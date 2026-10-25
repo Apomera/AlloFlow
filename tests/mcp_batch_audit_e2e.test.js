@@ -251,7 +251,7 @@ describe('pdf_batch_audit_start — folder triage e2e (scripted loopback Gemini)
     expect(res.scoredDocuments).toBe(2);
     expect(res.selected).toBe(2);
     expect(res.bands).toEqual([band]);
-    expect(res.succeeded).toBe(2);
+    expect(res.succeeded, JSON.stringify(res.perFile)).toBe(2);
     for (const r of res.perFile) {
       expect(r.ok).toBe(true);
       expect(existsSync(r.files.accessibleHtml)).toBe(true);

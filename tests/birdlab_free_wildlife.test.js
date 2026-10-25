@@ -31,7 +31,7 @@ describe('Autonomous woodland residents', () => {
       }
       expect(flightFrames).toBeGreaterThan(15);
     } finally {wildlife.dispose();}
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
   it('chooses independent actions and destinations rather than repeating the guided 44-second course', () => {
     const wildlife = create({ seed: 57 }), behaviors = new Map(), destinations = new Map();
     try {

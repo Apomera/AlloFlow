@@ -1,6 +1,4 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 // End-to-end contract between the two halves of the Canvas search path:
@@ -23,12 +21,7 @@ beforeAll(async () => {
   WebSearchProvider = window.WebSearchProvider;
   originalCanvasDescriptor = Object.getOwnPropertyDescriptor(WebSearchProvider, '_isCanvas');
 
-  const src = fs.readFileSync(
-    path.resolve(process.cwd(), 'catalog/cloudflare-worker/src/index.js'),
-    'utf8',
-  );
-  const mod = await import(`data:text/javascript;base64,${Buffer.from(src).toString('base64')}`);
-  worker = mod.default;
+  worker = (await import('../catalog/cloudflare-worker/src/index.js')).default;
 });
 
 afterEach(() => {

@@ -62,6 +62,31 @@ function probeHttpTransport(entry, env, manifestVersion) {
 const DEFAULT_BUNDLE = path.resolve(__dirname, '..', 'dist', 'mcpb', 'alloflow-remediation.mcpb');
 const DEFAULT_RPC_TIMEOUT_MS = 60000;
 
+const canonicalJson = value => Array.isArray(value) ? value.map(canonicalJson)
+  : value && typeof value === 'object'
+    ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonicalJson(value[key])])) : value;
+
+function verifyPackagedEpubRuntime(extraction, options = {}) {
+  const harness = path.resolve(__dirname, '../../dev-tools/security/test-mcp-runtime-dependencies.cjs');
+  const browserPolicy = path.resolve(__dirname, '../../tests/mcp_ace_browser_security.test.cjs');
+  if (!fs.existsSync(harness)) throw new Error('Packaged EPUB runtime verification harness is missing');
+  if (!fs.existsSync(browserPolicy)) throw new Error('Packaged browser policy verification harness is missing');
+  const environment = { ...(options.env || process.env),
+    SECURITY_MCP_RUNTIME: extraction, SECURITY_MCP_SERVER: path.join(extraction, 'server'), ALLOFLOW_TEST_ACE_BROWSER: '1' };
+  for (const key of Object.keys(environment)) {
+    if (key === 'NODE_PATH' || /(?:API_KEY|TOKEN|SECRET|PASSWORD)/i.test(key)) delete environment[key];
+  }
+  const result = (options.spawnSync || spawnSync)(process.execPath,
+    ['--test', '--test-concurrency=1', harness, browserPolicy],
+    { cwd: extraction, env: environment, encoding: 'utf8', windowsHide: true,
+      timeout: 300000, maxBuffer: 4 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+  if (result.error || result.signal || result.status !== 0) {
+    const detail = result.error ? result.error.message : String(result.stdout || '') + String(result.stderr || '');
+    throw new Error('Exact artifact EPUB runtime validation failed: ' + detail.slice(-4000));
+  }
+  return { passed: true };
+}
+
 function validatedToolNames(tools, label) {
   const source = String(label || 'Tool registry');
   if (!Array.isArray(tools) || !tools.length) throw new Error(source + ' must advertise at least one tool');
@@ -81,7 +106,72 @@ function assertSourceParity(manifest) {
   if (JSON.stringify(artifactNames) !== JSON.stringify(sourceNames)) {
     throw new Error('Artifact tool registry does not match the current source manifest');
   }
+  if (manifest.compatibility?.runtimes?.node !== sourceManifest.compatibility.runtimes.node) {
+    throw new Error('Artifact Node runtime requirement does not match the current source manifest');
+  }
+  if (JSON.stringify(canonicalJson(manifest.server)) !== JSON.stringify(canonicalJson(sourceManifest.server))) {
+    throw new Error('Artifact server configuration does not match the current source manifest');
+  }
   return { version: sourceManifest.version, tools: sourceNames };
+}
+
+function assertRuntimeManifest(extraction, expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'runtime', 'package.json'), 'utf8'))) {
+  const file = path.join(fs.realpathSync(extraction), 'package.json');
+  try {
+    const stat = fs.lstatSync(file);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 256 * 1024) throw new Error('not a bounded regular file');
+  } catch (error) {
+    throw new Error('Artifact runtime manifest is missing or unsafe: ' + error.message);
+  }
+  const actual = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (!actual || typeof actual !== 'object' || Array.isArray(actual)) throw new Error('Artifact runtime manifest must be an object');
+  for (const field of ['dependencies', 'overrides', 'engines']) {
+    if (JSON.stringify(canonicalJson(actual[field])) !== JSON.stringify(canonicalJson(expected[field]))) {
+      throw new Error('Artifact runtime manifest differs from current source: ' + field);
+    }
+  }
+  return { passed: true };
+}
+
+function assertSourceBytes(extraction, sourceFiles, { requirePlaywright = false } = {}) {
+  // Lean diagnostic bundles deliberately omit the runtime. Distribution checks
+  // require it even if an incomplete archive also omitted its root package.json.
+  const includeRuntime = requirePlaywright || fs.existsSync(path.join(extraction, 'package.json'));
+  if (sourceFiles === undefined) sourceFiles = require('./build_mcpb.cjs').getBundleSourceFiles({ includeRuntime });
+  if (!sourceFiles || typeof sourceFiles !== 'object' || Array.isArray(sourceFiles)
+      || Object.keys(sourceFiles).length === 0) throw new Error('Bundle source-file map is missing or invalid');
+  const root = fs.realpathSync(extraction);
+  let checkedFiles = 0;
+  for (const [relativePath, sourcePath] of Object.entries(sourceFiles)) {
+    const segments = relativePath.split('/');
+    if (!/^[A-Za-z0-9._/-]+$/.test(relativePath)
+        || segments.some(segment => !segment || segment === '.' || segment === '..')
+        || typeof sourcePath !== 'string' || !path.isAbsolute(sourcePath)) {
+      throw new Error('Invalid bundle source-file mapping: ' + relativePath);
+    }
+    const artifactPath = path.join(root, ...segments);
+    let current = root;
+    try {
+      for (const segment of segments) {
+        current = path.join(current, segment);
+        if (fs.lstatSync(current).isSymbolicLink()) throw new Error('symbolic link');
+      }
+      const real = fs.realpathSync(artifactPath);
+      const relative = path.relative(root, real);
+      if (!relative || relative === '..' || relative.startsWith('..' + path.sep)
+          || path.isAbsolute(relative) || !fs.lstatSync(real).isFile()) throw new Error('not a contained regular file');
+    } catch (error) {
+      throw new Error('Artifact source file is missing or unsafe: ' + relativePath + ' (' + error.message + ')');
+    }
+    if (fs.statSync(artifactPath).size !== fs.statSync(sourcePath).size) {
+      throw new Error('Artifact source bytes differ from current source: ' + relativePath);
+    }
+    const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+    if (hash(artifactPath) !== hash(sourcePath)) throw new Error('Artifact source bytes differ from current source: ' + relativePath);
+    checkedFiles++;
+  }
+  if (includeRuntime) assertRuntimeManifest(extraction);
+  return { checkedFiles };
 }
 
 function extractArchive(bundle, destination) {
@@ -155,7 +245,10 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
     const manifest = JSON.parse(fs.readFileSync(path.join(extraction, 'manifest.json'), 'utf8'));
     if (manifest.manifest_version !== '0.4') throw new Error('Unexpected manifest version: ' + manifest.manifest_version);
     const manifestNames = validatedToolNames(manifest.tools, 'Artifact manifest');
-    if (options.assertSourceParity !== false) assertSourceParity(manifest);
+    if (options.assertSourceParity !== false) {
+      assertSourceParity(manifest);
+      assertSourceBytes(extraction, undefined, options);
+    }
     const entry = path.join(extraction, manifest.server.entry_point);
     if (!fs.existsSync(entry)) throw new Error('Artifact server entry point is missing: ' + manifest.server.entry_point);
     const env = {
@@ -201,6 +294,7 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
     if (!capabilities.keylessModeAvailable) throw new Error('Extracted artifact did not expose keyless mode');
     if (options.requirePlaywright && !capabilities.playwrightAvailable) throw new Error('Distribution artifact does not contain a resolvable Playwright runtime');
     if(options.requirePlaywright && (!capabilities.narration?.epubVerification?.epubcheck?.installed || !capabilities.narration?.epubVerification?.ace?.installed))throw new Error('Distribution artifact is missing its EPUB verification runtimes');
+    const epubRuntime = options.requirePlaywright ? verifyPackagedEpubRuntime(extraction, { env }) : { passed: false };
     const httpProbe = options.skipHttpProbe ? { httpTransport: false } : await probeHttpTransport(entry, env, manifest.version);
     return {
       httpTransport: httpProbe.httpTransport,
@@ -213,6 +307,7 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
       vendorFiles: capabilities.vendorAssets.files,
       playwrightAvailable: capabilities.playwrightAvailable,
       chromiumInstalled: capabilities.chromiumInstalled,
+      epubRuntimeVerified: epubRuntime.passed,
     };
   } finally {
     if (proc && proc.exitCode === null && proc.signalCode === null) {
@@ -236,5 +331,5 @@ async function main() {
   process.stdout.write('MCPB ARTIFACT: PASS (v' + result.version + ', ' + result.tools + ' tools, ' + result.skills + ' skill, ' + result.prompts + ' prompt, ' + result.vendorFiles + ' hashed vendor files, ' + (result.httpTransport ? 'HTTP transport probed, ' : '') + result.bytes + ' bytes)\n');
 }
 
-module.exports = { extractArchive, verifyArtifact, validatedToolNames, assertSourceParity, DEFAULT_BUNDLE, DEFAULT_RPC_TIMEOUT_MS };
+module.exports = { extractArchive, verifyArtifact, verifyPackagedEpubRuntime, validatedToolNames, assertSourceParity, assertSourceBytes, assertRuntimeManifest, DEFAULT_BUNDLE, DEFAULT_RPC_TIMEOUT_MS };
 if (require.main === module) main().catch((error) => { console.error('[verify-mcpb] ERROR: ' + error.stack); process.exitCode = 1; });

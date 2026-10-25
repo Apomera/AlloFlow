@@ -74,6 +74,7 @@ describe('lang packs carry the corrected trapezoid fact', () => {
   const TWOS = ['2', '٢', '۲', '२', '২', '၂', '๒', '໒', '២', '༢'];
   const SIXES = ['6', '٦', '۶', '६', '৬', '၆', '๖', '໖', '៦', '༦'];
 
+  // Each case reads all 63 packs (~540 MB): ~4 s locally, over 5 s on loaded Windows CI.
   for (const dir of ['lang', 'desktop/web-app/public/lang']) {
     it(dir + ': first two-or-six digit in the value is a two, in all packs', () => {
       let checked = 0;
@@ -93,7 +94,7 @@ describe('lang packs carry the corrected trapezoid fact', () => {
         checked++;
       }
       expect(checked).toBeGreaterThanOrEqual(60);
-    });
+    }, 20000);
   }
 });
 

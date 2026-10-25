@@ -3205,6 +3205,8 @@
     "text_condensing": "Condensing text..."
   },
   "toasts": {
+    "qd_results_saved_for": "QD results saved for {student}",
+    "report_writer_unavailable": "Report Writer is not available in this build.",
     "submission_tools_still_loading": "Submission tools are still loading. Try Submit again.",
     "dictation_unavailable": "Voice dictation is unavailable right now.",
     "focus_streak": "{flames} {minutes}-minute focus streak! Keep it up!",
@@ -13627,6 +13629,7 @@
     "brainstorming_start": "Let's brainstorm some ideas!"
   },
   "help_mode": {
+    "guided_quick_route": "Use the quick route to review a plan for the whole resource pack before generating it, then continue to sharing or export. You can return to individual steps afterwards.",
     "header_rerun_wizard_title": "Start & setup",
     "header_quickstart_setup_title": "Setup Wizard",
     "header_guided_mode_start_title": "Start or resume Guided Mode",
@@ -40003,7 +40006,15 @@
       "a11y_interpret_the_construction": "Interpret the construction",
       "a11y_habitat_overview_the_outlined_window_shows_the_part_of_the_landscape_currently_in_vi": "Habitat overview. The outlined window shows the part of the landscape currently in view. No animal locations are shown.",
       "a11y_comparison_flight_style": "Comparison flight style",
-      "a11y_wing_construction_regions": "Wing construction regions"
+      "a11y_wing_construction_regions": "Wing construction regions",
+      "a11y_resident_studio_presentation": "Resident studio presentation",
+      "a11y_follow_a_chorus_voice": "Follow a chorus voice",
+      "a11y_phrase_timeline_cursor": "Phrase timeline cursor",
+      "a11y_nest_box_space_explorer": "Nest box space explorer",
+      "a11y_measuring_plane_height": "Measuring plane height",
+      "a11y_plane_height_percentage": "Plane height percentage",
+      "a11y_current_and_kept_entrance_dimensions": "Current and kept entrance dimensions",
+      "a11y_maximum_lift_capacity_versus_airspeed_solid_curves_show_capacity_and_dashed_horizontal_lines_show_ea": "Maximum lift capacity versus airspeed. Solid curves show capacity and dashed horizontal lines show each design’s weight. The vertical marker shows the selected speed. Axes are meters per second and newtons."
     },
     "brainatlas": {
       "a11y_diagram_orientation": "Diagram orientation",
@@ -52952,7 +52963,10 @@
       "show_all_layer_structures": "Show all structures in this layer",
       "structure_visible": "Visible",
       "prior_evidence": "Prior evidence",
-      "structure_not_visible": "Not visible"
+      "structure_not_visible": "Not visible",
+      "a11y_biology_fact_navigation": "Biology fact navigation",
+      "a11y_previous_biology_fact": "Previous biology fact",
+      "a11y_next_biology_fact": "Next biology fact"
     },
     "dna": {
       "sr_guided_dna_investigation_started_checkpoint_1_bas": "Guided DNA investigation started. Checkpoint 1: base pairing.",
@@ -61407,6 +61421,7 @@
       "hand_landmark_answer": "The palm side faces upward in both poses. The folds help you follow its surface; the nails mark the back of the hand."
     },
     "flightsim": {
+      "wing_area": "Wing area",
       "guided_inspect_angle": "Inspect angle comparison",
       "guided_inspect_speed": "Inspect speed comparison",
       "guided_export_scope": "Export includes your current draft and earlier attempts. Exporting does not complete the investigation.",
@@ -96749,7 +96764,43 @@
       "a11y_time_slows_on_a_close_approach_to_prey_a_stand_in_for_fast_raptor_vision_peregrine_f": "Time slows on a close approach to prey, a stand-in for fast raptor vision: peregrine falcons see flicker at 129 Hz or more (Potier et al. 2020).",
       "a11y_swap_the_nose_up_and_nose_down_keys_and_reverse_vertical_drag_as_in_a_flight_simulat": "Swap the nose-up and nose-down keys and reverse vertical drag, as in a flight simulator: push forward to dive.",
       "a11y_recorded_height_above_terrain_against_elapsed_simulation_time_a_white_cursor_marks_t": "Recorded height above terrain against elapsed simulation time. A white cursor marks the selected sample.",
-      "a11y_recorded_flight_interval_comparison": "Recorded flight interval comparison"
+      "a11y_recorded_flight_interval_comparison": "Recorded flight interval comparison",
+      "study_region_right_wing": "Right wing feathers",
+      "study_explore_visible": "Explore visible parts",
+      "study_explore_part": "Inspect {region}",
+      "study_explore_habitat": "Choose Studio to explore visible parts. The habitat view keeps its usual controls.",
+      "study_explore_help": "Turn on to tap a visible part of the bird. Drag to orbit; Inspect also selects parts by keyboard.",
+      "study_explore_active": "Tap a visible surface or a numbered label to look closer. Labels hide behind other parts. Drag to orbit; Inspect reaches every part.",
+      "study_explore_close": "Explore this surface by orbiting. Choose Whole bird to see the part labels again, or use Inspect to choose another part.",
+      "study_fine_view": "Fine view · camera compass",
+      "study_compass_forward": "Forward",
+      "study_compass_aft": "Aft",
+      "study_camera_bearing": "Bearing from heading",
+      "study_camera_elevation": "Requested elevation",
+      "study_compass_help": "Top-down compass: the arrow follows horizontal flight heading; the gold dot shows the camera. Elevation is measured above the horizon. Terrain may lift the camera above the requested angle.",
+      "study_camera_actual": "Actual camera: {bearing} bearing · {elevation} elevation",
+      "a11y_stripe_contrast_matching_challenge": "Stripe contrast matching challenge",
+      "a11y_saved_range_finding_evidence": "Saved range-finding evidence",
+      "a11y_compare_saved_reference_crossings": "Compare saved reference crossings",
+      "a11y_saved_distance_brackets_for_the_same_pattern_each_bar_starts_at_zero_metres_its_gold_end_interval_is": "Saved distance brackets for the same pattern. Each bar starts at zero metres; its gold end interval is the recorded bracket. Exact endpoints are in the saved result cards.",
+      "a11y_collected_trials_distance_in_metres_versus_spatial_frequency_in_cycles_per_degree_the_labeled_horizo": "Collected trials: distance in metres versus spatial frequency in cycles per degree. The labeled horizontal line is the selected reference. Exact results are in the table below.",
+      "a11y_condition_to_inspect": "Condition to inspect",
+      "a11y_comparison_divider_position": "Comparison divider position",
+      "a11y_find_the_distant_detail": "Find the distant detail",
+      "a11y_guided_investigations": "Guided investigations",
+      "a11y_wide_context_a_fixed_size_dove_and_test_plaque_at_the_selected_distance": "Wide context: a fixed-size dove and test plaque at the selected distance",
+      "a11y_distance_investigation_controls": "Distance investigation controls",
+      "a11y_predict_and_inspect": "Predict and inspect",
+      "a11y_compare_one_change": "Compare one change",
+      "a11y_explain_the_change": "Explain the change",
+      "a11y_distance_investigation_notebook": "Distance investigation notebook",
+      "a11y_distance_detail_investigation_invitation": "Distance detail investigation invitation",
+      "a11y_chart_interaction": "Chart interaction",
+      "a11y_move_both_peaks_together": "Move both peaks together",
+      "a11y_wing_profile_change_explorer": "Wing profile change explorer",
+      "a11y_primary_indices_on_a_shared_50_to_100_scale": "Primary indices on a shared 50 to 100 scale",
+      "a11y_selected_primary_index": "Selected primary index",
+      "a11y_two_generic_tapered_wings_shown_from_above_on_an_equal_scale_grid_together_their_polygon_area_equals": "Two generic tapered wings shown from above on an equal-scale grid. Together their polygon area equals the selected wing area. Ruler controls are below and beside the wings."
     },
     "renewables": {
       "a11y_trace": "Trace {value1}",
@@ -153021,8 +153072,12 @@
     "use_mine_help": "Prints with your font, text size and spacing."
   },
   "catalog": {
+    "pd_responses_deleted_one": "Deleted saved responses for {count} PD module.",
+    "pd_responses_deleted_many": "Deleted saved responses for {count} PD modules.",
+    "pd_responses_none_saved": "No saved PD responses were stored.",
     "a11y_published_lesson_preview": "Published lesson preview",
     "a11y_e_g_3_6_8_k": "e.g., 3, 6-8, K",
-    "a11y_e_g_3_6_8_k_2": "e.g., 3, 6-8, K-2"
+    "a11y_e_g_3_6_8_k_2": "e.g., 3, 6-8, K-2",
+    "lesson_link_copied": "Lesson link copied."
   }
 }

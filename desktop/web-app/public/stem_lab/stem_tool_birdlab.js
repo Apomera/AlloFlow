@@ -214,11 +214,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // Module scope keeps the renderer and its GPU resources alive when the
   // host persists toolData. Only leaving this view tears the scene down.
   function BirdlabResidentStudio(props){
+    var __alloT = typeof props.t === "function" ? props.t : function (key, fallback) { return fallback == null ? key : fallback; };
     var h=props.React.createElement,s=props.value||{presentation:'woodland',backdrop:'teal',light:'soft',active:false};
     function group(label,items,key,attribute,disabled){return h('div',{role:'group','aria-label':label,style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:8,margin:'8px 0 14px'}},items.map(function(item){
       var selected=s[key]===item[0],p={key:item[0],type:'button',disabled:props.disabled||disabled,'aria-pressed':String(selected),style:{minHeight:44,padding:'10px 8px',fontSize:13,background:selected?'#e6dbc0':'#214650',color:selected?'#203932':'#f3faf3',border:'1px solid #9abcb3',borderRadius:8},onClick:function(){var next={};next[key]=item[0];props.onChange(next);}};p[attribute]=item[0];return h('button',p,item[1]);
     }));}
-    return h('section',{'data-resident-studio-controls':true,'aria-label':'Resident studio presentation',style:{margin:'14px 0 18px',padding:14,border:'1px solid #7ca89e',borderRadius:12,background:'linear-gradient(145deg,#214b52,#102d39)',color:'#f0f8ef'}},
+    return h('section',{'data-resident-studio-controls':true,'aria-label':__alloT("stem.birdlab.a11y_resident_studio_presentation", 'Resident studio presentation'),style:{margin:'14px 0 18px',padding:14,border:'1px solid #7ca89e',borderRadius:12,background:'linear-gradient(145deg,#214b52,#102d39)',color:'#f0f8ef'}},
       h('div',{style:{fontSize:11,fontWeight:750,letterSpacing:'.08em',color:'#f3dcab'}},'SCENE / FIELD-MARK LIGHT'),
       h('h3',{style:{fontSize:18,lineHeight:1.4,margin:'6px 0 10px',color:'#f0f8ef'}},'Give the details room to stand out'),
       group('Resident presentation',[['woodland','Woodland'],['studio','Studio']],'presentation','data-resident-presentation',false),
@@ -378,7 +379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         h('div',{className:'birdlab-3d-eyebrow'},'LOOK CLOSER / FIELD MARKS'),
         h('h2',{id:'birdlab-resident-inspection-title'},'Field-mark studio'),
         h('p',{style:{fontSize:13,lineHeight:1.7,margin:'8px 0 12px'}},'Frame one part, then compare the same pose from different directions.'),
-        h(BirdlabResidentStudio,{React:React,value:inspection.studio,disabled:disabled,onChange:function(value){command('setResidentStudio',value);}}),
+        h(BirdlabResidentStudio,{React:React,t:t,value:inspection.studio,disabled:disabled,onChange:function(value){command('setResidentStudio',value);}}),
         h('strong',{style:{fontSize:13}},'Choose a part'),choices(parts,'setResidentPart','data-resident-part-choice',part[0],'Resident model part'),
         h('strong',{style:{fontSize:13}},'Choose a view'),choices(views,'setResidentView','data-resident-view-choice',view[0],'Resident model view'),
         inspection.active?h(BirdlabResidentCompass,{React:React,orientation:inspection.orientation,disabled:disabled,onAngle:function(value){command('setResidentAngle',value);}}):null,
@@ -5353,6 +5354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     return values.filter(function(value, index) { return values.indexOf(value) === index; }).sort(function(a,b) { return a-b; });
   }
   function BirdlabChorusTimelineStudy(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var React = props.React, h = React.createElement;
     var clock = React.useState(0), time = clock[0], setTime = clock[1];
     var shifts = React.useState(function() { return {robin:0,chickadee:0,redwingBlackbird:0,bluejay:0}; }), offsets = shifts[0], setOffsets = shifts[1];
@@ -5445,14 +5447,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('p',{style:{margin:'2px 0 8px',fontSize:12,fontWeight:800,letterSpacing:'.12em',color:'#a9d5c5'}},'PHRASE LAB / VISUAL LISTENING'),
       h('h3',{id:'birdlab-chorus-title',style:{margin:'0 0 8px',fontSize:24,lineHeight:1.2,color:'#fff0c8'}},'Follow a voice through the gaps.'),
       h('p',{style:{fontSize:14,lineHeight:1.6,margin:'0 0 14px'}},'The woodland scene shows which voices participate in a morning phase. Here, expand that phase into twelve invented seconds. Slide the cursor to find a phrase, a pause or an overlap; shift one lane to change the arrangement.'),
-      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,190px),1fr))',gap:8,marginBottom:12},role:'group','aria-label':'Follow a chorus voice'},BIRDLAB_CHORUS_VOICES.map(function(voice,index) {
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,190px),1fr))',gap:8,marginBottom:12},role:'group','aria-label':__alloT("stem.birdlab.a11y_follow_a_chorus_voice", 'Follow a chorus voice')},BIRDLAB_CHORUS_VOICES.map(function(voice,index) {
         var chosen = voice===singer, now = active.indexOf(voice)>=0, included = eligible.indexOf(index)>=0;
         return h('button',{key:voice,type:'button','data-chorus-voice-choice':voice,'aria-pressed':String(chosen),onClick:function(){selectVoice(voice);},style:Object.assign({},buttonStyle,{display:'flex',alignItems:'center',gap:10,textAlign:'left',border:chosen?'2px solid #ffe1a0':'1px solid #8caaa4',background:chosen?'#3b4b39':'#17373b'})},
           h('svg',{viewBox:'0 0 30 30','aria-hidden':'true',style:{width:44,height:44,flexShrink:0,background:'#dce8cb',borderRadius:8}},BIRDS[voice].svg(h)),
           h('span',null,(index+1)+'. '+BIRDS[voice].name,h('small',{style:{display:'block',fontSize:12,fontWeight:400,marginTop:4}},included?(now?'Phrase at cursor':'Between phrases'):'Outside this phase')));
       })),
       h('div',{style:{display:'flex',flexWrap:'wrap',gap:'8px 20px',fontSize:13,margin:'10px 0'}},h('span',{style:{color:'#ffe1a0'}},'Gold · current phrases'),h('span',{style:{color:'#9af0e6'}},'Mint + dashed cursor · frozen'),h('span',null,'Numbers match the voice buttons')),
-      h('svg',{ref:svgRef,'data-chorus-timeline':'',viewBox:'0 0 760 440',role:'slider',tabIndex:0,'aria-label':'Phrase timeline cursor','aria-valuemin':0,'aria-valuemax':12,'aria-valuenow':time,'aria-valuetext':time.toFixed(2)+' seconds; '+active.length+' voices active',onPointerDown:pointerDown,onPointerMove:pointerMove,onPointerUp:pointerUp,onPointerCancel:cancelDrag,onLostPointerCapture:function(event){if(dragRef.current&&dragRef.current.id===event.pointerId)cancelDrag();},onKeyDown:key,style:{display:'block',width:'100%',height:'auto',borderRadius:10,background:'#0a2228',touchAction:'pan-y',userSelect:'none',WebkitUserSelect:'none',cursor:'ew-resize'}},
+      h('svg',{ref:svgRef,'data-chorus-timeline':'',viewBox:'0 0 760 440',role:'slider',tabIndex:0,'aria-label':__alloT("stem.birdlab.a11y_phrase_timeline_cursor", 'Phrase timeline cursor'),'aria-valuemin':0,'aria-valuemax':12,'aria-valuenow':time,'aria-valuetext':time.toFixed(2)+' seconds; '+active.length+' voices active',onPointerDown:pointerDown,onPointerMove:pointerMove,onPointerUp:pointerUp,onPointerCancel:cancelDrag,onLostPointerCapture:function(event){if(dragRef.current&&dragRef.current.id===event.pointerId)cancelDrag();},onKeyDown:key,style:{display:'block',width:'100%',height:'auto',borderRadius:10,background:'#0a2228',touchAction:'pan-y',userSelect:'none',WebkitUserSelect:'none',cursor:'ew-resize'}},
         [0,3,6,9,12].map(function(t){return h('g',{key:t},h('line',{x1:80+50*t,x2:80+50*t,y1:40,y2:374,stroke:'#486965',strokeDasharray:'4 6'}),h('text',{x:80+50*t,y:424,textAnchor:'middle',fill:'#e3eee0',fontSize:34,fontFamily:'monospace'},String(t)));}),
         BIRDLAB_CHORUS_VOICES.map(function(voice,index){var y=76+88*index;return h('g',{key:voice,'data-chorus-lane':voice,'data-chorus-eligible':String(eligible.indexOf(index)>=0),'data-chorus-now':String(active.indexOf(voice)>=0),'data-chorus-selected':String(singer===voice)},
           h('rect',{x:65,y:y-33,width:630,height:70,rx:8,fill:singer===voice?'#345048':'#17353b',fillOpacity:.65}),
@@ -5498,6 +5500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       capacity:d.floor*d.floor*d.depth,holeArea:Math.PI*(d.holeW||d.hole)*(d.holeH||d.hole)/4};
   }
   function BirdlabNestboxStudy(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var React=props.React,h=React.createElement;
     var _level=React.useState(50),level=_level[0],setLevel=_level[1];
     var _pin=React.useState(null),pin=_pin[0],setPin=_pin[1];
@@ -5542,14 +5545,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     }
     function button(text,action,extra){return h('button',Object.assign({type:'button',onClick:action},extra||{}),text);}
     function reading(label,value,unit,attr){return h('div',{'data-box-reading':attr},h('span',null,label),h('strong',null,number(value)+' '+unit));}
-    return h('section',{'data-nestbox-study':true,'data-species':props.species,'data-level':level,'data-scale':scale,'aria-label':'Nest box space explorer',className:'bl-box-study'},
+    return h('section',{'data-nestbox-study':true,'data-species':props.species,'data-level':level,'data-scale':scale,'aria-label':__alloT("stem.birdlab.a11y_nest_box_space_explorer", 'Nest box space explorer'),className:'bl-box-study'},
       h('style',null,'.bl-box-study{margin:18px 0;padding:20px;border:1px solid #628a85;border-radius:20px;background:radial-gradient(ellipse at 20% 10%,#244d54,#102b36 70%);color:#edf7ee;container-type:inline-size}.bl-box-study *{box-sizing:border-box}.bl-box-study h3{font-size:25px;line-height:1.15;margin:5px 0 10px;color:#fff}.bl-box-study p{color:#d3e6df;font-size:14px;line-height:1.55;margin:8px 0}.bl-box-study .bl-box-kicker{font-size:11px;letter-spacing:.15em;font-weight:800;color:#f6d68d}.bl-box-study svg{display:block;width:100%;height:auto;overflow:visible}.bl-box-study svg text{display:inline!important;fill:#edf7ee;font-size:26px;font-family:ui-sans-serif,system-ui;font-weight:650}.bl-box-study .bl-box-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}.bl-box-study figure{margin:0;min-width:0}.bl-box-study figcaption{color:#d3e6df;font-size:12px;line-height:1.5}.bl-box-study .bl-box-measures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.bl-box-study [data-box-reading]{padding:10px;border:1px solid #5d827e;border-radius:10px;background:#0a232c}.bl-box-study [data-box-reading] span{display:block;font-size:11px;color:#c9e0d9}.bl-box-study [data-box-reading] strong{display:block;font-size:17px;line-height:1.6;color:#f7dfaa}.bl-box-study label{display:block;font-size:14px;font-weight:700}.bl-box-study input[type=range]{width:100%;min-width:0;min-height:44px;accent-color:#f6d68d}.bl-box-study .bl-box-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.bl-box-study button{min-height:44px;padding:9px 12px;border:1px solid #95b9af;border-radius:8px;background:#294e54;color:#f4f8ef;font-size:12px;font-weight:750}.bl-box-study button[aria-pressed=true]{background:#f6d68d;color:#243933;border-color:#ffeabf}.bl-box-study :is(button,input,svg):focus-visible{outline:3px solid #ffe4a6;outline-offset:3px}.bl-box-study .bl-box-saved{margin-top:12px;padding:12px;border:1px dashed #eaf3ef;border-radius:12px}.bl-box-study .bl-box-saved p{font-size:12px}.bl-box-study .bl-box-hole{background:#0a232c;border:1px solid #5d827e;border-radius:12px;margin-top:12px;padding:10px}.bl-box-study .bl-box-hole svg text{font-size:23px}.bl-box-study .bl-box-hole svg{max-height:160px}.bl-box-study [data-box-scene]{touch-action:pan-x}.bl-box-study .bl-box-note{font-size:12px}@container(max-width:650px){.bl-box-study .bl-box-layout{grid-template-columns:1fr}.bl-box-study h3{font-size:23px}.bl-box-study .bl-box-measures strong{font-size:17px}}@media(forced-colors:active){.bl-box-study{background:Canvas;color:CanvasText}.bl-box-study svg{forced-color-adjust:none}.bl-box-study button{background:ButtonFace;color:ButtonText}.bl-box-study [data-box-reading] strong{color:CanvasText}}'),
       h('div',{className:'bl-box-kicker'},'LOOK INSIDE · MEASURE THE SPACE'),
       h('h3',null,'How much space is below your plane?'),
       h('p',null,'Lift the gold plane through '+props.species+'’s model. Keep a box, then switch species above to compare both interiors at one scale.'),
       h('div',{className:'bl-box-layout'},
         h('figure',null,
-          h('svg',{'data-box-scene':true,viewBox:'0 0 720 580',role:'slider','aria-orientation':'vertical',tabIndex:0,'aria-label':'Measuring plane height','aria-valuemin':0,'aria-valuemax':100,'aria-valuenow':level,'aria-valuetext':number(m.height)+' inches above floor; '+level+' percent of box height',
+          h('svg',{'data-box-scene':true,viewBox:'0 0 720 580',role:'slider','aria-orientation':'vertical',tabIndex:0,'aria-label':__alloT("stem.birdlab.a11y_measuring_plane_height", 'Measuring plane height'),'aria-valuemin':0,'aria-valuemax':100,'aria-valuenow':level,'aria-valuetext':number(m.height)+' inches above floor; '+level+' percent of box height',
             onKeyDown:function(e){var v=level;if(e.key==='Escape'){cancel();return;}if(e.key==='Home')v=0;else if(e.key==='End')v=100;else if(e.key==='ArrowUp'||e.key==='ArrowRight')v+=e.shiftKey?10:1;else if(e.key==='ArrowDown'||e.key==='ArrowLeft')v-=e.shiftKey?10:1;else return;e.preventDefault();cancel();change(v);},
             onPointerDown:function(e){if(e.button!==0||!e.isPrimary||gesture.current)return;var node=e.currentTarget;node.focus({preventScroll:true});gesture.current={id:e.pointerId,node:node,y:e.clientY,original:level,unit:node.getBoundingClientRect().height/580*scale*d.depth/100};try{node.setPointerCapture(e.pointerId);}catch(_){cancel();}},
             onPointerMove:function(e){var g=gesture.current;if(!g||g.id!==e.pointerId)return;if(!g.node.hasPointerCapture(g.id)){cancel();return;}change(g.original-(e.clientY-g.y)/g.unit);},
@@ -5566,14 +5569,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('path',{d:'M'+(front[0]-5)+','+(front[1]-3)+' l5,-5 l5,5 M'+(front[0]-5)+','+(front[1]+3)+' l5,5 l5,-5',fill:'none',stroke:'#183b41',strokeWidth:2})),
           h('figcaption',null,'Drag up or down, or use arrow keys. Shift + arrow moves 10%; Home / End reaches floor / ceiling. The scene fits both boxes; their outlines share one scale.')),
         h('div',null,
-          h('label',null,'Measuring plane · '+level+'%',h('input',{type:'range',min:0,max:100,step:.1,value:level,'data-box-level':true,'aria-label':'Plane height percentage',onChange:function(e){cancel();change(Number(e.target.value));}})),
+          h('label',null,'Measuring plane · '+level+'%',h('input',{type:'range',min:0,max:100,step:.1,value:level,'data-box-level':true,'aria-label':__alloT("stem.birdlab.a11y_plane_height_percentage", 'Plane height percentage'),onChange:function(e){cancel();change(Number(e.target.value));}})),
           h('div',{className:'bl-box-actions'},[0,50,100].map(function(n){return button(n===0?'Floor':n===50?'Halfway':'Ceiling',function(){cancel();change(n);},{key:n,'aria-pressed':level===n});})),
           h('div',{className:'bl-box-measures'},reading('Height above floor',m.height,'in','height'),reading('Floor area',m.area,'in²','area'),reading('Space below plane',m.volume,'in³','volume'),reading('Full interior',m.capacity,'in³','capacity')),
           h('p',{className:'bl-box-note'},number(d.floor)+' × '+number(d.floor)+' × '+number(m.height)+' = '+number(m.volume)+' cubic inches. A square floor makes area grow with the square of its side.'),
           h('div',{className:'bl-box-actions'},button(pin?'Replace kept box':'Keep this box',function(){cancel();setPin({species:props.species,level:level});},{ref:keepButton,'data-box-keep':true})),
           pin&&h('div',{className:'bl-box-saved','data-box-saved':pin.species},h('strong',null,'White dashes · '+pin.species),h('p',null,'Kept plane: '+number(pm.height)+' in · '+number(pm.volume)+' in³ below it. Full interior: '+number(pm.capacity)+' in³.'),h('p',null,'Current full interior ÷ kept: '+number(m.capacity/pm.capacity)+'×. Current space below the plane: '+(m.volume-pm.volume>=0?'+':'')+number(m.volume-pm.volume)+' in³.'),h('div',{className:'bl-box-actions'},button('Restore kept box',function(){cancel();props.onSelect(pin.species);setLevel(pin.level);},{'data-box-restore':true}),button('Clear comparison',function(){cancel();setPin(null);if(keepButton.current)keepButton.current.focus();},{ref:clearButton,'data-box-clear':true}))),
           h('div',{className:'bl-box-hole'},h('strong',null,'Entrance shapes · shared scale'),
-            h('svg',{viewBox:'0 0 420 210',role:'img','aria-label':'Current and kept entrance dimensions'},
+            h('svg',{viewBox:'0 0 420 210',role:'img','aria-label':__alloT("stem.birdlab.a11y_current_and_kept_entrance_dimensions", 'Current and kept entrance dimensions')},
               h('ellipse',{cx:105,cy:90,rx:(d.holeW||d.hole)*20,ry:(d.holeH||d.hole)*20,fill:'#7ddac3',stroke:'#ddf9ee',strokeWidth:2,'data-box-entrance':'current'}),
               pd&&h('ellipse',{cx:315,cy:90,rx:(pd.holeW||pd.hole)*20,ry:(pd.holeH||pd.hole)*20,fill:'none',stroke:'#fff',strokeWidth:3,strokeDasharray:'5 5','data-box-entrance':'saved'}),
               h('text',{x:105,y:200,textAnchor:'middle'},number(d.holeW||d.hole)+' × '+number(d.holeH||d.hole)+' in'),
@@ -34906,7 +34909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (i === idx ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-900 hover:bg-amber-200 active:scale-[0.97]')
               }, n.species);
             })),
-          h(BirdlabNestboxStudy, { React: React, species: cur.species, dimensions: NESTBOX_DIMS, onSelect: function(name) { var next = NESTBOX_GUIDE.findIndex(function(item) { return item.species === name; }); if (next >= 0) setIdx(next); } }),
+          h(BirdlabNestboxStudy, { React: React, translateStudy: __alloT, species: cur.species, dimensions: NESTBOX_DIMS, onSelect: function(name) { var next = NESTBOX_GUIDE.findIndex(function(item) { return item.species === name; }); if (next >= 0) setIdx(next); } }),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
             h('h2', { className: 'text-xl font-black text-amber-900 mb-2 tracking-tight' }, '🪺 ' + cur.species),
             h('div', { className: 'flex flex-wrap gap-3 mb-3 items-start' },
@@ -36310,7 +36313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'birdlab-dawn-observation', role: 'status', 'aria-atomic': 'true' }, h('strong', null, phases[phase]), h('p', null, prompts[phase])),
                 h('p', { className: 'birdlab-equipment-note' }, __alloT('stem.birdlab.dawn_study_variation', 'Real timing and combinations vary with habitat, season, weather and species. Song can continue well beyond dawn. A quiet moment is not a complete bird count.')),
                 h('p', { className: 'birdlab-equipment-note' }, h('a', { href: 'https://academy.allaboutbirds.org/birdsong/', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.birdlab.dawn_study_source_song', 'Cornell: how and why birds sing')), ' · ', h('a', { href: 'https://news.cornell.edu/stories/2025/06/study-reveals-why-early-bird-sings-early', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.birdlab.dawn_study_source_timing', 'Cornell: studying dawn timing'))))),
-            h(BirdlabChorusTimelineStudy,{React:React,phase:phase,onPhase:setPhase,singer:singer,onSinger:setSinger}),
+            h(BirdlabChorusTimelineStudy,{React:React, translateStudy: __alloT,phase:phase,onPhase:setPhase,singer:singer,onSinger:setSinger}),
             h('div', { className: 'birdlab-dawn-singers', role: 'group', 'aria-label': __alloT('stem.birdlab.dawn_study_choose_voice', 'Inspect a voice') }, birds.map(function(bird) {
               var vocal = active.indexOf(bird.id) !== -1;
               return h('button', { key: bird.id, type: 'button', 'data-dawn-singer': bird.id, 'aria-pressed': singer === bird.id, onClick: function() { setSinger(bird.id); } },
@@ -36977,7 +36980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('button',{type:'button','data-lift-pin':'true',onClick:function(){setLiftReference(Object.assign({},liftCurrent));}},liftReference?'Replace pinned design':'Pin this design'),
               liftReference?h('button',{type:'button',onClick:function(){setLiftReference(null);}},'Clear pinned design'):null),
             h('div',{className:'birdlab-lift-grid'},liftModels.map(forceCard)),
-            h('svg',{className:'birdlab-lift-chart',viewBox:'0 0 600 310',role:'img','data-lift-chart':'true','aria-label':'Maximum lift capacity versus airspeed. Solid curves show capacity and dashed horizontal lines show each design’s weight. The vertical marker shows the selected speed. Axes are meters per second and newtons.'},
+            h('svg',{className:'birdlab-lift-chart',viewBox:'0 0 600 310',role:'img','data-lift-chart':'true','aria-label':__alloT("stem.birdlab.a11y_maximum_lift_capacity_versus_airspeed_solid_curves_show_capacity_and_dashed_horizontal_lines_show_ea", 'Maximum lift capacity versus airspeed. Solid curves show capacity and dashed horizontal lines show each design’s weight. The vertical marker shows the selected speed. Axes are meters per second and newtons.')},
               [0,.25,.5,.75,1].map(function(f){var x=60+f*510,y=235-f*190;return h('g',{key:f},h('path',{d:'M60 '+y+'H570',stroke:'#ccd7c4',strokeWidth:1}),h('text',{x:42,y:y+4,textAnchor:'end',fontSize:10,fill:'#3d5741'},axisForce(plotMaxForce*f)),h('text',{x:x,y:264,textAnchor:'middle',fontSize:10,fill:'#3d5741'},(speedLimit*f).toFixed(1)));}),
               h('text',{x:60,y:23,fill:'#294a38',fontSize:12,fontWeight:700},'Maximum lift capacity (N)'),h('text',{x:315,y:296,textAnchor:'middle',fill:'#294a38',fontSize:11},'Airspeed (m/s)'),
               curves.map(function(curve){var e=curve.entry,c=e.capacity,color=e.key==='current'?'#176c65':'#9c5d18';return h('g',{key:e.key},

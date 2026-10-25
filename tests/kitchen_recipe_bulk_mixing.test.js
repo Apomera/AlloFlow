@@ -1,8 +1,8 @@
 import {describe,it,expect} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js'),S=require('../stem_lab/kitchen_studio/recipe_lab_sauce_chemistry.js');
-const oldR=require('../reports/kitchen-sauce-mixing-2026-10-18/baseline-runtime/recipe_lab_engine.js');
-const oldFixtures=require('../reports/kitchen-sauce-mixing-2026-10-18/thermal3-release-fixtures.json');
+const oldR=require('./fixtures/regression/kitchen-sauce-mixing-2026-10-18/baseline-runtime/recipe_lab_engine.js');
+const oldFixtures=require('./helpers/reference_fixture.cjs')('kitchen-sauce-mixing-2026-10-18/thermal3-release-fixtures.json.gz');
 const copy=s=>structuredClone(s),act=(s,list,engine=R)=>list.reduce((q,[a,v])=>engine.act(q,a,v),s),pending=s=>R.mixing(s).pending,total=p=>p.savedWaterMl+p.plainWaterMl+p.tomatoJuiceMl;
 const start=()=>R.startRescue('cooled',0,'demonstrate');
 const check=s=>R.inspections(s).filter(x=>x.kind==='sauce').at(-1);

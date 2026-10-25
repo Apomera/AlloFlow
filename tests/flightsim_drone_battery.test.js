@@ -40,7 +40,7 @@ afterEach(async () => {
 
 async function mount() {
   function App() {
-    const [data, update] = React.useState({ flightSim: { view: 'menu', aircraft: 'drone', railCollapsed: true,
+    const [data, update] = React.useState({ flightSim: { view: 'menu', aircraft: 'drone', railCollapsed: true, menuSections: { challenges: true },
       takeoffTutorialDismissed: true, landingTutorialDismissed: true,
       earnedBadges: Object.fromEntries(api.ACHIEVEMENTS.map(a => [a.id, true])) } });
     latest = data.flightSim;
@@ -54,8 +54,17 @@ async function mount() {
     forces: { lift: api.Physics.WEIGHT, weight: api.Physics.WEIGHT, thrust: 0, drag: 0 } }));
 }
 
-async function start(battery = 100) {
-  await act(async () => host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
+async function start(battery = 100, mode = 'aerial') {
+  // Mission ticks belong to the launched flight session. Start the real mission
+  // and accept its briefing before seeding its telemetry and battery edge cases.
+  const id = mode === 'powerline' ? 'drone_powerline' : 'drone_survey';
+  const launch = host.querySelector('[data-flight-challenge-id="' + id + '"]');
+  expect(launch).toBeTruthy();
+  await act(async () => launch.click());
+  const accept = [...host.querySelectorAll('button')].find(button => button.textContent.includes('I Understand — Begin Flight'));
+  expect(accept).toBeTruthy();
+  await act(async () => accept.click());
+  expect(latest.view).toBe('flying');
   for (const canvas of host.querySelectorAll('canvas')) {
     Object.defineProperty(canvas, 'clientWidth', { configurable: true, value: 1280 });
     Object.defineProperty(canvas, 'clientHeight', { configurable: true, value: 720 });
@@ -66,7 +75,7 @@ async function start(battery = 100) {
   Object.assign(hooks().flightRef.current, { lat: airport.lat, lon: airport.lon,
     altitude: airport.alt + 50, fieldElev: airport.alt, speed: 0, vsi: 0, onGround: false,
     stalling: false, lowAirspeed: false, groundContact: null });
-  await act(async () => updateSaved({ survey: { active: true, completed: false, mode: 'aerial', battery,
+  await act(async () => updateSaved({ survey: { active: true, completed: false, mode, battery,
     capturedCount: 0, captureProgress: 0, launchLat: airport.lat, launchLon: airport.lon,
     photos: [{ name: 'Distant target', lat: airport.lat + 0.01, lon: airport.lon + 0.01, captured: false }] } }));
 }
@@ -86,7 +95,7 @@ async function finish() {
 
 describe('drone mission battery follows active simulation time', () => {
   it.each(['aerial', 'powerline'])('keeps %s hold time with its own target when the nearest target changes', async mode => {
-    await mount(); await start();
+    await mount(); await start(100, mode);
     const initial = { ...hooks().flightRef.current };
     const secondLat = initial.lat + 0.0001;
     await act(async () => updateSaved({ survey: { ...latest.survey, mode,

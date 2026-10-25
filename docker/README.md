@@ -4,12 +4,13 @@ This is the optional Docker-based School Box server stack. It is useful for scho
 
 For the normal AlloFlow Desktop package, use `desktop/README.md` instead. Desktop already serves the bundled app, manages local keys, can run the built-in AI engine, and supports Desktop LAN classroom sessions without Docker. Docker Desktop is needed only when you intentionally want this separate server stack.
 
-When you do use this stack, it runs AlloFlow entirely on local hardware with no cloud dependencies. All student data stays on-premise. All AI runs locally via Ollama.
+Ollama and the local database run on your hardware. Edge TTS sends speech text to Microsoft's online service; SearXNG searches online. Use the offline services below when network access is unavailable or text must stay on the box.
 
 ## Quick Start
 
 ```bash
-# From the project root:
+# From the project root, enter the stack directory first:
+cd docker
 docker compose up -d
 
 # Or with GPU image generation (Flux):
@@ -51,6 +52,45 @@ Key settings:
 - `REACT_APP_DATA_BACKEND=auto` — auto-detects PocketBase → Firebase → localStorage
 - `REACT_APP_POCKETBASE_URL=http://localhost:8090` — PocketBase endpoint
 - Ports are configurable via `WEB_PORT`, `OLLAMA_PORT`, etc.
+- `ALLOFLOW_BIND_ADDRESS=127.0.0.1` — publish ports only on this computer (the default even without `.env`). Container-to-container communication is unchanged.
+
+### Explicit classroom/LAN access
+
+For this optional Docker stack, set these values in `docker/.env`, replacing the sample address with the box's actual LAN IPv4 address:
+
+```dotenv
+ALLOFLOW_BIND_ADDRESS=192.168.1.50
+ALLOFLOW_TTS_ALLOWED_ORIGINS=http://192.168.1.50:3000
+REACT_APP_POCKETBASE_URL=http://192.168.1.50:8090
+```
+
+From `docker/`, run `docker compose up -d --build` to recreate containers and rebuild the frontend if its database URL changed. Open `http://192.168.1.50:3000` on classroom devices. Use your configured `WEB_PORT` in the allowed origin if it differs from 3000. Additional approved browser origins can be comma-separated; wildcards are not accepted.
+
+This explicitly publishes all listed service ports on that LAN interface. `0.0.0.0` can instead share all IPv4 interfaces. Restrict access with the host firewall to the trusted classroom network; these optional AI/speech APIs do not provide user authentication. Browser origin checks are an additional restriction, not authentication. Do not port-forward this stack onto the public internet. Use Docker Engine 28 or newer for localhost publishing isolation ([Docker port publishing guidance](https://docs.docker.com/engine/network/port-publishing/)).
+
+Existing Docker installations that relied on implicit LAN publishing must set `ALLOFLOW_BIND_ADDRESS` before their next recreation. AlloFlow Desktop's separate built-in LAN classroom mode is unchanged. Desktop's School Box preparation manages its own frontend/database URL for local use; use the commands above for a separately managed LAN Docker stack.
+
+### Optional NPU server
+
+`python docker/npu_server.py` now listens on `127.0.0.1:11435` by default. To share it intentionally, use `--host <box-LAN-address>` and set `ALLOFLOW_NPU_ALLOWED_ORIGINS` to the exact classroom app origin(s) for browser clients. Native local clients, loopback browser apps, and the shipped AlloFlow web origin remain supported. Apply the same trusted-network firewall restrictions as above.
+
+### Request limits and errors
+
+Both optional Python APIs cap request bodies at 256 KiB. Docker speech accepts up to 20,000 text characters, speeds from 0.25 to 4 (including existing numeric-string speeds), and four concurrent jobs. Audio output is capped at 32 MiB and each synthesis at five minutes. Existing voice aliases and the unknown-voice fallback are preserved.
+
+NPU requests accept 1–128 text messages with at most 64,000 combined characters, integer `max_tokens` from 1 to 65536, and finite temperatures from 0 to 2. The requested output is a ceiling: actual generation is capped to the selected model's remaining context, preserving AlloFlow's normal 8192-token request even on these 4096-context models. A prompt that leaves no room for output is rejected. One inference/model swap runs at a time. Busy requests return 429 with `Retry-After: 1`; invalid requests return 400 and oversized bodies 413. Provider failures return a generic 500 message; diagnostics stay in the local server log. Split long passages or shorten chat history rather than bypassing the limits.
+
+### Reviewed downloads and security checks
+
+The main School Box Compose images and all three Dockerfiles use immutable SHA256 manifest digests, including their existing x64/ARM64 manifests. Tags remain as readable labels, but the digest determines the actual download. Digest pins provide reproducibility; they do not certify an image as vulnerability-free. Dependabot checks Dockerfiles, Compose references, and the optional services' Python requirements weekly, with updates delivered as pull requests.
+
+Docker speech installs the complete `edge-tts` and Flask dependency tree from `edge-tts-server/requirements.txt` with wheel hashes enforced and source builds disabled. The security tooling has its own hashed lock in `dev-tools/security/requirements.txt`. CI audits both using `pip-audit` without running dependency build scripts. The unused `flask-cors` dependency was removed; the server retains its explicit origin checks. The speech health check uses Python's standard library so it works in the slim image without curl.
+
+The required security workflow discovers new non-MCP workflows automatically. Its scheduled Tuesday run and manual runs audit all four maintained npm scopes (desktop runtime, web app, trailer, security parser), even when their lockfiles have not changed. Normal PR/push dependency checks stay scoped to changed manifests. All four scopes block high and critical findings. Registry failures are errors, not clean audit results. MCP workflows and dependencies remain independently maintained.
+
+The NPU model catalog pins full Hugging Face commit IDs, refuses custom tokenizer code, and loads tokenizer files locally after the pinned download. Tokenizers for all three catalog entries were checked with Transformers 5.3.0. Cached files are separated by revision, so stale files from another revision cannot be selected. Existing caches are preserved, but the first run of this update may download a fresh pinned model copy; provision it while online before an offline deployment. The NPU Python environment and GPU Flux dependency stack still require hardware-specific compatibility testing; the hashed speech lock does not cover those environments. No GPU/NPU inference or container vulnerability scan is implied by the pin checks.
+
+To update a Python lock, change its sibling `requirements.in`, then use `pip-compile --generate-hashes --allow-unsafe --output-file <requirements.txt> <requirements.in>` in an isolated environment. Resolve conditional dependencies for all supported Python/platform targets; a lock generated on Python 3.14 can omit packages required on 3.11/3.12. After installing the lock with hash verification, run `python dev-tools/security/check_python_lock_compatibility.py <requirements.txt>` to check installed dependency metadata for Python 3.11–3.14 on Linux/Windows, including transitive extras. This metadata check supplements actual wheel-only installation tests on the supported targets. Audit the resulting lock and run the optional-service tests before merging. Review image digest changes and model commit changes in the same way; never replace a pin with an unreviewed moving reference just to make a check pass.
 
 ## How It Works
 

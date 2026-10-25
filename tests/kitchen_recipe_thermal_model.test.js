@@ -2,8 +2,8 @@ import {describe,it,expect} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js');
 const cook=require('../dev-tools/kitchen_recipe_fixture.cjs');
-const old=require('../reports/kitchen-sauce-heat-2026-10-18/pre-thermal-fixtures.json');
-const prior=require('../reports/kitchen-sauce-dilution-2026-10-18/model-two-fixtures.json');
+const old=require('./helpers/reference_fixture.cjs')('kitchen-sauce-heat-2026-10-18/pre-thermal-fixtures.json.gz');
+const prior=require('./helpers/reference_fixture.cjs')('kitchen-sauce-dilution-2026-10-18/model-two-fixtures.json.gz');
 function steps(s,list){for(const[a,v]of list)s=R.act(s,a,v);return s;}
 function waterTotal(s){return s.pan.moisture+s.pan.absorbedWaterMl+s.pan.evaporatedWaterMl;}
 function heated(heat,model=3){const s=R.restore({...R.startRescue('watery',1),thermalModel:model});return steps(s,[['panHeat',heat],['advance',60]]);}

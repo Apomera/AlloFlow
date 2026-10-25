@@ -20989,7 +20989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             return h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
               h('label', { htmlFor: id, className: 'block text-xs font-bold text-slate-700 mb-1', style: isContrast ? { color: ink } : undefined }, slot === 'primary' ? __alloT('stem.weldlab.catalog_atlas_primary', 'First specimen') : __alloT('stem.weldlab.catalog_atlas_secondary', 'Second specimen')),
               h('select', { id: id, value: value, 'data-catalog-select': slot, onChange: function (event) { onChange(event.target.value); },
-                className: 'w-full rounded-lg border-2 border-slate-400 bg-white text-slate-900 text-sm font-semibold px-3 py-2 focus:outline-none focus:ring-4 ring-orange-500/40', style: { minHeight: 44, maxWidth: '100%', color: isContrast ? ink : undefined, background: isContrast ? ground : undefined, borderColor: isContrast ? ink : undefined } },
+                className: 'w-full rounded-lg border-2 border-slate-500 bg-white text-slate-900 text-sm font-semibold px-3 py-2 focus:outline-none focus:ring-4 ring-orange-500/40', style: { minHeight: 44, maxWidth: '100%', color: isContrast ? ink : undefined, background: isContrast ? ground : undefined, borderColor: isContrast ? ink : undefined } },
                 options.map(function (k) { return h('option', { key: k, value: k }, DEFECT_INFO[k].name); })));
           }
           function toggle(kind, value, label, on, disabled, onClick) {

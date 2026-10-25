@@ -377,6 +377,7 @@ describe('the unloaded JS duplicate', () => {
     const gen = require(resolve(ROOT, 'dev-tools/generate_fixed_math_probe_forms.cjs'));
     const built = gen.build().data;
     expect(jsonText === gen.jsonText(built), 'psychometric_math_probes.json matches the generator').toBe(true);
-    expect(readFileSync(JS_PATH, 'utf8') === gen.jsText(built), 'psychometric_math_probes.js matches the generator').toBe(true);
+    // Git checkouts can use LF or CRLF; every non-newline byte remains pinned.
+    expect(readFileSync(JS_PATH, 'utf8').replace(/\r\n/g, '\n') === gen.jsText(built).replace(/\r\n/g, '\n'), 'psychometric_math_probes.js matches the generator').toBe(true);
   });
 });

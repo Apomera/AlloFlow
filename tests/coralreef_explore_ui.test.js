@@ -172,19 +172,23 @@ describe('coral reef exploration workflow', () => {
     const X = window.__RR_TEST_EXPORTS__.coralReef;
     const total = X.SPECIES_META.length;
     const pictures = [...t.host.querySelectorAll('img')];
-    expect(pictures).toHaveLength(47);
+    expect(total).toBeGreaterThan(0);
     expect(pictures).toHaveLength(total);
     expect(renderer).not.toHaveBeenCalled();
     expect(t.host.querySelector('canvas')).toBeNull();
     expect([...t.host.querySelectorAll('button')].some(b => b.textContent === 'Show 3D pictures')).toBe(false);
-    for (const [index, picture] of pictures.entries()) {
-      const portrait = 'stem_lab/assets/coralreef/species/' + X.SPECIES_META[index].id + '.webp';
+    // The guide groups cards by habitat/type; catalog append order is not display order.
+    const picturedIds = pictures.map(picture => picture.closest('[data-species]').dataset.species);
+    expect(picturedIds.slice().sort()).toEqual(X.SPECIES_META.map(meta => meta.id).sort());
+    for (const picture of pictures) {
+      const id = picture.closest('[data-species]').dataset.species;
+      const portrait = 'stem_lab/assets/coralreef/species/' + id + '.webp';
       expect(existsSync(portrait), portrait + ' is shipped').toBe(true);
       expect(existsSync('desktop/web-app/public/' + portrait), portrait + ' desktop mirror is shipped').toBe(true);
       expect(picture.getAttribute('loading')).toBe('lazy');
       expect(picture.getAttribute('decoding')).toBe('async');
       expect(picture.getAttribute('alt')).toMatch(/^3D model of a /);
-      expect(picture.getAttribute('src')).toContain('/assets/coralreef/species/' + X.SPECIES_META[index].id + '.webp');
+      expect(picture.getAttribute('src')).toContain('/assets/coralreef/species/' + id + '.webp');
     }
     const brokenCard = pictures[0].closest('li');
     await act(async () => pictures[0].dispatchEvent(new Event('error')));

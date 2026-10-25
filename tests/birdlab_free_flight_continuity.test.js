@@ -76,8 +76,7 @@ describe('Free woodland flight continuity', () => {
     } finally {wildlife.dispose();}
   });
 
-  it('aligns all five species with the actual curved route and keeps escape distance increasing', () => {
-    for(const id of Object.keys(origins)) {
+  it.each(Object.keys(origins))('aligns %s with the actual curved route and keeps escape distance increasing', id => {
       const {wildlife}=fixture(),[x,z]=origins[id],observer={position:new THREE.Vector3(x+.03,1.65,z),speed:0};
       try {
         wildlife.setMode('free');let previous=wildlife.snapshot().find(b=>b.id===id),airborneFrames=0;
@@ -96,7 +95,6 @@ describe('Free woodland flight continuity', () => {
         }
         expect(airborneFrames,id).toBeGreaterThan(40);
       } finally {wildlife.dispose();}
-    }
   });
 
   it('keeps wing phase consistent across 30 and 60 Hz updates and freezes it while paused', () => {

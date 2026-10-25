@@ -1,6 +1,6 @@
 // Generated exact-source bridge. Do not edit; run build.cjs.
-// Source SHA-256: 1a8881ac0cb9f033990ae4b3f5ca80f9414cd04f8ccfb7b069b224045c452b54
-export const sourceSha256 = "1a8881ac0cb9f033990ae4b3f5ca80f9414cd04f8ccfb7b069b224045c452b54";
+// Source SHA-256: 63e240b5b9819403f07c89b0e73a85ca7fba6ed57a1546477261bdf91d3933f7
+export const sourceSha256 = "63e240b5b9819403f07c89b0e73a85ca7fba6ed57a1546477261bdf91d3933f7";
 export function createWatershedRuntime() {
 const window = { StemLab: { findById: (items, id) => items.find(item => item.id === id) } };
 const t = (key, fallback) => fallback == null ? key : fallback;
@@ -351,7 +351,7 @@ function stewardRng(seed, year, purpose) {
 // Original stem_lab/stem_tool_watercycle.js:2945
 function stewardClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-// Original stem_lab/stem_tool_watercycle.js:6217
+// Original stem_lab/stem_tool_watercycle.js:6508
 function startStewardCampaign(opts) {
             opts = opts || {};
             var fresh = defaultStewardState();
@@ -369,7 +369,7 @@ function startStewardCampaign(opts) {
             if (typeof announceToSR === 'function') announceToSR('Watershed Steward started on ' + diff.label + '. Year 1 of 10. ' + diff.hoursPerYear + ' hours.');
           }
 
-// Original stem_lab/stem_tool_watercycle.js:6235
+// Original stem_lab/stem_tool_watercycle.js:6526
 function applyStewardTech(techId, componentId, previewOnly) {
             var tech = STEWARD_TECHNIQUES.find(function(t) { return t.id === techId; });
             if (!tech) return;
@@ -400,7 +400,7 @@ function applyStewardTech(techId, componentId, previewOnly) {
             if (typeof announceToSR === 'function') announceToSR(tech.name + ' applied. ' + (steward.hoursLeft - tech.hours) + ' hours left.');
           }
 
-// Original stem_lab/stem_tool_watercycle.js:6265
+// Original stem_lab/stem_tool_watercycle.js:6556
 function endStewardYear() {
             var pre = steward.components.map(function(c) { return Object.assign({}, c); });
 
@@ -467,7 +467,7 @@ function endStewardYear() {
             if (typeof announceToSR === 'function') announceToSR('Year ' + steward.year + ' complete. Event: ' + ev.name + '.');
           }
 
-// Original stem_lab/stem_tool_watercycle.js:6331
+// Original stem_lab/stem_tool_watercycle.js:6622
 function advanceFromStewardReview() {
             if (steward.year >= steward.maxYears) {
               // Final outcome

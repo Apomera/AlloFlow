@@ -247,17 +247,19 @@ describe('Reef sounds follow the dive', () => {
   });
 
   it('a healthy reef schedules far more shrimp crackle and fish calls than the damaged reef', async () => {
+    // A one-minute seeded sample is noisy; retain the rate ratio over ten modeled minutes.
+    const seconds = 600;
     function run(id) {
       const ctx = new StubAudioContext('running'), site = X.EXPLORE_SITES.find((s) => s.id === id);
       const engine = S.engine(ctx, { mix: S.mix(site), seed: site.seed, volume: 60 });
       engine.start();
-      for (let i = 0; i < 240; i++) { ctx.advance(0.25); engine.step(0.8, false); }
+      for (let i = 0; i < seconds * 4; i++) { ctx.advance(0.25); engine.step(0.8, false); }
       const out = { snaps: engine.stats.snaps, calls: engine.stats.calls, energy: shrimpEnergy(ctx), mix: engine.mix, ctx };
       engine.dispose();
       return out;
     }
     const healthy = run('healthy'), damaged = run('damaged'), restoration = run('restoration'), heatwave = run('heatwave');
-    expect(healthy.snaps, 'snaps in a minute').toBeGreaterThan(15000);
+    expect(healthy.snaps, 'snaps per minute').toBeGreaterThan(15000 * seconds / 60);
     expect(healthy.snaps).toBeGreaterThan(damaged.snaps * 3);
     expect(healthy.energy, 'more crackle energy in the batches').toBeGreaterThan(damaged.energy * 3);
     // Loudness of the shrimp layer: energy times the layer gain squared.
@@ -272,14 +274,14 @@ describe('Reef sounds follow the dive', () => {
     const kindsOf = (ctx) => new Set(ctx.started.filter((s) => s.kind === 'osc').map((s) => s.type + ':' + (s.frequency.events.some((e) => e[0] === 'exp') ? 'glide' : 'flat')));
     expect(kindsOf(healthy.ctx).size).toBeGreaterThan(kindsOf(damaged.ctx).size);
     // Scheduled ahead in batches on the audio clock: about one shrimp buffer per second, not one node per snap.
-    expect(healthy.ctx.started.filter((s) => s.buffer && s.buffer.duration === 1).length).toBeLessThanOrEqual(62);
+    expect(healthy.ctx.started.filter((s) => s.buffer && s.buffer.duration === 1).length).toBeLessThanOrEqual(seconds + 2);
   });
 
-  it('the panel uses the site: the damaged reef plays a few shrimp and rare calls, with its own sourced line', async () => {
+  it('the panel uses the site: the damaged reef plays fewer shrimp and occasional fish calls, with its own sourced line', async () => {
     const t = await mountTool({ diveSiteId: 'damaged', reefSound: true });
     await startDive(t);
     const note = t.host.querySelector('[data-sound-note]').textContent;
-    expect(note).toContain('Playing: snapping shrimp (a few), fish calls (rarely)');
+    expect(note).toContain('Playing: snapping shrimp (a few), fish calls (now and then)');
     expect(note).toContain('On this damaged reef you hear fewer shrimp snaps and fewer kinds of fish calls.');
     expect(note).toContain('twice as many young fish moved in');
   });

@@ -193,7 +193,7 @@ async function mountMission(kind) {
   root = ReactDOMClient.createRoot(host);
   function App() {
     const [data, updateData] = React.useState({ flightSim: { view: 'menu', aircraft: kind === 'rescue' ? 'rescue_heli' : 'drone',
-      railCollapsed: true, thirdPerson: false, takeoffTutorialDismissed: true, landingTutorialDismissed: true,
+      railCollapsed: true, thirdPerson: false, takeoffTutorialDismissed: true, landingTutorialDismissed: true, menuSections: { challenges: true },
       earnedBadges: Object.fromEntries(api().ACHIEVEMENTS.map(achievement => [achievement.id, true])),
     } });
     setData = updateData;
@@ -204,7 +204,9 @@ async function mountMission(kind) {
     }));
   }
   await act(async () => root.render(React.createElement(App)));
-  await act(async () => host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
+  const missionId = kind === 'rescue' ? 'coastal_rescue' : 'drone_survey';
+  await act(async () => host.querySelector('[data-flight-challenge-id="' + missionId + '"]').click());
+  if (kind !== 'rescue') await act(async () => button('✓ I Understand — Begin Flight').click());
   await patchData({ [kind]: kind === 'rescue' ? rescue() : survey() });
   vi.spyOn(api().Physics, 'step').mockImplementation(state => ({ ...state,
     forces: { normal: api().Physics.WEIGHT, lift: api().Physics.WEIGHT, weight: api().Physics.WEIGHT, thrust: 0, drag: 0 } }));

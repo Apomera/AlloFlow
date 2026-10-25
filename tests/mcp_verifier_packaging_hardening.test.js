@@ -136,6 +136,27 @@ describe('MCP verifier byte binding and cancellation', () => {
 });
 
 describe('MCPB vendor and tool-registry release contracts', () => {
+  it('checks the exact extracted EPUB runtime without checkout module paths or provider credentials', () => {
+    let call;
+    const extraction = join(scratch, 'extracted-runtime');
+    const spawnSync = (...args) => { call = args; return { status: 0, stdout: 'four runtime checks passed' }; };
+    expect(Artifact.verifyPackagedEpubRuntime(extraction, {
+      env: { NODE_PATH: '/borrowed/modules', GEMINI_API_KEY: 'synthetic',
+        OPENAI_API_KEY: 'synthetic', GITHUB_TOKEN: 'synthetic', PATH: process.env.PATH }, spawnSync,
+    })).toEqual({ passed: true });
+    expect(call[0]).toBe(process.execPath);
+    expect(call[1]).toContain('--test-concurrency=1');
+    expect(call[2].cwd).toBe(extraction);
+    expect(call[2].env.SECURITY_MCP_RUNTIME).toBe(extraction);
+    expect(call[2].env.SECURITY_MCP_SERVER).toBe(join(extraction, 'server'));
+    expect(call[2].env.ALLOFLOW_TEST_ACE_BROWSER).toBe('1');
+    expect(call[1].some(arg => arg.endsWith('mcp_ace_browser_security.test.cjs'))).toBe(true);
+    for (const name of ['NODE_PATH', 'GEMINI_API_KEY', 'OPENAI_API_KEY', 'GITHUB_TOKEN']) expect(call[2].env[name]).toBeUndefined();
+    for (const result of [{ status: 1 }, { status: null, signal: 'SIGTERM' }, { error: new Error('unavailable') }]) {
+      expect(() => Artifact.verifyPackagedEpubRuntime(extraction, { spawnSync: () => result })).toThrow(/validation failed/);
+    }
+  });
+
   // 60 s: verifyVendorBundle() hashes the 35 MB EPUBCheck distribution on first call, which exceeds
   // the 5 s default on an emulated or OneDrive-backed host.
   it('canonicalizes only manifest-declared LF text before hashing and staging', { timeout: 60000 }, () => {

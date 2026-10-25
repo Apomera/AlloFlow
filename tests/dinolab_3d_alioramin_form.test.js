@@ -181,5 +181,6 @@ describe('Alioramini retain a long, low snout in bone and life views', () => {
       m.dispose();
     }
     sphere.dispose();
-  });
+    // Exhaustive mesh vertices and triangle interiors at every taxon/scale.
+  }, 15000);
 });

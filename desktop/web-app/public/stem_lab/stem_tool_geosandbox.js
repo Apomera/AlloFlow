@@ -2791,7 +2791,9 @@ window.StemLab = window.StemLab || {
     var stage=geoGuidedStage({before:entry.before,experiment:experiment},entry.after);
     result.status=stage==='changed'?'guided':stage==='ready'?'starting':'custom';
     result.message=stage==='changed'?'The model matches the guided change.':stage==='ready'?'You are viewing the starting prism. Apply the change again to compare the result.':'This model includes changes beyond the guided step. These values describe the actual model.';
-    var rows=geoStretchComparison(entry).find(function(o){return o.id===experiment.objectId;}).rows;
+    var comparison=geoStretchComparison(entry).find(function(o){return o.id===experiment.objectId;});
+    if(!comparison){result.status='unavailable';result.message='The comparison measurements are unavailable. Restore a valid prism to compare its measurements.';return result;}
+    var rows=comparison.rows;
     function row(key){return rows.find(function(r){return r.key===key;});}
     function amount(n,exp){return geoStretchNumber(n)+geoStretchUnit(unit,exp);}
     result.lines.push('Before: '+amount(a.baseArea,2)+' × '+amount(a.height,1)+' = '+amount(a.volume,3)+'.');

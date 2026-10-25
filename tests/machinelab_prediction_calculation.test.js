@@ -89,7 +89,7 @@ describe('Machine Lab: prediction calculation arithmetic', () => {
       }
     }
     onlyPredictionChanged(before, s.allState()); expect(s.awardXP).not.toHaveBeenCalled(); expect(s.tryAward).not.toHaveBeenCalled();
-  });
+  }, 30000 /* exhaustive replay/calculation coverage; not a wall-clock performance test */);
   it('converts minutes exactly once and checks unchanged work separately from average power', () => {
     const b = BENCHES[4], s = session(b); s.edit('duration', 2); s.edit('timeUnit', 'min');
     for (const kind of KINDS) solve(s, kind, expected(b, kind, { seconds: 120 }));

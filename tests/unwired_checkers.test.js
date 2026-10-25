@@ -22,6 +22,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { runInNewContext } from 'node:vm';
 
 // 33 child processes over OneDrive-synced storage.
 vi.setConfig({ testTimeout: 300000 });
@@ -84,5 +87,50 @@ describe('checkers that nothing else runs', () => {
     for (const spec of writers) {
       expect(spec, spec[0] + ' must be invoked with --check').toContain('--check');
     }
+  });
+});
+
+describe('verification failure diagnostics', () => {
+  const require = createRequire(import.meta.url);
+  const file = resolve(process.cwd(), 'dev-tools/verify_all.cjs');
+  const source = readFileSync(file, 'utf8');
+
+  function runWith(result) {
+    const output = [];
+    let exitCode;
+    let selected = 0;
+    runInNewContext(source, {
+      __dirname: resolve(process.cwd(), 'dev-tools'),
+      process: { argv: ['node', file], exit: code => { exitCode = code; } },
+      console: { log: (...values) => output.push(values.join(' ')) },
+      require: name => name === 'child_process' ? {
+        spawnSync: (_command, args) => {
+          if (args.includes('dev-tools/check_pipeline_tests.cjs')) {
+            selected++;
+            return result;
+          }
+          return { status: 0, stdout: '', stderr: '' };
+        },
+      } : require(name),
+    });
+    expect(selected).toBe(1);
+    return { exitCode, output: output.join('\n') };
+  }
+
+  it.each([
+    [{ status: 1, stdout: '', stderr: 'SPECIFIC_PIPELINE_FAILURE' }, 'SPECIFIC_PIPELINE_FAILURE'],
+    [{ status: null, stdout: '', stderr: '', error: new Error('SPAWN_FAILURE') }, 'SPAWN_FAILURE'],
+    [{ status: null, stdout: '', stderr: '', signal: 'SIGTERM' }, 'Command terminated by signal: SIGTERM'],
+  ])('keeps a failed command diagnostic visible and blocking (%j)', (result, diagnostic) => {
+    const run = runWith(result);
+    expect(run.exitCode).toBe(1);
+    expect(run.output).toContain(diagnostic);
+    expect(run.output).toContain('Pipeline + Doc-Builder vitest gate');
+  });
+
+  it('does not turn a successful command warning into a failed gate', () => {
+    const run = runWith({ status: 0, stdout: '', stderr: 'non-fatal warning' });
+    expect(run.exitCode).toBe(0);
+    expect(run.output).toContain('All blocking checks passed');
   });
 });

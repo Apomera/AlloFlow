@@ -137,7 +137,7 @@ describe('SEL shell save pills follow reactive viewport state', () => {
       expect(
         shellHtml({ isCompact, innerWidth: isCompact ? 390 : 1280 }),
         `compact=${isCompact}`,
-      ).toContain('Tool checkpoints stay private here unless you choose them for a Share Packet.');
+      ).toContain('Tool checkpoints stay on this device unless you save a project file or choose them for a Share Packet.');
     }
   });
 

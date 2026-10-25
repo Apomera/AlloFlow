@@ -2,6 +2,11 @@
 import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {createRequire} from 'node:module';
 import {readFileSync} from 'node:fs';
+// These are complete DOM rehearsal journeys, including a 19-action Watch route.
+// On Windows the longest measured route takes about 38 seconds. Keep its full
+// assertions and bounded movement loops; allow time for the integration work.
+// Under the shared CI shard, a different case passed 60 s on each of three runs.
+vi.setConfig({testTimeout:120000});
 const require=createRequire(import.meta.url),M=require('../stem_lab/kitchen_studio/recipe_lab_avatar_model.js'),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js'),S=require('../stem_lab/kitchen_studio/recipe_lab_sauce_check.js'),V=require('../stem_lab/kitchen_studio/recipe_lab_avatar_motion.js');
 const source=readFileSync('stem_lab/kitchen_studio/recipe_lab_avatar.js','utf8'),key='alloflow-kitchen-avatar-v1',$=id=>document.getElementById(id);
 let ui,media,motionChange,frames,nextFrame;
@@ -19,7 +24,7 @@ function seed(record){ui.dispose();localStorage.setItem(key,JSON.stringify({vers
 function movementLoopGuard(iteration,target){if(iteration<20)return;const session=get();throw new Error('Movement did not reach '+target+' after 20 checkpoints: '+JSON.stringify({activity:session.activity,mode:session.mode,pending:session.pending&&{kind:session.pending.kind,phase:session.pending.phase,stepIndex:session.pending.stepIndex,steps:session.pending.steps},placeDisabled:$('avatarPlace').disabled,advanceDisabled:$('avatarAdvance').disabled,slider:$('avatarMovement').value,reaching:$('testHost').dataset.reaching,parking:$('testHost').dataset.parking,status:$('avatarStatus').textContent}));}
 function prepareUntil(phase){for(let step=0;get().pending?.phase!==phase;step++){movementLoopGuard(step,phase);expect(get().pending,'A pending movement must exist while preparing '+phase).not.toBeNull();expect(get().pending.steps,'Requested checkpoint must exist').toContain(phase);$('avatarPlace').click();$('avatarAdvance').click();}}
 function movement(value){$('avatarMovement').value=String(value);$('avatarMovement').dispatchEvent(new Event('input',{bubbles:true}));}
-beforeEach(()=>{document.body.innerHTML='<div id="testHost"></div>';localStorage.clear();window.KitchenRecipes=R;window.KitchenSauceCheck=S;window.KitchenAvatarStation=M;window.KitchenAvatarMotion=V;frames=new Map();nextFrame=0;vi.spyOn(window,'requestAnimationFrame').mockImplementation(fn=>{frames.set(++nextFrame,fn);return nextFrame;});vi.spyOn(window,'cancelAnimationFrame').mockImplementation(id=>frames.delete(id));media={matches:false,addEventListener:vi.fn((event,fn)=>{motionChange=fn;}),removeEventListener:vi.fn()};Object.defineProperty(window,'matchMedia',{configurable:true,value:()=>media});Object.defineProperty(document,'hidden',{configurable:true,value:false});window.eval(source);mount();});
+beforeEach(()=>{document.body.innerHTML='<div id="testHost"></div>';localStorage.clear();window.KitchenRecipes=R;window.KitchenSauceCheck=S;window.KitchenAvatarStation=M;window.KitchenAvatarMotion=V;frames=new Map();nextFrame=0;vi.spyOn(window,'requestAnimationFrame').mockImplementation(fn=>{frames.set(++nextFrame,fn);return nextFrame;});vi.spyOn(window,'cancelAnimationFrame').mockImplementation(id=>frames.delete(id));media={matches:false,addEventListener:vi.fn((event,fn)=>{motionChange=fn;}),removeEventListener:vi.fn()};Object.defineProperty(window,'matchMedia',{configurable:true,value:()=>media});Object.defineProperty(document,'hidden',{configurable:true,value:false});window.eval(source);mount();}, 30000 /* complete DOM fixture mount on shared CI workers */);
 afterEach(()=>{ui?.dispose();vi.clearAllMocks();vi.restoreAllMocks();localStorage.clear();document.body.replaceChildren();});
 
 describe('A chef rehearses visible tool movements before committing the kitchen',()=>{
@@ -512,10 +517,12 @@ describe('Individual pasta sweeps separate clumps without rewriting cooking evid
  });
  it('retains a real over-softened sample after the burner is switched off',()=>{
   start('independent','separate-and-check-pasta');complete('samplePasta');separateAll();choose('avatarStrandWait',60);for(let i=0;i<10;i++)complete('waitPot');complete('samplePasta');const reading=get().reading;expect(strands().tooSoftKnown).toBe(true);choose('avatarStrandHeat',0);complete('setPotHeat');expect(get().reading).toEqual(reading);expect($('avatarStrandSampleLatest').dataset.freshness).toBe('current');expect($('avatarStrandOutcome').textContent).toContain('softened strands firm again');expect(strands().targetMet).toBe(false);
- });
+  // Ten pot waits plus two samples took over 60 seconds on the Windows CI runner.
+ },120000);
  it('attributes the complete Watch route to the demonstrator and restores the exact sample evidence',()=>{
   start('watch','separate-and-check-pasta');for(let i=0;i<20;i++)watchAction();expect(get().guide.complete).toBe(true);expect(get().record.intents.every(i=>i.actor==='demonstrator')).toBe(true);expect($('avatarStrandSampleLatest').dataset.actor).toBe('demonstrator');const state=get().state,latest=$('avatarStrandSampleLatest').textContent;ui.dispose();mount();expect(get().state).toEqual(state);expect($('avatarStrandSampleLatest').textContent).toBe(latest);expect($('avatarWatchNext').disabled).toBe(true);
- });
+  // The complete 20-action DOM journey took 89.7 seconds on the Windows CI runner.
+ },120000);
  it('cancels an immersed sweep by lifting clear before carrying the spoon home, with no bundle changes',()=>{
   start('independent','separate-and-check-pasta');choose('avatarPastaGroup',3);const before=get().state;$('avatarSeparatePasta').click();prepareUntil('dip');movement(50);const mask=$('avatarSpoonDepth').dataset.immersion;$('avatarCancel').click();expect(get().pending).toBeNull();expect($('avatarSpoonDepth').dataset.immersion).toBe(mask);expect($('avatarStrandSweep').hasAttribute('hidden')).toBe(true);tick(0);tick(600);expect($('avatarSpoonDepth').dataset.masked).toBe('false');const hand=point('avatarHandle');expect(hand.y).toBeLessThan(300);tick(1900);expect($('testHost').dataset.parking).toBe('false');expect($('avatarPastaSampleSpoon').hasAttribute('hidden')).toBe(false);expect($('avatarHandL').dataset.gear).toBe('mitt');expect(get().state).toEqual(before);expect(get().record.intents).toHaveLength(0);
  });

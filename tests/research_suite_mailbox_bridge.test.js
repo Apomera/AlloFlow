@@ -366,7 +366,8 @@ describe('discoverability (Plan 3)', () => {
     expect(mirror).toBe(module);
   });
 
-  it('every language pack carries the three new command keys', () => {
+  // Reading and parsing all 63 language packs exceeded 7.5 seconds on Windows CI.
+  it('every language pack carries the three new command keys', { timeout: 60000 }, () => {
     const langDir = path.join(ROOT, 'lang');
     const packs = fs.readdirSync(langDir).filter((f) => f.endsWith('.js'));
     expect(packs.length).toBeGreaterThanOrEqual(63);

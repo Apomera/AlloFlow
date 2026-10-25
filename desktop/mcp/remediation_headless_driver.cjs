@@ -1852,6 +1852,7 @@ function createDriver(options) {
               detectedFolios: Array.isArray(extraction.detectedFolios) ? extraction.detectedFolios : [],
               ocrDupeCollapses: Array.isArray(extraction.ocrDupeCollapses) ? extraction.ocrDupeCollapses : [],
               ocrColumnReorders: Array.isArray(extraction.ocrColumnReorders) ? extraction.ocrColumnReorders : [],
+              ocrVisionAlignments: Array.isArray(extraction.ocrVisionAlignments) ? extraction.ocrVisionAlignments : [],
               strippedEdgeLines: Array.isArray(extraction.strippedEdgeLines) ? extraction.strippedEdgeLines : [],
               visionStripTrail: Array.isArray(extraction.visionStripTrail) ? extraction.visionStripTrail : [],
             };

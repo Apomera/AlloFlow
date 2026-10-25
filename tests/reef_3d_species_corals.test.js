@@ -179,7 +179,8 @@ describe('Lane F4 sizes and cost', () => {
     const sig = (m) => { const t = m.material; return [!!t.map, !!t.bumpMap, !!t.normalMap, !!t.roughnessMap, !!t.vertexColors, t.side, t.alphaTest, !!m.isInstancedMesh, !!m.instanceColor].join(); };
     const all = new Set(), mine = new Set();
     for (const id of S.ids) for (const health of ['healthy', 'bleached', 'dead']) build(id, { quality: 'high', seed: 3, health }, (h) => h.root.traverse((m) => { if (!m.isMesh) return; all.add(sig(m)); if (CORALS.includes(id) || SESSILE.includes(id)) mine.add(sig(m)); }));
-    expect(all.size, 'material families across all models').toBeLessThanOrEqual(10);
+    // Cucumber roughness and pipefish fin textures are included in the full catalog.
+    expect(all.size, 'material families across all models').toBeLessThanOrEqual(11);
     // The families these species used before this lane, and no others.
     expect([...mine].sort()).toEqual([
       'false,false,false,false,true,0,0,false,false', 'false,false,false,false,true,0,0,true,true', 'false,false,false,false,true,2,0,false,false', 'false,false,false,false,true,2,0,true,true',

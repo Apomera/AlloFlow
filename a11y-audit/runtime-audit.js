@@ -18,6 +18,7 @@ const puppeteer = require('puppeteer');
 const { AxePuppeteer } = require('@axe-core/puppeteer');
 const fs = require('fs');
 const path = require('path');
+const { handleRequest, launchOptions } = require('./browser-policy.cjs');
 
 // ── Configuration ──────────────────────────────────────────────────────────
 
@@ -379,10 +380,7 @@ async function main() {
 
   let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    browser = await puppeteer.launch(launchOptions());
 
     const page = await browser.newPage();
     await page.setViewport(VIEWPORT);
@@ -404,36 +402,9 @@ async function main() {
     // this the audit can only ever see the app shell — never the tools, and so
     // never the code being changed. Local edits are what we want to test, and
     // the published bundle is precisely what we do not.
-    const serveLocalModule = (req, pathname) => {
-      const base = path.basename(pathname);
-      for (const dir of ['stem_lab', '.', 'desktop/web-app/public']) {
-        const candidate = path.join(REPO_ROOT, dir, base);
-        if (!path.resolve(candidate).startsWith(REPO_ROOT)) continue;
-        if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
-          req.respond({
-            status: 200,
-            contentType: 'text/javascript',
-            body: fs.readFileSync(candidate),
-          });
-          return true;
-        }
-      }
-      return false;
-    };
-
     await page.setRequestInterception(true);
     page.on('request', req => {
-      try {
-        const reqUrl = req.url();
-        if (reqUrl.startsWith(targetOrigin)) return req.continue();
-        if (/alloflow-cdn\.pages\.dev/.test(reqUrl)) {
-          const pathname = new URL(reqUrl).pathname;
-          if (serveLocalModule(req, pathname)) return;
-          // Fall through to abort: a module we cannot supply locally must fail
-          // loudly rather than silently load a stale published copy.
-        }
-        req.abort();
-      } catch (_) { /* request already handled */ }
+      void handleRequest(req, { targetOrigin, repoRoot: REPO_ROOT });
     });
 
     console.log(`Navigating to ${url}...`);
@@ -484,7 +455,7 @@ async function main() {
         custom: customFindings,
         keyboard: keyboardFindings,
       };
-      const outPath = path.join(__dirname, 'runtime-report.json');
+      const outPath = process.env.ALLOFLOW_AUDIT_REPORT || path.join(__dirname, 'runtime-report.json');
       fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
       console.log(`\nJSON report written to: ${outPath}`);
     }
@@ -572,7 +543,7 @@ async function main() {
       console.error(`\nCould not connect to ${url}`);
       console.error('Make sure the dev server is running: cd desktop/web-app && npm start');
     }
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
     if (browser) await browser.close();
   }

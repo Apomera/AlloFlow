@@ -49,6 +49,7 @@ describe('direct-retreat recovery provenance and priorities',()=>{
   });
 });
 
+// Each case replays the whole scene; Windows CI under the full verify load took over 5 s.
 describe('recorded cautious resumption after direct retreat',()=>{
   const config={enabled:{voles:false,owls:false,caterpillars:false,bluetits:false},initial:{rabbits:90,foxes:6},cover:10,event:'none'};
 
@@ -66,16 +67,16 @@ describe('recorded cautious resumption after direct retreat',()=>{
       expect(api.explainBehavior('rabbits',p).cue).toBeNull();expect(api.explainBehavior('rabbits',p).text).toContain('fixed, previously recorded');expect(api.interaction(frames[step],'rabbits',index)).toBeNull();expect(api.ethogramCategory(p.state)).toBe('attending');
     }
     expect(onsets).toBeGreaterThan(0);expect(brakes).toBeGreaterThan(0);expect(stills).toBeGreaterThan(0);expect(completed).toBeGreaterThan(0);
-  });
+  },15000);
 
   it('clears original predator or rabbit removal at the exact sample, without leaving a remembered target',()=>{
     const base=api.compare(config).baseline,original=api.behaviorTimeline(config,base);let at=null;
     for(let step=1;step<original.length&&!at;step++)for(let index=0;index<16;index++)if(original[step].rabbits[index].recoveryCue?.age===1){at={step:step+1,index};break;}
     expect(at).not.toBeNull();
     for(const id of ['foxes','rabbits']){const rows=structuredClone(base);for(let step=at.step;step<rows.length;step++)rows[step].values[id]=0;const frames=api.behaviorTimeline(config,rows);expect(frames[at.step-1].rabbits[at.index].recoveryCue).not.toBeNull();expect(frames.slice(at.step).every(frame=>frame.rabbits.every(p=>!p.recoveryCue&&!p.lastDirectThreat))).toBe(true);}
-  });
+  },15000);
 
   it('keeps exact replay and sampled populations unchanged',()=>{
     const pair=api.compare(config),before=JSON.stringify(pair),a=api.behaviorTimeline(config,pair.baseline),b=api.behaviorTimeline(config,pair.baseline);expect(a).toEqual(b);expect(JSON.stringify(pair)).toBe(before);
-  });
+  },15000);
 });

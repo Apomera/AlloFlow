@@ -7,7 +7,27 @@ const { execFileSync, spawnSync } = require('node:child_process');
 const YAML = require('./security/node_modules/yaml');
 const ROOT = path.resolve(__dirname, '..');
 // MCP workflows and dependencies are being maintained independently.
-const WORKFLOWS = ['desktop-release.yml', 'verify.yml', 'indexnow.yml', 'physics.yml', 'trailer-render.yml', 'security-safeguards.yml'];
+function selectWorkflows(names) {
+  return names.filter((name) => /\.ya?ml$/.test(name)
+    && !/(^|[-_.])mcpb?([-.]|$)/i.test(name)).sort();
+}
+
+function auditsAllScopes(event) {
+  return event === 'workflow_dispatch' || event === 'schedule';
+}
+
+function isStaticNumericMatrix(expression, config) {
+  // Existing shard numbers are safe to interpolate. Dynamic matrices, string
+  // values and include overrides must use environment variables like inputs.
+  const match = /^\s*matrix\.([a-zA-Z_][\w-]*)\s*$/.exec(expression);
+  const matrix = config.strategy?.matrix;
+  if (!match || !matrix || typeof matrix !== 'object') return false;
+  const values = matrix[match[1]];
+  return Array.isArray(values) && values.length > 0 && values.every(Number.isSafeInteger)
+    && (!Object.hasOwn(matrix, 'include') || (Array.isArray(matrix.include)
+      && matrix.include.every((row) => row && typeof row === 'object'
+        && (!Object.hasOwn(row, match[1]) || Number.isSafeInteger(row[match[1]])))));
+}
 
 function inspectWorkflow(source, name) {
   const errors = [];
@@ -30,20 +50,37 @@ function inspectWorkflow(source, name) {
       if (access === 'write' && !(name === 'desktop-release.yml' && job === 'draft-release' && scope === 'contents')) errors.push('Unexpected job write permission: ' + job);
     }
     inspectAction(config);
-    for (const step of config.steps || []) inspectAction(step);
+    for (const step of config.steps || []) {
+      inspectAction(step);
+      const scripts = [step.run];
+      if (step.uses?.startsWith('actions/github-script@')) scripts.push(step.with?.script);
+      for (const script of scripts) {
+        if (typeof script !== 'string') continue;
+        for (const [, expression] of script.matchAll(/\$\{\{([\s\S]*?)\}\}/g)) {
+          if (!isStaticNumericMatrix(expression, config)) {
+            errors.push('Pass expressions through environment variables instead of inline script interpolation: ' + job + '/' + (step.name || 'unnamed step'));
+          }
+        }
+      }
+    }
     if (name === 'desktop-release.yml' && [workflow.env, config.env].some((env) => Object.keys(env || {}).some((key) => /^(CSC_|APPLE_|GH_TOKEN$)/.test(key)))) errors.push('Release credentials must be scoped to the steps that need them');
   }
   return errors;
 }
 
-function auditPlan(changed, manual = false) {
+function auditPlan(changed, full = false) {
   return [
     { directory: 'dev-tools/security', level: 'high' },
     { directory: 'desktop', level: 'high' },
-    // Legacy web build tooling still has high findings tracked in RELEASE.md.
-    // Keep the existing full audit; this additional gate prevents critical findings.
-    { directory: 'desktop/web-app', level: 'critical' },
-  ].filter(({ directory }) => manual || changed.some((file) => file === directory + '/package.json' || file === directory + '/package-lock.json'));
+    { directory: 'trailer', level: 'high' },
+    { directory: 'desktop/web-app', level: 'low' },
+    { directory: 'a11y-audit', level: 'low' },
+    { directory: '.', level: 'low' },
+    { directory: 'desktop/web-app/functions', level: 'low' },
+  ].filter(({ directory }) => {
+    const prefix = directory === '.' ? '' : directory + '/';
+    return full || changed.some((file) => file === prefix + 'package.json' || file === prefix + 'package-lock.json');
+  });
 }
 
 function changedFiles() {
@@ -56,23 +93,28 @@ function changedFiles() {
 }
 
 function main() {
-  for (const name of WORKFLOWS) {
+  const workflows = selectWorkflows(fs.readdirSync(path.join(ROOT, '.github/workflows')));
+  if (!workflows.length) throw new Error('No non-MCP workflows were found to inspect');
+  for (const name of workflows) {
     const errors = inspectWorkflow(fs.readFileSync(path.join(ROOT, '.github/workflows', name), 'utf8'), name);
     if (errors.length) throw new Error(name + ':\n' + errors.join('\n'));
   }
-  const plan = auditPlan(changedFiles(), process.env.GITHUB_EVENT_NAME === 'workflow_dispatch');
+  const full = auditsAllScopes(process.env.GITHUB_EVENT_NAME);
+  const plan = auditPlan(full ? [] : changedFiles(), full);
+  const failures = [];
   for (const { directory, level } of plan) {
     const args = ['audit', '--package-lock-only', '--ignore-scripts', '--audit-level=' + level];
     const windows = process.platform === 'win32';
     const result = spawnSync(windows ? 'npm.cmd ' + args.join(' ') : 'npm', windows ? [] : args, {
       cwd: path.join(ROOT, directory), stdio: 'inherit', shell: windows, windowsHide: true, timeout: 120000,
     });
-    if (result.error || result.status !== 0) throw new Error(directory + ': dependency security gate failed or did not complete');
+    if (result.error || result.status !== 0) failures.push(directory + ': dependency security gate failed or did not complete');
   }
-  console.log('Security safeguards passed (' + WORKFLOWS.length + ' non-MCP workflows; ' + plan.length + ' changed dependency scopes audited).');
+  if (failures.length) throw new Error(failures.join('\n'));
+  console.log('Security safeguards passed (' + workflows.length + ' non-MCP workflows; ' + plan.length + ' dependency scopes audited' + (full ? ' in full-audit mode' : '') + ').');
 }
 
-module.exports = { inspectWorkflow, auditPlan };
+module.exports = { inspectWorkflow, auditPlan, selectWorkflows, auditsAllScopes };
 if (require.main === module) {
   try { main(); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

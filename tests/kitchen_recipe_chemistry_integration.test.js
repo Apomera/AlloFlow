@@ -3,7 +3,7 @@ import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js');
 const cook=require('../dev-tools/kitchen_recipe_fixture.cjs');
-const legacy=require('../reports/kitchen-sauce-chemistry-2026-10-17/legacy-fixtures.json');
+const legacy=require('./helpers/reference_fixture.cjs')('kitchen-sauce-chemistry-2026-10-17/legacy-fixtures.json.gz');
 function totalStarch(s){return s.pot.starchG+s.pot.reserveStarchG+s.pot.discardedStarchG+s.pot.surfaceStarchG+s.pan.chemistry.starchG;}
 function finish(s,answer){for(const [a,v] of [['panHeat',0],['taste'],['plate']])s=R.act(s,a,v);return R.submit({...s,answers:[answer,null]});}
 

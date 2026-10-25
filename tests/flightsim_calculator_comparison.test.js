@@ -209,7 +209,7 @@ describe('Sky School calculator controlled comparisons', () => {
 
   it('uses existing localized reference actions and true-airspeed labels without translating stored fields', async () => {
     const labels = { 'common.save': 'Enregistrer', 'common.clear': 'Effacer', 'stem.flightsim.guided_reference_conditions': 'Conditions de référence',
-      'stem.flightsim.guided_practice_tas_units': 'Vitesse vraie (kt)', 'stem.raptorhunt.wing_area': 'Surface alaire' };
+      'stem.flightsim.guided_practice_tas_units': 'Vitesse vraie (kt)', 'stem.flightsim.wing_area': 'Surface alaire' };
     await mount({}, (key, fallback) => labels[key] || fallback);
     expect(range('Vitesse vraie (kt)')).toBeTruthy(); expect(action('save').textContent).toBe('Enregistrer · Conditions de référence');
     await click(action('save')); expect(action('clear').textContent).toBe('Effacer · Conditions de référence');

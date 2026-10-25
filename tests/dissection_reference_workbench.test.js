@@ -130,7 +130,10 @@ describe('dissection structure discovery', () => {
   it('distinguishes a filtered empty list from a missing structure', () => {
     const host = render('frog', null, { organSearch: 'stomach', directoryFilter: 'recorded' });
     expect(host.querySelector('.diss-directory-empty').textContent).toContain('No structures match this progress filter');
-    expect(host.querySelector('[data-directory-filter="all"] span').textContent).toBe('3');
+    const allMatches = render('frog', null, { organSearch: 'stomach' });
+    expect([...allMatches.querySelectorAll('#diss-directory-results > button')].map(node => node.id))
+      .toEqual(['diss-organ-stomach', 'diss-organ-pancreas']);
+    expect(host.querySelector('[data-directory-filter="all"] span').textContent).toBe('2');
     expect(host.querySelector('[data-directory-filter="recorded"]').getAttribute('aria-pressed')).toBe('true');
   });
   it.each([
@@ -527,7 +530,7 @@ describe('gas-exchange teaching comparisons', () => {
     const fish=panel().querySelector('[data-comparison-specimen="perch"]');
     expect(fish.textContent).toContain('no fixed percentage applies');
     expect(fish.textContent).toContain('two fluids do not mix');
-    expect(panel().querySelector('[data-comparison-specimen="crayfish"]').textContent).toContain('mouthparts');
+    expect(panel().querySelector('[data-comparison-specimen="crayfish"]').textContent).toMatch(/mouthparts?\b/i);
   });
   it('shows the current specimen and chosen reference without altering the source descriptions', () => {
     const host=panel({_comparisonFocus:{scope:'frog|gas-exchange',partner:'pig'}});

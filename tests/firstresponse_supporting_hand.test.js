@@ -935,7 +935,7 @@ describe('supporting hand lifecycle and camera compatibility', () => {
       expect(model('adult', 5, false, false, tab).content.meshes.supportingHand).toBeUndefined();
     }
     const available = model('adult', 3); assertMetadata(available.scene, available.content, 3);
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
 
   it('refits once after posed, age, contrast and guide rebuilds and once after each real resize', () => {
     mount(); const node = { clientWidth: 560, clientHeight: 420 }; viewer.attach(node);

@@ -87,6 +87,8 @@ function Broken() {
         .theme-dark .allo-probe-card [class~="focus-visible:ring-amber-500"]:focus-visible { --tw-ring-color: #b45309; }
         .theme-dark .allo-probe-only { color: #ffffff; background: #111111; }
         .allo-probe-mix { color: #ffffff; background: var(--allo-surface); }
+        .allo-layout-var { background: #ffffff; max-height: calc(100vh - var(--toolbar-height)); }
+        .allo-gradient-mix { color: #ffffff; background-image: linear-gradient(var(--allo-surface), var(--allo-surface-alt)); }
       \`}</style>
     </div>
   );
@@ -100,6 +102,8 @@ function Broken() {
       }
       expect(r.out, 'state-prefixed Tailwind utility overrides are intentional theme remaps, not dark-only custom selectors')
         .not.toContain('focus-visible:ring-amber-500');
+      expect(r.out, 'layout variables do not change a foreground/background colour pair').not.toContain('.allo-layout-var');
+      expect(r.out, 'theme variables in gradients still affect the foreground/background pair').toContain('.allo-gradient-mix');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

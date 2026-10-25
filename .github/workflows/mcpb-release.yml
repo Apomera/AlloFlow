@@ -45,6 +45,13 @@ on:
       - 'tests/mcp_verifier_packaging_hardening.test.js'
       - 'tests/mcp_call_cli.test.js'
       - 'tests/mcpb_release_workflow.test.js'
+      - 'dev-tools/security/test-mcp-runtime-dependencies.cjs'
+      - 'tests/mcp_bundle_audit_security.test.cjs'
+      - 'tests/mcp_artifact_source_bytes.test.cjs'
+      - 'tests/mcp_ace_browser_security.test.cjs'
+      - 'tests/mcp_epub_archive_security.test.js'
+      - 'tests/mcp_epub_validation.test.js'
+      - 'tests/mcp_checkpoint_extraction_contract.test.js'
       - 'package.json'
       - 'package-lock.json'
 
@@ -59,18 +66,21 @@ jobs:
   build:
     name: Verify and package MCPB
     runs-on: windows-latest
-    permissions:
-      contents: read
-      id-token: write
-      attestations: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Enable Git long paths before checkout
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: npm
       - name: Install pinned test dependencies
         run: npm ci --no-audit --no-fund
+      - name: Verify packaged audit handling and source integrity
+        run: node --test tests/mcp_bundle_audit_security.test.cjs tests/mcp_artifact_source_bytes.test.cjs
       - name: Install Chromium for app-to-MCP parity
         run: npx playwright install chromium
       # EPUBCheck is not in git (vendor/epubcheck is fetched and hash-verified at build time), but
@@ -90,6 +100,9 @@ jobs:
           tests/batch_checkpoint_boundary_commit.test.js
           tests/doc_pipeline_build_parity.test.js
           tests/mcp_verifier_packaging_hardening.test.js
+          tests/mcp_epub_archive_security.test.js
+          tests/mcp_epub_validation.test.js
+          tests/mcp_checkpoint_extraction_contract.test.js
           tests/mcp_call_cli.test.js
           tests/mcpb_release_workflow.test.js
           tests/mcp_agent_bridge_e2e.test.js
@@ -138,7 +151,9 @@ jobs:
           [IO.File]::WriteAllText((Join-Path (Get-Location) "$dist/SHA256SUMS.txt"), "$hash  $($artifact.Name)`n", (New-Object System.Text.UTF8Encoding $false))
           $manifestVersion = node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version"
           node desktop/mcp/build_registry_metadata.cjs --artifact "$dist/alloflow-remediation.mcpb" --tag "mcpb-v$manifestVersion" --output "$dist/server.json"
-          npm sbom --prefix "$dist/staging" --omit=dev --sbom-format=cyclonedx |
+          # Staging is installed with --install-links (build_mcpb.cjs), so the file: extract-zip
+          # stand-in is a copy, not a link; without the same flag npm sbom calls it invalid.
+          npm sbom --prefix "$dist/staging" --omit=dev --install-links --sbom-format=cyclonedx |
             Out-File -Encoding utf8 "$dist/alloflow-remediation.cdx.json"
           node -e "JSON.parse(require('fs').readFileSync('$dist/alloflow-remediation.cdx.json','utf8').replace(/^\uFEFF/,''))"
           Copy-Item desktop/mcp/vendor/manifest.json "$dist/vendor-manifest.json"
@@ -146,41 +161,59 @@ jobs:
           $releaseDir = "$dist/release"
           New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
           Copy-Item "$dist/alloflow-remediation.mcpb","$dist/SHA256SUMS.txt","$dist/server.json","$dist/alloflow-remediation.cdx.json","$dist/vendor-manifest.json","$dist/THIRD_PARTY_NOTICES.md",desktop/mcp/MCPB_RELEASE.md,desktop/mcp/PRIVACY.md $releaseDir
-      - name: Attest release build provenance
-        if: github.event_name != 'pull_request'
-        uses: actions/attest@v4
-        with:
-          subject-path: desktop/dist/mcpb/alloflow-remediation.mcpb
-      - name: Attest the CycloneDX dependency SBOM
-        if: github.event_name != 'pull_request'
-        uses: actions/attest@v4
-        with:
-          subject-path: desktop/dist/mcpb/alloflow-remediation.mcpb
-          sbom-path: desktop/dist/mcpb/alloflow-remediation.cdx.json
       - name: Upload verified installable and integrity evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: alloflow-remediation-mcpb-${{ github.sha }}
           if-no-files-found: error
           path: desktop/dist/mcpb/release/*
 
+  # PR code and dependency installation receive only the default read token.
+  # Attestation uses the verified artifact on trusted tag pushes and runs no source.
+  attest:
+    name: Attest verified tagged artifacts
+    if: github.event_name == 'push' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/tags/mcpb-v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: alloflow-remediation-mcpb-${{ github.sha }}
+          path: release-assets
+      - name: Attest release build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: release-assets/alloflow-remediation.mcpb
+      - name: Attest the CycloneDX dependency SBOM
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: release-assets/alloflow-remediation.mcpb
+          sbom-path: release-assets/alloflow-remediation.cdx.json
+
   release:
     name: Publish tagged GitHub release
-    if: startsWith(github.ref, 'refs/tags/mcpb-v')
-    needs: build
+    if: github.event_name == 'push' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/tags/mcpb-v')
+    needs: [build, attest]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     env:
-      GH_TOKEN: ${{ github.token }}
       RELEASE_TAG: ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: alloflow-remediation-mcpb-${{ github.sha }}
           path: release-assets
       - name: Create tag release or repair its assets
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
           gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY *> $null

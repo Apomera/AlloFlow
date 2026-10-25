@@ -143,7 +143,7 @@ describe('Machine Lab: unit conversion practice', () => {
       expect(s.state().benchPowerRecords).toBeUndefined();
     }
     expect(count).toBe(122);
-  });
+  }, 30000 /* exhaustive replay/calculation coverage; not a wall-clock performance test */);
 });
 
 describe('Machine Lab: unit conversion guarded state', () => {

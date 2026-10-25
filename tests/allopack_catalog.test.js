@@ -33,8 +33,13 @@ const LEGAL_GAMES = new Set(['crossword', 'wordScramble', 'memory', 'matching', 
 
 const files = readdirSync(resolve(process.cwd(), 'allopacks')).filter((f) => f.endsWith('.allopack.json'));
 expect(files.length).toBeGreaterThan(0);
+const readPack = file => JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', file), 'utf8'));
+const draftFiles = files.filter(file => /\bdraft\b/i.test(readPack(file).allopack.reviewStatus || ''));
 
-describe.each(files)('AlloPack: %s', (file) => {
+// The original catalog follows a compact, text-only authoring policy. Exported
+// teaching drafts may contain multiple lesson directions and embedded artwork;
+// validate that supported format below without claiming content approval.
+describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', (file) => {
   const pack = JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', file), 'utf8'));
   const items = pack.history;
   const byId = Object.fromEntries(items.map((i) => [i.id, i]));
@@ -242,7 +247,87 @@ describe.each(files)('AlloPack: %s', (file) => {
   });
 });
 
+describe.each(draftFiles)('Exported teaching draft: %s', file => {
+  const pack = readPack(file);
+  it('retains its draft disclosure and passes the real import contract without data loss', () => {
+    expect(pack.allopack.reviewStatus).toMatch(/\bdraft\b/i);
+    expect(pack.allopack.author).toMatch(/review pending/i);
+    expect(pack.allopack.license).toMatch(/review required/i);
+    expect(pack.allopack.spec).toBe('0.1');
+    expect(pack.allopack.language).toBe('en');
+    expect(pack.sourceTopic).toBeTypeOf('string');
+    expect(pack.history.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(pack.history.map(item => item.id)).size).toBe(pack.history.length);
+    const report = Contracts.validateArtifact({ schemaVersion: Contracts.SCHEMA_VERSION,
+      artifactId: 'draft-' + file.replace('.allopack.json', ''), type: 'allopack',
+      title: pack.allopack.title, language: pack.allopack.language, data: pack });
+    expect(report.ok, JSON.stringify(report.errors)).toBe(true);
+    expect(report.value.data).toEqual(pack);
+    for (const item of pack.history) {
+      expect(REGISTERED.has(item.type) || item.type === 'image', item.type).toBe(true);
+      expect(TEACHER_ONLY).not.toContain("'" + item.type + "'");
+      expect(item.title).toBeTypeOf('string');
+      expect(new Date(item.timestamp).toString()).not.toBe('Invalid Date');
+      if (item.meta !== undefined) expect(item.meta).toBeTypeOf('string');
+    }
+  });
+
+  it('preserves every directions section and its objectives through normalization', () => {
+    const directions = pack.history.filter(item => item.type === 'directions');
+    expect(directions.length).toBeGreaterThan(0);
+    for (const item of directions) {
+      const normalized = normalize(item.data);
+      expect(normalized.body.length).toBeGreaterThan(0);
+      expect(normalized.objectives).toHaveLength((item.data.objectives || []).length);
+      for (const objective of item.data.objectives || []) {
+        expect(['xp', 'game', 'manual']).toContain(objective.kind);
+        if (objective.resourceRef) expect(pack.history.some(r => r.id === objective.resourceRef)).toBe(true);
+      }
+    }
+  });
+
+  it('keeps embedded artwork bounded, in the supported format, and accompanied by text alternatives', () => {
+    const images = [];
+    for (const item of pack.history) {
+      if (item.type === 'image') {
+        expect(Array.isArray(item.data.visualPlan.panels)).toBe(true);
+        for (const panel of item.data.visualPlan.panels) if (panel.imageUrl) images.push({ url: panel.imageUrl, alt: panel.alt, decorative: panel.decorative });
+      }
+      if (item.type === 'glossary') {
+        expect(item.data.length).toBeGreaterThan(0);
+        for (const entry of item.data) {
+          expect(entry.term).toBeTypeOf('string'); expect(entry.def).toBeTypeOf('string');
+          if (entry.image) images.push({ url: entry.image, alt: entry.imageAlt, decorative: entry.imageDecorative });
+        }
+      }
+    }
+    for (const image of images) {
+      // The current illustrated draft exports WebP. Never accept SVG/script
+      // payloads merely because a data URL starts with "data:image".
+      expect(image.url).toMatch(/^data:image\/webp;base64,[A-Za-z0-9+/]+={0,2}$/);
+      const bytes = Buffer.from(image.url.split(',')[1], 'base64');
+      expect(bytes.length).toBeGreaterThan(12); expect(bytes.length).toBeLessThan(500000);
+      expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
+      expect(bytes.toString('ascii', 8, 12)).toBe('WEBP');
+      if (image.decorative !== true) expect(String(image.alt || '').trim().length).toBeGreaterThan(0);
+    }
+    expect(JSON.stringify(pack).length).toBeLessThan(2000000); // import contract bound
+  });
+});
+
 describe('catalog-wide', () => {
+  it('applies the same learner privacy rules to teaching drafts', () => {
+    for (const file of draftFiles) {
+      // Scan authored prose, not random base64 bytes; artwork is bounded and
+      // format-checked separately above.
+      const source = JSON.stringify(readPack(file), (_key, value) =>
+        typeof value === 'string' && value.startsWith('data:image/') ? '[embedded artwork]' : value).toLowerCase();
+      for (const banned of ['iep', 'ieps', '504 plan', 'accommodation', 'accommodations', 'low group', 'high group', 'special ed', 'special education', 'reading level group']) {
+        const re = new RegExp('(^|[^a-z])' + banned.replace(/ /g, '\\s+') + '([^a-z]|$)');
+        expect(re.test(source), file + ': banned disclosure term ' + banned).toBe(false);
+      }
+    }
+  });
   it('every pack has an image shot-list companion', () => {
     const docs = readdirSync(resolve(process.cwd(), 'allopacks'));
     for (const f of files) {

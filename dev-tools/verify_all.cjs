@@ -455,6 +455,7 @@ for (const check of checks) {
     cwd: check.cwd || ROOT,
     encoding: 'utf-8',
     shell: false,
+    maxBuffer: 16 * 1024 * 1024,
   });
   const elapsedMs = Date.now() - start;
   const passed = result.status === 0;
@@ -472,7 +473,11 @@ for (const check of checks) {
   const time = '(' + (elapsedMs / 1000).toFixed(1) + 's)';
   console.log('  ' + icon + ' ' + check.name.padEnd(40) + ' ' + time);
   if (VERBOSE || (!passed && !check.informational)) {
-    const out = (result.stdout || '').trim();
+    // Several gates report failures only on stderr. Keep those diagnostics,
+    // including launch/collection errors, beside the failing check in CI.
+    const out = [result.stdout, result.stderr, result.error && result.error.message,
+      result.signal && ('Command terminated by signal: ' + result.signal)]
+      .filter(Boolean).join('\n').trim();
     if (out) {
       console.log('');
       for (const line of out.split('\n')) console.log('      │ ' + line);

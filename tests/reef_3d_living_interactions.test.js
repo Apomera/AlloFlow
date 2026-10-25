@@ -221,12 +221,12 @@ describe('Sea turtles breathe air', () => {
 
 describe('Crown-of-thorns starfish', () => {
   function scars(t) { const out = []; t.scene.traverse((o) => { if (o.name === 'reef-explore-feeding-scar') out.push(o); }); return out; }
-  it('sits on a coral colony beside a fresh white scar, drawn with the decor coral material', () => {
+  it('sits on a coral colony beside a fresh white scar, drawn with the shared branching-coral material', () => {
     const t = runtime(), all = census(t), cots = all.filter((o) => o.speciesId === 'crown_of_thorns');
     const list = scars(t);
     expect(cots.length).toBe(2);
     expect(list.length).toBe(2);
-    const coralMat = t.scene.getObjectByName('reef-explore-decor-massive').material;
+    const coralMat = t.scene.getObjectByName('reef-explore-decor-finger').material;
     for (const s of list) {
       const host = all.find((o) => o.uid === s.userData.hostUid);
       expect(host && /table_coral|brain_coral/.test(host.speciesId), 'scar is on a coral colony').toBe(true);
@@ -399,8 +399,9 @@ describe('Shared programs and the species poses', () => {
     expect(h.graze.members.length).toBe(n);
     const body = h.root.getObjectByName('bumphead_parrotfish-body'), m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3(), e = new THREE.Euler();
     const pitches = () => { const out = []; for (let i = 0; i < n; i++) { body.getMatrixAt(i, m); m.decompose(p, q, s); out.push(e.setFromQuaternion(q, 'YZX').z); } return out; };
-    h.update(0.016, 10, { speed: 0.3, turn: 0 }); const swim = pitches();
-    const t0 = 20; h.update(0.016, t0, { speed: 0.1, turn: 0, graze: 1 }); const graze = pitches();
+    // Hold time and speed fixed so this isolates grazing from ordinary swimming pitch.
+    const t0 = 20; h.update(0.016, t0, { speed: 0.1, turn: 0 }); const swim = pitches();
+    h.update(0.016, t0, { speed: 0.1, turn: 0, graze: 1 }); const graze = pitches();
     graze.forEach((g2, i) => expect(g2, 'head down').toBeLessThan(swim[i] - 0.4));
     // The member at its bite contact dips deepest, as the published schedule says.
     const cyc = (i) => ((t0 / h.graze.period + i * h.graze.stagger) % 1 + 1) % 1;

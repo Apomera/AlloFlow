@@ -196,17 +196,20 @@ function seedRoster() {
   ]));
 }
 
-async function flushReact() {
+async function flushReact(delayMs = 0) {
   await React.act(async () => {
-    await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 0));
+    await new Promise((resolvePromise) => window.setTimeout(resolvePromise, delayMs));
   });
 }
 
 async function waitForCondition(predicate, message) {
-  for (let attempt = 0; attempt < 60; attempt += 1) {
-    await flushReact();
+  // Workspace persistence intentionally debounces for 300 ms. Sixty zero-delay
+  // turns can finish sooner than that on CI, before a successful save can run.
+  const deadline = Date.now() + 2000;
+  do {
+    await flushReact(20);
     if (predicate()) return;
-  }
+  } while (Date.now() < deadline);
   throw new Error(message);
 }
 

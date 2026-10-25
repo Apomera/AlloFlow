@@ -2,6 +2,7 @@
 (function (global) {
   'use strict';
   function Component(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
     var React = props.React, h = React.createElement, model = global.RaptorDistanceModel, evidence = global.RaptorDistanceEvidence, investigations = global.RaptorDistanceInvestigations;
     var settings = model.normalize(props.settings), metrics = model.metrics(settings), fieldwork = global.RaptorDistanceFieldwork, resultsAPI = global.RaptorDistanceResults, matchAPI = global.RaptorDistanceMatch;
     var root = React.useRef(null), scene = React.useRef(null);
@@ -202,7 +203,7 @@
           h('p', null, 'Keep a nearby human-reference view, then find a farther eagle-reference view with similar calculated stripe-contrast retention. Both images keep their original scale: the farther plaque will look smaller.'),
           h('p', null, 'Start at 60 m, eight stripe pairs and 95% contrast. Starting ends the current guided question or range-finding trial series and clears the pin. Your notebook, draft and kept results remain available.'),
           h('button', { type: 'button', 'data-distance-match-start': 'true', disabled: status !== 'ready', onClick: startMatch }, match ? 'Restart match challenge' : 'Start match challenge'),
-          match && h('section', { 'data-distance-match-active': 'true', 'aria-label': 'Stripe contrast matching challenge' },
+          match && h('section', { 'data-distance-match-active': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_stripe_contrast_matching_challenge", 'Stripe contrast matching challenge') },
             h('ol', { className: 'rh-distance-match-steps' }, h('li', null, 'Predict and reveal the 60 m starter; pin it.'), h('li', null, 'Change distance only. Predict and reveal each new condition.'), h('li', null, 'Compare the pinned human view with the current eagle view; check the match.')),
             h('p', { role: 'status' }, matchReference ? 'The human starter is pinned. Explore the viewing-distance control; keep eight stripe pairs and 95% contrast.' : pinned || !starter ? 'The starter evidence has changed. Restart this challenge to pin a fresh 60 m human reference.' : revealed ? 'The starter is revealed. Pin the human reference before moving farther away.' : 'Predict and reveal the starter, then pin it.'),
             h('div', { className: 'rh-distance-actions' }, h('button', { type: 'button', 'data-distance-match-next': 'true', disabled: status !== 'ready', onClick: matchNext }, matchReference ? 'Adjust viewing distance' : pinned || !starter ? 'Restart at the starter' : revealed ? 'Pin the human starter' : 'Go to prediction'), matchReference && h('button', { type: 'button', 'data-distance-match-predict': 'true', disabled: status !== 'ready', onClick: function () { focus('[data-distance-prediction="both"]'); } }, 'Go to prediction'), h('button', { type: 'button', 'data-distance-match-exit': 'true', onClick: function () { setMatch(null); setMatchCheck(null); focus('[data-distance-match-start]'); } }, 'Explore freely')),
@@ -252,7 +253,7 @@
       var comparison = resultsComparison;
       function x(distance) { return 54 + distance / 300 * 546; }
       var ratioLabel = comparison ? (Math.floor(comparison.ratioLow * 100) / 100).toFixed(2) + '–' + (Math.ceil(comparison.ratioHigh * 100) / 100).toFixed(2) + '×' : '';
-      return h('section', { className: 'rh-distance-results', 'data-distance-results': 'true', 'aria-label': 'Saved range-finding evidence' },
+      return h('section', { className: 'rh-distance-results', 'data-distance-results': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_saved_range_finding_evidence", 'Saved range-finding evidence') },
         h('h4', null, 'Keep the evidence. Compare the ranges.'),
         h('p', null, 'These results use saved trial sets, independent of the live controls. Keep one completed result for each reference to compare the same 30 cm pattern with 12 stripe pairs and 95% contrast.'),
         h('div', { className: 'rh-distance-results-cards' }, ['human', 'eagle'].map(function (id) {
@@ -268,8 +269,8 @@
                   h('tbody', null, summary.trials.map(function (trial) { return h('tr', { key: trial.settings.distance, 'data-distance-saved-trial': 'true', 'data-distance': trial.settings.distance }, h('th', { scope: 'row' }, trial.settings.distance + ' m'), h('td', null, trial.frequency.toFixed(2)), h('td', null, labels[trial.prediction])); })))),
               h('button', { type: 'button', 'data-distance-results-remove': id, onClick: function () { removeResult(id); } }, 'Remove saved ' + id + ' result')) : h('p', null, 'Complete and keep the ' + id + ' challenge to add its evidence.'));
         })),
-        comparison && h('section', { className: 'rh-distance-results-comparison', 'data-distance-results-comparison': 'true', 'aria-label': 'Compare saved reference crossings' },
-          h('svg', { viewBox: '0 0 640 210', className: 'rh-distance-results-plot', 'data-distance-results-plot': 'true', role: 'img', 'aria-label': 'Saved distance brackets for the same pattern. Each bar starts at zero metres; its gold end interval is the recorded bracket. Exact endpoints are in the saved result cards.' },
+        comparison && h('section', { className: 'rh-distance-results-comparison', 'data-distance-results-comparison': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_compare_saved_reference_crossings", 'Compare saved reference crossings') },
+          h('svg', { viewBox: '0 0 640 210', className: 'rh-distance-results-plot', 'data-distance-results-plot': 'true', role: 'img', 'aria-label': __alloT("stem.raptorhunt.a11y_saved_distance_brackets_for_the_same_pattern_each_bar_starts_at_zero_metres_its_gold_end_interval_is", 'Saved distance brackets for the same pattern. Each bar starts at zero metres; its gold end interval is the recorded bracket. Exact endpoints are in the saved result cards.') },
             [0, 100, 200, 300].map(function (distance) { return h('g', { key: distance }, h('line', { x1: x(distance), x2: x(distance), y1: 40, y2: 170, stroke: '#45665a' }), h('text', { x: x(distance), y: 188, textAnchor: 'middle' }, distance)); }),
             ['human', 'eagle'].map(function (id, index) { var result = comparison[id], y = 65 + index * 72; return h('g', { key: id, 'data-distance-results-range': id, 'data-low': result.below.distance, 'data-high': result.above.distance },
               h('text', { x: 54, y: y - 12 }, (id === 'human' ? 'Human' : 'Eagle') + ' reference · ' + result.below.distance + '–' + result.above.distance + ' m'),
@@ -309,7 +310,7 @@
               h('button', { type: 'button', 'data-distance-fieldwork-exit': 'true', onClick: function () { setHunt(null); setHuntMessage(''); focus('[data-distance-fieldwork-start="' + hunt.id + '"]'); } }, 'Finish range finding')),
             h('p', { 'data-distance-fieldwork-message': 'true', role: 'status' }, huntMessage || 'Choose a distance, predict its reference band, reveal the views, then record the trial here.'),
             summary.trials.length > 0 && h('div', null,
-              h('svg', { viewBox: '0 0 640 250', className: 'rh-distance-fieldwork-plot', 'data-distance-fieldwork-plot': 'true', role: 'img', 'aria-label': 'Collected trials: distance in metres versus spatial frequency in cycles per degree. The labeled horizontal line is the selected reference. Exact results are in the table below.' },
+              h('svg', { viewBox: '0 0 640 250', className: 'rh-distance-fieldwork-plot', 'data-distance-fieldwork-plot': 'true', role: 'img', 'aria-label': __alloT("stem.raptorhunt.a11y_collected_trials_distance_in_metres_versus_spatial_frequency_in_cycles_per_degree_the_labeled_horizo", 'Collected trials: distance in metres versus spatial frequency in cycles per degree. The labeled horizontal line is the selected reference. Exact results are in the table below.') },
                 h('rect', { x: 58, y: 28, width: 554, height: 180, fill: '#102a22' }),
                 [0, 60, 140, 220].map(function (value) { return h('g', { key: 'y' + value }, h('line', { x1: 58, x2: 612, y1: py(value), y2: py(value), stroke: '#45665a' }), h('text', { x: 49, y: py(value) + 4, textAnchor: 'end' }, value)); }),
                 [40, 120, 200, 300].map(function (value) { return h('text', { key: 'x' + value, x: px(value), y: 226, textAnchor: 'middle' }, value); }),
@@ -355,7 +356,7 @@
         h('div', { className: 'rh-distance-inspector-body' },
           h('h4', null, 'Same scene. Different detail.'),
           h('p', null, 'Move the divider across the stripes and the bird. Compare the same position through each filter. The images stay aligned; moving the divider changes which image is visible, not its sharpness, scale or viewing distance.'),
-          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': 'Condition to inspect' }, ['current', 'pinned'].map(function (source) {
+          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': __alloT("stem.raptorhunt.a11y_condition_to_inspect", 'Condition to inspect') }, ['current', 'pinned'].map(function (source) {
             return h('button', { key: source, type: 'button', 'data-distance-inspector-source': source, 'aria-pressed': inspectorSource === source,
               disabled: source === 'pinned' && !pinned, onClick: function () { setInspectorSource(source); } }, source === 'pinned' ? 'Inspect pinned condition' : 'Inspect current condition');
           })),
@@ -378,7 +379,7 @@
               disabled: !inspectorImages, 'aria-labelledby': 'rh-distance-inspector-share-label', 'aria-valuetext': shareLabel, 'aria-describedby': 'rh-distance-inspector-help',
               onChange: function (event) { setInspectorShare(Number(event.target.value)); } })),
           h('p', { id: 'rh-distance-inspector-help', className: 'rh-distance-inspector-help' }, 'Human image appears to the left of the divider; eagle image to the right. Use the slider, arrow keys or the full-image buttons. These percentages describe image area, not visual ability.'),
-          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': 'Comparison divider position' }, [['human', 100, 'Full human reference'], ['split', 50, 'Split view'], ['eagle', 0, 'Full eagle reference']].map(function (item) {
+          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': __alloT("stem.raptorhunt.a11y_comparison_divider_position", 'Comparison divider position') }, [['human', 100, 'Full human reference'], ['split', 50, 'Split view'], ['eagle', 0, 'Full eagle reference']].map(function (item) {
             return h('button', { key: item[0], type: 'button', 'data-distance-inspector-preset': item[0], disabled: !inspectorImages, 'aria-pressed': inspectorShare === item[1], onClick: function () { setInspectorShare(item[1]); } }, item[2]);
           })),
           h('p', { className: 'rh-distance-inspector-question' }, 'Look for evidence: which stripe boundaries remain distinct in each reference image? What stays fixed as you move the divider? Record what you notice in your observation below. This illustration does not predict whether an animal would detect prey.')));
@@ -397,13 +398,13 @@
           !revealed && h('div', { className: 'rh-distance-cover' }, h('span', null, 'Predict first'), h('p', null, 'Choose a reference band, then reveal both views.'))),
         h('p', null, name === 'reference' ? 'Selected human reference · 60 cycles/degree' : 'Selected wedge-tailed eagle reference · 140 cycles/degree'));
     }
-    return h('section', { ref: root, className: 'rh-distance-study', 'data-raptor-distance-study': 'true', 'data-render-ready': String(status === 'ready'), 'aria-label': 'Find the distant detail' },
+    return h('section', { ref: root, className: 'rh-distance-study', 'data-raptor-distance-study': 'true', 'data-render-ready': String(status === 'ready'), 'aria-label': __alloT("stem.raptorhunt.a11y_find_the_distant_detail", 'Find the distant detail') },
       h('style', null, CSS),
       h('header', { className: 'rh-distance-head' }, h('div', null, h('span', { className: 'rh-distance-kicker' }, 'Field investigation · Spatial detail'),
         h('h3', { tabIndex: -1 }, 'Find the distant detail'), h('p', null, 'A bird can remain in view while its fine details disappear. Keep the scene fixed and investigate what distance does to a pattern.')),
         h('button', { type: 'button', 'data-raptor-distance-close': 'true', onClick: props.onClose }, 'Close investigation')),
       h('p', { className: 'rh-distance-boundary' }, 'This display models spatial detail. It is not a view through an eagle’s eyes or a test of your eyesight. Resolving stripes is different from detecting an animal.'),
-      h('section', { className: 'rh-distance-inquiries', 'aria-label': 'Guided investigations' },
+      h('section', { className: 'rh-distance-inquiries', 'aria-label': __alloT("stem.raptorhunt.a11y_guided_investigations", 'Guided investigations') },
         h('span', { className: 'rh-distance-kicker' }, 'Start with a question'), h('h4', null, 'What makes fine detail disappear?'),
         h('p', null, 'Start a guided comparison at 80 m, eight stripe pairs and 95% contrast. Starting a question clears the current pin; your notebook and unfinished note remain available.'),
         h('div', { className: 'rh-distance-inquiry-cards' }, ['distance', 'cycles', 'contrast'].map(function (id) { var item = investigations.get(id); return h('button', {
@@ -411,7 +412,7 @@
         }, h('strong', null, item.title), h('span', null, item.question)); })),
         inquiry && h('div', { className: 'rh-distance-guide', 'data-distance-guide': inquiry.id, 'data-stage': guideStage },
           h('div', { className: 'rh-distance-guide-heading' }, h('strong', null, inquiry.title), h('button', { type: 'button', 'data-distance-guide-exit': 'true', onClick: function () { setGuide(null); setReflection(null); focus('[data-distance-inquiry="' + inquiry.id + '"]'); } }, 'Explore freely')),
-          h('ol', { className: 'rh-distance-guide-steps', 'aria-label': 'Investigation steps' }, ['Inspect the starter', 'Pin the starter', 'Change one factor', 'Compare and explain'].map(function (label, index) {
+          h('ol', { className: 'rh-distance-guide-steps', 'aria-label': __alloT("stem.raptorhunt.inquiry_steps", 'Investigation steps') }, ['Inspect the starter', 'Pin the starter', 'Change one factor', 'Compare and explain'].map(function (label, index) {
             var step = guideStage === 'starter' ? (revealed ? 1 : 0) : guideStage === 'pinned' || guideStage === 'changed' ? 2 : guideStage === 'inspect' ? 3 : -1;
             return h('li', { key: label, 'aria-current': step === index ? 'step' : undefined, 'data-complete': step > index ? 'true' : undefined }, h('span', { 'aria-hidden': 'true' }, index + 1), label);
           })),
@@ -421,9 +422,9 @@
       matchPanel(),
       h('div', { className: 'rh-distance-workspace' },
         h('figure', { className: 'rh-distance-wide' }, h('figcaption', null, h('strong', null, 'The same meadow'), h('span', null, '20° horizontal field · animal scale stays fixed')),
-          h('div', { className: 'rh-distance-context-image' }, h('canvas', { ref: wide, width: 1024, height: 512, 'data-distance-canvas': 'wide', role: 'img', 'aria-label': 'Wide context: a fixed-size dove and test plaque at the selected distance' }), h('div', { className: 'rh-distance-locator', 'aria-hidden': 'true' })),
+          h('div', { className: 'rh-distance-context-image' }, h('canvas', { ref: wide, width: 1024, height: 512, 'data-distance-canvas': 'wide', role: 'img', 'aria-label': __alloT("stem.raptorhunt.a11y_wide_context_a_fixed_size_dove_and_test_plaque_at_the_selected_distance", 'Wide context: a fixed-size dove and test plaque at the selected distance') }), h('div', { className: 'rh-distance-locator', 'aria-hidden': 'true' })),
           h('p', null, 'The marker locates the plaque-centered inspection area. The plaque is 30 cm wide. At the nearest distance, the narrow crop excludes the neighboring dove. The dove keeps its authored metre scale and illustrative anatomy.')),
-        h('aside', { className: 'rh-distance-controls', 'aria-label': 'Distance investigation controls' }, h('span', { className: 'rh-distance-kicker' }, '01 · Set the conditions'),
+        h('aside', { className: 'rh-distance-controls', 'aria-label': __alloT("stem.raptorhunt.a11y_distance_investigation_controls", 'Distance investigation controls') }, h('span', { className: 'rh-distance-kicker' }, '01 · Set the conditions'),
           slider('distance', 'Viewing distance', settings.distance, 40, 300, ' m'), slider('cycles', 'Light–dark stripe pairs', settings.cycles, 4, 20, ''), slider('contrast', 'Display contrast', settings.contrast, 10, 100, '%'),
           h('div', { className: 'rh-distance-actions' }, [['near', 'Near · 40 m'], ['middle', 'Middle · 120 m'], ['far', 'Far · 300 m']].map(function (item) {
             return h('button', { type: 'button', key: item[0], 'data-distance-preset': item[0], onClick: function () { change(model.presets[item[0]]); } }, item[1]);
@@ -431,7 +432,7 @@
       h('div', { className: 'rh-distance-status', 'data-distance-status': status, role: 'status' },
         status === 'loading' ? 'Preparing the shared dove and observation scene…' : status === 'error' ? 'The observation scene could not load. Your existing activities and saved observations are still available.' : 'Scene ready. Both detail views use the same camera, lighting, distance and target.',
         status === 'error' && h('button', { type: 'button', 'data-distance-retry': 'true', onClick: function () { setAttempt(attempt + 1); } }, 'Retry scene')),
-      h('section', { className: 'rh-distance-predict', 'aria-label': 'Predict and inspect' }, h('span', { className: 'rh-distance-kicker' }, '02 · Predict, then inspect'),
+      h('section', { className: 'rh-distance-predict', 'aria-label': __alloT("stem.raptorhunt.a11y_predict_and_inspect", 'Predict and inspect') }, h('span', { className: 'rh-distance-kicker' }, '02 · Predict, then inspect'),
         h('h4', null, 'Which high-contrast reference band contains this pattern?'),
         h('p', null, 'Use distance and stripe spacing to make a prediction. The bands compare spatial frequency with selected references; they do not predict whether a living animal could detect this target.'),
         h('div', { className: 'rh-distance-choices' }, Object.keys(labels).map(function (id) { return h('button', { key: id, type: 'button', 'data-distance-prediction': id, 'aria-pressed': choice === id,
@@ -450,7 +451,7 @@
       h('div', { className: 'rh-distance-panels', 'data-distance-original-panels': 'true', style: pinned && !snapshotMessage ? { display: 'none' } : undefined }, panel('reference', 'Human reference model', 'Same crop · illustrative detail filter', reference), panel('eagle', 'Wedge-tailed eagle reference model', 'Same crop · illustrative detail filter', eagle)),
       snapshotMessage && revealed && h('p', { className: 'rh-distance-snapshot-error', 'data-distance-snapshot-error': 'true', role: 'status' }, snapshotMessage),
       inspectSameCondition(),
-      h('section', { className: 'rh-distance-compare', 'aria-label': 'Compare one change' }, h('span', { className: 'rh-distance-kicker' }, '03 · Change one thing'),
+      h('section', { className: 'rh-distance-compare', 'aria-label': __alloT("stem.raptorhunt.a11y_compare_one_change", 'Compare one change') }, h('span', { className: 'rh-distance-kicker' }, '03 · Change one thing'),
         h('h4', { ref: comparisonHeading, tabIndex: -1 }, 'Keep a view. Test a change.'),
         h('p', null, 'Reveal both views, then pin them as your starting condition. Each experiment starts from that pin, keeping the other two controls fixed. Predict again before revealing the changed views.'),
         h('div', { className: 'rh-distance-actions' }, h('button', { type: 'button', 'data-distance-pin': 'true', disabled: !revealed || status !== 'ready', onClick: pin }, pinned ? 'Replace pinned condition' : 'Pin revealed condition'),
@@ -470,7 +471,7 @@
               return h('tr', { key: row[0], 'data-changed': row[3] ? String(comparison.changedFields.indexOf(row[3]) !== -1) : undefined }, h('th', { scope: 'row' }, row[0]), h('td', null, row[1]), h('td', null, row[2]));
             }))),
           h('p', { className: 'rh-distance-ratios' }, 'Current ÷ pinned: angular span ' + comparison.angleRatio.toFixed(2) + '×; spatial frequency ' + comparison.frequencyRatio.toFixed(2) + '×. Compare the same reference model across the two conditions.'),
-          matchedInquiry && revealed && status === 'ready' && h('section', { className: 'rh-distance-reflection', 'data-distance-reflection': 'true', 'aria-label': 'Explain the change' },
+          matchedInquiry && revealed && status === 'ready' && h('section', { className: 'rh-distance-reflection', 'data-distance-reflection': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_explain_the_change", 'Explain the change') },
             h('h5', { tabIndex: -1, 'data-distance-reflection-heading': 'true' }, 'What happened to angular span and spatial frequency?'),
             h('p', null, 'Use your comparison and the measurements above. This checks the model relationship; your personal visual observations are not scored.'),
             h('div', { className: 'rh-distance-choices' }, inquiry.choices.map(function (answer) { return h('button', { key: answer.id, type: 'button', 'data-distance-reflection-answer': answer.id, 'aria-pressed': reflection === answer.id, onClick: function () { setReflection(answer.id); } }, answer.text); })),
@@ -478,7 +479,7 @@
               h('strong', null, reflectionResult.correct ? 'That matches the model relationship.' : 'Use the measurements to reconsider.'), h('p', null, reflectionResult.explanation))),
           explanation && !matchedInquiry && h('p', { className: 'rh-distance-mechanism', 'data-distance-mechanism': 'true' }, explanation.text),
           h('p', { className: 'rh-distance-pin-help' }, 'For doubling experiments, pin 150 m or nearer and 10 stripe pairs or fewer. To test fading, compare the 25% contrast condition with a stronger pinned pattern.'))),
-      h('section', { className: 'rh-distance-notebook', 'aria-label': 'Distance investigation notebook' }, h('span', { className: 'rh-distance-kicker' }, '04 · Keep the evidence'), h('h4', null, 'What stayed the same? What changed?'),
+      h('section', { className: 'rh-distance-notebook', 'aria-label': __alloT("stem.raptorhunt.a11y_distance_investigation_notebook", 'Distance investigation notebook') }, h('span', { className: 'rh-distance-kicker' }, '04 · Keep the evidence'), h('h4', null, 'What stayed the same? What changed?'),
         h('p', null, pinned ? 'Compare the pinned and current views. Describe your evidence, name the factor you changed and explain what you kept fixed.' : 'Describe what you observed. Pin a revealed condition above to record a comparison with your next observation.'),
         h('label', { htmlFor: 'rh-distance-note' }, 'Your observation'), h('textarea', { id: 'rh-distance-note', 'data-distance-note': 'true', value: note, maxLength: 600, rows: 3,
           placeholder: 'At … metres, I noticed … . I kept … fixed.', onChange: function (event) { if (!note.trim()) setDraft(draftContext()); setNote(event.target.value); setSavedMessage(''); } }),

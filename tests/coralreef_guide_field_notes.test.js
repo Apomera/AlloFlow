@@ -61,6 +61,9 @@ describe('field-note collection retrieval',()=>{
   });
   it('keeps the note collection separate from unanswered practice and preserves it on return',async()=>{
     const t=await mount();await click(collection(t));await click(t.host.querySelector('[data-start-practice]'));
+    expect(t.host.querySelector('[data-practice-collection-select]').value).toBe('selection');
+    expect(t.host.querySelector('[data-practice-count]').dataset.practiceCount).toBe('3'); // living organisms with notes; reef_star is a structure
+    await select(t.host.querySelector('[data-practice-collection-select]'),'all');
     expect(t.host.querySelector('[data-practice-count]').dataset.practiceCount).toBe(String(X.SPECIES_META.filter(m=>m.group!=='structure').length));
     await click(t.host.querySelector('[data-practice-start]'));expect(t.host.querySelector('[data-guide-note-indicator]')).toBeNull();expect(t.host.textContent).not.toContain('Private observation 31');
     const back=[...t.host.querySelectorAll('button')].find(b=>b.textContent==='Back to the field guide');await click(back);expect(collection(t).getAttribute('aria-pressed')).toBe('true');expect(ids(t)).toHaveLength(4);expect(t.data.speciesPractice).toBeUndefined();

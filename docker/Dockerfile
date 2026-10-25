@@ -9,7 +9,7 @@
 #   (run from project root, or use docker-compose which sets context)
 
 # ── Stage 1: Build ──────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS builder
 
 WORKDIR /app
 
@@ -53,7 +53,7 @@ ENV REACT_APP_POCKETBASE_URL=$REACT_APP_POCKETBASE_URL
 RUN npm run build
 
 # ── Stage 2: Serve ──────────────────────────────────────────────────
-FROM nginx:alpine
+FROM nginx:alpine@sha256:a3554c0d0b48177b1413c26e01f695334428020d9df01243fbae3e11cfd17417
 
 # Copy custom nginx config (with API proxy routes)
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf

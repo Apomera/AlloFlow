@@ -14190,7 +14190,7 @@
           var animPlaying = d.simMeteorPlaying === true;
           var simView = d.simMeteorView === '3d' || (meteorsOnly && d.simMeteorView !== '2d') ? '3d' : '2d';
           var guideId = Object.prototype.hasOwnProperty.call(CONSTELLATION_PATTERNS, d.simMeteorPattern) ? d.simMeteorPattern : ({orionids:'orion',leonids:'leo',lyrids:'lyra',ursids:'ursa_minor',quadrantids:'bootes'}[selectedId] || 'cassiopeia');
-          var guideName = CONSTELLATIONS.find(function(c) { return c.id === guideId; }).name;
+          var guideName = (CONSTELLATIONS.find(function(c) { return c.id === guideId; }) || { name: guideId }).name;
           var guideData = meteorGuide(guideId, simAlt);
           var showGuides = d.simMeteorConstellations !== false;
           var showRadiant = d.simMeteorRadiant !== false;
@@ -16699,7 +16699,7 @@
         tabBar,
         h(AstronomySectionPanel, { React: React, sectionId: activeTab },
           SECTION_PURPOSE[activeTab] ? h('header', { id: 'astronomy-section-guide', style: { padding: '16px 16px 0', color: '#e2e8f0' } },
-            h('h2', { style: { margin: '0 0 6px', fontSize: 20, lineHeight: 1.3, color: '#f8fafc' } }, TABS.find(function(tab) { return tab.id === activeTab; }).label),
+            h('h2', { style: { margin: '0 0 6px', fontSize: 20, lineHeight: 1.3, color: '#f8fafc' } }, (TABS.find(function(tab) { return tab.id === activeTab; }) || { label: activeTab }).label),
             h('p', { style: { margin: 0, maxWidth: 820, fontSize: 14, lineHeight: 1.65, color: '#cbd5e1' } }, SECTION_PURPOSE[activeTab])
           ) : null,
           body)

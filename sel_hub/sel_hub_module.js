@@ -6065,7 +6065,7 @@
                       h('div', null, builderNoteLine('Sharing boundary', 'Student saves and share packets stay student-controlled.'))
                     )
                   ),
-                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.5, color: _t.textMuted } }, 'Save creates a new station with its own practice record. Draft edits are saved on this device for recovery; Cancel discards the draft. Model one small step, offer response choices, and invite a next use.'),
+                  h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.5, color: isContrast || isDark ? _t.textMuted : '#475569' } }, 'Save creates a new station with its own practice record. Draft edits are saved on this device for recovery; Cancel discards the draft. Model one small step, offer response choices, and invite a next use.'),
                   // Name
                   h('label', { htmlFor: 'sel-station-name-input', style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'Station name'),
                   h('input', {
@@ -6103,7 +6103,7 @@
                         type: 'button',
                         onClick: function () { setBuilderTools({}); },
                         'aria-label': 'Clear selected station tools',
-                        style: { minHeight: 44, border: 'none', background: 'none', color: _t.textMuted, cursor: 'pointer', fontSize: 13, fontWeight: 800, textDecoration: 'underline' }
+                        style: { minHeight: 44, border: 'none', background: 'none', color: isContrast || isDark ? _t.textMuted : '#475569', cursor: 'pointer', fontSize: 13, fontWeight: 800, textDecoration: 'underline' }
                       }, 'Clear')
                     ),
                     registry.length === 0

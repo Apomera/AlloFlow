@@ -74,7 +74,7 @@ describe('cardinal quiet woodland attention', () => {
       for (let frame = 0; frame < 90; frame++) a.wildlife.update(frame / 30, 1 / 30);
       expect(a.pose.lookYaw).toBe(first.yaw); expect(a.pose.lookPitch).toBe(first.pitch);
     } finally { a.wildlife.dispose(); b.wildlife.dispose(); }
-  });
+  }, 30000 /* exhaustive replay/calculation coverage; not a wall-clock performance test */);
 
   it('gives observer vigilance priority and releases the added pitch during flight, hops and preening', () => {
     const f = fixture(), observer = { position: new THREE.Vector3(-.35, 1.65, 1.25), speed: 0 };

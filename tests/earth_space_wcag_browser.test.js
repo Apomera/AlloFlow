@@ -203,6 +203,14 @@ describe('Earth and space tools WCAG regression in a real browser', () => {
       expect.soft(compactViolations(audit.violations)).toEqual([]);
       expect.soft(reflow.scrollWidth, JSON.stringify(reflow.offenders, null, 2)).toBeLessThanOrEqual(reflow.clientWidth);
       expect.soft(textSpacingReflow.scrollWidth, JSON.stringify(textSpacingReflow.offenders, null, 2)).toBeLessThanOrEqual(textSpacingReflow.clientWidth);
+      // Scenario accents also need readable hover text, in both host themes.
+      for (const button of await page.locator('.wc-pilot-compare-run:not(:disabled)').all()) {
+        await button.hover();
+        const hoverAudit = await page.evaluate(async () => axe.run('.wc-pilot-compare-run', {
+          runOnly: { type: 'rule', values: ['color-contrast'] },
+        }));
+        expect.soft(compactViolations(hoverAudit.violations)).toEqual([]);
+      }
       await page.close();
     }, 20000);
   }

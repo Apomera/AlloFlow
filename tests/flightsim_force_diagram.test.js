@@ -50,13 +50,14 @@ describe('flightsim four-forces overlay', () => {
       const helpBlock = source.slice(helpStart, source.indexOf('var challengeObjectiveText =', helpStart));
       const helpLayer = helpBlock.match(/position: 'absolute',\s*zIndex: (\d+)/);
       expect(helpLayer, `${path}: help no longer has an overlay stacking level`).not.toBeNull();
-      expect(helpBlock, `${path}: the help reference lost its accessible region`).toContain("role: 'region'");
+      expect(helpBlock, `${path}: the help reference lost its accessible dialog`).toContain("role: 'dialog'");
+      expect(helpBlock, `${path}: help no longer declares its modal interaction`).toContain("'aria-modal': 'true'");
       expect(helpBlock, `${path}: help lost its DOM close control`).toContain("id: 'skyschool-close-help'");
       const surface = source.indexOf("role: 'application'");
       const canvasStart = source.lastIndexOf("h('canvas',", surface);
       const helpRender = source.indexOf('d.showHelp && renderFlightHelp()', surface);
       expect(canvasStart, `${path}: the interactive canvas is gone`).toBeGreaterThan(-1);
-      expect(helpRender, `${path}: flying no longer renders the help region`).toBeGreaterThan(surface);
+      expect(helpRender, `${path}: flying no longer renders the help dialog`).toBeGreaterThan(surface);
       const canvasLayer = source.slice(canvasStart, helpRender).match(/zIndex: (\d+)/);
       expect(canvasLayer, `${path}: the interactive canvas lost its stacking level`).not.toBeNull();
       expect(Number(helpLayer[1]), `${path}: the canvas can cover the help reference`).toBeGreaterThan(Number(canvasLayer[1]));

@@ -1,6 +1,4 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
 
 // GET /search on the catalog Worker replaces the retired Firebase search proxy
 // as the Canvas web-search transport. It is deliberately unauthenticated
@@ -11,14 +9,8 @@ import path from 'node:path';
 let worker;
 
 beforeAll(async () => {
-  // The Worker is an ES module using `export default`. Load it through a
-  // data: URL so the test does not depend on a build step.
-  const src = fs.readFileSync(
-    path.resolve(process.cwd(), 'catalog/cloudflare-worker/src/index.js'),
-    'utf8',
-  );
-  const mod = await import(`data:text/javascript;base64,${Buffer.from(src).toString('base64')}`);
-  worker = mod.default;
+  // Load the real module from its location so local imports resolve without a build.
+  worker = (await import('../catalog/cloudflare-worker/src/index.js')).default;
 });
 
 function kvStub() {

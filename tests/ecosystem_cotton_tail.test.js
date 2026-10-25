@@ -68,5 +68,5 @@ describe('one connected rabbit cotton tail',()=>{
       expect(JSON.stringify(frames)).toBe(before);expect(JSON.stringify(api.behaviorTimeline(config,pair[branch]))).toBe(before);
     }expect(JSON.stringify(pair)).toBe(pairBefore);}
     expect(checked).toBeGreaterThan(1000000);expect(resting).toBeGreaterThan(10);expect(moving).toBeGreaterThan(10);expect(lowest).toBeGreaterThan(.08);
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
 });

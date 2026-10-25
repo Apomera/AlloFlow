@@ -99,7 +99,7 @@ describe('Dino Lab nested Triceratops frill',()=>{
         measurements.push({kind:'triangle-centroids-and-edge-midpoints',scale:1,depth,length,...checkContained(p.skin,samples,1)});
       } finally {p.skin.dispose();p.bone.dispose();}
     }
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
   it('keeps the life surface buffers independent and unchanged when building the bony layer',()=>{
     const skin=api.dinoFrillGeometry(THREE,.6,.70*.86,.08,true),saved={};
     for(const key of ['position','normal','uv'])saved[key]=skin.attributes[key].array.slice();

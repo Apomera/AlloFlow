@@ -87,5 +87,5 @@ describe('reviewed ceratopsid faces and fixed ornaments',()=>{
     expect(hash(boneState(full))).toBe(hash(boneState(b)));
     expect(full.context.ceratopsidCranium.metadata).toEqual(c.ceratopsidCranium.metadata);
     full.dispose();b.dispose();
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
 });

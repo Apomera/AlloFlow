@@ -3,6 +3,10 @@ import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),E=require('../desktop/mcp/remediation_epub_validation.cjs');
 const assertion=outcome=>({'@type':'earl:assertion','earl:result':{'earl:outcome':outcome}});
 const ace=(outcome,children)=>({'@type':'earl:report','earl:result':{'earl:outcome':outcome},assertions:children});
+it('requires the supported Ace browser runtime and rejects older Node versions honestly',()=>{
+ for(const version of ['18.20.8','20.19.0','22.11.0','invalid'])expect(E.supportsAceNode(version)).toBe(false);
+ for(const version of ['22.12.0','22.22.0','24.11.1','26.0.0'])expect(E.supportsAceNode(version)).toBe(true);
+});
 it('parses Ace native outcomes and nested findings, preserving contradictory failures',()=>{
  expect(E.parseAce(ace('pass',[assertion('pass')]))).toMatchObject({status:'passed',failures:0,assertions:1});
  expect(E.parseAce(ace('pass',[{'@type':'earl:assertion',assertions:[assertion('fail'),assertion('cantTell')]}]))).toMatchObject({status:'failed',failures:1,reviewFindings:1,assertions:2});
@@ -24,7 +28,7 @@ it('cancels a validator before launch and terminates a running child',async()=>{
 it('enforces a bounded validator runtime',async()=>{await expect(E.run(process.execPath,['-e','setInterval(()=>{},1000)'],{timeoutMs:100})).rejects.toThrow('timed out');},15000);
 it('reports missing runtimes as unavailable and survives a failed scratch cleanup',async()=>{
  const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),'alloflow-epub-'));const epub=path.join(dir,'sample.epub');fs.writeFileSync(epub,'PK fixture');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'alloflow-epub-'));const epub=path.join(dir,'sample.epub');fs.writeFileSync(epub,require('../desktop/mcp/zip_writer.cjs').makeZip([{name:'mimetype',data:'application/epub+zip',store:true}]));
  const prevJar=process.env.ALLOFLOW_MCP_EPUBCHECK_JAR;process.env.ALLOFLOW_MCP_EPUBCHECK_JAR=path.join(dir,'missing.jar');
  const realRm=fs.rmSync;let rmCalls=0;fs.rmSync=(...a)=>{rmCalls++;throw Object.assign(Error('EPERM fixture'),{code:'EPERM'});};
  const logs=[];let result;
@@ -32,6 +36,7 @@ it('reports missing runtimes as unavailable and survives a failed scratch cleanu
  finally{fs.rmSync=realRm;if(prevJar===undefined)delete process.env.ALLOFLOW_MCP_EPUBCHECK_JAR;else process.env.ALLOFLOW_MCP_EPUBCHECK_JAR=prevJar;}
  expect(result.status).toBe('review-required');expect(result.reviewRequired).toBe(true);expect(result.humanReviewRequired).toBe(true);
  expect(result.checks.epubcheck.status).toBe('unavailable');expect(result.checks.ace.status).toBe('unavailable');
+ expect(result.checks.archive.status).toBe('passed');
  expect(rmCalls).toBe(1);expect(logs.some(l=>/Could not remove private validation scratch/.test(l))).toBe(true);
  expect(fs.readdirSync(dir).some(n=>n.startsWith('epub-verify-'))).toBe(true);
  realRm(dir,{recursive:true,force:true});

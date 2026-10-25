@@ -1,12 +1,14 @@
 name: remote-mcp-verify
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - "services/alloflow-remote-mcp/**"
       - ".github/workflows/remote-mcp-verify.yml"
       - "desktop/mcp/**"
+      - "dev-tools/make_remediation_e2e_fixture.cjs"
       - "verification_policy_module.js"
       - "doc_builder_renderer_module.js"
       - "doc_pipeline_source.jsx"
@@ -40,6 +42,7 @@ on:
       - "services/alloflow-remote-mcp/**"
       - ".github/workflows/remote-mcp-verify.yml"
       - "desktop/mcp/**"
+      - "dev-tools/make_remediation_e2e_fixture.cjs"
       - "verification_policy_module.js"
       - "doc_builder_renderer_module.js"
       - "doc_pipeline_source.jsx"
@@ -100,6 +103,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Install pinned Worker dependencies
         run: npm ci --no-audit --no-fund
+      - name: Check Worker dependency security advisories
+        run: npm audit --package-lock-only --ignore-scripts --audit-level=high
       - name: Install pinned runner dependencies
         run: npm ci --prefix runner --no-audit --no-fund
       - name: Materialize manifest-verified EPUBCheck dependencies
@@ -111,6 +116,11 @@ jobs:
         run: npm run check
       - name: Verify and test the canonical isolated runner
         run: npm run runner:check
+      - name: Generate shared remediation PDF fixture
+        # The PDF is generated, gitignored test data; a clean checkout has none.
+        # Generate it explicitly before either the Vitest or Playwright consumer.
+        working-directory: ${{ github.workspace }}
+        run: node dev-tools/make_remediation_e2e_fixture.cjs
       - name: Verify the real shared remediation engine and tagged-PDF canary
         working-directory: ${{ github.workspace }}
         run: >-

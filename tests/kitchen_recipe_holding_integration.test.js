@@ -1,7 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js');
-const oldCooks=require('../reports/kitchen-sauce-holding-2026-10-18/model-one-fixtures.json');
+const oldCooks=require('./helpers/reference_fixture.cjs')('kitchen-sauce-holding-2026-10-18/model-one-fixtures.json.gz');
 function wait(s,seconds=120,step=30){while(seconds>0){const n=Math.min(step,seconds);s=R.act(s,'advance',n);seconds-=n;}return s;}
 function completeMix(s){for(let fold=0;fold<8&&R.needsMixing(s);fold++)s=R.act(s,'stirSweep','button');expect(R.needsMixing(s)).toBe(false);return s;}
 function adjusted(amount=50){let s=R.startRescue('holding',0,'demonstrate');s=R.act(s,'pour',amount);return R.act(completeMix(s),'taste');}

@@ -66,7 +66,7 @@ const WATCHED = {
     uses: (body) => /[^\w.$]h\s*\(\s*['"]/.test(body),          // h('div', ...)
     // Rebinding createElement — directly, or passed down as props.h / opts.h /
     // ctx.h — is the same value under the same name. Not a shadow worth naming.
-    wrong: (init) => !/createElement|\b(?:props|opts|ctx|p)\s*\.\s*h\b/.test(init)
+    wrong: (init) => !/createElement|\b(?:props|opts|ctx|p)\s*\.\s*(?:env\s*\.\s*)?h\b/.test(init)
   }
 };
 
@@ -103,6 +103,10 @@ const FIXTURES = [
   { name: 'inert t (loop counter, function never translates)', flag: false, src:
     "var t = function (k, fb) { return fb; };\n" +
     "function counterOnly() {\n  var n = 0;\n  for (var t = 0; t < 10; t++) { n += t; }\n  return n;\n}\n" },
+  { name: 'house idiom (h passed through a component environment)', flag: false, src:
+    "var h = React.createElement;\nfunction inner(props) {\n  var h = props.env.h;\n  return h('div', null, 'ok');\n}\n" },
+  { name: 'live h (DOM element shadowing createElement)', flag: true, src:
+    "var h = React.createElement;\nfunction inner() {\n  var h = document.getElementById('panel');\n  return h('div', null, 'bad');\n}\n" },
   { name: 'house idiom (h rebound to createElement in a nested IIFE)', flag: false, src:
     "var h = React.createElement;\n" +
     "function inner() {\n  var h = React.createElement;\n  return h('div', null, 'ok');\n}\n" }

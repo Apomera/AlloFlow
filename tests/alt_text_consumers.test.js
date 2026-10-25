@@ -140,17 +140,16 @@ describe('glossary descriptions and decorative icons remain distinct', () => {
 });
 
 describe('exports', () => {
-  it('glossary icons are decorative and timeline pictures carry their description', () => {
+  it('glossary pictures retain their term fallback and timeline pictures carry their description', () => {
     const glossary = { id: 'g1', type: 'glossary', title: 'Words', data: [{ term: 'Volcano', def: 'A mountain that erupts.', tier: 'Academic', image: PNG }] };
     const timeline = { id: 't1', type: 'timeline', title: 'Events', data: { items: [{ date: '1969', event: 'Moon landing', content: 'Moon landing', image: PNG, alt: 'An astronaut stands beside a lunar module.' }] } };
     const html = exportHtml([glossary, timeline]);
     const list = imgs(html);
     expect(list.length).toBeGreaterThanOrEqual(2);
-    const glossaryImg = list.find(img => img.getAttribute('src') === PNG && img.getAttribute('alt') === '');
+    const glossaryImg = list.find(img => img.getAttribute('src') === PNG && img.getAttribute('alt') === 'Volcano');
     expect(glossaryImg).toBeTruthy();
-    expect(glossaryImg.getAttribute('role')).toBe('presentation');
+    expect(glossaryImg.hasAttribute('role')).toBe(false);
     expect(list.some(img => img.getAttribute('alt') === 'An astronaut stands beside a lunar module.')).toBe(true);
-    expect(html).not.toContain('alt="Volcano"');
     const report = scan(html);
     expect(report.highCount).toBe(0);
   });
@@ -177,6 +176,19 @@ describe('exports', () => {
 });
 
 describe('saved glossary alt text in exports', () => {
+  it.each(['table', 'flash-cards', 'language-cards'])('escapes a term fallback as text in %s', mode => {
+    const term = '\"><svg onload="alert(1)"> & leaf';
+    const html = pipeline.generateFullPackHTML([{ id: 'g-fallback', type: 'glossary', data: [
+      { term, def: 'A plant part.', image: PNG, imageAlt: 'Stale', imageAltHash: 'stale-hash' },
+    ] }], 'Alt text', false, {}, { includeTeacherKey: false, annotations: [], glossaryDisplayMode: mode });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const picture = [...doc.querySelectorAll('img')].find(img => img.getAttribute('src') === PNG);
+    expect(picture.getAttribute('alt')).toBe(term);
+    expect(picture.hasAttribute('role')).toBe(false);
+    expect(doc.querySelector('[onload]')).toBeNull();
+    expect(doc.querySelector('svg')).toBeNull();
+  });
+
   it.each(['table', 'flash-cards', 'language-cards'])('preserves descriptions and ignores stale/decorative descriptions in %s', mode => {
     const description = 'Green leaf veins show "branching" & <connections>.';
     const glossary = { id: 'g-described', type: 'glossary', data: [
@@ -186,9 +198,9 @@ describe('saved glossary alt text in exports', () => {
     ] };
     const html = pipeline.generateFullPackHTML([glossary], 'Alt text', false, {}, { includeTeacherKey: false, annotations: [], glossaryDisplayMode: mode });
     const images = imgs(html).filter(img => img.getAttribute('src') === PNG);
-    expect(images.map(img => img.getAttribute('alt'))).toEqual([description, '', '']);
+    expect(images.map(img => img.getAttribute('alt'))).toEqual([description, 'Old picture', '']);
     expect(images[0].hasAttribute('role')).toBe(false);
-    expect(images[1].getAttribute('role')).toBe('presentation');
+    expect(images[1].hasAttribute('role')).toBe(false);
     expect(images[2].getAttribute('role')).toBe('presentation');
     expect(html).toContain(mode === 'table' ? 'gloss-img-cell' : 'alloflow-glossary-card-front');
   });

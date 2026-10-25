@@ -17,9 +17,12 @@ describe('MCPB dependency-audit gate', () => {
     expect(gate).toContain('allowlist entry expired');
   });
 
-  it('accepts only advisories that carry a reason, a reviewer, and an unexpired re-review date', () => {
+  it('ships the patched dependency bundle without advisory exceptions', () => {
+    expect(allowlist.accepted).toEqual([]);
+  });
+
+  it('requires reviewed, unexpired metadata for any future accepted advisories', () => {
     expect(Array.isArray(allowlist.accepted)).toBe(true);
-    expect(allowlist.accepted.length).toBeGreaterThan(0);
     const today = Date.now();
     const seen = new Set();
     for (const entry of allowlist.accepted) {

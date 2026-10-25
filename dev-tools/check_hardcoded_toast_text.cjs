@@ -49,8 +49,10 @@ const argFiles = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 // and mixing the two would make this baseline move for unrelated reasons.
 const TOAST_FN = /^(addToast|showToast|toast)$/;
 const SKIP_KEYS = new Set(['type', 'start', 'end', 'loc']);
-// tt(key, english, params): Behavior Lens / School Rewards translator (2026-10-16).
-const T_FN = /^(__alloT|t|tt|tr|__t|translate)$/;
+// tt: Behavior Lens / School Rewards. Reviewed wrappers with English fallbacks:
+// _gxText: Export live host translator + params; printTr: Word Sounds wsPresentTr(ts);
+// screenerLabel: Student Analytics host translator, with key-echo fallback.
+const T_FN = /^(__alloT|t|tt|tr|__t|translate|_gxText|printTr|screenerLabel)$/;
 
 function defaultFiles() {
   const files = [];
@@ -89,6 +91,7 @@ function isVisibleProse(raw) {
   if (!/[a-z]/.test(v)) return false;                        // ALLCAPS token
   if (!/^[\x20-\x7E -ɏ]+$/.test(v)) return false;  // already non-English
   if (/^[a-z0-9_.-]+$/.test(v)) return false;                // slug / id
+  if (/^(?:\{[A-Za-z_]\w*\}|\{\{[A-Za-z_]\w*\}\})$/.test(v)) return false; // interpolation token
   if (/^(https?:|#|\/|data:|\.)/.test(v)) return false;      // url / selector
   if (!/\s/.test(v) && v.length < 8) return false;           // lone short word
   // A toast severity argument (success, error, info, warning) is a token, not

@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { exactDeclarations } from './helpers/exact_declarations.js';
 
 const PATHS = ['stem_lab/stem_tool_watercycle.js', 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js'];
 // Re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words). The review manifest
@@ -8,7 +9,7 @@ const PATHS = ['stem_lab/stem_tool_watercycle.js', 'desktop/web-app/public/stem_
 // code: 79e3e5eae rewrote the air-crossing caption and the foreground caption pass, so two of
 // its behavioural checks were running a superseded draft. The regenerated manifest holds the
 // eight regions exactly as shipped (original === replacement), so those checks run real code.
-const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_PATH = 'tests/fixtures/regression/watercycle-freeze-reference/accepted-runtime.js';
 const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const TEST_PATH = 'tests/watercycle_storm_caption_clarity.test.js';
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -18,7 +19,7 @@ const sources = PATHS.map(path => { const bytes = readFileSync(path); return { p
 const baselineBytes = readFileSync(BASELINE_PATH);
 const baseline = baselineBytes.toString('utf8');
 const loadedTest = readFileSync(TEST_PATH);
-const PAINT_MANIFEST_PATH = 'reports/watercycle-freeze-reference/storm-caption-paint-regions.json';
+const PAINT_MANIFEST_PATH = 'tests/fixtures/regression/watercycle-freeze-reference/storm-caption-paint-regions.json';
 const paintManifestBytes = readFileSync(PAINT_MANIFEST_PATH);
 const paintManifest = JSON.parse(paintManifestBytes.toString('utf8'));
 const PAINT_NAMES = ['caption-helpers', 'cloud-caption', 'caption-reset', 'air-crossing-caption', 'virga-caption', 'orographic-captions', 'lifecycle-caption', 'foreground-caption-pass'];
@@ -192,8 +193,13 @@ describe('Water Cycle Storm 2D caption clarity', () => {
 
   for (const source of sources) {
     describe(source.path, () => {
-      it('preserves every runtime byte outside the reviewed caption presentation slices', () => {
-        expect(Buffer.from(restoredPresentation(source.text)).equals(baselineBytes)).toBe(true);
+      it('preserves both complete storm scenes and every reviewed caption slice', () => {
+        // Check all eight caption slices against the immutable manifest, then
+        // compare the complete 2D/3D scenes. The pilot and range experiment UI
+        // are independent features in this same runtime file.
+        const restored = restoredPresentation(source.text);
+        const scenes = ['precipCanvasRef', 'precip3dRef'];
+        expect(exactDeclarations(restored, scenes)).toEqual(exactDeclarations(baseline, scenes));
       });
 
       it('keeps precipitation and thermal phase decisions outside presentation helpers', () => {

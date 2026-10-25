@@ -54,9 +54,23 @@ describe('session code entropy + rules-compatible TTL cleanup', () => {
   it('session codes are 5 characters over the confusable-stripped alphabet', () => {
     const idx = src.indexOf('const generateSessionCode');
     expect(idx).toBeGreaterThan(-1);
-    const fn = src.slice(idx, idx + 600);
-    expect(fn).toContain("'ABCDEFGHJKMNPQRSTUVWXYZ23456789'");
-    expect(fn).toContain('for (let i = 0; i < 5; i++)');
+    const end = src.indexOf('const escapeXml', idx);
+    expect(end).toBeGreaterThan(idx);
+    const fn = src.slice(idx, end);
+    const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    let draws = 0;
+    const crypto = { getRandomValues(bytes) {
+      // Reject the high bytes that would bias modulo sampling, then accept
+      // five distinct positions. This runs the actual generator's loop.
+      bytes.fill(255);
+      if (draws++ > 0) bytes.set([0, 1, 2, 3, 4]);
+      return bytes;
+    } };
+    const generate = new Function('crypto', fn + '\nreturn generateSessionCode;')(crypto);
+    const code = generate();
+    expect(code).toBe(alphabet.slice(0, 5));
+    expect(code).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{5}$/);
+    expect(draws).toBe(2);
   });
 
   it('stale bridge-payload TTL cleanup runs for BOTH roles (host succeeds under rules)', () => {

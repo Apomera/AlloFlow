@@ -7,9 +7,10 @@ const root = path.resolve(__dirname, '..');
 const log = { log() {}, error() {} };
 const io = files => ({ readdirSync: () => files });
 
-test('native manifest discovers the four CI gap suites and keeps emulators separate', () => {
+test('native manifest discovers the CI gap and MCP security suites and keeps emulators separate', () => {
   const files = discoverNativeTests();
-  for (const file of ['blueprint_module_preflight', 'catalog_import_completion', 'lesson_deep_link_host', 'project_response_restore']) {
+  for (const file of ['blueprint_module_preflight', 'catalog_import_completion', 'lesson_deep_link_host', 'project_response_restore',
+    'mcp_ace_browser_security', 'mcp_artifact_source_bytes', 'mcp_bundle_audit_security']) {
     assert.ok(files.includes('tests/' + file + '.test.cjs'), file);
   }
   assert.equal(new Set(files).size, files.length);
