@@ -516,7 +516,8 @@ describe('Individual pasta sweeps separate clumps without rewriting cooking evid
  });
  it('retains a real over-softened sample after the burner is switched off',()=>{
   start('independent','separate-and-check-pasta');complete('samplePasta');separateAll();choose('avatarStrandWait',60);for(let i=0;i<10;i++)complete('waitPot');complete('samplePasta');const reading=get().reading;expect(strands().tooSoftKnown).toBe(true);choose('avatarStrandHeat',0);complete('setPotHeat');expect(get().reading).toEqual(reading);expect($('avatarStrandSampleLatest').dataset.freshness).toBe('current');expect($('avatarStrandOutcome').textContent).toContain('softened strands firm again');expect(strands().targetMet).toBe(false);
- });
+  // Ten pot waits plus two samples took over 60 seconds on the Windows CI runner.
+ },120000);
  it('attributes the complete Watch route to the demonstrator and restores the exact sample evidence',()=>{
   start('watch','separate-and-check-pasta');for(let i=0;i<20;i++)watchAction();expect(get().guide.complete).toBe(true);expect(get().record.intents.every(i=>i.actor==='demonstrator')).toBe(true);expect($('avatarStrandSampleLatest').dataset.actor).toBe('demonstrator');const state=get().state,latest=$('avatarStrandSampleLatest').textContent;ui.dispose();mount();expect(get().state).toEqual(state);expect($('avatarStrandSampleLatest').textContent).toBe(latest);expect($('avatarWatchNext').disabled).toBe(true);
   // The complete 20-action DOM journey took 89.7 seconds on the Windows CI runner.
