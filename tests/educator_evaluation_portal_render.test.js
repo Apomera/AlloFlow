@@ -313,7 +313,8 @@ describe('district portal bundle renders', () => {
     await directory.getByRole('button', { name: 'Review member change' }).click();
     const directoryHeading = directory.locator('.ae-review-heading');
     await directoryHeading.waitFor();
-    expect(await directoryHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    // The app focuses each review heading one animation frame after it renders.
+    await expect.poll(() => directoryHeading.evaluate((element) => element === document.activeElement)).toBe(true);
     const directoryAck = directory.getByRole('checkbox').last();
     await directoryAck.focus();
     await page.waitForTimeout(50);
@@ -326,7 +327,7 @@ describe('district portal bundle renders', () => {
     await schedule.getByRole('button', { name: 'Review schedule impact' }).click();
     const scheduleHeading = schedule.locator('.ae-review-heading');
     await scheduleHeading.waitFor();
-    expect(await scheduleHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    await expect.poll(() => scheduleHeading.evaluate((element) => element === document.activeElement)).toBe(true);
     await schedule.getByRole('button', { name: 'Cancel' }).click();
 
     const exports = page.locator('details').filter({ hasText: 'Audited private exports and official-record handoff' });
@@ -335,7 +336,7 @@ describe('district portal bundle renders', () => {
     await exports.getByRole('button', { name: 'Review private export' }).click();
     const exportHeading = exports.locator('.ae-review-heading');
     await exportHeading.waitFor();
-    expect(await exportHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    await expect.poll(() => exportHeading.evaluate((element) => element === document.activeElement)).toBe(true);
     await exports.getByRole('button', { name: 'Cancel' }).click();
 
     const rehearsal = page.locator('details').filter({ hasText: 'Annual archive inventory and restore rehearsal' });
@@ -344,7 +345,7 @@ describe('district portal bundle renders', () => {
     await rehearsal.getByRole('button', { name: 'Review rehearsal' }).click();
     const rehearsalHeading = rehearsal.locator('.ae-review-heading');
     await rehearsalHeading.waitFor();
-    expect(await rehearsalHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    await expect.poll(() => rehearsalHeading.evaluate((element) => element === document.activeElement)).toBe(true);
 
     expect(errors).toEqual([]);
     await page.close();
@@ -406,7 +407,7 @@ describe('district portal bundle renders', () => {
     const directoryHeading = directory.locator('.ae-review-heading');
     await directoryHeading.waitFor();
     expect(await directory.evaluate((element) => element.open)).toBe(true);
-    expect(await directoryHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    await expect.poll(() => directoryHeading.evaluate((element) => element === document.activeElement)).toBe(true);
     await page.waitForFunction(() => !document.querySelector('[data-testid="ae-operations-body"]').disabled);
 
     await scheduleButton.focus();
@@ -414,7 +415,7 @@ describe('district portal bundle renders', () => {
     await scheduleButton.click();
     const scheduleHeading = schedule.locator('.ae-review-heading');
     await scheduleHeading.waitFor();
-    expect(await scheduleHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    await expect.poll(() => scheduleHeading.evaluate((element) => element === document.activeElement)).toBe(true);
     expect(await page.evaluate(() => window.__portalCalls.filter((name) => /^reviewPortal/.test(name)))).toEqual([
       'reviewPortalDirectoryChange',
       'reviewPortalCycleSchedule',

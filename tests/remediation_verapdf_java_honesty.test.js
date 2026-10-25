@@ -152,7 +152,8 @@ describe('Java probe: "did not respond in time" is not "not found"', () => {
   });
   it('EPUB validation reports the same distinction instead of "Install Java"', async () => {
     const epub = join(scratch, 'book.epub');
-    writeFileSync(epub, Buffer.from('PK fixture, never opened because Java does not answer', 'latin1'));
+    // A canonical archive: the bounded archive check runs before Java, so it must pass to reach the probe.
+    writeFileSync(epub, require('../desktop/mcp/zip_writer.cjs').makeZip([{ name: 'mimetype', data: 'application/epub+zip', store: true }]));
     const keep = { bin: process.env.ALLOFLOW_MCP_JAVA_BIN, t: process.env.ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS, jar: process.env.ALLOFLOW_MCP_EPUBCHECK_JAR };
     process.env.ALLOFLOW_MCP_JAVA_BIN = process.execPath;
     process.env.ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS = '1';

@@ -48,6 +48,14 @@ describe('MCPB release workflow triggers', () => {
     expect(build.slice(0, checkout)).not.toMatch(/continue-on-error:\s*true/);
   });
 
+  it('reads the SBOM with the same link mode the staging install used', () => {
+    // A copied file: dependency is "invalid" to npm sbom unless it also runs with --install-links.
+    const builder = readFileSync(resolve('desktop/mcp/build_mcpb.cjs'), 'utf8');
+    const sbom = workflow.match(/^ +npm sbom --[^\n|]*/m);
+    expect(sbom).not.toBeNull();
+    expect(sbom[0].includes('--install-links')).toBe(/npm ci [^'"\n]*--install-links/.test(builder));
+  });
+
   it('nests manual, tag, and pull-request triggers under on', () => {
     expect(workflow).toMatch(/^on:\r?\n  workflow_dispatch:\r?\n  push:\r?\n    tags:/m);
     expect(workflow).toMatch(/^  pull_request:\r?\n    branches: \[main\]/m);
