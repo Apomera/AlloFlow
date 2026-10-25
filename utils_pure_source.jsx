@@ -27,6 +27,88 @@ var apiKey = (typeof window !== 'undefined') ? window.apiKey : undefined;
 var _isCanvasEnv = (typeof window !== 'undefined') ? Boolean(window._isCanvasEnv) : false;
 var GEMINI_MODELS = (typeof window !== 'undefined' && window.GEMINI_MODELS) || { default: 'gemini-3-flash-preview', fallback: 'gemini-3-flash-preview' };
 
+// Retired Gemini Canvas versions. Older Canvas shares keep loading this CDN
+// module, so this is the one place that can reach them. Only Canvas pages are
+// checked; Desktop, the hosted app and local development are never touched.
+//   1.11+ defines the trusted script dispatcher        -> current, nothing shown
+//   1.10 defines window.__alloModuleLoadDiagnostics    -> notice until the grace date, then retired
+//   1.9 and older define neither                       -> retired
+var ALLO_RETIRED_VERSION_GATE = {
+  launcherUrl: 'https://apomera.github.io/AlloFlow/launch.html',
+  previousGraceEnds: '2026-11-08T23:59:59Z'
+};
+function _alloCanvasGeneration(win) {
+  if (typeof win.__alloConfigureTrustedScript === 'function') return 'current';
+  if (win.__alloModuleLoadDiagnostics) return 'previous';
+  return 'retired';
+}
+function _alloIsCanvasPage(win) {
+  var stamp = win.__alloBuildStamp;
+  if (stamp && stamp.surface) return stamp.surface === 'canvas';
+  var loc = win.location || {};
+  return loc.protocol === 'blob:' || /(\.|^)(usercontent\.goog|googleusercontent\.com)$/i.test(String(loc.hostname || ''));
+}
+function _alloRetiredVersionState(win, now) {
+  if (!_alloIsCanvasPage(win)) return 'not-canvas';
+  var generation = _alloCanvasGeneration(win);
+  if (generation === 'previous' && now >= Date.parse(ALLO_RETIRED_VERSION_GATE.previousGraceEnds)) return 'retired';
+  return generation;
+}
+function _alloShowRetiredVersionNotice(win, doc, state) {
+  if (state !== 'retired' && state !== 'previous') return null;
+  if (doc.getElementById('allo-retired-version-notice')) return null;
+  var blocking = state === 'retired';
+  var box = doc.createElement('div');
+  box.id = 'allo-retired-version-notice';
+  box.setAttribute('role', blocking ? 'alertdialog' : 'region');
+  box.setAttribute('aria-label', blocking ? 'This version of AlloFlow has been retired' : 'A newer version of AlloFlow is available');
+  if (blocking) box.setAttribute('aria-modal', 'true');
+  box.style.cssText = blocking
+    ? 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#f8fafc;font:16px/1.5 system-ui,sans-serif;padding:24px;'
+    : 'position:fixed;left:0;right:0;top:0;z-index:2147483647;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;background:#fef3c7;color:#422006;font:15px/1.4 system-ui,sans-serif;padding:10px 16px;border-bottom:2px solid #b45309;';
+  var text = doc.createElement(blocking ? 'div' : 'span');
+  text.style.cssText = blocking ? 'max-width:520px;text-align:center;' : '';
+  var title = doc.createElement(blocking ? 'h1' : 'strong');
+  title.textContent = blocking ? 'This version of AlloFlow has been retired' : 'A newer version of AlloFlow is available.';
+  if (blocking) title.style.cssText = 'font-size:24px;margin:0 0 12px;';
+  var body = doc.createElement(blocking ? 'p' : 'span');
+  body.textContent = blocking
+    ? 'Older copies no longer receive security fixes, so this one has been switched off. Your saved work stays on this device. Open the current version to keep going.'
+    : ' This version stops working on November 8, 2026. Switch now to keep receiving fixes.';
+  if (blocking) body.style.cssText = 'margin:0 0 20px;';
+  text.appendChild(title); text.appendChild(body);
+  var link = doc.createElement('a');
+  link.href = ALLO_RETIRED_VERSION_GATE.launcherUrl;
+  link.target = '_blank'; link.rel = 'noopener';
+  link.textContent = 'Open the current AlloFlow';
+  link.style.cssText = blocking
+    ? 'display:inline-block;background:#f8fafc;color:#0f172a;font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;'
+    : 'color:#422006;font-weight:700;text-decoration:underline;';
+  if (blocking) text.appendChild(link); else box.appendChild(text);
+  if (blocking) box.appendChild(text); else box.appendChild(link);
+  if (!blocking) {
+    var close = doc.createElement('button');
+    close.type = 'button';
+    close.textContent = 'Dismiss';
+    close.setAttribute('aria-label', 'Dismiss the new version notice');
+    close.style.cssText = 'background:transparent;border:1px solid #92400e;color:#422006;border-radius:6px;padding:4px 10px;cursor:pointer;';
+    close.addEventListener('click', function () { box.remove(); });
+    box.appendChild(close);
+  }
+  (doc.body || doc.documentElement).appendChild(box);
+  if (blocking) { try { link.focus(); } catch (_) {} }
+  return box;
+}
+(function installRetiredVersionGate() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  try {
+    var state = _alloRetiredVersionState(window, Date.now());
+    if (state !== 'retired' && state !== 'previous') return;
+    var show = function () { _alloShowRetiredVersionNotice(window, document, state); };
+    if (document.body) show(); else document.addEventListener('DOMContentLoaded', show, { once: true });
+  } catch (_) {}
+})();
+
 const safeJsonParse = (text) => {
   if (!text || typeof text !== 'string') return null;
   try {

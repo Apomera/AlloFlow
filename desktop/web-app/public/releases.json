@@ -16,63 +16,63 @@
   {
     "id": "rel_20261019T112839Z_v1_9",
     "version": "1.9",
-    "canvas_url": "https://share.gemini.google/MjUL7MZ7eu4Z",
+    "retired": "2026-10-25",
     "released": "2026-10-19T11:28:39.272Z",
     "notes": "Updated AlloFlow Gemini Canvas link for the October 19, 2026 release. This release rebuilds the Cell Simulator with a new Stem Cells mode, adds the Coral Reef explorer, and includes broader updates across STEM tools, Lesson Board and Word Sounds."
   },
   {
     "id": "rel_20261013T104446Z_v1_8",
     "version": "1.8",
-    "canvas_url": "https://share.gemini.google/xHbhRje39fUQ",
+    "retired": "2026-10-25",
     "released": "2026-10-13T10:44:46.149Z",
     "notes": "Updated AlloFlow Gemini Canvas link for the October 13, 2026 release."
   },
   {
     "id": "rel_20261001T033406Z_v1_7",
     "version": "1.7",
-    "canvas_url": "https://share.gemini.google/4qxg0f3MSo0e",
+    "retired": "2026-10-25",
     "released": "2026-10-01T03:34:06.179Z",
     "notes": "Evolution Lab now lets students explore a 3D island, follow inherited traits through generations, watch environments change, compare possible futures and investigate chance. Guided discovery routes, family lineages and evidence tools make experiments easier to follow. This release also includes broader updates to STEM and learning tools, document workflows, accessibility and language resources."
   },
   {
     "id": "rel_20260913T200040Z_v1_6",
     "version": "1.6",
-    "canvas_url": "https://share.gemini.google/M6972jSRxnaq",
+    "retired": "2026-10-25",
     "released": "2026-09-13T20:00:40.644Z",
     "notes": "AlloFlow starts faster in Canvas: a fifth of the app source moved into modules that load on demand, so the page you paste is 20 percent smaller. Zoom Gallery measures between two points, shows a live scale bar on images whose size is known, adds a scale challenge (estimate first, then measure) and the far side of the Moon at a measured scale. Scale Explorer opens a real photo in one click, tiles near neighbours side by side, plays the zoom as one continuous film, shows the order of magnitude, lets the student be the person on the ladder, and shares links that open at a place. SEL Hub deepened Teamwork, Virtual Team, Values Sort, Bias Check, Decision Workshop and Upstander practice, and creative, health, personal and social goals with flexible routine plans; every SEL tool's content is now wired and audited. Dino Lab gained studio-light, size-reference, fossil-tray and anatomical close-up studies with smoother motion and skin detail. Cell Explorer labels read better and select by touch. Lesson plan scripts generate and persist reliably. Kitchen Lab has a recipe engine with units, and Sourcebook speaks Spanish (Latin America). 43 illustrated AlloPacks and six crew packs for grades 6 to 8 are published. The document remediation connector reached 0.11: it examines bookmarks, forms and open actions instead of refusing them, and the keyless lane verifies fixes per engine."
   },
   {
     "id": "rel_20260911T045338Z_v1_5",
     "version": "1.5",
-    "canvas_url": "https://share.gemini.google/zh6S0qT3fvjN",
+    "retired": "2026-10-25",
     "released": "2026-09-11T04:53:38.661Z",
     "notes": "Titration Lab rebuilt: the 3D bench sits in a lit room with a real glass flask and an endpoint colour bloom, the buffer tab shows the pH shift on a bar, the parallax lesson magnifies the reading error, and every screen now passes contrast checks in default, dark and high-contrast themes. School Store: the Store tab explains who completes a purchase and when, and the register confirms each sale where the cashier clicked. New Scale Explorer tool. Zoom Gallery images load again, Geography Explorer and GIS Studio no longer depend on keyed map tiles, Geometry World characters speak in the app voice, Dino Lab and Architecture Studio gained 3D detail, the auto mechanic workshop added guided repair routes, and SEL goals, habits and journals keep dated records. Shared tool links open straight to the tool."
   },
   {
     "id": "rel_20260906T203157Z_v1_4",
     "version": "1.4",
-    "canvas_url": "https://share.gemini.google/Y10uvvswOaio",
+    "retired": "2026-10-25",
     "released": "2026-09-06T20:31:57.249Z",
     "notes": "Plate Tectonics teaching rebuild: the eight-question quiz now ends with a score and a concepts-to-revisit list, the epicentre widget saves the map you are looking at, the boundary simulator no longer interrupts screen readers once a second, and the glossary carries 172 terms instead of 106. Broad translation coverage across the STEM tools, including screen-reader announcements and the labels drawn onto the figures. Also TreeLab, Galaxy Explorer, School Rewards, geology and test-prep improvements."
   },
   {
     "id": "rel_20260902T225232Z_v1_3",
     "version": "1.3",
-    "canvas_url": "https://share.gemini.google/IUtuB8gDVOr8",
+    "retired": "2026-10-25",
     "released": "2026-09-02T22:52:32.561Z",
     "notes": "School Rewards (PBIS) module with Apps Script portal and manuals, Educator Evaluation manual and practice menu, Memory Aid privacy flow, expanded export lanes (PPTX, quiz worksheets), and STEM Lab upgrades: Anatomy 3D body map, Rocks workbench, Plate Tectonics rebuild, Be the Water pilot mode, Space Station, Geology Explorer. Faster boot (audio bank and standards load lazily) and broad contrast and accessibility passes. Stable bookmark URL: apomera.github.io/AlloFlow/launch.html"
   },
   {
     "id": "release-v1.2",
     "version": "1.2",
-    "canvas_url": "https://share.gemini.google/lSEhbVb9PiQL",
+    "retired": "2026-10-25",
     "released": "2026-06-24T00:00:00Z",
     "notes": "Pipeline reliability + accuracy: heavy/scanned-document AI pacing for smoother large-file remediation, the audit no longer stops early, reading-order-safe restyle + heading transforms, more honest conformance reporting, and the auto-remediation completion target raised to 95. Also adds a STEM coordinate-grid tool, expanded translations (numberline + coordgrid across 50+ languages), and Geology Explorer deep-earth + first-person upgrades."
   },
   {
     "id": "release-v1.1",
     "version": "1.1",
-    "canvas_url": "https://gemini.google.com/share/c8baf80a46cc",
+    "retired": "2026-10-25",
     "released": "2026-05-29T00:00:00Z",
     "notes": "Initial release for King Middle pilot. Stable bookmark URL: apomera.github.io/AlloFlow/launch.html"
   }
