@@ -150,11 +150,16 @@ function _alloCreateOptionalBrowserDeliveryPolicy(input, options) {
   });
 }
 
+// Gemini Canvas serves the page from a blob: URL; its assets come from the CDN.
+function _alloTrustedPageBase(location) {
+  var href = String((location && location.href) || '');
+  return /^https?:\/\//i.test(href) ? href : 'https://alloflow-cdn.pages.dev/';
+}
 function _alloOptionalBrowserPolicyForPage() {
   var location = window.location;
   var desktop = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname || '')
     && (location.pathname || '').indexOf('/app/') === 0;
-  return _alloCreateOptionalBrowserDeliveryPolicy(_alloOptionalBrowserDeliveryManifest, { baseUrl: location.href, isDesktopBundledApp: desktop });
+  return _alloCreateOptionalBrowserDeliveryPolicy(_alloOptionalBrowserDeliveryManifest, { baseUrl: _alloTrustedPageBase(location), isDesktopBundledApp: desktop });
 }
 
 function _alloConfigureTrustedBrowserScript(script, url, key) {
@@ -634,7 +639,7 @@ function _alloInstallRuntimeGraphHost(manifest, target) {
   var desktop = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(target.location.hostname || '')
     && (target.location.pathname || '').indexOf('/app/') === 0;
   var policy = _alloCreateRuntimeGraphDeliveryPolicy(manifest, {
-    baseUrl: target.location.href, isDesktopBundledApp: desktop,
+    baseUrl: _alloTrustedPageBase(target.location), isDesktopBundledApp: desktop,
     fetch: typeof target.fetch === 'function' ? target.fetch.bind(target) : null, crypto: target.crypto, Blob: target.Blob, allowNativeIntegrity: true,
     URL: target.URL, Worker: target.Worker, AbortController: target.AbortController,
     setTimeout: target.setTimeout.bind(target), clearTimeout: target.clearTimeout.bind(target),
@@ -2187,7 +2192,7 @@ function _alloConfigureBrowserDeliveryScript(script, url) {
   var candidate = usesLocal && typeof url === 'string'
     ? url.replace(/^https:\/\/alloflow-cdn\.pages\.dev\//, './') : url;
   return _alloCreateBrowserDeliveryPolicy(_alloBrowserDeliveryManifest, {
-    baseUrl: location.href,
+    baseUrl: _alloTrustedPageBase(location),
     isDesktopBundledApp: desktop,
     usesLocalModuleAssets: usesLocal
   }).configureScript(script, candidate);
@@ -15362,7 +15367,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     var pluginCdnBase = usesLocalModuleAssets ? './' : 'https://alloflow-cdn.pages.dev/';
     // The trusted host owns this policy; downloaded scripts cannot supply new hashes.
     const __alloBrowserDelivery = _alloCreateBrowserDeliveryPolicy(_alloBrowserDeliveryManifest, {
-      baseUrl: window.location.href, usesLocalModuleAssets: usesLocalModuleAssets,
+      baseUrl: _alloTrustedPageBase(window.location), usesLocalModuleAssets: usesLocalModuleAssets,
       isDesktopBundledApp: isDesktopBundledApp
     });
     // Diagnostics identity stamp (2026-07-20): the Diagnostics panel shows
