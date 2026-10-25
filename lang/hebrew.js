@@ -7974,7 +7974,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "העבר את כל {count} אל",
+    "move_shown_label": "העבר את {count} המוצגים אל",
+    "move_all_choose": "בחר יחידה",
+    "move_all_button": "העבר",
+    "move_all_no_units": "צור קודם תיקיית יחידה, ואז תוכל להעביר אליה את המשאבים האלה בבת אחת.",
+    "moved_all": "{count} משאבים הועברו ליחידה \"{unit}\".",
+    "moved_one": "משאב אחד הועבר ליחידה \"{unit}\".",
+    "move_uncategorized_on_create": "העבר גם את {count} המשאבים ללא קטגוריה ליחידה זו",
+    "move_uncategorized_on_create_one": "העבר גם את המשאב אחד ללא קטגוריה ליחידה זו",
+    "unit_created_moved": "היחידה \"{name}\" נוצרה והמשאבים ללא קטגוריה הועברו אליה."
   },
   "class_analytics": {
     "title": "אנליטיקת כיתה",

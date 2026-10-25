@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "리소스 {count}개 모두 이동:",
+    "move_shown_label": "표시된 리소스 {count}개 이동:",
+    "move_all_choose": "단원 선택",
+    "move_all_button": "이동",
+    "move_all_no_units": "먼저 단원 폴더를 만들면 이 리소스들을 한 번에 이동할 수 있습니다.",
+    "moved_all": "리소스 {count}개가 \"{unit}\" 단원으로 이동되었습니다.",
+    "moved_one": "리소스 1개가 \"{unit}\" 단원으로 이동되었습니다.",
+    "move_uncategorized_on_create": "미분류 리소스 {count}개도 이 단원으로 이동",
+    "move_uncategorized_on_create_one": "미분류 리소스 1개도 이 단원으로 이동",
+    "unit_created_moved": "\"{name}\" 단원이 생성되었고 미분류 리소스가 이동되었습니다."
   },
   "input": {
     "placeholder": "여기에 교육과정 텍스트를 붙여넣거나, 문서 또는 수업 슬라이드, 이미지, 오디오, 동영상을 업로드하거나, '원본 텍스트 생성'을 사용하세요...",

@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Matsa duka {count} zuwa",
+    "move_shown_label": "Matsa {count} da aka nuna zuwa",
+    "move_all_choose": "Zaɓi unit",
+    "move_all_button": "Matsa",
+    "move_all_no_units": "Da farko ƙirƙiri unit folder, sannan za ka iya matsa waɗannan albarkatu cikinsa a lokaci ɗaya.",
+    "moved_all": "An matsa albarkatu {count} zuwa \"{unit}\".",
+    "moved_one": "An matsa albarkatu 1 zuwa \"{unit}\".",
+    "move_uncategorized_on_create": "Kuma matsa albarkatu {count} da ba a rarrabasu ba zuwa wannan unit",
+    "move_uncategorized_on_create_one": "Kuma matsa albarkatu 1 da ba a rarrabasu ba zuwa wannan unit",
+    "unit_created_moved": "An ƙirƙiri \"{name}\" kuma an matsa albarkatun da ba a rarrabasu ba cikinsa."
   },
   "input": {
     "placeholder": "Manna rubutun tsarin karatu a nan, ɗora takarda ko silaidin darasi, hoto, sauti ko bidiyo, ko yi amfani da 'Ƙirƙiri Rubutun Tushe'...",

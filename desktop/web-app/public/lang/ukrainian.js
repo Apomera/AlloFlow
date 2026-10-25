@@ -6004,7 +6004,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Перемістити всі ({count}) до",
+    "move_shown_label": "Перемістити показані ({count}) до",
+    "move_all_choose": "Оберіть розділ",
+    "move_all_button": "Перемістити",
+    "move_all_no_units": "Спершу створіть теку розділу, і тоді зможете перемістити ці ресурси до неї одним кліком.",
+    "moved_all": "Ресурси ({count}) переміщено до розділу «{unit}».",
+    "moved_one": "1 ресурс переміщено до розділу «{unit}».",
+    "move_uncategorized_on_create": "Також перемістити до цього розділу ресурси без категорії ({count})",
+    "move_uncategorized_on_create_one": "Також перемістити до цього розділу 1 ресурс без категорії",
+    "unit_created_moved": "Розділ «{name}» створено, а ресурси без категорії переміщено до нього."
   },
   "input": {
     "placeholder": "Вставте сюди текст навчальної програми, завантажте документ або презентацію уроку, зображення, аудіо чи відео, або скористайтеся 'Створити вихідний текст'...",

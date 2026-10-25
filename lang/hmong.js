@@ -4744,7 +4744,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Tshais tag nrho {count} mus rau",
+    "move_shown_label": "Tshais {count} yam uas pom mus rau",
+    "move_all_choose": "Xaiv ib chav kawm",
+    "move_all_button": "Tshais",
+    "move_all_no_units": "Tsim ib daim nplaub tshev chav kawm ua ntej, ces koj thiaj tshais cov khoom siv no mus rau hauv ib zaug.",
+    "moved_all": "Tau tshais {count} yam khoom siv mus rau \"{unit}\".",
+    "moved_one": "Tau tshais 1 yam khoom siv mus rau \"{unit}\".",
+    "move_uncategorized_on_create": "Tshais {count} yam khoom siv Tsis Tau Cais mus rau hauv chav kawm no thiab",
+    "move_uncategorized_on_create_one": "Tshais 1 yam khoom siv Tsis Tau Cais mus rau hauv chav kawm no thiab",
+    "unit_created_moved": "Tau tsim \"{name}\" thiab tshais cov khoom siv Tsis Tau Cais mus rau hauv."
   },
   "input": {
     "placeholder": "Muab cov ntawv qhia ntawv txawb rau ntawm no, xa ib daim ntawv lossis cov slides ntawm zaj kawm, duab, suab lossis yees duab, lossis siv 'Tsim Cov Ntawv Keeb'...",

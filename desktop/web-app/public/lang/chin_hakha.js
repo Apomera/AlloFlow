@@ -3529,7 +3529,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Resources {count} zawng zawng Move ah",
+    "move_shown_label": "A lang {count} Move ah",
+    "move_all_choose": "Unit thim",
+    "move_all_button": "Move",
+    "move_all_no_units": "Unit folder ser hmasa hna, cutin hi resources hi pakhat in a chung ah na Move khawh lai.",
+    "moved_all": "Resources {count} cu \"{unit}\" ah Moved.",
+    "moved_one": "Resource 1 cu \"{unit}\" ah Moved.",
+    "move_uncategorized_on_create": "Uncategorized resources {count} hi unit hi ah Move ve",
+    "move_uncategorized_on_create_one": "Uncategorized resource 1 hi unit hi ah Move ve",
+    "unit_created_moved": "Unit \"{name}\" created i uncategorized resources a chung ah Moved."
   },
   "input": {
     "placeholder": "Paste curriculum text here, upload a document or lesson deck, image, audio, or video, or use 'Generate Source Text'...",

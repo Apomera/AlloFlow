@@ -4744,7 +4744,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Ilipat ang lahat ng {count} sa",
+    "move_shown_label": "Ilipat ang {count} na ipinapakita sa",
+    "move_all_choose": "Pumili ng yunit",
+    "move_all_button": "Ilipat",
+    "move_all_no_units": "Gumawa muna ng folder ng yunit, at saka mo maililipat nang sabay-sabay ang mga resource na ito rito.",
+    "moved_all": "Nailipat ang {count} resource sa \"{unit}\".",
+    "moved_one": "Nailipat ang 1 resource sa \"{unit}\".",
+    "move_uncategorized_on_create": "Ilipat din sa yunit na ito ang {count} resource na Walang Kategorya",
+    "move_uncategorized_on_create_one": "Ilipat din sa yunit na ito ang 1 resource na Walang Kategorya",
+    "unit_created_moved": "Nagawa ang \"{name}\" at nailipat dito ang mga resource na Walang Kategorya."
   },
   "input": {
     "placeholder": "I-paste dito ang teksto ng kurikulum, mag-upload ng dokumento o slides ng aralin, larawan, audio, o video, o gamitin ang 'Bumuo ng Source Text'...",

@@ -8795,7 +8795,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Deplase tout {count} nan",
+    "move_shown_label": "Deplase {count} ki parèt yo nan",
+    "move_all_choose": "Chwazi yon inite",
+    "move_all_button": "Deplase",
+    "move_all_no_units": "Kreye yon dosye inite anvan, apre sa w ap ka deplase resous sa yo ladan l yon sèl kou.",
+    "moved_all": "{count} resous deplase nan inite \"{unit}\".",
+    "moved_one": "1 resous deplase nan inite \"{unit}\".",
+    "move_uncategorized_on_create": "Deplase tou {count} resous Pa Kategori yo nan inite sa a",
+    "move_uncategorized_on_create_one": "Deplase tou 1 resous Pa Kategori a nan inite sa a",
+    "unit_created_moved": "Inite \"{name}\" kreye, epi resous Pa Kategori yo deplase ladan l."
   },
   "modals": {
     "student_welcome": "Espas Travay Elèv",

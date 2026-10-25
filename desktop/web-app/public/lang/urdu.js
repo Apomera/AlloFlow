@@ -7964,7 +7964,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "تمام {count} کو منتقل کریں",
+    "move_shown_label": "دکھائے گئے {count} کو منتقل کریں",
+    "move_all_choose": "اکائی منتخب کریں",
+    "move_all_button": "منتقل کریں",
+    "move_all_no_units": "پہلے اکائی کا فولڈر بنائیں، پھر یہ وسائل ایک ساتھ اس میں منتقل کر سکتے ہیں۔",
+    "moved_all": "{count} وسائل اکائی \"{unit}\" میں منتقل کر دیے گئے۔",
+    "moved_one": "1 وسیلہ اکائی \"{unit}\" میں منتقل کر دیا گیا۔",
+    "move_uncategorized_on_create": "غیر مصنَّف {count} وسائل کو بھی اس اکائی میں منتقل کریں",
+    "move_uncategorized_on_create_one": "غیر مصنَّف 1 وسیلہ بھی اس اکائی میں منتقل کریں",
+    "unit_created_moved": "اکائی \"{name}\" بنا دی گئی اور غیر مصنَّف وسائل اس میں منتقل کر دیے گئے۔"
   },
   "class_analytics": {
     "title": "تحلینہیںت جماعت",

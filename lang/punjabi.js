@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "ਸਾਰੇ {count} ਨੂੰ ਇੱਥੇ ਹਿਲਾਓ",
+    "move_shown_label": "ਦਿਖਾਏ ਗਏ {count} ਨੂੰ ਇੱਥੇ ਹਿਲਾਓ",
+    "move_all_choose": "ਇਕਾਈ ਚੁਣੋ",
+    "move_all_button": "ਹਿਲਾਓ",
+    "move_all_no_units": "ਪਹਿਲਾਂ ਇਕਾਈ ਫੋਲਡਰ ਬਣਾਓ, ਫਿਰ ਤੁਸੀਂ ਇਹ ਸਰੋਤ ਇੱਕੋ ਵਾਰ ਵਿੱਚ ਉਸ ਵਿੱਚ ਹਿਲਾ ਸਕਦੇ ਹੋ।",
+    "moved_all": "{count} ਸਰੋਤ \"{unit}\" ਵਿੱਚ ਹਿਲਾਏ ਗਏ।",
+    "moved_one": "1 ਸਰੋਤ \"{unit}\" ਵਿੱਚ ਹਿਲਾਇਆ ਗਿਆ।",
+    "move_uncategorized_on_create": "{count} ਅਣਵਰਗਿਤ ਸਰੋਤ ਵੀ ਇਸ ਇਕਾਈ ਵਿੱਚ ਹਿਲਾਓ",
+    "move_uncategorized_on_create_one": "1 ਅਣਵਰਗਿਤ ਸਰੋਤ ਵੀ ਇਸ ਇਕਾਈ ਵਿੱਚ ਹਿਲਾਓ",
+    "unit_created_moved": "\"{name}\" ਬਣਾਈ ਗਈ ਅਤੇ ਅਣਵਰਗਿਤ ਸਰੋਤ ਉਸ ਵਿੱਚ ਹਿਲਾ ਦਿੱਤੇ ਗਏ।"
   },
   "input": {
     "placeholder": "ਪਾਠਕ੍ਰਮ ਦਾ ਪਾਠ ਇੱਥੇ ਚਿਪਕਾਓ, ਦਸਤਾਵੇਜ਼ ਜਾਂ ਪਾਠ ਦੀਆਂ ਸਲਾਈਡਾਂ, ਚਿੱਤਰ, ਆਡੀਓ ਜਾਂ ਵੀਡੀਓ ਅੱਪਲੋਡ ਕਰੋ, ਜਾਂ 'ਸਰੋਤ ਪਾਠ ਬਣਾਓ' ਵਰਤੋ...",

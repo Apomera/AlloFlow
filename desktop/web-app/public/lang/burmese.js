@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "အားလုံး {count} ခုကို ရွှေ့ရန်",
+    "move_shown_label": "ပြထားသော {count} ခုကို ရွှေ့ရန်",
+    "move_all_choose": "ယူနစ်တစ်ခု ရွေးပါ",
+    "move_all_button": "ရွှေ့ပါ",
+    "move_all_no_units": "ယူနစ် ဖိုင်တွဲကို အရင်ဖန်တီးပါ၊ ထို့နောက် ဤအရင်းအမြစ်များကို တစ်ပြိုင်နက် ရွှေ့နိုင်ပါမည်။",
+    "moved_all": "အရင်းအမြစ် {count} ခုကို \"{unit}\" သို့ ရွှေ့လိုက်ပါပြီ။",
+    "moved_one": "အရင်းအမြစ် ၁ ခုကို \"{unit}\" သို့ ရွှေ့လိုက်ပါပြီ။",
+    "move_uncategorized_on_create": "အမျိုးအစားမသတ်မှတ်ထားသော အရင်းအမြစ် {count} ခုကိုလည်း ဤယူနစ်သို့ ရွှေ့ပါ",
+    "move_uncategorized_on_create_one": "အမျိုးအစားမသတ်မှတ်ထားသော အရင်းအမြစ် ၁ ခုကိုလည်း ဤယူနစ်သို့ ရွှေ့ပါ",
+    "unit_created_moved": "\"{name}\" ကို ဖန်တီးပြီး အမျိုးအစားမသတ်မှတ်ထားသော အရင်းအမြစ်များကို ၎င်းထဲသို့ ရွှေ့လိုက်ပါပြီ။"
   },
   "input": {
     "placeholder": "သင်ရိုးစာသားကို ဤနေရာတွင် ကူးထည့်ပါ၊ စာရွက်စာတမ်း သို့မဟုတ် သင်ခန်းစာ ဆလိုက်၊ ပုံ၊ အသံ သို့မဟုတ် ဗီဒီယို တင်ပါ၊ သို့မဟုတ် 'မူရင်းစာသား ဖန်တီးရန်' ကို သုံးပါ...",

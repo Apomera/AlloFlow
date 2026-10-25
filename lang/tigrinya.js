@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "ኩሎም {count} ኣንቀሳቐስ ናብ",
+    "move_shown_label": "እቶም ዝርኣዩ {count} ኣንቀሳቐስ ናብ",
+    "move_all_choose": "ኣሃዱ ምረጽ",
+    "move_all_button": "ኣንቀሳቐስ",
+    "move_all_no_units": "ቅድሚ ኩሉ ኣሃዱ ፎልደር ፍጠር፣ ድሕሪኡ እዞም ጸጋታት ብሓባር ናብኡ ከተንቀሳቅሶም ትኽእል።",
+    "moved_all": "{count} ጸጋታት ናብ {unit} ተኣንቂፉ።",
+    "moved_one": "1 ጸጋ ናብ {unit} ተኣንቂፉ።",
+    "move_uncategorized_on_create": "እቶም ዘይተመደቡ {count} ጸጋታት ከኣ ናብዚ ኣሃዱ ኣንቀሳቐስ",
+    "move_uncategorized_on_create_one": "እቲ ዘይተመደበ 1 ጸጋ ከኣ ናብዚ ኣሃዱ ኣንቀሳቐስ",
+    "unit_created_moved": "{name} ተፈጢሩ፣ እቶም ዘይተመደቡ ጸጋታት ድማ ናብኡ ተኣንቂፎም።"
   },
   "input": {
     "placeholder": "ናይ ስርዓተ ትምህርቲ ጽሑፍ ኣብዚ ለጥፍ፣ ሰነድ ወይ ናይ ትምህርቲ ስላይዳት፣ ስእሊ፣ ኦዲዮ ወይ ቪድዮ ጸዓን፣ ወይ 'ምንጪ ጽሑፍ ፍጠር' ተጠቐም...",

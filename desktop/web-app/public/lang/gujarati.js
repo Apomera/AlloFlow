@@ -4751,7 +4751,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "બધા {count} ને આમાં ખસેડો",
+    "move_shown_label": "બતાવેલા {count} ને આમાં ખસેડો",
+    "move_all_choose": "એકમ પસંદ કરો",
+    "move_all_button": "ખસેડો",
+    "move_all_no_units": "પહેલા એકમ ફોલ્ડર બનાવો, પછી તમે આ સંસાધનો એકસાથે તેમાં ખસેડી શકશો.",
+    "moved_all": "{count} સંસાધનો \"{unit}\" માં ખસેડ્યા.",
+    "moved_one": "1 સંસાધન \"{unit}\" માં ખસેડ્યું.",
+    "move_uncategorized_on_create": "વર્ગીકૃત નથી તેવા {count} સંસાધનો પણ આ એકમમાં ખસેડો",
+    "move_uncategorized_on_create_one": "વર્ગીકૃત નથી તેવું 1 સંસાધન પણ આ એકમમાં ખસેડો",
+    "unit_created_moved": "\"{name}\" બનાવ્યું અને વર્ગીકૃત નથી તેવા સંસાધનો તેમાં ખસેડ્યા."
   },
   "input": {
     "placeholder": "અહીં અભ્યાસક્રમનું લખાણ પેસ્ટ કરો, દસ્તાવેજ કે પાઠની સ્લાઇડ્સ, છબી, ઓડિયો કે વીડિયો અપલોડ કરો, અથવા 'સ્રોત લખાણ બનાવો' વાપરો...",

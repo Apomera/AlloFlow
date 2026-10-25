@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Gbé gbogbo {count} lọ sí",
+    "move_shown_label": "Gbé {count} tí a fihàn lọ sí",
+    "move_all_choose": "Yan ẹ̀ka kan",
+    "move_all_button": "Gbé",
+    "move_all_no_units": "Ṣẹ̀dá fóldà ẹ̀ka kan ná, lẹ́yìn náà o lè gbé àwọn ohun èlò wọ̀nyí sínú rẹ̀ lẹ́ẹ̀kan náà.",
+    "moved_all": "A ti gbé àwọn ohun èlò {count} lọ sí ẹ̀ka \"{unit}\".",
+    "moved_one": "A ti gbé ohun èlò 1 lọ sí ẹ̀ka \"{unit}\".",
+    "move_uncategorized_on_create": "Gbé àwọn ohun èlò {count} tí kò ní ẹ̀ka sínú ẹ̀ka yìí pẹ̀lú",
+    "move_uncategorized_on_create_one": "Gbé ohun èlò 1 tí kò ní ẹ̀ka sínú ẹ̀ka yìí pẹ̀lú",
+    "unit_created_moved": "A ti ṣẹ̀dá ẹ̀ka \"{name}\" a sì ti gbé àwọn ohun èlò tí kò ní ẹ̀ka sínú rẹ̀."
   },
   "input": {
     "placeholder": "Lẹ ọ̀rọ̀ ètò ẹ̀kọ́ síbí, gbé àkọsílẹ̀ tàbí àwọn ojú ìwé ẹ̀kọ́, àwòrán, ìró tàbí fídíò sókè, tàbí lo 'Ṣẹ̀dá Ọ̀rọ̀ Orísun'...",

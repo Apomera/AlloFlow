@@ -5941,7 +5941,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Mover todos os {count} para",
+    "move_shown_label": "Mover os {count} apresentados para",
+    "move_all_choose": "Escolha uma unidade",
+    "move_all_button": "Mover",
+    "move_all_no_units": "Crie primeiro uma pasta de unidade; depois poderá mover estes recursos para ela de uma só vez.",
+    "moved_all": "Movidos {count} recursos para a unidade «{unit}».",
+    "moved_one": "Movido 1 recurso para a unidade «{unit}».",
+    "move_uncategorized_on_create": "Mover também os {count} recursos sem categoria para esta unidade",
+    "move_uncategorized_on_create_one": "Mover também 1 recurso sem categoria para esta unidade",
+    "unit_created_moved": "Unidade «{name}» criada e recursos sem categoria movidos para ela."
   },
   "input": {
     "placeholder": "Cole aqui o texto do currículo, carregue um documento ou os diapositivos da aula, imagem, áudio ou vídeo, ou use 'Gerar Texto Fonte'...",

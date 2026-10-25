@@ -9229,7 +9229,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "ټول {count} ته انتقال کړئ",
+    "move_shown_label": "ښودل شوي {count} ته انتقال کړئ",
+    "move_all_choose": "یو واحد غوره کړئ",
+    "move_all_button": "انتقال",
+    "move_all_no_units": "لومړی د واحد فولډر جوړ کړئ، بیا کولی شئ دا سرچینې په یو ځل ورته انتقال کړئ.",
+    "moved_all": "{count} سرچینې \"{unit}\" ته انتقال شوې.",
+    "moved_one": "یوه سرچینه \"{unit}\" ته انتقال شوه.",
+    "move_uncategorized_on_create": "{count} غیر مصنَّف سرچینې هم دې واحد ته انتقال کړئ",
+    "move_uncategorized_on_create_one": "یوه غیر مصنَّف سرچینه هم دې واحد ته انتقال کړئ",
+    "unit_created_moved": "\"{name}\" جوړ شو او غیر مصنَّف سرچینې ورته انتقال شوې."
   },
   "class_analytics": {
     "title": "تحلیلات ټولګی",

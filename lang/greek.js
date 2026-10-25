@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Μετακίνηση και των {count} σε",
+    "move_shown_label": "Μετακίνηση των {count} που εμφανίζονται σε",
+    "move_all_choose": "Επιλέξτε ενότητα",
+    "move_all_button": "Μετακίνηση",
+    "move_all_no_units": "Δημιουργήστε πρώτα έναν φάκελο ενότητας και μετά θα μπορείτε να μετακινήσετε εκεί αυτούς τους πόρους μονομιάς.",
+    "moved_all": "Μετακινήθηκαν {count} πόροι στην ενότητα \"{unit}\".",
+    "moved_one": "Μετακινήθηκε 1 πόρος στην ενότητα \"{unit}\".",
+    "move_uncategorized_on_create": "Μετακίνηση και των {count} πόρων χωρίς κατηγορία σε αυτή την ενότητα",
+    "move_uncategorized_on_create_one": "Μετακίνηση και του 1 πόρου χωρίς κατηγορία σε αυτή την ενότητα",
+    "unit_created_moved": "Η ενότητα \"{name}\" δημιουργήθηκε και οι πόροι χωρίς κατηγορία μετακινήθηκαν σε αυτήν."
   },
   "input": {
     "placeholder": "Επικολλήστε εδώ το κείμενο του προγράμματος σπουδών, ανεβάστε ένα έγγραφο ή μια παρουσίαση μαθήματος, εικόνα, ήχο ή βίντεο, ή χρησιμοποιήστε το 'Δημιουργία κειμένου πηγής'...",

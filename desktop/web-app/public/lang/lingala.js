@@ -3523,7 +3523,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Mema biloko nyonso {count} na",
+    "move_shown_label": "Mema biloko {count} oyo emonisami na",
+    "move_all_choose": "Pona lisanga",
+    "move_all_button": "Mema",
+    "move_all_no_units": "Salá liboso lisanga ya dosie, sima okoki komema biloko oyo na kati na yango mbala moko.",
+    "moved_all": "Biloko {count} ememami na lisanga \"{unit}\".",
+    "moved_one": "Eloko 1 ememami na lisanga \"{unit}\".",
+    "move_uncategorized_on_create": "Mema lisusu biloko {count} ezangi lisanga na lisanga oyo",
+    "move_uncategorized_on_create_one": "Mema lisusu eloko 1 ezangi lisanga na lisanga oyo",
+    "unit_created_moved": "Lisanga \"{name}\" esalemi mpe biloko ezangi lisanga ememami na kati na yango."
   },
   "input": {
     "placeholder": "Kotisa awa makomi ya programme ya kelasi, tinda mokanda to bililingi ya liteya, elilingi, lokito to video, to salela 'Kosala Makomi ya Ebandeli'...",

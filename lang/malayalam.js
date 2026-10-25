@@ -4751,7 +4751,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "എല്ലാ {count} എണ്ണവും ഇതിലേക്ക് മാറ്റുക",
+    "move_shown_label": "കാണിച്ചിരിക്കുന്ന {count} എണ്ണം ഇതിലേക്ക് മാറ്റുക",
+    "move_all_choose": "ഒരു യൂണിറ്റ് തിരഞ്ഞെടുക്കുക",
+    "move_all_button": "മാറ്റുക",
+    "move_all_no_units": "ആദ്യം ഒരു യൂണിറ്റ് ഫോൾഡർ സൃഷ്ടിക്കുക; എന്നിട്ട് ഈ റിസോഴ്സുകൾ ഒരുമിച്ച് അതിലേക്ക് മാറ്റാം.",
+    "moved_all": "\"{unit}\" യൂണിറ്റിലേക്ക് {count} റിസോഴ്സുകൾ മാറ്റി.",
+    "moved_one": "\"{unit}\" യൂണിറ്റിലേക്ക് 1 റിസോഴ്സ് മാറ്റി.",
+    "move_uncategorized_on_create": "വർഗ്ഗീകരിക്കാത്ത {count} റിസോഴ്സുകളും ഈ യൂണിറ്റിലേക്ക് മാറ്റുക",
+    "move_uncategorized_on_create_one": "വർഗ്ഗീകരിക്കാത്ത 1 റിസോഴ്സും ഈ യൂണിറ്റിലേക്ക് മാറ്റുക",
+    "unit_created_moved": "\"{name}\" യൂണിറ്റ് സൃഷ്ടിച്ച് വർഗ്ഗീകരിക്കാത്ത റിസോഴ്സുകൾ അതിലേക്ക് മാറ്റി."
   },
   "input": {
     "placeholder": "പാഠ്യപദ്ധതി വാചകം ഇവിടെ ഒട്ടിക്കുക, ഒരു പ്രമാണമോ പാഠ സ്ലൈഡുകളോ, ചിത്രം, ഓഡിയോ അല്ലെങ്കിൽ വീഡിയോ അപ്‌ലോഡ് ചെയ്യുക, അല്ലെങ്കിൽ 'ഉറവിട വാചകം സൃഷ്ടിക്കുക' ഉപയോഗിക്കുക...",

@@ -7099,7 +7099,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Mover los {count} a",
+    "move_shown_label": "Mover los {count} mostrados a",
+    "move_all_choose": "Elige una unidad",
+    "move_all_button": "Mover",
+    "move_all_no_units": "Primero crea una carpeta de unidad y luego podrás mover estos recursos a ella de una sola vez.",
+    "moved_all": "Se movieron {count} recursos a \"{unit}\".",
+    "moved_one": "Se movió 1 recurso a \"{unit}\".",
+    "move_uncategorized_on_create": "Mover también a esta unidad los {count} recursos sin categoría",
+    "move_uncategorized_on_create_one": "Mover también a esta unidad el 1 recurso sin categoría",
+    "unit_created_moved": "Se creó \"{name}\" y se movieron a ella los recursos sin categoría."
   },
   "class_analytics": {
     "title": "Analítica de Clase",

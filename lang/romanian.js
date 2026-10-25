@@ -4686,7 +4686,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Mută toate cele {count} la",
+    "move_shown_label": "Mută cele {count} afișate la",
+    "move_all_choose": "Alege o unitate",
+    "move_all_button": "Mută",
+    "move_all_no_units": "Creează mai întâi un dosar de unitate, apoi poți muta aceste resurse în el dintr-o dată.",
+    "moved_all": "{count} resurse mutate la \"{unit}\".",
+    "moved_one": "1 resursă mutată la \"{unit}\".",
+    "move_uncategorized_on_create": "Mută în această unitate și cele {count} resurse necategorisite",
+    "move_uncategorized_on_create_one": "Mută în această unitate și resursa necategorisită",
+    "unit_created_moved": "Unitatea \"{name}\" a fost creată, iar resursele necategorisite au fost mutate în ea."
   },
   "input": {
     "placeholder": "Lipește aici textul din programă, încarcă un document sau o prezentare a lecției, o imagine, audio sau video, ori folosește 'Generează text sursă'...",

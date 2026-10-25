@@ -8404,7 +8404,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "{count} 件すべてを移動先:",
+    "move_shown_label": "表示中の {count} 件を移動先:",
+    "move_all_choose": "ユニットを選択",
+    "move_all_button": "移動",
+    "move_all_no_units": "先にユニットフォルダを作成すると、これらのリソースをまとめて移動できます。",
+    "moved_all": "{count} 件のリソースを「{unit}」に移動しました。",
+    "moved_one": "1 件のリソースを「{unit}」に移動しました。",
+    "move_uncategorized_on_create": "未分類のリソース {count} 件もこのユニットに移動する",
+    "move_uncategorized_on_create_one": "未分類のリソース 1 件もこのユニットに移動する",
+    "unit_created_moved": "ユニット「{name}」を作成し、未分類のリソースを移動しました。"
   },
   "mastery": {
     "start_check": "マスターチェック",

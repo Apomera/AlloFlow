@@ -4755,7 +4755,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "সব {count}টি এখানে সরান",
+    "move_shown_label": "দেখানো {count}টি এখানে সরান",
+    "move_all_choose": "একটি unit বেছে নিন",
+    "move_all_button": "সরান",
+    "move_all_no_units": "প্রথমে একটি unit ফোল্ডার তৈরি করুন, তারপর এই রিসোর্সগুলো একসাথে তাতে সরাতে পারবেন।",
+    "moved_all": "{count}টি রিসোর্স \"{unit}\"-এ সরানো হয়েছে।",
+    "moved_one": "1টি রিসোর্স \"{unit}\"-এ সরানো হয়েছে।",
+    "move_uncategorized_on_create": "{count}টি অশ্রেণীবদ্ধ রিসোর্সও এই unit-এ সরান",
+    "move_uncategorized_on_create_one": "1টি অশ্রেণীবদ্ধ রিসোর্সও এই unit-এ সরান",
+    "unit_created_moved": "Unit \"{name}\" তৈরি হয়েছে এবং অশ্রেণীবদ্ধ রিসোর্সগুলো তাতে সরানো হয়েছে।"
   },
   "input": {
     "placeholder": "এখানে পাঠ্যক্রমের লেখা পেস্ট করুন, একটি নথি বা পাঠের স্লাইড, ছবি, অডিও বা ভিডিও আপলোড করুন, অথবা 'উৎস লেখা তৈরি করুন' ব্যবহার করুন...",

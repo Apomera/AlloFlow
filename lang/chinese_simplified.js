@@ -12204,7 +12204,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "将全部 {count} 项移到",
+    "move_shown_label": "将显示的 {count} 项移到",
+    "move_all_choose": "选择单元",
+    "move_all_button": "移动",
+    "move_all_no_units": "请先创建单元文件夹，然后即可一次性将这些资源移入其中。",
+    "moved_all": "已将 {count} 个资源移到「{unit}」。",
+    "moved_one": "已将 1 个资源移到「{unit}」。",
+    "move_uncategorized_on_create": "同时将 {count} 个未分类资源移入此单元",
+    "move_uncategorized_on_create_one": "同时将 1 个未分类资源移入此单元",
+    "unit_created_moved": "已创建「{name}」，并将未分类资源移入其中。"
   },
   "mastery": {
     "start_check": "精熟度检查",

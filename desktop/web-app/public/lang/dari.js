@@ -9237,7 +9237,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "انتقال همه {count} مورد به",
+    "move_shown_label": "انتقال {count} مورد نمایش‌داده‌شده به",
+    "move_all_choose": "یک واحد انتخاب کنید",
+    "move_all_button": "انتقال",
+    "move_all_no_units": "نخست یک پوشه واحد بسازید، سپس می‌توانید این منابع را یک‌باره به آن منتقل کنید.",
+    "moved_all": "{count} منبع به «{unit}» منتقل شد.",
+    "moved_one": "۱ منبع به «{unit}» منتقل شد.",
+    "move_uncategorized_on_create": "{count} منبع غیر مصنَّف را نیز به این واحد منتقل کنید",
+    "move_uncategorized_on_create_one": "۱ منبع غیر مصنَّف را نیز به این واحد منتقل کنید",
+    "unit_created_moved": "«{name}» ساخته شد و منابع غیر مصنَّف به آن منتقل شدند."
   },
   "class_analytics": {
     "title": "تحلیخیرت صنف",

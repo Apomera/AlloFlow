@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Bugharịa ha niile {count} na",
+    "move_shown_label": "Bugharịa {count} a na-egosi na",
+    "move_all_choose": "Họrọ nkebi",
+    "move_all_button": "Bugharịa",
+    "move_all_no_units": "Kee nkebi folda mbụ, mgbe ahụ ị ga-ebugharị ihe enyemaka ndị a niile n'ime ya ozugbo.",
+    "moved_all": "Ebugharịla ihe enyemaka {count} na nkebi \"{unit}\".",
+    "moved_one": "Ebugharịla ihe enyemaka 1 na nkebi \"{unit}\".",
+    "move_uncategorized_on_create": "Bugharịkwa ihe enyemaka {count} edobeghị n'òtù n'ime nkebi a",
+    "move_uncategorized_on_create_one": "Bugharịkwa ihe enyemaka 1 edobeghị n'òtù n'ime nkebi a",
+    "unit_created_moved": "Kere nkebi \"{name}\" ma bugharịa ihe enyemaka edobeghị n'òtù n'ime ya."
   },
   "input": {
     "placeholder": "Mado ederede usoro ọmụmụ ebe a, bulite akwụkwọ ma ọ bụ slide nkuzi, foto, ụda ma ọ bụ vidiyo, ma ọ bụ jiri 'Mepụta Ederede Isi Mmalite'...",

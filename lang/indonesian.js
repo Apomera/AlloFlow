@@ -4745,7 +4745,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Pindahkan semua {count} ke",
+    "move_shown_label": "Pindahkan {count} yang ditampilkan ke",
+    "move_all_choose": "Pilih unit",
+    "move_all_button": "Pindahkan",
+    "move_all_no_units": "Buat folder unit terlebih dahulu, lalu Anda dapat memindahkan sumber daya ini ke dalamnya sekaligus.",
+    "moved_all": "{count} sumber daya dipindahkan ke \"{unit}\".",
+    "moved_one": "1 sumber daya dipindahkan ke \"{unit}\".",
+    "move_uncategorized_on_create": "Pindahkan juga {count} sumber daya tanpa kategori ke unit ini",
+    "move_uncategorized_on_create_one": "Pindahkan juga 1 sumber daya tanpa kategori ke unit ini",
+    "unit_created_moved": "Unit \"{name}\" dibuat dan sumber daya tanpa kategori dipindahkan ke dalamnya."
   },
   "input": {
     "placeholder": "Tempel teks kurikulum di sini, unggah dokumen atau salindia pelajaran, gambar, audio, atau video, atau gunakan 'Buat Teks Sumber'...",

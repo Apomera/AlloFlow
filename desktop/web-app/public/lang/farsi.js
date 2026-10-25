@@ -9237,7 +9237,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "نقل همه {count} منبع به",
+    "move_shown_label": "نقل {count} منبع نمایش‌داده‌شده به",
+    "move_all_choose": "یک واحد انتخاب کنید",
+    "move_all_button": "نقل",
+    "move_all_no_units": "ابتدا یک پوشه واحد ایجاد کنید، سپس می‌توانید این منابع را یکجا به آن منتقل کنید.",
+    "moved_all": "{count} منبع به «{unit}» منتقل شد.",
+    "moved_one": "یک منبع به «{unit}» منتقل شد.",
+    "move_uncategorized_on_create": "همچنین {count} منبع غیر مصنَّف به این واحد منتقل شوند",
+    "move_uncategorized_on_create_one": "همچنین یک منبع غیر مصنَّف به این واحد منتقل شود",
+    "unit_created_moved": "«{name}» ایجاد شد و منابع غیر مصنَّف به آن منتقل شدند."
   },
   "class_analytics": {
     "title": "تحلیخیرت پایه",

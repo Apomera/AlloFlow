@@ -5936,7 +5936,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Przenieś wszystkie zasoby ({count}) do",
+    "move_shown_label": "Przenieś wyświetlone zasoby ({count}) do",
+    "move_all_choose": "Wybierz jednostkę",
+    "move_all_button": "Przenieś",
+    "move_all_no_units": "Najpierw utwórz folder jednostki, a potem będzie można przenieść do niego te zasoby naraz.",
+    "moved_all": "Przeniesiono zasoby ({count}) do jednostki \"{unit}\".",
+    "moved_one": "Przeniesiono 1 zasób do jednostki \"{unit}\".",
+    "move_uncategorized_on_create": "Przenieś też zasoby bez kategorii ({count}) do tej jednostki",
+    "move_uncategorized_on_create_one": "Przenieś też 1 zasób bez kategorii do tej jednostki",
+    "unit_created_moved": "Utworzono jednostkę \"{name}\" i przeniesiono do niej zasoby bez kategorii."
   },
   "input": {
     "placeholder": "Wklej tutaj tekst programu nauczania, prześlij dokument lub prezentację lekcji, obraz, audio albo wideo, lub użyj 'Wygeneruj tekst źródłowy'...",

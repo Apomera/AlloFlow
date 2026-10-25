@@ -6642,7 +6642,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "ຍ້າຍທັງ {count} ໄປ",
+    "move_shown_label": "ຍ້າຍ {count} ທີ່ສະແດງຢູ່ ໄປ",
+    "move_all_choose": "ເລືອກໜ່ວຍ",
+    "move_all_button": "ຍ້າຍ",
+    "move_all_no_units": "ສ້າງໂຟນເດີໜ່ວຍກ່ອນ ແລ້ວທ່ານຈະຍ້າຍຊັບພະຍາກອນເຫຼົ່ານີ້ເຂົ້າໄປພ້ອມກັນໄດ້",
+    "moved_all": "ຍ້າຍຊັບພະຍາກອນ {count} ລາຍການໄປໜ່ວຍ \"{unit}\" ແລ້ວ",
+    "moved_one": "ຍ້າຍຊັບພະຍາກອນ 1 ລາຍການໄປໜ່ວຍ \"{unit}\" ແລ້ວ",
+    "move_uncategorized_on_create": "ຍ້າຍຊັບພະຍາກອນ {count} ລາຍການທີ່ບໍ່ໄດ້ຈັດໝວດເຂົ້າໃນໜ່ວຍນີ້ນຳ",
+    "move_uncategorized_on_create_one": "ຍ້າຍຊັບພະຍາກອນ 1 ລາຍການທີ່ບໍ່ໄດ້ຈັດໝວດເຂົ້າໃນໜ່ວຍນີ້ນຳ",
+    "unit_created_moved": "ສ້າງໜ່ວຍ \"{name}\" ແລະຍ້າຍຊັບພະຍາກອນທີ່ບໍ່ໄດ້ຈັດໝວດເຂົ້າໄປແລ້ວ"
   },
   "visuals": {
     "title": "ສະໜັບສະໜຸນດ້ວຍຮູບ",

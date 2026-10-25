@@ -6003,7 +6003,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Переместить все ({count}) в",
+    "move_shown_label": "Переместить показанные ({count}) в",
+    "move_all_choose": "Выберите юнит",
+    "move_all_button": "Переместить",
+    "move_all_no_units": "Сначала создайте папку юнита, и тогда сможете переместить в неё все эти ресурсы сразу.",
+    "moved_all": "Ресурсов перемещено: {count}. Юнит: «{unit}».",
+    "moved_one": "Ресурс перемещён в юнит «{unit}».",
+    "move_uncategorized_on_create": "Также переместить в этот юнит ресурсы без категории ({count})",
+    "move_uncategorized_on_create_one": "Также переместить в этот юнит ресурс без категории (1)",
+    "unit_created_moved": "Юнит «{name}» создан, ресурсы без категории перемещены в него."
   },
   "input": {
     "placeholder": "Вставьте сюда текст учебной программы, загрузите документ или презентацию урока, изображение, аудио или видео, либо используйте 'Создать исходный текст'...",

@@ -5948,7 +5948,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Movi ĉiujn {count} al",
+    "move_shown_label": "Movi la {count} montritajn al",
+    "move_all_choose": "Elektu unuon",
+    "move_all_button": "Movi",
+    "move_all_no_units": "Unue kreu unuodosierujon, poste vi povos movi ĉi tiujn rimedojn en ĝin samtempe.",
+    "moved_all": "{count} rimedoj movitaj al \"{unit}\".",
+    "moved_one": "1 rimedo movita al \"{unit}\".",
+    "move_uncategorized_on_create": "Movi ankaŭ la {count} nekategoriigitajn rimedojn en ĉi tiun unuon",
+    "move_uncategorized_on_create_one": "Movi ankaŭ la 1 nekategoriigitan rimedon en ĉi tiun unuon",
+    "unit_created_moved": "\"{name}\" kreita, kaj la nekategoriigitaj rimedoj movitaj en ĝin."
   },
   "input": {
     "placeholder": "Algluu ĉi tie la instruplanan tekston, alŝutu dokumenton aŭ lecionan prezentaĵon, bildon, sonon aŭ videon, aŭ uzu 'Generi Fontan Tekston'...",

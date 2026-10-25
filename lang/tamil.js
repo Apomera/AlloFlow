@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "மொத்தம் {count} ஐயும் நகர்த்து:",
+    "move_shown_label": "காட்டப்பட்டுள்ள {count} ஐயும் நகர்த்து:",
+    "move_all_choose": "அலகைத் தேர்ந்தெடுக்கவும்",
+    "move_all_button": "நகர்த்து",
+    "move_all_no_units": "முதலில் ஓர் அலகு கோப்புறையை உருவாக்குங்கள்; பிறகு இந்த வளங்களை ஒரே நேரத்தில் அதற்குள் நகர்த்தலாம்.",
+    "moved_all": "{count} வளங்கள் \"{unit}\" என்பதற்கு நகர்த்தப்பட்டன.",
+    "moved_one": "1 வளம் \"{unit}\" என்பதற்கு நகர்த்தப்பட்டது.",
+    "move_uncategorized_on_create": "வகைப்படுத்தப்படாத {count} வளங்களையும் இந்த அலகுக்கு நகர்த்து",
+    "move_uncategorized_on_create_one": "வகைப்படுத்தப்படாத 1 வளத்தையும் இந்த அலகுக்கு நகர்த்து",
+    "unit_created_moved": "\"{name}\" உருவாக்கப்பட்டது; வகைப்படுத்தப்படாத வளங்கள் அதற்குள் நகர்த்தப்பட்டன."
   },
   "input": {
     "placeholder": "பாடத்திட்ட உரையை இங்கே ஒட்டவும், ஆவணம் அல்லது பாட ஸ்லைடுகள், படம், ஒலி அல்லது வீடியோவைப் பதிவேற்றவும், அல்லது 'மூல உரையை உருவாக்கு' ஐப் பயன்படுத்தவும்...",

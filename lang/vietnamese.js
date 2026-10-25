@@ -4749,7 +4749,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Chuyển tất cả {count} mục đến",
+    "move_shown_label": "Chuyển {count} mục đang hiển thị đến",
+    "move_all_choose": "Chọn một đơn vị",
+    "move_all_button": "Chuyển",
+    "move_all_no_units": "Hãy tạo một thư mục đơn vị trước, rồi bạn có thể chuyển các tài nguyên này vào đó cùng lúc.",
+    "moved_all": "Đã chuyển {count} tài nguyên đến đơn vị \"{unit}\".",
+    "moved_one": "Đã chuyển 1 tài nguyên đến đơn vị \"{unit}\".",
+    "move_uncategorized_on_create": "Chuyển luôn {count} tài nguyên chưa phân loại vào đơn vị này",
+    "move_uncategorized_on_create_one": "Chuyển luôn 1 tài nguyên chưa phân loại vào đơn vị này",
+    "unit_created_moved": "Đã tạo đơn vị \"{name}\" và chuyển các tài nguyên chưa phân loại vào đó."
   },
   "input": {
     "placeholder": "Dán văn bản chương trình học vào đây, tải lên tài liệu hoặc bài trình chiếu, hình ảnh, âm thanh hay video, hoặc dùng 'Tạo Văn bản Nguồn'...",

@@ -12017,7 +12017,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "將全部 {count} 項移到",
+    "move_shown_label": "將顯示的 {count} 項移到",
+    "move_all_choose": "選擇單元",
+    "move_all_button": "移動",
+    "move_all_no_units": "請先創建單元文件夾，然後即可一次性將這些資源移入其中。",
+    "moved_all": "已將 {count} 個資源移到「{unit}」。",
+    "moved_one": "已將 1 個資源移到「{unit}」。",
+    "move_uncategorized_on_create": "同時將 {count} 個未分類資源移入此單元",
+    "move_uncategorized_on_create_one": "同時將 1 個未分類資源移入此單元",
+    "unit_created_moved": "已創建「{name}」，並將未分類資源移入其中。"
   },
   "mastery": {
     "start_check": "精熟度檢查",

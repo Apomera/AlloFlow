@@ -3529,7 +3529,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Move {count} ducu i",
+    "move_shown_label": "Move {count} ma nyuto i",
+    "move_all_choose": "Yer unit",
+    "move_all_button": "Move",
+    "move_all_no_units": "Chwak unit folder mukwongo, dok i twero moko resources magi i kare acel.",
+    "moved_all": "Jami {count} gimoko i \"{unit}\".",
+    "moved_one": "Jami 1 gimoko i \"{unit}\".",
+    "move_uncategorized_on_create": "Moko bene jami {count} ma pe gin i category i unit man",
+    "move_uncategorized_on_create_one": "Moko bene jami 1 ma pe i category i unit man",
+    "unit_created_moved": "Unit \"{name}\" gichwako, dok jami ma pe gin i category gimoko i iye."
   },
   "input": {
     "placeholder": "Paste curriculum text here, upload a document or lesson deck, image, audio, or video, or use 'Generate Source Text'...",

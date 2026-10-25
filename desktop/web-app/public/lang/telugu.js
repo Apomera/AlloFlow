@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "మొత్తం {count} వాటిని తరలించు:",
+    "move_shown_label": "చూపిన {count} వాటిని తరలించు:",
+    "move_all_choose": "యూనిట్‌ను ఎంచుకోండి",
+    "move_all_button": "తరలించు",
+    "move_all_no_units": "ముందుగా యూనిట్ ఫోల్డర్‌ను సృష్టించండి, ఆపై ఈ వనరులను ఒకేసారి అందులోకి తరలించవచ్చు.",
+    "moved_all": "{count} వనరులు {unit} కు తరలించబడ్డాయి.",
+    "moved_one": "1 వనరు {unit} కు తరలించబడింది.",
+    "move_uncategorized_on_create": "వర్గీకరించబడని {count} వనరులను కూడా ఈ యూనిట్‌లోకి తరలించు",
+    "move_uncategorized_on_create_one": "వర్గీకరించబడని 1 వనరును కూడా ఈ యూనిట్‌లోకి తరలించు",
+    "unit_created_moved": "{name} సృష్టించబడింది, వర్గీకరించబడని వనరులు అందులోకి తరలించబడ్డాయి."
   },
   "input": {
     "placeholder": "పాఠ్యప్రణాళిక వచనాన్ని ఇక్కడ అతికించండి, పత్రం లేదా పాఠ స్లయిడ్‌లు, చిత్రం, ఆడియో లేదా వీడియోను అప్‌లోడ్ చేయండి, లేదా 'మూల వచనాన్ని రూపొందించు' ఉపయోగించండి...",

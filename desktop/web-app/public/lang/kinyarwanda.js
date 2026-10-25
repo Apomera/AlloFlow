@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Imura ibikoresho byose {count} kuri",
+    "move_shown_label": "Imura ibikoresho {count} byerekanwe kuri",
+    "move_all_choose": "Hitamo igice",
+    "move_all_button": "Imura",
+    "move_all_no_units": "Banza ukore igice, hanyuma ushobore kwimurira ibi bikoresho muri cyo icyarimwe.",
+    "moved_all": "Ibikoresho {count} byimuriwe muri \"{unit}\".",
+    "moved_one": "Igikoresho 1 cyimuriwe muri \"{unit}\".",
+    "move_uncategorized_on_create": "Imurira kandi ibikoresho {count} bitabariwe muri iki gice",
+    "move_uncategorized_on_create_one": "Imurira kandi igikoresho 1 kitabariwe muri iki gice",
+    "unit_created_moved": "Igice \"{name}\" cyakozwe kandi ibikoresho bitabariwe byimuriwemo."
   },
   "input": {
     "placeholder": "Omeka hano umwandiko w'integanyanyigisho, ohereza inyandiko cyangwa amashusho y'isomo, ishusho, ijwi cyangwa videwo, cyangwa ukoreshe 'Kora Umwandiko Shingiro'...",

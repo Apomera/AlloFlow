@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "ផ្លាស់ទីទាំង {count} ទៅ",
+    "move_shown_label": "ផ្លាស់ទី {count} ដែលបង្ហាញ ទៅ",
+    "move_all_choose": "ជ្រើសរើសឯកតា",
+    "move_all_button": "ផ្លាស់ទី",
+    "move_all_no_units": "បង្កើតថតឯកតាជាមុនសិន ពេលនោះអ្នកអាចផ្លាស់ទីធនធានទាំងនេះចូលក្នុងវាម្តង។",
+    "moved_all": "បានផ្លាស់ទីធនធាន {count} ទៅឯកតា \"{unit}\"។",
+    "moved_one": "បានផ្លាស់ទីធនធាន 1 ទៅឯកតា \"{unit}\"។",
+    "move_uncategorized_on_create": "ផ្លាស់ទីធនធាន {count} ដែលមិនបានចាត់ជាប្រភេទ ចូលក្នុងឯកតានេះផងដែរ",
+    "move_uncategorized_on_create_one": "ផ្លាស់ទីធនធាន 1 ដែលមិនបានចាត់ជាប្រភេទ ចូលក្នុងឯកតានេះផងដែរ",
+    "unit_created_moved": "បានបង្កើតឯកតា \"{name}\" ហើយផ្លាស់ទីធនធានដែលមិនបានចាត់ជាប្រភេទចូលក្នុងវា។"
   },
   "input": {
     "placeholder": "បិទភ្ជាប់អត្ថបទកម្មវិធីសិក្សានៅទីនេះ បញ្ចូលឯកសារ ឬស្លាយមេរៀន រូបភាព សំឡេង ឬវីដេអូ ឬប្រើ 'បង្កើតអត្ថបទប្រភព'...",

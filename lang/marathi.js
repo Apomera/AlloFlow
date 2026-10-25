@@ -4751,7 +4751,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "सर्व {count} येथे हलवा",
+    "move_shown_label": "दाखवलेली {count} येथे हलवा",
+    "move_all_choose": "युनिट निवडा",
+    "move_all_button": "हलवा",
+    "move_all_no_units": "आधी युनिट फोल्डर तयार करा, मग ही संसाधने एकाच वेळी त्यात हलवता येतील.",
+    "moved_all": "{count} संसाधने \"{unit}\" युनिटमध्ये हलवली.",
+    "moved_one": "1 संसाधन \"{unit}\" युनिटमध्ये हलवले.",
+    "move_uncategorized_on_create": "{count} अवर्गीकृत संसाधनेही या युनिटमध्ये हलवा",
+    "move_uncategorized_on_create_one": "1 अवर्गीकृत संसाधनही या युनिटमध्ये हलवा",
+    "unit_created_moved": "\"{name}\" युनिट तयार केले आणि अवर्गीकृत संसाधने त्यात हलवली."
   },
   "input": {
     "placeholder": "येथे अभ्यासक्रमाचा मजकूर पेस्ट करा, दस्तऐवज किंवा धड्याच्या स्लाइड्स, प्रतिमा, ऑडिओ किंवा व्हिडिओ अपलोड करा, किंवा 'स्रोत मजकूर तयार करा' वापरा...",

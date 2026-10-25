@@ -8143,7 +8143,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "نقل جميع الموارد ({count}) إلى",
+    "move_shown_label": "نقل الموارد المعروضة ({count}) إلى",
+    "move_all_choose": "اختر وحدة",
+    "move_all_button": "نقل",
+    "move_all_no_units": "أنشئ مجلد وحدة أولاً، ثم يمكنك نقل هذه الموارد إليه دفعة واحدة.",
+    "moved_all": "تم نقل {count} من الموارد إلى \"{unit}\".",
+    "moved_one": "تم نقل مورد واحد إلى \"{unit}\".",
+    "move_uncategorized_on_create": "نقل الموارد غير المصنَّفة ({count}) إلى هذه الوحدة أيضاً",
+    "move_uncategorized_on_create_one": "نقل المورد غير المصنَّف (1) إلى هذه الوحدة أيضاً",
+    "unit_created_moved": "تم إنشاء الوحدة \"{name}\" ونقل الموارد غير المصنَّفة إليها."
   },
   "class_analytics": {
     "title": "تحليلات الصف",

@@ -5938,7 +5938,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Verplaats alle {count} naar",
+    "move_shown_label": "Verplaats de {count} getoonde naar",
+    "move_all_choose": "Kies een unit",
+    "move_all_button": "Verplaatsen",
+    "move_all_no_units": "Maak eerst een unitmap aan, dan kun je deze bronnen in één keer erheen verplaatsen.",
+    "moved_all": "{count} bronnen verplaatst naar \"{unit}\".",
+    "moved_one": "1 bron verplaatst naar \"{unit}\".",
+    "move_uncategorized_on_create": "Verplaats de {count} niet-gecategoriseerde bronnen ook naar deze unit",
+    "move_uncategorized_on_create_one": "Verplaats de 1 niet-gecategoriseerde bron ook naar deze unit",
+    "unit_created_moved": "Unit \"{name}\" aangemaakt en de niet-gecategoriseerde bronnen erin verplaatst."
   },
   "input": {
     "placeholder": "Plak hier de lestekst, upload een document of lespresentatie, afbeelding, audio of video, of gebruik 'Brontekst genereren'...",

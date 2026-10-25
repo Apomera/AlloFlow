@@ -3529,7 +3529,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Move {count} All ဆူ",
+    "move_shown_label": "Move {count} ဟ်ဖျါ ဆူ",
+    "move_all_choose": "Unit တခါ Choose",
+    "move_all_button": "Move",
+    "move_all_no_units": "Unit Folder ကသီ Create ကဒီး resources အံၤဘၣ် တဘျီခါ Move ဆူ အဂီၢ်လီၤ.",
+    "moved_all": "Resources {count} Move ဆူ \"{unit}\" လီၤ.",
+    "moved_one": "Resource 1 Move ဆူ \"{unit}\" လီၤ.",
+    "move_uncategorized_on_create": "Uncategorized Resources {count} အံၤ Unit အံၤ Move",
+    "move_uncategorized_on_create_one": "Uncategorized Resource 1 အံၤ Unit အံၤ Move",
+    "unit_created_moved": "Unit \"{name}\" created, ကဒီး Uncategorized resources Move ဆူ အဂီၢ်လီၤ."
   },
   "input": {
     "placeholder": "Paste curriculum text here, upload a document or lesson deck, image, audio, or video, or use 'Generate Source Text'...",

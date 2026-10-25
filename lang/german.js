@@ -5999,7 +5999,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Alle {count} verschieben nach",
+    "move_shown_label": "Die {count} angezeigten verschieben nach",
+    "move_all_choose": "Unit auswählen",
+    "move_all_button": "Verschieben",
+    "move_all_no_units": "Erstellen Sie zuerst einen Unit-Ordner, dann können Sie diese Ressourcen gesammelt hineinverschieben.",
+    "moved_all": "{count} Ressourcen nach \"{unit}\" verschoben.",
+    "moved_one": "1 Ressource nach \"{unit}\" verschoben.",
+    "move_uncategorized_on_create": "Auch die {count} nicht kategorisierten Ressourcen in diese Unit verschieben",
+    "move_uncategorized_on_create_one": "Auch die 1 nicht kategorisierte Ressource in diese Unit verschieben",
+    "unit_created_moved": "Unit \"{name}\" erstellt und die nicht kategorisierten Ressourcen darin verschoben."
   },
   "input": {
     "placeholder": "Füge hier den Lehrplantext ein, lade ein Dokument oder eine Unterrichtspräsentation, ein Bild, Audio oder Video hoch, oder nutze 'Quelltext erzeugen'...",

@@ -7861,7 +7861,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "U dhaqaaji dhammaan {count} cutubka",
+    "move_shown_label": "U dhaqaaji {count} la tusay cutubka",
+    "move_all_choose": "Dooro cutub",
+    "move_all_button": "U dhaqaaji",
+    "move_all_no_units": "Marka hore samee folder cutub, kadibna waxaad khayraadkan ugu dhaqaajin kartaa mar keliya.",
+    "moved_all": "{count} khayraad ayaa loo dhaqaajiyay \"{unit}\".",
+    "moved_one": "1 kheyraad ayaa loo dhaqaajiyay \"{unit}\".",
+    "move_uncategorized_on_create": "Sidoo kale ku dhaqaaji {count} khayraad ee aan la qaybin cutubkan",
+    "move_uncategorized_on_create_one": "Sidoo kale ku dhaqaaji 1 kheyraad ee aan la qaybin cutubkan",
+    "unit_created_moved": "Cutubka \"{name}\" waa la sameeyay, khayraadka aan la qaybinna waa loo dhaqaajiyay."
   },
   "class_analytics": {
     "title": "Falanqaynta Fasalka",

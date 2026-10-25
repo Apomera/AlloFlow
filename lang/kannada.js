@@ -4751,7 +4751,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "ಎಲ್ಲಾ {count} ಸಂಪನ್ಮೂಲಗಳನ್ನು ಇಲ್ಲಿಗೆ ಸರಿಸಿ",
+    "move_shown_label": "ತೋರಿಸಿರುವ {count} ಸಂಪನ್ಮೂಲಗಳನ್ನು ಇಲ್ಲಿಗೆ ಸರಿಸಿ",
+    "move_all_choose": "ಘಟಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "move_all_button": "ಸರಿಸಿ",
+    "move_all_no_units": "ಮೊದಲು ಘಟಕ ಫೋಲ್ಡರ್ ರಚಿಸಿ, ನಂತರ ಈ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಒಂದೇ ಬಾರಿಗೆ ಅದಕ್ಕೆ ಸರಿಸಬಹುದು.",
+    "moved_all": "{count} ಸಂಪನ್ಮೂಲಗಳನ್ನು \"{unit}\" ಘಟಕಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.",
+    "moved_one": "1 ಸಂಪನ್ಮೂಲವನ್ನು \"{unit}\" ಘಟಕಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ.",
+    "move_uncategorized_on_create": "ವರ್ಗೀಕರಿಸದ {count} ಸಂಪನ್ಮೂಲಗಳನ್ನು ಸಹ ಈ ಘಟಕಕ್ಕೆ ಸರಿಸಿ",
+    "move_uncategorized_on_create_one": "ವರ್ಗೀಕರಿಸದ 1 ಸಂಪನ್ಮೂಲವನ್ನು ಸಹ ಈ ಘಟಕಕ್ಕೆ ಸರಿಸಿ",
+    "unit_created_moved": "\"{name}\" ಘಟಕವನ್ನು ರಚಿಸಲಾಗಿದೆ ಮತ್ತು ವರ್ಗೀಕರಿಸದ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಅದಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ."
   },
   "input": {
     "placeholder": "ಪಠ್ಯಕ್ರಮದ ಪಠ್ಯವನ್ನು ಇಲ್ಲಿ ಅಂಟಿಸಿ, ದಾಖಲೆ ಅಥವಾ ಪಾಠದ ಸ್ಲೈಡ್‌ಗಳು, ಚಿತ್ರ, ಆಡಿಯೋ ಅಥವಾ ವೀಡಿಯೊವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ, ಅಥವಾ 'ಮೂಲ ಪಠ್ಯವನ್ನು ರಚಿಸಿ' ಬಳಸಿ...",

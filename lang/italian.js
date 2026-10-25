@@ -5939,7 +5939,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Sposta tutte le {count} in",
+    "move_shown_label": "Sposta le {count} visualizzate in",
+    "move_all_choose": "Scegli un'unità",
+    "move_all_button": "Sposta",
+    "move_all_no_units": "Crea prima una cartella unità, poi potrai spostarvi queste risorse tutte insieme.",
+    "moved_all": "{count} risorse spostate in \"{unit}\".",
+    "moved_one": "1 risorsa spostata in \"{unit}\".",
+    "move_uncategorized_on_create": "Sposta in questa unità anche le {count} risorse senza categoria",
+    "move_uncategorized_on_create_one": "Sposta in questa unità anche la risorsa senza categoria",
+    "unit_created_moved": "\"{name}\" creata e risorse senza categoria spostate al suo interno."
   },
   "input": {
     "placeholder": "Incolla qui il testo del programma, carica un documento o una presentazione della lezione, un'immagine, un audio o un video, oppure usa 'Genera testo sorgente'...",

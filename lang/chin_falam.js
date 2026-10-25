@@ -5420,7 +5420,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "{count} Vialte ...ah Move",
+    "move_shown_label": "A lang {count} ...ah Move",
+    "move_all_choose": "Unit pakhat thim",
+    "move_all_button": "Move",
+    "move_all_no_units": "Unit folder cu hmasa ah chuah hna, cun hi resource hna cu pakhatte ah a chungah na kal khawh lai.",
+    "moved_all": "Resource {count} \"{unit}\" ah a kal cang.",
+    "moved_one": "Resource 1 \"{unit}\" ah a kal cang.",
+    "move_uncategorized_on_create": "'Categorize Lo' resource {count} hna zong hi unit ah Move",
+    "move_uncategorized_on_create_one": "'Categorize Lo' resource 1 zong hi unit ah Move",
+    "unit_created_moved": "Unit \"{name}\" chuah cang, 'Categorize Lo' resource hna cu a chungah a kal cang."
   },
   "visuals": {
     "title": "Cawnnak hmanthlak",

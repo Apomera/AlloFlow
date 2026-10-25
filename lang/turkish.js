@@ -4750,7 +4750,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "{count} kaynağın tümünü şuraya taşı:",
+    "move_shown_label": "Gösterilen {count} kaynağı şuraya taşı:",
+    "move_all_choose": "Bir ünite seçin",
+    "move_all_button": "Taşı",
+    "move_all_no_units": "Önce bir ünite klasörü oluşturun; ardından bu kaynakları tek seferde içine taşıyabilirsiniz.",
+    "moved_all": "{count} kaynak \"{unit}\" ünitesine taşındı.",
+    "moved_one": "1 kaynak \"{unit}\" ünitesine taşındı.",
+    "move_uncategorized_on_create": "Kategorisiz {count} kaynağı da bu üniteye taşı",
+    "move_uncategorized_on_create_one": "Kategorisiz 1 kaynağı da bu üniteye taşı",
+    "unit_created_moved": "\"{name}\" ünitesi oluşturuldu ve kategorisiz kaynaklar içine taşındı."
   },
   "input": {
     "placeholder": "Müfredat metnini buraya yapıştırın, bir belge veya ders sunumu, görsel, ses ya da video yükleyin veya 'Kaynak Metin Oluştur'u kullanın...",

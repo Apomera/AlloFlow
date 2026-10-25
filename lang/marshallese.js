@@ -3530,7 +3530,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Move aolep {count} ñan",
+    "move_shown_label": "Move {count} ko rar kwalok ñan",
+    "move_all_choose": "Kālet juon unit",
+    "move_all_button": "Move",
+    "move_all_no_units": "Kōm̧m̧an juon unit folder mokta, innām kwōn̄ Move resources kein ilo juon.",
+    "moved_all": "Resource ko {count} moved ñan \"{unit}\".",
+    "moved_one": "Resource 1 moved ñan \"{unit}\".",
+    "move_uncategorized_on_create": "Bar Move resource ko {count} Uncategorized ñan unit in",
+    "move_uncategorized_on_create_one": "Bar Move resource 1 Uncategorized ñan unit in",
+    "unit_created_moved": "Unit \"{name}\" created im resources Uncategorized ko moved ñan ilo."
   },
   "input": {
     "placeholder": "Paste curriculum text here, upload a document or lesson deck, image, audio, or video, or use 'Generate Source Text'...",

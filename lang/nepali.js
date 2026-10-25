@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "सबै {count} वटा यसमा सार्नुहोस्",
+    "move_shown_label": "देखाइएका {count} वटा यसमा सार्नुहोस्",
+    "move_all_choose": "इकाई छान्नुहोस्",
+    "move_all_button": "सार्नुहोस्",
+    "move_all_no_units": "पहिले इकाई फोल्डर सिर्जना गर्नुहोस्, त्यसपछि यी स्रोतहरू एकैचोटि त्यसमा सार्न सकिन्छ।",
+    "moved_all": "{count} वटा स्रोत इकाई \"{unit}\" मा सारियो।",
+    "moved_one": "1 स्रोत इकाई \"{unit}\" मा सारियो।",
+    "move_uncategorized_on_create": "वर्गीकरण नगरिएका {count} वटा स्रोत पनि यो इकाईमा सार्नुहोस्",
+    "move_uncategorized_on_create_one": "वर्गीकरण नगरिएको 1 स्रोत पनि यो इकाईमा सार्नुहोस्",
+    "unit_created_moved": "इकाई \"{name}\" सिर्जना गरियो र वर्गीकरण नगरिएका स्रोतहरू त्यसमा सारिए।"
   },
   "input": {
     "placeholder": "यहाँ पाठ्यक्रमको पाठ टाँस्नुहोस्, कागजात वा पाठका स्लाइडहरू, तस्वीर, अडियो वा भिडियो अपलोड गर्नुहोस्, वा 'स्रोत पाठ सिर्जना गर्नुहोस्' प्रयोग गर्नुहोस्...",

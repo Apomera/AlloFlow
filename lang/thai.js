@@ -6917,7 +6917,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "ย้ายทั้งหมด {count} รายการไปยัง",
+    "move_shown_label": "ย้าย {count} รายการที่แสดงไปยัง",
+    "move_all_choose": "เลือกหน่วย",
+    "move_all_button": "ย้าย",
+    "move_all_no_units": "สร้างโฟลเดอร์หน่วยก่อน แล้วจึงย้ายทรัพยากรเหล่านี้เข้าไปพร้อมกันได้",
+    "moved_all": "ย้ายทรัพยากร {count} รายการไปยัง {unit} แล้ว",
+    "moved_one": "ย้ายทรัพยากร 1 รายการไปยัง {unit} แล้ว",
+    "move_uncategorized_on_create": "ย้ายทรัพยากรที่ไม่ได้จัดหมวด {count} รายการเข้าหน่วยนี้ด้วย",
+    "move_uncategorized_on_create_one": "ย้ายทรัพยากรที่ไม่ได้จัดหมวด 1 รายการเข้าหน่วยนี้ด้วย",
+    "unit_created_moved": "สร้าง {name} และย้ายทรัพยากรที่ไม่ได้จัดหมวดเข้าไปแล้ว"
   },
   "visuals": {
     "title": "สนับสนุนด้วยภาพ",

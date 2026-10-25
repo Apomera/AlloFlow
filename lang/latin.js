@@ -4686,7 +4686,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Move omnia {count} ad",
+    "move_shown_label": "Move {count} ostensa ad",
+    "move_all_choose": "Elige unitatem",
+    "move_all_button": "Move",
+    "move_all_no_units": "Prius crea fasciculum unitatis, deinde haec subsidia simul in eum movere potes.",
+    "moved_all": "{count} subsidia in \"{unit}\" mota sunt.",
+    "moved_one": "1 subsidium in \"{unit}\" motum est.",
+    "move_uncategorized_on_create": "Move etiam {count} subsidia sine categoria in hanc unitatem",
+    "move_uncategorized_on_create_one": "Move etiam 1 subsidium sine categoria in hanc unitatem",
+    "unit_created_moved": "\"{name}\" creata est, et subsidia sine categoria in eam mota sunt."
   },
   "input": {
     "placeholder": "Textum curriculī hīc agglūtinā, documentum vel lēctiōnis tabulās, imāginem, sonum aut vīsiōnem impōne, vel 'Textum Fontis Generāre' ūtere...",

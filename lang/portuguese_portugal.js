@@ -9149,7 +9149,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Mover todos os {count} para",
+    "move_shown_label": "Mover os {count} apresentados para",
+    "move_all_choose": "Escolha uma unidade",
+    "move_all_button": "Mover",
+    "move_all_no_units": "Crie primeiro uma pasta de unidade; depois poderá mover estes recursos para lá de uma só vez.",
+    "moved_all": "{count} recursos movidos para a unidade \"{unit}\".",
+    "moved_one": "1 recurso movido para a unidade \"{unit}\".",
+    "move_uncategorized_on_create": "Mover também os {count} recursos sem categoria para esta unidade",
+    "move_uncategorized_on_create_one": "Mover também o 1 recurso sem categoria para esta unidade",
+    "unit_created_moved": "Unidade \"{name}\" criada e recursos sem categoria movidos para lá."
   },
   "class_analytics": {
     "title": "Análises da Turma",

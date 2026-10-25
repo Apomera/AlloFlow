@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Hamisha zote {count} kwenda",
+    "move_shown_label": "Hamisha {count} zinazoonyeshwa kwenda",
+    "move_all_choose": "Chagua mada",
+    "move_all_button": "Hamisha",
+    "move_all_no_units": "Unda folda ya mada kwanza, kisha unaweza kuhamishia rasilimali hizi ndani yake kwa mara moja.",
+    "moved_all": "Rasilimali {count} zimehamishiwa \"{unit}\".",
+    "moved_one": "Rasilimali 1 imehamishiwa \"{unit}\".",
+    "move_uncategorized_on_create": "Hamishia pia rasilimali {count} zisizo na kategoria kwenye mada hii",
+    "move_uncategorized_on_create_one": "Hamishia pia rasilimali 1 isiyo na kategoria kwenye mada hii",
+    "unit_created_moved": "\"{name}\" imeundwa na rasilimali zisizo na kategoria zimehamishiwa humo."
   },
   "input": {
     "placeholder": "Bandika maandishi ya mtaala hapa, pakia hati au slaidi za somo, picha, sauti au video, au tumia 'Tengeneza Maandishi ya Chanzo'...",

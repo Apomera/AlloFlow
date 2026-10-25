@@ -4746,7 +4746,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "ሁሉንም {count} አንቀሳቅስ ወደ",
+    "move_shown_label": "የሚታዩትን {count} አንቀሳቅስ ወደ",
+    "move_all_choose": "unit ምረጥ",
+    "move_all_button": "አንቀሳቅስ",
+    "move_all_no_units": "መጀመሪያ unit folder ፍጠር፤ ከዚያ እነዚህን ሀብቶች በአንድ ጊዜ ወደ እሱ ማንቀሳቀስ ትችላለህ።",
+    "moved_all": "{count} ሀብቶች ወደ \"{unit}\" ተንቀሳቅሰዋል።",
+    "moved_one": "1 ሀብት ወደ \"{unit}\" ተንቀሳቅሷል።",
+    "move_uncategorized_on_create": "{count} ያልተመደቡ ሀብቶችን ደግሞ ወደዚህ unit አንቀሳቅስ",
+    "move_uncategorized_on_create_one": "1 ያልተመደበ ሀብት ደግሞ ወደዚህ unit አንቀሳቅስ",
+    "unit_created_moved": "Unit \"{name}\" ተፈጥሯል፤ ያልተመደቡ ሀብቶችም ወደ እሱ ተንቀሳቅሰዋል።"
   },
   "input": {
     "placeholder": "የሥርዓተ ትምህርቱን ጽሑፍ እዚህ ለጥፍ፣ ሰነድ ወይም የትምህርት ስላይዶች፣ ምስል፣ ኦዲዮ ወይም ቪዲዮ ስቀል፣ ወይም 'ምንጭ ጽሑፍ አመንጭ' ተጠቀም...",

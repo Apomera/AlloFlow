@@ -4749,7 +4749,17 @@
     "keyboard_reorder": "Use Alt plus Up or Down Arrow to reorder.",
     "position": "Position",
     "share_pack_not_ready": "Sharing is still warming up — try again in a moment.",
-    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path"
+    "visualize_unit_tooltip": "Open this unit in Learning Web: Unit Path",
+    "move_all_label": "Move {count} dhammaan ku",
+    "move_shown_label": "Move {count} muuqda ku",
+    "move_all_choose": "Dooro unit",
+    "move_all_button": "Move",
+    "move_all_no_units": "Marka hore samee unit folder, kadib waad resources tan ku move kari kartaa isku mar.",
+    "moved_all": "{count} resources waa move ku Unit \"{unit}\".",
+    "moved_one": "1 resource waa move ku Unit \"{unit}\".",
+    "move_uncategorized_on_create": "Sidoo kale move {count} resources Uncategorized ah ku unit tan",
+    "move_uncategorized_on_create_one": "Sidoo kale move 1 resource Uncategorized ah ku unit tan",
+    "unit_created_moved": "Unit \"{name}\" waa created, resources Uncategorized ah waa move ku."
   },
   "input": {
     "placeholder": "Paste curriculum text here, upload a PDF/sawir/Text/Audio fayl (max 20MB), ama isticmaal 'Generate Source Text'...",
