@@ -780,6 +780,11 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     const explanation = !Array.isArray(value) && !scope && Object.prototype.hasOwnProperty.call(value, 'factCheck') ? studentFactCheck(value) : '';
     Object.entries(value).forEach(([key, nested]) => {
       if (teacherOnlyKeys.includes(key)) return;
+      // KWL teacher examples: keep the branch (the student prompt renders), not its items.
+      if (value.teacherExample === true && (key === 'items' || key === 'items_en') && Array.isArray(nested)) {
+        out[key] = [];
+        return;
+      }
       if (key === 'factCheck') {
         if (explanation) out.factCheck = explanation;
         return;
@@ -801,22 +806,61 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   // Mirrors withholdGradedQuizKeys in firestore_sync_module.js.
   const gradedKeyFields = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits', 'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey', 'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
   const gradedOptionFields = ['isCorrect', 'correct', 'isAnswer', 'feedback', 'explanation', 'rationale'];
+  // Sequence Sense items in their displayed order: canonical order is the key.
+  // Mirrors QuizLiveAggregators.sequenceDisplayForm.
+  const sequenceDisplayOrder = question => {
+    const items = question.type === 'sequence-sense' && Array.isArray(question.items) ? question.items : null;
+    const order = question.presentedOrder;
+    if (!items || !Array.isArray(order) || order.length !== items.length || new Set(order).size !== items.length || !order.every(value => Number.isInteger(value) && value >= 0 && value < items.length)) return question;
+    const out = {
+      ...question,
+      presentedOrder: order.map((_, index) => index),
+      itemsInDisplayOrder: true
+    };
+    ['items', 'items_en', 'itemImageUrls', 'itemImageAltTexts', 'itemImagePrompts'].forEach(field => {
+      if (Array.isArray(question[field]) && question[field].length === order.length) out[field] = order.map(index => question[field][index]);
+    });
+    return out;
+  };
+  // teacher-release copies are withheld too; a release made for this exact
+  // version (feedbackReleaseKeys) rides along so learners get their feedback.
   const withholdGradedQuizKeys = resource => {
     const data = resource && resource.type === 'quiz' && resource.data && typeof resource.data === 'object' && !Array.isArray(resource.data) ? resource.data : null;
-    if (!data || !data.deliverySettings || data.deliverySettings.feedbackTiming !== 'teacher-graded') return resource;
+    if (!data) return resource;
     const omit = (value, fields) => Object.fromEntries(Object.entries(value).filter(([key]) => !fields.includes(key)));
+    const settings = data.deliverySettings && typeof data.deliverySettings === 'object' ? data.deliverySettings : {};
+    if (settings.feedbackTiming !== 'teacher-graded' && settings.feedbackTiming !== 'teacher-release') {
+      return Object.prototype.hasOwnProperty.call(data, 'feedbackReleaseKeys') ? {
+        ...resource,
+        data: omit(data, ['feedbackReleaseKeys'])
+      } : resource;
+    }
+    const release = data.feedbackReleaseKeys;
+    // Only a release for the current version ships: an edit after release
+    // must not send the old key to new learners. No signer -> withheld.
+    const quality = typeof window !== 'undefined' && window.AlloModules?.QuizView?.keyQuality;
+    const released = settings.feedbackTiming === 'teacher-release' && release && typeof release === 'object' && typeof release.signature === 'string' && release.signature === settings.feedbackReleasedFor && Array.isArray(release.questions) && typeof quality?.feedbackSignature === 'function' && typeof quality?.releaseKeyVersion === 'function' && (() => {
+      try {
+        return quality.feedbackSignature(data) === release.signature && quality.releaseKeyVersion(data) === release.keyVersion;
+      } catch (_) {
+        return false;
+      }
+    })();
     const questions = Array.isArray(data.questions) ? data.questions.map(question => {
       if (!question || typeof question !== 'object' || Array.isArray(question)) return question;
       const kept = omit(question, gradedKeyFields);
       ['options', 'answerOptions', 'evidenceOptions'].forEach(field => {
         if (Array.isArray(kept[field])) kept[field] = kept[field].map(option => option && typeof option === 'object' && !Array.isArray(option) ? omit(option, gradedOptionFields) : option);
       });
-      return kept;
+      return sequenceDisplayOrder(kept);
     }) : data.questions;
     return {
       ...resource,
       data: {
-        ...omit(data, ['answerKey', 'distractorReview']),
+        ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys']),
+        ...(released ? {
+          feedbackReleaseKeys: release
+        } : {}),
         questions,
         answerKeysWithheld: true
       }

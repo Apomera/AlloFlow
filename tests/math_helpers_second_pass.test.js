@@ -460,7 +460,7 @@ describe('nested hint state and request lifecycle', () => {
     pendingGrade.resolve(JSON.stringify({ verdict: 'correct', score: 100, feedback: 'Correct now.' }));
     await grading;
 
-    expect(score).toHaveBeenCalledWith(8, 'Math Problem', resourceId);
+    expect(score).toHaveBeenCalledWith(8, 'Math Problem', resourceId + ':p');
     expect(gradeHarness.getResults()[resourceId].p).toMatchObject({ hintsUsed: 1, xpEarned: 8 });
   });
 });

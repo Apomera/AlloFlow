@@ -220,6 +220,29 @@ function _mathRequestActivity(kind, resourceId, problemKey) {
     return null;
   }
 }
+function _markMathSolutionViewed(resourceId, problemKey) {
+  try {
+    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MathHelpers;
+    if (helpers && typeof helpers.markMathSolutionViewed === 'function') helpers.markMathSolutionViewed(resourceId, problemKey);
+  } catch (_) {}
+}
+
+// t() with an English fallback; {name} tokens are filled from params either way.
+function _mathT(t, key, fallback, params) {
+  var text = '';
+  try {
+    text = t(key, params);
+  } catch (_) {
+    text = '';
+  }
+  if (typeof text !== 'string' || !text || text === key) {
+    text = String(fallback);
+    Object.keys(params || {}).forEach(function (name) {
+      text = text.split('{' + name + '}').join(String(params[name]));
+    });
+  }
+  return text;
+}
 function _normalizeMathManipulative(value) {
   var raw = _mathSafeShallowCopy(value);
   var tool = _mathScalarText(raw.tool);
@@ -512,7 +535,7 @@ function MathView(props) {
   var mathProblems = _normalizeMathProblems(generatedContent, mathResourceId);
   if (!mathProblems.length) return /*#__PURE__*/React.createElement("div", {
     role: "alert"
-  }, "This math activity has no displayable problems. Try regenerating it.");
+  }, _mathT(t, 'math.display.no_problems', 'This math activity has no displayable problems. Try regenerating it.'));
   var isTeacherMode = props.isTeacherMode === true;
   var isIndependentMode = props.isIndependentMode === true;
   var showMathAnswers = props.showMathAnswers === true;
@@ -825,8 +848,10 @@ function MathView(props) {
   var graphHtml = '';
   if (typeof generatedContent.data.graphData === 'string' && generatedContent.data.graphData) {
     try {
-      var graphSource = _mathScalarText(generatedContent.data.graphData, 250000);
-      graphHtml = _mathScalarText(sanitizeHtml(graphSource), 250000);
+      var graphSource = _mathScalarText(generatedContent.data.graphData, 120001);
+      // Math graphs have a stricter boundary than rich instructional HTML.
+      // Fail closed on an older host rather than inserting arbitrary markup.
+      graphHtml = typeof window.sanitizeSvgGraph === 'function' ? window.sanitizeSvgGraph(graphSource) : '';
     } catch (_) {
       graphHtml = '';
     }
@@ -1216,11 +1241,22 @@ function MathView(props) {
     return /*#__PURE__*/React.createElement("p", {
       role: "status",
       className: "mt-2 text-sm text-slate-700"
-    }, requested, " requested · ", mathProblems.length, " available · ", reviewCount, " need teacher review", requested > mathProblems.length ? ' · ' + (requested - mathProblems.length) + ' missing' : '');
+    }, _mathT(t, 'math.preparation_status', '{requested} requested · {available} available · {review} need teacher review', {
+      requested,
+      available: mathProblems.length,
+      review: reviewCount
+    }), requested > mathProblems.length ? ' · ' + _mathT(t, 'math.preparation_missing', '{count} missing', {
+      count: requested - mathProblems.length
+    }) : '');
   })(), mathSelfGradeMode && /*#__PURE__*/React.createElement("p", {
     id: selfGradeHelpId,
     className: "mt-2 text-sm font-medium text-emerald-800"
-  }, hasAllSelfGradeAnswers ? `All ${mathProblems.length} problems are answered. Review your responses, then submit.` : selfGradeReviewHelp || `Answered ${answeredSelfGradeCount} of ${mathProblems.length}. Answer every problem to enable Submit Assessment.`)), graphHtml && /*#__PURE__*/React.createElement("div", {
+  }, hasAllSelfGradeAnswers ? _mathT(t, 'math.self_grade_all_answered', 'All {count} problems are answered. Review your responses, then submit.', {
+    count: mathProblems.length
+  }) : selfGradeReviewHelp || _mathT(t, 'math.self_grade_progress', 'Answered {answered} of {total}. Answer every problem to enable Submit Assessment.', {
+    answered: answeredSelfGradeCount,
+    total: mathProblems.length
+  }))), graphHtml && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2"
@@ -1471,7 +1507,7 @@ function MathView(props) {
       className: "animate-spin motion-reduce:animate-none"
     }), " ", t('math.check.checking') || 'Evaluating your work...') : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Sparkles, {
       size: 16
-    }), " ", checkResult?.verdict === 'error' ? 'Try checking again' : t('math.check.button') || 'Check My Work')), !checkResult?.checked && (() => {
+    }), " ", checkResult?.verdict === 'error' ? _mathT(t, 'math.check.try_checking_again', 'Try checking again') : t('math.check.button') || 'Check My Work')), !checkResult?.checked && (() => {
       const hintInfo = getMathHintState(problem.__viewKey);
       return /*#__PURE__*/React.createElement("div", {
         className: "space-y-2",
@@ -1485,7 +1521,9 @@ function MathView(props) {
         className: "flex-1"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-[11px] font-black text-amber-600 uppercase tracking-widest"
-      }, "Hint ", hIdx + 1, " of 3"), /*#__PURE__*/React.createElement("p", {
+      }, _mathT(t, 'math.hint.label', 'Hint {n} of 3', {
+        n: hIdx + 1
+      })), /*#__PURE__*/React.createElement("p", {
         className: "text-sm text-amber-900 font-medium leading-relaxed mt-0.5"
       }, hint)))), hintInfo.count < 3 && /*#__PURE__*/React.createElement("button", {
         type: "button",
@@ -1496,15 +1534,15 @@ function MathView(props) {
       }, hintInfo.loading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
         size: 14,
         className: "animate-spin motion-reduce:animate-none"
-      }), " Thinking...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      }), " ", _mathT(t, 'math.hint.thinking', 'Thinking...')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
         className: "text-sm"
-      }, "💡"), " ", hintInfo.count === 0 ? 'Give me a hint (-25% XP)' : hintInfo.count === 1 ? 'Another hint (-50% XP)' : 'Final hint (-75% XP)')));
+      }, "💡"), " ", hintInfo.count === 0 ? _mathT(t, 'math.hint.request_first', 'Give me a hint (-25% XP)') : hintInfo.count === 1 ? _mathT(t, 'math.hint.request_second', 'Another hint (-50% XP)') : _mathT(t, 'math.hint.request_final', 'Final hint (-75% XP)'))));
     })(), checkResult?.verdict === 'error' && !checkResult.checking && /*#__PURE__*/React.createElement("div", {
       role: "alert",
       className: "rounded-xl border-2 border-red-300 bg-red-50 p-4 text-sm text-red-900"
     }, /*#__PURE__*/React.createElement("p", {
       className: "font-bold"
-    }, "Your work has not been graded."), /*#__PURE__*/React.createElement("p", null, checkResult.feedback), /*#__PURE__*/React.createElement("p", null, "Your answer is saved. Use the check button above to try again.")), checkResult?.checked && checkResult.verdict !== 'error' && /*#__PURE__*/React.createElement("div", {
+    }, _mathT(t, 'math.check.not_graded', 'Your work has not been graded.')), /*#__PURE__*/React.createElement("p", null, checkResult.feedback), /*#__PURE__*/React.createElement("p", null, _mathT(t, 'math.check.answer_saved_retry', 'Your answer is saved. Use the check button above to try again.'))), checkResult?.checked && checkResult.verdict !== 'error' && /*#__PURE__*/React.createElement("div", {
       role: "status",
       "aria-live": "polite",
       className: `rounded-xl border-2 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 ${checkResult.verdict === 'correct' ? 'border-green-300 bg-green-50' : checkResult.verdict === 'partial' ? 'border-amber-300 bg-amber-50' : 'border-red-300 bg-red-50'}`
@@ -1518,7 +1556,11 @@ function MathView(props) {
       className: `font-black text-sm uppercase tracking-wider ${checkResult.verdict === 'correct' ? 'text-green-700' : checkResult.verdict === 'partial' ? 'text-amber-700' : 'text-red-700'}`
     }, checkResult.verdict === 'correct' ? t('math.check.verdict_correct') || 'Correct!' : checkResult.verdict === 'partial' ? t('math.check.verdict_partial') || 'Partially Correct' : t('math.check.verdict_incorrect') || 'Not Quite Right')), /*#__PURE__*/React.createElement("div", {
       className: `px-3 py-1 rounded-full text-xs font-black ${checkResult.score >= 80 ? 'bg-green-200 text-green-800' : checkResult.score >= 40 ? 'bg-amber-200 text-amber-800' : 'bg-red-200 text-red-800'}`
-    }, checkResult.score, "%", checkResult.hintsUsed > 0 ? ` · -${checkResult.hintsUsed} hint${checkResult.hintsUsed > 1 ? 's' : ''}` : '', checkResult.xpEarned > 0 ? ` · +${checkResult.xpEarned} XP` : '')), /*#__PURE__*/React.createElement("div", {
+    }, checkResult.score, "%", checkResult.hintsUsed > 0 ? ' · ' + (checkResult.hintsUsed > 1 ? _mathT(t, 'math.check.hints_used', '-{count} hints', {
+      count: checkResult.hintsUsed
+    }) : _mathT(t, 'math.check.hint_used_one', '-1 hint')) : '', checkResult.solutionViewed === true && checkResult.verdict !== 'incorrect' ? ' · ' + _mathT(t, 'math.check.answer_viewed', 'answer viewed') : '', checkResult.xpEarned > 0 ? ' · ' + _mathT(t, 'math.check.xp_earned', '+{xp} XP', {
+      xp: checkResult.xpEarned
+    }) : '')), /*#__PURE__*/React.createElement("div", {
       className: "px-4 py-3"
     }, /*#__PURE__*/React.createElement("p", {
       className: `text-sm leading-relaxed font-medium ${checkResult.verdict === 'correct' ? 'text-green-800' : checkResult.verdict === 'partial' ? 'text-amber-800' : 'text-red-800'}`
@@ -1532,14 +1574,19 @@ function MathView(props) {
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12
     }), checkResult.verdict === 'correct' ? t('math.check.try_another') || 'Revise Answer' : t('math.check.try_again') || 'Try Again'))), checkResult?.checked && problem.steps && problem.steps.length > 0 && /*#__PURE__*/React.createElement("details", {
-      className: "mt-3 group"
+      className: "mt-3 group",
+      onToggle: e => {
+        if (e.currentTarget.open && !checkResult.xpAwarded) _markMathSolutionViewed(mathResourceId, problem.__viewKey);
+      }
     }, /*#__PURE__*/React.createElement("summary", {
       className: "flex min-h-[44px] items-center gap-2 cursor-pointer select-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:from-blue-100 hover:to-indigo-100 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-sm"
     }, "📖"), /*#__PURE__*/React.createElement("span", {
       className: "text-xs font-bold text-blue-700"
-    }, t('math.show_solution_steps') || 'Show Solution Steps'), /*#__PURE__*/React.createElement(ChevronDown, {
+    }, t('math.show_solution_steps') || 'Show Solution Steps'), !checkResult.xpAwarded && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-blue-800"
+    }, _mathT(t, 'math.solution.xp_note', '(shows the answer: XP for this problem drops to the final-hint level)')), /*#__PURE__*/React.createElement(ChevronDown, {
       size: 14,
       className: "text-blue-700 ml-auto group-open:rotate-180 transition-transform"
     })), /*#__PURE__*/React.createElement("div", {
@@ -1570,7 +1617,7 @@ function MathView(props) {
       className: "text-sm"
     }, "✅"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-green-700"
-    }, "Answer: ", problem.answer), (mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && /*#__PURE__*/React.createElement("button", {
+    }, _mathT(t, 'math.solution.answer_label', 'Answer:'), " ", problem.answer), (mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: !canOpenCubeLab,
       onClick: () => {
@@ -1588,7 +1635,7 @@ function MathView(props) {
         setCubeBuilderFeedback(null);
       },
       className: "ml-auto min-h-[44px] text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-    }, "📦 Try with cubes")))));
+    }, "📦 ", _mathT(t, 'math.solution.try_with_cubes', 'Try with cubes'))))));
   })())))), mathProblems.length === 1 && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 flex justify-center pb-4"
   }, /*#__PURE__*/React.createElement("button", {

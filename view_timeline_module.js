@@ -18,7 +18,24 @@
   if (!React) { console.error('[ViewTimelineModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  // Lazy Lucide icon resolution from window.AlloIcons (populated by
+  function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+// Companion language belongs to the saved artifact, independent of current app settings.
+function _timelineTranslationAttributes(artifact) {
+  const api = window.AlloModules?.TextPipelineHelpers;
+  if (typeof api?.getArtifactTranslationTextAttributes === 'function') return api.getArtifactTranslationTextAttributes(artifact);
+  const target = [artifact?.config?.translationPolicy?.target, artifact?.translationPolicy?.target, artifact?.translationTarget, artifact?.config?.translationTarget, artifact?.config?.attachedTranslationTarget].find(value => typeof value === 'string' && value.trim()) || 'English';
+  const helpers = window.AlloModules?.ModuleScopeExtras;
+  const lang = helpers?.getSpeechLangCode?.(target) || window.AlloFlowLang?.bcp47Full?.(target) || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : target === 'English' ? 'en' : 'und');
+  return {
+    lang,
+    dir: helpers?.getContentDirection?.(target) || 'auto',
+    style: {
+      textAlign: 'start'
+    }
+  };
+}
+
+// Lazy Lucide icon resolution from window.AlloIcons (populated by
 // host at AlloFlowANTI.txt:4930). Avoids threading 16 icon
 // components as props. Mirrors view_renderers_module.js pattern.
 var _lazyIcon = function (name) {
@@ -296,8 +313,26 @@ function TimelineView(props) {
   }, generatedContent.data.validationIssues.map((iss, i) => /*#__PURE__*/React.createElement("li", {
     key: i
   }, iss.message)))), isTeacherMode && generatedContent?.data && /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-end"
-  }, /*#__PURE__*/React.createElement("button", {
+    className: "flex flex-wrap justify-end items-center gap-2"
+  }, (() => {
+    const items = (Array.isArray(generatedContent.data) ? generatedContent.data : generatedContent.data.items || []).filter(item => item && typeof item === 'object');
+    const unchecked = items.filter(item => !item.verification || typeof item.verification !== 'object').length;
+    if (!items.length || !unchecked || isVerifyingTimeline) return null;
+    const tl = (key, fallback) => {
+      const value = t(key);
+      return typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+    };
+    const label = unchecked === items.length ? tl('timeline.validation.not_checked', 'Accuracy not yet checked') : tl('timeline.validation.some_not_checked', '{count} items not yet checked').split('{count}').join(String(unchecked));
+    return /*#__PURE__*/React.createElement("span", {
+      "data-timeline-unverified": true,
+      className: "inline-flex items-center gap-1 rounded-full border border-amber-400 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-900",
+      title: tl('timeline.validation.not_checked_tip', 'AI has not checked these items for factual accuracy yet. Press Verify accuracy to check them.')
+    }, /*#__PURE__*/React.createElement(AlertTriangle, {
+      size: 12,
+      className: "text-amber-700",
+      "aria-hidden": "true"
+    }), label);
+  })(), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleVerifyTimelineAccuracy(),
     disabled: isVerifyingTimeline,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
@@ -411,21 +446,21 @@ function TimelineView(props) {
     placeholder: t('timeline.event_placeholder')
   })), (item.event_en || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
-  }, /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("input", _extends({}, _timelineTranslationAttributes(generatedContent), {
     "aria-label": t('common.enter_item'),
     type: "text",
     value: item.date_en || '',
     onChange: e => handleTimelineChange(idx, 'date', e.target.value, true),
     className: "w-1/3 min-w-0 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
     placeholder: t('timeline.label_en_placeholder')
-  }), /*#__PURE__*/React.createElement("input", {
+  })), /*#__PURE__*/React.createElement("input", _extends({}, _timelineTranslationAttributes(generatedContent), {
     "aria-label": t('common.text_field'),
     type: "text",
     value: item.event_en || '',
     onChange: e => handleTimelineChange(idx, 'event', e.target.value, true),
     className: "w-2/3 min-w-0 text-xs text-slate-600 bg-white border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300",
     placeholder: t('timeline.event_en_placeholder')
-  }))), /*#__PURE__*/React.createElement("div", {
+  })))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center gap-1 mt-1 shrink-0"
   }, item.image ? /*#__PURE__*/React.createElement("div", {
     "data-timeline-image-box": true,
@@ -541,13 +576,13 @@ function TimelineView(props) {
     className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("span", {
     className: "inline-block bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded mb-1 border border-indigo-200"
-  }, item.date, item.date_en && /*#__PURE__*/React.createElement("span", {
+  }, item.date, item.date_en && /*#__PURE__*/React.createElement("span", _extends({}, _timelineTranslationAttributes(generatedContent), {
     className: "opacity-60 font-normal ml-1"
-  }, "(", item.date_en, ")")), /*#__PURE__*/React.createElement("p", {
+  }), "(", item.date_en, ")")), /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-medium text-slate-800 leading-relaxed"
-  }, item.event), item.event_en && /*#__PURE__*/React.createElement("p", {
+  }, item.event), item.event_en && /*#__PURE__*/React.createElement("p", _extends({}, _timelineTranslationAttributes(generatedContent), {
     className: "text-xs text-slate-600 italic mt-1"
-  }, item.event_en), (() => {
+  }), item.event_en), (() => {
     const _vKey = idx + ':' + (item.event || '');
     const _flagged = item.verification && (item.verification.factual === false || item.verification.position === false);
     if (!_flagged || dismissedVerifications.has(_vKey)) return null;

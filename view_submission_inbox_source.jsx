@@ -310,7 +310,8 @@ function siAssessmentAnswerForGrading(type, row) {
   }
   if (type === 'fill-blank') {
     var fill = a && typeof a.text === 'string' ? a.text : response;
-    return fill ? { text: fill } : null;
+    // The AI verdict the learner saw lets the grader send a near-miss to review.
+    return fill ? (a && typeof a.aiVerdict === 'string' ? { text: fill, aiVerdict: a.aiVerdict } : { text: fill }) : null;
   }
   if (type === 'sequence-sense' || type === 'relation-mismatch') return a;
   return null;
@@ -344,6 +345,9 @@ function siAssessmentReport(value, resourceId, history, content) {
   var questions = data && Array.isArray(data.questions) && data.answerKeysWithheld !== true ? data.questions : null;
   var grader = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizLiveAggregators;
   var signatureFor = grader && typeof grader.assessmentItemSignature === 'function' ? grader.assessmentItemSignature : null;
+  // Rows saved before Sequence Sense signatures used display order still match.
+  var legacySignatureFor = grader && typeof grader.legacyAssessmentItemSignature === 'function' ? grader.legacyAssessmentItemSignature : null;
+  var signs = function (candidate, signature) { return !!candidate && (signatureFor(candidate) === signature || !!legacySignatureFor && legacySignatureFor(candidate) === signature); };
   var copyStatus = questions ? 'found' : matches.length > 1 ? 'ambiguous' : teacherQuiz ? 'no-key' : 'missing';
   var studentCopy = (Array.isArray(content) ? content : []).find(function (item) { return item && String(item.id) === id; });
   var title = siResponseText((teacherQuiz && teacherQuiz.title) || (studentCopy && studentCopy.title) || '', 160);
@@ -357,8 +361,8 @@ function siAssessmentReport(value, resourceId, history, content) {
     var changed = false, versionUnverified = false;
     var signature = typeof row.questionSignature === 'string' ? row.questionSignature : '';
     if (questions && signature) {
-      if (!signatureFor || !question || signatureFor(question) !== signature) {
-        var bySignature = signatureFor ? questions.filter(function (candidate) { return candidate && signatureFor(candidate) === signature; }) : [];
+      if (!signatureFor || !signs(question, signature)) {
+        var bySignature = signatureFor ? questions.filter(function (candidate) { return signs(candidate, signature); }) : [];
         question = bySignature.length === 1 ? bySignature[0] : null;
         changed = !question;
       }

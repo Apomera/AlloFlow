@@ -525,28 +525,62 @@ function UniversalSettingsPanel(props) {
     languageInput, setLanguageInput, addLanguage, removeLanguage, handleKeyDown,
     setSourceTopic,
     translationMode, setTranslationMode, currentUiLanguage,
+    outputLanguagePreference, setOutputLanguagePreference,
     resolveTranslationPolicy, isTranslationControlRelevant, translationTargetChoices
   } = props;
+  const languageApi = window.AlloModules?.TextPipelineHelpers || {};
+  const normalizeLanguage = languageApi.normalizeLanguageName || (value => String(value || '').trim());
+  const sameLanguage = (a, b) => normalizeLanguage(a).toLowerCase() === normalizeLanguage(b).toLowerCase();
+  const uniqueLanguages = values => (Array.isArray(values) ? values : []).map(normalizeLanguage)
+    .filter((language, index, languages) => language && language !== 'All Selected Languages'
+      && languages.findIndex(candidate => sameLanguage(candidate, language)) === index);
+  const appLanguage = normalizeLanguage(currentUiLanguage) || 'English';
+  const extraLanguages = uniqueLanguages(selectedLanguages);
+  const hasAddedAppLanguage = extraLanguages.some(language => sameLanguage(language, appLanguage));
+  const activeExplicit = outputLanguagePreference?.mode === 'language' ? outputLanguagePreference.language
+    : !outputLanguagePreference && leveledTextLanguage !== 'All Selected Languages' ? leveledTextLanguage : '';
+  const outputLanguages = typeof languageApi.languageOptions === 'function'
+    ? languageApi.languageOptions(appLanguage, extraLanguages, activeExplicit)
+    : uniqueLanguages(['English', appLanguage, ...extraLanguages, activeExplicit]);
+  const allLanguages = typeof languageApi.allGenerationLanguages === 'function'
+    ? languageApi.allGenerationLanguages(appLanguage, extraLanguages) : uniqueLanguages([appLanguage, ...extraLanguages]);
+  const outputSelection = outputLanguagePreference?.mode === 'app' ? '__app__'
+    : outputLanguagePreference?.mode === 'all-selected' || (!outputLanguagePreference && leveledTextLanguage === 'All Selected Languages') ? 'All Selected Languages'
+    : normalizeLanguage(activeExplicit || leveledTextLanguage) || appLanguage;
+  const languageText = (key, fallback, values = {}) => {
+    const translated = t(key);
+    return Object.entries(values).reduce((text, [name, value]) => text.replace(`{${name}}`, value),
+      translated && translated !== key ? translated : fallback);
+  };
+  const selectOutputLanguage = value => {
+    if (typeof setOutputLanguagePreference === 'function') setOutputLanguagePreference(value === '__app__' ? { mode: 'app' }
+      : value === 'All Selected Languages' ? { mode: 'all-selected' } : { mode: 'language', language: normalizeLanguage(value) });
+    else setLeveledTextLanguage(value === '__app__' ? appLanguage : value);
+  };
   // ── Translations control ─────────────────────────────────────────────
   // Reads the SAME resolver the generators read, passed down from the host.
   // The panel deliberately owns no interpretation of the stored value: it
   // renders whatever the resolver says the mode is, so a stale or unknown
   // setting shows the teacher the state generation will actually use rather
   // than a state only the panel believes in.
-  const translationChoices = typeof translationTargetChoices === 'function'
+  const allOutputLanguages = outputSelection === 'All Selected Languages';
+  const translationChoices = allOutputLanguages ? uniqueLanguages([appLanguage, 'English', ...extraLanguages])
+    : typeof translationTargetChoices === 'function'
     ? translationTargetChoices(leveledTextLanguage, currentUiLanguage, selectedLanguages)
     : [];
   const translationPolicy = typeof resolveTranslationPolicy === 'function'
     ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage, translationChoices)
     : { enabled: false, target: '', mode: 'auto' };
-  const translationAutoTarget = typeof resolveTranslationPolicy === 'function'
+  const translationAutoTarget = allOutputLanguages ? appLanguage : typeof resolveTranslationPolicy === 'function'
     ? resolveTranslationPolicy('auto', leveledTextLanguage, currentUiLanguage, translationChoices).target
     : '';
   // Hidden for the English-in / English-out majority, which is the whole point:
   // a teacher who never works in another language never sees this control.
   const showTranslationControl = typeof isTranslationControlRelevant === 'function'
     && typeof setTranslationMode === 'function'
-    && isTranslationControlRelevant(translationMode, leveledTextLanguage, currentUiLanguage, translationChoices);
+    && (isTranslationControlRelevant(translationMode, leveledTextLanguage, currentUiLanguage, translationChoices)
+      || (allOutputLanguages && typeof resolveTranslationPolicy === 'function'
+        && allLanguages.some(language => resolveTranslationPolicy(translationMode, language, appLanguage, translationChoices).enabled)));
   // Open state lives in the host: this panel sits inside the 'create' tab
   // subtree, so component-local state re-collapsed the card on every tab switch.
   const isOpen = !!isUniversalSettingsOpen;
@@ -669,7 +703,7 @@ function UniversalSettingsPanel(props) {
                     <p className="text-[11px] leading-relaxed text-slate-600">
                       {t('universal.scope_note') || 'These steer what AlloFlow writes for you.'}
                     </p>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
                             <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.grade_level')}</label>
                             <select aria-label={t('common.selection')}
@@ -696,16 +730,16 @@ function UniversalSettingsPanel(props) {
                             </select>
                         </div>
                         <div>
-                            <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.output_language')}</label>
-                            <select aria-label={t('common.selection')}
+                            <label htmlFor="universal-output-language" className={SIDEBAR_PANEL_UI.label}>{t('wizard.output_language')}</label>
+                            <select id="universal-output-language"
                                 data-help-key="simplified_language"
-                                value={leveledTextLanguage}
-                                onChange={(e) => setLeveledTextLanguage(e.target.value)}
+                                value={outputSelection}
+                                onChange={(e) => selectOutputLanguage(e.target.value)}
                                 className={SIDEBAR_PANEL_UI.control}
                             >
-                                <option value="English">{t('languages.english')}</option>
-                                {selectedLanguages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
-                                {selectedLanguages.length > 0 && <option value="All Selected Languages">{t('languages.all_selected')}</option>}
+                                <option value="__app__">{languageText('universal.output_use_app', 'Use app language ({language})', { language: appLanguage })}</option>
+                                {outputLanguages.map(lang => <option key={lang} value={lang}>{lang === 'English' ? t('languages.english') : lang}</option>)}
+                                <option value="All Selected Languages">{languageText('universal.all_generation_languages', 'App and added languages ({count})', { count: allLanguages.length })}</option>
                             </select>
                             {/* The builder for this list used to live in the Glossary panel while
                                 its main consumer was this dropdown — so adding a language meant
@@ -714,7 +748,7 @@ function UniversalSettingsPanel(props) {
                                 translations), so it belongs with the shared settings. */}
                             <div className="mt-2" data-help-key="glossary_language_input">
                                 <label className={SIDEBAR_PANEL_UI.label}>
-                                    {t('glossary.add_languages_label')}
+                                    {languageText('universal.additional_languages', 'Additional languages')}
                                 </label>
                                 <div className="flex gap-2">
                                     <input
@@ -722,14 +756,14 @@ function UniversalSettingsPanel(props) {
                                         value={languageInput}
                                         onChange={(e) => setLanguageInput(e.target.value)}
                                         onKeyDown={handleKeyDown}
-                                        placeholder={t('glossary.language_placeholder')}
+                                        placeholder={languageText('universal.language_placeholder', 'Add a language (e.g., Spanish)')}
                                         maxLength={40}
                                         className={`${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`}
                                         aria-label={t('common.target_language_aria')}
                                     />
                                     <button type="button"
                                         onClick={addLanguage}
-                                        disabled={!languageInput.trim() || selectedLanguages.length >= 4}
+                                        disabled={!languageInput.trim() || extraLanguages.length >= 4}
                                         className={SIDEBAR_PANEL_UI.iconButton}
                                         aria-label={t('common.add')}
                                     >
@@ -737,14 +771,22 @@ function UniversalSettingsPanel(props) {
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-2 min-h-[1.5rem] mt-2">
-                                    {selectedLanguages.map(lang => (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-800 border border-sky-200" data-app-language-pill>
+                                        {languageText('universal.app_language_pill', '{language} · App language', { language: appLanguage })}
+                                        {hasAddedAppLanguage && <button type="button" onClick={() => removeLanguage(appLanguage)} className="hover:text-sky-950 focus-visible:ring-2 focus-visible:ring-sky-500 rounded-full"
+                                          aria-label={languageText('universal.remove_added_language', 'Remove {language} from added languages', { language: appLanguage })}
+                                          title={languageText('universal.remove_app_added_language_hint', 'Remove this added language; it remains available as the app language.')}><X size={12} /></button>}
+                                    </span>
+                                    {extraLanguages.filter(lang => !sameLanguage(lang, appLanguage)).map(lang => (
                                         <span key={lang} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
                                             {lang}
-                                            <button type="button" onClick={() => removeLanguage(lang)} className="hover:text-indigo-900" aria-label={"Remove " + lang}><X size={12} /></button>
+                                            <button type="button" onClick={() => removeLanguage(lang)} className="hover:text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-full"
+                                              aria-label={languageText('universal.remove_added_language', 'Remove {language} from added languages', { language: lang })}><X size={12} /></button>
                                         </span>
                                     ))}
-                                    {selectedLanguages.length === 0 && <span className="text-xs text-slate-600 italic">{t('glossary.no_languages')}</span>}
                                 </div>
+                                <p className="text-[10px] text-slate-500 mt-1">{languageText('universal.language_limit_hint', '{count}/4 added languages. App language is available automatically.', { count: extraLanguages.length })}</p>
+                                <p className="text-[10px] text-slate-500 mt-1">{languageText('universal.languages_new_resources', 'Changes apply to new resources. Saved resources keep their languages.')}</p>
                             </div>
                             {/* One selector, two questions. "Include translations?"
                                 and "into which language?" are genuinely separate,
@@ -778,7 +820,7 @@ function UniversalSettingsPanel(props) {
                                     ))}
                                 </select>
                                 <p className="text-[10px] text-slate-500 leading-snug mt-1">
-                                    {translationPolicy.enabled
+                                    {allOutputLanguages ? languageText('universal.translations_all_hint', 'Applies to each output language. Matching languages do not add a second version.') : translationPolicy.enabled
                                         ? (t('universal.translations_on_hint') || 'Resources in {output} will also include a version in {target}.')
                                             .replace('{output}', leveledTextLanguage).replace('{target}', translationPolicy.target)
                                         : (t('universal.translations_off_hint') || 'Resources will be in {output} only, with no second-language version.')
@@ -1119,6 +1161,7 @@ function UniversalSettingsPanel(props) {
                             )}
                         </div>
                         <div className="mt-2" data-help-key="universal_image_style">
+                            {window.AlloModules?.AiImageGenerationToggle && React.createElement(window.AlloModules.AiImageGenerationToggle)}
                             <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
                                 <Palette size={12} className="text-indigo-500"/> {t('universal.image_style') || 'Image Style (default)'} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                             </label>
@@ -1147,7 +1190,7 @@ function AdventurePanel(props) {
     Cloud, CloudOff, Octagon, Package,
     addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters,
     adventureCustomArtStyle, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled,
-    adventureInputMode, adventureLanguageMode, adventureState, enableFactionResources,
+    adventureInputMode, adventureLanguageMode, adventureLanguagePreference, currentUiLanguage, adventureState, enableFactionResources,
     expandedTools, factionResourceMode, globalPoints, handleResumeAdventure,
     handleSetFactionResourceModeToAi, handleSetFactionResourceModeToManual, handleStartAdventure, hasSavedAdventure,
     hasSourceOrAnalysis, isAdventureCloudEnabled, isAdventureStoryMode, isProcessing,
@@ -2106,7 +2149,8 @@ function GlossaryPanel(props) {
     hasSourceOrAnalysis, includeEtymology, isProcessing,
     leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
     setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count,
-    setIncludeEtymology, t
+    setIncludeEtymology, t, nativeLanguageDefaultsVersion, appLanguage, currentUiLanguage,
+    translationMode, resolveTranslationPolicy, translationTargetChoices
   } = props;
   if (!expandedTools || !expandedTools.includes('glossary')) return null;
   return (
@@ -2194,14 +2238,37 @@ function GlossaryPanel(props) {
                         coming — but it is not the place to edit the list. */}
                     <div className="mb-3 text-xs text-slate-600" data-help-key="glossary_language_summary">
                         {(() => {
-                            // Translation columns follow the universal Output Language
-                            // (2026-09-03): every selected language only when the output is
-                            // "All Selected Languages"; otherwise the one output language.
+                            const languageApi = window.AlloModules?.TextPipelineHelpers || {};
+                            const normalize = languageApi.normalizeLanguageName || (value => String(value || '').trim());
+                            const same = (a, b) => normalize(a).toLowerCase() === normalize(b).toLowerCase();
+                            const unique = values => values.map(normalize).filter((value, index, list) => value && list.findIndex(candidate => same(candidate, value)) === index);
                             const output = String(leveledTextLanguage || 'English').replace(/\s+/g, ' ').trim();
-                            const columns = /^all selected languages$/i.test(output) ? (selectedLanguages || []) : (/^english$/i.test(output) ? [] : [output]);
-                            return columns.length > 0
-                                ? <span>{t('glossary.will_translate') || 'Will include translations for'}: <span className="font-bold text-sky-700">{columns.join(', ')}</span> <span className="text-slate-500">({t('glossary.follows_output_language') || 'follows the Output Language in Universal Settings'})</span></span>
-                                : <span className="italic">{t('glossary.english_only_hint') || 'English only. Set an Output Language in Universal Settings to add a translation column.'}</span>;
+                            const app = normalize(appLanguage || currentUiLanguage) || 'English';
+                            const nativeDefaults = Number(nativeLanguageDefaultsVersion) >= 1;
+                            const all = /^all selected languages$/i.test(output);
+                            const effectiveLanguages = typeof languageApi.allGenerationLanguages === 'function'
+                                ? languageApi.allGenerationLanguages(app, (selectedLanguages || [])) : unique([app, ...(selectedLanguages || [])]);
+                            const base = nativeDefaults ? (all ? app : normalize(output)) : 'English';
+                            const choices = typeof translationTargetChoices === 'function' ? translationTargetChoices(base, app, selectedLanguages) : undefined;
+                            const policy = typeof resolveTranslationPolicy === 'function' ? resolveTranslationPolicy(translationMode, base, app, choices) : { enabled: false, target: '' };
+                            const resolvePlan = window.AlloModules?.GenDispatcher?.resolveGlossaryLanguagePlan;
+                            const plan = typeof resolvePlan === 'function' ? resolvePlan({ outputLanguage: output, appLanguage: app,
+                                selectedLanguages, translationPolicy: policy, nativeLanguageDefaultsVersion, effectiveLanguageList: effectiveLanguages }) : null;
+                            const baseLanguage = plan?.baseLanguage || base;
+                            const columns = plan?.translationLanguages || unique([
+                                ...(all ? (nativeDefaults ? effectiveLanguages : (selectedLanguages || [])) : nativeDefaults ? [] : [output]),
+                                ...(policy.enabled ? [policy.target] : [])
+                            ]).filter(language => !same(language, baseLanguage));
+                            const text = (key, fallback, values = {}) => {
+                                const value = t(key);
+                                return Object.entries(values).reduce((copy, [name, replacement]) => copy.replace(`{${name}}`, replacement), value && value !== key ? value : fallback);
+                            };
+                            return <span>
+                                <span>{text('universal.glossary_next_base', 'Next glossary: {language} definitions', { language: baseLanguage })}</span>{' · '}
+                                {columns.length > 0
+                                    ? <span>{text('universal.glossary_next_translations', 'Translation columns: {languages}', { languages: columns.join(', ') })}</span>
+                                    : <span>{text('universal.glossary_next_no_translations', 'No translation columns.')}</span>}
+                            </span>;
                         })()}
                     </div>
                     <div className="mt-3 pt-2 border-t border-slate-100">
@@ -3018,6 +3085,14 @@ function ImagePanel(props) {
   const visualStyleMode = !visualStyle || visualStyle === 'Default' ? 'inherit' : 'override';
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
+                    {window.AlloModules?.ResourceImageInput && <details className="mb-3 rounded-lg border border-slate-300 bg-white p-3"><summary className="min-h-11 cursor-pointer text-sm font-bold">Use your own image or drawing</summary>{React.createElement(window.AlloModules.ResourceImageInput, {
+                      label: 'New lesson image', disabled: isProcessing,
+                      onApply: result => {
+                        const detail = { result, accepted: false };
+                        window.dispatchEvent(new CustomEvent('alloflow:create-authored-image', { detail }));
+                        return detail.accepted;
+                      }
+                    })}</details>}
                     <div className={SIDEBAR_PANEL_UI.settingsSurface} data-help-key="tour-visual-settings">
                         <div className="flex flex-col gap-2">
                             <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
@@ -3593,7 +3668,7 @@ function GeneratorActionsView(props) {
     _alloDiagnosticReason, _alloGenerationHelpersDeps, activeView, addConcept, addInterest, addLanguage,
     addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters,
     adventureCustomArtStyle, adventureCustomInstructions, adventureDifficulty,
-    adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureState,
+    adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureLanguagePreference, adventureState,
     aiCapability, aiStandardQuery, anchorChartCustomInstructions, anchorChartType,
     appliedChallengeAgencyMode, appliedChallengeCustomInstructions, appliedChallengePlan, appliedChallengeFamily,
     appliedChallengeScope, appliedChallengeSelectionMode, autoAttachManipulatives, autoRemoveWords,
@@ -3601,7 +3676,7 @@ function GeneratorActionsView(props) {
     checkAccuracyWithSearch, conceptImageMode, conceptInput, conceptItemCount,
     conceptSortCustomInstructions, conceptSortImageStyle, createGuidedHomeworkShare, creativeMode,
     cubeAnswer, cubeChallenge, cubeDims, cubeDragRef, cubeFeedback, cubeNotch, cubeRotation, cubeScale,
-    cubeShape, cubeShowLayers, currentUiLanguage, dbqCustomInstructions, differentiationCustomGrades,
+    cubeShape, cubeShowLayers, currentUiLanguage, appLanguage, nativeLanguageDefaultsVersion, dbqCustomInstructions, differentiationCustomGrades,
     differentiationRange, differentiationTypes, dokLevel, enableFactionResources, expandedTools,
     exploreDifficulty, factionResourceMode, faqCount, faqCustomInstructions, fetchAndCleanUrl,
     fillInTheBlank, frameCustomInstructions, frameType, fullPackAddType, fullPackRun,
@@ -3625,7 +3700,7 @@ function GeneratorActionsView(props) {
     isMathGraphEnabled, isParentMode, isPersonaFreeResponse, isProcessing, isResumingAdventure,
     isSocialStoryMode, isTeacherMode, isToolCatalogExpanded, isToolCatalogHidden,
     isToolCatalogItemVisible, isTranslationControlRelevant, isUniversalSettingsOpen, keepCitations,
-    languageInput, lessonCustomAdditions, leveledTextCustomInstructions, leveledTextLanguage,
+    languageInput, lessonCustomAdditions, leveledTextCustomInstructions, leveledTextLanguage, outputLanguagePreference,
     leveledTextLength, mathInput, mathMode, mathQuantity, mathSubject, mcqVisualMode,
     memoryAidAuthorshipMode, memoryAidCount, memoryAidCustomInstructions, memoryAidIncludeHookFacts,
     memoryAidIncludeVisuals, memoryAidReasoningRequired, memoryAidReflectionLevel,
@@ -3655,7 +3730,7 @@ function GeneratorActionsView(props) {
     setIsAdventureCloudEnabled, setIsAdventureStoryMode, setIsAutoConfigEnabled, setIsMathGraphEnabled,
     setIsPersonaFreeResponse, setIsSocialStoryMode, setIsToolCatalogExpanded, setIsToolCatalogHidden,
     setIsUniversalSettingsOpen, setKeepCitations, setLanguageInput, setLessonCustomAdditions,
-    setLeveledTextCustomInstructions, setLeveledTextLanguage, setLeveledTextLength, setMathInput,
+    setLeveledTextCustomInstructions, setLeveledTextLanguage, setOutputLanguagePreference, setLeveledTextLength, setMathInput,
     setMathMode, setMathQuantity, setMathSubject, setMbDirectionsDraft, setMcqVisualMode,
     setMemoryAidAuthorshipMode, setMemoryAidCount, setMemoryAidCustomInstructions,
     setMemoryAidIncludeHookFacts, setMemoryAidIncludeVisuals, setMemoryAidReasoningRequired,
@@ -3769,7 +3844,7 @@ function GeneratorActionsView(props) {
           // and the panel needs it to decide whether the control is relevant
           // at all. The resolver itself is passed in so the panel and the
           // generators cannot drift into two readings of the same setting.
-          translationMode, setTranslationMode, currentUiLanguage,
+          translationMode, setTranslationMode, currentUiLanguage, outputLanguagePreference, setOutputLanguagePreference,
           resolveTranslationPolicy, isTranslationControlRelevant, translationTargetChoices
             })}
             <div style={{display: isGuidedToolVisible('analysis') ? undefined : 'none'}} id="tour-tool-analysis" data-help-key="tool_analysis" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
@@ -3809,7 +3884,8 @@ function GeneratorActionsView(props) {
           handleGenerate, hasSourceOrAnalysis, includeEtymology, isProcessing,
           leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
           setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology,
-          t
+          t, nativeLanguageDefaultsVersion, appLanguage, currentUiLanguage,
+          translationMode, resolveTranslationPolicy, translationTargetChoices
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('simplified') ? undefined : 'none'}} id="ui-tool-simplified" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
@@ -4163,7 +4239,7 @@ function GeneratorActionsView(props) {
               {expandedTools.includes('adventure') && window.AlloModules && window.AlloModules.AdventurePanel && React.createElement(window.AlloModules.AdventurePanel, {
           expandedTools, Cloud, CloudOff, Octagon, Package,
           addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters, adventureCustomArtStyle,
-          adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode,
+          adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureLanguagePreference,
           adventureState, enableFactionResources, factionResourceMode, globalPoints, handleResumeAdventure,
           handleSetFactionResourceModeToAi, handleSetFactionResourceModeToManual, handleStartAdventure, hasSourceOrAnalysis,
           // Lesson-scoped, so Resume never points at a previous lesson's story.
@@ -4263,7 +4339,8 @@ function GeneratorActionsView(props) {
         setShowAIBackendModal, setShowCompletedFullPackRows, setShowSessionStartOptions, showCompletedFullPackRows, studentInterests, t, targetStandards, textFormat,
         translationMode, universalImageStyle, useEmojis,
         // Grade-level standard: the pack's main reading is the original with supports.
-        handleReadOriginal: props.handleReadOriginal
+        handleReadOriginal: props.handleReadOriginal,
+        previewGuidedStudentAssignment: props.previewGuidedStudentAssignment
         }}
       />
             <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all motion-reduce:transition-none group">

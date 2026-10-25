@@ -485,6 +485,7 @@ const _GetFeedbackButton = ({ onClick, isLoading, disabled, t, colorClass = "eme
     /* @__PURE__ */ React.createElement("span", null, isLoading ? t("notes_feedback.loading") || "Reading your notes..." : t("notes_feedback.button") || "Get AI Feedback")
   ));
 };
+const _cornellCueGuidance = (cue) => typeof cue?.guidance === "string" && cue.guidance.length <= 1e3 ? cue.guidance.trim() : "";
 const CornellNotesView = React.memo((props) => {
   const generatedContent = props.generatedContent;
   const handleNoteUpdate = props.handleNoteUpdate || (() => {
@@ -497,6 +498,8 @@ const CornellNotesView = React.memo((props) => {
   const notes = Array.isArray(data.notes) ? data.notes : [];
   const summary = typeof data.summary === "string" ? data.summary : "";
   const lessonRef = data.lessonRef || {};
+  const guidanceId = React.useId();
+  const hasGuidance = cues.some((cue) => !!_cornellCueGuidance(cue));
   const fb = _useNotesFeedback(props, "cornell-notes");
   const rowCount = Math.max(cues.length, notes.length, 1);
   const handleCueChange = (idx, newText) => {
@@ -521,39 +524,42 @@ const CornellNotesView = React.memo((props) => {
   };
   const handleSummaryChange = (e) => handleNoteUpdate("summary", e.target.value);
   const handleTitleChange = (e) => handleNoteUpdate("title", e.target.value);
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4", "data-help-key": "cornell_notes_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-indigo-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1" }, "Cornell Notes"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4", "data-help-key": "cornell_notes_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-indigo-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_cornell", "Cornell Notes")), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: title,
       onChange: handleTitleChange,
-      placeholder: "Today's lesson title",
+      placeholder: _noteText(t, "note_taking.lesson_title_placeholder", "Today's lesson title"),
       className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-indigo-500 py-1",
       "aria-label": t("a11y.cornell_title"),
       "data-help-key": "cornell_notes_title_field"
     }
-  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "cornell_notes_two_column_grid" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-[35%_65%] bg-slate-100 border-b border-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300", "data-help-key": "cornell_notes_cue_column" }, "Cues / Questions"), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700", "data-help-key": "cornell_notes_notes_column" }, "Notes")), Array.from({ length: rowCount }).map((_, idx) => {
+  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "cornell_notes_two_column_grid" }, /* @__PURE__ */ React.createElement("div", { className: `${hasGuidance ? "hidden sm:grid" : "grid"} grid-cols-[35%_65%] bg-slate-100 border-b border-slate-300` }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300", "data-help-key": "cornell_notes_cue_column" }, _noteText(t, "note_taking.cues_column", "Cues / Questions")), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700", "data-help-key": "cornell_notes_notes_column" }, _noteText(t, "note_taking.notes_column", "Notes"))), Array.from({ length: rowCount }).map((_, idx) => {
     const cueText = cues[idx] && cues[idx].text || "";
     const noteText = notes[idx] && notes[idx].text || "";
-    return /* @__PURE__ */ React.createElement("div", { key: idx, className: "grid grid-cols-[35%_65%] border-b border-slate-200 last:border-b-0 group" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 border-r border-slate-200 relative" }, /* @__PURE__ */ React.createElement(
+    const guidance = _cornellCueGuidance(cues[idx]);
+    const rowGuidanceId = guidance ? `${guidanceId}-cornell-guidance-${idx}` : void 0;
+    return /* @__PURE__ */ React.createElement("div", { key: idx, "data-cornell-guided-row": guidance ? "true" : void 0, className: `grid ${guidance ? "grid-cols-1 sm:grid-cols-[35%_65%]" : "grid-cols-[35%_65%]"} border-b border-slate-200 last:border-b-0 group` }, /* @__PURE__ */ React.createElement("div", { className: `min-w-0 px-3 py-2 ${guidance ? "border-b sm:border-b-0 sm:border-r" : "border-r"} border-slate-200 relative` }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: cueText,
         onChange: (e) => handleCueChange(idx, e.target.value),
-        placeholder: idx === 0 ? "Key term, question, cue..." : "",
+        placeholder: idx === 0 ? _noteText(t, "note_taking.cue_placeholder", "Key term, question, cue...") : "",
         className: "w-full text-sm text-slate-700 bg-transparent resize-none focus:ring-2 focus:ring-indigo-300 rounded p-1 min-h-[60px]",
         rows: 2,
-        "aria-label": `Cue ${idx + 1}`
+        "aria-label": _noteText(t, "note_taking.cue_n", "Cue {n}").replace("{n}", () => idx + 1)
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 relative" }, /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: `${guidance ? "min-w-0 pl-3 pr-9" : "px-3"} py-2 relative` }, guidance ? /* @__PURE__ */ React.createElement("p", { id: rowGuidanceId, "data-cornell-guidance": "true", className: "mb-2 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap break-words" }, guidance) : null, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: noteText,
         onChange: (e) => handleNoteChange(idx, e.target.value),
-        placeholder: idx === 0 ? "Notes, details, examples..." : "",
-        className: "w-full text-sm text-slate-700 bg-transparent resize-none focus:ring-2 focus:ring-indigo-300 rounded p-1 min-h-[60px]",
+        placeholder: guidance ? _noteText(t, "quiz.live_student.write_response", "Write your response") : idx === 0 ? _noteText(t, "note_taking.notes_placeholder", "Notes, details, examples...") : "",
+        className: `w-full text-sm text-slate-700 focus:ring-2 focus:ring-indigo-300 rounded ${guidance ? "bg-slate-50 border border-slate-300 resize-y p-2 min-h-[96px]" : "bg-transparent resize-none p-1 min-h-[60px]"}`,
         rows: 2,
-        "aria-label": `Notes for row ${idx + 1}`
+        "aria-label": _noteText(t, "note_taking.notes_row_n", "Notes for row {n}").replace("{n}", () => idx + 1),
+        "aria-describedby": rowGuidanceId
       }
     ), /* @__PURE__ */ React.createElement(
       "button",
@@ -561,8 +567,8 @@ const CornellNotesView = React.memo((props) => {
         type: "button",
         onClick: () => handleRemoveRow(idx),
         className: "absolute right-1 top-1 opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs px-1",
-        "aria-label": `Remove row ${idx + 1}`,
-        title: "Remove row"
+        "aria-label": _noteText(t, "note_taking.remove_row_n", "Remove row {n}").replace("{n}", () => idx + 1),
+        title: _noteText(t, "note_taking.remove_row", "Remove row")
       },
       "\u2715"
     )));
@@ -575,8 +581,9 @@ const CornellNotesView = React.memo((props) => {
       "aria-label": t("a11y.cornell_add_row"),
       "data-help-key": "cornell_notes_add_row_button"
     },
-    "+ Add row"
-  )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Summary", hint: "Write a short summary after the lesson. The act of summarizing in your own words consolidates the learning.", color: "emerald" }, /* @__PURE__ */ React.createElement(
+    "+ ",
+    _noteText(t, "note_taking.add_row", "Add row")
+  )), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.summary_title", "Summary"), hint: _noteText(t, "note_taking.summary_hint", "Write a short summary after the lesson. The act of summarizing in your own words consolidates the learning."), color: "emerald" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: summary,
@@ -587,7 +594,7 @@ const CornellNotesView = React.memo((props) => {
       "aria-label": t("a11y.cornell_summary"),
       "data-help-key": "cornell_notes_summary_section"
     }
-  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Cornell Notes: cues on the left, notes on the right, summary below. ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, hasGuidance ? _noteText(t, "note_taking.cornell_footer_guided", "Cornell Notes: use cues and notes together, then summarize below.") : _noteText(t, "note_taking.cornell_footer", "Cornell Notes: cues on the left, notes on the right, summary below."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const LabReportView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -621,7 +628,7 @@ const LabReportView = React.memo((props) => {
   };
   const addProcedureStep = () => handleNoteUpdate("procedure", procedure.concat([{ id: _genId("step"), text: "" }]));
   const removeProcedureStepAt = (idx) => handleNoteUpdate("procedure", procedure.filter((_, i) => i !== idx));
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6 space-y-4", "data-help-key": "lab_report_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-sky-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-sky-700 uppercase tracking-wider mb-1" }, "Lab Report"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6 space-y-4", "data-help-key": "lab_report_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-sky-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-sky-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_lab", "Lab Report")), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -632,7 +639,7 @@ const LabReportView = React.memo((props) => {
       "aria-label": t("a11y.lab_report_title"),
       "data-help-key": "lab_report_title_field"
     }
-  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: "Research Question", hint: "What are you investigating? Frame it as a question you can answer through observation.", color: "sky" }, /* @__PURE__ */ React.createElement(
+  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.research_question", "Research Question"), hint: _noteText(t, "note_taking.research_question_hint", "What are you investigating? Frame it as a question you can answer through observation."), color: "sky" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: question,
@@ -642,7 +649,7 @@ const LabReportView = React.memo((props) => {
       rows: 2,
       "aria-label": t("a11y.research_question")
     }
-  )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Hypothesis", hint: "Sentence frame: 'I predict that ___ will happen because ___.'", color: "violet" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.hypothesis", "Hypothesis"), hint: _noteText(t, "note_taking.hypothesis_hint", "Sentence frame: 'I predict that ___ will happen because ___.'"), color: "violet" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: hypothesis,
@@ -653,25 +660,25 @@ const LabReportView = React.memo((props) => {
       "aria-label": t("a11y.hypothesis"),
       "data-help-key": "lab_report_hypothesis_field"
     }
-  )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Materials", hint: "List everything you need to run the experiment.", color: "amber" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, materials.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "No materials added yet.") : materials.map((m, idx) => /* @__PURE__ */ React.createElement("li", { key: m.id || idx, className: "flex items-center gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs" }, "\u2022"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.materials", "Materials"), hint: _noteText(t, "note_taking.materials_hint", "List everything you need to run the experiment."), color: "amber" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, materials.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, _noteText(t, "note_taking.no_materials", "No materials added yet.")) : materials.map((m, idx) => /* @__PURE__ */ React.createElement("li", { key: m.id || idx, className: "flex items-center gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs" }, "\u2022"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: m.text || "",
       onChange: (e) => updateMaterialAt(idx, e.target.value),
       className: "flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 focus:ring-2 focus:ring-amber-300",
-      "aria-label": `Material ${idx + 1}`
+      "aria-label": _noteText(t, "note_taking.material_n", "Material {n}").replace("{n}", () => idx + 1)
     }
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeMaterialAt(idx), className: "opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs", "aria-label": t("a11y.remove_material") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addMaterial, className: "mt-2 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200" }, "+ Add material")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Procedure", hint: "Number each step. Another student should be able to follow your procedure and reproduce your experiment.", color: "emerald" }, /* @__PURE__ */ React.createElement("ol", { className: "space-y-1" }, procedure.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "No steps added yet.") : procedure.map((s, idx) => /* @__PURE__ */ React.createElement("li", { key: s.id || idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs font-bold mt-1.5 w-5 flex-shrink-0" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeMaterialAt(idx), className: "opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs", "aria-label": t("a11y.remove_material") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addMaterial, className: "mt-2 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200" }, "+ ", _noteText(t, "note_taking.add_material", "Add material"))), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.procedure", "Procedure"), hint: _noteText(t, "note_taking.procedure_hint", "Number each step. Another student should be able to follow your procedure and reproduce your experiment."), color: "emerald" }, /* @__PURE__ */ React.createElement("ol", { className: "space-y-1" }, procedure.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, _noteText(t, "note_taking.no_steps", "No steps added yet.")) : procedure.map((s, idx) => /* @__PURE__ */ React.createElement("li", { key: s.id || idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs font-bold mt-1.5 w-5 flex-shrink-0" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: s.text || "",
       onChange: (e) => updateProcedureAt(idx, e.target.value),
       className: "flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 focus:ring-2 focus:ring-emerald-300 resize-y min-h-[40px]",
       rows: 1,
-      "aria-label": `Procedure step ${idx + 1}`
+      "aria-label": _noteText(t, "note_taking.procedure_step_n", "Procedure step {n}").replace("{n}", () => idx + 1)
     }
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeProcedureStepAt(idx), className: "opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": t("a11y.remove_step") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addProcedureStep, className: "mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200", "data-help-key": "lab_report_add_step_button" }, "+ Add step")), /* @__PURE__ */ React.createElement(_CardSection, { title: "Data / Observations", hint: "Record what you see, measure, or count. Use specific numbers and units when possible.", color: "indigo" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeProcedureStepAt(idx), className: "opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": t("a11y.remove_step") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addProcedureStep, className: "mt-2 px-3 py-1 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded hover:bg-emerald-200", "data-help-key": "lab_report_add_step_button" }, "+ ", _noteText(t, "note_taking.add_step", "Add step"))), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.data_observations", "Data / Observations"), hint: _noteText(t, "note_taking.data_observations_hint", "Record what you see, measure, or count. Use specific numbers and units when possible."), color: "indigo" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: dataObservations,
@@ -682,29 +689,29 @@ const LabReportView = React.memo((props) => {
       "aria-label": t("a11y.data_observations"),
       "data-help-key": "lab_report_data_observations_field"
     }
-  )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Analysis (Claim / Evidence / Reasoning)", hint: "State your claim. List the evidence from your data. Explain the reasoning that connects them.", color: "rose" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.analysis", "Analysis (Claim / Evidence / Reasoning)"), hint: _noteText(t, "note_taking.analysis_hint", "State your claim. List the evidence from your data. Explain the reasoning that connects them."), color: "rose" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: analysis,
       onChange: (e) => handleNoteUpdate("analysis", e.target.value),
-      placeholder: "Claim: ...\\nEvidence: ...\\nReasoning: ...",
+      placeholder: _noteText(t, "note_taking.analysis_placeholder", "Claim: ...\nEvidence: ...\nReasoning: ..."),
       className: "w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-rose-300 resize-y min-h-[100px]",
       rows: 5,
-      "aria-label": "Analysis (Claim, Evidence, Reasoning)",
+      "aria-label": _noteText(t, "note_taking.analysis_label", "Analysis (Claim, Evidence, Reasoning)"),
       "data-help-key": "lab_report_cer_section"
     }
-  )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Conclusion", hint: "Did your data support your hypothesis? What did you learn? What new questions came up?", color: "slate" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.conclusion", "Conclusion"), hint: _noteText(t, "note_taking.conclusion_hint", "Did your data support your hypothesis? What did you learn? What new questions came up?"), color: "slate" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: conclusion,
       onChange: (e) => handleNoteUpdate("conclusion", e.target.value),
-      placeholder: "Restate your hypothesis, summarize the results, reflect on what you learned...",
+      placeholder: _noteText(t, "note_taking.conclusion_placeholder", "Restate your hypothesis, summarize the results, reflect on what you learned..."),
       className: "w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-slate-400 resize-y min-h-[80px]",
       rows: 4,
-      "aria-label": "Conclusion",
+      "aria-label": _noteText(t, "note_taking.conclusion", "Conclusion"),
       "data-help-key": "lab_report_conclusion_field"
     }
-  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: "Optional \u2014 how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too.", t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "sky" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Return to this Lab Report to keep adding observations across days. ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.lab_connections_hint", "Optional \u2014 how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "sky" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.lab_footer", "Return to this Lab Report to keep adding observations across days."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const ReadingResponseView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -724,20 +731,20 @@ const ReadingResponseView = React.memo((props) => {
   const setConnectionType = (newType) => handleNoteUpdate("connection", { ...connection, type: newType });
   const setConnectionText = (newText) => handleNoteUpdate("connection", { ...connection, text: newText });
   const connTypes = [
-    { id: "text-to-self", label: "Text to Self", hint: "How does this connect to something in your own life?" },
-    { id: "text-to-text", label: "Text to Text", hint: "How does this connect to another book, story, or article?" },
-    { id: "text-to-world", label: "Text to World", hint: "How does this connect to something happening in the world?" }
+    { id: "text-to-self", label: _noteText(t, "note_taking.text_to_self", "Text to Self"), hint: _noteText(t, "note_taking.text_to_self_hint", "How does this connect to something in your own life?") },
+    { id: "text-to-text", label: _noteText(t, "note_taking.text_to_text", "Text to Text"), hint: _noteText(t, "note_taking.text_to_text_hint", "How does this connect to another book, story, or article?") },
+    { id: "text-to-world", label: _noteText(t, "note_taking.text_to_world", "Text to World"), hint: _noteText(t, "note_taking.text_to_world_hint", "How does this connect to something happening in the world?") }
   ];
   const activeConnType = connTypes.find((ct) => ct.id === connection.type) || connTypes[0];
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "reading_response_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-violet-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-violet-700 uppercase tracking-wider mb-1" }, "Reading Response"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "reading_response_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-violet-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-violet-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_reading_response", "Reading Response")), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: title,
       onChange: (e) => handleNoteUpdate("title", e.target.value),
-      placeholder: "Title of what you read",
+      placeholder: _noteText(t, "note_taking.reading_title_placeholder", "Title of what you read"),
       className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-violet-500 py-1",
-      "aria-label": "Reading title",
+      "aria-label": _noteText(t, "note_taking.reading_title", "Reading title"),
       "data-help-key": "reading_response_title_field"
     }
   ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 mt-2" }, /* @__PURE__ */ React.createElement(
@@ -746,9 +753,9 @@ const ReadingResponseView = React.memo((props) => {
       type: "text",
       value: author,
       onChange: (e) => handleNoteUpdate("author", e.target.value),
-      placeholder: "Author",
+      placeholder: _noteText(t, "note_taking.author", "Author"),
       className: "flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-violet-300 py-1",
-      "aria-label": "Author"
+      "aria-label": _noteText(t, "note_taking.author", "Author")
     }
   ), /* @__PURE__ */ React.createElement(
     "input",
@@ -756,32 +763,32 @@ const ReadingResponseView = React.memo((props) => {
       type: "text",
       value: pageRange,
       onChange: (e) => handleNoteUpdate("pageRange", e.target.value),
-      placeholder: "Pages or chapter",
+      placeholder: _noteText(t, "note_taking.pages", "Pages or chapter"),
       className: "sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-violet-300 py-1",
-      "aria-label": "Pages or chapter"
+      "aria-label": _noteText(t, "note_taking.pages", "Pages or chapter")
     }
-  )), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: "Favorite Line or Passage", hint: "Pick a quote that stuck with you. Include the page number.", color: "amber" }, /* @__PURE__ */ React.createElement(
+  )), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.favorite_line", "Favorite Line or Passage"), hint: _noteText(t, "note_taking.favorite_line_hint", "Pick a quote that stuck with you. Include the page number."), color: "amber" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: favoriteLine,
       onChange: (e) => handleNoteUpdate("favoriteLine", e.target.value),
-      placeholder: '"Quote here..." (p. ___)',
+      placeholder: _noteText(t, "note_taking.favorite_line_placeholder", '"Quote here..." (p. ___)'),
       className: "w-full text-sm italic bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-amber-300 resize-y min-h-[60px]",
       rows: 2,
-      "aria-label": "Favorite line or passage",
+      "aria-label": _noteText(t, "note_taking.favorite_line_label", "Favorite line or passage"),
       "data-help-key": "reading_response_evidence_field"
     }
-  )), /* @__PURE__ */ React.createElement(_CardSection, { title: "What This Made Me Think About", hint: "Free-write what came up for you as you read.", color: "violet" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.thinkings", "What This Made Me Think About"), hint: _noteText(t, "note_taking.thinkings_hint", "Free-write what came up for you as you read."), color: "violet" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: thinkings,
       onChange: (e) => handleNoteUpdate("thinkings", e.target.value),
-      placeholder: "Reflect on what came up for you while reading...",
+      placeholder: _noteText(t, "note_taking.thinkings_placeholder", "Reflect on what came up for you while reading..."),
       className: "w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-violet-300 resize-y min-h-[100px]",
       rows: 5,
-      "aria-label": "What this made me think about"
+      "aria-label": _noteText(t, "note_taking.thinkings_label", "What this made me think about")
     }
-  )), /* @__PURE__ */ React.createElement(_CardSection, { title: "Connection", hint: activeConnType.hint, color: "sky" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", "data-help-key": "reading_response_connection_type_toggle" }, connTypes.map((ct) => /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.connection", "Connection"), hint: activeConnType.hint, color: "sky" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", "data-help-key": "reading_response_connection_type_toggle" }, connTypes.map((ct) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -796,24 +803,24 @@ const ReadingResponseView = React.memo((props) => {
     {
       value: connection.text || "",
       onChange: (e) => setConnectionText(e.target.value),
-      placeholder: `Describe the ${activeConnType.label.toLowerCase()} connection...`,
+      placeholder: _noteText(t, "note_taking.connection_placeholder", "Describe the {type} connection...").replace("{type}", () => String(activeConnType.label).toLowerCase()),
       className: "w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-sky-300 resize-y min-h-[80px]",
       rows: 4,
-      "aria-label": "Connection text",
+      "aria-label": _noteText(t, "note_taking.connection_text", "Connection text"),
       "data-help-key": "reading_response_connection_field"
     }
-  )), /* @__PURE__ */ React.createElement(_CardSection, { title: "One Question I Have", hint: "What did this reading leave you wondering about?", color: "emerald" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.one_question", "One Question I Have"), hint: _noteText(t, "note_taking.one_question_hint", "What did this reading leave you wondering about?"), color: "emerald" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: question,
       onChange: (e) => handleNoteUpdate("question", e.target.value),
-      placeholder: "What's one question you still have after this reading?",
+      placeholder: _noteText(t, "note_taking.one_question_placeholder", "What's one question you still have after this reading?"),
       className: "w-full text-sm bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-emerald-300 resize-y min-h-[60px]",
       rows: 2,
-      "aria-label": "Question",
+      "aria-label": _noteText(t, "note_taking.question", "Question"),
       "data-help-key": "reading_response_open_question_field"
     }
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "violet" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Browse your Reading Responses to build a record of your reading life. ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "violet" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.reading_response_footer", "Browse your Reading Responses to build a record of your reading life."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const DoubleEntryView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -836,38 +843,38 @@ const DoubleEntryView = React.memo((props) => {
   };
   const addRow = () => handleNoteUpdate("entries", entries.concat([{ id: _genId("de"), quote: "", response: "" }]));
   const removeRow = (idx) => handleNoteUpdate("entries", entries.filter((_, i) => i !== idx));
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4", "data-help-key": "double_entry_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-rose-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-rose-700 uppercase tracking-wider mb-1" }, "Double-Entry Journal"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4", "data-help-key": "double_entry_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-rose-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-rose-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_double_entry", "Double-Entry Journal")), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: title,
       onChange: (e) => handleNoteUpdate("title", e.target.value),
-      placeholder: "Title of what you read",
+      placeholder: _noteText(t, "note_taking.reading_title_placeholder", "Title of what you read"),
       className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-rose-500 py-1",
-      "aria-label": "Reading title",
+      "aria-label": _noteText(t, "note_taking.reading_title", "Reading title"),
       "data-help-key": "double_entry_title_field"
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 mt-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: author, onChange: (e) => handleNoteUpdate("author", e.target.value), placeholder: "Author", className: "flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1", "aria-label": "Author" }), /* @__PURE__ */ React.createElement("input", { type: "text", value: pageRange, onChange: (e) => handleNoteUpdate("pageRange", e.target.value), placeholder: "Pages or chapter", className: "sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1", "aria-label": "Pages or chapter" })), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "double_entry_grid" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 bg-slate-100 border-b border-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300" }, "Quote / Passage from the text"), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700" }, "My response / thinking")), Array.from({ length: rowCount }).map((_, idx) => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 mt-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: author, onChange: (e) => handleNoteUpdate("author", e.target.value), placeholder: _noteText(t, "note_taking.author", "Author"), className: "flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1", "aria-label": _noteText(t, "note_taking.author", "Author") }), /* @__PURE__ */ React.createElement("input", { type: "text", value: pageRange, onChange: (e) => handleNoteUpdate("pageRange", e.target.value), placeholder: _noteText(t, "note_taking.pages", "Pages or chapter"), className: "sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1", "aria-label": _noteText(t, "note_taking.pages", "Pages or chapter") })), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "double_entry_grid" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 bg-slate-100 border-b border-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300" }, _noteText(t, "note_taking.quote_column", "Quote / Passage from the text")), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700" }, _noteText(t, "note_taking.response_column", "My response / thinking"))), Array.from({ length: rowCount }).map((_, idx) => {
     const en = entries[idx] || { quote: "", response: "" };
     return /* @__PURE__ */ React.createElement("div", { key: en && en.id || idx, className: "grid grid-cols-2 border-b border-slate-200 last:border-b-0 group" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 border-r border-slate-200" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: en.quote || "",
         onChange: (e) => updateEntry(idx, "quote", e.target.value),
-        placeholder: idx === 0 ? '"Copy a line or passage that struck you..." (p. ___)' : "",
+        placeholder: idx === 0 ? _noteText(t, "note_taking.quote_placeholder", '"Copy a line or passage that struck you..." (p. ___)') : "",
         className: "w-full text-sm italic text-slate-700 bg-transparent resize-none focus:ring-2 focus:ring-rose-300 rounded p-1 min-h-[70px]",
         rows: 3,
-        "aria-label": `Quote ${idx + 1}`
+        "aria-label": _noteText(t, "note_taking.quote_n", "Quote {n}").replace("{n}", () => idx + 1)
       }
     )), /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 relative" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: en.response || "",
         onChange: (e) => updateEntry(idx, "response", e.target.value),
-        placeholder: idx === 0 ? "React, question, interpret. Why did this strike you? What does it make you think?" : "",
+        placeholder: idx === 0 ? _noteText(t, "note_taking.response_placeholder", "React, question, interpret. Why did this strike you? What does it make you think?") : "",
         className: "w-full text-sm text-slate-700 bg-transparent resize-none focus:ring-2 focus:ring-rose-300 rounded p-1 min-h-[70px]",
         rows: 3,
-        "aria-label": `Response ${idx + 1}`
+        "aria-label": _noteText(t, "note_taking.response_n", "Response {n}").replace("{n}", () => idx + 1)
       }
     ), /* @__PURE__ */ React.createElement(
       "button",
@@ -875,8 +882,8 @@ const DoubleEntryView = React.memo((props) => {
         type: "button",
         onClick: () => removeRow(idx),
         className: "absolute right-1 top-1 opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs px-1",
-        "aria-label": `Remove row ${idx + 1}`,
-        title: "Remove row"
+        "aria-label": _noteText(t, "note_taking.remove_row_n", "Remove row {n}").replace("{n}", () => idx + 1),
+        title: _noteText(t, "note_taking.remove_row", "Remove row")
       },
       "\u2715"
     )));
@@ -886,11 +893,12 @@ const DoubleEntryView = React.memo((props) => {
       type: "button",
       onClick: addRow,
       className: "px-4 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full hover:bg-rose-100",
-      "aria-label": "Add a new quote and response row",
+      "aria-label": _noteText(t, "note_taking.add_entry_label", "Add a new quote and response row"),
       "data-help-key": "double_entry_add_row_button"
     },
-    "+ Add entry"
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "rose" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Double-Entry Journal: quotes on the left, your thinking on the right. ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+    "+ ",
+    _noteText(t, "note_taking.add_entry", "Add entry")
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "rose" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.double_entry_footer", "Double-Entry Journal: quotes on the left, your thinking on the right."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const GuidedNotesView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -912,18 +920,18 @@ const GuidedNotesView = React.memo((props) => {
   };
   const filledCount = blanks.filter((b) => b && (b.studentAnswer || "").trim()).length;
   const correctCount = blanks.filter((b) => b && _normalizeBlank(b.studentAnswer) && _normalizeBlank(b.studentAnswer) === _normalizeBlank(b.answer)).length;
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "guided_notes_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-emerald-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1" }, "Guided Notes"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "guided_notes_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-emerald-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_guided", "Guided Notes")), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: title,
       onChange: (e) => handleNoteUpdate("title", e.target.value),
-      placeholder: "Today's lesson title",
+      placeholder: _noteText(t, "note_taking.lesson_title_placeholder", "Today's lesson title"),
       className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 py-1",
-      "aria-label": "Lesson title",
+      "aria-label": _noteText(t, "note_taking.lesson_title", "Lesson title"),
       "data-help-key": "guided_notes_title_field"
     }
-  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: "Fill in the blanks", hint: "Read or listen along, then complete each key term. Use Check answers when you're done to see how you did \u2014 matching ignores capitals and punctuation.", color: "emerald" }, blanks.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, "No guided notes were generated for this source. Use the notes space below to take your own.") : /* @__PURE__ */ React.createElement("ol", { className: "space-y-3" }, blanks.map((b, idx) => {
+  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.fill_blanks", "Fill in the blanks"), hint: _noteText(t, "note_taking.fill_blanks_hint", "Read or listen along, then complete each key term. Use Check answers when you're done to see how you did \u2014 matching ignores capitals and punctuation."), color: "emerald" }, blanks.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, _noteText(t, "note_taking.no_blanks", "No guided notes were generated for this source. Use the notes space below to take your own.")) : /* @__PURE__ */ React.createElement("ol", { className: "space-y-3" }, blanks.map((b, idx) => {
     const studentAnswer = b.studentAnswer || "";
     const isCorrect = !!_normalizeBlank(studentAnswer) && _normalizeBlank(studentAnswer) === _normalizeBlank(b.answer);
     const showState = revealed && !!studentAnswer.trim();
@@ -939,10 +947,10 @@ const GuidedNotesView = React.memo((props) => {
         readOnly: !!props.learnerReadOnly,
         placeholder: "________",
         className: `inline-block mx-1 px-2 py-0.5 text-sm font-semibold text-slate-800 bg-white border-b-2 rounded-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 align-baseline ${inputBorder}`,
-        "aria-label": `Blank ${idx + 1}`,
+        "aria-label": _noteText(t, "note_taking.blank_n", "Blank {n}").replace("{n}", () => idx + 1),
         style: { width: Math.max(110, ((b.answer || "").length + 4) * 9) + "px" }
       }
-    ), /* @__PURE__ */ React.createElement("span", { id: sentenceId + "-after" }, b.after || ""), revealed && studentAnswer.trim() && isCorrect ? /* @__PURE__ */ React.createElement("span", { role: "img", className: "ml-1 text-xs font-black text-emerald-700", "aria-label": "Correct" }, "\u2713") : null, revealed && studentAnswer.trim() && !isCorrect ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-700" }, /* @__PURE__ */ React.createElement("span", { role: "img", className: "text-rose-700", "aria-label": "Incorrect" }, "\u2717 "), "\u2192 ", b.answer) : null, revealed && !studentAnswer.trim() ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 text-xs italic text-slate-600" }, _noteText(t, "notes_feedback.blank_not_tried", "Try this blank first to check it.")) : null);
+    ), /* @__PURE__ */ React.createElement("span", { id: sentenceId + "-after" }, b.after || ""), revealed && studentAnswer.trim() && isCorrect ? /* @__PURE__ */ React.createElement("span", { role: "img", className: "ml-1 text-xs font-black text-emerald-700", "aria-label": _noteText(t, "note_taking.correct", "Correct") }, "\u2713") : null, revealed && studentAnswer.trim() && !isCorrect ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-700" }, /* @__PURE__ */ React.createElement("span", { role: "img", className: "text-rose-700", "aria-label": _noteText(t, "note_taking.incorrect", "Incorrect") }, "\u2717 "), "\u2192 ", b.answer) : null, revealed && !studentAnswer.trim() ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 text-xs italic text-slate-600" }, _noteText(t, "notes_feedback.blank_not_tried", "Try this blank first to check it.")) : null);
   })), blanks.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-4" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -952,19 +960,19 @@ const GuidedNotesView = React.memo((props) => {
       "aria-pressed": revealed,
       "data-help-key": "guided_notes_check_button"
     },
-    revealed ? "Hide answers" : "Check answers"
-  ), revealed ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, correctCount, "/", blanks.length, " correct \xB7 ", filledCount, "/", blanks.length, " filled") : null) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: "My own notes", hint: "Add anything else worth remembering \u2014 an example, a question, a connection to something you already know, or a memory hook of your own.", color: "indigo" }, /* @__PURE__ */ React.createElement(
+    revealed ? _noteText(t, "note_taking.hide_answers", "Hide answers") : _noteText(t, "note_taking.check_answers", "Check answers")
+  ), revealed ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, _noteText(t, "note_taking.guided_score", "{correct}/{total} correct \xB7 {filled}/{total} filled").replace("{correct}", () => correctCount).replace("{filled}", () => filledCount).split("{total}").join(String(blanks.length))) : null) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.own_notes", "My own notes"), hint: _noteText(t, "note_taking.own_notes_hint", "Add anything else worth remembering \u2014 an example, a question, a connection to something you already know, or a memory hook of your own."), color: "indigo" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: notesExtra,
       onChange: (e) => handleNoteUpdate("notesExtra", e.target.value),
-      placeholder: "Your own notes, questions, examples...",
+      placeholder: _noteText(t, "note_taking.own_notes_placeholder", "Your own notes, questions, examples..."),
       className: "w-full text-sm text-slate-700 bg-white border border-slate-200 rounded-md p-3 focus:ring-2 focus:ring-indigo-300 resize-y min-h-[80px]",
       rows: 3,
-      "aria-label": "My own notes",
+      "aria-label": _noteText(t, "note_taking.own_notes", "My own notes"),
       "data-help-key": "guided_notes_own_notes_field"
     }
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "The blanks are the key terms \u2014 revisit them to study. ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.guided_footer", "The blanks are the key terms \u2014 revisit them to study."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const QAndAView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -990,7 +998,7 @@ const QAndAView = React.memo((props) => {
   const toggleShown = (key) => setShown((s) => ({ ...s, [key]: !s[key] }));
   const hasStudyable = pairs.some((p) => p && (p.question || "").trim() && (p.answer || "").trim());
   const quizPairs = pairs.filter((p) => p && (p.question || "").trim());
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "qanda_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-cyan-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-cyan-700 uppercase tracking-wider mb-1" }, "Q&A Study Notes"), hasStudyable ? /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "qanda_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-cyan-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-cyan-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_qa", "Q&A Study Notes")), hasStudyable ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -999,55 +1007,56 @@ const QAndAView = React.memo((props) => {
       "aria-pressed": quizMode,
       "data-help-key": "qanda_quiz_toggle"
     },
-    quizMode ? "\u270F\uFE0F Edit mode" : "\u{1F3AF} Quiz me"
+    quizMode ? "\u270F\uFE0F " + _noteText(t, "note_taking.edit_mode", "Edit mode") : "\u{1F3AF} " + _noteText(t, "note_taking.quiz_me", "Quiz me")
   ) : null), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: title,
       onChange: (e) => handleNoteUpdate("title", e.target.value),
-      placeholder: "Study set title",
+      placeholder: _noteText(t, "note_taking.study_set_title", "Study set title"),
       className: "w-full text-xl font-black text-slate-800 bg-transparent border-b border-slate-300 focus:border-cyan-500 py-1",
-      "aria-label": "Study set title",
+      "aria-label": _noteText(t, "note_taking.study_set_title", "Study set title"),
       "data-help-key": "qanda_title_field"
     }
-  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, "Started: ", new Date(lessonRef.generatedAt).toLocaleString()) : null), quizMode ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3", "data-help-key": "qanda_quiz_view" }, quizPairs.map((p, idx) => {
+  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), quizMode ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3", "data-help-key": "qanda_quiz_view" }, quizPairs.map((p, idx) => {
     const key = p.id || idx;
-    return /* @__PURE__ */ React.createElement("div", { key, className: "bg-white border border-slate-200 rounded-lg p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 mr-1" }, "Q", idx + 1, "."), p.question), shown[key] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 bg-cyan-50 border-l-4 border-cyan-400 rounded-r p-2" }, (p.answer || "").trim() ? p.answer : /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, "No answer written yet.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "mt-2 text-[11px] text-slate-500 hover:text-slate-700 underline" }, "Hide answer")) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100" }, "Show answer"));
+    return /* @__PURE__ */ React.createElement("div", { key, className: "bg-white border border-slate-200 rounded-lg p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 mr-1" }, _noteText(t, "note_taking.q_n", "Q{n}").replace("{n}", () => idx + 1), "."), p.question), shown[key] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 bg-cyan-50 border-l-4 border-cyan-400 rounded-r p-2" }, (p.answer || "").trim() ? p.answer : /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, _noteText(t, "note_taking.no_answer_yet", "No answer written yet."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "mt-2 text-[11px] text-slate-500 hover:text-slate-700 underline" }, _noteText(t, "note_taking.hide_answer", "Hide answer"))) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100" }, _noteText(t, "note_taking.show_answer", "Show answer")));
   })) : /* @__PURE__ */ React.createElement(React.Fragment, null, Array.from({ length: rowCount }).map((_, idx) => {
     const p = pairs[idx] || { question: "", answer: "" };
-    return /* @__PURE__ */ React.createElement("div", { key: p && p.id || idx, className: "bg-white border border-slate-200 rounded-lg p-3 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 text-xs font-black mt-2 w-8 flex-shrink-0" }, "Q", idx + 1), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: p && p.id || idx, className: "bg-white border border-slate-200 rounded-lg p-3 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 text-xs font-black mt-2 w-8 flex-shrink-0" }, _noteText(t, "note_taking.q_n", "Q{n}").replace("{n}", () => idx + 1)), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: p.question || "",
         onChange: (e) => updatePair(idx, "question", e.target.value),
-        placeholder: idx === 0 ? 'Write a study question (try a "why" or "how", not just "what")...' : "Question...",
+        placeholder: idx === 0 ? _noteText(t, "note_taking.question_placeholder_first", 'Write a study question (try a "why" or "how", not just "what")...') : _noteText(t, "note_taking.question_placeholder", "Question..."),
         className: "w-full text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded p-2 focus:ring-2 focus:ring-cyan-300 resize-y min-h-[48px]",
         rows: 1,
-        "aria-label": `Question ${idx + 1}`
+        "aria-label": _noteText(t, "note_taking.question_n", "Question {n}").replace("{n}", () => idx + 1)
       }
     ), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: p.answer || "",
         onChange: (e) => updatePair(idx, "answer", e.target.value),
-        placeholder: "Answer \u2014 explain, don't just name.",
+        placeholder: _noteText(t, "note_taking.answer_placeholder", "Answer \u2014 explain, don't just name."),
         className: "w-full text-sm text-slate-700 bg-white border border-slate-200 rounded p-2 focus:ring-2 focus:ring-cyan-300 resize-y min-h-[48px]",
         rows: 2,
-        "aria-label": `Answer ${idx + 1}`
+        "aria-label": _noteText(t, "note_taking.answer_n", "Answer {n}").replace("{n}", () => idx + 1)
       }
-    )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removePair(idx), className: "opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": `Remove pair ${idx + 1}`, title: "Remove" }, "\u2715")));
+    )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removePair(idx), className: "opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs mt-2", "aria-label": _noteText(t, "note_taking.remove_pair_n", "Remove pair {n}").replace("{n}", () => idx + 1), title: _noteText(t, "note_taking.remove", "Remove") }, "\u2715")));
   }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: addPair,
       className: "px-4 py-1.5 text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full hover:bg-cyan-100",
-      "aria-label": "Add a question and answer pair",
+      "aria-label": _noteText(t, "note_taking.add_pair_label", "Add a question and answer pair"),
       "data-help-key": "qanda_add_pair_button"
     },
-    "+ Add question"
-  ))), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: "Optional \u2014 connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer.", t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "cyan" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, "Switch to Quiz me to self-test with active recall. ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+    "+ ",
+    _noteText(t, "note_taking.add_question", "Add question")
+  ))), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.qa_connections_hint", "Optional \u2014 connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "cyan" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.qa_footer", "Switch to Quiz me to self-test with active recall."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 function _autoGrowTextarea(el) {
   if (!el || el.tagName !== "TEXTAREA") return;
@@ -1166,6 +1175,60 @@ const _entryTitle = (entry) => {
   const meta = NOTEBOOK_TEMPLATE_META[kind];
   return meta ? `Untitled ${meta.label}` : "Untitled entry";
 };
+const _ntEsc = (value) => String(value == null ? "" : value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const _ntStr = (value) => typeof value === "string" || typeof value === "number" ? String(value) : "";
+function _notebookEntryPrintHtml(entry, t) {
+  const L = (key, fallback) => _ntEsc(_noteText(t, "note_taking." + key, fallback));
+  const data = entry && entry.data || {};
+  const kind = _entryKind(entry) || "cornell-notes";
+  const meta = NOTEBOOK_TEMPLATE_META[kind] || NOTEBOOK_TEMPLATE_META["cornell-notes"];
+  const list = (v) => Array.isArray(v) ? v.filter(Boolean) : [];
+  const para = (text) => _ntStr(text).trim() ? '<p class="txt">' + _ntEsc(_ntStr(text).trim()) + "</p>" : '<p class="empty">\u2014</p>';
+  const field = (label, text) => "<h3>" + label + "</h3>" + para(text);
+  const items = (arr, tag) => arr.length ? "<" + tag + ">" + arr.map((s) => "<li>" + _ntEsc(s) + "</li>").join("") + "</" + tag + ">" : '<p class="empty">\u2014</p>';
+  const textsOf = (arr) => list(arr).map((x) => _ntStr(x && typeof x === "object" ? x.text : x)).filter((s) => s.trim());
+  let body = "";
+  const meta2 = [_ntStr(data.author), _ntStr(data.pageRange)].filter((s) => s.trim()).map(_ntEsc).join(" \xB7 ");
+  if (meta2) body += '<p class="meta">' + meta2 + "</p>";
+  if (kind === "cornell-notes") {
+    const cues = list(data.cues), notes = list(data.notes);
+    const rows = Math.max(cues.length, notes.length);
+    let table = "<table><thead><tr><th>" + L("cues_column", "Cues / Questions") + "</th><th>" + L("notes_column", "Notes") + "</th></tr></thead><tbody>";
+    for (let i = 0; i < rows; i++) {
+      const cue = cues[i] || {}, note = notes[i] || {};
+      const guidance = _cornellCueGuidance(cue);
+      table += "<tr><td>" + _ntEsc(_ntStr(cue.text)) + "</td><td>" + (guidance ? '<div class="guide">' + _ntEsc(guidance) + "</div>" : "") + _ntEsc(_ntStr(note.text)) + "</td></tr>";
+    }
+    body += table + "</tbody></table>" + field(L("summary_title", "Summary"), data.summary);
+  } else if (kind === "lab-report") {
+    body += field(L("research_question", "Research Question"), data.question) + field(L("hypothesis", "Hypothesis"), data.hypothesis) + "<h3>" + L("materials", "Materials") + "</h3>" + items(textsOf(data.materials), "ul") + "<h3>" + L("procedure", "Procedure") + "</h3>" + items(textsOf(data.procedure), "ol") + field(L("data_observations", "Data / Observations"), data.data) + field(L("analysis", "Analysis (Claim / Evidence / Reasoning)"), data.analysis) + field(L("conclusion", "Conclusion"), data.conclusion);
+  } else if (kind === "reading-response") {
+    const conn = data.connection && typeof data.connection === "object" ? data.connection : {};
+    const connLabel = { "text-to-self": L("text_to_self", "Text to Self"), "text-to-text": L("text_to_text", "Text to Text"), "text-to-world": L("text_to_world", "Text to World") }[conn.type] || "";
+    body += field(L("favorite_line", "Favorite Line or Passage"), data.favoriteLine) + field(L("thinkings", "What This Made Me Think About"), data.thinkings) + field(L("connection", "Connection") + (connLabel ? " (" + connLabel + ")" : ""), conn.text) + field(L("one_question", "One Question I Have"), data.question);
+  } else if (kind === "double-entry") {
+    body += "<table><thead><tr><th>" + L("quote_column", "Quote / Passage from the text") + "</th><th>" + L("response_column", "My response / thinking") + "</th></tr></thead><tbody>" + list(data.entries).map((en) => "<tr><td>" + _ntEsc(_ntStr(en.quote)) + "</td><td>" + _ntEsc(_ntStr(en.response)) + "</td></tr>").join("") + "</tbody></table>";
+  } else if (kind === "guided-notes") {
+    const blanks = list(data.blanks);
+    body += "<h3>" + L("fill_blanks", "Fill in the blanks") + "</h3>" + (blanks.length ? "<ol>" + blanks.map((b) => "<li>" + _ntEsc(_ntStr(b.before)) + '<span class="blank">' + (_ntEsc(_ntStr(b.studentAnswer).trim()) || "________") + "</span>" + _ntEsc(_ntStr(b.after)) + "</li>").join("") + "</ol>" : '<p class="empty">\u2014</p>') + field(L("own_notes", "My own notes"), data.notesExtra);
+  } else if (kind === "q-and-a") {
+    body += list(data.pairs).map((p, i) => '<div class="qa"><h3>' + _ntEsc(_noteText(t, "note_taking.q_n", "Q{n}").replace("{n}", () => String(i + 1))) + ". " + _ntEsc(_ntStr(p.question)) + "</h3>" + para(p.answer) + "</div>").join("");
+  } else if (kind === "anchor-chart") {
+    body += list(data.sections).map((s) => "<h3>" + _ntEsc(_ntStr(s.label)) + "</h3>" + items(list(s.bullets).map(_ntStr).filter((b) => b.trim()), "ul")).join("");
+  } else if (kind === "memory-aid") {
+    body += list(data.cards).map((c) => "<h3>" + _ntEsc(_ntStr(c.target)) + "</h3>" + para(c.studentDraft)).join("");
+  } else if (kind === "applied-challenge") {
+    body += para(data.brief && data.brief.drivingQuestion) + para(data.workspace && data.workspace.response);
+  }
+  if (_ntStr(data.connections).trim()) body += field(_ntEsc(_noteText(t, "notes_connections.title", "Connections & Memory Hooks")), data.connections);
+  return '<section class="entry"><div class="kind">' + _ntEsc(meta.label) + "</div><h2>" + _ntEsc(_entryTitle(entry)) + "</h2>" + body + "</section>";
+}
+function _notebookPrintDocument(entries, t) {
+  const title = _ntEsc(_noteText(t, "notebook.print_doc_title", "My Notebook"));
+  const lang = typeof document !== "undefined" && String(document.documentElement.lang || "en").replace(/[^\w-]/g, "") || "en";
+  const dir = typeof document !== "undefined" && document.documentElement.dir === "rtl" ? ' dir="rtl"' : "";
+  return '<!doctype html><html lang="' + lang + '"' + dir + '><head><meta charset="utf-8"><title>' + title + "</title><style>body{font:14px/1.5 system-ui,sans-serif;color:#111;margin:24px}h1{font-size:22px}h2{font-size:18px;margin:4px 0 8px}h3{font-size:14px;margin:12px 0 4px}.kind{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#444}.meta{color:#444}.txt{white-space:pre-wrap;margin:0}.empty{color:#666;margin:0}.guide{color:#444;font-style:italic;margin-bottom:4px;white-space:pre-wrap}.blank{border-bottom:1px solid #111;padding:0 4px;font-weight:600}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:6px;vertical-align:top;text-align:start;white-space:pre-wrap}.entry{border-top:2px solid #333;padding-top:12px;margin-top:20px;break-inside:auto}.entry+.entry{break-before:page}</style></head><body><h1>" + title + "</h1>" + entries.map((e) => _notebookEntryPrintHtml(e, t)).join("") + "<script>window.onload=function(){setTimeout(function(){window.print();},100);};<\/script></body></html>";
+}
 function _buildNoteInsightsPrompt(noteEntries) {
   const byType = { "cornell-notes": [], "lab-report": [], "reading-response": [], "double-entry": [], "guided-notes": [], "q-and-a": [] };
   for (const entry of noteEntries) {
@@ -1357,22 +1420,23 @@ const NotebookOverlay = React.memo((props) => {
     "applied-challenge": sortedEntries.filter((e) => _entryKind(e) === "applied-challenge").length
   };
   const handlePrintAll = () => {
+    if (!filtered.length) {
+      addToast(_noteText(t, "notebook.print_nothing", "There are no notebook entries to print."), "info");
+      return;
+    }
     try {
-      document.querySelectorAll(".nt-autogrow").forEach(function(root) {
-        _autoGrowAll(root);
-      });
-      if (!document.getElementById("nt-notebook-print-style")) {
-        const style = document.createElement("style");
-        style.id = "nt-notebook-print-style";
-        style.textContent = "@media print { body.nt-print-notebook *:not(:has(.nt-notebook-print)):not(.nt-notebook-print):not(.nt-notebook-print *) { display: none !important; } body.nt-print-notebook *:has(.nt-notebook-print) { display: block !important; position: static !important; overflow: visible !important; height: auto !important; max-height: none !important; transform: none !important; padding: 0 !important; background: none !important; } body.nt-print-notebook .nt-notebook-print, body.nt-print-notebook .nt-notebook-print * { overflow: visible !important; max-height: none !important; box-shadow: none !important; } body.nt-print-notebook .nt-notebook-print { position: static !important; width: 100% !important; max-width: none !important; border: 0 !important; } }";
-        document.head.appendChild(style);
+      const html = _notebookPrintDocument(filtered, t);
+      const popup = window.open("", "_blank");
+      if (!popup || !popup.document) {
+        addToast(_noteText(t, "notebook.print_popup_blocked", "The print window was blocked. Allow pop-ups for this page, then try again."), "error");
+        return;
       }
-      document.body.classList.add("nt-print-notebook");
-      window.addEventListener("afterprint", function() {
-        document.body.classList.remove("nt-print-notebook");
-      }, { once: true });
-      window.print();
-    } catch (_) {
+      popup.document.open();
+      popup.document.write(html);
+      popup.document.close();
+    } catch (e) {
+      console.warn("[Notebook] print failed", e);
+      addToast(_noteText(t, "notebook.print_failed", "The notebook could not be printed. Try again."), "error");
     }
   };
   const filters = [
@@ -1447,10 +1511,12 @@ const NotebookOverlay = React.memo((props) => {
         type: "button",
         onClick: handlePrintAll,
         className: "px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 rounded-full hover:bg-slate-200",
-        "aria-label": "Print or export notebook as PDF",
-        title: "Print or save as PDF"
+        "aria-label": _noteText(t, "notebook.print_aria", "Print or save these notebook entries as PDF"),
+        title: _noteText(t, "notebook.print_title", "Print or save as PDF"),
+        "data-notebook-print": "true"
       },
-      "\u{1F5A8}\uFE0F Print / PDF"
+      "\u{1F5A8}\uFE0F ",
+      _noteText(t, "notebook.print_button", "Print / PDF")
     ))), /* @__PURE__ */ React.createElement("p", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, filtered.length, " notebook entries shown."), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-5 py-4 bg-slate-50" }, filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 opacity-50" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold mb-1" }, sortedEntries.length === 0 ? "Your notebook is empty." : "No entries match this filter."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 max-w-sm mx-auto leading-relaxed" }, sortedEntries.length === 0 ? _noteText(t, "notebook.empty_work_hint", "Open Notes, Anchor Charts, Memory Aid or Applied Challenge from the resource tools to begin.") : "Switch filters above to see other entry types.")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, filtered.map((entry) => {
       const kind = _entryKind(entry) || "cornell-notes";
       const meta = NOTEBOOK_TEMPLATE_META[kind] || NOTEBOOK_TEMPLATE_META["cornell-notes"];

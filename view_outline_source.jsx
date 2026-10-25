@@ -2,6 +2,8 @@
 function OutlineView(props) {
   // Pure data + state reads
   var t = props.t;
+  // English fallback whether t returns '' or the key itself for a missing string.
+  var tl = function (key, fallback) { var v = typeof t === 'function' ? t(key) : ''; return v && v !== key ? v : fallback; };
   var generatedContent = props.generatedContent;
   var history = props.history;
   var inputText = props.inputText;
@@ -81,9 +83,9 @@ function OutlineView(props) {
                       <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex flex-col sm:flex-row flex-wrap justify-between items-start gap-4">
                         {/* The UDL rationale is the teacher's; a student's first read is the organizer. */}
                         {isTeacherMode && <div data-organizer-udl-goal className="text-sm text-orange-800">
-                            <strong>UDL Goal:</strong> Providing options for perception. This graphic organizer helps students who process information visually or struggle with large blocks of text.
+                            <strong>{tl('outline.udl_goal_label', 'UDL Goal:')}</strong> {tl('outline.udl_goal_desc', 'Providing options for perception. This graphic organizer helps students who process information visually or struggle with large blocks of text.')}
                             <div className="mt-2 flex flex-wrap gap-2">
-                                <span className="inline-block bg-white/50 border border-orange-200 px-2 py-0.5 rounded text-xs font-bold">Level: {gradeLevel}</span>
+                                <span className="inline-block bg-white/50 border border-orange-200 px-2 py-0.5 rounded text-xs font-bold">{tl('outline.level_label', 'Level:')} {gradeLevel}</span>
                                 {leveledTextLanguage !== 'English' && <span className="inline-block bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded text-xs font-bold">{leveledTextLanguage}</span>}
                                 {standardsInput && <span className="inline-block bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1"><CheckCircle size={10}/> {standardsInput}</span>}
                             </div>
@@ -222,7 +224,7 @@ function OutlineView(props) {
                                         </button>
                                     </div>
                                 </div>
-                                <p className="text-slate-600 max-w-md mx-auto mb-6">Review and curate the concepts before generating the interactive diagram.</p>
+                                <p className="text-slate-600 max-w-md mx-auto mb-6">{tl('outline.curate_concepts_hint', 'Review and curate the concepts before generating the interactive diagram.')}</p>
                                 <button
                                     onClick={handleInitializeMap}
                                     disabled={isProcessing} aria-busy={isProcessing}

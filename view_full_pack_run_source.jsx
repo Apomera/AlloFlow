@@ -12,24 +12,39 @@ function FullPackRunView(props) {
   const packSizeLabel = isAutoConfigEnabled
     ? ({ Auto: t('fullpack.option_auto'), '5': t('fullpack.option_short'), '8': t('fullpack.option_standard'), '12': t('fullpack.option_deep'), All: t('fullpack.option_all') }[resourceCount] || resourceCount)
     : (t('fullpack.current_settings') || 'Current settings');
+  // Delivery routes: the Guided delivery step, or (outside Guided Mode) once a
+  // run has finished or any resource exists. Locked while a run is writing.
+  const deliveryGroups = Array.isArray(GUIDED_DELIVERY_GROUPS) ? GUIDED_DELIVERY_GROUPS : [];
+  const hasDeliverableResources = Array.isArray(history) && history.some(item => item && item.id && item.type && !(item.data && item.data.submissionCopy));
+  const showDeliveryRoutes = guidedMode
+    ? guidedActiveSteps[guidedStep]?.id === 'package-deliver'
+    : (['completed', 'landed', 'partial'].includes(fullPackRun?.status) || hasDeliverableResources);
+  const latestStudentShare = (qrShareModal && qrShareModal.url) ? qrShareModal : ((Array.isArray(recentQrShares) && recentQrShares.find(item => item && item.url)) || null);
+  const testLatestStudentLink = () => {
+    // The host helper also records the Guided "learner view tested" evidence.
+    if (typeof props.previewGuidedStudentAssignment === 'function') return props.previewGuidedStudentAssignment();
+    if (latestStudentShare?.url) return openStudentQrPreview(latestStudentShare.url, 'homework link as a student');
+    return false;
+  };
   return (
 <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-sm">
-                {guidedMode && guidedActiveSteps[guidedStep]?.id === 'package-deliver' && (
-                  <div role="region" aria-labelledby="guided-delivery-panel-title" className="m-1 mb-2 rounded-2xl bg-white p-3 text-slate-800">
-                    <div id="guided-delivery-panel-title" className="text-sm font-black text-indigo-900">Preview, Package &amp; Deliver</div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-slate-600">Choose formats by purpose. You can use more than one route, for example an accessible Word handout plus a Homework QR.</p>
-                    <div role="list" aria-label={t('a11y.export_families') || 'Available export and delivery families'} className="mt-2 grid gap-2">
-                      {GUIDED_DELIVERY_GROUPS.map(group => (
+                {showDeliveryRoutes && (
+                  <div role="region" aria-labelledby="guided-delivery-panel-title" data-testid="full-pack-delivery-routes" className="m-1 mb-2 rounded-2xl bg-white p-3 text-slate-800">
+                    <div id="guided-delivery-panel-title" className="text-sm font-black text-indigo-900">{t('fullpack.delivery_title') || 'Preview, Package & Deliver'}</div>
+                    <p className="mt-1 text-[11px] leading-relaxed text-slate-600">{t('fullpack.delivery_help') || 'Choose formats by purpose. You can use more than one route, for example an accessible Word handout plus a Homework QR.'}</p>
+                    {deliveryGroups.length > 0 && <div role="list" aria-label={t('a11y.export_families') || 'Available export and delivery families'} className="mt-2 grid gap-2">
+                      {deliveryGroups.map(group => (
                         <div role="listitem" key={group.id} className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-2">
                           <div className="text-[11px] font-black text-indigo-900">{group.label}</div>
                           <div className="mt-0.5 text-[10px] leading-relaxed text-slate-600">{group.options.join(' · ')}</div>
                         </div>
                       ))}
-                    </div>
-                    <p className="mt-2 text-[10px] leading-relaxed text-slate-500">QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.</p>
+                    </div>}
+                    <p className="mt-2 text-[10px] leading-relaxed text-slate-500">{t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'}</p>
+                    {isRunActive && <p role="status" data-testid="full-pack-delivery-locked" className="mt-2 text-[11px] font-semibold text-slate-700">{t('fullpack.delivery_wait_run') || 'Delivery opens when the Full Pack run finishes.'}</p>}
                     <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <button type="button" onClick={() => openExportPreview('print')} className="min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-600">Open Document Builder</button>
-                      <button type="button" onClick={createGuidedHomeworkShare} className="min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-50">Create Homework QR</button>
+                      <button type="button" disabled={isRunActive} onClick={() => openExportPreview('print')} className="min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_document_builder') || 'Open Document Builder'}</button>
+                      <button type="button" disabled={isRunActive} onClick={createGuidedHomeworkShare} className="min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_homework_qr') || 'Create Homework QR'}</button>
                       {/* W3 2026-08-16 (N8): the second door to a live CLASS session.
                           MODE_AUDIT_2026-08-03.md F1 excluded parents and independent
                           learners from starting one, and gated both header entries
@@ -38,9 +53,9 @@ function FullPackRunView(props) {
                           independent mode could still start a class session from the
                           Preview, Package & Deliver step. Same exclusion as the header. */}
                       {!isIndependentMode && !isParentMode && (
-                      <button type="button" onClick={() => setShowSessionStartOptions(true)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100">Teach live</button>
+                      <button type="button" disabled={isRunActive} onClick={() => setShowSessionStartOptions(true)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_teach_live') || 'Teach live'}</button>
                       )}
-                      <button type="button" disabled={!((qrShareModal && qrShareModal.url) || (Array.isArray(recentQrShares) && recentQrShares.some(share => share && share.url)))} onClick={() => { const share = (qrShareModal && qrShareModal.url) ? qrShareModal : ((Array.isArray(recentQrShares) && recentQrShares.find(item => item && item.url)) || null); if (share?.url) openStudentQrPreview(share.url, 'homework link as a student'); }} className="min-h-10 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50">Test latest student link</button>
+                      <button type="button" disabled={isRunActive || !latestStudentShare} onClick={testLatestStudentLink} className="min-h-10 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_test_link') || 'Test latest student link'}</button>
                     </div>
                   </div>
                 )}
@@ -434,9 +449,24 @@ function FullPackRunView(props) {
                                                                                     const coordinates = [variant.grade, variant.language].filter(Boolean).join(' · ') || (t('fullpack.source_wide') || 'Source-wide');
                                                                                     return <li key={variant.generationIdentity || `${variantIndex}-${coordinates}`} className="flex min-w-0 items-start justify-between gap-2"><span className="min-w-0 break-words">{coordinates}</span><span className="shrink-0 font-bold">{action}{variant.status ? ` · ${variant.status}` : ''}</span></li>;
                                                                                 })}
-                                                                                {row.type === 'glossary' && Array.isArray(snapshot.selectedLanguages) && snapshot.selectedLanguages.length > 0 && (
-                                                                                    <li className="text-sky-800">{t('fullpack.embedded_translations') || 'Embedded translations'}: {snapshot.selectedLanguages.join(', ')}</li>
-                                                                                )}
+                                                                                {row.type === 'glossary' && (() => {
+                                                                                    const matrixSettings = section?.preflight?.generationMatrix?.settings || snapshot;
+                                                                                    const output = matrixSettings.language || snapshot.leveledTextLanguage || 'English';
+                                                                                    const app = matrixSettings.appLanguage || snapshot.appLanguage || matrixSettings.currentUiLanguage || snapshot.currentUiLanguage || 'English';
+                                                                                    const native = Number(matrixSettings.nativeLanguageDefaultsVersion || snapshot.nativeLanguageDefaultsVersion) >= 1;
+                                                                                    const all = output === 'All Selected Languages';
+                                                                                    const base = native ? (all ? app : output) : 'English';
+                                                                                    const mode = matrixSettings.translationMode || snapshot.translationMode || 'auto';
+                                                                                    const helpers = window.AlloModules?.TextPipelineHelpers;
+                                                                                    const choices = helpers?.translationTargetChoices?.(base, app, snapshot.selectedLanguages || []);
+                                                                                    const policy = helpers?.resolveTranslationPolicy?.(mode, base, app, choices);
+                                                                                    const companion = policy ? (policy.enabled ? policy.target : '') : (mode === 'off' ? '' : mode === 'auto' ? app : mode);
+                                                                                    const candidateLanguages = all ? (matrixSettings.effectiveLanguageList || snapshot.effectiveLanguageList || snapshot.selectedLanguages || []) : (native ? [] : [output]);
+                                                                                    const requested = Array.isArray(candidateLanguages) ? candidateLanguages : [];
+                                                                                    const columns = Array.from(new Set(requested.concat(companion ? [companion] : [])))
+                                                                                        .filter(language => language && language !== base && language !== 'All Selected Languages');
+                                                                                    return <li className="text-sky-800">{base}{columns.length ? ` · ${t('fullpack.embedded_translations') || 'Embedded translations'}: ${columns.join(', ')}` : ''}</li>;
+                                                                                })()}
                                                                                 {row.type === 'glossary' && Number(row.providerWorkEstimate?.glossaryImageCalls) > 0 && (
                                                                                     <li data-testid="full-pack-glossary-image-impact" className="text-sky-800">
                                                                                         {t('fullpack.glossary_visuals') || 'Glossary visuals'}: ~{row.providerWorkEstimate.glossaryImageCalls} {t('fullpack.term_images') || 'term images'}

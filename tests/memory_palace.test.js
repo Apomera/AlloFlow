@@ -1238,7 +1238,10 @@ describe('doc_pipeline — Memory Palace print projection', () => {
 
   it('projects the palace from the same store the walk uses', () => {
     const d = doc();
-    expect(d).toContain('const _palaceStore = (item.data && item.data.memoryPalace) || {};');
+    // fix1025 C: learner palace work (studentResponses[id].organizerWork) wins when responses are included;
+    // behaviour is covered in tests/fix1025_C_exports.test.js.
+    expect(d).toContain("|| (item.data && item.data.memoryPalace) || {};");
+    expect(d).toContain('responses[item.id].organizerWork.memoryPalace');
     expect(d).toContain('const _palaceRooms = () => {');
     expect(d).toContain('_palaceStore.myMnemonics');
     // the student's own image outranks the generated one, exactly as buildPalace does

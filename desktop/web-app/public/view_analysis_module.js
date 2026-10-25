@@ -293,8 +293,160 @@ function AnalysisView(props) {
   }, dokIdeas.map((idea, index) => /*#__PURE__*/React.createElement("li", {
     key: index
   }, formatInlineText(idea, false)))))));
+  // Only a web search with attributable sources verifies accuracy. Older reports carry no
+  // marker; their citations are the evidence that a search ran.
+  const accuracyVerified = baseAccuracy.verification === 'web-search' || !baseAccuracy.verification && !!asText(baseAccuracy.citations).trim();
+  const showAiRating = !accuracyVerified && baseAccuracy.verificationNote !== 'search-unavailable' && !/^not (?:web-)?verified$/i.test(accuracyRating);
+  const accuracyBadge = accuracyVerified ? /*#__PURE__*/React.createElement("span", {
+    "data-accuracy-verification": "web-search",
+    className: `px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`
+  }, accuracyRating) : /*#__PURE__*/React.createElement("span", {
+    "data-accuracy-verification": "ai-estimate",
+    className: "flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide border bg-slate-100 text-slate-700 border-slate-300"
+  }, analysisLabel('analysis.accuracy_ai_estimate', 'AI estimate, not verified')), showAiRating && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-600"
+  }, fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), {
+    rating: accuracyRating
+  })));
+  const DISCREPANCY_FIXED_PREFIX = '✓ FIXED: ';
+  const isFixedDiscrepancy = note => typeof note === 'string' && note.startsWith('✓ FIXED:');
+  const [factualProposal, setFactualProposal] = React.useState(null);
+  const activeFactualProposal = factualProposal && factualProposal.resourceId === generatedContent?.id ? factualProposal : null;
+  const barrierSource = isRecord(reportData.learnerBarriers) ? reportData.learnerBarriers : isRecord(analysisData.learnerBarriers) ? analysisData.learnerBarriers : null;
+  const barrierGroups = barrierSource ? [['backgroundKnowledge', analysisLabel('analysis.barriers_background', 'Background knowledge')], ['figurativeLanguage', analysisLabel('analysis.barriers_figurative', 'Idioms and figurative language')], ['textStructure', analysisLabel('analysis.barriers_structure', 'Text structure')], ['biasRepresentation', analysisLabel('analysis.barriers_bias', 'Bias and representation')]].map(([key, label]) => ({
+    key,
+    label,
+    items: (Array.isArray(barrierSource[key]) ? barrierSource[key] : []).map(asText).filter(item => item.trim())
+  })).filter(group => group.items.length) : [];
+  const learnerBarriersCard = barrierGroups.length > 0 && /*#__PURE__*/React.createElement("section", {
+    "data-analysis-learner-barriers": true,
+    className: "bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6 text-sm text-slate-700"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-1"
+  }, analysisLabel('analysis.barriers_title', 'Possible learner barriers')), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600 mb-3"
+  }, analysisLabel('analysis.barriers_note', 'AI suggestions to check against what you know about your students.')), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-2 gap-4"
+  }, barrierGroups.map(group => /*#__PURE__*/React.createElement("div", {
+    key: group.key,
+    "data-barrier-group": group.key
+  }, /*#__PURE__*/React.createElement("h5", {
+    className: "text-xs font-bold text-slate-700 mb-1"
+  }, group.label), /*#__PURE__*/React.createElement("ul", {
+    className: "list-disc pl-5 space-y-1"
+  }, group.items.map((item, index) => /*#__PURE__*/React.createElement("li", {
+    key: index
+  }, formatInlineText(item, false))))))));
   const isTranslatedDisplay = typeof analysisData.translatedText === 'string' && !!analysisData.translatedText.trim();
   const canChangeReportNotes = isTeacherMode && !isTranslatedReport;
+  // Factual notes describe the source; on a translated display the fix would edit the wrong text.
+  const canFixFacts = canChangeReportNotes && !isTranslatedDisplay;
+  const factualFixMessages = {
+    'no-selection': () => t('process.select_error') || 'Select at least one note to fix.',
+    length: () => analysisLabel('analysis.factual_fix_too_large', 'The proposed fix changed too much of the text, so it was not offered. Try again with fewer notes selected.'),
+    citations: () => analysisLabel('analysis.factual_fix_citations', 'The proposed fix changed a source citation, so it was not offered. Try again or edit the text by hand.'),
+    'no-change': () => analysisLabel('analysis.factual_fix_no_change', 'The AI found nothing to change for the selected notes.')
+  };
+  const handleProposeFactualFix = async () => {
+    if (!canFixFacts || isProcessing || typeof handleAutoCorrectSource !== 'function') return;
+    setFactualProposal(null);
+    let result = null;
+    try {
+      result = await handleAutoCorrectSource();
+    } catch (err) {
+      warnLog('Factual fix failed:', err);
+    }
+    if (result && result.ok === true && typeof result.corrected === 'string' && typeof result.original === 'string') {
+      setFactualProposal({
+        ...result,
+        resourceId: result.resourceId || generatedContent?.id
+      });
+      return;
+    }
+    const message = result && factualFixMessages[result.reason];
+    addToast(message ? message() : t('process.correction_error') || 'The correction could not be prepared. Please try again.', message ? 'warning' : 'error');
+  };
+  const applyFactualProposal = async () => {
+    const proposal = activeFactualProposal;
+    if (!proposal) return;
+    setFactualProposal(null);
+    if (typeof props.onCorrectAnalysisText !== 'function') {
+      addToast(t('process.grammar_fix_failed') || 'The source editor is unavailable. Please reload and try again.', 'error');
+      return;
+    }
+    const applied = await props.onCorrectAnalysisText(proposal.resourceId, proposal.original, proposal.corrected, []);
+    if (applied === false) {
+      addToast(analysisLabel('analysis.factual_fix_source_changed', 'The source changed after this fix was prepared, so it was not applied. Prepare the fix again.'), 'warning');
+      return;
+    }
+    const fixedNotes = new Set(proposal.notes || []);
+    updateAnalysisResource(prev => {
+      const acc = prev && prev.data && prev.data.accuracy;
+      if (!acc || !Array.isArray(acc.discrepancies)) return prev;
+      return {
+        ...prev,
+        data: {
+          ...prev.data,
+          accuracy: {
+            ...acc,
+            discrepancies: acc.discrepancies.map(note => typeof note === 'string' && fixedNotes.has(note) ? DISCREPANCY_FIXED_PREFIX + note : note)
+          }
+        }
+      };
+    });
+    addToast(t('process.correction_success') || 'Correction applied.', 'success');
+  };
+  const factualChanges = (() => {
+    if (!activeFactualProposal) return [];
+    const split = text => String(text).split(/\n[ \t]*\n/);
+    const before = split(activeFactualProposal.original),
+      after = split(activeFactualProposal.corrected);
+    if (before.length !== after.length) return [{
+      before: activeFactualProposal.original,
+      after: activeFactualProposal.corrected
+    }];
+    return before.map((text, index) => ({
+      before: text,
+      after: after[index]
+    })).filter(pair => pair.before.trim() !== pair.after.trim());
+  })();
+  const factualPreview = activeFactualProposal && /*#__PURE__*/React.createElement("section", {
+    "data-factual-fix-preview": true,
+    "aria-label": analysisLabel('analysis.factual_fix_preview_title', 'Review the proposed fix'),
+    className: "mt-3 rounded border border-indigo-300 bg-white p-3 text-xs text-slate-800"
+  }, /*#__PURE__*/React.createElement("h5", {
+    className: "font-bold text-indigo-900 mb-1"
+  }, analysisLabel('analysis.factual_fix_preview_title', 'Review the proposed fix')), /*#__PURE__*/React.createElement("p", {
+    className: "mb-2 text-slate-700"
+  }, analysisLabel('analysis.factual_fix_preview_note', 'Nothing has changed yet. Compare the passages, then apply the fix to this source or discard it.')), factualChanges.map((pair, index) => /*#__PURE__*/React.createElement("div", {
+    key: index,
+    className: "mb-2 grid grid-cols-1 md:grid-cols-2 gap-2"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "font-bold text-slate-700"
+  }, analysisLabel('analysis.factual_fix_before', 'Current text')), /*#__PURE__*/React.createElement("div", {
+    "data-fix-before": true,
+    className: "max-h-48 overflow-auto whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-2"
+  }, pair.before)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "font-bold text-indigo-900"
+  }, analysisLabel('analysis.factual_fix_after', 'Proposed text')), /*#__PURE__*/React.createElement("div", {
+    "data-fix-after": true,
+    className: "max-h-48 overflow-auto whitespace-pre-wrap rounded border border-indigo-200 bg-indigo-50 p-2"
+  }, pair.after)))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-fix-apply": true,
+    onClick: applyFactualProposal,
+    disabled: isProcessing,
+    className: "min-h-11 rounded bg-indigo-700 px-3 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50"
+  }, analysisLabel('analysis.factual_fix_apply', 'Apply fix')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-fix-discard": true,
+    onClick: () => setFactualProposal(null),
+    className: "min-h-11 rounded border border-slate-400 bg-white px-3 font-bold text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-500"
+  }, analysisLabel('analysis.factual_fix_discard', 'Discard'))));
   const normalizedText = text => asText(text).trim().replace(/\s+/g, ' ');
   const sourceTranslationMap = isRecord(analysisData.sourceTranslations) ? analysisData.sourceTranslations : {};
   const sourceTranslations = Object.entries(sourceTranslationMap).filter(([language, text]) => language.trim() && typeof text === 'string' && text.trim() && normalizedText(text) !== normalizedText(analysisData.originalText) && language.trim().toLowerCase() !== asText(analysisData.sourceLanguage).trim().toLowerCase());
@@ -374,15 +526,13 @@ function AnalysisView(props) {
   }, conceptList.map((concept, idx) => /*#__PURE__*/React.createElement("span", {
     key: idx,
     className: "bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100"
-  }, formatInlineText(concept, false)))))), targetFitCard, /*#__PURE__*/React.createElement("div", {
+  }, formatInlineText(concept, false)))))), targetFitCard, learnerBarriersCard, /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3 mb-3"
+    className: "flex flex-wrap items-center gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider"
-  }, t('output.analysis_verification')), /*#__PURE__*/React.createElement("span", {
-    className: `px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`
-  }, accuracyRating)), /*#__PURE__*/React.createElement("p", {
+  }, t('output.analysis_verification')), accuracyBadge), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 leading-relaxed"
   }, formatInlineText(asText(accuracy.reason), false)), asText(accuracy.verificationDetails) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-4 border-t border-slate-100"
@@ -393,7 +543,11 @@ function AnalysisView(props) {
   }), " ", t('analysis.verification_details')), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 bg-blue-50 p-3 rounded border border-blue-100 leading-relaxed"
   }, renderFormattedText(asText(accuracy.verificationDetails), false))), (() => {
-    const rawDiscrepancies = Array.isArray(accuracy.discrepancies) ? accuracy.discrepancies : [];
+    const shownDiscrepancies = Array.isArray(accuracy.discrepancies) ? accuracy.discrepancies : [];
+    const baseDiscrepancies = Array.isArray(baseAccuracy.discrepancies) ? baseAccuracy.discrepancies : [];
+    // A translated report keeps the fixed status of the source-language note it explains.
+    const rawDiscrepancies = isTranslatedReport && shownDiscrepancies.length === baseDiscrepancies.length ? shownDiscrepancies.map((note, i) => isFixedDiscrepancy(baseDiscrepancies[i]) && typeof note === 'string' && !isFixedDiscrepancy(note) ? DISCREPANCY_FIXED_PREFIX + note : note) : shownDiscrepancies;
+    const fixedCount = rawDiscrepancies.filter(isFixedDiscrepancy).length;
     const unreadableDiscrepancies = rawDiscrepancies.filter(isUnreadableNote).length + (Number(accuracy.discrepanciesUnreadable) > 0 ? Number(accuracy.discrepanciesUnreadable) : 0);
     const isInvalidDiscrepancy = d => {
       if (!d || typeof d !== 'string') return true;
@@ -404,6 +558,8 @@ function AnalysisView(props) {
       return false;
     };
     const realDiscrepancies = rawDiscrepancies.filter(d => !isInvalidDiscrepancy(d));
+    const hasOpenDiscrepancies = realDiscrepancies.some(note => !isFixedDiscrepancy(note));
+    const openSelectedCount = rawDiscrepancies.filter((note, i) => selectedDiscrepancies.has(i) && !isInvalidDiscrepancy(note) && !isFixedDiscrepancy(note)).length;
     const hasDiscrepancies = realDiscrepancies.length > 0;
     const hasVerifiedFacts = verifiedFactList.length > 0;
     const unreadableNotice = unreadableDiscrepancies > 0 && /*#__PURE__*/React.createElement("p", {
@@ -440,11 +596,26 @@ function AnalysisView(props) {
       className: "space-y-2 mb-3"
     }, rawDiscrepancies.map((d, i) => {
       if (isInvalidDiscrepancy(d)) return null;
+      if (isFixedDiscrepancy(d)) return /*#__PURE__*/React.createElement("div", {
+        key: i,
+        "data-discrepancy-fixed": true,
+        className: "flex items-start gap-2 p-1.5 rounded bg-green-50 border border-green-100"
+      }, /*#__PURE__*/React.createElement(CheckCircle2, {
+        size: 14,
+        className: "text-green-700 mt-0.5 shrink-0",
+        "aria-hidden": "true"
+      }), /*#__PURE__*/React.createElement("div", {
+        className: "text-xs text-slate-700 leading-relaxed w-full"
+      }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
+        text: d.slice(DISCREPANCY_FIXED_PREFIX.length)
+      }), " ", /*#__PURE__*/React.createElement("span", {
+        className: "inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-200 text-green-900"
+      }, analysisLabel('analysis.factual_fixed_tag', 'Fixed in source'))));
       const isSelected = isTranslatedReport || selectedDiscrepancies.has(i);
       return /*#__PURE__*/React.createElement("div", {
         key: i,
         className: `flex items-start gap-2 p-1.5 rounded transition-colors ${isSelected ? 'bg-white/50' : 'opacity-60'}`
-      }, canChangeReportNotes && /*#__PURE__*/React.createElement("input", {
+      }, canFixFacts && /*#__PURE__*/React.createElement("input", {
         "aria-label": analysisLabel('analysis.select_factual_note', 'Include factual note in correction') + ' ' + (i + 1) + ': ' + d,
         type: "checkbox",
         checked: isSelected,
@@ -456,9 +627,15 @@ function AnalysisView(props) {
       }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
         text: d
       })));
-    })), canChangeReportNotes && /*#__PURE__*/React.createElement("button", {
-      onClick: handleAutoCorrectSource,
-      disabled: isProcessing || selectedDiscrepancies.size === 0,
+    })), fixedCount > 0 && /*#__PURE__*/React.createElement("p", {
+      role: "note",
+      "data-factual-fix-stale": true,
+      className: "mb-3 text-xs text-slate-700"
+    }, analysisLabel('analysis.factual_fix_rerun_note', 'Fixed notes are marked. The rating and the other findings still describe the text before the fix; run the analysis again for a fresh check.')), canFixFacts && hasOpenDiscrepancies && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-factual-fix": true,
+      onClick: handleProposeFactualFix,
+      disabled: isProcessing || openSelectedCount === 0,
       "aria-busy": isProcessing,
       className: "w-full flex items-center justify-center gap-2 bg-white border border-red-600 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
     }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -466,7 +643,9 @@ function AnalysisView(props) {
       className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Wrench, {
       size: 12
-    }), t('analysis.fix_button'), " (", selectedDiscrepancies.size, ")"))));
+    }), t('analysis.fix_button'), " (", openSelectedCount, ")"), isTeacherMode && isTranslatedDisplay && !isTranslatedReport && /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-xs text-slate-700"
+    }, analysisLabel('analysis.factual_translated_note', 'These notes describe the source text, not the translation shown here, so Fix is off.')), factualPreview)));
   })(), asText(accuracy.citations) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-4 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("div", {

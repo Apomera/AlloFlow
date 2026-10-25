@@ -1226,7 +1226,7 @@ function createWordSoundsCore(options = {}) {
       new Set(supplied.distractors).size === supplied.distractors.length);
     if (curated && matching) return {...curated, distractors: [...curated.distractors], contentStatus: 'curated', targetWord: target};
     return {type: 'review', contentStatus: 'teacher_review_required', targetWord: target,
-      instruction: 'Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.',
+      instruction: 'Sound Swap has a checked sound change for only a small set of words, and this word is not one of them. Choose another activity.',
       answer: '', distractors: []};
   };
   const manipulationReady = task => !!task && task.contentStatus === 'curated' &&
@@ -3217,7 +3217,7 @@ const WS_CORE = createWordSoundsCore();
         }
         if (data && !WS_CORE.manipulationReady(data)) {
           return React.createElement('p', {role: 'status', className: 'text-center text-slate-700 text-sm py-6'},
-            (ts("word_sounds.manipulation_review_required") || "Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity."));
+            (ts("word_sounds.manipulation_unavailable_word") || "Sound Swap has a checked sound change for only a small set of words, and this word is not one of them. Choose another activity."));
         }
         if (!data || !data.instruction) {
           return /*#__PURE__*/ React.createElement(
@@ -7203,6 +7203,65 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         if (own.length && !own.includes(key)) return false;
         return !!buildWordFamilyBoard(key, data).issue;
       };
+      // Sound Sort and Sound Swap follow the same rule (2026-10-25): learner
+      // play skips a word whose board cannot be built (Sound Swap: no checked
+      // one-sound change; Sound Sort: no word set for the sound). Teachers keep
+      // the notice, and the review screen names the skipped words.
+      const learnerSkipKey = (word) => String(word || "").trim().toLowerCase();
+      const learnerSkipSeenRef = React.useRef({ sound_sort: new Set(), manipulation: new Set() });
+      const soundSortUnplayable = (word, data) => !computeSoundSortItem(learnerSkipKey(word), data && data.phonemes,
+        data && data.soundSortMatches, data && data.activityItems ? data.activityItems.sound_sort : undefined);
+      const soundSwapUnplayable = (word, data) => !WS_CORE.manipulationReady(WS_CORE.resolveManipulationTask(learnerSkipKey(word),
+        data ? (data.manipulationTask || (data.activityItems && data.activityItems.manipulation ? data.activityItems.manipulation.task : null)) : null,
+        wordSoundsLanguage));
+      const LEARNER_SKIP_RULES = { sound_sort: soundSortUnplayable, manipulation: soundSwapUnplayable };
+      // Sound Swap needs no pack data to judge a word; a Sound Sort word without
+      // pack data is judged once the player has seen and skipped it.
+      const learnerSkipEntry = (activityId, word) => {
+        if (activityId === "word_families") return wordFamilyEntrySkipped(word);
+        const unplayable = LEARNER_SKIP_RULES[activityId];
+        if (!unplayable) return false;
+        if (learnerSkipSeenRef.current[activityId].has(learnerSkipKey(word))) return true;
+        const data = wordFamilyDataFor(word);
+        return data || activityId === "manipulation" ? unplayable(word, data) : false;
+      };
+      const learnerSkipNonePlayable = (activityId) => {
+        if (activityId === "word_families") return wordFamilyNonePlayable();
+        if (!LEARNER_SKIP_RULES[activityId]) return false;
+        const pack = wsPreloadedWords || [];
+        const pool = pack.length > 0 ? pack : (wordPool || []);
+        const words = pool.map((w) => w && (w.displayWord || w.word || w.targetWord)).filter(Boolean);
+        return words.length > 0 && words.every((w) => learnerSkipEntry(activityId, w));
+      };
+      const learnerSkippedWords = (activityId) => (wsPreloadedWords || [])
+        .map((pw) => pw && [pw, pw.displayWord || pw.word || pw.targetWord])
+        .filter((e) => e && e[1] && LEARNER_SKIP_RULES[activityId](e[1], e[0]))
+        .map((e) => e[1]);
+      const learnerItemSkipped = (activityId, word, data) => {
+        if (activityId === "word_families") return wordFamilyItemSkipped(word, data);
+        const unplayable = LEARNER_SKIP_RULES[activityId];
+        if (!wordFamilySkipMode || !unplayable || !word) return false;
+        const own = data && !Array.isArray(data) ? [data.word, data.targetWord, data.displayWord, data.term].filter(Boolean).map(learnerSkipKey) : [];
+        if (own.length && !own.includes(learnerSkipKey(word))) return false;
+        if (activityId === "sound_sort" && !own.length) return false;
+        return unplayable(word, own.length ? data : null);
+      };
+      // Same inputs as the Sound Sort view: true when it has no board to show.
+      const soundSortBoardMissing = () => {
+        const w = learnerSkipKey(currentWordSoundsWord);
+        if (!w || w.length < 2) return false;
+        const pre = soundSortPreloadRef.current;
+        if (pre && pre.word === w && pre.item) return false;
+        return soundSortUnplayable(w, wordSoundsPhonemes);
+      };
+      // Sound Swap is offered only when at least one word in the list has a
+      // checked one-sound change.
+      const soundSwapAvailable = React.useMemo(() => {
+        const pack = Array.isArray(wsPreloadedWords) ? wsPreloadedWords : [];
+        if (pack.length) return pack.some((pw) => { const w = pw && (pw.displayWord || pw.word || pw.targetWord); return !!w && !soundSwapUnplayable(w, pw); });
+        return (Array.isArray(glossaryTerms) ? glossaryTerms : []).some((term) => String((term && (term.term || term.word)) || (typeof term === "string" ? term : ""))
+          .toLowerCase().split(/[^\p{L}\p{M}']+/u).some((w) => w && !soundSwapUnplayable(w, null)));
+      }, [wsPreloadedWords, glossaryTerms, wordSoundsLanguage]);
       const [isMinimized, setIsMinimized] = React.useState(false);
       React.useEffect(() => {
         if (typeof loadProbeBanks === "function") {
@@ -10588,6 +10647,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         (activityId) => {
           const prepared = runtimeSessionConfig.preparedActivities;
           if (Array.isArray(prepared) && prepared.length && !prepared.includes(activityId)) return false;
+          if (activityId === "manipulation" && !soundSwapAvailable) return false;
           if (wsLangCaps.isEnglish) return true; // English: everything, unchanged
           switch (activityId) {
             // English-specific machinery — never half-run in another language:
@@ -10613,15 +10673,15 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               return true;
           }
         },
-        [wsLangCaps, runtimeSessionConfig.preparedActivities],
+        [wsLangCaps, runtimeSessionConfig.preparedActivities, soundSwapAvailable],
       );
       const ACTIVITIES = React.useMemo(() => {
         const tierFiltered = includeOrthographic
           ? ALL_ACTIVITIES
           : ALL_ACTIVITIES.filter((a) => a.tier === "phonological");
-        if (wsLangCaps.isEnglish && !runtimeSessionConfig.preparedActivities?.length) return tierFiltered;
+        if (wsLangCaps.isEnglish && !runtimeSessionConfig.preparedActivities?.length) return tierFiltered.filter((a) => a.id !== "manipulation" || soundSwapAvailable);
         return tierFiltered.filter((a) => wsActivityAvailableForLang(a.id));
-      }, [includeOrthographic, wsLangCaps, wsActivityAvailableForLang]);
+      }, [includeOrthographic, wsLangCaps, wsActivityAvailableForLang, soundSwapAvailable]);
       // Skill-cluster grouping for the activity picker (UX). Maps each activity
       // to a research-aligned cluster along the phonological-awareness continuum
       // -> phonics -> spelling -> handwriting. Purely presentational; the
@@ -11659,8 +11719,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             );
           }
           // Learner play: unplayable Word Families items never enter the queue.
-          if (activityId === "word_families" && wordFamilySkipMode) {
-            selection = selection.filter((entry) => !wordFamilyEntrySkipped(entry.displayWord || entry.word));
+          if ((activityId === "word_families" || LEARNER_SKIP_RULES[activityId]) && wordFamilySkipMode) {
+            selection = selection.filter((entry) => !learnerSkipEntry(activityId, entry.displayWord || entry.word));
           }
           const queue = selection
             .slice(0, isFixedForm ? probeItemGoal : SESSION_LENGTH)
@@ -15311,7 +15371,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       }, [currentWordSoundsWord, isolationState?.word, wordSoundsActivity]);
       React.useEffect(() => {
         if (playInstructions) return;
-        if (wordSoundsActivity === "word_families" && wordFamilyItemSkipped(currentWordSoundsWord, wordSoundsPhonemes)) return;
+        if (learnerItemSkipped(wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes)) return;
         if (currentWordSoundsWord && !isLoadingPhonemes) {
           const playKey = `${currentWordSoundsWord}-${wordSoundsActivity}${wordSoundsActivity === 'syllable_counting' ? '-' + syllableCountPresentation : ''}`;
           if (lastPlayedWord.current === playKey) return;
@@ -15484,10 +15544,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           // passed over like an unavailable activity. The next activity in the
           // sequence starts, or the session ends when it was the last one.
           let wordFamiliesEnded = false;
-          if (activityId === "word_families" && !forceWord && wordFamilySkipMode && wordFamilyNonePlayable()) {
+          if (!forceWord && wordFamilySkipMode && learnerSkipNonePlayable(activityId)) {
             const seq = [...new Set(activitySequence || [])];
-            const at = seq.indexOf("word_families");
-            const next = at >= 0 ? seq.slice(at + 1).find((a) => wsActivityAvailableForLang(a)) : null;
+            const at = seq.indexOf(activityId);
+            const next = at >= 0 ? seq.slice(at + 1).find((a) => wsActivityAvailableForLang(a) && !learnerSkipNonePlayable(a)) : null;
             if (next) activityId = next;
             else wordFamiliesEnded = true;
           }
@@ -16043,20 +16103,21 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       // once, with no attempt or score. The next playable queue word follows;
       // with none left, startActivity ends the activity.
       React.useEffect(() => {
-        if (wordSoundsActivity !== "word_families" || isLoadingPhonemes || showReviewPanel || showSessionComplete) return;
-        if (!wordFamilyItemSkipped(currentWordSoundsWord, wordSoundsPhonemes)) return;
+        const skipActivity = wordSoundsActivity;
+        if ((skipActivity !== "word_families" && !LEARNER_SKIP_RULES[skipActivity]) || isLoadingPhonemes || showReviewPanel || showSessionComplete) return;
+        if (!learnerItemSkipped(skipActivity, currentWordSoundsWord, wordSoundsPhonemes)) return;
         const word = String(currentWordSoundsWord).trim().toLowerCase();
-        wordFamilySkippedRef.current.add(word);
-        const queue = sessionQueueRef.current.word_families || [];
+        (skipActivity === "word_families" ? wordFamilySkippedRef.current : learnerSkipSeenRef.current[skipActivity]).add(word);
+        const queue = sessionQueueRef.current[skipActivity] || [];
         const at = queue.findIndex((entry) => {
           const w = String((typeof entry === "string" ? entry : entry && (entry.singleWord || entry.fullTerm || entry.word)) || "").trim().toLowerCase();
-          return w && w !== word && !wordFamilyEntrySkipped(w);
+          return w && w !== word && !learnerSkipEntry(skipActivity, w);
         });
         if (at >= 0) {
-          sessionQueueRef.current.word_families = queue.slice(at + 1);
-          startActivity("word_families", queue[at]);
+          sessionQueueRef.current[skipActivity] = queue.slice(at + 1);
+          startActivity(skipActivity, queue[at]);
         } else {
-          startActivity("word_families");
+          startActivity(skipActivity);
         }
       }, [wordFamilySkipMode, wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, isLoadingPhonemes, showReviewPanel, showSessionComplete, startActivity]);
       React.useEffect(() => {
@@ -16090,7 +16151,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         if (!playInstructions || isMinimized || !currentWordSoundsWord) return;
         if (showReviewPanel) return;
         // A skipped Word Families item is never spoken.
-        if (wordSoundsActivity === "word_families" && wordFamilyItemSkipped(currentWordSoundsWord, wordSoundsPhonemes)) return;
+        if (learnerItemSkipped(wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes)) return;
         // orthography now gets instructions like all other activities
         let cancelled = false;
         let cancelInstructionWait = null;
@@ -18641,7 +18702,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ? manipulationState && !WS_CORE.manipulationReady(manipulationState)
           : wordSoundsActivity === 'read_sentence' ? readSentenceBoard?.contentStatus === 'teacher_review_required'
           : wordSoundsActivity === 'read_passage' ? readPassageBoard?.contentStatus === 'teacher_review_required'
-          : wordSoundsActivity === 'sentence_match' ? sentenceMatchBoard?.contentStatus === 'teacher_review_required' : false;
+          : wordSoundsActivity === 'sentence_match' ? sentenceMatchBoard?.contentStatus === 'teacher_review_required'
+          : wordSoundsActivity === 'sound_sort' ? soundSortBoardMissing() : false;
+        if (reviewRequired && wordFamilySkipMode && LEARNER_SKIP_RULES[wordSoundsActivity]) {
+          return React.createElement("div", { className: "p-4", "aria-busy": "true" });
+        }
         if (reviewRequired) {
           return React.createElement('div', {className: 'flex flex-col items-center gap-4 p-6'},
             React.createElement('p', {role: 'status', className: 'text-slate-700 text-sm text-center'},
@@ -18650,7 +18715,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 : wordSoundsActivity === 'mapping'
                 ? (ts("word_sounds.mapping_unscored_review") || "Sound Mapping needs a teacher to check how the letters match these sounds. This item will not be scored.")
                 : wordSoundsActivity === 'manipulation'
-                ? (ts("word_sounds.manipulation_unscored_review") || "Sound Swap needs a teacher to verify a one-sound change for this word. This item will not be scored.")
+                ? (ts("word_sounds.manipulation_unscored_unavailable") || "Sound Swap has no checked sound change for this word. This item will not be scored.")
+                : wordSoundsActivity === 'sound_sort'
+                ? (ts("word_sounds.sound_sort_unscored_review") || "Sound Sort has no word set for this sound. This item will not be scored.")
                 : (ts("word_sounds.reading_unscored_review") || "A teacher needs to provide and review this reading example. This item will not be scored.")),
             React.createElement('button', {
               type: 'button', className: 'px-4 py-2 rounded-lg bg-violet-700 text-white font-semibold focus:ring-2 focus:ring-violet-400',
@@ -20018,7 +20085,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const _ssItem = (_ssPre && _ssPre.word === targetWord && _ssPre.item)
               ? _ssPre.item
               : computeSoundSortItem(targetWord, wordSoundsPhonemes && wordSoundsPhonemes.phonemes, wordSoundsPhonemes && wordSoundsPhonemes.soundSortMatches, wordSoundsPhonemes?.activityItems?.sound_sort);
-            if (!_ssItem) return React.createElement("div", { role: "status", className: "p-4 text-slate-700" }, ts("word_sounds.sound_sort_review_needed") || "This sound needs a reviewed word set. Choose another activity or return to setup.");
+            if (!_ssItem) return wordFamilySkipMode
+              ? React.createElement("div", { className: "p-4", "aria-busy": "true" })
+              : React.createElement("div", { role: "status", className: "p-4 text-slate-700" }, ts("word_sounds.sound_sort_review_needed") || "This sound needs a reviewed word set. Choose another activity or return to setup.");
             // PIN the item on first compute: on the non-preloaded path the AI
             // sort data lands asynchronously mid-play — recomputing per-render
             // could flip first/last (remounting the board via key= and wiping
@@ -21841,6 +21910,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           // Words students skip in Word Families (board cannot be played).
           wordFamilySkips: wsActivityAvailableForLang("word_families") && (!activitySequence.length || activitySequence.includes("word_families"))
             ? wordFamilySkippedWords() : [],
+          soundSortSkips: wsActivityAvailableForLang("sound_sort") && (!activitySequence.length || activitySequence.includes("sound_sort"))
+            ? learnerSkippedWords("sound_sort") : [],
+          soundSwapSkips: wsActivityAvailableForLang("manipulation") && (!activitySequence.length || activitySequence.includes("manipulation"))
+            ? learnerSkippedWords("manipulation") : [],
           isStudentLocked: isStudentLocked,
           setIsStudentLocked: setIsStudentLocked,
           generatingImageIndex: generatingImageIndex,

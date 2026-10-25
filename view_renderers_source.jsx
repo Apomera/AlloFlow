@@ -646,7 +646,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
       const safeTitle = String(topicTitle || 'Flow Chart').replace(/[&<>"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[character]));
       printWindow.document.open();
       printWindow.document.write(
-        '<!doctype html><html><head><meta charset="utf-8"><title>' + safeTitle + '</title>' +
+        '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + safeTitle + '</title>' +
         '<style>html,body{margin:0;background:white}body{padding:20px}svg{display:block;max-width:100%;height:auto;margin:auto}@page{size:landscape;margin:.35in}</style>' +
         '</head><body>' + svg + '<script>window.onload=function(){setTimeout(function(){window.print();},100);};<\/script></body></html>'
       );
@@ -2619,14 +2619,25 @@ const renderOutlineContentCore = (deps) => {
                 violet:  { bg: 'bg-violet-50/70',  header: 'bg-violet-600 text-white',  dot: 'text-violet-500' },
                 emerald: { bg: 'bg-emerald-50/70', header: 'bg-emerald-700 text-white', dot: 'text-emerald-500' },
             };
-            const renderColumn = (branch, colorKey, placeholderWhenEmpty) => {
+            // Generated Know / Want entries are teacher examples (teacherExample); students get a prompt instead.
+            const kwlPrompt = (key, fallback) => (
+                <p data-kwl-student-prompt className="px-4 pt-4 text-sm font-semibold text-slate-700">
+                    {t('outline.' + key) || fallback}
+                    <span className="mt-1 block text-xs font-normal italic text-slate-600">{t('outline.kwl_write_below') || 'Write your own answer in the reflection boxes below.'}</span>
+                </p>
+            );
+            const renderColumn = (branch, colorKey, placeholderWhenEmpty, prompt) => {
+                const isExample = branch.teacherExample === true;
                 const items = (branch.items || []).map(itemText).filter(Boolean);
                 const c = KWL_COLORS[colorKey];
+                const asksStudent = !isTeacherMode && prompt && (isExample || (organizerData.kwlTeacherExamples === true && items.length === 0));
                 return (
                     <div className={`${c.bg} flex-1 min-h-[300px]`}>
                         <h4 className={`${c.header} font-black text-base uppercase tracking-wide text-center py-3 px-4`}>
                             {branch.title}
                         </h4>
+                        {asksStudent ? kwlPrompt(prompt[0], prompt[1]) : <>
+                        {isExample && isTeacherMode && items.length > 0 && <p data-kwl-teacher-example-label className="px-4 pt-3 text-xs font-bold uppercase tracking-wide text-slate-700">{t('outline.kwl_teacher_examples') || 'Teacher examples (hidden from students)'}</p>}
                         <ul className="p-4 space-y-2">
                             {items.length > 0 ? items.map((text, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
@@ -2636,7 +2647,7 @@ const renderOutlineContentCore = (deps) => {
                             )) : (
                                 <li className="text-xs text-slate-600 italic">{placeholderWhenEmpty || '—'}</li>
                             )}
-                        </ul>
+                        </ul></>}
                     </div>
                 );
             };
@@ -2644,9 +2655,9 @@ const renderOutlineContentCore = (deps) => {
                 <div className="max-w-5xl mx-auto px-4 py-6">
                     <MainTitle />
                     <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
-                        {renderColumn(knowBranch,    'sky',     null)}
-                        {renderColumn(wantBranch,    'violet',  null)}
-                        {renderColumn(learnedBranch, 'emerald', t('outline.kwl_learned_placeholder') || '(students fill this in after the lesson)')}
+                        {renderColumn(knowBranch,    'sky',     null, ['kwl_prompt_know', 'What do you already know?'])}
+                        {renderColumn(wantBranch,    'violet',  null, ['kwl_prompt_want', 'What do you want to know?'])}
+                        {renderColumn(learnedBranch, 'emerald', t('outline.kwl_learned_placeholder') || '(students fill this in after the lesson)', ['kwl_prompt_learned', 'What did you learn?'])}
                     </div>
 
                     <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.kwl_caption') || 'KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson.'}</p>
@@ -5582,7 +5593,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             return `<section class="room"><h2 style="border-color:${_mpEsc(room.color)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
         }).join('');
         const sheetTitle = _mpEsc(palace.title || data?.main || title || 'Memory Palace');
-        const html = `<!doctype html><html><head><meta charset="utf-8"><title>${sheetTitle}</title><style>`
+        const html = `<!doctype html><html lang="${String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '')}"${document.documentElement.dir === 'rtl' ? ' dir="rtl"' : ''}><head><meta charset="utf-8"><title>${sheetTitle}</title><style>`
             + `body{font-family:system-ui,-apple-system,sans-serif;color:#1e293b;max-width:760px;margin:0 auto;padding:32px 24px;line-height:1.5;}`
             + `h1{font-size:24px;margin:0 0 4px;}.sub{color:#64748b;font-size:13px;margin:0 0 22px;}`
             + `.room{page-break-inside:avoid;margin-bottom:20px;}.room h2{font-size:16px;border-left:5px solid #6366f1;padding-left:10px;margin:0 0 8px;}`

@@ -109,6 +109,32 @@ function SentenceFramesView(props) {
   const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
   const isSessionOpen = !!gradingSession.isOpen && (sessionResourceId == null || String(sessionResourceId) === String(generatedContent?.id));
   const canGenerateRubric = !!isTeacherMode && !isParentMode;
+  // Shown numbers count only the items that render, so a dropped item leaves no gap.
+  const visibleItemNumbers = {};
+  usableItems.reduce((n, item, i) => {
+    if (isUsableItem(item)) {
+      visibleItemNumbers[i] = n + 1;
+      return n + 1;
+    }
+    return n;
+  }, 0);
+  const gradeScores = gradingResult && Array.isArray(gradingResult.scores) ? gradingResult.scores.filter(s => s && typeof s === 'object') : [];
+  const gradeFeedback = gradingResult && gradingResult.feedback && typeof gradingResult.feedback === 'object' ? gradingResult.feedback : {};
+  const gradeText = v => typeof v === 'string' || typeof v === 'number' ? v : '';
+  // Optional generator extras (absent on older scaffolds, which render as before).
+  const TIER_LABELS = {
+    emerging: ['scaffolds.tier_emerging', 'Emerging'],
+    expanding: ['scaffolds.tier_expanding', 'Expanding'],
+    bridging: ['scaffolds.tier_bridging', 'Bridging']
+  };
+  const TIER_CLASSES = {
+    emerging: 'bg-sky-50 text-sky-800 border-sky-300',
+    expanding: 'bg-violet-50 text-violet-800 border-violet-300',
+    bridging: 'bg-emerald-50 text-emerald-800 border-emerald-300'
+  };
+  const tierOf = item => item && typeof item.tier === 'string' && TIER_LABELS[item.tier] ? item.tier : null;
+  const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 12);
+  const wordBankHeadingId = `scaffold-word-bank-${generatedContent?.id}`;
   const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
@@ -159,8 +185,21 @@ function SentenceFramesView(props) {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), isSessionOpen ? /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Draft feedback encountered an error. Please try again."
+  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), wordBank.length > 0 && /*#__PURE__*/React.createElement("section", {
+    "data-scaffold-word-bank": true,
+    "aria-labelledby": wordBankHeadingId,
+    className: "bg-amber-50 border border-amber-200 rounded-xl p-4"
+  }, /*#__PURE__*/React.createElement("h4", {
+    id: wordBankHeadingId,
+    className: "text-xs font-bold text-amber-900 uppercase tracking-wider mb-2"
+  }, label('scaffolds.word_bank', 'Word bank')), /*#__PURE__*/React.createElement("ul", {
+    className: "flex flex-wrap gap-2"
+  }, wordBank.map((word, i) => /*#__PURE__*/React.createElement("li", {
+    key: i,
+    dir: "auto",
+    className: "px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950"
+  }, word)))), isSessionOpen ? /*#__PURE__*/React.createElement(ErrorBoundary, {
+    fallbackMessage: label('scaffolds.draft_feedback_error', 'Draft feedback encountered an error. Please try again.')
   }, /*#__PURE__*/React.createElement(DraftFeedbackInterface, {
     status: gradingSession.status,
     draftText: gradingSession.draftText,
@@ -188,9 +227,12 @@ function SentenceFramesView(props) {
     className: "flex items-start gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1"
-  }, idx + 1), /*#__PURE__*/React.createElement("div", {
+  }, visibleItemNumbers[idx]), /*#__PURE__*/React.createElement("div", {
     className: "w-full min-w-0"
-  }, isEditingScaffolds ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
+  }, tierOf(item) && /*#__PURE__*/React.createElement("span", {
+    "data-scaffold-tier": tierOf(item),
+    className: `inline-block mb-1 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-wider ${TIER_CLASSES[tierOf(item)]}`
+  }, label(TIER_LABELS[tierOf(item)][0], TIER_LABELS[tierOf(item)][1])), isEditingScaffolds ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('scaffolds.edit_item') || `Edit scaffold item ${idx + 1}`,
     value: item.text,
     onChange: e => handleScaffoldChange(idx, 'text', e.target.value),
@@ -210,7 +252,7 @@ function SentenceFramesView(props) {
   }, item.text), leveledTextLanguage !== 'English' && item.text_en && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 italic px-2"
   }, item.text_en), /*#__PURE__*/React.createElement("textarea", {
-    "aria-label": `${label('scaffolds.student_response', 'Student response')} ${idx + 1}`,
+    "aria-label": `${label('scaffolds.student_response', 'Student response')} ${visibleItemNumbers[idx]}`,
     "aria-describedby": `scaffold-prompt-${generatedContent.id}-${idx}`,
     value: studentResponses[generatedContent.id]?.[idx] || '',
     onChange: e => handleStudentInput(generatedContent.id, idx, e.target.value),
@@ -349,16 +391,16 @@ function SentenceFramesView(props) {
     className: "font-bold text-indigo-900 text-lg"
   }, t('dashboard.grading.total_score')), /*#__PURE__*/React.createElement("span", {
     className: "bg-indigo-100 text-indigo-800 font-black px-3 py-1 rounded-full"
-  }, gradingResult.totalScore)), /*#__PURE__*/React.createElement("div", {
+  }, gradeText(gradingResult.totalScore))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3 mb-4"
-  }, gradingResult.scores.map((s, i) => /*#__PURE__*/React.createElement("div", {
+  }, gradeScores.map((s, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     className: "text-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between font-bold text-slate-700"
-  }, /*#__PURE__*/React.createElement("span", null, s.criteria), /*#__PURE__*/React.createElement("span", null, s.score)), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("span", null, gradeText(s.criteria)), /*#__PURE__*/React.createElement("span", null, gradeText(s.score))), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 text-xs italic"
-  }, s.comment)))), /*#__PURE__*/React.createElement("div", {
+  }, gradeText(s.comment))))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-3 text-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 p-3 rounded border border-green-100"
@@ -368,7 +410,7 @@ function SentenceFramesView(props) {
     size: 12
   }), " ", t('dashboard.grading.glow_label')), /*#__PURE__*/React.createElement("p", {
     className: "text-green-700"
-  }, gradingResult.feedback.glow)), /*#__PURE__*/React.createElement("div", {
+  }, gradeText(gradeFeedback.glow))), /*#__PURE__*/React.createElement("div", {
     className: "bg-orange-50 p-3 rounded border border-orange-100"
   }, /*#__PURE__*/React.createElement("strong", {
     className: "text-orange-800 block mb-1 flex items-center gap-1"
@@ -376,7 +418,7 @@ function SentenceFramesView(props) {
     size: 12
   }), " ", t('dashboard.grading.grow_label')), /*#__PURE__*/React.createElement("p", {
     className: "text-orange-700"
-  }, gradingResult.feedback.grow)))), /*#__PURE__*/React.createElement("button", {
+  }, gradeText(gradeFeedback.grow))))), /*#__PURE__*/React.createElement("button", {
     onClick: handleSetGradingResultToNull,
     className: "text-xs text-indigo-500 hover:text-indigo-700 underline w-full text-center"
   }, t('dashboard.grading.grade_another'))))));

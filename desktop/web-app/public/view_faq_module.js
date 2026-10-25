@@ -16,7 +16,23 @@
   if (!React) { console.error('[ViewFaqModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  var _lazyIcon = function (name) {
+  function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+// Companion language belongs to the saved artifact, independent of current app settings.
+function _faqTranslationAttributes(artifact) {
+  const api = window.AlloModules?.TextPipelineHelpers;
+  if (typeof api?.getArtifactTranslationTextAttributes === 'function') return api.getArtifactTranslationTextAttributes(artifact);
+  const target = [artifact?.config?.translationPolicy?.target, artifact?.translationPolicy?.target, artifact?.translationTarget, artifact?.config?.translationTarget, artifact?.config?.attachedTranslationTarget].find(value => typeof value === 'string' && value.trim()) || 'English';
+  const helpers = window.AlloModules?.ModuleScopeExtras;
+  const lang = helpers?.getSpeechLangCode?.(target) || window.AlloFlowLang?.bcp47Full?.(target) || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : target === 'English' ? 'en' : 'und');
+  return {
+    lang,
+    dir: helpers?.getContentDirection?.(target) || 'auto',
+    style: {
+      textAlign: 'start'
+    }
+  };
+}
+var _lazyIcon = function (name) {
   return function (props) {
     var I = window.AlloIcons && window.AlloIcons[name];
     return I ? /*#__PURE__*/React.createElement(I, props) : null;
@@ -399,6 +415,47 @@ function FaqView(props) {
     }, label('faq.audio_identity_loading', 'Sentence audio tools are not ready. Try again after they finish loading.')));
   };
   var faqItems = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+  // PASS 1: precompute sentence index ranges per FAQ so we can derive
+  // which FAQ contains the currently-playing TTS sentence (used to
+  // auto-expand the matching item).
+  var rangeStart = [];
+  var rangeEnd = [];
+  var _sCount = 0;
+  faqItems.forEach(function (faq, idx) {
+    rangeStart[idx] = _sCount;
+    var qN = splitTextToSentences(faq.question).filter(function (s) {
+      return s && s.trim().length > 0;
+    }).length;
+    var aN = splitTextToSentences(faq.answer).filter(function (s) {
+      return s && s.trim().length > 0;
+    }).length;
+    _sCount += qN + aN;
+    rangeEnd[idx] = _sCount;
+  });
+  var currentlyReadingFaqIdx = -1;
+  if (isPlaying && playingContentId === 'faq-active' && playbackState && typeof playbackState.currentIdx === 'number') {
+    for (var ri = 0; ri < rangeStart.length; ri++) {
+      if (playbackState.currentIdx >= rangeStart[ri] && playbackState.currentIdx < rangeEnd[ri]) {
+        currentlyReadingFaqIdx = ri;
+        break;
+      }
+    }
+  }
+  // TTS auto-expand: when the reader reaches a new FAQ, persist that index
+  // into the expanded set so the answer stays visible. Top-level hook (rules of hooks).
+  React.useEffect(function () {
+    if (currentlyReadingFaqIdx >= 0) {
+      setExpandedSet(function (prev) {
+        if (prev.has(currentlyReadingFaqIdx)) return prev;
+        var next = new Set(prev);
+        next.add(currentlyReadingFaqIdx);
+        return next;
+      });
+    }
+  }, [currentlyReadingFaqIdx]);
+  var faqQuestionName = function (faq) {
+    return String(faq && faq.question || '').replace(/[*_`#>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 160);
+  };
   return /*#__PURE__*/React.createElement("div", {
     "data-faq-view": true,
     className: "space-y-6"
@@ -526,47 +583,7 @@ function FaqView(props) {
   }, label('faq.empty_teacher_hint', 'Generate the FAQ again to create questions.'))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, (() => {
-    // PASS 1: precompute sentence index ranges per FAQ so we can derive
-    // which FAQ contains the currently-playing TTS sentence (used to
-    // auto-expand the matching item).
     var data = faqItems;
-    var rangeStart = [];
-    var rangeEnd = [];
-    var _sCount = 0;
-    data.forEach(function (faq, idx) {
-      rangeStart[idx] = _sCount;
-      var qN = splitTextToSentences(faq.question).filter(function (s) {
-        return s && s.trim().length > 0;
-      }).length;
-      var aN = splitTextToSentences(faq.answer).filter(function (s) {
-        return s && s.trim().length > 0;
-      }).length;
-      _sCount += qN + aN;
-      rangeEnd[idx] = _sCount;
-    });
-    var currentlyReadingFaqIdx = -1;
-    if (isPlaying && playingContentId === 'faq-active' && playbackState && typeof playbackState.currentIdx === 'number') {
-      for (var ri = 0; ri < rangeStart.length; ri++) {
-        if (playbackState.currentIdx >= rangeStart[ri] && playbackState.currentIdx < rangeEnd[ri]) {
-          currentlyReadingFaqIdx = ri;
-          break;
-        }
-      }
-    }
-    // Side-effect: TTS auto-expand. When the reader reaches a new FAQ,
-    // persist that index into the expanded set so the answer is visible.
-    // Effect runs in render closure — safe because setState is no-op when
-    // value is already present.
-    React.useEffect(function () {
-      if (currentlyReadingFaqIdx >= 0 && !expandedSet.has(currentlyReadingFaqIdx)) {
-        setExpandedSet(function (prev) {
-          if (prev.has(currentlyReadingFaqIdx)) return prev;
-          var next = new Set(prev);
-          next.add(currentlyReadingFaqIdx);
-          return next;
-        });
-      }
-    }, [currentlyReadingFaqIdx]);
     // PASS 2: actual render. Sentence indices come from rangeStart[idx] so
     // they stay stable regardless of which FAQs are expanded/collapsed.
     return data.map((faq, idx) => {
@@ -583,8 +600,9 @@ function FaqView(props) {
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-start gap-3"
       }, /*#__PURE__*/React.createElement("div", {
-        className: "bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1"
-      }, "Q"), /*#__PURE__*/React.createElement("div", {
+        className: "bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
+        "aria-hidden": "true"
+      }, label('faq.q_badge', 'Q')), /*#__PURE__*/React.createElement("div", {
         className: "flex-grow space-y-2"
       }, isEditingFaq ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
         "aria-label": t('faq.edit_question') || 'Edit FAQ question',
@@ -593,14 +611,14 @@ function FaqView(props) {
         className: "w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
         rows: getRows(faq.question),
         placeholder: t('faq.question_placeholder')
-      }), renderFaqEditAudioTools(idx, 'question'), (faq.question_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", {
+      }), renderFaqEditAudioTools(idx, 'question'), (faq.question_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", _extends({}, _faqTranslationAttributes(generatedContent), {
         "aria-label": t('faq.edit_question_translation') || 'Edit FAQ question translation',
         value: faq.question_en || '',
         onChange: e => handleFaqChange(idx, 'question_en', e.target.value),
         className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
         rows: getRows(faq.question_en || ''),
         placeholder: t('common.placeholder_question_trans')
-      }), /*#__PURE__*/React.createElement("div", {
+      })), /*#__PURE__*/React.createElement("div", {
         className: "bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"
       }, /*#__PURE__*/React.createElement("textarea", {
         "aria-label": t('faq.edit_answer') || 'Edit FAQ answer',
@@ -609,14 +627,14 @@ function FaqView(props) {
         className: "w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
         rows: getRows(faq.answer),
         placeholder: t('faq.answer_placeholder')
-      }), renderFaqEditAudioTools(idx, 'answer'), (faq.answer_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", {
+      }), renderFaqEditAudioTools(idx, 'answer'), (faq.answer_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", _extends({}, _faqTranslationAttributes(generatedContent), {
         "aria-label": t('faq.edit_answer_translation') || 'Edit FAQ answer translation',
         value: faq.answer_en || '',
         onChange: e => handleFaqChange(idx, 'answer_en', e.target.value),
         className: "w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200",
         rows: getRows(faq.answer_en || ''),
         placeholder: t('common.placeholder_answer_trans')
-      }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h4", {
+      })))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h4", {
         className: "font-bold text-slate-800 text-lg mb-1 leading-relaxed"
       }, (() => {
         const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
@@ -635,12 +653,13 @@ function FaqView(props) {
             }
           }, formatInteractiveText(s, false), " ");
         });
-      })()), isExpanded && faq.question_en && /*#__PURE__*/React.createElement("p", {
+      })()), isExpanded && faq.question_en && /*#__PURE__*/React.createElement("p", _extends({}, _faqTranslationAttributes(generatedContent), {
         className: "text-sm text-slate-600 italic mb-2"
-      }, "(", faq.question_en, ")"), isExpanded && /*#__PURE__*/React.createElement("div", {
+      }), "(", faq.question_en, ")"), /*#__PURE__*/React.createElement("div", {
         id: `faq-answer-${idx}`,
+        hidden: !isExpanded,
         className: "bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200"
-      }, (() => {
+      }, isExpanded && (() => {
         const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
         return aSentences.map((s, sIdx) => {
           const currentGlobalIdx = aBase + sIdx;
@@ -657,14 +676,14 @@ function FaqView(props) {
             }
           }, formatInteractiveText(s, false), " ");
         });
-      })(), faq.answer_en && /*#__PURE__*/React.createElement("p", {
+      })(), isExpanded && faq.answer_en && /*#__PURE__*/React.createElement("p", _extends({}, _faqTranslationAttributes(generatedContent), {
         className: "text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic"
-      }, "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("button", {
+      }), "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => toggleFaq(idx),
         "aria-expanded": isExpanded,
         "aria-controls": `faq-answer-${idx}`,
-        "aria-label": isExpanded ? label('faq.collapse_answer', 'Collapse FAQ answer') : label('faq.expand_answer', 'Expand FAQ answer'),
+        "aria-label": (isExpanded ? label('faq.collapse_answer_named', 'Hide answer: {question}') : label('faq.expand_answer_named', 'Show answer: {question}')).replace('{question}', () => faqQuestionName(faq) || label('faq.audio_item', 'FAQ') + ' ' + (idx + 1)),
         className: "shrink-0 mt-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
       }, /*#__PURE__*/React.createElement(ChevronDown, {
         size: 20,

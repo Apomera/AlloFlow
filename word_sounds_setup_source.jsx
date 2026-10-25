@@ -1092,7 +1092,7 @@ function createWordSoundsCore(options = {}) {
       new Set(supplied.distractors).size === supplied.distractors.length);
     if (curated && matching) return {...curated, distractors: [...curated.distractors], contentStatus: 'curated', targetWord: target};
     return {type: 'review', contentStatus: 'teacher_review_required', targetWord: target,
-      instruction: 'Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.',
+      instruction: 'Sound Swap has a checked sound change for only a small set of words, and this word is not one of them. Choose another activity.',
       answer: '', distractors: []};
   };
   const manipulationReady = task => !!task && task.contentStatus === 'curated' &&
@@ -4221,6 +4221,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             return uniqueWords;
         }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms, preloadedWords, includeSyllableWords, includeSyllableCountWords, wordSoundsLanguage, withinSyllableRange, selectedWords, selectionInputsKey]);
         const selectedIndices = React.useMemo(() => new Set(previewList.map((word, index) => selectedWords.has(word) ? index : -1).filter(index => index >= 0)), [previewList, selectedWords]);
+        // Sound Swap has checked one-sound changes for a short list of words only;
+        // it is offered when at least one selected word is on that list (2026-10-25).
+        const soundSwapAvailable = previewList.some((word, i) => selectedIndices.has(i)
+            && WS_CORE.manipulationReady(WS_CORE.resolveManipulationTask(word, null, wordSoundsLanguage)));
+        const lessonPlanActivityOn = id => !!lessonPlan[id]?.enabled && (id !== 'manipulation' || soundSwapAvailable);
         const syllableBlendingSelected = sessionType === 'assessment' ? probeActivitySel === 'syllable_blending'
             : includeLessonPlan && !!lessonPlan.syllable_blending?.enabled;
         const syllableCountingSelected = sessionType === 'assessment' ? probeActivitySel === 'syllable_counting'
@@ -4230,7 +4235,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const unreviewedSyllableCountWords = syllableCountingSelected
             ? previewList.filter((word, i) => selectedIndices.has(i) && !syllableCountFor(word).supported) : [];
         const previewPreparedActivities = sessionType === 'assessment' ? [probeActivitySel]
-            : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(id => lessonPlan[id]?.enabled) : null;
+            : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(lessonPlanActivityOn) : null;
         const teacherSpokenCountWords = previewPreparedActivities?.length === 1 && previewPreparedActivities[0] === 'syllable_counting'
             ? previewList.filter((word, i) => selectedIndices.has(i) && WS_CORE.isTeacherSpokenSyllableCount(word, {
                 language: wordSoundsLanguage, prepared: preparedCountFor(word), recordedTask: preparedSyllableFor(word), audioContext: syllableCountContextFor(word),
@@ -4693,7 +4698,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  sessionType === 'assessment' ? applySetupSyllableReviews() : preloadedWords,
                  selectedVocabulary, sessionType === 'assessment', preparedSessionConfig.itemIds);
              const preparedActivities = sessionType === 'assessment' ? [probeActivitySel]
-                 : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(id => lessonPlan[id]?.enabled) : null;
+                 : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(lessonPlanActivityOn) : null;
              if (preparedActivities && !preparedActivities.length) { setLessonPlanReorderStatus(tf('word_sounds.choose_lesson_activity', 'Choose at least one lesson activity before preparing.')); return; }
              if (!generationMountedRef.current || wordsToProcess.length === 0 || unsupportedSyllableWords.length || unreviewedSyllableCountWords.length || startRunRef.current) return;
              const unsavedEdits = findUnsavedSyllableEdits();
@@ -5380,7 +5385,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              if (useLessonPlan) {
                  lessonPlanOrder.forEach(actId => {
                      const cfg = lessonPlan[actId];
-                     if (cfg && cfg.enabled) {
+                     if (cfg && lessonPlanActivityOn(actId)) {
                          enabledActivities.push({ id: actId, count: cfg.count, enabled: true });
                          for (let k = 0; k < cfg.count; k++) sequence.push(actId);
                      }
@@ -5390,7 +5395,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  masteryMode: 'consecutive',
                  masteryThreshold: 3,
                  activities: enabledActivities,
-                 order: lessonPlanOrder.filter(id => lessonPlan[id]?.enabled),
+                 order: lessonPlanOrder.filter(lessonPlanActivityOn),
                  totalItems: sequence.length,
                  estimatedMinutes: Math.ceil(sequence.length * 0.5)
              } : null;
@@ -6000,7 +6005,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         <div className="space-y-3 pl-2 mt-3 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" role="list" aria-label="Lesson plan activity order">
                                             <p className="text-xs text-slate-600">Drag activities or use the Move up and Move down buttons to reorder.</p>
                                             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{lessonPlanReorderStatus}</div>
+                                            {!soundSwapAvailable && <p className="text-xs text-slate-600" data-ws-sound-swap-hidden="true">{tf('word_sounds.sound_swap_hidden_note', 'Sound Swap is hidden: none of the selected words has a checked one-sound change.')}</p>}
                                             {lessonPlanOrder.map((actId, activityIndex) => {
+                                                if (actId === 'manipulation' && !soundSwapAvailable) return null;
                                                 const activityDefs = {
                                                     isolation: { id: 'isolation', label: 'Find Sounds', icon: ScanSearch },
                                                     blending: { id: 'blending', label: 'Blending', icon: GripHorizontal },

@@ -910,7 +910,7 @@ const AnchorChartView = React.memo((props) => {
       `}</style>
       <div className="ac-toolbar ac-no-print flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="text-[11px] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-2">
-          <span>📋</span> Anchor Chart
+          <span aria-hidden="true">📋</span> {tx('anchor_chart.view_title', 'Anchor Chart')}
           {chartType && chartType !== 'reference' ? (
             <span className="px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full text-amber-900">{chartLabel}</span>
           ) : null}
@@ -920,26 +920,26 @@ const AnchorChartView = React.memo((props) => {
             onClick={() => setIsEditing((v) => !v)}
             className={`px-3 py-1.5 text-xs font-bold rounded-full border ${isEditing ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50'}`}
             aria-pressed={isEditing}
-            aria-label={isEditing ? 'Finish editing' : 'Edit chart'}
+            aria-label={isEditing ? tx('anchor_chart.finish_editing', 'Finish editing') : tx('anchor_chart.edit_chart', 'Edit chart')}
             data-help-key="anchor_chart_edit_toggle"
-          >{isEditing ? '✓ Done editing' : '✎ Edit'}</button>}
+          >{isEditing ? '✓ ' + tx('common.done_editing', 'Done editing') : '✎ ' + tx('common.edit', 'Edit')}</button>}
           {/* Interactive mode toggle — teacher only. Shows "Armed" badge when on. */}
           {isTeacherMode ? (
             interactive.armed ? (
               <span className="inline-flex items-center gap-1">
-                <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white">🎯 Interactive armed</span>
+                <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white">🎯 {tx('anchor_chart.interactive_armed', 'Interactive armed')}</span>
                 <button type="button"
                   onClick={openInteractiveDialog}
                   aria-haspopup="dialog"
                   className="px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50"
-                  aria-label="Edit interactive rubric"
-                  title="Edit rubric / disarm"
-                >Edit</button>
+                  aria-label={tx('a11y.edit_interactive_rubric', 'Edit interactive rubric')}
+                  title={tx('anchor_chart.edit_rubric_title', 'Edit rubric / disarm')}
+                >{tx('common.edit', 'Edit')}</button>
                 <button type="button"
                   onClick={handleDisarmInteractive}
                   className="px-2 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-                  aria-label="Disarm interactive mode"
-                  title="Stop interactive mode"
+                  aria-label={tx('a11y.disarm_interactive_mode', 'Disarm interactive mode')}
+                  title={tx('anchor_chart.stop_interactive_title', 'Stop interactive mode')}
                 >⏹</button>
               </span>
             ) : (
@@ -947,37 +947,37 @@ const AnchorChartView = React.memo((props) => {
                 onClick={openInteractiveDialog}
                   aria-haspopup="dialog"
                 className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-fuchsia-800 border-fuchsia-300 hover:bg-fuchsia-50"
-                aria-label="Arm interactive mode"
-                title="Make this chart interactive — students fill in blanks + get AI feedback"
+                aria-label={tx('a11y.arm_interactive_mode', 'Arm interactive mode')}
+                title={tx('anchor_chart.arm_interactive_title', 'Make this chart interactive — students fill in blanks + get AI feedback')}
                 data-help-key="anchor_chart_interactive_mode_toggle"
-              >🎯 Interactive mode</button>
+              >🎯 {tx('anchor_chart.interactive_mode', 'Interactive mode')}</button>
             )
           ) : null}
           {isTeacherMode && activeSessionCode && onPlayPictionary && sections.length > 0 ? (
             <button type="button"
               onClick={() => onPlayPictionary({ concepts: sections.map(s => (s && s.label) || '').filter(Boolean) })}
               className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-rose-800 border-rose-300 hover:bg-rose-50"
-              aria-label="Play Pictionary using this chart's section labels"
-              title="Open Concept Pictionary pre-loaded with this chart's terms"
-            >🎨 Play Pictionary</button>
+              aria-label={tx('a11y.play_pictionary_chart', "Play Pictionary using this chart's section labels")}
+              title={tx('anchor_chart.play_pictionary_title', "Open Concept Pictionary pre-loaded with this chart's terms")}
+            >🎨 {tx('anchor_chart.play_pictionary', 'Play Pictionary')}</button>
           ) : null}
           <button type="button"
             onClick={handleDownloadPNG}
             disabled={exportState === 'rendering'}
             className={`px-3 py-1.5 text-xs font-bold rounded-full border ${exportState === 'error' ? 'bg-red-50 text-red-800 border-red-300' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50'} disabled:opacity-60`}
-            aria-label="Download chart as PNG image"
+            aria-label={tx('a11y.download_chart_png', 'Download chart as PNG image')}
             aria-busy={exportState === 'rendering'}
-            title="Download as PNG (poster-quality)"
+            title={tx('anchor_chart.download_png_title', 'Download as PNG (poster-quality)')}
             data-help-key="anchor_chart_download_png"
           >
-            {exportState === 'rendering' ? '⏳ Rendering…' : exportState === 'error' ? '⚠ Try again' : '💾 Download PNG'}
+            {exportState === 'rendering' ? '⏳ ' + tx('anchor_chart.rendering', 'Rendering…') : exportState === 'error' ? '⚠ ' + tx('anchor_chart.try_again', 'Try again') : '💾 ' + tx('anchor_chart.download_png', 'Download PNG')}
           </button>
           <button type="button"
             onClick={() => { const studio=window.AlloModules?.StudioResponse; const printable=!isTeacherMode && studio ? studio.projectForExport(props.referenceResource || generatedContent, studio.responseFromData('anchor-chart', generatedContent.data)) : generatedContent; if (typeof props.onPrint === 'function') props.onPrint(printable, { worksheet:false, teacherKey:isTeacherMode }); else { try { window.print(); } catch (_) {} } }}
             className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-            aria-label="Print or save as PDF"
+            aria-label={tx('a11y.print_or_save_pdf', 'Print or save as PDF')}
             data-help-key="anchor_chart_print_button"
-          >🖨️ Print</button>
+          >🖨️ {tx('common.print', 'Print')}</button>
         </div>
       </div>
       <div ref={paperRef} className="ac-paper p-6 sm:p-8" data-help-key="anchor_chart_paper">
@@ -988,17 +988,17 @@ const AnchorChartView = React.memo((props) => {
               type="text"
               value={title}
               onChange={handleTitleChange}
-              placeholder="Chart title"
+              placeholder={tx('a11y.chart_title', 'Chart title')}
               className="ac-title w-full text-center bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-amber-300 focus:border-amber-600 py-1"
               style={{ fontSize: '2.625rem', color: '#7a4a1e' }}
-              aria-label="Chart title"
+              aria-label={tx('a11y.chart_title', 'Chart title')}
             />
           ) : (
-            <h1 className="ac-title break-words" style={{ fontSize: '2.625rem', color: '#7a4a1e', margin: 0 }}>{title || '(untitled chart)'}</h1>
+            <h1 className="ac-title break-words" style={{ fontSize: '2.625rem', color: '#7a4a1e', margin: 0 }}>{title || tx('anchor_chart.untitled', '(untitled chart)')}</h1>
           )}
           {lessonRef.generatedAt ? (
             <div className="text-[11px] text-amber-700/70 italic mt-1">
-              Created {new Date(lessonRef.generatedAt).toLocaleDateString()}
+              {tx('anchor_chart.created_on', 'Created {date}').replace('{date}', () => new Date(lessonRef.generatedAt).toLocaleDateString())}
             </div>
           ) : null}
         </div>
@@ -1011,6 +1011,12 @@ const AnchorChartView = React.memo((props) => {
           ) : (
             <div className="text-center text-[11px] text-amber-700/80 italic mb-1">{chartMeta.caption}</div>
           )
+        ) : null}
+        {sections.length === 0 ? (
+          <div role="status" data-anchor-empty="true" className="my-4 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 p-4 text-center text-sm text-amber-950">
+            <p className="font-bold">{tx('anchor_chart.empty', 'This anchor chart has no sections yet.')}</p>
+            {isTeacherMode ? <p className="mt-1">{tx('anchor_chart.empty_teacher_hint', 'Regenerate the anchor chart, or choose Edit and add a section.')}</p> : null}
+          </div>
         ) : null}
         <div
           className="ac-sections"
@@ -1135,9 +1141,9 @@ const AnchorChartView = React.memo((props) => {
               onClick={handleAddSection}
               className="px-4 py-1.5 text-sm font-bold rounded-full bg-white border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50"
               data-help-key="anchor_chart_add_section"
-            >+ Add section</button>
+            >+ {tx('anchor_chart.add_section', 'Add section')}</button>
             {sections.length > 1 ? (
-              <div className="text-[11px] text-amber-700/70 italic">Tip: use the arrow buttons or drag the handle on any section to reorder.</div>
+              <div className="text-[11px] text-amber-700/70 italic">{tx('anchor_chart.reorder_tip', 'Tip: use the arrow buttons or drag the handle on any section to reorder.')}</div>
             ) : null}
           </div>
         ) : null}
@@ -1146,7 +1152,7 @@ const AnchorChartView = React.memo((props) => {
           <div className="mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
               <div>
-                <div className="text-sm font-bold text-fuchsia-900">🎯 Interactive Anchor Chart</div>
+                <div className="text-sm font-bold text-fuchsia-900">🎯 {tx('anchor_chart.interactive_title', 'Interactive Anchor Chart')}</div>
                 <div className="text-[12px] text-fuchsia-800/80 mt-1">{tx('anchor_chart.workspace_hint','Fill in your answers above. Check the workspace save status before leaving. AI feedback does not submit your work to your teacher.')}</div>
               </div>
               <button type="button"
@@ -1154,7 +1160,7 @@ const AnchorChartView = React.memo((props) => {
                 disabled={gradingState === 'submitting' || !callGeminiProp}
                 className="px-4 py-2 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-60"
                 aria-busy={gradingState === 'submitting'}
-              >{gradingState === 'submitting' ? '⏳ Grading…' : '✨ Submit for AI feedback'}</button>
+              >{gradingState === 'submitting' ? '⏳ ' + tx('anchor_chart.grading', 'Grading…') : '✨ ' + tx('anchor_chart.submit_for_feedback', 'Submit for AI feedback')}</button>
             </div>
             {gradingResult && gradingIsEarlier ? (
               <p role="status" data-anchor-feedback-earlier-draft="true" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[12px] font-semibold text-amber-950">{tx('anchor_chart.feedback_earlier_draft', 'Feedback on an earlier draft of your chart. Keep it in view while you revise, or submit again for new feedback.')}</p>
@@ -1163,22 +1169,22 @@ const AnchorChartView = React.memo((props) => {
               <div className="mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2" role="status" aria-live="polite" aria-atomic="true">
                 {gradingResult.strength ? (
                   <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5">What you did well</div>
+                    <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5">{tx('notes_feedback.strength_label', 'What you did well')}</div>
                     <div className="text-sm text-slate-800 leading-relaxed">{gradingResult.strength}</div>
                   </div>
                 ) : null}
                 {gradingResult.growthNudge ? (
                   <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5">One thing to try next</div>
+                    <div className="text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5">{tx('anchor_chart.growth_label', 'One thing to try next')}</div>
                     <div className="text-sm text-slate-800 leading-relaxed">{gradingResult.growthNudge}</div>
                   </div>
                 ) : null}
                 {gradingResult.xpAwarded > 0 ? (
                   <div className="flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1">
-                    <span aria-hidden="true">✨</span><span>+{gradingResult.xpAwarded} XP earned</span>
+                    <span aria-hidden="true">✨</span><span>{tx('anchor_chart.xp_earned', '+{amount} XP earned').replace('{amount}', () => String(gradingResult.xpAwarded))}</span>
                   </div>
                 ) : gradingResult.hadPriorXp ? (
-                  <div className="text-center text-[11px] italic text-slate-500">You've already earned XP here — improve your answers to earn more.</div>
+                  <div className="text-center text-[11px] italic text-slate-500">{tx('anchor_chart.prior_xp', "You've already earned XP here — improve your answers to earn more.")}</div>
                 ) : null}
               </div>
             ) : null}

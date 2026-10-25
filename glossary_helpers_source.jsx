@@ -79,7 +79,7 @@ function findRelatedHistoryItem(history, type, active) {
     if (same) return same;
     const unit = unitOf(active), family = familyOf(active);
     const inUnit = items.filter(item => unitOf(item) === unit);
-    return (family && (inUnit.find(item => familyOf(item) === family) || items.find(item => familyOf(item) === family))) || inUnit[0] || items[0] || null;
+    return (family && (inUnit.find(item => familyOf(item) === family) || items.find(item => familyOf(item) === family))) || inUnit[0] || (unit || family ? null : items[0]) || null;
 }
 
 // glossary_helpers_source.jsx - Phase G.1 of CDN modularization.
@@ -245,14 +245,20 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
     }, 45000); // two sequential calls on the multilingual path (generate + locale repair)
     try {
         const def = generatedContent?.data[index]?.def || "";
+        const entry = generatedContent?.data[index];
+        const languageHelpers = window.AlloModules?.TextPipelineHelpers;
+        const baseLanguage = languageHelpers?.getGlossaryBaseLanguage?.(generatedContent, entry)
+            || entry?.termLanguage || generatedContent?.baseLanguage || 'English';
+        const nativeGlossary = Number(generatedContent?.glossaryLanguageSchemaVersion
+            || generatedContent?.config?.glossaryLanguageSchemaVersion || entry?.glossaryLanguageSchemaVersion) >= 1;
         const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(gradeLevel);
         const existingTranslationLangs = Object.keys(generatedContent?.data?.[index]?.translations || {});
         const targetLanguages = Array.from(new Set(
-            ['English']
-                .concat(Array.isArray(selectedLanguages) ? selectedLanguages : [])
+            [baseLanguage]
+                .concat(!nativeGlossary && Array.isArray(selectedLanguages) ? selectedLanguages : [])
                 .concat(existingTranslationLangs)
         ));
-        const prompt = `
+        let prompt = `
           Etymology of "${term}" (context: ${def}) for a ${gradeLevel} student.
           MANDATORY:
           (a) Name the ACTUAL root morpheme(s) — put them verbatim in the "roots" array. Do NOT just say "from Greek" without the specific morpheme.
@@ -296,6 +302,10 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
            "meaningByLang":{"English":"light","Spanish":"luz","French":"lumière"}}
           Every root object MUST carry BOTH langByLocale and meaningByLang, each with an entry for EVERY language in [${targetLanguages.join(', ')}] — English included. Omitting one makes the app print English inside a non-English column.
         `;
+        if (nativeGlossary) prompt = `Explain the etymology of the ${baseLanguage} word ${JSON.stringify(term)} (definition: ${JSON.stringify(def)}) for ${gradeLevel} students.
+Explain THIS word's history and morphemes in ${baseLanguage}, not the history of an English translation. Name genuine source-language morphemes verbatim. Mention related words in ${baseLanguage} only when known; omit invented or uncertain history.
+Return JSON: {"prosePerLanguage":{${targetLanguages.map(language => JSON.stringify(language) + ':"Two to four short sentences in ' + language + '"').join(',')}},"roots":[{"root":"Original-script morpheme","lang":"Origin language named in ${baseLanguage}","meaning":"Meaning in ${baseLanguage}","related":["Related ${baseLanguage} word"],"langByLocale":{},"meaningByLang":{}}]}.
+For every root, fill langByLocale and meaningByLang for each language in ${JSON.stringify(targetLanguages)}. Keep root spellings unchanged across languages. If no reliable etymology is known, return {"prosePerLanguage":{${JSON.stringify(baseLanguage)}:"NONE"},"roots":[]}.`;
         const raw = await callGemini(prompt, true, false, null, null, task.signal);
         if (!task.isCurrent()) return;
         const stripped = (raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
@@ -312,7 +322,7 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
                     }
                 });
             } else if (parsed && typeof parsed.prose === 'string') {
-                etymologyByLang['English'] = parsed.prose.trim();
+                etymologyByLang[baseLanguage] = parsed.prose.trim();
             }
             if (parsed && Array.isArray(parsed.roots)) {
                 roots = parsed.roots
@@ -346,7 +356,7 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
             }
         } catch (parseErr) {
             warnLog('Etymology JSON parse failed — falling back to raw prose:', parseErr?.message, 'raw response preview:', (stripped || '').substring(0, 200));
-            etymologyByLang['English'] = stripped;
+            etymologyByLang[baseLanguage] = stripped;
         }
         // Repair pass. The model routinely returns prosePerLanguage for every
         // target language but drops langByLocale/meaningByLang, and the renderer
@@ -357,10 +367,10 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
             roots.forEach(r => {
                 r.langByLocale = r.langByLocale || {};
                 r.meaningByLang = r.meaningByLang || {};
-                if (r.lang && !r.langByLocale['English']) r.langByLocale['English'] = r.lang;
-                if (r.meaning && !r.meaningByLang['English']) r.meaningByLang['English'] = r.meaning;
+                if (r.lang && !r.langByLocale[baseLanguage]) r.langByLocale[baseLanguage] = r.lang;
+                if (r.meaning && !r.meaningByLang[baseLanguage]) r.meaningByLang[baseLanguage] = r.meaning;
             });
-            const gaps = targetLanguages.filter(L => L !== 'English'
+            const gaps = targetLanguages.filter(L => L !== baseLanguage
                 && roots.some(r => !r.meaningByLang[L] || !r.langByLocale[L]));
             if (gaps.length > 0) {
                 try {
@@ -369,7 +379,7 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
                       Provide an entry for EVERY numbered root below in EVERY one of these languages: ${gaps.join(', ')}.
 
                       Roots:
-${roots.map((r, i) => `                      ${i}. root "${r.root}" — origin language "${r.lang || 'unknown'}" — English meaning "${r.meaning || ''}"`).join('\n')}
+${roots.map((r, i) => `                      ${i}. root "${r.root}" — origin language "${r.lang || 'unknown'}" — ${baseLanguage} meaning "${r.meaning || ''}"`).join('\n')}
 
                       Shape (top-level keys are the root numbers above, as strings — include ALL of ${roots.map((r, i) => `"${i}"`).join(', ')}):
                       {
@@ -378,7 +388,7 @@ ${roots.map((r, i) => `                      ${i}. root "${r.root}" — origin l
 
                       Rules:
                       - "lang" = the ORIGIN language name (Latin, Greek, Old English…) written in the target language's own words and script: Latin → "latín" in Spanish, "latin" in French, "lateinisch" in German, "латинский" in Russian, "اللاتينية" in Arabic. Lowercase unless that language's grammar requires a capital.
-                      - "meaning" = a natural translation of the English meaning, 1-4 words, no quotes, no explanation: "to keep or watch" → "guardar o vigilar" in Spanish.
+                      - "meaning" = a natural translation of the ${baseLanguage} meaning, 1-4 words, no quotes, no explanation.
                       - Never translate the root morpheme itself, and never return English text for a non-English language.
                     `;
                     const rawFix = await callGemini(repairPrompt, true, false, null, null, task.signal);
@@ -416,7 +426,7 @@ ${roots.map((r, i) => `                      ${i}. root "${r.root}" — origin l
         // it as "English prose version (legacy field, mirrors etymologyByLang.English)"), and the
         // glossary's base column always shows the English definition. Keying this to
         // leveledTextLanguage stored e.g. Spanish prose in the field read as English.
-        const primaryProse = etymologyByLang['English'] || etymologyByLang[leveledTextLanguage]
+        const primaryProse = etymologyByLang[baseLanguage]
             || etymologyByLang[Object.keys(etymologyByLang)[0]] || '';
         if (!task.isCurrent()) return;
         if (!primaryProse || primaryProse === 'NONE') {

@@ -142,8 +142,9 @@ describe('activity picker reflects language capabilities', () => {
     expect(host.innerHTML).not.toContain('Word Families');
     expect(host.innerHTML).not.toContain('Letter Trace');
     expect(host.innerHTML).toContain('Some activities are English-only');
-    // phoneme-core activities remain
-    expect(host.innerHTML).toContain('Sound Swap');
+    // Sound Swap is offered only when a word has a checked one-sound change, and
+    // those are English words, so a Spanish list hides it (2026-10-25, fix1025 lane B).
+    expect(host.innerHTML).not.toContain('Sound Swap');
   });
 
   it('English: everything present, no chip', async () => {

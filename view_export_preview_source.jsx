@@ -1,3 +1,24 @@
+// Outline branches as Markdown. KWL teacher examples (branch.teacherExample) follow the
+// answer-key gate: labelled in a teacher copy, otherwise replaced by the student prompt.
+function _kwlMarkdownLines(d, esc, teacherCopy, t) {
+  const tx = (key, fallback) => { const v = typeof t === 'function' ? t(key) : ''; return v && v !== key ? v : fallback; };
+  const kwl = d.structureType === 'KWL Chart' && d.branches.some(b => b && b.teacherExample === true);
+  const prompts = [['kwl_prompt_know', 'What do you already know?'], ['kwl_prompt_want', 'What do you want to know?'], ['kwl_prompt_learned', 'What did you learn?']];
+  const out = [];
+  d.branches.forEach((b, i) => {
+    if (!b) return;
+    out.push('- ' + esc(b.title));
+    const items = Array.isArray(b.items) ? b.items : [];
+    if (kwl && !teacherCopy && prompts[i] && (b.teacherExample === true || (!items.length && d.kwlTeacherExamples === true))) {
+      out.push('  - _' + tx('outline.' + prompts[i][0], prompts[i][1]) + '_');
+      return;
+    }
+    if (kwl && b.teacherExample === true && items.length) out.push('  - _' + tx('outline.kwl_teacher_examples', 'Teacher examples (hidden from students)') + '_');
+    items.forEach(s => out.push('  - ' + esc(s)));
+  });
+  return out;
+}
+
 // Read the host document, including when the target is in the preview iframe.
 // Check at interaction time so header changes apply without reopening the builder.
 function _builderPrefersReducedMotion() {
@@ -75,7 +96,7 @@ function _applyHarperTextReplacement(doc, textNode, localStart, badLength, repla
 }
 // end _applyHarperTextReplacement
 function _builderSuggestionPreviewSrcDoc(fragment) {
-  return '<!doctype html><html><head><meta charset="utf-8"><style>'
+  return '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><style>'
     + 'html,body{margin:0;padding:0;background:#fff;color:#0f172a;font:14px/1.55 system-ui,sans-serif}'
     + 'body{padding:12px}blockquote{margin:0;padding:.65em .8em;border-left:4px solid #6366f1;background:#eef2ff}'
     + 'ul,ol{padding-left:1.35em}h1,h2,h3,h4,h5,h6{margin:.1em 0 .45em;color:#312e81}'
@@ -3696,6 +3717,8 @@ function _builderReadingAccessReview(history, exportConfig) {
       outline: 'includeOutline', faq: 'includeFaq', 'sentence-frames': 'includeSentenceFrames', image: 'includeImage',
       math: 'includeMath', dbq: 'includeDbq', 'lesson-plan': 'includeLessonPlan', 'udl-advice': 'includeUdlAdvice',
       brainstorm: 'includeBrainstorm', 'concept-sort': 'includeConceptSort',
+      timeline: 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart',
+      directions: 'includeDirections', 'gemini-bridge': 'includeGeminiBridge',
     };
     const selected = source.filter((item) => {
       if (!item) return false;
@@ -3777,12 +3800,17 @@ function _builderResourceOptions(history, t) {
     ['includeLessonPlan', '📋 Lesson Plan', 'lesson-plan'],
     ['includeUdlAdvice', '🧩 UDL Advice', 'udl-advice'],
     ['includeBrainstorm', '💡 Brainstorm', 'brainstorm'],
+    ['includeTimeline', translate('sidebar.tool_timeline') || 'Sequence Builder', 'timeline'],
+    ['includeNoteTaking', translate('sidebar.tool_note_taking') || 'Note-Taking Templates', 'note-taking'],
+    ['includeAnchorChart', translate('sidebar.tool_anchor_chart') || 'Anchor Chart', 'anchor-chart'],
+    ['includeDirections', translate('help_mode.tool_directions_title') || 'Lesson Directions', 'directions'],
+    ['includeGeminiBridge', translate('sidebar.tool_bridge') || 'Gemini Bridge', 'gemini-bridge'],
   ];
   const types = new Set(_builderReadingHistory(history).filter(Boolean).map(item => _builderIsOriginalReading(item) ? 'same-text-supported' : item.type));
   return entries.filter(([, , type]) => types.has(type));
 }
 function _builderResourceIncluded(config, key) {
-  return ['includeMemoryAid', 'includeAppliedChallenge', 'includeOriginalReading', 'includeConceptSort'].includes(key) ? config?.[key] !== false : !!config?.[key];
+  return ['includeMemoryAid', 'includeAppliedChallenge', 'includeOriginalReading', 'includeConceptSort', 'includeTimeline', 'includeNoteTaking', 'includeAnchorChart', 'includeDirections', 'includeGeminiBridge'].includes(key) ? config?.[key] !== false : !!config?.[key];
 }
 function _builderBulkResourceUpdate(history, config, t) {
   const available = _builderResourceOptions(history, t);
@@ -9037,6 +9065,7 @@ function ExportPreviewView(props) {
                                 if (typeof d === 'string') { out.push(d.trim(), ''); }
                                 else if (ty === 'glossary' && Array.isArray(d)) {
                                   d.forEach(g => { if (!g) return; out.push('- **' + esc(g.term) + '** — ' + esc(g.def));
+                                    if (typeof g.contextSentence === 'string' && g.contextSentence.trim()) out.push('  - _In the text:_ ' + esc(g.contextSentence.trim()));
                                     if (g.translations && Object.keys(g.translations).length) out.push('  - _Translations:_ ' + Object.values(g.translations).map(t => esc(t)).join(' / '));
                                     if (g.etymology) out.push('  - _Etymology:_ ' + esc(g.etymology)); });
                                   out.push('');
@@ -9066,8 +9095,7 @@ function ExportPreviewView(props) {
                                 }
                                 else if (ty === 'outline' && d && Array.isArray(d.branches)) {
                                   if (d.main) out.push('**' + esc(d.main) + '**', '');
-                                  d.branches.forEach(b => { if (!b) return; out.push('- ' + esc(b.title));
-                                    if (Array.isArray(b.items)) b.items.forEach(s => out.push('  - ' + esc(s))); });
+                                  _kwlMarkdownLines(d, esc, !!(exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)), t).forEach(line => out.push(line));
                                   out.push('');
                                 }
                                 else if (ty === 'timeline' && Array.isArray(d)) {

@@ -39,6 +39,11 @@
   function OutlineView(props) {
   // Pure data + state reads
   var t = props.t;
+  // English fallback whether t returns '' or the key itself for a missing string.
+  var tl = function (key, fallback) {
+    var v = typeof t === 'function' ? t(key) : '';
+    return v && v !== key ? v : fallback;
+  };
   var generatedContent = props.generatedContent;
   var history = props.history;
   var inputText = props.inputText;
@@ -120,11 +125,11 @@
   }, isTeacherMode && /*#__PURE__*/React.createElement("div", {
     "data-organizer-udl-goal": true,
     className: "text-sm text-orange-800"
-  }, /*#__PURE__*/React.createElement("strong", null, "UDL Goal:"), " Providing options for perception. This graphic organizer helps students who process information visually or struggle with large blocks of text.", /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, tl('outline.udl_goal_label', 'UDL Goal:')), " ", tl('outline.udl_goal_desc', 'Providing options for perception. This graphic organizer helps students who process information visually or struggle with large blocks of text.'), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "inline-block bg-white/50 border border-orange-200 px-2 py-0.5 rounded text-xs font-bold"
-  }, "Level: ", gradeLevel), leveledTextLanguage !== 'English' && /*#__PURE__*/React.createElement("span", {
+  }, tl('outline.level_label', 'Level:'), " ", gradeLevel), leveledTextLanguage !== 'English' && /*#__PURE__*/React.createElement("span", {
     className: "inline-block bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded text-xs font-bold"
   }, leveledTextLanguage), standardsInput && /*#__PURE__*/React.createElement("span", {
     className: "inline-block bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1"
@@ -250,7 +255,7 @@
     size: 14
   }), " ", t('concept_map.setup.add_concept_btn')))), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 max-w-md mx-auto mb-6"
-  }, "Review and curate the concepts before generating the interactive diagram."), /*#__PURE__*/React.createElement("button", {
+  }, tl('outline.curate_concepts_hint', 'Review and curate the concepts before generating the interactive diagram.')), /*#__PURE__*/React.createElement("button", {
     onClick: handleInitializeMap,
     disabled: isProcessing,
     "aria-busy": isProcessing,

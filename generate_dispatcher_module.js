@@ -161,6 +161,12 @@ Preserve genre, speaker and narrator identities, point of view, sequence, meanin
 Adapt vocabulary and syntax within that form. Meaning, speaker attribution, factual relationships, and citation accuracy take priority. Grade-level paragraph and formal-tone instructions apply only when compatible with the source form. Explain essential difficult words briefly without flattening the scene or argument.
 Do not promise exact authorial voice, meter, rhyme, or ambiguity after rewriting. When aggressive simplification conflicts with these features, prefer a limited faithful adaptation. Desired length is separate from format.`;
 }
+// 'all' and 'uncategorized' are History views, not units. A resource stamped
+// with one vanished from Uncategorized without joining any unit folder.
+function _realUnitId(value) {
+    const unit = value == null ? '' : String(value).trim();
+    return !unit || unit === 'all' || unit === 'uncategorized' ? null : unit;
+}
 function resolveGenerationSource({ type, textOverride, inputText, history = [], config = {}, contextModule, selectedReadingSourceId = '', activeUnitId = null }) {
     const explicit = textOverride !== null && textOverride !== undefined;
     const has = key => Object.prototype.hasOwnProperty.call(config, key);
@@ -198,7 +204,7 @@ function resolveGenerationSource({ type, textOverride, inputText, history = [], 
     }
     // Older runtime compatibility must also avoid a global newest-text guess.
     const candidates = history.filter(item => item && !item._fullPackPlannedArtifact
-        && (!unitId || unitId === 'all' || (item.unitId || item.config?.unitId) === unitId)
+        && (!unitId || unitId === 'all' || _realUnitId(item.unitId || item.config?.unitId) === _realUnitId(unitId))
         && (item.type === 'analysis' || item.type === 'simplified')
         && (typeof item.data === 'string' ? item.data.trim() : typeof item.data?.originalText === 'string' && item.data.originalText.trim()));
     const eligibleCandidates = candidates.filter(item => {
@@ -207,7 +213,7 @@ function resolveGenerationSource({ type, textOverride, inputText, history = [], 
             && (!profile || profile.form !== 'adapted' || profile.role !== 'primary'
                 || (profile.replacementAuthorization?.authorized === true && profile.replacementAuthorization?.source === 'educator'));
     });
-    if (!choice && unitId === 'all' && new Set(eligibleCandidates.map(item => item.unitId || item.config?.unitId || null)).size > 1) {
+    if (!choice && unitId === 'all' && new Set(eligibleCandidates.map(item => _realUnitId(item.unitId || item.config?.unitId))).size > 1) {
         return { status: 'ambiguous', text: '', candidates: eligibleCandidates, unitId };
     }
     const primaryCandidates = eligibleCandidates.filter(item => {
@@ -1299,7 +1305,7 @@ function selectCurriculumArtifacts(history, config) {
     selected = safe.filter(function (artifact) { return idSet.has(String(artifact.id)); });
     selectionMode = 'explicit artifact IDs';
   } else if (config && Object.prototype.hasOwnProperty.call(config, 'unitId') && config.unitId !== 'all') {
-    selected = safe.filter(artifact => String(artifact.unitId || artifact.config?.unitId || '') === String(config.unitId || ''));
+    selected = safe.filter(artifact => String(_realUnitId(artifact.unitId || artifact.config?.unitId) || '') === String(_realUnitId(config.unitId) || ''));
     selectionMode = 'lesson scope';
   } else {
     if (!curriculumKey) {
@@ -1397,12 +1403,28 @@ function _auditFingerprint(artifacts, ...extras) {
 // (analysis items contain reading-level bands + accuracy ratings; simplified
 // items contain readability shifts; quiz items contain DOK levels). The
 // comprehensive audit should USE these signals rather than re-derive them.
+function _auditItemDok(value) {
+  if (typeof value === 'number') return Number.isInteger(value) && value >= 1 && value <= 4 ? value : null;
+  const match = String(value == null ? '' : value).trim().match(/^(?:dok|level|l)?\s*[-:]?\s*([1-4])(?![\d.])/i);
+  return match ? Number(match[1]) : null;
+}
+// An AI estimate of the quiz DOK mix, labelled with how many stems it actually read.
+const AUDIT_DOK_ESTIMATE_MAX_STEMS = 40;
+function applyAuditDokEstimate(engagement, estimate) {
+  if (!engagement || !estimate || !estimate.distribution || !(estimate.sampled > 0)) return;
+  engagement.dokDistribution = { ...estimate.distribution, unknown: 0 };
+  engagement.dokTotal = estimate.sampled;
+  engagement.dokQuestionCount = estimate.total;
+  engagement.dokSource = 'llm-estimated';
+  if (estimate.distribution.L1 > 80) engagement.status = worseAuditStatus(engagement.status, 'Partially Aligned');
+}
 function harvestExistingAuditSignals(artifacts) {
   const out = {
     readingLevels: [],         // from analysis items: ranges + explanations
     accuracyRatings: [],       // from analysis items: rating + reason + counts
     simplifiedShifts: [],      // from simplified items: original vs simplified delta
     dokLevels: [],             // from quiz items: per-question DOK
+    untaggedQuizStems: [],     // quiz stems with no DOK tag (AI-estimate input)
     quizCounts: { total: 0, mcq: 0, reflection: 0 },
     scaffoldCounts: { sentenceFrames: 0, simplifiedTexts: 0, leveledGlossary: 0 },
     multimodal: { text: false, image: false, audio: false, interactive: false },
@@ -1429,7 +1451,7 @@ function harvestExistingAuditSignals(artifacts) {
         out.accuracyRatings.push({
           rating: String(d.accuracy.rating),
           reason: String(d.accuracy.reason || ''),
-          discrepancyCount: Array.isArray(d.accuracy.discrepancies) ? d.accuracy.discrepancies.length : 0,
+          discrepancyCount: Array.isArray(d.accuracy.discrepancies) ? d.accuracy.discrepancies.filter(note => !(typeof note === 'string' && note.startsWith('✓ FIXED:'))).length : 0,
           verifiedFactCount: Array.isArray(d.accuracy.verifiedFacts) ? d.accuracy.verifiedFacts.length : 0,
         });
       }
@@ -1461,7 +1483,9 @@ function harvestExistingAuditSignals(artifacts) {
       out.multimodal.interactive = true;
       out.quizCounts.total += d.questions.length;
       d.questions.forEach(q => {
-        if (q && q.dok) out.dokLevels.push(String(q.dok));
+        // Per-item DOK from the quiz generator: a whole level 1-4, anything else counts as unknown.
+        if (q && q.dok != null && q.dok !== '') out.dokLevels.push(_auditItemDok(q.dok) || 'unknown');
+        else if (q && (q.question || q.text)) out.untaggedQuizStems.push(String(q.question || q.text).slice(0, 220));
         if (q && q.type === 'reflection') out.quizCounts.reflection++;
         else out.quizCounts.mcq++;
       });
@@ -1496,9 +1520,9 @@ function computeEngagementVariety(harvest, artifacts) {
   // DOK distribution as percentages
   const dokDist = { L1: 0, L2: 0, L3: 0, L4: 0, unknown: 0 };
   harvest.dokLevels.forEach(level => {
-    const m = String(level).match(/[1-4]/);
-    if (!m) { dokDist.unknown++; return; }
-    dokDist['L' + m[0]]++;
+    const value = _auditItemDok(level);
+    if (!value) { dokDist.unknown++; return; }
+    dokDist['L' + value]++;
   });
   const dokTotal = harvest.dokLevels.length;
   const dokPercent = {};
@@ -1539,6 +1563,8 @@ function computeEngagementVariety(harvest, artifacts) {
     totalArtifacts,
     dokDistribution: dokPercent,
     dokTotal,
+    dokQuestionCount: dokTotal + (Array.isArray(harvest.untaggedQuizStems) ? harvest.untaggedQuizStems.length : 0),
+    dokSource: dokTotal > 0 ? 'item-tags' : null,
     quizCounts: harvest.quizCounts,
     scaffoldCounts: harvest.scaffoldCounts,
     multimodalCoverage: { present: modalitiesPresent, missing: ['text','image','audio','interactive'].filter(m => !harvest.multimodal[m]) },
@@ -2495,8 +2521,10 @@ const normalizeJigsawActivity = (raw, requestedGroupSize) => {
 // flattener (which otherwise dumps label-less value soup). `labels` overrides
 // the English section labels; the export path passes t()-driven ones (the keys
 // all exist in ui_strings under brainstorm.*). Pure; exported on GenDispatcher.
-const describeActivityItem = (item, labels) => {
+// options.audience 'student' leaves out facilitation notes, look-fors and the answer key.
+const describeActivityItem = (item, labels, options) => {
     if (!item || typeof item !== 'object') return '';
+    const forStudent = !!(options && options.audience === 'student');
     const L = Object.assign({
         protocol: 'Protocol',
         grouping: 'Grouping',
@@ -2537,8 +2565,8 @@ const describeActivityItem = (item, labels) => {
             lines.push('', L.talk_stems + ':');
             stemCats.forEach(c => lines.push('  ' + L['stems_' + c] + ': ' + stems[c].join(' | ')));
         }
-        if (item.facilitationNotes) lines.push('', L.facilitation_notes + ':', item.facilitationNotes);
-        if (Array.isArray(item.lookFors) && item.lookFors.length) lines.push('', L.look_fors + ': ' + item.lookFors.join('; '));
+        if (!forStudent && item.facilitationNotes) lines.push('', L.facilitation_notes + ':', item.facilitationNotes);
+        if (!forStudent && Array.isArray(item.lookFors) && item.lookFors.length) lines.push('', L.look_fors + ': ' + item.lookFors.join('; '));
         return lines.join('\n').trim();
     }
     if (item.kind === 'jigsaw') {
@@ -2556,8 +2584,10 @@ const describeActivityItem = (item, labels) => {
         if (checks.length) {
             lines.push('', L.accountability_check + ':');
             checks.forEach((c, i) => lines.push('  ' + (i + 1) + '. ' + (c && c.q || '')));
-            lines.push('', L.answer_key + ':');
-            checks.forEach((c, i) => lines.push('  ' + (i + 1) + '. ' + (c && c.answer || '')));
+            if (!forStudent) {
+                lines.push('', L.answer_key + ':');
+                checks.forEach((c, i) => lines.push('  ' + (i + 1) + '. ' + (c && c.answer || '')));
+            }
         }
         return lines.join('\n').trim();
     }
@@ -2704,6 +2734,18 @@ const _normalizeAnalysisDok = (raw, toList) => {
     const ideas = toList(raw.ideas, item => _analysisFieldText(item, ['idea', 'text', 'suggestion', 'description'])).list.slice(0, 4);
     return { level, reason: _analysisFieldText(raw.reason, ['reason', 'text', 'explanation']), ideas };
 };
+// Optional learner-barrier notes: up to four short items per category; absent when the model gave none.
+const LEARNER_BARRIER_KEYS = ['backgroundKnowledge', 'figurativeLanguage', 'textStructure', 'biasRepresentation'];
+const _normalizeLearnerBarriers = (raw, toList) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const out = {};
+    LEARNER_BARRIER_KEYS.forEach(key => {
+        const list = toList(raw[key], item => _analysisFieldText(item, ['text', 'item', 'barrier', 'example', 'description'])).list
+            .filter(item => !/^(none|n\/a|none (?:detected|found|noted))\.?$/i.test(item)).slice(0, 4);
+        if (list.length) out[key] = list;
+    });
+    return Object.keys(out).length ? out : null;
+};
 const normalizeAnalysisResult = (raw) => {
     const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
     const toList = (value, mapItem) => {
@@ -2733,6 +2775,8 @@ const normalizeAnalysisResult = (raw) => {
         translatedText: typeof source.translatedText === 'string' && source.translatedText.trim() ? source.translatedText : undefined };
     const depthOfKnowledge = _normalizeAnalysisDok(source.depthOfKnowledge, toList);
     if (depthOfKnowledge) result.depthOfKnowledge = depthOfKnowledge;
+    const learnerBarriers = _normalizeLearnerBarriers(source.learnerBarriers, toList);
+    if (learnerBarriers) result.learnerBarriers = learnerBarriers;
     if (grammar.unreadable) result.grammarUnreadable = grammar.unreadable;
     if (discrepancies.unreadable) result.accuracy.discrepanciesUnreadable = discrepancies.unreadable;
     return result;
@@ -2796,6 +2840,10 @@ const createAnalysisSourceContent = (report, raw, options = {}) => {
                 && translatedDok.ideas.length === baseDok.ideas.length && translatedDok.ideas.every(idea => typeof idea === 'string')) {
                 reportTranslations[target].depthOfKnowledge = { level: baseDok.level, reason: translatedDok.reason, ideas: translatedDok.ideas.slice() };
             }
+            const baseBarriers = report.learnerBarriers, translatedBarriers = translated.learnerBarriers;
+            if (baseBarriers && translatedBarriers && Object.keys(baseBarriers).every(key => sameShape(baseBarriers[key], translatedBarriers[key]))) {
+                reportTranslations[target].learnerBarriers = Object.fromEntries(Object.keys(baseBarriers).map(key => [key, translatedBarriers[key].slice()]));
+            }
         }
         for (const language of options.includeSourceTranslations === false ? [] : new Set([reportLanguage, target])) {
             const companion = raw?.sourceTranslations?.[language];
@@ -2805,6 +2853,54 @@ const createAnalysisSourceContent = (report, raw, options = {}) => {
     const { translatedText, ...base } = report;
     return { ...base, analysisSourceVersion: 1, originalText: sourceText, rawEnglishText: sourceText,
         reportLanguage, sourceLanguage, reportTranslations, sourceTranslations, localStats: options.localStats };
+};
+// The one minimum-content rule for a generated resource. Single generation and
+// Full Pack/Blueprint both use it, so a parse that degraded to {} is never saved
+// or recorded as landed. Types without a rule pass.
+const _minContentText = value => typeof value === 'string' ? value.trim() : (typeof value === 'number' ? String(value) : '');
+const _minContentList = (data, keys) => {
+    if (Array.isArray(data)) return data;
+    for (const key of keys) if (data && Array.isArray(data[key])) return data[key];
+    return [];
+};
+const _minContentEntry = (entry, keys) => !!entry && (typeof entry === 'string' ? !!entry.trim()
+    : typeof entry === 'object' && keys.some(key => _minContentText(entry[key])));
+const hasMinimumContent = (type, data) => {
+    const some = (keys, fields) => _minContentList(data, keys).some(entry => _minContentEntry(entry, fields));
+    switch (type) {
+        case 'quiz': return some(['questions'], ['question', 'text', 'prompt']) || some(['reflections'], ['question', 'text', 'prompt']);
+        case 'glossary': return some(['terms', 'glossary', 'items'], ['term', 'word']);
+        case 'anchor-chart': return some(['sections'], ['label', 'title']) && _minContentList(data, ['sections']).some(section => section && Array.isArray(section.bullets) && section.bullets.some(bullet => _minContentText(bullet)));
+        case 'outline': return _minContentList(data, ['branches']).length > 0;
+        case 'timeline': return some(['items', 'events'], ['event', 'title', 'label', 'text', 'description', 'date']);
+        case 'concept-sort': return some(['items'], ['text', 'label', 'term', 'content']);
+        case 'faq': return some(['faqs', 'items', 'questions'], ['question', 'q']);
+        case 'sentence-frames': return some(['items', 'frames'], ['text', 'frame', 'starter']) || !!_minContentText(data && data.text);
+        case 'note-taking': {
+            const template = data && data.templateType;
+            if (template === 'cornell-notes') return some(['cues'], ['text', 'question', 'cue']);
+            if (template === 'guided-notes') return some(['blanks'], ['text', 'answer', 'sentence']);
+            if (template === 'q-and-a') return some(['pairs'], ['question', 'answer', 'text']);
+            if (template === 'double-entry') return some(['entries'], ['quote']);
+            if (template === 'lab-report') return !!_minContentText(data.question) || some(['materials'], ['text']);
+            return !!data && typeof data === 'object';
+        }
+        default: return true;
+    }
+};
+// Earlier analyses of the SAME source decide the version number, never every analysis in history.
+const countPriorAnalysisVersions = (history, newItem, related) => {
+    const family = newItem && (newItem.sourceFamilyId || newItem.config?.sourceFamilyId);
+    const relatedIds = new Set((related || []).filter(item => item && item.type === 'analysis').map(item => item.id));
+    return (Array.isArray(history) ? history : []).filter(item => item && item.type === 'analysis' && item.id !== newItem?.id
+        && (relatedIds.has(item.id) || (!!family && (item.sourceFamilyId || item.config?.sourceFamilyId) === family))).length;
+};
+const emptyResultMessage = (translate, titleOf, type) => {
+    let template = typeof translate === 'function' ? translate('errors.generation_empty_result') : '';
+    if (!template || template === 'errors.generation_empty_result') template = 'The {type} came back with no content, so nothing was saved. Please try again.';
+    let title = type;
+    try { title = (typeof titleOf === 'function' && titleOf(type)) || type; } catch (_) {}
+    return String(template).replace('{type}', title);
 };
 // Cloud and local scaffold JSON share one list/paragraph shape; an empty result is an error, not a blank resource.
 const normalizeScaffoldContent = (raw, frameType) => {
@@ -2824,6 +2920,25 @@ const normalizeScaffoldContent = (raw, frameType) => {
         if (!content.text.trim()) throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
     }
     if (frameType) content.frameType = frameType;
+    return normalizeScaffoldExtras(content);
+};
+// Optional tier per starter and a word bank from the source; older scaffolds have neither.
+const _SCAFFOLD_TIERS = { emerging: 'emerging', beginning: 'emerging', entering: 'emerging', expanding: 'expanding', intermediate: 'expanding', developing: 'expanding', bridging: 'bridging', advanced: 'bridging' };
+const normalizeScaffoldExtras = (content, sourceText) => {
+    if (!content || typeof content !== 'object') return content;
+    if (Array.isArray(content.items)) content.items = content.items.map(item => {
+        if (!item || typeof item !== 'object') return item;
+        const tier = _SCAFFOLD_TIERS[String(item.tier || '').trim().toLowerCase()];
+        const next = { ...item };
+        if (tier) next.tier = tier; else delete next.tier;
+        return next;
+    });
+    const seen = new Set();
+    const bank = (Array.isArray(content.wordBank) ? content.wordBank : []).map(entry => _generatedText(entry && typeof entry === 'object' ? (entry.word || entry.term || entry.text) : entry))
+        .filter(word => word && word.length <= 40 && !seen.has(word.toLowerCase()) && seen.add(word.toLowerCase()));
+    const inSource = typeof sourceText === 'string' && sourceText.trim() ? bank.filter(word => glossaryTermInText(word, sourceText)) : bank;
+    const words = (inSource.length ? inSource : bank).slice(0, 12);
+    if (words.length) content.wordBank = words; else delete content.wordBank;
     return content;
 };
 // Concept Sort answer key: a card's categoryId must name a category. Model ids
@@ -2878,15 +2993,148 @@ const _unwrapGeneratedList = (raw, keys) => {
     return arrays.length === 1 ? arrays[0] : [];
 };
 const _generatedText = value => typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
-const normalizeGlossaryTerms = (raw) => _unwrapGeneratedList(raw, ['terms', 'items', 'glossary', 'vocabulary', 'words', 'entries']).map(item => {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
-    const { definition, ...rest } = item;
-    const tierRaw = _generatedText(item.tier).toLowerCase();
-    const entry = { ...rest, term: _generatedText(item.term) || _generatedText(item.word), def: _generatedText(item.def) || _generatedText(definition),
-        tier: /domain|subject|tier\s*3|^3$/.test(tierRaw) ? 'Domain-Specific' : 'Academic' };
-    if (!entry.translations || typeof entry.translations !== 'object' || Array.isArray(entry.translations)) delete entry.translations;
-    return entry.term && entry.def ? entry : null;
-}).filter(Boolean);
+// Word-boundary matching with simple English inflections (-s/-es/-ed/-ing);
+// scripts written without spaces, or with attached clitics, use a substring test.
+const _GLOSS_SUBSTRING_SCRIPT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}\p{Script=Arabic}\p{Script=Hebrew}]/u;
+const _glossaryTermForms = (term) => {
+    const base = String(term || '').normalize('NFC').toLowerCase().replace(/\s*\([^)]*\)/g, ' ').replace(/["“”«»]/g, '').replace(/\s+/g, ' ').trim();
+    if (!base) return [];
+    const stems = new Set([base]);
+    if (base.length > 4) [[/ies$/, 'y'], [/es$/, ''], [/s$/, ''], [/ied$/, 'y'], [/ed$/, ''], [/ed$/, 'e'], [/ing$/, ''], [/ing$/, 'e']]
+        .forEach(([re, rep]) => { if (re.test(base)) stems.add(base.replace(re, rep)); });
+    const forms = new Set();
+    stems.forEach(s => { forms.add(s); if (/e$/.test(s)) forms.add(s.slice(0, -1)); if (/y$/.test(s)) forms.add(s.slice(0, -1) + 'i'); });
+    return [...forms].filter(f => f.length > 0);
+};
+const glossaryTermInText = (term, text) => {
+    const hay = String(text || '').normalize('NFC').toLowerCase();
+    const forms = _glossaryTermForms(term);
+    if (!hay || !forms.length) return false;
+    if (_GLOSS_SUBSTRING_SCRIPT.test(forms[0])) return forms.some(f => hay.includes(f));
+    return forms.some(f => new RegExp('(?<![\\p{L}\\p{M}\\p{N}])' + f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[\s-]+/g, '[\\s\\-]+')
+        + '(?:s|es|d|ies|ied|\\p{L}?(?:ed|ing|er|ers))?(?![\\p{L}\\p{M}\\p{N}])', 'u').test(hay));
+};
+const _glossaryQuoteKey = value => String(value || '').normalize('NFC').toLowerCase().replace(/[‘’`]/g, "'").replace(/[“”]/g, '"').replace(/[*_#>]/g, '').replace(/\s+/g, ' ').trim();
+// With sourceText, drop terms absent from it, unless none match (a language or
+// script mismatch, not a hallucinated list); keep contextSentence only when quoted.
+const normalizeGlossaryTerms = (raw, sourceText) => {
+    const seen = new Set();
+    const items = _unwrapGeneratedList(raw, ['terms', 'items', 'glossary', 'vocabulary', 'words', 'entries']).map(item => {
+        if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+        const { definition, ...rest } = item;
+        const tierRaw = _generatedText(item.tier).toLowerCase();
+        const entry = { ...rest, term: _generatedText(item.term) || _generatedText(item.word), def: _generatedText(item.def) || _generatedText(definition),
+            tier: /domain|subject|tier\s*3|^3$/.test(tierRaw) ? 'Domain-Specific' : 'Academic' };
+        if (!entry.translations || typeof entry.translations !== 'object' || Array.isArray(entry.translations)) delete entry.translations;
+        const context = _generatedText(item.contextSentence);
+        if (context) entry.contextSentence = context; else delete entry.contextSentence;
+        return entry.term && entry.def ? entry : null;
+    }).filter(Boolean).filter(entry => {
+        const keys = [entry.term, entry.sourceTerm].map(v => _glossaryQuoteKey(v)).filter(Boolean);
+        if (keys.some(key => seen.has(key))) return false;
+        keys.forEach(key => seen.add(key));
+        return true;
+    });
+    if (typeof sourceText !== 'string' || !sourceText.trim()) return items;
+    const sourceKey = _glossaryQuoteKey(sourceText);
+    items.forEach(entry => {
+        if (entry.contextSentence && !_glossaryQuoteKey(entry.contextSentence).split(/\.{3}|…/).every(part => !part.trim() || sourceKey.includes(part.trim()))) delete entry.contextSentence;
+    });
+    const inSource = items.filter(entry => [entry.sourceTerm, entry.term].some(value => value && glossaryTermInText(value, sourceText)));
+    return inSource.length ? inSource : items;
+};
+const _generationLanguageName = value => window.AlloModules?.TextPipelineHelpers?.normalizeLanguageName?.(value) || String(value || '').trim();
+const _generationLanguageList = (appLanguage, selectedLanguages, frozen) => {
+    const values = Array.isArray(frozen) && frozen.length ? frozen
+        : window.AlloModules?.TextPipelineHelpers?.allGenerationLanguages?.(appLanguage, selectedLanguages)
+            || [appLanguage, ...(Array.isArray(selectedLanguages) ? selectedLanguages : [])];
+    const seen = new Set();
+    return values.map(_generationLanguageName).filter(value => {
+        const key = value.toLowerCase();
+        if (!key || key === 'all selected languages' || seen.has(key)) return false;
+        seen.add(key); return true;
+    });
+};
+const resolveGlossaryLanguagePlan = (options = {}) => {
+    const native = Number(options.nativeLanguageDefaultsVersion) >= 1;
+    const app = _generationLanguageName(options.appLanguage || 'English');
+    const output = _generationLanguageName(options.outputLanguage || app);
+    const all = output.toLowerCase() === 'all selected languages';
+    const baseLanguage = native ? (all ? app : output) : 'English';
+    let languages = all ? (native ? _generationLanguageList(app, options.selectedLanguages, options.effectiveLanguageList)
+        : options.selectedLanguages || []) : (native ? [] : [output]);
+    if (options.translationPolicy?.enabled && options.translationPolicy.target) languages = languages.concat([options.translationPolicy.target]);
+    const seen = new Set([baseLanguage.toLowerCase(), 'all selected languages', '']);
+    const translationLanguages = languages.map(_generationLanguageName).filter(value => {
+        const key = value.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+    });
+    return { baseLanguage, translationLanguages, nativeLanguageDefaultsVersion: native ? 1 : 0, glossaryLanguageSchemaVersion: native ? 1 : 0 };
+};
+const stampNativeGlossaryTerms = (items, plan) => items.map(item => {
+    const requested = new Map(plan.translationLanguages.map(language => [language.toLowerCase(), language]));
+    const translations = {};
+    Object.entries(item.translations || {}).forEach(([language, value]) => {
+        const canonical = requested.get(_generationLanguageName(language).toLowerCase());
+        if (canonical) translations[canonical] = value;
+    });
+    return { ...item, termLanguage: plan.baseLanguage, definitionLanguage: plan.baseLanguage,
+        baseLanguage: plan.baseLanguage, glossaryLanguageSchemaVersion: 1,
+        ...(Object.keys(translations).length ? { translations } : { translations: {} }) };
+});
+const GLOSSARY_IN_TEXT_RULES = 'Choose ONLY words that actually appear in the source; if it has fewer suitable words, return fewer rather than adding outside vocabulary. Define each word in the sense it has IN THIS TEXT (not its most common dictionary sense). For each term add "contextSentence": the sentence from the source where it is used, copied exactly (shorten with ... only if longer than about 30 words).';
+const buildNativeGlossaryPrompt = (options = {}) => {
+    const plan = options.languagePlan;
+    const languages = [plan.baseLanguage, ...plan.translationLanguages];
+    return `Identify vocabulary from the source for ${options.grade || 'the selected grade'} students.
+Return up to ${options.tier2Count || 0} Academic (Tier 2) and ${options.tier3Count || 0} Domain-Specific (Tier 3) terms. ${GLOSSARY_IN_TEXT_RULES}
+PRIMARY LANGUAGE: Write each visible term and definition in ${plan.baseLanguage}. ${options.levelContext || ''}
+Keep the exact vocabulary from the original source separately in sourceTerm, and record its language in sourceLanguage. If a term differs in the primary language, term is the natural ${plan.baseLanguage} equivalent; sourceTerm remains the original spelling. Never replace the source passage's vocabulary with unrelated terms.
+${plan.translationLanguages.length ? 'Include translations ONLY for: ' + plan.translationLanguages.join(', ') + '. Each translations value must contain both the translated term and definition as "Term: Definition".' : 'Return no translation columns. Do not add English or any other second-language text.'}
+${options.includeEtymology ? `For each word with useful etymology, explain the actual morphemes and origin of THIS ${plan.baseLanguage} term, its history in ${plan.baseLanguage}, and related words in ${plan.baseLanguage}. Do not substitute the history of its English translation. Preserve source-script morphemes verbatim. If unknown, omit etymology and roots.
+Write etymology in ${plan.baseLanguage}; etymologyByLang may contain prose for ${languages.join(', ')}. Each root has root, langByLocale and meaningByLang keyed by those languages, and optional related words in ${plan.baseLanguage}.` : 'Do not add etymology.'}
+${options.useEmojis ? 'Use an optional separate emoji field; never place emoji inside term.' : 'Do not add emoji.'}
+${options.directives || ''}
+${options.customInstructions ? 'Additional vocabulary instructions: ' + options.customInstructions : ''}
+Return ONLY ${options.local ? '{"terms": [...]}' : 'a JSON array'} with entries shaped as {"term":"Term in ${plan.baseLanguage}","def":"Definition in ${plan.baseLanguage}","sourceTerm":"Exact source vocabulary","sourceLanguage":"Source language","contextSentence":"Sentence copied exactly from the source","tier":"Academic or Domain-Specific","translations":{${plan.translationLanguages.map(language => JSON.stringify(language) + ':"Term: Definition"').join(',')}}${options.includeEtymology ? ',"etymology":"Optional primary-language prose","etymologyByLang":{},"roots":[]' : ''}}.
+Source:\n${options.text || ''}`;
+};
+// A resource with nothing to use; the message avoids the words Full Pack treats as final, so it retries once.
+const emptyGenerationError = (message) => Object.assign(new Error(message), { emptyGeneration: true });
+const finalizeOrganizerContent = (content, outlineType, translate) => {
+    if (!content || typeof content !== 'object') return content;
+    const branches = Array.isArray(content.branches) ? content.branches : [];
+    if (outlineType === 'Story Map' && (content.notNarrative === true || branches.length < 2
+        || (branches.length < 5 && /not applicable|non-narrative|not a (?:story|narrative)/i.test(JSON.stringify(branches))))) {
+        throw emptyGenerationError((typeof translate === 'function' && translate('errors.story_map_not_narrative'))
+            || 'This text does not read as a story, so the Story Map has no plot to show. Choose a narrative text or a different organizer type, or try again.');
+    }
+    // Students write their own Know / Want to Know; generated entries are teacher examples.
+    if (outlineType === 'KWL Chart' && branches.length === 3) {
+        return { ...content, kwlTeacherExamples: true, branches: branches.map((branch, index) => index < 2
+            ? { ...branch, teacherExample: true } : { ...branch, items: [], ...(Array.isArray(branch.items_en) ? { items_en: [] } : {}) }) };
+    }
+    return content;
+};
+// Simulation steps render as {promptStep}: keep strings only.
+const normalizeSimulationSteps = (raw) => {
+    let list = raw;
+    if (list && typeof list === 'object' && !Array.isArray(list)) list = list.steps || list.prompts || list.items || [];
+    if (!Array.isArray(list)) return [];
+    return list.map(step => {
+        if (typeof step === 'string') return step.trim();
+        if (step && typeof step === 'object' && !Array.isArray(step)) {
+            const text = [step.prompt, step.text, step.content, step.step].find(value => typeof value === 'string' && value.trim());
+            return text ? text.trim() : '';
+        }
+        return '';
+    }).filter(Boolean);
+};
+const _clampDok = (value) => {
+    const n = typeof value === 'number' ? value : Number((String(value == null ? '' : value).match(/\d+/) || [])[0]);
+    return Number.isFinite(n) && n >= 1 ? Math.min(4, Math.round(n)) : null;
+};
 const normalizeFaqItems = (raw) => _unwrapGeneratedList(raw, ['faqs', 'faq', 'questions', 'items']).map(item => {
     if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
     const entry = { question: _generatedText(item.question) || _generatedText(item.q), answer: _generatedText(item.answer) || _generatedText(item.a) };
@@ -2920,6 +3168,14 @@ function mergeMemoryAidProgress(previous, progress, baseline, complete) {
 }
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
+  // Reviewed jobs override ambient controls, including the legacy version 0.
+  const frozenLanguageDeps = {};
+  ['nativeLanguageDefaultsVersion', 'appLanguage', 'effectiveLanguageList', 'currentUiLanguage', 'translationMode', 'selectedLanguages'].forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(configOverride, key)) frozenLanguageDeps[key] = configOverride[key];
+  });
+  if (Object.keys(frozenLanguageDeps).length) deps = new Proxy(deps, {
+      get: (target, key) => Object.prototype.hasOwnProperty.call(frozenLanguageDeps, key) ? frozenLanguageDeps[key] : Reflect.get(target, key),
+  });
   const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat: ambientTextFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setGenerationStage, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, callGeminiVision, webSearchProvider, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, memoryAidCustomInstructions, appliedChallengeSelectionMode, appliedChallengeFamily, appliedChallengeAgencyMode, appliedChallengeScope, appliedChallengeCustomInstructions, appliedChallengePlan, memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, memoryAidIncludeVisuals, memoryAidIncludeHookFacts, personaCustomInstructions, differentiationTypes, differentiationCustomGrades, selectedReadingSourceId, activeUnitId } = deps;
   const textFormat = configOverride.textFormat || ambientTextFormat || SOURCE_FORMAT_POLICY;
   const setGenerationStatus = (label, stage = null) => {
@@ -2992,6 +3248,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         });
     };
     const callImagenWithSignal = async (...args) => {
+        if (window.AlloImageGeneration?.isEnabled() === false) return null;
         throwIfGenerationAborted();
         if (generationSignal) {
             const options = args[3];
@@ -3016,6 +3273,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         return result;
     };
     const callGeminiImageEditWithSignal = async (...args) => {
+        if (window.AlloImageGeneration?.isEnabled() === false) return null;
         throwIfGenerationAborted();
         if (generationSignal) {
             const options = args[5];
@@ -3142,6 +3400,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             const helpers = typeof window !== 'undefined' ? window.AIBackendLocal : null;
             if (!usesLocalTextBackend || !helpers || typeof helpers.resourceSchemaFor !== 'function') return null;
             const schema = helpers.resourceSchemaFor(schemaType);
+            if (schemaType === 'glossary' && _nativeLanguageDefaultsVersion && schema) {
+                const nativeSchema = JSON.parse(JSON.stringify(schema));
+                const row = nativeSchema.properties?.terms?.items || nativeSchema.items;
+                if (row?.properties) {
+                    row.properties.sourceTerm = { type: 'string' };
+                    row.properties.sourceLanguage = { type: 'string' };
+                }
+                return { schema: nativeSchema };
+            }
             return schema ? { schema } : null;
         } catch (_) {
             return null;
@@ -3427,12 +3694,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         sourceSelection: _selectedSource.selection || '',
         primaryArtifactId: _chosenPrimaryArtifactId,
     };
+    // _sourceUse.unitId stays the lookup scope ('all' = every unit); the saved
+    // resource gets only a real unit id.
+    const _itemUnitId = _realUnitId(_sourceUse.unitId);
     const _sourceTransformations = Array.isArray(configOverride.sourceTransformations) ? configOverride.sourceTransformations.slice() : [];
     configOverride = { ...configOverride, ..._sourceUse, sourceSnapshot: _sourceSnapshot, sourceArtifactId: _primarySourceArtifactId, generationInputText: _selectedSource.text, sourceTransformations: _sourceTransformations, textFormat };
     const sourceRelatedHistory = generationHistory.filter(item => {
         if (!item) return false;
-        const itemUnit = item.unitId || item.config?.unitId || null;
-        if (_sourceUse.unitId !== 'all' && itemUnit !== (_sourceUse.unitId || null)) return false;
+        const itemUnit = _realUnitId(item.unitId || item.config?.unitId);
+        if (_sourceUse.unitId !== 'all' && itemUnit !== _itemUnitId) return false;
         if (item.id === _inputArtifactId || item.id === _primarySourceArtifactId) return true;
         if (_sourceUse.sourceFamilyId && (item.sourceFamilyId || item.config?.sourceFamilyId) === _sourceUse.sourceFamilyId) return true;
         if (_inputArtifactId && (item.inputArtifactId || item.config?.inputArtifactId) === _inputArtifactId) return true;
@@ -3526,7 +3796,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     }
     setIsReviewGame(false);
     setReviewGameState({ claimed: new Set(), activeQuestion: null, showAnswer: false });
-    const _rawEffectiveLanguage = langOverride || leveledTextLanguage || 'English';
+    const _nativeLanguageDefaultsVersion = Number(deps.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0;
+    const _nativeAppLanguage = _generationLanguageName(deps.appLanguage || currentUiLanguage || 'English');
+    const _effectiveLanguageList = _nativeLanguageDefaultsVersion
+        ? _generationLanguageList(_nativeAppLanguage, selectedLanguages, deps.effectiveLanguageList)
+        : _generationLanguageList('English', selectedLanguages, deps.effectiveLanguageList);
+    const _requestedEffectiveLanguage = langOverride || leveledTextLanguage || (_nativeLanguageDefaultsVersion ? _nativeAppLanguage : 'English');
+    const _rawEffectiveLanguage = _nativeLanguageDefaultsVersion ? _generationLanguageName(_requestedEffectiveLanguage) : _requestedEffectiveLanguage;
     const effectiveLanguage = _generationMatrixModule
         && typeof _generationMatrixModule.normalizeLanguageValue === 'function'
         ? _generationMatrixModule.normalizeLanguageValue(_rawEffectiveLanguage, 'English')
@@ -3736,6 +4012,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 groupId: configOverride.rosterGroupId || '',
                 translationMode,
                 currentUiLanguage,
+                nativeLanguageDefaultsVersion: _nativeLanguageDefaultsVersion,
+                appLanguage: _nativeAppLanguage,
+                effectiveLanguageList: _effectiveLanguageList,
                 translationTarget: _xlate && _xlate.target || '',
                 studentInterests,
                 dokLevel,
@@ -3849,6 +4128,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     // ship twin prompts behind usesLocalTextBackend and those twins have drifted.
     const _buildItemConfig = (extra) => Object.assign({
         ..._sourceUse,
+        unitId: _itemUnitId,
         sourceSnapshot: _sourceSnapshot,
         // Only store a second passage when generation used a distinct input.
         ...(_sourceSnapshot?.text !== _selectedSource.text ? { generationInputText: _selectedSource.text } : {}),
@@ -3895,6 +4175,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         variantKeyDerived: _resolvedVariantKeyDerived,
         translationMode: translationMode || 'auto',
         currentUiLanguage: currentUiLanguage || 'English',
+        nativeLanguageDefaultsVersion: _nativeLanguageDefaultsVersion,
+        appLanguage: _nativeAppLanguage,
+        effectiveLanguageList: _effectiveLanguageList,
         translationTarget: _xlate && _xlate.target || null,
     }, (configOverride.rosterGroupId ? {
         rosterGroupId: configOverride.rosterGroupId,
@@ -3935,14 +4218,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'memory-aid',
             'applied-challenge', 'persona'];
         if (!MULTILINGUAL_FANOUT_TYPES.includes(type)) {
-            return await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
+            return await handleGenerate(type, _nativeLanguageDefaultsVersion ? _nativeAppLanguage : 'English', keepLoading, textToProcess, configOverride, switchView, deps);
         }
         setIsProcessing(true);
         // Same contract as the differentiation fan-out: batch paths must not
         // return undefined after landing real resources.
         let _lastLangItem = null;
         try {
-            const langsToGen = ['English', ...(Array.isArray(selectedLanguages) ? selectedLanguages : [])];
+            const langsToGen = _effectiveLanguageList;
             const uniqueLangs = _generationMatrixModule
                 && typeof _generationMatrixModule.normalizeLanguageValues === 'function'
                 ? _generationMatrixModule.normalizeLanguageValues(langsToGen, 'English')
@@ -4014,6 +4297,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     try {
       let content;
       let metaInfo = '';
+      let glossaryLanguagePlan = null;
       if (type === 'glossary') {
         const glossaryImages = glossaryImageReuseCache.begin({
             sourceText: textToProcess,
@@ -4058,6 +4342,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // useful case (the student's primary language, not every language in the
         // room). The glossary is not fanned out, so read the universal setting
         // directly: the per-pass override is always 'English' for this branch.
+        glossaryLanguagePlan = resolveGlossaryLanguagePlan({
+            outputLanguage: _nativeLanguageDefaultsVersion ? (configOverride.requestedOutputLanguage || (leveledTextLanguage === 'All Selected Languages' ? leveledTextLanguage : effectiveLanguage)) : leveledTextLanguage,
+            appLanguage: _nativeAppLanguage, selectedLanguages, translationPolicy: _xlate,
+            nativeLanguageDefaultsVersion: _nativeLanguageDefaultsVersion, effectiveLanguageList: _effectiveLanguageList,
+        });
         const _glossaryOutput = String(leveledTextLanguage || 'English').replace(/\s+/g, ' ').trim();
         let langsReq = /^all selected languages$/i.test(_glossaryOutput)
             ? [...(Array.isArray(selectedLanguages) ? selectedLanguages : [])]
@@ -4081,14 +4370,23 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             _seenGlossaryLangs.add(key);
             return true;
         });
+        if (_nativeLanguageDefaultsVersion) langsReq = glossaryLanguagePlan.translationLanguages;
+        const nativeGlossaryPromptOptions = {
+            languagePlan: glossaryLanguagePlan, grade: effectiveGrade, tier2Count: t2Count, tier3Count: t3Count,
+            levelContext, useEmojis, includeEtymology, text: textToProcess,
+            customInstructions: effCustomInstructions,
+            directives: [standardsDirective, dokDirective, interestsDirective, differentiationContext].filter(Boolean).join('\n'),
+        };
         if (usesLocalTextBackend) {
             const localTermLimit = Math.max(1, Math.min(totalTerms, 8));
             const localLangInstruction = langsReq.length > 0
                 ? `For each term, add a "translations" object for these languages: ${langsReq.join(', ')}. Use "Translated Term: Translated Definition" as each value.`
                 : 'Do not include translations.';
-            const prompt = `
+            const prompt = _nativeLanguageDefaultsVersion
+                ? buildNativeGlossaryPrompt({ ...nativeGlossaryPromptOptions, local: true, text: localExcerpt(textToProcess, 6000) }) : `
               Analyze the source excerpt and identify vocabulary for ${effectiveGrade} students.
               Choose up to ${localTermLimit} useful terms total, balancing Academic and Domain-Specific vocabulary when possible.
+              ${GLOSSARY_IN_TEXT_RULES}
               ${levelContext}
               ${localLangInstruction}
               ${effCustomInstructions ? `Prioritize these terms or concepts if they appear: "${effCustomInstructions}".` : ''}
@@ -4097,7 +4395,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${dokDirective}
               ${interestsDirective}
               Return ONLY valid JSON with this shape:
-              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
+              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
               Source excerpt:
               """
               ${localExcerpt(textToProcess, 6000)}
@@ -4109,23 +4407,24 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('glossary'));
             setGenerationTaskProgress(1, 2, t('status_steps.extracting_vocab'));
             const parsed = parseJsonLenient(result, {});
-            const parsedContent = normalizeGlossaryTerms(parsed).slice(0, localTermLimit)
-                .map(({ term, def, tier, translations, emoji }) => ({ term, def, tier, ...(translations ? { translations } : {}), ...(useEmojis && typeof emoji === 'string' && emoji.trim() ? { emoji: emoji.trim() } : {}) }));
+            const parsedContent = normalizeGlossaryTerms(parsed, textToProcess).slice(0, localTermLimit)
+                .map(({ term, def, tier, translations, emoji, sourceTerm, sourceLanguage, contextSentence }) => ({ term, def, tier, ...(sourceTerm ? { sourceTerm, sourceLanguage } : {}), ...(contextSentence ? { contextSentence } : {}), ...(translations ? { translations } : {}), ...(useEmojis && typeof emoji === 'string' && emoji.trim() ? { emoji: emoji.trim() } : {}) }));
             if (!parsedContent.length) {
                 throw new Error("Failed to parse Glossary JSON. The AI response was not valid.");
             }
             content = parsedContent;
-            metaInfo = `${content.length} Terms - ${langsReq.length > 0 ? langsReq.join(', ') : 'English Only'} - Local`;
+            metaInfo = `${content.length} Terms - ${_nativeLanguageDefaultsVersion ? [glossaryLanguagePlan.baseLanguage, ...langsReq].join(', ') : (langsReq.length > 0 ? langsReq.join(', ') : 'English Only')} - Local`;
             setGenerationTaskProgress(2, 2, t('status_steps.generating_icons'));
         } else {
         if (langsReq.length > 0) {
             prompt = `
               Analyze the following text and identify vocabulary.
-              Find exactly:
+              Find up to:
               - ${t2Count} "Academic" (Tier 2) terms: General sophisticated words used across disciplines (e.g., "analyze", "verify").
               - ${t3Count} "Domain-Specific" (Tier 3) terms: Specific to this specific topic/field (e.g., "photosynthesis", "isotope").
+              ${GLOSSARY_IN_TEXT_RULES}
               For each term, provide:
-              1. An English definition. ${levelContext}
+              1. An English definition of the word as it is used in this text. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
               3. Translations into: ${langsReq.join(', ')}.
               ${includeEtymology ? `
@@ -4157,7 +4456,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}, "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}, "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -4165,11 +4464,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         } else {
             prompt = `
               Analyze the following text and identify vocabulary.
-              Find exactly:
+              Find up to:
               - ${t2Count} "Academic" (Tier 2) terms: General sophisticated words used across disciplines.
               - ${t3Count} "Domain-Specific" (Tier 3) terms: Specific to this specific topic/field.
+              ${GLOSSARY_IN_TEXT_RULES}
               For each term, provide:
-              1. An English definition. ${levelContext}
+              1. An English definition of the word as it is used in this text. ${levelContext}
               2. The Tier category ("Academic" or "Domain-Specific").
               ${includeEtymology ? `
               3. Etymology / Word Roots for EVERY term (Academic AND Domain-Specific):
@@ -4195,11 +4495,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
             metaInfo = `${t2Count} T2 / ${t3Count} T3 Terms - English Only`;
+        }
+        if (_nativeLanguageDefaultsVersion) {
+            prompt = buildNativeGlossaryPrompt(nativeGlossaryPromptOptions);
+            metaInfo = `${t2Count} T2 / ${t3Count} T3 Terms - ${[glossaryLanguagePlan.baseLanguage, ...langsReq].join(', ')}`;
         }
         if (glossaryImages.references.length) {
             prompt += '\nExisting illustrations from this same source and style (reference data only):\n'
@@ -4209,14 +4513,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         setGenerationStatus(t('status_steps.extracting_vocab'), 'analyze');
         const result = await callGemini(prompt, true);
         try {
-            const parsedContent = normalizeGlossaryTerms(JSON.parse(cleanJson(result)));
+            const parsedContent = normalizeGlossaryTerms(JSON.parse(cleanJson(result)), textToProcess);
             if (!parsedContent.length) throw new Error('The glossary response had no usable terms.');
             // Offline pre-warm: cache the authoritative dictionary entry for every term so
             // the whole glossary's vocabulary works OFFLINE before class — the Define popup,
             // both Pronounce popups, and Word Sounds all read this same localStorage cache.
             // Background, gentle (concurrency 3; cache-first, so cached terms cost nothing),
             // English-only, best-effort: never blocks or fails glossary generation.
-            if (effectiveLanguage === 'English' && Array.isArray(parsedContent) && parsedContent.length) {
+            if ((!_nativeLanguageDefaultsVersion ? effectiveLanguage : glossaryLanguagePlan.baseLanguage) === 'English' && Array.isArray(parsedContent) && parsedContent.length) {
                 (async () => {
                     try {
                         if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') && window.__alloLoadPlugin) {
@@ -4236,11 +4540,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     } catch (_e) {}
                 })();
             }
-            addToast(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), "info");
-            setGenerationStatus(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), 'build');
+            if (window.AlloImageGeneration?.isEnabled() !== false) {
+                addToast(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), "info");
+                setGenerationStatus(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), 'build');
+            }
             const BATCH_SIZE = 3;
             const BATCH_DELAY_MS = 500;
-            const MAX_RETRIES = 1;
+            const MAX_RETRIES = 3; // total attempts; only rate-limit errors retry
             const processedContent = [];
             const generateImageWithRetry = async (item, index, total) => {
                 try {
@@ -4273,7 +4579,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                             return { ...entry, image: imageUrl };
                         } catch (e) {
                             if ((e && e.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw e;
-                            const is401 = e.message && e.message.includes('401');
+                            const is401 = /\b(401|429)\b|rate.?limit|quota/i.test(String((e && e.message) || ''));
                             if (is401 && attempt < MAX_RETRIES - 1) {
                                 warnLog(`⚠️ Rate limited on "${item.term}", will retry...`);
                                 continue;
@@ -4298,7 +4604,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     batch.map((item, idx) => generateImageWithRetry(item, i + idx, parsedContent.length))
                 );
                 processedContent.push(...batchResults);
-                if (i + BATCH_SIZE < parsedContent.length) {
+                if (window.AlloImageGeneration?.isEnabled() !== false && i + BATCH_SIZE < parsedContent.length) {
                     await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
                 }
             }
@@ -4310,6 +4616,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             throw new Error("Failed to parse Glossary JSON. The AI response was not valid.");
         }
         }
+        if (_nativeLanguageDefaultsVersion) content = stampNativeGlossaryTerms(content, glossaryLanguagePlan);
       } else if (type === 'simplified') {
         let complexityGuide = "";
         if (effectiveGrade === 'Kindergarten') {
@@ -4415,7 +4722,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             - Average sentence length: at most ${_gradeCalibration.asl} words. Individual sentences may vary, but the average across the whole passage must not exceed this.
             - Average syllables per word: at most ${_gradeCalibration.asw}. Prefer the shorter of two words that mean the same thing.
             - Flesch-Kincaid grade level of the finished passage: ${_gradeCalibration.fk}.
-            - Every Tier 3 term you keep must be defined in the same sentence it first appears, in plain words.
+            - Every Tier 3 term in the passage must be defined in the same sentence it first appears, in plain words.
             - CALIBRATION: writing to a grade label alone reliably lands one to two grades above it. Write to the numbers above, not to the label, and when a sentence is borderline, split it.
             `;
         }
@@ -4470,7 +4777,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             - ${outputLangInstruction}
             - Use a journalistic tone (Who, What, Where, When, Why).
             - Include a catchy headline and a dateline.
-            - Include "quotes" from relevant figures (experts, historical figures, or witnesses).
+            - QUOTATIONS: Only quote words that appear in the source text, attributed exactly as the source attributes them. Never invent a quotation or attribute words to a real person, expert, witness or publication that did not say or write them. Present any other viewpoint as paraphrase without quotation marks (e.g. "Scientists explain that...").
             - Structure with the most important facts first (inverted pyramid).
             `;
         } else if (textFormat === 'Podcast Script') {
@@ -4525,6 +4832,17 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       const extractedReferences = referenceParts.references || carriedInputReferences;
       const chunks = chunkText(textWithoutRefs, usesLocalTextBackend ? 3500 : 9000);
       const isMultiChunk = chunks.length > 1;
+      // Highlighting, Fill in the Blanks and cloze look for the lesson glossary's words in this text.
+      const _lessonGlossary = sourceRelatedHistory.slice().reverse().find(h => h && h.type === 'glossary' && Array.isArray(h.data) && h.data.length);
+      const glossaryKeepInstruction = (segment) => {
+          const words = [];
+          (_lessonGlossary ? _lessonGlossary.data : []).slice(0, 60).forEach(entry => {
+              if (!entry || entry.isSelected === false) return;
+              const word = [entry.term, entry.sourceTerm].find(v => typeof v === 'string' && v.trim() && glossaryTermInText(v, segment));
+              if (word && words.length < 30 && !words.some(w => w.toLowerCase() === word.trim().toLowerCase())) words.push(word.trim());
+          });
+          return words.length ? `- LESSON GLOSSARY (REQUIRED): Students study these glossary words: ${words.map(w => JSON.stringify(w)).join(', ')}. Keep EVERY one of them in your rewrite, spelled the same way (a plural or verb ending is fine); never swap one for an easier synonym. The first time each appears, explain it inside the same sentence in plain words (e.g. "erosion, the slow wearing away of land,").` : '';
+      };
       if (isMultiChunk) {
             addToast(t('meta.processing_sections', { count: chunks.length }), "info");
             setGenerationTaskProgress(0, chunks.length, t('status_steps.adapting_text'));
@@ -4615,7 +4933,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           config: _itemConfig,
           instructionalText: _baseInstructionalText,
           sourceSnapshot: _sourceSnapshot,
-          ..._sourceUse
+          ..._sourceUse,
+          unitId: _itemUnitId
       };
       // Drafts stay private until all required sections have usable text.
       const replacementBaseline = configOverride.relevelReplaceId
@@ -4706,6 +5025,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${lengthInstruction}
               ${formatInstruction}
               INSTRUCTIONAL PURPOSE: Create an adapted companion that supports reading the original. Preserve the original as the primary reading reference; do not claim this rewrite replaces it or is an unchanged original. This guidance applies even when no standards are attached.
+              ${glossaryKeepInstruction(chunks[i])}
               ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
               ${useEmojis ? '- Use emojis liberally throughout the text to provide visual cues and engagement (e.g., "The sun ☀️ is a star ⭐").' : '- Do not use emojis.'}
               ${keepCitations
@@ -5127,8 +5447,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 structureHint = "CRITICAL FOR FRAYER MODEL: Return exactly 4 branches with titles Definition / Characteristics / Examples / Non-Examples in that order. 'Definition' branch should have exactly one item.";
                 break;
             case 'KWL Chart':
-                promptInstructions = "Create a KWL Chart anchored to the topic of the source text. The 'main' field is the topic. Return exactly 3 branches: 1. 'Know' (4-6 prior knowledge items students at the target grade are likely to bring), 2. 'Want to Know' (4-6 anticipated student questions about the topic), 3. 'Learned' (return an empty items array OR 1-2 placeholder items like '___' since students fill this in after the lesson).";
-                structureHint = "CRITICAL FOR KWL CHART: Return exactly 3 branches with titles Know / Want to Know / Learned in that order. The Learned column should be sparse (empty array or placeholder) because students complete it after the lesson.";
+                promptInstructions = "Create a KWL Chart anchored to the topic of the source text. The 'main' field is the topic. Students write their OWN Know and Want-to-Know entries, so the first two columns are short TEACHER EXAMPLES for modeling the routine, not answers. Return exactly 3 branches: 1. 'Know' (2-3 example prior-knowledge statements a student at the target grade might write, phrased in first person, e.g. 'I know that...'), 2. 'Want to Know' (2-3 example student questions, phrased as questions), 3. 'Learned' (an empty items array; students fill this in after the lesson).";
+                structureHint = "CRITICAL FOR KWL CHART: Return exactly 3 branches with titles Know / Want to Know / Learned in that order. Know and Want to Know hold only 2-3 teacher examples each; Learned must be an empty array.";
                 break;
             case 'Claim-Evidence-Reasoning':
                 promptInstructions = "Create a Claim-Evidence-Reasoning template anchored to a key scientific question or phenomenon from the source text. The 'main' field is the central question or phenomenon. Return exactly 3 branches: 1. 'Claim' (a single declarative answer to the question, as the only item), 2. 'Evidence' (3-5 specific pieces of data, observations, or quotations from the source that support the claim), 3. 'Reasoning' (2-4 statements connecting the evidence to the claim via scientific principles or logical inference).";
@@ -5136,7 +5456,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 break;
             case 'Story Map':
                 promptInstructions = "Create a Story Map (plot diagram) for the source narrative text. The 'main' field is the story title or central narrative summary. Return exactly 5 branches in narrative order: 1. 'Exposition' (setting, main characters, initial situation), 2. 'Rising Action' (3-4 key events that build tension), 3. 'Climax' (the turning point or moment of highest tension, typically a single item), 4. 'Falling Action' (events that follow the climax and lead toward resolution), 5. 'Resolution' (how the story concludes and any final state).";
-                structureHint = "CRITICAL FOR STORY MAP: Return exactly 5 branches with titles Exposition / Rising Action / Climax / Falling Action / Resolution in that order. If the source text is non-narrative, return a single branch noting this is not applicable.";
+                structureHint = "CRITICAL FOR STORY MAP: Return exactly 5 branches with titles Exposition / Rising Action / Climax / Falling Action / Resolution in that order. If the source text is not a narrative (no characters and plot), return ONLY {\"notNarrative\": true, \"branches\": []} instead of a story map.";
                 break;
             case 'Memory Palace':
                 promptInstructions = "Create a Memory Palace (method of loci) for the key facts in this text. TARGET SIZE: about 16 loci in total — 4 ROOMS of 4 items is the ideal shape. A palace that size can actually be walked from memory; much larger and it stops being memorable, which defeats the technique. Use 3-5 ROOMS (branches) that group the material into meaningful clusters, 3-5 items each. Go under 16 only if the text genuinely cannot support it, and never pad with weak or duplicated facts to reach the number. Each branch.title = a short room name (1-3 words). Each branch's items = the facts or concepts to memorize (max 6 words each, listed in the order they should be memorized). ALSO include on each branch a parallel array 'mnemonics' with EXACTLY one entry per item: a vivid, concrete, slightly surreal mental-image description (max 20 words) that visually encodes BOTH the item and its meaning — bizarre, exaggerated, sensory images are remembered best. Keep every mnemonic school-appropriate and non-violent.";
@@ -5204,9 +5524,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 throw new Error("Failed to parse Visual Organizer data. Please try regenerating.");
             }
         }
+        content = finalizeOrganizerContent(content, effectiveOutlineType, t);
         metaInfo = `${effectiveGrade} - ${effectiveLanguage} - ${effectiveOutlineType}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'image') {
-        console.log('[VisualDebug] dispatcher routing to image branch; effectiveVisualStyle=', effectiveVisualStyle, 'visualLayoutMode=', typeof visualLayoutMode !== 'undefined' ? visualLayoutMode : '(undefined)');
         setGenerationStatus(t('status_steps.analyzing_visuals'), 'analyze');
         const imageSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 4500) : textToProcess;
         const _imageGuide = _imageGradeGuidance(effectiveGrade);
@@ -5253,29 +5573,29 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const targetWidth = useLowQualityVisuals ? 300 : 800;
         const targetQual = useLowQualityVisuals ? 0.5 : 0.9;
         let visualPlan = null;
+        // The plan sees the first pass's whole-source reading plus a large excerpt, not just the opening lines.
+        const imagePlanConcept = [altText ? `Diagram goal: ${altText}` : '', typeof imagePrompt === 'string' && imagePrompt !== result ? `Key visual elements: ${imagePrompt}` : '',
+            `Source text:\n${imageSourceText.substring(0, 6000)}`].filter(Boolean).join('\n');
         if (visualLayoutMode !== 'single') {
             try {
                 if (visualLayoutMode === 'auto') {
-                    visualPlan = await generateVisualPlan(imageSourceText.substring(0, 500), effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions, generationSignal);
+                    visualPlan = await generateVisualPlan(imagePlanConcept, effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions, generationSignal);
                 } else {
                     const templateHint = `You MUST use layout: "${visualLayoutMode}".`;
-                    const concept = imageSourceText.substring(0, 500);
+                    const concept = imagePlanConcept;
                     visualPlan = await generateVisualPlan(concept + '\n\n' + templateHint, effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions, generationSignal);
                     if (visualPlan) visualPlan.layout = visualLayoutMode;
                 }
             } catch (planErr) {
-                console.error('[VisualDebug] generateVisualPlan threw:', planErr);
                 warnLog('[ArtDirector] Plan generation failed, falling back to single image', planErr);
             }
         }
         if (visualPlan && visualPlan.layout !== 'single' && visualPlan.panels.length > 1) {
             setGenerationStatus(t('visual_director.generating_panels') || 'Generating multi-panel illustration...', 'build');
             const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle, generationSignal);
-            if (!executedPlan?.panels?.some(p => p?.imageUrl)) {
-                console.error('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
-            }
+            if (!executedPlan?.panels?.some(p => p?.imageUrl)) warnLog('[ArtDirector] every panel came back without a picture');
             // A panel with no picture failed; mark it so the view offers a retry instead of a spinner.
-            (executedPlan?.panels || []).forEach(p => { if (p && !p.imageUrl) p.failed = true; });
+            (executedPlan?.panels || []).forEach(p => { if (p && !p.imageUrl) p.failed = window.AlloImageGeneration?.isEnabled() !== false; });
             content = {
                 prompt: finalPrompt,
                 style: styleDescription,
@@ -5306,17 +5626,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             imageBase64 = await callImagenWithSignal(finalPrompt, targetWidth, targetQual);
         } catch(e) {
             throwIfGenerationAborted();
-            console.error('[VisualDebug] callImagen threw:', e);
             warnLog('Image generation failed:', e);
             if (typeof setError === 'function') setError(`Image generation failed: ${e?.message || e}`);
             return;
         }
-        if (!imageBase64) {
-            console.error('[VisualDebug] callImagen returned falsy imageBase64; bailing');
+        if (!imageBase64 && window.AlloImageGeneration?.isEnabled() !== false) {
+            warnLog('Image generation produced no output');
             if (typeof setError === 'function') setError('Image generation produced no output');
             return;
         }
-        if (fillInTheBlank || noText || creativeMode) {
+        if (imageBase64 && (fillInTheBlank || noText || creativeMode)) {
              try {
                  setGenerationStatus(t('status.refining_image'), 'finalize');
                  const rawBase64 = imageBase64.split(',')[1];
@@ -5581,6 +5900,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _answerCueRules = (_mcqCount + _multiSelectCount + _answerEvidenceCount) > 0
             ? 'ANSWER-CUE RULES for choice items: write every option in parallel grammatical form with similar length and detail, so the correct option is not the longest, the shortest, or the most specific. Never use "all of the above", "none of the above", or options that combine or name other options. Do not put absolute words (always, never, only, every) only in the wrong options. Vary which position holds the correct answer.'
             : '';
+        const QUIZ_DOK_FIELD_RULE = 'For EVERY assessed item also provide "dok": an integer 1-4 giving the cognitive demand the item ACTUALLY requires on Webb\'s Depth of Knowledge (1 = recall, 2 = skill/concept, 3 = strategic thinking, 4 = extended thinking). Rate honestly; do not copy the target level.';
         let result = '';
         if (usesLocalTextBackend) {
         const prompt = `
@@ -5600,6 +5920,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_reflectionInstruction}
           ${_scoringInstruction}
           Follow the requested JSON example for each item type exactly. MCQs must have exactly 4 options and correctAnswer must exactly match one option. Every assessed item must include a short lowercase conceptLabel.
+          ${QUIZ_DOK_FIELD_RULE}
           ${_useMisconceptionDistractors ? 'Build MCQ distractors from common student misconceptions or predictable errors, not random wrong answers.' : ''}
           ${_answerCueRules}
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery.' : ''}
@@ -5638,12 +5959,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
           ${_answerCueRules}
           IMPORTANT — concept tagging for retention tracking: For EVERY item (regardless of type), additionally provide a "conceptLabel" field — a 2-4 word stable concept tag describing what the item tests (e.g., "photosynthesis basics", "subject-verb agreement", "fraction equivalents"). Use lowercase. Use the SAME label across items that test the same underlying concept. This enables cross-session retention tracking — students who saw "photosynthesis basics" in last week's exit-ticket and again in today's review get tracked as the same concept.
+          ${QUIZ_DOK_FIELD_RULE}
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery. Example: "A simple labeled diagram of the water cycle showing evaporation, condensation, and precipitation, in a clean educational illustration style."' : ''}
           ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each is a 1-sentence prompt depicting that option\'s answer concretely. Example for "Which planet is Mars?": ["A red rocky planet with thin atmosphere", "A large striped gas giant with a great red spot", ...]' : ''}
           ${_multiSelectCount > 0 ? 'For each Multi-Select: provide 4-6 plausible options and a correctAnswers array containing the exact text of 2-4 correct options. Make every option independently judgeable. Avoid tricks such as all-of-the-above. The student receives partial credit for correct selections and loses credit for incorrect selections.' : ''}
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'ACCESSIBLE QUESTION VISUAL: Include imageAltText for each imagePrompt. Objectively describe the intended visible content, labels, and spatial relationships. Do not interpret the image or identify the keyed answer unless that fact is visibly explicit.' : ''}
           ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'ACCESSIBLE OPTION VISUALS: Include optionImageAltTexts as 4 objective visual descriptions aligned with optionImagePrompts. Describe what is visibly distinct; do not merely repeat the option label.' : ''}
-          ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
+          ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives: synonyms or accepted spellings that should earn full credit; other misspellings are sent to the teacher for review.' : ''}
           ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
           ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
           ${_sequenceSenseCount > 0 ? 'For each Sequence Sense Question: provide an "items" array of 4-6 strings in the CANONICAL CORRECT ORDER. Then provide "presentedOrder" — an array of indices [0..N-1] representing the order the student will see. Either swap two ADJACENT items or move ONE item to a different position; never scramble more than that. Provide "intentionallyWrongIndex" — the position in presentedOrder where the moved item appears; for an adjacent swap use either swapped position (the grader accepts both). Use null if you want the displayed order to actually be correct. Provide "orderingPrinciple" — one of "chronological", "cause-effect", "process", "size", or "hierarchy" — and "principleOptions" — the same 5 strings (always all 5, in random order is fine). The student will: (1) verify yes/no, (2) click a misplaced item if any, (3) arrange the items into the correct order, (4) identify the principle. Choose content where ordering genuinely matters and the principle is clear.' : ''}
@@ -5693,6 +6015,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     question: q.question || "Question text missing",
                     conceptLabel: _rawConceptLabel,
                 };
+                const _itemDok = _clampDok(q.dok);
+                if (_itemDok) base.dok = _itemDok; else delete base.dok;
                 if (itemType === 'mcq') {
                     base.options = Array.isArray(q.options) ? q.options : ["True", "False"];
                     base.correctAnswer = q.correctAnswer || "";
@@ -5797,13 +6121,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              warnLog("Quiz Parse Error:", parseErr);
              throw new Error("Failed to parse Quiz JSON. The AI response was not valid.");
         }
+        if (!hasMinimumContent('quiz', content)) throw emptyGenerationError(emptyResultMessage(t, getDefaultTitle, 'quiz'));
         // Plan S Slice 5: Visual MCQ image generation. Only runs when the
         // teacher opted in via mcqVisualMode. Iterates MCQ items in parallel
         // (Promise.all) so wall-clock scales with max single-image latency,
         // not the sum. Question and option images each fire independently.
         const _wantQuestionImages = _mcqVisualMode === 'question' || _mcqVisualMode === 'both';
         const _wantOptionImages = _mcqVisualMode === 'options' || _mcqVisualMode === 'both';
-        if ((_wantQuestionImages || _wantOptionImages) && Array.isArray(content.questions) && typeof callImagen === 'function') {
+        if (window.AlloImageGeneration?.isEnabled() !== false && (_wantQuestionImages || _wantOptionImages) && Array.isArray(content.questions) && typeof callImagen === 'function') {
             try {
                 const _mcqItems = content.questions.filter(function (q) { return q && (q.type === 'mcq' || !q.type); });
                 if (_mcqItems.length > 0) {
@@ -6054,6 +6379,7 @@ ${_itemsBlock}`;
           4. Potential Grammar/Spelling Issues (list specific examples or say "None detected")
           5. Source Language: Identify the language of the supplied source using its English language name (or "Multiple languages" for mixed text).
           6. Depth of Knowledge: the highest level of Webb's Depth of Knowledge (1 Recall, 2 Skill/Concept, 3 Strategic Thinking, 4 Extended Thinking) that lessons built on this text alone could reasonably reach, with a one-sentence reason. ${_analysisDokTarget ? `The teacher is aiming for ${_analysisDokTarget}. Give 2 or 3 short, concrete ideas for reaching it with this text (for example, what to add, compare or ask).` : 'Give 2 or 3 short, concrete ideas for taking students beyond what the text alone supports.'}
+          7. Learner Barriers (optional): short notes (under 20 words each, at most 3 per category) on what could block access to THIS text: "backgroundKnowledge" (knowledge the text assumes), "figurativeLanguage" (idioms and figurative or culturally specific phrases an English learner may misread, quoted from the source), "textStructure" (organization that may confuse readers), "biasRepresentation" (one-sided framing, stereotypes or missing perspectives). Leave a category as an empty array when nothing applies; do not invent problems.
           Write the analysis prose (explanations, concepts, accuracy reason, grammar notes) in ${effectiveLanguage}.
           Always quote source examples and proposed spelling/grammar corrections in the ORIGINAL source language.
           Calculate reading level and all findings from the ORIGINAL SOURCE, never from a translation.
@@ -6081,13 +6407,15 @@ ${_itemsBlock}`;
             },
             "grammar": ["..."],
             "depthOfKnowledge": { "level": 2, "reason": "...", "ideas": ["..."] },
+            "learnerBarriers": { "backgroundKnowledge": ["..."], "figurativeLanguage": [], "textStructure": [], "biasRepresentation": [] },
             "sourceLanguage": "English language name"${isTranslatedAnalysis ? `,
             "reportTranslations": { ${JSON.stringify(targetUiLang)}: {
                 "readingLevel": { "range": "same range", "explanation": "translated explanation" },
                 "concepts": ["translated concept"],
                 "accuracy": { "rating": "same rating", "reason": "translated reason", "discrepancies": [], "verifiedFacts": [] },
                 "grammar": ["translated note with original source examples"],
-                "depthOfKnowledge": { "level": "same level", "reason": "translated reason", "ideas": ["translated idea"] }
+                "depthOfKnowledge": { "level": "same level", "reason": "translated reason", "ideas": ["translated idea"] },
+                "learnerBarriers": { "backgroundKnowledge": ["translated note, same count"] }
             } },
             "sourceTranslations": { ${JSON.stringify(effectiveLanguage)}: "source translation, only if language differs" }` : ''}
           }
@@ -6162,11 +6490,15 @@ ${_itemsBlock}`;
         }
         const analysisLanguageData = analysisData;
         analysisData = normalizeAnalysisResult(analysisData);
+        // Only a web search that returned attributable sources verifies accuracy; otherwise the rating is the AI's own estimate.
+        analysisData.accuracy = { ...analysisData.accuracy, verification: isSearchActive ? 'web-search' : 'ai-estimate' };
         if (checkAccuracyWithSearch && !isSearchActive) {
+            const _verifyLabel = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
             analysisData.accuracy = {
                 ...analysisData.accuracy,
-                rating: "Not web-verified",
-                reason: "Web verification did not return attributable sources. This is an AI-generated estimate, not a Google Search-verified accuracy result.",
+                rating: _verifyLabel('analysis.not_web_verified_rating', 'Not web-verified'),
+                reason: _verifyLabel('analysis.not_web_verified_reason', 'Web verification did not return attributable sources. This is an AI-generated estimate, not a Google Search-verified accuracy result.'),
+                verificationNote: 'search-unavailable',
                 discrepancies: [],
                 verifiedFacts: []
             };
@@ -6280,10 +6612,12 @@ ${_itemsBlock}`;
         content.analysisTargets = { grade: effectiveGrade || '', dok: (!dokLevel || _isolatedContext) ? '' : dokLevel };
         metaInfo = `${isSearchActive ? t('meta.analysis_verified') : t('meta.analysis_standard')}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'faq') {
+        const FAQ_MISCONCEPTION_RULES = 'Write the questions a student reading THIS text is likely to get wrong or find confusing: likely misconceptions about its ideas, terms used in a confusing or unusual sense, and easily mixed-up details. Do not write generic questions about the topic. Ground every answer in the text: when a misconception is involved, name it and correct it using what the text says. Do not present outside facts as coming from the text; if a short piece of background the text does not give is essential, say plainly that it is background, not from the text.';
         if (usesLocalTextBackend) {
             const localFaqCount = Math.max(3, Math.min(Number(faqCount) || 5, 6));
             const prompt = `
                 Generate ${localFaqCount} clear Frequently Asked Questions based on the source excerpt.
+                ${FAQ_MISCONCEPTION_RULES}
                 Audience: ${effectiveGrade} students.
                 Language: ${effectiveLanguage}.
                 ${standardsDirective}
@@ -6313,6 +6647,7 @@ ${_itemsBlock}`;
         } else {
         const prompt = `
             Generate ${faqCount} Frequently Asked Questions (FAQs) based on the text below.
+            ${FAQ_MISCONCEPTION_RULES}
             Target Audience: ${effectiveGrade} students.
             Language: ${effectiveLanguage}.
             ${standardsDirective}
@@ -6537,6 +6872,8 @@ ${_itemsBlock}`;
          }
          }
       } else if (type === 'sentence-frames') {
+         const SCAFFOLD_TIER_RULE = 'mark each with "tier": "emerging" (short, highly supported, e.g. "The ___ is ___ because ___."), "expanding" (a fuller frame with a transition word), or "bridging" (an open academic stem that asks students to connect or justify ideas).';
+         const SCAFFOLD_WORD_BANK_RULE = 'Add "wordBank": 6-10 key words copied from the text that students can use in their writing (single words or short phrases, spelled as in the text).';
          if (usesLocalTextBackend) {
              const localMode = frameType === 'Paragraph Frame' ? 'paragraph' : 'list';
              const prompt = `
@@ -6548,11 +6885,13 @@ ${_itemsBlock}`;
                 ${standardsPromptString ? `Support these standards: ${standardsPromptString}.` : ''}
                 ${effCustomInstructions ? `Instructions: ${effCustomInstructions}.` : ''}
                 ${useEmojis ? 'Use emojis only when they help students understand the scaffold.' : 'Do not use emojis.'}
+                ${frameType === 'Sentence Starters' ? 'Give 2 starters for each tier, listed emerging first. ' + SCAFFOLD_TIER_RULE : ''}
+                ${SCAFFOLD_WORD_BANK_RULE}
                 Return ONLY valid JSON.
                 If the type is Paragraph Frame, use:
-                { "mode": "paragraph", "text": "A fill-in-the-blank paragraph using [blank].", "rubric": "| Criteria | 1 | 3 | 5 |\\n|---|---|---|---|\\n| Content | ... | ... | ... |" }
+                { "mode": "paragraph", "text": "A fill-in-the-blank paragraph using [blank].", "wordBank": ["word"], "rubric": "| Criteria | 1 | 3 | 5 |\\n|---|---|---|---|\\n| Content | ... | ... | ... |" }
                 Otherwise use:
-                { "mode": "list", "items": [{ "text": "Sentence starter or discussion prompt" }], "rubric": "| Criteria | 1 | 3 | 5 |\\n|---|---|---|---|\\n| Content | ... | ... | ... |" }
+                { "mode": "list", "items": [{ "text": "Sentence starter or discussion prompt", "tier": "emerging" }], "wordBank": ["word"], "rubric": "| Criteria | 1 | 3 | 5 |\\n|---|---|---|---|\\n| Content | ... | ... | ... |" }
                 Source excerpt:
                 """
                 ${localExcerpt(textToProcess, 5500)}
@@ -6572,9 +6911,10 @@ ${_itemsBlock}`;
              }
              if (content.mode === 'list') {
                  content.items = (content.items || []).slice(0, 8)
-                     .map(item => ({ text: String((item && item.text) || item || '').trim() }))
+                     .map(item => ({ text: String((item && item.text) || item || '').trim(), ...(item && item.tier ? { tier: item.tier } : {}) }))
                      .filter(item => item.text);
              }
+             content = normalizeScaffoldExtras(content, textToProcess);
              if ((content.mode === 'list' && (!content.items || !content.items.length)) || (content.mode === 'paragraph' && !content.text)) {
                  throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
              }
@@ -6596,17 +6936,19 @@ ${_itemsBlock}`;
             ${useEmojis ? 'Include relevant emojis in the sentence starters or prompts.' : 'Do not use emojis.'}
             Output Requirements:
             1. Scaffolds:
-               - If "Sentence Starters": Provide 5-8 distinct sentence beginnings that help students structure an answer or argument about the text.
+               - If "Sentence Starters": Provide 6-9 distinct sentence beginnings that help students structure an answer or argument about the text, in three tiers (2-3 each, listed emerging first): ${SCAFFOLD_TIER_RULE}
                - If "Paragraph Frame": Provide a fill-in-the-blank paragraph structure. Use [blank] (bracketed text) to indicate where students should write.
                - If "Discussion Prompts": Provide 3-5 provocative discussion questions.
+               - For every type: ${SCAFFOLD_WORD_BANK_RULE}
             2. Grading Rubric:
                - Create a Markdown table rubric (Criteria vs Levels 1-5) specifically for this activity.
                - Include criteria for Content, Use of Scaffolds, and Mechanics.
             Return ONLY a JSON object with this structure:
             {
                 "mode": "list" (for Starters/Prompts) OR "paragraph" (for Frame),
-                "items": [{ "text": "..."${_xlate.enabled ? ', "text_en": "..."' : ''} }] (if mode is list),
+                "items": [{ "text": "..."${_xlate.enabled ? ', "text_en": "..."' : ''}, "tier": "emerging|expanding|bridging" (Sentence Starters only) }] (if mode is list),
                 "text": "..." (if mode is paragraph)${_xlate.enabled ? ', "text_en": "..."' : ''},
+                "wordBank": ["word from the text", "..."],
                 "rubric": "Markdown string of the rubric table",
             }
             ${differentiationContext}
@@ -6616,6 +6958,7 @@ ${_itemsBlock}`;
          const result = await callGemini(prompt, true);
          try {
              content = normalizeScaffoldContent(JSON.parse(cleanJson(result)), frameType);
+             content = normalizeScaffoldExtras(content, textToProcess);
              metaInfo = `${frameType} - ${effectiveLanguage}`;
          } catch (parseErr) {
              warnLog("Scaffolds Parse Error:", parseErr);
@@ -6955,23 +7298,16 @@ ${_itemsBlock}`;
          const engagementTask = engagement ? (async () => {
              const fp = 'engagement:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
              const cached = _auditLLMCache.get(fp);
-             if (cached) { content.comprehensive.engagement.llmReview = cached; applyAuditReviewStatus(content.comprehensive.engagement, cached); return; }
+             if (cached) { content.comprehensive.engagement.llmReview = cached; applyAuditReviewStatus(content.comprehensive.engagement, cached); applyAuditDokEstimate(content.comprehensive.engagement, cached.dokEstimate); return; }
              try {
-                 // DOK fallback: when engagement.dokTotal === 0 BUT a quiz exists in the
-                 // artifacts (i.e., the quiz generator didn't tag DOK levels), pass the
-                 // actual quiz questions to the LLM so it can estimate DOK rather than
-                 // falsely report "no quiz items." Verified bug from Solar System audit.
-                 const quizItem = artifactsToAudit.find(function (h) { return h && h.type === 'quiz' && h.data; });
-                 const hasQuiz = !!(quizItem && quizItem.data && Array.isArray(quizItem.data.questions) && quizItem.data.questions.length > 0);
-                 const needsDokFallback = hasQuiz && (engagement.dokTotal === 0 || !engagement.dokTotal);
-                 const quizSnippet = needsDokFallback
-                     ? quizItem.data.questions.slice(0, 12).map(function (q, i) {
-                         var qt = (q && (q.question || q.text)) ? String(q.question || q.text) : '';
-                         return (i + 1) + '. ' + qt.slice(0, 220);
-                       }).join('\n')
-                     : '';
+                 // No quiz item carries a DOK tag: the AI estimates the mix from the stems it is shown,
+                 // and the report says how many of the quiz items that covers.
+                 const untaggedStems = Array.isArray(auditHarvest.untaggedQuizStems) ? auditHarvest.untaggedQuizStems : [];
+                 const needsDokFallback = untaggedStems.length > 0 && !engagement.dokTotal;
+                 const sampledStems = needsDokFallback ? untaggedStems.slice(0, AUDIT_DOK_ESTIMATE_MAX_STEMS) : [];
+                 const quizSnippet = sampledStems.map(function (qt, i) { return (i + 1) + '. ' + qt; }).join('\n');
                  const dokFallbackBlock = needsDokFallback
-                     ? '\n\nDOK FALLBACK NEEDED: This quiz has ' + quizItem.data.questions.length + ' questions but no DOK metadata. Estimate DOK distribution from the question stems below. Return percentages summing to 100. Examples:\n' + quizSnippet
+                     ? '\n\nDOK FALLBACK NEEDED: The quiz has ' + untaggedStems.length + ' questions but no DOK metadata. Estimate the DOK distribution of the ' + sampledStems.length + ' question stems below. Return percentages summing to 100. Stems:\n' + quizSnippet
                      : '';
                  const dokInstruction = needsDokFallback
                      ? '3. "dokAssessment": ONE sentence on the estimated DOK distribution from the questions above (e.g., "Estimated ~70% L1 recall, ~25% L2, ~5% L3; add 2-3 strategic-thinking items").\n4. "estimatedDokDistribution": object with percentage estimates {"L1": int, "L2": int, "L3": int, "L4": int} based on the questions above (must sum to 100).'
@@ -6994,22 +7330,18 @@ ${_itemsBlock}`;
                  // so the render shows the bar chart instead of "no quiz items."
                  if (needsDokFallback && review.estimatedDokDistribution && typeof review.estimatedDokDistribution === 'object') {
                      const est = review.estimatedDokDistribution;
-                     const safeNum = function (v) { return typeof v === 'number' && v >= 0 ? Math.round(v) : 0; };
-                     content.comprehensive.engagement.dokDistribution = {
-                         L1: safeNum(est.L1),
-                         L2: safeNum(est.L2),
-                         L3: safeNum(est.L3),
-                         L4: safeNum(est.L4),
-                         unknown: 0,
-                     };
-                     content.comprehensive.engagement.dokTotal = quizItem.data.questions.length;
-                     content.comprehensive.engagement.dokSource = 'llm-estimated';
-                     if (content.comprehensive.engagement.dokDistribution.L1 > 80) {
-                         content.comprehensive.engagement.status = worseAuditStatus(content.comprehensive.engagement.status, 'Partially Aligned');
+                     const safeNum = function (v) { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : 0; };
+                     const raw = { L1: safeNum(est.L1), L2: safeNum(est.L2), L3: safeNum(est.L3), L4: safeNum(est.L4) };
+                     const sum = raw.L1 + raw.L2 + raw.L3 + raw.L4;
+                     if (sum > 0) {
+                         const distribution = {};
+                         ['L1', 'L2', 'L3', 'L4'].forEach(function (k) { distribution[k] = Math.round(raw[k] * 100 / sum); });
+                         reviewShape.dokEstimate = { distribution, sampled: sampledStems.length, total: untaggedStems.length };
                      }
                  }
                  content.comprehensive.engagement.llmReview = reviewShape;
                  applyAuditReviewStatus(content.comprehensive.engagement, reviewShape);
+                 applyAuditDokEstimate(content.comprehensive.engagement, reviewShape.dokEstimate);
                  _auditLLMCache.set(fp, reviewShape);
              } catch (e) { warnLog('[Alignment] Engagement LLM review failed:', e); }
          })() : Promise.resolve();
@@ -7392,7 +7724,7 @@ ${modeListForAuto}
          } catch (vErr) {
              warnLog('[Timeline] Validator threw:', vErr);
          }
-         if (includeTimelineVisuals && content.items && content.items.length > 0) {
+         if (window.AlloImageGeneration?.isEnabled() !== false && includeTimelineVisuals && content.items && content.items.length > 0) {
              setGenerationStep(t('timeline.visuals.generating') || 'Generating sequence visuals...');
              addToast(t('timeline.visuals.generating') || 'Generating sequence visuals...', 'info');
              let failCount = 0;
@@ -7653,12 +7985,13 @@ ${modeListForAuto}
          if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
          const result = await callGemini(prompt, true);
          if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
+         let bridgeParsed = null;
          try {
-             content = usesLocalTextBackend ? parseJsonLenient(result, []) : JSON.parse(cleanJson(result));
-             if (!Array.isArray(content)) content = [result];
-         } catch (e) {
-             content = [result];
-         }
+             bridgeParsed = usesLocalTextBackend ? parseJsonLenient(result, null) : JSON.parse(cleanJson(result));
+         } catch (e) { bridgeParsed = null; }
+         content = bridgeParsed && typeof bridgeParsed === 'object' ? normalizeSimulationSteps(bridgeParsed)
+             : normalizeSimulationSteps([typeof result === 'string' ? result : '']);
+         if (!content.length) throw emptyGenerationError(t('errors.simulation_empty') || 'The simulation guide came back with no prompt steps. Please try again.');
          metaInfo = `${t('meta.bridge_info', { type: bridgeSimType, count: localBridgeStepCount })}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'concept-sort') {
          setGenerationStep(t('status_steps.categorizing_concepts'));
@@ -7758,7 +8091,7 @@ ${modeListForAuto}
              const shouldGenerateImages =
                  conceptImageMode === 'always' ||
                  (!usesLocalTextBackend && conceptImageMode === 'auto' && itemsAreShort);
-             if (shouldGenerateImages && content.items.length > 0) {
+             if (window.AlloImageGeneration?.isEnabled() !== false && shouldGenerateImages && content.items.length > 0) {
                  setGenerationStep('Generating card visuals...');
                  addToast(t('toasts.generating_card_visuals'), "info");
                  // POOL_SIZE was 5, dropped to 2 to reduce concurrent rate-limit
@@ -8071,7 +8404,19 @@ Return ONLY JSON:
                const _dbqSuppliedText = _dbqFlat(_dbqSourceRecords.map(record => record.text).join(' '));
                const _usedDbqIds = new Set();
                const _nextDbqId = () => { for (let n = 0; ; n++) { const id = String.fromCharCode(65 + (n % 26)) + (n >= 26 ? Math.floor(n / 26) + 1 : ''); if (!_usedDbqIds.has(id)) return id; } };
-               content.documents = (Array.isArray(content.documents) ? content.documents : []).filter(d => d && typeof d === 'object' && !Array.isArray(d)).map(d => {
+               // Custom docs match the teacher's text first, then link, then order (a dropped doc shifts order).
+               const _dbqClaimed = new Set();
+               const _dbqCustomRecord = (d, docIndex, candidateUrl) => {
+                 const open = record => record && !_dbqClaimed.has(record.id);
+                 const key = _dbqFlat(d.excerpt);
+                 let record = key.length >= 20 ? _dbqSourceRecords.find(r => open(r) && _dbqFlat(r.text).includes(key)) : null;
+                 let by = record ? 'excerpt' : '';
+                 if (!record && candidateUrl) { record = _dbqSourceRecords.find(r => open(r) && r.url === candidateUrl); by = record ? 'url' : ''; }
+                 if (!record) { record = open(_dbqSourceRecords[docIndex]) ? _dbqSourceRecords[docIndex] : _dbqSourceRecords.find(open); by = record ? 'position' : 'none'; }
+                 if (record) _dbqClaimed.add(record.id);
+                 return { record, by };
+               };
+               content.documents = (Array.isArray(content.documents) ? content.documents : []).filter(d => d && typeof d === 'object' && !Array.isArray(d)).map((d, docIndex) => {
                  let id = d.id == null ? '' : String(d.id).trim();
                  if (!id || _usedDbqIds.has(id)) id = _nextDbqId();
                  _usedDbqIds.add(id);
@@ -8080,13 +8425,15 @@ Return ONLY JSON:
                  if (!['verbatim', 'adapted', 'reconstructed'].includes(excerptKind)) excerptKind = fallbackKind;
                  if (excerptKind === 'verbatim' && (!_dbqFlat(d.excerpt) || !_dbqSuppliedText.includes(_dbqFlat(d.excerpt)))) excerptKind = fallbackKind;
                  const candidateUrl = _dbqUrl(d.sourceUrl);
-                 const record = (_dbqMode === 'custom' ? _dbqSourceRecords[content.documents.indexOf(d)] : null)
+                 const customMatch = _dbqMode === 'custom' ? _dbqCustomRecord(d, docIndex, candidateUrl) : null;
+                 const record = (customMatch ? customMatch.record : null)
                    || _dbqSourceRecords.find(record => candidateUrl && record.url === candidateUrl)
                    || _dbqSourceRecords.find(record => _dbqFlat(d.excerpt) && _dbqFlat(record.text).includes(_dbqFlat(d.excerpt)))
                    || (_dbqMode === 'custom' ? _dbqSourceRecords[content.documents.indexOf(d)] : _dbqSourceRecords[0]);
                  if (excerptKind === 'verbatim' && (!record || !_dbqFlat(record.text).includes(_dbqFlat(d.excerpt)))) excerptKind = 'reconstructed';
                  return { ...d, id, title: 'Document ' + id + ': ' + (record?.title || 'Unverified generated passage'), source: record?.source || 'Source not verified; author and date not recorded', date: '', author: '', sourceUrl: record?.url || '', excerpt: _dbqMode === 'custom' && record ? record.text : d.excerpt, excerptKind: _dbqMode === 'custom' && record ? 'verbatim' : excerptKind,
-                   sourceRecordId: record?.id || '', sourceProvenance: record ? { version: 1, recordId: record.id, origin: record.origin, url: record.url, title: record.title } : null };
+                   sourceRecordId: record?.id || '', sourceProvenance: record ? { version: 1, recordId: record.id, origin: record.origin, url: record.url, title: record.title } : null,
+                   ...(customMatch ? { sourceMatchedBy: customMatch.record ? customMatch.by : 'none' } : {}) };
 
                });
                if (content.documents.length > _dbqRequestedCount) content.documents = content.documents.slice(0, _dbqRequestedCount);
@@ -8387,7 +8734,7 @@ Return ONLY JSON:
               gradeLevel: effectiveGrade,
               language: effectiveLanguage,
           };
-          const noteSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : (textToProcess || '').substring(0, 3000);
+          const noteSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : (textToProcess || '').substring(0, 12000);
           const parseNoteScaffold = async (prompt, fallback, progressLabel) => {
               try {
                   if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, progressLabel);
@@ -8555,6 +8902,11 @@ Return ONLY JSON:
               };
           } else {
               content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
+          }
+          const _noteRequired = { 'cornell-notes': ['cues', 'errors.note_taking_no_cues', 'Cornell Notes cues'], 'guided-notes': ['blanks', 'errors.note_taking_no_blanks', 'Guided Notes blanks'],
+              'q-and-a': ['pairs', 'errors.note_taking_no_questions', 'study questions'] }[templateType];
+          if (_noteRequired && !(Array.isArray(content[_noteRequired[0]]) && content[_noteRequired[0]].some(entry => entry && String(entry.text || entry.answer || entry.question || '').trim()))) {
+              throw emptyGenerationError(t(_noteRequired[1]) || `The note-taking template came back with no ${_noteRequired[2]}. Please try again.`);
           }
           metaInfo = `${effectiveGrade} - ${templateType}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'applied-challenge') {
@@ -8834,11 +9186,11 @@ Return ONLY JSON:
           const reasoningRequired = reflectionLevel !== 'none' && (((configOverride && configOverride.memoryAidReasoningRequired) ?? memoryAidReasoningRequired) === true);
           const requestedCount = Number((configOverride && configOverride.memoryAidCount) || memoryAidCount || 3);
           const targetCount = Math.max(1, Math.min(5, Number.isFinite(requestedCount) ? Math.round(requestedCount) : 3));
-          const memorySourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 4200) : (textToProcess || '').substring(0, 4000);
+          const memorySourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 4200) : (textToProcess || '').substring(0, 12000);
           if (configOverride.memoryAidPreviewSource !== undefined && configOverride.memoryAidPreviewSource !== memorySourceText) return { memoryAidPreviewExpired: true };
           const reviewedTargets = (Array.isArray(configOverride.memoryAidTargets) ? configOverride.memoryAidTargets : []).slice(0, 5).map(value => sanitizeMemoryAidPromptData(value, 300, false)).filter(Boolean);
           const safeMemorySourceTopic = sanitizeMemoryAidPromptData(sourceTopic, 1000, false);
-          const safeMemorySourceText = sanitizeMemoryAidPromptData(memorySourceText, 4000, true);
+          const safeMemorySourceText = sanitizeMemoryAidPromptData(memorySourceText, 12000, true);
           const memoryResourceId = 'memory-resource-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
           const typeDirection = selectionMode === 'manual'
               ? 'Use only these aid type ids, mixing them when more than one is supplied: ' + selectedAidTypes.join(', ') + '.'
@@ -8990,7 +9342,7 @@ Return ONLY JSON:
               setHistory(previous => previous.map(item => mergeMemoryAidProgress(item, snapshot, memoryBaseline, complete)));
               setGeneratedContent(previous => mergeMemoryAidProgress(previous, snapshot, memoryBaseline, complete));
           };
-          if (includeVisuals && typeof callImagen === 'function' && memoryAidRules && typeof memoryAidRules.visualPrompt === 'function') {
+          if (window.AlloImageGeneration?.isEnabled() !== false && includeVisuals && typeof callImagen === 'function' && memoryAidRules && typeof memoryAidRules.visualPrompt === 'function') {
               // Same shape as the timeline visuals loop: pool of 2, and a failed
               // image leaves the card text-only (the prompt already requires every
               // card to work without a picture). Student-authored cards are skipped
@@ -9199,7 +9551,7 @@ Return ONLY JSON:
               'question-guide': 'a question guide for discussion, close reading, inquiry, or analysis. Sections should be question categories with student-friendly prompts. Use 4-6 sections.',
           };
           const chartTypeHint = chartTypeGuide[chartType] || chartTypeGuide.reference;
-          const chartSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : (textToProcess || '').substring(0, 2500);
+          const chartSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : (textToProcess || '').substring(0, 12000);
           const prompt = `
               Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || chartSourceText.substring(0, 200) || 'reference'}". Chart type request: ${chartType} - ${chartTypeHint}.
 
@@ -9239,11 +9591,15 @@ Return ONLY JSON:
               if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, 'Designing anchor chart');
               scaffolded = usesLocalTextBackend ? parseJsonLenient(result, scaffolded) : JSON.parse(cleanJson(result));
           } catch (parseErr) {
+              if ((parseErr && parseErr.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw parseErr;
               warnLog('Anchor chart scaffold parse failed:', parseErr);
           }
           const generatedChartType = String((scaffolded && scaffolded.chartType) || '').trim();
           const resolvedChartType = supportedChartTypes.includes(chartType) ? chartType : (supportedChartTypes.includes(generatedChartType) ? generatedChartType : 'reference');
-          const rawSections = Array.isArray(scaffolded.sections) ? scaffolded.sections : [];
+          const rawSections = scaffolded && Array.isArray(scaffolded.sections) ? scaffolded.sections : [];
+          if (!rawSections.some(s => s && Array.isArray(s.bullets) && s.bullets.some(b => String(b || '').trim()))) {
+              throw emptyGenerationError(t('errors.anchor_chart_empty') || 'The anchor chart came back with no sections. Please try again.');
+          }
           const sections = rawSections.slice(0, 6).map((s, i) => ({
               id: `sec-${Date.now()}-${i}`,
               label: String((s && s.label) || `Section ${i + 1}`),
@@ -9259,13 +9615,8 @@ Return ONLY JSON:
           };
           metaInfo = `${effectiveGrade} - ${resolvedChartType}${usesLocalTextBackend ? ' - Local' : ''}`;
       }
+      if (!hasMinimumContent(type, content)) throw emptyGenerationError(emptyResultMessage(t, getDefaultTitle, type));
       let itemTitle = getDefaultTitle(type);
-      if (type === 'analysis') {
-          const existingCount = generationHistory.filter(h => h.type === 'analysis').length;
-          if (existingCount > 0) {
-              itemTitle += ` (V${existingCount + 1})`;
-          }
-      }
       if (type === 'simplified') {
           itemTitle = `Adapted Text (${effectiveGrade})`;
       }
@@ -9278,7 +9629,13 @@ Return ONLY JSON:
           meta: metaInfo,
           title: itemTitle,
           timestamp: new Date(),
-          config: _buildItemConfig(),
+          config: _buildItemConfig(glossaryLanguagePlan?.glossaryLanguageSchemaVersion ? {
+              language: glossaryLanguagePlan.baseLanguage, baseLanguage: glossaryLanguagePlan.baseLanguage,
+              glossaryLanguageSchemaVersion: 1, translationLanguages: glossaryLanguagePlan.translationLanguages,
+          } : {}),
+          ...(glossaryLanguagePlan?.glossaryLanguageSchemaVersion ? {
+              baseLanguage: glossaryLanguagePlan.baseLanguage, glossaryLanguageSchemaVersion: 1,
+          } : {}),
           ..._sourceUse,
           ...(type === 'analysis' ? {
               sourceSnapshot: _sourceSnapshot,
@@ -9320,7 +9677,12 @@ Return ONLY JSON:
           newItem.config = { ...newItem.config, sourceSnapshot: newItem.sourceSnapshot,
               sourceInstructionalText: newItem.sourceInstructionalText, sourceFamilyId: newItem.sourceFamilyId };
       }
+      if (type === 'analysis') {
+          const priorVersions = countPriorAnalysisVersions(generationHistory, newItem, sourceRelatedHistory);
+          if (priorVersions > 0) newItem.title = `${itemTitle} (V${priorVersions + 1})`;
+      }
       if (type === 'lesson-plan' && planningGenerationInputs) newItem.config = { ...newItem.config, generationInputs: planningGenerationInputs };
+      newItem.unitId = _itemUnitId;
       throwIfGenerationAborted();
       if (!memoryProgress) setHistory(prev => isGenerationCurrent() && !generationSignal?.aborted ? [...prev, newItem] : prev);
       if (!memoryProgress && (switchView || !generatedContent)) {
@@ -9366,7 +9728,8 @@ Return ONLY JSON:
       const failureDetails = String(err?.category || '') + ' ' + String(err?.code || '') + ' ' + String(err?.message || '');
       const authorizationFailure = [401, 403].includes(failureStatus) || /\b(?:401|403)\b|unauthorized|forbidden|authentication|invalid.*(?:api.?key|credential)/i.test(failureDetails);
       const quotaFailure = /quota|resource[_ -]exhausted|usage limit|daily limit|billing/i.test(failureDetails);
-      const errMsg = err.message?.includes("Blocked") ? "Content blocked by safety filters." :
+      const errMsg = err?.emptyGeneration && err.message ? err.message :
+                     err.message?.includes("Blocked") ? "Content blocked by safety filters." :
                      err.message?.includes("Stopped") ? "Generation stopped by AI model." :
                      authorizationFailure ? "Authorization failed. Check the selected provider and its credentials, then retry. Previously saved resources were kept." :
                      quotaFailure ? "The selected provider's usage limit was reached. Retry when it resets or choose an available provider. Previously saved resources were kept." :
@@ -9438,10 +9801,20 @@ window.AlloModules.GenDispatcher = {
   stampActivityDerivative,
   attachActivityDerivativeMetadata,
   normalizeAnalysisResult,
+  hasMinimumContent,
+  countPriorAnalysisVersions,
   createAnalysisSourceContent,
   normalizeScaffoldContent,
   normalizeConceptSortContent,
   normalizeGlossaryTerms,
+  glossaryTermInText,
+  finalizeOrganizerContent,
+  normalizeSimulationSteps,
+  normalizeScaffoldExtras,
+  clampDok: _clampDok,
+  resolveGlossaryLanguagePlan,
+  stampNativeGlossaryTerms,
+  buildNativeGlossaryPrompt,
   normalizeFaqItems
 };
 

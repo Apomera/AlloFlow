@@ -244,6 +244,53 @@ function activityNonEmpty(values) {
     return String(value == null ? '' : value).trim();
   });
 }
+function activityT(t, key, fallback, vars) {
+  var value = typeof t === 'function' ? t(key) : '';
+  var text = typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+  Object.keys(vars || {}).forEach(function (name) {
+    text = text.split('{' + name + '}').join(String(vars[name]));
+  });
+  return text;
+}
+
+// Learner answers ride the shared studentResponses[resourceId] record (the DBQ
+// contract). Keys come from the text, not positions: the student projection drops
+// blank lines and idea cards, so positions differ between the two copies.
+function activityTextHash(value) {
+  var text = String(value == null ? '' : value).trim(),
+    hash = 5381;
+  for (var i = 0; i < text.length; i++) hash = (hash << 5) + hash + text.charCodeAt(i) | 0;
+  return (hash >>> 0).toString(36);
+}
+function activityResponseKey(item, part, question) {
+  var slug = String(question == null ? '' : question).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  var title = item && typeof item.title === 'string' ? item.title : '';
+  return 'activity:' + activityTextHash((item && item.kind) + '|' + title) + ':' + part + ':' + activityTextHash(question) + (slug ? ':' + slug : '');
+}
+
+// The value comes only from the learner's own record, never from the resource.
+function ActivityResponseField(props) {
+  var answers = props.answers || {};
+  var value = typeof answers[props.responseKey] === 'string' ? answers[props.responseKey] : '';
+  return /*#__PURE__*/React.createElement("textarea", {
+    "data-activity-response": props.responseKey,
+    value: value,
+    onChange: function (event) {
+      props.onAnswer(props.responseKey, event.target.value);
+    },
+    rows: 2,
+    "aria-label": activityT(props.t, 'brainstorm.answer_aria', 'Your answer: {question}', {
+      question: String(props.question || '').slice(0, 160)
+    }),
+    placeholder: activityT(props.t, 'brainstorm.answer_placeholder', 'Type your answer...'),
+    className: "mt-1 mb-2 w-full rounded-lg border border-slate-400 bg-white p-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+  });
+}
+function ActivityAnswersNote(props) {
+  return /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600 mb-3"
+  }, activityT(props.t, 'brainstorm.answers_saved_note', 'Write your answers below. They are saved with your work.'));
+}
 function ActivityArtifactSummary(props) {
   var item = props.item || {};
   var t = props.t;
@@ -344,6 +391,16 @@ function DiscussionKitBody(props) {
     return stems[c].length;
   });
   var lookFors = activityNonEmpty(item.lookFors);
+  var answering = !isTeacherMode && typeof props.onAnswer === 'function';
+  var field = function (key, question) {
+    return answering ? /*#__PURE__*/React.createElement(ActivityResponseField, {
+      t: t,
+      answers: props.answers,
+      onAnswer: props.onAnswer,
+      responseKey: key,
+      question: question
+    }) : null;
+  };
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "brainstorm_discussion_card"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -357,9 +414,13 @@ function DiscussionKitBody(props) {
     className: "text-[11px] font-bold uppercase tracking-wider bg-cyan-50 text-cyan-900 border border-cyan-200 rounded-full px-2.5 py-0.5"
   }, protocolLabel), item.grouping ? /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600"
-  }, activityDisplayText(item.grouping)) : null), item.openingQuestion ? /*#__PURE__*/React.createElement("p", {
-    className: "text-sm font-semibold text-slate-800 bg-cyan-50/60 border border-cyan-100 rounded-lg p-3 mb-4 whitespace-pre-line"
-  }, activityDisplayText(item.openingQuestion)) : null, (Array.isArray(item.questionSets) ? item.questionSets : []).map(function (set, setIdx) {
+  }, activityDisplayText(item.grouping)) : null), answering ? /*#__PURE__*/React.createElement(ActivityAnswersNote, {
+    t: t
+  }) : null, item.openingQuestion ? /*#__PURE__*/React.createElement("div", {
+    className: "mb-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-semibold text-slate-800 bg-cyan-50/60 border border-cyan-100 rounded-lg p-3 whitespace-pre-line"
+  }, activityDisplayText(item.openingQuestion)), field(activityResponseKey(item, 'opening', item.openingQuestion), activityDisplayText(item.openingQuestion))) : null, (Array.isArray(item.questionSets) ? item.questionSets : []).map(function (set, setIdx) {
     var qs = activityNonEmpty(set && set.questions);
     if (!qs.length) return null;
     return /*#__PURE__*/React.createElement("div", {
@@ -372,7 +433,7 @@ function DiscussionKitBody(props) {
     }, qs.map(function (q, qIdx) {
       return /*#__PURE__*/React.createElement("li", {
         key: qIdx
-      }, activityDisplayText(q));
+      }, activityDisplayText(q), field(activityResponseKey(item, 'question', q), activityDisplayText(q)));
     })));
   }), hasStems ? /*#__PURE__*/React.createElement("div", {
     className: "mb-4"
@@ -424,6 +485,7 @@ function JigsawBody(props) {
   var checks = (Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : []).filter(function (c) {
     return c && String(c.q == null ? '' : c.q).trim();
   });
+  var answering = !isTeacherMode && typeof props.onAnswer === 'function';
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "brainstorm_jigsaw_card"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -488,12 +550,20 @@ function JigsawBody(props) {
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("h5", {
     className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
-  }, t('brainstorm.accountability_check') || 'Show what you learned (everyone answers)'), /*#__PURE__*/React.createElement("ol", {
+  }, t('brainstorm.accountability_check') || 'Show what you learned (everyone answers)'), answering ? /*#__PURE__*/React.createElement(ActivityAnswersNote, {
+    t: t
+  }) : null, /*#__PURE__*/React.createElement("ol", {
     className: "list-decimal ml-5 text-sm text-slate-700 space-y-1"
   }, checks.map(function (c, aIdx) {
     return /*#__PURE__*/React.createElement("li", {
       key: aIdx
-    }, activityDisplayText(c && c.q));
+    }, activityDisplayText(c && c.q), answering ? /*#__PURE__*/React.createElement(ActivityResponseField, {
+      t: t,
+      answers: props.answers,
+      onAnswer: props.onAnswer,
+      responseKey: activityResponseKey(item, 'check', c && c.q),
+      question: activityDisplayText(c && c.q)
+    }) : null);
   })), isTeacherMode ? /*#__PURE__*/React.createElement("details", {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement("summary", {
@@ -526,6 +596,12 @@ function BrainstormView(props) {
   var handleOpenActivityInStudio = props.handleOpenActivityInStudio;
   var getRows = props.getRows;
   var renderFormattedText = props.renderFormattedText;
+  var resourceId = generatedContent && generatedContent.id;
+  var handleStudentInput = props.handleStudentInput;
+  var learnerAnswers = !isTeacherMode && resourceId != null && typeof handleStudentInput === 'function' ? props.studentResponses && props.studentResponses[resourceId] || {} : null;
+  var onAnswer = learnerAnswers ? function (key, value) {
+    handleStudentInput(resourceId, key, value);
+  } : null;
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6",
     "data-help-key": "brainstorm_panel"
@@ -556,12 +632,16 @@ function BrainstormView(props) {
     item: idea,
     t: t,
     isTeacherMode: isTeacherMode,
-    renderFormattedText: renderFormattedText
+    renderFormattedText: renderFormattedText,
+    answers: learnerAnswers,
+    onAnswer: onAnswer
   }) : idea.kind === 'jigsaw' ? /*#__PURE__*/React.createElement(JigsawBody, {
     item: idea,
     t: t,
     isTeacherMode: isTeacherMode,
-    renderFormattedText: renderFormattedText
+    renderFormattedText: renderFormattedText,
+    answers: learnerAnswers,
+    onAnswer: onAnswer
   }) : isEditingBrainstorm ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement(Lightbulb, {
@@ -772,6 +852,7 @@ function BrainstormView(props) {
   }), isGeneratingBrainstormRubric[idx] ? t('brainstorm.creating_rubric') || 'Creating rubric...' : t('brainstorm.generate_rubric') || 'Generate Activity Rubric') : null)))));
 }
 BrainstormView.projectStudentActivityResource = projectStudentActivityResource;
+BrainstormView.activityResponseKey = activityResponseKey;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.BrainstormView = BrainstormView;

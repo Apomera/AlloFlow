@@ -74,7 +74,8 @@ describe('AD2: resuming the right story', () => {
     expect(addToast).toHaveBeenCalledWith('toasts.adventure_other_learner', 'error');
   });
   it('the host stamps device saves with the learner and hides another learner\'s save', () => {
-    expect(anti).toContain('learnerKey: _alloAdventureLessonKey([], studentNickname)');
+    // 2026-10-25 (fix1025 lane B): the stamp also carries the profile id; see tests/fix1025_B_adventure_learner.test.js.
+    expect(anti).toContain("learnerKey: isTeacherMode ? 'teacher' : selectedProfileId ? 'profile:' + encodeURIComponent(String(selectedProfileId)) + '|' + _alloAdventureLessonKey([], studentNickname) : _alloAdventureLessonKey([], studentNickname)");
     expect(anti).toContain("setSavedAdventureLessonKey(otherLearner ? 'learner:other' : String(savedAdventureConfig.lessonKey || ''));");
     expect(anti).toContain("hasSavedAdventure && savedAdventureLessonKey !== 'learner:other'");
     // A fresh save of this learner's story (e.g. just loaded from a work file) re-opens the offer.

@@ -141,7 +141,8 @@ describe('Actual play and teacher-review render paths', () => {
     const View = manipulationView(); const onCheckAnswer = vi.fn();
     const state = preloadEffect(invalid);
     const m = mount(View, {data: {...state.task, options: ['vibrate']}, ts: () => '', onCheckAnswer});
-    expect(m.host.querySelector('[role="status"]').textContent).toContain('teacher verifies a one-sound change');
+    // 2026-10-25 (fix1025 lane B): honest wording; no teacher verification step exists.
+    expect(m.host.querySelector('[role="status"]').textContent).toContain('this word is not one of them');
     expect(m.host.querySelectorAll('button').length).toBe(0);
     const curated = core.resolveManipulationTask('cat', null, 'en');
     m.render({data: {...curated, answer: 'vibrate', options: ['vibrate']}});
@@ -204,9 +205,12 @@ describe('Actual play and teacher-review render paths', () => {
     new Function(embeddedSource)();
     const Modal = window.AlloModules.WordSoundsModal;
     const item = compileWords([word('migrate', {manipulationTask: invalid, sentence: '', story: [], ttsReady: true})])[0];
+    // 2026-10-25 (fix1025 lane B): Sound Swap is offered only when some word has a checked
+    // change (cat), and learner play now skips 'migrate' silently; the teacher keeps the notice.
+    const cat = compileWords([word('cat', {manipulationTask: core.resolveManipulationTask('cat', null, 'en'), sentence: '', story: [], ttsReady: true})])[0];
     const history = vi.fn(), score = vi.fn(), setActivity = vi.fn();
-    const props = {...baseProps('manipulation'), currentWordSoundsWord: 'migrate', wordSoundsPhonemes: item,
-      wsPreloadedWords: [item], initialActivitySequence: ['manipulation', 'counting', 'blending', 'read_sentence', 'sentence_match'],
+    const props = {...baseProps('manipulation'), isTeacherMode: true, currentWordSoundsWord: 'migrate', wordSoundsPhonemes: item,
+      wsPreloadedWords: [item, cat], initialActivitySequence: ['manipulation', 'counting', 'blending', 'read_sentence', 'sentence_match'],
       setWordSoundsActivity: setActivity, setWordSoundsHistory: history, setWordSoundsScore: score,
       callGemini: null, callTTS: null, callImagen: null, fetchTTSBytes: null, speakWord: vi.fn(),
       t: () => '', getWordSoundsString: () => ''};

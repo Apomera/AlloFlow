@@ -225,6 +225,12 @@ function AdventureSetupEditor(props) {
   const permissions = settings.adventurePermissions || {};
   const label = (key, fallback) => adventureSetupText(props.t, key, fallback);
   const id = props.idPrefix || "adventure-setup";
+  const languageApi = typeof window !== "undefined" ? window.AlloModules?.TextPipelineHelpers : null;
+  const normalizeLanguage = languageApi?.normalizeLanguageName || ((value) => String(value || "").trim());
+  const appLanguage = normalizeLanguage(props.currentUiLanguage) || "English";
+  const hasLanguagePreference = Object.prototype.hasOwnProperty.call(props, "adventureLanguagePreference");
+  const followsAppLanguage = hasLanguagePreference && (props.adventureLanguagePreference == null || props.adventureLanguagePreference === "__app__");
+  const languageSelection = followsAppLanguage ? "__app__" : props.adventureLanguagePreference || props.adventureLanguageMode || "English";
   const locked = (permission) => adventureSetupLocked(props, permission);
   const fixedByTeacher = (permission) => !props.isTeacherMode && adventureSetupLocked({ isTeacherMode: false, studentProjectSettings: settings }, permission);
   const fixedHint = (permission, key) => fixedByTeacher(permission) && /* @__PURE__ */ React.createElement("span", { className: "as-help", id: id + "-" + key + "-fixed" }, label("teacher_fixed_field", "Set by your teacher."));
@@ -233,13 +239,18 @@ function AdventureSetupEditor(props) {
     if (!locked(permission) && typeof props[setter] === "function") props[setter](value);
   };
   const toggle = (field2, setter, title, help, permission, extraDisabled = false) => typeof props[setter] === "function" && /* @__PURE__ */ React.createElement("label", { className: "as-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "aria-label": title, "aria-describedby": describedBy(permission, field2, help), checked: !!props[field2], disabled: locked(permission) || extraDisabled, onChange: (e) => change(setter, e.target.checked, permission) }), /* @__PURE__ */ React.createElement("span", null, title, help && /* @__PURE__ */ React.createElement("span", { className: "as-help", id: id + "-" + field2 + "-help" }, help), fixedHint(permission, field2)));
-  const field = (key, title, value, setter, options, permission, help) => /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-" + key }, title, /* @__PURE__ */ React.createElement("select", { className: "as-control", "aria-label": title, "aria-describedby": describedBy(permission, key, help), id: id + "-" + key, value, disabled: locked(permission) || typeof props[setter] !== "function", onChange: (e) => change(setter, e.target.value, permission) }, options.map(([value2, text]) => /* @__PURE__ */ React.createElement("option", { key: value2, value: value2 }, text))), help && /* @__PURE__ */ React.createElement("span", { className: "as-help", id: id + "-" + key + "-help" }, help), fixedHint(permission, key));
+  const field = (key, title, value, setter, options, permission, help) => /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-" + key }, title, /* @__PURE__ */ React.createElement("select", { className: "as-control", "aria-label": title, "aria-describedby": describedBy(permission, key, help), id: id + "-" + key, value, disabled: locked(permission) || typeof props[setter] !== "function", onChange: (e) => change(setter, key === "language" && e.target.value === "__app__" && !hasLanguagePreference ? appLanguage : e.target.value, permission) }, options.map(([value2, text]) => /* @__PURE__ */ React.createElement("option", { key: value2, value: value2 }, text))), help && /* @__PURE__ */ React.createElement("span", { className: "as-help", id: id + "-" + key + "-help" }, help), fixedHint(permission, key));
   const modeGuide = props.adventureInputMode === "debate" ? label("mode_debate_guide", "Choose a position first. Then support your argument with lesson evidence and consider another perspective.") : props.adventureInputMode === "system" ? label("mode_system_guide", "Change a policy or part of a system, then compare its effects and resource tradeoffs.") : props.isSocialStoryMode ? label("mode_social_guide", "Practise what you could say or do, with room for boundaries, different perspectives, and repair.") : label("mode_story_guide", "Explore a story through decisions that use ideas from the lesson.");
   const modes = [["choice", label("adventure.mode_choice", "Standard Adventure Mode")], ["debate", label("adventure.mode_debate", "Debate")], ["system", label("adventure.mode_system", "Systems simulation")]];
-  const languages = Array.from(new Set((props.selectedLanguages || []).filter((lang) => lang !== "English")));
-  const languageOptions = [["English", label("adventure.lang_options.english_only", "English only")], ...languages.flatMap((lang) => [[lang, lang], [lang + " + English", lang + " \xB7 " + label("with_translation", "with translation")]])];
-  if (languages.length > 1) languageOptions.push(["All + English", languages.join(", ") + " \xB7 " + label("with_translation", "with translation")]);
-  if (props.adventureLanguageMode && !languageOptions.some((option) => option[0] === props.adventureLanguageMode)) languageOptions.push([props.adventureLanguageMode, props.adventureLanguageMode]);
+  const uniqueLanguages = (values) => Array.from(new Set((values || []).map(normalizeLanguage).filter(Boolean)));
+  const addedLanguages = uniqueLanguages(props.selectedLanguages).filter((lang) => lang !== "English");
+  const availableLanguages = typeof languageApi?.languageOptions === "function" ? languageApi.languageOptions(appLanguage, props.selectedLanguages, !String(languageSelection).includes(" + English") && languageSelection !== "__app__" ? languageSelection : "") : uniqueLanguages(["English", appLanguage, ...props.selectedLanguages || []]);
+  const languages = availableLanguages.filter((lang) => lang !== "English");
+  const appOptionCopy = typeof props.t === "function" ? props.t("universal.output_use_app") : "";
+  const appOptionLabel = (appOptionCopy && appOptionCopy !== "universal.output_use_app" ? appOptionCopy : "Use app language ({language})").replace("{language}", appLanguage);
+  const languageOptions = [["__app__", appOptionLabel], ["English", label("adventure.lang_options.english_only", "English only")], ...languages.flatMap((lang) => [[lang, lang], [lang + " + English", lang + " \xB7 " + label("with_translation", "with translation")]])];
+  if (addedLanguages.length > 1) languageOptions.push(["All + English", addedLanguages.join(", ") + " \xB7 " + label("with_translation", "with translation")]);
+  if (languageSelection && !languageOptions.some((option) => option[0] === languageSelection)) languageOptions.push([languageSelection, languageSelection]);
   const resources = Array.isArray(state.systemResources) ? state.systemResources : [];
   const [removedResource, setRemovedResource] = React.useState(null);
   const [resourceAnnouncement, setResourceAnnouncement] = React.useState("");
@@ -313,7 +324,7 @@ function AdventureSetupEditor(props) {
   } }), /* @__PURE__ */ React.createElement("span", null, title, /* @__PURE__ */ React.createElement("span", { className: "as-help" }, help)));
   const limit = adventureSetupLimit(state);
   const onOff = (value) => label(value ? "common.on" : "common.off", value ? "On" : "Off");
-  return /* @__PURE__ */ React.createElement(AdventureSettingsSurface, { theme: props.theme, compact: props.compact }, !props.isTeacherMode && !props.hideNotice && !state.isLoading && !props.isProcessing && /* @__PURE__ */ React.createElement("p", { className: "as-notice" }, permissions.lockAllSettings ? label("student_locked_hint", "Your teacher has fixed this setup. You can review the settings and start your adventure.") : label("student_edit_hint", "You can adjust the settings your teacher allows. Unavailable controls are set by your teacher.")), /* @__PURE__ */ React.createElement("section", { className: "as-box", "aria-labelledby": id + "-essential-heading" }, /* @__PURE__ */ React.createElement("h3", { id: id + "-essential-heading", className: "as-title" }, label("essential_setup", "Essential setup")), /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, field("input-mode", label("adventure.interaction_mode", "Interaction mode"), props.adventureInputMode || "choice", "setAdventureInputMode", modes, "allowModeSwitch", modeGuide), languageOptions.length > 1 && field("language", label("adventure.language_label", "Adventure language"), props.adventureLanguageMode || "English", "setAdventureLanguageMode", languageOptions, "allowLanguageSwitch", label("translation_hint", "Story language follows this control; the translation language follows Universal Settings.")), /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-response" }, label("response_format", "Student responses"), /* @__PURE__ */ React.createElement("select", { "aria-label": label("response_format", "Student responses"), "aria-describedby": describedBy("freeResponse", "response"), id: id + "-response", className: "as-control", value: props.adventureFreeResponseEnabled ? "written" : "choice", disabled: locked("freeResponse") || typeof props.setAdventureFreeResponseEnabled !== "function", onChange: (e) => change("setAdventureFreeResponseEnabled", e.target.value === "written", "freeResponse") }, /* @__PURE__ */ React.createElement("option", { value: "choice" }, label("response_choices", "Choose from suggestions")), /* @__PURE__ */ React.createElement("option", { value: "written" }, label("response_written", "Write or dictate"))), fixedHint("freeResponse", "response"))), props.isTeacherMode && typeof props.openUniversalSettings === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", className: "as-button", style: { marginTop: 12 }, disabled: locked(), onClick: () => {
+  return /* @__PURE__ */ React.createElement(AdventureSettingsSurface, { theme: props.theme, compact: props.compact }, !props.isTeacherMode && !props.hideNotice && !state.isLoading && !props.isProcessing && /* @__PURE__ */ React.createElement("p", { className: "as-notice" }, permissions.lockAllSettings ? label("student_locked_hint", "Your teacher has fixed this setup. You can review the settings and start your adventure.") : label("student_edit_hint", "You can adjust the settings your teacher allows. Unavailable controls are set by your teacher.")), /* @__PURE__ */ React.createElement("section", { className: "as-box", "aria-labelledby": id + "-essential-heading" }, /* @__PURE__ */ React.createElement("h3", { id: id + "-essential-heading", className: "as-title" }, label("essential_setup", "Essential setup")), /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, field("input-mode", label("adventure.interaction_mode", "Interaction mode"), props.adventureInputMode || "choice", "setAdventureInputMode", modes, "allowModeSwitch", modeGuide), languageOptions.length > 1 && field("language", label("adventure.language_label", "Adventure language"), languageSelection, "setAdventureLanguageMode", languageOptions, "allowLanguageSwitch", label("translation_hint", "Story language follows this control; the translation language follows Universal Settings.")), /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-response" }, label("response_format", "Student responses"), /* @__PURE__ */ React.createElement("select", { "aria-label": label("response_format", "Student responses"), "aria-describedby": describedBy("freeResponse", "response"), id: id + "-response", className: "as-control", value: props.adventureFreeResponseEnabled ? "written" : "choice", disabled: locked("freeResponse") || typeof props.setAdventureFreeResponseEnabled !== "function", onChange: (e) => change("setAdventureFreeResponseEnabled", e.target.value === "written", "freeResponse") }, /* @__PURE__ */ React.createElement("option", { value: "choice" }, label("response_choices", "Choose from suggestions")), /* @__PURE__ */ React.createElement("option", { value: "written" }, label("response_written", "Write or dictate"))), fixedHint("freeResponse", "response"))), props.isTeacherMode && typeof props.openUniversalSettings === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", className: "as-button", style: { marginTop: 12 }, disabled: locked(), onClick: () => {
     if (!locked()) props.openUniversalSettings("languages");
   } }, languageOptions.length === 1 ? label("add_languages", "Add languages in Universal Settings") : label("manage_languages", "Manage languages in Universal Settings")), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16 } }, /* @__PURE__ */ React.createElement(AdventureEpisodeSettings, { state, onChange: props.setAdventureState, t: props.t, theme: props.theme, locked: locked(), id: id + "-episode-length", freeResponse: props.adventureFreeResponseEnabled, includeFinale: true })), props.isSocialStoryMode && /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-social-focus" }, label("social_focus", "Social skill to practise"), /* @__PURE__ */ React.createElement("input", { id: id + "-social-focus", className: "as-control", type: "text", value: props.socialStoryFocus || "", disabled: locked() || typeof props.setSocialStoryFocus !== "function", onChange: (e) => change("setSocialStoryFocus", e.target.value), placeholder: label("adventure.social_story_focus_placeholder", "e.g., Sharing toys, Dealing with frustration") })), props.adventureInputMode === "system" && /* @__PURE__ */ React.createElement("div", null, toggle("enableFactionResources", "setEnableFactionResources", label("adventure.system_state_label", "Track resources"), label("adventure.system_state_desc", "Track how your decisions affect the system.")), props.enableFactionResources && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-resource-mode" }, label("resource_setup", "Resource setup"), /* @__PURE__ */ React.createElement("select", { "aria-label": label("resource_setup", "Resource setup"), className: "as-control", id: id + "-resource-mode", value: resourceMode, disabled: locked() || !(props.setFactionResourceMode || props.handleSetFactionResourceModeToManual), onChange: (e) => setResourceMode(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "ai" }, label("resources_ai", "AI-generated resources")), /* @__PURE__ */ React.createElement("option", { value: "manual" }, label("resources_manual", "Teacher-defined resources")))), resourceMode === "manual" && /* @__PURE__ */ React.createElement("div", { ref: resourceEditorRef }, /* @__PURE__ */ React.createElement("p", { className: "as-help" }, label("resources_manual_hint", "Give each resource a distinct name and unit. Percentages stay between 0 and 100; other values can exceed 100 and include decimals.")), resources.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "as-notice" }, label("resources_empty", "No resources yet. Add a resource such as Budget (credits), Water (litres), or Trust (%).")), /* @__PURE__ */ React.createElement("p", { className: "as-help" }, label("resource_count", "Resource rows"), ": ", resources.length, " / 24"), resources.map((resource, index) => /* @__PURE__ */ React.createElement("div", { className: "as-resource", key: index }, /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, [["name", label("resource_name", "Resource name"), "text"], ["quantity", label("resource_quantity", "Starting value"), "number"], ["unit", label("resource_unit", "Unit"), "text"]].map(([key, title, type]) => /* @__PURE__ */ React.createElement("label", { className: "as-field", key, htmlFor: id + "-resource-" + index + "-" + key }, title, " ", index + 1, /* @__PURE__ */ React.createElement("input", { id: id + "-resource-" + index + "-" + key, className: "as-control", "aria-label": title + " " + (index + 1), "aria-invalid": key === "name" && !!resourceNameIssue(index) ? true : void 0, "aria-describedby": key === "name" && resourceNameIssue(index) ? id + "-resource-" + index + "-issue" : void 0, maxLength: key === "name" ? 80 : key === "unit" ? 30 : void 0, type, min: type === "number" ? 0 : void 0, step: type === "number" ? "any" : void 0, max: type === "number" && /^(%|percent|percentage)$/i.test(String(resource.unit || "").trim()) ? 100 : void 0, value: resource[key] ?? "", disabled: resourcesLocked, onChange: (e) => {
     const value = type === "number" ? Math.min(/^(%|percent|percentage)$/i.test(String(resource.unit || "").trim()) ? 100 : Infinity, Math.max(0, Number(e.target.value) || 0)) : e.target.value;
@@ -773,14 +784,39 @@ function UniversalSettingsPanel(props) {
     translationMode,
     setTranslationMode,
     currentUiLanguage,
+    outputLanguagePreference,
+    setOutputLanguagePreference,
     resolveTranslationPolicy,
     isTranslationControlRelevant,
     translationTargetChoices
   } = props;
-  const translationChoices = typeof translationTargetChoices === "function" ? translationTargetChoices(leveledTextLanguage, currentUiLanguage, selectedLanguages) : [];
+  const languageApi = window.AlloModules?.TextPipelineHelpers || {};
+  const normalizeLanguage = languageApi.normalizeLanguageName || ((value) => String(value || "").trim());
+  const sameLanguage = (a, b) => normalizeLanguage(a).toLowerCase() === normalizeLanguage(b).toLowerCase();
+  const uniqueLanguages = (values) => (Array.isArray(values) ? values : []).map(normalizeLanguage).filter((language, index, languages) => language && language !== "All Selected Languages" && languages.findIndex((candidate) => sameLanguage(candidate, language)) === index);
+  const appLanguage = normalizeLanguage(currentUiLanguage) || "English";
+  const extraLanguages = uniqueLanguages(selectedLanguages);
+  const hasAddedAppLanguage = extraLanguages.some((language) => sameLanguage(language, appLanguage));
+  const activeExplicit = outputLanguagePreference?.mode === "language" ? outputLanguagePreference.language : !outputLanguagePreference && leveledTextLanguage !== "All Selected Languages" ? leveledTextLanguage : "";
+  const outputLanguages = typeof languageApi.languageOptions === "function" ? languageApi.languageOptions(appLanguage, extraLanguages, activeExplicit) : uniqueLanguages(["English", appLanguage, ...extraLanguages, activeExplicit]);
+  const allLanguages = typeof languageApi.allGenerationLanguages === "function" ? languageApi.allGenerationLanguages(appLanguage, extraLanguages) : uniqueLanguages([appLanguage, ...extraLanguages]);
+  const outputSelection = outputLanguagePreference?.mode === "app" ? "__app__" : outputLanguagePreference?.mode === "all-selected" || !outputLanguagePreference && leveledTextLanguage === "All Selected Languages" ? "All Selected Languages" : normalizeLanguage(activeExplicit || leveledTextLanguage) || appLanguage;
+  const languageText = (key, fallback, values = {}) => {
+    const translated = t(key);
+    return Object.entries(values).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, value),
+      translated && translated !== key ? translated : fallback
+    );
+  };
+  const selectOutputLanguage = (value) => {
+    if (typeof setOutputLanguagePreference === "function") setOutputLanguagePreference(value === "__app__" ? { mode: "app" } : value === "All Selected Languages" ? { mode: "all-selected" } : { mode: "language", language: normalizeLanguage(value) });
+    else setLeveledTextLanguage(value === "__app__" ? appLanguage : value);
+  };
+  const allOutputLanguages = outputSelection === "All Selected Languages";
+  const translationChoices = allOutputLanguages ? uniqueLanguages([appLanguage, "English", ...extraLanguages]) : typeof translationTargetChoices === "function" ? translationTargetChoices(leveledTextLanguage, currentUiLanguage, selectedLanguages) : [];
   const translationPolicy = typeof resolveTranslationPolicy === "function" ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage, translationChoices) : { enabled: false, target: "", mode: "auto" };
-  const translationAutoTarget = typeof resolveTranslationPolicy === "function" ? resolveTranslationPolicy("auto", leveledTextLanguage, currentUiLanguage, translationChoices).target : "";
-  const showTranslationControl = typeof isTranslationControlRelevant === "function" && typeof setTranslationMode === "function" && isTranslationControlRelevant(translationMode, leveledTextLanguage, currentUiLanguage, translationChoices);
+  const translationAutoTarget = allOutputLanguages ? appLanguage : typeof resolveTranslationPolicy === "function" ? resolveTranslationPolicy("auto", leveledTextLanguage, currentUiLanguage, translationChoices).target : "";
+  const showTranslationControl = typeof isTranslationControlRelevant === "function" && typeof setTranslationMode === "function" && (isTranslationControlRelevant(translationMode, leveledTextLanguage, currentUiLanguage, translationChoices) || allOutputLanguages && typeof resolveTranslationPolicy === "function" && allLanguages.some((language) => resolveTranslationPolicy(translationMode, language, appLanguage, translationChoices).enabled));
   const isOpen = !!isUniversalSettingsOpen;
   const setIsOpen = setIsUniversalSettingsOpen;
   const [localResolution, setLocalResolution] = React.useState(null);
@@ -870,7 +906,7 @@ function UniversalSettingsPanel(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-left min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to most resources you generate" : summaryBits.join(" \xB7 "))),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
-  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600" }, t("universal.scope_note") || "These steer what AlloFlow writes for you."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
+  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600" }, t("universal.scope_note") || "These steer what AlloFlow writes for you."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -894,26 +930,26 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("grades.g12")),
     /* @__PURE__ */ React.createElement("option", { value: "College" }, t("grades.college")),
     /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("grades.grad"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "universal-output-language", className: SIDEBAR_PANEL_UI.label }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("common.selection"),
+      id: "universal-output-language",
       "data-help-key": "simplified_language",
-      value: leveledTextLanguage,
-      onChange: (e) => setLeveledTextLanguage(e.target.value),
+      value: outputSelection,
+      onChange: (e) => selectOutputLanguage(e.target.value),
       className: SIDEBAR_PANEL_UI.control
     },
-    /* @__PURE__ */ React.createElement("option", { value: "English" }, t("languages.english")),
-    selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang)),
-    selectedLanguages.length > 0 && /* @__PURE__ */ React.createElement("option", { value: "All Selected Languages" }, t("languages.all_selected"))
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "__app__" }, languageText("universal.output_use_app", "Use app language ({language})", { language: appLanguage })),
+    outputLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang === "English" ? t("languages.english") : lang)),
+    /* @__PURE__ */ React.createElement("option", { value: "All Selected Languages" }, languageText("universal.all_generation_languages", "App and added languages ({count})", { count: allLanguages.length }))
+  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, languageText("universal.additional_languages", "Additional languages")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: languageInput,
       onChange: (e) => setLanguageInput(e.target.value),
       onKeyDown: handleKeyDown,
-      placeholder: t("glossary.language_placeholder"),
+      placeholder: languageText("universal.language_placeholder", "Add a language (e.g., Spanish)"),
       maxLength: 40,
       className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`,
       "aria-label": t("common.target_language_aria")
@@ -923,12 +959,31 @@ function UniversalSettingsPanel(props) {
     {
       type: "button",
       onClick: addLanguage,
-      disabled: !languageInput.trim() || selectedLanguages.length >= 4,
+      disabled: !languageInput.trim() || extraLanguages.length >= 4,
       className: SIDEBAR_PANEL_UI.iconButton,
       "aria-label": t("common.add")
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem] mt-2" }, selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("span", { key: lang, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, lang, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeLanguage(lang), className: "hover:text-indigo-900", "aria-label": "Remove " + lang }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedLanguages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("glossary.no_languages")))), showTranslationControl && /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_translations" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label, htmlFor: "universal-translations-select" }, t("universal.translations") || "Translations"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem] mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-800 border border-sky-200", "data-app-language-pill": true }, languageText("universal.app_language_pill", "{language} \xB7 App language", { language: appLanguage }), hasAddedAppLanguage && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => removeLanguage(appLanguage),
+      className: "hover:text-sky-950 focus-visible:ring-2 focus-visible:ring-sky-500 rounded-full",
+      "aria-label": languageText("universal.remove_added_language", "Remove {language} from added languages", { language: appLanguage }),
+      title: languageText("universal.remove_app_added_language_hint", "Remove this added language; it remains available as the app language.")
+    },
+    /* @__PURE__ */ React.createElement(X, { size: 12 })
+  )), extraLanguages.filter((lang) => !sameLanguage(lang, appLanguage)).map((lang) => /* @__PURE__ */ React.createElement("span", { key: lang, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, lang, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => removeLanguage(lang),
+      className: "hover:text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-full",
+      "aria-label": languageText("universal.remove_added_language", "Remove {language} from added languages", { language: lang })
+    },
+    /* @__PURE__ */ React.createElement(X, { size: 12 })
+  )))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, languageText("universal.language_limit_hint", "{count}/4 added languages. App language is available automatically.", { count: extraLanguages.length })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, languageText("universal.languages_new_resources", "Changes apply to new resources. Saved resources keep their languages."))), showTranslationControl && /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_translations" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label, htmlFor: "universal-translations-select" }, t("universal.translations") || "Translations"), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "universal-translations-select",
@@ -939,7 +994,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, translationAutoTarget ? (t("universal.translations_auto") || "Automatic ({language})").replace("{language}", translationAutoTarget) : t("universal.translations_auto_plain") || "Automatic"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, t("universal.translations_none") || "None"),
     translationChoices.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug mt-1" }, translationPolicy.enabled ? (t("universal.translations_on_hint") || "Resources in {output} will also include a version in {target}.").replace("{output}", leveledTextLanguage).replace("{target}", translationPolicy.target) : (t("universal.translations_off_hint") || "Resources will be in {output} only, with no second-language version.").replace("{output}", leveledTextLanguage)))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug mt-1" }, allOutputLanguages ? languageText("universal.translations_all_hint", "Applies to each output language. Matching languages do not add a second version.") : translationPolicy.enabled ? (t("universal.translations_on_hint") || "Resources in {output} will also include a version in {target}.").replace("{output}", leveledTextLanguage).replace("{target}", translationPolicy.target) : (t("universal.translations_off_hint") || "Resources will be in {output} only, with no second-language version.").replace("{output}", leveledTextLanguage)))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1164,7 +1219,7 @@ function UniversalSettingsPanel(props) {
       },
       universalToolLabel(id, t)
     );
-  })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades)))))), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_image_style" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades)))))), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_image_style" }, window.AlloModules?.AiImageGenerationToggle && React.createElement(window.AlloModules.AiImageGenerationToggle), /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("universal.image_style") || "Default image style",
@@ -1194,6 +1249,8 @@ function AdventurePanel(props) {
     adventureFreeResponseEnabled,
     adventureInputMode,
     adventureLanguageMode,
+    adventureLanguagePreference,
+    currentUiLanguage,
     adventureState,
     enableFactionResources,
     expandedTools,
@@ -2211,7 +2268,13 @@ function GlossaryPanel(props) {
     setGlossaryTier2Count,
     setGlossaryTier3Count,
     setIncludeEtymology,
-    t
+    t,
+    nativeLanguageDefaultsVersion,
+    appLanguage,
+    currentUiLanguage,
+    translationMode,
+    resolveTranslationPolicy,
+    translationTargetChoices
   } = props;
   if (!expandedTools || !expandedTools.includes("glossary")) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: `${SIDEBAR_PANEL_UI.settingsSurface} !gap-0`, "data-help-key": "tour-glossary-settings" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "glossary_tier2_count" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center` }, t("glossary.tier2"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: t("glossary.tier2_tooltip") })), /* @__PURE__ */ React.createElement(
@@ -2281,9 +2344,37 @@ function GlossaryPanel(props) {
       placeholderKey: "glossary.placeholder_instructions"
     }
   ), /* @__PURE__ */ React.createElement("div", { className: "mb-3 text-xs text-slate-600", "data-help-key": "glossary_language_summary" }, (() => {
+    const languageApi = window.AlloModules?.TextPipelineHelpers || {};
+    const normalize = languageApi.normalizeLanguageName || ((value) => String(value || "").trim());
+    const same = (a, b) => normalize(a).toLowerCase() === normalize(b).toLowerCase();
+    const unique = (values) => values.map(normalize).filter((value, index, list) => value && list.findIndex((candidate) => same(candidate, value)) === index);
     const output = String(leveledTextLanguage || "English").replace(/\s+/g, " ").trim();
-    const columns = /^all selected languages$/i.test(output) ? selectedLanguages || [] : /^english$/i.test(output) ? [] : [output];
-    return columns.length > 0 ? /* @__PURE__ */ React.createElement("span", null, t("glossary.will_translate") || "Will include translations for", ": ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sky-700" }, columns.join(", ")), " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "(", t("glossary.follows_output_language") || "follows the Output Language in Universal Settings", ")")) : /* @__PURE__ */ React.createElement("span", { className: "italic" }, t("glossary.english_only_hint") || "English only. Set an Output Language in Universal Settings to add a translation column.");
+    const app = normalize(appLanguage || currentUiLanguage) || "English";
+    const nativeDefaults = Number(nativeLanguageDefaultsVersion) >= 1;
+    const all = /^all selected languages$/i.test(output);
+    const effectiveLanguages = typeof languageApi.allGenerationLanguages === "function" ? languageApi.allGenerationLanguages(app, selectedLanguages || []) : unique([app, ...selectedLanguages || []]);
+    const base = nativeDefaults ? all ? app : normalize(output) : "English";
+    const choices = typeof translationTargetChoices === "function" ? translationTargetChoices(base, app, selectedLanguages) : void 0;
+    const policy = typeof resolveTranslationPolicy === "function" ? resolveTranslationPolicy(translationMode, base, app, choices) : { enabled: false, target: "" };
+    const resolvePlan = window.AlloModules?.GenDispatcher?.resolveGlossaryLanguagePlan;
+    const plan = typeof resolvePlan === "function" ? resolvePlan({
+      outputLanguage: output,
+      appLanguage: app,
+      selectedLanguages,
+      translationPolicy: policy,
+      nativeLanguageDefaultsVersion,
+      effectiveLanguageList: effectiveLanguages
+    }) : null;
+    const baseLanguage = plan?.baseLanguage || base;
+    const columns = plan?.translationLanguages || unique([
+      ...all ? nativeDefaults ? effectiveLanguages : selectedLanguages || [] : nativeDefaults ? [] : [output],
+      ...policy.enabled ? [policy.target] : []
+    ]).filter((language) => !same(language, baseLanguage));
+    const text = (key, fallback, values = {}) => {
+      const value = t(key);
+      return Object.entries(values).reduce((copy, [name, replacement]) => copy.replace(`{${name}}`, replacement), value && value !== key ? value : fallback);
+    };
+    return /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", null, text("universal.glossary_next_base", "Next glossary: {language} definitions", { language: baseLanguage })), " \xB7 ", columns.length > 0 ? /* @__PURE__ */ React.createElement("span", null, text("universal.glossary_next_translations", "Translation columns: {languages}", { languages: columns.join(", ") })) : /* @__PURE__ */ React.createElement("span", null, text("universal.glossary_next_no_translations", "No translation columns.")));
   })()), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none", "data-help-key": "glossary_auto_remove" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -2954,7 +3045,15 @@ function ImagePanel(props) {
   } = props;
   if (!expandedTools || !expandedTools.includes("image")) return null;
   const visualStyleMode = !visualStyle || visualStyle === "Default" ? "inherit" : "override";
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface, "data-help-key": "tour-visual-settings" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_worksheet_mode", type: "checkbox", checked: fillInTheBlank, onChange: (e) => setFillInTheBlank(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(PenTool, { size: 12, className: "text-purple-600" }), " ", t("visuals.worksheet_mode")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_creative_mode", type: "checkbox", checked: creativeMode, onChange: (e) => setCreativeMode(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-pink-600" }), " ", t("visuals.enhanced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle_no_text"), "data-help-key": "visuals_no_text", type: "checkbox", checked: noText, onChange: (e) => setNoText(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-500" }), " ", t("visuals.text_reduced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, window.AlloModules?.ResourceImageInput && /* @__PURE__ */ React.createElement("details", { className: "mb-3 rounded-lg border border-slate-300 bg-white p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer text-sm font-bold" }, "Use your own image or drawing"), React.createElement(window.AlloModules.ResourceImageInput, {
+    label: "New lesson image",
+    disabled: isProcessing,
+    onApply: (result) => {
+      const detail = { result, accepted: false };
+      window.dispatchEvent(new CustomEvent("alloflow:create-authored-image", { detail }));
+      return detail.accepted;
+    }
+  })), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface, "data-help-key": "tour-visual-settings" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_worksheet_mode", type: "checkbox", checked: fillInTheBlank, onChange: (e) => setFillInTheBlank(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(PenTool, { size: 12, className: "text-purple-600" }), " ", t("visuals.worksheet_mode")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_creative_mode", type: "checkbox", checked: creativeMode, onChange: (e) => setCreativeMode(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-pink-600" }), " ", t("visuals.enhanced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle_no_text"), "data-help-key": "visuals_no_text", type: "checkbox", checked: noText, onChange: (e) => setNoText(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-500" }), " ", t("visuals.text_reduced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_use_low_quality_visuals"),
@@ -3578,6 +3677,7 @@ function GeneratorActionsView(props) {
     adventureFreeResponseEnabled,
     adventureInputMode,
     adventureLanguageMode,
+    adventureLanguagePreference,
     adventureState,
     aiCapability,
     aiStandardQuery,
@@ -3615,6 +3715,8 @@ function GeneratorActionsView(props) {
     cubeShape,
     cubeShowLayers,
     currentUiLanguage,
+    appLanguage,
+    nativeLanguageDefaultsVersion,
     dbqCustomInstructions,
     differentiationCustomGrades,
     differentiationRange,
@@ -3716,6 +3818,7 @@ function GeneratorActionsView(props) {
     lessonCustomAdditions,
     leveledTextCustomInstructions,
     leveledTextLanguage,
+    outputLanguagePreference,
     leveledTextLength,
     mathInput,
     mathMode,
@@ -3843,6 +3946,7 @@ function GeneratorActionsView(props) {
     setLessonCustomAdditions,
     setLeveledTextCustomInstructions,
     setLeveledTextLanguage,
+    setOutputLanguagePreference,
     setLeveledTextLength,
     setMathInput,
     setMathMode,
@@ -4039,6 +4143,8 @@ function GeneratorActionsView(props) {
     translationMode,
     setTranslationMode,
     currentUiLanguage,
+    outputLanguagePreference,
+    setOutputLanguagePreference,
     resolveTranslationPolicy,
     isTranslationControlRelevant,
     translationTargetChoices
@@ -4098,7 +4204,13 @@ function GeneratorActionsView(props) {
     setGlossaryTier2Count,
     setGlossaryTier3Count,
     setIncludeEtymology,
-    t
+    t,
+    nativeLanguageDefaultsVersion,
+    appLanguage,
+    currentUiLanguage,
+    translationMode,
+    resolveTranslationPolicy,
+    translationTargetChoices
   })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("simplified") ? void 0 : "none" }, id: "ui-tool-simplified", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "simplified" ? "border-indigo-600 shadow-xl shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10"}
               ` }, /* @__PURE__ */ React.createElement(
@@ -4626,6 +4738,7 @@ function GeneratorActionsView(props) {
     adventureFreeResponseEnabled,
     adventureInputMode,
     adventureLanguageMode,
+    adventureLanguagePreference,
     adventureState,
     enableFactionResources,
     factionResourceMode,
@@ -4843,7 +4956,8 @@ function GeneratorActionsView(props) {
         universalImageStyle,
         useEmojis,
         // Grade-level standard: the pack's main reading is the original with supports.
-        handleReadOriginal: props.handleReadOriginal
+        handleReadOriginal: props.handleReadOriginal,
+        previewGuidedStudentAssignment: props.previewGuidedStudentAssignment
       }
     }
   ), /* @__PURE__ */ React.createElement("div", { style: { display: !guidedMode || guidedActiveSteps[guidedStep]?.id === "alignment" ? void 0 : "none" }, id: "tour-tool-alignment", "data-help-key": "tool_alignment", className: "bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all motion-reduce:transition-none group" }, /* @__PURE__ */ React.createElement(

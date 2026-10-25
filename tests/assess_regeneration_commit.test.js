@@ -59,7 +59,7 @@ describe('guarded question regeneration commits against latest state', () => {
     expect(f.generatedQueue.every(update => typeof update === 'function')).toBe(true);
     f.flush(flushOrder);
     for (const item of [f.state.current, f.state.history[0]]) {
-      expect(item.data.questions.slice(0, 2)).toEqual(replacements.map(value => ({ ...value, factCheck: null })));
+      expect(item.data.questions.slice(0, 2)).toEqual(replacements.map(value => ({ ...value, factCheck: null, keyCheck: null })));
       expect(item.data.questions[2]).toEqual(f.initial.data.questions[2]);
       expect(item.data.actualItemTypeMix).toEqual({ 'numeric-response': 1, 'short-answer': 2 });
       expect(item.data.itemCountMismatch).toBe(true);
@@ -162,6 +162,6 @@ describe('guarded question regeneration commits against latest state', () => {
   it('preserves the existing unguarded replace action', async () => {
     const f = fixture(); await f.handle(0, 'replace', replacements[0]);
     expect(typeof f.generatedQueue[0]).toBe('object');
-    f.flush(); expect(f.state.current.data.questions[0]).toEqual({ ...replacements[0], factCheck: null });
+    f.flush(); expect(f.state.current.data.questions[0]).toEqual({ ...replacements[0], factCheck: null, keyCheck: null });
   });
 });

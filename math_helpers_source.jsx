@@ -10,6 +10,9 @@ const _mathHintInFlight = new Set();
 const _mathEditInFlight = new Set();
 const _mathXpAwardedKeys = new Set();
 const _mathHintUsageCounts = new Map();
+// Problems whose worked solution (with the answer) the learner opened. A later
+// correct answer earns the final-hint rate; "Try Again" must not clear this.
+const _mathSolutionViewedKeys = new Set();
 // History indexes are presentation order, not identity. Keep duplicate resource
 // identities attached to the actual artifact objects so reordering or deleting a
 // sibling cannot move one learner's answers, hints, or request state to another.
@@ -309,6 +312,23 @@ const invalidateMathProblemRequests = (resourceId, problemIdx) => {
   _mathProblemLifecycle.set(key, (_mathProblemLifecycle.get(key) || 0) + 1);
   _mathXpAwardedKeys.delete(key);
   _mathHintUsageCounts.delete(key);
+  _mathSolutionViewedKeys.delete(key);
+};
+
+const markMathSolutionViewed = (resourceId, problemIdx) => {
+  try {
+    _mathSolutionViewedKeys.add(_mathProblemKey(resourceId, problemIdx));
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+const hasViewedMathSolution = (resourceId, problemIdx) => {
+  try {
+    return _mathSolutionViewedKeys.has(_mathProblemKey(resourceId, problemIdx));
+  } catch (_) {
+    return false;
+  }
 };
 
 const invalidateMathResourceRequests = resourceId => {
@@ -324,12 +344,18 @@ const invalidateMathResourceRequests = resourceId => {
       if (JSON.parse(key)[0] === resource) _mathHintUsageCounts.delete(key);
     } catch (_) {}
   }
+  for (const key of Array.from(_mathSolutionViewedKeys)) {
+    try {
+      if (JSON.parse(key)[0] === resource) _mathSolutionViewedKeys.delete(key);
+    } catch (_) {}
+  }
 };
 
 const invalidateAllMathRequests = () => {
   _mathGlobalLifecycle += 1;
   _mathXpAwardedKeys.clear();
   _mathHintUsageCounts.clear();
+  _mathSolutionViewedKeys.clear();
 };
 
 const _gcdBigInt = (a, b) => {
@@ -632,6 +658,10 @@ const _withHintEntry = (state, resourceId, problemIdx, create) => {
   };
 };
 
+// Opening the worked solution (which shows the answer) costs the same as the
+// final hint: the learner keeps the 25% floor instead of full credit.
+const _mathPenaltyHints = (hintsUsed, solutionViewed) => (solutionViewed ? 3 : hintsUsed);
+
 const _awardMathXpOnce = async ({ resourceId, problemIdx, score, hintsUsed, alreadyAwarded, handleScoreUpdate, warnLog }) => {
   const requestKey = _mathProblemKey(resourceId, problemIdx);
   if (alreadyAwarded || _mathXpAwardedKeys.has(requestKey)) {
@@ -650,8 +680,16 @@ const _awardMathXpOnce = async ({ resourceId, problemIdx, score, hintsUsed, alre
   // Reserve before awaiting so a second invocation cannot race the callback.
   _mathXpAwardedKeys.add(requestKey);
   try {
-    await Promise.resolve(handleScoreUpdate(xpEarned, 'Math Problem', resourceId));
-    return { xpAwarded: true, xpEarned };
+    // The host keeps one max score per id, so each problem needs its own id or
+    // only the first problem on a sheet would ever pay out.
+    const hostKey = `${canonicalMathStateKey(resourceId, 'math')}:${_safeMathStateKey(problemIdx, 'problem')}`;
+    const credited = await Promise.resolve(handleScoreUpdate(xpEarned, 'Math Problem', hostKey));
+    // Claim only what the host actually added (0 when it already holds this
+    // problem's score); a host that reports nothing keeps the computed value.
+    const awarded = typeof credited === 'number' && Number.isFinite(credited)
+      ? Math.max(0, Math.min(xpEarned, Math.round(credited)))
+      : xpEarned;
+    return { xpAwarded: true, xpEarned: awarded };
   } catch (error) {
     _mathXpAwardedKeys.delete(requestKey);
     _safeMathWarn(warnLog, 'Math XP award failed:', error);
@@ -733,18 +771,19 @@ const _handleCheckMathWorkCore = async (resourceId, problemIdx, question, correc
   try { if (window._DEBUG_MATH_HELPERS) console.log("[MathHelpers] handleCheckMathWork fired"); } catch(_) {}
       const trimmedStudentWork = studentWork.trim();
       if (!trimmedStudentWork) {
-          addToast('Please enter an answer before checking!', 'info');
+          addToast(t('math.check.empty_answer') || 'Please enter an answer before checking!', 'info');
           return;
       }
       const existing = mathCheckResults[resourceId]?.[problemIdx];
       const currentHintCount = _hintCount(mathHintData, resourceId, problemIdx);
+      const solutionViewed = existing?.solutionViewed === true || hasViewedMathSolution(resourceId, problemIdx);
       if (areMathAnswersEquivalent(studentWork, correctAnswer)
           && !_mathAnswerFormMismatch(studentWork, correctAnswer, question, '', true)) {
         const award = await _awardMathXpOnce({
             resourceId,
             problemIdx,
             score: 100,
-            hintsUsed: currentHintCount,
+            hintsUsed: _mathPenaltyHints(currentHintCount, solutionViewed),
             alreadyAwarded: !!existing?.xpAwarded,
             handleScoreUpdate,
             warnLog
@@ -755,7 +794,7 @@ const _handleCheckMathWorkCore = async (resourceId, problemIdx, question, correc
                 ...(prev || {}),
                 [resourceId]: {
                     ...(prev?.[resourceId] || {}),
-                    [problemIdx]: { ...previous, checking: false, verdict: 'correct', score: 100, feedback: 'Perfect! Your answer is exactly right. ✅', checked: true, hintsUsed: currentHintCount, xpAwarded: !!previous.xpAwarded || award.xpAwarded, xpEarned: award.xpEarned, fastPath: true }
+                    [problemIdx]: { ...previous, checking: false, verdict: 'correct', score: 100, feedback: t('math.check.exact_correct') || 'Perfect! Your answer is exactly right. ✅', checked: true, hintsUsed: currentHintCount, solutionViewed, xpAwarded: !!previous.xpAwarded || award.xpAwarded, xpEarned: award.xpEarned, fastPath: true }
                 }
             };
         });
@@ -792,11 +831,12 @@ Return ONLY valid JSON:
 }`;
           const { verdict, score, feedback } = _parseMathEvaluation(await callGemini(prompt, true));
           const latestHintCount = _hintCount(mathHintData, resourceId, problemIdx);
+          const latestSolutionViewed = solutionViewed || hasViewedMathSolution(resourceId, problemIdx);
           const award = await _awardMathXpOnce({
               resourceId,
               problemIdx,
               score,
-              hintsUsed: latestHintCount,
+              hintsUsed: _mathPenaltyHints(latestHintCount, latestSolutionViewed),
               alreadyAwarded: !!existing?.xpAwarded,
               handleScoreUpdate,
               warnLog
@@ -807,7 +847,7 @@ Return ONLY valid JSON:
                   ...(prev || {}),
                   [resourceId]: {
                       ...(prev?.[resourceId] || {}),
-                      [problemIdx]: { ...previous, checking: false, verdict, score, feedback, checked: true, hintsUsed: latestHintCount, xpAwarded: !!previous.xpAwarded || award.xpAwarded, xpEarned: award.xpEarned, fastPath: false }
+                      [problemIdx]: { ...previous, checking: false, verdict, score, feedback, checked: true, hintsUsed: latestHintCount, solutionViewed: latestSolutionViewed, xpAwarded: !!previous.xpAwarded || award.xpAwarded, xpEarned: award.xpEarned, fastPath: false }
                   }
               };
           });
@@ -837,7 +877,7 @@ const handleCheckMathWork = async (resourceId, problemIdx, question, correctAnsw
   const resourceKey = _safeMathStateKey(resourceId, 'math');
   const problemKey = _safeMathStateKey(problemIdx, 'problem');
   if (typeof safeDeps.setMathCheckResults !== 'function') {
-    _safeMathToast(safeDeps.addToast, 'Math grading is unavailable right now.', 'error');
+    _safeMathToast(safeDeps.addToast, _mathTranslation(safeDeps.t, 'math.check.unavailable', 'Math grading is unavailable right now.'), 'error');
     return;
   }
   const token = _captureMathLifecycle(resourceKey, problemKey);
@@ -893,7 +933,7 @@ const handleCheckMathWork = async (resourceId, problemIdx, question, correctAnsw
     );
   } catch (error) {
     _safeMathWarn(safeDeps.warnLog, 'Math grading could not start:', error);
-    if (isCurrent()) _safeMathToast(safeDeps.addToast, 'Math grading is unavailable right now.', 'error');
+    if (isCurrent()) _safeMathToast(safeDeps.addToast, _mathTranslation(safeDeps.t, 'math.check.unavailable', 'Math grading is unavailable right now.'), 'error');
   } finally {
     _mathCheckInFlight.delete(requestKey);
   }
@@ -1077,9 +1117,22 @@ const handleMathEdit = async (editInstruction, deps) => {
   // rule (gloss into English when the content is not English) if an older host
   // has not threaded the resolver yet, so a stale CDN never silently changes
   // what teachers get.
+  const mathLanguage = capturedContent.config?.language || leveledTextLanguage || 'English';
+  const savedPolicy = capturedContent.config?.translationPolicy || capturedContent.translationPolicy;
+  const savedTarget = [savedPolicy?.target, capturedContent.translationTarget,
+    capturedContent.config?.translationTarget, capturedContent.config?.attachedTranslationTarget]
+    .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
+  const hasSavedPolicy = typeof savedPolicy?.enabled === 'boolean' || !!savedTarget
+    || typeof capturedContent.config?.translationMode === 'string';
+  // Revisions preserve the saved companion even if its language was removed
+  // from today's picker, and preserve a saved single-language activity too.
+  const editTranslationMode = savedPolicy?.enabled === false ? 'off'
+    : savedTarget?.trim() || (hasSavedPolicy ? 'off' : translationMode);
   const _xlate = (typeof resolveTranslationPolicy === 'function')
-    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage)
-    : { enabled: !!leveledTextLanguage && leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
+    ? resolveTranslationPolicy(editTranslationMode, mathLanguage, currentUiLanguage,
+        ...(!hasSavedPolicy && Array.isArray(safeDeps.selectedLanguages)
+          ? [window.AlloModules?.TextPipelineHelpers?.translationTargetChoices?.(mathLanguage, currentUiLanguage, safeDeps.selectedLanguages)] : []))
+    : { enabled: !!mathLanguage && mathLanguage !== 'English' && mathLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
   try { if (window._DEBUG_MATH_HELPERS) console.log("[MathHelpers] handleMathEdit fired"); } catch(_) {}
       setEditBusy(true);
       try {
@@ -1088,7 +1141,7 @@ const handleMathEdit = async (editInstruction, deps) => {
           ).join("\n");
           const prompt = `
               You are an Expert Math Curriculum Designer.
-              ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
+              ${mathLanguage && mathLanguage !== 'All Selected Languages' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + mathLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
               A teacher has an existing problem set and wants to modify it.
 
               CURRENT PROBLEMS (the [bracket] tag is the taskType — preserve unless edit specifically changes the action):
@@ -1196,9 +1249,17 @@ const handleMathEdit = async (editInstruction, deps) => {
           if (typeof setGeneratedContent !== 'function') {
               throw new Error('Math content state is unavailable');
           }
+          const revisedConfig = {
+              ...capturedContent.config,
+              language: mathLanguage,
+              translationMode: _xlate.mode || 'auto',
+              currentUiLanguage: capturedContent.config?.currentUiLanguage || currentUiLanguage || 'English',
+              translationTarget: _xlate.enabled ? _xlate.target : null,
+              translationPolicy: { enabled: !!_xlate.enabled, target: _xlate.target || '', mode: _xlate.mode || 'auto' }
+          };
           setGeneratedContent(previousContent => (
               matchesCapturedResource(previousContent)
-                  ? { ...previousContent, _mathResourceStateKey: capturedResourceId, data: normalizedContent }
+                  ? { ...previousContent, _mathResourceStateKey: capturedResourceId, data: normalizedContent, config: revisedConfig }
                   : previousContent
           ));
           if (typeof setHistory === 'function') {
@@ -1213,7 +1274,8 @@ const handleMathEdit = async (editInstruction, deps) => {
                   nextHistory[targetIndex] = {
                       ...previousHistory[targetIndex],
                       _mathResourceStateKey: capturedResourceId,
-                      data: normalizedContent
+                      data: normalizedContent,
+                      config: revisedConfig
                   };
                   return nextHistory;
               });
@@ -1377,6 +1439,8 @@ window.AlloModules.MathHelpers = {
   invalidateMathProblemRequests,
   invalidateMathResourceRequests,
   invalidateAllMathRequests,
+  markMathSolutionViewed,
+  hasViewedMathSolution,
   handleMathEdit,
   handleGenerateSimilar,
   handleGenerateOutcome,

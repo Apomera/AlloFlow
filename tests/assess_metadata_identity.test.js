@@ -202,8 +202,11 @@ describe('exact previous-identity migration', () => {
     await render(p); expect(host.querySelector('[data-assessment-attempt-feedback]')).toBeTruthy();
     const changed = { ...p, generatedContent: structuredClone(p.generatedContent) };
     changed.generatedContent.data.questions[0].expectedAnswer = 'A different reference answer.';
-    await render(changed); await fill('A new response.'); await click('Review & submit'); await click('Submit assessment');
+    // teacher-release work is identified without the key (fix1025 A2), so the
+    // submitted attempt stays; the release made for the old key must not.
+    await render(changed);
     expect(host.querySelector('[data-assessment-submitted]')).toBeTruthy();
     expect(host.querySelector('[data-assessment-attempt-feedback]')).toBeNull();
+    expect(host.querySelector('[data-assessment-feedback-waiting]')).toBeTruthy();
   });
 });

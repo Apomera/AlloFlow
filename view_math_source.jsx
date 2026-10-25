@@ -188,6 +188,26 @@ function _mathRequestActivity(kind, resourceId, problemKey) {
   }
 }
 
+function _markMathSolutionViewed(resourceId, problemKey) {
+  try {
+    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MathHelpers;
+    if (helpers && typeof helpers.markMathSolutionViewed === 'function') helpers.markMathSolutionViewed(resourceId, problemKey);
+  } catch (_) {}
+}
+
+// t() with an English fallback; {name} tokens are filled from params either way.
+function _mathT(t, key, fallback, params) {
+  var text = '';
+  try { text = t(key, params); } catch (_) { text = ''; }
+  if (typeof text !== 'string' || !text || text === key) {
+    text = String(fallback);
+    Object.keys(params || {}).forEach(function (name) {
+      text = text.split('{' + name + '}').join(String(params[name]));
+    });
+  }
+  return text;
+}
+
 function _normalizeMathManipulative(value) {
   var raw = _mathSafeShallowCopy(value);
   var tool = _mathScalarText(raw.tool);
@@ -458,7 +478,7 @@ function MathView(props) {
       : 'legacy-math-' + _mathStableHash(resourceSeed)
   );
   var mathProblems = _normalizeMathProblems(generatedContent, mathResourceId);
-  if (!mathProblems.length) return <div role="alert">This math activity has no displayable problems. Try regenerating it.</div>;
+  if (!mathProblems.length) return <div role="alert">{_mathT(t, 'math.display.no_problems', 'This math activity has no displayable problems. Try regenerating it.')}</div>;
   var isTeacherMode = props.isTeacherMode === true;
   var isIndependentMode = props.isIndependentMode === true;
   var showMathAnswers = props.showMathAnswers === true;
@@ -774,8 +794,10 @@ function MathView(props) {
   var graphHtml = '';
   if (typeof generatedContent.data.graphData === 'string' && generatedContent.data.graphData) {
     try {
-      var graphSource = _mathScalarText(generatedContent.data.graphData, 250000);
-      graphHtml = _mathScalarText(sanitizeHtml(graphSource), 250000);
+      var graphSource = _mathScalarText(generatedContent.data.graphData, 120001);
+      // Math graphs have a stricter boundary than rich instructional HTML.
+      // Fail closed on an older host rather than inserting arbitrary markup.
+      graphHtml = typeof window.sanitizeSvgGraph === 'function' ? window.sanitizeSvgGraph(graphSource) : '';
     } catch (_) {
       graphHtml = '';
     }
@@ -1128,13 +1150,13 @@ function MathView(props) {
                             {Number(generatedContent.data.preparation?.requested) > 0 && (() => {
                                 const requested = Number(generatedContent.data.preparation.requested);
                                 const reviewCount = mathProblems.filter(problem => problem._verification?.reviewRequired).length;
-                                return <p role="status" className="mt-2 text-sm text-slate-700">{requested} requested · {mathProblems.length} available · {reviewCount} need teacher review{requested > mathProblems.length ? ' · ' + (requested - mathProblems.length) + ' missing' : ''}</p>;
+                                return <p role="status" className="mt-2 text-sm text-slate-700">{_mathT(t, 'math.preparation_status', '{requested} requested · {available} available · {review} need teacher review', { requested, available: mathProblems.length, review: reviewCount })}{requested > mathProblems.length ? ' · ' + _mathT(t, 'math.preparation_missing', '{count} missing', { count: requested - mathProblems.length }) : ''}</p>;
                             })()}
                             {mathSelfGradeMode && (
                                 <p id={selfGradeHelpId} className="mt-2 text-sm font-medium text-emerald-800">
                                     {hasAllSelfGradeAnswers
-                                        ? `All ${mathProblems.length} problems are answered. Review your responses, then submit.`
-                                        : selfGradeReviewHelp || `Answered ${answeredSelfGradeCount} of ${mathProblems.length}. Answer every problem to enable Submit Assessment.`}
+                                        ? _mathT(t, 'math.self_grade_all_answered', 'All {count} problems are answered. Review your responses, then submit.', { count: mathProblems.length })
+                                        : selfGradeReviewHelp || _mathT(t, 'math.self_grade_progress', 'Answered {answered} of {total}. Answer every problem to enable Submit Assessment.', { answered: answeredSelfGradeCount, total: mathProblems.length })}
                                 </p>
                             )}
                         </div>
@@ -1462,7 +1484,7 @@ function MathView(props) {
                                                             {checkResult?.checking ? (
                                                                 <><RefreshCw size={16} className="animate-spin motion-reduce:animate-none" /> {t('math.check.checking') || 'Evaluating your work...'}</>
                                                             ) : (
-                                                                <><Sparkles size={16} /> {checkResult?.verdict === 'error' ? 'Try checking again' : (t('math.check.button') || 'Check My Work')}</>
+                                                                <><Sparkles size={16} /> {checkResult?.verdict === 'error' ? _mathT(t, 'math.check.try_checking_again', 'Try checking again') : (t('math.check.button') || 'Check My Work')}</>
                                                             )}
                                                         </button>
                                                     )}
@@ -1476,7 +1498,7 @@ function MathView(props) {
                     <div key={hIdx} className="flex gap-2 items-start p-3 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 animate-in fade-in slide-in-from-top-1 duration-200">
                         <span className="text-lg flex-shrink-0">{hIdx === 0 ? '💡' : hIdx === 1 ? '🔦' : '🔍'}</span>
                         <div className="flex-1">
-                            <span className="text-[11px] font-black text-amber-600 uppercase tracking-widest">Hint {hIdx + 1} of 3</span>
+                            <span className="text-[11px] font-black text-amber-600 uppercase tracking-widest">{_mathT(t, 'math.hint.label', 'Hint {n} of 3', { n: hIdx + 1 })}</span>
                             <p className="text-sm text-amber-900 font-medium leading-relaxed mt-0.5">{hint}</p>
                         </div>
                     </div>
@@ -1490,9 +1512,9 @@ function MathView(props) {
                         className="flex min-h-[44px] items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                     >
                         {hintInfo.loading ? (
-                            <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> Thinking...</>
+                            <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> {_mathT(t, 'math.hint.thinking', 'Thinking...')}</>
                         ) : (
-                            <><span className="text-sm">💡</span> {hintInfo.count === 0 ? 'Give me a hint (-25% XP)' : hintInfo.count === 1 ? 'Another hint (-50% XP)' : 'Final hint (-75% XP)'}</>
+                            <><span className="text-sm">💡</span> {hintInfo.count === 0 ? _mathT(t, 'math.hint.request_first', 'Give me a hint (-25% XP)') : hintInfo.count === 1 ? _mathT(t, 'math.hint.request_second', 'Another hint (-50% XP)') : _mathT(t, 'math.hint.request_final', 'Final hint (-75% XP)')}</>
                         )}
                     </button>
                 )}
@@ -1502,9 +1524,9 @@ function MathView(props) {
 }
                                                     {checkResult?.verdict === 'error' && !checkResult.checking && (
                                                         <div role="alert" className="rounded-xl border-2 border-red-300 bg-red-50 p-4 text-sm text-red-900">
-                                                            <p className="font-bold">Your work has not been graded.</p>
+                                                            <p className="font-bold">{_mathT(t, 'math.check.not_graded', 'Your work has not been graded.')}</p>
                                                             <p>{checkResult.feedback}</p>
-                                                            <p>Your answer is saved. Use the check button above to try again.</p>
+                                                            <p>{_mathT(t, 'math.check.answer_saved_retry', 'Your answer is saved. Use the check button above to try again.')}</p>
                                                         </div>
                                                     )}
                                                     {checkResult?.checked && checkResult.verdict !== 'error' && (
@@ -1538,8 +1560,9 @@ function MathView(props) {
                                                                     'bg-red-200 text-red-800'
                                                                 }`}>
                                                                     {checkResult.score}%
-                                                                    {checkResult.hintsUsed > 0 ? ` · -${checkResult.hintsUsed} hint${checkResult.hintsUsed > 1 ? 's' : ''}` : ''}
-                                                                    {checkResult.xpEarned > 0 ? ` · +${checkResult.xpEarned} XP` : ''}
+                                                                    {checkResult.hintsUsed > 0 ? ' · ' + (checkResult.hintsUsed > 1 ? _mathT(t, 'math.check.hints_used', '-{count} hints', { count: checkResult.hintsUsed }) : _mathT(t, 'math.check.hint_used_one', '-1 hint')) : ''}
+                                                                    {checkResult.solutionViewed === true && checkResult.verdict !== 'incorrect' ? ' · ' + _mathT(t, 'math.check.answer_viewed', 'answer viewed') : ''}
+                                                                    {checkResult.xpEarned > 0 ? ' · ' + _mathT(t, 'math.check.xp_earned', '+{xp} XP', { xp: checkResult.xpEarned }) : ''}
                                                                 </div>
                                                             </div>
                                                             <div className="px-4 py-3">
@@ -1572,10 +1595,11 @@ function MathView(props) {
                                                         </div>
                                                     )}
                                                     {checkResult?.checked && problem.steps && problem.steps.length > 0 && (
-                                                        <details className="mt-3 group">
+                                                        <details className="mt-3 group" onToggle={(e) => { if (e.currentTarget.open && !checkResult.xpAwarded) _markMathSolutionViewed(mathResourceId, problem.__viewKey); }}>
                                                             <summary className="flex min-h-[44px] items-center gap-2 cursor-pointer select-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:from-blue-100 hover:to-indigo-100 transition-all">
                                                                 <span className="text-sm">📖</span>
                                                                 <span className="text-xs font-bold text-blue-700">{t('math.show_solution_steps') || 'Show Solution Steps'}</span>
+                                                                {!checkResult.xpAwarded && <span className="text-xs text-blue-800">{_mathT(t, 'math.solution.xp_note', '(shows the answer: XP for this problem drops to the final-hint level)')}</span>}
                                                                 <ChevronDown size={14} className="text-blue-700 ml-auto group-open:rotate-180 transition-transform" />
                                                             </summary>
                                                             <div className="mt-2 space-y-2 pl-2 border-l-3 border-blue-200">
@@ -1602,10 +1626,10 @@ function MathView(props) {
                                                                 {problem.answer && (
                                                                     <div className="p-3 bg-green-50 rounded-lg border border-green-200 flex items-center gap-2">
                                                                         <span className="text-sm">✅</span>
-                                                                        <span className="text-sm font-bold text-green-700">Answer: {problem.answer}</span>
+                                                                        <span className="text-sm font-bold text-green-700">{_mathT(t, 'math.solution.answer_label', 'Answer:')} {problem.answer}</span>
                                                                         {(mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && (
                                                                             <button type="button" disabled={!canOpenCubeLab} onClick={() => { setShowStemLab(true); setStemLabTab('explore'); setStemLabTool('volume'); setCubeBuilderMode('freeform'); setCubePositions(new Set()); const vol = _mathCubeChallengeVolume(problem.answer); setCubeBuilderChallenge(vol ? {type:'volume', answer: vol, shape:'any'} : null); setCubeBuilderFeedback(null); }} className="ml-auto min-h-[44px] text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
-                                                                                📦 Try with cubes
+                                                                                📦 {_mathT(t, 'math.solution.try_with_cubes', 'Try with cubes')}
                                                                             </button>
                                                                         )}
                                                                     </div>

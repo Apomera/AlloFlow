@@ -63,7 +63,7 @@ const CASES = [
   ['the same source family wins across units', [glossA, glossB], 'glossary', { id: 'x', type: 'simplified', unitId: 'unit-c', sourceFamilyId: 'fam-a' }, 'g-a'],
   ['a unit glossary without family data still matches the unit', [{ ...glossA, sourceFamilyId: null }, glossB], 'glossary', { id: 'x', type: 'quiz', unitId: 'unit-a' }, 'g-a'],
   ['config-only unit ids count', [{ ...glossA, unitId: undefined, config: { unitId: 'unit-a' } }, glossB], 'glossary', { id: 'x', type: 'quiz', config: { unitId: 'unit-a' } }, 'g-a'],
-  ['falls back to the newest only when nothing matches', HISTORY, 'glossary', { id: 'x', type: 'quiz', unitId: 'unit-z' }, 'g-b'],
+  ['a unit with no glossary borrows none (fix1025)', HISTORY, 'glossary', { id: 'x', type: 'quiz', unitId: 'unit-z' }, undefined],
   ['no active resource keeps the newest', HISTORY, 'glossary', null, 'g-b'],
   ['a resource with no unit or family keeps the newest', HISTORY, 'glossary', { id: 'x', type: 'simplified', data: 'Plain text.' }, 'g-b'],
   ['an uncategorized unit counts as no unit', HISTORY, 'glossary', { id: 'x', type: 'quiz', unitId: 'uncategorized' }, 'g-b'],
@@ -76,7 +76,7 @@ describe('G1: companions resolve to the active unit and source', () => {
     expect(typeof GH.findRelatedHistoryItem).toBe('function');
     expect(GH.findRelatedHistoryItem(history, type, active)?.id).toBe(expected);
   });
-  it.each(CASES)('host resolver matches the module: %s', (_, history, type, active, expected) => {
+  it.each(CASES)('host resolver matches the module: %s', (name, history, type, active, expected) => {
     const resolve = hostResolver();
     expect(typeof resolve).toBe('function');
     expect(resolve(history, type, active)?.id).toBe(expected);
@@ -84,9 +84,6 @@ describe('G1: companions resolve to the active unit and source', () => {
   it('host latestGlossary feeds a unit-A reading the unit-A terms (cloze, highlighting)', () => {
     expect(hostLatestGlossary(HISTORY, textA).map(item => item.term)).toEqual(['Erosion']);
     expect(hostLatestGlossary(HISTORY, null).map(item => item.term)).toEqual(['Orbit']);
-  });
-  it('host health check scores against the glossary unit analysis', () => {
-    expect(ANTI).toMatch(/const sourceText = _findRelatedHistoryItem\(state\.history, 'analysis', state\.resource\)\?\.data\?\.originalText/);
   });
 
   function quickAddDeps(overrides = {}) {
@@ -149,6 +146,7 @@ describe('G2: language tools follow the glossary translation columns', () => {
 
 describe('G1: health check in the view scores against the related analysis', () => {
   it('sends the unit-A analysis text for a unit-A glossary', async () => {
+    window.__alloResolveAiCapability = () => ({ text: true });
     const runGlossaryHealthCheck = vi.fn();
     const c = mount({ generatedContent: { ...glossA, data: [{ ...glossA.data[0], entryId: 'e' }] }, history: HISTORY, runGlossaryHealthCheck });
     await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.includes('glossary.more_tools')).click());
@@ -156,6 +154,7 @@ describe('G1: health check in the view scores against the related analysis', () 
     await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.trim() === 'Run health check').click());
     expect(runGlossaryHealthCheck).toHaveBeenCalledTimes(1);
     expect(runGlossaryHealthCheck.mock.calls[0][1]).toBe('Text A');
+    delete window.__alloResolveAiCapability;
   });
 });
 

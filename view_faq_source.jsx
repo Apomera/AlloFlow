@@ -1,3 +1,13 @@
+// Companion language belongs to the saved artifact, independent of current app settings.
+function _faqTranslationAttributes(artifact) {
+  const api = window.AlloModules?.TextPipelineHelpers;
+  if (typeof api?.getArtifactTranslationTextAttributes === 'function') return api.getArtifactTranslationTextAttributes(artifact);
+  const target = [artifact?.config?.translationPolicy?.target, artifact?.translationPolicy?.target, artifact?.translationTarget, artifact?.config?.translationTarget, artifact?.config?.attachedTranslationTarget].find(value => typeof value === 'string' && value.trim()) || 'English';
+  const helpers = window.AlloModules?.ModuleScopeExtras;
+  const lang = helpers?.getSpeechLangCode?.(target) || window.AlloFlowLang?.bcp47Full?.(target) || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : target === 'English' ? 'en' : 'und');
+  return { lang, dir: helpers?.getContentDirection?.(target) || 'auto', style: { textAlign: 'start' } };
+}
+
 var _lazyIcon = function (name) {
     return function (props) {
       var I = window.AlloIcons && window.AlloIcons[name];
@@ -263,6 +273,47 @@ var _lazyIcon = function (name) {
       </div>;
     };
     var faqItems = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+    // PASS 1: precompute sentence index ranges per FAQ so we can derive
+    // which FAQ contains the currently-playing TTS sentence (used to
+    // auto-expand the matching item).
+    var rangeStart = [];
+    var rangeEnd = [];
+    var _sCount = 0;
+    faqItems.forEach(function (faq, idx) {
+      rangeStart[idx] = _sCount;
+      var qN = splitTextToSentences(faq.question).filter(function (s) {
+        return s && s.trim().length > 0;
+      }).length;
+      var aN = splitTextToSentences(faq.answer).filter(function (s) {
+        return s && s.trim().length > 0;
+      }).length;
+      _sCount += qN + aN;
+      rangeEnd[idx] = _sCount;
+    });
+    var currentlyReadingFaqIdx = -1;
+    if (isPlaying && playingContentId === 'faq-active' && playbackState && typeof playbackState.currentIdx === 'number') {
+      for (var ri = 0; ri < rangeStart.length; ri++) {
+        if (playbackState.currentIdx >= rangeStart[ri] && playbackState.currentIdx < rangeEnd[ri]) {
+          currentlyReadingFaqIdx = ri;
+          break;
+        }
+      }
+    }
+    // TTS auto-expand: when the reader reaches a new FAQ, persist that index
+    // into the expanded set so the answer stays visible. Top-level hook (rules of hooks).
+    React.useEffect(function () {
+      if (currentlyReadingFaqIdx >= 0) {
+        setExpandedSet(function (prev) {
+          if (prev.has(currentlyReadingFaqIdx)) return prev;
+          var next = new Set(prev);
+          next.add(currentlyReadingFaqIdx);
+          return next;
+        });
+      }
+    }, [currentlyReadingFaqIdx]);
+    var faqQuestionName = function (faq) {
+      return String(faq && faq.question || '').replace(/[*_`#>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 160);
+    };
     return <div data-faq-view className="space-y-6"><style>{"[data-faq-view] p, [data-faq-view] button, [data-faq-view] textarea, [data-faq-view] [data-faq-audio-group] { line-height: 1.5; }"}</style>{audioNotice &&<p role="status" aria-live="polite" aria-atomic="true" className="rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">{audioNotice}</p>}{isPlaying && playingContentId === 'faq-active' && <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" aria-busy={isGeneratingAudio}><div className="flex items-center gap-3" role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}>{isGeneratingAudio ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none text-cyan-600 shrink-0" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_loading', 'Loading FAQ audio...')}</span></> : <><div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" /><span className="text-sm font-medium text-cyan-800">{label('faq.audio_reading', 'Reading FAQ...')}</span></>}</div><div className="flex items-center gap-4"><div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"><span className="text-[11px] uppercase font-bold text-slate-600">{label('common.speed', 'Speed')}</span><input aria-label={t('common.speed')} type="range" min="0.5" max="2" step="0.1" value={voiceSpeed} aria-valuetext={voiceSpeed + '×'} onChange={e => setVoiceSpeed(parseFloat(e.target.value))} className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500" /></div><button aria-label={t('common.stop')} onClick={e => {
             e.stopPropagation();
             audioRef.current?.pause();
@@ -273,47 +324,7 @@ var _lazyIcon = function (name) {
           }} className="p-1.5 hover:bg-rose-100 text-rose-800 rounded-md transition-colors" title={t('common.stop')}><span className="font-bold text-xs uppercase px-1">{label('common.stop', 'Stop')}</span></button></div></div>}{isTeacherMode && <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4" data-help-key="faq_goal_panel"><p className="text-sm text-cyan-800 max-w-xl"><strong>{label('faq.udl_goal_label', 'UDL Goal:')}</strong> {label('faq.udl_goal_desc', 'Clarifying language and symbols. FAQs help anticipate misconceptions and provide quick reference.')}</p>{isTeacherMode && <div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={function () { if (prepState.busy) { var request = audioRequestRef.current; if (request && request.controller) request.controller.abort(); window.__alloPrepareReadAloudCancel = true; return; } handlePrepareFaqAudio(); }} disabled={!!regenAudioKey} aria-busy={prepState.busy} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm" title={prepState.busy ? label('common.stop', 'Stop') : label('faq.save_tts', 'Save TTS')} aria-label={prepState.busy ? label('faq.stop_saving_tts', 'Stop saving TTS') : label('faq.save_tts', 'Save TTS')}>{prepState.busy ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={14} />}{prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : label('faq.save_tts', 'Save TTS')}</button><button onClick={handleToggleIsEditingFaq} data-help-key="faq_edit_toggle" className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`}>{isEditingFaq ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingFaq ? t('common.done_editing') : t('faq.edit')}</button></div>}</div>}{
       // Show all / Hide all controls (only when not editing — teacher needs everything visible to edit)
       !isEditingFaq && faqItems.length > 0 && <div className="flex items-center gap-2 mb-2">{/* One toggle: Hide all once every answer is open. */}{faqItems.every(function (_, i) { return expandedSet.has(i); }) ? <button type="button" data-faq-toggle-all onClick={collapseAll} className="px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors"><span aria-hidden="true">&#x25B8; </span>{label('faq.hide_all', 'Hide all')}</button> : <button type="button" data-faq-toggle-all onClick={expandAll} className="px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors"><span aria-hidden="true">&#x25BE; </span>{label('faq.show_all', 'Show all')}</button>}<span className="text-[11px] text-slate-500 italic ml-1">{label('faq.disclosure_tip', 'Use the arrow to reveal an answer. Select a sentence to hear it aloud.')}</span></div>}{faqItems.length === 0 && <div role="status" data-faq-empty className="rounded-lg border border-slate-300 bg-slate-50 p-4 text-sm text-slate-700"><p className="font-semibold">{label('faq.empty', 'No questions are available yet.')}</p>{isTeacherMode && <p className="mt-1">{label('faq.empty_teacher_hint', 'Generate the FAQ again to create questions.')}</p>}</div>}<div className="space-y-4">{(() => {
-          // PASS 1: precompute sentence index ranges per FAQ so we can derive
-          // which FAQ contains the currently-playing TTS sentence (used to
-          // auto-expand the matching item).
           var data = faqItems;
-          var rangeStart = [];
-          var rangeEnd = [];
-          var _sCount = 0;
-          data.forEach(function (faq, idx) {
-            rangeStart[idx] = _sCount;
-            var qN = splitTextToSentences(faq.question).filter(function (s) {
-              return s && s.trim().length > 0;
-            }).length;
-            var aN = splitTextToSentences(faq.answer).filter(function (s) {
-              return s && s.trim().length > 0;
-            }).length;
-            _sCount += qN + aN;
-            rangeEnd[idx] = _sCount;
-          });
-          var currentlyReadingFaqIdx = -1;
-          if (isPlaying && playingContentId === 'faq-active' && playbackState && typeof playbackState.currentIdx === 'number') {
-            for (var ri = 0; ri < rangeStart.length; ri++) {
-              if (playbackState.currentIdx >= rangeStart[ri] && playbackState.currentIdx < rangeEnd[ri]) {
-                currentlyReadingFaqIdx = ri;
-                break;
-              }
-            }
-          }
-          // Side-effect: TTS auto-expand. When the reader reaches a new FAQ,
-          // persist that index into the expanded set so the answer is visible.
-          // Effect runs in render closure — safe because setState is no-op when
-          // value is already present.
-          React.useEffect(function () {
-            if (currentlyReadingFaqIdx >= 0 && !expandedSet.has(currentlyReadingFaqIdx)) {
-              setExpandedSet(function (prev) {
-                if (prev.has(currentlyReadingFaqIdx)) return prev;
-                var next = new Set(prev);
-                next.add(currentlyReadingFaqIdx);
-                return next;
-              });
-            }
-          }, [currentlyReadingFaqIdx]);
           // PASS 2: actual render. Sentence indices come from rangeStart[idx] so
           // they stay stable regardless of which FAQs are expanded/collapsed.
           return data.map((faq, idx) => {
@@ -323,7 +334,7 @@ var _lazyIcon = function (name) {
             });
             var qBase = rangeStart[idx] || 0;
             var aBase = qBase + qSentencesForCount.length;
-            return <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item"><div className="flex items-start gap-3"><div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div><div className="flex-grow space-y-2">{isEditingFaq ? <><textarea aria-label={t('faq.edit_question') || 'Edit FAQ question'} value={faq.question} onChange={e => handleFaqChange(idx, 'question', e.target.value)} className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question)} placeholder={t('faq.question_placeholder')} />{renderFaqEditAudioTools(idx, 'question')}{(faq.question_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'} value={faq.question_en || ''} onChange={e => handleFaqChange(idx, 'question_en', e.target.value)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question_en || '')} placeholder={t('common.placeholder_question_trans')} />}<div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"><textarea aria-label={t('faq.edit_answer') || 'Edit FAQ answer'} value={faq.answer} onChange={e => handleFaqChange(idx, 'answer', e.target.value)} className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.answer)} placeholder={t('faq.answer_placeholder')} />{renderFaqEditAudioTools(idx, 'answer')}{(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && <textarea aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'} value={faq.answer_en || ''} onChange={e => handleFaqChange(idx, 'answer_en', e.target.value)} className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200" rows={getRows(faq.answer_en || '')} placeholder={t('common.placeholder_answer_trans')} />}</div></> : <><h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">{(() => {
+            return <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item"><div className="flex items-start gap-3"><div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1" aria-hidden="true">{label('faq.q_badge', 'Q')}</div><div className="flex-grow space-y-2">{isEditingFaq ? <><textarea aria-label={t('faq.edit_question') || 'Edit FAQ question'} value={faq.question} onChange={e => handleFaqChange(idx, 'question', e.target.value)} className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question)} placeholder={t('faq.question_placeholder')} />{renderFaqEditAudioTools(idx, 'question')}{(faq.question_en !== undefined || leveledTextLanguage !== 'English') && <textarea {..._faqTranslationAttributes(generatedContent)} aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'} value={faq.question_en || ''} onChange={e => handleFaqChange(idx, 'question_en', e.target.value)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.question_en || '')} placeholder={t('common.placeholder_question_trans')} />}<div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2"><textarea aria-label={t('faq.edit_answer') || 'Edit FAQ answer'} value={faq.answer} onChange={e => handleFaqChange(idx, 'answer', e.target.value)} className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all" rows={getRows(faq.answer)} placeholder={t('faq.answer_placeholder')} />{renderFaqEditAudioTools(idx, 'answer')}{(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && <textarea {..._faqTranslationAttributes(generatedContent)} aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'} value={faq.answer_en || ''} onChange={e => handleFaqChange(idx, 'answer_en', e.target.value)} className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200" rows={getRows(faq.answer_en || '')} placeholder={t('common.placeholder_answer_trans')} />}</div></> : <><h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">{(() => {
                         const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
                         return qSentences.map((s, sIdx) => {
                           const currentGlobalIdx = qBase + sIdx;
@@ -333,7 +344,7 @@ var _lazyIcon = function (name) {
                             handleSpeak(s, 'faq-active', currentGlobalIdx);
                           }}>{formatInteractiveText(s, false)} </button>;
                         });
-                      })()}</h4>{isExpanded && faq.question_en && <p className="text-sm text-slate-600 italic mb-2">({faq.question_en})</p>}{isExpanded && <div id={`faq-answer-${idx}`} className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">{(() => {
+                      })()}</h4>{isExpanded && faq.question_en && <p {..._faqTranslationAttributes(generatedContent)} className="text-sm text-slate-600 italic mb-2">({faq.question_en})</p>}{/* The region stays in the DOM (hidden) so aria-controls always resolves. */}<div id={`faq-answer-${idx}`} hidden={!isExpanded} className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">{isExpanded && (() => {
                         const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
                         return aSentences.map((s, sIdx) => {
                           const currentGlobalIdx = aBase + sIdx;
@@ -343,7 +354,7 @@ var _lazyIcon = function (name) {
                             handleSpeak(s, 'faq-active', currentGlobalIdx);
                           }}>{formatInteractiveText(s, false)} </button>;
                         });
-                      })()}{faq.answer_en && <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}</div>}</>}</div>{!isEditingFaq && <button type="button" onClick={() => toggleFaq(idx)} aria-expanded={isExpanded} aria-controls={`faq-answer-${idx}`} aria-label={isExpanded ? label('faq.collapse_answer', 'Collapse FAQ answer') : label('faq.expand_answer', 'Expand FAQ answer')} className="shrink-0 mt-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"><ChevronDown size={20} aria-hidden="true" className="transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} /></button>}</div></div>;
+                      })()}{isExpanded && faq.answer_en && <p {..._faqTranslationAttributes(generatedContent)} className="text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}</div></>}</div>{!isEditingFaq && <button type="button" onClick={() => toggleFaq(idx)} aria-expanded={isExpanded} aria-controls={`faq-answer-${idx}`} aria-label={(isExpanded ? label('faq.collapse_answer_named', 'Hide answer: {question}') : label('faq.expand_answer_named', 'Show answer: {question}')).replace('{question}', () => faqQuestionName(faq) || label('faq.audio_item', 'FAQ') + ' ' + (idx + 1))} className="shrink-0 mt-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"><ChevronDown size={20} aria-hidden="true" className="transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} /></button>}</div></div>;
           });
         })()}</div></div>;
   }

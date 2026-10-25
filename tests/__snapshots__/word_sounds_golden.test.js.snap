@@ -2434,7 +2434,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </button>
 </div>
 </div>
-<p role="status" class="text-center text-slate-700 text-sm py-6">Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.</p>
+<p role="status" class="text-center text-slate-700 text-sm py-6">Sound Swap has a checked sound change for only a small set of words, and this word is not one of them. Choose another activity.</p>
 <button aria-label="common.voice_input" class="mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors">
 <span class="lucide-icon" data-icon="Mic">
 </span> Use Microphone</button>

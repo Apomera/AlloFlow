@@ -44,14 +44,21 @@ function DbqTimer(props) {
     key: minutes,
     onClick: () => props.onDeadlineChange(Date.now() + minutes * 60000),
     className: "px-2 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-slate-400",
-    "aria-label": 'Start ' + minutes + ' minute timer'
-  }, "⏱️ ", minutes, "m"))), active && /*#__PURE__*/React.createElement("div", {
+    "aria-label": dbqT(props.t, 'dbq.timer_start_aria', 'Start {n} minute timer', {
+      n: minutes
+    })
+  }, "⏱️ ", dbqT(props.t, 'dbq.timer_minutes_short', '{n}m', {
+    n: minutes
+  })))), active && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: 'font-mono font-black text-sm px-3 py-1 rounded-lg border-2 ' + (remaining <= 300 ? 'bg-red-50 text-red-700 border-red-300' : remaining <= 600 ? 'bg-amber-50 text-amber-700 border-amber-300' : 'bg-indigo-50 text-indigo-700 border-indigo-300'),
     role: "timer",
     "aria-live": "off",
-    "aria-label": mins + ' minutes ' + secs + ' seconds remaining'
+    "aria-label": dbqT(props.t, 'dbq.timer_remaining_aria', '{m} minutes {s} seconds remaining', {
+      m: mins,
+      s: secs
+    })
   }, mins, ":", secs < 10 ? '0' : '', secs), /*#__PURE__*/React.createElement("button", {
     onClick: () => props.onDeadlineChange(null),
     className: "text-[11px] text-slate-600 hover:text-red-600",
@@ -61,7 +68,7 @@ function DbqTimer(props) {
   }, /*#__PURE__*/React.createElement("span", {
     role: "status",
     className: "text-xs font-bold text-red-700 bg-red-50 px-3 py-1 rounded-lg border border-red-200"
-  }, "⏰ Time's up!"), /*#__PURE__*/React.createElement("button", {
+  }, "⏰ ", dbqT(props.t, 'dbq.times_up', "Time's up!")), /*#__PURE__*/React.createElement("button", {
     onClick: () => props.onDeadlineChange(null),
     className: "text-[11px] text-slate-600 hover:text-slate-700",
     "aria-label": props.t('a11y.dismiss_timer')
@@ -116,6 +123,149 @@ function dbqExcerptLabel(kind, t) {
     badge: tr('dbq.excerpt_badge_adapted', 'Adapted'),
     note: tr('dbq.excerpt_note_adapted', 'Adapted or shortened from the source. The wording may differ from the original.')
   };
+}
+// UI text. The host t() returns the key, or nothing, for a missing string.
+function dbqT(t, key, fallback, vars) {
+  const value = typeof t === 'function' ? t(key) : '';
+  let text = typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+  Object.keys(vars || {}).forEach(name => {
+    text = text.split('{' + name + '}').join(String(vars[name]));
+  });
+  return text;
+}
+// Teacher-asserted provenance (provenance: 'teacher') replaces the "not recorded"
+// placeholders on screen. The captured record (source, sourceProvenance) is kept.
+const DBQ_PROVENANCE_FIELDS = ['title', 'author', 'date', 'citation'];
+function dbqCleanProvenance(fields) {
+  const out = {};
+  DBQ_PROVENANCE_FIELDS.forEach(name => {
+    out[name] = fields && typeof fields[name] === 'string' ? fields[name].trim().slice(0, 300) : '';
+  });
+  return out;
+}
+function dbqTeacherProvenance(doc) {
+  const p = doc && doc.teacherProvenance;
+  if (!p || typeof p !== 'object' || p.provenance !== 'teacher') return null;
+  const out = dbqCleanProvenance(p);
+  return DBQ_PROVENANCE_FIELDS.some(name => out[name]) ? out : null;
+}
+function dbqDisplayDoc(doc, t) {
+  const p = dbqTeacherProvenance(doc);
+  if (!p) return {
+    ...doc,
+    author: '',
+    date: '',
+    provenanceByTeacher: false
+  };
+  const recorded = String(doc.source || '').replace(/;?\s*author(?: and |\/)date not recorded\.?\s*$/i, '').trim();
+  return {
+    ...doc,
+    title: p.title ? dbqT(t, 'dbq.document_title', 'Document {id}: {title}', {
+      id: doc.id,
+      title: p.title
+    }) : doc.title,
+    author: p.author,
+    date: p.date,
+    source: p.citation || (p.author || p.date ? recorded : doc.source),
+    provenanceByTeacher: true
+  };
+}
+function dbqByline(doc, t) {
+  if (!doc || !doc.provenanceByTeacher) return '';
+  return [doc.author && dbqT(t, 'dbq.author_label', 'Author') + ': ' + doc.author, doc.date && dbqT(t, 'dbq.date_label', 'Date') + ': ' + doc.date].filter(Boolean).join(' · ');
+}
+// Pure updater: the docIndex-th document object gets (or loses) teacher provenance.
+function dbqWithTeacherProvenance(resource, docIndex, fields) {
+  if (!resource || !resource.data || !Array.isArray(resource.data.documents)) return resource;
+  let seen = -1,
+    changed = false;
+  const next = dbqCleanProvenance(fields);
+  const documents = resource.data.documents.map(doc => {
+    if (!doc || typeof doc !== 'object' || Array.isArray(doc) || ++seen !== docIndex) return doc;
+    changed = true;
+    const {
+      teacherProvenance,
+      ...rest
+    } = doc;
+    return DBQ_PROVENANCE_FIELDS.some(name => next[name]) ? {
+      ...rest,
+      teacherProvenance: {
+        provenance: 'teacher',
+        ...next
+      }
+    } : rest;
+  });
+  return changed ? {
+    ...resource,
+    data: {
+      ...resource.data,
+      documents
+    }
+  } : resource;
+}
+function DbqProvenanceEditor(props) {
+  const t = props.t;
+  const doc = props.doc || {};
+  const saved = dbqTeacherProvenance(doc) || dbqCleanProvenance({});
+  const [draft, setDraft] = React.useState(saved);
+  const [status, setStatus] = React.useState('');
+  React.useEffect(() => {
+    setDraft(dbqTeacherProvenance(doc) || dbqCleanProvenance({}));
+    setStatus('');
+  }, [props.resourceId, doc.id]);
+  const labels = {
+    title: dbqT(t, 'dbq.provenance_title', 'Title'),
+    author: dbqT(t, 'dbq.author_label', 'Author'),
+    date: dbqT(t, 'dbq.date_label', 'Date'),
+    citation: dbqT(t, 'dbq.provenance_citation', 'Source or citation')
+  };
+  const save = fields => {
+    const applied = props.onSave(fields);
+    setStatus(applied === false ? dbqT(t, 'dbq.provenance_not_saved', 'Could not save the source details. Try again.') : dbqT(t, 'dbq.provenance_saved', 'Source details saved. Students now see them.'));
+  };
+  return /*#__PURE__*/React.createElement("details", {
+    "data-dbq-provenance-editor": true,
+    className: "mb-3 rounded-lg border border-slate-300 bg-slate-50 p-3 text-xs"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-bold text-slate-800"
+  }, dbqT(t, 'dbq.provenance_edit', 'Edit source details (teacher)')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-slate-700"
+  }, dbqT(t, 'dbq.provenance_help', 'Add what you know about this document. AlloFlow never fills these in for you; students see exactly what you enter.')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2"
+  }, DBQ_PROVENANCE_FIELDS.map(name => /*#__PURE__*/React.createElement("label", {
+    key: name,
+    className: "block"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block font-bold text-slate-700 mb-0.5"
+  }, labels[name]), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: draft[name],
+    maxLength: 300,
+    onChange: e => {
+      const value = e.target.value;
+      setDraft(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    },
+    className: "w-full rounded border border-slate-400 bg-white px-2 py-1 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => save(draft),
+    className: "rounded-full bg-indigo-700 px-3 py-1.5 font-bold text-white hover:bg-indigo-800"
+  }, dbqT(t, 'dbq.provenance_save', 'Save source details')), dbqTeacherProvenance(doc) && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      setDraft(dbqCleanProvenance({}));
+      save({});
+    },
+    className: "rounded-full border border-slate-400 bg-white px-3 py-1.5 font-bold text-slate-700 hover:bg-slate-100"
+  }, dbqT(t, 'dbq.provenance_clear', 'Clear source details')), /*#__PURE__*/React.createElement("span", {
+    role: "status",
+    className: "text-slate-700"
+  }, status)));
 }
 // Every document needs a unique id: responses and navigation are keyed by it.
 function dbqNormalizeDocs(documents) {
@@ -183,10 +333,13 @@ function DbqView(props) {
   var callTTS = props.callTTS;
   var selectedVoice = props.selectedVoice;
   const dbqData = generatedContent.data;
-  const docs = dbqNormalizeDocs(dbqData.documents).map(doc => ({
+  var onUpdateResource = props.onUpdateResource;
+  const docs = dbqNormalizeDocs(dbqData.documents).map(doc => dbqDisplayDoc({
     ...doc,
     sourceUrl: dbqTrustedSourceUrl(doc)
-  }));
+  }, t));
+  const docCount = dbqData.documentCount && typeof dbqData.documentCount === 'object' ? dbqData.documentCount : null;
+  const docsMissing = docCount && Number(docCount.requested) > docs.length ? Number(docCount.requested) - docs.length : 0;
   const docIdSet = new Set(docs.map(doc => doc.id));
   const knownDocIds = ids => (Array.isArray(ids) ? ids : []).map(String).filter(id => docIdSet.has(id));
   const rubric = dbqData.rubric || [];
@@ -271,7 +424,7 @@ function DbqView(props) {
     return true;
   };
   const feedbackFor = key => {
-    if (feedbackPending(key)) return key === '_aiFeedback' ? 'Analyzing your essay...' : 'loading';
+    if (feedbackPending(key)) return key === '_aiFeedback' ? dbqT(t, 'dbq.analyzing_essay', 'Analyzing your essay...') : 'loading';
     const saved = r[key];
     const savedInput = (r._dbqFeedbackInputs || {})[key];
     if (typeof saved === 'string' || savedInput && savedInput !== fingerprint(key)) return null;
@@ -281,7 +434,7 @@ function DbqView(props) {
     const saved = r[key];
     if (!saved || feedbackPending(key)) return null;
     const previous = (r._dbqFeedbackInputs || {})[key];
-    const message = previous && previous !== fingerprint(key) ? 'Your work or source changed. Request new feedback for this version.' : !previous && typeof saved === 'object' && !saved.error ? 'Earlier feedback is shown below. Request a new check to evaluate this version of your work.' : '';
+    const message = previous && previous !== fingerprint(key) ? dbqT(t, 'dbq.feedback_stale', 'Your work or source changed. Request new feedback for this version.') : !previous && typeof saved === 'object' && !saved.error ? dbqT(t, 'dbq.feedback_earlier', 'Earlier feedback is shown below. Request a new check to evaluate this version of your work.') : '';
     return message ? /*#__PURE__*/React.createElement("p", {
       role: "status",
       className: "text-sm text-slate-700 border border-amber-300 bg-amber-50 rounded-lg p-3"
@@ -324,6 +477,34 @@ function DbqView(props) {
     };
   };
   const progress = countAnswers();
+  const L = (key, fallback, vars) => dbqT(t, key, fallback, vars);
+  const docLabel = id => L('dbq.doc_short', 'Doc {id}', {
+    id
+  });
+  const happDefs = doc => [{
+    key: 'historical',
+    icon: '🕰️',
+    label: L('dbq.happ_historical', 'Historical Context'),
+    prompt: doc.happPrompts?.historical || L('dbq.happ_historical_prompt', 'What was happening when this was created?')
+  }, {
+    key: 'audience',
+    icon: '👥',
+    label: L('dbq.happ_audience', 'Audience'),
+    prompt: doc.happPrompts?.audience || L('dbq.happ_audience_prompt', 'Who was this written for?')
+  }, {
+    key: 'purpose',
+    icon: '🎯',
+    label: L('dbq.happ_purpose', 'Purpose'),
+    prompt: doc.happPrompts?.purpose || L('dbq.happ_purpose_prompt', 'Why was this created?')
+  }, {
+    key: 'pointOfView',
+    icon: '👁️',
+    label: L('dbq.happ_point_of_view', 'Point of View'),
+    prompt: doc.happPrompts?.pointOfView || L('dbq.happ_point_of_view_prompt', 'What perspective does the author have?')
+  }];
+  const levelNames = [L('dbq.level_1', 'Beginning'), L('dbq.level_2', 'Developing'), L('dbq.level_3', 'Proficient'), L('dbq.level_4', 'Advanced')];
+  const ratingLabel = rating => rating === 'exemplary' ? '⭐ ' + L('dbq.rating_exemplary', 'Exemplary') : rating === 'proficient' ? '✅ ' + L('dbq.rating_proficient', 'Proficient') : '📈 ' + L('dbq.rating_developing', 'Developing');
+  const sameSourceNote = ' ' + L('dbq.same_source_note', 'This is one of several excerpts from the same source.');
   const tabBtnStyle = id => ({
     padding: '10px 16px',
     fontSize: '0.8125rem',
@@ -359,20 +540,30 @@ function DbqView(props) {
         textTransform: 'uppercase',
         letterSpacing: '0.5px'
       }
-    }, type === 'linked' ? 'external source' : type || 'source');
+    }, type === 'linked' ? L('dbq.type_external', 'external source') : type ? L('dbq.type_' + type, type) : L('dbq.type_source', 'source'));
   };
   // min-h-0 lets the tab panel below actually shrink inside this column, and
   // overflow-y-auto means a work pane that hits its own minimum scrolls the
   // whole resource instead of being clipped by the shell.
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-0 max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto overflow-x-hidden"
-  }, dbqData.sourceDisclosure && /*#__PURE__*/React.createElement("p", {
+  }, isTeacherMode && docsMissing > 0 && /*#__PURE__*/React.createElement("p", {
+    role: "alert",
+    "data-dbq-missing-docs": true,
+    className: "text-sm rounded-lg border-2 border-amber-500 bg-amber-50 text-amber-950 p-3 mb-3"
+  }, /*#__PURE__*/React.createElement("strong", null, dbqT(t, 'dbq.missing_docs_title', 'Documents missing:')), " ", dbqT(t, 'dbq.missing_docs_body', '{requested} documents were requested but only {actual} came back. Check that each document you supplied is here before students start, and regenerate if one is missing.', {
+    requested: docCount.requested,
+    actual: docs.length
+  }), docs.some(doc => doc.sourceMatchedBy === 'position' || doc.sourceMatchedBy === 'none') ? ' ' + dbqT(t, 'dbq.missing_docs_order', 'Some documents could only be matched to your text by order, so check that each one shows the right text and title.') : ''), dbqData.sourceDisclosure && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-sm rounded-lg border border-slate-300 p-3 mb-3"
-  }, dbqData.sourceDisclosure, dbqData.documentCount && dbqData.documentCount.actual !== dbqData.documentCount.requested ? ' Requested ' + dbqData.documentCount.requested + ' documents; available ' + dbqData.documentCount.actual + '.' : ''), !callGemini && /*#__PURE__*/React.createElement("p", {
+  }, dbqData.sourceDisclosure, docCount && docCount.actual !== docCount.requested ? ' ' + dbqT(t, 'dbq.doc_count_note', 'Requested {requested} documents; available {actual}.', {
+    requested: docCount.requested,
+    actual: docCount.actual
+  }) : ''), !callGemini && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 mb-3"
-  }, "AI feedback is unavailable in this session. You can keep reading, writing, and using the rubric."), /*#__PURE__*/React.createElement("div", {
+  }, dbqT(t, 'dbq.ai_unavailable', 'AI feedback is unavailable in this session. You can keep reading, writing, and using the rubric.')), /*#__PURE__*/React.createElement("div", {
     className: `bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl shrink-0 ${headerCollapsed ? 'p-3 mb-2' : 'p-4 sm:p-5 mb-4'}`
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col sm:flex-row items-start justify-between gap-3"
@@ -380,7 +571,7 @@ function DbqView(props) {
     className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words"
-  }, "📜 ", dbqData.title || 'Document-Based Question'), dbqData.historicalContext && !headerCollapsed && /*#__PURE__*/React.createElement("p", {
+  }, "📜 ", dbqData.title || dbqT(t, 'dbq.default_title', 'Document-Based Question')), dbqData.historicalContext && !headerCollapsed && /*#__PURE__*/React.createElement("p", {
     tabIndex: 0,
     role: "region",
     "aria-label": t("ui_common.historical_context") || 'Historical Context',
@@ -388,7 +579,7 @@ function DbqView(props) {
     style: {
       maxHeight: 'min(30vh, 220px)'
     }
-  }, /*#__PURE__*/React.createElement("strong", null, "Historical Context:"), " ", dbqData.historicalContext)), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, dbqT(t, 'ui_common.historical_context', 'Historical Context'), ":"), " ", dbqData.historicalContext)), /*#__PURE__*/React.createElement("div", {
     className: "text-right shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-black text-amber-700"
@@ -418,31 +609,21 @@ function DbqView(props) {
         testimony: '#7c3aed'
       };
       const docSections = docs.map(doc => {
-        const happFields = [{
-          label: 'Historical Context',
-          prompt: doc.happPrompts?.historical || 'What was happening when this was created?'
-        }, {
-          label: 'Audience',
-          prompt: doc.happPrompts?.audience || 'Who was this written for?'
-        }, {
-          label: 'Purpose',
-          prompt: doc.happPrompts?.purpose || 'Why was this created?'
-        }, {
-          label: 'Point of View',
-          prompt: doc.happPrompts?.pointOfView || 'What perspective does the author have?'
-        }];
-        const sourcingQs = (doc.sourcingQuestions || []).map((q, i) => `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#6b21a8;margin:0 0 4px">${i + 1}. ${dbqEscapePrintText(q)}</p>${doc.sentenceStarters?.length ? '<p style="font-size:10px;color:#a78bfa;margin:0 0 4px;font-style:italic">Try: "' + dbqEscapePrintText(doc.sentenceStarters[i % doc.sentenceStarters.length]) + '"</p>' : ''}<div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`).join('');
+        const happFields = happDefs(doc);
+        const sourcingQs = (doc.sourcingQuestions || []).map((q, i) => `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#6b21a8;margin:0 0 4px">${i + 1}. ${dbqEscapePrintText(q)}</p>${doc.sentenceStarters?.length ? '<p style="font-size:10px;color:#a78bfa;margin:0 0 4px;font-style:italic">' + dbqEscapePrintText(L('dbq.try_starter', 'Try starting with:')) + ' "' + dbqEscapePrintText(doc.sentenceStarters[i % doc.sentenceStarters.length]) + '"</p>' : ''}<div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`).join('');
         const analysisQs = (doc.analysisQuestions || []).map((q, i) => `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#1d4ed8;margin:0 0 4px">${i + 1}. ${dbqEscapePrintText(q)}</p><div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`).join('');
         return `<div style="page-break-inside:avoid;margin-bottom:24px;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden">
                                             <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
-                                                <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${dbqEscapePrintText(doc.title || 'Document ' + doc.id)}</h3>
-                                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${typeColors[doc.documentType] || '#64748b'}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${dbqEscapePrintText(doc.documentType || 'source')}</span>
+                                                <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${dbqEscapePrintText(doc.title || L('dbq.document_label', 'Document {id}', {
+          id: doc.id
+        }))}</h3>
+                                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${typeColors[doc.documentType] || '#64748b'}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${dbqEscapePrintText(doc.documentType ? L('dbq.type_' + doc.documentType, doc.documentType) : L('dbq.type_source', 'source'))}</span>
                                             </div>
                                             ${(() => {
           const kindLabel = dbqExcerptLabel(dbqExcerptKind(doc), t);
-          return '<p style="font-size:11px;color:#334155;padding:8px 16px 0;margin:0"><strong>' + dbqEscapePrintText(kindLabel.badge) + ':</strong> ' + dbqEscapePrintText(kindLabel.note + (doc.sameSourceExcerpts ? ' This is one of several excerpts from the same source.' : '')) + '</p>' + (doc.source ? '<p style="font-size:11px;color:#64748b;padding:4px 16px 0;margin:0;font-style:italic">' + dbqEscapePrintText(kindLabel.prefix) + ' ' + dbqEscapePrintText(doc.source) + '</p>' : '');
+          return '<p style="font-size:11px;color:#334155;padding:8px 16px 0;margin:0"><strong>' + dbqEscapePrintText(kindLabel.badge) + ':</strong> ' + dbqEscapePrintText(kindLabel.note + (doc.sameSourceExcerpts ? sameSourceNote : '')) + '</p>' + (doc.source ? '<p style="font-size:11px;color:#64748b;padding:4px 16px 0;margin:0;font-style:italic">' + dbqEscapePrintText(kindLabel.prefix) + ' ' + dbqEscapePrintText(doc.source) + '</p>' : '') + (dbqByline(doc, t) ? '<p style="font-size:11px;color:#334155;padding:4px 16px 0;margin:0">' + dbqEscapePrintText(dbqByline(doc, t)) + '</p>' : '');
         })()}
-                                            ${dbqTrustedSourceUrl(doc) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqTrustedSourceUrl(doc)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
+                                            ${dbqTrustedSourceUrl(doc) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqTrustedSourceUrl(doc)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 ' + dbqEscapePrintText(L('dbq.view_original', 'View Original Source')) + ' (' + (() => {
           try {
             return new URL(doc.sourceUrl).hostname;
           } catch {
@@ -451,37 +632,39 @@ function DbqView(props) {
         })() + ')</a></p>' : ''}
                                             <div style="padding:12px 16px;font-size:13px;line-height:1.7;color:#334155;border-left:4px solid #f59e0b;margin:8px 16px;background:#fffbeb;border-radius:0 8px 8px 0;padding:12px">${dbqEscapePrintText(doc.excerpt)}</div>
                                             <div style="padding:0 16px 12px">
-                                                <h4 style="font-size:12px;font-weight:800;color:#4338ca;margin:12px 0 8px">🔍 HAPP Source Analysis</h4>
+                                                <h4 style="font-size:12px;font-weight:800;color:#4338ca;margin:12px 0 8px">🔍 ${dbqEscapePrintText(L('dbq.happ_heading', 'HAPP Source Analysis'))}</h4>
                                                 <table style="width:100%;border-collapse:collapse"><tbody>${happFields.map(h => '<tr><td style="border:1px solid #e0e7ff;padding:6px 10px;font-size:11px;font-weight:700;color:#4338ca;width:25%;background:#eef2ff;vertical-align:top">' + dbqEscapePrintText(h.label) + '<br><span style="font-weight:400;font-size:10px;color:#818cf8;font-style:italic">' + dbqEscapePrintText(h.prompt) + '</span></td><td style="border:1px solid #e0e7ff;padding:6px 10px;min-height:36px"></td></tr>').join('')}</tbody></table>
-                                                ${sourcingQs ? '<h4 style="font-size:12px;font-weight:800;color:#6b21a8;margin:14px 0 6px">🔎 Sourcing Questions</h4>' + sourcingQs : ''}
-                                                ${analysisQs ? '<h4 style="font-size:12px;font-weight:800;color:#1d4ed8;margin:14px 0 6px">🧠 Analysis Questions</h4>' + analysisQs : ''}
+                                                ${sourcingQs ? '<h4 style="font-size:12px;font-weight:800;color:#6b21a8;margin:14px 0 6px">🔎 ' + dbqEscapePrintText(L('dbq.sourcing_questions', 'Sourcing Questions')) + '</h4>' + sourcingQs : ''}
+                                                ${analysisQs ? '<h4 style="font-size:12px;font-weight:800;color:#1d4ed8;margin:14px 0 6px">🧠 ' + dbqEscapePrintText(L('dbq.analysis_questions', 'Analysis Questions')) + '</h4>' + analysisQs : ''}
                                             </div>
                                         </div>`;
       }).join('');
       const corrobSection = claims.length > 0 ? `<div style="page-break-before:always;margin-top:24px">
-                                        <h2 style="font-size:16px;font-weight:800;color:#065f46;border-left:4px solid #059669;padding-left:8px;margin:0 0 12px">🔗 Corroboration</h2>
+                                        <h2 style="font-size:16px;font-weight:800;color:#065f46;border-left:4px solid #059669;padding-left:8px;margin:0 0 12px">🔗 ${dbqEscapePrintText(L('dbq.corroboration', 'Corroboration'))}</h2>
                                         ${claims.map((c, i) => `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:12px">
-                                            <p style="font-size:13px;font-weight:700;color:#1e293b;margin:0 0 4px">Claim ${i + 1}: "${dbqEscapePrintText(c.claim)}"</p>
+                                            <p style="font-size:13px;font-weight:700;color:#1e293b;margin:0 0 4px">${dbqEscapePrintText(L('dbq.claim_n', 'Claim {n}', {
+        n: i + 1
+      }))}: "${dbqEscapePrintText(c.claim)}"</p>
                                             ${c.guideQuestion ? '<p style="font-size:11px;color:#059669;font-style:italic;margin:0 0 8px">' + dbqEscapePrintText(c.guideQuestion) + '</p>' : ''}
-                                            <p style="font-size:11px;margin:0 0 4px"><strong style="color:#16a34a">${dbqEscapePrintText(t("ui_common.supporting_label") || "Supporting:")}</strong> ${(c.supportingDocs || []).map(id => 'Doc ' + dbqEscapePrintText(id)).join(', ') || 'None'} &nbsp; <strong style="color:#dc2626">${dbqEscapePrintText(t("ui_common.challenging_label") || "Challenging:")}</strong> ${(c.challengingDocs || []).map(id => 'Doc ' + dbqEscapePrintText(id)).join(', ') || 'None'}</p>
+                                            <p style="font-size:11px;margin:0 0 4px"><strong style="color:#16a34a">${dbqEscapePrintText(t("ui_common.supporting_label") || "Supporting:")}</strong> ${(c.supportingDocs || []).map(id => dbqEscapePrintText(docLabel(id))).join(', ') || dbqEscapePrintText(L('dbq.none', 'None'))} &nbsp; <strong style="color:#dc2626">${dbqEscapePrintText(t("ui_common.challenging_label") || "Challenging:")}</strong> ${(c.challengingDocs || []).map(id => dbqEscapePrintText(docLabel(id))).join(', ') || dbqEscapePrintText(L('dbq.none', 'None'))}</p>
                                             <div style="border-bottom:1px solid #d1d5db;min-height:48px;margin-top:8px"></div>
                                         </div>`).join('')}
                                     </div>` : '';
       const rubricSection = rubric.length > 0 ? `<div style="page-break-before:always;margin-top:24px">
-                                        <h2 style="font-size:16px;font-weight:800;color:#9a3412;border-left:4px solid #ea580c;padding-left:8px;margin:0 0 12px">📊 Rubric</h2>
+                                        <h2 style="font-size:16px;font-weight:800;color:#9a3412;border-left:4px solid #ea580c;padding-left:8px;margin:0 0 12px">📊 ${dbqEscapePrintText(L('dbq.rubric', 'Rubric'))}</h2>
                                         <table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr>
                                             <th style="border:1px solid #fed7aa;padding:8px;background:#fff7ed;text-align:left;font-weight:700;color:#9a3412">${dbqEscapePrintText(t("ui_common.criteria") || "Criteria")}</th>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fef2f2;text-align:center;color:#991b1b;width:20%">1 — Beginning</th>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fefce8;text-align:center;color:#854d0e;width:20%">2 — Developing</th>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#f0fdf4;text-align:center;color:#166534;width:20%">3 — Proficient</th>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#eff6ff;text-align:center;color:#1e40af;width:20%">4 — Advanced</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fef2f2;text-align:center;color:#991b1b;width:20%">1 — ${dbqEscapePrintText(levelNames[0])}</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fefce8;text-align:center;color:#854d0e;width:20%">2 — ${dbqEscapePrintText(levelNames[1])}</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#f0fdf4;text-align:center;color:#166534;width:20%">3 — ${dbqEscapePrintText(levelNames[2])}</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#eff6ff;text-align:center;color:#1e40af;width:20%">4 — ${dbqEscapePrintText(levelNames[3])}</th>
                                         </tr></thead><tbody>${rubric.map(row => '<tr><td style="border:1px solid #fed7aa;padding:8px;font-weight:700;color:#1e293b">' + dbqEscapePrintText(row.criteria) + '</td>' + ['1', '2', '3', '4'].map(l => '<td style="border:1px solid #fed7aa;padding:8px;font-size:10px;color:#475569">' + dbqEscapePrintText(row[l]) + '</td>').join('') + '</tr>').join('')}</tbody></table>
                                     </div>` : '';
       const essaySection = `<div style="page-break-before:always;margin-top:24px">
-                                        <h2 style="font-size:16px;font-weight:800;color:#3730a3;border-left:4px solid #4f46e5;padding-left:8px;margin:0 0 12px">✏️ Synthesis Essay</h2>
+                                        <h2 style="font-size:16px;font-weight:800;color:#3730a3;border-left:4px solid #4f46e5;padding-left:8px;margin:0 0 12px">✏️ ${dbqEscapePrintText(L('dbq.synthesis_essay', 'Synthesis Essay'))}</h2>
                                         <div style="background:#eef2ff;border:2px solid #c7d2fe;border-radius:8px;padding:14px;margin-bottom:16px">
                                             <p style="font-size:13px;color:#3730a3;line-height:1.6;margin:0">${dbqEscapePrintText(dbqData.synthesisPrompt)}</p>
-                                            ${dbqData.thesisStarter ? '<p style="font-size:11px;color:#6366f1;margin:8px 0 0;font-style:italic">Thesis starter: ' + dbqEscapePrintText(dbqData.thesisStarter) + '</p>' : ''}
+                                            ${dbqData.thesisStarter ? '<p style="font-size:11px;color:#6366f1;margin:8px 0 0;font-style:italic">' + dbqEscapePrintText(dbqT(t, 'ui_common.thesis_starter', 'Thesis starter')) + ': ' + dbqEscapePrintText(dbqData.thesisStarter) + '</p>' : ''}
                                         </div>
                                         <div style="border:1px solid #e2e8f0;border-radius:8px;min-height:200px;padding:12px">
                                             <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
@@ -496,17 +679,18 @@ function DbqView(props) {
                                             <div style="border-bottom:1px dotted #cbd5e1;min-height:28px"></div>
                                         </div>
                                     </div>`;
-      const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>DBQ: ${dbqEscapePrintText(dbqData.title || 'Document-Based Question')}</title>
+      const packetTitle = dbqEscapePrintText(dbqData.title || L('dbq.default_title', 'Document-Based Question'));
+      const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>DBQ: ${packetTitle}</title>
                                     <style>body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5}h1{font-size:20px;color:#1e3a5f;border-bottom:3px solid #f59e0b;padding-bottom:6px;margin:0 0 8px}@media print{body{padding:0.4in;font-size:11px}h1{font-size:16px}}</style></head><body>
-                                    <h1>📜 ${dbqEscapePrintText(dbqData.title || 'Document-Based Question')}</h1>
-                                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:12px"><span>Name: ________________________</span><span>Date: ____________</span><span>Period: ______</span></div>
+                                    <h1>📜 ${packetTitle}</h1>
+                                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:12px"><span>${dbqEscapePrintText(L('dbq.print_name', 'Name'))}: ________________________</span><span>${dbqEscapePrintText(L('dbq.date_label', 'Date'))}: ____________</span><span>${dbqEscapePrintText(L('dbq.print_period', 'Period'))}: ______</span></div>
                                     ${dbqData.historicalContext ? '<div style="background:#fffbeb;border:2px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:16px"><p style="font-size:12px;font-weight:700;color:#92400e;margin:0 0 4px">' + dbqEscapePrintText(t("ui_common.historical_context") || "Historical Context") + '</p><p style="font-size:13px;color:#78350f;line-height:1.6;margin:0">' + dbqEscapePrintText(dbqData.historicalContext) + '</p></div>' : ''}
-                                    <h2 style="font-size:16px;font-weight:800;color:#1e3a5f;border-left:4px solid #f59e0b;padding-left:8px;margin:16px 0 12px">📄 Documents</h2>
+                                    <h2 style="font-size:16px;font-weight:800;color:#1e3a5f;border-left:4px solid #f59e0b;padding-left:8px;margin:16px 0 12px">📄 ${dbqEscapePrintText(L('dbq.documents', 'Documents'))}</h2>
                                     ${docSections}
                                     ${corrobSection}
                                     ${essaySection}
                                     ${rubricSection}
-                                    <div style="margin-top:24px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center">Generated by AlloFlow &bull; ${new Date().toLocaleDateString('en-US', {
+                                    <div style="margin-top:24px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center">${dbqEscapePrintText(L('dbq.generated_by', 'Generated by AlloFlow'))} &bull; ${new Date().toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -518,7 +702,9 @@ function DbqView(props) {
         w.document.close();
         const banner = w.document.createElement('div');
         banner.id = 'pb';
-        banner.innerHTML = '<div style="background:#92400e;color:white;padding:10px 16px;font-family:system-ui;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:9999"><span style="font-weight:bold;font-size:13px">📜 DBQ Packet — ' + docs.length + ' Documents</span><button onclick="document.getElementById(\'pb\').remove();window.print()" style="margin-left:auto;background:white;color:#92400e;border:none;padding:6px 14px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px">🖨 Print Packet</button><button onclick="document.getElementById(\'pb\').remove()" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px">✕</button></div>';
+        banner.innerHTML = '<div style="background:#92400e;color:white;padding:10px 16px;font-family:system-ui;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:9999"><span style="font-weight:bold;font-size:13px">📜 ' + dbqEscapePrintText(L('dbq.packet_banner', 'DBQ Packet — {n} Documents', {
+          n: docs.length
+        })) + '</span><button onclick="document.getElementById(\'pb\').remove();window.print()" style="margin-left:auto;background:white;color:#92400e;border:none;padding:6px 14px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px">🖨 ' + dbqEscapePrintText(L('dbq.print_packet', 'Print Packet')) + '</button><button onclick="document.getElementById(\'pb\').remove()" aria-label="' + dbqEscapePrintText(L('dbq.close', 'Close')) + '" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px">✕</button></div>';
         w.document.body.insertBefore(banner, w.document.body.firstChild);
         const ps = w.document.createElement('style');
         ps.textContent = '@media print{#pb{display:none!important}}';
@@ -526,7 +712,7 @@ function DbqView(props) {
       }
     },
     className: "px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200"
-  }, "🖨️ Print DBQ Packet"), /*#__PURE__*/React.createElement(DbqTimer, {
+  }, "🖨️ ", L('dbq.print_dbq_packet', 'Print DBQ Packet')), /*#__PURE__*/React.createElement(DbqTimer, {
     resourceId: resId,
     deadline: r._dbqTimerEnd,
     onDeadlineChange: value => setDbq('_dbqTimerEnd', value),
@@ -540,7 +726,9 @@ function DbqView(props) {
     className: "flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto",
     role: "tablist",
     "aria-label": t("a11y.dbq_sections")
-  }, [['documents', `📄 Docs (${docs.length})`], ['corroboration', '🔗 Corroborate'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
+  }, [['documents', '📄 ' + L('dbq.tab_docs', 'Docs ({n})', {
+    n: docs.length
+  })], ['corroboration', '🔗 ' + L('dbq.step_corroborate', 'Corroborate')], ['essay', '✏️ ' + L('dbq.step_essay', 'Essay')], ['rubric', '📊 ' + L('dbq.rubric', 'Rubric')]].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
     key: id,
     role: "tab",
     "aria-selected": dbqTab === id,
@@ -567,52 +755,62 @@ function DbqView(props) {
     const docQuestionsStarted = docs.some(d => ['sourcing', 'analysis'].some(field => (d[field + 'Questions'] || []).some((_, qi) => String(r[`doc-${d.id}-${field}-${qi}`] || '').trim())));
     const essayCitesDoc = docs.some(doc => essayText.toLowerCase().includes(`document ${String(doc.id).toLowerCase()}`) || essayText.toLowerCase().includes(`doc ${String(doc.id).toLowerCase()}`));
     const steps = aiAvailable ? [{
-      label: 'Analyze',
+      label: L('dbq.step_analyze', 'Analyze'),
       done: docsDone === docs.length && docs.length > 0,
       partial: docsDone > 0,
-      detail: `${docsDone}/${docs.length} docs`
+      detail: L('dbq.step_docs_detail', '{done}/{total} docs', {
+        done: docsDone,
+        total: docs.length
+      })
     }, {
-      label: 'Feedback',
+      label: L('dbq.step_feedback', 'Feedback'),
       done: docsFeedback === docs.length && docs.length > 0,
       partial: docsFeedback > 0,
       detail: `${docsFeedback}/${docs.length}`
     }, {
-      label: 'Corroborate',
+      label: L('dbq.step_corroborate', 'Corroborate'),
       done: corrobDone && hasCorrobFb,
       partial: corrobDone,
-      detail: hasCorrobFb ? '✓' : corrobDone ? 'started' : ''
+      detail: hasCorrobFb ? '✓' : corrobDone ? L('dbq.step_started', 'started') : ''
     }, {
-      label: 'Essay',
+      label: L('dbq.step_essay', 'Essay'),
       done: hasEssayFb,
       partial: essayLen > 0,
-      detail: essayLen > 0 ? `${essayLen}w` : ''
+      detail: essayLen > 0 ? L('dbq.words_short', '{n}w', {
+        n: essayLen
+      }) : ''
     }, {
-      label: 'Self-Assess',
+      label: L('dbq.step_self_assess', 'Self-Assess'),
       done: selfDone,
       partial: Object.keys(selfScores).length > 0,
       detail: selfDone ? '✓' : ''
     }] : [{
-      label: 'Analyze',
+      label: L('dbq.step_analyze', 'Analyze'),
       done: docsDone === docs.length && docs.length > 0,
       partial: docsDone > 0,
-      detail: `${docsDone}/${docs.length} docs`
+      detail: L('dbq.step_docs_detail', '{done}/{total} docs', {
+        done: docsDone,
+        total: docs.length
+      })
     }, {
-      label: 'Questions',
+      label: L('dbq.step_questions', 'Questions'),
       done: docQuestionsDone === docs.length && docs.length > 0,
       partial: docQuestionsStarted,
       detail: `${docQuestionsDone}/${docs.length}`
     }, {
-      label: 'Corroborate',
+      label: L('dbq.step_corroborate', 'Corroborate'),
       done: !!corrobDone,
       partial: !!corrobDone,
       detail: corrobDone ? '✓' : ''
     }, {
-      label: 'Essay',
+      label: L('dbq.step_essay', 'Essay'),
       done: essayLen > 0 && essayCitesDoc,
       partial: essayLen > 0,
-      detail: essayLen > 0 ? `${essayLen}w` : ''
+      detail: essayLen > 0 ? L('dbq.words_short', '{n}w', {
+        n: essayLen
+      }) : ''
     }, {
-      label: 'Self-Assess',
+      label: L('dbq.step_self_assess', 'Self-Assess'),
       done: selfDone,
       partial: Object.keys(selfScores).length > 0,
       detail: selfDone ? '✓' : ''
@@ -675,18 +873,23 @@ function DbqView(props) {
       className: `text-left p-2 sm:p-2.5 rounded-xl text-xs font-bold transition-all border-2 shrink-0 min-w-[5rem] sm:min-w-0 sm:w-full ${dbqActiveDoc === doc.id ? 'border-indigo-400 bg-indigo-50 text-indigo-800 shadow-md' : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'}`
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between gap-1"
-    }, /*#__PURE__*/React.createElement("span", null, "Doc ", doc.id), docDone && /*#__PURE__*/React.createElement("span", {
+    }, /*#__PURE__*/React.createElement("span", null, docLabel(doc.id)), docDone && /*#__PURE__*/React.createElement("span", {
       className: "text-green-500"
     }, "✓")), /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-normal mt-0.5 truncate opacity-70 hidden sm:block"
-    }, doc.title?.replace(`Document ${doc.id}: `, '') || ''));
+    }, doc.title?.replace(`Document ${doc.id}: `, '').replace(L('dbq.document_title', 'Document {id}: {title}', {
+      id: doc.id,
+      title: ''
+    }), '') || ''));
   })), activeDoc && /*#__PURE__*/React.createElement("div", {
     className: "flex-1 space-y-4 min-w-0"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 mb-2"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-black text-slate-800"
-  }, activeDoc.title || `Document ${activeDoc.id}`), docTypeBadge(activeDoc.documentType), activeDoc.perspective && /*#__PURE__*/React.createElement("span", {
+  }, activeDoc.title || L('dbq.document_label', 'Document {id}', {
+    id: activeDoc.id
+  })), docTypeBadge(activeDoc.documentType), activeDoc.perspective && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '0.625rem',
       fontWeight: 800,
@@ -705,15 +908,26 @@ function DbqView(props) {
     }, /*#__PURE__*/React.createElement("span", {
       "data-dbq-excerpt-kind": dbqExcerptKind(activeDoc),
       className: "inline-block mr-2 px-2 py-0.5 rounded-full border border-cyan-700 bg-cyan-50 text-cyan-900 text-[11px] font-bold not-italic"
-    }, kindLabel.badge), kindLabel.note, activeDoc.sameSourceExcerpts && ' This is one of several excerpts from the same source.'), activeDoc.source && /*#__PURE__*/React.createElement("p", {
+    }, kindLabel.badge), kindLabel.note, activeDoc.sameSourceExcerpts && sameSourceNote), activeDoc.source && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 italic"
-    }, kindLabel.prefix, " ", activeDoc.source));
-  })(), dbqTrustedSourceUrl(activeDoc) && /*#__PURE__*/React.createElement("a", {
+    }, kindLabel.prefix, " ", activeDoc.source), activeDoc.provenanceByTeacher && /*#__PURE__*/React.createElement("p", {
+      "data-dbq-byline": true,
+      className: "text-xs text-slate-700"
+    }, dbqByline(activeDoc, t), " ", /*#__PURE__*/React.createElement("span", {
+      className: "ml-1 inline-block rounded-full border border-slate-400 px-2 py-0.5 text-[11px] font-bold text-slate-700"
+    }, L('dbq.provenance_badge', 'Added by your teacher'))));
+  })(), isTeacherMode && typeof onUpdateResource === 'function' && /*#__PURE__*/React.createElement(DbqProvenanceEditor, {
+    key: resId + ':' + activeDoc.id,
+    t: t,
+    resourceId: resId,
+    doc: dbqNormalizeDocs(dbqData.documents)[docs.indexOf(activeDoc)] || activeDoc,
+    onSave: fields => onUpdateResource(resId, previous => dbqWithTeacherProvenance(previous, docs.indexOf(activeDoc), fields))
+  }), dbqTrustedSourceUrl(activeDoc) && /*#__PURE__*/React.createElement("a", {
     href: dbqTrustedSourceUrl(activeDoc),
     target: "_blank",
     rel: "noopener noreferrer",
     className: "inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline"
-  }, "🔗 View Original Source", /*#__PURE__*/React.createElement("span", {
+  }, "🔗 ", L('dbq.view_original', 'View Original Source'), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-normal text-indigo-400 max-w-[200px] truncate"
   }, (() => {
     try {
@@ -745,7 +959,7 @@ function DbqView(props) {
       }
     },
     className: "text-[11px] font-bold bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-2 py-1 rounded-full"
-  }, "🖍️ Highlight"), /*#__PURE__*/React.createElement("button", {
+  }, "🖍️ ", L('dbq.highlight', 'Highlight')), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       // Migrated to AlloSpeechPlayer (May 2026) — was 35 lines of
       // duplicated callTTS → Audio element → SpeechSynthesis cascade,
@@ -805,7 +1019,7 @@ function DbqView(props) {
     "data-dbq-listen": true,
     className: `text-[11px] font-bold px-2 py-1 rounded-full ${speakingDocId === activeDoc.id ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`,
     "aria-label": speakingDocId === activeDoc.id ? t('a11y.stop_reading') || 'Stop reading' : t('a11y.read_aloud') || 'Read aloud'
-  }, speakingDocId === activeDoc.id ? '⏹️ Stop' : '🔊 Listen'), /*#__PURE__*/React.createElement("button", {
+  }, speakingDocId === activeDoc.id ? '⏹️ ' + L('dbq.stop', 'Stop') : '🔊 ' + L('dbq.listen', 'Listen')), /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       if (feedbackPending(`_docVocab_${activeDoc.id}`)) return;
       if (feedbackFor(`_docVocab_${activeDoc.id}`)) {
@@ -830,7 +1044,7 @@ function DbqView(props) {
     disabled: !callGemini || feedbackPending(`_docVocab_${activeDoc.id}`),
     className: `text-[11px] font-bold disabled:opacity-50 px-2 py-1 rounded-full ${feedbackFor(`_docVocab_${activeDoc.id}`) && feedbackFor(`_docVocab_${activeDoc.id}`) !== 'loading' ? 'bg-green-200 hover:bg-green-300 text-green-800' : 'bg-purple-200 hover:bg-purple-300 text-purple-800'}`,
     "aria-label": t("a11y.vocab_help")
-  }, feedbackFor(`_docVocab_${activeDoc.id}`) === 'loading' ? '⏳' : feedbackFor(`_docVocab_${activeDoc.id}`) ? '📖 Hide Vocab' : '📖 Vocab Help')), feedbackFor(`_docVocab_${activeDoc.id}`) && Array.isArray(feedbackFor(`_docVocab_${activeDoc.id}`)) && /*#__PURE__*/React.createElement("div", {
+  }, feedbackFor(`_docVocab_${activeDoc.id}`) === 'loading' ? '⏳' : feedbackFor(`_docVocab_${activeDoc.id}`) ? '📖 ' + L('dbq.hide_vocab', 'Hide Vocab') : '📖 ' + L('dbq.vocab_help', 'Vocab Help'))), feedbackFor(`_docVocab_${activeDoc.id}`) && Array.isArray(feedbackFor(`_docVocab_${activeDoc.id}`)) && /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 flex-wrap mb-2"
   }, feedbackFor(`_docVocab_${activeDoc.id}`).map((v, vi) => /*#__PURE__*/React.createElement("span", {
     key: vi,
@@ -844,7 +1058,7 @@ function DbqView(props) {
     className: "bg-yellow-50 border border-yellow-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-yellow-700 mb-2"
-  }, "📌 Your Annotations"), (annotations[activeDoc.id] || []).map((ann, ai) => /*#__PURE__*/React.createElement("div", {
+  }, "📌 ", L('dbq.your_annotations', 'Your Annotations')), (annotations[activeDoc.id] || []).map((ann, ai) => /*#__PURE__*/React.createElement("div", {
     key: ann.id || ai,
     className: "flex items-start gap-2 mb-2 bg-white rounded-lg p-2 border border-yellow-100"
   }, /*#__PURE__*/React.createElement("span", {
@@ -865,7 +1079,9 @@ function DbqView(props) {
       });
     },
     className: "flex-1 text-xs border border-slate-400 rounded px-2 py-1 focus:ring-2 focus:ring-yellow-400 outline-none",
-    "aria-label": `Note for annotation ${ai + 1}`
+    "aria-label": L('dbq.annotation_note_aria', 'Note for annotation {n}', {
+      n: ai + 1
+    })
   }), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       const u = (annotations[activeDoc.id] || []).filter((_, i) => i !== ai);
@@ -880,29 +1096,9 @@ function DbqView(props) {
     className: "bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-black text-indigo-800 mb-3 flex items-center gap-2"
-  }, "🔍 HAPP Source Analysis"), /*#__PURE__*/React.createElement("div", {
+  }, "🔍 ", L('dbq.happ_heading', 'HAPP Source Analysis')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
-  }, [{
-    key: 'historical',
-    label: 'Historical Context',
-    icon: '🕰️',
-    prompt: activeDoc.happPrompts?.historical || 'What was happening when this was created?'
-  }, {
-    key: 'audience',
-    label: 'Audience',
-    icon: '👥',
-    prompt: activeDoc.happPrompts?.audience || 'Who was this written for?'
-  }, {
-    key: 'purpose',
-    label: 'Purpose',
-    icon: '🎯',
-    prompt: activeDoc.happPrompts?.purpose || 'Why was this created?'
-  }, {
-    key: 'pointOfView',
-    label: 'Point of View',
-    icon: '👁️',
-    prompt: activeDoc.happPrompts?.pointOfView || 'What perspective does the author have?'
-  }].map(h => /*#__PURE__*/React.createElement("div", {
+  }, happDefs(activeDoc).map(h => /*#__PURE__*/React.createElement("div", {
     key: h.key,
     className: "bg-white rounded-lg p-3 border border-indigo-100"
   }, /*#__PURE__*/React.createElement("div", {
@@ -918,33 +1114,39 @@ function DbqView(props) {
         [h.key]: e.target.value
       }
     }),
-    placeholder: activeDoc.sentenceStarters?.[0] || 'Your analysis...',
+    placeholder: activeDoc.sentenceStarters?.[0] || L('dbq.your_analysis_placeholder', 'Your analysis...'),
     rows: 2,
     className: "w-full text-xs border border-indigo-200 rounded-lg p-2 resize-none focus:ring-2 focus:ring-indigo-400 outline-none",
-    "aria-label": `${h.label} analysis for Document ${activeDoc.id}`
+    "aria-label": L('dbq.happ_field_aria', '{label} analysis for Document {id}', {
+      label: h.label,
+      id: activeDoc.id
+    })
   }))))), activeDoc.sourcingQuestions?.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "bg-purple-50 border border-purple-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-bold text-purple-800 mb-3"
-  }, "🔎 Sourcing Questions"), activeDoc.sourcingQuestions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
+  }, "🔎 ", L('dbq.sourcing_questions', 'Sourcing Questions')), activeDoc.sourcingQuestions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
     key: qi,
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-purple-700 font-medium mb-1"
   }, qi + 1, ". ", q), activeDoc.sentenceStarters && /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-purple-700 italic mb-1"
-  }, "Try starting with: \"", activeDoc.sentenceStarters[qi % activeDoc.sentenceStarters.length], "\""), /*#__PURE__*/React.createElement("textarea", {
+  }, L('dbq.try_starter', 'Try starting with:'), " \"", activeDoc.sentenceStarters[qi % activeDoc.sentenceStarters.length], "\""), /*#__PURE__*/React.createElement("textarea", {
     value: r[`doc-${activeDoc.id}-sourcing-${qi}`] || '',
     onChange: e => setDbq(`doc-${activeDoc.id}-sourcing-${qi}`, e.target.value),
     rows: 2,
     placeholder: t("placeholders.type_answer"),
     className: "w-full text-sm border border-purple-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-purple-400 outline-none",
-    "aria-label": `Sourcing question ${qi + 1} for Document ${activeDoc.id}`
+    "aria-label": L('dbq.sourcing_q_aria', 'Sourcing question {n} for Document {id}', {
+      n: qi + 1,
+      id: activeDoc.id
+    })
   })))), activeDoc.analysisQuestions?.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "bg-blue-50 border border-blue-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-bold text-blue-800 mb-3"
-  }, "🧠 Analysis Questions"), activeDoc.analysisQuestions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
+  }, "🧠 ", L('dbq.analysis_questions', 'Analysis Questions')), activeDoc.analysisQuestions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
     key: qi,
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("p", {
@@ -955,20 +1157,23 @@ function DbqView(props) {
     rows: 2,
     placeholder: t("placeholders.type_answer"),
     className: "w-full text-sm border border-blue-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-blue-400 outline-none",
-    "aria-label": `Analysis question ${qi + 1} for Document ${activeDoc.id}`
+    "aria-label": L('dbq.analysis_q_aria', 'Analysis question {n} for Document {id}', {
+      n: qi + 1,
+      id: activeDoc.id
+    })
   })))), /*#__PURE__*/React.createElement("div", {
     className: "bg-rose-50 border border-rose-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-bold text-rose-800 mb-1 flex items-center gap-2"
-  }, "🔎 Source Reliability Check"), /*#__PURE__*/React.createElement("p", {
+  }, "🔎 ", L('dbq.reliability_heading', 'Source Reliability Check')), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-rose-500 mb-3"
-  }, "Think critically: Is this source trustworthy? Why or why not?"), /*#__PURE__*/React.createElement("div", {
+  }, L('dbq.reliability_intro', 'Think critically: Is this source trustworthy? Why or why not?')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-lg p-3 border border-rose-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-rose-700 mb-1"
-  }, "🎯 Reliability Rating"), /*#__PURE__*/React.createElement("div", {
+  }, "🎯 ", L('dbq.reliability_rating', 'Reliability Rating')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 flex-wrap"
   }, ['Very Reliable', 'Somewhat Reliable', 'Questionable', 'Unreliable'].map(rating => /*#__PURE__*/React.createElement("button", {
     key: rating,
@@ -978,12 +1183,14 @@ function DbqView(props) {
     }),
     className: `text-[11px] px-2 py-1 rounded-full border transition-all ${(r[`_reliability_${activeDoc.id}`] || {}).rating === rating ? 'bg-rose-600 text-white border-rose-600 font-bold' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'}`,
     "aria-pressed": (r[`_reliability_${activeDoc.id}`] || {}).rating === rating,
-    "aria-label": `Rate as ${rating}`
-  }, rating)))), /*#__PURE__*/React.createElement("div", {
+    "aria-label": L('dbq.rate_as_aria', 'Rate as {rating}', {
+      rating: L('dbq.rating_' + rating.toLowerCase().replace(/\s+/g, '_'), rating)
+    })
+  }, L('dbq.rating_' + rating.toLowerCase().replace(/\s+/g, '_'), rating))))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-lg p-3 border border-rose-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-rose-700 mb-1"
-  }, "⚠️ Potential Bias"), /*#__PURE__*/React.createElement("div", {
+  }, "⚠️ ", L('dbq.potential_bias', 'Potential Bias')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 flex-wrap"
   }, ['None detected', 'Political', 'Cultural', 'Economic', 'Personal', 'Other'].map(bias => /*#__PURE__*/React.createElement("button", {
     key: bias,
@@ -993,17 +1200,21 @@ function DbqView(props) {
     }),
     className: `text-[11px] px-2 py-1 rounded-full border transition-all ${(r[`_reliability_${activeDoc.id}`] || {}).bias === bias ? 'bg-rose-600 text-white border-rose-600 font-bold' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'}`,
     "aria-pressed": (r[`_reliability_${activeDoc.id}`] || {}).bias === bias,
-    "aria-label": `Bias: ${bias}`
-  }, bias))))), /*#__PURE__*/React.createElement("textarea", {
+    "aria-label": L('dbq.bias_aria', 'Bias: {bias}', {
+      bias: L('dbq.bias_' + bias.toLowerCase().replace(/\s+/g, '_'), bias)
+    })
+  }, L('dbq.bias_' + bias.toLowerCase().replace(/\s+/g, '_'), bias)))))), /*#__PURE__*/React.createElement("textarea", {
     value: (r[`_reliability_${activeDoc.id}`] || {}).reasoning || '',
     onChange: e => setDbq(`_reliability_${activeDoc.id}`, {
       ...(r[`_reliability_${activeDoc.id}`] || {}),
       reasoning: e.target.value
     }),
     rows: 2,
-    placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? 'I think this source is... because...' : /6th|7th|8th/i.test(gradeLevel) ? 'This source seems reliable/unreliable because... The author might be biased because...' : 'Evaluate the reliability of this source considering the author\'s position, the intended audience, corroborating evidence, and potential limitations...',
+    placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? L('dbq.reliability_placeholder_elem', 'I think this source is... because...') : /6th|7th|8th/i.test(gradeLevel) ? L('dbq.reliability_placeholder_mid', 'This source seems reliable/unreliable because... The author might be biased because...') : L('dbq.reliability_placeholder_high', 'Evaluate the reliability of this source considering the author\'s position, the intended audience, corroborating evidence, and potential limitations...'),
     className: "w-full text-sm border border-rose-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-rose-400 outline-none",
-    "aria-label": `Source reliability reasoning for Document ${activeDoc.id}`
+    "aria-label": L('dbq.reliability_reasoning_aria', 'Source reliability reasoning for Document {id}', {
+      id: activeDoc.id
+    })
   }), (r[`_reliability_${activeDoc.id}`] || {}).reasoning?.trim() && /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       if (!callGemini) return;
@@ -1033,7 +1244,7 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
         addToast && addToast(t("toasts.reliability_complete"));
       } catch (e) {
         commitFeedback(request, {
-          error: 'Could not analyze. Try again.'
+          error: L('dbq.error_analyze', 'Could not analyze. Try again.')
         });
       } finally {
         endFeedback(request);
@@ -1042,9 +1253,9 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
     disabled: !callGemini || feedbackPending(`_reliabilityAI_${activeDoc.id}`),
     className: "mt-2 text-xs font-bold disabled:opacity-50 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl transition-all flex items-center gap-1.5",
     "aria-label": t("a11y.compare_with_ai")
-  }, "🔍 Compare My Assessment with AI Analysis"), feedbackNotice(`_reliabilityAI_${activeDoc.id}`), feedbackFor(`_reliabilityAI_${activeDoc.id}`) === 'loading' && /*#__PURE__*/React.createElement("p", {
+  }, "🔍 ", L('dbq.compare_with_ai', 'Compare My Assessment with AI Analysis')), feedbackNotice(`_reliabilityAI_${activeDoc.id}`), feedbackFor(`_reliabilityAI_${activeDoc.id}`) === 'loading' && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-rose-500 italic mt-2"
-  }, "⏳ Analyzing source reliability..."), feedbackFor(`_reliabilityAI_${activeDoc.id}`) && typeof feedbackFor(`_reliabilityAI_${activeDoc.id}`) === 'object' && !feedbackFor(`_reliabilityAI_${activeDoc.id}`).error && (() => {
+  }, "⏳ ", L('dbq.analyzing_reliability', 'Analyzing source reliability...')), feedbackFor(`_reliabilityAI_${activeDoc.id}`) && typeof feedbackFor(`_reliabilityAI_${activeDoc.id}`) === 'object' && !feedbackFor(`_reliabilityAI_${activeDoc.id}`).error && (() => {
     const ai = feedbackFor(`_reliabilityAI_${activeDoc.id}`);
     return /*#__PURE__*/React.createElement("div", {
       className: "mt-3 bg-white border-2 border-rose-200 rounded-xl p-4 space-y-2"
@@ -1052,9 +1263,9 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
       className: "flex items-center justify-between"
     }, /*#__PURE__*/React.createElement("h5", {
       className: "text-xs font-black text-rose-800"
-    }, "🤖 AI Reliability Analysis"), /*#__PURE__*/React.createElement("span", {
+    }, "🤖 ", L('dbq.ai_reliability_heading', 'AI Reliability Analysis')), /*#__PURE__*/React.createElement("span", {
       className: `text-[11px] font-bold px-2 py-0.5 rounded-full ${ai.reliabilityRating === 'very reliable' ? 'bg-green-100 text-green-800' : ai.reliabilityRating === 'somewhat reliable' ? 'bg-blue-100 text-blue-800' : ai.reliabilityRating === 'questionable' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`
-    }, ai.reliabilityRating)), ai.biasTypes?.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, L('dbq.rating_' + String(ai.reliabilityRating || '').toLowerCase().replace(/\s+/g, '_'), ai.reliabilityRating))), ai.biasTypes?.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "flex gap-1 flex-wrap"
     }, ai.biasTypes.map((b, bi) => /*#__PURE__*/React.createElement("span", {
       key: bi,
@@ -1071,7 +1282,7 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
       className: "bg-amber-50 rounded-lg p-3 border border-amber-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-amber-700 mb-0.5"
-    }, "⚠️ FACTUAL CONCERNS"), /*#__PURE__*/React.createElement("ul", {
+    }, "⚠️ ", L('dbq.factual_concerns', 'FACTUAL CONCERNS')), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-amber-800 space-y-1"
     }, ai.factualConcerns.map((c, ci) => /*#__PURE__*/React.createElement("li", {
       key: ci
@@ -1079,7 +1290,7 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
       className: "bg-rose-50 rounded-lg p-2 border border-rose-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-rose-600"
-    }, "🤔 THINK ABOUT THIS:"), /*#__PURE__*/React.createElement("p", {
+    }, "🤔 ", L('dbq.think_about_this', 'THINK ABOUT THIS:')), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-rose-800 italic"
     }, ai.keyQuestion)));
   })(), feedbackFor(`_reliabilityAI_${activeDoc.id}`)?.error && /*#__PURE__*/React.createElement("p", {
@@ -1159,7 +1370,7 @@ Rules:
           handleScoreUpdate(xpAmount, `DBQ Source Analysis (Doc ${activeDoc.id})`, `dbq-analysis-${resId}-${activeDoc.id}`);
         } catch (e) {
           commitFeedback(request, {
-            error: 'Could not generate feedback. Try again.'
+            error: L('dbq.error_feedback', 'Could not generate feedback. Try again.')
           });
         } finally {
           endFeedback(request);
@@ -1168,38 +1379,40 @@ Rules:
       disabled: !callGemini || feedbackLoading,
       className: "bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2",
       "aria-label": t("a11y.get_ai_feedback_doc")
-    }, feedbackLoading ? '⏳ Analyzing...' : '✨ Check My Analysis'), feedbackNotice(`_docFeedback_${activeDoc.id}`), docFeedback && typeof docFeedback === 'object' && !docFeedback.error && /*#__PURE__*/React.createElement("div", {
+    }, feedbackLoading ? '⏳ ' + L('dbq.analyzing', 'Analyzing...') : '✨ ' + L('dbq.check_my_analysis', 'Check My Analysis')), feedbackNotice(`_docFeedback_${activeDoc.id}`), docFeedback && typeof docFeedback === 'object' && !docFeedback.error && /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-black text-emerald-800"
-    }, "📝 Analysis Feedback"), /*#__PURE__*/React.createElement("span", {
+    }, "📝 ", L('dbq.analysis_feedback', 'Analysis Feedback')), /*#__PURE__*/React.createElement("span", {
       className: `text-xs font-black px-3 py-1 rounded-full ${docFeedback.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : docFeedback.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`
-    }, docFeedback.overallRating === 'exemplary' ? '⭐ Exemplary' : docFeedback.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing')), docFeedback.happFeedback && /*#__PURE__*/React.createElement("div", {
+    }, ratingLabel(docFeedback.overallRating))), docFeedback.happFeedback && /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
     }, Object.entries(docFeedback.happFeedback).map(([k, v]) => v && /*#__PURE__*/React.createElement("div", {
       key: k,
       className: "bg-white/60 rounded-lg p-2.5 border border-emerald-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-emerald-600 uppercase mb-0.5"
-    }, k === 'pointOfView' ? 'Point of View' : k.charAt(0).toUpperCase() + k.slice(1)), /*#__PURE__*/React.createElement("p", {
+    }, (happDefs(activeDoc).find(h => h.key === k) || {
+      label: k
+    }).label), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-700"
     }, v)))), docFeedback.sourcingFeedback && /*#__PURE__*/React.createElement("div", {
       className: "bg-white/60 rounded-lg p-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-purple-600 mb-0.5"
-    }, "SOURCING"), /*#__PURE__*/React.createElement("p", {
+    }, L('dbq.sourcing_caps', 'SOURCING')), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-700"
     }, docFeedback.sourcingFeedback)), docFeedback.analysisFeedback && /*#__PURE__*/React.createElement("div", {
       className: "bg-white/60 rounded-lg p-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-blue-600 mb-0.5"
-    }, "ANALYSIS"), /*#__PURE__*/React.createElement("p", {
+    }, L('dbq.analysis_caps', 'ANALYSIS')), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-700"
     }, docFeedback.analysisFeedback)), docFeedback.strengths?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-green-700 mb-1"
-    }, "💪 Strengths"), /*#__PURE__*/React.createElement("ul", {
+    }, "💪 ", L('dbq.strengths', 'Strengths')), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-green-800 space-y-1"
     }, docFeedback.strengths.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
@@ -1208,7 +1421,7 @@ Rules:
       className: "text-green-500 mt-0.5"
     }, "✓"), s)))), docFeedback.nudges?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-amber-700 mb-1"
-    }, "🤔 Think Deeper"), /*#__PURE__*/React.createElement("ul", {
+    }, "🤔 ", L('dbq.think_deeper', 'Think Deeper')), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-amber-800 space-y-1"
     }, docFeedback.nudges.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
@@ -1219,7 +1432,7 @@ Rules:
       className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-indigo-700 mb-0.5"
-    }, "💡 EXAMPLE RESPONSE"), /*#__PURE__*/React.createElement("p", {
+    }, "💡 ", L('dbq.example_response', 'EXAMPLE RESPONSE')), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-indigo-800 italic"
     }, docFeedback.modelResponse))), docFeedback?.error && /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-red-600"
@@ -1230,7 +1443,7 @@ Rules:
     className: "bg-purple-50 border-2 border-purple-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-purple-800 mb-3"
-  }, "⚔️ Competing Perspectives"), /*#__PURE__*/React.createElement("div", {
+  }, "⚔️ ", L('dbq.competing_perspectives', 'Competing Perspectives')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
   }, dbqData.perspectives.map((pov, pi) => /*#__PURE__*/React.createElement("div", {
     key: pi,
@@ -1244,11 +1457,11 @@ Rules:
   }, knownDocIds(pov.docIds).map(id => /*#__PURE__*/React.createElement("span", {
     key: id,
     className: `text-xs font-bold px-2 py-0.5 rounded-full ${pi === 0 ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-red-100 text-red-700 border border-red-200'}`
-  }, "Doc ", id)))))), /*#__PURE__*/React.createElement("div", {
+  }, docLabel(id))))))), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 bg-white rounded-lg p-3 border border-purple-100"
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-bold text-purple-600 uppercase block mb-1"
-  }, "Which perspective do you find more convincing? Why?"), /*#__PURE__*/React.createElement("textarea", {
+  }, L('dbq.perspective_question', 'Which perspective do you find more convincing? Why?')), /*#__PURE__*/React.createElement("textarea", {
     value: r._perspectiveResponse || '',
     onChange: e => setDbq('_perspectiveResponse', e.target.value),
     rows: 3,
@@ -1259,14 +1472,16 @@ Rules:
     className: "bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-emerald-800 mb-1"
-  }, "🔗 Corroboration Matrix"), /*#__PURE__*/React.createElement("p", {
+  }, "🔗 ", L('dbq.corroboration_matrix', 'Corroboration Matrix')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-emerald-600 mb-4"
-  }, "Compare how documents agree or disagree on key claims."), claims.length > 0 ? claims.map((claim, ci) => /*#__PURE__*/React.createElement("div", {
+  }, L('dbq.corroboration_intro', 'Compare how documents agree or disagree on key claims.')), claims.length > 0 ? claims.map((claim, ci) => /*#__PURE__*/React.createElement("div", {
     key: ci,
     className: "bg-white rounded-xl border border-emerald-100 p-4 mb-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-bold text-slate-800 mb-2"
-  }, "Claim ", ci + 1, ": \"", claim.claim, "\""), claim.guideQuestion && /*#__PURE__*/React.createElement("p", {
+  }, L('dbq.claim_n', 'Claim {n}', {
+    n: ci + 1
+  }), ": \"", claim.claim, "\""), claim.guideQuestion && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-emerald-600 italic mb-3"
   }, claim.guideQuestion), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3"
@@ -1274,23 +1489,23 @@ Rules:
     className: "flex-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-green-700 uppercase mb-1"
-  }, "✅ Supporting"), /*#__PURE__*/React.createElement("div", {
+  }, "✅ ", L('dbq.supporting', 'Supporting')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 flex-wrap"
   }, (claim.supportingDocs || []).map(id => /*#__PURE__*/React.createElement("span", {
     key: id,
     className: "text-xs bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full border border-green-200"
-  }, "Doc ", id)))), /*#__PURE__*/React.createElement("div", {
+  }, docLabel(id))))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-red-700 uppercase mb-1"
-  }, "❌ Challenging"), /*#__PURE__*/React.createElement("div", {
+  }, "❌ ", L('dbq.challenging', 'Challenging')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 flex-wrap"
   }, (claim.challengingDocs || []).length > 0 ? (claim.challengingDocs || []).map(id => /*#__PURE__*/React.createElement("span", {
     key: id,
     className: "text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full border border-red-200"
-  }, "Doc ", id)) : /*#__PURE__*/React.createElement("span", {
+  }, docLabel(id))) : /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600 italic"
-  }, "None")))), /*#__PURE__*/React.createElement("textarea", {
+  }, L('dbq.none', 'None'))))), /*#__PURE__*/React.createElement("textarea", {
     value: corrobNotes[ci] || '',
     onChange: e => setDbq('_corrobNotes', {
       ...corrobNotes,
@@ -1299,7 +1514,9 @@ Rules:
     rows: 2,
     placeholder: t("placeholders.doc_support_claim"),
     className: "w-full text-sm border border-emerald-200 rounded-lg p-2.5 resize-none focus:ring-2 focus:ring-emerald-400 outline-none",
-    "aria-label": `Corroboration analysis for claim ${ci + 1}`
+    "aria-label": L('dbq.corroboration_claim_aria', 'Corroboration analysis for claim {n}', {
+      n: ci + 1
+    })
   }))) : /*#__PURE__*/React.createElement("div", {
     className: "overflow-x-auto"
   }, /*#__PURE__*/React.createElement("table", {
@@ -1320,7 +1537,7 @@ Rules:
     key: doc.id
   }, /*#__PURE__*/React.createElement("td", {
     className: "border border-slate-400 p-2 font-bold"
-  }, "Doc ", doc.id), /*#__PURE__*/React.createElement("td", {
+  }, docLabel(doc.id)), /*#__PURE__*/React.createElement("td", {
     className: "border border-slate-400 p-1"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
@@ -1328,7 +1545,9 @@ Rules:
     onChange: e => setDbq(`corrob-claim-${doc.id}`, e.target.value),
     className: "w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-emerald-300",
     placeholder: t("placeholders.main_claim"),
-    "aria-label": `Key claim from Document ${doc.id}`
+    "aria-label": L('dbq.key_claim_aria', 'Key claim from Document {id}', {
+      id: doc.id
+    })
   })), /*#__PURE__*/React.createElement("td", {
     className: "border border-slate-400 p-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -1337,7 +1556,9 @@ Rules:
     onChange: e => setDbq(`corrob-agree-${doc.id}`, e.target.value),
     className: "w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-green-300",
     placeholder: t("placeholders.doc_ids"),
-    "aria-label": `Documents agreeing with Document ${doc.id}`
+    "aria-label": L('dbq.agreeing_aria', 'Documents agreeing with Document {id}', {
+      id: doc.id
+    })
   })), /*#__PURE__*/React.createElement("td", {
     className: "border border-slate-400 p-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -1346,7 +1567,9 @@ Rules:
     onChange: e => setDbq(`corrob-disagree-${doc.id}`, e.target.value),
     className: "w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-red-300",
     placeholder: t("placeholders.doc_ids"),
-    "aria-label": `Documents disagreeing with Document ${doc.id}`
+    "aria-label": L('dbq.disagreeing_aria', 'Documents disagreeing with Document {id}', {
+      id: doc.id
+    })
   })))))))), (() => {
     const hasCorrobResponses = claims.some((_, ci) => corrobNotes[ci]?.trim()) || docs.some(d => ['claim', 'agree', 'disagree'].some(field => r['corrob-' + field + '-' + d.id]?.trim())) || (r._perspectiveResponse || '').trim();
     const corrobFb = feedbackFor('_corrobFeedback');
@@ -1393,7 +1616,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
           handleScoreUpdate(xp, 'DBQ Corroboration Analysis', `dbq-corrob-${resId}`);
         } catch (e) {
           commitFeedback(request, {
-            error: 'Could not generate feedback. Try again.'
+            error: L('dbq.error_feedback', 'Could not generate feedback. Try again.')
           });
         } finally {
           endFeedback(request);
@@ -1401,18 +1624,18 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       },
       disabled: !callGemini || corrobLoading,
       className: "bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2",
-      "aria-label": "Get AI feedback on corroboration analysis"
-    }, corrobLoading ? '⏳ Analyzing...' : '✨ Check My Corroboration'), feedbackNotice('_corrobFeedback'), corrobFb && typeof corrobFb === 'object' && !corrobFb.error && /*#__PURE__*/React.createElement("div", {
+      "aria-label": L('dbq.corroboration_feedback_aria', 'Get AI feedback on corroboration analysis')
+    }, corrobLoading ? '⏳ ' + L('dbq.analyzing', 'Analyzing...') : '✨ ' + L('dbq.check_my_corroboration', 'Check My Corroboration')), feedbackNotice('_corrobFeedback'), corrobFb && typeof corrobFb === 'object' && !corrobFb.error && /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-black text-emerald-800"
-    }, "🔗 Corroboration Feedback"), /*#__PURE__*/React.createElement("span", {
+    }, "🔗 ", L('dbq.corroboration_feedback', 'Corroboration Feedback')), /*#__PURE__*/React.createElement("span", {
       className: `text-xs font-black px-3 py-1 rounded-full ${corrobFb.overallRating === 'exemplary' ? 'bg-green-100 text-green-800 border border-green-300' : corrobFb.overallRating === 'proficient' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}`
-    }, corrobFb.overallRating === 'exemplary' ? '⭐ Exemplary' : corrobFb.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing')), corrobFb.corrobStrengths?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    }, ratingLabel(corrobFb.overallRating))), corrobFb.corrobStrengths?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-green-700 mb-1"
-    }, "💪 Strengths"), /*#__PURE__*/React.createElement("ul", {
+    }, "💪 ", L('dbq.strengths', 'Strengths')), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-green-800 space-y-1"
     }, corrobFb.corrobStrengths.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
@@ -1421,7 +1644,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       className: "text-green-500 mt-0.5"
     }, "✓"), s)))), corrobFb.corrobNudges?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-amber-700 mb-1"
-    }, "🤔 Think Deeper"), /*#__PURE__*/React.createElement("ul", {
+    }, "🤔 ", L('dbq.think_deeper', 'Think Deeper')), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-amber-800 space-y-1"
     }, corrobFb.corrobNudges.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
@@ -1438,7 +1661,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-[11px] font-bold text-indigo-700 mb-0.5"
-    }, "💡 EXAMPLE"), /*#__PURE__*/React.createElement("p", {
+    }, "💡 ", L('dbq.example', 'EXAMPLE')), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-indigo-800 italic"
     }, corrobFb.modelCorroboration))), corrobFb?.error && /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-red-600"
@@ -1449,7 +1672,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-xl p-5"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-indigo-800 mb-2"
-  }, "📝 Synthesis Essay Prompt"), /*#__PURE__*/React.createElement("p", {
+  }, "📝 ", L('dbq.essay_prompt', 'Synthesis Essay Prompt')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-700 leading-relaxed"
   }, dbqData.synthesisPrompt), dbqData.thesisStarter && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 bg-white/70 rounded-lg p-3 border border-indigo-100"
@@ -1461,28 +1684,30 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-slate-50 rounded-xl border border-slate-400 p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase mb-2"
-  }, "📎 Evidence Tracker"), /*#__PURE__*/React.createElement("div", {
+  }, "📎 ", L('dbq.evidence_tracker', 'Evidence Tracker')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 flex-wrap"
   }, docs.map(doc => {
     const cited = essayText.toLowerCase().includes(`document ${String(doc.id).toLowerCase()}`) || essayText.toLowerCase().includes(`doc ${String(doc.id).toLowerCase()}`);
     return /*#__PURE__*/React.createElement("span", {
       key: doc.id,
       className: `text-xs font-bold px-3 py-1.5 rounded-full border-2 transition-all ${cited ? 'bg-green-100 border-green-400 text-green-800' : 'bg-slate-100 border-slate-200 text-slate-600'}`
-    }, cited ? '✅' : '⬜', " Doc ", doc.id);
+    }, cited ? '✅' : '⬜', " ", docLabel(doc.id));
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mt-2 italic"
-  }, "Reference documents in your essay (e.g., \"Document A shows...\") to track them.")), /*#__PURE__*/React.createElement("div", {
+  }, L('dbq.evidence_tracker_hint', 'Reference documents in your essay (e.g., "Document A shows...") to track them.'))), /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("textarea", {
     value: essayText,
     onChange: e => setDbq('_essayText', e.target.value),
     rows: 14,
-    placeholder: dbqData.thesisStarter || 'Write your synthesis essay here. Use evidence from multiple documents to support your argument...',
+    placeholder: dbqData.thesisStarter || L('dbq.essay_placeholder', 'Write your synthesis essay here. Use evidence from multiple documents to support your argument...'),
     className: "w-full text-base font-serif leading-loose border-2 border-slate-200 rounded-xl p-5 resize-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none",
-    "aria-label": "Synthesis essay"
+    "aria-label": L('dbq.synthesis_essay', 'Synthesis Essay')
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute bottom-3 right-4 text-xs text-slate-600 font-mono"
-  }, essayText.split(/\s+/).filter(Boolean).length, " words")), /*#__PURE__*/React.createElement("div", {
+  }, L('dbq.word_count', '{n} words', {
+    n: essayText.split(/\s+/).filter(Boolean).length
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 items-start"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
@@ -1512,7 +1737,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
         handleScoreUpdate(essayXP, 'DBQ Synthesis Essay', `dbq-essay-${resId}`);
       } catch (e) {
         commitFeedback(request, {
-          error: 'Could not generate feedback. Try again.'
+          error: L('dbq.error_feedback', 'Could not generate feedback. Try again.')
         });
       } finally {
         endFeedback(request);
@@ -1520,7 +1745,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     },
     disabled: !callGemini || feedbackPending("_aiFeedback"),
     className: "bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 shrink-0"
-  }, "✨ Get AI Feedback"), aiFeedback && typeof aiFeedback === 'string' && /*#__PURE__*/React.createElement("p", {
+  }, "✨ ", L('dbq.get_ai_feedback', 'Get AI Feedback')), aiFeedback && typeof aiFeedback === 'string' && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 italic flex-1"
   }, aiFeedback)), feedbackNotice('_aiFeedback'), aiFeedback && typeof aiFeedback === 'object' && !aiFeedback.error && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3"
@@ -1528,11 +1753,11 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "flex items-center justify-between"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-black text-emerald-800"
-  }, "📝 AI Writing Feedback"), /*#__PURE__*/React.createElement("div", {
+  }, "📝 ", L('dbq.ai_writing_feedback', 'AI Writing Feedback')), /*#__PURE__*/React.createElement("div", {
     className: "bg-emerald-700 text-white text-lg font-black px-4 py-1 rounded-full"
   }, aiFeedback.overallScore, "/4")), aiFeedback.strengths?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-green-700 mb-1"
-  }, "💪 Strengths"), /*#__PURE__*/React.createElement("ul", {
+  }, "💪 ", L('dbq.strengths', 'Strengths')), /*#__PURE__*/React.createElement("ul", {
     className: "text-sm text-green-800 space-y-1"
   }, aiFeedback.strengths.map((s, i) => /*#__PURE__*/React.createElement("li", {
     key: i,
@@ -1541,7 +1766,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "text-green-500 mt-0.5"
   }, "✓"), s)))), aiFeedback.improvements?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-amber-700 mb-1"
-  }, "📈 Areas to Improve"), /*#__PURE__*/React.createElement("ul", {
+  }, "📈 ", L('dbq.areas_to_improve', 'Areas to Improve')), /*#__PURE__*/React.createElement("ul", {
     className: "text-sm text-amber-800 space-y-1"
   }, aiFeedback.improvements.map((s, i) => /*#__PURE__*/React.createElement("li", {
     key: i,
@@ -1552,7 +1777,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-white/60 rounded-lg p-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-indigo-600 mb-0.5"
-  }, "THESIS"), /*#__PURE__*/React.createElement("p", {
+  }, L('dbq.thesis_caps', 'THESIS')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-700"
   }, aiFeedback.thesisFeedback)), aiFeedback.evidenceFeedback && /*#__PURE__*/React.createElement("div", {
     className: "bg-white/60 rounded-lg p-3"
@@ -1562,7 +1787,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "text-xs text-slate-700"
   }, aiFeedback.evidenceFeedback)), aiFeedback.missingDocs?.length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-red-600 font-bold"
-  }, "⚠️ Documents not cited: ", aiFeedback.missingDocs.map(d => `Doc ${d}`).join(', ')), aiFeedback.nextSteps && /*#__PURE__*/React.createElement("div", {
+  }, "⚠️ ", L('dbq.docs_not_cited', 'Documents not cited:'), " ", aiFeedback.missingDocs.map(d => docLabel(d)).join(', ')), aiFeedback.nextSteps && /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-100 rounded-lg p-3 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-indigo-700 mb-0.5"
@@ -1576,9 +1801,9 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-orange-50 border-2 border-orange-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-orange-800 mb-1"
-  }, "📊 DBQ Rubric"), /*#__PURE__*/React.createElement("p", {
+  }, "📊 ", L('dbq.rubric_heading', 'DBQ Rubric')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-orange-600 mb-4"
-  }, "Review scoring criteria, then self-assess your work below."), rubric.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, L('dbq.rubric_intro', 'Review scoring criteria, then self-assess your work below.')), rubric.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "overflow-x-auto"
   }, /*#__PURE__*/React.createElement("table", {
     className: "w-full text-sm border-collapse mb-4"
@@ -1588,16 +1813,16 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
   }, t("ui_common.criteria")), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-red-50 text-center font-bold text-red-700 w-1/5",
     scope: "col"
-  }, "1 — Beginning"), /*#__PURE__*/React.createElement("th", {
+  }, "1 — ", levelNames[0]), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-yellow-50 text-center font-bold text-yellow-700 w-1/5",
     scope: "col"
-  }, "2 — Developing"), /*#__PURE__*/React.createElement("th", {
+  }, "2 — ", levelNames[1]), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-green-50 text-center font-bold text-green-700 w-1/5",
     scope: "col"
-  }, "3 — Proficient"), /*#__PURE__*/React.createElement("th", {
+  }, "3 — ", levelNames[2]), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-blue-50 text-center font-bold text-blue-700 w-1/5",
     scope: "col"
-  }, "4 — Advanced"))), /*#__PURE__*/React.createElement("tbody", null, rubric.map((row, ri) => /*#__PURE__*/React.createElement("tr", {
+  }, "4 — ", levelNames[3]))), /*#__PURE__*/React.createElement("tbody", null, rubric.map((row, ri) => /*#__PURE__*/React.createElement("tr", {
     key: ri
   }, /*#__PURE__*/React.createElement("th", {
     scope: "row",
@@ -1613,7 +1838,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
       [row.criteria]: level
     }),
     "aria-pressed": String(selfScores[row.criteria]) === level,
-    "aria-label": row.criteria + ': ' + level + ' — ' + ['Beginning', 'Developing', 'Proficient', 'Advanced'][Number(level) - 1],
+    "aria-label": row.criteria + ': ' + level + ' — ' + levelNames[Number(level) - 1],
     "aria-describedby": 'dbq-rubric-description-' + ri + '-' + level
   }, String(selfScores[row.criteria]) === level && /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
@@ -1637,13 +1862,13 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     className: "bg-indigo-100 rounded-lg px-4 py-2 border-2 border-indigo-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-indigo-600"
-  }, "AVERAGE"), /*#__PURE__*/React.createElement("div", {
+  }, L('dbq.average_caps', 'AVERAGE')), /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-indigo-800"
   }, (rubricScores.reduce((sum, entry) => sum + entry[1], 0) / rubricScores.length).toFixed(1), "/4"))))), dbqData.teacherNotes && isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "bg-purple-50 border border-purple-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-purple-700 uppercase mb-1"
-  }, "🍎 Teacher Notes"), /*#__PURE__*/React.createElement("p", {
+  }, "🍎 ", L('dbq.teacher_notes', 'Teacher Notes')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-purple-800"
   }, dbqData.teacherNotes)))));
 }

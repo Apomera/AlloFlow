@@ -785,6 +785,35 @@ const handleStartAdventure = async (deps) => {
       return true;
 };
 
+// Device adventure saves are stamped with the learner who made them. The host
+// (AlloFlowANTI.txt: the autosave stamp and the "Resume" gate) inlines the same
+// rules; tests/fix1025_B_adventure_learner.test.js checks the copies agree.
+//   teacher                    -> 'teacher'
+//   student with a profile     -> 'profile:<id>|<nickname key>'
+//   student with a nickname    -> '<nickname key>' (the pre-2026-10-25 format)
+//   anonymous student          -> ''  (never reopened by another student)
+const adventureLearnerKey = ({ isTeacher, profileId, nickname } = {}, lessonKeyOf = window._alloAdventureLessonKey) => {
+  const nickKey = typeof lessonKeyOf === 'function' ? String(lessonKeyOf([], nickname) || '') : '';
+  if (isTeacher) return 'teacher';
+  if (profileId) return 'profile:' + encodeURIComponent(String(profileId)) + '|' + nickKey;
+  return nickKey;
+};
+// profileId undefined = the caller cannot tell (older host): a profile stamp is then
+// left to the host's Resume gate, which does know the profile.
+const adventureSaveMatchesLearner = (saved, { isTeacher, profileId, nickname } = {}, lessonKeyOf = window._alloAdventureLessonKey) => {
+  if (typeof saved !== 'string') return true;
+  if (saved === 'teacher' || saved === '') return !!isTeacher;
+  const nickKey = typeof lessonKeyOf === 'function' ? String(lessonKeyOf([], nickname) || '') : '';
+  if (saved.indexOf('profile:') === 0) {
+    const bar = saved.indexOf('|');
+    let savedProfile = '';
+    try { savedProfile = decodeURIComponent(saved.slice(8, bar < 0 ? saved.length : bar)); } catch (_) { return false; }
+    if (profileId === undefined) return true;
+    return !!savedProfile && savedProfile === String(profileId || '');
+  }
+  return !!nickKey && saved === nickKey;
+};
+
 const handleResumeAdventure = async (deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureTypingPaceEnabled, setAdventureFluencyEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, adventureImageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleResumeAdventure fired"); } catch(_) {}
@@ -823,7 +852,11 @@ const handleResumeAdventure = async (deps) => {
           }
           // Saves stamped with a learner key open only for that learner (shared devices).
           if (typeof savedConfig.learnerKey === 'string' && typeof _lessonKeyOf === 'function'
-              && savedConfig.learnerKey !== _lessonKeyOf([], deps.studentNickname)) {
+              && !adventureSaveMatchesLearner(savedConfig.learnerKey, {
+                isTeacher: !!isTeacherMode,
+                profileId: typeof deps.selectedProfileId === 'string' ? deps.selectedProfileId : undefined,
+                nickname: deps.studentNickname
+              }, _lessonKeyOf)) {
               addToast(t('toasts.adventure_other_learner'), "error");
               setHasSavedAdventure(false);
               return;
@@ -1916,6 +1949,8 @@ window.AlloModules.AdventureHandlers = {
   cancelAdventureEstablishingShot,
   resolveProtagonistAge,
   PROTAGONIST_AGE_BY_GRADE,
+  adventureLearnerKey,
+  adventureSaveMatchesLearner,
 };
 
 window.AlloModules.AdventureHandlersModule = true;

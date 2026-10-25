@@ -33,6 +33,21 @@ const isUsableGeneratedResource = (item, expectedType) => {
   if (Array.isArray(item.data) && item.data.length === 0) return false;
   return true;
 };
+// The per-type minimum-content rule lives with the dispatcher (every generation
+// passes through it, so it is loaded whenever a pack row runs). A shape-valid but
+// empty resource fails the row as retryable instead of being recorded as landed.
+const hasMinimumGeneratedContent = (item, expectedType) => {
+  let rule = null;
+  try { rule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenDispatcher && window.AlloModules.GenDispatcher.hasMinimumContent; } catch (_) {}
+  if (typeof rule !== 'function') return true;
+  try { return rule(expectedType || (item && item.type), item && item.data) !== false; } catch (_) { return true; }
+};
+const assertFullPackResultContent = (item, type, retry) => {
+  if (!isUsableGeneratedResource(item, type)) throw new Error('handleGenerate ' + (retry ? 'retry ' : '') + 'returned an unusable ' + type + ' resource');
+  if (!hasMinimumGeneratedContent(item, type)) {
+    throw Object.assign(new Error('The ' + type + ' came back with no content (nothing to teach from).'), { emptyGeneration: true });
+  }
+};
 let _fullPackAbortCtl = null;
 let _fullPackRunInFlight = false;
 const handleStopFullPack = () => {
@@ -334,6 +349,9 @@ const _buildFullPackGenerationSettings = (options = {}) => {
     gradeLevel: String(options.gradeLevel || options.grade || ''),
     language: String(options.language || options.leveledTextLanguage || 'English'),
     selectedLanguages: Array.isArray(options.selectedLanguages) ? options.selectedLanguages.slice() : [],
+    nativeLanguageDefaultsVersion: Number(options.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+    appLanguage: options.appLanguage || options.currentUiLanguage || 'English',
+    effectiveLanguageList: Array.isArray(options.effectiveLanguageList) ? options.effectiveLanguageList.slice() : [],
     differentiationRange: String(options.differentiationRange || 'None'),
     differentiationGrades: Array.isArray(options.differentiationGrades || options.grades)
       ? (options.differentiationGrades || options.grades).slice() : [],
@@ -366,6 +384,27 @@ const _buildFullPackGenerationSettings = (options = {}) => {
     visionModel: String(options.visionModel || ''),
     forceRefresh: !!options.forceRefresh,
   });
+};
+const resolveFullPackProfileLanguage = (profile = {}, inherited = {}, reviewed = false) => {
+  const helpers = window.AlloModules?.TextPipelineHelpers;
+  const version = reviewed ? (Number(profile.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0)
+    : (Number(inherited.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0);
+  const appLanguage = reviewed ? profile.appLanguage || profile.currentUiLanguage || 'English'
+    : inherited.appLanguage || inherited.currentUiLanguage || 'English';
+  const hasPreference = profile.outputLanguagePreference || profile.leveledTextLanguage;
+  const preference = hasPreference && helpers?.normalizeOutputLanguagePreference?.(profile.outputLanguagePreference, profile.leveledTextLanguage);
+  const language = reviewed ? profile.leveledTextLanguage || profile.language || 'English'
+    : preference && helpers?.resolveOutputLanguagePreference ? helpers.resolveOutputLanguagePreference(preference, appLanguage)
+      : profile.leveledTextLanguage || inherited.leveledTextLanguage || appLanguage;
+  const selected = Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : inherited.selectedLanguages || [];
+  const frozenList = reviewed && Array.isArray(profile.effectiveLanguageList) && profile.effectiveLanguageList.length
+    ? profile.effectiveLanguageList.slice() : version
+      ? helpers?.allGenerationLanguages?.(appLanguage, selected) || [appLanguage, ...selected]
+      : ['English', ...selected];
+  return { nativeLanguageDefaultsVersion: version, appLanguage,
+    currentUiLanguage: reviewed ? profile.currentUiLanguage || appLanguage : appLanguage,
+    leveledTextLanguage: language, effectiveLanguageList: frozenList,
+    outputLanguagePreference: profile.outputLanguagePreference || inherited.outputLanguagePreference };
 };
 const _fallbackFullPackPlanRows = (rows, settings) => {
   const selected = (Array.isArray(rows) ? rows : []).map((raw, index) => {
@@ -1685,7 +1724,9 @@ const generateMathAssessment = async (blocks, options = {}) => {
   const language = options.language || 'English';
   // Only the shared resolver may read the multi-state setting; without one, stay single-language.
   const translation = typeof options.resolveTranslationPolicy === 'function'
-    ? options.resolveTranslationPolicy(options.translationMode, language, options.uiLanguage)
+    ? options.resolveTranslationPolicy(options.translationMode, language, options.uiLanguage,
+        ...(Array.isArray(options.selectedLanguages)
+          ? [window.AlloModules?.TextPipelineHelpers?.translationTargetChoices?.(language, options.uiLanguage, options.selectedLanguages)] : []))
     : { enabled: false, target: 'English' };
   const resourceId = options.resourceId || _nextMathGeneratedResourceId([]);
   for (let index = 0; index < blocks.length; index++) {
@@ -1758,7 +1799,9 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
   // has not threaded the resolver yet, so a stale CDN never silently changes
   // what teachers get.
   const _xlate = (typeof resolveTranslationPolicy === 'function')
-    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage)
+    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage,
+        ...(Array.isArray(deps.selectedLanguages)
+          ? [window.AlloModules?.TextPipelineHelpers?.translationTargetChoices?.(leveledTextLanguage, currentUiLanguage, deps.selectedLanguages)] : []))
     : { enabled: !!leveledTextLanguage && leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleGenerateMath fired"); } catch(_) {}
       const problemToSolve = typeof inputOverride === 'string' ? inputOverride : mathInput;
@@ -1801,7 +1844,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           if (effectiveMode === 'Freeform Builder') {
               prompt = `
                 You are an Expert Math Curriculum Designer creating a CUSTOM problem set.
-                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
+                ${leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Teacher's Request: "${problemToSolve}"
                 ${mathContextPrompt}
                 Subject: ${mathSubject}
@@ -1864,7 +1907,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           } else if (effectiveMode === 'Problem Set Generator') {
               prompt = `
                 You are an expert Math Curriculum Designer.
-                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
+                ${leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Topic/Skill: "${problemToSolve}"
                 ${mathContextPrompt}
                 Instruction: Create EXACTLY ${requestedCount} problems, matching the requested skill, types, and difficulty.
@@ -1897,7 +1940,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           } else {
               prompt = `
                 You are an Expert Math & Science Tutor.
-                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
+                ${leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Subject: ${mathSubject}
                 Mode: ${mathMode}
                 Problem: "${problemToSolve}",
@@ -1983,7 +2026,13 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
               meta: `${mathSubject} - ${mathMode}`,
               title: normalizedContent.title,
               timestamp: new Date(),
-              config: {}
+              config: {
+                  language: leveledTextLanguage || 'English',
+                  translationMode: _xlate.mode || 'auto',
+                  currentUiLanguage: currentUiLanguage || 'English',
+                  translationTarget: _xlate.enabled ? _xlate.target : null,
+                  translationPolicy: { enabled: !!_xlate.enabled, target: _xlate.target || '', mode: _xlate.mode || 'auto' }
+              }
           };
           // Keep the active artifact byte-for-byte aligned with the history
           // entry. Dropping meta/title/config here made a freshly generated
@@ -2070,7 +2119,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
   // has not threaded the resolver yet, so a stale CDN never silently changes
   // what teachers get.
   const _xlate = (typeof resolveTranslationPolicy === 'function')
-    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage)
+    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage,
+        ...(Array.isArray(selectedLanguages)
+          ? [window.AlloModules?.TextPipelineHelpers?.translationTargetChoices?.(leveledTextLanguage, currentUiLanguage, selectedLanguages)] : []))
     : { enabled: !!leveledTextLanguage && leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleGenerateFullPack fired"); } catch(_) {}
     const _fullPackStartedAt = Date.now();
@@ -2182,6 +2233,14 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     if (_fullPackRunAbortCtl) _fullPackAbortCtl = _fullPackRunAbortCtl;
     const _fullPackGenerationConfig = _captureFullPackGenerationConfig(deps);
     const _fullPackSettingsSnapshot = Object.freeze({
+        outputLanguagePreference: deps.outputLanguagePreference,
+        nativeLanguageDefaultsVersion: Number(deps.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+        appLanguage: deps.appLanguage || currentUiLanguage || 'English',
+        effectiveLanguageList: Array.isArray(deps.effectiveLanguageList) ? deps.effectiveLanguageList.slice()
+            : (Number(deps.nativeLanguageDefaultsVersion) >= 1
+                ? window.AlloModules?.TextPipelineHelpers?.allGenerationLanguages?.(deps.appLanguage || currentUiLanguage, selectedLanguages)
+                    || [deps.appLanguage || currentUiLanguage || 'English', ...(selectedLanguages || [])]
+                : ['English', ...(selectedLanguages || [])]),
         selectedReadingSourceId: selectedReadingSourceId || '',
         activeUnitId: activeUnitId || null,
         gradeLevel,
@@ -2382,6 +2441,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     profile.fullPackGenerationConfig || _fullPackGenerationConfig
                 );
                 const groupDeps = Object.assign({}, deps, groupFrozenGenerationDeps, {
+                    ...resolveFullPackProfileLanguage(profile, _fullPackSettingsSnapshot, !!reviewedGroupRun),
                     isProcessing: false,
                     setIsProcessing: () => {},
                     fullPackTargetGroup: 'none',
@@ -2389,9 +2449,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     history: sharedGroupHistory,
                     handleGenerate: sharedGroupHandleGenerate,
                     gradeLevel: profile.gradeLevel || gradeLevel,
-                    leveledTextLanguage: profile.leveledTextLanguage || leveledTextLanguage,
                     translationMode: profile.translationMode === undefined ? translationMode : profile.translationMode,
-                    currentUiLanguage: profile.currentUiLanguage || currentUiLanguage,
                     studentInterests: profile.studentInterests
                         ? (Array.isArray(profile.studentInterests) ? profile.studentInterests : String(profile.studentInterests).split(',').map(s => s.trim()).filter(Boolean))
                         : studentInterests,
@@ -2784,10 +2842,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             interests: Array.isArray(studentInterests) ? studentInterests : [],
             dokLevel: dokLevel || '',
             useEmojis: !!useEmojis,
-            translationMode: translationMode || '',
-            currentUiLanguage: currentUiLanguage || '',
+            translationMode: _fullPackSettingsSnapshot.nativeLanguageDefaultsVersion ? (_xlate.enabled ? 'included' : 'off') : translationMode || '',
+            currentUiLanguage: _fullPackSettingsSnapshot.nativeLanguageDefaultsVersion ? '' : currentUiLanguage || '',
             translationTarget: _xlate && _xlate.target || '',
-            selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages : [],
+            selectedLanguages: _fullPackSettingsSnapshot.nativeLanguageDefaultsVersion ? [] : (Array.isArray(selectedLanguages) ? selectedLanguages : []),
             groupId: fullPackGroupId || null,
         }));
         const _matrixGenerationContext = _buildFullPackScopedGenerationContext(
@@ -2812,6 +2870,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 leveledTextLanguage,
                 selectedLanguages,
                 differentiationRange,
+                nativeLanguageDefaultsVersion: _fullPackSettingsSnapshot.nativeLanguageDefaultsVersion,
+                appLanguage: _fullPackSettingsSnapshot.appLanguage,
+                effectiveLanguageList: _fullPackSettingsSnapshot.effectiveLanguageList,
                 differentiationGrades: _diffLevels,
                 differentiationCustomGrades,
                 differentiationTypes: Array.from(_diffTypeSet),
@@ -3115,6 +3176,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         contextInputsFingerprint: variant.contextInputsFingerprint
                             || rowMatrixSettings.contextInputsFingerprint || '',
                         generationMatrixManaged: true,
+                        nativeLanguageDefaultsVersion: Number(rowMatrixSettings.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+                        appLanguage: rowMatrixSettings.appLanguage || rowMatrixSettings.currentUiLanguage || 'English',
+                        effectiveLanguageList: rowMatrixSettings.effectiveLanguageList,
+                        requestedOutputLanguage: rowMatrixSettings.language || _fullPackSettingsSnapshot.leveledTextLanguage,
                         translationMode: rowMatrixSettings.translationMode || translationMode || '',
                         currentUiLanguage: rowMatrixSettings.currentUiLanguage || currentUiLanguage || '',
                         translationTarget: rowMatrixSettings.translationTarget || (_xlate && _xlate.target) || '',
@@ -3153,6 +3218,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         ..._fullPackGenerationConfigDeps(_fullPackGenerationConfig),
                         gradeLevel: cellGrade,
                         leveledTextLanguage: cellLanguage,
+                        nativeLanguageDefaultsVersion: Number(rowMatrixSettings.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+                        appLanguage: rowMatrixSettings.appLanguage || rowMatrixSettings.currentUiLanguage || 'English',
+                        effectiveLanguageList: rowMatrixSettings.effectiveLanguageList,
                         studentInterests: Array.isArray(rowMatrixSettings.studentInterests)
                             ? rowMatrixSettings.studentInterests.slice() : studentInterests,
                         dokLevel: effectiveDokLevel,
@@ -3190,7 +3258,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     try {
                         resultItem = await handleGenerate(type, cellLanguage, keepLoading, batchSourceText, cellConfig, false, generationDepsOverride);
                         plannedCallsRemaining = Math.max(0, plannedCallsRemaining - 1);
-                        if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate returned an unusable ' + type + ' resource');
+                        assertFullPackResultContent(resultItem, type, false);
                     } catch (error) {
                         plannedCallsRemaining = Math.max(0, plannedCallsRemaining - 1);
                         finalError = error;
@@ -3217,7 +3285,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                             try {
                                 await _waitForFullPackDelay(failurePolicy.delayMs, _fullPackSignal);
                                 resultItem = await handleGenerate(type, cellLanguage, keepLoading, batchSourceText, cellConfig, false, generationDepsOverride);
-                                if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate retry returned an unusable ' + type + ' resource');
+                                assertFullPackResultContent(resultItem, type, true);
                                 _recordFullPackMetric('retry-recovered', { type });
                             } catch (retryError) {
                                 finalError = retryError;
@@ -3420,7 +3488,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             let resultItem = null;
             try {
                 resultItem = await handleGenerate(type, generationLanguageOverride, !isLast, batchSourceText, stepConfig, false, generationDepsOverride);
-                if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate returned an unusable ' + type + ' resource');
+                assertFullPackResultContent(resultItem, type, false);
                 if (!resultItem.instructionalText && plannedInstructionalText) {
                     resultItem = Object.assign({}, resultItem, { instructionalText: _cloneFullPackValue(plannedInstructionalText) });
                 }
@@ -3446,7 +3514,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     try {
                         await _waitForFullPackDelay(failurePolicy.delayMs, _fullPackSignal);
                         resultItem = await handleGenerate(type, generationLanguageOverride, !isLast, batchSourceText, stepConfig, false, generationDepsOverride);
-                        if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate retry returned an unusable ' + type + ' resource');
+                        assertFullPackResultContent(resultItem, type, true);
                         if (!resultItem.instructionalText && plannedInstructionalText) {
                             resultItem = Object.assign({}, resultItem, { instructionalText: _cloneFullPackValue(plannedInstructionalText) });
                         }
@@ -3647,7 +3715,9 @@ const handleComplexityAdjustment = async (deps) => {
   // has not threaded the resolver yet, so a stale CDN never silently changes
   // what teachers get.
   const resolvedTranslationPolicy = (typeof resolveTranslationPolicy === 'function')
-    ? resolveTranslationPolicy(translationMode, effectiveLanguage, currentUiLanguage)
+    ? resolveTranslationPolicy(translationMode, effectiveLanguage, currentUiLanguage,
+        ...(Array.isArray(deps.selectedLanguages)
+          ? [window.AlloModules?.TextPipelineHelpers?.translationTargetChoices?.(effectiveLanguage, currentUiLanguage, deps.selectedLanguages)] : []))
     : { enabled: !!effectiveLanguage && effectiveLanguage !== 'English' && effectiveLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
   const artifactIsBilingual = generatedContent?.type === 'simplified'
     && typeof generatedContent?.data === 'string'
@@ -3658,7 +3728,7 @@ const handleComplexityAdjustment = async (deps) => {
     generatedContent?.translationPolicy?.target, generatedContent?.translationTarget,
     generatedContent?.config?.translationTarget, generatedContent?.config?.attachedTranslationTarget]
     .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
-  const _xlate = artifactIsBilingual
+  const _xlate = artifactIsBilingual || (generatedContent?.type === 'quiz' && savedTranslationTarget)
     ? { enabled: true, target: window.AlloModules?.TextPipelineHelpers?.getArtifactTranslationTarget?.(generatedContent) || savedTranslationTarget?.trim() || 'English', mode: 'artifact-preserve' }
     : resolvedTranslationPolicy;
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleComplexityAdjustment fired"); } catch(_) {}
@@ -5035,6 +5105,10 @@ const handleApproveFullPack = async (priorRun, deps) => {
   const snapshot = run.settingsSnapshot && typeof run.settingsSnapshot === 'object' ? run.settingsSnapshot : {};
   const frozenGenerationDeps = _fullPackGenerationConfigDeps(snapshot.fullPackGenerationConfig);
   const approvedDeps = Object.assign({}, deps || {}, snapshot, frozenGenerationDeps, {
+    nativeLanguageDefaultsVersion: Number(snapshot.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+    appLanguage: snapshot.appLanguage || snapshot.currentUiLanguage || 'English',
+    currentUiLanguage: snapshot.currentUiLanguage || snapshot.appLanguage || 'English',
+    selectedLanguages: Array.isArray(snapshot.selectedLanguages) ? snapshot.selectedLanguages.slice() : [],
     isProcessing: false,
     fullPackTargetGroup: run.targetMode === 'all-groups' ? 'all' : 'none',
   });
@@ -5064,6 +5138,10 @@ const handleRetryFailedFullPack = async (priorRun, deps) => {
       ? run.settingsSnapshot : {};
     const frozenGenerationDeps = _fullPackGenerationConfigDeps(rootSnapshot.fullPackGenerationConfig);
     const retryDeps = Object.assign({}, deps || {}, rootSnapshot, frozenGenerationDeps, {
+      nativeLanguageDefaultsVersion: Number(rootSnapshot.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+      appLanguage: rootSnapshot.appLanguage || rootSnapshot.currentUiLanguage || 'English',
+      currentUiLanguage: rootSnapshot.currentUiLanguage || rootSnapshot.appLanguage || 'English',
+      selectedLanguages: Array.isArray(rootSnapshot.selectedLanguages) ? rootSnapshot.selectedLanguages.slice() : [],
       isProcessing: false,
       fullPackTargetGroup: 'all',
       rosterKey: Object.assign({}, deps && deps.rosterKey || {}, { groups: rosterGroups }),
@@ -5076,6 +5154,10 @@ const handleRetryFailedFullPack = async (priorRun, deps) => {
   const snapshot = run.settingsSnapshot && typeof run.settingsSnapshot === 'object' ? run.settingsSnapshot : {};
   const frozenGenerationDeps = _fullPackGenerationConfigDeps(snapshot.fullPackGenerationConfig);
   const retryDeps = Object.assign({}, deps || {}, snapshot, frozenGenerationDeps, {
+    nativeLanguageDefaultsVersion: Number(snapshot.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+    appLanguage: snapshot.appLanguage || snapshot.currentUiLanguage || 'English',
+    currentUiLanguage: snapshot.currentUiLanguage || snapshot.appLanguage || 'English',
+    selectedLanguages: Array.isArray(snapshot.selectedLanguages) ? snapshot.selectedLanguages.slice() : [],
     isProcessing: false, fullPackTargetGroup: 'none'
   });
   return handleGenerateFullPack({ __fullPackRetryRun: run }, retryDeps);
@@ -5088,6 +5170,7 @@ window.AlloModules.GenerationHelpers = {
   prepareGeneratedMathContent,
   generateMathAssessment,
   handleGenerateFullPack,
+  resolveFullPackProfileLanguage,
   resolveFullPackReadingSource,
   handlePlanFullPack,
   getFullPackEditableResourceTypes,

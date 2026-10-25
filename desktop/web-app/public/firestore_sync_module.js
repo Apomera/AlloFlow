@@ -692,6 +692,8 @@
     const explanation = !Array.isArray(value) && !scope && Object.prototype.hasOwnProperty.call(value, 'factCheck') ? studentFactCheck(value) : '';
     Object.entries(value).forEach(([key, nested]) => {
       if (TEACHER_ONLY_RESOURCE_KEYS.indexOf(key) >= 0) return;
+      // KWL teacher examples: keep the branch (the student prompt renders), not its items.
+      if (value.teacherExample === true && (key === 'items' || key === 'items_en') && Array.isArray(nested)) { out[key] = []; return; }
       if (key === 'factCheck') { if (explanation) out.factCheck = explanation; return; }
       if (key === 'keyCheck') {
         if (explanation && nested && nested.status === 'confirmed' && String(nested.checkedKey == null ? '' : nested.checkedKey) === String(value.correctAnswer == null ? '' : value.correctAnswer)) out.keyCheck = { status: 'confirmed', checkedKey: nested.checkedKey };
@@ -769,19 +771,45 @@
     'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality',
     'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
   const GRADED_OPTION_FIELDS = ['isCorrect', 'correct', 'isAnswer', 'feedback', 'explanation', 'rationale'];
+  // Sequence Sense items in their displayed order: canonical order is the key.
+  // Mirrors QuizLiveAggregators.sequenceDisplayForm.
+  function sequenceDisplayOrder(question) {
+    const items = question.type === 'sequence-sense' && Array.isArray(question.items) ? question.items : null;
+    const order = question.presentedOrder;
+    if (!items || !Array.isArray(order) || order.length !== items.length || new Set(order).size !== items.length || !order.every(value => Number.isInteger(value) && value >= 0 && value < items.length)) return question;
+    const out = { ...question, presentedOrder: order.map((_, index) => index), itemsInDisplayOrder: true };
+    ['items', 'items_en', 'itemImageUrls', 'itemImageAltTexts', 'itemImagePrompts'].forEach(field => {
+      if (Array.isArray(question[field]) && question[field].length === order.length) out[field] = order.map(index => question[field][index]);
+    });
+    return out;
+  }
+  // teacher-release copies are withheld too; a release made for this exact
+  // version (feedbackReleaseKeys) rides along so learners get their feedback.
   function withholdGradedQuizKeys(resource) {
     const data = resource && resource.type === 'quiz' && resource.data && typeof resource.data === 'object' && !Array.isArray(resource.data) ? resource.data : null;
-    if (!data || !data.deliverySettings || data.deliverySettings.feedbackTiming !== 'teacher-graded') return resource;
+    if (!data) return resource;
     const omit = (value, fields) => Object.fromEntries(Object.entries(value).filter(([key]) => fields.indexOf(key) < 0));
+    const settings = data.deliverySettings && typeof data.deliverySettings === 'object' ? data.deliverySettings : {};
+    if (settings.feedbackTiming !== 'teacher-graded' && settings.feedbackTiming !== 'teacher-release') {
+      return Object.prototype.hasOwnProperty.call(data, 'feedbackReleaseKeys') ? { ...resource, data: omit(data, ['feedbackReleaseKeys']) } : resource;
+    }
+    const release = data.feedbackReleaseKeys;
+    // Only a release for the current version ships: an edit after release
+    // must not send the old key to new learners. No signer -> withheld.
+    const quality = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.keyQuality;
+    const released = settings.feedbackTiming === 'teacher-release' && release && typeof release === 'object' && typeof release.signature === 'string'
+      && release.signature === settings.feedbackReleasedFor && Array.isArray(release.questions)
+      && !!quality && typeof quality.feedbackSignature === 'function' && typeof quality.releaseKeyVersion === 'function'
+      && (() => { try { return quality.feedbackSignature(data) === release.signature && quality.releaseKeyVersion(data) === release.keyVersion; } catch (_) { return false; } })();
     const questions = Array.isArray(data.questions) ? data.questions.map(question => {
       if (!question || typeof question !== 'object' || Array.isArray(question)) return question;
       const kept = omit(question, GRADED_KEY_FIELDS);
       ['options', 'answerOptions', 'evidenceOptions'].forEach(field => {
         if (Array.isArray(kept[field])) kept[field] = kept[field].map(option => option && typeof option === 'object' && !Array.isArray(option) ? omit(option, GRADED_OPTION_FIELDS) : option);
       });
-      return kept;
+      return sequenceDisplayOrder(kept);
     }) : data.questions;
-    return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview']), questions, answerKeysWithheld: true } };
+    return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys']), ...(released ? { feedbackReleaseKeys: release } : {}), questions, answerKeysWithheld: true } };
   }
 
   function prepareSessionResourcesForWrite(resources, options) {

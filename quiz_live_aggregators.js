@@ -57,12 +57,24 @@
 
   // ─── Helper: resolve correct option index for an MCQ ──────────────────
   // Mirrors the export pipeline's _resolveCorrectIdx (doc_pipeline:13235).
+  // What a key check judged: the stem plus the option SET. Order-free, so the
+  // position balancer does not invalidate a check; any wording edit does.
+  function keyCheckShape(question) {
+    var q = question && typeof question === 'object' ? question : {};
+    var norm = function (value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().toLowerCase(); };
+    var serialized = JSON.stringify([norm(q.question), (Array.isArray(q.options) ? q.options : []).map(norm).sort()]);
+    var hash = 2166136261;
+    for (var i = 0; i < serialized.length; i++) { hash ^= serialized.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+    return 'key-shape-v1:' + (hash >>> 0).toString(36);
+  }
+
   function isAnswerKeyDisputed(question) {
     if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
     var review = question.keyCheck;
     var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
     if (review && typeof review === 'object') {
       if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
+      if (review.checkedShape != null && String(review.checkedShape) !== keyCheckShape(question)) return false;
       if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(review.status) >= 0) return review.status === 'disputed';
     }
     return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(question.factCheck || '')) || /correction\s*\/\s*warning/i.test(String(question.factCheck || '').replace(/\*/g, ''));
@@ -112,8 +124,50 @@
   // Fingerprint the public stimulus, never an answer key. Student copies with
   // withheld keys must match the teacher copy; translations and alt text do not
   // change the authored choice represented by a saved response.
-  function assessmentItemSignature(question) {
+  // Sequence Sense as the learner sees it: items in displayed order, identity
+  // presentedOrder. Withheld copies ship this form (the canonical order is the
+  // key), and item signatures hash it so teacher and learner copies agree.
+  var SEQUENCE_ITEM_ARRAYS = ['items', 'items_en', 'itemImageUrls', 'itemImageAltTexts', 'itemImagePrompts'];
+  function sequencePresentedPermutation(question) {
+    var items = question && Array.isArray(question.items) ? question.items : null;
+    var order = question && question.presentedOrder;
+    if (!items || !Array.isArray(order) || order.length !== items.length || new Set(order).size !== items.length) return null;
+    return order.every(function (value) { return Number.isInteger(value) && value >= 0 && value < items.length; }) ? order : null;
+  }
+  function sequenceDisplayForm(question) {
+    if (!question || typeof question !== 'object' || String(question.type || question.itemType || '') !== 'sequence-sense') return question;
+    var order = sequencePresentedPermutation(question);
+    if (!order) return question;
+    var out = Object.assign({}, question);
+    SEQUENCE_ITEM_ARRAYS.forEach(function (field) {
+      if (Array.isArray(question[field]) && question[field].length === order.length) out[field] = order.map(function (index) { return question[field][index]; });
+    });
+    out.presentedOrder = order.map(function (_, index) { return index; });
+    return out;
+  }
+  // A learner on a display-form copy answers in displayed positions; grading
+  // maps them back through the teacher copy's presentedOrder.
+  function canonicalOrderAnswer(question, answer) {
+    var order = answer && Array.isArray(answer.orderAnswer) ? answer.orderAnswer : null;
+    var presented = sequencePresentedPermutation(question);
+    if (!order || answer.orderBasis !== 'displayed' || !presented) return order;
+    return order.map(function (value) { return Number.isInteger(value) && value >= 0 && value < presented.length ? presented[value] : value; });
+  }
+
+  function legacyAssessmentItemSignature(question) {
+    return assessmentItemSignature(question, true);
+  }
+
+  // Self-contained (tests compare it with the view's offline copy). Sequence
+  // Sense hashes its display form unless legacy === true (canonical order).
+  function assessmentItemSignature(question, legacy) {
     var q = question && typeof question === 'object' ? question : {};
+    var shown = q.presentedOrder, count = Array.isArray(q.items) ? q.items.length : -1;
+    if (legacy !== true && String(q.type || q.itemType || '') === 'sequence-sense' && Array.isArray(shown) && shown.length === count && new Set(shown).size === count
+      && shown.every(function (value) { return Number.isInteger(value) && value >= 0 && value < count; })) {
+      q = Object.assign({}, q, { items: shown.map(function (index) { return q.items[index]; }), presentedOrder: shown.map(function (_, index) { return index; }) });
+      if (Array.isArray(question.itemImageUrls) && question.itemImageUrls.length === count) q.itemImageUrls = shown.map(function (index) { return question.itemImageUrls[index]; });
+    }
     var context = { type: String(q.type || q.itemType || 'mcq') };
     var textFields = ['question', 'contextSentence', 'prompt', 'instructions', 'evidencePrompt', 'unit', 'imageUrl'];
     var arrayFields = ['options', 'answerOptions', 'evidenceOptions', 'items', 'presentedOrder', 'pairs', 'candidatePartners', 'principleOptions', 'optionImageUrls', 'answerOptionImageUrls', 'answerImageUrls', 'evidenceOptionImageUrls', 'evidenceImageUrls', 'itemImageUrls', 'candidatePartnerImageUrls', 'principleOptionImageUrls', 'principleOptionsImageUrls'];
@@ -143,7 +197,7 @@
   function assessmentResponseVersionIssue(question, response) {
     if (!response || typeof response !== 'object') return '';
     if (typeof response.questionSignature === 'string' && response.questionSignature) {
-      return response.questionSignature === assessmentItemSignature(question) ? '' : 'mismatch';
+      return response.questionSignature === assessmentItemSignature(question) || response.questionSignature === legacyAssessmentItemSignature(question) ? '' : 'mismatch';
     }
     var type = normalizeItemType(question, response);
     return response.assessmentActivityId && (type === 'sequence-sense' || type === 'relation-mismatch') ? 'unverified' : '';
@@ -169,7 +223,7 @@
       evidenceIdx: choice(a.evidenceIdx, a.evidenceText, question.evidenceOptions)
     };
     else if (type === 'numeric-response') reviewed = { numericValue: extractNumericAnswer(response), unit: normalizePresentationUnit(extractNumericUnit(response)), unparsedText: extractNumericAnswer(response) == null ? extractTextAnswer(response) : '' };
-    else if (type === 'sequence-sense') reviewed = { verifyAnswer: a.verifyAnswer || '', clickedIdx: Number.isInteger(a.clickedIdx) ? a.clickedIdx : null, orderAnswer: Array.isArray(a.orderAnswer) ? a.orderAnswer : null, principleAnswer: a.principleAnswer || '' };
+    else if (type === 'sequence-sense') reviewed = { verifyAnswer: a.verifyAnswer || '', clickedIdx: Number.isInteger(a.clickedIdx) ? a.clickedIdx : null, orderAnswer: canonicalOrderAnswer(question, a), principleAnswer: a.principleAnswer || '' };
     else if (type === 'relation-mismatch') reviewed = { clickedPairIdx: Number.isInteger(a.clickedPairIdx) ? a.clickedPairIdx : null, partnerAnswer: a.partnerAnswer || '' };
     else if (type === 'order') reviewed = extractOrderAnswer(response);
     else if (type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') reviewed = { text: extractTextAnswer(response) };
@@ -189,7 +243,7 @@
     }
     try {
       var serialized = JSON.stringify(stable({
-        question: assessmentItemSignature(question), responseQuestion: envelope.questionSignature || assessmentItemSignature(question),
+        question: legacyAssessmentItemSignature(question), responseQuestion: envelope.questionSignature || legacyAssessmentItemSignature(question),
         activity: envelope.assessmentActivityId || '', attempt: envelope.assessmentAttemptId || '', attemptStartedAt: envelope.assessmentAttemptStartedAt || 0,
         answer: reviewed, keys: keys, keyUnderReview: isAnswerKeyDisputed(question)
       }));
@@ -339,6 +393,34 @@
 
   function normalizePresentationComparable(value) {
     return String(value == null ? '' : value).trim().toLowerCase();
+  }
+
+  // Fill-blank keys tolerate case, width/composition, whitespace runs, and
+  // wrapping quotes, brackets, or sentence punctuation. Signs, %, and inner
+  // punctuation stay significant ("-5" is not "5").
+  function normalizeFillBlankComparable(value) {
+    var s = String(value == null ? '' : value);
+    if (typeof s.normalize === 'function') s = s.normalize('NFKC');
+    s = s.toLowerCase().replace(/\s+/g, ' ').trim();
+    var previous;
+    do {
+      previous = s;
+      s = s.replace(/^["'`‘’“”«»¿¡([{]+/, '').replace(/["'`‘’“”«»)\]}.,;:!?…]+$/, '').trim();
+    } while (s !== previous);
+    return s;
+  }
+
+  // Pure fill-blank verdict. A miss the learner's AI check called correct
+  // (a typo, a synonym, or a different real word such as affect/effect) goes
+  // to teacher review instead of contradicting what the learner was shown.
+  function gradeFillBlankAnswer(text, question, studentAiVerdict) {
+    var answer = normalizeFillBlankComparable(text);
+    var targets = [question && question.expectedFill || ''].concat(question && Array.isArray(question.acceptableAlternatives) ? question.acceptableAlternatives : [])
+      .map(normalizeFillBlankComparable).filter(Boolean);
+    if (!answer || !targets.length) return { status: 'submitted', evaluable: false };
+    if (targets.indexOf(answer) !== -1) return { status: 'correct', evaluable: true };
+    if (String(studentAiVerdict || '').trim().toLowerCase() === 'correct') return { status: 'submitted', evaluable: false, needsReview: true, studentAiVerdict: 'correct' };
+    return { status: 'incorrect', evaluable: true };
   }
 
   function normalizePresentationUnit(value) {
@@ -529,11 +611,9 @@
       return result(multiStatus, true, multiScore, { scoreFraction: multiScore / 100 });
     }
     if (type === 'fill-blank') {
-      var text = normalizeComparable(extractTextAnswer(response));
-      var targets = [question && question.expectedFill || ''].concat(question && Array.isArray(question.acceptableAlternatives) ? question.acceptableAlternatives : [])
-        .map(normalizeComparable).filter(Boolean);
-      if (!text || !targets.length) return result('submitted', false, null);
-      return result(targets.indexOf(text) !== -1 ? 'correct' : 'incorrect', true, targets.indexOf(text) !== -1 ? 100 : 0);
+      var fill = gradeFillBlankAnswer(extractTextAnswer(response), question, answerObject.aiVerdict);
+      if (!fill.evaluable) return result('submitted', false, null, fill.needsReview ? { needsReview: true, studentAiVerdict: fill.studentAiVerdict } : null);
+      return result(fill.status, true, fill.status === 'correct' ? 100 : 0);
     }
     if (type === 'numeric-response') {
       var value = extractNumericAnswer(response);
@@ -580,7 +660,7 @@
       // Clients that ran the arrange step send orderAnswer (canonical indices in
       // the student's arrangement) and are scored out of 4; older payloads have
       // none and stay 3-step so their totals do not shift under them.
-      var orderAnswer = Array.isArray(answerObject.orderAnswer) ? answerObject.orderAnswer : null;
+      var orderAnswer = canonicalOrderAnswer(question, answerObject);
       var arrangeCorrect = orderAnswer
         ? orderAnswer.length === sequenceItemCount && orderAnswer.every(function (value, index) { return value === index; })
         : null;
@@ -1014,7 +1094,7 @@
       hasResponse = hasAnswer || hasEvidence; answered = hasAnswer && hasEvidence;
     } else if (type === 'sequence-sense') {
       var verify = a.verifyAnswer === 'yes' || a.verifyAnswer === 'no';
-      var changedOrder = Array.isArray(a.orderAnswer) && JSON.stringify(a.orderAnswer) !== JSON.stringify(question && question.presentedOrder || []);
+      var changedOrder = Array.isArray(a.orderAnswer) && JSON.stringify(canonicalOrderAnswer(question, a)) !== JSON.stringify(question && question.presentedOrder || []);
       hasResponse = verify || index(a.clickedIdx) || text(a.principleAnswer) || changedOrder;
       answered = verify && text(a.principleAnswer) && (a.verifyAnswer === 'yes' || index(a.clickedIdx));
     } else if (type === 'relation-mismatch') {
@@ -2213,12 +2293,17 @@
     gradeResponseForItem: gradeResponseForItem,
     gradePresentationResponse: gradePresentationResponse,
     isAnswerKeyDisputed: isAnswerKeyDisputed,
+    keyCheckShape: keyCheckShape,
+    normalizeFillBlankComparable: normalizeFillBlankComparable,
+    gradeFillBlankAnswer: gradeFillBlankAnswer,
     presentationQuestionIsGameScorable: presentationQuestionIsGameScorable,
     aggregatePresentationResponses: aggregatePresentationResponses,
     isUnscoredPollQuestion: isUnscoredPollQuestion,
     normalizeItemType: normalizeItemType,
     normalizeLiveScoringPolicy: normalizeLiveScoringPolicy,
     assessmentItemSignature: assessmentItemSignature,
+    legacyAssessmentItemSignature: legacyAssessmentItemSignature,
+    sequenceDisplayForm: sequenceDisplayForm,
     assessmentResponseFingerprint: assessmentResponseFingerprint,
     assessmentAnswerSummary: assessmentAnswerSummary,
     assessmentResponseState: assessmentResponseState,

@@ -1109,7 +1109,9 @@ describe('Readiness confirmations belong to the reviewed lesson', () => {
     localStorage.setItem(key, JSON.stringify({ accessibility: true, backup: true, directions: true }));
     const b = mountBanner(props());
     expect(check(b).checked).toBe(false);
-    expect(b.text()).toContain('0/6');
+    // 1/6: only the computed answer-key check (a key-free reading on the
+    // default homework route, fix1025 lane E); no manual check is inherited.
+    expect(b.text()).toContain('1/6');
     b.cleanup();
   });
 

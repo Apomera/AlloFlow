@@ -283,7 +283,9 @@ const WordSoundsReviewPanel = ({
     isProbeMode,
     // Words the student player skips in Word Families (no playable board),
     // computed by the player so this list and the skip always agree.
-    wordFamilySkips
+    wordFamilySkips,
+    soundSortSkips,
+    soundSwapSkips
 }) => {
     // Setup can select several activities; standalone sessions provide only
     // the current activity. Older hosts that provide neither retain the full
@@ -786,6 +788,14 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         const label = t('word_sounds.word_families_skipped_for_students', { count: skipped.length, words }) || '{count} skipped for students in Word Families (needs a reviewed word family): {words}';
                         return <p role="note" data-ws-word-family-skips="true" className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900">{label.replace(/\{\{?count\}?\}/g, String(skipped.length)).replace(/\{\{?words\}?\}/g, words)}</p>;
                     })()}
+                    {[['sound_sort', soundSortSkips, 'word_sounds.sound_sort_skipped_for_students', '{count} skipped for students in Sound Sort (no word set for that sound): {words}'],
+                      ['manipulation', soundSwapSkips, 'word_sounds.sound_swap_skipped_for_students', '{count} skipped for students in Sound Swap (no checked one-sound change): {words}']].map(([activity, list, key, fallback]) => {
+                        const skipped = reviewsActivity(activity) && Array.isArray(list) ? list.filter(Boolean) : [];
+                        if (!skipped.length) return null;
+                        const words = skipped.join(', ');
+                        const label = t(key, { count: skipped.length, words }) || fallback;
+                        return <p key={activity} role="note" data-ws-activity-skips={activity} className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900">{label.replace(/\{\{?count\}?\}/g, String(skipped.length)).replace(/\{\{?words\}?\}/g, words)}</p>;
+                    })}
                     {/* Pack completeness: what the student device will actually
                         have, per activity — portable audio, board answers,
                         decoding pictures. Rendered only when something is

@@ -2021,6 +2021,8 @@ const createExport = deps => {
       t
     } = liveRef.current;
     const history = _readingSourcePairsForExport(Object.prototype.hasOwnProperty.call(options, 'history') ? options.history : liveRef.current.history);
+    // 'student' leaves activity answer keys and facilitation notes off the slides.
+    const slideAudience = options.audience === 'student' ? 'student' : 'teacher';
     if (Object.prototype.hasOwnProperty.call(options, 'liveHtml')) {
       try {
         if (typeof options.liveHtml !== 'string' || !options.liveHtml.trim()) throw new Error('The editable preview is not ready.');
@@ -2678,7 +2680,10 @@ const createExport = deps => {
           addSlideTitle(slide, item.data.main || itemTitle);
           const richText = [];
           const branches = Array.isArray(item.data.branches) ? item.data.branches : [];
-          branches.forEach(b => {
+          // KWL teacher examples: a student deck gets the prompt instead; a teacher deck labels them.
+          const kwlExamples = item.data.structureType === 'KWL Chart' && branches.some(b => b && b.teacherExample === true);
+          const kwlPrompts = [['kwl_prompt_know', 'What do you already know?'], ['kwl_prompt_want', 'What do you want to know?'], ['kwl_prompt_learned', 'What did you learn?']];
+          branches.forEach((b, bi) => {
             richText.push({
               text: b.title,
               options: {
@@ -2692,6 +2697,20 @@ const createExport = deps => {
                 }
               }
             });
+            const kwlItems = Array.isArray(b.items) ? b.items : [];
+            const kwlStudentPrompt = kwlExamples && slideAudience === 'student' && kwlPrompts[bi] && (b.teacherExample === true || !kwlItems.length && item.data.kwlTeacherExamples === true);
+            const kwlNote = kwlStudentPrompt ? _nsT('outline.' + kwlPrompts[bi][0], kwlPrompts[bi][1]) : kwlExamples && slideAudience !== 'student' && b.teacherExample === true && kwlItems.length ? _nsT('outline.kwl_teacher_examples', 'Teacher examples (hidden from students)') : '';
+            if (kwlNote) richText.push({
+              text: kwlNote,
+              options: {
+                fontSize: 13,
+                italic: true,
+                breakLine: true,
+                color: '475569',
+                indentLevel: 1
+              }
+            });
+            if (kwlStudentPrompt) return;
             if (Array.isArray(b.items)) {
               b.items.forEach(sub => {
                 richText.push({
@@ -2895,7 +2914,9 @@ const createExport = deps => {
             });
             return out;
           };
-          const text = (type === 'brainstorm' && Array.isArray(item.data) && _describeActivity ? item.data.map(entry => entry && (entry.kind === 'discussion' || entry.kind === 'jigsaw') ? _describeActivity(entry, _activityLabels()) : resourceText(entry)).filter(Boolean).join('\n\n') : resourceText(item.data)).replace(/\n{3,}/g, '\n\n').trim();
+          const text = (type === 'brainstorm' && Array.isArray(item.data) && _describeActivity ? item.data.map(entry => entry && (entry.kind === 'discussion' || entry.kind === 'jigsaw') ? _describeActivity(entry, _activityLabels(), {
+            audience: slideAudience
+          }) : resourceText(entry)).filter(Boolean).join('\n\n') : resourceText(item.data)).replace(/\n{3,}/g, '\n\n').trim();
           const chunks = chunkText(text || itemTitle, 760);
           chunks.forEach((chunk, index) => {
             const slide = pptx.addSlide({
@@ -3917,7 +3938,14 @@ const createExport = deps => {
       region
     };
   };
-  const _glossarySourceLanguage = (resource, item, field) => [item && item[field], resource && resource.language, resource && resource.baseLanguage].find(value => typeof value === 'string' && value.trim())?.trim() || 'English';
+  const _glossarySourceLanguage = (resource, item, field) => {
+    const explicit = [item && item[field], item && item.baseLanguage, item && item.termLanguage].find(value => typeof value === 'string' && value.trim());
+    if (explicit) return explicit.trim();
+    const resolve = typeof window !== 'undefined' && window.AlloModules?.TextPipelineHelpers?.getGlossaryBaseLanguage;
+    if (typeof resolve === 'function') return resolve(resource);
+    const translated = resource?.translationOf || resource?.translationSourceId || resource?.sourceTranslationOf || resource?.config?.translationOf || resource?.config?.translationSourceId || resource?.config?.sourceTranslationOf || resource?.meta?.translatedTo;
+    return [resource && resource.baseLanguage, resource && resource.glossaryBaseLanguage, resource?.config?.baseLanguage, resource?.config?.glossaryBaseLanguage].find(value => typeof value === 'string' && value.trim())?.trim() || (!resource?.config?.language && !translated && typeof resource?.language === 'string' ? resource.language.trim() : '') || 'English';
+  };
   const _glossaryAudioLanguageMatches = (stored, requested) => {
     // Older exact-text clips did not record language; retain that legacy
     // lane. A known saved language must match the current card instead.
@@ -4187,7 +4215,7 @@ const createExport = deps => {
                     `;
           backContent = `
                         <div class="def-text"><strong>${_escapeExportText(definitionLabel)}:</strong> <span${definitionAttrs}>${cleanText(item.def || item.definition)}</span></div>
-                        ${transDef ? `<div class="def-trans"><strong>${_escapeExportText(lang)}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}
+                        ${transDef ? `<div class="def-trans"><strong>${_escapeExportText(lang)}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}${typeof item.contextSentence === 'string' && item.contextSentence.trim() ? `<div class="def-text" data-context-sentence style="margin-top:8px;"><strong>${_escapeExportText(_gxText('glossary.context_sentence_label', 'In the text:'))}</strong> <q${definitionAttrs}>${cleanText(item.contextSentence.trim())}</q></div>` : ''}
                         ${item.etymology ? `<div class="etym-text">📜 <strong>${_escapeExportText(t('glossary.etymology_label') || 'Roots')}:</strong> ${cleanText(item.etymology)}</div>` : ''}
                         ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => `<span class="root-chip"><b>${cleanText(r.root || '')}</b>${r.lang ? ` <i>(${cleanText(r.lang)})</i>` : ''}${r.meaning ? ` = ${cleanText(r.meaning)}` : ''}</span>`).join(' ')}</div>${(() => {
             const seen = new Set();

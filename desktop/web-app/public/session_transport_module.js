@@ -71,20 +71,40 @@
   }
 
   // The single student-safe candidate rule for EVERY content channel:
-  // a resource must have an id and must not be a teacher-only type.
+  // a resource must have an id and must not be a teacher-only type. A
+  // student's submitted copy under teacher review never travels back out,
+  // even when a caller forgets to drop it first.
+  function isSubmissionCopy(item) {
+    return !!(item && item.data && typeof item.data === 'object' && item.data.submissionCopy);
+  }
+  // KWL teacher examples (branch.teacherExample) stay on the teacher's device;
+  // the branch stays so the student's writing prompt still renders.
+  function withoutTeacherExamples(item) {
+    var data = item && item.data;
+    if (!data || typeof data !== 'object' || !Array.isArray(data.branches)) return item;
+    var changed = false;
+    var branches = data.branches.map(function (branch) {
+      if (!branch || branch.teacherExample !== true) return branch;
+      var next = Object.assign({}, branch);
+      ['items', 'items_en'].forEach(function (key) { if (Array.isArray(next[key]) && next[key].length) { next[key] = []; changed = true; } });
+      return next;
+    });
+    return changed ? Object.assign({}, item, { data: Object.assign({}, data, { branches: branches }) }) : item;
+  }
   function studentSafeResources(history, teacherOnlyTypes, projectActivity) {
     var blocked = Array.isArray(teacherOnlyTypes) ? teacherOnlyTypes : [];
     var reading = window.AlloModules && window.AlloModules.InstructionalContext;
+    var source = (Array.isArray(history) ? history : []).filter(function (item) { return !isSubmissionCopy(item); });
     var resources = reading && typeof reading.ensureReadingSourcePairs === 'function'
-      ? reading.ensureReadingSourcePairs(Array.isArray(history) ? history : []) : history;
+      ? reading.ensureReadingSourcePairs(source) : source;
     return (Array.isArray(resources) ? resources : []).map(function (item) {
-      if (!item || !item.id || !item.type) return null;
+      if (!item || !item.id || !item.type || isSubmissionCopy(item)) return null;
       if (item.type === 'brainstorm') {
         var projected = typeof projectActivity === 'function' ? projectActivity(item) : null;
         return projected && projected.id === item.id && projected.type === 'brainstorm' && projected.studentProjection === true ? projected : null;
       }
       if (item.type === 'lesson-plan') return projectStudentGuide(item);
-      return blocked.indexOf(item.type) === -1 ? item : null;
+      return blocked.indexOf(item.type) === -1 ? withoutTeacherExamples(item) : null;
     }).filter(Boolean);
   }
 

@@ -3,7 +3,327 @@
 // object: every `__d.<binding>` reads the live component/module binding, exactly as the
 // original closure did. Handlers moved together call each other directly.
 
+// Resolve the translation batch from saved resource identity. A known pack must
+// never silently widen to the whole workspace when its matching list is empty.
+function _alloSelectTranslationBatchItems(history, current, options = {}) {
+  const list = Array.isArray(history) ? history : [];
+  const scope = options.scope === 'single' || options.scope === 'all' ? options.scope : 'pack';
+  const text = value => value == null ? '' : String(value).trim();
+  const unitOf = item => {
+    const value = text(item && (item.unitId || item.config?.unitId));
+    return value && !['all', 'uncategorized', 'none'].includes(value.toLowerCase()) ? value : '';
+  };
+  const supported = item => item && typeof item === 'object' && item.type
+    && !['image', 'gemini-bridge', 'audio', 'udl-advice'].includes(item.type);
+  const isCopy = item => Boolean(item.translationOf || item.sourceTranslationOf || item.translationProvenance
+    || item.config?.translationOf || item.config?.sourceTranslationOf || item.config?.translationProvenance
+    || (item.type !== 'analysis' && item.meta?.translatedTo));
+  const instanceOf = item => text(item && (item._artifactInstanceId || item.artifactInstanceId));
+  const sameResource = (left, right) => left && right && text(left.id) && text(left.id) === text(right.id)
+    && (!instanceOf(right) || instanceOf(left) === instanceOf(right));
+  const anchor = current && (list.find(item => sameResource(item, current)) || current);
+  if (scope === 'single') {
+    return { items: supported(anchor) ? [anchor] : [], kind: 'single' };
+  }
+  const seen = new Set();
+  const originals = list.filter(item => {
+    if (!supported(item) || isCopy(item)) return false;
+    const key = text(item.id) && text(item.id) + '\u0000' + instanceOf(item);
+    if (key && seen.has(key)) return false;
+    if (key) seen.add(key);
+    return true;
+  });
+  if (scope === 'all') return { items: originals, kind: 'workspace' };
+  const unit = unitOf(anchor);
+  if (unit) return { items: originals.filter(item => unitOf(item) === unit), kind: 'pack' };
+  const sourceIdsOf = item => {
+    if (!item) return [];
+    const config = item.config || {};
+    const profile = item.instructionalText || config.instructionalText || {};
+    const snapshot = item.sourceSnapshot || config.sourceSnapshot || {};
+    return [item.sourceFamilyId, config.sourceFamilyId, item.sourceArtifactId, item.primaryArtifactId,
+      config.sourceArtifactId, config.primaryArtifactId, profile.sourceArtifactId, profile.primaryArtifactId,
+      snapshot.sourceArtifactId].map(text).filter(Boolean);
+  };
+  const sourceIds = new Set(sourceIdsOf(anchor));
+  if (anchor?.type === 'analysis' && text(anchor.id)
+    && originals.some(item => item !== anchor && sourceIdsOf(item).includes(text(anchor.id)))) sourceIds.add(text(anchor.id));
+  if (sourceIds.size) {
+    return { items: originals.filter(item => sourceIds.has(text(item.id))
+      || sourceIdsOf(item).some(id => sourceIds.has(id))), kind: 'pack' };
+  }
+  const runIds = new Set();
+  const addRunRow = row => {
+    if (!row || typeof row !== 'object') return;
+    [row.resourceId, row.artifactId, ...(Array.isArray(row.resourceIds) ? row.resourceIds : []),
+      ...(Array.isArray(row.artifactIds) ? row.artifactIds : [])].map(text).filter(Boolean).forEach(id => runIds.add(id));
+    (Array.isArray(row.generationVariants) ? row.generationVariants : []).forEach(addRunRow);
+  };
+  const addRunResources = resources => Object.values(resources && typeof resources === 'object' ? resources : {}).forEach(addRunRow);
+  addRunResources(options.fullPackRun?.resources);
+  Object.values(options.fullPackRun?.groups || {}).forEach(group => addRunResources(group?.resources));
+  // A previous full-pack run cannot claim an unrelated selected resource.
+  if (runIds.size && (!anchor || runIds.has(text(anchor.id)) || runIds.has(text(anchor.translationOf)))) {
+    return { items: originals.filter(item => runIds.has(text(item.id))), kind: 'pack' };
+  }
+  const activeUnit = unitOf({ unitId: options.activeUnitId });
+  if (activeUnit) return { items: originals.filter(item => unitOf(item) === activeUnit), kind: 'pack' };
+  return { items: originals, kind: 'workspace' };
+}
+
+const _alloLessonRevisionSessions = new WeakMap();
+
 function createHostHandlers(__d) {
+const restoreOutputLanguageSettings = settings => {
+    const source = settings && typeof settings === 'object' ? settings : {};
+    const legacy = typeof source.leveledTextLanguage === 'string' && source.leveledTextLanguage.trim() ? source.leveledTextLanguage : 'English';
+    if (typeof __d.setOutputLanguagePreference === 'function') {
+      const normalize = __d.normalizeOutputLanguagePreference || window.AlloModules?.TextPipelineHelpers?.normalizeOutputLanguagePreference;
+      __d.setOutputLanguagePreference(typeof normalize === 'function'
+        ? normalize(source.outputLanguagePreference, legacy)
+        : source.outputLanguagePreference || (legacy === 'All Selected Languages' ? { mode: 'all-selected' } : { mode: 'language', language: legacy }));
+    } else if (typeof __d.setLeveledTextLanguage === 'function') __d.setLeveledTextLanguage(legacy);
+  };
+const _revisionLive = () => __d._resourceMutationStateRef && __d._resourceMutationStateRef.current;
+const _revisionResources = live => {
+  const resources = Array.isArray(live && live.history) ? live.history.slice() : [];
+  const current = live && live.generatedContent;
+  if (current && current.id != null && !resources.some(item => item && String(item.id) === String(current.id))) resources.push(current);
+  return resources;
+};
+const _revisionScope = live => [live && live.revisionContext && live.revisionContext.ownershipToken, __d.workspaceReplacementGenerationRef && __d.workspaceReplacementGenerationRef.current, live && live.inputText, live && live.isTeacherMode,
+  live && live.revisionContext && live.revisionContext.workspaceGeneration,
+  live && live.revisionContext && live.revisionContext.recoveryId,
+  live && live.revisionContext && live.revisionContext.isStudentLinkMode,
+  live && live.revisionContext && live.revisionContext.isParentMode,
+  live && live.revisionContext && live.revisionContext.isIndependentMode];
+const _revisionAuthor = live => !!(live && live.isTeacherMode && live.revisionContext && !live.revisionContext.isStudentLinkMode);
+const _revisionError = message => ({ ok: false, error: message });
+const _revisionSession = () => {
+  const owner = __d._resourceMutationStateRef;
+  const live = _revisionLive();
+  const scope = _revisionScope(live);
+  let session = owner && _alloLessonRevisionSessions.get(owner);
+  if (session && !scope.every((value, index) => value === session.scope[index])) {
+    _alloLessonRevisionSessions.delete(owner);
+    session = null;
+  }
+  if (!session && owner && _revisionAuthor(live)) {
+    session = { scope, serial: 0, proposal: null, undo: null, undoId: null, resourceIds: [], discussion: [] };
+    _alloLessonRevisionSessions.set(owner, session);
+  }
+  return session;
+};
+const _revisionFlush = () => {
+  if (window.ReactDOM && typeof window.ReactDOM.flushSync === 'function') window.ReactDOM.flushSync(() => {});
+};
+const _revisionReady = () => {
+  const live = _revisionLive();
+  if (!_revisionAuthor(live)) return 'Open the lesson in teacher mode to revise it.';
+  if (live.revisionContext.busy) return 'Wait for the current generation to finish before revising this lesson.';
+  if (!window.AlloModules || !window.AlloModules.LessonRevision) return 'Lesson revision tools are still loading. Please try again.';
+  return '';
+};
+const _revisionCommit = (result, resourceIds) => {
+  const live = _revisionLive();
+  const changed = new Set(resourceIds.map(String));
+  const updatedAt = new Date().toISOString();
+  const changedResources = new Map((result.resources || []).filter(item => item && changed.has(String(item.id)))
+    .map(item => [String(item.id), { ...item, updatedAt }]));
+  if (changedResources.size !== changed.size) return false;
+  const replace = item => item && changedResources.get(String(item.id)) || item;
+  const nextHistory = (Array.isArray(live.history) ? live.history : []).map(replace);
+  const nextGeneratedContent = replace(live.generatedContent);
+  const commit = () => {
+    __d._resourceMutationStateRef.current = { ...live, history: nextHistory, generatedContent: nextGeneratedContent };
+    __d.setHistory(nextHistory);
+    __d.setGeneratedContent(nextGeneratedContent);
+    if (typeof __d.setBlueprintExecutionResult === 'function') __d.setBlueprintExecutionResult(previous => {
+      if (!previous || !previous.audit || !Array.isArray(previous.audit.resourceIds)) return previous;
+      const resourceIds = previous.audit.resourceIds.filter(id => !changed.has(String(id)));
+      return resourceIds.length === previous.audit.resourceIds.length ? previous : { ...previous, audit: { ...previous.audit, resourceIds } };
+    });
+  };
+  if (window.ReactDOM && typeof window.ReactDOM.flushSync === 'function') window.ReactDOM.flushSync(commit);
+  else commit();
+  return true;
+};
+const getLessonRevisionResources = () => {
+  _revisionSession();
+  const live = _revisionLive();
+  const service = window.AlloModules && window.AlloModules.LessonRevision;
+  return _revisionAuthor(live) && service && typeof service.describeResources === 'function'
+    ? service.describeResources(_revisionResources(live), live.generatedContent && live.generatedContent.id) : [];
+};
+const prepareLessonRevision = async (request = {}) => {
+  _revisionFlush();
+  const readinessError = _revisionReady();
+  if (readinessError) return _revisionError(readinessError);
+  const session = _revisionSession();
+  const followup = request.reviewId != null;
+  const mode = followup ? request.mode : 'prepare';
+  if (followup && !['refine', 'question'].includes(mode) || !followup && request.mode && request.mode !== 'prepare') return _revisionError('Choose a current proposal before refining it or asking about it.');
+  const prior = followup ? session.proposal : null;
+  const service = window.AlloModules.LessonRevision;
+  if (followup && (!prior || prior.id !== request.reviewId)) return _revisionError('That proposal is no longer current. Open the current review before continuing.');
+  if (followup) {
+    const current = service.checkCurrent(prior, _revisionResources(_revisionLive()));
+    if (!current.ok) return _revisionError(current.error);
+  }
+  const serial = ++session.serial;
+  if (!followup) { service.discard(session.proposal); session.proposal = null; session.discussion = []; }
+  try {
+    const options = {
+      signal: request.signal,
+      discussion: followup ? session.discussion.slice() : [],
+      callGemini: prompt => __d.callGemini(prompt, false, false, null, null, request.signal || null),
+    };
+    const resources = _revisionResources(_revisionLive());
+    const result = mode === 'question' ? await service.explain(prior, resources, request.instruction, options)
+      : mode === 'refine' ? await service.refine(prior, resources, request.instruction, options)
+      : await service.prepare(resources, request.resourceIds, request.instruction, options);
+    _revisionFlush();
+    if (_revisionSession() !== session || session.serial !== serial || request.signal && request.signal.aborted
+        || followup && session.proposal !== prior) {
+      if (result && result.proposal) service.discard(result.proposal);
+      return _revisionError('This revision request was cancelled or belongs to an earlier lesson. Prepare a fresh revision.');
+    }
+    const completionError = _revisionReady();
+    if (completionError) { if (result && result.proposal) service.discard(result.proposal); return _revisionError(completionError); }
+    if (followup) {
+      const current = service.checkCurrent(prior, _revisionResources(_revisionLive()));
+      if (!current.ok) { if (result && result.proposal) service.discard(result.proposal); return _revisionError(current.error); }
+    }
+    if (mode === 'question') {
+      if (!result || !result.ok || typeof result.answer !== 'string' || !result.answer.trim()) return _revisionError(result && result.error || 'I could not answer that question. Your proposal is unchanged.');
+      const question = String(request.instruction || '');
+      session.discussion = session.discussion.concat({ question: question.slice(0, 1000), answer: result.answer.slice(0, 2000),
+        truncated: question.length > 1000 || result.answer.length > 2000 }).slice(-2);
+      return { ok: true, answer: result.answer };
+    }
+    if (!result || !result.ok || !result.proposal) return _revisionError(result && result.error || 'I could not prepare that revision. Your lesson has not changed.');
+    const current = service.checkCurrent(result.proposal, _revisionResources(_revisionLive()));
+    if (!current.ok) { service.discard(result.proposal); return _revisionError(current.error); }
+    const review = service.review(result.proposal);
+    if (!review || !review.id) { service.discard(result.proposal); return _revisionError('The revision did not return a reviewable result. Your lesson has not changed.'); }
+    if (prior) service.discard(prior);
+    session.proposal = result.proposal;
+    return { ok: true, review };
+  } catch (error) {
+    if (!followup && _revisionSession() === session && session.serial === serial) session.proposal = null;
+    return _revisionError(error && error.name === 'AbortError' ? 'Revision cancelled. Your lesson has not changed.'
+      : followup ? 'I could not finish that follow-up. Your earlier proposal and lesson are unchanged; try again.' : 'I could not prepare that revision. Your lesson has not changed; try again.');
+  }
+};
+const applyLessonRevision = reviewId => {
+  _revisionFlush();
+  const readinessError = _revisionReady();
+  if (readinessError) return _revisionError(readinessError);
+  const session = _revisionSession();
+  const proposal = session && session.proposal;
+  if (!proposal || proposal.id !== reviewId) return _revisionError('This review is no longer current. Prepare a fresh revision before applying changes.');
+  const result = window.AlloModules.LessonRevision.apply(proposal, _revisionResources(_revisionLive()));
+  if (!result || !result.ok) return _revisionError(result && result.error || 'The lesson changed after review. Prepare a fresh revision.');
+  if (!Array.isArray(result.resourceIds) || !result.resourceIds.length || !_revisionCommit(result, result.resourceIds)) return _revisionError('The revised resources could not be applied. Prepare a fresh revision.');
+  session.proposal = null;
+  session.discussion = [];
+  session.serial++;
+  session.undo = result.undo;
+  session.undoId = 'lesson-undo-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+  session.resourceIds = result.resourceIds.slice();
+  return { ok: true, undoId: session.undoId, changedCount: result.changedCount, resourceIds: session.resourceIds.slice() };
+};
+const undoLessonRevision = undoId => {
+  _revisionFlush();
+  const readinessError = _revisionReady();
+  if (readinessError) return _revisionError(readinessError);
+  const session = _revisionSession();
+  if (!session || !session.undo || session.undoId !== undoId) return _revisionError('That Undo belongs to an earlier revision or lesson.');
+  const result = window.AlloModules.LessonRevision.undo(session.undo, _revisionResources(_revisionLive()));
+  if (!result || !result.ok) return _revisionError(result && result.error || 'The edited fields changed again. Undo is unavailable so your newer work is preserved.');
+  if (!_revisionCommit(result, session.resourceIds)) return _revisionError('The previous lesson could not be restored.');
+  session.undo = null;
+  session.undoId = null;
+  window.AlloModules.LessonRevision.discard(session.proposal);
+  session.proposal = null;
+  session.discussion = [];
+  session.serial++;
+  return { ok: true, resourceIds: session.resourceIds.slice() };
+};
+const discardLessonRevision = (reviewId, options = {}) => {
+  const session = _revisionSession();
+  if (!session || reviewId && (!session.proposal || session.proposal.id !== reviewId)) return false;
+  window.AlloModules?.LessonRevision?.discard(session.proposal);
+  session.proposal = null;
+  session.discussion = [];
+  session.serial++;
+  if (options.close === true) { session.undo = null; session.undoId = null; session.resourceIds = []; }
+  return true;
+};
+const openLessonRevisionPreview = async resourceId => {
+  _revisionFlush();
+  const readinessError = _revisionReady();
+  if (readinessError) { __d.addToast(readinessError, 'info'); return false; }
+  const session = _revisionSession();
+  const explicit = resourceId != null;
+  const requested = Array.isArray(resourceId) ? resourceId : explicit ? [resourceId] : null;
+  const requestedIds = Array.isArray(requested) ? Array.from(new Set(requested.map(String))) : [];
+  if (!explicit && (!session || !session.resourceIds.length)) return false;
+  if (explicit && (!requestedIds.length || requestedIds.length > 25)) return false;
+  const resources = _revisionResources(_revisionLive());
+  let resolved;
+  try { resolved = __d.resolveAssignmentResources(explicit ? requestedIds : null); } catch (_) { return false; }
+  const ids = Array.isArray(resolved) ? resolved.filter(Boolean).map(item => String(item.id)) : [];
+  if (!ids.length || ids.length > 25 || new Set(ids).size !== ids.length || requestedIds.some(id => !ids.includes(id))
+      || ids.some(id => resources.filter(item => item && String(item.id) === id).length !== 1)) {
+    __d.addToast('This lesson preview is unavailable or too large. Choose one revised resource to preview.', 'info');
+    return false;
+  }
+  const selected = ids.map(id => resources.find(item => item && String(item.id) === id));
+  const previewSerial = session.serial;
+  const safe = __d._alloStudentSafeResources(selected);
+  if (safe.length !== selected.length) { __d.addToast('These resources do not have a student activity preview.', 'info'); return false; }
+  let preview;
+  try {
+    const url = new URL(window.location.href);
+    if (!['http:', 'https:', 'file:', 'blob:'].includes(url.protocol)) throw new Error('Unsupported preview host');
+    preview = window.open('about:blank', '_blank');
+    if (!preview) { __d.addToast('Allow pop-ups to open the student preview.', 'info'); return false; }
+    preview.opener = null;
+    const packet = {
+      v: 1, kind: 'assignment', title: 'Lesson revision — student preview',
+      createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+      currentResourceId: safe[0].id,
+      resources: safe.map(item => __d._alloSerializeResourceForStudentPack(item, 'qr')),
+      aiPolicy: { studentAi: 'off', defaultStudentAi: 'off', teacherPrepared: true }, workStory: false,
+    };
+    const encoded = await __d._alloEncodeAlloPack(JSON.stringify(packet));
+    _revisionFlush();
+    const previewResources = _revisionResources(_revisionLive());
+    if (_revisionSession() !== session || session.serial !== previewSerial || _revisionReady() || !encoded
+        || selected.some(item => previewResources.find(current => current && String(current.id) === String(item.id)) !== item)) { try { preview.close(); } catch (_) {} return false; }
+    if (url.protocol !== 'blob:') {
+      url.search = '';
+      url.searchParams.set('allo_ai', 'off');
+    }
+    url.hash = 'allo_pack=' + encoded;
+    preview.location.replace(url.toString());
+    __d.addToast('Student preview opened in a new tab. Your teacher lesson stays here.', 'success');
+    return true;
+  } catch (_) {
+    try { if (preview) preview.close(); } catch (_) {}
+    __d.addToast('The student preview could not open from this host. Your lesson is unchanged.', 'warning');
+    return false;
+  }
+};
+
+const getTranslationBatchItems = (requestedScope = 'pack') => {
+    const current = __d._resourceMutationStateRef?.current;
+    return _alloSelectTranslationBatchItems(current?.history || __d.history,
+      current && Object.prototype.hasOwnProperty.call(current, 'generatedContent') ? current.generatedContent : __d.generatedContent, {
+        scope: requestedScope, activeUnitId: __d.activeUnitId, fullPackRun: __d.fullPackRun
+      });
+  };
 // Older open app shells still delegate this mutation to HostHandlers. Keep the
 // callable entry point after moving it back into the shell for boot-time edits.
 // Do not forward to __d.onUpdateResource: in those shells that is this same shim.
@@ -1715,7 +2035,7 @@ const handleLoadProfile = (profileId) => {
       if (!profile) return;
       __d.setSelectedProfileId(profileId);
       __d.setGradeLevel(profile.config.gradeLevel || '5th Grade');
-      __d.setLeveledTextLanguage(profile.config.leveledTextLanguage || 'English');
+      restoreOutputLanguageSettings(profile.config);
       __d.setTranslationMode(typeof profile.config.translationMode === 'string' ? profile.config.translationMode : __d.TRANSLATION_MODE_AUTO);
       __d.setSelectedLanguages(profile.config.selectedLanguages || []);
       const loadedInterests = profile.config.studentInterests;
@@ -1756,7 +2076,9 @@ const handleSyncRosterToSession = async () => {
                   complexityLevel: group.profile?.complexityLevel || '',
                   ttsSpeed: group.profile?.ttsSpeed || null,
                   karaokeMode: group.profile?.karaokeMode || false,
-                  language: group.profile?.leveledTextLanguage || '',
+                  language: group.profile?.outputLanguagePreference && typeof __d.resolveOutputLanguagePreference === 'function'
+                    ? __d.resolveOutputLanguagePreference(group.profile.outputLanguagePreference, __d.currentUiLanguage)
+                    : group.profile?.leveledTextLanguage || '',
                   visualDensity: group.profile?.visualDensity || '',
                   readingThemeDefault: __d.alloNormalizeReadingTheme(group.profile?.readingThemeDefault, '') || null
               };
@@ -1831,25 +2153,37 @@ const calculateReadability = (text) => {
         syllables
     };
   };
-const handleTranslateAction = async (requestedScope) => {
+const handleTranslateAction = async (requestedScope, options = {}) => {
     // Capture the clicked scope before React applies the modal's state update.
-    const translationScope = requestedScope === 'single' || requestedScope === 'all' ? requestedScope : __d.translateScope;
-    if (!__d.targetTranslationLang.trim()) {
+    const translationScope = ['single', 'pack', 'all'].includes(requestedScope) ? requestedScope : __d.translateScope;
+    const targetLanguage = String(__d.targetTranslationLang || '').trim();
+    if (!targetLanguage) {
         __d.addToast(__d.t('toasts.enter_target_language'), "error");
         return;
     }
+    if (__d.isProcessing) return;
+    const batch = getTranslationBatchItems(translationScope);
+    const itemsToProcess = batch.items;
+    if (!itemsToProcess.length) {
+        __d.addToast(__d.t('translate.no_resources') || 'There are no eligible resources to translate.', 'info');
+        return;
+    }
+    // Freeze the primary and companion choices for the entire action. The app
+    // language and Universal Settings can change while a model reply is pending.
+    const uiLanguage = __d.currentUiLanguage || 'English';
+    const mode = typeof options.translationMode === 'string' ? options.translationMode : __d.translationMode;
+    const pipeline = typeof window !== 'undefined' && window.AlloModules?.TextPipelineHelpers;
+    const resolver = __d.resolveTranslationPolicy || pipeline?.resolveTranslationPolicy;
+    const choicesFor = __d.translationTargetChoices || pipeline?.translationTargetChoices;
+    const choices = typeof choicesFor === 'function' ? choicesFor(targetLanguage, uiLanguage, __d.selectedLanguages) : undefined;
+    const translationPolicy = typeof resolver === 'function'
+        ? resolver(mode, targetLanguage, uiLanguage, choices)
+        : { enabled: mode !== 'off' && targetLanguage.toLowerCase() !== uiLanguage.toLowerCase(), target: mode === 'off' ? '' : uiLanguage, mode: mode || 'auto' };
     __d.setIsProcessing(true);
-    __d.setGenerationStep(__d.t('status_steps.preparing_translation', { lang: __d.targetTranslationLang }) || `Preparing translation to ${__d.targetTranslationLang}...`);
+    __d.setGenerationStep(__d.t('status_steps.preparing_translation', { lang: targetLanguage }) || `Preparing translation to ${targetLanguage}...`);
     __d.setIsTranslateModalOpen(false);
     __d.addToast(__d.t('toasts.translation_started'), "info");
     try {
-        let itemsToProcess = [];
-        if (translationScope === 'single' && __d.generatedContent) {
-            const currentItem = __d.history.find(h => h.id === __d.generatedContent.id);
-            if(currentItem) itemsToProcess = [currentItem];
-        } else {
-            itemsToProcess = __d.history.filter(item => !['image', 'gemini-bridge', 'audio', 'udl-advice'].includes(item.type));
-        }
         const newItems = [];
         const analysisUpdates = new Map();
         const _translatedIdMap = {}; // originalId → translated copy's new id (for resourceRef repointing)
@@ -1861,7 +2195,7 @@ const handleTranslateAction = async (requestedScope) => {
             // Per-item isolation (2026-07-20): one failed translation must not sink the rest of
             // the pack — the completed copies land, the failures are named in the toast.
             try {
-                const translatedItem = await __d.translateResourceItem(item, __d.targetTranslationLang);
+                const translatedItem = await __d.translateResourceItem(item, targetLanguage, { translationPolicy });
                 if (item.type === 'analysis') {
                     // Analysis stays the same source artifact in both scopes. Other
                     // resources and directions retain their links to this exact id.
@@ -1906,6 +2240,18 @@ const handleTranslateAction = async (requestedScope) => {
                 } : {}),
             };
         }
+        // Native resource links in plans and guides follow the successful copies
+        // from this batch. A failed or out-of-scope target keeps its original link.
+        const remapTranslatedLinks = value => {
+            if (typeof value === 'string') return value.replace(/(\(\s*resource:\s*)([^\s)]+)(\s*\))/g,
+                (match, prefix, id, suffix) => _translatedIdMap[id] ? prefix + _translatedIdMap[id] + suffix : match);
+            if (Array.isArray(value)) return value.map(remapTranslatedLinks);
+            if (!value || typeof value !== 'object') return value;
+            return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key,
+                ['resourceRef', 'resourceId'].includes(key) && _translatedIdMap[nested]
+                    ? _translatedIdMap[nested] : remapTranslatedLinks(nested)]));
+        };
+        for (const newItem of newItems) newItem.data = remapTranslatedLinks(newItem.data);
         // Apply analysis translations only if their source and base findings still
         // match. A source edit while the request was running invalidates the reply.
         const translationUpdatedAt = new Date().toISOString();
@@ -3255,7 +3601,9 @@ const resetCanvasWorkspaceSettings = () => {
       __d.setStandardInputValue('');
       __d.setStandardMode('ai');
       __d.setSelectedLanguages([]);
-      __d.setLeveledTextLanguage('English');
+      if (typeof __d.setOutputLanguagePreference === 'function') __d.setOutputLanguagePreference({ mode: 'app' });
+      else __d.setLeveledTextLanguage('English');
+      if (typeof __d.setAdventureLanguageMode === 'function') __d.setAdventureLanguageMode('__app__');
       __d.setSourceTone('Informative');
       __d.setSourceLevel('5th Grade');
       if (typeof __d.setSelectedOwnSourceIds === 'function') __d.setSelectedOwnSourceIds(null);
@@ -3341,7 +3689,7 @@ const restoreCanvasWorkspaceSnapshot = async (candidate) => {
           if (typeof settings.standardInputValue === 'string') __d.setStandardInputValue(settings.standardInputValue);
           if (typeof settings.standardMode === 'string') __d.setStandardMode(settings.standardMode);
           if (Array.isArray(settings.selectedLanguages)) __d.setSelectedLanguages(settings.selectedLanguages);
-          if (typeof settings.leveledTextLanguage === 'string') __d.setLeveledTextLanguage(settings.leveledTextLanguage);
+          restoreOutputLanguageSettings(settings);
           if (typeof settings.sourceTone === 'string') __d.setSourceTone(settings.sourceTone);
           if (typeof settings.sourceLevel === 'string') __d.setSourceLevel(settings.sourceLevel);
           if (typeof settings.sourceVocabulary === 'string') __d.setSourceVocabulary(settings.sourceVocabulary);
@@ -4319,8 +4667,15 @@ const handleSubmitAssignment = async (confirmedName, summaryStats) => {
           'litlab-submission', 'lingua-submission',
           // Learner-authored interview records; the 'persona' resource (teacher config) stays out.
           'persona-reflection', 'persona-summary',
+          // Activities ride only as the student projection (no answer keys or facilitation notes).
+          'brainstorm',
       ];
-      const filteredContent = __d.history.filter(item => relevantTypes.includes(item.type));
+      const filteredContent = __d.history.filter(item => item && relevantTypes.includes(item.type));
+      const brainstormView = window.AlloModules && window.AlloModules.BrainstormView;
+      const projectActivity = item => {
+          if (!brainstormView || typeof brainstormView.projectStudentActivityResource !== 'function') return null;
+          try { return brainstormView.projectStudentActivityResource(item) || null; } catch (_) { return null; }
+      };
       const studioApi = window.AlloModules && window.AlloModules.StudioResponse;
       const needsStudioResponse = filteredContent.some(item => ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type));
       if (needsStudioResponse && (!studioApi || ['supports', 'toSubmission', 'toResponseEntries'].some(name => typeof studioApi[name] !== 'function'))) {
@@ -4328,8 +4683,9 @@ const handleSubmitAssignment = async (confirmedName, summaryStats) => {
           return { ok: false, retryable: true, reason: 'studio-tools-not-ready' };
       }
       const cleanContent = __d.sanitizeSubmissionData(filteredContent.filter(item => !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type) || studioApi).map(item =>
-          studioApi && studioApi.supports(item.type) ? studioApi.toSubmission(item, __d.studentResponses[item.id]?.studio) : item
-      ));
+          item.type === 'brainstorm' ? projectActivity(item)
+          : studioApi && studioApi.supports(item.type) ? studioApi.toSubmission(item, __d.studentResponses[item.id]?.studio) : item
+      ).filter(Boolean));
       // Both response aliases use the same bounded adapter; raw images and private
       // practice must not bypass the content boundary through the autosave lane.
       const submissionResponses = Object.fromEntries(Object.entries(__d.studentResponses).map(([id, answers]) => {
@@ -4614,9 +4970,13 @@ const handleGenerateExtensionGuide = async (index) => {
       const savedPlan = __d._resourceMutationStateRef.current.history.find(item => item?.type === 'lesson-plan' && String(item.id) === String(resourceId)) || __d.generatedContent;
       const recordedGrade = savedPlan.config?.gradeLevel ?? savedPlan.config?.grade ?? savedPlan.targetGradeLevel ?? savedPlan.instructionalText?.complexity?.requestedGrade ?? savedPlan.gradeLevel ?? savedPlan.grade;
       const gradeLabel = recordedGrade && typeof recordedGrade === 'object' ? (recordedGrade.label || recordedGrade.gradeLabel || recordedGrade.gradeLevel || recordedGrade.grade || '') : recordedGrade;
+      const planLanguage = [savedPlan.config?.language, savedPlan.language, __d.leveledTextLanguage].find(value => typeof value === 'string' && value.trim() && value !== 'All Selected Languages') || 'English';
+      const planFocus = [savedPlan.title, savedPlan.data?.essentialQuestion, Array.isArray(savedPlan.data?.objectives) ? savedPlan.data.objectives.filter(value => typeof value === 'string').join('; ') : ''].filter(value => typeof value === 'string' && value.trim()).join(' | ').slice(0, 600);
       const prompt = 'Create a concise step-by-step teacher guide for this lesson extension activity: "'
         + activity.title + '".\nContext: ' + activity.description
+        + (planFocus ? '\nLesson focus: ' + planFocus : '')
         + '\nTarget Grade: ' + (gradeLabel == null || gradeLabel === '' ? 'Not recorded in this lesson' : gradeLabel)
+        + '\nLanguage: ' + planLanguage + '. Write the entire guide in ' + planLanguage + ', the language of this lesson plan.'
         + '\nProvide materials, preparation, and step-by-step instructions using simple Markdown.';
       const guide = await __d.callGemini(prompt);
       if (__d._extensionGuideRequests.current.get(requestKey) !== request) return;
@@ -5271,6 +5631,7 @@ const handleQuizChange = (qIndex, field, value, optIndex = null, isEn = false) =
     const updatedQuestion = { ...newQuestions[qIndex] };
     if (!isEn && (field === 'question' || field === 'option' || field === 'correctAnswer')) {
         updatedQuestion.factCheck = null;
+        updatedQuestion.keyCheck = null;
     }
     if (field === 'question') {
         if (isEn) updatedQuestion.question_en = value;
@@ -5356,7 +5717,7 @@ const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = 
         // The caller may have completed after navigation or a target edit.
         // Recheck now, and again against each latest state inside the updaters.
         if (!matchesTarget(__d.generatedContent, true)) return false;
-        const replacement = { ...payload, type: payload.type || originalQuestion.type || 'mcq', factCheck: null };
+        const replacement = { ...payload, type: payload.type || originalQuestion.type || 'mcq', factCheck: null, keyCheck: null };
         const applyReplacement = (item, requireIdentity) => {
             if (!matchesTarget(item, requireIdentity)) return item;
             const questions = item.data.questions.slice();
@@ -5388,12 +5749,18 @@ const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = 
     if (action === 'release-feedback') {
         if (!__d.isTeacherMode || !payload || typeof payload.signature !== 'string' || !payload.signature) return false;
         const targetId = __d.generatedContent.id;
-        const release = { resourceId: String(targetId || ''), signature: payload.signature, releasedAt: Date.now() };
+        // A teacher-release copy travels without its key; the release carries it.
+        const keys = payload.keys && typeof payload.keys === 'object' && payload.keys.signature === payload.signature && Array.isArray(payload.keys.questions) ? payload.keys : null;
+        const release = { resourceId: String(targetId || ''), signature: payload.signature, releasedAt: Date.now(), ...(keys ? { keys } : {}) };
         if (__d.activeSessionCode) {
             const ref = __d.doc(__d.db, 'artifacts', __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
             await __d.updateDoc(ref, { 'quizState.assessmentFeedbackRelease': release });
         }
-        const applyRelease = item => item && item.id === targetId ? { ...item, data: { ...item.data, deliverySettings: { ...item.data.deliverySettings, feedbackReleasedFor: payload.signature } } } : item;
+        const applyRelease = item => {
+            if (!item || item.id !== targetId) return item;
+            const { feedbackReleaseKeys, ...data } = item.data || {};
+            return { ...item, data: { ...data, ...(keys ? { feedbackReleaseKeys: keys } : {}), deliverySettings: { ...data.deliverySettings, feedbackReleasedFor: payload.signature } } };
+        };
         __d.setGeneratedContent(applyRelease);
         __d.setHistory(prev => prev.map(applyRelease));
         return true;
@@ -5404,9 +5771,9 @@ const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = 
     if (action === 'patch-assessment' && payload && payload.deliverySettings && typeof payload.deliverySettings === 'object') {
         newData.deliverySettings = { ...payload.deliverySettings };
     } else if (action === 'patch' && newQuestions[index]) {
-        newQuestions[index] = { ...newQuestions[index], ...(payload || {}), factCheck: null };
+        newQuestions[index] = { ...newQuestions[index], ...(payload || {}), factCheck: null, keyCheck: null };
     } else if (action === 'replace' && payload && typeof payload === 'object' && newQuestions[index]) {
-        newQuestions[index] = { ...payload, type: payload.type || newQuestions[index].type || 'mcq', factCheck: null };
+        newQuestions[index] = { ...payload, type: payload.type || newQuestions[index].type || 'mcq', factCheck: null, keyCheck: null };
     } else if (action === 'delete' && newQuestions[index]) {
         newQuestions.splice(index, 1);
     } else if (action === 'duplicate' && newQuestions[index]) {
@@ -5414,6 +5781,7 @@ const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = 
         clone.id = 'assessment-item-' + Date.now();
         clone.question = (clone.question || 'Question') + ' (copy)';
         clone.factCheck = null;
+        clone.keyCheck = null;
         newQuestions.splice(index + 1, 0, clone);
     } else if (action === 'move' && newQuestions[index]) {
         const delta = Number(payload) < 0 ? -1 : 1;
@@ -5515,7 +5883,7 @@ const restoreIntentSnapshot = () => {
           if (s.sourceCustomInstructions !== undefined) __d.setSourceCustomInstructions(s.sourceCustomInstructions);
           __d.setStudentInterests(s.studentInterests);
           __d.setSelectedLanguages(s.selectedLanguages);
-          __d.setLeveledTextLanguage(s.leveledTextLanguage);
+          restoreOutputLanguageSettings(s);
           __d.setLeveledTextCustomInstructions(s.leveledTextCustomInstructions);
           __d.setSourceTone(s.sourceTone);
           __d.setSourceLength(s.sourceLength);
@@ -6416,7 +6784,18 @@ const handleAutoGrade = async () => {
             }
           `;
           const result = await __d.callGemini(prompt, true);
-          const data = JSON.parse(__d.cleanJson(result));
+          let data = null;
+          try { data = JSON.parse(__d.cleanJson(result)); } catch (_) {}
+          const isText = v => (typeof v === 'string' && v.trim() !== '') || (typeof v === 'number' && isFinite(v));
+          // The view renders every one of these fields; a partial reply would crash it on every render.
+          const isGradeShape = !!data && typeof data === 'object' && Array.isArray(data.scores) && data.scores.length > 0
+              && data.scores.every(s => s && typeof s === 'object' && isText(s.criteria) && isText(s.score))
+              && isText(data.totalScore) && !!data.feedback && typeof data.feedback === 'object'
+              && isText(data.feedback.glow) && isText(data.feedback.grow);
+          if (!isGradeShape) {
+              __d.addToast(__d.t('scaffolds.grading_failed'), "error");
+              return;
+          }
           __d.setGradingResult(data);
           __d.addToast(__d.t('scaffolds.grading_complete'), "success");
           if (__d.isBotVisible && __d.alloBotRef.current) {
@@ -8524,7 +8903,7 @@ const handleApplyRosterGroup = (groupId) => {
       if (!group?.profile) return;
       const p = group.profile;
       if (p.gradeLevel) __d.setGradeLevel(p.gradeLevel);
-      if (p.leveledTextLanguage) __d.setLeveledTextLanguage(p.leveledTextLanguage);
+      if (p.outputLanguagePreference || p.leveledTextLanguage) restoreOutputLanguageSettings(p);
       if (typeof p.translationMode === 'string') __d.setTranslationMode(p.translationMode);
       if (p.studentInterests) {
           const interests = Array.isArray(p.studentInterests) ? p.studentInterests : p.studentInterests.split(',').map(s => s.trim()).filter(Boolean);
@@ -9525,6 +9904,7 @@ const handleQuizBulkOptionChange = (updates) => {
         updatedQuestion.options = newOpts;
         if (wasCorrect) updatedQuestion.correctAnswer = u.newText;
         updatedQuestion.factCheck = null;
+        updatedQuestion.keyCheck = null;
         newQuestions[u.qIdx] = updatedQuestion;
     });
     newData.questions = newQuestions;
@@ -9596,7 +9976,7 @@ const captureIntentSnapshot = (label) => {
                   sourceCustomInstructions: __d.sourceCustomInstructions,
                   studentInterests: Array.isArray(__d.studentInterests) ? __d.studentInterests.slice() : [],
                   selectedLanguages: Array.isArray(__d.selectedLanguages) ? __d.selectedLanguages.slice() : [],
-                  leveledTextLanguage: __d.leveledTextLanguage,
+                  leveledTextLanguage: __d.leveledTextLanguage, outputLanguagePreference: __d.outputLanguagePreference, nativeLanguageDefaultsVersion: __d.nativeLanguageDefaultsVersion || 0, appLanguage: __d.appLanguage || __d.currentUiLanguage,
                   leveledTextCustomInstructions: __d.leveledTextCustomInstructions,
                   sourceTone: __d.sourceTone,
                   sourceLength: __d.sourceLength,
@@ -9661,11 +10041,12 @@ const handleReturnToStart = () => __d.requestReadingSupportTransition(() => {
     __d.setHasSelectedMode(false);
   });
 const saveFullChat = () => {
-      if (__d.udlMessages.length <= 1) {
+      const shareableMessages = __d.udlMessages.filter(message => message && !message.localOnly);
+      if (shareableMessages.length <= 1) {
           __d.addToast(__d.t('toasts.no_conversation_yet'), "info");
           return;
       }
-      const chatLog = __d.udlMessages.map(m => `**${m.role === 'user' ? 'Teacher' : 'UDL Guide'}:**\n${m.text}`).join('\n\n---\n\n');
+      const chatLog = shareableMessages.map(m => `**${m.role === 'user' ? 'Teacher' : 'UDL Guide'}:**\n${m.text}`).join('\n\n---\n\n');
       const newItem = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           type: 'udl-advice',
@@ -10307,10 +10688,15 @@ const handleNavigateResource = (direction) => {
       if (newIndex >= 0 && newIndex < filtered.length) {
           const targetItem = filtered[newIndex];
           __d.setIsMapLocked(false);
-          if (__d.contentRef.current) {
+          const contentNode = __d.contentRef?.current;
+          if (contentNode) {
               setTimeout(() => {
-                  const container = __d.contentRef.current.closest('.overflow-y-auto');
-                  if (container) container.scrollTop = 0;
+                  // A fast view change may unmount or replace this resource.
+                  // Never scroll a different node that subsequently owns the ref.
+                  const currentNode = __d.contentRef?.current;
+                  if (currentNode !== contentNode || !currentNode?.isConnected) return;
+                  const container = currentNode.closest('.overflow-y-auto');
+                  if (container?.isConnected) container.scrollTop = 0;
               }, 50);
           }
           // Preserve the artifact-owned grade, standards, role, source links, and
@@ -10936,7 +11322,7 @@ const handleSaveProfile = () => {
           name: __d.newProfileName.trim(),
           config: {
               gradeLevel: __d.gradeLevel,
-              leveledTextLanguage: __d.leveledTextLanguage,
+              leveledTextLanguage: __d.leveledTextLanguage, outputLanguagePreference: __d.outputLanguagePreference, nativeLanguageDefaultsVersion: __d.nativeLanguageDefaultsVersion || 0, appLanguage: __d.appLanguage || __d.currentUiLanguage,
               translationMode: __d.translationMode,
               selectedLanguages: __d.selectedLanguages,
               studentInterests: __d.studentInterests,
@@ -11640,7 +12026,7 @@ const handleCheckAlignment = async () => {
     const api = __d.getSimplifiedRigorApi();
     if (!api) return;
     return api.checkAlignment({
-      generatedContent: __d.generatedContent, gradeLevel: __d.gradeLevel, leveledTextLanguage: __d.leveledTextLanguage, activeResolvedStandardsContext: __d.activeResolvedStandardsContext,
+      generatedContent: __d.generatedContent, gradeLevel: __d.gradeLevel, leveledTextLanguage: __d.leveledTextLanguage, outputLanguagePreference: __d.outputLanguagePreference, nativeLanguageDefaultsVersion: __d.nativeLanguageDefaultsVersion || 0, appLanguage: __d.appLanguage || __d.currentUiLanguage, activeResolvedStandardsContext: __d.activeResolvedStandardsContext,
       standardsInput: __d.standardsInput, targetStandards: __d.targetStandards, alloBotRef: __d.alloBotRef, t: __d.t, addToast: __d.addToast, setIsCheckingAlignment: __d.setIsCheckingAlignment,
       callGemini: __d.callGemini, cleanJson: __d.cleanJson, setGeneratedContent: __d.setGeneratedContent, setHistory: __d.setHistory, speak: __d.speak, warnLog: __d.warnLog, setError: __d.setError
     });
@@ -11651,7 +12037,7 @@ const handleRegenerateWithRigor = async () => {
     return api.regenerateWithRigor({
       generatedContent: __d.generatedContent, setIsProcessing: __d.setIsProcessing, splitReferencesFromBody: __d.splitReferencesFromBody, extractSourceTextForProcessing: __d.extractSourceTextForProcessing,
       activeResolvedStandardsContext: __d.activeResolvedStandardsContext, standardsInput: __d.standardsInput, targetStandards: __d.targetStandards, gradeLevel: __d.gradeLevel,
-      leveledTextLanguage: __d.leveledTextLanguage, translationTargetChoices: __d.translationTargetChoices, currentUiLanguage: __d.currentUiLanguage, selectedLanguages: __d.selectedLanguages,
+      leveledTextLanguage: __d.leveledTextLanguage, outputLanguagePreference: __d.outputLanguagePreference, nativeLanguageDefaultsVersion: __d.nativeLanguageDefaultsVersion || 0, appLanguage: __d.appLanguage || __d.currentUiLanguage, translationTargetChoices: __d.translationTargetChoices, currentUiLanguage: __d.currentUiLanguage, selectedLanguages: __d.selectedLanguages,
       resolveTranslationPolicy: __d.resolveTranslationPolicy, translationMode: __d.translationMode, generateBilingualText: __d.generateBilingualText, callGemini: __d.callGemini,
       applySimplifiedTextMutation: _applySimplifiedTextMutation, setGeneratedContent: __d.setGeneratedContent, setHistory: __d.setHistory,
       addToast: __d.addToast, t: __d.t, warnLog: __d.warnLog, setError: __d.setError
@@ -11691,5 +12077,5 @@ const handleScaffoldTextChange = (field, value) => {
      __d.setGeneratedContent(updatedContent);
      __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
   }
-  return { onUpdateResource, focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, highlightElement, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleScaffoldChange, handleScaffoldTextChange };
+  return { getLessonRevisionResources, prepareLessonRevision, applyLessonRevision, undoLessonRevision, discardLessonRevision, openLessonRevisionPreview, getTranslationBatchItems, onUpdateResource, focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, highlightElement, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleScaffoldChange, handleScaffoldTextChange };
 }

@@ -115,7 +115,8 @@ describe('Sound Swap curated content guard in the mounted player', () => {
  it('keeps an unverified spelling deletion unscored and offers another activity', async () => {
   const { host, word, rows } = await mount('manipulation', true, { wordData: { word: 'ship', targetWord: 'ship', phonemes: ['sh', 'i', 'p'], manipulationTask: { type: 'deletion', targetPhoneme: 'sh', answer: 'ip', distractors: ['it', 'in'] } } });
   expect(word.activityItems.manipulation).toMatchObject({ task: { contentStatus: 'teacher_review_required', answer: '' }, options: [] });
-  expect(host.textContent).toContain('This item will not be scored.');
+  // 2026-10-25 (fix1025 lane B): with no word that has a checked change, Sound Swap is not offered at all.
+  expect([...host.querySelectorAll('button')].some(button => button.textContent.includes('Sound Swap'))).toBe(false);
   expect([...host.querySelectorAll('button')].some(button => button.textContent.trim() === 'ip')).toBe(false);
   expect(rows).toEqual([]);
  });

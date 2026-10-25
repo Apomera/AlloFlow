@@ -52,6 +52,16 @@ var _lazyIcon = function (name) {
     culturalResponsiveness: 'Cultural responsiveness'
   };
   function dimLabel(key) { return atr('dim_' + key, AUDIT_DIMENSION_FALLBACKS[key] || key); }
+  // Say where the DOK numbers came from and how many quiz items they cover.
+  function dokHeading(e) {
+    var measured = Number(e && e.dokTotal) || 0;
+    var total = Math.max(measured, Number(e && e.dokQuestionCount) || 0);
+    if (e && e.dokSource === 'llm-estimated') return atr('dok_heading_estimated', 'Quiz DOK distribution, AI estimate from {n} of {m} questions (Webb\'s framework):', { n: measured, m: total });
+    if (e && e.dokSource === 'item-tags') return total > measured
+      ? atr('dok_heading_tagged_partial', 'Quiz DOK distribution, from the DOK tags on {n} of {m} questions (Webb\'s framework):', { n: measured, m: total })
+      : atr('dok_heading_tagged', 'Quiz DOK distribution, from the DOK tags on {n} questions (Webb\'s framework):', { n: measured });
+    return atr('dok_heading_unlabelled', 'Quiz DOK distribution ({n} items, source not recorded; Webb\'s framework):', { n: measured });
+  }
   function statusBadgeClass(status) {
     if (status === 'Aligned' || status === 'Pass') return 'bg-green-100 text-green-700';
     if (status === 'Not Aligned' || status === 'Revise') return 'bg-red-100 text-red-700';
@@ -416,7 +426,7 @@ var _lazyIcon = function (name) {
     var s = p.standards;
     if (!s) return null;
     var perStandard = Array.isArray(s.perStandard) ? s.perStandard : [];
-    return <ComprehensiveSection id="audit-standards" icon="🎯" title={dimLabel('standards')} status={s.status}> // Top stat row
+    return <ComprehensiveSection id="audit-standards" icon="🎯" title={dimLabel('standards')} status={s.status}>{/* Top stat row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{s.totalStandards || perStandard.length}</div><div className="text-xs text-slate-600">{'Standard' + ((s.totalStandards || perStandard.length) === 1 ? '' : 's') + ' audited'}</div></div><div className="p-3 bg-emerald-50 rounded text-center border border-emerald-200"><div className="text-2xl font-bold text-emerald-800">{s.passCount || 0}</div><div className="text-xs text-emerald-700">Pass</div></div><div className={'p-3 rounded text-center ' + ((s.reviseCount || 0) > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + ((s.reviseCount || 0) > 0 ? 'text-rose-800' : 'text-slate-800')}>{s.reviseCount || 0}</div><div className={'text-xs ' + ((s.reviseCount || 0) > 0 ? 'text-rose-700' : 'text-slate-600')}>Revise</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-xs font-bold text-slate-800 leading-tight pt-2">Holistic Lesson Plan Audit</div><div className="text-[10px] text-slate-500 mt-1">text + activities + assessment</div></div></div>{
       // Per-standard collapsible cards
       perStandard.length > 0 && <div className="space-y-3">{perStandard.map(function (report, idx) {
@@ -467,19 +477,19 @@ var _lazyIcon = function (name) {
     var dok = e.dokDistribution || {};
     var modPresent = e.multimodalCoverage && e.multimodalCoverage.present || [];
     var modMissing = e.multimodalCoverage && e.multimodalCoverage.missing || [];
-    return <ComprehensiveSection id="audit-engagement" icon="🎯" title={dimLabel('engagement')} status={e.status}> // Top stat row
+    return <ComprehensiveSection id="audit-engagement" icon="🎯" title={dimLabel('engagement')} status={e.status}>{/* Top stat row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{e.distinctTypeCount}</div><div className="text-xs text-slate-600">Distinct artifact types</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{e.totalArtifacts}</div><div className="text-xs text-slate-600">Total artifacts</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{Math.round((e.diversityScore || 0) * 100) + '%'}</div><div className="text-xs text-slate-600">Diversity score</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{modPresent.length + '/4'}</div><div className="text-xs text-slate-600">Modalities present</div></div></div>{
       // Distinct types chips
       e.distinctTypes && e.distinctTypes.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-slate-700 mb-1">Artifact types in this curriculum:</div><div className="flex flex-wrap gap-1">{e.distinctTypes.map(function (t, i) {
             return <span key={i} className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-900 rounded">{auditText(t)}</span>;
-          })}</div></div>} // Modalities row
+          })}</div></div>}{/* Modalities row */}
       <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-2"><div><div className="text-xs font-semibold text-emerald-800 mb-1">Modalities present:</div><div className="flex flex-wrap gap-1">{modPresent.length > 0 ? modPresent.map(function (m, i) {
               return <span key={i} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded">{auditText(m)}</span>;
             }) : <span className="text-xs text-slate-500 italic">(none)</span>}</div></div><div><div className="text-xs font-semibold text-rose-800 mb-1">Modalities missing:</div><div className="flex flex-wrap gap-1">{modMissing.length > 0 ? modMissing.map(function (m, i) {
               return <span key={i} className="text-xs px-2 py-0.5 bg-rose-100 text-rose-900 rounded">{auditText(m)}</span>;
             }) : <span className="text-xs text-emerald-700">all four covered</span>}</div></div></div>{
       // DOK bar
-      e.dokTotal > 0 && <div className="mb-3"><div className="text-xs font-semibold text-slate-700 mb-1">{'Quiz DOK distribution (' + e.dokTotal + ' items, Webb\'s framework):'}</div><div role="img" aria-label={'Quiz DOK distribution: Level 1 recall ' + (dok.L1 || 0) + ' percent; Level 2 skill and concept ' + (dok.L2 || 0) + ' percent; Level 3 strategic thinking ' + (dok.L3 || 0) + ' percent; Level 4 extended thinking ' + (dok.L4 || 0) + ' percent; unknown ' + (dok.unknown || 0) + ' percent.'} className="flex h-6 w-full rounded overflow-hidden border border-slate-200">{(dok.L1 || 0) > 0 && <div style={{
+      e.dokTotal > 0 && <div className="mb-3" data-dok-source={e.dokSource || 'unlabelled'}><div className="text-xs font-semibold text-slate-700 mb-1">{dokHeading(e)}</div>{e.dokSource === 'llm-estimated' && <p className="text-[11px] text-slate-600 mb-1">{atr('dok_estimate_note', 'The quiz items carry no DOK tags, so the AI estimated these levels from the question wording. Treat the chart as a rough guide.')}</p>}<div role="img" aria-label={'Quiz DOK distribution: Level 1 recall ' + (dok.L1 || 0) + ' percent; Level 2 skill and concept ' + (dok.L2 || 0) + ' percent; Level 3 strategic thinking ' + (dok.L3 || 0) + ' percent; Level 4 extended thinking ' + (dok.L4 || 0) + ' percent; unknown ' + (dok.unknown || 0) + ' percent.'} className="flex h-6 w-full rounded overflow-hidden border border-slate-200">{(dok.L1 || 0) > 0 && <div style={{
             width: dok.L1 + '%',
             backgroundColor: '#fde68a'
           }} className="flex items-center justify-center text-[10px] font-bold text-amber-900" title={'L1 Recall: ' + dok.L1 + '%'}>{dok.L1 > 8 ? 'L1 ' + dok.L1 + '%' : ''}</div>}{(dok.L2 || 0) > 0 && <div style={{
@@ -494,7 +504,7 @@ var _lazyIcon = function (name) {
           }} className="flex items-center justify-center text-[10px] font-bold text-purple-900" title={'L4 Extended Thinking: ' + dok.L4 + '%'}>{dok.L4 > 8 ? 'L4 ' + dok.L4 + '%' : ''}</div>}{(dok.unknown || 0) > 0 && <div style={{
             width: dok.unknown + '%',
             backgroundColor: '#cbd5e1'
-          }} className="flex items-center justify-center text-[10px] text-slate-700" title={'Unknown: ' + dok.unknown + '%'}>{dok.unknown > 8 ? '?' : ''}</div>}</div></div>} // Scaffold counts
+          }} className="flex items-center justify-center text-[10px] text-slate-700" title={'Unknown: ' + dok.unknown + '%'}>{dok.unknown > 8 ? '?' : ''}</div>}</div></div>}{/* Scaffold counts */}
       <div className="mb-3 grid grid-cols-3 gap-2 text-center text-xs"><div className="p-2 bg-slate-50 rounded"><div className="font-bold text-slate-800">{e.scaffoldCounts && e.scaffoldCounts.sentenceFrames || 0}</div><div className="text-slate-600">sentence frames</div></div><div className="p-2 bg-slate-50 rounded"><div className="font-bold text-slate-800">{e.scaffoldCounts && e.scaffoldCounts.simplifiedTexts || 0}</div><div className="text-slate-600">simplified texts</div></div><div className="p-2 bg-slate-50 rounded"><div className="font-bold text-slate-800">{e.scaffoldCounts && e.scaffoldCounts.leveledGlossary || 0}</div><div className="text-slate-600">leveled glossaries</div></div></div>{
       // Heuristic recommendations
       e.recommendations && e.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">{atr('heuristic_recommendations', 'Heuristic recommendations:')}</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{e.recommendations.map(function (r, i) {
@@ -509,7 +519,7 @@ var _lazyIcon = function (name) {
     var a = p.access;
     if (!a) return null;
     var altPctColor = a.altCoveragePct === null ? 'slate' : a.altCoveragePct >= 80 ? 'emerald' : a.altCoveragePct >= 50 ? 'amber' : 'rose';
-    return <ComprehensiveSection id="audit-accessibility" icon="♿" title={dimLabel('accessibility')} status={a.status}> // Top stat row
+    return <ComprehensiveSection id="audit-accessibility" icon="♿" title={dimLabel('accessibility')} status={a.status}>{/* Top stat row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{a.totalImages}</div><div className="text-xs text-slate-600">Images</div></div><div className={'p-3 rounded text-center bg-' + altPctColor + '-50 border border-' + altPctColor + '-200'}><div className={'text-2xl font-bold text-' + altPctColor + '-800'}>{a.altCoveragePct === null ? 'n/a' : a.altCoveragePct + '%'}</div><div className={'text-xs text-' + altPctColor + '-700'}>Alt-text coverage</div></div><div className={'p-3 rounded text-center ' + (a.colorOnlyCount > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-emerald-50 border border-emerald-200')}><div className={'text-2xl font-bold ' + (a.colorOnlyCount > 0 ? 'text-rose-800' : 'text-emerald-800')}>{a.colorOnlyCount}</div><div className={'text-xs ' + (a.colorOnlyCount > 0 ? 'text-rose-700' : 'text-emerald-700')}>Color-only refs</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{a.longestUnbrokenPassage}</div><div className="text-xs text-slate-600">Longest passage (words)</div></div></div>{
       // Color-only examples
       a.colorOnlyExamples && a.colorOnlyExamples.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-rose-800 mb-1">Color-only language found (students with color blindness cannot follow these):</div><ul className="list-disc ml-5 text-xs text-rose-900 space-y-0.5">{a.colorOnlyExamples.slice(0, 6).map(function (ex, i) {
@@ -539,8 +549,8 @@ var _lazyIcon = function (name) {
     var u = p.udl;
     if (!u) return null;
     var priors = u.priorsUsed || {};
-    return <ComprehensiveSection id="audit-udl" icon="🌐" title={atr('dim_udl_full', 'UDL principles (CAST Guidelines v3.0)')} status={u.status}> // Priors banner
-      <div className="mb-3 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700"><span className="font-semibold">Priors used: </span>{(priors.modalitiesPresent || []).length} modalities ({(priors.modalitiesPresent || []).join(', ') || 'none'}), {(priors.distinctTypes || []).length} distinct artifact types, {(priors.scaffoldCounts && priors.scaffoldCounts.sentenceFrames || 0) + (priors.scaffoldCounts && priors.scaffoldCounts.simplifiedTexts || 0) + (priors.scaffoldCounts && priors.scaffoldCounts.leveledGlossary || 0)} scaffolds.</div> // Three pillars
+    return <ComprehensiveSection id="audit-udl" icon="🌐" title={atr('dim_udl_full', 'UDL principles (CAST Guidelines v3.0)')} status={u.status}>{/* Priors banner */}
+      <div className="mb-3 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700"><span className="font-semibold">Priors used: </span>{(priors.modalitiesPresent || []).length} modalities ({(priors.modalitiesPresent || []).join(', ') || 'none'}), {(priors.distinctTypes || []).length} distinct artifact types, {(priors.scaffoldCounts && priors.scaffoldCounts.sentenceFrames || 0) + (priors.scaffoldCounts && priors.scaffoldCounts.simplifiedTexts || 0) + (priors.scaffoldCounts && priors.scaffoldCounts.leveledGlossary || 0)} scaffolds.</div>{/* Three pillars */}
       <UdlPillar pillar={u.representation} title="Representation" icon="👁️" /><UdlPillar pillar={u.engagement} title="Engagement" icon="✨" /><UdlPillar pillar={u.actionExpression} title="Action & Expression" icon="✍️" />{
       // Overall narrative
       u.overallNarrative && <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded"><div className="text-xs font-semibold text-indigo-900 mb-1 flex items-center gap-2"><span aria-hidden="true">🤖</span> {atr('ai_udl_synthesis', 'UDL specialist synthesis (AI)')}</div><p className="text-sm text-indigo-900">{u.overallNarrative}</p></div>}<div className="text-[11px] text-slate-500 italic mt-2">{u.notes || ''}</div></ComprehensiveSection>;
@@ -553,7 +563,7 @@ var _lazyIcon = function (name) {
       medium: 0,
       low: 0
     };
-    return <ComprehensiveSection id="audit-accuracy" icon="✅" title={dimLabel('accuracy')} status={a.status}> // Top stat row
+    return <ComprehensiveSection id="audit-accuracy" icon="✅" title={dimLabel('accuracy')} status={a.status}>{/* Top stat row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{a.totalAnalyses}</div><div className="text-xs text-slate-600">Analyses run</div></div><div className="p-3 bg-emerald-50 rounded text-center border border-emerald-200"><div className="text-2xl font-bold text-emerald-800">{a.totalVerifiedFacts}</div><div className="text-xs text-emerald-700">Verified facts</div></div><div className={'p-3 rounded text-center ' + (a.totalDiscrepancies > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + (a.totalDiscrepancies > 0 ? 'text-rose-800' : 'text-slate-800')}>{a.totalDiscrepancies}</div><div className={'text-xs ' + (a.totalDiscrepancies > 0 ? 'text-rose-700' : 'text-slate-600')}>Discrepancies</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{counts.high + 'H/' + counts.medium + 'M/' + counts.low + 'L'}</div><div className="text-xs text-slate-600">Rating mix</div></div></div>{
       // Sample verifications
       a.sampleVerifications && a.sampleVerifications.length > 0 && <details className="mb-3 bg-slate-50 border border-slate-200 rounded p-3"><summary className="cursor-pointer text-sm font-semibold text-slate-800">{'Per-analysis details (' + a.sampleVerifications.length + ')'}</summary><ul className="mt-2 space-y-2">{a.sampleVerifications.map(function (s, i) {
@@ -592,7 +602,7 @@ var _lazyIcon = function (name) {
       visualOrImage: 'Image / visual',
       audioPath: 'Audio narration'
     };
-    return <ComprehensiveSection id="audit-differentiation" icon="🎚️" title={dimLabel('differentiation')} status={d.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{d.coverage + '%'}</div><div className="text-xs text-slate-600">Access-path coverage</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{d.presentCount + '/' + d.totalAccommodationTypes}</div><div className="text-xs text-slate-600">Scored access paths</div></div><div className="p-3 bg-emerald-50 rounded text-center border border-emerald-200"><div className="text-2xl font-bold text-emerald-800">{d.presentCount}</div><div className="text-xs text-emerald-700">Present</div></div><div className={'p-3 rounded text-center ' + (d.missing && d.missing.length > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + (d.missing && d.missing.length > 0 ? 'text-rose-800' : 'text-slate-800')}>{d.missing && d.missing.length || 0}</div><div className={'text-xs ' + (d.missing && d.missing.length > 0 ? 'text-rose-700' : 'text-slate-600')}>Missing</div></div></div> // Inventory grid
+    return <ComprehensiveSection id="audit-differentiation" icon="🎚️" title={dimLabel('differentiation')} status={d.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{d.coverage + '%'}</div><div className="text-xs text-slate-600">Access-path coverage</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{d.presentCount + '/' + d.totalAccommodationTypes}</div><div className="text-xs text-slate-600">Scored access paths</div></div><div className="p-3 bg-emerald-50 rounded text-center border border-emerald-200"><div className="text-2xl font-bold text-emerald-800">{d.presentCount}</div><div className="text-xs text-emerald-700">Present</div></div><div className={'p-3 rounded text-center ' + (d.missing && d.missing.length > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + (d.missing && d.missing.length > 0 ? 'text-rose-800' : 'text-slate-800')}>{d.missing && d.missing.length || 0}</div><div className={'text-xs ' + (d.missing && d.missing.length > 0 ? 'text-rose-700' : 'text-slate-600')}>Missing</div></div></div>{/* Inventory grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 mb-3">{Object.keys(flags).map(function (k) {
           var on = flags[k];
           return <div key={k} className={'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-500')}><span aria-hidden="true" className="flex-shrink-0">{on ? '✓' : '○'}</span><span className="min-w-0 break-words">{labelMap[k] || k}</span></div>;
@@ -717,12 +727,12 @@ var _lazyIcon = function (name) {
     return <div className="p-5 rounded-2xl border-2 mb-8 shadow-sm" style={{
       backgroundColor: bgColor,
       borderColor: ringColor
-    }}> // Polish #2: Score circle removed — already rendered in the executive summary banner
-      // above. This card now functions as the per-dimension chip strip + blocking-issues
-      // detail panel that didn't fit in the summary banner.
+    }}>{/* Polish #2: Score circle removed — already rendered in the executive summary banner
+      above. This card now functions as the per-dimension chip strip + blocking-issues
+      detail panel that didn't fit in the summary banner. */}
       <div className="min-w-0"><h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{
           color: textColor
-        }}>{atr('per_dimension_breakdown', 'Per-Dimension Breakdown')}</h3> // Per-dimension status links
+        }}>{atr('per_dimension_breakdown', 'Per-Dimension Breakdown')}</h3>{/* Per-dimension status links */}
         <ReadinessDimensionNav overall={o} />{o.blockingIssues && o.blockingIssues.length > 0 && <div className="mt-3 p-2 bg-white border border-rose-300 rounded text-xs"><div className="font-bold text-rose-900 mb-1"><span aria-hidden="true">🔴</span> {atr('blocking_issues', 'Blocking issues (must fix before Pass):')}</div><ul className="list-disc ml-5 text-rose-900 space-y-1">{o.blockingIssues.map(function (b, i) {
               return <li key={i}><span className="font-semibold">{b.dimension + ': '}</span>{b.issue}</li>;
             })}</ul></div>}{o.incompleteIssues && o.incompleteIssues.length > 0 && <div className="mt-3 p-2 bg-white border border-slate-300 rounded text-xs"><div className="font-bold text-slate-900 mb-1">{atr('incomplete_evidence', 'Incomplete evidence:')}</div><ul className="list-disc ml-5 text-slate-800 space-y-1">{o.incompleteIssues.map(function (b, i) { return <li key={i}><span className="font-semibold">{b.dimension + ': '}</span>{b.issue}</li>; })}</ul></div>}</div>{(o.scoreBasis || o.notes) && <details className="mt-3 p-2 bg-white border border-slate-300 rounded text-xs text-slate-800"><summary className="cursor-pointer font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded">{atr('how_scoring_works', 'How scoring works')}</summary>{o.scoreBasis && <p className="mt-2">{o.scoreBasis}</p>}{o.notes && <p className="mt-1 italic">{o.notes}</p>}</details>}</div>;

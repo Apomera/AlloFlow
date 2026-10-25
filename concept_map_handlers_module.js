@@ -738,54 +738,95 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
         }
 };
 
+// Factual "Fix" for analysis notes. It only PREPARES a correction: the analysis
+// view shows a before/after and applies it to the same resource on the teacher's
+// accept, through the same stale-source guard as the grammar fix.
+const FACTUAL_FIX_MAX_CHANGE = 0.15;
+const FACTUAL_FIX_MIN_ALLOWANCE = 60;
+const isOpenFactualNote = (note) => {
+  if (typeof note !== 'string' || !note.trim() || note.startsWith('✓ FIXED:')) return false;
+  const clean = note.trim().toLowerCase().replace(/[.,;!]+$/, '');
+  return !/^(none|n\/a|no errors|no issues|no discrepancies|no factual errors|none detected|no inaccuracies)\b/.test(clean);
+};
+const buildFactualCorrectionPrompt = (chunk, notes, index, total) => `You are an expert educational editor. Correct factual errors in the text segment below (segment ${index + 1} of ${total}), based strictly on the listed notes.
+
+NOTES TO FIX:
+${notes.map(note => '- ' + note).join('\n')}
+
+Rules:
+1. Change only the sentences a note is about; leave every other word, line break and Markdown mark as it is.
+2. Keep all citations such as [⁽¹⁾](url) exactly as they appear.
+3. If no note applies to this segment, return the segment unchanged.
+4. Return ONLY the segment text: no preamble, no explanation, no quote marks around it, no code fences, no delimiter lines.
+
+<<<SEGMENT>>>
+${chunk}
+<<<END SEGMENT>>>`;
+const cleanCorrectionReply = (raw, chunk) => {
+  let text = typeof raw === 'string' ? raw : (raw && typeof raw.text === 'string' ? raw.text : '');
+  text = text.replace(/\r\n/g, '\n').trim()
+    .replace(/^```[a-z]*[ \t]*\n?/i, '').replace(/\n?```$/, '').trim()
+    .replace(/^<<<SEGMENT>>>\s*/, '').replace(/\s*<<<END SEGMENT>>>$/, '').trim()
+    .replace(/^(?:(?:sure|certainly|okay|ok)[!.,]?\s+)?(?:here(?:'s| is| are)\b[^\n:]{0,80}|(?:the )?(?:corrected|revised|fixed|updated)(?: text| segment| version| passage)?)\s*:[ \t]*\n+/i, '').trim();
+  const source = String(chunk || '').trim();
+  for (const [open, close] of [['"""', '"""'], ['"', '"'], ['“', '”'], ["'", "'"]]) {
+    const wrapped = new RegExp('^' + open + '([\\s\\S]*)' + close + ',?$');
+    const match = text.match(wrapped);
+    if (match && !(source.startsWith(open) && source.endsWith(close))) { text = match[1].trim(); break; }
+  }
+  return text;
+};
+const _linkTargets = (text) => (String(text || '').match(/\]\([^)\s]+\)/g) || []).sort().join('\n');
+const prepareFactualCorrection = async ({ sourceText, notes, callGemini, chunkText, onStep }) => {
+  const original = String(sourceText || '');
+  const openNotes = (Array.isArray(notes) ? notes : []).filter(isOpenFactualNote);
+  if (!original.trim()) return { ok: false, reason: 'no-source' };
+  if (!openNotes.length) return { ok: false, reason: 'no-selection' };
+  const chunks = typeof chunkText === 'function' ? chunkText(original, 8000) : [original];
+  const joiner = chunks.join('') === original ? '' : '\n\n';
+  const parts = [];
+  let changedChunks = 0;
+  for (let i = 0; i < chunks.length; i++) {
+    if (typeof onStep === 'function') onStep(i, chunks.length);
+    const chunk = chunks[i];
+    const core = chunk.trim();
+    const cleaned = cleanCorrectionReply(await callGemini(buildFactualCorrectionPrompt(core, openNotes, i, chunks.length)), core);
+    if (!cleaned) return { ok: false, reason: 'empty' };
+    if (Math.abs(cleaned.length - core.length) > Math.max(core.length * FACTUAL_FIX_MAX_CHANGE, FACTUAL_FIX_MIN_ALLOWANCE)) return { ok: false, reason: 'length' };
+    if (_linkTargets(cleaned) !== _linkTargets(core)) return { ok: false, reason: 'citations' };
+    if (cleaned === core) parts.push(joiner ? core : chunk);
+    else {
+      changedChunks++;
+      parts.push(joiner ? cleaned : chunk.slice(0, chunk.length - chunk.trimStart().length) + cleaned + chunk.slice(chunk.trimEnd().length));
+    }
+    if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 500));
+  }
+  const corrected = parts.join(joiner);
+  if (!changedChunks || corrected === original) return { ok: false, reason: 'no-change' };
+  return { ok: true, original, corrected, notes: openNotes, changedChunks };
+};
 const handleAutoCorrectSource = async (deps) => {
-  const { generatedContent, selectedDiscrepancies, inputText, setIsProcessing, setGenerationStep, setInputText, setError, addToast, t, callGemini, warnLog, chunkText, handleGenerate } = deps;
+  const { generatedContent, selectedDiscrepancies, setIsProcessing, setGenerationStep, t, callGemini, warnLog, chunkText } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleAutoCorrectSource fired"); } catch(_) {}
-      if (!generatedContent || !generatedContent?.data || !generatedContent?.data.accuracy?.discrepancies) return;
-      const allDiscrepancies = generatedContent?.data.accuracy.discrepancies;
-      const discrepanciesToFix = allDiscrepancies.filter((_, index) => selectedDiscrepancies.has(index));
-      if (discrepanciesToFix.length === 0) {
-          addToast(t('process.select_error'), "info");
-          return;
-      }
-      const sourceText = generatedContent?.data.originalText || inputText;
-      setIsProcessing(true);
-      setGenerationStep(t('process.correcting'));
-      addToast(t('process.fixing', { count: discrepanciesToFix.length }), "info");
-      try {
-          const chunks = chunkText(sourceText, 8000);
-          let correctedParts = [];
-          for (let i = 0; i < chunks.length; i++) {
-              setGenerationStep(`${t('process.correcting')} (${i+1}/${chunks.length})...`);
-              const chunk = chunks[i];
-              const fixPrompt = `
-                You are an expert educational editor.
-                Task: Review the following text segment (${i+1}/${chunks.length}) and correct factual errors based strictly on the list below.
-                List of Known Discrepancies to Fix:
-                ${discrepanciesToFix.map(d => `- ${d}`).join('\n')}
-                Text Segment to Review:
-                "${chunk}",
-                Instructions:
-                1. Check if any of the "Discrepancies" appear in this specific text segment.
-                2. If found, rewrite the specific sentence/paragraph to be factually accurate.
-                3. If NO discrepancies are found in this segment, return the text EXACTLY as is.
-                4. Preserve original markdown formatting, citations [⁽¹⁾](url), and structure.
-                5. Do NOT add conversational filler ("Here is the fixed text"). Return ONLY the text content.
-              `;
-              const partResult = await callGemini(fixPrompt);
-              correctedParts.push(partResult || chunk);
-              if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 500));
-          }
-          const finalCorrectedText = correctedParts.map(p => p.trim()).join('\n\n');
-          setInputText(finalCorrectedText);
-          addToast(t('process.correction_success'), "success");
-          await handleGenerate('analysis', null, false, finalCorrectedText);
-      } catch (e) {
-          warnLog("Auto-correct failed", e);
-          setError(t('process.correction_failed_msg'));
-          addToast(t('process.correction_error'), "error");
-          setIsProcessing(false);
-      }
+  const data = generatedContent && generatedContent.type === 'analysis' ? generatedContent.data : null;
+  const all = data && data.accuracy && Array.isArray(data.accuracy.discrepancies) ? data.accuracy.discrepancies : null;
+  if (!all) return { ok: false, reason: 'unavailable' };
+  const notes = all.filter((note, index) => selectedDiscrepancies && selectedDiscrepancies.has(index) && isOpenFactualNote(note));
+  if (!notes.length) return { ok: false, reason: 'no-selection' };
+  if (typeof data.originalText !== 'string' || !data.originalText.trim()) return { ok: false, reason: 'no-source' };
+  setIsProcessing(true);
+  setGenerationStep(t('process.correcting'));
+  try {
+    const result = await prepareFactualCorrection({ sourceText: data.originalText, notes, callGemini, chunkText,
+      onStep: (i, n) => setGenerationStep(n > 1 ? `${t('process.correcting')} (${i + 1}/${n})...` : t('process.correcting')) });
+    return { ...result, resourceId: generatedContent.id };
+  } catch (e) {
+    if (typeof warnLog === 'function') warnLog("Factual correction failed", e);
+    return { ok: false, reason: 'failed' };
+  } finally {
+    setIsProcessing(false);
+    setGenerationStep('');
+  }
 };
 
 const handleRefinePanel = async (panelIdx, editInstruction, deps) => {
@@ -827,6 +868,9 @@ window.AlloModules.CmapHandlers = {
   handleBatchGenerateForRoster,
   handleGenerateLessonPlan,
   handleAutoCorrectSource,
+  prepareFactualCorrection,
+  cleanCorrectionReply,
+  isOpenFactualNote,
   handleRefinePanel,
 };
 

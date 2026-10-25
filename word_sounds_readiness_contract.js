@@ -1100,7 +1100,7 @@ function createWordSoundsCore(options = {}) {
       new Set(supplied.distractors).size === supplied.distractors.length);
     if (curated && matching) return {...curated, distractors: [...curated.distractors], contentStatus: 'curated', targetWord: target};
     return {type: 'review', contentStatus: 'teacher_review_required', targetWord: target,
-      instruction: 'Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.',
+      instruction: 'Sound Swap has a checked sound change for only a small set of words, and this word is not one of them. Choose another activity.',
       answer: '', distractors: []};
   };
   const manipulationReady = task => !!task && task.contentStatus === 'curated' &&

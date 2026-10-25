@@ -143,7 +143,7 @@ describe('math grading XP and AI response hardening', () => {
     await MathHelpers.handleCheckMathWork(resourceId, 0, 'What is six times seven?', '42', [], '42.000', harness.deps);
 
     expect(scoreUpdate).toHaveBeenCalledTimes(1);
-    expect(scoreUpdate).toHaveBeenCalledWith(5, 'Math Problem', resourceId);
+    expect(scoreUpdate).toHaveBeenCalledWith(5, 'Math Problem', resourceId + ':0');
     expect(harness.getResults()[resourceId][0]).toMatchObject({
       verdict: 'correct',
       score: 100,
@@ -194,7 +194,7 @@ describe('math grading XP and AI response hardening', () => {
 
     expect(callGemini).toHaveBeenCalledTimes(2);
     expect(scoreUpdate).toHaveBeenCalledTimes(1);
-    expect(scoreUpdate).toHaveBeenCalledWith(6, 'Math Problem', resourceId);
+    expect(scoreUpdate).toHaveBeenCalledWith(6, 'Math Problem', resourceId + ':0');
     expect(harness.getResults()[resourceId][0]).toMatchObject({
       verdict: 'partial',
       score: 80,

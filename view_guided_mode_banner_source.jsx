@@ -1067,18 +1067,32 @@ function GuidedModeBanner({
   const hasSavedDirections = !!guidedDeliveryEvidence?.directionsSaved || (history || []).some(item => item?.id && _createdIdSet.has(item.id) && item.type === 'directions');
   const hasDeliveryOutcome = _deliveryOutcomeDone;
   const hasStudentPreview = !!guidedDeliveryEvidence?.studentPreviewed;
+  // Answer keys, computed where the code can tell. Live sessions and homework
+  // links strip teacher-only notes and withhold quiz keys for "Graded" and
+  // "Teacher release" quizzes (released keys travel later, per question); any
+  // other feedback timing sends the key to student devices, which no checkbox
+  // can undo. Exports and other resource types stay a manual check.
+  const _packItems = guidedResourceItems.map(entry => entry.item);
+  const _keysSharedCount = _packItems.filter(item => item.type === 'quiz' && !(item.data?.answerKeysWithheld === true || ['teacher-graded', 'teacher-release'].includes(item.data?.deliverySettings?.feedbackTiming))).length;
+  const _keyFreeTypes = ['quiz', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames', 'faq', 'brainstorm', 'lesson-plan', 'anchor-chart', 'directions', 'analysis', 'udl-advice', 'alignment-report', 'gemini-bridge'];
+  const answerKeysState = _keysSharedCount > 0 ? 'shared'
+    : (['live', 'take-home'].includes(deliverySetting) && _packItems.length > 0 && _packItems.every(item => _keyFreeTypes.includes(item.type))) ? 'hidden' : 'confirm';
   const readinessItems = [
     { id: 'directions', label: t('guided.readiness_directions') || 'Student directions are saved', verified: hasSavedDirections, action: 'directions' },
     { id: 'delivery', label: t('guided.readiness_delivery') || 'A delivery file, link, or session was created', verified: hasDeliveryOutcome, action: 'package-deliver' },
     { id: 'learner-view', label: t('guided.readiness_learner_view') || 'The learner view was tested', verified: hasStudentPreview, action: 'learner-preview' },
-    { id: 'answer-keys', label: t('guided.readiness_answers') || 'Answer keys and teacher-only notes are hidden', verified: false },
+    { id: 'answer-keys', state: answerKeysState, locked: answerKeysState === 'shared', verified: answerKeysState === 'hidden',
+      label: answerKeysState === 'shared'
+        ? (t('guided.readiness_answers_shared') || 'Answer keys travel to student devices with {count} quiz(zes) set to give feedback. To hide them, set Feedback timing to "Graded" or "Teacher release".').replace('{count}', String(_keysSharedCount))
+        : (t('guided.readiness_answers') || 'Answer keys and teacher-only notes are hidden') },
     { id: 'accessibility', label: t('guided.readiness_accessibility') || 'Accessibility and reading order were reviewed', verified: false },
     { id: 'backup', label: t('guided.readiness_backup') || 'A backup access route is ready', verified: false },
   ];
-  const readinessCount = readinessItems.filter(item => item.verified || readinessChecks[item.id]).length;
+  const readinessDone = item => !!(item.verified || (!item.locked && readinessChecks[item.id]));
+  const readinessCount = readinessItems.filter(readinessDone).length;
   const readinessTotal = readinessItems.length;
-  const readinessFixes = readinessItems.filter(item => !item.verified && !readinessChecks[item.id] && item.action);
-  const readinessRemainingItems = readinessItems.filter(item => !item.verified && !readinessChecks[item.id]);
+  const readinessFixes = readinessItems.filter(item => !readinessDone(item) && item.action);
+  const readinessRemainingItems = readinessItems.filter(item => !readinessDone(item));
   const getDeliveryRecommendation = (setting, priority) => {
     if (priority === 'low-connectivity') return { primary: 'Self-contained HTML', backup: 'PDF / Print', why: 'Both routes can be used without a continuous connection.' };
     if (priority === 'editable') return { primary: 'Accessible Word (.docx)', backup: 'OpenDocument (.odt)', why: 'Both preserve an editable teacher copy.' };
@@ -1858,7 +1872,7 @@ function GuidedModeBanner({
             {(!readinessContextKey || readinessChanged || readinessSaveFailed) && <div role="status" aria-live="polite" style={{ color: '#fde68a', fontSize: '12px', lineHeight: 1.45, marginBottom: '8px' }}>{!readinessContextKey ? (t('guided.readiness_loading') || 'Waiting for the lesson resources before restoring manual checks.') : readinessSaveFailed ? (t('guided.readiness_session_only') || 'These checks could not be saved on this device. They remain available in this session; confirm them again after reopening.') : (t('guided.readiness_context_changed') || 'The lesson or delivery route changed. Please confirm the manual checks again.')}</div>}
             <div role="progressbar" aria-label={t('guided.readiness_progress') || 'Learner readiness progress'} aria-valuemin={0} aria-valuemax={readinessTotal} aria-valuenow={readinessCount} style={{ height: '7px', overflow: 'hidden', borderRadius: '999px', background: 'rgba(15,23,42,.55)', marginBottom: '8px' }}><span style={{ display: 'block', width: (readinessCount / Math.max(1, readinessTotal) * 100) + '%', height: '100%', background: readinessCount === readinessTotal ? '#34d399' : '#60a5fa', transition: 'width .2s' }} /></div>
             {readinessFixes.length > 0 && <div className="allo-guided-readiness-fixes"><strong>{t('guided.readiness_fix_title') || 'Finish verified setup'}</strong>{readinessFixes.map(item => <button type="button" key={item.id} onClick={() => runReadinessAction(item.action)}>{item.id === 'directions' ? (t('guided.readiness_fix_directions') || 'Create directions') : item.id === 'delivery' ? (t('guided.readiness_fix_delivery') || 'Choose export or delivery') : (t('guided.readiness_fix_preview') || 'Test learner view')}</button>)}</div>}
-            <div style={{ display: 'grid', gap: '5px' }}>{readinessItems.map(item => { const checked = !!(item.verified || readinessChecks[item.id]); return <label key={item.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', padding: '6px 7px', borderRadius: '7px', background: checked ? 'rgba(16,185,129,.12)' : 'rgba(15,23,42,.32)', color: checked ? '#d1fae5' : '#e0e7ff', fontSize: '12px', lineHeight: 1.4 }}><input type="checkbox" checked={checked} disabled={item.verified || guidedBusy || !readinessContextKey} onChange={event => setReadinessChecks(previous => ({ ...(previous || {}), [item.id]: event.target.checked }))} style={{ marginTop: '2px' }} /><span style={{ flex: 1 }}>{item.label}</span><span style={{ color: item.verified ? '#6ee7b7' : '#c7d2fe', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' }}>{item.verified ? (t('guided.readiness_verified') || 'Verified') : (t('guided.readiness_confirm') || 'Confirm')}</span></label>; })}</div>
+            <div style={{ display: 'grid', gap: '5px' }}>{readinessItems.map(item => { const checked = readinessDone(item); return <label key={item.id} data-readiness-item={item.id} data-readiness-state={item.state || undefined} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', padding: '6px 7px', borderRadius: '7px', background: checked ? 'rgba(16,185,129,.12)' : 'rgba(15,23,42,.32)', color: checked ? '#d1fae5' : '#e0e7ff', fontSize: '12px', lineHeight: 1.4 }}><input type="checkbox" checked={checked} disabled={item.verified || item.locked || guidedBusy || !readinessContextKey} onChange={event => setReadinessChecks(previous => ({ ...(previous || {}), [item.id]: event.target.checked }))} style={{ marginTop: '2px' }} /><span style={{ flex: 1 }}>{item.label}</span><span style={{ color: item.verified ? '#6ee7b7' : item.locked ? '#fde68a' : '#c7d2fe', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' }}>{item.verified ? (t('guided.readiness_verified') || 'Verified') : item.locked ? (t('guided.readiness_keys_shared') || 'Keys shared') : (t('guided.readiness_confirm') || 'Confirm')}</span></label>; })}</div>
             <div role="status" aria-live="polite" style={{ marginTop: '8px', color: readinessCount === readinessTotal ? '#6ee7b7' : '#fde68a', fontSize: '12px', fontWeight: 800 }}>{readinessCount}/{readinessTotal} {readinessCount === readinessTotal ? (t('guided.readiness_ready') || 'ready for learners') : (t('guided.readiness_remaining') || 'checks complete')}</div>
           </div>
         )}

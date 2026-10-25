@@ -246,7 +246,9 @@ const WordSoundsReviewPanel = ({
   isProbeMode,
   // Words the student player skips in Word Families (no playable board),
   // computed by the player so this list and the skip always agree.
-  wordFamilySkips
+  wordFamilySkips,
+  soundSortSkips,
+  soundSwapSkips
 }) => {
   const reviewActivities = Array.isArray(activitySequence) && activitySequence.length ? activitySequence : currentActivity ? [currentActivity] : null;
   const reviewsActivity = (...activities) => !reviewActivities || reviewActivities.some((activity) => activities.includes(activity));
@@ -749,7 +751,16 @@ const WordSoundsReviewPanel = ({
     const words = skipped.join(", ");
     const label = t("word_sounds.word_families_skipped_for_students", { count: skipped.length, words }) || "{count} skipped for students in Word Families (needs a reviewed word family): {words}";
     return /* @__PURE__ */ React.createElement("p", { role: "note", "data-ws-word-family-skips": "true", className: "rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900" }, label.replace(/\{\{?count\}?\}/g, String(skipped.length)).replace(/\{\{?words\}?\}/g, words));
-  })(), !isLoading && preloadedWords.length > 0 && (() => {
+  })(), [
+    ["sound_sort", soundSortSkips, "word_sounds.sound_sort_skipped_for_students", "{count} skipped for students in Sound Sort (no word set for that sound): {words}"],
+    ["manipulation", soundSwapSkips, "word_sounds.sound_swap_skipped_for_students", "{count} skipped for students in Sound Swap (no checked one-sound change): {words}"]
+  ].map(([activity, list, key, fallback]) => {
+    const skipped = reviewsActivity(activity) && Array.isArray(list) ? list.filter(Boolean) : [];
+    if (!skipped.length) return null;
+    const words = skipped.join(", ");
+    const label = t(key, { count: skipped.length, words }) || fallback;
+    return /* @__PURE__ */ React.createElement("p", { key: activity, role: "note", "data-ws-activity-skips": activity, className: "rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900" }, label.replace(/\{\{?count\}?\}/g, String(skipped.length)).replace(/\{\{?words\}?\}/g, words));
+  }), !isLoading && preloadedWords.length > 0 && (() => {
     const norm = (v) => String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
     const portableKeys = /* @__PURE__ */ new Set();
     const imageKeysFor = (words) => {

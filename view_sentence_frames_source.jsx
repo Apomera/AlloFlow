@@ -71,6 +71,18 @@ function SentenceFramesView(props) {
   const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
   const isSessionOpen = !!gradingSession.isOpen && (sessionResourceId == null || String(sessionResourceId) === String(generatedContent?.id));
   const canGenerateRubric = !!isTeacherMode && !isParentMode;
+  // Shown numbers count only the items that render, so a dropped item leaves no gap.
+  const visibleItemNumbers = {};
+  usableItems.reduce((n, item, i) => { if (isUsableItem(item)) { visibleItemNumbers[i] = n + 1; return n + 1; } return n; }, 0);
+  const gradeScores = gradingResult && Array.isArray(gradingResult.scores) ? gradingResult.scores.filter(s => s && typeof s === 'object') : [];
+  const gradeFeedback = gradingResult && gradingResult.feedback && typeof gradingResult.feedback === 'object' ? gradingResult.feedback : {};
+  const gradeText = v => (typeof v === 'string' || typeof v === 'number') ? v : '';
+  // Optional generator extras (absent on older scaffolds, which render as before).
+  const TIER_LABELS = { emerging: ['scaffolds.tier_emerging', 'Emerging'], expanding: ['scaffolds.tier_expanding', 'Expanding'], bridging: ['scaffolds.tier_bridging', 'Bridging'] };
+  const TIER_CLASSES = { emerging: 'bg-sky-50 text-sky-800 border-sky-300', expanding: 'bg-violet-50 text-violet-800 border-violet-300', bridging: 'bg-emerald-50 text-emerald-800 border-emerald-300' };
+  const tierOf = item => item && typeof item.tier === 'string' && TIER_LABELS[item.tier] ? item.tier : null;
+  const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 12);
+  const wordBankHeadingId = `scaffold-word-bank-${generatedContent?.id}`;
   const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
   return (
                   <div className="space-y-6">
@@ -118,7 +130,15 @@ function SentenceFramesView(props) {
                             )}
                         </div>
                     </div>
-                    {isSessionOpen ? (<ErrorBoundary fallbackMessage="Draft feedback encountered an error. Please try again.">
+                    {wordBank.length > 0 && (
+                        <section data-scaffold-word-bank aria-labelledby={wordBankHeadingId} className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                            <h4 id={wordBankHeadingId} className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-2">{label('scaffolds.word_bank', 'Word bank')}</h4>
+                            <ul className="flex flex-wrap gap-2">
+                                {wordBank.map((word, i) => <li key={i} dir="auto" className="px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950">{word}</li>)}
+                            </ul>
+                        </section>
+                    )}
+                    {isSessionOpen ? (<ErrorBoundary fallbackMessage={label('scaffolds.draft_feedback_error', 'Draft feedback encountered an error. Please try again.')}>
                         <DraftFeedbackInterface
                             status={gradingSession.status}
                             draftText={gradingSession.draftText}
@@ -137,8 +157,9 @@ function SentenceFramesView(props) {
                              {usableItems.map((item, idx) => isUsableItem(item) ? (
                                  <div key={idx} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors" data-help-key="scaffolds_item">
                                      <div className="flex items-start gap-3">
-                                         <div className="bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1">{idx + 1}</div>
+                                         <div className="bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1">{visibleItemNumbers[idx]}</div>
                                          <div className="w-full min-w-0">
+                                            {tierOf(item) && <span data-scaffold-tier={tierOf(item)} className={`inline-block mb-1 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-wider ${TIER_CLASSES[tierOf(item)]}`}>{label(TIER_LABELS[tierOf(item)][0], TIER_LABELS[tierOf(item)][1])}</span>}
                                             {isEditingScaffolds ? (
                                                 <>
                                                     <textarea
@@ -164,7 +185,7 @@ function SentenceFramesView(props) {
                                                     <p id={`scaffold-prompt-${generatedContent.id}-${idx}`} dir="auto" className="text-lg break-words font-medium text-slate-800 mb-1 font-serif px-2 py-1">{item.text}</p>
                                                     {leveledTextLanguage !== 'English' && item.text_en && <p className="text-sm text-slate-600 italic px-2">{item.text_en}</p>}
                                                     <textarea
-                                                        aria-label={`${label('scaffolds.student_response', 'Student response')} ${idx + 1}`}
+                                                        aria-label={`${label('scaffolds.student_response', 'Student response')} ${visibleItemNumbers[idx]}`}
                                                         aria-describedby={`scaffold-prompt-${generatedContent.id}-${idx}`}
                                                         value={studentResponses[generatedContent.id]?.[idx] || ''}
                                                         onChange={(e) => handleStudentInput(generatedContent.id, idx, e.target.value)}
@@ -322,27 +343,27 @@ function SentenceFramesView(props) {
                                         <div className="bg-white rounded-lg border border-indigo-100 p-4 mb-4">
                                             <div className="flex justify-between items-center mb-4 border-b border-indigo-50 pb-2">
                                                 <span className="font-bold text-indigo-900 text-lg">{t('dashboard.grading.total_score')}</span>
-                                                <span className="bg-indigo-100 text-indigo-800 font-black px-3 py-1 rounded-full">{gradingResult.totalScore}</span>
+                                                <span className="bg-indigo-100 text-indigo-800 font-black px-3 py-1 rounded-full">{gradeText(gradingResult.totalScore)}</span>
                                             </div>
                                             <div className="space-y-3 mb-4">
-                                                {gradingResult.scores.map((s, i) => (
+                                                {gradeScores.map((s, i) => (
                                                     <div key={i} className="text-sm">
                                                         <div className="flex justify-between font-bold text-slate-700">
-                                                            <span>{s.criteria}</span>
-                                                            <span>{s.score}</span>
+                                                            <span>{gradeText(s.criteria)}</span>
+                                                            <span>{gradeText(s.score)}</span>
                                                         </div>
-                                                        <p className="text-slate-600 text-xs italic">{s.comment}</p>
+                                                        <p className="text-slate-600 text-xs italic">{gradeText(s.comment)}</p>
                                                     </div>
                                                 ))}
                                             </div>
                                             <div className="grid grid-cols-1 gap-3 text-sm">
                                                 <div className="bg-green-50 p-3 rounded border border-green-100">
                                                     <strong className="text-green-800 block mb-1 flex items-center gap-1"><Sparkles size={12}/> {t('dashboard.grading.glow_label')}</strong>
-                                                    <p className="text-green-700">{gradingResult.feedback.glow}</p>
+                                                    <p className="text-green-700">{gradeText(gradeFeedback.glow)}</p>
                                                 </div>
                                                 <div className="bg-orange-50 p-3 rounded border border-orange-100">
                                                     <strong className="text-orange-800 block mb-1 flex items-center gap-1"><ArrowUpRight size={12}/> {t('dashboard.grading.grow_label')}</strong>
-                                                    <p className="text-orange-700">{gradingResult.feedback.grow}</p>
+                                                    <p className="text-orange-700">{gradeText(gradeFeedback.grow)}</p>
                                                 </div>
                                             </div>
                                         </div>

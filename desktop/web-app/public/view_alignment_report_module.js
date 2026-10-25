@@ -93,6 +93,24 @@ var AUDIT_DIMENSION_FALLBACKS = {
 function dimLabel(key) {
   return atr('dim_' + key, AUDIT_DIMENSION_FALLBACKS[key] || key);
 }
+// Say where the DOK numbers came from and how many quiz items they cover.
+function dokHeading(e) {
+  var measured = Number(e && e.dokTotal) || 0;
+  var total = Math.max(measured, Number(e && e.dokQuestionCount) || 0);
+  if (e && e.dokSource === 'llm-estimated') return atr('dok_heading_estimated', 'Quiz DOK distribution, AI estimate from {n} of {m} questions (Webb\'s framework):', {
+    n: measured,
+    m: total
+  });
+  if (e && e.dokSource === 'item-tags') return total > measured ? atr('dok_heading_tagged_partial', 'Quiz DOK distribution, from the DOK tags on {n} of {m} questions (Webb\'s framework):', {
+    n: measured,
+    m: total
+  }) : atr('dok_heading_tagged', 'Quiz DOK distribution, from the DOK tags on {n} questions (Webb\'s framework):', {
+    n: measured
+  });
+  return atr('dok_heading_unlabelled', 'Quiz DOK distribution ({n} items, source not recorded; Webb\'s framework):', {
+    n: measured
+  });
+}
 function statusBadgeClass(status) {
   if (status === 'Aligned' || status === 'Pass') return 'bg-green-100 text-green-700';
   if (status === 'Not Aligned' || status === 'Revise') return 'bg-red-100 text-red-700';
@@ -788,7 +806,7 @@ function StandardsSection(p) {
     icon: "🎯",
     title: dimLabel('standards'),
     status: s.status
-  }, " // Top stat row", /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
@@ -1033,7 +1051,7 @@ function EngagementSection(p) {
     icon: "🎯",
     title: dimLabel('engagement'),
     status: e.status
-  }, " // Top stat row", /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
@@ -1072,7 +1090,7 @@ function EngagementSection(p) {
       key: i,
       className: "text-xs px-2 py-0.5 bg-indigo-100 text-indigo-900 rounded"
     }, auditText(t));
-  }))), " // Modalities row", /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "mb-3 grid grid-cols-1 md:grid-cols-2 gap-2"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-emerald-800 mb-1"
@@ -1099,10 +1117,13 @@ function EngagementSection(p) {
   }, "all four covered")))),
   // DOK bar
   e.dokTotal > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "mb-3"
+    className: "mb-3",
+    "data-dok-source": e.dokSource || 'unlabelled'
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-slate-700 mb-1"
-  }, 'Quiz DOK distribution (' + e.dokTotal + ' items, Webb\'s framework):'), /*#__PURE__*/React.createElement("div", {
+  }, dokHeading(e)), e.dokSource === 'llm-estimated' && /*#__PURE__*/React.createElement("p", {
+    className: "text-[11px] text-slate-600 mb-1"
+  }, atr('dok_estimate_note', 'The quiz items carry no DOK tags, so the AI estimated these levels from the question wording. Treat the chart as a rough guide.')), /*#__PURE__*/React.createElement("div", {
     role: "img",
     "aria-label": 'Quiz DOK distribution: Level 1 recall ' + (dok.L1 || 0) + ' percent; Level 2 skill and concept ' + (dok.L2 || 0) + ' percent; Level 3 strategic thinking ' + (dok.L3 || 0) + ' percent; Level 4 extended thinking ' + (dok.L4 || 0) + ' percent; unknown ' + (dok.unknown || 0) + ' percent.',
     className: "flex h-6 w-full rounded overflow-hidden border border-slate-200"
@@ -1141,7 +1162,7 @@ function EngagementSection(p) {
     },
     className: "flex items-center justify-center text-[10px] text-slate-700",
     title: 'Unknown: ' + dok.unknown + '%'
-  }, dok.unknown > 8 ? '?' : ''))), " // Scaffold counts", /*#__PURE__*/React.createElement("div", {
+  }, dok.unknown > 8 ? '?' : ''))), /*#__PURE__*/React.createElement("div", {
     className: "mb-3 grid grid-cols-3 gap-2 text-center text-xs"
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-2 bg-slate-50 rounded"
@@ -1206,7 +1227,7 @@ function AccessibilitySection(p) {
     icon: "♿",
     title: dimLabel('accessibility'),
     status: a.status
-  }, " // Top stat row", /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
@@ -1343,11 +1364,11 @@ function UdlSection(p) {
     icon: "🌐",
     title: atr('dim_udl_full', 'UDL principles (CAST Guidelines v3.0)'),
     status: u.status
-  }, " // Priors banner", /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "mb-3 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
-  }, "Priors used: "), (priors.modalitiesPresent || []).length, " modalities (", (priors.modalitiesPresent || []).join(', ') || 'none', "), ", (priors.distinctTypes || []).length, " distinct artifact types, ", (priors.scaffoldCounts && priors.scaffoldCounts.sentenceFrames || 0) + (priors.scaffoldCounts && priors.scaffoldCounts.simplifiedTexts || 0) + (priors.scaffoldCounts && priors.scaffoldCounts.leveledGlossary || 0), " scaffolds."), " // Three pillars", /*#__PURE__*/React.createElement(UdlPillar, {
+  }, "Priors used: "), (priors.modalitiesPresent || []).length, " modalities (", (priors.modalitiesPresent || []).join(', ') || 'none', "), ", (priors.distinctTypes || []).length, " distinct artifact types, ", (priors.scaffoldCounts && priors.scaffoldCounts.sentenceFrames || 0) + (priors.scaffoldCounts && priors.scaffoldCounts.simplifiedTexts || 0) + (priors.scaffoldCounts && priors.scaffoldCounts.leveledGlossary || 0), " scaffolds."), /*#__PURE__*/React.createElement(UdlPillar, {
     pillar: u.representation,
     title: "Representation",
     icon: "👁️"
@@ -1386,7 +1407,7 @@ function AccuracySection(p) {
     icon: "✅",
     title: dimLabel('accuracy'),
     status: a.status
-  }, " // Top stat row", /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
@@ -1531,7 +1552,7 @@ function DifferentiationSection(p) {
     className: 'text-2xl font-bold ' + (d.missing && d.missing.length > 0 ? 'text-rose-800' : 'text-slate-800')
   }, d.missing && d.missing.length || 0), /*#__PURE__*/React.createElement("div", {
     className: 'text-xs ' + (d.missing && d.missing.length > 0 ? 'text-rose-700' : 'text-slate-600')
-  }, "Missing"))), " // Inventory grid", /*#__PURE__*/React.createElement("div", {
+  }, "Missing"))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 md:grid-cols-3 gap-1.5 mb-3"
   }, Object.keys(flags).map(function (k) {
     var on = flags[k];
@@ -1838,14 +1859,14 @@ function ReadinessScoreCard(p) {
       backgroundColor: bgColor,
       borderColor: ringColor
     }
-  }, " // Polish #2: Score circle removed — already rendered in the executive summary banner // above. This card now functions as the per-dimension chip strip + blocking-issues // detail panel that didn't fit in the summary banner.", /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "min-w-0"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-xs font-bold uppercase tracking-wider mb-3",
     style: {
       color: textColor
     }
-  }, atr('per_dimension_breakdown', 'Per-Dimension Breakdown')), " // Per-dimension status links", /*#__PURE__*/React.createElement(ReadinessDimensionNav, {
+  }, atr('per_dimension_breakdown', 'Per-Dimension Breakdown')), /*#__PURE__*/React.createElement(ReadinessDimensionNav, {
     overall: o
   }), o.blockingIssues && o.blockingIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-2 bg-white border border-rose-300 rounded text-xs"
