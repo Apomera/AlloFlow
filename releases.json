@@ -1,5 +1,12 @@
 [
   {
+    "id": "rel_20261025T221023Z_v1_11",
+    "version": "1.11",
+    "canvas_url": "https://share.gemini.google/UTJhLsZ0QOx1",
+    "released": "2026-10-25T22:10:23.571Z",
+    "notes": "Fairer grading and safer answer keys: fill-in-the-blank answers your students saw as correct now go to you for review instead of being marked wrong, quiz answer keys stay off student devices until you release results, and math XP counts every problem. Better printouts for notes, activities and cloze worksheets, clearer AI estimates in Analysis and Alignment, student answer fields in discussion and jigsaw activities, and stronger security for how the app loads its tools."
+  },
+  {
     "id": "rel_20261022T102223Z_v1_10",
     "version": "1.10",
     "canvas_url": "https://share.gemini.google/igmVhCP2zfxj",

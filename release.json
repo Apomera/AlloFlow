@@ -1,6 +1,6 @@
 {
-  "version": "1.10",
-  "canvas_url": "https://share.gemini.google/igmVhCP2zfxj",
-  "released": "2026-10-22T10:22:23.314Z",
-  "notes": "Updated AlloFlow Gemini Canvas link with improved dinosaur anatomy and exploration, diagram sorting guidance, and bug report receipts with a private developer inbox."
+  "version": "1.11",
+  "canvas_url": "https://share.gemini.google/UTJhLsZ0QOx1",
+  "released": "2026-10-25T22:10:23.571Z",
+  "notes": "Fairer grading and safer answer keys: fill-in-the-blank answers your students saw as correct now go to you for review instead of being marked wrong, quiz answer keys stay off student devices until you release results, and math XP counts every problem. Better printouts for notes, activities and cloze worksheets, clearer AI estimates in Analysis and Alignment, student answer fields in discussion and jigsaw activities, and stronger security for how the app loads its tools."
 }
