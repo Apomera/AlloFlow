@@ -5,7 +5,8 @@ import {readFileSync} from 'node:fs';
 // These are complete DOM rehearsal journeys, including a 19-action Watch route.
 // On Windows the longest measured route takes about 38 seconds. Keep its full
 // assertions and bounded movement loops; allow time for the integration work.
-vi.setConfig({testTimeout:60000});
+// Under the shared CI shard, a different case passed 60 s on each of three runs.
+vi.setConfig({testTimeout:120000});
 const require=createRequire(import.meta.url),M=require('../stem_lab/kitchen_studio/recipe_lab_avatar_model.js'),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js'),S=require('../stem_lab/kitchen_studio/recipe_lab_sauce_check.js'),V=require('../stem_lab/kitchen_studio/recipe_lab_avatar_motion.js');
 const source=readFileSync('stem_lab/kitchen_studio/recipe_lab_avatar.js','utf8'),key='alloflow-kitchen-avatar-v1',$=id=>document.getElementById(id);
 let ui,media,motionChange,frames,nextFrame;

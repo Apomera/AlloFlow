@@ -1344,12 +1344,15 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
 
   it('goal notes allow blank responses and pausing without creating another goal', async () => {
     await openGoalReview({ tab: 'goals', goals: [completedNoteGoal('note-d', 'Pause and reflect')] });
+    // Reflect moves focus to the first field on a timer; typing before it lands can follow the focus.
     await noteButton(page, 'Reflect on Pause and reflect').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-note-note-d-whatWorked');
     let form = noteRegion('Reflection for Pause and reflect');
     await noteField(form, 'What got in the way? (optional)').fill('A draft barrier.');
     await noteButton(form, 'Pause for now').click();
     await page.waitForFunction(() => document.activeElement?.id === 'goal-completed-note-d');
     await noteButton(page, 'Reflect on Pause and reflect').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-note-note-d-whatWorked');
     form = noteRegion('Reflection for Pause and reflect');
     expect(await noteField(form, 'What got in the way? (optional)').inputValue()).toBe('A draft barrier.');
     await noteField(form, 'What got in the way? (optional)').fill('');
