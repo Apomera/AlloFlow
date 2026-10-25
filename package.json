@@ -223,7 +223,7 @@
     "compromise": "14.15.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.28.6",
+    "@babel/cli": "^8.0.6",
     "@babel/core": "7.29.7",
     "@babel/parser": "7.29.7",
     "@babel/plugin-transform-react-jsx": "^7.28.6",
