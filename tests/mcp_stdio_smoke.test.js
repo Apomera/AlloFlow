@@ -100,13 +100,13 @@ describe('MCP stdio local connector', () => {
   it('lists the validation and Task C job slice with correct annotations', async () => {
     const res = await request('tools/list', {});
     const tools = res.result.tools;
-    expect(tools.map((t) => t.name).sort()).toEqual(['artifact_validate', 'blueprint_create', 'blueprint_preview', 'blueprint_revise', 'blueprint_validate', 'capabilities', 'job_cancel', 'job_get', 'job_get_result', 'media_plan', 'resource_pack_attach_image', 'resource_pack_export', 'resource_pack_generate', 'resource_pack_preview', 'resource_pack_validate']);
+    expect(tools.map((t) => t.name).sort()).toEqual(['artifact_validate', 'blueprint_create', 'blueprint_preview', 'blueprint_revise', 'blueprint_validate', 'capabilities', 'job_cancel', 'job_get', 'job_get_result', 'media_plan', 'resource_pack_attach_image', 'resource_pack_capabilities', 'resource_pack_export', 'resource_pack_generate', 'resource_pack_preview', 'resource_pack_validate']);
     expect(tools.map((t) => t.name)).not.toContain('blueprint_execute');
     for (const t of tools) {
       expect(t.name).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
       expect(t.name).not.toContain('.');
       expect(t.annotations.title).toBeTruthy();
-      const isReadOnly = ['capabilities', 'blueprint_validate', 'blueprint_preview', 'media_plan', 'job_get', 'job_get_result', 'artifact_validate', 'resource_pack_validate', 'resource_pack_preview'].includes(t.name);
+      const isReadOnly = ['capabilities', 'blueprint_validate', 'blueprint_preview', 'media_plan', 'job_get', 'job_get_result', 'artifact_validate', 'resource_pack_capabilities', 'resource_pack_validate', 'resource_pack_preview'].includes(t.name);
       expect(t.annotations.readOnlyHint).toBe(isReadOnly);
       expect(t.annotations.destructiveHint).toBe(false);
       expect(t.inputSchema.type).toBe('object');

@@ -29,14 +29,14 @@
  *
  * Manifest: honest-by-default (no capabilities advertised). Set
  * ALLOFLOW_MCP_MANIFEST_PATH to a JSON CapabilityManifest to advertise real
- * local providers; an invalid file falls back to the empty manifest.
+ * local providers; an explicitly configured invalid file denies scoped tools.
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
 const crypto = require('crypto');
+const { LIMITS, BoundedJobs, BoundedInput, BoundedOutput, boundedDiagnostics, readConfigurationJson } = require('./agent_core_stdio_security.cjs');
 
 const Contracts = require(path.join(__dirname, '..', '..', 'agent_core_contracts_module.js'));
 const BlueprintServiceModule = require(path.join(__dirname, '..', '..', 'agent_core_blueprint_service_module.js'));
@@ -44,10 +44,11 @@ const MediaContracts = require(path.join(__dirname, '..', '..', 'agent_core_medi
 const MediaPlanner = require(path.join(__dirname, '..', '..', 'agent_core_media_planner_module.js'));
 const ResourcePackService = require(path.join(__dirname, '..', '..', 'agent_core_resource_pack_module.js'));
 
-const SERVER_INFO = { name: 'alloflow-agent-core', title: 'AlloFlow Agent Core (local)', version: '0.4.0' };
+const SERVER_INFO = { name: 'alloflow-agent-core', title: 'AlloFlow Agent Core (local)', version: '0.5.0' };
 const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
-const MAX_LINE_CHARS = 4000000;
-const MAX_JOBS = 256;
+// An atomic frame replacement carries the bounded pack, new still frame, and
+// re-encoded playback GIF in one request. Keep transport headroom above those
+// payloads without changing the service's pack or decoded-media budgets.
 const AUDITED_TOOLS = new Set(['blueprint_create', 'blueprint_revise', 'resource_pack_generate', 'resource_pack_attach_image', 'resource_pack_export', 'job_cancel']);
 
 function log(msg) {
@@ -76,13 +77,14 @@ function loadManifest() {
   const p = process.env.ALLOFLOW_MCP_MANIFEST_PATH;
   if (!p) return fallback;
   try {
-    const parsed = JSON.parse(fs.readFileSync(p, 'utf-8'));
+    const parsed = readConfigurationJson(p);
     const report = Contracts.validateCapabilityManifest(parsed);
-    if (report.ok) { log('manifest loaded from ' + path.basename(p)); return report.value; }
-    log('manifest at ALLOFLOW_MCP_MANIFEST_PATH failed validation (' + report.errors.map((e) => e.code).join(', ') + '); using empty manifest');
-  } catch (e) {
-    log('manifest unreadable (' + e.message + '); using empty manifest');
+    if (report.ok) { log('configured manifest loaded'); return report.value; }
+    log('configured manifest failed validation; scoped tools disabled');
+  } catch (_) {
+    log('configured manifest unreadable; scoped tools disabled');
   }
+  fallback.permissions = [];
   return fallback;
 }
 
@@ -94,16 +96,18 @@ function loadMediaInventory() {
   const p = process.env.ALLOFLOW_MCP_MEDIA_INVENTORY_PATH;
   if (!p) return fallback;
   try {
-    const report = MediaContracts.validateProviderInventory(JSON.parse(fs.readFileSync(p, 'utf-8')));
-    if (report.ok) { log('media inventory loaded from ' + path.basename(p)); return report.value; }
-    log('media inventory failed validation (' + report.errors.map((e) => e.code).join(', ') + '); using empty inventory');
-  } catch (e) { log('media inventory unreadable (' + e.message + '); using empty inventory'); }
+    const report = MediaContracts.validateProviderInventory(readConfigurationJson(p));
+    if (report.ok) { log('configured media inventory loaded'); return report.value; }
+    log('configured media inventory failed validation; using empty inventory');
+  } catch (_) { log('configured media inventory unreadable or outside local limits; using empty inventory'); }
   return fallback;
 }
 const MEDIA_INVENTORY = loadMediaInventory();
 
 const BLUEPRINT_SERVICE = BlueprintServiceModule.createBlueprintService({ contracts: Contracts });
-const JOBS = new Map();
+const JOBS = new BoundedJobs();
+const jobSweep = setInterval(() => JOBS.sweep(), 60000);
+jobSweep.unref();
 
 function getDataDir() {
   if (process.env.ALLOFLOW_MCP_DATA_DIR) return path.resolve(process.env.ALLOFLOW_MCP_DATA_DIR);
@@ -112,20 +116,38 @@ function getDataDir() {
 }
 
 function getAuditPath() { return path.join(getDataDir(), 'agent-core', 'mcp-audit.jsonl'); }
+function hashRef(value) { return 'sha256:' + crypto.createHash('sha256').update(String(value), 'utf8').digest('hex').slice(0, 16); }
+function rotateAudit(auditPath, incomingBytes) {
+  if (!fs.existsSync(auditPath) || fs.statSync(auditPath).size + incomingBytes <= LIMITS.auditBytes) return;
+  for (let index = LIMITS.auditFiles - 1; index >= 1; index--) {
+    const target = auditPath + '.' + index;
+    if (fs.existsSync(target)) fs.unlinkSync(target);
+    const source = index === 1 ? auditPath : auditPath + '.' + (index - 1);
+    if (fs.existsSync(source)) {
+      if (fs.statSync(source).size > LIMITS.auditBytes) fs.unlinkSync(source);
+      else fs.renameSync(source, target);
+    }
+  }
+}
 
 function appendAudit(toolName, outcome, context) {
   const classification = Contracts.getToolClassification(toolName);
   const ctx = context || {};
   const record = { schemaVersion: Contracts.SCHEMA_VERSION, eventId: crypto.randomUUID(), recordedAt: new Date().toISOString(), tool: toolName, classification: classification ? classification.kind : "unknown", outcome };
-  if (typeof ctx.jobId === 'string' && ctx.jobId) record.jobId = ctx.jobId.slice(0, 200);
+  if (typeof ctx.jobId === 'string' && ctx.jobId) {
+    if (ctx.issuedJob === true || JOBS.get(ctx.jobId)) record.jobId = ctx.jobId;
+    else record.jobRef = hashRef(ctx.jobId);
+  }
   if (typeof ctx.blueprintId === 'string' && ctx.blueprintId) {
-    record.blueprintRef = 'sha256:' + crypto.createHash('sha256').update(ctx.blueprintId, 'utf8').digest('hex').slice(0, 16);
+    record.blueprintRef = hashRef(ctx.blueprintId);
   }
   if (typeof ctx.errorCode === 'string' && ctx.errorCode) record.errorCode = ctx.errorCode.slice(0, 100);
   try {
     const auditPath = getAuditPath();
     fs.mkdirSync(path.dirname(auditPath), { recursive: true, mode: 0o700 });
-    fs.appendFileSync(auditPath, JSON.stringify(record) + '\n', { encoding: 'utf8', mode: 0o600 });
+    const line = JSON.stringify(record) + '\n';
+    rotateAudit(auditPath, Buffer.byteLength(line, 'utf8'));
+    fs.appendFileSync(auditPath, line, { encoding: 'utf8', mode: 0o600 });
   } catch (_) {
     const e = new Error('Audit log unavailable; the requested state change was not committed.');
     e.auditFailure = true;
@@ -138,7 +160,7 @@ function assertObject(value, name) { if (!isPlainObject(value)) throw invalidPar
 function assertAllowedKeys(value, allowed, name) {
   assertObject(value, name);
   const unknown = Object.keys(value).filter((key) => allowed.indexOf(key) === -1);
-  if (unknown.length) throw invalidParams(name + ' has unsupported field(s): ' + unknown.join(', '));
+  if (unknown.length) throw invalidParams(name + ' has unsupported fields');
 }
 function assertOptionalString(value, key, maxLength, name) {
   if (value[key] !== undefined && (typeof value[key] !== "string" || value[key].length > maxLength)) throw invalidParams(name + "." + key + " must be a string of at most " + maxLength + " characters");
@@ -148,7 +170,13 @@ function assertOptionalObject(value, key, name) {
 }
 function assertOptionalToolArray(value, key, name) {
   if (value[key] === undefined) return;
-  if (!Array.isArray(value[key]) || value[key].some((tool) => typeof tool !== "string" || Contracts.FALLBACK_TOOL_IDS.indexOf(tool) === -1)) throw invalidParams(name + "." + key + " must contain only known tool IDs");
+  if (!Array.isArray(value[key]) || value[key].length > LIMITS.planSteps || value[key].some((tool) => typeof tool !== "string" || Contracts.FALLBACK_TOOL_IDS.indexOf(tool) === -1)) throw invalidParams(name + "." + key + " must contain at most " + LIMITS.planSteps + " known tool IDs");
+}
+function assertBlueprintBounds(blueprint) {
+  if (Array.isArray(blueprint.plan)) {
+    if (blueprint.plan.length > LIMITS.planSteps) throw invalidParams('Blueprint plans may contain at most ' + LIMITS.planSteps + ' steps');
+    blueprint.plan.forEach(item => { if (isPlainObject(item)) assertOptionalString(item, 'directive', LIMITS.directiveChars, 'plan item'); });
+  }
 }
 function validateCreateRequest(request) {
   assertAllowedKeys(request, ['blueprintId', 'gradeLevel', 'language', 'standards', 'interests', 'plan', 'lessonDNA', 'globalSettings', 'provenance'], 'arguments.request');
@@ -157,6 +185,7 @@ function validateCreateRequest(request) {
   Object.keys(limits).forEach((key) => assertOptionalString(request, key, limits[key], 'arguments.request'));
   ['lessonDNA', 'globalSettings', 'provenance'].forEach((key) => assertOptionalObject(request, key, 'arguments.request'));
   if (!Array.isArray(request.plan) || !request.plan.length) throw invalidParams('arguments.request.plan must be a non-empty array');
+  assertBlueprintBounds(request);
   request.plan.forEach((item, index) => {
     if (typeof item === 'string') {
       if (Contracts.FALLBACK_TOOL_IDS.indexOf(item) === -1) throw invalidParams('arguments.request.plan[' + index + '] must be a known tool ID');
@@ -164,7 +193,7 @@ function validateCreateRequest(request) {
     }
     assertAllowedKeys(item, ['tool', 'directive'], 'arguments.request.plan[' + index + ']');
     if (typeof item.tool !== 'string' || Contracts.FALLBACK_TOOL_IDS.indexOf(item.tool) === -1) throw invalidParams('arguments.request.plan[' + index + '].tool must be a known tool ID');
-    if (item.directive !== undefined && typeof item.directive !== 'string') throw invalidParams('arguments.request.plan[' + index + '].directive must be a string');
+    assertOptionalString(item, 'directive', LIMITS.directiveChars, 'arguments.request.plan[' + index + ']');
   });
 }
 function validateRevisionChanges(changes) {
@@ -175,7 +204,7 @@ function validateRevisionChanges(changes) {
   assertOptionalString(changes, 'standards', 4000, 'arguments.changes');
   if (changes.setDirectives !== undefined) {
     assertObject(changes.setDirectives, 'arguments.changes.setDirectives');
-    const bad = Object.keys(changes.setDirectives).find((tool) => Contracts.FALLBACK_TOOL_IDS.indexOf(tool) === -1 || typeof changes.setDirectives[tool] !== 'string');
+    const bad = Object.keys(changes.setDirectives).find((tool) => Contracts.FALLBACK_TOOL_IDS.indexOf(tool) === -1 || typeof changes.setDirectives[tool] !== 'string' || changes.setDirectives[tool].length > LIMITS.directiveChars);
     if (bad) throw invalidParams('arguments.changes.setDirectives must map known tool IDs to strings');
   }
 }
@@ -196,10 +225,7 @@ function createCompletedJob(blueprintId) {
   if (!report.ok) throw new Error('Internal Job contract failure');
   return report.value;
 }
-function storeJob(record) {
-  if (!JOBS.has(record.job.jobId) && JOBS.size >= MAX_JOBS) { const oldest = JOBS.keys().next().value; if (oldest) JOBS.delete(oldest); }
-  JOBS.set(record.job.jobId, record);
-}
+function storeJob(record) { JOBS.prepare(record)(); }
 function copyValue(value) { return JSON.parse(JSON.stringify(value)); }
 function pendingWrite(payload, audit, commit, auditOutcome) { return { __pendingWrite: true, payload, audit, commit, auditOutcome: auditOutcome || 'succeeded' }; }
 function notFound(jobId) { return { ok: false, errors: [{ code: 'job-not-found', path: 'jobId', message: 'No job exists for the supplied jobId.' }], jobId }; }
@@ -250,12 +276,13 @@ const BLUEPRINT_INPUT_SCHEMA = {
     plan: {
       type: 'array',
       minItems: 1,
+      maxItems: LIMITS.planSteps,
       items: {
         type: 'object',
         required: ['tool'],
         properties: {
           tool: { type: 'string', enum: Contracts.FALLBACK_TOOL_IDS },
-          directive: { type: 'string' }
+          directive: { type: 'string', maxLength: LIMITS.directiveChars }
         },
         additionalProperties: false
       }
@@ -299,7 +326,7 @@ const CREATE_REQUEST_INPUT_SCHEMA = {
     blueprintId: { type: 'string', minLength: 1, maxLength: 200 },
     gradeLevel: { type: 'string', maxLength: 200 }, language: { type: 'string', maxLength: 100 },
     standards: { type: 'string', maxLength: 4000 }, interests: { type: 'string', maxLength: 2000 },
-    plan: { type: 'array', minItems: 1, items: { oneOf: [{ type: 'string', enum: Contracts.FALLBACK_TOOL_IDS }, BLUEPRINT_INPUT_SCHEMA.properties.plan.items] } },
+    plan: { type: 'array', minItems: 1, maxItems: LIMITS.planSteps, items: { oneOf: [{ type: 'string', enum: Contracts.FALLBACK_TOOL_IDS }, BLUEPRINT_INPUT_SCHEMA.properties.plan.items] } },
     lessonDNA: { type: 'object', additionalProperties: true }, globalSettings: { type: 'object', additionalProperties: true },
     provenance: PROVENANCE_INPUT_SCHEMA
   }, additionalProperties: false
@@ -308,9 +335,9 @@ const CREATE_REQUEST_INPUT_SCHEMA = {
 const REVISION_INPUT_SCHEMA = {
   type: 'object',
   properties: {
-    addTools: { type: 'array', items: { type: 'string', enum: Contracts.FALLBACK_TOOL_IDS } },
-    removeTools: { type: 'array', items: { type: 'string', enum: Contracts.FALLBACK_TOOL_IDS } },
-    setDirectives: { type: 'object', additionalProperties: { type: 'string' } },
+    addTools: { type: 'array', maxItems: LIMITS.planSteps, items: { type: 'string', enum: Contracts.FALLBACK_TOOL_IDS } },
+    removeTools: { type: 'array', maxItems: LIMITS.planSteps, items: { type: 'string', enum: Contracts.FALLBACK_TOOL_IDS } },
+    setDirectives: { type: 'object', additionalProperties: { type: 'string', maxLength: LIMITS.directiveChars } },
     audience: { type: 'object', additionalProperties: true }, standards: { type: 'string' },
     globalSettings: { type: 'object', additionalProperties: true }, configs: { type: 'object', additionalProperties: true },
     lessonDNA: { type: 'object', additionalProperties: true }
@@ -376,7 +403,7 @@ const MEDIA_BATCH_INPUT_SCHEMA = {
   }, additionalProperties: false
 };
 
-const PACK_PROFILE_SCHEMA = { type: 'string', enum: ['text', 'illustrated'], default: 'text', description: 'Text: original 12-type, 500K-character authoring subset. Illustrated: 15 types, 2M compact characters, validated self-contained PNG/JPEG/WebP images, full metadata preserved on validate/export.' };
+const PACK_PROFILE_SCHEMA = { type: 'string', enum: ['text', 'illustrated', 'native'], default: 'text', description: 'Text: original 12-type subset. Illustrated: original 15-type still-image profile. Native: all supported native resource formats, notebook templates, animation and saved image state. Call resource_pack_capabilities for format contracts and limits. Accepted metadata is preserved on validate/export.' };
 const RESOURCE_PACK_REQUEST_INPUT_SCHEMA = {
   type: 'object', required: ['requestId', 'sourceTopic', 'learningGoal', 'history', 'privacy'],
   properties: {
@@ -385,7 +412,7 @@ const RESOURCE_PACK_REQUEST_INPUT_SCHEMA = {
     sourceTopic: { type: 'string', minLength: 1, maxLength: 1000 }, gradeLevel: { type: 'string', maxLength: 200 },
     language: { type: 'string', maxLength: 100 }, standards: { type: 'string', maxLength: 4000 },
     learningGoal: { type: 'string', minLength: 1, maxLength: 1000 }, author: { type: 'string', maxLength: 200 },
-    history: { type: 'array', minItems: 1, maxItems: 24, items: { type: 'object', required: ['id', 'type', 'title', 'data'], properties: { id: { type: 'string', maxLength: 200 }, type: { type: 'string', enum: ResourcePackService.ILLUSTRATED_TYPES, description: 'image, memory-aid and applied-challenge require profile: illustrated.' }, title: { type: 'string', maxLength: 240 }, timestamp: { type: 'string', maxLength: 80 }, data: {}, meta: { type: 'string', maxLength: 500 } }, additionalProperties: true } },
+    history: { type: 'array', minItems: 1, maxItems: 24, items: { type: 'object', required: ['id', 'type', 'title', 'data'], properties: { id: { type: 'string', maxLength: 200 }, type: { type: 'string', enum: ResourcePackService.NATIVE_TYPES, description: 'Supported type depends on request.profile. Call resource_pack_capabilities for each type\'s native format contract and example.' }, title: { type: 'string', maxLength: 240 }, timestamp: { type: 'string', maxLength: 80 }, data: {}, meta: { type: 'string', maxLength: 500 } }, additionalProperties: true } },
     privacy: { type: 'object', required: ['confirmNoStudentPii', 'confirmSourcePermission'], properties: { confirmNoStudentPii: { type: 'boolean', const: true }, confirmSourcePermission: { type: 'boolean', const: true } }, additionalProperties: false }
   }, additionalProperties: false
 };
@@ -395,9 +422,11 @@ const IMAGE_ATTACHMENT_SCHEMA = {
   type: 'object', required: ['resourceId', 'slot', 'index', 'dataUrl', 'alt'], additionalProperties: false,
   properties: {
     resourceId: { type: 'string', minLength: 1, maxLength: 200 },
-    slot: { type: 'string', enum: ['glossary', 'panel', 'anchor', 'sort'] },
+    slot: { type: 'string', enum: ['glossary', 'panel', 'anchor', 'sort', 'single', 'timeline', 'frame', 'override', 'memory', 'challenge'], description: 'single, timeline, frame, override, memory and challenge require profile: native. Targets must already exist; index is zero-based; single and challenge require index 0.' },
     index: { type: 'integer', minimum: 0 },
-    dataUrl: { type: 'string', maxLength: 1333400, description: 'Self-contained PNG/JPEG/WebP base64 data URL supplied by the host. Maximum 1,000,000 decoded bytes; no network URL or filesystem path.' },
+    panelIndex: { type: 'integer', minimum: 0, description: 'Parent panel for a frame attachment; native profile only.' },
+    playbackDataUrl: { type: 'string', maxLength: 1333400, description: 'Re-encoded base64 GIF playback, required when replacing a native frame so playback and individual still frames remain consistent. Used only with slot: frame; at most 1,000,000 decoded bytes.' },
+    dataUrl: { type: 'string', maxLength: 1333400, description: 'Self-contained PNG/JPEG/WebP base64 data URL supplied by the host; native also supports GIF. Maximum 1,000,000 decoded bytes; no network URL or filesystem path.' },
     alt: { type: 'string', maxLength: 250, description: 'Image-specific description. Empty only when decorative is true.' },
     decorative: { type: 'boolean', default: false },
     altSource: { type: 'string', enum: ['vision', 'author', 'planning'], default: 'planning', description: 'vision means reviewed against the actual image; author means human-written; planning is an unverified draft.' }
@@ -453,37 +482,42 @@ const TOOLS = [
     }
   ),
   toolEntry(
+    'resource_pack_capabilities',
+    'Discover supported AlloPack resource types, native data contracts and examples, notebook templates, attachment slots, and size limits for a profile. Defaults to native. Format support does not imply an AI provider, renderer execution, publication, or educator approval. Read-only; no network or generation.',
+    { type: 'object', properties: { profile: { ...PACK_PROFILE_SCHEMA, default: 'native' } }, additionalProperties: false }
+  ),
+  toolEntry(
     'resource_pack_generate',
-    'Assemble a fresh agent-authored AlloPack. Default text profile supports 12 types/500K characters. request.profile=illustrated adds image, memory-aid and applied-challenge, validated PNG/JPEG/WebP artwork, and a 2M compact-character limit. For existing packs use validate/export to preserve their envelope and credits. The host supplies content and images; no model call, image generation, file read, or network request. Returns a completed job; call job_get_result.',
+    'Assemble a fresh agent-authored AlloPack. Set request.profile=native for all supported native resource formats; call resource_pack_capabilities for contracts and examples. Default text and explicit illustrated profiles retain their original subsets. For existing packs use validate/export to preserve their complete envelope. The host supplies content and images; no model call, image generation, file read, or network request. Returns a completed job; call job_get_result.',
     { type: 'object', properties: { request: RESOURCE_PACK_REQUEST_INPUT_SCHEMA }, required: ['request'], additionalProperties: false }
   ),
   toolEntry(
     'resource_pack_validate',
-    'Validate renderer shapes, references, privacy and size. Opt into profile=illustrated for native illustrated packs: checks embedded raster structure/dimensions, byte budgets and image-specific alt metadata while preserving the complete accepted pack. Default text retains its original subset. Validation does not establish visual correctness or educator approval. Read-only.',
+    'Validate renderer shapes, references, privacy and size, preserving the complete accepted pack. profile=native covers the full supported native resource catalog, notebook templates and saved image state. profile=illustrated retains the still-image subset; default text retains its original subset. Checks embedded media and alt metadata. Validation does not execute interactive resources or establish visual correctness or educator approval. Read-only.',
     PACK_ARGUMENT_SCHEMA
   ),
   toolEntry(
     'resource_pack_preview',
-    'Return a structured teacher-review summary with resource order, media statistics, warnings and a review checklist. Use profile=illustrated for image packs. This is not a rendered student preview. Read-only.',
+    'Return a structured teacher-review summary with resource order, media statistics, warnings and a review checklist. Use the same profile used to validate the pack: text, illustrated or native. This is not a rendered student preview and does not execute interactive content. Read-only.',
     PACK_ARGUMENT_SCHEMA
   ),
   toolEntry(
     'resource_pack_export',
-    'Export a validated AlloPack as a .allopack.json payload. profile=illustrated returns compact JSON, preserving images, captions, labels, credits, provenance and all accepted fields without normalizing them away. The connector does not write files or publish.',
+    'Export a validated AlloPack as a .allopack.json payload. profile=illustrated or native returns compact JSON, preserving images, captions, labels, credits, provenance and all accepted fields without normalizing them away. The connector does not execute resources, write files or publish.',
     PACK_ARGUMENT_SCHEMA
   ),
   toolEntry(
     'resource_pack_attach_image',
-    'Attach host-supplied PNG/JPEG/WebP artwork to an existing glossary row, image panel, anchor-chart section or concept-sort card. Requires profile=illustrated. Returns an independently validated copy, updates matching native alt/hash fields, preserves other fields, and never mutates the input. No image generation, network fetch or file reads. Default altSource=planning does not claim visual review.',
-    { type: 'object', required: ['pack', 'profile', 'attachment'], properties: { pack: RESOURCE_PACK_INPUT_SCHEMA, profile: { type: 'string', const: 'illustrated' }, attachment: IMAGE_ATTACHMENT_SCHEMA }, additionalProperties: false }
+    'Attach host-supplied artwork to an existing resource target. profile=illustrated supports glossary, panel, anchor and sort. profile=native adds single, timeline, frame, override, memory and challenge targets, plus GIF. A frame replacement also requires re-encoded playbackDataUrl. Returns a validated copy with native accessibility fields and preserves review gates; never mutates input. No generation, network fetch or file reads. Default altSource=planning does not claim visual review.',
+    { type: 'object', required: ['pack', 'profile', 'attachment'], properties: { pack: RESOURCE_PACK_INPUT_SCHEMA, profile: { type: 'string', enum: ['illustrated', 'native'] }, attachment: IMAGE_ATTACHMENT_SCHEMA }, additionalProperties: false }
   )
 ];
 
 function reportPayload(report) {
   return {
     ok: report.ok,
-    errors: report.errors || [],
-    warnings: report.warnings || [],
+    errors: boundedDiagnostics(report.errors),
+    warnings: boundedDiagnostics(report.warnings),
     value: report.ok ? report.value : null,
     media: report.media
   };
@@ -498,22 +532,25 @@ const TOOL_HANDLERS = {
     const blueprint = await BLUEPRINT_SERVICE.createDraft(request);
     const job = createCompletedJob(blueprint.blueprintId);
     const record = { job, operation: 'blueprint_create', result: { kind: 'blueprint', blueprint } };
-    return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, blueprintId: blueprint.blueprintId }, () => storeJob(record));
+    return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, issuedJob: true, blueprintId: blueprint.blueprintId }, JOBS.prepare(record));
   },
   blueprint_revise(args) {
     assertAllowedKeys(args, ['blueprint', 'changes'], 'arguments');
     assertObject(args.blueprint, 'arguments.blueprint');
+    assertBlueprintBounds(args.blueprint);
     validateRevisionChanges(args.changes);
     const report = BLUEPRINT_SERVICE.revise(args.blueprint, args.changes);
     if (!report.ok) throw invalidParams('Blueprint revision failed contract validation: ' + report.errors.map((e) => e.code).join(', '));
     const blueprint = report.value;
+    assertBlueprintBounds(blueprint);
     const job = createCompletedJob(blueprint.blueprintId);
     const record = { job, operation: 'blueprint_revise', result: { kind: 'blueprint', blueprint } };
-    return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, blueprintId: blueprint.blueprintId }, () => storeJob(record));
+    return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, issuedJob: true, blueprintId: blueprint.blueprintId }, JOBS.prepare(record));
   },
   blueprint_preview(args) {
     assertAllowedKeys(args, ['blueprint'], 'arguments');
     assertObject(args.blueprint, 'arguments.blueprint');
+    assertBlueprintBounds(args.blueprint);
     const report = BLUEPRINT_SERVICE.validate(args.blueprint);
     if (!report.ok) throw invalidParams('Blueprint preview failed contract validation: ' + report.errors.map((e) => e.code).join(', '));
     const preview = BLUEPRINT_SERVICE.dryRun(report.value, MANIFEST);
@@ -535,7 +572,7 @@ const TOOL_HANDLERS = {
       return pendingWrite(payload, { jobId, blueprintId: record.job.blueprintId, errorCode: 'job-not-cancellable' }, () => {}, 'rejected');
     }
     const next = copyValue(record); next.job.status = 'cancelled'; next.job.updatedAt = new Date().toISOString();
-    return pendingWrite({ ok: true, job: copyValue(next.job) }, { jobId, blueprintId: next.job.blueprintId }, () => storeJob(next));
+    return pendingWrite({ ok: true, job: copyValue(next.job) }, { jobId, blueprintId: next.job.blueprintId }, JOBS.prepare(next));
   },
   job_get_result(args) {
     const jobId = requireJobId(args); const record = JOBS.get(jobId);
@@ -546,7 +583,13 @@ const TOOL_HANDLERS = {
   blueprint_validate(args) {
     assertAllowedKeys(args, ['blueprint'], 'arguments');
     assertObject(args.blueprint, 'arguments.blueprint');
+    assertBlueprintBounds(args.blueprint);
     const payload = reportPayload(Contracts.validateBlueprint(args.blueprint)); if (payload.ok) payload.requiredCapabilities = payload.value.requiredCapabilities; return payload;
+  },
+  resource_pack_capabilities(args) {
+    assertAllowedKeys(args, ['profile'], 'arguments');
+    if (args.profile !== undefined && !PACK_PROFILE_SCHEMA.enum.includes(args.profile)) throw invalidParams('arguments.profile must be text, illustrated or native');
+    return ResourcePackService.getCapabilities(args.profile === undefined ? 'native' : args.profile);
   },
   resource_pack_generate(args) {
     assertAllowedKeys(args, ['request'], 'arguments');
@@ -555,7 +598,7 @@ const TOOL_HANDLERS = {
     if (!report.ok) throw invalidParams('Resource-pack draft failed validation: ' + report.errors.map((e) => e.code).join(', '));
     const job = createCompletedJob(args.request.requestId);
     const record = { job, operation: 'resource_pack_generate', result: { kind: 'resource-pack', pack: report.value, warnings: report.warnings, preview: ResourcePackService.previewPack(report.value, { profile: args.request.profile }) } };
-    return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, blueprintId: args.request.requestId }, () => storeJob(record));
+    return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, issuedJob: true, blueprintId: args.request.requestId }, JOBS.prepare(record));
   },
   resource_pack_validate(args) {
     assertAllowedKeys(args, ['pack', 'profile'], 'arguments');
@@ -594,13 +637,13 @@ const TOOL_HANDLERS = {
 // ── JSON-RPC plumbing ──────────────────────────────────────────────────────
 
 function invalidParams(message) {
-  const e = new Error(message);
+  const e = new Error(String(message).slice(0, LIMITS.diagnosticChars));
   e.rpcCode = -32602;
   return e;
 }
 
 function send(message) {
-  process.stdout.write(JSON.stringify(message) + '\n');
+  output.send(message);
 }
 
 function sendResult(id, result) {
@@ -608,14 +651,23 @@ function sendResult(id, result) {
 }
 
 function sendError(id, code, message) {
-  send({ jsonrpc: '2.0', id, error: { code, message } });
+  send({ jsonrpc: '2.0', id, error: { code, message: String(message).slice(0, LIMITS.diagnosticChars) } });
 }
 
 let initialized = false;
 
-// In-flight tools/call requests, keyed by String(id) so a numeric id still matches the value a
-// client echoes back in notifications/cancelled.
+// Preserve JSON-RPC's distinction between numeric and string request identifiers.
+function requestKey(id) { return typeof id + ':' + String(id); }
+function validId(id) { return (typeof id === 'string' && id.length > 0 && id.length <= 128) || (typeof id === 'number' && Number.isSafeInteger(id)); }
 const IN_FLIGHT = new Map();
+const ACTIVE_IDS = new Set();
+const REGISTERED_NAMES = new Set(TOOLS.map(tool => tool.name));
+function permitted(name) {
+  if (name === 'capabilities') return true;
+  const classification = Contracts.getToolClassification(name);
+  const scope = classification && classification.kind === 'read-only' ? 'artifact:read' : 'artifact:draft';
+  return Array.isArray(MANIFEST.permissions) && MANIFEST.permissions.includes(scope);
+}
 
 async function handleRequest(msg) {
   const { id, method, params } = msg;
@@ -632,7 +684,7 @@ async function handleRequest(msg) {
         protocolVersion,
         capabilities: { tools: { listChanged: false } },
         serverInfo: SERVER_INFO,
-        instructions: 'AlloFlow Agent Core local connector. Call `capabilities` first; validate or create, revise, and preview deterministic Blueprint drafts, compose and validate agent-authored AlloPacks, or use `media_plan` for a read-only provider-aware media dry run. Resource-pack tools do not invoke AI or spend quota; the connector never makes hidden network requests. Execution and publication tools are intentionally unavailable.'
+        instructions: 'AlloFlow Agent Core local connector. Call `capabilities` for deployment providers and `resource_pack_capabilities` for AlloPack format contracts, examples and profile limits. Validate or create, revise, and preview deterministic Blueprint drafts, compose and validate agent-authored AlloPacks, or use `media_plan` for a read-only provider-aware media dry run. Resource-pack tools do not invoke AI or spend quota; the connector never makes hidden network requests. Execution and publication tools are intentionally unavailable.'
       });
       return;
     }
@@ -640,17 +692,20 @@ async function handleRequest(msg) {
       sendResult(id, {});
       return;
     case 'tools/list':
-      sendResult(id, { tools: TOOLS });
+      sendResult(id, { tools: TOOLS.filter(tool => permitted(tool.name)) });
       return;
     case 'tools/call': {
       const name = params && params.name;
+      if (!isPlainObject(params) || Object.keys(params).some(key => !['name', 'arguments', '_meta'].includes(key)) || typeof name !== 'string' || !REGISTERED_NAMES.has(name) || !Object.prototype.hasOwnProperty.call(TOOL_HANDLERS, name)) { sendError(id, -32602, 'Unknown tool or invalid tool-call parameters'); return; }
       const handler = TOOL_HANDLERS[name];
-      if (!handler) { sendError(id, -32602, 'Unknown tool: ' + String(name)); return; }
-      const inFlightKey = String(id);
+      const inFlightKey = requestKey(id);
       const inFlight = { tool: name, cancelled: false };
       IN_FLIGHT.set(inFlightKey, inFlight);
       try {
-        const args = (params && params.arguments) || {};
+        if (!permitted(name)) { const error = new Error('Configured manifest does not permit this tool.'); error.rpcCode = -32003; throw error; }
+        const args = params.arguments === undefined ? {} : params.arguments;
+        assertObject(args, 'arguments');
+        if (params._meta !== undefined) assertObject(params._meta, 'params._meta');
         const output = await handler(args);
         let structured = output;
         if (AUDITED_TOOLS.has(name)) {
@@ -662,8 +717,11 @@ async function handleRequest(msg) {
           output.commit(); structured = output.payload;
         }
         if (inFlight.cancelled) return; // per spec: no response for a cancelled request
+        if (isPlainObject(structured) && (Array.isArray(structured.errors) || Array.isArray(structured.warnings))) {
+          structured = { ...structured, ...(Array.isArray(structured.errors) ? { errors: boundedDiagnostics(structured.errors) } : {}), ...(Array.isArray(structured.warnings) ? { warnings: boundedDiagnostics(structured.warnings) } : {}) };
+        }
         sendResult(id, {
-          content: [{ type: 'text', text: JSON.stringify(structured, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(structured) }],
           structuredContent: structured,
           isError: false
         });
@@ -671,7 +729,7 @@ async function handleRequest(msg) {
         if (AUDITED_TOOLS.has(name) && !(e && e.auditFailure)) {
           try {
             const context = auditContextFromArgs((params && params.arguments) || {});
-            context.errorCode = e && e.rpcCode ? 'invalid-params' : 'tool-failed';
+            context.errorCode = e && e.rpcCode === -32003 ? 'permission-denied' : (e && e.rpcCode ? 'invalid-params' : 'tool-failed');
             appendAudit(name, 'rejected', context);
           } catch (auditError) { e = auditError; }
         }
@@ -679,7 +737,7 @@ async function handleRequest(msg) {
         if (e && e.rpcCode) { sendError(id, e.rpcCode, e.message); return; }
         // Tool execution failure — reported in-band per MCP so the model can react.
         sendResult(id, {
-          content: [{ type: 'text', text: 'Tool failed: ' + (e && e.message ? e.message : 'unknown error') }],
+          content: [{ type: 'text', text: 'Tool failed: ' + (e && e.message ? String(e.message).slice(0, LIMITS.diagnosticChars) : 'unknown error') }],
           isError: true
         });
       } finally {
@@ -688,7 +746,7 @@ async function handleRequest(msg) {
       return;
     }
     default:
-      sendError(id, -32601, 'Method not found: ' + String(method));
+      sendError(id, -32601, 'Method not found');
   }
 }
 
@@ -700,34 +758,56 @@ async function handleRequest(msg) {
 function handleNotification(msg) {
   if (msg.method !== 'notifications/cancelled') return;
   const p = msg.params || {};
-  if (p.requestId === undefined || p.requestId === null) return;
-  const entry = IN_FLIGHT.get(String(p.requestId));
+  if (!validId(p.requestId)) return;
+  const entry = IN_FLIGHT.get(requestKey(p.requestId));
   if (!entry) return; // already answered, or never ours
   entry.cancelled = true;
-  log('cancellation requested for request ' + String(p.requestId) + ' (' + entry.tool + ')');
+  log('cancellation requested for request ' + hashRef(requestKey(p.requestId)) + ' (' + entry.tool + ')');
 }
 
-function handleMessage(line) {
+async function handleMessage(line) {
   if (!line.trim()) return;
-  if (line.length > MAX_LINE_CHARS) { sendError(null, -32600, 'Message too large'); return; }
   let msg;
   try { msg = JSON.parse(line); }
   catch (_) { sendError(null, -32700, 'Parse error'); return; }
-  if (!msg || msg.jsonrpc !== '2.0') { sendError(msg && msg.id !== undefined ? msg.id : null, -32600, 'Invalid request'); return; }
-  if (msg.id === undefined || msg.id === null) {
+  if (!isPlainObject(msg) || msg.jsonrpc !== '2.0' || typeof msg.method !== 'string' || !msg.method || msg.method.length > 128 || Object.keys(msg).some(key => !['jsonrpc', 'id', 'method', 'params'].includes(key)) || (Object.prototype.hasOwnProperty.call(msg, 'id') && !validId(msg.id)) || (msg.params !== undefined && !isPlainObject(msg.params))) {
+    sendError(validId(msg && msg.id) ? msg.id : null, -32600, 'Invalid request'); return;
+  }
+  // Bound validation work as well as wire bytes. Images are strings and do not
+  // increase this node count; ordinary native packs remain well below it.
+  const stack = [[msg, 0]]; let nodes = 1;
+  while (stack.length) {
+    const [value, depth] = stack.pop();
+    if (depth > 32) { if (msg.id !== undefined) sendError(msg.id, -32602, 'Request structure exceeds local limits'); return; }
+    if (value && typeof value === 'object') for (const key in value) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+      if (++nodes > 50000) { if (msg.id !== undefined) sendError(msg.id, -32602, 'Request structure exceeds local limits'); return; }
+      stack.push([value[key], depth + 1]);
+    }
+  }
+  if (msg.id === undefined) {
     // Notification — never answered. notifications/cancelled is acted on; notifications/initialized
     // and everything else stay ignored.
     return handleNotification(msg);
   }
-  return handleRequest(msg);
+  const key = requestKey(msg.id);
+  if (ACTIVE_IDS.has(key)) { sendError(msg.id, -32600, 'Duplicate in-flight request ID'); return; }
+  ACTIVE_IDS.add(key);
+  try { await handleRequest(msg); } finally { ACTIVE_IDS.delete(key); }
 }
 
-const rl = readline.createInterface({ input: process.stdin, terminal: false });
-rl.on('line', (line) => {
-  Promise.resolve().then(() => handleMessage(line)).catch((e) => {
-    log('unexpected error: ' + (e && e.message ? e.message : 'unknown'));
-  });
+let input;
+let ending = false;
+const output = new BoundedOutput(process.stdout, {
+  pressure: blocked => input?.setPressure(blocked),
+  fatal: () => { log('transport output unavailable or backlog limit exceeded; closing'); input?.close(); process.stdout.destroy(); process.exitCode = 1; }
 });
-rl.on('close', () => { log('stdin closed; exiting'); process.exit(0); });
+input = new BoundedInput(process.stdin, {
+  dispatch: handleMessage,
+  oversized: () => sendError(null, -32600, 'Message too large'),
+  malformed: () => sendError(null, -32700, 'Invalid UTF-8 message'),
+  failure: () => { log('unexpected transport failure; closing'); input?.close(); process.stdout.destroy(); process.exitCode = 1; },
+  idle: () => { if (output.idle && !ending) { ending = true; log('stdin closed; exiting'); process.stdout.end(); } }
+});
 
 log('ready (stdio only, local validation/draft tools: ' + TOOLS.map((t) => t.name).join(', ') + ')');

@@ -1,0 +1,9 @@
+{
+  "name": "@alloflow/disabled-extract-zip",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fail-closed replacement for unsupported third-party ZIP extraction; AlloFlow uses its bounded EPUB extractor",
+  "main": "index.cjs",
+  "license": "MIT",
+  "files": ["index.cjs", "README.md"]
+}

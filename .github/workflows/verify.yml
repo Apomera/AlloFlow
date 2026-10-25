@@ -31,13 +31,16 @@ name: verify
 # fired on a push to main that never came. Running it here found it already
 # RED, from three separate sessions' committed work.
 #
-# `branches-ignore: []` runs it on every branch push. A gate that reports on
+# `branches: ['**']` runs it on every branch push. A gate that reports on
 # the branch people actually commit to is the whole point; restricting it to
 # main made it a gate in name only.
 on:
   push:
-    branches-ignore: []
+    branches: ['**']
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   docs-integrity:
@@ -48,8 +51,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -70,8 +75,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -80,14 +87,43 @@ jobs:
         run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
       - name: Install local-fixture browser
         run: npx playwright install chromium
+      - name: Verify browser delivery policy and actual host loaders
+        run: npx vitest run tests/browser_delivery_integrity.test.js tests/browser_delivery_loaders.test.js tests/browser_delivery_global_helpers.test.js tests/optional_browser_delivery_policy.test.js tests/optional_browser_delivery_loaders.test.js tests/browser_delivery_stem_helpers.test.js tests/runtime_graph_delivery_policy.test.js tests/runtime_graph_host.test.js tests/tool_private_script_delivery.test.js tests/document_runtime_integrity.test.js tests/service_worker_release_identity.test.js tests/browser_release_cache_security.test.js tests/browser_release_publication.test.js tests/desktop_app_build_parity.test.js --maxWorkers=1
+      - name: Verify runtime delivery source and publication gates
+        run: node --test --test-concurrency=1 dev-tools/security/test-runtime-delivery-builder.cjs dev-tools/security/test-browser-runtime-builder.cjs tests/runtime_graph_engine_adapters.test.cjs
+      - name: Verify runtime graph guards in real Chromium
+        run: node --test --test-concurrency=1 dev-tools/security/test-runtime-graph-policy.cjs
+      - name: Verify actual document workers and WASM without traineddata
+        run: node --test --test-concurrency=1 dev-tools/security/test-document-runtime-browser.cjs
+      - name: Verify bundled DuckDB query and code tamper rejection
+        run: node --test --test-concurrency=1 dev-tools/security/test-data-kernel-runtime-browser.cjs
+      - name: Verify published local engine graphs without downloaded models
+        run: node --test --test-concurrency=1 dev-tools/security/test-browser-runtime-graphs.cjs
+      - name: Verify native browser SRI using isolated local fixtures
+        run: node --test dev-tools/security/test-browser-delivery.cjs
+      - name: Verify optional vendor SRI and Desktop network refusal in Chromium
+        run: node --test dev-tools/security/test-optional-browser-delivery.cjs
+      - name: Verify actual browser release cache and update transitions
+        env:
+          ALLO_UPDATE_REPORT: test-results/remediation-validation/browser-update-results.json
+        run: node dev-tools/check_app_update_browser.cjs
       - name: Source, generated module, rendered fidelity and export regressions
         run: npm run verify:remediation
+      - name: Verify reviewed runtime catalog bytes
+        run: node dev-tools/build_runtime_graph_delivery_policy.cjs --check
+      - name: Block publication of stale or uncovered private loaders
+        run: node dev-tools/check_private_loader_coverage.cjs --check
       - name: Retain remediation validation evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: remediation-validation
-          path: test-results/remediation-validation/
+          path: |
+            test-results/remediation-validation/
+            tmp/private-loader-security-20261024/runtime-graph-policy-native.json
+            tmp/private-loader-security-20261024/data-kernel-native.json
+            tmp/private-loader-security-20261024/runtime-staging/browser-runtime-smoke.json
+            tmp/document-runtime-security-20261024/browser-results.json
           if-no-files-found: warn
 
   gate:
@@ -98,8 +134,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -127,8 +165,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -147,7 +187,7 @@ jobs:
         run: npm run visual:allobot
       - name: Upload AlloBot visual diagnostics
         if: failure() && steps.allobot_visual.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: allobot-visual-diagnostics
           path: test-results/allobot-visual-qa/**
@@ -160,8 +200,10 @@ jobs:
       - name: Enable Git long paths
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
       - name: Run native host, catalog, and project regressions
@@ -194,8 +236,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -211,7 +255,7 @@ jobs:
         shell: bash
         run: echo "version=$(node -p "require('playwright-core/package.json').version")" >> "$GITHUB_OUTPUT"
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/AppData/Local/ms-playwright
           key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
@@ -221,7 +265,7 @@ jobs:
       # vendor/manifest.json) and tests/e2e/artifacts/remediation-e2e.source.pdf (gitignored; a
       # by-product of remediation_corpus_golden.spec.ts). Both were missing on a fresh checkout.
       - name: Cache EPUBCheck vendor assets
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: desktop/mcp/vendor/epubcheck
           key: epubcheck-${{ hashFiles('desktop/mcp/vendor/manifest.json', 'desktop/mcp/fetch_epubcheck.cjs') }}
@@ -245,8 +289,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -264,8 +310,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -283,8 +331,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -309,8 +359,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -328,8 +380,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -360,8 +414,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -436,12 +492,14 @@ jobs:
     # a green run is real.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -475,7 +533,7 @@ jobs:
         run: node dev-tools/verapdf_diff.cjs --gate
       - name: Upload veraPDF diff record + artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: verapdf-diff
           path: |
@@ -496,8 +554,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
           cache: 'npm'

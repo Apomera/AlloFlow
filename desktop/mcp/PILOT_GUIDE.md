@@ -1,6 +1,6 @@
 # AlloFlow Remediation MCP: supervised pilot guide
 
-_For colleagues evaluating the connector for Title II document work. Prepared 2026-09-04 for v0.10; bundle v0.11.0 (2026-09-13) supersedes it, see reports/mcp-scanner-walk-2026-09-13._
+_For colleagues evaluating the connector for Title II document work. Prepared 2026-09-04; updated 2026-10-25 for connector v0.11.3._
 
 This is a **supervised pilot**, not a certified compliance tool. The connector runs machine-verifiable
 checks (veraPDF for PDF/UA-1, EPUBCheck and DAISY Ace for EPUB, axe-core and IBM Equal Access for
@@ -10,12 +10,13 @@ Title II conformance. A human still reviews every document before it is publishe
 ## Setup (about 15 minutes)
 
 1. Install Claude Desktop. Other MCP hosts (Codex CLI, Cursor, VS Code, Gemini CLI, ChatGPT via a
-   tunnel) work too; see HOSTS.md. They need Node.js 20 or newer on PATH.
+   tunnel) work too; see HOSTS.md. They need Node.js 22.12 or newer on PATH.
 2. Install a Java runtime (Temurin 21 LTS is fine). veraPDF and EPUBCheck need it.
 3. Drag `alloflow-remediation.mcpb` into Claude Desktop Settings > Extensions. Verify the SHA-256
    against SHA256SUMS.txt first.
 4. Ask: "Run remediation_capabilities." Confirm Java, Chromium, EPUBCheck and Ace are reported as
-   available. If Chromium is missing, ask: "Run remediation_setup" (one-time download).
+   available. If Chromium is missing, ask: "Run remediation_setup" (one-time download). If Java is
+   missing, `javaHint` says what to install; without Java every tagged PDF stays review-required.
 5. No Gemini key is needed for the pilot. The keyless path uses the model already in your Claude
    conversation. Never paste an API key into chat.
 
@@ -32,8 +33,10 @@ or documents you are already authorized to process with that provider. **No stud
 
 ## Example prompts
 
-- "Audit every document in C:\pilot\inputs and tell me which ones need work. Explain what was
-  checked automatically and what was not."
+- "Remediate every document in C:\pilot\inputs with the keyless agent bridge. Then give me a table:
+  which are ready to share, which need a person to check, and why, using each report's
+  deliveryExplanation. Explain what was checked automatically and what was not."
+  (Audit-only triage of a folder, `pdf_batch_audit_start`, needs a Gemini key.)
 - "Remediate C:\pilot\inputs\notice.pdf using the keyless agent bridge with thorough effort. Before
   starting, tell me what document content will enter this conversation. Write outputs to C:\pilot\out."
 - "Validate the tagged PDF you produced for PDF/UA-1 and show me the validator's failed rules."

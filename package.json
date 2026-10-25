@@ -11,6 +11,7 @@
     "verify:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs --check && vitest run tests/portable_skill_contract.test.js tests/portable_remediation_core.test.js tests/portable_benchmark.test.js --maxWorkers=1 --testTimeout=30000",
     "benchmark:portable-remediation": "node dev-tools/benchmark_alloflow_portable.cjs",
     "verify:mcp-parity": "node dev-tools/mcp_capability_inventory.cjs --assert-parity && vitest run tests/mcp_remediation_stdio_smoke.test.js --maxWorkers=1 --testTimeout=70000",
+    "verify:mcp-security": "node dev-tools/verify_mcp_security.cjs",
     "verify:mcpb-ci": "vitest run tests/desktop_mcp_durable_jobs.test.js tests/desktop_mcp_residual_hardening.test.js tests/desktop_mcp_runtime_build_drift.test.js tests/desktop_mcp_completion_manifest_race.test.js tests/batch_checkpoint_boundary_commit.test.js tests/doc_pipeline_build_parity.test.js tests/mcp_verifier_packaging_hardening.test.js tests/mcp_call_cli.test.js tests/mcpb_release_workflow.test.js --maxWorkers=1 --testTimeout=70000",
     "verify:mcp-calibration": "node dev-tools/mcp_calibration_validation.cjs",
     "verify:mcpb-artifact": "node desktop/mcp/verify_mcpb_artifact.cjs --require-playwright",
@@ -229,7 +230,7 @@
     "@babel/plugin-transform-react-jsx": "^7.28.6",
     "@babel/traverse": "7.29.7",
     "@playwright/test": "^1.60.0",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/coverage-v8": "^4.1.12",
     "accessibility-checker-engine": "^3.1.83",
     "axe-core": "^4.12.1",
     "diff": "^9.0.0",
@@ -237,8 +238,8 @@
     "eslint-scope": "^9.1.2",
     "jsdom": "^29.1.0",
     "jszip": "^3.10.1",
-    "markdown-it": "15.0.0",
+    "markdown-it": "15.0.3",
     "playwright": "^1.59.1",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.12"
   }
 }

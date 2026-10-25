@@ -605,7 +605,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, col
                   ? "rgba(255,255,255,0.35)"
                   : "rgba(255,255,255,0.12)",
               boxShadow: di === index ? `0 0 8px ${accentColor}66` : undefined,
-              transition: "width 0.3s",
             }}
           />
         ))}

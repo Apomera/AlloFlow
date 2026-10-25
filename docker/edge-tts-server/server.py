@@ -4,20 +4,32 @@ Exposes POST /v1/audio/speech with { input, voice, speed }
 Returns WAV audio matching the OpenAI TTS API format.
 """
 import asyncio
-import io
+import math
 import os
+import threading
 import edge_tts
 from urllib.parse import urlsplit
 from flask import Flask, request, Response, jsonify
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
+MAX_TEXT_CHARS = 20000
+MAX_AUDIO_BYTES = 32 * 1024 * 1024
+SPEECH_TIMEOUT_SECONDS = 300
+_speech_slots = threading.BoundedSemaphore(4)
+
+
+@app.errorhandler(413)
+def request_too_large(_error):
+    return jsonify({"error": "Request body exceeds 256 KiB."}), 413
 
 
 def is_allowed_origin(origin):
     """Allow native clients, loopback apps and explicitly trusted web origins."""
     if origin is None:
         return True
-    if not isinstance(origin, str) or not origin or origin != origin.strip():
+    if (not isinstance(origin, str) or not origin
+            or any(ord(char) <= 32 or ord(char) == 127 for char in origin)):
         return False
     try:
         parsed = urlsplit(origin)
@@ -91,29 +103,47 @@ def _run_edge_tts(text: str, voice: str, rate: str) -> bytes:
     """Run edge-tts in a sync context, return MP3 bytes."""
     async def _generate():
         communicate = edge_tts.Communicate(text, voice, rate=rate)
-        audio_data = b""
+        audio_data = bytearray()
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
-                audio_data += chunk["data"]
-        return audio_data
+                if len(audio_data) + len(chunk["data"]) > MAX_AUDIO_BYTES:
+                    raise RuntimeError("Speech output exceeded the audio size limit")
+                audio_data.extend(chunk["data"])
+        return bytes(audio_data)
 
-    loop = asyncio.new_event_loop()
-    try:
-        return loop.run_until_complete(_generate())
-    finally:
-        loop.close()
+    async def _bounded_generate():
+        return await asyncio.wait_for(_generate(), SPEECH_TIMEOUT_SECONDS)
+
+    # asyncio.run also closes streaming generators when a size/timeout limit trips.
+    return asyncio.run(_bounded_generate())
 
 
 @app.route("/v1/audio/speech", methods=["POST"])
 def speech():
     """OpenAI-compatible TTS endpoint."""
-    data = request.get_json(force=True, silent=True) or {}
+    data = request.get_json(force=True, silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Request must be a JSON object."}), 400
     text = data.get("input", "")
-    voice_id = data.get("voice", "alloy").lower()
-    speed = float(data.get("speed", 1.0))
-
-    if not text:
+    if not isinstance(text, str):
+        return jsonify({"error": "Input must be text."}), 400
+    if not text.strip():
         return jsonify({"error": "No input text provided"}), 400
+    if len(text) > MAX_TEXT_CHARS:
+        return jsonify({"error": "Input exceeds 20000 characters; split it into shorter passages."}), 400
+    voice_id = data.get("voice", "alloy")
+    if not isinstance(voice_id, str) or not voice_id or len(voice_id) > 128:
+        return jsonify({"error": "Voice must be a nonempty string of at most 128 characters."}), 400
+    voice_id = voice_id.lower()
+    raw_speed = data.get("speed", 1.0)
+    try:
+        if isinstance(raw_speed, bool) or not isinstance(raw_speed, (int, float, str)):
+            raise ValueError
+        speed = float(raw_speed)
+        if not math.isfinite(speed) or not 0.25 <= speed <= 4.0:
+            raise ValueError
+    except (ValueError, OverflowError):
+        return jsonify({"error": "Speed must be a finite number between 0.25 and 4."}), 400
 
     # Resolve voice
     edge_voice = VOICE_MAP.get(voice_id, "en-US-AvaNeural")
@@ -122,13 +152,18 @@ def speech():
     rate_pct = int((speed - 1.0) * 100)
     rate_str = f"+{rate_pct}%" if rate_pct >= 0 else f"{rate_pct}%"
 
+    if not _speech_slots.acquire(blocking=False):
+        return jsonify({"error": "Speech service is busy; retry shortly."}), 429, {"Retry-After": "1"}
     try:
         audio_bytes = _run_edge_tts(text, edge_voice, rate_str)
         if not audio_bytes:
             return jsonify({"error": "No audio generated"}), 500
         return Response(audio_bytes, mimetype="audio/mpeg")
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        app.logger.exception("Speech generation failed")
+        return jsonify({"error": "Speech generation failed; check the server log."}), 500
+    finally:
+        _speech_slots.release()
 
 
 @app.route("/health", methods=["GET"])

@@ -485,7 +485,7 @@ export const ByTheNumbers: React.FC = () => {
       <WaveformVisualizer barCount={80} color="#60a5fa" height={50} position="bottom" opacity={0.1} />
 
       {/* Opening header */}
-      <Sequence from={0} durationInFrames={65}>
+      <Sequence durationInFrames={65}>
         <AbsoluteFill
           style={{
             justifyContent: "center",

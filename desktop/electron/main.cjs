@@ -420,12 +420,16 @@ function postJson(url, timeoutMs = 35000) {
     .finally(() => clearTimeout(timeout));
 }
 
-async function waitForRuntime(url, timeoutMs = 6000) {
+async function waitForRuntime(url, timeoutMs = 30000) {
   const startedAt = Date.now();
   let lastError = null;
   while (Date.now() - startedAt < timeoutMs) {
     try {
-      return await fetchJson(url + '/api/health', 700);
+      // Health includes optional School Box probes: two Docker commands may
+      // each take up to 5 seconds, followed by service probes. A 700 ms
+      // deadline aborts healthy cold starts on Windows before a window opens.
+      const remainingMs = timeoutMs - (Date.now() - startedAt);
+      return await fetchJson(url + '/api/health', Math.min(15000, remainingMs));
     } catch (error) {
       lastError = error;
       await new Promise((resolve) => setTimeout(resolve, 180));

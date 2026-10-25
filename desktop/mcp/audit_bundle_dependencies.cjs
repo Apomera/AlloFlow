@@ -26,8 +26,6 @@ const prefix = path.resolve(arg('--prefix', path.join(__dirname, '..', 'dist', '
 const level = arg('--level', 'high');
 const allowlistPath = path.resolve(arg('--allowlist', path.join(__dirname, 'audit_allowlist.json')));
 const threshold = LEVELS.indexOf(level);
-if (threshold < 0) { console.error('[audit-bundle] unknown level: ' + level); process.exit(2); }
-if (!fs.existsSync(path.join(prefix, 'package-lock.json'))) { console.error('[audit-bundle] no package-lock.json under ' + prefix); process.exit(2); }
 
 function loadAllowlist() {
   if (!fs.existsSync(allowlistPath)) return [];
@@ -44,20 +42,61 @@ function loadAllowlist() {
   return entries;
 }
 
-function runAudit() {
-  const r = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm',
-    ['audit', '--omit=dev', '--json', '--prefix', prefix],
-    { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, shell: process.platform === 'win32' });
-  // npm audit exits non-zero whenever vulnerabilities exist; the JSON on stdout is still complete.
-  const text = String(r.stdout || '').trim();
-  if (!text) { console.error('[audit-bundle] npm audit produced no JSON\n' + String(r.stderr || '')); process.exit(2); }
-  return JSON.parse(text);
+function parseAuditResult(result) {
+  if (!result || result.error || result.signal || ![0, 1].includes(result.status)) throw new Error('npm audit execution failed; no complete audit result.');
+  let audit;
+  try { audit = JSON.parse(String(result.stdout || '')); }
+  catch (_) { throw new Error('npm audit did not return complete JSON.'); }
+  const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (!object(audit) || audit.error || audit.auditReportVersion !== 2 || !object(audit.vulnerabilities)
+      || !object(audit.metadata) || !object(audit.metadata.vulnerabilities)) throw new Error('npm audit returned an error or unsupported/incomplete report.');
+  const counts = Object.fromEntries(LEVELS.map(severity => [severity, 0]));
+  const vulns = audit.vulnerabilities;
+  for (const vulnerability of Object.values(vulns)) {
+    if (!object(vulnerability) || typeof vulnerability.name !== 'string' || !vulnerability.name
+        || !LEVELS.includes(vulnerability.severity) || !Array.isArray(vulnerability.via)
+        || !vulnerability.via.length) throw new Error('npm audit returned malformed vulnerability records.');
+    counts[vulnerability.severity]++;
+    for (const via of vulnerability.via) {
+      if (typeof via === 'string') {
+        if (!Object.hasOwn(vulns, via)) throw new Error('npm audit returned an unresolved dependency advisory.');
+      } else if (!object(via) || !LEVELS.includes(via.severity) || typeof via.name !== 'string'
+          || !via.name || typeof via.title !== 'string'
+          || !/^https:\/\/github\.com\/advisories\/GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}$/.test(via.url)) {
+        throw new Error('npm audit returned malformed advisory details.');
+      }
+    }
+  }
+  function reachesAdvisory(name, seen = new Set()) {
+    if (seen.has(name)) return false;
+    const next = new Set(seen).add(name);
+    return vulns[name].via.some(via => typeof via !== 'string' || reachesAdvisory(via, next));
+  }
+  if (Object.keys(vulns).some(name => !reachesAdvisory(name))) throw new Error('npm audit returned dependency cycles without advisory details.');
+  const totals = audit.metadata.vulnerabilities;
+  if (LEVELS.some(severity => !Number.isSafeInteger(totals[severity]) || totals[severity] !== counts[severity])
+      || !Number.isSafeInteger(totals.total) || totals.total !== Object.keys(vulns).length
+      || (result.status === 1 && totals.total === 0)) throw new Error('npm audit vulnerability totals contradict its report.');
+  return audit;
+}
+
+function runAudit({ run = spawnSync, auditPrefix = prefix } = {}) {
+  // npm.cmd needs a Windows shell, but the command contains fixed arguments
+  // only. Put the caller's directory in cwd, never in shell command text.
+  const args = ['audit', '--omit=dev', '--json', '--package-lock-only', '--ignore-scripts'];
+  const windows = process.platform === 'win32';
+  const r = run(windows ? 'npm.cmd ' + args.join(' ') : 'npm', windows ? [] : args,
+    { cwd: auditPrefix, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024,
+      timeout: 90000, windowsHide: true, shell: windows });
+  return parseAuditResult(r);
 }
 
 function main() {
+  if (threshold < 0) throw new Error('Unknown audit level: ' + level);
+  if (!fs.existsSync(path.join(prefix, 'package-lock.json'))) throw new Error('No package-lock.json under ' + prefix);
   const allowlist = loadAllowlist();
   const audit = runAudit();
-  const vulns = audit.vulnerabilities || {};
+  const vulns = audit.vulnerabilities;
   const today = new Date();
   // Every advisory (by GHSA id) at or above the threshold, with the packages it reaches.
   const advisories = new Map();
@@ -118,4 +157,8 @@ function main() {
   console.log('[audit-bundle] gate passed: ' + accepted.length + ' accepted advisor' + (accepted.length === 1 ? 'y' : 'ies') + ' at or above ' + level + ', none unaccepted');
 }
 
-main();
+module.exports = { parseAuditResult, runAudit };
+if (require.main === module) {
+  try { main(); }
+  catch (error) { console.error('[audit-bundle] INCOMPLETE: ' + error.message); process.exitCode = 2; }
+}

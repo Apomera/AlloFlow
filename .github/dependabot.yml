@@ -1,0 +1,63 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /desktop
+      - /desktop/web-app
+      - /desktop/web-app/functions
+      - /a11y-audit
+      - /trailer
+      - /dev-tools/security
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    exclude-paths:
+      - '**/mcp/**'
+      - '**/alloflow-remote-mcp/**'
+    groups:
+      security-patches:
+        applies-to: security-updates
+        update-types: [patch, minor]
+  # MCP runtime updates remain separate and pass their dedicated compatibility
+  # and artifact gates; they no longer have a blanket automatic-update hold.
+  - package-ecosystem: npm
+    directories:
+      - /desktop/mcp
+      - /desktop/mcp/runtime
+      - /services/alloflow-remote-mcp
+      - /services/alloflow-remote-mcp/runner
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    groups:
+      mcp-security-patches:
+        applies-to: security-updates
+        update-types: [patch, minor]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+  - package-ecosystem: pip
+    directories:
+      - /docker/edge-tts-server
+      - /docker/flux-server
+      - /dev-tools/security
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    insecure-external-code-execution: deny
+  - package-ecosystem: docker
+    directories:
+      - /docker
+      - /docker/edge-tts-server
+      - /docker/flux-server
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+  - package-ecosystem: docker-compose
+    directory: /docker
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2

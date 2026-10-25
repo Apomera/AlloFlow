@@ -11,7 +11,8 @@ const { createAlloSheetGristBridge } = require('./allosheet-grist-bridge.cjs');
 const { createAlloSheetEngineManager } = require('./allosheet-engine-manager.cjs');
 const { createWindowsZipExtractor } = require('./allosheet-zip-extractor.cjs');
 const path = require('path');
-const { spawn, spawnSync } = require('child_process');
+const { execFile, spawn, spawnSync } = require('child_process');
+const { isDeepStrictEqual } = require('util');
 
 const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DESKTOP_ROOT, '..');
@@ -1967,17 +1968,20 @@ function validLanWordSoundsValue(value, probe) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const allowed = probe
     ? new Set(['activity', 'correct', 'total', 'accuracy', 'itemsPerMin', 'elapsed', 'grade', 'form', 'at'])
-    : new Set(['kind', 'activity', 'correct', 'total', 'goal', 'done', 'at']);
+    : new Set(['kind', 'activity', 'correct', 'total', 'goal', 'done', 'audioStatus', 'audioReady', 'audioTotal', 'audioRequestAt', 'audioDeliveryAt', 'at']);
   if (Object.keys(value).some((key) => !allowed.has(key))) return false;
   if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
   if (!probe && value.kind != null && value.kind !== 'practice' && value.kind !== 'probe') return false;
   if (!probe && value.done != null && typeof value.done !== 'boolean') return false;
+  if (!probe && value.audioStatus != null && !['ready', 'missing', 'runtime', 'unknown', 'checking', 'unsupported', 'damaged', 'blocked', 'requested', 'resending'].includes(value.audioStatus)) return false;
   if (probe && value.grade != null && !(typeof value.grade === 'string' && /^[A-Za-z0-9 -]{1,16}$/.test(value.grade))) return false;
   if (probe && value.form != null && !(typeof value.form === 'string' && /^[A-Za-z0-9-]{1,8}$/.test(value.form))) return false;
-  for (const key of ['correct', 'total', 'goal', 'accuracy', 'itemsPerMin', 'elapsed']) {
+  for (const key of ['correct', 'total', 'goal', 'accuracy', 'itemsPerMin', 'elapsed', 'audioReady', 'audioTotal']) {
     if (value[key] != null && !validLanMetricNumber(value[key])) return false;
   }
-  if (value.at != null && !validLanMetricNumber(value.at, 999999999999999)) return false;
+  for (const key of ['at', 'audioRequestAt', 'audioDeliveryAt']) {
+    if (value[key] != null && !validLanMetricNumber(value[key], 999999999999999)) return false;
+  }
   return true;
 }
 
@@ -2012,8 +2016,23 @@ function validLanActivityProgress(value) {
   if (!validLanMetricNumber(value.at, 999999999999999) || value.at <= 0) return false;
   return true;
 }
+const LAN_READING_THEMES = new Set(['default', 'warm', 'sepia', 'dark', 'highContrast', 'blue', 'green', 'rose', 'dyslexia', 'dim']);
+
+function validLanImageDelivery(value) {
+  if (!isPlainObject(value)) return false;
+  const fields = ['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'];
+  if (Object.keys(value).length !== fields.length || Object.keys(value).some(key => !fields.includes(key))) return false;
+  if (value.version !== 1 || typeof value.resourceId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/.test(value.resourceId)) return false;
+  if (!['loading', 'ready', 'failed'].includes(value.status)) return false;
+  const count = (number, maximum) => Number.isInteger(number) && number >= 0 && number <= maximum;
+  return count(value.total, 100000) && value.total >= 1 && count(value.loaded, value.total)
+    && count(value.omitted, value.total - value.loaded) && (value.status !== 'ready' || value.loaded === value.total)
+    && count(value.assignmentAt, 999999999999999) && count(value.at, 999999999999999) && value.at > 0;
+}
+
 function validLanRosterField(field, value, uid) {
-  if (isDeleteFieldSentinel(value)) return field !== 'uid';
+  if (isDeleteFieldSentinel(value)) return field !== 'uid' && isPlainObject(value)
+    && Object.keys(value).length === 1 && Object.prototype.hasOwnProperty.call(value, '__op');
   if (field === 'uid') return value === uid;
   if (field === 'name') return typeof value === 'string' && value.length <= 40;
   if (field === 'joinedAt') return typeof value === 'string' && value.length <= 40;
@@ -2027,6 +2046,11 @@ function validLanRosterField(field, value, uid) {
   if (field === 'activityProgress') return validLanActivityProgress(value);
   if (field === 'wsProgress') return validLanWordSoundsValue(value, false);
   if (field === 'wsProbeResult') return validLanWordSoundsValue(value, true);
+  if (field === 'readingTheme') return value === null || LAN_READING_THEMES.has(value);
+  if (field === 'readingThemeFavorites') return value === null || (Array.isArray(value) && value.length <= 10
+    && new Set(value).size === value.length && value.every(theme => LAN_READING_THEMES.has(theme)));
+  if (field === 'readingPreferenceAt') return value === null || validLanMetricNumber(value, 999999999999999);
+  if (field === 'imageDelivery') return validLanImageDelivery(value);
   return false;
 }
 
@@ -2147,10 +2171,21 @@ function bindLanParticipant(auth, updates) {
 
 function validateParticipantLanUpdates(updates, auth, sessionData) {
   validatePublicLanUpdates(updates);
+  // Validation and application must interpret the same canonical paths. Reject
+  // overlapping parent/child writes rather than depending on object key order.
+  const paths = new Set(Object.keys(updates));
+  for (const key of paths) {
+    const parts = key.split('.');
+    if (parts.some(part => !part)) throw new Error('A participant field path is not canonical.');
+    for (let length = 1; length < parts.length; length++) {
+      if (paths.has(parts.slice(0, length).join('.'))) throw new Error('Participant field paths must not overlap.');
+    }
+  }
   const uid = bindLanParticipant(auth, updates);
-  const data = isPlainObject(sessionData) ? sessionData : {};
+  if (!isPlainObject(sessionData)) throw new Error('The teacher must repair this classroom session before participant updates.');
+  const data = sessionData;
   const rosterRoot = 'roster.' + uid;
-  const rosterFields = new Set(['uid', 'name', 'joinedAt', 'status', 'xp', 'signal', 'signalAt', 'viewingResourceId', 'viewingAt', 'viewingResourceAt', 'viewingResourceStatus', 'lastSeen', 'wsProgress', 'wsProbeResult', 'organizerProgress', 'activityProgress']);
+  const rosterFields = new Set(['uid', 'name', 'joinedAt', 'status', 'xp', 'signal', 'signalAt', 'viewingResourceId', 'viewingAt', 'viewingResourceAt', 'viewingResourceStatus', 'lastSeen', 'wsProgress', 'wsProbeResult', 'organizerProgress', 'activityProgress', 'readingTheme', 'readingThemeFavorites', 'readingPreferenceAt', 'imageDelivery']);
   const ownedRoots = [
     'quizState.allResponses.' + uid,
     'quizState.responses.' + uid,
@@ -2160,16 +2195,28 @@ function validateParticipantLanUpdates(updates, auth, sessionData) {
   ];
   for (const [key, value] of Object.entries(updates)) {
     if (pathStarts(key, rosterRoot)) {
+      const has = (object, field) => Object.prototype.hasOwnProperty.call(object, field);
+      if (has(data, 'roster') && !isPlainObject(data.roster)) throw new Error('The teacher must repair the classroom roster before participant updates.');
+      const roster = has(data, 'roster') ? data.roster : {};
+      if (has(roster, uid) && !isPlainObject(roster[uid])) throw new Error('The teacher must repair this roster entry before participant updates.');
+      const previous = has(roster, uid) ? roster[uid] : {};
       const rest = key === rosterRoot ? '' : key.slice(rosterRoot.length + 1);
       if (rest) {
         const field = rest.split('.')[0];
-        if (!rosterFields.has(field) || rest.includes('.') || !validLanRosterField(field, value, uid)) {
+        const unchanged = has(previous, field) && isDeepStrictEqual(previous[field], value);
+        if (!rosterFields.has(field) || rest.includes('.')
+          || ((isDeleteFieldSentinel(value) || !unchanged) && !validLanRosterField(field, value, uid))) {
           throw new Error('That participant roster field is not allowed.');
         }
       } else {
-        if (!isPlainObject(value)) throw new Error('A participant roster entry must be an object.');
-        for (const [field, fieldValue] of Object.entries(value)) {
-          if (!rosterFields.has(field) || !validLanRosterField(field, fieldValue, uid)) {
+        if (!isPlainObject(value) || isDeleteFieldSentinel(value)) throw new Error('A participant roster entry must be an object, not a delete operation.');
+        for (const field of new Set([...Object.keys(previous), ...Object.keys(value)])) {
+          const existed = has(previous, field), present = has(value, field);
+          if (existed && present && isDeepStrictEqual(previous[field], value[field])) continue;
+          // Whole-map writes replace missing fields. Protected/unknown fields
+          // must therefore remain present and equal, including legacy metadata.
+          if (!rosterFields.has(field) || (!present && field === 'uid')
+            || (present && (isDeleteFieldSentinel(value[field]) || !validLanRosterField(field, value[field], uid)))) {
             throw new Error('That participant roster field is not allowed.');
           }
         }
@@ -2364,11 +2411,14 @@ function upsertLanSession(code, data, options = {}, config = readConfig()) {
   return serializeLanSession(cleanCode);
 }
 
-function updateLanSession(code, updates) {
+function updateLanSession(code, updates, participantAuth) {
   const cleanCode = sanitizeLanSessionCode(code);
   const existing = lanSessions.get(cleanCode);
   if (!cleanCode || !existing) return null;
-  const nextData = applyLanSessionUpdates(cloneJson(existing.data || {}), updates || {});
+  // No await or client snapshot separates authorization from applying this
+  // batch to the current stored session. Private teacher writes stay unchanged.
+  const allowedUpdates = participantAuth ? validateParticipantLanUpdates(updates, participantAuth, existing.data) : updates;
+  const nextData = applyLanSessionUpdates(cloneJson(existing.data || {}), allowedUpdates || {});
   assertLanSessionCapacity(cleanCode, nextData);
   existing.data = nextData;
   existing.updatedAt = new Date().toISOString();
@@ -2959,38 +3009,38 @@ function prepareSchoolBoxEnv(config) {
 }
 
 function getToolVersion(command, args) {
-  try {
-    const result = spawnSync(command, args, {
-      encoding: 'utf8',
-      timeout: 5000,
-      windowsHide: true,
+  return new Promise((resolve) => {
+    execFile(command, args, { encoding: 'utf8', timeout: 5000, windowsHide: true }, (error, stdout, stderr) => {
+      if (error) resolve({ available: false, error: String(stderr || stdout || error.message).trim() });
+      else resolve({ available: true, version: String(stdout || stderr || '').trim() });
     });
-    if (result.error) {
-      return { available: false, error: result.error.message };
-    }
-    if (result.status !== 0) {
-      return {
-        available: false,
-        error: (result.stderr || result.stdout || `${command} exited with ${result.status}`).trim(),
-      };
-    }
-    return { available: true, version: (result.stdout || result.stderr || '').trim() };
-  } catch (error) {
-    return { available: false, error: error.message };
-  }
+  });
 }
 
-function getDockerStatus() {
-  const docker = getToolVersion('docker', ['--version']);
-  const compose = docker.available ? getToolVersion('docker', ['compose', 'version']) : { available: false, error: docker.error };
-  return {
-    available: Boolean(docker.available && compose.available),
-    dockerAvailable: Boolean(docker.available),
-    composeAvailable: Boolean(compose.available),
-    dockerVersion: docker.version || null,
-    composeVersion: compose.version || null,
-    error: docker.error || compose.error || null,
-  };
+let dockerStatusCache = null;
+let dockerStatusExpiresAt = 0;
+let dockerStatusPending = null;
+async function getDockerStatus(force = false) {
+  if (dockerStatusPending) return dockerStatusPending;
+  if (!force && dockerStatusCache && Date.now() < dockerStatusExpiresAt) return dockerStatusCache;
+  // Health, readiness, and the command center request the same tool versions
+  // concurrently. Share the probe and avoid blocking Electron's main thread.
+  dockerStatusPending = (async () => {
+    const docker = await getToolVersion('docker', ['--version']);
+    const compose = docker.available ? await getToolVersion('docker', ['compose', 'version']) : { available: false, error: docker.error };
+    dockerStatusCache = {
+      available: Boolean(docker.available && compose.available),
+      dockerAvailable: Boolean(docker.available),
+      composeAvailable: Boolean(compose.available),
+      dockerVersion: docker.version || null,
+      composeVersion: compose.version || null,
+      error: docker.error || compose.error || null,
+    };
+    dockerStatusExpiresAt = Date.now() + 15000;
+    return dockerStatusCache;
+  })();
+  try { return await dockerStatusPending; }
+  finally { dockerStatusPending = null; }
 }
 
 function probeTcp(host, port, timeoutMs = 1000) {
@@ -3050,7 +3100,7 @@ async function getSchoolBoxStatus(config = readConfig()) {
         composeVersion: null,
         error: 'District Server mode does not start local Docker services yet.',
       }
-    : getDockerStatus();
+    : await getDockerStatus();
   const services = isDistrictMode
     ? []
     : await Promise.all(SCHOOLBOX_SERVICE_DEFS.map((service) => (
@@ -3174,7 +3224,7 @@ function schoolBoxComposeArgs(action, config) {
 }
 
 async function runSchoolBoxCompose(action, config) {
-  const docker = getDockerStatus();
+  const docker = await getDockerStatus(true);
   if (!docker.available) {
     throw new Error(docker.error || 'Docker with Compose is not available.');
   }
@@ -5550,16 +5600,14 @@ async function handlePublicLanApi(req, res, url) {
     }
     if (req.method === 'PATCH') {
       if (!consumeLanRateLimit(req, res, 'write', LAN_WRITE_RATE_PER_MINUTE, lanSessionAuth)) return;
-      let updates;
+      let session;
       try {
         const body = await readRequestJson(req, MAX_PUBLIC_LAN_BODY_BYTES);
-        const stored = lanSessions.get(sanitizeLanSessionCode(code));
-        updates = validateParticipantLanUpdates(body.updates || body.data || {}, lanSessionAuth, stored && stored.data);
+        session = updateLanSession(code, body.updates || body.data || {}, lanSessionAuth);
       } catch (error) {
         jsonResponse(res, error.statusCode || 403, { error: error.message });
         return;
       }
-      const session = updateLanSession(code, updates);
       if (!session) {
         jsonResponse(res, 404, { error: 'Class session not found.' });
         return;
@@ -5702,7 +5750,15 @@ async function runSmoke(args) {
   await new Promise((resolve) => server.listen(args.port, args.host, resolve));
   const address = server.address();
   const baseUrl = `http://${args.host}:${address.port}`;
+  let mediaFixtureDir;
   try {
+    // Exercise the real static-file transport without depending on large,
+    // gitignored introductory videos. Remove this test-only payload before
+    // packaging; it checks byte transport, not video decoding.
+    mediaFixtureDir = fs.mkdtempSync(path.join(STATIC_APP_DIR, 'alloflow-smoke-'));
+    const mediaFixtureBytes = Buffer.from(Array.from({ length: 4096 }, (_, index) => index % 251));
+    fs.writeFileSync(path.join(mediaFixtureDir, 'stream.mp4'), mediaFixtureBytes, { flag: 'wx' });
+    const mediaUrl = baseUrl + '/app/' + path.basename(mediaFixtureDir) + '/stream.mp4';
     const health = await fetch(baseUrl + '/api/health').then((response) => response.json());
     const commandOrigin = new URL(baseUrl).origin;
     const appOrigin = new URL(health.appUrl).origin;
@@ -5714,14 +5770,14 @@ async function runSmoke(args) {
     const commandCsp = commandResponse.headers.get('content-security-policy') || '';
     const commandNoSniff = commandResponse.headers.get('x-content-type-options') || '';
     await commandResponse.text();
-    const mediaResponse = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4');
+    const mediaResponse = await fetch(mediaUrl);
     const mediaType = mediaResponse.headers.get('content-type') || '';
     if (mediaResponse.body) await mediaResponse.body.cancel();
-    const mediaHead = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', { method: 'HEAD' });
-    const mediaRange = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', { headers: { Range: 'bytes=0-1023' } });
+    const mediaHead = await fetch(mediaUrl, { method: 'HEAD' });
+    const mediaRange = await fetch(mediaUrl, { headers: { Range: 'bytes=0-1023' } });
     const mediaRangeBytes = Buffer.from(await mediaRange.arrayBuffer());
     const mediaEtag = mediaRange.headers.get('etag') || '';
-    const mediaNotModified = await fetch(baseUrl + '/app/alloflow_intro_teacher.mp4', {
+    const mediaNotModified = await fetch(mediaUrl, {
       headers: { 'If-None-Match': mediaEtag },
     });
 
@@ -5794,9 +5850,10 @@ async function runSmoke(args) {
     if (health.status !== 'ok') throw new Error('Health endpoint did not return ok.');
     if (!commandCsp.includes("script-src 'self'")) throw new Error('Command center CSP is missing or too permissive for scripts.');
     if (commandNoSniff !== 'nosniff') throw new Error('Static responses are missing nosniff protection.');
-    if (!mediaType.startsWith('video/mp4')) throw new Error('Bundled MP4 is served with the wrong MIME type: ' + mediaType);
+    if (mediaResponse.status !== 200 || !mediaType.startsWith('video/mp4')) throw new Error('Bundled MP4 is served with the wrong status or MIME type: ' + mediaResponse.status + ' ' + mediaType);
     if (mediaHead.status !== 200 || mediaHead.headers.get('accept-ranges') !== 'bytes') throw new Error('Bundled media HEAD/range metadata regressed.');
     if (mediaRange.status !== 206 || mediaRangeBytes.length !== 1024) throw new Error('Bundled media byte-range streaming regressed.');
+    if (!mediaRangeBytes.equals(mediaFixtureBytes.subarray(0, 1024))) throw new Error('Bundled media byte-range contents changed.');
     if (!String(mediaRange.headers.get('content-range') || '').startsWith('bytes 0-1023/')) throw new Error('Bundled media Content-Range is invalid.');
     if (!mediaEtag) throw new Error('Bundled media is missing an ETag.');
     if (mediaNotModified.status !== 304) throw new Error('Bundled media conditional request did not return 304.');
@@ -5948,6 +6005,10 @@ async function runSmoke(args) {
   } finally {
     await stopLanShare().catch(() => {});
     await new Promise((resolve) => server.close(resolve));
+    if (mediaFixtureDir) {
+      fs.rmSync(path.join(mediaFixtureDir, 'stream.mp4'), { force: true });
+      fs.rmdirSync(mediaFixtureDir);
+    }
   }
 }
 

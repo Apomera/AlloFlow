@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
 
 const workflow = readFileSync(resolve('.github/workflows/mcpb-release.yml'), 'utf8');
+const require = createRequire(import.meta.url);
+const { SUITES } = require('../dev-tools/verify_mcp_security.cjs');
 
 describe('MCPB release workflow triggers', () => {
   it('nests manual, tag, and pull-request triggers under on', () => {
@@ -55,5 +58,30 @@ describe('MCPB release workflow triggers', () => {
     ]) {
       expect(workflow.indexOf(path, testStep)).toBeLessThan(buildStep);
     }
+  });
+
+  it('requires the security gate after dependency installation and before packaging', () => {
+    const installStep = workflow.indexOf('      - name: Install pinned test dependencies');
+    const securityStep = workflow.indexOf('      - name: Verify MCP security boundaries and shared policies');
+    const buildStep = workflow.indexOf('      - name: Build, officially validate, extract, and boot-check the exact MCPB');
+    expect(installStep).toBeGreaterThan(-1);
+    expect(securityStep).toBeGreaterThan(installStep);
+    expect(buildStep).toBeGreaterThan(securityStep);
+    const step = workflow.slice(securityStep, workflow.indexOf('\n      - ', securityStep + 1));
+    expect(step).toContain('run: npm run verify:mcp-security');
+    expect(step).not.toMatch(/\b(?:if|continue-on-error):/);
+    expect(step).not.toMatch(/\|\|\s*true/);
+  });
+
+  it('triggers the security gate for its full suite manifest and shared app policies', () => {
+    const triggerBlock = workflow.slice(workflow.indexOf('  pull_request:'), workflow.indexOf('\npermissions:'));
+    for (const path of [...SUITES,
+      'agent_core_*_module.js', 'desktop/web-app/public/agent_core_*_module.js',
+      'AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt',
+      'view_math_source.jsx', 'view_math_module.js', 'desktop/web-app/public/view_math_module.js',
+      'dev-tools/verify_mcp_security.cjs', 'dev-tools/sync_static_svg_policy.cjs',
+      'dev-tools/check_agent_core_mirrors.cjs', 'tests/setup.js', 'tests/helpers/**',
+      'test_data/agent_core/**', 'allopacks/**', 'vitest.config.js',
+    ]) expect(triggerBlock).toContain(`- '${path}'`);
   });
 });

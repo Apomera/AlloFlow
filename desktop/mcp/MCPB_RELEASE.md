@@ -18,7 +18,7 @@ not require an AlloFlow account, institution account, Cloudflare Worker, or paid
 
 ## Requirements
 
-Claude Desktop supplies the Node runtime for this extension; other MCP hosts need Node 20 or newer
+Claude Desktop supplies the Node runtime for this extension; other MCP hosts need Node 22.12 or newer
 on PATH. PDF/UA validation (veraPDF) and EPUB validation (EPUBCheck) need a local Java runtime;
 `remediation_capabilities` reports whether Java, Chromium, EPUBCheck and Ace are available
 (`javaAvailable` comes from a real `java -version`, so the macOS stub that exists without a runtime

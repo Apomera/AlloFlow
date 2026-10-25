@@ -121,13 +121,44 @@ function applyPdfDeliveryEvidence(summary,evidence) {
   if(needsReview){
     summary.verdict={level:'review',reviewCount:(summary.verdict?.reviewCount||0)+1,cautionCount:summary.verdict?.cautionCount||0};
     summary.verificationState='review-required';
-    summary.taggedPdfDelivery={ok:false,code:evidence.status==='failed'?'validator-failed':evidence.error?'validator-error':'validator-unavailable'};
+    summary.taggedPdfDelivery={ok:false,code:evidence.status==='failed'?'validator-failed':evidence.status==='not-run'?'validator-not-requested':evidence.error?'validator-error':'validator-unavailable'};
   }
   const delivery=pdfDeliveryState({hasPdf:Boolean(summary.files?.taggedPdf),pdfStatus:evidence.status,
     verificationState:summary.verificationState,level:summary.verdict?.level,taggedPdfVerified:summary.taggedPdfDelivery?.ok===true});
   summary.reviewRequired=delivery.reviewRequired;
   summary.deliveryStatus=delivery.deliveryStatus;
   return summary;
+}
+// Plain-language meaning + next step for every withhold/review code, so staff never have to
+// decode `taggedPdfError` or `taggedPdfDelivery.code` themselves. Wording only: never changes a verdict.
+const WITHHOLD_EXPLANATIONS={
+  active_content_scan_unavailable:['The original PDF has parts AlloFlow cannot safely inspect (for example an XFA fillable form, embedded files or an unusually deep structure), so no tagged PDF was made.','Share the accessible HTML, or have a person rebuild the PDF from it in Word or Acrobat.'],
+  active_content_requires_review:['The original PDF contains scripts, launch actions or embedded files, so no tagged PDF was made.','Remove those from the source (or share the accessible HTML), then run again.'],
+  content_coverage_requires_review:['The accessible version may be missing words from the original, so the tagged PDF was held back.','Read the accessible version next to the original and check that no words are missing (the report lists the words it could not find). Run again, or share once a person confirms nothing is lost.'],
+  distribution_review_required:['The accessible HTML still has findings a person must check, so the tagged PDF was held back.','Work through the review findings in this report, then run again.'],
+  distribution_verdict_unavailable:['AlloFlow could not reach a final verdict for this document, so the tagged PDF was held back.','Run the document again. If it repeats, keep this report for support.'],
+  tagged_pdf_delivery_unverified:['A tagged PDF was built but failed AlloFlow\'s own structure check after saving.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
+  'createTaggedPdf returned no bytes':['The tagged PDF could not be built.','Use the accessible HTML, or run the document again.'],
+  'validator-failed':['The independent veraPDF check found PDF/UA problems in the tagged PDF (see pdfUa.failedRules).','Use the accessible HTML, or fix the listed problems in Acrobat before sharing the PDF.'],
+  'validator-error':['The independent veraPDF check could not run.','Install Java 11 or newer (Eclipse Temurin 21 is free) and run again, or check the file yourself with veraPDF or PAC.'],
+  'validator-not-requested':['The independent veraPDF check was turned off for this run (validate_ua: false).','Run again without validate_ua: false, or check the file yourself with veraPDF or PAC.'],
+  'validator-unavailable':['The independent veraPDF check gave no usable result for this file.','Run again. If it repeats, check the file yourself with veraPDF or PAC.'],
+  'roundtrip-failed':['Reading the saved tagged PDF back did not match the accessible version.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
+  'roundtrip-unavailable':['The saved tagged PDF could not be read back to confirm it.','Use the accessible HTML, or run the document again.'],
+  'typeset-content-dropped':['Some content did not make it into the tagged PDF.','Use the accessible HTML, which keeps all of the content.'],
+  'ocr-text-layer-incomplete':['Some recognized text could not be written into the scanned PDF\'s hidden text layer.','Use the accessible HTML, or check the PDF\'s text with a screen reader before sharing.'],
+  'delivery-verdict-unavailable':['AlloFlow could not reach a final verdict for the tagged PDF.','Run the document again. If it repeats, keep this report for support.'],
+};
+function explainDelivery(summary){
+  const s=summary||{},items=[];
+  const add=(code,detail)=>{const k=Object.keys(WITHHOLD_EXPLANATIONS).find(c=>code===c||String(code).startsWith(c+' '));
+    const e=WITHHOLD_EXPLANATIONS[k];items.push({code:String(code).slice(0,200),meaning:e?e[0]:'The tagged PDF was not delivered.',nextStep:e?e[1]:'Use the accessible HTML, and keep this report for support.',...(detail?{detail:String(detail).slice(0,400)}:{})});};
+  if(s.taggedPdfError)add(s.taggedPdfError);
+  else if(s.taggedPdfDelivery&&s.taggedPdfDelivery.ok===false)add(s.taggedPdfDelivery.code,s.pdfUa&&s.pdfUa.error);
+  const ready=s.deliveryStatus==='complete-for-tested-scope';
+  return {headline:ready?'Automated checks passed for everything they can test. A person should still read it once before sharing.'
+      :items.length?'Not ready to share as a PDF yet. The accessible HTML can still be reviewed and used.'
+      :'Automated checks finished, but some findings need a person to look before sharing.',items};
 }
 // Self-contained so the browser uses exactly the same per-engine report contract.
 function auditChecks(input) {
@@ -250,4 +281,4 @@ function compactVerificationEvidence(source) {
   if (!out.ai && !out.axe && !out.equalAccess) return null;
   return out;
 }
-module.exports={compactVerificationEvidence,pdfUaEvidence,applyPdfDeliveryEvidence,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};
+module.exports={compactVerificationEvidence,pdfUaEvidence,applyPdfDeliveryEvidence,explainDelivery,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};

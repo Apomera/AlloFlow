@@ -1,0 +1,257 @@
+name: MCP platform validation
+
+# Validation only. This workflow has no deployment, release, signing, or secret inputs.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'codex/mcp-platform-validation-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcp-platform-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  PUPPETEER_SKIP_DOWNLOAD: 'true'
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  candidate:
+    name: Build the Windows candidate
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*.js
+            /*.json
+            /.npmrc
+            /.gitattributes
+            /LICENSE
+            /.github/
+            /desktop/mcp/
+            /verapdf/
+            /agent_skills/alloflow-pdf-remediation/
+            /dev-tools/security/
+            /dev-tools/check_secrets.cjs
+            /tests/mcp_*
+            /services/alloflow-remote-mcp/scripts/staging-paths.cjs
+            /services/alloflow-remote-mcp/scripts/test/staging-paths.test.cjs
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install locked tooling
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm ci --prefix dev-tools/security --ignore-scripts --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm ci --prefix desktop/mcp/runtime --ignore-scripts --install-links --no-audit --no-fund
+          exit $LASTEXITCODE
+      - name: Check validation workflow safety
+        run: node --test dev-tools/security/test-mcp-platform-workflow.cjs
+      - name: Install pinned runtime Chromium
+        run: node desktop/mcp/runtime/node_modules/playwright/cli.js install chromium
+      - name: Materialize verified EPUBCheck
+        run: node desktop/mcp/fetch_epubcheck.cjs
+      - name: Build and verify the exact candidate
+        run: |
+          New-Item -ItemType Directory -Path evidence -Force | Out-Null
+          node desktop/mcp/build_mcpb.cjs 2>&1 | Tee-Object -FilePath evidence/build.log
+          exit $LASTEXITCODE
+      - name: Audit packaged dependencies at every severity
+        run: |
+          node desktop/mcp/audit_bundle_dependencies.cjs --prefix desktop/dist/mcpb/staging --level low 2>&1 | Tee-Object -FilePath evidence/dependency-audit.log
+          exit $LASTEXITCODE
+      - name: Record candidate identity
+        run: >-
+          node -e "const fs=require('node:fs'),crypto=require('node:crypto');
+          const file='desktop/dist/mcpb/alloflow-remediation.mcpb';
+          fs.writeFileSync('evidence/candidate.json',JSON.stringify({platform:process.platform,arch:process.arch,node:process.version,commit:process.env.GITHUB_SHA,sha256:crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')},null,2)+'\n');"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mcp-platform-candidate-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            desktop/dist/mcpb/alloflow-remediation.mcpb
+            desktop/dist/mcpb/SHA256SUMS.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: mcp-platform-windows-evidence-${{ github.sha }}
+          if-no-files-found: warn
+          path: evidence/
+
+  native:
+    name: Native security on ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            label: linux-x64
+          - os: macos-15
+            label: macos-arm64
+          - os: macos-15-intel
+            label: macos-x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      ALLOFLOW_REQUIRE_SYMLINK_TESTS: '1'
+      ALLOFLOW_TEST_ACE_BROWSER: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*.js
+            /*.json
+            /.npmrc
+            /.gitattributes
+            /LICENSE
+            /.github/
+            /desktop/mcp/
+            /verapdf/
+            /agent_skills/alloflow-pdf-remediation/
+            /dev-tools/security/
+            /dev-tools/check_secrets.cjs
+            /tests/mcp_*
+            /services/alloflow-remote-mcp/scripts/staging-paths.cjs
+            /services/alloflow-remote-mcp/scripts/test/staging-paths.test.cjs
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: desktop/mcp/runtime/package-lock.json
+      - name: Install locked native-test dependencies
+        run: npm ci --prefix desktop/mcp/runtime --ignore-scripts --install-links --no-audit --no-fund
+      - name: Install pinned Chromium and Linux system dependencies
+        if: runner.os == 'Linux'
+        run: node desktop/mcp/runtime/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Install pinned macOS Chromium
+        if: runner.os == 'macOS'
+        run: node desktop/mcp/runtime/node_modules/playwright/cli.js install chromium
+      - name: Record native host identity
+        run: |
+          mkdir -p evidence
+          node <<'NODE'
+          const fs = require('node:fs');
+          fs.writeFileSync('evidence/platform.json', JSON.stringify({platform:process.platform,arch:process.arch,node:process.version,commit:process.env.GITHUB_SHA,strictSymlinks:process.env.ALLOFLOW_REQUIRE_SYMLINK_TESTS,runtimePlaywright:require('./desktop/mcp/runtime/node_modules/playwright/package.json').version},null,2)+'\n');
+          NODE
+      - name: Require native symlink and browser security tests without skips
+        run: |
+          set -euo pipefail
+          node --test --test-concurrency=1 --test-reporter=tap tests/mcp_bundle_audit_security.test.cjs tests/mcp_artifact_source_bytes.test.cjs tests/mcp_ace_browser_security.test.cjs services/alloflow-remote-mcp/scripts/test/staging-paths.test.cjs | tee evidence/native-security.tap
+          node <<'NODE'
+          const fs = require('node:fs');
+          const text = fs.readFileSync('evidence/native-security.tap','utf8');
+          const counts = [...text.matchAll(/^# skipped (\d+)\r?$/gm)];
+          if (!counts.length || counts.some(match => Number(match[1]) !== 0)) throw new Error('Native security validation must complete without skipped tests');
+          NODE
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: mcp-platform-native-${{ matrix.label }}-evidence-${{ github.sha }}
+          if-no-files-found: warn
+          path: evidence/
+
+  validate:
+    name: Validate ${{ matrix.label }}
+    needs: candidate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            label: linux-x64
+          - os: macos-15
+            label: macos-arm64
+          - os: macos-15-intel
+            label: macos-x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      ALLOFLOW_REQUIRE_SYMLINK_TESTS: '1'
+      ALLOFLOW_TEST_ACE_BROWSER: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*.js
+            /*.json
+            /.npmrc
+            /.gitattributes
+            /LICENSE
+            /.github/
+            /desktop/mcp/
+            /verapdf/
+            /agent_skills/alloflow-pdf-remediation/
+            /dev-tools/security/
+            /dev-tools/check_secrets.cjs
+            /tests/mcp_*
+            /services/alloflow-remote-mcp/scripts/staging-paths.cjs
+            /services/alloflow-remote-mcp/scripts/test/staging-paths.test.cjs
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install locked source-validation dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --prefix desktop/mcp/runtime --ignore-scripts --install-links --no-audit --no-fund
+      - name: Install pinned Chromium and Linux system dependencies
+        if: runner.os == 'Linux'
+        run: node desktop/mcp/runtime/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Install pinned macOS Chromium
+        if: runner.os == 'macOS'
+        run: node desktop/mcp/runtime/node_modules/playwright/cli.js install chromium
+      - name: Materialize verified EPUBCheck
+        run: node desktop/mcp/fetch_epubcheck.cjs
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: mcp-platform-candidate-${{ github.sha }}
+          path: candidate
+      - name: Verify candidate checksum and record host identity
+        run: |
+          mkdir -p evidence
+          java -version > evidence/java-version.log 2>&1
+          node <<'NODE'
+          const fs = require('node:fs'), crypto = require('node:crypto');
+          const file = 'candidate/alloflow-remediation.mcpb';
+          const hash = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+          const expected = fs.readFileSync('candidate/SHA256SUMS.txt','utf8').trim().split(/\s+/)[0];
+          if (!/^[a-f0-9]{64}$/.test(expected) || expected !== hash) throw new Error('Candidate checksum mismatch');
+          fs.writeFileSync('evidence/platform.json', JSON.stringify({platform:process.platform,arch:process.arch,node:process.version,commit:process.env.GITHUB_SHA,sha256:hash,strictSymlinks:process.env.ALLOFLOW_REQUIRE_SYMLINK_TESTS,runtimePlaywright:require('./desktop/mcp/runtime/node_modules/playwright/package.json').version},null,2)+'\n');
+          NODE
+      - name: Verify the same extracted Windows candidate on this OS
+        run: |
+          set -euo pipefail
+          node desktop/mcp/verify_mcpb_artifact.cjs candidate/alloflow-remediation.mcpb --require-playwright 2>&1 | tee evidence/exact-artifact.log
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: mcp-platform-${{ matrix.label }}-evidence-${{ github.sha }}
+          if-no-files-found: warn
+          path: evidence/

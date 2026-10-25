@@ -37,7 +37,7 @@ describe('MCP calibration selection and execution', () => {
     try {
       for (const unit of [[], [manifest.unit[0], manifest.unit[0]], ['tests/doc_pipeline_focus_wrap_browser.test.js'], ['../tests/outside.test.js']]) {
         fs.writeFileSync(path.join(reportDir, 'summary.json'), JSON.stringify({ status: 'passed', testsPassed: 9999 }));
-        expect(() => executeCalibration({ reportDir, capture: stableCapture, selection: { ...manifest, unit }, run: () => { calls++; } })).toThrow();
+        expect(() => executeCalibration({ reportDir, capture: stableCapture, selection: { ...manifest, unit }, run: () => { calls++; } })).toThrow(/Invalid unit suite selection|Missing or invalid suite/);
         const summary = JSON.parse(fs.readFileSync(path.join(reportDir, 'summary.json'), 'utf8'));
         expect(summary.status).toBe('failed');
         expect(summary.testsPassed).toBeUndefined();
@@ -45,6 +45,31 @@ describe('MCP calibration selection and execution', () => {
       }
       expect(calls).toBe(0);
     } finally { removeScratch(reportDir); }
+  });
+
+  it('retains an initial summary-publication failure without replaying a stale success', () => {
+    const reportDir = scratch(); let calls = 0;
+    const rename = fs.renameSync;
+    let injected = false;
+    try {
+      fs.writeFileSync(path.join(reportDir, 'summary.json'), JSON.stringify({ status: 'passed', testsPassed: 9999 }));
+      fs.renameSync = (from, to) => {
+        if (!injected && to === path.join(reportDir, 'summary.json')) {
+          injected = true;
+          throw Object.assign(new Error('Injected summary publication failure'), { code: 'EIO' });
+        }
+        return rename(from, to);
+      };
+      expect(() => executeCalibration({ reportDir, capture: stableCapture, run: () => { calls++; } })).toThrow(/Injected summary publication failure/);
+      const summary = JSON.parse(fs.readFileSync(path.join(reportDir, 'summary.json'), 'utf8'));
+      expect(calls).toBe(0);
+      expect(summary.status).toBe('failed');
+      expect(summary.testsPassed).toBeUndefined();
+      expect(summary.error).toContain('Injected summary publication failure');
+      expect(summary.identity.after).toBeTruthy();
+      expect(summary.phases.unit.status).toBe('not-started');
+      expect(summary.phases.browser.status).toBe('not-started');
+    } finally { fs.renameSync = rename; removeScratch(reportDir); }
   });
 
   it('runs both selections with strict flags and accepts complete passing reports', () => {

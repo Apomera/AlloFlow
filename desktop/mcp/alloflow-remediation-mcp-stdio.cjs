@@ -292,7 +292,8 @@ async function validatePdfUaLocally(filePath, onProgress, signal) {
     const offlineError = new Error(
       'The packaged offline veraPDF CLI could not start. pdf_validate_ua will not fall back '
       + 'to the browser validator because that path downloads public CDN dependencies. '
-      + 'Reinstall the connector and confirm local Java is available. Cause: ' + message,
+      + 'Most often Java is missing: install Java 11 or newer (Eclipse Temurin 21 is free), restart the '
+      + 'client, and run again. If Java is installed, reinstall the connector. Cause: ' + message,
     );
     offlineError.cause = error;
     throw offlineError;
@@ -1729,7 +1730,8 @@ function validateRemediateOptions(args) {
     taggedPdf: args.tagged_pdf !== false,
     autoContinue: args.auto_continue === undefined ? thorough : args.auto_continue,
     autoContinueRounds: autoContinueRounds === undefined ? 3 : autoContinueRounds,
-    validateUa: args.validate_ua === undefined ? thorough : args.validate_ua,
+    // Default ON: without veraPDF evidence a tagged PDF can never leave review (2026-10-25).
+    validateUa: args.validate_ua === undefined ? true : args.validate_ua,
     ocrLanguage: optionalOcrLanguage(args),
     maxRunMinutes: Math.max(1, Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30),
   };
@@ -1877,7 +1879,7 @@ function listBatchInputs(dirPathArg, limit, label) {
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
   catch (_) { throw invalidParams('arguments.dir_path does not exist or is unreadable: ' + dir); }
   const files = entries
-    .filter((e) => e.isFile() && (label === 'narration' ? /\.html?$/i : label === 'keyless remediation' ? /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xls|xlsb|ods)$/i : /\.(pdf|docx|pptx)$/i).test(e.name) && !/-tagged\.pdf$/i.test(e.name) && !(label === 'narration' && /-readalong(?:-\d+)?\.html?$/i.test(e.name))) // don't re-process our own outputs
+    .filter((e) => e.isFile() && (label === 'narration' ? /\.html?$/i : label === 'keyless remediation' ? /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xls|xlsb|ods)$/i : /\.(pdf|docx|pptx)$/i).test(e.name) && !/-tagged(?:-review-required)?(?:-\d+)?\.pdf$/i.test(e.name) && !(label === 'narration' && /-readalong(?:-\d+)?\.html?$/i.test(e.name))) // don't re-process our own outputs
     .map((e) => path.join(dir, e.name))
     .sort();
   if (!files.length) throw invalidParams('No supported document files found in ' + dir);
@@ -2630,6 +2632,7 @@ const TAGGED_PDF_DELIVERY_CODES = new Set([
   'validator-unavailable',
   'validator-error',
   'validator-failed',
+  'validator-not-requested',
   'ocr-text-layer-incomplete',
   'delivery-verdict-unavailable',
 ]);
@@ -2804,6 +2807,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     bytes: files.taggedPdf ? fs.statSync(files.taggedPdf).size : null,
   });
   Verification.applyPdfDeliveryEvidence(summary, pdfEvidence);
+  summary.deliveryExplanation = Verification.explainDelivery(summary);
   if (files.taggedPdf && pdfEvidence.status !== 'passed') {
     const reviewPath = claimOutputPath(outDir, stem + '-tagged-review-required.pdf');
     fs.renameSync(files.taggedPdf, reviewPath);
@@ -3192,7 +3196,7 @@ const TOOLS = [
       tagged_pdf: { type: 'boolean', description: 'Also build the tagged PDF export (default true)' },
       auto_continue: { type: 'boolean', description: "Run the app's auto-continue improvement loop after the primary pass: extra fix rounds merged through the same canonical reducer the app uses, until the target score + complete verification or the rounds are spent (default false; adds time and Gemini quota)" },
       auto_continue_rounds: { type: 'number', minimum: 1, maximum: 5, description: 'Max auto-continue rounds (default 3)' },
-      validate_ua: { type: 'boolean', description: 'Also run the independent keyless PDF/UA-1 (ISO 14289-1) veraPDF check on the tagged output and include its verdict in the report (default false; ~1 min extra)' },
+      validate_ua: { type: 'boolean', description: 'Also run the independent keyless PDF/UA-1 (ISO 14289-1) veraPDF check on the tagged output and include its verdict in the report (default true; ~1 min extra; needs local Java 11+). Without it a tagged PDF stays review-required.' },
       ocr_language: OCR_LANGUAGE_INPUT_SCHEMA,
       page_range: { type: 'string', pattern: '^[0-9]{1,4}(-[0-9]{1,4})?$', description: 'Remediate only these 1-indexed pages of a PDF, e.g. "12-18" or "5". Big quota/time saver on long documents; the pipeline treats a full-document range as no range. PDF inputs only.' },
     };
@@ -3315,7 +3319,7 @@ const TOOLS = [
             {
               file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, image (.png/.jpg/.webp), text (.md/.txt/.csv/.tsv), or spreadsheet (.xlsx/.xls/.xlsb/.ods) file (max 200MB)' },
               dir_path: { type: 'string', description: 'Process this folder sequentially (up to 60 supported documents, non-recursive). Use instead of file_path.' },
-              skip_existing: { type: 'boolean', description: 'Reuse hash-verified completed remediations (default true); never skip based on file names alone.' },
+              skip_existing: { type: 'boolean', description: 'Reuse hash-verified completed remediations (default true for dir_path, false for file_path); never skip based on file names alone.' },
               narration: { type: 'string', enum: ['none','accessible','natural'], description: 'Optional local Kokoro/Piper narration after remediation. Accessible announces document structure; natural is continuous reading. Default none.' },
               narration_voice: { type: 'string', description: 'auto (default), a Kokoro English voice id, or the language-matched Piper voice from document_narration_voices.' },
               narration_provider:{type:'string',enum:['auto','kokoro','piper'],default:'auto'},
@@ -3566,7 +3570,7 @@ const S_REMEDIATE = obj({
     ok: S_BOOL,
     code: {
       type: 'string',
-      enum: ['verified', 'typeset-content-dropped', 'roundtrip-unavailable', 'roundtrip-failed', 'validator-unavailable', 'validator-error', 'validator-failed', 'ocr-text-layer-incomplete', 'delivery-verdict-unavailable'],
+      enum: ['verified', 'typeset-content-dropped', 'roundtrip-unavailable', 'roundtrip-failed', 'validator-unavailable', 'validator-error', 'validator-failed', 'validator-not-requested', 'ocr-text-layer-incomplete', 'delivery-verdict-unavailable'],
     },
   }, ['ok', 'code'], true),
   taggedPdfExportMode: { type: ['string', 'null'], enum: ['original_layout', 'clean_rebuild', null] },
@@ -3580,6 +3584,7 @@ const S_REMEDIATE = obj({
   }, ['configuredAuditorCap', 'requestedAuditors', 'completedAuditors', 'sliced'], true),
   autoContinue: {}, taggedPdfError: {}, runId: {}, stats: {},
   pdfUa: {}, verificationChecks: {}, verification: {}, reviewTriage: {}, deliveryReviewReasons: {type:'array',items:S_STR}, reviewRequired: S_BOOL, deliveryStatus: S_STR, htmlVerificationState: {},
+  deliveryExplanation: obj({ headline: S_STR, items: { type: 'array', items: obj({ code: S_STR, meaning: S_STR, nextStep: S_STR, detail: S_STR }) } }),
   note: S_STR,
 }, ['input', 'files']);
 const S_JOB_VIEW = obj({
@@ -3628,6 +3633,7 @@ const OUTPUT_SCHEMAS = {
     keyVerificationState: { type: 'string', enum: ['not-checked', 'valid', 'valid-but-quota-exhausted', 'invalid', 'unreachable'] },
     keyVerificationCheckedAt: { type: ['string', 'null'] },
     connectorVersion: { type: 'string', description: 'Installed connector version (single-sourced from connector_version.cjs; the same number the MCPB manifest and serverInfo report).' },
+    javaHint: { type: ['string', 'null'], description: 'Plain-language next step when Java is missing or slow; null when Java is available.' },
     javaAvailable: { type: 'boolean', description: 'A local `java -version` succeeded in this process. Required by pdf_validate_ua (veraPDF) and EPUBCheck; a PATH stub without a runtime reports false.' },
     javaVersion: { type: ['string', 'null'] },
     javaError: { type: ['string', 'null'] },
@@ -3985,7 +3991,7 @@ const TOOL_HANDLERS = {
     } else {
       onboarding = {
         state: 'keyless-ready', nextTool: 'remediation_selftest', actionRequired: false,
-        message: 'Full keyless remediation is ready: use pdf_remediate_agent_start and answer its requests with the client model. Pass dir_path for a folder, effort: thorough for bounded improvement and validation, and narration: accessible to include local Kokoro/Piper audio. Local tools also cover structure, extraction and exports. ' + KEY_SETUP_HINT,
+        message: 'Full keyless remediation is ready: use pdf_remediate_agent_start and answer its requests with the client model. Pass dir_path for a folder, effort: thorough for extra bounded fix passes (independent PDF/UA validation runs by default when Java is present), and narration: accessible to include local Kokoro/Piper audio. Local tools also cover structure, extraction and exports. ' + KEY_SETUP_HINT,
       };
     }
     const javaRuntime = EpubValidation.javaRuntime(process.env.ALLOFLOW_MCP_JAVA_BIN || null);
@@ -4000,6 +4006,9 @@ const TOOL_HANDLERS = {
       javaAvailable: javaRuntime.present,
       javaVersion: javaRuntime.version,
       javaError: javaRuntime.error,
+      javaHint: javaRuntime.present ? null : (javaRuntime.timedOut
+        ? 'Java did not answer in time; the machine may be busy. The independent PDF/UA check (veraPDF) will retry when a document runs.'
+        : 'Install Java 11 or newer (Eclipse Temurin 21 is free), then restart the client. Remediation still runs without it, but tagged PDFs stay review-required because the independent PDF/UA check (veraPDF) cannot run.'),
       keylessModeAvailable: true,
       transports: { stdio: true, http: Object.assign({}, HTTP_STATE) },
       keylessModeMeans: 'These registered tools require no Gemini key, paid Worker, institution account, or AlloFlow service. Individual tools can still require local files, Java/Chromium, or an optional library download; inspect the tool description.',
@@ -4736,7 +4745,7 @@ const TOOL_HANDLERS = {
     const maxRunMinutes = optionalBoundedNumber(args, 'max_run_minutes', 1, 180);
     opts.maxRunMinutes = maxRunMinutes === undefined ? Math.max(60, opts.maxRunMinutes) : maxRunMinutes;
     const outDir = resolveOutputDir(args, files[0]);
-    if(busyWith)throw invalidParams('A run is already in progress. Continue its requests or cancel it before starting another.');
+    if(busyWith)throw invalidParams('A run is already in progress' + (busyWith === 'pdf_remediate_agent' && agentRun ? ' (run_id ' + agentRun.runId + '; continue it with remediation_agent_requests)' : ' (' + busyWith + ')') + '. Continue its requests or cancel it before starting another.');
     fs.mkdirSync(outDir, { recursive: true });
     agentRun = startAgentRun(files[0], outDir, opts, { files, skipExisting: args.skip_existing === true || (!!args.dir_path && args.skip_existing !== false) });
     return { runId: agentRun.runId, status: 'running', modelTransport: 'agent-bridge',
@@ -4913,7 +4922,7 @@ const TOOL_HANDLERS = {
           : (omittedImages.length
             ? 'Some images exceeded this response\'s combined budget. Fetch each with request_id + image_index, then answer the request.'
             : (pendingRequests.length
-              ? 'Answer each request with remediation_agent_respond, matching its prompt\'s format contract exactly. Follow promptNextOffset pages before answering when non-null.'
+              ? 'Answer the pending requests with remediation_agent_respond_batch (or remediation_agent_respond for one), matching each prompt\'s format contract exactly. Follow promptNextOffset pages before answering when non-null.'
               : 'Nothing pending — the pipeline is working. Poll again.')))
         : 'Run is ' + run.status + '.',
     });

@@ -262,7 +262,7 @@ function validateBuildArtifacts({ appBuildDir }) {
   }
 
   if (worker) {
-    if (worker.includes('__BUILD_TS__') || worker.includes('__RELEASE_ID__') || worker.includes('__PRECACHE_PATHS__')) {
+    if (worker.includes('__BUILD_TS__') || worker.includes('__RELEASE_ID__') || worker.includes('__PRECACHE_PATHS__') || worker.includes('__PRECACHE_DIGESTS__')) {
       errors.push('sw.js still contains an unstamped build placeholder.');
     }
     // postbuild.js stamps alloflow-v<sha256 release id>-<build time>; older builds used alloflow-v<build time>.

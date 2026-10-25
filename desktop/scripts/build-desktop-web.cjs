@@ -7,6 +7,10 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { validateDesktopAppBuild } = require('./check-desktop-app-build.cjs');
+const { normalizeShellHtml, assertReleaseDigests } = require('../web-app/postbuild.js');
+const { assertBuiltDelivery } = require('../../dev-tools/build_browser_delivery_manifest.cjs');
+const { assertOptionalHost } = require('../../dev-tools/build_optional_browser_delivery_policy.cjs');
+const { assertRuntimeHost } = require('../../dev-tools/build_runtime_graph_delivery_policy.cjs');
 
 const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DESKTOP_ROOT, '..');
@@ -235,13 +239,12 @@ function assertSingleReactBundle(rootDir) {
   }
 }
 
-function patchDesktopHtml(rootDir) {
+function patchDesktopHtml(rootDir, { assertUnchanged = false } = {}) {
   const indexPath = path.join(rootDir, 'index.html');
   let html = fs.readFileSync(indexPath, 'utf8');
-  html = html
-    .replace(/serviceWorker\.register\(["']\/sw\.js["']/g, 'serviceWorker.register("./sw.js"')
-    .replace(/(<script\b[^>]*\bsrc=["'])\/ai_backend_module\.js(["'])/gi, '$1./ai_backend_module.js$2');
-  fs.writeFileSync(indexPath, html, 'utf8');
+  const normalized = normalizeShellHtml(html);
+  if (assertUnchanged && normalized !== html) throw new Error('Stamped desktop HTML needs normalization; rebuild it before staging');
+  if (normalized !== html) fs.writeFileSync(indexPath, normalized, 'utf8');
 }
 
 function stageDesktopAppBuild(sourceBuildDir = APP_BUILD, inputFingerprint = null) {
@@ -251,8 +254,7 @@ function stageDesktopAppBuild(sourceBuildDir = APP_BUILD, inputFingerprint = nul
   let preserveStagingRoot = false;
   try {
     fs.cpSync(sourceBuildDir, stagedDir, { recursive: true });
-    patchDesktopHtml(stagedDir);
-    sanitizeBakedGoogleKeys(stagedDir);
+    patchDesktopHtml(stagedDir, { assertUnchanged: true });
     if (inputFingerprint) writeBuildInputFingerprint(stagedDir, inputFingerprint);
     assertSingleReactBundle(stagedDir);
     assertScopedServiceWorker(stagedDir);
@@ -264,6 +266,10 @@ function stageDesktopAppBuild(sourceBuildDir = APP_BUILD, inputFingerprint = nul
         + details
       );
     }
+    assertBuiltDelivery({ root: REPO_ROOT, buildDir: stagedDir });
+    assertOptionalHost({ root: REPO_ROOT, buildDir: stagedDir });
+    assertRuntimeHost({ root: REPO_ROOT, buildDir: stagedDir });
+    assertReleaseDigests(stagedDir);
     validateDesktopAppBuild({ repoRoot: REPO_ROOT, appBuildDir: stagedDir });
     replaceWithStagedDirectory(stagedDir, DESKTOP_APP_BUILD, stagingRoot);
     published = true;
@@ -359,6 +365,8 @@ function buildAndStage({ buildOutputDir, inputFingerprint }) {
   }
 
   copyDesktopPublicAssets(buildOutputDir);
+  patchDesktopHtml(buildOutputDir);
+  sanitizeBakedGoogleKeys(buildOutputDir);
 
   const postbuild = path.join(APP_ROOT, 'postbuild.js');
   if (fs.existsSync(postbuild)) {
@@ -409,6 +417,10 @@ function main() {
     validateDesktopAppBuild({ repoRoot: REPO_ROOT, appBuildDir: DESKTOP_APP_BUILD });
     assertSingleReactBundle(DESKTOP_APP_BUILD);
     assertScopedServiceWorker(DESKTOP_APP_BUILD);
+    assertBuiltDelivery({ root: REPO_ROOT, buildDir: DESKTOP_APP_BUILD });
+    assertOptionalHost({ root: REPO_ROOT, buildDir: DESKTOP_APP_BUILD });
+    assertRuntimeHost({ root: REPO_ROOT, buildDir: DESKTOP_APP_BUILD });
+    assertReleaseDigests(DESKTOP_APP_BUILD);
     const keyHits = scanForBakedKeys(DESKTOP_APP_BUILD);
     if (keyHits.length) {
       throw new Error('Cached desktop app-build contains a baked Google API key.');

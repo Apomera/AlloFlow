@@ -18,19 +18,16 @@ permissions:
   contents: read
 
 jobs:
-  publish:
-    name: Publish immutable Registry metadata
+  verify:
+    name: Verify tagged release without publishing credentials
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
     env:
-      GH_TOKEN: ${{ github.token }}
       RELEASE_TAG: ${{ inputs.release_tag }}
       CONFIRMATION: ${{ inputs.confirmation }}
       MCP_NAME: io.github.Apomera/alloflow-remediation
-      PUBLISHER_VERSION: v1.7.9
-      PUBLISHER_SHA256: ab128162b0616090b47cf245afe0a23f3ef08936fdce19074f5ba0a4469281ac
     steps:
       - name: Require explicit immutable-publication confirmation
         shell: bash
@@ -39,24 +36,45 @@ jobs:
             echo "::error::Confirmation must be exactly: PUBLISH $MCP_NAME"
             exit 1
           fi
-      - uses: actions/checkout@v4
+          if [[ ! "$RELEASE_TAG" =~ ^mcpb-v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::An existing mcpb-v semantic-version release tag is required."
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           ref: ${{ inputs.release_tag }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
+          package-manager-cache: false
 
       - name: Download the existing verified GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           mkdir release-assets
           gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --dir release-assets --pattern alloflow-remediation.mcpb --pattern SHA256SUMS.txt --pattern server.json
       - name: Verify checksum and GitHub build provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          cd release-assets
-          sha256sum --check SHA256SUMS.txt
-          gh attestation verify alloflow-remediation.mcpb --repo "$GITHUB_REPOSITORY"
+          node <<'NODE'
+          const fs = require('node:fs'), crypto = require('node:crypto');
+          for (const [name, max] of [['SHA256SUMS.txt',128],['server.json',262144],['alloflow-remediation.mcpb',536870912]]) {
+            const stat = fs.lstatSync('release-assets/' + name);
+            if (!stat.isFile() || stat.size < 1 || stat.size > max) throw new Error('Invalid release asset: ' + name);
+          }
+          const sums = fs.readFileSync('release-assets/SHA256SUMS.txt','utf8');
+          const match = /^([a-f0-9]{64})  alloflow-remediation\.mcpb\r?\n?$/i.exec(sums);
+          const digest = crypto.createHash('sha256').update(fs.readFileSync('release-assets/alloflow-remediation.mcpb')).digest('hex');
+          if (!match || match[1].toLowerCase() !== digest) throw new Error('Release checksum does not match the single expected bundle');
+          JSON.parse(fs.readFileSync('release-assets/server.json','utf8'));
+          NODE
+          source_sha="$(git rev-parse HEAD)"
+          gh attestation verify release-assets/alloflow-remediation.mcpb --repo "$GITHUB_REPOSITORY" --cert-identity "https://github.com/$GITHUB_REPOSITORY/.github/workflows/mcpb-release.yml@refs/tags/$RELEASE_TAG" --source-ref "refs/tags/$RELEASE_TAG" --source-digest "$source_sha" --deny-self-hosted-runners
 
       - name: Regenerate registry metadata and require byte-for-byte release parity
         shell: bash
@@ -64,19 +82,52 @@ jobs:
           node desktop/mcp/build_registry_metadata.cjs --artifact release-assets/alloflow-remediation.mcpb --tag "$RELEASE_TAG" --output release-assets/server.generated.json
           cmp release-assets/server.json release-assets/server.generated.json
 
+      - name: Transfer only verified Registry metadata
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: verified-mcp-registry-${{ github.run_id }}
+          if-no-files-found: error
+          path: release-assets/server.json
+
+  # This OIDC-capable job downloads bounded data, never selected tag source.
+  publish:
+    name: Publish immutable Registry metadata
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag }}
+      MCP_NAME: io.github.Apomera/alloflow-remediation
+      PUBLISHER_VERSION: v1.7.9
+      PUBLISHER_SHA256: ab128162b0616090b47cf245afe0a23f3ef08936fdce19074f5ba0a4469281ac
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: verified-mcp-registry-${{ github.run_id }}
+          path: registry-metadata
+      - name: Require a bounded regular metadata file
+        shell: bash
+        run: |
+          test -f registry-metadata/server.json
+          test ! -L registry-metadata/server.json
+          test "$(wc -c < registry-metadata/server.json)" -le 262144
+
       - name: Install checksum-pinned official MCP publisher
         shell: bash
         run: |
           curl --fail --silent --show-error --location "https://github.com/modelcontextprotocol/registry/releases/download/$PUBLISHER_VERSION/mcp-publisher_linux_amd64.tar.gz" --output mcp-publisher.tgz
           echo "$PUBLISHER_SHA256  mcp-publisher.tgz" | sha256sum --check
           tar -xzf mcp-publisher.tgz mcp-publisher
-          ./mcp-publisher validate release-assets/server.json
+          ./mcp-publisher validate registry-metadata/server.json
 
       - name: Check whether this immutable version already exists
         id: existing
         shell: bash
         run: |
-          version="$(node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version")"
+          version="$(printf '%s' "$RELEASE_TAG" | sed 's/^mcpb-v//')"
           curl --fail --silent --show-error --get --data-urlencode "search=$MCP_NAME" https://registry.modelcontextprotocol.io/v0.1/servers > registry-before.json
           if jq -e --arg name "$MCP_NAME" --arg version "$version" '.servers[]? | select(.server.name == $name and .server.version == $version)' registry-before.json >/dev/null; then
             echo "published=true" >> "$GITHUB_OUTPUT"
@@ -89,11 +140,11 @@ jobs:
         run: ./mcp-publisher login github-oidc
       - name: Publish MCPB metadata
         if: steps.existing.outputs.published != 'true'
-        run: ./mcp-publisher publish release-assets/server.json
+        run: ./mcp-publisher publish registry-metadata/server.json
       - name: Confirm discoverability
         shell: bash
         run: |
-          version="$(node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version")"
+          version="$(printf '%s' "$RELEASE_TAG" | sed 's/^mcpb-v//')"
           for attempt in 1 2 3 4 5 6; do
             curl --fail --silent --show-error --get --data-urlencode "search=$MCP_NAME" https://registry.modelcontextprotocol.io/v0.1/servers > registry-after.json
             if jq -e --arg name "$MCP_NAME" --arg version "$version" '.servers[]? | select(.server.name == $name and .server.version == $version)' registry-after.json >/dev/null; then

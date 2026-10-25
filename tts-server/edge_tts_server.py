@@ -21,6 +21,9 @@ def is_allowed_origin(origin):
         return True
     if not isinstance(origin, str) or not origin or origin != origin.strip():
         return False
+    # urlsplit removes CR/LF/TAB; reject them before validating or echoing headers.
+    if any(ord(char) <= 32 or ord(char) == 127 for char in origin):
+        return False
     try:
         parsed = urlsplit(origin)
         if (parsed.scheme not in ("http", "https") or not parsed.hostname

@@ -5,10 +5,20 @@
   "description": "Pinned browser and EPUB accessibility validation runtime for the local MCP connector",
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0"
   },
   "dependencies": {
-    "playwright": "1.60.0",
-    "@daisy/ace-cli": "1.4.6"
+    "@daisy/ace-cli": "1.4.6",
+    "extract-zip": "file:disabled-extract-zip",
+    "playwright": "1.60.0"
+  },
+  "overrides": {
+    "@daisy/ace-axe-runner-puppeteer": {
+      "puppeteer": "25.16.0"
+    },
+    "@daisy/ace-config": {
+      "conf": "10.2.0"
+    },
+    "extract-zip": "$extract-zip"
   }
 }

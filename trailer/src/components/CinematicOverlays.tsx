@@ -1,5 +1,5 @@
 import React from "react";
-import { useCurrentFrame, interpolate } from "remotion";
+import { useCurrentFrame, interpolate, Img } from "remotion";
 
 // Darkened edge vignette for film look — subtle breathing pulse
 export const Vignette: React.FC = () => {
@@ -46,6 +46,8 @@ export const Scanlines: React.FC<{ opacity?: number }> = ({ opacity = 0.03 }) =>
   );
 };
 
+const FILM_GRAIN_TEXTURE = "data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E";
+
 // Film grain noise using pseudo-random dots
 export const FilmGrain: React.FC<{ opacity?: number }> = ({ opacity = 0.04 }) => {
   const frame = useCurrentFrame();
@@ -56,18 +58,24 @@ export const FilmGrain: React.FC<{ opacity?: number }> = ({ opacity = 0.04 }) =>
   const bgY = ((seed * 3) % 200) - 100;
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        pointerEvents: "none",
-        zIndex: 56,
-        opacity,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
-        backgroundPosition: `${bgX}px ${bgY}px`,
-        mixBlendMode: "overlay",
-      }}
-    />
+    <>
+      {/* Await the same asset while retaining its original CSS tiling and offsets.
+          https://www.remotion.dev/docs/troubleshooting/background-image */}
+      <Img src={FILM_GRAIN_TEXTURE} style={{ opacity: 0, position: "absolute", left: "-100%" }} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 56,
+          opacity,
+          // eslint-disable-next-line @remotion/no-background-image -- The adjacent Img waits for this same tiled asset.
+          backgroundImage: `url("${FILM_GRAIN_TEXTURE}")`,
+          backgroundPosition: `${bgX}px ${bgY}px`,
+          mixBlendMode: "overlay",
+        }}
+      />
+    </>
   );
 };
 
