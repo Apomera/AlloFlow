@@ -5,6 +5,7 @@ export const BUG_RECEIPT_PATTERN = /^bug:\d{13}:[a-z0-9]{1,32}$/;
 const STATUSES = new Set(['new', 'investigating', 'resolved']);
 const NOTE_LIMIT = 2000;
 const BODY_LIMIT = 16384;
+const REVIEW_RETENTION_SECONDS = 30 * 24 * 60 * 60;
 const eventPrefix = receipt => `bug-review:${receipt}:`;
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const has = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
@@ -118,9 +119,19 @@ export async function handleBugReview(request, env, { respond, authorize }) {
   try {
     const raw = await env.BUG_REPORTS.get(payload.id);
     if (raw == null) return respond({ ok: false, error: 'Report not found. Refresh the inbox and try again.' }, 404);
-    if (!object(JSON.parse(raw))) throw new Error('Unavailable report');
-    if (request.method === 'GET') return respond({ ok: true, review: await readBugReview(env.BUG_REPORTS, payload.id) });
+    const report = JSON.parse(raw);
+    if (!object(report)) throw new Error('Unavailable report');
     const now = Date.now();
+    const parentExpiry = report.expires_at == null ? null : Date.parse(report.expires_at);
+    if (parentExpiry != null && !Number.isFinite(parentExpiry)) throw new Error('Invalid report retention');
+    if (parentExpiry != null && parentExpiry <= now) return respond({ ok: false, error: 'Report not found. Refresh the inbox and try again.' }, 404);
+    if (request.method === 'GET') return respond({ ok: true, review: await readBugReview(env.BUG_REPORTS, payload.id) });
+    // A new note never renews the parent report. Legacy parents without expiry
+    // get a bounded window for NEW events, not a retroactive purge.
+    const expiration = Math.floor(Math.min(parentExpiry ?? Infinity, now + REVIEW_RETENTION_SECONDS * 1000) / 1000);
+    // KV rejects expiration less than 60 seconds ahead. Refuse a last-minute
+    // append instead of extending retention to fit that storage minimum.
+    if (expiration - Math.ceil(now / 1000) <= 60) return respond({ ok: false, error: 'The report retention window is ending. No review was saved.' }, 409);
     const event = {
       id: crypto.randomUUID().replace(/-/g, ''),
       created_at: new Date(now).toISOString(),
@@ -130,6 +141,7 @@ export async function handleBugReview(request, env, { respond, authorize }) {
     // Each submission gets its own random key, so parallel reviewers cannot
     // overwrite one another's notes. Timestamp + id defines status precedence.
     await env.BUG_REPORTS.put(`${eventPrefix(payload.id)}${now}:${event.id}`, JSON.stringify(event), {
+      expiration,
       metadata: { schema_version: 1, created_at: event.created_at, ...(has(event, 'status') ? { status: event.status } : {}), has_note: has(event, 'note') },
     });
     return respond({ ok: true, event }, 201);

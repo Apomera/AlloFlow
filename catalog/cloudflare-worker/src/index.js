@@ -56,7 +56,7 @@ const PII_PATTERNS = [
   { type: 'diagnostic acronym',      re: /\b(?:ADHD|ASD|ODD|OCD|PTSD|TBI|SLD|EBD|OHI|IEP|504\sPlan)\b/g },
 ];
 
-const ALLOWED_LICENSES = new Set(['CC-BY-SA-4.0', 'CC-BY-4.0', 'CC0']);
+const ALLOWED_LICENSES = new Set(['CC-BY-SA-4.0', 'CC-BY-4.0', 'CC-BY-NC-SA-4.0', 'CC-BY-NC-4.0', 'CC0']);
 const ALLOWED_SUBJECTS = new Set([
   'Math', 'Science', 'ELA / Literacy', 'Social Studies',
   'SEL / Character', 'Art / Music', 'World Languages',
@@ -137,8 +137,9 @@ function validateSubmission(payload) {
   if (!m.grade_level || typeof m.grade_level !== 'string' || m.grade_level.trim().length === 0) return 'metadata.grade_level required.';
   if (m.grade_level.length > 20) return 'metadata.grade_level too long (max 20 chars).';
   if (m.credit && (typeof m.credit !== 'string' || m.credit.length > 80)) return 'metadata.credit must be a string up to 80 chars.';
-  if (m.license && !ALLOWED_LICENSES.has(m.license)) return 'metadata.license must be CC-BY-SA-4.0, CC-BY-4.0, or CC0.';
+  if (m.license && !ALLOWED_LICENSES.has(m.license)) return 'metadata.license must be CC-BY-SA-4.0, CC-BY-4.0, CC-BY-NC-SA-4.0, CC-BY-NC-4.0, or CC0.';
   if (m.tags && (!Array.isArray(m.tags) || m.tags.length > 20)) return 'metadata.tags must be an array of up to 20 strings.';
+  if (m.standards != null && (typeof m.standards !== 'string' || m.standards.length > 2000)) return 'metadata.standards must be text up to 2000 chars.';
 
   const a = payload.affirmations;
   for (const key of ['author_or_authorized', 'no_pii', 'license_agreed', 'age_eligible']) {
@@ -828,6 +829,44 @@ const BUG_RESPONSE_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
 };
 const BUG_KEY_PATTERN = BUG_RECEIPT_PATTERN;
+const BUG_REPORT_RETENTION_SECONDS = 30 * 24 * 60 * 60;
+
+// Count network bytes before decoding/parsing. Content-Length is only an early
+// refusal: absent, understated, and chunked bodies still use the actual cap.
+async function readBugBody(request) {
+  const declared = request.headers.get('Content-Length');
+  if (declared != null && (!/^\d+$/.test(declared.trim()) || Number(declared) > MAX_BODY_BYTES)) {
+    try { await request.body?.cancel(); } catch (_) { /* never echo stream details */ }
+    return /^\d+$/.test(declared.trim())
+      ? { status: 413, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }
+      : { status: 400, error: 'Invalid Content-Length.' };
+  }
+  if (!request.body) return { text: '' };
+  let reader;
+  try {
+    reader = request.body.getReader();
+    const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: false });
+    const parts = [];
+    let total = 0;
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_BODY_BYTES) {
+        try { await reader.cancel(); } catch (_) { /* size refusal takes precedence */ }
+        return { status: 413, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` };
+      }
+      parts.push(decoder.decode(value, { stream: true }));
+    }
+    parts.push(decoder.decode());
+    return { text: parts.join('') };
+  } catch (_) {
+    try { await reader?.cancel(); } catch (_) { /* never echo body or stream errors */ }
+    return { status: 400, error: 'Could not read report.' };
+  } finally {
+    reader?.releaseLock();
+  }
+}
 
 function bugResponse(body, status = 200) {
   return jsonResponse(body, status, BUG_RESPONSE_HEADERS);
@@ -848,21 +887,22 @@ function handleBugInbox() {
 async function handleBugSubmit(request, env) {
   if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
   const contentType = request.headers.get('Content-Type') || '';
-  if (!contentType.toLowerCase().includes('application/json')) return bugResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  let rawBody;
-  try { rawBody = await request.text(); } catch (_) { return bugResponse({ ok: false, error: 'Could not read report.' }, 400); }
-  if (bodyTooLarge(rawBody)) return bugResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  if (!/^\s*application\/json(?:\s*;\s*charset\s*=\s*(?:utf-?8|"utf-?8"))?\s*$/i.test(contentType)) return bugResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  const body = await readBugBody(request);
+  if (body.status) return bugResponse({ ok: false, error: body.error }, body.status);
   let p;
-  try { p = JSON.parse(rawBody); } catch (_) { return bugResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
+  try { p = JSON.parse(body.text); } catch (_) { return bugResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
   const err = validateBug(p);
   if (err) return bugResponse({ ok: false, error: err }, 400);
 
   const piiFindings = scanForPii([p.what, p.steps].filter(Boolean).join('\n'));
-  const submittedAt = new Date().toISOString();
+  const now = Date.now();
+  const submittedAt = new Date(now).toISOString();
   const record = {
     schema_version: '1.0',
     kind: 'bug_report',
     submitted_at: submittedAt,
+    expires_at: new Date(now + BUG_REPORT_RETENTION_SECONDS * 1000).toISOString(),
     type: (p.type || 'Bug Report').slice(0, 60),
     what: (p.what || '').slice(0, 16000),
     steps: (p.steps || '').slice(0, 8000),
@@ -874,10 +914,11 @@ async function handleBugSubmit(request, env) {
       user_agent: (request.headers.get('User-Agent') || '').slice(0, 200),
     },
   };
-  // Key sorts by time (13-digit epoch). No TTL — reports persist until manually purged.
-  const id = `bug:${Date.now()}:${crypto.randomUUID().slice(0, 8)}`;
+  // Only new records receive expiration; no legacy migration or deletion.
+  const id = `bug:${now}:${crypto.randomUUID().slice(0, 8)}`;
   try {
     await env.BUG_REPORTS.put(id, JSON.stringify(record), {
+      expirationTtl: BUG_REPORT_RETENTION_SECONDS,
       metadata: { submitted_at: submittedAt, pii: piiFindings.length > 0, country: record.submitter.ip_country },
     });
   } catch (_) {
@@ -2174,7 +2215,7 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: { ...corsHeaders, ...(url.pathname === '/bug-review' ? BUG_RESPONSE_HEADERS : {}) } });
+      return new Response(null, { status: 204, headers: { ...corsHeaders, ...(['/submitBug', '/bugs', '/bug-inbox', '/bug-review'].includes(url.pathname) ? BUG_RESPONSE_HEADERS : {}) } });
     }
 
     if (request.method === 'GET' && url.pathname === '/healthz') {
@@ -2200,7 +2241,8 @@ export default {
       return handleItemCorrectionSubmit(request, env);
     }
 
-    if (request.method === 'POST' && url.pathname === '/submitBug') {
+    if (url.pathname === '/submitBug') {
+      if (request.method !== 'POST') return bugResponse({ ok: false, error: 'Use POST /submitBug.' }, 405);
       return handleBugSubmit(request, env);
     }
 
@@ -2297,6 +2339,7 @@ export default {
         tags: Array.isArray(payload.metadata.tags) ? payload.metadata.tags.filter(t => typeof t === 'string').slice(0, 20) : [],
         credit: payload.metadata.credit ? payload.metadata.credit.trim() : null,
         license: payload.metadata.license || 'CC-BY-SA-4.0',
+        standards: payload.metadata.standards ? payload.metadata.standards.trim() : null,
       },
       affirmations: payload.affirmations,
       pii_scan: {

@@ -1,0 +1,18 @@
+{
+  "id": "eg-sort-monument",
+  "itemId": "eg8",
+  "scene": "The Great Pyramid of Khufu at Giza as a surviving monument today, viewed from a respectful distance on the rocky pale limestone plateau. Show a single massive square-base pyramid in three-quarter view, with its familiar straight triangular silhouette and rough exposed horizontal courses of weathered limestone blocks. Most smooth outer casing is absent; no white capped tip and no golden tip. Include the entire pyramid and a modest amount of bare ground and pale sky. No people, vehicles, other monuments, camels, trees or river. No writing, carvings or invented hieroglyphs.",
+  "alt": "A large weathered stone pyramid stands on a bare rocky plateau.",
+  "historicalReviewSources": [
+    "https://egymonuments.gov.eg/monuments/the-great-pyramid/"
+  ],
+  "kind": "sort",
+  "resourceId": "eg-sort",
+  "file": "eg-sort-monument.png",
+  "maxEdge": 320,
+  "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: The Great Pyramid of Khufu at Giza as a surviving monument today, viewed from a respectful distance on the rocky pale limestone plateau. Show a single massive square-base pyramid in three-quarter view, with its familiar straight triangular silhouette and rough exposed horizontal courses of weathered limestone blocks. Most smooth outer casing is absent; no white capped tip and no golden tip. Include the entire pyramid and a modest amount of bare ground and pale sky. No people, vehicles, other monuments, camels, trees or river. No writing, carvings or invented hieroglyphs. Style and constraints: Warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth colors with clear shapes and generous margins, square composition readable on a small sorting card. Show one scene only. No words, letters, numerals, captions, labels, arrows, timeline, diagram, category colors, symbols, logos or watermark. No boats or sails. No modern objects or machinery. The app supplies the card text.",
+  "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-b352cfca-1e7c-48bd-905e-48e935878a59.png",
+  "status": "visual-review-passed",
+  "provider": "Built-in image generation",
+  "reviewedAt": "2026-10-12"
+}

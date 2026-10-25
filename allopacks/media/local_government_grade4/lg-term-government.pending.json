@@ -1,0 +1,8 @@
+{
+  "id": "lg-term-government",
+  "prompt": "Use case: illustration-story. Asset: square glossary picture. A modest civic building with steps, an accessible ramp, a blank noticeboard, a bike rack and open doors. No columns, no flags, no readable signs. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: square illustration. Warm paper texture, restrained muted colors and clear fine ink contours. Every visible arm connects naturally at the shoulder, bends at the elbow, and ends at its own wrist; natural relaxed hands and coherent hair silhouettes. Keep clothing simple, simple poses, no tiny decorative marks that resemble writing.",
+  "result": {
+    "image_url": "[large string 4470778 characters]",
+    "output_hint": "Generated images are saved to C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c as C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-80a653ca-449c-4e78-85e0-ebf512587bcc.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+  }
+}

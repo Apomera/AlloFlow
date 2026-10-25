@@ -1,0 +1,10 @@
+{
+  "id": "eg-img-irrigation",
+  "file": "eg-img-irrigation-v3.png",
+  "prompt": "Use case: precise-object-edit. Edit target: this ancient Egyptian irrigation illustration. Change ONLY the digging tools and the hands needed to hold them correctly. The tools now look like long straight paddles. Replace all such tools with clearly bent ancient wooden hoes. Each hoe is a short thick wooden handle joined at its top to a broad tapered wooden blade: in side view the two wooden pieces form an inverted V, with the blade extending DOWNWARD AND BACK TOWARD THE WORKER, at a sharp 55-degree angle to the handle. A cord braces the open V. The worker grips the handle with two hands and draws the angled blade toward their feet through the soil. Make the bend unmistakable; the blade must NOT be a straight continuation of the handle. No metal parts, no shovel shapes. Preserve the exact workers, faces, linen clothing, landscape, boat-free river, channels, palms, huts, watercolor palette and composition. Preserve water cascading from the channel into the lower foreground field. Hands and arms anatomically natural, exactly two arms per person. No extra people, objects, text, labels or watermarks.",
+  "ref": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7d01229d-9e14-4dd4-ad79-384748586114.png",
+  "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-7772d2cb-1198-47c5-9206-f0b328bfcb59.png",
+  "completedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "savedFile": "allopacks/media/ancient_egypt_grade6/eg-img-irrigation-v3.png"
+}

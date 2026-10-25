@@ -1,0 +1,25 @@
+{
+  "id": "eg-term-silt",
+  "kind": "term",
+  "scene": "Close low view of an ancient Egyptian Nile floodplain after floodwater has receded: a broad smooth layer of fine dark moist sediment covers the flat low ground. A shallow residual pool glints nearby; the river and a pale dry raised bank sit quietly behind. No people, hands, baskets, tools, crops, buildings or vessels. Mud deposited naturally by water, not deliberately spread or mixed.",
+  "alt": "Fine dark mud covers low ground beside a shallow pool, with a pale dry bank beyond.",
+  "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: Close low view of an ancient Egyptian Nile floodplain after floodwater has receded: a broad smooth layer of fine dark moist sediment covers the flat low ground. A shallow residual pool glints nearby; the river and a pale dry raised bank sit quietly behind. No people, hands, baskets, tools, crops, buildings or vessels. Mud deposited naturally by water, not deliberately spread or mixed. Style and constraints: Warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth colors with clear shapes and generous margins, square composition readable on a small sorting card. Show one scene only. No words, letters, numerals, captions, labels, arrows, timeline, diagram, category colors, symbols, logos or watermark. No boats or sails. No modern objects or machinery. The app supplies the card text.",
+  "file": "eg-term-silt-v2.png",
+  "status": "visual-review-passed",
+  "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-4d01385c-e41e-4246-b605-95a982d9c459.png",
+  "previousVersions": [
+    {
+      "file": "eg-term-silt.png",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. Close view of fine dark wet mud spread over pale dry sand, one adult hand pressing gently into it; obvious color difference, not a pile of dirt. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "alt": "A hand presses into dark wet mud spread over pale sand.",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-5f278d85-35a6-477e-ae46-ae01c28da0da.png"
+    }
+  ],
+  "provider": "Built-in image generation",
+  "reviewedAt": "2026-10-12",
+  "historicalReviewSources": [
+    "https://www.metmuseum.org/-/media/files/learn/for-educators/publications-for-educators/the-art-of-ancient-egypt.pdf"
+  ],
+  "visualReviewNotes": "Replaced with a boat-free, text-free standalone scene. Original artwork retained."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "eg-img-receipt",
+  "file": "eg-img-receipt-v2.png",
+  "prompt": "Use case: precise-object-edit. Asset type: ancient Egyptian classroom lesson illustration. Input image is the edit target. Remove only the incidental boats and their sails on the distant river, replacing them with calm uninterrupted water that matches the existing watercolor and fine-ink rendering. Preserve every other part of the image: the seated scribe with his angled wooden writing board, the workers carrying grain sacks, the granary architecture, columns, ox and cart, baskets, landscape, people, faces, limbs, clothing, composition, warm earth colors and paper texture. No boats, sails, new symbols, writing, text, captions, labels, logos or watermarks.",
+  "ref": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/allopacks/media/ancient_egypt_grade6/eg-img-receipt.png",
+  "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a131b6-0352-7193-a3c9-4af3fa6e59ef\\exec-17032e65-696a-4d82-b61a-9471b6f049fc.png",
+  "completedAt": "2026-10-12",
+  "status": "visual-review-passed",
+  "savedFile": "allopacks/media/ancient_egypt_grade6/eg-img-receipt-v2.png"
+}

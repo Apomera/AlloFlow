@@ -1,0 +1,8 @@
+{
+  "id": "lg-term-vote",
+  "prompt": "Use case: precise-object-edit. Edit the supplied voting illustration. Remove every person and all background furniture, windows and wall decoration from behind the foreground voter and ballot box. Replace that entire background with softly textured plain ivory paper. Retain the single adult forearm with its connected natural hand, folded completely blank white paper entering the slot and plain unmarked cardboard box. Crop above the adult hand so the image contains only that adult hand, forearm, blank folded paper, and box. Maintain the warm watercolor and fine ink illustration style. No letters, numbers, words, symbols, seals or watermark.",
+  "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-b6c45005-bc4f-4fdb-a6c0-fbb359799607.png",
+  "referenced_image_paths": [
+    "C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-b0a371a9-8c30-4bda-8142-85b5af228d7c.png"
+  ]
+}

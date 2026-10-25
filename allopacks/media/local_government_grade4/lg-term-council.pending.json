@@ -1,0 +1,8 @@
+{
+  "id": "lg-term-council",
+  "prompt": "Use case: illustration-story. Asset: square glossary picture. Seven adults of varied ages and everyday clothing seated at one long plain table, facing rows of folding chairs in a modest public meeting room; not corporate boardroom. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks. Format: square illustration. Warm paper texture, restrained muted colors and clear fine ink contours. Every visible arm connects naturally at the shoulder, bends at the elbow, and ends at its own wrist; natural relaxed hands and coherent hair silhouettes. Keep clothing simple, simple poses, no tiny decorative marks that resemble writing.",
+  "result": {
+    "image_url": "[large string 3751558 characters]",
+    "output_hint": "Generated images are saved to C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c as C:\\Users\\cabba\\.codex\\generated_images\\01a12cfd-0c6f-70c2-ac92-12d18ff6e13c\\exec-75321bd7-39a7-4e5f-a08b-7bf2d567be40.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+  }
+}

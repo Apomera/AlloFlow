@@ -572,7 +572,7 @@
   {
     "path": "allopacks/academic_discourse_reading_space_grade6.allopack.json",
     "slug": "academic-discourse-reading-space-grade6",
-    "title": "A Reading Space We Can Share: Discourse and Collaboration Learning Lab",
+    "title": "Thinking Together: A Reading-Space Decision",
     "subject": "English Language Arts",
     "grade_level": "6",
     "tags": [
@@ -581,10 +581,13 @@
       "udl",
       "evidence-and-reasoning",
       "teacher-review-draft",
-      "illustrated"
+      "illustrated",
+      "feedback-and-revision",
+      "visual-reasoning",
+      "cut-paper"
     ],
-    "credit": "Original AI-authored lesson and illustrations inspired by Katie Novak's article; educator review pending; not reviewed or endorsed by Katie Novak.",
-    "license": "Teacher review required",
+    "credit": "Independent AI-authored AlloFlow teaching draft informed by Katie Novak’s writing. Original activities and cut-paper illustrations; educator review pending. Not authored, reviewed, or endorsed by Katie Novak or Novak Education.",
+    "license": "CC-BY-4.0",
     "submitted_at": "2026-10-21T18:24:44.058Z",
     "share_slug": "reading-space"
   },
@@ -992,5 +995,27 @@
     "path": "allopacks/word_families_grade1.allopack.json",
     "slug": "word_families_grade1",
     "submitted_at": "2026-09-06T01:10:00.000Z"
+  },
+  {
+    "path": "allopacks/reading_decisions_grade6.allopack.json",
+    "slug": "reading-decisions-grade6",
+    "title": "A Decision We Can Explain: Plan, Discuss, Revise, Reflect",
+    "subject": "English Language Arts",
+    "grade_level": "6",
+    "tags": [
+      "academic-discourse",
+      "collaboration",
+      "udl",
+      "evidence-and-reasoning",
+      "feedback-and-revision",
+      "self-reflection",
+      "four-lesson-unit",
+      "cut-paper",
+      "teacher-review-draft"
+    ],
+    "credit": "Independent AI-authored AlloFlow teaching draft informed by Katie Novak’s writing. Original activities and cut-paper illustrations; educator review pending. Not authored, reviewed, or endorsed by Katie Novak or Novak Education.",
+    "license": "CC-BY-4.0",
+    "submitted_at": "2026-10-23T12:02:23.839Z",
+    "share_slug": "reading-decisions"
   }
 ]

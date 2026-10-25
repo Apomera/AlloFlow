@@ -1,0 +1,19 @@
+{
+  "id": "eg-sort-royal-record",
+  "itemId": "eg9",
+  "resourceId": "eg-sort",
+  "kind": "sort",
+  "file": "eg-sort-royal-record.png",
+  "maxEdge": 320,
+  "scene": "A single surviving limestone relief fragment shows the head and shoulders of an ancient Egyptian ruler in profile, wearing a simple tall white crown. The portrait is carved shallowly into the flat face of the stone; it is clearly an archaeological object, not a living person. Warm weathered stone, small chips at the slab edges, plain ivory backdrop. No writing or glyphs remain in this cropped fragment. The relief is a general educational illustration, not a claimed reproduction of a named artifact.",
+  "alt": "A weathered stone relief shows the head and shoulders of a crowned ruler in profile.",
+  "historicalReviewSources": [
+    "https://www.metmuseum.org/art/collection/search/329964",
+    "https://collections.penn.museum/collections/object/232562"
+  ],
+  "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: A single surviving limestone relief fragment shows the head and shoulders of an ancient Egyptian ruler in profile, wearing a simple tall white crown. The portrait is carved shallowly into the flat face of the stone; it is clearly an archaeological object, not a living person. Warm weathered stone, small chips at the slab edges, plain ivory backdrop. No writing or glyphs remain in this cropped fragment. The relief is a general educational illustration, not a claimed reproduction of a named artifact. Style and constraints: Warm grounded watercolor and fine ink educational illustration, muted sandy earth colors, generous margins, square composition readable on a small activity card. One limestone fragment only, no other objects or people. Egyptian profile conventions, natural face proportions, crisp carved contour against the stone surface. No texts, letters, numerals, labels, captions, readable writing, invented hieroglyphs, arrows, timeline, categories, modern objects, logos or watermark. No second scene or comparison. The app supplies the card text.",
+  "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-af6dfd43-22aa-4dd3-97a2-eed5021181d5.png",
+  "status": "visual-review-passed",
+  "provider": "Built-in image generation",
+  "reviewedAt": "2026-10-12"
+}

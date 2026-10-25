@@ -1,0 +1,54 @@
+{
+  "mode": "built-in image_gen",
+  "style": "Cut-paper collage: decision comparisons, chart memory cues and neutral case-object sort pictures",
+  "assets": [
+    {
+      "id": "proposal-retain-cutpaper",
+      "file": "proposal-retain-cutpaper.webp",
+      "prompt": "Use case: scientific-educational\nAsset type: illustration for a middle-school discussion activity, justified retention of a proposal after considering another idea.\nCreate a left-to-right objects-only comparison. On the left, one teal paper proposal card showing exactly a simple desk lamp and a small handled basket containing books. In the middle, a smaller ochre paper speech-bubble card shows a freestanding rectangular room divider and a book basket: this is a counterproposal. Two broad navy paper paths from these cards converge toward an open cream notebook on the right. On the notebook is a teal card showing the same lamp and book basket as the first proposal, alongside two small blank coral note strips. Keep the desk lamp visibly distinct from the tall room divider. This represents retaining the original proposal with a reason after considering the alternative; do not show a winner, approval, or reject the other contribution. Every object fully in frame. Refined flat scissor-cut paper collage for ages 11–13, warm cream background, teal, ochre, coral and muted navy; gently irregular edges and subtle paper grain with tiny layered shadows. Landscape 3:2, generous margins, few large shapes easy to distinguish on a phone. No people, readable words, letters, numbers, checkmarks, trophies, logos or watermark. Not realistic, photographic, or 3D. These are neutral memory cues, not evidence of success. All teaching information will be in editable captions.",
+      "alt": "Two proposal cards feed into a notebook. Its final card keeps the lamp and book basket; blank notes cue the need to record a reason and a remaining check."
+    },
+    {
+      "id": "proposal-revise-cutpaper",
+      "file": "proposal-revise-cutpaper.webp",
+      "prompt": "Use case: scientific-educational\nAsset type: illustration for a middle-school discussion activity, reasoned revision after considering another idea.\nCreate a left-to-right objects-only comparison. On the left, one teal paper proposal card showing exactly a simple desk lamp and a small handled basket containing books. In the middle, a smaller ochre paper speech-bubble card shows a freestanding rectangular room divider and a book basket: this is a counterproposal. Two broad navy paper paths from these cards converge toward an open cream notebook on the right. On the notebook is an ochre card showing the divider and book basket, alongside two small blank coral note strips. Keep the desk lamp visibly distinct from the tall room divider. This represents revising the proposal with a reason after considering the alternative; do not show a winner, approval, or depict revision as inherently better than retaining. Every object fully in frame. Refined flat scissor-cut paper collage for ages 11–13, warm cream background, teal, ochre, coral and muted navy; gently irregular edges and subtle paper grain with tiny layered shadows. Landscape 3:2, generous margins, few large shapes easy to distinguish on a phone. No people, readable words, letters, numbers, checkmarks, trophies, logos or watermark. Not realistic, photographic, or 3D. These are neutral memory cues, not evidence of success. All teaching information will be in editable captions.",
+      "alt": "Two proposal cards feed into a notebook. Its final card changes from lamp and basket to divider and basket; blank notes cue the need to record a reason and a remaining check."
+    },
+    {
+      "id": "sort-lamp-cutpaper",
+      "file": "sort-lamp-cutpaper.webp",
+      "prompt": "Use case: scientific-educational. A neutral context thumbnail for a card-sorting learning activity. Show one simple desk lamp directed toward one open book on a plain surface. The book has blank pages. Make the lamp and book large and legible. Square 1:1 composition, original flat scissor-cut paper illustration for middle school students, warm cream background with teal, ochre, coral and muted navy paper. Few large distinct shapes, lightly handmade paper edges, subtle paper grain, minimal layered-paper shadows. Not realistic, not 3D. No people, letters, words, numerals, labels, arrows, checkmarks, awards or watermarks. Generous margins, full objects entirely visible. Context picture only: no answer clues, no depiction of completed collaboration. All task information appears in accessible text beside the image.",
+      "alt": "A paper lamp lights one open book. This is a case-object cue; use the written record to decide what is documented."
+    },
+    {
+      "id": "sort-furniture-cutpaper",
+      "file": "sort-furniture-cutpaper.webp",
+      "prompt": "Use case: scientific-educational. A neutral context thumbnail for a card-sorting learning activity. Show one small movable table with visible wheels and a separate basket containing books beside it. Both equally prominent, simple silhouette, no floor plan or implied measured clearance. Square 1:1 composition, original flat scissor-cut paper illustration for middle school students, warm cream background with teal, ochre, coral and muted navy paper. Few large distinct shapes, lightly handmade paper edges, subtle paper grain, minimal layered-paper shadows. Not realistic, not 3D. No people, letters, words, numerals, labels, arrows, checkmarks, awards or watermarks. Generous margins, full objects entirely visible. Context picture only: no answer clues, no depiction of completed collaboration. All task information appears in accessible text beside the image.",
+      "alt": "A paper table on wheels stands beside a book basket. This is a case-object cue; the picture does not show a reply, agreement or measured fit."
+    },
+    {
+      "id": "sort-notebook-cutpaper",
+      "file": "sort-notebook-cutpaper.webp",
+      "prompt": "Use case: scientific-educational. A neutral context thumbnail for a card-sorting learning activity. Show one large open notebook with entirely blank pages, a coral bookmark and a single teal pencil alongside. The notebook contains no symbols, ticks, paths or diagrams. Square 1:1 composition, original flat scissor-cut paper illustration for middle school students, warm cream background with teal, ochre, coral and muted navy paper. Few large distinct shapes, lightly handmade paper edges, subtle paper grain, minimal layered-paper shadows. Not realistic, not 3D. No people, letters, words, numerals, labels, arrows, checkmarks, awards or watermarks. Generous margins, full objects entirely visible. Context picture only: no answer clues, no depiction of completed collaboration. All task information appears in accessible text beside the image.",
+      "alt": "An open paper notebook has blank pages, a bookmark and a pencil. Read the supplied record; the blank picture does not indicate whether an exchange or agreement occurred."
+    },
+    {
+      "id": "sort-divider-cutpaper",
+      "file": "sort-divider-cutpaper.webp",
+      "prompt": "Use case: scientific-educational. A neutral context thumbnail for a card-sorting learning activity. Show one simple freestanding three-panel room divider and one small desk lamp beside it. No enclosure or sound waves; do not imply that the divider blocks sound. Square 1:1 composition, original flat scissor-cut paper illustration for middle school students, warm cream background with teal, ochre, coral and muted navy paper. Few large distinct shapes, lightly handmade paper edges, subtle paper grain, minimal layered-paper shadows. Not realistic, not 3D. No people, letters, words, numerals, labels, arrows, checkmarks, awards or watermarks. Generous margins, full objects entirely visible. Context picture only: no answer clues, no depiction of completed collaboration. All task information appears in accessible text beside the image.",
+      "alt": "A paper divider stands beside a lamp on a small table. This context picture does not establish sound reduction or what the recorded contributors did."
+    },
+    {
+      "id": "anchor-prepare-cutpaper",
+      "file": "anchor-prepare-cutpaper.webp",
+      "prompt": "Use case: scientific-educational. A cut-paper memory cue for preparing an idea and choosing a way to contribute. Arrange an open notebook with blank pages, a large pencil, a simple tablet showing one blank speech bubble, and a loose card with a simple book sketch together on one equal-level surface. Show communication options without selecting a best one and without any arrows. Do not imply a disability or learning style. Square 1:1, original flat scissor-cut paper collage for ages11–13. Cream background, teal, ochre, coral, muted navy. Large simple shapes, subtle handmade paper grain, small layered shadows, generous margins. No readable text, letters, numerals, checkmarks, ranks, progress bars, people, logos or watermark. Not photorealistic or3D. All objects fully visible; instructional text will be beside the art.",
+      "alt": "A blank notebook, pencil, tablet with a speech bubble, and book-picture card suggest ways to prepare and communicate an idea. The text explains preparation and reciprocal access."
+    },
+    {
+      "id": "anchor-support-cutpaper",
+      "file": "anchor-support-cutpaper.webp",
+      "prompt": "Use case: scientific-educational. A cut-paper memory cue for choosing among an optional full sentence prompt, a brief purpose cue, and personal wording. Three equally sized cream cards side-by-side at the same height: the first bears three broad navy horizontal strips representing a longer prompt; the second bears one broad navy strip representing a brief cue; the third bears a large empty outlined speech bubble. All three cards have the same border and visual prominence, no arrows or ranking. A single teal pencil rests below the set. Lines are simple shapes, not readable text. Square 1:1, original flat scissor-cut paper collage for ages11–13. Cream background, teal, ochre, coral, muted navy. Large simple shapes, subtle handmade paper grain, small layered shadows, generous margins. No readable text, letters, numerals, checkmarks, ranks, progress bars, people, logos or watermark. Not photorealistic or3D. All objects fully visible; instructional text will be beside the art.",
+      "alt": "Three equal cards show several lines, one line, and an empty speech bubble. They cue full prompts, brief cues, and personal wording; none is ranked above another."
+    }
+  ]
+}

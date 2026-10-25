@@ -23,7 +23,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { entryFromPack } = require('./allopack_entry');
+const { entryFromPack, parseStandards } = require('./allopack_entry');
 
 const ROOT = path.resolve(__dirname);
 const REPO_ROOT = path.resolve(ROOT, '..');
@@ -43,6 +43,7 @@ function readJsonSafe(filePath) {
 function buildEntry(filename, payload) {
   const slug = filename.replace(/\.json$/, '');
   const meta = payload.metadata || {};
+  const standards = parseStandards(meta.standards);
   return {
     slug,
     title: meta.title || slug,
@@ -53,6 +54,7 @@ function buildEntry(filename, payload) {
     license: meta.license || 'CC-BY-SA-4.0',
     submitted_at: payload.submitted_at || null,
     path: `catalog/approved/${filename}`,
+    ...(standards.length ? { standards } : {}),
   };
 }
 

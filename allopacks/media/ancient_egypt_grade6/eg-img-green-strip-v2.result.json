@@ -1,0 +1,53 @@
+{
+  "id": "eg-img-green-strip",
+  "kind": "lesson",
+  "scene": "High oblique aerial view of a gently winding Nile in ancient Egypt, with a very narrow strip of green plants and small fields on BOTH banks. Broad pale dry desert extends far beyond the sharp edges of green land on BOTH sides. Frame wide enough to show the whole valley cross section from desert through green bank, river, green bank, desert. No people, buildings or monuments.",
+  "alt": "A winding river and narrow green banks pass through a broad pale desert.",
+  "title": "A country a few miles wide",
+  "caption": "Egypt is mostly desert. Nearly everyone lived in the green strip.",
+  "afterType": "simplified",
+  "labelTexts": [
+    "The Nile",
+    "Farmland",
+    "Desert"
+  ],
+  "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: High oblique aerial view of a gently winding Nile in ancient Egypt, with a very narrow strip of green plants and small fields on BOTH banks. Broad pale dry desert extends far beyond the sharp edges of green land on BOTH sides. Frame wide enough to show the whole valley cross section from desert through green bank, river, green bank, desert. No people, buildings or monuments. Style and constraints: Warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth colors with clear shapes and generous margins, square composition readable on a small sorting card. Show one scene only. No words, letters, numerals, captions, labels, arrows, timeline, diagram, category colors, symbols, logos or watermark. No boats or sails. No modern objects or machinery. The app supplies the card text.",
+  "file": "eg-img-green-strip-v2.png",
+  "status": "visual-review-passed",
+  "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-7edd6e50-3077-4d7f-aad8-409bd1d70958.png",
+  "previousVersions": [
+    {
+      "file": "eg-img-green-strip.png",
+      "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide aerial view along the river in ancient Egypt: a narrow band of dark green cultivated fields hugging the calm river with sharp edges, pale desert filling the rest in every direction. No monuments. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "alt": "A narrow strip of green fields follows a winding river through a broad pale desert.",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-463f057c-8956-428d-8cb4-914420e0fe94.png"
+    }
+  ],
+  "provider": "Built-in image generation",
+  "reviewedAt": "2026-10-12",
+  "historicalReviewSources": [
+    "https://www.metmuseum.org/-/media/files/learn/for-educators/publications-for-educators/the-art-of-ancient-egypt.pdf"
+  ],
+  "visualReviewNotes": "Replaced with a boat-free, text-free standalone scene. Original artwork retained. Narrow green banks and desert on both sides are clear. Native label anchors reviewed against the new composition.",
+  "plannedLabels": [
+    {
+      "text": "The Nile",
+      "position": "bottom-left",
+      "anchorX": 55,
+      "anchorY": 65
+    },
+    {
+      "text": "Farmland",
+      "position": "bottom-center",
+      "anchorX": 81,
+      "anchorY": 72
+    },
+    {
+      "text": "Desert",
+      "position": "bottom-right",
+      "anchorX": 81,
+      "anchorY": 37
+    }
+  ]
+}

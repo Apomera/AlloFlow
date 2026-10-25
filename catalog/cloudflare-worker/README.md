@@ -136,15 +136,32 @@ logs + free text can contain FERPA-sensitive student data and this repo is publi
 
 ```
 wrangler kv namespace create BUG_REPORTS      # paste the printed id into wrangler.toml
-wrangler secret put ADMIN_TOKEN               # optional — enables the GET /bugs reader
+wrangler secret put BUG_REPORTS_ADMIN_TOKEN   # optional — enables the private developer inbox
 wrangler deploy
 ```
 
 Read reports either with the CLI (`wrangler kv key list --binding BUG_REPORTS`,
-`wrangler kv key get --binding BUG_REPORTS <id>`) or, if `ADMIN_TOKEN` is set, via
-`GET /bugs?token=<ADMIN_TOKEN>&limit=50` (returns newest-first JSON). KV reports persist until
-manually purged; periodically delete handled ones (and remember KV is private but still contains PII —
-treat accordingly). Smoke test for all routes: `npm test`.
+`wrangler kv key get --binding BUG_REPORTS <id>`) or through `/bug-inbox`. The JSON reader
+`GET /bugs?limit=50` requires `Authorization: Bearer <BUG_REPORTS_ADMIN_TOKEN>` and returns
+newest-first JSON. Query-string tokens are not accepted. The legacy `ADMIN_TOKEN` secret
+works only when the dedicated bug token is absent; a dedicated token does not authorize
+the unrelated PD/plugin readers.
+
+`POST /submitBug` accepts `application/json` with an optional UTF-8 charset. It rejects a
+declared body above 1,048,576 bytes before reading, independently caps actual streamed bytes,
+and rejects malformed UTF-8/JSON with private, content-free errors. This remains an anonymous
+intake endpoint; CORS is not district authentication or an admission control.
+
+New bug-report records receive a server-owned `expires_at` and a **30-day KV expiration**.
+This bounds free-text/log retention while allowing a month for triage. Clients cannot override
+that window. New `/bug-review` status/note events expire no later than the parent report;
+for a legacy parent without `expires_at`, newly written events receive at most 30 days.
+New notes are refused near the parent's expiry instead of extending retention to meet KV's
+60-second storage minimum. Existing report/review records are not migrated, deleted, or
+given retroactive expiration by this change; the operator must review those separately.
+Downloaded exports, email/digest-provider copies, backups, and platform logs have separate
+retention controls. KV is private storage, not a guarantee that free text contains no PII.
+Smoke test for all routes: `npm test`.
 
 ### `POST /submitPd` → Cloudflare KV (PRIVATE)
 Professional-development module submissions from the in-app PD catalogue (Educator Hub → Community

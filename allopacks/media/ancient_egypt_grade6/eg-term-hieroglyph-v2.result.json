@@ -1,0 +1,22 @@
+{
+  "id": "eg-term-hieroglyph",
+  "kind": "term",
+  "scene": "A weathered limestone wall seen almost edge-on in very shallow focus. Raking light suggests carved recesses but the front surface is so oblique and softly out of focus that no individual sign can be identified. No invented symbols, no visible legible characters.",
+  "alt": "A family examines a weathered stone wall beside the Nile; shallow carvings catch the light but individual signs cannot be read.",
+  "prompt": "Use case: precise-object-edit. Input image is the edit target: an ancient Egyptian family looking at a weathered carved limestone wall. Change ONLY the distant river background: remove every boat, mast and sail, replacing their footprints with uninterrupted calm river water matching the existing light and watercolor texture. Preserve the people, faces, coherent hands and arms, linen clothes, stone wall, soft shallow-focus unreadable carvings, village, palms, desert, square framing and warm palette exactly. Do not add any other objects or any words, dates, symbols, logos or watermarks.",
+  "file": "eg-term-hieroglyph-v2.png",
+  "status": "visual-review-passed",
+  "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-9d5e5630-a040-45e9-89a1-b716199524de.png",
+  "previousVersions": [
+    {
+      "file": "eg-term-hieroglyph.png",
+      "prompt": "Use case: historical-scene. Asset: square glossary picture. A weathered limestone wall seen almost edge-on in very shallow focus. Raking light suggests carved recesses but the front surface is so oblique and softly out of focus that no individual sign can be identified. No invented symbols, no visible legible characters. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
+      "alt": "Raking light catches shallow carvings on a weathered stone wall viewed nearly edge-on; individual signs cannot be read.",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a107ef-ffb1-78b1-859e-ac12967fcbf1\\exec-59c9eaa2-5656-42bd-9df5-81529879857a.png"
+    }
+  ],
+  "provider": "Built-in image generation",
+  "reviewedAt": "2026-10-12",
+  "visualReviewNotes": "Removed incidental sailboats; preserved the stone wall and people. Parent agent visually reviewed the edit."
+}

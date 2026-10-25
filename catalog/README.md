@@ -116,7 +116,8 @@ Each approved entry is a JSON file with this shape:
     "grade_level": "7",
     "tags": ["biology", "lab", "peer-teaching"],
     "credit": "Anya G., 7th grade",
-    "license": "CC-BY-SA-4.0"
+    "license": "CC-BY-SA-4.0",
+    "standards": "NGSS MS-LS1-6 (construct an explanation for how photosynthesis cycles matter and flows energy)"
   },
   "affirmations": {
     "author_or_authorized": true,
@@ -135,7 +136,11 @@ Each approved entry is a JSON file with this shape:
 
 ## License
 
-Catalog entries inherit AGPL v3 from the AlloFlow project. Each entry's own `metadata.license` field selects the Creative Commons option chosen at submission (CC-BY-SA-4.0 by default; CC-BY-4.0 or CC0 also accepted).
+Catalog entries inherit AGPL v3 from the AlloFlow project. Each entry's own `metadata.license` field selects the Creative Commons option chosen at submission (CC-BY-SA-4.0 by default; CC-BY-4.0, CC-BY-NC-SA-4.0, CC-BY-NC-4.0 or CC0 also accepted). The NC options forbid commercial reuse; AGPL itself does not.
+
+## Standards
+
+`metadata.standards` (optional, up to 2000 characters) and an AlloPack's `allopack.standards` use the same form: `CODE (plain-language description); CODE (description)`. `generate_index.js` parses them into each index entry's `standards` array, which the in-app catalog and `library.html` search by code ("SL.6.1" also finds SL.6.1.A, never SL.6.10) and show on each card.
 
 ## Removal / takedown
 

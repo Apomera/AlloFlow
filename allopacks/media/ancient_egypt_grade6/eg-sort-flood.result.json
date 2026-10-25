@@ -1,0 +1,18 @@
+{
+  "id": "eg-sort-flood",
+  "itemId": "eg1",
+  "scene": "Ancient Egyptian Nile valley during the annual inundation. A calm swollen river has spread shallow silty water across a wide flat low floodplain. Sparse reeds emerge at the edge; dry pale desert rises gently beyond. Emphasize natural water spreading over low ground, not a destructive rushing wave. No people, buildings, monuments or cultivated grids. No before-and-after comparison.",
+  "alt": "A swollen river spreads shallow water across a low floodplain, with reeds at the edge and dry desert beyond.",
+  "historicalReviewSources": [
+    "https://www.metmuseum.org/-/media/files/learn/for-educators/publications-for-educators/the-art-of-ancient-egypt.pdf"
+  ],
+  "kind": "sort",
+  "resourceId": "eg-sort",
+  "file": "eg-sort-flood.png",
+  "maxEdge": 320,
+  "prompt": "Use case: historical-scene. Asset type: classroom sorting-card illustration. Primary request: Ancient Egyptian Nile valley during the annual inundation. A calm swollen river has spread shallow silty water across a wide flat low floodplain. Sparse reeds emerge at the edge; dry pale desert rises gently beyond. Emphasize natural water spreading over low ground, not a destructive rushing wave. No people, buildings, monuments or cultivated grids. No before-and-after comparison. Style and constraints: Warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth colors with clear shapes and generous margins, square composition readable on a small sorting card. Show one scene only. No words, letters, numerals, captions, labels, arrows, timeline, diagram, category colors, symbols, logos or watermark. No boats or sails. No modern objects or machinery. The app supplies the card text.",
+  "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a131c9-c690-7fe3-a3df-475143af1581\\exec-6cbdf6a2-90b8-4fb7-8b66-eabcda689466.png",
+  "status": "visual-review-passed",
+  "provider": "Built-in image generation",
+  "reviewedAt": "2026-10-12"
+}

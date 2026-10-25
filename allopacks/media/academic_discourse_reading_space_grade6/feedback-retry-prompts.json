@@ -1,0 +1,16 @@
+{
+  "createdAt": "2026-10-23T14:36:28.159Z",
+  "tool": "built-in image_gen",
+  "mode": "generate",
+  "assets": [
+    {
+      "file": "feedback-retry-cutpaper.webp",
+      "resourceId": "reading-space-pause-studio",
+      "panelId": "studio-pause-feedback-retry",
+      "prompt": "Use case: scientific-educational. Create one original cut-paper collage illustration for a middle-school learning activity about using a specific feedback cue to try again while keeping the first attempt. Landscape 3:2. Warm cream paper background, large clean scissor-cut shapes in teal, ochre, coral and muted navy, gently irregular edges, subtle paper grain, tiny layered-paper shadows. Three balanced elements read left to right: on the left a teal-backed cream note sheet with a few plain broad navy paper strips suggesting a recorded first attempt; in the center one large ochre speech bubble holding a single simple coral pencil, with generous empty space; on the right a second teal-backed cream note sheet with a few plain broad navy paper strips and one small coral strip. A broad navy curved paper arrow links the first note to the feedback bubble, and another links the feedback bubble to the second note. Both note sheets remain fully visible, equally sized and equally respected. The small coral strip represents an area to revisit, not a badge of success. Few large objects, generous margins, useful as a visual memory cue on phones. No people, faces, stars, trophies, checkmarks, crosses, red-versus-green evaluation, scores, words, letters, numbers, logos or watermark. No realistic or photographic materials, 3D rendering or ornate decoration. All actual messages and instructional meaning will be in separate editable captions. No implied proof that the retry improved; keep both records visible.",
+      "alt": "Two paper notes are linked by arrows through a speech bubble with a pencil. The second note includes a coral strip. Both attempts remain visible; the picture does not establish improvement.",
+      "credit": "Original AI-generated cut-paper memory cue; captions supply the messages; educator review pending",
+      "sha256": "6a787a0beb005db13fe714cf74a9807991c31b6da47ce1c3a915fd5826297d22"
+    }
+  ]
+}
