@@ -1,0 +1,428 @@
+{
+  "checkedAt": "2026-10-24T21:17:11.876Z",
+  "scope": "Managed request approval and actual dispatch; local synthetic validation only",
+  "tests": {
+    "files": 38,
+    "passed": 521,
+    "failed": 0,
+    "pending": 0,
+    "suites": [
+      {
+        "report": "test-results.json",
+        "files": [
+          "tests/ai_backend_abort.test.js",
+          "tests/ai_backend_analyze_images.test.js",
+          "tests/ai_backend_citation_followup.test.js",
+          "tests/ai_backend_claude_browser_access.test.js",
+          "tests/ai_backend_connection.test.js",
+          "tests/ai_backend_local_schema.test.js",
+          "tests/ai_backend_local_truncation.test.js",
+          "tests/ai_backend_managed_request_races.test.js",
+          "tests/ai_backend_ollama_minicpm.test.js",
+          "tests/allobot_privacy_followup.test.js",
+          "tests/blueprint_provider_retry_policy.test.js",
+          "tests/canvas_search_citation_contract.test.js",
+          "tests/clinical_prefs_mirror.test.js",
+          "tests/device_storage_bridge.test.js",
+          "tests/gemini_api_build_determinism.test.js",
+          "tests/gemini_auth_debounce.test.js",
+          "tests/gemini_error_taxonomy_contract.test.js",
+          "tests/gemini_managed_dispatch.test.js",
+          "tests/gemini_media_request_shapes.test.js",
+          "tests/gemini_youtube_research.test.js",
+          "tests/karaoke_tts_review_runtime.test.js",
+          "tests/managed_ai_policy_dispatch.test.js",
+          "tests/provider_error_policy.test.js",
+          "tests/report_url_api_key_headers.test.js",
+          "tests/search_query_contract.test.js",
+          "tests/sensitive_workspace_app_integration.test.js",
+          "tests/settings_persistence.test.js",
+          "tests/source_research_query_transport.test.js",
+          "tests/storage_security_integration_contract.test.js",
+          "tests/tts_auth_latch_fallback.test.js",
+          "tests/tts_fallback_ladder_regressions.test.js",
+          "tests/tts_managed_policy.test.js",
+          "tests/utils_pure_backoff.test.js",
+          "tests/utils_pure_storage.test.js",
+          "tests/utils_source_import_policy.test.js",
+          "tests/websearch_managed_request_races.test.js"
+        ],
+        "passed": 503,
+        "failed": 0,
+        "pending": 0
+      },
+      {
+        "report": "recovery-test-results.json",
+        "files": [
+          "tests/canvas_transient_auth_retry.test.js",
+          "tests/gemini_probe_representative_recovery.test.js"
+        ],
+        "passed": 18,
+        "failed": 0,
+        "pending": 0
+      }
+    ],
+    "command": {
+      "executable": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/managed_ai_policy_dispatch.test.js",
+        "tests/sensitive_workspace_app_integration.test.js",
+        "tests/ai_backend_managed_request_races.test.js",
+        "tests/websearch_managed_request_races.test.js",
+        "tests/allobot_privacy_followup.test.js",
+        "tests/ai_backend_connection.test.js",
+        "tests/ai_backend_abort.test.js",
+        "tests/ai_backend_analyze_images.test.js",
+        "tests/ai_backend_local_schema.test.js",
+        "tests/ai_backend_local_truncation.test.js",
+        "tests/ai_backend_ollama_minicpm.test.js",
+        "tests/ai_backend_claude_browser_access.test.js",
+        "tests/ai_backend_citation_followup.test.js",
+        "tests/gemini_media_request_shapes.test.js",
+        "tests/karaoke_tts_review_runtime.test.js",
+        "tests/tts_auth_latch_fallback.test.js",
+        "tests/tts_fallback_ladder_regressions.test.js",
+        "tests/tts_managed_policy.test.js",
+        "tests/search_query_contract.test.js",
+        "tests/source_research_query_transport.test.js",
+        "tests/canvas_search_citation_contract.test.js",
+        "tests/utils_source_import_policy.test.js",
+        "tests/report_url_api_key_headers.test.js",
+        "tests/provider_error_policy.test.js",
+        "tests/clinical_prefs_mirror.test.js",
+        "tests/utils_pure_storage.test.js",
+        "tests/storage_security_integration_contract.test.js",
+        "tests/settings_persistence.test.js",
+        "tests/device_storage_bridge.test.js",
+        "tests/utils_pure_backoff.test.js",
+        "tests/blueprint_provider_retry_policy.test.js",
+        "tests/gemini_managed_dispatch.test.js",
+        "tests/gemini_api_build_determinism.test.js",
+        "tests/gemini_auth_debounce.test.js",
+        "tests/gemini_error_taxonomy_contract.test.js",
+        "tests/gemini_youtube_research.test.js",
+        "--maxWorkers=1",
+        "--testTimeout=30000",
+        "--hookTimeout=120000",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile.json=tmp/ai-dispatch-20261024/test-results.json"
+      ],
+      "excludedEarlierFailure": {
+        "file": "tests/external_search_privacy.test.js",
+        "reason": "Worker data-URL fixture cannot resolve new relative ./bug_inbox.js import; failed in setup before its ten checks. Separate Worker workstream; not represented as passing."
+      }
+    },
+    "recoveryCommand": "node node_modules/vitest/vitest.mjs run tests/gemini_probe_representative_recovery.test.js tests/canvas_transient_auth_retry.test.js --maxWorkers=1 --testTimeout=30000 --hookTimeout=120000 --reporter=default --reporter=json --outputFile.json=tmp/ai-dispatch-20261024/recovery-test-results.json"
+  },
+  "browser": {
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "realWebCrypto": true,
+    "externalRequests": "Blocked; all HTTP calls are synthetic in-page stubs.",
+    "checks": {
+      "providerUsesApprovedCapturedEndpointAndKey": true,
+      "providerNextRequestUsesNewSettingsAndIsBlocked": true,
+      "providerRevocationDuringWebCryptoBlocks": true,
+      "geminiUsesCapturedKeyAndModel": true,
+      "geminiNextUnapprovedKeyIsBlocked": true,
+      "policyRecheckedAfterAttemptCallbacks": true,
+      "modelQueryCannotInjectCredential": true,
+      "managedSourceImportDoesNotUseRelayOrGemini": true,
+      "managedVideoImportDoesNotUseGemini": true,
+      "searchRevocationDuringHeaderLookupBlocksQuery": true,
+      "noBrowserRuntimeErrors": true,
+      "noPrivateCanariesInDiagnostics": true
+    },
+    "passed": 12
+  },
+  "delivery": {
+    "checkedAt": "2026-10-24T21:13:27.649Z",
+    "reviewed": {
+      "ai_backend_module.js": {
+        "bytes": 184825,
+        "integrity": "sha384-PCredwg6G14miglxa9TKQNrN6vlgGT5iQd90CmsHHKayQnsUrb0rBHMsl/JxHQMW",
+        "sha256": "bb3e486f3badc3f98d3a164070497ec386f09ff0b7bf4647a26d0c1cef3371ba"
+      },
+      "gemini_api_module.js": {
+        "bytes": 84303,
+        "integrity": "sha384-QFMy9dhiWUARlT4T9IcmCpbOhOfFTuY2Tpl/bdJQPtRkd0kHMtIUZqSCmSEd98ym",
+        "sha256": "67fb2675fa700956475f171cedc4b7b83fa94dbd249f5a2179c6e19396f0915d"
+      },
+      "utils_pure_module.js": {
+        "bytes": 110856,
+        "integrity": "sha384-oU+ffif8w88fmbUNSZkktktuRnCT4RPa46fFe9kLr5UjTuMDPSJjAHmwxPkN98pv",
+        "sha256": "889e511e0f52fec9acab0608544d9a1c0de4c2c3176ad2f7fea0d88a1ade69dc"
+      }
+    },
+    "hosts": [
+      "AlloFlowANTI.txt",
+      "desktop/web-app/src/AlloFlowANTI.txt",
+      "desktop/web-app/src/App.jsx"
+    ],
+    "previousManifestId": "b7a6f112c388289807dead1157cbf8256c9c84b090215a2df371c632318e462c",
+    "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40",
+    "totalAssets": 652,
+    "otherAssetRecordsPreserved": true,
+    "scope": "Three managed-request assets only. No broad release approval or deployment.",
+    "checks": [
+      {
+        "host": "AlloFlowANTI.txt",
+        "asset": "ai_backend_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      },
+      {
+        "host": "AlloFlowANTI.txt",
+        "asset": "gemini_api_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      },
+      {
+        "host": "AlloFlowANTI.txt",
+        "asset": "utils_pure_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      },
+      {
+        "host": "desktop/web-app/src/AlloFlowANTI.txt",
+        "asset": "ai_backend_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      },
+      {
+        "host": "desktop/web-app/src/AlloFlowANTI.txt",
+        "asset": "gemini_api_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      },
+      {
+        "host": "desktop/web-app/src/AlloFlowANTI.txt",
+        "asset": "utils_pure_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      },
+      {
+        "host": "desktop/web-app/src/App.jsx",
+        "asset": "ai_backend_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      },
+      {
+        "host": "desktop/web-app/src/App.jsx",
+        "asset": "gemini_api_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      },
+      {
+        "host": "desktop/web-app/src/App.jsx",
+        "asset": "utils_pure_module.js",
+        "mirror": true,
+        "integrity": true,
+        "cacheIdentity": true,
+        "actualPolicyAccepted": true,
+        "manifestId": "516ca49a5c5ff8408919015d93075207181e69ba7471842d3156aab084a36e40"
+      }
+    ]
+  },
+  "syntaxCheck": "passed: canonical policy, Provider, Gemini API, UtilsPure",
+  "canonicalPolicySync": "passed",
+  "scopedDiffCheck": "passed",
+  "sourceFiles": [
+    {
+      "path": "managed_ai_policy.js",
+      "bytes": 5694,
+      "sha256": "0c2a446540477dcc5d3313bc56a6c69ae4e06151075e4d2b4b9580c35e0dc650"
+    },
+    {
+      "path": "dev-tools/sync_managed_ai_policy.cjs",
+      "bytes": 1216,
+      "sha256": "c6ea19fecf68ab5cb89a209a9b3edbda41453ed78e6dfa1577afa6ff6e91a346"
+    },
+    {
+      "path": "gemini_api_source.jsx",
+      "bytes": 84152,
+      "sha256": "0ea6849f5740efeae53598dbeca8b883071c581550f0208eadfbec9e64fb353c"
+    },
+    {
+      "path": "utils_pure_source.jsx",
+      "bytes": 110506,
+      "sha256": "1c0899e0955ace845ef60df8f7b4f238603050c955f171169a0eaaf95fa56dbe"
+    },
+    {
+      "path": "ai_backend_module.js",
+      "bytes": 184825,
+      "sha256": "bb3e486f3badc3f98d3a164070497ec386f09ff0b7bf4647a26d0c1cef3371ba"
+    },
+    {
+      "path": "gemini_api_module.js",
+      "bytes": 84303,
+      "sha256": "67fb2675fa700956475f171cedc4b7b83fa94dbd249f5a2179c6e19396f0915d"
+    },
+    {
+      "path": "utils_pure_module.js",
+      "bytes": 110856,
+      "sha256": "889e511e0f52fec9acab0608544d9a1c0de4c2c3176ad2f7fea0d88a1ade69dc"
+    },
+    {
+      "path": "desktop/web-app/public/ai_backend_module.js",
+      "bytes": 184825,
+      "sha256": "bb3e486f3badc3f98d3a164070497ec386f09ff0b7bf4647a26d0c1cef3371ba"
+    },
+    {
+      "path": "desktop/web-app/public/gemini_api_module.js",
+      "bytes": 84303,
+      "sha256": "67fb2675fa700956475f171cedc4b7b83fa94dbd249f5a2179c6e19396f0915d"
+    },
+    {
+      "path": "desktop/web-app/public/utils_pure_module.js",
+      "bytes": 110856,
+      "sha256": "889e511e0f52fec9acab0608544d9a1c0de4c2c3176ad2f7fea0d88a1ade69dc"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3083470,
+      "sha256": "8f88636de87966633d8b315cba01744ee51104ca47c9451e2fc805e78b3d33a0"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3074099,
+      "sha256": "4e577ae5b09cfd2ca94ed81a660a0afdab28bd168ebb8d4ba55e47c68a829093"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3074099,
+      "sha256": "4e577ae5b09cfd2ca94ed81a660a0afdab28bd168ebb8d4ba55e47c68a829093"
+    },
+    {
+      "path": "tests/managed_ai_policy_dispatch.test.js",
+      "bytes": 8337,
+      "sha256": "95ac9fde2e474bddd80124bfd4b0d6c47dbd05c2be9ba48cc27beaff9d4cea60"
+    },
+    {
+      "path": "tests/ai_backend_managed_request_races.test.js",
+      "bytes": 14056,
+      "sha256": "bd5303bb17dca32e8dc3548695e4d3d269ed9d95d054a101f9e325bde268ea5d"
+    },
+    {
+      "path": "tests/websearch_managed_request_races.test.js",
+      "bytes": 5782,
+      "sha256": "5e871463eb5d37d2e21597259f1c056529f84ee7b5cce27f9fea8e92ab310fbe"
+    },
+    {
+      "path": "tests/gemini_managed_dispatch.test.js",
+      "bytes": 17031,
+      "sha256": "c9a62df62d22e293a8966d8524d01944f796be18e0f91778e44f006feba69b51"
+    },
+    {
+      "path": "tests/utils_source_import_policy.test.js",
+      "bytes": 9155,
+      "sha256": "2190ceee6e24129866b9da7ed8eee7efbc6bb4039386f389314d5319026f7a22"
+    },
+    {
+      "path": "tests/report_url_api_key_headers.test.js",
+      "bytes": 9182,
+      "sha256": "3c5a8fd34463b6a79d5f0a50837f2f299e7ba1f7eb481d7e29cb65984a1f9f8c"
+    },
+    {
+      "path": "tests/karaoke_tts_review_runtime.test.js",
+      "bytes": 16833,
+      "sha256": "43988819334331d9f9ff1c67368aa3492eb76afd0b42ef024c9f8783f7560377"
+    },
+    {
+      "path": "browser_delivery_policy.js",
+      "bytes": 7396,
+      "sha256": "7add57500453cc0430f82f3219fed921dd7be2b2519200ae67a15d3b6bacf25e"
+    },
+    {
+      "path": "docs/audits/2026-10-24-school-district/managed-request-security-followup.md",
+      "bytes": 8246,
+      "sha256": "d307a2a1d5955d083c6be61afac70906797932858ba777b7e93533476038a751"
+    },
+    {
+      "path": "tmp/ai-dispatch-20261024/final-client.log",
+      "bytes": 61550,
+      "sha256": "ccdc5ce9dec18d0deb8c79cc1363a5e9775720783f8ce91fce55126808fb4348"
+    },
+    {
+      "path": "tmp/ai-dispatch-20261024/recovery-client.log",
+      "bytes": 6673,
+      "sha256": "63bb6cd4f985590af1483bf0c1e46d2a4e5f5759455854f1e8aa50ef309dc902"
+    },
+    {
+      "path": "tmp/ai-dispatch-20261024/test-results.json",
+      "bytes": 190382,
+      "sha256": "18ddd8e564a2651b6344a5b87c8e3177f35b61ca4521e414c8d85c46ff9d34a7"
+    },
+    {
+      "path": "tmp/ai-dispatch-20261024/recovery-test-results.json",
+      "bytes": 7463,
+      "sha256": "d3ba4016a4598fe7200c58937dfccf5de2683cddb5f5140ef87cd2b7273bff25"
+    },
+    {
+      "path": "tmp/ai-dispatch-20261024/browser-qa.cjs",
+      "bytes": 9830,
+      "sha256": "5956ef3e2977e59808092a2475ee1582171e3d519f37983ee435afe89c633803"
+    },
+    {
+      "path": "tmp/ai-dispatch-20261024/pin-delivery.cjs",
+      "bytes": 3838,
+      "sha256": "febefd834c1406307a9ace324694d54969e04a1beb52f826b4d0cfc666d97be6"
+    },
+    {
+      "path": "tmp/ai-managed-20261024/cross-realm-after.log",
+      "bytes": 464,
+      "sha256": "a32711416bedd5a6bdc92786bd9814a9f1c9dd9ef46f050e2cc6c09739a69b1f"
+    },
+    {
+      "path": "tmp/source-import-policy-20261024/evidence.json",
+      "bytes": 3036,
+      "sha256": "5775e9fc7324270e92bbac1d06b53ad25ebd0edb3d0429c0e509e9c09b136a99"
+    }
+  ],
+  "coordination": {
+    "excludedWork": [
+      "dependencies/CI",
+      "optional loaders and worker import graphs",
+      "packaging, publication and production deployment"
+    ],
+    "priorExpandedFailure": {
+      "file": "tests/external_search_privacy.test.js",
+      "reason": "Worker data-URL fixture cannot resolve new relative ./bug_inbox.js import; failed in setup before its ten checks. Separate Worker workstream; not represented as passing."
+    }
+  },
+  "limits": [
+    "No live credentials, student records, production access, provider calls or deletion.",
+    "No commit, push, publication, broad build or deployment.",
+    "Legacy compiled app/ and packaged artifacts require coordinated rebuild and verification.",
+    "Absent/null policy is unmanaged compatibility; configure and validate the actual district profile.",
+    "Browser routing control does not verify staff identity, enforce arbitrary injected transports or replace server/network controls.",
+    "Actual Canvas service, key injection, agreements, storage and PPS feature approval remain unverified."
+  ]
+}

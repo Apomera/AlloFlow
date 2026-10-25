@@ -52,6 +52,11 @@ absence of `blueprint_execute`.
 
 ## Deferred
 
-Permission-model review and any `blueprint_execute` exposure remain separate work.
+The original permission-model deferral was superseded by the 2026-10-23 local
+connector hardening: manifest `artifact:read` and `artifact:draft` scopes are now
+enforced, with invalid explicit configuration denying scoped calls. Job storage
+has byte/count/TTL limits and audit retention is bounded; see the current
+[connector README](../desktop/mcp/README.md) for exact behavior and limits.
+Any `blueprint_execute` exposure remains separate work.
 Cloudflare catalog MCP, district remote MCP/OAuth, MCPB packaging/submission, and
 computer control also remain deferred.

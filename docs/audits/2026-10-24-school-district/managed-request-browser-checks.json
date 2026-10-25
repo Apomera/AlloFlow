@@ -1,0 +1,20 @@
+{
+  "syntheticOnly": true,
+  "browser": "Microsoft Edge",
+  "realWebCrypto": true,
+  "externalRequests": "Blocked; all HTTP calls are synthetic in-page stubs.",
+  "checks": {
+    "providerUsesApprovedCapturedEndpointAndKey": true,
+    "providerNextRequestUsesNewSettingsAndIsBlocked": true,
+    "providerRevocationDuringWebCryptoBlocks": true,
+    "geminiUsesCapturedKeyAndModel": true,
+    "geminiNextUnapprovedKeyIsBlocked": true,
+    "policyRecheckedAfterAttemptCallbacks": true,
+    "modelQueryCannotInjectCredential": true,
+    "managedSourceImportDoesNotUseRelayOrGemini": true,
+    "managedVideoImportDoesNotUseGemini": true,
+    "searchRevocationDuringHeaderLookupBlocksQuery": true,
+    "noBrowserRuntimeErrors": true,
+    "noPrivateCanariesInDiagnostics": true
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "checkedOn": "2026-10-23",
+  "title": "Longfin bannerfish and bigfin reef squid",
+  "scope": "Guide-only specimens; no Explore population or placement changes. The existing Moorish idol remains unchanged.",
+  "specimens": [
+    {
+      "meta": {
+        "id": "longfin_bannerfish",
+        "group": "fish",
+        "scientific": "Heniochus acuminatus",
+        "iucn": "LC",
+        "iucnYear": 2009,
+        "lookalikes": [
+          "moorish_idol",
+          "threadfin_butterflyfish"
+        ]
+      },
+      "speciesText": {
+        "name": "Longfin bannerfish",
+        "marks": [
+          "A deep, flattened white body carries two broad, slanting black bands",
+          "A very long, tapering white filament trails from the front of the back fin",
+          "The tail and the soft rear part of the back fin are bright yellow",
+          "The rear black band continues past the corner of the pointed anal fin"
+        ],
+        "role": "Feeds on drifting zooplankton and small animals living on the reef bottom.",
+        "fact": "The similar schooling bannerfish has a shorter snout and a rounder chest. A long white streamer alone is not enough to tell them apart."
+      },
+      "marineProfile": {
+        "habitat": "Sheltered bays, lagoons, channels and coral reef slopes across the tropical Indo-West and Central Pacific. Usually found between about 2 and 75 m deep.",
+        "diet": "Zooplankton and bottom-dwelling invertebrates. Juveniles sometimes remove parasites from other fish.",
+        "behavior": "Adults often swim as pairs near the reef; young fish are frequently solitary. Small groups also occur.",
+        "observe": "Compare its yellow tail and shorter snout with the Moorish idol, then compare its broad bands with the finer diagonal lines of the threadfin butterflyfish. These study contrasts do not replace the extra checks needed for closely similar bannerfish.",
+        "sources": [
+          "dx-csiro-longfin_bannerfish",
+          "dx-am-longfin_bannerfish",
+          "dx-foa-longfin_bannerfish",
+          "dx-fishbase-longfin_bannerfish"
+        ]
+      },
+      "evidence": {
+        "taxonomy": "CSIRO accepts Heniochus acuminatus (Linnaeus, 1758), family Chaetodontidae, linked to WoRMS 218765. It is a butterflyfish, unlike the existing Moorish idol, which is in Zanclidae. Do not replace the existing moorish_idol record or builder.",
+        "conservation": "FishBase explicitly gives global Least Concern and an assessment date of 5 October 2009. The assessment was published in 2010; iucnYear records the assessed year, not the publication year. The 2015 Persian Gulf assessment is regional and is not substituted for the global category.",
+        "morphology": "Fishes of Australia supports the rear band extending beyond the anal-fin corner. The Australian Museum contrasts H. diphreutes: shorter snout, rounder chest, rear band farther forward on the anal fin and commonly 12 rather than 11 dorsal spines. The model depicts H. acuminatus, not the schooling species.",
+        "ecology": "The profile uses the 2-75 m usual range supported by Australian Museum, Fishes of Australia and CSIRO; FishBase includes a deeper overall record of 178 m. The usual range is not claimed as an absolute limit.",
+        "model": {
+          "totalLengthM": 0.15,
+          "representative": true,
+          "maximum": false,
+          "depthM": [
+            2,
+            75
+          ],
+          "habit": "pair",
+          "notes": "15 cm total length is the FishBase common length; maximum total length is 25 cm. Total length measures snout to tail, not the tall dorsal filament. Use a pointed projecting snout, tall compressed body, two diagonal black bands, yellow rear dorsal and caudal fins, and a white dorsal streamer. Gentle fin and filament movement should preserve the placement root."
+        },
+        "comparisons": "Moorish idol and threadfin butterflyfish offer useful visible contrasts already in the guide. The closest bannerfish lookalike, Heniochus diphreutes, is not currently in the guide; the fact and observe text explicitly avoid implying a complete identification key."
+      }
+    },
+    {
+      "meta": {
+        "id": "bigfin_reef_squid",
+        "group": "invertebrate",
+        "scientific": "Sepioteuthis lessoniana (species complex)",
+        "iucn": "DD",
+        "iucnYear": 2014,
+        "lookalikes": [
+          "broadclub_cuttlefish",
+          "day_octopus"
+        ]
+      },
+      "speciesText": {
+        "name": "Bigfin reef squid",
+        "marks": [
+          "A long, muscular mantle tapers toward the rear of the body",
+          "Broad, rounded side fins run almost the full mantle length and are widest toward the rear",
+          "Eight arms surround the mouth, with two longer feeding tentacles ending in wider clubs",
+          "Large eyes sit beside the head; skin markings can shift from dark bands to nearly transparent"
+        ],
+        "role": "An active coastal predator that catches fish, prawns and other small crustaceans.",
+        "fact": "The name covers a species complex: very similar-looking animals can belong to different genetic lineages. A model or photograph cannot resolve all of those boundaries."
+      },
+      "marineProfile": {
+        "habitat": "Warm coastal waters across the Indo-Pacific, including coral reefs, seagrass meadows and sandy areas, from the surface to about 100 m. Introduced populations also occur in the Mediterranean.",
+        "diet": "Mainly fish and prawns, with other crustaceans such as crabs and mantis shrimps.",
+        "behavior": "Can gather in groups of similar-sized animals. Rippling fins and gentle water jets help it hover; stronger mantle contractions drive rapid jet swimming.",
+        "observe": "Use a view from above to follow the broad side fins, then look beneath the head for the arms and feeding tentacles. Compare its long mantle with the broadclub cuttlefish and the finless body of the day octopus. Colour alone cannot identify it.",
+        "sources": [
+          "dx-worms-bigfin_reef_squid",
+          "dx-am-bigfin_reef_squid",
+          "dx-fao-bigfin_reef_squid",
+          "dx-slb-bigfin_reef_squid",
+          "dx-genetics-bigfin_reef_squid",
+          "dx-motion-bigfin_reef_squid"
+        ]
+      },
+      "evidence": {
+        "taxonomy": "WoRMS currently accepts Sepioteuthis lessoniana R. P. Lesson, 1831 (AphiaID 220317). Australian Museum and FAO note unresolved diversity under this name; primary genetic work found cryptic lineages in Shark Bay. The guide retains the accepted nominal name with an explicit species-complex qualifier, without assigning the model to an unverified lineage.",
+        "conservation": "SeaLifeBase explicitly reports global IUCN Data Deficient and assessment date 2 July 2014, with its current Red List reference. WoRMS and Taiwan Biodiversity Network corroborate DD. The assessment publication is 2019, not the assessed year. Direct IUCN access returned HTTP 403; older Animal Diversity Web NE text predates the assessment and is not used.",
+        "inaccessibleAssessment": "https://www.iucnredlist.org/species/163376/1003553",
+        "morphology": "FAO describes a robust mantle about 40% as wide as long. Broad oval fins occupy over 90% to nearly all of the mantle length and are widest behind the midpoint; feeding tentacles have expanded clubs. These are wide side fins, unlike the narrow edge skirt on the existing broadclub cuttlefish.",
+        "ecology": "Australian Museum supports schools of similar-sized animals and variable colour. The JEB study independently supports low-amplitude jets and fin hovering, with forceful mantle contraction during escape jets. The representative model depicts calm swimming, not a perpetual escape response.",
+        "model": {
+          "mantleLengthM": 0.25,
+          "illustrativeOverallLengthM": 0.4,
+          "representative": true,
+          "maximum": false,
+          "depthM": [
+            0,
+            100
+          ],
+          "habit": "hover",
+          "notes": "FAO common mantle length is 20-30 cm; reported maxima are 42.2 cm male and 38.2 cm female. The 25 cm mantle excludes head, arms and tentacles. About40 cm from rear mantle to gently extended arms/tentacles is an illustrative pose length, not a measured maximum. Keep eight arms distinct from two club-ended tentacles, broad paired fins, lateral eyes and the ventral funnel. Animate a restrained traveling fin ripple and local mantle breathing without moving the placement root."
+        },
+        "comparisons": "Broadclub cuttlefish and day octopus are body-plan contrasts, not alternative species within the Sepioteuthis lessoniana complex. Colour varies and cannot establish a lineage or full species diagnosis."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "dx-csiro-longfin_bannerfish",
+      "text": "CSIRO. Codes for Australian Aquatic Biota: Heniochus acuminatus, CAAB 37 365011. Accepted name, family and cross-reference to WoRMS AphiaID 218765 (accessed October 2026).",
+      "url": "https://www.cmar.csiro.au/caab/taxon_report.cfm?caab_code=37365011",
+      "urlLabel": "cmar.csiro.au"
+    },
+    {
+      "id": "dx-am-longfin_bannerfish",
+      "text": "McGrouther, M. (2021). Australian Museum: Longfin Bannerfish, Heniochus acuminatus. Identification, diet, range and differences from the schooling bannerfish.",
+      "url": "https://australian.museum/learn/animals/fishes/longfin-bannerfish-heniochus-acuminatus-linnaeus-1758/",
+      "urlLabel": "australian.museum"
+    },
+    {
+      "id": "dx-foa-longfin_bannerfish",
+      "text": "Bray, D.J. Fishes of Australia / Museums Victoria: Heniochus acuminatus. Diagonal body bands, anal-fin marking and usual depth range (accessed October 2026).",
+      "url": "https://fishesofaustralia.net.au/home/species/427",
+      "urlLabel": "fishesofaustralia.net.au"
+    },
+    {
+      "id": "dx-fishbase-longfin_bannerfish",
+      "text": "Froese, R. and Pauly, D. (eds.). FishBase: Heniochus acuminatus. Common and maximum total length, behaviour and global IUCN Least Concern assessment dated 5 October 2009 (accessed October 2026).",
+      "url": "https://www.fishbase.se/summary/Heniochus-acuminatus.html",
+      "urlLabel": "fishbase.se"
+    },
+    {
+      "id": "dx-worms-bigfin_reef_squid",
+      "text": "MolluscaBase eds. (2026). MolluscaBase / WoRMS: Sepioteuthis lessoniana R. P. Lesson, 1831. Accepted name, AphiaID 220317.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=220317",
+      "urlLabel": "marinespecies.org"
+    },
+    {
+      "id": "dx-am-bigfin_reef_squid",
+      "text": "Runck, A. (2021). Australian Museum: Bigfin Reef Squid. Fin outline, variable colour, diet, habitat and groups of similar-sized animals.",
+      "url": "https://australian.museum/learn/animals/molluscs/bigfin-reef-squid-sepioteuthis-lessoniana-lesson-1830/",
+      "urlLabel": "australian.museum"
+    },
+    {
+      "id": "dx-fao-bigfin_reef_squid",
+      "text": "Jereb, P. and Roper, C.F.E. (eds.) (2010). Cephalopods of the World, volume 2. FAO Species Catalogue for Fishery Purposes 4(2), pp. 95-97: Sepioteuthis lessoniana anatomy, mantle dimensions, range and unresolved species complex.",
+      "url": "https://www.fao.org/4/i1920e/i1920e03.pdf",
+      "urlLabel": "fao.org"
+    },
+    {
+      "id": "dx-slb-bigfin_reef_squid",
+      "text": "SeaLifeBase. Sepioteuthis lessoniana: global IUCN Data Deficient category, assessed 2 July 2014, from the current Red List reference (accessed October 2026).",
+      "url": "https://www.sealifebase.org/summary/Sepioteuthis-lessoniana.html",
+      "urlLabel": "sealifebase.org"
+    },
+    {
+      "id": "dx-genetics-bigfin_reef_squid",
+      "text": "Triantafillos, L. and Adams, M. (2005). Genetic evidence that the northern calamary, Sepioteuthis lessoniana, is a species complex in Australian waters. ICES Journal of Marine Science 62(8): 1665-1670.",
+      "url": "https://doi.org/10.1016/j.icesjms.2005.06.004",
+      "urlLabel": "doi.org"
+    },
+    {
+      "id": "dx-motion-bigfin_reef_squid",
+      "text": "Thompson, J.T. and Kier, W.M. (2006). Ontogeny of mantle musculature and implications for jet locomotion in oval squid Sepioteuthis lessoniana. Journal of Experimental Biology 209: 433-443. Observations include hovering with fins and low-amplitude jets.",
+      "url": "https://journals.biologists.com/jeb/article/209/3/433/16443/Ontogeny-of-mantle-musculature-and-implications",
+      "urlLabel": "journals.biologists.com"
+    }
+  ]
+}

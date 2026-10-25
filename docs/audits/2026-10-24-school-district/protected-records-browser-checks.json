@@ -1,0 +1,23 @@
+{
+  "syntheticOnly": true,
+  "browser": "Microsoft Edge",
+  "checks": {
+    "realEditorAbsentBeforeSetup": true,
+    "noCanaryBeforeUnlock": true,
+    "downloadEncrypted": true,
+    "beforeConfirmationOriginalsRetained": true,
+    "originalVisibleAfterUnlock": true,
+    "durableCiphertextAndMirrorCleanup": true,
+    "olderCopyPreserved": true,
+    "aiOffByDefault": true,
+    "lockHidesEditor": true,
+    "wrongPasswordStaysLocked": true,
+    "finalUiDraftSavedBeforeLock": true,
+    "mobileNoHorizontalOverflow": true,
+    "mobileReadableInputSize": true,
+    "globalUnlockedIndicator": true,
+    "reloadRequiresUnlock": true,
+    "offlineRecoveryRestoresLatestDraft": true,
+    "noBrowserErrors": true
+  }
+}

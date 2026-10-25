@@ -1,0 +1,137 @@
+{
+  "checked": "2026-10-23",
+  "scope": "One additional sea star for the guide, illustrative sand encounters and optional identification. The model is a five-armed, cream/ochre example with dark upper knobs and a visible underside in the inspector.",
+  "iucnYearConvention": "Global Not Evaluated in the current SeaLifeBase IUCN 2025-2 export, so iucnYear and iucnDateAssessed are null. This is not a global Least Concern assessment. The Singapore Red List separately lists the species as Endangered; that national category must not be substituted for a global IUCN assessment or assigned the webpage publication date as an assessment date.",
+  "specimens": [
+    {
+      "id": "chocolate_chip_sea_star",
+      "name": "Chocolate chip sea star",
+      "scientific": "Protoreaster nodosus",
+      "group": "invertebrate",
+      "iucn": "NE",
+      "iucnYear": null,
+      "iucnDateAssessed": null,
+      "lookalikes": [
+        "blue_sea_star"
+      ],
+      "marks": [
+        "Five broad, tapering arms join a thick central disc",
+        "Large dark cone-shaped knobs stand above the upper surface",
+        "The robust body can be beige, orange or pinkish",
+        "Small tube feet line grooves on the underside of the arms"
+      ],
+      "role": "A seafloor consumer that feeds on surface films and tiny organisms among sand and seagrass.",
+      "fact": "Hundreds of tiny tube feet beneath the arms work together to move this sea star. The dark knobs on top are part of its body.",
+      "habitat": "Shallow sand flats and seagrass habitats in the western Pacific region, including sheltered areas near reefs.",
+      "diet": "Microbial and algal films, detritus and tiny organisms on sediment and seagrass surfaces.",
+      "behavior": "Moves over the seafloor using many tube feet on its underside and feeds along sediment and seagrass surfaces.",
+      "observe": "Compare the thick arms and raised knobs with the longer, smoother arms of the blue sea star. In the 3D inspector, use Above to inspect the knobs and Below to find the tube feet; colour alone is not enough for identification.",
+      "sources": [
+        "dx-nparks-chocolate_chip_sea_star",
+        "dx-worms-chocolate_chip_sea_star",
+        "dx-range-chocolate_chip_sea_star",
+        "dx-feeding-chocolate_chip_sea_star",
+        "dx-motion-chocolate_chip_sea_star",
+        "dx-slb-chocolate_chip_sea_star",
+        "dx-local-chocolate_chip_sea_star"
+      ],
+      "claimSupport": {
+        "acceptedName": "WoRMS / World Asteroidea Database accepts Protoreaster nodosus (Linnaeus, 1758), AphiaID 213285. Protoreaster nodulosus is a different accepted species and its photographs and biology are not substituted here.",
+        "shape": "NParks describes a robust body, beige/orange/pinkish colours and large dark conical upper projections. The five-armed example and the underside tube feet are consistent with species-specific research images. Four simplified marks support observation, not a complete taxonomic key; unusual arm numbers and colour variation are not excluded.",
+        "habitatDiet": "Scheibling and Metaxas (2008) studied sand and seagrass populations in Palau and described feeding on surface films, detritus and small benthic organisms. NParks independently records sandy shore habitat and extra-oral feeding. The guide does not turn a local density estimate into a global abundance claim.",
+        "range": "Ducarme’s range revision questions older Indian Ocean records and supports a western Pacific distribution. The guide therefore avoids the unqualified Indo-Pacific range still repeated in older accounts. The final repository record is dated 2023, although earlier indexed versions cite 2022.",
+        "depth": "The chosen 0–30 m interval comes from WoRMS descriptive notes credited to Rowe and Gates (1995). It is a literature habitat range, not a claim that every site or depth is suitable.",
+        "size": "SeaLifeBase reports a maximum width of 30 cm. The model uses an illustrative .28 m maximum span between arm tips, not an arm radius, a measured individual, or a typical adult size estimate. Published Palau radii are not silently relabelled as whole-body widths.",
+        "motion": "Po, Korob and McHenry (2025) directly studied coordinated tube-foot movement in this species. Only gentle selected tube-foot probing is illustrated here: the body, knobs, root and planted contacts remain stable. No simulated phototaxis, whole-body crawl, flexible swimming arms or inferred emotional response is claimed.",
+        "conservation": "SeaLifeBase currently shows global Not Evaluated and supplies no assessment date. NParks’ Singapore Red List shows EN in national editions. These refer to different scopes; NE does not imply absence of local threats.",
+        "comparison": "The new one-way blue_sea_star link is an educational contrast between stout knobbed and long smoother arms. It is not a closest-relative claim. The existing blue sea star metadata, text, sources and encounters remain unchanged."
+      },
+      "caution": "Knob count, colour, tube-foot colour, exact shape and the selected probing pattern are illustrative variation, not fixed species invariants. No sex, maturity, global population trend, global threat category beyond NE, enhanced vision, fluorescence, medical claim or animal-handling activity is inferred."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-nparks-chocolate_chip_sea_star",
+      "text": "National Parks Board, Singapore. Protoreaster nodosus (Linnaeus, 1758), Knobbly Sea Star. Flora & Fauna Web. Accessed October 2026.",
+      "url": "https://www.nparks.gov.sg/florafaunaweb/fauna/4/3/435",
+      "urlLabel": "nparks.gov.sg",
+      "supports": [
+        "Robust shape, variable beige/orange/pinkish colour, dark conical upper knobs, sandy habitat and extra-oral feeding"
+      ],
+      "access": "Full government species account read."
+    },
+    {
+      "id": "dx-worms-chocolate_chip_sea_star",
+      "text": "Mah, C.L. (2026). World Asteroidea Database: Protoreaster nodosus (Linnaeus, 1758). Accessed through WoRMS; descriptive depth notes cite Rowe & Gates (1995).",
+      "url": "https://www.marinespecies.org/aphia.php?id=213285&p=taxdetails",
+      "urlLabel": "marinespecies.org (WoRMS)",
+      "supports": [
+        "Accepted name and 0–30 m literature depth interval"
+      ],
+      "access": "Detailed indexed taxonomic entry and descriptive source notes read; direct page returned 403. Older broad distribution notes are qualified using the newer range revision."
+    },
+    {
+      "id": "dx-range-chocolate_chip_sea_star",
+      "text": "Ducarme, F. (2023). How to assess the absence of a species? A revision of the geographical range of the horned sea star, Protoreaster nodosus. Frontiers of Biogeography 15(1): e56187. doi:10.21425/F5FBG56187.",
+      "url": "https://escholarship.org/uc/item/9hx8h1tk",
+      "urlLabel": "escholarship.org",
+      "supports": [
+        "Revised western Pacific range and uncertainty in older Indian Ocean records"
+      ],
+      "access": "Indexed primary repository abstract and PDF text read; direct landing page requested robot verification. Final repository version is 2023; earlier indexed versions cite 2022."
+    },
+    {
+      "id": "dx-feeding-chocolate_chip_sea_star",
+      "text": "Scheibling, R.E. & Metaxas, A. (2008). Abundance, Spatial Distribution, and Size Structure of the Sea Star Protoreaster nodosus in Palau, with Notes on Feeding and Reproduction. Bulletin of Marine Science 82(2): 221–235.",
+      "url": "https://www.researchgate.net/publication/233671580_Abundance_Spatial_Distribution_and_Size_Structure_of_the_Sea_Star_Protoreaster_nodosus_in_Palau_with_Notes_on_Feeding_and_Reproduction",
+      "urlLabel": "researchgate.net (author-posted research)",
+      "supports": [
+        "Sand/seagrass habitat, surface-film and small benthos feeding; distinction between radius and width"
+      ],
+      "access": "Author-posted primary article abstract and indexed full-text feeding section read. Bibliographic details corroborated on coauthor Anna Metaxas’s publication list and the US EPA HERO record."
+    },
+    {
+      "id": "dx-motion-chocolate_chip_sea_star",
+      "text": "Po, T., Korob, L. & McHenry, M.J. (2025). The directional control of phototaxis in sea stars (Protoreaster nodosus). Journal of Experimental Biology 228(6): jeb249293. doi:10.1242/jeb.249293.",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12050092/",
+      "urlLabel": "pmc.ncbi.nlm.nih.gov (primary research)",
+      "supports": [
+        "Species-specific anatomy and coordinated movement using many underside tube feet"
+      ],
+      "access": "Full open-access primary article read. Laboratory phototaxis results are not portrayed as an implemented model feature."
+    },
+    {
+      "id": "dx-slb-chocolate_chip_sea_star",
+      "text": "SeaLifeBase (2026). Protoreaster nodosus species summary, including IUCN Version 2025-2 (Global) export. Accessed October 2026.",
+      "url": "https://www.sealifebase.ca/summary/Protoreaster-nodosus.html",
+      "urlLabel": "sealifebase.ca",
+      "supports": [
+        "Global Not Evaluated, no assessment date, and reported maximum width of 30 cm"
+      ],
+      "access": "Detailed indexed current species summary read; direct page returned 403. Modelled vulnerability and ambiguous embryo-development text are not imported."
+    },
+    {
+      "id": "dx-local-chocolate_chip_sea_star",
+      "text": "National Parks Board, Singapore (2024). Singapore Red List: Echinodermata. Protoreaster nodosus is listed as EN in the national RDB2 and RDB3 columns; this is not a global assessment.",
+      "url": "https://www.nparks.gov.sg/nature/species-list/echinodermata-sea-stars-feather-stars-brittle-stars-sea-cucumbers-and-sea-urchins",
+      "urlLabel": "nparks.gov.sg (Singapore Red List)",
+      "supports": [
+        "Local national listing distinguished from global assessment status"
+      ],
+      "access": "Full government table read. Page publication date is not treated as a biological assessment date."
+    }
+  ],
+  "modelProvenance": {
+    "nominalLengthM": 0.28,
+    "lengthMeaning": "Maximum whole-body arm-tip span, not arm radius; illustrative individual",
+    "depthM": [
+      0,
+      30
+    ],
+    "habit": "bottom",
+    "anchor": "base",
+    "zone": "sand",
+    "palette": "Illustrative cream/ochre body, dark upper knobs and pale lilac tube feet",
+    "motion": "Selected tube-foot probing only; body, root, knobs and planted contacts fixed"
+  }
+}

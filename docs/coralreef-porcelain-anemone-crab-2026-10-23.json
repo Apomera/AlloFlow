@@ -1,0 +1,140 @@
+{
+  "checked": "2026-10-23",
+  "scope": "One additional anemone-associated porcelain crab for the guide, isolated inspection and optional identification. The unsexed model shows a white/cream, red-spotted variant with large flattened claws, three walking-leg pairs and separate feeding fans beside the mouth.",
+  "iucnYearConvention": "The current SeaLifeBase IUCN 2025-2 global export lists Not Evaluated. No global assessment date is supplied, so iucnYear and iucnDateAssessed are null. NE is not a Least Concern assessment or a claim that local populations face no threats.",
+  "specimens": [
+    {
+      "id": "porcelain_anemone_crab",
+      "name": "Porcelain anemone crab",
+      "scientific": "Neopetrolisthes maculatus",
+      "group": "invertebrate",
+      "iucn": "NE",
+      "iucnYear": null,
+      "iucnDateAssessed": null,
+      "lookalikes": [
+        "cleaner_shrimp"
+      ],
+      "marks": [
+        "A smooth pale shell and broad claws carry red or purplish spots",
+        "Two large flattened claws sit in front of a compact body",
+        "Three pairs of walking legs spread from the sides, with long thin antennae ahead",
+        "Feathery feeding fans extend beside the mouth"
+      ],
+      "role": "A small suspension feeder that gathers plankton while living around large sea anemones.",
+      "fact": "Its delicate feeding fans are bristly mouthparts. They gather tiny food particles from the water, while the much larger claws serve other roles.",
+      "habitat": "Shallow coral and rocky reefs across the Indo-West Pacific, living on or around large sea anemones.",
+      "diet": "Tiny suspended organisms, including planktonic algae and small crustaceans, caught with bristles on the mouthparts.",
+      "behavior": "Shelters among anemone tentacles and extends its feathery mouthparts into the water to collect food. Spot size and colour vary between individuals.",
+      "observe": "Look between the broad claws for the much finer feeding fans, then count the three visible walking-leg pairs. Compare this compact, spotted body with the slender striped body of the cleaner shrimp.",
+      "sources": [
+        "dx-worms-porcelain_anemone_crab",
+        "dx-wam-porcelain_anemone_crab",
+        "dx-osawa-porcelain_anemone_crab",
+        "dx-haig-porcelain_anemone_crab",
+        "dx-hkbm-porcelain_anemone_crab",
+        "dx-slb-porcelain_anemone_crab",
+        "dx-guide-porcelain_anemone_crab"
+      ],
+      "claimSupport": {
+        "acceptedName": "Current WoRMS/DecaNet accepts Neopetrolisthes maculatus (H. Milne Edwards, 1837), AphiaID 217271. It treats Neopetrolisthes ohshimai Miyake, 1937 as a junior subjective synonym. ITIS independently agrees. The spelling ohshimai includes an h; older spot-pattern names are not presented as two currently accepted species.",
+        "shape": "Haig’s primary specimen account describes a smooth convex carapace longer than broad and wide flattened claws with curved outer edges. Osawa (2014) describes pale shells, claws and walking legs with variable reddish or purplish spots. The chosen small-spotted example is illustrative, not an invariant pattern or a sex diagnosis.",
+        "legs": "Hong Kong Biodiversity Museum explains the family-level distinction: three developed walking-leg pairs and a reduced last pair tucked close. NOAA independently confirms three walking pairs. Together with the claw-bearing first pair, this is still a decapod; the model must not depict four equally developed walking pairs or confuse the feeding fans with extra claws.",
+        "feeding": "Western Australian Museum’s species account identifies filtering with bristles on the mouthparts and planktonic algae/crustaceans as food. The large claws are not the filtering apparatus. The model’s two exposed fans represent the paired bristly feeding appendages, not antennae, wings or independent organisms.",
+        "habitat": "The museum describes large-anemone associations on tropical Western Australian reefs. Osawa (2014) documents broader Indo-West Pacific occurrence and shallow coral/rocky reef hosts. The isolated specimen does not imply it normally lives away from anemones or that all reef rubble is suitable habitat.",
+        "depth": "The model reference metadata uses SeaLifeBase’s cited 1–10 m interval. Osawa’s Christmas Island collection station spans 1–12.3 m, so the chosen interval is not an absolute physiological or geographical depth limit. No unsupported rounded 20–30 m maximum is introduced.",
+        "size": "The model’s nominal .04 m is posed leg/claw span excluding long antennae, not carapace length. Its approximately .012 m carapace is consistent with the 6×4 to 12×10 mm carapace range in Poupin and Juncker’s guide and close to the 10.8 and 11.4 mm specimens measured by Osawa. These are published examples/ranges, not proof of a species maximum or a typical adult size.",
+        "taxonomyCaveat": "Poupin and Juncker (2010) show small- and large-spotted forms under separate names. Osawa (2014) explicitly treats the variation within N. maculatus and explains that it is not tied to sex; the current WoRMS synonymy governs this entry. Haig’s older name choice was subsequently corrected and is not imported.",
+        "conservation": "SeaLifeBase currently provides global NE with no assessment date. No unaccessed IUCN rationale, population trend, CITES assessment or modelled zero-vulnerability claim is used.",
+        "comparison": "The new one-way cleaner_shrimp link is an educational shape comparison between existing crustaceans, not a closest-relative or likely-misidentification claim. The older shrimp record remains exact."
+      },
+      "caution": "No sex, reproductive pairing, exact universal spot pattern or fixed fan-beat frequency is inferred. The isolated model does not simulate a living anemone host; no population or reef encounter is added. Fan and antenna motion are illustrative; the root, large claws and planted walking contacts remain stable. No aquarium-care, handling, venom, enhanced-vision or medical claims are introduced."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-worms-porcelain_anemone_crab",
+      "text": "DecaNet eds. (2026). Neopetrolisthes maculatus (H. Milne Edwards, 1837). World Register of Marine Species, AphiaID 217271. Accessed October 2026.",
+      "url": "https://www.marinespecies.org/aphia.php?id=217271&p=taxdetails",
+      "urlLabel": "marinespecies.org (WoRMS / DecaNet)",
+      "supports": [
+        "Accepted name and junior subjective synonym Neopetrolisthes ohshimai"
+      ],
+      "access": "Detailed current indexed taxonomic account read; independently corroborated by ITIS TSN 1201041."
+    },
+    {
+      "id": "dx-wam-porcelain_anemone_crab",
+      "text": "Hosie, A. Creature Feature: Neopetrolisthes maculatus. Western Australian Museum. Accessed October 2026.",
+      "url": "https://museum.wa.gov.au/explore/blogs/andrew-hosie/creature-feature-neopetrolisthes-maculatus/",
+      "urlLabel": "museum.wa.gov.au",
+      "supports": [
+        "Anemone association, long antennae, mouthpart-bristle filtering and planktonic diet"
+      ],
+      "access": "Complete indexed species-account text read. Direct landing page returned only site chrome; no publication year inferred from relative page age."
+    },
+    {
+      "id": "dx-osawa-porcelain_anemone_crab",
+      "text": "Osawa, M. (2014). Porcellanidae (Crustacea: Decapoda: Anomura) from Christmas and Cocos (Keeling) Islands. Raffles Bulletin of Zoology, Supplement 30: 255–262.",
+      "url": "https://www.esrec.shimane-u.ac.jp/_files/00184748/Osawa-2014.pdf",
+      "urlLabel": "esrec.shimane-u.ac.jp (primary research)",
+      "supports": [
+        "Variable spot patterns, non-sex-linked colour, synonymy, measured carapace size, distribution and anemone habitat"
+      ],
+      "access": "Primary PDF text read on the author’s university site, especially pages 255–257. The 1–12.3 m collection station is not treated as a complete species depth range."
+    },
+    {
+      "id": "dx-haig-porcelain_anemone_crab",
+      "text": "Haig, J. (1965). The Porcellanidae (Crustacea, Anomura) of Western Australia, with descriptions of four new Australian species. Journal of the Royal Society of Western Australia 48: 97–118. Species account under Petrolisthes ohshimai.",
+      "url": "https://research.nhm.org/pdfs/16635/16635.pdf",
+      "urlLabel": "research.nhm.org (museum research library)",
+      "supports": [
+        "Smooth convex carapace and broad flattened claw anatomy"
+      ],
+      "access": "Primary PDF and species diagnosis read. Historical nomenclatural reasoning is superseded by Osawa (2014) and current WoRMS; only documented morphology is used."
+    },
+    {
+      "id": "dx-hkbm-porcelain_anemone_crab",
+      "text": "Hong Kong Biodiversity Museum (2025). Specimen Showcase: Crab in Name Only? Family-level explanation of porcelain-crab walking legs; published 8 April 2025.",
+      "url": "https://www.hkbiodiversitymuseum.org/post/specimen-showcase-crab-in-name-only",
+      "urlLabel": "hkbiodiversitymuseum.org",
+      "supports": [
+        "Three developed walking-leg pairs and a reduced last pair"
+      ],
+      "access": "Full museum article read. Its focal species is Petrolisthes japonicus; that species’ reproductive timing, diet details and sexual dimorphism are not transferred to N. maculatus."
+    },
+    {
+      "id": "dx-slb-porcelain_anemone_crab",
+      "text": "SeaLifeBase (2026). Neopetrolisthes maculatus species summary, including IUCN Version 2025-2 (Global). Accessed October 2026.",
+      "url": "https://sealifebase.ca/summary/Neopetrolisthes-maculatus",
+      "urlLabel": "sealifebase.ca",
+      "supports": [
+        "Global Not Evaluated with no assessment date; cited 1–10 m interval"
+      ],
+      "access": "Detailed current indexed species summary read. Direct .html page returned 403. Modelled vulnerability, generic order-level reproduction and host-mucus feeding claims are not imported."
+    },
+    {
+      "id": "dx-guide-porcelain_anemone_crab",
+      "text": "Poupin, J. & Juncker, M. (2010). A Guide to the Decapod Crustaceans of the South Pacific. Neopetrolisthes species plate. Secretariat of the Pacific Community / CRISP.",
+      "url": "https://library.sprep.org/sites/default/files/2021-03/guide-decapod-crustaceans-south-pacific.pdf",
+      "urlLabel": "library.sprep.org",
+      "supports": [
+        "Carapace measurements and pale red-spotted morphology"
+      ],
+      "access": "Detailed indexed plate text read; direct PDF returned 403. Its treatment of N. ohshimai as separate is superseded here by current WoRMS and Osawa (2014)."
+    }
+  ],
+  "modelProvenance": {
+    "nominalLengthM": 0.04,
+    "lengthMeaning": "Posed leg/claw span excluding antennae; approximately .012 m carapace length",
+    "depthM": [
+      1,
+      10
+    ],
+    "habit": "bottom",
+    "anchor": "base",
+    "zone": null,
+    "availability": "guide and identification only",
+    "palette": "Illustrative unsexed white/cream shell with small red/purplish spots",
+    "motion": "Local movement of paired mouthpart fans and long antennae; body, root, large claws and planted walking feet fixed",
+    "hostContext": "Associated with large sea anemones in nature; isolated specimen only, with no new reef placement or population"
+  }
+}

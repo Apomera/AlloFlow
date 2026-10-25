@@ -1,168 +1,59 @@
-# AlloFlow Live Sessions — Data Privacy Posture
+# AlloFlow data privacy posture
 
-> **Security status (2026-07-09): historical design memo, not a deployment guarantee.**
-> The safe default Firebase configuration is hosting-only. If a district explicitly enables
-> live sessions, anonymous authentication identifies a browser, not a staff member; quiz fallback
-> data can reach Firestore; session deletion is best-effort; and TTL applies only after deploying
-> `firebase.live-sessions.json`. The current rules bind session assets to owners and parents,
-> deny retired mastery data, and support quiz signaling, but a district pilot still requires
-> App Check enforcement and emulator tests. Use [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md) as
-> the authoritative deployment boundary. Do not quote the stronger historical statements below
-> as current legal, retention, or staff-access assurances.
->
+Updated October 24, 2026. This describes the reviewed application paths for district evaluation. AlloFlow can use browser storage, downloaded files, peer connections, a teacher's local server, and optional remote services. Local-first operation does not mean that all content stays off servers or that every saved copy is encrypted.
 
-**Audience:** district IT, privacy officers, and reviewers. Written 2026-07-01 from a verified
-read of the code (every storage write site enumerated), not from marketing intent.
-**Status of claims:** engineering statements are verified; legal conclusions are flagged as such —
-this document is not legal advice, and the final FERPA determination always belongs to the
-district and its counsel.
+For the proposed Portland Public Schools, Maine deployment, Gemini Canvas should use public or synthetic authoring material while its account, sharing, runtime API, storage, and deletion arrangements are approved. The three protected clinical tools block real records in Canvas by default and disable their external AI requests by default. A school sign-in, public app link, educator access code, or local configuration flag does not establish district approval or verified staff authorization.
 
-**2026-07-09 scope note:** this memo describes the browser/cloud live-session design as
-verified on 2026-07-01. AlloFlow Desktop now also supports a no-Docker Desktop LAN /
-Local Network mode that routes session documents and session assets through the teacher's
-Desktop runtime and student-safe LAN Share listener instead of Firestore. See
-`docs/SCHOOL_SERVER_ARCHITECTURE.md` and `desktop/README.md` for the newer Desktop LAN
-and optional School Box Server split.
+The [school data flow inventory](audits/2026-10-24-school-district/data-flow-inventory.md) identifies the reviewed feature paths, recipients, persistence, and deletion boundaries. [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md) describes the owned deployment boundary; the [district cybersecurity audit](audits/2026-10-24-school-district/report.md) tracks remaining approval and deployment requirements.
 
-## 1. The core design claim (verified)
+## Deployment boundaries
 
-Student-generated **content** never reaches any server. Poll answers (including free text),
-drawings, guesses, and voice travel **browser-to-browser over encrypted WebRTC data channels**
-between student devices and the teacher's device, and exist only in device memory. A complete
-compromise of the backend would yield none of it, because it was never there.
+| Deployment or service | Data boundary |
+| --- | --- |
+| Gemini Canvas | Google provides the surrounding Canvas service and may provision app storage. The generated app also runs its own requests, external modules, and optional integrations. Review those routes separately. Keep real clinical records blocked until the actual deployment is approved and configured. |
+| Hosted browser app | Browser/device persistence and configured remote routes apply. Public hosting does not create an approved student-record service. Source rules and policy files take effect only through the reviewed deployment. |
+| Desktop LAN classroom mode | The teacher's Desktop runtime serves the selected classroom session on the local network. This avoids Firestore for that session path, but the teacher machine is still a server and received/saved work still needs access and retention controls. |
+| Owned Firebase live sessions | An explicitly selected project provides coordination, resources, supported answer/fallback paths and optional sync. Deploy the reviewed rules/index configuration and verify actual auth, App Check, access, expiry and cleanup behavior. The default browser Firebase configuration is hosting-only. |
+| Optional Apps Script mailbox | The script owner's Google account provides cache/properties for live state and Drive storage for homework, complete submissions and delivered documents. Account ownership, deployment access, file sharing and retention require separate approval. |
 
-What the backend (Firestore) carries is **session coordination metadata**, enumerated
-exhaustively below. Students cannot free-type into any stored field: student names are
-**dropdown-curated codenames** (adjective + animal), and every student-writable stored field is
-an enum, number, timestamp, or auto-generated ID — enforced by an in-app allowlist
-(`SESSION_TIER1_LEAVES`) and, on the owned backend, by server-side Firestore rules
-(`firestore.rules`).
+Google describes enterprise protections for eligible Education users of the Gemini app. Its Canvas guidance separately warns that public links to shared multi-user apps can expose shared app data. Neither school-account use nor an automatically provisioned API key settles the agreement for every request a generated app makes. Confirm the effective service and terms for the chosen routes. [Google Education FAQ](https://knowledge.workspace.google.com/admin/generative-ai/workspace-with-gemini/gemini-for-google-workspace-faq-education), [Canvas safety guidance](https://support.google.com/gemini/answer/16419134?hl=en).
 
-## 2. Exactly what is stored, and for how long
+## Content and storage
 
-| Stored item | Contents | Written by | Lifetime |
-|---|---|---|---|
-| Session doc: roster | codename, xp points, group id, enum help-signal, viewed-resource id | student (own entry only) | **Deleted when the teacher ends the session** (all end paths converge on deletion as of 2026-07-01) |
-| Session doc: teacher fields | pacing mode, group definitions, resource ids, teacher-authored resources (media stripped/externalized) | teacher | Same — deleted at session end |
-| Session doc: quiz responses | **fallback path only (as of 2026-07-01):** answers travel peer-to-peer to the teacher's device; this stored path fires only when a student's WebRTC connection is down. Structured answers only (free text excluded by code), anonymous uid | student (own entries) | Same — deleted at session end |
-| WebRTC signaling docs | connection handshake (SDP/ICE — includes transient network addresses), codename | each participant (own doc) | Deleted ~1 second after the connection opens; `expiresAt` field supports a TTL sweep for orphans |
-| `conceptMastery/{uid}` | **RETIRED 2026-07-01** — mastery is now device-local (student's browser + their project file); the cloud write was removed. Legacy docs may exist from before the change and can be bulk-deleted | — (no new writes) | n/a |
-| Bridge class message | teacher-authored text broadcast to the class (documented exception; sender de-identified) | teacher only | 24h TTL, cleaned by the teacher's device; deleted at session end |
+Ordinary authoring and tool data can persist in localStorage, IndexedDB, the configured Canvas DeviceStorage bridge, or downloaded project files. Encryption of one recovery store does not encrypt all other tools, media, preferences, exports, or provider copies.
 
-Never stored, by architecture: free-text responses, drawings/strokes, guesses, audio/voice
-(explicitly stripped by sanitizers before any cloud write), real names, emails, or accounts —
-students authenticate anonymously and create no account.
+BehaviorLens, Dynamic Assessment and Report Writer now use a separate encrypted clinical workspace before real-record components open. Setup verifies an encrypted backup and offline recovery key before removing known readable legacy copies. The migration covers recognized clinical localStorage/sessionStorage keys and their Canvas preferences mirror; it preserves differing versions inside the encrypted store. Other-tool originals, older downloads, remote copies and data recreated by an older open app are outside that cleanup. See the [protected clinical workspace implementation](audits/2026-10-24-school-district/protected-clinical-workspace-followup.md).
 
-## 3. The deployment/back-end reality
+Supported live responses can travel directly to the teacher through WebRTC. The selected backend can still receive session metadata, teacher-authored resources, signaling, supported answer receipts or fallback responses, and referenced assets. WebRTC signaling can include network addresses. Codenames and browser UIDs do not guarantee anonymity when records contain identifying context.
 
-- **AlloFlow Desktop LAN (local classroom path):** teacher Desktop runtime hosts the
-  private command bridge and the student-safe LAN Share listener. Students join from
-  the same local network with a class code and optional PIN. This path is the current
-  no-Docker local-first classroom mode; it does not use Firestore for classroom session
-  docs unless the teacher explicitly selects a cloud mode.
+Teacher history cloud sync is a separate optional path. Its sanitizer removes selected media, including raw fluency audio, while retaining supported scored results such as metrics, word data and feedback. Turning sync off does not delete a document already stored in the cloud. Apps Script mailbox submissions can contain complete student work and persist in the script owner's Drive until deleted.
 
-- **Gemini Canvas surface (demos/authoring):** Firebase project is injected and operated by
-  Google's Canvas platform; AlloFlow cannot configure it. **Correction 2026-07-01 (verified):**
-  the Gemini app — Canvas included — became a **Core Service for Google Workspace for Education
-  in April 2025**, with enterprise-grade data protection and stated FERPA/COPPA compliance
-  support, so district Workspace agreements generally DO cover it for school-account users
-  (sources: Google Workspace Updates 2025-04; Google for Education privacy FAQ). Residual items
-  for counsel: coverage attaches to *school-account* usage (a public Canvas share opened without
-  school sign-in is murkier), and the injected backend remains district-inaccessible (no export,
-  retention, or audit controls) — which is why the architecture keeps anything record-like off
-  it entirely (§4).
-**Platform compliance is not application compliance.** Google's Core-Service FERPA posture
-covers the *platform substrate* — how Google processes, protects, and refrains from training on
-data that flows through the Gemini app. It does **not** bless the data flows any particular app
-built inside Canvas creates. AlloFlow uses Canvas in ways its compliance statement was not
-written around: the injected Firebase runtime as a multi-user classroom backend, WebRTC
-signaling between student devices, a teacher-shared app joined by a whole class. A badly designed
-app could absolutely create FERPA problems *inside* a compliant platform (e.g., storing student
-work keyed by real names), and responsibility for that would sit with the school/operator, not
-Google. AlloFlow's answer is to make the application layer defensible **without leaning on the
-platform statement at all**: student content never enters the shared backend (peer-to-peer), what
-does enter is enum/ID-only under curated codenames and is deleted at session end, and the whole
-flow is documented in this file. Treat Google's statement as covering the substrate; treat this
-document as covering the app. (Also note: the injected Canvas Firebase is a runtime affordance,
-not a contracted service — Google can change it without notice, which is an availability
-argument, alongside the privacy one, for the owned deployment below. And WebRTC's normal ICE
-exchange briefly reveals device network addresses between class peers — routine for
-peer-to-peer, low-risk on a school LAN, disclosed here for completeness.)
+Source pointers: [DeviceStorage](../allo_device_storage_module.js), [history sanitization](../firestore_sync_module.js), [teacher history sync](../AlloFlowANTI.txt), [Firebase rules](../firestore.rules), [mailbox storage and submissions](../apps_script/session_mailbox/README.md).
 
-- **Owned deployment (classroom phase):** project `prismflow-911fe` (or a pilot-dedicated
-  successor) — district-inspectable on request, server-side rules deployed from the repo's
-  `firestore.rules`, TTL policies available. **Recommendation: all student classroom traffic runs
-  here**, where access, retention, and audit are controllable and a standard DPA (e.g. the
-  SDPC/NDPA used widely in Maine) can be signed. Canvas remains a teacher-side authoring surface.
+## AI media and diagnostics
 
-### Adventure portrait uploads and AI processing
+The configured AI operation can transmit instructions, selected source/context, images, audio or documents to its provider. A managed AI policy and the clinical policy are configuration controls; their effective route and settings must be verified in the deployment.
 
-Portrait images uploaded in Adventure Mode remain device-local when selected and stored in the
-cast lobby. They are sent to the **AI provider configured for the app** only when an AI feature
-needs the image: refining that portrait, or applying the consistent-characters pass to a scene.
-When consistent characters are enabled, that scene pass may send the portrait again for each
-scene. Choosing **AI Generate** creates a portrait from the written character description and
-does not use the uploaded image.
+The three protected clinical tools require deployment approval before their guarded AI requests can proceed to editable text review. Automatic identifier removal can miss names or identifying context and does not anonymize attached images or recordings. It is not a general guarantee for all AI features.
 
-On the Gemini Canvas surface, the Gemini API key is auto-provisioned by the platform rather than
-entered by the user; for school-account use, that processing rides the school's Google Workspace
-for Education agreement. In the Desktop build, AI access uses the provider and key configured by
-the user or deploying organization. Schools should permit portrait uploads only when they have
-permission to use the image this way and should apply their own AI/data agreement to student
-photos.
+Adventure portrait refinement and consistent-character scene generation can send an uploaded portrait to the configured image provider; scene generation can send it again. Teacher consent in the UI does not establish school approval or provider terms. Browser speech voices may use a local or remote service; selecting a browser voice is not an offline-processing guarantee. Schools must review allowed voices and cloud speech routes separately. [Browser voice service distinction](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesisVoice/localService).
 
-## 4. Former exceptions — both RESOLVED 2026-07-01
+Support reporting sends only after review under the configured support policy. Its credential removal and editable review reduce accidental disclosure but cannot guarantee that user free text contains no personal information. The built-in service gives newly stored reports a 30-day expiry; legacy reports, custom endpoints, external forms, platform logs and downloaded copies have separate retention boundaries. See the [support security follow-up](audits/2026-10-24-school-district/support-security-followup.md).
 
-An ironclad posture names its own soft spots. The two this document originally flagged have been
-closed in code:
+## Retention deletion and recovery
 
-1. **Live-quiz structured answers — RESOLVED.** Quiz answers now travel over the same
-   peer-to-peer WebRTC transport as polls (a dedicated star per session): they land only on the
-   teacher's device, aggregates are computed there, and nothing is stored. The old session-doc
-   path survives strictly as a fallback for students whose peer connection is down (blocked UDP);
-   fallback answers remain structured-only, codename-keyed, and are deleted at session end.
-2. **`conceptMastery` — RESOLVED.** Cross-session mastery is now **device-local** (student's
-   browser). It reaches the teacher only through user-controlled channels: a live peer-to-peer
-   snapshot during a session, and the student's saved **project file** — when a student submits
-   their file and the teacher opens it, the mastery block is banked locally on the teacher's
-   device for the retention dashboard. The cloud write was removed; legacy cloud docs can be
-   bulk-deleted.
-3. **Teacher free-text class broadcast (Bridge)** — the remaining documented exception: relies on
-   the teacher not typing student names into a class-wide message, a professional-judgment
-   channel like writing on the board. Documented at the allowlist; 24h TTL + session-end
-   deletion; long-term fix is the same WebRTC migration.
+The [reviewed retention/deletion paths](audits/2026-10-24-school-district/retention-deletion-followup.md) now cover whole-store protected clinical deletion, selected expired-assignment cleanup in an owned Firebase project, and mailbox access expiry/manual Drive deletion evidence. These are separately scoped operations, not an all-app or per-student purge. Uncertain results stay unverified; retained backups, other tools and provider copies require separate outcomes.
 
-With 1–2 closed, the headline claim is now simply true: **no student-generated data of any kind
-is stored on any server in normal operation; session coordination metadata is deleted when class
-ends.** (The quiz fallback path is the one narrow, disclosed, self-deleting exception, used only
-when a student's device cannot form a peer connection.)
+The data owner must set a records schedule for each enabled store and recipient, including applicable holds. Closing a tab, ending a session, disabling sync, clearing one tool, or removing a parent record does not establish deletion of every copy.
 
-## 5. Regulatory map (engineering summary — counsel confirms)
+Device recovery capacity/pruning settings protect recoverability; they are not a district retention schedule. Protected clinical buckets are not automatically aged out by the new setup. Exported backups, readable reports, clipboard/print copies, teacher downloads and submitted files require separate custody and deletion procedures. Losing a saved-records password and its offline recovery key can make locked work inaccessible.
 
-- **FERPA:** turns on whether PII from education records is maintained/disclosed. The design goal
-  is that nothing maintained server-side is linkable to a student "with reasonable certainty" —
-  hence codenames-from-dropdowns, anonymous auth, no accounts, session-end deletion. §4's two
-  items are where a reviewer could push back; closing them makes the argument clean.
-- **State student-privacy law (Maine):** SOPIPA-style operator duties (Maine's student
-  information privacy act) attach to *operators of services used for school purposes* regardless
-  of how little is stored — no targeted advertising, no profiling, no sale, deletion on request.
-  AlloFlow trivially complies in substance (no ads, no tracking, no sale, nothing to delete), but
-  "compliance by architecture" should still be stated in a signed agreement.
-- **COPPA:** middle school includes under-13 students. No accounts, no persistent identifiers used
-  for tracking/ads, and anonymous auth keep the surface minimal; counsel should confirm the
-  anonymous-uid + conceptMastery combination (another reason for §4.2).
-- **Practical instrument:** districts don't reward "we don't need a DPA"; they reward easy
-  vetting. The strong position is *both*: sign the standard DPA **and** be able to attach §2's
-  table showing there's almost nothing behind it.
+Firestore TTL is asynchronous and must be active for the selected collection group. It does not delete a parent's subcollections. The current index file configures expiry for session assets, signaling peers and rate limits, rather than every session, assignment, answer or history store. Verify access expiry, recursive/orphan cleanup, and actual deletion separately. [TTL configuration](../firestore.indexes.json), [Firebase TTL behavior](https://firebase.google.com/docs/firestore/ttl).
 
-## 6. One-paragraph summary for a reviewer
+## District review and historical claims
 
-AlloFlow's live classroom features are peer-to-peer by design: student work and responses —
-including live quiz answers — move directly between devices and are never written to any server
-in normal operation. Cross-session mastery data lives on the student's own device and travels
-only in their saved project file. The backend stores only thin, non-typed session coordination
-metadata under curated codenames and anonymous IDs, deleted when the session ends (one disclosed,
-self-deleting fallback exists for quiz answers when a device cannot form a peer connection). For
-classroom deployments this runs on a district-inspectable Firebase project with server-side
-access rules (students can write only their own entries) shipped in this repo, and the vendor
-will sign the standard SDPC/NDPA.
+Approve a versioned feature/provider map with the actual account/project, data categories, purpose, permitted recipients, access controls, retention, deletion owner, recovery arrangements and release evidence. Shared staff services need verified identity and server-side authorization. An anonymous browser identity and an educator navigation code do not provide that boundary.
+
+AlloFlow's source design does not itself establish FERPA, COPPA, Maine-law or other legal compliance. The district must approve the intended workflow and applicable agreements. Keep other optional school services, such as Educator Evaluation and School Rewards/Print Lab, within their separately approved data and account scope.
+
+This revision replaces the July 2026 design memo's universal no-server, no-stored-content and automatic Workspace-coverage claims. The [earlier design memo](https://github.com/Apomera/AlloFlow/blob/46130b0a0caaa6acf472e21cc9450bcccf40d7e9/docs/DATA_PRIVACY_POSTURE.md) remains available for architectural history and should not be used as a current deployment or retention assurance.

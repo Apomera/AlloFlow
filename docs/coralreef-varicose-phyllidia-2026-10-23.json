@@ -1,0 +1,140 @@
+{
+  "checked": "2026-10-23",
+  "scope": "One additional Phyllidia varicosa for the species guide, isolated inspection and optional identification. Its raised ridges, paired rhinophores, sheltered lateral gills and striped foot provide complementary top and underside details. No reef population or engine metadata is added.",
+  "iucnYearConvention": "SeaLifeBase lists global Not Evaluated in IUCN Version 2025-2. No assessment date is supplied; iucnYear and iucnDateAssessed are null. This is not a Least Concern assessment or a statement that local populations face no threats.",
+  "specimens": [
+    {
+      "id": "varicose_phyllidia",
+      "name": "Varicose phyllidia",
+      "scientific": "Phyllidia varicosa",
+      "group": "invertebrate",
+      "iucn": "NE",
+      "iucnYear": null,
+      "iucnDateAssessed": null,
+      "lookalikes": [
+        "nudibranch"
+      ],
+      "marks": [
+        "Blue-grey ridges with yellow-tipped knobs run lengthwise over a dark body",
+        "Two yellow, finely layered rhinophores stand near the front",
+        "The gills sit below the mantle edge, with no feathery plume on the back",
+        "A black stripe runs lengthwise along the underside of the foot"
+      ],
+      "role": "A small reef predator that feeds on sponges.",
+      "fact": "The two yellow rhinophores sense chemicals in seawater. Its breathing gills sit under the mantle edge, away from the top of the back.",
+      "habitat": "Tropical coral reefs across the Indo-West Pacific, including the Red Sea and central Pacific.",
+      "diet": "Sponge tissue. Feeding on Axinyssa cf. aculeata has been observed on Indonesian coral reefs.",
+      "behavior": "Glides on its broad foot and can draw its rhinophores into pockets. Feeding observations show the body contracting as it takes food from a sponge.",
+      "observe": "Follow the raised central ridge, then compare the tucked-away gills with the feathery back gills of Anna’s chromodoris. In an underside view, look for the dark line along the foot.",
+      "sources": [
+        "dx-worms-varicose_phyllidia",
+        "dx-am-varicose_phyllidia",
+        "dx-gills-varicose_phyllidia",
+        "dx-papu-varicose_phyllidia",
+        "dx-yasman-varicose_phyllidia",
+        "dx-cas-varicose_phyllidia",
+        "dx-slb-varicose_phyllidia"
+      ],
+      "claimSupport": {
+        "acceptedName": "Current WoRMS lists Phyllidia varicosa Lamarck, 1801 as the accepted target of several synonyms. OBIS independently links the accepted name to WoRMS 212835. The author is not parenthesised because the original genus is retained.",
+        "morphology": "Brunckhorst’s museum revision and Rudman’s species account describe three to six longitudinal blue-grey ridges bearing yellow-capped tubercles, a black foot stripe and 27–30 lamellae on the rhinophoral clavus. The model is a representative variant; exact counts and colour intensity are not universal field rules.",
+        "variation": "Papu et al. (2022) examined 114 specimens: their larger animals had more ridges, yellow concentrated on median tubercles, and a foot stripe sometimes broken into sections. Adults often curl the lateral mantle edge underneath. The illustrated continuous stripe and selected ridge layout are not claimed to be invariant.",
+        "gills": "Rudman’s expert account places the secondary gills along the groove between mantle and foot. The posterior dorsal papilla is not a gill plume. The model must not inherit the exposed dorsal plume of the existing Chromodoris annae model.",
+        "sensory": "California Academy of Sciences explains that the anterior rhinophores detect chemicals in water and that sea slugs move on a foot. This supports the general sensory and locomotion wording, not a species-specific detection threshold or movement rate.",
+        "feeding": "Yasman (2003) directly observed this species feeding on Axinyssa cf. aculeata on Indonesian coral reefs, with body contraction and rhinophore withdrawal. The cf. qualification is retained; this observation does not mean every sponge is suitable prey.",
+        "rangeAndDepth": "Rudman’s museum account gives the Indo-West Pacific including central Pacific and Red Sea. Its photographed specimens include 4–10 m and 22 m localities; an expert-confirmed South African record is at 25 m. The model-reference interval [4,25] represents those observations, not an exhaustive depth range or physiological limit. SeaLifeBase’s narrower cited 10–20 m interval is not treated as a limit.",
+        "size": "The nominal .06 m is full posed body length, not height or foot width. It is close to the museum’s documented 58 mm individual. That account also records a 104 mm specimen, and Papu et al. document animals up to 87 mm in their collection. SeaLifeBase’s explicitly assumed 70 mm maximum is therefore not repeated as a species maximum.",
+        "conservation": "The current SeaLifeBase summary gives global NE and no assessment date. No unaccessed IUCN rationale, trend, generic reproductive account, modelled fishing vulnerability or handling guidance is used.",
+        "comparison": "The new one-way link to the existing Anna’s chromodoris entry compares raised ridges and sheltered gills with that animal’s smooth pattern and exposed plume. It is an educational comparison, not a claim that it is the closest relative or hardest real-world identification."
+      },
+      "caution": "Similar phyllidiids can require more than colour to distinguish. This is an illustrative adult-form specimen, not a taxonomic key. The fixed body/root and gentle appendage movement do not simulate locomotion, feeding, retraction or a universal current response. No sex, toxicity, handling, aquarium-care, medicinal, lifespan or reproductive claims are introduced."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-worms-varicose_phyllidia",
+      "text": "WoRMS / MolluscaBase (2026). Phyllidia varicosa Lamarck, 1801; accepted name, AphiaID 212835. Accessed October 2026.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=212835",
+      "urlLabel": "marinespecies.org",
+      "supports": [
+        "Accepted name and synonym targets"
+      ],
+      "access": "Current WoRMS Phyllidia taxon list read in full; direct species-detail page returned 403. OBIS taxon 212835 independently confirms the name and identifier."
+    },
+    {
+      "id": "dx-am-varicose_phyllidia",
+      "text": "Rudman, W.B. (1999). Phyllidia varicosa. Australian Museum Sea Slug Forum, based on Brunckhorst (1993), Records of the Australian Museum, Supplement 16: 1–107.",
+      "url": "https://www.seaslugforum.net/find/phylvari",
+      "urlLabel": "seaslugforum.net (Australian Museum archive)",
+      "supports": [
+        "Ridges, tubercles, rhinophore lamellae, foot stripe, documented sizes and distribution"
+      ],
+      "access": "Full museum factsheet read. Primary revision metadata and indexed species diagnosis also checked; the full 107-page PDF returned 403. Depth 25 m corroborated in the museum’s expert-confirmed South African observation, https://www.seaslugforum.net/find/2118, available as indexed text."
+    },
+    {
+      "id": "dx-gills-varicose_phyllidia",
+      "text": "Rudman, W.B. (2001). Comment on So this must be Phyllidia varicosa! Australian Museum Sea Slug Forum, 11 October 2001.",
+      "url": "https://seaslugforum.net/message/5429",
+      "urlLabel": "seaslugforum.net (Australian Museum archive)",
+      "supports": [
+        "Ventral lateral gills and distinction from posterior dorsal papilla"
+      ],
+      "access": "Complete indexed expert response read; direct archive message returned a cache miss. A later expert reply, find/21068, independently describes the same lateral gill bands."
+    },
+    {
+      "id": "dx-papu-varicose_phyllidia",
+      "text": "Papu, A. et al. (2022). Phyllidiidae (Nudibranchia, Heterobranchia, Gastropoda): an integrative taxonomic approach including chemical analyses. Organisms Diversity & Evolution 22: 585–629.",
+      "url": "https://link.springer.com/article/10.1007/s13127-021-00535-7",
+      "urlLabel": "Springer Nature (primary research)",
+      "supports": [
+        "Observed variation, ridge layout, ventral stripe and curled mantle edge"
+      ],
+      "access": "Open-access primary article read, especially the Phyllidia varicosa species section. Published 15 February 2022; the DOI’s 2021 component is not used as publication year. Its chemical analyses are not turned into health claims."
+    },
+    {
+      "id": "dx-yasman-varicose_phyllidia",
+      "text": "Yasman (2003). Observation on the feeding of Phyllidia varicosa on Axinyssa cf. aculeata in coral reefs of Pramuka Island, Indonesia. MAKARA of Science Series 7(1), DOI: 10.7454/mss.v7i1.284.",
+      "url": "https://scholar.ui.ac.id/en/publications/observation-on-the-feeding-of-nudibranch-phyllidia-varicosa-lamar/",
+      "urlLabel": "scholar.ui.ac.id (primary research)",
+      "supports": [
+        "Observed sponge feeding, body contraction and rhinophore withdrawal"
+      ],
+      "access": "Author-institution research record and complete abstract read. Limited to those documented observations; no claim to have read unavailable full text."
+    },
+    {
+      "id": "dx-cas-varicose_phyllidia",
+      "text": "Shipman, C. (2012). Sea Slug Senses Part I. California Academy of Sciences, 9 December 2012.",
+      "url": "https://www.calacademy.org/blogs/project-lab/sea-slug-senses-part-i",
+      "urlLabel": "calacademy.org",
+      "supports": [
+        "General rhinophore chemosensory role and foot-based locomotion"
+      ],
+      "access": "Full museum science article read. Its general description is not used to infer species-specific detection thresholds, speeds or other sensory capabilities."
+    },
+    {
+      "id": "dx-slb-varicose_phyllidia",
+      "text": "SeaLifeBase (2026). Phyllidia varicosa species summary, including IUCN Version 2025-2 (Global). Accessed October 2026.",
+      "url": "https://www.sealifebase.org/summary/Phyllidia-varicosa",
+      "urlLabel": "sealifebase.org",
+      "supports": [
+        "Global Not Evaluated with no assessment date"
+      ],
+      "access": "Detailed indexed current species summary read. The assumed maximum size conflicts with larger documented museum specimens, so it is not adopted. Generic reproduction, threat-to-humans and modelled vulnerability text is not imported."
+    }
+  ],
+  "modelProvenance": {
+    "nominalLengthM": 0.06,
+    "lengthMeaning": "Full posed body length; illustrative individual near a documented 58 mm specimen",
+    "depthM": [
+      4,
+      25
+    ],
+    "habit": "bottom",
+    "anchor": "base",
+    "zone": null,
+    "availability": "guide and identification only",
+    "palette": "Representative blue-grey raised ridges with yellow-tipped median tubercles and yellow rhinophores over a dark mantle",
+    "motion": "Subtle local appendage movement; fixed body, foot contact and root",
+    "hostContext": "Reef-associated sponge predator; isolated specimen with no new reef population or encounter"
+  }
+}

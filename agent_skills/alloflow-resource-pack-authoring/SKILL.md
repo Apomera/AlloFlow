@@ -19,7 +19,7 @@ Never include student names, IDs, email addresses, health information, disabilit
 2. Keep the source and learning goal as the common intellectual center. Do not lower the goal merely to make a resource easier to read.
 3. Draft only the requested resources. A useful first pack usually includes directions, one access support, one practice or organization support, and one evidence-of-learning item.
 4. Return structured AlloPack history entries, not prose about the entries.
-5. For a new draft, call `resource_pack_generate` with the generated `history` and explicit privacy attestations. Set `request.profile: "illustrated"` for images or the additional supported resource types. The connector assembles and validates the agent's draft; it does not perform hidden model calls. For an existing pack, validate its complete parsed JSON instead of generating a new envelope from its history.
+5. Call `resource_pack_capabilities` with `profile: "native"` to discover resource types, contracts, examples, notebook templates, image slots, and limits. For a new draft, call `resource_pack_generate` with generated `history`, explicit privacy attestations, and `request.profile: "native"` for the full native catalog. The connector assembles and validates the agent's draft; it does not perform hidden model calls. For an existing pack, validate its complete parsed JSON instead of generating a new envelope from its history.
 6. Attach any reviewed images, validate the complete pack, and call `resource_pack_preview` with the same profile. Report the teacher-review checklist and unresolved image review needs.
 7. Revise if validation reports a renderer-shape or privacy error.
 8. Export the `.allopack.json` payload when requested or as part of an already authorized pack deliverable. Import it in AlloFlow for actual rendering and interaction review before describing it as classroom-ready. Publication and student distribution require the user's authorization.
@@ -47,12 +47,27 @@ Never include student names, IDs, email addresses, health information, disabilit
 
 The default `text` profile validates these renderer-critical types: `directions`, `simplified`, `glossary`, `outline`, `quiz`, `sentence-frames`, `faq`, `concept-sort`, `timeline`, `math`, `note-taking`, and `anchor-chart`. It retains the original restriction on embedded images.
 
-The explicit `illustrated` profile supports embedded images and adds `image`, `memory-aid`, and `applied-challenge`, for 15 supported types. It does not cover every resource type supported by the AlloFlow app.
+The explicit `illustrated` profile supports embedded images and adds `image`, `memory-aid`, and `applied-challenge`, preserving the original 15-type subset.
 
-This initial still-image profile rejects animation frames and nonempty saved
+The explicit `native` profile covers the full supported native catalog, including
+analysis, discussion/jigsaw activities, adventures, persona interviews,
+document-based inquiry, teacher lesson plans, alignment reports, educator UDL
+advice, Word Sounds records, and Gemini Bridge prompt steps. It also supports all six notebook templates, animation and
+saved image-view state. Use `resource_pack_capabilities` for exact per-type
+contracts and examples; do not guess shapes from the resource title.
+
+Format support does not provide an AI backend or execute an artifact. The MCP
+does not start persona conversations, run simulations, or generate audio/video.
+Gemini Bridge contains prompt steps for the external app-building workflow, not
+executable app code. Adventure scenes require a runtime provider for continued
+play. Specialized studio submissions and standalone audio/video files are not
+resource-authoring contracts; STEAM tools launch in the application.
+
+The illustrated still-image profile rejects animation frames and nonempty saved
 image-view annotations or overrides. Use native panel image, caption, and label
-fields for clean authored resources. Preserve an existing pack's original saved
-state when reporting that compatibility error; do not remove it to force export.
+fields for clean authored resources, or choose native for supported saved state.
+Preserve an existing pack's original saved state when reporting a compatibility
+error; do not remove it to force export.
 
 Important shape rules:
 
@@ -62,12 +77,12 @@ Important shape rules:
 - `glossary.data` contains `{term, def, tier}` rows.
 - `quiz.data` contains questions and reflections. MCQ `correctAnswer` must exactly equal one option.
 - `concept-sort` items must reference an existing category.
-- `note-taking` cue and note arrays must have matching lengths.
-- Use the illustrated profile and `resource_pack_attach_image` for embedded images; do not force illustrated content through the text-only profile.
+- Cornell `note-taking` cue and note arrays must have matching lengths. Native also supports `lab-report`, `reading-response`, `double-entry`, `guided-notes`, and `q-and-a`; use each template's contract.
+- Use illustrated or native and `resource_pack_attach_image` for embedded images; do not force illustrated content through the text-only profile.
 
 ## Existing packs and illustrated exports
 
-Pass `{ pack, profile: "illustrated" }` to `resource_pack_validate`,
+Pass `{ pack, profile: "native" }` (or `"illustrated"` for that subset) to `resource_pack_validate`,
 `resource_pack_preview`, and `resource_pack_export`. The complete accepted pack
 and its metadata survive export, including fields outside `history`. Generation
 composes a new envelope and is not an import round trip. Never drop credits,
@@ -99,8 +114,14 @@ resource_pack_attach_image({
 ```
 
 This example represents tool arguments, not a built-in JavaScript function.
-Slots are `glossary`, `panel`, `anchor`, or `sort`; the zero-based target must
-already exist. The tool returns `{ ok, errors, warnings, value }`; on success,
+Illustrated slots are `glossary`, `panel`, `anchor`, or `sort`. Native adds
+`single` (index 0), `timeline`, `frame` (with `panelIndex`), `override` (panel
+index), `memory` (card index), and `challenge` (index 0); the zero-based target
+must already exist. Replacing a frame also requires a re-encoded GIF in
+`playbackDataUrl` so both playback and frame stepping show the revised sequence.
+Memory and challenge attachments retain native illustration review gates and
+invalidate an earlier approval when the artwork changes. The tool returns
+`{ ok, errors, warnings, value }`; on success,
 use the full updated `value` for subsequent calls. The input pack is unchanged.
 It does not generate images, fetch URLs, or read or write image files. The MCP
 records its usual redacted local audit metadata.
@@ -114,7 +135,8 @@ Do not label a description as reviewed solely because it matches the generation
 prompt. The tool associates alt metadata with the current image using hashes;
 retain them and review alt text again when changing the image.
 
-SVG, GIF, remote URLs, and file paths are not accepted image payloads. The profile
+Native also accepts bounded GIF; illustrated remains PNG/JPEG/WebP only.
+SVG, remote URLs, and file paths are not accepted image payloads. The profile
 bounds image bytes, dimensions, placement count, text, and total serialized size.
 For exact limits and complete workflow details, read
 [the authoring reference](../../docs/AGENT_CORE_RESOURCE_PACK_AUTHORING.md).

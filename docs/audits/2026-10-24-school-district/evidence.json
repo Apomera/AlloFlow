@@ -1,0 +1,212 @@
+{
+  "auditDate": "2026-10-24",
+  "primaryDeployment": "Gemini Canvas",
+  "districtReference": "Portland Public Schools, Maine, K-12",
+  "gitHeadAtReview": "46130b0a0caaa6acf472e21cc9450bcccf40d7e9",
+  "gitBranchAtReview": "main",
+  "sourceState": "Shared working tree with concurrent uncommitted changes; not an immutable full source snapshot",
+  "publicHeaderObservationUtc": "2026-10-24T15:57Z",
+  "observations": [
+    {
+      "url": "https://alloflow-cdn.pages.dev/app/",
+      "method": "HEAD",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": null,
+        "Content-Security-Policy-Report-Only": null,
+        "X-Frame-Options": null,
+        "X-Content-Type-Options": "nosniff",
+        "Strict-Transport-Security": null,
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": null,
+        "Cache-Control": "public, must-revalidate, max-age=0"
+      }
+    },
+    {
+      "url": "https://alloflow-cdn.pages.dev/gemini_api_module.js",
+      "method": "HEAD",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/javascript",
+        "Content-Security-Policy": null,
+        "Content-Security-Policy-Report-Only": null,
+        "X-Frame-Options": null,
+        "X-Content-Type-Options": "nosniff",
+        "Strict-Transport-Security": null,
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": null,
+        "Cache-Control": "public, must-revalidate, max-age=0"
+      }
+    },
+    {
+      "url": "https://apomera.github.io/AlloFlow/",
+      "method": "HEAD",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Security-Policy": null,
+        "Content-Security-Policy-Report-Only": null,
+        "X-Frame-Options": null,
+        "X-Content-Type-Options": null,
+        "Strict-Transport-Security": "max-age=31556952",
+        "Referrer-Policy": null,
+        "Permissions-Policy": null,
+        "Cache-Control": "max-age=600"
+      }
+    }
+  ],
+  "htmlObservation": {
+    "url": "https://alloflow-cdn.pages.dev/app/",
+    "method": "GET",
+    "status": 200,
+    "checkedAtUtc": "2026-10-24T15:57:36.3157077Z",
+    "htmlBytes": 11432,
+    "metaCspFound": false
+  },
+  "limitations": [
+    "Public responses are point-in-time observations, not platform-wide configuration guarantees",
+    "No authenticated PPS Canvas instance or production backend administration inspected",
+    "No exploit traffic, real student-record access, or production mutation",
+    "Existing security agents own dependency/service/packaged-runtime remediation; their tests were not rerun",
+    "Source hashes identify reviewed file contents captured at audit close, not a complete build attestation"
+  ],
+  "sourceHashes": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "sha256": "e76fb24dd4f4521bf94b45e7a1bb462f42c438477ea53438de98395ca57be9a0",
+      "bytes": 2951541
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "7db8b392db62366e1f56801b0ea227bee4cd16acfa346bccfb81ee7edc4bc55c",
+      "bytes": 5270
+    },
+    {
+      "path": "docs/DATA_PRIVACY_POSTURE.md",
+      "sha256": "7ea962d15049e5d6b5f0bede5420f323b89cab3f19da6f46f79d26afc512dded",
+      "bytes": 12846
+    },
+    {
+      "path": "gemini_api_module.js",
+      "sha256": "96f483a84a3f2b9c3f0c0edc3e51edee023c38e6969a8000df76b21e06577030",
+      "bytes": 77117
+    },
+    {
+      "path": "behavior_lens_module.js",
+      "sha256": "d584549a88dddd4567750a49e75d80c8c3475c647cb3154fcd3e4951ffae2c84",
+      "bytes": 2622316
+    },
+    {
+      "path": "report_writer_module.js",
+      "sha256": "889dc8c8754354613bdde06800fd44dacf91dd65f787bbbf1a4ef8bb868e1f73",
+      "bytes": 595075
+    },
+    {
+      "path": "allo_device_storage_module.js",
+      "sha256": "dae0b944581716cba45829f8b818def940af66b9be0bf5f6064ca64d375cada3",
+      "bytes": 68630
+    },
+    {
+      "path": "allo_device_vault_module.js",
+      "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+      "bytes": 43286
+    },
+    {
+      "path": "allo_crypto_module.js",
+      "sha256": "88d541c85f83a5efe4a2d17c47b83362b389cf7c165999be9eb25916364fa01a",
+      "bytes": 22719
+    },
+    {
+      "path": "submission_crypto_module.js",
+      "sha256": "89b94938586b3d7c475a5f52cfe5c3c0fdecc107ef0fa93d5e354abdf09341ca",
+      "bytes": 8025
+    },
+    {
+      "path": "device_access_code_module.js",
+      "sha256": "b73bf61b14c47c76e499c622ab903b6164ad2a608d5dba89a49c4e7af30f7edc",
+      "bytes": 9158
+    },
+    {
+      "path": "ui_modals_source.jsx",
+      "sha256": "0320c27470600aa171943d262b75451b093efea89f2d0c341f1ae7b049c5ebbb",
+      "bytes": 129673
+    },
+    {
+      "path": "firestore.rules",
+      "sha256": "3309612f4ca8de8dbc11739d0b233da9b8616c1e8ebe5cf9d731ea29b5c9b0ba",
+      "bytes": 34575
+    },
+    {
+      "path": "firestore.indexes.json",
+      "sha256": "c5775d42193c518b2e76da6ea60ef810262eef7b2ad28f7f30e310a35c4b3e84",
+      "bytes": 423
+    },
+    {
+      "path": "firestore_sync_module.js",
+      "sha256": "8326f81be88782ce2d6f98331418ddee62cb3ed437ad87af4899bf601aafe00a",
+      "bytes": 49481
+    },
+    {
+      "path": "error_reporter_module.js",
+      "sha256": "bdc5a915ecb3d4430b91db0034c23debfb96c4c84a09cb1c897ee1e11696bc17",
+      "bytes": 71754
+    },
+    {
+      "path": "catalog/cloudflare-worker/src/index.js",
+      "sha256": "4b7ade40140ac116e9816ee9caa1e11e8c6d3e58862eaec576cdde0450f6459b",
+      "bytes": 149204
+    },
+    {
+      "path": "apps_script/session_mailbox/README.md",
+      "sha256": "9d0b7bdb3741b14dfd9b7ecba7fbf3735593ece4178005fc09d7d5c43b96a860",
+      "bytes": 17280
+    },
+    {
+      "path": "apps_script/educator_evaluation/Code.gs",
+      "sha256": "4f129e34a778a14681644bd060dbdb39fe22c3532ac1193176d81a6e19f3040d",
+      "bytes": 456959
+    },
+    {
+      "path": "apps_script/school_rewards/Code.gs",
+      "sha256": "ed82e9e431cbfec4a6f7b4a94d4870442cc7ee8f96d792c11e5af2df7a908737",
+      "bytes": 461249
+    },
+    {
+      "path": "question_board_transport_module.js",
+      "sha256": "cff375828ae651367925fbdb83cc05bce560f209f8152891dbbb34f2b133e4a4",
+      "bytes": 14419
+    },
+    {
+      "path": "tests/question_board_firebase_adapter.test.js",
+      "sha256": "997bba60ef41812bce7b2d5f7a7147b1938ad98c7104fef0771e6d0e364fd6d9",
+      "bytes": 13363
+    },
+    {
+      "path": "desktop/web-app/firebase.json",
+      "sha256": "90a1a0f07b69591f9c26857a095ae5a69f2df9f03c6a082e2bf0f3c26cc52cd5",
+      "bytes": 2036
+    },
+    {
+      "path": "dev-tools/check_firebase_security.cjs",
+      "sha256": "0dbad64444a4775ddf9a6bcb807d29195a1819c7ed9c371065b2cd500e4cd13c",
+      "bytes": 6972
+    },
+    {
+      "path": "desktop/RELEASE.md",
+      "sha256": "aba684f98e7d3bb63951ff3c1f87a7ab866eb15c869af5af9721f0c63d050f55",
+      "bytes": 17868
+    },
+    {
+      "path": "DEPLOY_YOUR_OWN.md",
+      "sha256": "b38ad2f2044a049edde60a299590650d3b29d60b540a90ca4150c5075489bbc9",
+      "bytes": 7343
+    },
+    {
+      "path": "_headers",
+      "sha256": "ffbcf03086b29473c28144699018f85d7de2b3aad17f790baabf41fee77b2d40",
+      "bytes": 1177
+    }
+  ],
+  "sourceHashCaptureUtc": "2026-10-24T16:02:55.3538675Z"
+}

@@ -1,0 +1,126 @@
+{
+  "checked": "2026-10-23",
+  "scope": "One additional reef fish for the guide, illustrative encounters and optional identification. Show an unsexed white/red example with its supporting fin rays braced on a small illustrative branch perch.",
+  "iucnYearConvention": "LC assessed 3 March 2015; published 2016 with errata in 2017. FishBase current IUCN export supplies the assessment date and status; Museums Victoria corroborates LC and reproduces the publication/errata citation. Direct primary IUCN species-page and DOI access failed. Do not present the errata or publication date as a new assessment.",
+  "specimens": [
+    {
+      "id": "longnose_hawkfish",
+      "name": "Longnose hawkfish",
+      "scientific": "Oxycirrhites typus",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2015,
+      "iucnPublishedYear": 2016,
+      "iucnErrataYear": 2017,
+      "iucnDateAssessed": "2015-03-03",
+      "lookalikes": [
+        "yellow_longnose_butterflyfish"
+      ],
+      "marks": [
+        "A very long pointed snout extends from a slender body",
+        "Red lengthwise lines cross red bars to form a grid on a pale body",
+        "Tiny tassels rise near the tips of the back-fin spines",
+        "Thick lower side-fin rays form sturdy little supports"
+      ],
+      "role": "A reef-perching predator that eats tiny crustaceans from the water and the bottom.",
+      "fact": "The small tassels on its back-fin spines are called cirri. Its strong lower side-fin rays help it perch among coral branches.",
+      "habitat": "Tropical Indo-Pacific and eastern Pacific reefs, especially steep outer slopes with sea fans or black corals. Often found deeper than 25 m.",
+      "diet": "Small planktonic and bottom-dwelling crustaceans.",
+      "behavior": "Often rests among branches of gorgonian sea fans and black corals. This specimen shows a perched pose with gentle fin movement; its support is an illustrative branch.",
+      "observe": "Follow the red grid, then look for the long snout and tiny dorsal tassels. Compare its slender body with the deeper yellow body of the yellow longnose butterflyfish: a long snout alone is not enough to identify either fish.",
+      "sources": [
+        "dx-am-longnose_hawkfish",
+        "dx-foa-longnose_hawkfish",
+        "dx-stri-longnose_hawkfish",
+        "dx-catalog-longnose_hawkfish",
+        "dx-fishbase-longnose_hawkfish",
+        "dx-iucn-longnose_hawkfish"
+      ],
+      "claimSupport": {
+        "acceptedName": "The current Eschmeyer catalog, updated 21 September 2026, accepts Oxycirrhites typus Bleeker 1857. Museums and Smithsonian use this name; Oxycirrhites morrisi and O. seftoni are catalogued synonyms.",
+        "shape": "Australian Museum directly describes the long snout, pale/red grid and dorsal-spine cirri. Smithsonian documents an elongated body, 10 dorsal spines plus 13 soft rays, 2–4 cirri near each spine tip, thick lower 5–6 pectoral rays and a blunt, straight caudal edge. The learning marks simplify these diagnostic characters without promising a complete taxonomic key.",
+        "habitatDiet": "Museums Victoria describes current-exposed outer slopes and gorgonian/black-coral perches, with small planktonic and benthic crustaceans as food. Australian Museum and Smithsonian independently describe the perches; Smithsonian specifies the lower pectoral rays as supports.",
+        "depth": "Select the museum Indo-Pacific interval 10–100 m with its usual-below-25 m qualification. Australian Museum says usually below 30 m; Smithsonian reports 5–100 m including shallow eastern Pacific observations. These regional/general differences are retained here rather than treating the chosen interval as an absolute limit or equally suitable at every depth.",
+        "size": "Museum maximum is 13 cm total length. The model uses an illustrative .12 m fish, including snout and tail; branch support is excluded from that nominal fish-length label. This is not a measured individual or a claim about typical adult size.",
+        "conservation": "FishBase current IUCN 2025-2 export gives LC and 3 March 2015. Museums Victoria reproduces Greenfield and Williams (2016), errata2017, and independently lists LC. Direct primary IUCN access failed, so no unaccessed rationale or population trend is asserted. Smithsonian’s stale Not evaluated / Listed field is not used.",
+        "comparison": "The one-way yellow_longnose_butterflyfish link compares two long-snouted forms already supported by the guide; it is an educational contrast, not a nearest-relative or closest-lookalike claim. The older butterflyfish record remains exact."
+      },
+      "caution": "No sex, maturity or pair-bond diagnosis from this solitary unsexed model. No aquarium-care, enhanced vision, fluorescence or fixed lifelong perch claim. No assumption that it is restricted to black coral, that all branches are living coral, or that every dive site represents its complete geographic/depth range."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-am-longnose_hawkfish",
+      "text": "McGrouther, M. (2021). Longnose Hawkfish, Oxycirrhites typus Bleeker, 1857. Australian Museum. Updated 30 March 2021; accessed October 2026.",
+      "url": "https://australian.museum/learn/animals/fishes/longnose-hawkfish-oxycirrhites-typus/",
+      "urlLabel": "australian.museum",
+      "supports": [
+        "Long snout, red grid, dorsal-spine cirri, coral perches and broad distribution"
+      ],
+      "access": "Full museum account read."
+    },
+    {
+      "id": "dx-foa-longnose_hawkfish",
+      "text": "Bray, D.J. (2022). Oxycirrhites typus, Longnose Hawkfish. Fishes of Australia, Museums Victoria / OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/2428",
+      "urlLabel": "fishesofaustralia.net.au (Museums Victoria)",
+      "supports": [
+        "Outer slopes, current exposure, crustacean diet, 13 cm TL, 10–100 m and LC"
+      ],
+      "access": "Full museum account read, including assessment publication/errata citation."
+    },
+    {
+      "id": "dx-stri-longnose_hawkfish",
+      "text": "Robertson, D.R. and Allen, G.R. Shorefishes of the Eastern Pacific: Oxycirrhites typus. Smithsonian Tropical Research Institute. Accessed October 2026.",
+      "url": "https://biogeodb.stri.si.edu/sftep/en/thefishes/species/1594",
+      "urlLabel": "biogeodb.stri.si.edu (Smithsonian)",
+      "supports": [
+        "Fin-ray anatomy, supporting lower pectoral rays, truncate tail, perch habitat and eastern Pacific depth qualification"
+      ],
+      "access": "Full species account read in English and indexed Spanish text. Its stale conservation field is not used."
+    },
+    {
+      "id": "dx-catalog-longnose_hawkfish",
+      "text": "Fricke, R., Eschmeyer, W.N. & van der Laan, R. (eds., 2026). Eschmeyer’s Catalog of Fishes: Oxycirrhites typus. California Academy of Sciences. Updated 21 September 2026; accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?genus=Oxycirrhites&tbl=species",
+      "urlLabel": "researcharchive.calacademy.org (Catalog of Fishes)",
+      "supports": [
+        "Accepted species name and distribution"
+      ],
+      "access": "Detailed indexed catalog entry read, including Valid as Oxycirrhites typus and synonym entries."
+    },
+    {
+      "id": "dx-fishbase-longnose_hawkfish",
+      "text": "FishBase (2026). Oxycirrhites typus species summary, including IUCN Version 2025-2 (Global) export. Accessed October 2026.",
+      "url": "https://www.fishbase.se/summary/Oxycirrhites-typus.html",
+      "urlLabel": "fishbase.se",
+      "supports": [
+        "LC assessment date 2015-03-03; museum ecology corroboration"
+      ],
+      "access": "Current species summary read. Modelled trophic, vulnerability and nutrient estimates are not imported."
+    },
+    {
+      "id": "dx-iucn-longnose_hawkfish",
+      "text": "Greenfield, D. & Williams, I. (2016). Oxycirrhites typus (errata version published in 2017). The IUCN Red List of Threatened Species 2016: e.T67997854A115453267. Assessed 3 March 2015.",
+      "url": "https://www.iucnredlist.org/species/67997854/115453267",
+      "urlLabel": "iucnredlist.org",
+      "supports": [
+        "Primary assessment citation, publication versus errata dates"
+      ],
+      "access": "Direct page and original DOI requests failed. Citation and LC are reproduced by Museums Victoria; assessment date is verified through the current FishBase IUCN export. No claim to having read the unavailable full primary assessment."
+    }
+  ],
+  "modelProvenance": {
+    "nominalLengthM": 0.12,
+    "lengthMeaning": "Total fish length including snout and tail, excluding the illustrative supporting branch",
+    "depthM": [
+      10,
+      100
+    ],
+    "habit": "bottom",
+    "anchor": "base",
+    "zone": "slope",
+    "palette": "Unsexed pale white body with red intersecting stripes and bars",
+    "motion": "Fixed perch, supporting contact rays and root; slight fin motion is illustrative, not a physiological model"
+  }
+}

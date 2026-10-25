@@ -1,0 +1,48 @@
+{
+  "kind": "alloflow-mailbox-deletion-receipt",
+  "version": 1,
+  "requestRef": "synthetic_request_001",
+  "scope": {
+    "accountRef": "school_account_reference",
+    "scriptId": "synthetic_script_id",
+    "mailboxFolderId": "synthetic_mailbox_folder",
+    "deliveryFolderId": "synthetic_delivery_folder"
+  },
+  "planSha256": "74e1f0f0d59460a689598e79f8bc3506370ce87142fff51ee66a556327ac18f8",
+  "outcomes": [
+    {
+      "ref": "submission_001",
+      "state": "pending",
+      "checkedAt": "2026-10-24T19:05:00Z",
+      "beforeModifiedAt": "2026-10-23T18:00:00Z"
+    },
+    {
+      "ref": "session_001",
+      "state": "pending",
+      "checkedAt": "2026-10-24T19:05:00Z",
+      "beforeModifiedAt": null
+    }
+  ],
+  "externalReviews": [
+    {
+      "area": "drive-trash",
+      "state": "pending",
+      "checkedAt": "2026-10-24T19:05:00Z"
+    },
+    {
+      "area": "vault-and-provider-retention",
+      "state": "pending",
+      "checkedAt": "2026-10-24T19:05:00Z"
+    },
+    {
+      "area": "exports-and-backups",
+      "state": "pending",
+      "checkedAt": "2026-10-24T19:05:00Z"
+    },
+    {
+      "area": "recipient-copies",
+      "state": "pending",
+      "checkedAt": "2026-10-24T19:05:00Z"
+    }
+  ]
+}

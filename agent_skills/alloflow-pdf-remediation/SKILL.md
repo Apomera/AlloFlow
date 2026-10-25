@@ -44,7 +44,7 @@ installed connector's local tools.
 
 1. **Never overstate the result.** Relay the verdict tier and its cautions
    verbatim-in-spirit. "Ready to hand out" is the tool's claim to make, not
-   yours; if the verdict says review-first, tell the teacher to review first.
+   yours; if the verdict level is `review`, tell the teacher to review first.
 2. **The two scores are different artifacts.** The remediation score judges the
    accessible-HTML *content* (semantics, alt text, structure). `pdf_validate_ua`
    judges the exported PDF *bytes* against ISO 14289-1. Never mix them up and
@@ -102,8 +102,9 @@ installed connector's local tools.
    - **fidelity notes** (each one is a real "the output may differ from the
      original here" warning — surface them all),
    - the three written file paths.
-6. For the tagged PDF: offer `pdf_validate_ua` as an independent ISO check
-   (needs no key, ~1 min). A `clause 5, test 1` failure alone usually means
+6. For the tagged PDF: remediation runs the independent veraPDF check by
+   default (`pdfUa` in the report; needs local Java). `pdf_validate_ua`
+   re-checks any PDF on its own (needs no key, ~1 min). A `clause 5, test 1` failure alone usually means
    the pipeline *withheld* the PDF/UA identification on purpose because the
    file didn't earn it — report it as "not claiming conformance", not as a
    defect it forgot.
@@ -258,8 +259,9 @@ distribution, not just "done". A cancelled batch keeps its partial scoreboard
 
 | Field | Meaning |
 | --- | --- |
-| `verdict` | Distribution readiness (ready / cautions / review-first). Relay it. |
+| `verdict` | Distribution readiness: `level` is `ready`, `caution` or `review`. Relay it. |
+| `deliveryExplanation` | Plain-language `headline` plus, per withhold code, `meaning` and `nextStep`. Read these to the teacher instead of raw codes. |
 | `aiVerificationIncomplete` | AI semantic audit didn't fully complete; score leans structural. Disclose. |
 | `integrityWarning` / `fidelityNotes` | Content may differ from the original (numbers, tables, reading order, stripped headers…). Surface every note. |
 | `estimatedMinimumScore` | Floor estimate when the exact score was withheld. Say "at least N", never "N". |
-| `taggedPdfError` | Tagged export failed; HTML output is still valid. |
+| `taggedPdfError` | No tagged PDF was delivered. Usually a deliberate withhold (for example `content_coverage_requires_review`, `active_content_scan_unavailable`, `distribution_review_required`), not a crash; `deliveryExplanation` says why and what to do. The accessible HTML is still written. |

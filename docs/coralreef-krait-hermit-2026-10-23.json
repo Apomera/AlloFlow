@@ -1,0 +1,179 @@
+{
+  "checkedOn": "2026-10-23",
+  "scope": "Guide-only specimens; no Explore population or placement changes.",
+  "specimens": [
+    {
+      "meta": {
+        "id": "banded_sea_krait",
+        "group": "reptile",
+        "scientific": "Laticauda colubrina",
+        "iucn": "LC",
+        "iucnYear": null,
+        "lookalikes": [
+          "giant_moray",
+          "ribbon_eel"
+        ]
+      },
+      "speciesText": {
+        "name": "Banded sea krait (yellow-lipped sea krait)",
+        "marks": [
+          "A long, slender body has dark rings around a blue-grey background",
+          "The small head has a yellow snout and upper lip",
+          "The tail is flattened from side to side into a vertical paddle",
+          "Broad belly scales run underneath the body, which has no fins"
+        ],
+        "role": "An eel-hunting reptile that searches narrow reef crevices for prey.",
+        "fact": "Its life links land and sea: it hunts underwater, then comes ashore to rest, shed its skin and lay eggs."
+      },
+      "marineProfile": {
+        "habitat": "Tropical Indo-Pacific coral reefs, rocky shores and nearby islands. Often found in shallow water; the New Zealand Herpetological Society reports hunting dives to 60 m.",
+        "diet": "Mostly eels, with some other small fish. Larger females can take larger prey than males.",
+        "behavior": "Usually searches for prey alone, bending its body through reef gaps. It returns to sheltered places on land between trips to sea.",
+        "observe": "Compare its paddle tail and broad belly scales with the long fin edging the giant moray and ribbon eel. In the wild, watch from a distance without touching this venomous animal.",
+        "sources": [
+          "dx-worms-banded_sea_krait",
+          "dx-auckland-banded_sea_krait",
+          "dx-nparks-banded_sea_krait",
+          "dx-nzhs-banded_sea_krait",
+          "dx-reptiledb-banded_sea_krait"
+        ]
+      },
+      "evidence": {
+        "taxonomy": "WoRMS accepts Laticauda colubrina (Schneider, 1799); the Reptile Database places it in Elapidae, Laticaudinae. The product reptile group is appropriate.",
+        "conservation": "Auckland Zoo and the New Zealand Herpetological Society report global IUCN LC. The direct IUCN assessment returned HTTP 403 and its DOI could not be opened. The 2010 citation is discoverable, but no assessment year was verified from that assessment, so iucnYear remains null. Singapore EN and New Zealand Vagrant are regional classifications and are not substituted for global status.",
+        "inaccessibleAssessment": "https://www.iucnredlist.org/species/176750/7296975",
+        "morphology": "NParks supports the slender body, small distinct head and paddle tail; Auckland Zoo supports body colour and yellow face; Reptile Database supports wide ventral scales. Tail compression is lateral, so the paddle is vertical during level swimming. An eel-like continuous dorsal fin would be incorrect.",
+        "ecology": "NZHS supports solitary foraging, larger prey taken by females and dives to 60 m. Auckland Zoo notes typical shallow water under 10 m; the larger depth records do not imply that all individuals routinely dive that deep.",
+        "model": {
+          "totalLengthM": 1.2,
+          "representative": true,
+          "maximum": false,
+          "depthM": [
+            0,
+            60
+          ],
+          "habit": "solitary",
+          "notes": "Representative adult length, below the zoo-reported 1.7 m female length. Use gently curved local geometry and a restrained swimming wave. Keep the placement root fixed. Yellow upper lip, dark head, blue-grey bands and vertical paddle should remain readable from multiple angles."
+        },
+        "comparisons": "Giant moray and ribbon eel are broad shape contrasts within the existing guide, not taxonomic relatives or a comprehensive sea-snake identification key."
+      }
+    },
+    {
+      "meta": {
+        "id": "white_spotted_hermit_crab",
+        "group": "invertebrate",
+        "scientific": "Dardanus megistos",
+        "iucn": "NE",
+        "iucnYear": null,
+        "lookalikes": [
+          "porcelain_anemone_crab",
+          "peacock_mantis_shrimp"
+        ]
+      },
+      "speciesText": {
+        "name": "White-spotted hermit crab",
+        "marks": [
+          "Orange-red legs and claws carry pale spots edged with dark rings",
+          "The left claw is larger than the right claw",
+          "Reddish bristles fringe the legs, and long pale antennae extend forward",
+          "The front body emerges from the opening of a carried spiral shell"
+        ],
+        "role": "A bottom-dwelling predator and scavenger that feeds on a variety of animals.",
+        "fact": "The shell is borrowed from a sea snail. It protects the soft abdomen, while the legs and claws reach out through the opening."
+      },
+      "marineProfile": {
+        "habitat": "Indo-Pacific reef flats, rocky slopes, seagrass beds and mangrove areas. A Raffles Bulletin of Zoology survey gives a depth range from the intertidal zone to about 50 m.",
+        "diet": "Small animals such as worms and molluscs, plus carrion. A 2023 study also documented predation on juvenile sandfish sea cucumbers.",
+        "behavior": "Walks across the seabed while carrying its shell and uses its claws to handle food. It can pull back inside the shell when disturbed.",
+        "observe": "Find the larger left claw and the legs emerging from the shell. Compare the compact, flattened porcelain anemone crab and the long, segmented peacock mantis shrimp; shell shape alone cannot identify the occupant.",
+        "sources": [
+          "dx-worms-white_spotted_hermit_crab",
+          "dx-raffles-white_spotted_hermit_crab",
+          "dx-doris-white_spotted_hermit_crab",
+          "dx-predation-white_spotted_hermit_crab",
+          "dx-spc-white_spotted_hermit_crab"
+        ]
+      },
+      "evidence": {
+        "taxonomy": "WoRMS / DecaNet accepts Dardanus megistos (Herbst, 1804) in Diogenidae. Common-name and synonym spellings were checked against that record.",
+        "conservation": "Pacific Community (SPC) 2021 Appendix 4 labels the species IUCN Not Evaluated. No newer global assessment was found in this check; NE is the sourced category, not an inference from absence. No assessment year is assigned.",
+        "morphology": "DORIS identification photographs and text support the markings and left-claw asymmetry. Its shell is an external shelter, not a rigid part of the crab body. The 2018 survey Fig. 4C independently illustrates the taxon.",
+        "ecology": "The 2018 Raffles account supports habitat and approximately 0 to 50 m depth. Its broad 50 to 500 m tangle-net collection interval is not a confirmed 500 m occurrence; the explicit habitat range is used. The 2023 experiments support the predatory feeding account without implying trial consumption rates apply to undisturbed wild populations.",
+        "model": {
+          "overallSpanM": 0.2,
+          "representative": true,
+          "maximum": false,
+          "depthM": [
+            0,
+            50
+          ],
+          "habit": "bottom",
+          "notes": "The 20 cm shell-plus-extended-limbs composition is an illustrative adult scale, not measured body length or maximum size. Survey specimens have shield lengths of 11 to 26.2 mm; shield, full body, shell and extended span are different measurements. Keep the borrowed shell rigid and the abdomen hidden; animate antennae and small local limb movements without translating the placement root."
+        },
+        "comparisons": "The porcelain anemone crab and peacock mantis shrimp are introductory body-plan contrasts. They are not presented as close taxonomic lookalikes. A borrowed shell varies between individuals."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "dx-worms-banded_sea_krait",
+      "text": "Uetz, P. (ed.). The Reptile Database / WoRMS. Laticauda colubrina (Schneider, 1799): accepted name, AphiaID 344083 (accessed October 2026).",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=344083",
+      "urlLabel": "marinespecies.org"
+    },
+    {
+      "id": "dx-auckland-banded_sea_krait",
+      "text": "Auckland Zoo. Yellow-Lipped Sea Krait: colour, size, amphibious habits, eel diet and global IUCN Least Concern category (accessed October 2026).",
+      "url": "https://www.aucklandzoo.co.nz/animals/yellow-lipped-sea-krait",
+      "urlLabel": "aucklandzoo.co.nz"
+    },
+    {
+      "id": "dx-nparks-banded_sea_krait",
+      "text": "Singapore National Parks Board. Laticauda colubrina: body and tail shape, habitat and feeding. Its Singapore Red Data Book category is regional, not the global IUCN category.",
+      "url": "https://www.nparks.gov.sg/florafaunaweb/fauna/2/4/247",
+      "urlLabel": "nparks.gov.sg"
+    },
+    {
+      "id": "dx-nzhs-banded_sea_krait",
+      "text": "New Zealand Herpetological Society. Yellow-lipped sea krait: ecology, reported dives to 60 m, diet and land use (accessed October 2026).",
+      "url": "https://www.reptiles.org.nz/herpetofauna/native/laticauda-colubrina",
+      "urlLabel": "reptiles.org.nz"
+    },
+    {
+      "id": "dx-reptiledb-banded_sea_krait",
+      "text": "The Reptile Database. Laticauda colubrina: diagnostic belly scales, lateral nostrils, yellow upper lip and taxonomy (accessed October 2026).",
+      "url": "https://reptile-database.reptarium.cz/species?genus=Laticauda&species=colubrina",
+      "urlLabel": "reptile-database.reptarium.cz"
+    },
+    {
+      "id": "dx-worms-white_spotted_hermit_crab",
+      "text": "DecaNet eds. (2026). DecaNet / WoRMS. Dardanus megistos (Herbst, 1804): accepted name, AphiaID 208700.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=208700",
+      "urlLabel": "marinespecies.org"
+    },
+    {
+      "id": "dx-raffles-white_spotted_hermit_crab",
+      "text": "Malay, M.C.D., Rahayu, D.L. and Chan, T.-Y. (2018). Hermit crabs from the PANGLAO 2004 Expedition. Raffles Bulletin of Zoology 66: 23-65; Dardanus megistos account p. 51, photograph Fig. 4C and distribution table.",
+      "url": "https://lkcnhm.nus.edu.sg/app/uploads/2018/01/66rbz023-065.pdf",
+      "urlLabel": "lkcnhm.nus.edu.sg"
+    },
+    {
+      "id": "dx-doris-white_spotted_hermit_crab",
+      "text": "Le Bris, S. and Noel, P. (2021). DORIS: Dardanus megistos. Illustrated identification of spots, bristles, unequal claws, antennae, eyes and borrowed shells.",
+      "url": "https://doris.ffessm.fr/ref/specie/2195",
+      "urlLabel": "doris.ffessm.fr"
+    },
+    {
+      "id": "dx-predation-white_spotted_hermit_crab",
+      "text": "Caasi, O.J.C., Gosselin, L.A. and Juinio-Menez, M.A. (2023). Size-dependent predation on juvenile sandfish by seagrass-associated crabs. Journal of the Marine Biological Association of the United Kingdom 103, e84.",
+      "url": "https://doi.org/10.1017/S0025315423000735",
+      "urlLabel": "doi.org"
+    },
+    {
+      "id": "dx-spc-white_spotted_hermit_crab",
+      "text": "Saulei, S. et al. (2021). Rapid coastal assessment of Tuna Bay, Papua New Guinea. Pacific Community; Appendix 4, p. 47 lists Dardanus megistos as IUCN Not Evaluated.",
+      "url": "https://www.pacific-r2r.org/sites/default/files/2021-05/RapCA_Tuna_Bay_PNG.pdf",
+      "urlLabel": "pacific-r2r.org"
+    }
+  ]
+}

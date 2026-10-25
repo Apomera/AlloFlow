@@ -2,9 +2,10 @@
 
 The Class Mailbox is a tiny message-drop that runs on **your own Google
 account** (Google Apps Script). It lets students join live sessions and open
-image-rich homework QR codes **without any accounts, apps, or district IT** —
-AlloFlow maintainer servers are never involved. Live state and hosted homework
-remain in the Google account chosen by the teacher.
+image-rich homework QR codes without separate student app accounts or installs.
+School approval and the account's deployment restrictions still apply. AlloFlow
+maintainer servers are not the mailbox backend; live state and hosted homework
+remain in the Google account chosen for the deployment.
 
 ## Deploy steps
 
@@ -107,7 +108,7 @@ reachable under the narrower scope.
 | Data | Where | Lifetime |
 | --- | --- | --- |
 | Live messages and session documents | Apps Script cache in **your** Google account | eligible for early eviction; requested expiry at most 45 min or 6 h |
-| Live-session markers and random join secrets | Apps Script Properties in **your** Google account | at most 6 h |
+| Live-session markers and random join secrets | Apps Script Properties in **your** Google account | absolute 6 h access window in v26; marker/cache cleanup on close, lookup or pruning, not a scheduled physical purge |
 | Homework pack manifests and chunks | AlloFlow Class Mailbox folder in **your** Drive | until you delete them |
 | Completed mailbox student submissions (JSON) | the same private Drive folder | until you delete them according to school policy |
 | Admin token recovery note | the same private Drive folder | until rotated or deleted |
@@ -120,6 +121,21 @@ signals, read a privacy-filtered session view, and modify only their own
 approved fields. The admin token is required for teacher broadcasts, complete
 class state, ending sessions, and pack management; it is never placed in a QR.
 Treat a QR like a classroom invitation and the admin token like a password.
+
+**v26 live-session expiry:** redeploy the reviewed script before relying on the
+absolute six-hour access limit. Cached secrets retain their original creation
+deadline, and an eviction/reconnect cannot extend it by another six hours.
+Malformed, future or expired durable markers cannot rewarm the cache. Normal
+warm polling does not read Script Properties on every request. Use `end` or
+`closeall` to close a live session; manually deleting a Script Property does
+not instantly revoke an already validated cache envelope.
+
+Ending a session does not delete Drive submissions or delivered documents.
+`delpack` moves its located manifest, declared chunks and activity sidecars to
+trash; it does not remove those other files or establish permanent deletion.
+Use the [mailbox retention and deletion runbook](../../docs/audits/2026-10-24-school-district/mailbox-deletion-runbook.md)
+for exact-scope review, holds, trash/permanent-deletion distinctions and an
+offline evidence packet. Do not erase held or unreviewed records.
 
 ## School accounts and student privacy
 
@@ -292,3 +308,17 @@ against the current retry window, so a delayed response from an earlier attempt
 cannot replace a newer pending response. Existing classroom activity request
 fields remain compatible. After replacing Code.gs, deploy a new Web App version
 using the same URL and reconnect the mailbox in AlloFlow.
+
+## Participant roster protection (revision 25)
+
+Revision 25 checks whole roster replacements against the latest stored record
+under the script lock. Students cannot remove or change teacher assignments or
+unknown retained metadata. Compatible replacements preserve those fields exactly;
+updated clients use individual join fields so a reconnect also preserves concurrent
+teacher changes. Fixed metadata schemas reject inherited JavaScript property names.
+Normal progress, reading preferences and optional student-field deletion remain
+supported. See the [authorization validation record](../../docs/audits/2026-10-24-school-district/session-transport-authorization-followup.md).
+
+The source and tests alone do not update an existing Google deployment. After a
+reviewed release, update the owned Web App version and verify assignment followed
+by reconnect on staging before classroom rollout.

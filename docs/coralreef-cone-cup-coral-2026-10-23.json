@@ -1,0 +1,183 @@
+{
+  "checkedOn": "2026-10-23",
+  "scope": "Guide-only specimens; no Explore population or placement changes.",
+  "specimens": [
+    {
+      "meta": {
+        "id": "textile_cone",
+        "group": "invertebrate",
+        "scientific": "Conus textile",
+        "iucn": "LC",
+        "iucnYear": null,
+        "lookalikes": [
+          "giant_triton",
+          "giant_clam"
+        ]
+      },
+      "speciesText": {
+        "name": "Textile cone",
+        "marks": [
+          "Smooth, tapered shell with a pointed spire at the broad end",
+          "Brown lines form a fine net around many pale triangular patches",
+          "One long, narrow opening runs along the side of the shell",
+          "A pale muscular foot with brown mottling extends beneath the shell"
+        ],
+        "role": "A predator of other marine snails that searches sand, rubble and reef surfaces for prey.",
+        "fact": "It hunts using a hollow tooth that injects venom. A beautiful shell can still hold a living animal; observe it without handling it."
+      },
+      "marineProfile": {
+        "habitat": "Indo-Pacific reefs, sandy areas and coral rubble, often beneath rocks. The Conus Biodiversity Website records it from the intertidal zone to about 50 m deep.",
+        "diet": "Mainly other sea snails, including cowries and other cone snails.",
+        "behavior": "Moves on a muscular foot, usually sheltering by day and hunting at night. A flexible siphon draws water into the mantle cavity.",
+        "observe": "Rotate to find the long opening, then compare the low spire and tapered shape with the giant triton. The giant clam instead has two hinged shells.",
+        "sources": [
+          "dx-worms-textile_cone",
+          "dx-ummz-textile_cone",
+          "dx-qm-textile_cone",
+          "dx-qatar-textile_cone"
+        ]
+      },
+      "evidence": {
+        "taxonomy": "WoRMS lists Conus textile Linnaeus, 1758 as the accepted species; Cylinder textile is represented under Conus textile.",
+        "conservation": "LC is explicitly reported by Qatar e-Nature and corroborated by a 2024 Frontiers review. The direct IUCN page and DOI were inaccessible. Secondary citations identify a 2013 assessment, but that year was not verified from the assessment itself, so iucnYear is null rather than guessed.",
+        "statusCrossCheck": "https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2024.1387984/full",
+        "inaccessibleAssessment": "https://www.iucnredlist.org/species/192316/2071675",
+        "morphology": "Michigan account supports tapered convex shell, moderate pointed spire, aperture, triangular network, soft-part coloration and spiral bands. Qatar account independently supports shell form and typical adult size. Pattern and colour vary; model is an illustrative typical form.",
+        "ecology": "Michigan supports intertidal to about 50 m, sand/rubble/rock habitat and predominantly gastropod prey. Queensland Museum explicitly calls the species a mollusc-eater. Do not repeat the Lizard Island Field Guide fish-eating shorthand or the Qatar account main-diet wording: these conflict with the more detailed monograph and museum classification.",
+        "behavior": "Qatar e-Nature supports sheltering during the day and nocturnal hunting. Australian Museum cone-shell guide supports the muscular foot and venomous tooth. DORIS species account describes the siphon as respiratory; no swimming or shell flexing is implied.",
+        "behaviorCrossChecks": [
+          "https://australian.museum/learn/animals/molluscs/cone-shells-conus/",
+          "https://doris.ffessm.fr/Especes/Conus-textile-Cone-drap-d-or-1184/%28rOffset%29/12"
+        ],
+        "model": {
+          "shellLengthM": 0.09,
+          "shellWidthM": 0.054,
+          "representative": true,
+          "maximum": false,
+          "depthM": [
+            0,
+            50
+          ],
+          "habit": "bottom",
+          "notes": "Typical 9 cm shell, within published 40–150 mm range and reported adult 9–10 cm. Keep the hard shell fixed; modest local siphon/soft-body movement is illustrative. Shell aperture belongs on the underside-facing side of a crawling animal; do not add two hinged valves."
+        },
+        "comparisons": "Giant triton and giant clam are broad body-plan comparisons available in the current guide, not close taxonomic lookalikes. They distinguish one low-spired shell, one tall-spired shell and two hinged valves."
+      }
+    },
+    {
+      "meta": {
+        "id": "orange_cup_coral",
+        "group": "coral",
+        "scientific": "Tubastraea coccinea",
+        "iucn": "NE",
+        "iucnYear": null,
+        "lookalikes": [
+          "magnificent_anemone",
+          "cauliflower_coral"
+        ]
+      },
+      "speciesText": {
+        "name": "Orange cup coral (sun coral)",
+        "marks": [
+          "A cluster of tube-shaped cups rises from a shared hard base",
+          "Red or orange tissue covers the cups",
+          "Fine yellow tentacles form a ring around each central mouth",
+          "Many small polyps make a rounded mound rather than long branches"
+        ],
+        "role": "A colony of small predators that catches drifting animal plankton. It grows on hard surfaces without building a large reef framework.",
+        "fact": "It has no photosynthetic algae living in its tissues, so it can feed and grow in shaded places. Introduced populations can compete with native corals in the Atlantic."
+      },
+      "marineProfile": {
+        "habitat": "Shaded rock, overhangs and artificial surfaces. Native to the Indo-Pacific and eastern Pacific; introduced in parts of the Atlantic. Smithsonian reports it at depths down to 60 m.",
+        "diet": "Tiny drifting animals, called zooplankton, caught by the tentacles.",
+        "behavior": "Polyps often extend their tentacles at night to feed, then draw them back into their hard cups. New polyps can bud from the colony.",
+        "observe": "Look for a separate mouth and ring of tentacles in each cup. Compare this colony with the magnificent anemone's single large oral disc and the cauliflower coral's knobbly branches.",
+        "sources": [
+          "dx-worms-orange_cup_coral",
+          "dx-smithsonian-orange_cup_coral",
+          "dx-usgs-orange_cup_coral",
+          "dx-aquarium-orange_cup_coral",
+          "dx-sealifebase-orange_cup_coral"
+        ]
+      },
+      "evidence": {
+        "taxonomy": "WoRMS World List of Scleractinia lists accepted Tubastraea coccinea Lesson, 1830. ITIS, Smithsonian and several older ecological sources use 1829. The product scientific name does not include an authority year; the difference is documented here.",
+        "conservation": "Aquarium of the Pacific explicitly says the species has not been evaluated by IUCN; SeaLifeBase independently lists Not Evaluated (N.E.). Use NE and null year. Do not mistake Singapore national DD status or an invasive-species impact classification for the global IUCN extinction-risk category.",
+        "morphology": "USGS supports orange/red polyp tissue, yellow/orange tentacles and rounded 14 cm colonies. Smithsonian specifies cups up to 11 mm diameter, projection up to 4 cm, a white skeleton under the tissue and variable spacing. Four marks describe the illustrated compact colony rather than imply all colonies share identical spacing.",
+        "ecology": "Smithsonian documents native Indo-Pacific/eastern-Pacific distribution, introduction into the Atlantic, zooplankton feeding, absence of symbiotic algae and a non-reef-building habit. Its Ecology text reports down to 60 m, while the parameters table records a 78 m Louisiana observation. The profile attributes 60 m to that account and does not claim it is an absolute limit.",
+        "behavior": "Aquarium of the Pacific supports usual nighttime tentacle extension; Smithsonian supports budding of new polyps. Flexible tentacle motion is a gentle illustrative current response, while the calcareous cups and placement root remain fixed.",
+        "caveat": "The Smithsonian page has an inconsistent Primary Producer database label and a later hermatypic typo. Its detailed Ecology/Life History descriptions and the other sources agree this animal lacks photosynthetic algae and captures prey; the proposed copy follows those descriptions.",
+        "model": {
+          "colonyWidthM": 0.14,
+          "cupDiameterM": 0.011,
+          "cupProjectionMaxM": 0.04,
+          "representative": true,
+          "maximum": false,
+          "depthM": [
+            1,
+            60
+          ],
+          "habit": "sessile",
+          "notes": "Use a small mound with distinct short cups, orange-red tissue, pale-yellow tapered tentacles and visible central mouths. Keep cups rigid and gently sway only flexible tentacles. A 14 cm colony is a cited common upper size, not a universal biological maximum."
+        },
+        "comparisons": "Magnificent anemone and cauliflower coral are useful introductory body-plan contrasts, not close species-level lookalikes. No species name is included in any field-mark clue."
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "dx-worms-textile_cone",
+      "text": "MolluscaBase / World Register of Marine Species. Conus textile Linnaeus, 1758: accepted name and synonyms (accessed October 2026).",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxlist&tName=Conus+textile",
+      "urlLabel": "marinespecies.org"
+    },
+    {
+      "id": "dx-ummz-textile_cone",
+      "text": "Rockel, D., Korn, W. and Kohn, A.J. (1995). Manual of the Living Conidae: Conus textile account, reproduced by the University of Michigan Conus Biodiversity Website. Morphology, depth and feeding.",
+      "url": "https://ummz-mollusks-conus.apps.gnosis.lsa.umich.edu/recordview/Conus_textile_2909l1l_21111111.html",
+      "urlLabel": "umich.edu"
+    },
+    {
+      "id": "dx-qm-textile_cone",
+      "text": "Queensland Museum. Gastropods: identifies Conus textile as a mollusc-eating cone snail (accessed October 2026).",
+      "url": "https://www.museum.qld.gov.au/learn-and-discover/animals-of-queensland/molluscs/gastropods",
+      "urlLabel": "museum.qld.gov.au"
+    },
+    {
+      "id": "dx-qatar-textile_cone",
+      "text": "Qatar e-Nature. Conus textile: shell identification, size and global IUCN Least Concern category. The guide does not give an assessment year (accessed October 2026).",
+      "url": "https://www.enature.qa/specie/conus-textile/",
+      "urlLabel": "enature.qa"
+    },
+    {
+      "id": "dx-worms-orange_cup_coral",
+      "text": "Hoeksema, B.W., Cairns, S. and Samimi-Namin, K. (2026). World List of Scleractinia / WoRMS: accepted name Tubastraea coccinea Lesson, 1830. Older references use 1829.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxlist&tName=Tubastraea",
+      "urlLabel": "marinespecies.org"
+    },
+    {
+      "id": "dx-smithsonian-orange_cup_coral",
+      "text": "Smithsonian Environmental Research Center. NEMESIS: Tubastraea coccinea. Morphology, ecology, native range and introduced populations (accessed October 2026).",
+      "url": "https://invasions.si.edu/nemesis/species_summary/53808",
+      "urlLabel": "invasions.si.edu"
+    },
+    {
+      "id": "dx-usgs-orange_cup_coral",
+      "text": "U.S. Geological Survey. Nonindigenous Aquatic Species: Orange cup coral. Colony shape, colour and introduced range (accessed October 2026).",
+      "url": "https://nas.er.usgs.gov/queries/FactSheet.aspx?speciesID=2586",
+      "urlLabel": "usgs.gov"
+    },
+    {
+      "id": "dx-aquarium-orange_cup_coral",
+      "text": "Aquarium of the Pacific. Sun Coral: nocturnal tentacle extension, feeding and IUCN Not Evaluated status (accessed October 2026).",
+      "url": "https://www.aquariumofpacific.org/onlinelearningcenter/species/sun_coral",
+      "urlLabel": "aquariumofpacific.org"
+    },
+    {
+      "id": "dx-sealifebase-orange_cup_coral",
+      "text": "SeaLifeBase. Tubastraea coccinea: shaded habitats, colour and IUCN Not Evaluated status (accessed October 2026).",
+      "url": "https://sealifebase.org/FieldGuide/FieldGuideSummary.php?GenusName=Tubastraea&SpeciesName=coccinea&print=&sps=",
+      "urlLabel": "sealifebase.org"
+    }
+  ]
+}

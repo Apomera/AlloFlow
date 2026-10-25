@@ -11,6 +11,8 @@ npm run verify:remediation
 
 The nested installation is required: root dependencies alone do not provide the React and ReactDOM UMD files read by the tests. The command runs the maintained source, generated-module, rendered-fidelity, and export-acceptance suites in [the suite manifest](../dev-tools/remediation_validation.json).
 
+Run the complete Windows gate with the normal Windows user identity. Its real process-tree cleanup and directory-junction rejection tests require operating-system capabilities that a managed execution sandbox can block. A sandbox's failed junction creation or `taskkill` authentication is a setup failure; do not skip these tests or treat unconfirmed cleanup as a pass. If a sandbox also remaps the temporary directory or browser cache, use a writable workspace temporary directory and the installed Playwright browser location for local diagnosis, then obtain the complete passing run in the native environment. Neither administrator privileges nor disabling browser security is required.
+
 The `remediation-preservation` job in [verify.yml](../.github/workflows/verify.yml) runs the same command on pull requests and on pushes to every branch. The job fails on test or setup errors. Making that status mandatory for merging remains a repository branch-protection setting.
 
 Reports go to `test-results/remediation-validation/` by default. Use a new evidence directory for a retained local run:

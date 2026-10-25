@@ -1,0 +1,364 @@
+{
+  "checkedAt": "2026-10-24T19:40:01.500Z",
+  "scope": "Local implementation and synthetic verification only; no deployment or district certification.",
+  "target": "Gemini Canvas / Portland Public Schools, Maine K-12; real-record Canvas mode remains disabled absent explicit deployment policy.",
+  "testEnvironment": "Vitest/jsdom and real existing vault/crypto modules. Test-only iteration setting uses the library minimum; isolated Edge browser uses production 600,000-iteration default. Windows TEMP/TMP were placed under the task workspace to avoid sandbox cache rename failures.",
+  "tests": {
+    "passed": 569,
+    "fileCount": 48,
+    "groups": [
+      {
+        "name": "Shared core, durability, migration, cancellation and host delivery",
+        "passed": 53,
+        "files": [
+          "tests/sensitive_workspace.test.js",
+          "tests/sensitive_workspace_races.test.js",
+          "tests/sensitive_workspace_migration.test.js",
+          "tests/sensitive_workspace_app_integration.test.js"
+        ],
+        "log": "tmp/protected-clinical-20261024/core-final.log"
+      },
+      {
+        "name": "Canvas preference isolation and existing storage contracts",
+        "passed": 66,
+        "files": [
+          "tests/clinical_prefs_mirror.test.js",
+          "tests/utils_pure_storage.test.js",
+          "tests/settings_persistence.test.js",
+          "tests/storage_security_integration_contract.test.js",
+          "tests/device_storage_bridge.test.js"
+        ]
+      },
+      {
+        "name": "Report Writer protected boundary and existing workflows",
+        "passed": 367,
+        "files": [
+          "tests/report_writer_background_refresh.test.js",
+          "tests/report_writer_case_documents.test.js",
+          "tests/report_writer_citation_integrity.test.js",
+          "tests/report_writer_close_guard.test.js",
+          "tests/report_writer_corrections.test.js",
+          "tests/report_writer_draft_selection.test.js",
+          "tests/report_writer_eligibility_language.test.js",
+          "tests/report_writer_export_quality.test.js",
+          "tests/report_writer_i18n.test.js",
+          "tests/report_writer_percentiles.test.js",
+          "tests/report_writer_prior_scores.test.js",
+          "tests/report_writer_protected_workspace.test.js",
+          "tests/report_writer_psycheck.test.js",
+          "tests/report_writer_quote_check.test.js",
+          "tests/report_writer_reference_import.test.js",
+          "tests/report_writer_reference_retrieval.test.js",
+          "tests/report_writer_report_values.test.js",
+          "tests/report_writer_score_classification.test.js",
+          "tests/report_writer_score_entry.test.js",
+          "tests/report_writer_score_entry_ui.test.js",
+          "tests/report_writer_score_paste.test.js",
+          "tests/report_writer_score_table.test.js",
+          "tests/report_writer_sensitive_prompt_review.test.js",
+          "tests/report_writer_significance.test.js",
+          "tests/report_writer_stale_facts.test.js",
+          "tests/report_writer_step_a11y.test.js",
+          "tests/report_writer_stop_runs.test.js",
+          "tests/report_writer_style_and_identity.test.js",
+          "tests/report_writer_ui.test.js",
+          "tests/report_writer_verifier_coverage.test.js",
+          "tests/report_writer_work_safety.test.js"
+        ],
+        "log": "tmp/protected-clinical-20261024/report-writer-final.log"
+      },
+      {
+        "name": "BehaviorLens local preservation and disabled legacy cloud sync",
+        "passed": 17,
+        "files": [
+          "tests/behavior_lens_cloud_roster.test.js",
+          "tests/behavior_lens_workspace_lifecycle.test.js"
+        ],
+        "log": "tmp/protected-clinical-20261024/bl-protected-local-lifecycle.log"
+      },
+      {
+        "name": "Dynamic Assessment clinical isolation and host adapter",
+        "passed": 25,
+        "files": [
+          "tests/da_clinical_isolation.test.js",
+          "tests/dynamic_assessment_host_adapter_extraction.test.js"
+        ],
+        "additionalCheck": "node dev-tools/check_da_clinical_isolation.cjs"
+      },
+      {
+        "name": "BehaviorLens and Dynamic Assessment protected workspaces and sensitive AI",
+        "passed": 41,
+        "files": [
+          "tests/behavior_lens_protected_workspace.test.js",
+          "tests/behavior_lens_sensitive_prompt_review.test.js",
+          "tests/dynamic_assessment_protected_workspace.test.js",
+          "tests/dynamic_assessment_sensitive_ai_review.test.js"
+        ],
+        "log": "tmp/protected-clinical-20261024/clinical-adapters-final.log"
+      }
+    ]
+  },
+  "nativeBrowser": {
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "checks": {
+      "realEditorAbsentBeforeSetup": true,
+      "noCanaryBeforeUnlock": true,
+      "downloadEncrypted": true,
+      "beforeConfirmationOriginalsRetained": true,
+      "originalVisibleAfterUnlock": true,
+      "durableCiphertextAndMirrorCleanup": true,
+      "olderCopyPreserved": true,
+      "aiOffByDefault": true,
+      "lockHidesEditor": true,
+      "wrongPasswordStaysLocked": true,
+      "finalUiDraftSavedBeforeLock": true,
+      "mobileNoHorizontalOverflow": true,
+      "mobileReadableInputSize": true,
+      "globalUnlockedIndicator": true,
+      "reloadRequiresUnlock": true,
+      "offlineRecoveryRestoresLatestDraft": true,
+      "noBrowserErrors": true
+    },
+    "checkCount": 17,
+    "externalRequests": "Blocked; synthetic isolated HTTPS origin, no live district or Canvas service.",
+    "screenshotsVisuallyInspected": true,
+    "artifacts": [
+      "protected-records-browser-checks.json",
+      "protected-records-desktop.png",
+      "protected-records-mobile.png"
+    ]
+  },
+  "sources": [
+    {
+      "file": "sensitive_workspace_module.js",
+      "bytes": 50677,
+      "sha256": "43b675d24fd8fea5d034994d29638e82387771af03a2dab5cc6cb0c02cf74a91"
+    },
+    {
+      "file": "behavior_lens_module.js",
+      "bytes": 2640555,
+      "sha256": "4254efcf92d485f71b5d5732185b8a4cade5a287ac66810b5a9f6b71fb749d4c"
+    },
+    {
+      "file": "behavior_lens_workspace_module.js",
+      "bytes": 84289,
+      "sha256": "e8f4ff4532a68c7af9504ab208c95153ecf8fc2b102217f063f7b1d6a922c780"
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "bytes": 1134796,
+      "sha256": "5b2db25cbf00311ddfcf1e8b948c961aa60455b4bf325abe93ec39002fb59a40"
+    },
+    {
+      "file": "report_writer_module.js",
+      "bytes": 617945,
+      "sha256": "0366d4eb00f1b08f3d7ee6a55ed90232a1e57b63b76b8f914e43ecafe4f3cac1"
+    },
+    {
+      "file": "utils_pure_source.jsx",
+      "bytes": 107998,
+      "sha256": "1031a0c934f89e449d538dca64ef100c96c5b7e396658ad4253a9e6853ed1b48"
+    },
+    {
+      "file": "utils_pure_module.js",
+      "bytes": 108348,
+      "sha256": "c988c6f1a0b6e4d4518e22458bb9c7dc414d5aa9c5cd4dbab51cabff37c6a59a"
+    },
+    {
+      "file": "ui_strings.js",
+      "bytes": 12930912,
+      "sha256": "c4cdbb7abd163d63186b886c1f07f5e29447e9450c9daa10631345b98c3030a3"
+    },
+    {
+      "file": "build.js",
+      "bytes": 118127,
+      "sha256": "d38022ddae307e624c9d9884c370c2b691e6bea067cbafc69e61ed9eafedac07"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "bytes": 3066421,
+      "sha256": "0762b50d2c4901d0d132ad6045ad3a6bd5c883e66e35cfbb29ef233001d45bb4"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3056987,
+      "sha256": "dc4e5ddc8e753a6d25c44cccb61a2ea5d06d9766fe4bd020a3b4d4dbe075ce07"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "bytes": 3056987,
+      "sha256": "dc4e5ddc8e753a6d25c44cccb61a2ea5d06d9766fe4bd020a3b4d4dbe075ce07"
+    },
+    {
+      "file": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "file": "tests/sensitive_workspace_races.test.js",
+      "bytes": 8734,
+      "sha256": "b2ed1b4b5286be11f9b87a6f33b6dcc19d955d336f0f9599adca6ed6b3890cb8"
+    },
+    {
+      "file": "tests/sensitive_workspace_migration.test.js",
+      "bytes": 10022,
+      "sha256": "80b1103d1cdff65d4971dc8d05021f64314e7b96d88596ecf8be8361056a3153"
+    },
+    {
+      "file": "tests/sensitive_workspace_app_integration.test.js",
+      "bytes": 5894,
+      "sha256": "717840f083c0ef9a239752fa8c73c3e6b0b3de3e42919d9bd6ec068bd40de492"
+    },
+    {
+      "file": "tests/clinical_prefs_mirror.test.js",
+      "bytes": 8710,
+      "sha256": "dd6f3a22697214e5ae8b096df925b0791583a4f8908fbe71c0e58e5f9949bf2e"
+    },
+    {
+      "file": "tests/behavior_lens_protected_workspace.test.js",
+      "bytes": 16409,
+      "sha256": "00797fd863180495356c0882324e57217834193b1b1a13d958d41abf8d045732"
+    },
+    {
+      "file": "tests/dynamic_assessment_protected_workspace.test.js",
+      "bytes": 14537,
+      "sha256": "956bf183f1fa22403bdf04541b9559257af613aa9828315e2a5e20fd34abc6df"
+    },
+    {
+      "file": "tests/report_writer_protected_workspace.test.js",
+      "bytes": 10829,
+      "sha256": "3d29f691b89c0a8d0dfaaf02f16ea56178fa78cdbbca6e5ea839619764c4ad5e"
+    }
+  ],
+  "mirrors": [
+    {
+      "file": "sensitive_workspace_module.js",
+      "publicFile": "desktop/web-app/public/sensitive_workspace_module.js",
+      "sha256": "43b675d24fd8fea5d034994d29638e82387771af03a2dab5cc6cb0c02cf74a91",
+      "equal": true
+    },
+    {
+      "file": "behavior_lens_module.js",
+      "publicFile": "desktop/web-app/public/behavior_lens_module.js",
+      "sha256": "4254efcf92d485f71b5d5732185b8a4cade5a287ac66810b5a9f6b71fb749d4c",
+      "equal": true
+    },
+    {
+      "file": "behavior_lens_workspace_module.js",
+      "publicFile": "desktop/web-app/public/behavior_lens_workspace_module.js",
+      "sha256": "e8f4ff4532a68c7af9504ab208c95153ecf8fc2b102217f063f7b1d6a922c780",
+      "equal": true
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "publicFile": "desktop/web-app/public/dynamic_assessment_module.js",
+      "sha256": "5b2db25cbf00311ddfcf1e8b948c961aa60455b4bf325abe93ec39002fb59a40",
+      "equal": true
+    },
+    {
+      "file": "report_writer_module.js",
+      "publicFile": "desktop/web-app/public/report_writer_module.js",
+      "sha256": "0366d4eb00f1b08f3d7ee6a55ed90232a1e57b63b76b8f914e43ecafe4f3cac1",
+      "equal": true
+    },
+    {
+      "file": "utils_pure_module.js",
+      "publicFile": "desktop/web-app/public/utils_pure_module.js",
+      "sha256": "c988c6f1a0b6e4d4518e22458bb9c7dc414d5aa9c5cd4dbab51cabff37c6a59a",
+      "equal": true
+    },
+    {
+      "file": "ui_strings.js",
+      "publicFile": "desktop/web-app/public/ui_strings.js",
+      "sha256": "c4cdbb7abd163d63186b886c1f07f5e29447e9450c9daa10631345b98c3030a3",
+      "equal": true
+    }
+  ],
+  "delivery": {
+    "reviewedAssets": {
+      "sensitive_workspace_module.js": {
+        "bytes": 50677,
+        "integrity": "sha384-FE9Jg6hYIbcwMwaVlSoOxttkJdVuzGEYdUYFmtKR+l8BL8jT64Ooklougwi56KLq",
+        "sha256": "43b675d24fd8fea5d034994d29638e82387771af03a2dab5cc6cb0c02cf74a91"
+      },
+      "behavior_lens_module.js": {
+        "bytes": 2640555,
+        "integrity": "sha384-1zN7aApaskfuCcDZovLb+5A+eOazcR3xhSy8+D7TDz9oU+VmkHLFYky9k/7/NvQQ",
+        "sha256": "4254efcf92d485f71b5d5732185b8a4cade5a287ac66810b5a9f6b71fb749d4c"
+      },
+      "behavior_lens_workspace_module.js": {
+        "bytes": 84289,
+        "integrity": "sha384-97cqccsb9m6YVn953kSKGdionhcAXRiJhGADS1uo7nqU/fUWOZsXzYN8rqatqtUi",
+        "sha256": "e8f4ff4532a68c7af9504ab208c95153ecf8fc2b102217f063f7b1d6a922c780"
+      },
+      "dynamic_assessment_module.js": {
+        "bytes": 1134796,
+        "integrity": "sha384-//AmR4rKUofsxJM41Q5mHpg575/kb0Y3sQMbcSrBzovWSwpbzC3Wan+hdElKnW58",
+        "sha256": "5b2db25cbf00311ddfcf1e8b948c961aa60455b4bf325abe93ec39002fb59a40"
+      },
+      "report_writer_module.js": {
+        "bytes": 617945,
+        "integrity": "sha384-fb+7HF5O4s3JKL9Up2lJGeuHpqnaLeY0ToE1hcs83cHtp8TXbT/5StsyeniwnFn+",
+        "sha256": "0366d4eb00f1b08f3d7ee6a55ed90232a1e57b63b76b8f914e43ecafe4f3cac1"
+      },
+      "utils_pure_module.js": {
+        "bytes": 108348,
+        "integrity": "sha384-D79UW7ppUS3kQ+W75jT/YfBMJEybGJ6SBRE1umW9VG0BJm6bhYcGllwwbTYVASzJ",
+        "sha256": "c988c6f1a0b6e4d4518e22458bb9c7dc414d5aa9c5cd4dbab51cabff37c6a59a"
+      }
+    },
+    "embeddedManifestId": "bed68360a69cbd4382863d9b6d82f56c23421c8a6af4e323799b4d8d4278cd50",
+    "method": "Narrow review of six protected-workspace assets; all other existing manifest records preserved verbatim. No deployment or broad asset approval.",
+    "unrelatedStaleAtReview": [
+      "agent_core_blueprint_service_module.js",
+      "agent_core_ui_adapter_module.js",
+      "app_styles_module.js",
+      "audio_helpers_module.js",
+      "catalog_module.js",
+      "content_engine_module.js",
+      "export_module.js",
+      "generate_dispatcher_module.js",
+      "generation_helpers_module.js",
+      "generation_matrix_module.js",
+      "glossary_helpers_module.js",
+      "resource_read_aloud_module.js",
+      "stem_lab/stem_tool_aquarium.js",
+      "stem_lab/stem_tool_birdlab.js",
+      "stem_lab/stem_tool_decomposer.js",
+      "stem_lab/stem_tool_dna.js",
+      "stem_lab/stem_tool_galaxy.js",
+      "stem_lab/stem_tool_migration.js",
+      "stem_lab/stem_tool_organismid.js",
+      "stem_lab/stem_tool_raptorhunt.js",
+      "stem_lab/stem_tool_weldlab.js",
+      "text_pipeline_helpers_module.js",
+      "ui_strings.js",
+      "view_full_pack_run_module.js",
+      "view_glossary_module.js",
+      "view_sidebar_panels_module.js"
+    ],
+    "unrelatedMirrorMismatchAtReview": [
+      "stem_lab/stem_tool_galaxy.js"
+    ],
+    "publishableRelease": false,
+    "remainingRequirement": "The shared checkout contains unrelated asset work. Coordinate review and complete manifest regeneration before any production build or deployment."
+  },
+  "defaults": {
+    "clinicalAi": "Disabled per feature until deployment approval/configuration; per-request review still required.",
+    "canvasRealRecords": "Disabled until explicit deployment policy.",
+    "ordinaryTeachingAndStudentActivities": "No new password.",
+    "idleLock": "Manual default; optional 5/15/30 minutes.",
+    "reportWriter": "Encrypted autosave after protected setup; explicit session-only preferences honored."
+  },
+  "limits": [
+    "Client access codes and configuration flags do not verify district staff identity or replace server authorization.",
+    "No real student data, Google live Canvas deployment, district account policy, Firebase deployment, or external AI service was exercised.",
+    "Only known clinical local/session/prefs keys are migrated; other-tool originals, downloads, old project files and provider copies remain outside this store.",
+    "Older noncooperating app versions can recreate readable copies; close them before migration. localStorage has no atomic cross-tab read-and-delete.",
+    "Failed saves preserve work by retaining an unlocked window; keep that window secured and open while resolving storage failure.",
+    "Temporary Report Writer source documents are not saved-record backup attachments; preserve or explicitly discard them before locking.",
+    "Legacy clinical cloud sync and DA main-history/delegated-generator publishing are disabled; no clinical server or district SSO was provisioned.",
+    "The shared checkout contains unrelated ongoing asset changes. A coordinated reviewed build, matching CDN publication, and district approval remain required."
+  ]
+}

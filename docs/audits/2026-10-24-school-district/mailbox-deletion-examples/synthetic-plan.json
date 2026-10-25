@@ -1,0 +1,32 @@
+{
+  "kind": "alloflow-mailbox-deletion-plan",
+  "version": 1,
+  "requestRef": "synthetic_request_001",
+  "scope": {
+    "accountRef": "school_account_reference",
+    "scriptId": "synthetic_script_id",
+    "mailboxFolderId": "synthetic_mailbox_folder",
+    "deliveryFolderId": "synthetic_delivery_folder"
+  },
+  "reviewedAt": "2026-10-24T19:00:00Z",
+  "resources": [
+    {
+      "ref": "submission_001",
+      "type": "submission",
+      "id": "synthetic_drive_file_id",
+      "parentId": "synthetic_mailbox_folder",
+      "modifiedAt": "2026-10-23T18:00:00Z",
+      "hold": "unknown",
+      "action": "retain"
+    },
+    {
+      "ref": "session_001",
+      "type": "live-session",
+      "id": "ABC23",
+      "parentId": null,
+      "modifiedAt": null,
+      "hold": "unknown",
+      "action": "retain"
+    }
+  ]
+}

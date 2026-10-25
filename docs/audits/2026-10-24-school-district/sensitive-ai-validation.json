@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-24",
+  "deployment": "Local changes only",
+  "validation": {
+    "rootClinicalAndShared": {
+      "passed": 73,
+      "suites": 8
+    },
+    "familyConnectedAndShared": {
+      "passed": 45,
+      "suites": 3
+    },
+    "reportWriterBroadBeforeCancellationRefinement": {
+      "passed": 106,
+      "suites": 14
+    },
+    "reportWriterFinalBoundaries": {
+      "passed": 18
+    },
+    "reportWriterFinalAffectedRegressions": {
+      "passed": 21
+    },
+    "dynamicAssessment": {
+      "passed": 144,
+      "suites": 7
+    },
+    "historyAndLauncher": {
+      "passed": 15
+    },
+    "countsOverlap": true
+  },
+  "files": [
+    {
+      "path": "identifier_redaction_module.js",
+      "sha256": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179",
+      "mirrorEqual": true
+    },
+    {
+      "path": "behavior_lens_module.js",
+      "sha256": "2a0e57b398f186b3722edea1baaa930ac2b4342aa0969fe296f398d8b585f2da",
+      "mirrorEqual": true
+    },
+    {
+      "path": "report_writer_module.js",
+      "sha256": "a422c7cb12d49eb2d2ba8a5032bafe0cace2917f99d53c11aff70bc1b4729e4a",
+      "mirrorEqual": true
+    },
+    {
+      "path": "dynamic_assessment_module.js",
+      "sha256": "95bd9c9af9eb2893c16984fc7b039e818ecf50bbf32a2dde2e6d49cb965d3535",
+      "mirrorEqual": true
+    },
+    {
+      "path": "changelog.html",
+      "sha256": "b4e1541ac39747bc3eed38de5a779e48f7ff835152ba7fc5662e6cc4fff31c4f",
+      "mirrorEqual": true
+    }
+  ],
+  "notes": [
+    "No live model or real student-record requests used in these tests",
+    "Browser proof uses synthetic data and blocks external requests",
+    "Full application build, authenticated PPS Canvas validation, and publication remain release work"
+  ]
+}

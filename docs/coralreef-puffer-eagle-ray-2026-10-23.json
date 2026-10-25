@@ -1,0 +1,155 @@
+{
+  "checkedOn": "2026-10-23",
+  "specimens": [
+    {
+      "meta": {
+        "id": "blackspotted_puffer",
+        "group": "fish",
+        "scientific": "Arothron nigropunctatus",
+        "iucn": "LC",
+        "iucnYear": 2014,
+        "lookalikes": [
+          "porcupinefish",
+          "yellow_boxfish"
+        ]
+      },
+      "speciesText": {
+        "name": "Blackspotted puffer (dogface puffer)",
+        "marks": [
+          "Rounded body with a blunt, doglike snout and small mouth",
+          "Irregular black spots scatter across the body; dark patches surround the eyes and snout",
+          "Small side fins and short fins near the back of the body propel a mostly steady body",
+          "Fine prickles cover the skin rather than long, obvious spines"
+        ],
+        "role": "Feeds on reef invertebrates, including corals, sponges, molluscs and tunicates, as well as algae.",
+        "fact": "Individuals may be grey, brown or partly yellow. Look for several field marks together: body colour alone cannot identify this puffer."
+      },
+      "marineProfile": {
+        "habitat": "Coastal and outer reefs across the Indo-Pacific, especially areas rich in attached invertebrates. Fishes of Australia lists a 3–25 m depth range.",
+        "diet": "Coral tissue, sponges, molluscs, tunicates and algae.",
+        "behavior": "Small side, back and belly fins work together during steady swimming. The tail contributes more during faster bursts.",
+        "observe": "Check the pale bar across the snout, then compare its fine skin prickles with the porcupinefish's longer spines. Watch the fins while the rounded body stays comparatively still.",
+        "sources": [
+          "dx-foa-blackspotted_puffer",
+          "dx-am-blackspotted_puffer",
+          "dx-catalog-blackspotted_puffer",
+          "dx-swim-blackspotted_puffer"
+        ]
+      },
+      "evidence": {
+        "nameAndStatus": "California Academy Catalog verifies valid name and LC (2014). Direct IUCN page returned 403. The year 2014 is publication year, not assessment date; FishBase reports assessed 7 June 2011.",
+        "morphology": "FoA Summary/Features supports marks 2 and 4 and colour variation; Australian Museum identification supports pale snout bar and shape. Mark 1 shape is also evident in museum photographs.",
+        "ecology": "FoA Distribution/Feeding/Quick Facts supports habitat, 3–25 m, diet and role. Do not claim exclusive coral diet.",
+        "movement": "Gordon et al. (1996) directly filmed A. nigropunctatus: pectorals 180 degrees out of phase, dorsal/anal in phase, body slightly mouth-up; tail bursts at high speed. Supports mark 3 and behavior.",
+        "model": {
+          "totalLengthM": 0.25,
+          "representative": true,
+          "maximum": false,
+          "note": "Museum gives 25 cm; FoA 30 cm. 0.25 m is illustrative, not species maximum. Tiny spinules, no long porcupine spines."
+        }
+      }
+    },
+    {
+      "meta": {
+        "id": "ocellated_eagle_ray",
+        "group": "fish",
+        "scientific": "Aetobatus ocellatus",
+        "iucn": "EN",
+        "iucnYear": 2024,
+        "lookalikes": [
+          "reef_manta",
+          "bluespotted_stingray"
+        ]
+      },
+      "speciesText": {
+        "name": "Ocellated eagle ray (whitespotted eagle ray)",
+        "marks": [
+          "Broad diamond-shaped disc with pointed, winglike pectoral fins",
+          "Pale spots cover the dark grey-green back; the underside is white",
+          "A projecting, flattened snout forms a single duckbill shape",
+          "A thin whip tail trails far behind the disc, with small spines near its base"
+        ],
+        "role": "A bottom-feeding predator of molluscs and crustaceans that searches sandy areas near reefs.",
+        "fact": "This Indo-Pacific species was once grouped with Aetobatus narinari. That name now refers to an Atlantic species, so location matters when reading older eagle-ray accounts."
+      },
+      "marineProfile": {
+        "habitat": "Coastal and offshore Indo-Pacific waters, often near coral reefs, lagoons and sandy feeding grounds. Australian fisheries accounts record it from the surface to about 40 m.",
+        "diet": "Mostly hard-shelled molluscs and crabs, with other small bottom-dwelling animals.",
+        "behavior": "Cruises alone or in groups and digs in sand for food. Researchers have also documented occasional resting and visits from cleaner fishes.",
+        "observe": "Compare the pointed wings and single duckbill snout with the manta's paired head lobes. Use an underside view to find the mouth and five gill slits on each side.",
+        "sources": [
+          "dx-foa-ocellated_eagle_ray",
+          "dx-behavior-ocellated_eagle_ray",
+          "dx-iucn-ocellated_eagle_ray",
+          "dx-safs-ocellated_eagle_ray"
+        ]
+      },
+      "evidence": {
+        "nameAndStatus": "FoA verifies accepted Indo-Pacific name distinct from Atlantic A. narinari. EN (2024) verified by Araujo (2024), Introduction/reference 15, and official IUCN 2024 change table indexed row VU→EN. Direct IUCN page was inaccessible; table direct open returned 403. Older FoA/SAFS VU superseded.",
+        "statusVerification": "https://nc.iucnredlist.org/redlist/content/attachment_files/2024-2_RL_Table_7.pdf",
+        "morphology": "FoA Summary/Features/Colour supports marks, gills, tail and teeth. Study prompts compare documented anatomy with existing manta entry; no paired cephalic lobes on eagle ray.",
+        "ecology": "FoA Feeding supports diet and role; Distribution supports groups and habitat. SAFS Habitat and biology supports 0–40 m; FoA lists 0–60 m, so copy clearly attributes the narrower published range.",
+        "behavior": "FoA supports grouping/digging; Araujo (2024) reports eight resting cases, some with cleaner fish. Occasional avoids claiming common resting.",
+        "model": {
+          "discWidthM": 1.5,
+          "totalLengthM": 4.2,
+          "representative": true,
+          "maximum": false,
+          "meanTotalLengthToDiscWidth": 2.81,
+          "meanCloacaToTailTipToDiscWidth": 2.302,
+          "note": "Ratios from FoA Features citing White et al. (2010). Table 1 of Araujo (2024) includes visually estimated 1.5 m disc-width animals. Tail length may vary through damage; do not interpret the fixed ratio as a maximum. Ignore inconsistent FoA Quick Facts 153 cm total length."
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "dx-foa-blackspotted_puffer",
+      "text": "Bray, D.J. (2022). Fishes of Australia: Blackspotted Puffer. Museums Victoria and OzFishNet (accessed October 2026).",
+      "url": "https://fishesofaustralia.net.au/home/species/850",
+      "urlLabel": "fishesofaustralia.net.au"
+    },
+    {
+      "id": "dx-am-blackspotted_puffer",
+      "text": "McGrouther, M. (2021). Blackspotted Pufferfish. Australian Museum: identification, habitat and feeding (accessed October 2026).",
+      "url": "https://australian.museum/learn/animals/fishes/blackspotted-pufferfish-arothron-nigropunctatus-bloch-schneider-1801/",
+      "urlLabel": "australian.museum"
+    },
+    {
+      "id": "dx-catalog-blackspotted_puffer",
+      "text": "California Academy of Sciences. Eschmeyer's Catalog of Fishes: Arothron nigropunctatus, accepted name and IUCN 2014 Least Concern listing (accessed October 2026).",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?genus=Arothron&species=nigropunctatus&tbl=species",
+      "urlLabel": "calacademy.org"
+    },
+    {
+      "id": "dx-swim-blackspotted_puffer",
+      "text": "Gordon, M.S., Plaut, I. and Kim, D. (1996). How puffers (Teleostei: Tetraodontidae) swim. Journal of Fish Biology 49:319–328.",
+      "url": "https://doi.org/10.1111/j.1095-8649.1996.tb00026.x",
+      "urlLabel": "doi.org"
+    },
+    {
+      "id": "dx-foa-ocellated_eagle_ray",
+      "text": "Bray, D.J. (2024). Fishes of Australia: Whitespotted Eagle Ray. Museums Victoria and OzFishNet. Morphology, range and feeding; its older Vulnerable listing predates the 2024 IUCN update.",
+      "url": "https://fishesofaustralia.net.au/home/species/2034",
+      "urlLabel": "fishesofaustralia.net.au"
+    },
+    {
+      "id": "dx-behavior-ocellated_eagle_ray",
+      "text": "Araujo, G. et al. (2024). Citizen science highlights rare behaviours by the spotted eagle ray Aetobatus ocellatus Kuhl 1823. Frontiers in Marine Science 11:1406803. Resting and cleaning observations; cites the 2024 Endangered assessment.",
+      "url": "https://doi.org/10.3389/fmars.2024.1406803",
+      "urlLabel": "doi.org"
+    },
+    {
+      "id": "dx-iucn-ocellated_eagle_ray",
+      "text": "Finucci, B., Rigby, C.L., Armstrong, A.O. and Rezaie-Atagholipour, M. (2024). Aetobatus ocellatus. The IUCN Red List: e.T42566169A124549514. Global category: Endangered.",
+      "url": "https://www.iucnredlist.org/species/42566169/124549514",
+      "urlLabel": "iucnredlist.org"
+    },
+    {
+      "id": "dx-safs-ocellated_eagle_ray",
+      "text": "Status of Australian Fish Stocks (2023). Spotted Eagle Ray: habitat and size report. Its older global Vulnerable listing predates the 2024 IUCN Endangered assessment.",
+      "url": "https://www.fish.gov.au/docs/SharkReport/2023_FRDC_Aetobatus_ocellatus_Final.pdf",
+      "urlLabel": "fish.gov.au"
+    }
+  ]
+}

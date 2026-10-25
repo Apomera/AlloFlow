@@ -1,0 +1,139 @@
+{
+  "checked": "2026-10-23",
+  "scope": "One broadclub cuttlefish for the species guide, isolated inspection and optional identification. The broad fin skirt, arm crown and distinctive pupils add a cephalopod comparison. No reef population or engine metadata is added.",
+  "iucnYearConvention": "The current SeaLifeBase record reports global Data Deficient, assessed 15 March 2009. The year field uses that assessment date, not the 2012 publication year of the linked IUCN record. Data Deficient is not an assessment of low extinction risk.",
+  "specimens": [
+    {
+      "id": "broadclub_cuttlefish",
+      "name": "Broadclub cuttlefish",
+      "scientific": "Ascarosepion latimanus",
+      "group": "invertebrate",
+      "iucn": "DD",
+      "iucnYear": 2009,
+      "iucnDateAssessed": "2009-03-15",
+      "lookalikes": [
+        "day_octopus"
+      ],
+      "marks": [
+        "A broad oval mantle is edged by a thin, rippling fin skirt",
+        "Large eyes have W-shaped pupils and yellow along their lower edges",
+        "Eight short arms surround the mouth; two longer feeding tentacles tuck into pockets",
+        "Pale bands edge the arms, while cream and brown mottling varies across the body"
+      ],
+      "role": "A reef predator that catches small fish and crustaceans.",
+      "fact": "Its appearance can change quickly. Colour cells and raised skin bumps help create different patterns and textures, so a single colour pattern is not a reliable identity check.",
+      "habitat": "Shallow tropical coral reefs across the Indo-Pacific, from eastern Africa to the western Pacific and northern Australia.",
+      "diet": "Small fish, shrimps and crabs.",
+      "behavior": "Ripples its narrow fins to hover and move slowly. When catching prey, two longer tentacles reach out, then the eight arms hold and move the food toward the mouth.",
+      "observe": "Trace the fin skirt around the mantle and look closely at a pupil. Compare the body outline with the day octopus, then use an underside view to find the rows of arm suckers.",
+      "sources": [
+        "dx-worms-broadclub_cuttlefish",
+        "dx-fao-broadclub_cuttlefish",
+        "dx-doris-broadclub_cuttlefish",
+        "dx-mba-broadclub_cuttlefish",
+        "dx-omura-broadclub_cuttlefish",
+        "dx-how-broadclub_cuttlefish",
+        "dx-slb-broadclub_cuttlefish"
+      ],
+      "claimSupport": {
+        "acceptedName": "WoRMS accepts Ascarosepion latimanus (Quoy & Gaimard, 1832), AphiaID 1667002. Sepia latimanus is the superseded combination used by older references and some recent research. Current genus list and indexed taxon details agree.",
+        "morphology": "FAO describes an oval mantle, four rows of arm suckers, papillose skin, pale arm margins and a yellow lower eye border. Its tentacular clubs are crescent-shaped; those clubs remain retracted in this calm illustrated pose.",
+        "pupilAndPockets": "The expert DORIS species account describes the W-shaped pupil with an anterior notch and two long tentacles stored in pockets among eight visible arms. Pupil appearance is illustrative, not a simulated light response. Its generic reproductive section conflicts with the species-specific FAO diagnosis and is not used.",
+        "feeding": "Omura and Ikeda directly examined this species’ arm and tentacular suckers. Their abstract supports tentacle capture followed by arm handling. Aquarium husbandry information supports the fish, shrimp and crab diet and slow fin-driven movement.",
+        "variation": "How et al. documented multiple hunting displays in wild animals, differing in posture, colour and texture. The mottled model represents one quiet appearance; neither its palette nor its pose is a universal identifier. No claim that prey are literally hypnotized is introduced.",
+        "rangeAndDepth": "FAO gives tropical Indo-Pacific reefs to 30 m. DORIS documents a 5 m observation in New Caledonia. The model-reference interval [5,30] is a conservative display reference, not an exhaustive depth range or physiological limit.",
+        "size": "Nominal .30 m means the full posed mantle, head and arm crown, with retracted tentacles; it is not mantle length, a typical adult size or a maximum. FAO reports a maximum of 500 mm mantle length. The model mantle is approximately .18–.20 m; source measurements must not be compared directly with posed total length.",
+        "conservation": "SeaLifeBase’s current global IUCN field reports DD and 15 March 2009. Direct IUCN access was unavailable, so no unreviewed rationale, population trend or new assessment is inferred.",
+        "comparison": "The one-way day_octopus link teaches the fin-edged mantle and arm arrangement by contrasting two existing guide forms. It is an educational comparison, not a closest-relative or field-identification key claim."
+      },
+      "caution": "The model is an illustrative unsexed animal, not a complete identification key. It does not simulate chromatophore control, prey capture, jetting or an adaptive pupil. The feeding tentacles remain retracted in the calm pose; their capture clubs are not permanently exposed. No sex, lifespan, toxicity, handling or aquarium-care claims are introduced."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-worms-broadclub_cuttlefish",
+      "text": "WoRMS / MolluscaBase (2026). Ascarosepion latimanus (Quoy & Gaimard, 1832), accepted name, AphiaID 1667002. Accessed October 2026.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=1667002",
+      "urlLabel": "marinespecies.org",
+      "supports": [
+        "Accepted name and superseded Sepia combination"
+      ],
+      "access": "Current Ascarosepion genus list and complete indexed species-detail text read. Direct species-detail request returned 403."
+    },
+    {
+      "id": "dx-fao-broadclub_cuttlefish",
+      "text": "Jereb, P. & Roper, C.F.E. (eds., 2005). Cephalopods of the World, volume 1. FAO Species Catalogue for Fishery Purposes 4(1): 91–92, Sepia latimanus.",
+      "url": "https://www.fao.org/4/a0150e/a0150e10.pdf",
+      "urlLabel": "fao.org (species catalogue)",
+      "supports": [
+        "Mantle, arm suckers, colour variation, range, depth and mantle-length measurements"
+      ],
+      "access": "Both species pages of the original FAO PDF read, including morphology and measurement definition. Superseded taxonomy is reconciled with current WoRMS. Unqualified mesmerism and reproductive details are not imported."
+    },
+    {
+      "id": "dx-doris-broadclub_cuttlefish",
+      "text": "Mitel, C. & Müller, Y. (2021). Sepia latimanus. DORIS / Fédération Française d’Études et de Sports Sous-Marins, species account 582, updated 21 January 2021.",
+      "url": "https://doris.ffessm.fr/Especes/Sepia-latimanus-Seiche-a-larges-grandes-mains-582",
+      "urlLabel": "doris.ffessm.fr (expert field account)",
+      "supports": [
+        "W-shaped pupil, retracted tentacles and documented 5 m observation"
+      ],
+      "access": "Full expert account and attributed field-observation captions read. Used only for the stated external features and locality observation; generic reproductive claims are excluded."
+    },
+    {
+      "id": "dx-mba-broadclub_cuttlefish",
+      "text": "Monterey Bay Aquarium (2026). Broadclub cuttlefish animal account. Accessed October 2026.",
+      "url": "https://www.montereybayaquarium.org/animals-the-ocean/animals-a-to-z/broadclub-cuttlefish",
+      "urlLabel": "montereybayaquarium.org",
+      "supports": [
+        "Diet, fin undulation and eight arms plus two feeding tentacles"
+      ],
+      "access": "Full aquarium species account read. Its total-length wording is not combined with the FAO mantle-length maximum. Claims of hypnosis, general threat lists and reproductive details are not adopted."
+    },
+    {
+      "id": "dx-omura-broadclub_cuttlefish",
+      "text": "Omura, A. & Ikeda, Y. (2022). Morphology of the suckers for hunting behavior in broadclub cuttlefish (Sepia latimanus). Ecological Research 37(1): 156–162. DOI: 10.1111/1440-1703.12278.",
+      "url": "https://agris.fao.org/search/en/providers/122535/records/65dea17c6eef00c2cea0dfd0",
+      "urlLabel": "FAO AGRIS (primary research abstract)",
+      "supports": [
+        "Separate capture and handling functions of tentacles and arms"
+      ],
+      "access": "Complete author abstract and publication metadata read through the National Agricultural Library record in FAO AGRIS. No claim to have read unavailable full text."
+    },
+    {
+      "id": "dx-how-broadclub_cuttlefish",
+      "text": "How, M.J. et al. (2025). Multiple hunting displays in wild broadclub cuttlefish. Ecology 106(2): e70021. DOI: 10.1002/ecy.70021.",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11834760/",
+      "urlLabel": "Ecology (open primary research)",
+      "supports": [
+        "Variable skin appearance and multiple observed hunting displays"
+      ],
+      "access": "Open-access primary article read, including descriptions of four hunting displays and variability. Published 18 February 2025; hypotheses about effects on prey are not presented as certainty."
+    },
+    {
+      "id": "dx-slb-broadclub_cuttlefish",
+      "text": "SeaLifeBase (2026). Ascarosepion latimanus species summary; IUCN Version 2025-2 (Global), assessed 15 March 2009. Accessed October 2026.",
+      "url": "https://www.sealifebase.ca/summary/Sepia-latimanus.html",
+      "urlLabel": "sealifebase.ca",
+      "supports": [
+        "Global Data Deficient status and assessment date"
+      ],
+      "access": "Current indexed summary and accepted-name field-guide record read; direct requests returned 403/cache miss. IUCN species 162505 assessment 904969 also returned 403. Status/date are attributed to the accessed database; no inaccessible IUCN rationale is asserted."
+    }
+  ],
+  "modelProvenance": {
+    "nominalLengthM": 0.3,
+    "lengthMeaning": "Full posed mantle, head and arm crown with feeding tentacles retracted; not mantle length, typical size or maximum",
+    "depthM": [
+      5,
+      30
+    ],
+    "habit": "hover",
+    "anchor": "centre",
+    "zone": null,
+    "availability": "guide and identification only",
+    "palette": "Illustrative cream and brown mottling, pale arm/fin margins and yellow lower eye rims; unsexed, without a male-specific breeding display",
+    "motion": "Gentle local fin ripples and small arm movement around a fixed root; no locomotion or prey-capture sequence",
+    "hostContext": "Isolated reef-associated cephalopod with no added reef population or encounter"
+  }
+}

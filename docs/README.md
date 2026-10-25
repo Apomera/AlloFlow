@@ -22,9 +22,15 @@ This directory contains both maintained guidance and dated review artifacts. Use
 - [Release evidence template](release-evidence-template.md)
 - [Test Prep Hub broad AP expansion plan](test-prep-ap-expansion.md)
 
+## Deferred plans
+
+- [Independent classroom backup](independent-backup-plan.md) — deferred October 24, 2026; AWS is a candidate, and the current Cloudflare deployment remains in place.
+
 ## Dated reviews and handoffs
 
 Files with a date in their filename, including the July 3, 2026 codebase and competitive reviews, are point-in-time evidence. Their counts, market observations, test totals, and deployment details should not be treated as current unless a maintained document independently confirms them.
+
+- [Security hardening review for October 24, 2026](security-hardening-2026-10-24.md) — local fixes, verified connector artifact, and validation limits.
 
 ## Accuracy rules
 

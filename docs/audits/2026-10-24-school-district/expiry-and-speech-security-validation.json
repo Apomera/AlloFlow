@@ -1,0 +1,475 @@
+{
+  "checkedAt": "2026-10-24T20:03:26.641Z",
+  "scope": "Local source fixes and synthetic verification for Canvas/PPS review. No deployment, real student data, credential access, or physical record deletion.",
+  "coordination": "Existing chats retain dependency/CI/release validation and MCP/browser-loader hardening. This pass updates one required speech asset pin only; other manifest asset records are preserved.",
+  "rules": {
+    "baselineChecks": 190,
+    "candidateChecks": 190,
+    "newlyEnforcedDenials": 70,
+    "tightened": [
+      "EXPIRED participant update cutoff",
+      "EXPIRED own private answer read cutoff",
+      "EXPIRED own private answer update cutoff",
+      "EXPIRED own private answer create cutoff",
+      "EXPIRED asset read respects parent cutoff",
+      "EXPIRED signaling own read cutoff",
+      "EXPIRED signaling own update cutoff",
+      "EXPIRED pictionary-signaling own read cutoff",
+      "EXPIRED pictionary-signaling own update cutoff",
+      "EXPIRED quiz-signaling own read cutoff",
+      "EXPIRED quiz-signaling own update cutoff",
+      "MISSING participant update cutoff",
+      "MISSING own private answer read cutoff",
+      "MISSING own private answer update cutoff",
+      "MISSING own private answer create cutoff",
+      "MISSING asset read respects parent cutoff",
+      "MISSING signaling own read cutoff",
+      "MISSING signaling own update cutoff",
+      "MISSING pictionary-signaling own read cutoff",
+      "MISSING pictionary-signaling own update cutoff",
+      "MISSING quiz-signaling own read cutoff",
+      "MISSING quiz-signaling own update cutoff",
+      "NULLX participant update cutoff",
+      "NULLX own private answer read cutoff",
+      "NULLX own private answer update cutoff",
+      "NULLX own private answer create cutoff",
+      "NULLX asset read respects parent cutoff",
+      "NULLX signaling own read cutoff",
+      "NULLX signaling own update cutoff",
+      "NULLX pictionary-signaling own read cutoff",
+      "NULLX pictionary-signaling own update cutoff",
+      "NULLX quiz-signaling own read cutoff",
+      "NULLX quiz-signaling own update cutoff",
+      "STRING participant update cutoff",
+      "STRING own private answer read cutoff",
+      "STRING own private answer update cutoff",
+      "STRING own private answer create cutoff",
+      "STRING asset read respects parent cutoff",
+      "STRING signaling own read cutoff",
+      "STRING signaling own update cutoff",
+      "STRING pictionary-signaling own read cutoff",
+      "STRING pictionary-signaling own update cutoff",
+      "STRING quiz-signaling own read cutoff",
+      "STRING quiz-signaling own update cutoff",
+      "NUMBER participant update cutoff",
+      "NUMBER own private answer read cutoff",
+      "NUMBER own private answer update cutoff",
+      "NUMBER own private answer create cutoff",
+      "NUMBER asset read respects parent cutoff",
+      "NUMBER signaling own read cutoff",
+      "NUMBER signaling own update cutoff",
+      "NUMBER pictionary-signaling own read cutoff",
+      "NUMBER pictionary-signaling own update cutoff",
+      "NUMBER quiz-signaling own read cutoff",
+      "NUMBER quiz-signaling own update cutoff",
+      "signaling expired assignment own create cutoff",
+      "pictionary-signaling expired assignment own create cutoff",
+      "quiz-signaling expired assignment own create cutoff",
+      "deleted parent own private answer get",
+      "signaling deleted parent own read cutoff",
+      "signaling deleted parent own update cutoff",
+      "signaling deleted parent own create cutoff",
+      "pictionary-signaling deleted parent own read cutoff",
+      "pictionary-signaling deleted parent own update cutoff",
+      "pictionary-signaling deleted parent own create cutoff",
+      "quiz-signaling deleted parent own read cutoff",
+      "quiz-signaling deleted parent own update cutoff",
+      "quiz-signaling deleted parent own create cutoff",
+      "unauthenticated approved board item get cutoff",
+      "unauthenticated approved board item query cutoff"
+    ],
+    "candidateRulesSha256": "f2be58995ca6b95c5c570a7a1f10baef6f1ea648718c4729da71e78070f15793",
+    "mirrorRulesSha256": "f2be58995ca6b95c5c570a7a1f10baef6f1ea648718c4729da71e78070f15793",
+    "suiteSha256": "997e1853f002b578e3e78683167303a24dc15ce3e2e0f0059de900308d2ef10f",
+    "runnerSha256": "43a6402d4e7a530cfc12048f6694dce01fc39368c5dd32b0a8d0d07e6fe03350",
+    "receiptPath": "_dev_scratch/security-district-audit/session-expiry/run-V9nz4T/receipt.json",
+    "receipt": {
+      "startedAt": "2026-10-24T19:50:56.942Z",
+      "passed": true,
+      "projectId": "demo-alloflow-session-metadata",
+      "suite": "expiry",
+      "launchMode": "java-direct-cached-cli-emulator",
+      "suiteSha256": "997e1853f002b578e3e78683167303a24dc15ce3e2e0f0059de900308d2ef10f",
+      "runnerSha256": "43a6402d4e7a530cfc12048f6694dce01fc39368c5dd32b0a8d0d07e6fe03350",
+      "regressionSuiteSha256": "9ebe658f7d550158116b0ac72030a0893ce17e56dbb705311a75b7a8c6c8fbc2",
+      "node": "v24.11.1",
+      "java": "openjdk version \"21.0.11\" 2026-04-21 LTS\r\nOpenJDK Runtime Environment Temurin-21.0.11+10 (build 21.0.11+10-LTS)\r\nOpenJDK 64-Bit Server VM Temurin-21.0.11+10 (build 21.0.11+10-LTS, mixed mode, sharing)",
+      "tools": {
+        "jar": "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+        "jarVersion": "1.19.8",
+        "jarSha256": "9d43599ed6151199e8d604dc87fac51218e49e5f3a48519b1ae560bbe5e3382d",
+        "firebaseTools": "14.26.0",
+        "rulesUnitTesting": "3.0.4",
+        "firebase": "10.14.1"
+      },
+      "phases": [
+        {
+          "name": "baseline",
+          "legacyNegativeControl": true,
+          "rulesPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tmp\\session-expiry-20261024\\baseline.rules",
+          "rulesSha256": "7e5709e910b875c3f6605378ffdcd2988ebffcb8a3139bb892dcb2cffd2def9d",
+          "projectId": "demo-alloflow-session-metadata",
+          "host": "127.0.0.1",
+          "firestorePort": 20196,
+          "webchannelPort": 22557,
+          "websocketPort": 24207,
+          "emulatorArgs": [
+            "-Duser.language=en",
+            "-jar",
+            "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "20196",
+            "--webchannel_port",
+            "22557",
+            "--websocket_port",
+            "24207",
+            "--project_id",
+            "demo-alloflow-session-metadata",
+            "--single_project_mode",
+            "--single_project_mode_error",
+            "--rules",
+            "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-expiry\\run-V9nz4T\\baseline\\firestore.rules"
+          ],
+          "suiteExit": {
+            "code": 0,
+            "signal": null
+          },
+          "passed": true,
+          "coverage": {
+            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-expiry\\run-V9nz4T\\baseline\\rule-coverage.json",
+            "bytes": 9915870,
+            "sha256": "45688fd45d007022656a3968dca972c77cc6bcb52895ff4f9f1bc8a4b66d2b66"
+          },
+          "durationMs": 194259,
+          "expressionLimitMessageLines": {
+            "suite.log": 0,
+            "regression.log": 0,
+            "firestore.log": 0
+          },
+          "expressionLimitPolicy": {
+            "enforced": false,
+            "passed": null
+          }
+        },
+        {
+          "name": "candidate",
+          "legacyNegativeControl": false,
+          "rulesPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\firestore.rules",
+          "rulesSha256": "f2be58995ca6b95c5c570a7a1f10baef6f1ea648718c4729da71e78070f15793",
+          "projectId": "demo-alloflow-session-metadata",
+          "host": "127.0.0.1",
+          "firestorePort": 22825,
+          "webchannelPort": 16402,
+          "websocketPort": 24986,
+          "emulatorArgs": [
+            "-Duser.language=en",
+            "-jar",
+            "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "22825",
+            "--webchannel_port",
+            "16402",
+            "--websocket_port",
+            "24986",
+            "--project_id",
+            "demo-alloflow-session-metadata",
+            "--single_project_mode",
+            "--single_project_mode_error",
+            "--rules",
+            "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-expiry\\run-V9nz4T\\candidate\\firestore.rules"
+          ],
+          "suiteExit": {
+            "code": 0,
+            "signal": null
+          },
+          "regressionExit": {
+            "code": 0,
+            "signal": null
+          },
+          "passed": true,
+          "coverage": {
+            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-expiry\\run-V9nz4T\\candidate\\rule-coverage.json",
+            "bytes": 10096737,
+            "sha256": "dc40c69840c4f58548bc4bbab34cfb0f1cb6ed0fd34e27311defdcd1b7e0dfe3"
+          },
+          "durationMs": 122720,
+          "expressionLimitMessageLines": {
+            "suite.log": 0,
+            "regression.log": 0,
+            "firestore.log": 0
+          },
+          "expressionLimitPolicy": {
+            "enforced": true,
+            "passed": true
+          }
+        }
+      ],
+      "officialReferences": [
+        "https://firebase.google.com/docs/rules/unit-tests",
+        "https://firebase.google.com/docs/emulator-suite/connect_firestore",
+        "https://firebase.google.com/docs/rules/emulator-reports"
+      ],
+      "finishedAt": "2026-10-24T19:56:14.224Z"
+    },
+    "metadataRegression": {
+      "checks": 242,
+      "receiptPath": "_dev_scratch/security-district-audit/session-metadata/run-yEEZyI/receipt.json",
+      "receipt": {
+        "startedAt": "2026-10-24T19:57:34.520Z",
+        "passed": true,
+        "projectId": "demo-alloflow-session-metadata",
+        "suite": "metadata",
+        "launchMode": "java-direct-cached-cli-emulator",
+        "suiteSha256": "3005d587cca26c8e3f64261b996d542e3a7cf981570a02d3df912c4d6c185b50",
+        "runnerSha256": "43a6402d4e7a530cfc12048f6694dce01fc39368c5dd32b0a8d0d07e6fe03350",
+        "regressionSuiteSha256": "9ebe658f7d550158116b0ac72030a0893ce17e56dbb705311a75b7a8c6c8fbc2",
+        "node": "v24.11.1",
+        "java": "openjdk version \"21.0.11\" 2026-04-21 LTS\r\nOpenJDK Runtime Environment Temurin-21.0.11+10 (build 21.0.11+10-LTS)\r\nOpenJDK 64-Bit Server VM Temurin-21.0.11+10 (build 21.0.11+10-LTS, mixed mode, sharing)",
+        "tools": {
+          "jar": "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+          "jarVersion": "1.19.8",
+          "jarSha256": "9d43599ed6151199e8d604dc87fac51218e49e5f3a48519b1ae560bbe5e3382d",
+          "firebaseTools": "14.26.0",
+          "rulesUnitTesting": "3.0.4",
+          "firebase": "10.14.1"
+        },
+        "phases": [
+          {
+            "name": "candidate",
+            "legacyNegativeControl": false,
+            "rulesPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\firestore.rules",
+            "rulesSha256": "f2be58995ca6b95c5c570a7a1f10baef6f1ea648718c4729da71e78070f15793",
+            "projectId": "demo-alloflow-session-metadata",
+            "host": "127.0.0.1",
+            "firestorePort": 20325,
+            "webchannelPort": 24483,
+            "websocketPort": 18009,
+            "emulatorArgs": [
+              "-Duser.language=en",
+              "-jar",
+              "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+              "--host",
+              "127.0.0.1",
+              "--port",
+              "20325",
+              "--webchannel_port",
+              "24483",
+              "--websocket_port",
+              "18009",
+              "--project_id",
+              "demo-alloflow-session-metadata",
+              "--single_project_mode",
+              "--single_project_mode_error",
+              "--rules",
+              "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-metadata\\run-yEEZyI\\candidate\\firestore.rules"
+            ],
+            "suiteExit": {
+              "code": 0,
+              "signal": null
+            },
+            "regressionExit": {
+              "code": 0,
+              "signal": null
+            },
+            "passed": true,
+            "coverage": {
+              "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-metadata\\run-yEEZyI\\candidate\\rule-coverage.json",
+              "bytes": 10096737,
+              "sha256": "decf561c9a83036faf909ac078f1cd44239fb0eb64dc8ed882aa97a37a2437bf"
+            },
+            "durationMs": 48422,
+            "expressionLimitMessageLines": {
+              "suite.log": 0,
+              "regression.log": 0,
+              "firestore.log": 0
+            },
+            "expressionLimitPolicy": {
+              "enforced": true,
+              "passed": true
+            }
+          }
+        ],
+        "officialReferences": [
+          "https://firebase.google.com/docs/rules/unit-tests",
+          "https://firebase.google.com/docs/emulator-suite/connect_firestore",
+          "https://firebase.google.com/docs/rules/emulator-reports"
+        ],
+        "finishedAt": "2026-10-24T19:58:23.098Z"
+      }
+    },
+    "staticChecks": {
+      "firebaseSecurityContractInvariants": 50,
+      "ownedDiffWhitespaceClean": true
+    }
+  },
+  "speech": {
+    "log": "tmp/canvas-pps-20261024/tts-policy-final-current.log",
+    "passed": 123,
+    "logSha256": "fe41bae2813dc4d001c70e912a149055b42c813d5a80173ee270ae1dc06d2565",
+    "fileCount": 8,
+    "managedPolicyCases": 23,
+    "finalManagedSourceVerification": {
+      "log": "tmp/canvas-pps-20261024/tts-managed-frozen.log",
+      "passed": 23,
+      "logSha256": "9f465095491603a934f0f88371c786040622df4de11df9af977d1bd96c7e81d4"
+    },
+    "freshManagedCasesAlreadyIncludedInSpeechTotal": true,
+    "negativeControl": {
+      "description": "At least eight valid fake-network checks demonstrated old legacy/direct cloud speech requests despite a configured managed policy. The initial 14-case run had ten failures, two of which were obsolete off-provider fixture expectations corrected before candidate verification.",
+      "networkBypassChecks": 8
+    },
+    "covers": [
+      "legacy/direct/queued cloud speech policy enforcement",
+      "policy installed while queued",
+      "managed-ai-blocked error propagation",
+      "unmanaged cloud compatibility",
+      "local/device voice alternatives",
+      "spoken-text, raw provider-body, arbitrary error-code and retry-diagnostic canaries",
+      "existing karaoke/auth/fallback/source resilience"
+    ]
+  },
+  "hostIntegration": {
+    "log": "tmp/expiry-speech-20261024/host-delivery.log",
+    "passed": 21,
+    "logSha256": "fba0b57012ad4b4870f241429e6d9a89e65b4f60609d0bde54d9b4f5ee775f36"
+  },
+  "delivery": {
+    "checkedAt": "2026-10-24T20:03:22.476Z",
+    "asset": "tts_module.js",
+    "bytes": 118615,
+    "integrity": "sha384-uqO20WoLzezqhXFOi0dGXH+wLpa0sOe/R6nCCDmr+kE8vDlQxt4mmZevSU153yZ2",
+    "sha256": "18262ae46d44a97850cdb49c2f0018ebbb0bcf87e1eadb0f9a5658ae3d91aba7",
+    "previousManifestId": "b806d3c28836d1095d8058f2421834420794b30b4978aa790c75e7d34dadddb0",
+    "manifestId": "f8248fab20f78a702eeead0eaf6b5b2a367851d282f552af537bf215defddaf2",
+    "reviewedAssetCount": 1,
+    "otherManifestRecordsPreserved": true,
+    "totalAssetCount": 652,
+    "hosts": [
+      "AlloFlowANTI.txt",
+      "desktop/web-app/src/AlloFlowANTI.txt",
+      "desktop/web-app/src/App.jsx"
+    ],
+    "scope": "Only the speech module bytes and cache/integrity pins are updated. This is not approval of a full release or deployment."
+  },
+  "actualTtsDeliveryPolicyChecks": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "4416e0aadb60de0b5863b460cc2eec7dad76bf3c2d5c654e83a6fd4d89bdf0ba",
+      "manifestId": "f8248fab20f78a702eeead0eaf6b5b2a367851d282f552af537bf215defddaf2",
+      "ttsByteIntegrityAndCachePinVerified": true,
+      "actualPolicyConfigureScriptPassed": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "6507e9224cb497648a23b5a12d4b0334375ff0c05acbd557f9f79799f413694f",
+      "manifestId": "f8248fab20f78a702eeead0eaf6b5b2a367851d282f552af537bf215defddaf2",
+      "ttsByteIntegrityAndCachePinVerified": true,
+      "actualPolicyConfigureScriptPassed": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "6507e9224cb497648a23b5a12d4b0334375ff0c05acbd557f9f79799f413694f",
+      "manifestId": "f8248fab20f78a702eeead0eaf6b5b2a367851d282f552af537bf215defddaf2",
+      "ttsByteIntegrityAndCachePinVerified": true,
+      "actualPolicyConfigureScriptPassed": true
+    }
+  ],
+  "staticFirebaseContractInvariants": 50,
+  "boundedDiffWhitespaceClean": true,
+  "mirrorPairs": [
+    {
+      "file": "tts_module.js",
+      "bytes": 118615,
+      "sha256": "18262ae46d44a97850cdb49c2f0018ebbb0bcf87e1eadb0f9a5658ae3d91aba7",
+      "mirror": "desktop/web-app/public/tts_module.js",
+      "equal": true
+    },
+    {
+      "file": "firestore.rules",
+      "bytes": 42529,
+      "sha256": "f2be58995ca6b95c5c570a7a1f10baef6f1ea648718c4729da71e78070f15793",
+      "mirror": "desktop/web-app/firestore.rules",
+      "equal": true
+    }
+  ],
+  "files": [
+    {
+      "file": "firestore.rules",
+      "bytes": 42529,
+      "sha256": "f2be58995ca6b95c5c570a7a1f10baef6f1ea648718c4729da71e78070f15793"
+    },
+    {
+      "file": "desktop/web-app/firestore.rules",
+      "bytes": 42529,
+      "sha256": "f2be58995ca6b95c5c570a7a1f10baef6f1ea648718c4729da71e78070f15793"
+    },
+    {
+      "file": "tests/firebase_session_expiry_rules.cjs",
+      "bytes": 15421,
+      "sha256": "997e1853f002b578e3e78683167303a24dc15ce3e2e0f0059de900308d2ef10f"
+    },
+    {
+      "file": "dev-tools/security/run_session_metadata_rules.cjs",
+      "bytes": 15453,
+      "sha256": "43a6402d4e7a530cfc12048f6694dce01fc39368c5dd32b0a8d0d07e6fe03350"
+    },
+    {
+      "file": "tts_source.jsx",
+      "bytes": 118476,
+      "sha256": "8734d9ff67bad0fa06d48a3761799c1eedd4bdf792cd3a248dc018ebb0dfd6ef"
+    },
+    {
+      "file": "tts_module.js",
+      "bytes": 118615,
+      "sha256": "18262ae46d44a97850cdb49c2f0018ebbb0bcf87e1eadb0f9a5658ae3d91aba7"
+    },
+    {
+      "file": "desktop/web-app/public/tts_module.js",
+      "bytes": 118615,
+      "sha256": "18262ae46d44a97850cdb49c2f0018ebbb0bcf87e1eadb0f9a5658ae3d91aba7"
+    },
+    {
+      "file": "tests/tts_managed_policy.test.js",
+      "bytes": 10374,
+      "sha256": "21e510f3e8d018f058eabdec2da205fdce0909c0c69c5fe9a9f716fd4412a25b"
+    },
+    {
+      "file": "tests/tts_pipeline_source_resilience.test.js",
+      "bytes": 24073,
+      "sha256": "5115122511d8d21e85253db596da8854c1e621000a316e8afd92af65a051037b"
+    },
+    {
+      "file": "docs/DATA_PRIVACY_POSTURE.md",
+      "bytes": 9452,
+      "sha256": "2a7b3d834e2d38ddd928a9d0728efb4054e897763fb5a74c46fc527d52f71684"
+    },
+    {
+      "file": "docs/audits/2026-10-24-school-district/data-flow-inventory.md",
+      "bytes": 15121,
+      "sha256": "bac53fcd8e7ffad30d227f51a0bc757b1d7dc82de8f3e59fbf5b8cc8fe4c387c"
+    },
+    {
+      "file": "SECURITY.md",
+      "bytes": 13605,
+      "sha256": "d22f6b406afeb16cde9dd213a5186db8d0c05e0bd1f9bafab723cb8c838cefc0"
+    }
+  ],
+  "sourcesReviewed": [
+    "https://firebase.google.com/docs/firestore/ttl",
+    "https://firebase.google.com/docs/firestore/manage-data/delete-data",
+    "https://firebase.google.com/docs/firestore/security/rules-conditions"
+  ],
+  "limitations": [
+    "Versioned Firestore rules require an owned deployment. These tests do not configure or verify Google-provisioned Canvas rules.",
+    "Anonymous authentication is not verified district staff identity; approved native Firebase question items require authentication, not a new board-membership boundary.",
+    "Live sessions retain their existing lifetime behavior. No new TTL schedule, recursive deletion service, or all-store retention program was activated.",
+    "Expiry denies backend requests; existing downloaded, cached, exported, browser and provider copies are separate. Parent deletion cannot establish former host ownership for child cleanup.",
+    "The managed AI policy must be explicitly configured. An absent or null policy preserves unmanaged behavior; version 1 does not approve cloud speech.",
+    "Browser or OS speech voices may use network services outside the speech module fetch guard. Device/voice controls remain required.",
+    "No PPS agreement, deployment approval, provider approval, or compliance certification is established. Coordinated full release validation remains with the existing workstream."
+  ]
+}

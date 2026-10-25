@@ -1,0 +1,124 @@
+{
+  "checked": "2026-10-23",
+  "scope": "One additional reef fish for the guide, illustrative encounters and optional identification. Show an unsexed cream-and-pink mottled example with fixed contact points and gentle upper-body sway.",
+  "iucnYearConvention": "LC assessed 5 March 2015; published 2016. The indexed primary IUCN DOI page supplied the complete assessment metadata; direct DOI and species-page fetches returned 403. Do not mistake publication year for assessment year.",
+  "specimens": [
+    {
+      "id": "leaf_scorpionfish",
+      "name": "Leaf scorpionfish",
+      "scientific": "Taenianotus triacanthus",
+      "group": "fish",
+      "iucn": "LC",
+      "iucnYear": 2015,
+      "iucnPublishedYear": 2016,
+      "iucnDateAssessed": "2015-03-05",
+      "lookalikes": [
+        "lionfish"
+      ],
+      "marks": [
+        "A deep body is flattened strongly from side to side",
+        "A tall sail-like back fin runs almost continuously into the rounded tail",
+        "Small skin fringes surround the mouth and rise above the eyes",
+        "Broad fan-shaped side fins support a mottled, rough-skinned body"
+      ],
+      "role": "A small bottom-dwelling ambush predator of fishes and crustaceans.",
+      "fact": "It periodically sheds its outer skin, removing attached growth. Its colour can change after a moult.",
+      "habitat": "Tropical Indo-Pacific reef bottoms, including sand, rock, coral and algae-covered areas.",
+      "diet": "Small fishes and crustaceans caught by ambush.",
+      "behavior": "Often stays in place and rocks with water movement, resembling a loose leaf. The gentle sway here illustrates that camouflage.",
+      "observe": "Look for the flattened outline, tall continuous back fin and small facial fringes. Compare the red lionfish’s separate long spines and striped body. Colour varies widely, so use shape as well as colour. Observe without touching its venomous spines.",
+      "sources": [
+        "dx-foa-leaf_scorpionfish",
+        "dx-stri-leaf_scorpionfish",
+        "dx-am-leaf_scorpionfish",
+        "dx-iucn-leaf_scorpionfish",
+        "dx-csiro-leaf_scorpionfish"
+      ],
+      "claimSupport": {
+        "acceptedName": "CSIRO CAAB identifies Taenianotus triacanthus as accepted; the current indexed Eschmeyer catalog agrees. The species account and primary assessment use the same name.",
+        "shape": "Smithsonian documents a deep, highly compressed body, oblique mouth, high sail-like dorsal with XII spines, last soft ray attached to the upper caudal, large fan-like pectorals and rounded caudal. Museums Victoria corroborates skin papillae and mouth appendages; the Australian Museum field guide adds above-eye appendages. This illustrative mesh is not a complete diagnostic key.",
+        "habitatDiet": "Smithsonian supplies demersal sand, rock, coral and algal habitats and fishes/crustaceans as food. Museums Victoria independently identifies an ambush predator; no aquarium-care claims are imported.",
+        "motionColour": "Museums Victoria describes current-associated rocking, varied whitish/pink/yellow/brown/greenish appearances and skin shedding to remove growth. The cream/pink model is one illustrative unsexed variant; no sex, age, fixed moulting interval or universally pink appearance is inferred.",
+        "sizeDepth": "Museums Victoria gives a maximum 10 cm total length and 1–135 m. Smithsonian gives 10 cm and 5–135 m. The museum interval is selected as encounter metadata, not a hard biological limit or equal habitat suitability. Nominal .10 m represents an illustrative individual near the reported maximum, not a typical measured adult.",
+        "conservation": "Indexed primary IUCN DOI account names Motomura and Matsuura (2016), status LC, assessment date 2015-03-05, with unknown trend. FishBase independently reports LC and the same assessment date. Smithsonian’s unupdated Not evaluated / Listed field is not adopted.",
+        "comparison": "The one-way red-lionfish link contrasts two scorpionfish silhouettes already represented in the guide; it does not claim they are the closest species-level lookalikes. The existing lionfish entry is preserved."
+      },
+      "caution": "No special fluorescence, human-like emotions, rapid swimming, obligate lifelong site fidelity, fixed moulting schedule, sex or maturity label. Spines are venomous, but this guide supplies no handling or medical instructions."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-foa-leaf_scorpionfish",
+      "text": "Bray, D.J. Leaf Scorpionfish, Taenianotus triacanthus. Fishes of Australia, Museums Victoria / OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/3342",
+      "urlLabel": "fishesofaustralia.net.au (Museums Victoria)",
+      "supports": [
+        "Papillae and mouth fringes, varied colours, rocking, moulting, diet, venomous spines, 10 cm TL and 1–135 m"
+      ],
+      "access": "Full museum account read."
+    },
+    {
+      "id": "dx-stri-leaf_scorpionfish",
+      "text": "Robertson, D.R. and Allen, G.R. Shorefishes of the Eastern Pacific: Taenianotus triacanthus. Smithsonian Tropical Research Institute. Accessed October 2026.",
+      "url": "https://biogeodb.stri.si.edu/sftep/en/thefishes/species/1024",
+      "urlLabel": "biogeodb.stri.si.edu (Smithsonian)",
+      "supports": [
+        "Compressed body, high continuous dorsal, rounded caudal, fan pectorals, benthic habitats and 5–135 m"
+      ],
+      "access": "Full account read. Stale conservation field is superseded by current indexed primary IUCN assessment."
+    },
+    {
+      "id": "dx-am-leaf_scorpionfish",
+      "text": "Australian Museum. Lizard Island Field Guide: Leaf Scorpionfish, Taenianotus triacanthus. Accessed October 2026.",
+      "url": "https://lifg.australian.museum/Group.html?groupId=69cV8QbM",
+      "urlLabel": "lifg.australian.museum",
+      "supports": [
+        "Above-eye appendages and sedentary leaf-like sway"
+      ],
+      "access": "Indexed museum text read; direct fetch returned 403."
+    },
+    {
+      "id": "dx-iucn-leaf_scorpionfish",
+      "text": "Motomura, H. & Matsuura, K. (2016). Taenianotus triacanthus. The IUCN Red List of Threatened Species 2016: e.T79800214A79800219. Assessed 5 March 2015.",
+      "url": "https://doi.org/10.2305/IUCN.UK.2016-3.RLTS.T79800214A79800219.en",
+      "urlLabel": "doi.org (IUCN assessment)",
+      "supports": [
+        "Least Concern, assessment date 2015-03-05 and publication year 2016"
+      ],
+      "access": "Detailed indexed primary DOI account read; direct DOI and IUCN species-page requests returned 403. Date and status corroborated by current FishBase indexed account."
+    },
+    {
+      "id": "dx-csiro-leaf_scorpionfish",
+      "text": "CSIRO. Codes for Australian Aquatic Biota, code 37 287090: Taenianotus triacanthus. Accessed October 2026.",
+      "url": "https://www.cmar.csiro.au/caab/taxon_report.cfm?caab_code=37287090",
+      "urlLabel": "cmar.csiro.au (CSIRO)",
+      "supports": [
+        "Accepted scientific name and standard common name"
+      ],
+      "access": "Indexed authority account read; direct fetch returned a cache miss."
+    }
+  ],
+  "corroboration": [
+    {
+      "url": "https://www.fishbase.se/summary/Taenianotus-triacanthus.html",
+      "access": "Current indexed account read; LC/date corroboration and dorsal ray count. Its 5–135 m interval differs from the selected museum interval."
+    },
+    {
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?spid=51921",
+      "access": "Current indexed valid-name entry read; direct fetch returned 403."
+    }
+  ],
+  "modelProvenance": {
+    "nominalLengthM": 0.1,
+    "lengthMeaning": "Total body length including the tail, an illustrative individual near the museum-reported maximum",
+    "depthM": [
+      1,
+      135
+    ],
+    "habit": "bottom",
+    "anchor": "base",
+    "zone": "rubble",
+    "palette": "Unsexed cream/pink mottled variant",
+    "motion": "Fixed root and supporting contact points with small upper-body current motion; not a swimming or physiological model"
+  }
+}

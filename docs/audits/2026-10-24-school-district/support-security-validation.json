@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-24",
+  "state": "Local changes only, no live records changed",
+  "tests": {
+    "reporterPrivacy": 41,
+    "existingReporterAndAlloBot": 72,
+    "workerDeliveryReviewInboxDigest": 186,
+    "communityFeedback": 39,
+    "settingsAndProjectSave": 25,
+    "countsOverlapAcrossEarlierRuns": true
+  },
+  "files": [
+    {
+      "path": "error_reporter_module.js",
+      "sha256": "55c60d17fe5e6fbb32016ee9801a71c47a63e2cbc3eadbb8c2b4ab9d25aec765",
+      "mirrorEqual": true
+    },
+    {
+      "path": "translation_feedback_module.js",
+      "sha256": "622068190926ec93c6ba25bcfa542f90e47810b9b9c315f6d58b75da4d22ec1e",
+      "mirrorEqual": true
+    },
+    {
+      "path": "item_correction_module.js",
+      "sha256": "0e3e95b5db6ea46086b3683d5ced8d1d41ccab906b6bf8433861c9068b3ff117",
+      "mirrorEqual": true
+    },
+    {
+      "path": "view_project_settings_module.js",
+      "sha256": "03273b0505ce7c2502860b36fc547b20f58a20d33a214dcaee70dfc14387f404",
+      "mirrorEqual": true
+    },
+    {
+      "path": "view_project_settings_source.jsx",
+      "sha256": "bdaa389dfdfdda87339042c0519258f53a2669b49a7acdef176888ffac07e288"
+    },
+    {
+      "path": "catalog/cloudflare-worker/src/index.js",
+      "sha256": "32b2f35adf7fc2368a9b0d444a9504c66e204db3043c1a2f09a7d4ef20a39566"
+    },
+    {
+      "path": "catalog/cloudflare-worker/src/bug_review.js",
+      "sha256": "58468a463aa36f981db4a4e7f3d432fbff08c2f126157e3a5d5be493b073fce6"
+    }
+  ],
+  "nativeBrowser": "support-review-browser-checks.json",
+  "benchmarks": {
+    "scope": "Isolated Node synthetic-text checks; timings are observations, not service guarantees",
+    "before20000CharsMs": 2535,
+    "after20000CharsMs": 0.96,
+    "oversized100000Chars": "Whole value omitted before expensive parsing",
+    "integrationBeforeMs": 3604,
+    "integrationAfterMs": 158
+  }
+}

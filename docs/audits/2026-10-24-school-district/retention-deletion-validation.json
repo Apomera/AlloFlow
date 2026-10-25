@@ -1,0 +1,835 @@
+{
+  "checkedAt": "2026-10-24T20:39:41.388Z",
+  "scope": "Local retention/deletion implementation and synthetic verification only. No production data access, deletion, deployment or district certification.",
+  "coordination": "Read-only status checks left dependency/CI/release validation and MCP/browser-loader work with their existing chats. Only three necessary asset records/cache pins and mailbox validation constants were updated; no broad build or release approval.",
+  "finalClientTests": {
+    "passed": 474,
+    "fileCount": 23,
+    "groups": [
+      {
+        "passed": 177,
+        "fileCount": 11,
+        "log": "tmp/retention-deletion-20261024/final-client.log",
+        "logSha256": "35703284040ae3cf55d731ceb78fea641207f1f84adc63f4d1764c507b12aa3d",
+        "includes": "92 clinical/core/adapter cases, 48 pure retention cases, 16 CLI cases and 21 complete-host integration cases"
+      },
+      {
+        "passed": 297,
+        "fileCount": 12,
+        "newSessionRetentionCases": 25,
+        "offlineReceiptCases": 18,
+        "files": [
+          "tests/mailbox_session_retention.test.js",
+          "tests/class_mailbox.test.js",
+          "tests/mailbox_session_bridge.test.js",
+          "tests/mailbox_roster_authorization.test.js",
+          "tests/mailbox_script_source_module.test.js",
+          "tests/class_mailbox_delivery.test.js",
+          "tests/class_mailbox_survey.test.js",
+          "tests/connected_escape_mailbox.test.js",
+          "tests/lesson_board_mailbox.test.js",
+          "tests/lesson_board_mailbox_privacy.test.js",
+          "tests/question_board_mailbox_adapter.test.js",
+          "tests/mailbox_deletion_receipt.test.js"
+        ],
+        "log": "tmp/mailbox-retention-20261024/mailbox-final.log",
+        "logSha256": "afbaf198424a36db999a48a6ca1736e528b98742a10b5b38d4c6a0913bcbdaed",
+        "environment": "Vitest/jsdom, mocked Google services and clock/cache/lock, fake network; Windows task-local TEMP/TMP, testTimeout=30000, hookTimeout=120000."
+      }
+    ]
+  },
+  "serverSdk": {
+    "passed": true,
+    "checks": 37,
+    "projectId": "demo-alloflow-session-metadata",
+    "scope": "Synthetic emulator fixtures only",
+    "serverSdk": "7.11.6",
+    "receiptPath": "_dev_scratch/security-district-audit/session-retention/run-fYKohq/receipt.json",
+    "receipt": {
+      "startedAt": "2026-10-24T20:36:51.065Z",
+      "passed": true,
+      "projectId": "demo-alloflow-session-metadata",
+      "suite": "retention",
+      "launchMode": "java-direct-cached-cli-emulator",
+      "suiteSha256": "111f367c9e4ef6697676453a1491433433836fab70ca365f235236323627a2a7",
+      "runnerSha256": "fd528b3f5f7181b47362510fd03d57e12f82ba20e7fe07db541d4adfbb359d76",
+      "regressionSuiteSha256": "9ebe658f7d550158116b0ac72030a0893ce17e56dbb705311a75b7a8c6c8fbc2",
+      "node": "v24.11.1",
+      "java": "openjdk version \"21.0.11\" 2026-04-21 LTS\r\nOpenJDK Runtime Environment Temurin-21.0.11+10 (build 21.0.11+10-LTS)\r\nOpenJDK 64-Bit Server VM Temurin-21.0.11+10 (build 21.0.11+10-LTS, mixed mode, sharing)",
+      "tools": {
+        "jar": "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+        "jarVersion": "1.19.8",
+        "jarSha256": "9d43599ed6151199e8d604dc87fac51218e49e5f3a48519b1ae560bbe5e3382d",
+        "firebaseTools": "14.26.0",
+        "rulesUnitTesting": "3.0.4",
+        "firebase": "10.14.1"
+      },
+      "phases": [
+        {
+          "name": "candidate",
+          "legacyNegativeControl": false,
+          "rulesPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\firestore.rules",
+          "rulesSha256": "f2be58995ca6b95c5c570a7a1f10baef6f1ea648718c4729da71e78070f15793",
+          "projectId": "demo-alloflow-session-metadata",
+          "host": "127.0.0.1",
+          "firestorePort": 20832,
+          "webchannelPort": 23641,
+          "websocketPort": 19361,
+          "emulatorArgs": [
+            "-Duser.language=en",
+            "-jar",
+            "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "20832",
+            "--webchannel_port",
+            "23641",
+            "--websocket_port",
+            "19361",
+            "--project_id",
+            "demo-alloflow-session-metadata",
+            "--single_project_mode",
+            "--single_project_mode_error",
+            "--rules",
+            "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-retention\\run-fYKohq\\candidate\\firestore.rules"
+          ],
+          "suiteExit": {
+            "code": 0,
+            "signal": null
+          },
+          "regressionExit": {
+            "code": 0,
+            "signal": null
+          },
+          "passed": true,
+          "coverage": {
+            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-retention\\run-fYKohq\\candidate\\rule-coverage.json",
+            "bytes": 10096737,
+            "sha256": "39af017b096c3ac69d03b195a578c8a8f5de44693865f71169d57f05cfe5ba5d"
+          },
+          "durationMs": 26387,
+          "expressionLimitMessageLines": {
+            "suite.log": 0,
+            "regression.log": 0,
+            "firestore.log": 0
+          },
+          "expressionLimitPolicy": {
+            "enforced": true,
+            "passed": true
+          }
+        }
+      ],
+      "officialReferences": [
+        "https://firebase.google.com/docs/rules/unit-tests",
+        "https://firebase.google.com/docs/emulator-suite/connect_firestore",
+        "https://firebase.google.com/docs/rules/emulator-reports"
+      ],
+      "finishedAt": "2026-10-24T20:37:17.477Z"
+    },
+    "focus": [
+      "metadata field masks",
+      "missing intermediate document enumeration",
+      "related assets and three signaling trees",
+      "dry-run preservation",
+      "scoped physical deletion and independent reads",
+      "server update-time preconditions",
+      "transactional parent-version/hold race",
+      "changed/new work preservation",
+      "partial receipts and no-op acknowledgments",
+      "malformed timestamp maps",
+      "unrelated records retained"
+    ]
+  },
+  "browser": {
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "checks": {
+      "realEditorAbsentBeforeSetup": true,
+      "noCanaryBeforeUnlock": true,
+      "downloadEncrypted": true,
+      "beforeConfirmationOriginalsRetained": true,
+      "originalVisibleAfterUnlock": true,
+      "durableCiphertextAndMirrorCleanup": true,
+      "olderCopyPreserved": true,
+      "aiOffByDefault": true,
+      "lockHidesEditor": true,
+      "wrongPasswordStaysLocked": true,
+      "finalUiDraftSavedBeforeLock": true,
+      "mobileNoHorizontalOverflow": true,
+      "mobileReadableInputSize": true,
+      "globalUnlockedIndicator": true,
+      "reloadRequiresUnlock": true,
+      "offlineRecoveryRestoresLatestDraft": true,
+      "reviewPausesEditorAndShowsNoRecordText": true,
+      "reviewHeadingReceivesFocus": true,
+      "reviewMobileNoHorizontalOverflow": true,
+      "cancelRestoresLatestDraft": true,
+      "cancelRestoresTriggerFocus": true,
+      "missingConfirmationDoesNotDelete": true,
+      "deletionMarkerReplacesEncryptedBuckets": true,
+      "otherNamespaceAndPreferencesRetained": true,
+      "deletionSurvivesReload": true,
+      "noBrowserErrors": true
+    },
+    "count": 26,
+    "externalRequests": "Blocked; isolated disposable HTTPS origin and synthetic records only.",
+    "screenshotsVisuallyInspected": true,
+    "artifacts": [
+      "clinical-deletion-records-desktop.png",
+      "clinical-deletion-records-mobile.png",
+      "clinical-deletion-review-mobile.png",
+      "clinical-deletion-complete-mobile.png"
+    ]
+  },
+  "clinical": {
+    "initialVerification": {
+      "checkedAt": "2026-10-24T20:27:13.127Z",
+      "scope": "Reviewed logical deletion of the entire protected clinical DeviceStorage store only; no actual records or remote services were accessed.",
+      "sourceFrozen": true,
+      "rootPublicEqual": true,
+      "files": [
+        {
+          "file": "sensitive_workspace_module.js",
+          "bytes": 69629,
+          "sha256": "808a99c968ac2e91a82466529f606ccec281b96b600ef07f5fcd49bc8c629db3"
+        },
+        {
+          "file": "desktop/web-app/public/sensitive_workspace_module.js",
+          "bytes": 69629,
+          "sha256": "808a99c968ac2e91a82466529f606ccec281b96b600ef07f5fcd49bc8c629db3"
+        },
+        {
+          "file": "tests/sensitive_workspace_deletion.test.js",
+          "bytes": 26304,
+          "sha256": "8331e9da25473358343b9c335b81cc2d31233bc134666ae9b743d946cae75377"
+        },
+        {
+          "file": "tests/sensitive_workspace_deletion_races.test.js",
+          "bytes": 4986,
+          "sha256": "a312f906bf98bcf60a4463c7686cfad8ad308b2de78603536ca9c9eba2fe9200"
+        }
+      ],
+      "tests": {
+        "passed": 91,
+        "fileCount": 8,
+        "groups": [
+          {
+            "passed": 62,
+            "log": "tmp/clinical-deletion-20261024/deletion-final.log",
+            "files": [
+              "tests/sensitive_workspace_deletion.test.js",
+              "tests/sensitive_workspace_deletion_races.test.js",
+              "tests/sensitive_workspace.test.js",
+              "tests/sensitive_workspace_races.test.js",
+              "tests/sensitive_workspace_migration.test.js"
+            ],
+            "logSha256": "022981ee572c0d8b7c0060823c9086fce68f8294a22f0864e11203b96f17b9a4"
+          },
+          {
+            "passed": 29,
+            "log": "tmp/clinical-deletion-20261024/clinical-adapters.log",
+            "files": [
+              "tests/behavior_lens_protected_workspace.test.js",
+              "tests/dynamic_assessment_protected_workspace.test.js",
+              "tests/report_writer_protected_workspace.test.js"
+            ],
+            "logSha256": "42c32f9517f4553514c103b1f207983e31b30dd10ddfc47b3434db121c63abf7"
+          }
+        ],
+        "newDeletionCases": 30,
+        "notes": "Real existing encryption, CAS, independent current-password verification, React review UI, and injected channel/async barriers. Existing three clinical adapters retain their protected behavior."
+      },
+      "api": [
+        "prepareDeletion()",
+        "deleteClinicalRecords(plan,input)",
+        "cancelDeletion()",
+        "reconcileDeletion()"
+      ],
+      "input": {
+        "phrase": "DELETE PROTECTED RECORDS",
+        "password": "Current saved-records password; never logged or persisted by deletion.",
+        "retentionApproved": true,
+        "holdsReviewed": true,
+        "otherClinicalWindowsClosed": true
+      },
+      "retentionPolicy": {
+        "name": "window.ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY",
+        "example": {
+          "version": 1,
+          "allowManualDeletion": false,
+          "legalHold": true
+        },
+        "absent": "Manual deletion is available after review/password/acknowledgments.",
+        "malformed": "Blocked."
+      },
+      "behavior": {
+        "reviewStagesAllEditors": true,
+        "sessionOnlyOrTemporarySourcesBlockReview": true,
+        "reviewCountsContainNoClinicalValues": true,
+        "reviewRevokesOldCapabilitiesAndPausesEditors": true,
+        "wrongPasswordOrMissingAcknowledgmentsDoNotDelete": true,
+        "exactReviewedRevisionCas": true,
+        "currentStoreReplacedByContentFreeTombstone": true,
+        "unknownRecordTypesPreserved": true,
+        "casAttemptUncertaintyFencesNormalSavingUntilReconciliation": true,
+        "unchangedDurableHeadCanResumeReview": true,
+        "changedDurableHeadRemainsSealed": true,
+        "confirmedTombstoneClearsKeysMapsArchiveMetadataTransfersAndReviewCiphertextReferences": true,
+        "durableVerifiedBroadcastInvalidatesWithoutSaving": true,
+        "staleAndDuplicateNoticeFencedAgainstNewSetup": true,
+        "oldWriterCannotResurrect": true,
+        "newSetupAndExplicitBackupRestoreWork": true,
+        "legacyRawCopiesBlockOrProduceResidualWarningWithoutRemoval": true,
+        "keyboardFocusMovesToReviewAndBackOnCancel": true,
+        "deletedAtOnlyMinimalReceiptMetadata": true
+      },
+      "limits": [
+        "This deletes all three protected clinical tool buckets on the connected device store, not individual student/case records or all application stores.",
+        "Deletion is logical active-store replacement; it is not a forensic disk wipe or erasure of older downloads, backups, other tools, providers, or malicious/noncooperating windows.",
+        "Operators must close other clinical windows. A verified deletion notice clears cooperating tabs without saving their stale copy; older versions cannot be remotely forced to erase RAM.",
+        "Retention and hold acknowledgments are operator statements, not evidence of district authorization or verified staff identity. Policy is client configuration.",
+        "The tombstone prevents automatic stale vault writes, but a user can deliberately restore an old encrypted backup and recreate deleted records.",
+        "CAS or acknowledgment uncertainty keeps work/key paused and cannot cancel back into normal saving until durable state is reconciled. Locking this paused copy deliberately does not resave it.",
+        "No automatic age-based deletion schedule, production deletion, deployment, or PPS compliance certification is established."
+      ]
+    },
+    "finalFocusVerification": {
+      "checkedAt": "2026-10-24T20:29:52.127Z",
+      "source": "sensitive_workspace_module.js",
+      "bytes": 70015,
+      "sha256": "b8a3d0257242956e833acfee215f02aff8ebc19bd7dd4f26cd0e8c432ee6a987",
+      "rootPublicEqual": true,
+      "change": "Restore deletion cancel focus once after busy ends; focus headings on phase entry only.",
+      "tests": {
+        "passed": 39,
+        "files": [
+          "tests/sensitive_workspace_deletion.test.js",
+          "tests/sensitive_workspace_deletion_races.test.js",
+          "tests/sensitive_workspace_races.test.js"
+        ],
+        "log": "tmp/clinical-deletion-20261024/deletion-focus-final.log",
+        "newBusyTimingRegression": true
+      }
+    },
+    "finalModuleSha256": "b8a3d0257242956e833acfee215f02aff8ebc19bd7dd4f26cd0e8c432ee6a987",
+    "operatorAcknowledgmentsAreNotVerifiedDistrictApproval": true
+  },
+  "mailbox": {
+    "checkedAt": "2026-10-24T20:24:33.959Z",
+    "scope": "Local mailbox access-expiry fix and offline deletion evidence review; no live Google calls, deployment, new destructive endpoint, or real records accessed.",
+    "version": 26,
+    "tests": {
+      "passed": 297,
+      "fileCount": 12,
+      "newSessionRetentionCases": 25,
+      "offlineReceiptCases": 18,
+      "files": [
+        "tests/mailbox_session_retention.test.js",
+        "tests/class_mailbox.test.js",
+        "tests/mailbox_session_bridge.test.js",
+        "tests/mailbox_roster_authorization.test.js",
+        "tests/mailbox_script_source_module.test.js",
+        "tests/class_mailbox_delivery.test.js",
+        "tests/class_mailbox_survey.test.js",
+        "tests/connected_escape_mailbox.test.js",
+        "tests/lesson_board_mailbox.test.js",
+        "tests/lesson_board_mailbox_privacy.test.js",
+        "tests/question_board_mailbox_adapter.test.js",
+        "tests/mailbox_deletion_receipt.test.js"
+      ],
+      "log": "tmp/mailbox-retention-20261024/mailbox-final.log",
+      "logSha256": "afbaf198424a36db999a48a6ca1736e528b98742a10b5b38d4c6a0913bcbdaed",
+      "environment": "Vitest/jsdom, mocked Google services and clock/cache/lock, fake network; Windows task-local TEMP/TMP, testTimeout=30000, hookTimeout=120000."
+    },
+    "negativeControl": {
+      "checkedAt": "2026-10-24T20:23:05.285Z",
+      "syntheticOnly": true,
+      "baselineSource": "artifacts/allobot-lesson-revision-2026-10-24/validation/frozen-assets/mailbox_script_source_module.js",
+      "baselineSourceSha256": "606c72aa6876cfe1ae92abc5c2acf2686e80840f7bb0115c198b3f152bbba043",
+      "candidateSourceSha256": "d91741b0d221983ee46e0985d71078ff10b269d76391ffb65042bd2256ce5867",
+      "deniedAccessControls": [
+        {
+          "name": "cached secret after original six-hour deadline",
+          "baseline": {
+            "accepted": true,
+            "ttl": null
+          },
+          "candidate": {
+            "accepted": false,
+            "ttl": null
+          }
+        },
+        {
+          "name": "cached secret exactly at original deadline",
+          "baseline": {
+            "accepted": true,
+            "ttl": null
+          },
+          "candidate": {
+            "accepted": false,
+            "ttl": null
+          }
+        },
+        {
+          "name": "malformed timestamp cannot rewarm",
+          "baseline": {
+            "accepted": true,
+            "ttl": 21600
+          },
+          "candidate": {
+            "accepted": false,
+            "ttl": null
+          }
+        },
+        {
+          "name": "future timestamp cannot rewarm",
+          "baseline": {
+            "accepted": true,
+            "ttl": 21600
+          },
+          "candidate": {
+            "accepted": false,
+            "ttl": null
+          }
+        },
+        {
+          "name": "legacy cache without a marker cannot rewarm",
+          "baseline": {
+            "accepted": true,
+            "ttl": null
+          },
+          "candidate": {
+            "accepted": false,
+            "ttl": null
+          }
+        },
+        {
+          "name": "partial timestamp text cannot rewarm",
+          "baseline": {
+            "accepted": true,
+            "ttl": 21600
+          },
+          "candidate": {
+            "accepted": false,
+            "ttl": null
+          }
+        }
+      ],
+      "rewarmLeaseControl": {
+        "name": "cold cache near deadline uses remaining TTL",
+        "baseline": {
+          "accepted": true,
+          "ttl": 21600
+        },
+        "candidate": {
+          "accepted": true,
+          "ttl": 12
+        }
+      }
+    },
+    "hostMetadata": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "version": 26,
+        "sourceSha256": "d91741b0d221983ee46e0985d71078ff10b269d76391ffb65042bd2256ce5867",
+        "sourceBytes": 154905
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "version": 26,
+        "sourceSha256": "d91741b0d221983ee46e0985d71078ff10b269d76391ffb65042bd2256ce5867",
+        "sourceBytes": 154905
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "version": 26,
+        "sourceSha256": "d91741b0d221983ee46e0985d71078ff10b269d76391ffb65042bd2256ce5867",
+        "sourceBytes": 154905
+      }
+    ],
+    "pairs": [
+      {
+        "file": "apps_script/session_mailbox/Code.gs",
+        "bytes": 154905,
+        "sha256": "d91741b0d221983ee46e0985d71078ff10b269d76391ffb65042bd2256ce5867",
+        "mirror": "desktop/web-app/public/apps_script/session_mailbox/Code.gs",
+        "equal": true
+      },
+      {
+        "file": "mailbox_script_source_module.js",
+        "bytes": 158828,
+        "sha256": "2b5c6d3ad4a31fee3c76167a9d88a1108b7bcb346b2dd531151a217f5a801353",
+        "mirror": "desktop/web-app/public/mailbox_script_source_module.js",
+        "equal": true
+      },
+      {
+        "file": "view_share_session_surfaces_module.js",
+        "bytes": 67911,
+        "sha256": "84aeb996fe15a275197d3e7c6912ae9524a600b8d43e979bb4e525e44300777e",
+        "mirror": "desktop/web-app/public/view_share_session_surfaces_module.js",
+        "equal": true
+      }
+    ],
+    "files": [
+      {
+        "file": "apps_script/session_mailbox/Code.gs",
+        "bytes": 154905,
+        "sha256": "d91741b0d221983ee46e0985d71078ff10b269d76391ffb65042bd2256ce5867"
+      },
+      {
+        "file": "apps_script/session_mailbox/README.md",
+        "bytes": 19380,
+        "sha256": "18c9bd66cb4f8326ccb139dca9e5e12ab61c219f5edbea07afc0390679bb5e21"
+      },
+      {
+        "file": "mailbox_script_source_module.js",
+        "bytes": 158828,
+        "sha256": "2b5c6d3ad4a31fee3c76167a9d88a1108b7bcb346b2dd531151a217f5a801353"
+      },
+      {
+        "file": "view_share_session_surfaces_source.jsx",
+        "bytes": 62928,
+        "sha256": "198479f7ef83827cf841b72c2b57d97c6b4d603e49f373204a1324d4df302416"
+      },
+      {
+        "file": "view_share_session_surfaces_module.js",
+        "bytes": 67911,
+        "sha256": "84aeb996fe15a275197d3e7c6912ae9524a600b8d43e979bb4e525e44300777e"
+      },
+      {
+        "file": "dev-tools/security/check_mailbox_deletion_receipt.cjs",
+        "bytes": 9089,
+        "sha256": "c1697a4f5c27d6e3f3e28cef7d117ce3cd201c4d615657d919ce809fa0db6d1f"
+      },
+      {
+        "file": "docs/audits/2026-10-24-school-district/mailbox-deletion-runbook.md",
+        "bytes": 8821,
+        "sha256": "f0cf50c465e076a47af18c24ece4ea66a31e05393be7533bc3fb8c254c6c68fa"
+      },
+      {
+        "file": "docs/audits/2026-10-24-school-district/mailbox-deletion-examples/synthetic-plan.json",
+        "bytes": 814,
+        "sha256": "f74b66ae9ff29b5f0cb13db1fe42200cbb252fa5467c069cd941f3f3452bb5c8"
+      },
+      {
+        "file": "docs/audits/2026-10-24-school-district/mailbox-deletion-examples/synthetic-receipt.json",
+        "bytes": 1217,
+        "sha256": "eac38097bc9d4eeb60efe484333acddbc149f545a254b1885207e13ecdef4f85"
+      },
+      {
+        "file": "tests/mailbox_session_retention.test.js",
+        "bytes": 9348,
+        "sha256": "04a265528af3c324e0d599f0c4c63f7eb09710c3051c29d92850471c651bd0b9"
+      },
+      {
+        "file": "tests/class_mailbox.test.js",
+        "bytes": 75860,
+        "sha256": "f5b07cfa68b35db01623289d95be0f38cd81bfa4ac32a4477586d75f7cb0bac9"
+      },
+      {
+        "file": "tests/mailbox_session_bridge.test.js",
+        "bytes": 60349,
+        "sha256": "e5b7faff293641e94bf09f504c5a6910359d2512b13dd8ae15bcb6a2ef085b6e"
+      },
+      {
+        "file": "tests/mailbox_roster_authorization.test.js",
+        "bytes": 15592,
+        "sha256": "1907e0f999e337c695b3ca60b43cfb8f3dbadb104637b909af042bcaf826814d"
+      },
+      {
+        "file": "tests/mailbox_script_source_module.test.js",
+        "bytes": 11633,
+        "sha256": "b240cef1bb3c566ba7fb9857bc8ab2fed97762c5758118cb74a51b406d806061"
+      },
+      {
+        "file": "tests/class_mailbox_delivery.test.js",
+        "bytes": 24428,
+        "sha256": "bd5a54f7a4dd1e84c7a15c8973b7bf2cc724f7949070cf6ca4622a0c57b4b7e1"
+      },
+      {
+        "file": "tests/class_mailbox_survey.test.js",
+        "bytes": 18699,
+        "sha256": "7cf777158bf67a47c0382472bf31300610edf8943bc2e8b487f51cff8461b408"
+      },
+      {
+        "file": "tests/connected_escape_mailbox.test.js",
+        "bytes": 2380,
+        "sha256": "fc195e933b9d5329353b4c1a8251bbe7bf2502d37cec4c878494479e5ff25e77"
+      },
+      {
+        "file": "tests/lesson_board_mailbox.test.js",
+        "bytes": 3526,
+        "sha256": "798760953376261980d6c0ac22b356241614260dad04e53fa92d031b484bab99"
+      },
+      {
+        "file": "tests/lesson_board_mailbox_privacy.test.js",
+        "bytes": 5382,
+        "sha256": "bc9b8f3fc609da36188cc473225108c3567f97aceb5325a752e069b3ebf435da"
+      },
+      {
+        "file": "tests/question_board_mailbox_adapter.test.js",
+        "bytes": 13248,
+        "sha256": "8238b4d52e10feba76d28b037159b3e401b1469c8e720e7e0cce448ab6716994"
+      },
+      {
+        "file": "tests/mailbox_deletion_receipt.test.js",
+        "bytes": 8317,
+        "sha256": "1a8a6868431dc41691f7becf7266f0826cd41971ae585e94f347821b6d63e826"
+      }
+    ],
+    "productionChanges": [
+      "absolute original six-hour deadline in versioned cached envelopes",
+      "legacy/cold cache refill uses only remaining TTL",
+      "missing/malformed/future/expired durable markers cannot rewarm",
+      "serialized cache refill and lifecycle operations; no per-poll property read",
+      "unknown codes avoid whole-session cleanup; busy cold lookups are retryable",
+      "explicit close/prune clear known cache and markers under lock",
+      "update banner now points older deployments to version26"
+    ],
+    "offlineReceiptReview": {
+      "validator": "dev-tools/security/check_mailbox_deletion_receipt.cjs",
+      "examplesDefaultToUnknownHoldsAndPending": true,
+      "exampleExitCode": 1,
+      "reviewNotProviderVerification": true,
+      "decisions": [
+        "exact scope and reviewed plan hash",
+        "held/unknown-hold records cannot be planned or reported deleted",
+        "trash is not permanent deletion",
+        "changed, missing, failed or pending outcomes stay incomplete",
+        "external Drive trash, provider/Vault, exports/backups and recipients require separate review",
+        "diagnostics report metadata counts, not identifiers or input contents"
+      ]
+    },
+    "boundedDiffWhitespaceClean": true,
+    "limits": [
+      "Existing script deployments must be updated to apply version26. Client setup banner is guidance, not evidence of server deployment.",
+      "Manual property edits do not immediately revoke an already validated cached envelope; use authenticated end/closeall.",
+      "Access expiry and request-driven known cache cleanup do not establish a scheduled physical purge or whole-store deletion.",
+      "Pack deletion trashes located declared artifacts, not submissions, delivered documents, Vault, recipient or downloaded copies.",
+      "A complete offline review packet consists of operator observations. The tool cannot authenticate the reviewer or verify Google/provider purge and always reports allCopiesDeleted:false.",
+      "Known fields exclude student-content and credential fields but identifiers can still be sensitive; secure the packet and do not disguise names or tokens as opaque identifiers.",
+      "Root must update the two changed module SRI/cache pins; this summary does not certify the shared checkout or a full release."
+    ],
+    "officialReferences": [
+      "https://developers.google.com/workspace/drive/api/guides/delete",
+      "https://knowledge.workspace.google.com/admin/drive/recover-deleted-files-and-folders-for-drive-users",
+      "https://knowledge.workspace.google.com/vault/retention/how-retention-works"
+    ]
+  },
+  "offlineSyntheticPacket": {
+    "kind": "alloflow-mailbox-deletion-evidence-review",
+    "version": 1,
+    "evidenceStatus": "incomplete",
+    "planSha256": "74e1f0f0d59460a689598e79f8bc3506370ce87142fff51ee66a556327ac18f8",
+    "counts": {
+      "planned": 2,
+      "reported": 2,
+      "pending": 2,
+      "failed": 0,
+      "changed": 0,
+      "trashed": 0,
+      "permanentlyDeletedReported": 0,
+      "sessionsEndedReported": 0,
+      "retained": 0,
+      "notFound": 0,
+      "unknownHold": 2
+    },
+    "externalOutstanding": 4,
+    "externalRetained": 0,
+    "evidenceSource": "Operator observations; this offline tool did not contact Google or inspect files.",
+    "providerPurgeVerified": false,
+    "allCopiesDeleted": false,
+    "permanentDeletionOfTrashedFilesEstablished": null
+  },
+  "delivery": {
+    "checkedAt": "2026-10-24T20:30:33.088Z",
+    "reviewed": {
+      "sensitive_workspace_module.js": {
+        "bytes": 70015,
+        "integrity": "sha384-VmfKV2l7NCBm5z1iHObNtkRgqK/s7Dtt2EX9yQPc0qQHoLQX7Midl+SwaecbvTiF",
+        "sha256": "b8a3d0257242956e833acfee215f02aff8ebc19bd7dd4f26cd0e8c432ee6a987"
+      },
+      "mailbox_script_source_module.js": {
+        "bytes": 158828,
+        "integrity": "sha384-MxDJfbiXdeP6qRk7mlcHGBgLhbe6BUZRL9GNqJ7SaK3AjTQDVjxKFCI+0g7uKq3m",
+        "sha256": "2b5c6d3ad4a31fee3c76167a9d88a1108b7bcb346b2dd531151a217f5a801353"
+      },
+      "view_share_session_surfaces_module.js": {
+        "bytes": 67911,
+        "integrity": "sha384-PUAj6hZt7Yr6l8eKgx4OfE3ck35MtY1dNoCktZs93qm2LG0lNE1E929rJkzIHuZ8",
+        "sha256": "84aeb996fe15a275197d3e7c6912ae9524a600b8d43e979bb4e525e44300777e"
+      }
+    },
+    "hosts": [
+      "AlloFlowANTI.txt",
+      "desktop/web-app/src/AlloFlowANTI.txt",
+      "desktop/web-app/src/App.jsx"
+    ],
+    "previousManifestId": "b9c06e715fe5f06b83a38adad4bdc75c747fefa550fb91d3024cb62d60d5c0e5",
+    "manifestId": "029389064ce2304acd46c6cc4f143dc9fd94cc617a6e7b2cac93d98fa413b0a7",
+    "totalAssets": 652,
+    "otherAssetRecordsPreserved": true,
+    "scope": "Three retention-related assets only. No broad release approval or deployment."
+  },
+  "hostChecks": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "a8c0a6da9cba8ad9eaf580b640791e4c4c3a37f330f36baf73f0ea6a8d4bfdd3",
+      "manifestId": "029389064ce2304acd46c6cc4f143dc9fd94cc617a6e7b2cac93d98fa413b0a7",
+      "reviewedAssetCount": 3,
+      "actualPolicyPassed": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "fe25fd2fd939ddbda311aa7d722052abfa2af27b472e2fd7b84c693ea85daa4c",
+      "manifestId": "029389064ce2304acd46c6cc4f143dc9fd94cc617a6e7b2cac93d98fa413b0a7",
+      "reviewedAssetCount": 3,
+      "actualPolicyPassed": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "fe25fd2fd939ddbda311aa7d722052abfa2af27b472e2fd7b84c693ea85daa4c",
+      "manifestId": "029389064ce2304acd46c6cc4f143dc9fd94cc617a6e7b2cac93d98fa413b0a7",
+      "reviewedAssetCount": 3,
+      "actualPolicyPassed": true
+    }
+  ],
+  "mirrors": [
+    {
+      "file": "sensitive_workspace_module.js",
+      "bytes": 70015,
+      "sha256": "b8a3d0257242956e833acfee215f02aff8ebc19bd7dd4f26cd0e8c432ee6a987",
+      "publicFile": "desktop/web-app/public/sensitive_workspace_module.js",
+      "equal": true
+    },
+    {
+      "file": "mailbox_script_source_module.js",
+      "bytes": 158828,
+      "sha256": "2b5c6d3ad4a31fee3c76167a9d88a1108b7bcb346b2dd531151a217f5a801353",
+      "publicFile": "desktop/web-app/public/mailbox_script_source_module.js",
+      "equal": true
+    },
+    {
+      "file": "view_share_session_surfaces_module.js",
+      "bytes": 67911,
+      "sha256": "84aeb996fe15a275197d3e7c6912ae9524a600b8d43e979bb4e525e44300777e",
+      "publicFile": "desktop/web-app/public/view_share_session_surfaces_module.js",
+      "equal": true
+    }
+  ],
+  "sources": [
+    {
+      "file": "sensitive_workspace_module.js",
+      "bytes": 70015,
+      "sha256": "b8a3d0257242956e833acfee215f02aff8ebc19bd7dd4f26cd0e8c432ee6a987"
+    },
+    {
+      "file": "dev-tools/security/school_firestore_retention_core.cjs",
+      "bytes": 18632,
+      "sha256": "bf3c828cc190c9328f89b47a27e8485cda2f21aa9f0dd6a3b70225e87fb1ecb5"
+    },
+    {
+      "file": "dev-tools/security/school_firestore_retention.cjs",
+      "bytes": 13085,
+      "sha256": "4141b19319ec5cacdfafad68a2d870fcbac804394660c5991e991c5cfaba8383"
+    },
+    {
+      "file": "dev-tools/security/run_session_metadata_rules.cjs",
+      "bytes": 15711,
+      "sha256": "fd528b3f5f7181b47362510fd03d57e12f82ba20e7fe07db541d4adfbb359d76"
+    },
+    {
+      "file": "tests/school_firestore_retention.emulator.cjs",
+      "bytes": 9886,
+      "sha256": "111f367c9e4ef6697676453a1491433433836fab70ca365f235236323627a2a7"
+    },
+    {
+      "file": "tests/school_firestore_retention.test.js",
+      "bytes": 18120,
+      "sha256": "b3e73056d43cb2e73d882cd1a1633a68d852f23f4575cfb232a0abfb8bb5ceff"
+    },
+    {
+      "file": "tests/school_firestore_retention_cli.test.js",
+      "bytes": 8006,
+      "sha256": "8669152a294f3072100274c190871e18e2b7c2c356c9bb429f81c9745bc174ce"
+    },
+    {
+      "file": "tests/sensitive_workspace_deletion.test.js",
+      "bytes": 27395,
+      "sha256": "295f07a1c99c8eaefbb5d9c638c2b420618b1e3a64596a227f2966daad59090e"
+    },
+    {
+      "file": "tests/sensitive_workspace_deletion_races.test.js",
+      "bytes": 4986,
+      "sha256": "a312f906bf98bcf60a4463c7686cfad8ad308b2de78603536ca9c9eba2fe9200"
+    },
+    {
+      "file": "tests/sensitive_workspace_app_integration.test.js",
+      "bytes": 6180,
+      "sha256": "a29e8798104263b89ca31a0a0a63f72814abccc700bcd3341d1d43a7b85274c7"
+    },
+    {
+      "file": "apps_script/session_mailbox/Code.gs",
+      "bytes": 154905,
+      "sha256": "d91741b0d221983ee46e0985d71078ff10b269d76391ffb65042bd2256ce5867"
+    },
+    {
+      "file": "apps_script/session_mailbox/README.md",
+      "bytes": 19380,
+      "sha256": "18c9bd66cb4f8326ccb139dca9e5e12ab61c219f5edbea07afc0390679bb5e21"
+    },
+    {
+      "file": "dev-tools/security/check_mailbox_deletion_receipt.cjs",
+      "bytes": 9089,
+      "sha256": "c1697a4f5c27d6e3f3e28cef7d117ce3cd201c4d615657d919ce809fa0db6d1f"
+    },
+    {
+      "file": "tests/mailbox_session_retention.test.js",
+      "bytes": 9348,
+      "sha256": "04a265528af3c324e0d599f0c4c63f7eb09710c3051c29d92850471c651bd0b9"
+    },
+    {
+      "file": "tests/mailbox_deletion_receipt.test.js",
+      "bytes": 8317,
+      "sha256": "1a8a6868431dc41691f7becf7266f0826cd41971ae585e94f347821b6d63e826"
+    },
+    {
+      "file": "view_share_session_surfaces_source.jsx",
+      "bytes": 62928,
+      "sha256": "198479f7ef83827cf841b72c2b57d97c6b4d603e49f373204a1324d4df302416"
+    },
+    {
+      "file": "SECURITY.md",
+      "bytes": 15255,
+      "sha256": "e688cddbe871b473a26dbcd3fb17c66d524ad2525e04276711bb4bcf184b7b81"
+    },
+    {
+      "file": "docs/DATA_PRIVACY_POSTURE.md",
+      "bytes": 9923,
+      "sha256": "f79574a98b8b2b0f968a96077c59b809c641fc8034134d8d08efd7f86bfb3fd8"
+    },
+    {
+      "file": "docs/audits/2026-10-24-school-district/data-flow-inventory.md",
+      "bytes": 15745,
+      "sha256": "b6c921823c8239aa512f241ff4e8b5d5487f7ee34700905b92ba7bec7abf32e0"
+    }
+  ],
+  "officialReferences": [
+    "https://legislature.maine.gov/statutes/20-A/title20-Asec953.html",
+    "https://firebase.google.com/docs/firestore/manage-data/delete-data",
+    "https://firebase.google.com/docs/firestore/ttl",
+    "https://docs.cloud.google.com/nodejs/docs/reference/firestore/latest/firestore/firestore"
+  ],
+  "limits": [
+    "Clinical deletion covers the complete connected protected three-tool store, not an individual student or every application store. Logical replacement is not forensic disk erasure.",
+    "Old noncooperating app windows, encrypted backups, exports, general recovery, browser caches and external provider copies require separate disposition. Explicit backup restore can restore previously deleted records.",
+    "Known retention/hold conventions and operator acknowledgments are not a complete legal-hold detector or district staff identity system.",
+    "Owned-Firestore tooling targets one expired assignment with an existing owner-matching parent. It does not administer Google-provisioned Canvas storage or infer ownership for previously orphaned sessions.",
+    "Actual writers must be stopped. Transactions bind parent changes/holds to each delete, but arbitrary new child creation or future writes cannot be excluded by enumeration alone. Partial/unknown results are not success.",
+    "Plan files contain exact resource paths, UIDs and approval references; protect them as administrative records. Receipts avoid record bodies but identifiers can still be sensitive.",
+    "Mailbox v26 source must be redeployed; cache access expiry is not a scheduled physical purge. Drive trash, permanent deletion, submissions, delivered files, Vault and recipients are distinct outcomes.",
+    "Offline receipt review validates operator observations only and always reports providerPurgeVerified:false and allCopiesDeleted:false.",
+    "The district must approve record schedules, holds, service/account scope, deletion authority and actual deployment. No live operator cleanup or full coordinated release has occurred."
+  ]
+}

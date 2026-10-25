@@ -1,0 +1,324 @@
+# AlloFlow Class Mailbox — teacher setup (one time, ~2 minutes)
+
+The Class Mailbox is a tiny message-drop that runs on **your own Google
+account** (Google Apps Script). It lets students join live sessions and open
+image-rich homework QR codes without separate student app accounts or installs.
+School approval and the account's deployment restrictions still apply. AlloFlow
+maintainer servers are not the mailbox backend; live state and hosted homework
+remain in the Google account chosen for the deployment.
+
+## Deploy steps
+
+1. Type **script.new** into your browser's address bar (it is a Google
+   shortcut URL, like docs.new — it creates a blank Google Apps Script
+   project and opens the editor; the long way is script.google.com →
+   "New project"). Do this in a browser where you are signed into the
+   Google account that should own the mailbox (a school account is ideal;
+   see "School accounts" below).
+2. Delete the starter code in the editor and paste the mailbox script. The
+   easiest source is AlloFlow itself: **Student QR → Live class without
+   accounts → "copy script code"** — the script ships inside the app, so the
+   button works offline and inside Gemini Canvas (this folder's `Code.gs` is
+   the same file). Name the project **AlloFlow Class Mailbox** (click
+   "Untitled project" to rename). Save (Ctrl+S).
+   Then open **Project Settings** (the gear in the left rail), tick **Show
+   "appsscript.json" manifest file in editor**, open `appsscript.json` from
+   the file list and replace its contents with the manifest printed under
+   "v24: Send to Drive" below. It tells Google the script may touch only the
+   files it creates (`drive.file`) and make outbound web requests; without
+   it, Google grants the script access to your entire Drive.
+3. Click **Deploy → New deployment**. Click the gear next to "Select type"
+   and choose **Web app**.
+4. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy**.
+5. Authorize when prompted. With the manifest in place the consent screen
+   asks for two things: "See, edit, create, and delete only the specific
+   Google Drive files you use with this app" and "Connect to an external
+   service". Neither is a sensitive scope, so Google's "Google hasn't
+   verified this app" interstitial is not expected. If it still appears
+   (deployments without the manifest request full Drive access, which does
+   trigger it), continue only if you created the project, reviewed the
+   pasted source, and recognize the account and project name; otherwise
+   cancel. Google explains this flow at
+   https://developers.google.com/apps-script/guides/services/authorization.
+   The script uses cache/properties for live sessions and Drive for hosted
+   homework, admin-token recovery, completed student submissions, and the
+   documents you send to Drive.
+6. Copy the **Web app URL** (ends in `/exec`) and paste it into AlloFlow:
+   **Student QR → Live class without accounts → Connect mailbox**. AlloFlow
+   runs a self-test and claims the admin token automatically.
+
+**Updating later:** paste new code, then Deploy → **Manage deployments** →
+pencil icon → Version: New version → Deploy. The URL stays the same.
+
+> **v8 (required for secure live QR sessions and automatic Drive submissions):**
+> separates the QR join secret
+> from teacher authority. Each student receives a signed, session-scoped
+> participant credential. Older scripts must be updated before new AlloFlow
+> builds will show a live-session QR.
+
+## v24: Send to Drive, Google Docs, Forms, and page import
+
+Version 24 lets AlloFlow hand finished work to **your own Drive** and read a
+web page **for you**. Everything stays in your account; the mailbox never
+serves any of it to students.
+
+| Request | What happens | Needs |
+| --- | --- | --- |
+| `{a:'deliver'}` with a DOCX, PPTX, HTML, CSV, PDF or JSON file | The file lands in **AlloFlow Class Mailbox / Delivered documents**. DOCX and HTML become a native Google Doc, PPTX a Google Slides deck, CSV a Sheet; `convert:'none'` keeps the original. The reply carries the link. | `drive.file` + outbound requests (the shipped manifest) |
+| `{a:'deliverform'}` with quiz items | A Google Form is created in quiz mode (points, correct choices marked, expected short answers kept as feedback) and moved into the same subfolder. | the optional Forms scope (below) |
+| `{a:'fetchpage'}` with a URL | The page is fetched from Google's servers and returned as plain text with its title, so an article can be leveled without a browser-side reader proxy that sites flag as a bot. Private and local addresses are refused; 60 requests per minute. | outbound requests (the shipped manifest) |
+
+All three require the admin token: the deployment is reachable by anyone, so
+without that gate it would be an open upload box.
+
+**The manifest** (`appsscript.json`, see step 2):
+
+```json
+{
+  "timeZone": "America/New_York",
+  "dependencies": {},
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "webapp": {
+    "access": "ANYONE_ANONYMOUS",
+    "executeAs": "USER_DEPLOYING"
+  },
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/script.external_request"
+  ]
+}
+```
+
+**Google Forms is opt-in.** The manifest deliberately omits the Forms scope,
+because it is a broader permission than the two the script normally needs.
+To enable `deliverform`, add `"https://www.googleapis.com/auth/forms"` to
+`oauthScopes`, deploy a new version, and authorize again (this scope can
+trigger Google's unverified-app interstitial; the step 5 advice applies).
+Until then the action replies `forms-scope` and nothing else changes.
+
+**Changing scopes re-prompts you.** Whenever `oauthScopes` changes, the next
+deploy asks you to authorize again. Scripts deployed before v24 without a
+manifest asked for full Drive access; after this update they ask for less.
+Your existing mailbox folder was created by this same script, so it stays
+reachable under the narrower scope.
+
+## What it stores
+
+| Data | Where | Lifetime |
+| --- | --- | --- |
+| Live messages and session documents | Apps Script cache in **your** Google account | eligible for early eviction; requested expiry at most 45 min or 6 h |
+| Live-session markers and random join secrets | Apps Script Properties in **your** Google account | absolute 6 h access window in v26; marker/cache cleanup on close, lookup or pruning, not a scheduled physical purge |
+| Homework pack manifests and chunks | AlloFlow Class Mailbox folder in **your** Drive | until you delete them |
+| Completed mailbox student submissions (JSON) | the same private Drive folder | until you delete them according to school policy |
+| Admin token recovery note | the same private Drive folder | until rotated or deleted |
+| Documents you send to Drive (Docs, Slides, Sheets, PDFs, Forms) | a "Delivered documents" subfolder of the same folder | until you delete them |
+
+No student accounts exist. A live QR carries a random **join-only secret**.
+The mailbox exchanges it for a signed participant credential bound to one
+random student id. Participants can send their own presence and activity
+signals, read a privacy-filtered session view, and modify only their own
+approved fields. The admin token is required for teacher broadcasts, complete
+class state, ending sessions, and pack management; it is never placed in a QR.
+Treat a QR like a classroom invitation and the admin token like a password.
+
+**v26 live-session expiry:** redeploy the reviewed script before relying on the
+absolute six-hour access limit. Cached secrets retain their original creation
+deadline, and an eviction/reconnect cannot extend it by another six hours.
+Malformed, future or expired durable markers cannot rewarm the cache. Normal
+warm polling does not read Script Properties on every request. Use `end` or
+`closeall` to close a live session; manually deleting a Script Property does
+not instantly revoke an already validated cache envelope.
+
+Ending a session does not delete Drive submissions or delivered documents.
+`delpack` moves its located manifest, declared chunks and activity sidecars to
+trash; it does not remove those other files or establish permanent deletion.
+Use the [mailbox retention and deletion runbook](../../docs/audits/2026-10-24-school-district/mailbox-deletion-runbook.md)
+for exact-scope review, holds, trash/permanent-deletion distinctions and an
+offline evidence packet. Do not erase held or unreviewed records.
+
+## School accounts and student privacy
+
+Some Workspace districts disable "Anyone" access for Apps Script web apps.
+If the **Who has access** dropdown has no "Anyone" option, ask school or
+district IT whether this workflow can be approved. Do not bypass an
+administrative control by moving student records to a personal account.
+
+A Google account or Workspace for Education account does not by itself make a
+workflow FERPA-compliant. The school remains responsible for approval,
+legitimate educational purpose, access controls, required notices or consent,
+and retention. Use codenames and avoid unnecessary student identifiers. See
+the U.S. Department of Education student-privacy FAQ:
+https://studentprivacy.ed.gov/frequently-asked-questions
+## Your admin token (reconnecting from a new device)
+
+When AlloFlow first connects it claims an **admin token** and shows it to
+you once — save it like a password. Connecting from a new device (or a fresh
+Canvas paste) just needs that token pasted into the "Admin token" field.
+
+**Lost the token? Check your Drive first:** the script keeps a copy in the
+`AlloFlow Class Mailbox` folder as `ADMIN-TOKEN (do not share).txt` (written
+at claim and refreshed on every successful reconnect). It cannot be fetched
+automatically by the app — any "fetch my token" endpoint would hand it to
+students too, which is exactly what the token exists to prevent.
+
+If the Drive file is also gone: open the script → Project Settings (gear) →
+**Script properties** → delete the `admin` property → reconnect from
+AlloFlow, and it will claim (and show, and re-save) a new one.
+
+## Live sessions are real-time when the network allows
+
+Students first connect through the mailbox (poll every few seconds), then
+AlloFlow automatically upgrades each student to a direct device-to-device
+WebRTC channel using the mailbox only for the handshake. Upgraded students
+get instant pushes and hand-raises; students whose network blocks
+peer-to-peer stay on mailbox polling and everything still works, just a few
+seconds slower. Participant and class-wide rate limits, bounded replay rings,
+and retry guidance protect the teacher's Apps Script execution capacity.
+
+## Capacity notes
+
+Designed for classroom-scale testing. Each connected device makes two kinds of
+request: a **message poll** (new pushes, hand-raises, signaling) and a
+**session-document poll** (roster, groups, quiz and poll state). The message
+poll runs about every 2.5 seconds, stretching when the session is idle and
+parking while the tab is hidden.
+
+**WebRTC buys latency, not quota.** The session-document poll normally rides
+along on the message poll's response and skips its own request, but only while
+the message poll is arriving faster than every 4 seconds. Once a device
+upgrades to WebRTC its message poll backs off to roughly 8 seconds, which is
+slower than that window, so the document poll resumes making its own request
+(about every 1.8 seconds in an actively changing class). Plan for an upgraded
+device to cost at least as many Apps Script requests as a device that stayed on
+polling — the upgrade is what makes pushes instant, not what protects the
+teacher's execution capacity.
+
+Server-side ceilings, per rolling minute: **120 reads and 120 writes per
+participant**, and **1,800 reads per session** across all devices and both poll
+types. A class of 30 typically lands somewhere between 700 and 1,200 reads per
+minute depending on how many devices upgraded, so roughly 40-70% of the
+per-session ceiling. Past about 45 devices in one session, expect students to
+start meeting rate-limit backoff (AlloFlow retries with the server's own
+`retryAfterMs`, so the class degrades to slower updates rather than failing).
+
+Google also limits **simultaneous** Apps Script executions per user, and quotas
+can change; request rate is not the same as concurrency, and neither figure
+above is a Google-published guarantee. Monitor the Apps Script **Executions**
+dashboard during pilots and treat the numbers here as a starting estimate to
+check against your own account.
+
+Hosted packs are capped at ~8 MB and stored as individual download chunks.
+Live messages cap at 90 KB; AlloFlow chunks larger resource pushes
+automatically.
+
+## Images in live sessions
+
+Live packs include supported pictures in image resources, glossary and timeline
+entries, visual panels (including animation frames), and quiz questions/choices.
+The app packages these separately from the small session document and sends them
+through the existing chunked mailbox and WebRTC paths. Hosted live packs retain
+the same pictures for students who join later.
+
+Large embedded PNG, JPEG, WebP and AVIF still pictures are resized for delivery
+when possible, preserving the teacher's original. Animated GIFs are not flattened.
+If an image cannot fit or uses an unsupported source, the teacher gets a warning
+and the student sees that it was omitted. Ordinary resource images share a 5 MiB
+character budget; the hosted pack limit still applies to the complete pack.
+HTTPS images are checked on the student device; a browser-local blob URL cannot
+be transferred to another device.
+
+The Live Dashboard distinguishes **Images: awaiting device**, **Images loading**,
+**Images loaded**, and **Images missing**. These receipts confirm that the images
+loaded on the learner device, not that the learner looked at them. Students can
+choose **Retry images** for failed downloads; teachers can resend and reassign
+the resource with the learner's **Retry images** button. Pictures omitted from the
+pack require the teacher to replace or resize them; an omission alone does not
+show a retry button. Mixed failures explain both actions.
+
+Mailbox **v23+** stores image counts in the participant's independent `imageDelivery`
+receipt, preserving activity progress. Each receipt matches a resource and its
+assignment nonce, so a previous assignment cannot appear loaded for a newer one.
+Only bounded counts, a resource id, status and timestamps cross this channel.
+Older deployments still transfer images and offer local student retry controls;
+the teacher dashboard explains that independent image status needs a script update.
+
+Transfers are acknowledged after successful decoding. Interrupted decoding can
+retry automatically, while **Retry resource** restarts replay and hosted-pack
+recovery without discarding already acknowledged transfers. Incomplete buffers
+expire and automatic attempts are bounded so failures cannot loop indefinitely.
+
+Earlier app builds stripped ordinary images before mailbox transfer. Reload the
+updated teacher and student apps and share the resource again (or use **Share
+full resource pack**). Image transfer fixes require the updated app. For independent
+teacher image status, update the mailbox script to v23 and reconnect/self-test.
+
+## Two-device smoke test (after deploying or updating the script)
+
+1. Teacher: connect the mailbox, start a live session, scan the QR with a
+   phone, pick a codename — the student should appear in the roster within a
+   few seconds and gain the ⚡ badge within ~10–30 s on open networks.
+2. Push a resource — it should appear on the phone; raise a hand on the
+   phone — it should appear next to the codename.
+3. With a v7 script: open a Quick Check or Live Poll from the Live Session
+   Center — the question should reach the phone and the answer should come
+   back to the teacher dashboard.
+4. **Mid-session, refresh the teacher tab** — you should land back in your
+   running session with the roster repopulating within a few seconds and
+   students' ⚡ returning within ~15–30 s (no student action needed).
+5. **Lock the student phone for a minute, then wake it** — it should
+   reconnect on its own within ~30 s, without any taps.
+
+## Admin lifecycle and incident controls
+
+AlloFlow masks the saved admin token by default. Use **Rotate token** when a
+token may have been exposed; rotation invalidates the old token. Active
+sessions must be closed first. **Close all sessions** removes every durable
+session marker, causing participant requests to fail closed.
+
+Before AlloFlow displays a new live QR, it opens the session, obtains a real
+participant credential, and performs a privacy-filtered session read. A stale
+script or broken permission deployment therefore fails on the teacher device
+instead of producing a QR that students cannot use.
+
+Apps Script cache is intentionally ephemeral: Google may evict entries before
+their requested expiry. AlloFlow can re-seed teacher state after eviction and
+uses a version precondition so a stale recovery cannot overwrite a document
+that was already recreated. Very recent transient student activity can still
+need resubmission after a cache eviction.
+## Student submission behavior
+
+With a v8 mailbox, **Save & Submit** automatically uploads complete student
+work for mailbox live sessions and mailbox-hosted homework. The server accepts
+chunked JSON only when the caller proves either a signed live-session
+participant capability or the unguessable hosted-homework pack capability.
+Files are written to the teacher's private `AlloFlow Class Mailbox` Drive
+folder; no endpoint lists or downloads submissions. If upload fails, AlloFlow
+downloads a backup JSON file on the student device instead of discarding work.
+
+Teachers download those JSON files from Drive and import them through
+AlloFlow's **Submission Inbox**. Standard Firebase live sessions continue to
+sync supported live answers and signals, but complete portfolio submissions
+remain file-based rather than being retained permanently in Firebase.
+
+## Lesson board retry compatibility
+
+Lesson boards require mailbox v22 or later. This version checks each response
+against the current retry window, so a delayed response from an earlier attempt
+cannot replace a newer pending response. Existing classroom activity request
+fields remain compatible. After replacing Code.gs, deploy a new Web App version
+using the same URL and reconnect the mailbox in AlloFlow.
+
+## Participant roster protection (revision 25)
+
+Revision 25 checks whole roster replacements against the latest stored record
+under the script lock. Students cannot remove or change teacher assignments or
+unknown retained metadata. Compatible replacements preserve those fields exactly;
+updated clients use individual join fields so a reconnect also preserves concurrent
+teacher changes. Fixed metadata schemas reject inherited JavaScript property names.
+Normal progress, reading preferences and optional student-field deletion remain
+supported. See the [authorization validation record](../../docs/audits/2026-10-24-school-district/session-transport-authorization-followup.md).
+
+The source and tests alone do not update an existing Google deployment. After a
+reviewed release, update the owned Web App version and verify assignment followed
+by reconnect on staging before classroom rollout.

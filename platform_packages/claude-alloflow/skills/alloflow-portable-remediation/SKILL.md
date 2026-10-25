@@ -1,6 +1,6 @@
 ---
 name: alloflow-portable-remediation
-description: Rebuild attached PDFs as accessible copies plus a scoped report entirely in the active file sandbox. Use by default for PDF accessibility, WCAG, Section 508, or PDF/UA remediation when the user has no paid Worker, institution account, AlloFlow server, or separate model API key.
+description: Rebuild attached PDFs as accessible copies plus a scoped report entirely in the active file sandbox. Use for PDF accessibility, WCAG, Section 508, or PDF/UA remediation only when no AlloFlow remediation connector (MCP) is installed and the user has no paid Worker, institution account, AlloFlow server, or separate model API key. If the connector is available, use alloflow-pdf-remediation instead.
 ---
 
 # AlloFlow portable PDF remediation

@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-24T17:49:49.664Z",
+  "scope": "Student Firestore roster/reaction validation and non-destructive client reconnect writes",
+  "sharedWorkingTree": true,
+  "localOnly": true,
+  "productionDataAccessed": false,
+  "rulesDeployed": false,
+  "cloudConfigurationChanged": false,
+  "existingDataMigratedOrDeleted": false,
+  "protocol": {
+    "supportedStudentFields": 20,
+    "maxChangedRosterLeaves": 5,
+    "maxSpecializedProgressFamilies": 1,
+    "specializedProgressFamilies": [
+      "wsProgress",
+      "wsProbeResult",
+      "organizerProgress",
+      "imageDelivery"
+    ],
+    "universalActivityProgressMayAccompanyFamily": true,
+    "twentyFieldBulkChange": "Intentionally denied before detailed validation; fields proven across actual client write groups",
+    "hostAuthority": "Unchanged; anonymous Firebase host ownership does not verify district staff"
+  },
+  "client": {
+    "files": [
+      "tests/session_roster_rejoin_security.test.js",
+      "tests/mailbox_session_bridge.test.js",
+      "tests/niche_live_session_writes.test.js",
+      "tests/roster_reading_preferences.test.js",
+      "tests/word_sounds_live_progress.test.js",
+      "tests/word_sounds_audio_delivery_hardening.test.js"
+    ],
+    "filesPassed": 6,
+    "testsPassed": 77,
+    "testsFailed": 0,
+    "newReconnectTests": 12,
+    "preFixReconnectResult": {
+      "failed": 9,
+      "passed": 3,
+      "log": "tmp/session-metadata-security-20261024/client-baseline.log",
+      "sha256": "532a67a60095ee427d949e7665603811a9fad4a496677a2a171d491d64e8c9d5"
+    },
+    "log": "tmp/session-metadata-security-20261024/client-focused.log",
+    "logSha256": "2db8e73611127821467cb1b849413f4657d5cb53ec46620ab358924de94fc013",
+    "options": [
+      "--maxWorkers=1",
+      "--testTimeout=30000"
+    ]
+  },
+  "emulator": {
+    "metadataPermissionChecksPassed": 242,
+    "broaderRegressionPassed": true,
+    "evaluationLimitLines": {
+      "suite": 0,
+      "regression": 0,
+      "firestore": 0
+    },
+    "enforcedZeroLimitPolicy": true,
+    "receipt": {
+      "startedAt": "2026-10-24T17:45:06.901Z",
+      "passed": true,
+      "projectId": "demo-alloflow-session-metadata",
+      "launchMode": "java-direct-cached-cli-emulator",
+      "suiteSha256": "3005d587cca26c8e3f64261b996d542e3a7cf981570a02d3df912c4d6c185b50",
+      "runnerSha256": "1e98dfb300db12e870601880183fc976e7a560f4906f577c6714dc8be90aeff4",
+      "regressionSuiteSha256": "9ebe658f7d550158116b0ac72030a0893ce17e56dbb705311a75b7a8c6c8fbc2",
+      "node": "v24.11.1",
+      "java": "openjdk version \"21.0.11\" 2026-04-21 LTS\r\nOpenJDK Runtime Environment Temurin-21.0.11+10 (build 21.0.11+10-LTS)\r\nOpenJDK 64-Bit Server VM Temurin-21.0.11+10 (build 21.0.11+10-LTS, mixed mode, sharing)",
+      "tools": {
+        "jar": "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+        "jarVersion": "1.19.8",
+        "jarSha256": "9d43599ed6151199e8d604dc87fac51218e49e5f3a48519b1ae560bbe5e3382d",
+        "firebaseTools": "14.26.0",
+        "rulesUnitTesting": "3.0.4",
+        "firebase": "10.14.1"
+      },
+      "phases": [
+        {
+          "name": "candidate",
+          "legacyNegativeControl": false,
+          "rulesPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\firestore.rules",
+          "rulesSha256": "7e5709e910b875c3f6605378ffdcd2988ebffcb8a3139bb892dcb2cffd2def9d",
+          "projectId": "demo-alloflow-session-metadata",
+          "host": "127.0.0.1",
+          "firestorePort": 21282,
+          "webchannelPort": 25127,
+          "websocketPort": 22343,
+          "emulatorArgs": [
+            "-Duser.language=en",
+            "-jar",
+            "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "21282",
+            "--webchannel_port",
+            "25127",
+            "--websocket_port",
+            "22343",
+            "--project_id",
+            "demo-alloflow-session-metadata",
+            "--single_project_mode",
+            "--single_project_mode_error",
+            "--rules",
+            "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-metadata\\run-HjxVce\\candidate\\firestore.rules"
+          ],
+          "suiteExit": {
+            "code": 0,
+            "signal": null
+          },
+          "regressionExit": {
+            "code": 0,
+            "signal": null
+          },
+          "passed": true,
+          "coverage": {
+            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-metadata\\run-HjxVce\\candidate\\rule-coverage.json",
+            "bytes": 9877711,
+            "sha256": "03a645cef88e037d8756a493470e4370488d98c1eb32d0c0d85b1b00a729f0c4"
+          },
+          "durationMs": 59553,
+          "expressionLimitMessageLines": {
+            "suite.log": 0,
+            "regression.log": 0,
+            "firestore.log": 0
+          },
+          "expressionLimitPolicy": {
+            "enforced": true,
+            "passed": true
+          }
+        }
+      ],
+      "officialReferences": [
+        "https://firebase.google.com/docs/rules/unit-tests",
+        "https://firebase.google.com/docs/emulator-suite/connect_firestore",
+        "https://firebase.google.com/docs/rules/emulator-reports"
+      ],
+      "finishedAt": "2026-10-24T17:46:06.535Z"
+    },
+    "phaseReceipt": {
+      "name": "candidate",
+      "legacyNegativeControl": false,
+      "rulesPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\firestore.rules",
+      "rulesSha256": "7e5709e910b875c3f6605378ffdcd2988ebffcb8a3139bb892dcb2cffd2def9d",
+      "projectId": "demo-alloflow-session-metadata",
+      "host": "127.0.0.1",
+      "firestorePort": 21282,
+      "webchannelPort": 25127,
+      "websocketPort": 22343,
+      "emulatorArgs": [
+        "-Duser.language=en",
+        "-jar",
+        "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "21282",
+        "--webchannel_port",
+        "25127",
+        "--websocket_port",
+        "22343",
+        "--project_id",
+        "demo-alloflow-session-metadata",
+        "--single_project_mode",
+        "--single_project_mode_error",
+        "--rules",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-metadata\\run-HjxVce\\candidate\\firestore.rules"
+      ],
+      "suiteExit": {
+        "code": 0,
+        "signal": null
+      },
+      "regressionExit": {
+        "code": 0,
+        "signal": null
+      },
+      "passed": true,
+      "coverage": {
+        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-metadata\\run-HjxVce\\candidate\\rule-coverage.json",
+        "bytes": 9877711,
+        "sha256": "03a645cef88e037d8756a493470e4370488d98c1eb32d0c0d85b1b00a729f0c4"
+      },
+      "durationMs": 59553,
+      "expressionLimitMessageLines": {
+        "suite.log": 0,
+        "regression.log": 0,
+        "firestore.log": 0
+      },
+      "expressionLimitPolicy": {
+        "enforced": true,
+        "passed": true
+      }
+    },
+    "rawReceipt": "_dev_scratch/security-district-audit/session-metadata/run-HjxVce/receipt.json",
+    "logs": {
+      "suite": {
+        "path": "_dev_scratch/security-district-audit/session-metadata/run-HjxVce/candidate/suite.log",
+        "sha256": "fdc1d0639ce1d2c25e1ff33ed2c66916ca8291d1289e4254309c46dee6c92c4d"
+      },
+      "regression": {
+        "path": "_dev_scratch/security-district-audit/session-metadata/run-HjxVce/candidate/regression.log",
+        "sha256": "e0096d4dc3334dcff0d534ce0e9d9b6d14f725975d77d0898ee587333d686cc5"
+      },
+      "firestore": {
+        "path": "_dev_scratch/security-district-audit/session-metadata/run-HjxVce/candidate/firestore.log",
+        "sha256": "f5ec019057d7312dfc3912a23eda311a88b6194363e7d485c236f258dc8c3e71"
+      }
+    }
+  },
+  "originalRulesNegativeControl": {
+    "unsafeWritesAccepted": 12,
+    "receipt": {
+      "name": "baseline",
+      "legacyNegativeControl": true,
+      "rulesPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-metadata\\baseline.rules",
+      "rulesSha256": "3309612f4ca8de8dbc11739d0b233da9b8616c1e8ebe5cf9d731ea29b5c9b0ba",
+      "projectId": "demo-alloflow-session-metadata",
+      "host": "127.0.0.1",
+      "firestorePort": 51969,
+      "webchannelPort": 51970,
+      "websocketPort": 51971,
+      "emulatorArgs": [
+        "-Duser.language=en",
+        "-jar",
+        "C:\\Users\\cabba\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "51969",
+        "--webchannel_port",
+        "51970",
+        "--websocket_port",
+        "51971",
+        "--project_id",
+        "demo-alloflow-session-metadata",
+        "--single_project_mode",
+        "--single_project_mode_error",
+        "--rules",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\_dev_scratch\\security-district-audit\\session-metadata\\run-BOsN3l\\baseline\\firestore.rules"
+      ],
+      "suiteExit": {
+        "code": 0,
+        "signal": null
+      },
+      "passed": true,
+      "durationMs": 42491
+    },
+    "suiteLog": "_dev_scratch/security-district-audit/session-metadata/run-BOsN3l/baseline/suite.log",
+    "suiteLogSha256": "4e8b3e0c2693bfd0de69897b042688c57ac64bdb0e82800ed8f11c440898b268"
+  },
+  "testedSourceHashes": {
+    "firestore.rules": "7e5709e910b875c3f6605378ffdcd2988ebffcb8a3139bb892dcb2cffd2def9d",
+    "desktop/web-app/firestore.rules": "7e5709e910b875c3f6605378ffdcd2988ebffcb8a3139bb892dcb2cffd2def9d",
+    "AlloFlowANTI.txt": "329531f67e5614dcfe4d0bdb539fd29a7f1825f511fe9c49efc9c5ee6b1e3cb4",
+    "desktop/web-app/src/App.jsx": "5c58cf8b182809eeaed69bc7d18d7317f526403469248f6f19f342869eac2224",
+    "desktop/web-app/src/AlloFlowANTI.txt": "5c58cf8b182809eeaed69bc7d18d7317f526403469248f6f19f342869eac2224",
+    "tests/session_roster_rejoin_security.test.js": "3f79e707733b9ba9a0e0991fef4ec3f705d740b141f27b9e73677fbf571135af",
+    "tests/mailbox_session_bridge.test.js": "e5b7faff293641e94bf09f504c5a6910359d2512b13dd8ae15bcb6a2ef085b6e",
+    "tests/firebase_session_metadata_rules.cjs": "3005d587cca26c8e3f64261b996d542e3a7cf981570a02d3df912c4d6c185b50",
+    "tests/firebase_rules_security.test.cjs": "9ebe658f7d550158116b0ac72030a0893ce17e56dbb705311a75b7a8c6c8fbc2",
+    "dev-tools/security/run_session_metadata_rules.cjs": "1e98dfb300db12e870601880183fc976e7a560f4906f577c6714dc8be90aeff4",
+    "SECURITY.md": "9889722fabe21a63d2465647de509414a7bf3150ab9e54988e338c85a79f6ded",
+    "docs/audits/2026-10-24-school-district/session-metadata-security-followup.md": "b9e9b6ad7ad553fa3c30ba08ed4f37fa429060407a6f8997dbc3893f3b8a5363"
+  },
+  "remainingBoundaries": [
+    "Owned Firebase deployment required; Canvas provisioned backend not configured by repository rules",
+    "LAN and Apps Script servers still permit destructive own-entry whole-map replacement by legacy/direct clients",
+    "Verified staff identity, tenant isolation, historical record review and retention remain separate requirements",
+    "Pre-existing assessment questionIndexes receipt mismatch remains outside this roster/reaction patch",
+    "Arbitrary mixed top-level student-surface batches were not compatibility-tested; observed production emitters use one surface per request"
+  ],
+  "passwordAndRecoveryReview": "docs/audits/2026-10-24-school-district/password-vault-review-validation.json"
+}

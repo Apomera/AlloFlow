@@ -64,13 +64,17 @@ So if a control is missing from the header, it is almost certainly in the expand
 
 ## Changing the language, and the setting people mix up
 
-There are two different language settings, they do different jobs, and confusing them is the single most common source of "why is this in the wrong language".
+Keep three choices separate: the app interface language, the primary resource language, and the optional companion language.
 
-**App Language** is in the header. It changes the interface: buttons, menus, labels. Open it and you get a searchable list, your current language, and a **Custom** option if your language is not listed. Changing it may offer to regenerate the content you already have so it matches, and it warns you first, because unsaved changes to the current text can be lost in that regeneration.
+**App Language** is in the header. It sets the app's language environment: buttons, menus, labels, and the default language for new resources. Open it and you get a searchable list, your current language, and a **Custom** option if your language is not listed. Its regeneration command refreshes the interface language pack. This choice is remembered on your device. Changing it updates output set to **Use app language** and automatic companion translations for future generation. Named output choices stay fixed. Newly written Source material uses the app language; supplied original source text stays intact.
 
-**Output and translation languages** live in **Universal Settings**, not the header. These decide what language the resources you generate come out in, and which translations get attached. A glossary panel will tell you directly when none are set, with a line reading that no translation languages are set and pointing you to Universal Settings.
+**Output and translation language defaults** live in **Universal Settings**. The language pills include the current app language automatically, with room for four added languages. **Use app language** is the default output choice; choose a named language to keep output fixed, or **App and added languages** for the combined list. Glossary shows a summary of the base and columns it will create.
 
-So: header for the language *you* read the app in, Universal Settings for the language *students* receive.
+Use **Output language** for the primary language of derived student resources and **Translations** for their optional companion. Changing these defaults does not rewrite saved resources or their recorded audio languages. Opening an older pack preserves its explicit output choice and resource languages without changing your personal App Language.
+
+To translate existing resources, open **Translate** in the header. **Translate into** selects the new primary language. **Companion translation** starts with the Universal Settings choice and offers **Automatic (app language)**, **None**, or a specific language. A change here applies to this translation action.
+
+Choose **Translate Current** for the selected resource. The batch button names the **current pack** and shows its eligible resource count when the selected resource has saved unit, source, or pack membership. When no pack can be identified, it explicitly offers the **workspace** instead. Batch actions skip saved translated copies. Ordinary resources become separate copies; source analysis gains translated language views while its source text stays intact. Links within the translated batch follow the successfully translated resources; links to resources outside that batch keep their original destination.
 
 ## The left column: settings, then tools
 

@@ -1,0 +1,26 @@
+[
+  {
+    "initialFocus": true
+  },
+  {
+    "initiallyDisabled": true
+  },
+  {
+    "mobileNoHorizontalOverflow": true
+  },
+  {
+    "focusWraps": true
+  },
+  {
+    "accepted": {
+      "accepted": true,
+      "prompt": "Synthetic example only: [Student], [EMAIL], [ADDRESS] Observation: works for 15 minutes at a 2nd grade level. Score 85; evidence F-17. Unlisted school details must be reviewed.",
+      "searchQuery": "[Student] reading supports"
+    },
+    "completeEmailRemoved": true
+  },
+  {
+    "escapeCancelled": true,
+    "focusReturned": true
+  }
+]

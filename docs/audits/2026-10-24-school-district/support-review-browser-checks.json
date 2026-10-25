@@ -1,0 +1,21 @@
+[
+  {
+    "noSendBeforeReview": true,
+    "sendInitiallyDisabled": true
+  },
+  {
+    "secretsRemovedFromLocalBuffer": true
+  },
+  {
+    "oversizedDiagnosticOmitted": true
+  },
+  {
+    "mobileNoHorizontalOverflow": true
+  },
+  {
+    "reviewedDispatch": true
+  },
+  {
+    "policyBlocksFurtherSend": true
+  }
+]
