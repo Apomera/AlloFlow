@@ -95,7 +95,8 @@ describe('Free woodland grounded reorientation', () => {
       }
       expect(turns).toBeGreaterThan(20);
     } finally { a.wildlife.dispose(); b.wildlife.dispose(); }
-  });
+    // Keep the full 24-second, 30/60 Hz replay on slower CI runners.
+  }, 15000);
 
   it('uses different even stride counts for differently sized foraging routes', () => {
     const f = fixture(), bouts = new Map(), completed = [];

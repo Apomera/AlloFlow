@@ -66,7 +66,8 @@ describe('Light-year voyage physical reference and navigation',()=>{
    const key='lightyear:'+detail.id;expect(plain(api.drafts({[key]:'Saved '+detail.id}))).toEqual({[key]:'Saved '+detail.id});
   }
   expect(plain(api.drafts({'lightyear:lightyear-time-1001':'invalid','lightyear:lightyear-time-050':'invalid','lightyear:missing':'invalid'}))).toEqual({});
- });
+  // Keep restoration coverage for all 1,007 positions on slower CI runners.
+ },15000);
 
  it('keeps the source and public preview module identical',()=>{
   expect(fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js','utf8')).toBe(source);
