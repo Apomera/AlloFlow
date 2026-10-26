@@ -2729,6 +2729,9 @@
     clearDissectionCanvasTimer(canvas, 'layerPeel');
     clearDissectionCanvasTimer(canvas, 'layerTransition');
   }
+  function isDissectionPlainEscape(event) {
+    return !!event && event.key === 'Escape' && !event.defaultPrevented && !event.isComposing && !(event.nativeEvent && event.nativeEvent.isComposing) && event.keyCode !== 229 && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
+  }
   function dissectionEvidenceImageFormat(image) {
     if (typeof image !== 'string') return null;
     var match = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.exec(image);
@@ -10127,7 +10130,7 @@ var d = labToolData.dissection || {};
             focusDissectionTarget('diss-scenario-restart');
           }
           function handleProcedureScenarioRestartKey(event, review) {
-            if (!review || _disScenarioRestartReviews[dissectionSaveOwner] !== review || event.key !== 'Escape' || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
+            if (!review || _disScenarioRestartReviews[dissectionSaveOwner] !== review || !isDissectionPlainEscape(event)) return;
             event.preventDefault(); event.stopPropagation(); cancelProcedureScenarioRestart(review);
           }
           function activateProcedureScenario(scenario, restartAttempt) {
@@ -24641,7 +24644,7 @@ var d = labToolData.dissection || {};
             return true;
           }
           function handleDirectorySearchKey(event) {
-            if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+            if (event.defaultPrevented || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
             var root = event.currentTarget.closest('[data-dissection-root]');
             if (event.key === 'ArrowDown' && focusDirectoryResult(root, 0)) {
               event.preventDefault(); event.stopPropagation();
@@ -24650,7 +24653,7 @@ var d = labToolData.dissection || {};
             }
           }
           function handleDirectoryNavigation(event) {
-            if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+            if (event.defaultPrevented || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
             var results = event.currentTarget;
             var root = results.closest('[data-dissection-root]');
             var rows = Array.prototype.slice.call(results.querySelectorAll('button[data-exposure-state]'));
@@ -25464,7 +25467,7 @@ var d = labToolData.dissection || {};
             focusEvidenceControl('diss-evidence-confirm-remove-' + evidenceDomToken(evidenceId));
           }
           function handleEvidenceConfirmationKey(event, evidenceId) {
-            if (event.defaultPrevented || event.key !== 'Escape' || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+            if (!isDissectionPlainEscape(event)) return;
             if (evidenceId == null ? !d.evidenceClearPending : d.evidenceRemovePendingId !== evidenceId) return;
             event.preventDefault(); event.stopPropagation();
             if (evidenceId == null) cancelClearVisualEvidence();
@@ -27096,7 +27099,7 @@ var d = labToolData.dissection || {};
                       )
                     ) : null
                   ),
-                  !d.quizMode && activeProcedureReplay && activeProcedureReplay.paused && replayReviewVisible && React.createElement("section", { id: "diss-replay-specimen", className: "diss-replay-specimen", "aria-label": __alloT('stem.dissection.a11y_held_replay_action', "Held replay action"), onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
+                  !d.quizMode && activeProcedureReplay && activeProcedureReplay.paused && replayReviewVisible && React.createElement("section", { id: "diss-replay-specimen", className: "diss-replay-specimen", "aria-label": __alloT('stem.dissection.a11y_held_replay_action', "Held replay action"), onKeyDown: function (event) { if (isDissectionPlainEscape(event)) { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
                     React.createElement("div", { className: "diss-replay-specimen__context" },
                       React.createElement("strong", null, 'Held action ' + (activeReplayPosition.index + 1) + ' of ' + activeProcedureReplay.actions.length + ' · ' + (activeReplayEntry.label || procedureActionLabel(activeReplayEntry.action))),
                       React.createElement("span", null, 'Paused on the specimen below.')
@@ -27437,7 +27440,7 @@ var d = labToolData.dissection || {};
                   // replay of the phase text that had not changed. Without atomic, only the node
                   // that actually changed is announced, so the selection sentence below is its own
                   // element. Visible text is byte-identical either way.
-                  !d.quizMode && activeProcedureReplay && replayReviewVisible && React.createElement("section", { id: "diss-replay-review", className: "diss-replay-review", role: "group", "aria-label": __alloT('stem.dissection.a11y_attempt_replay_controls', "Attempt replay controls"), onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
+                  !d.quizMode && activeProcedureReplay && replayReviewVisible && React.createElement("section", { id: "diss-replay-review", className: "diss-replay-review", role: "group", "aria-label": __alloT('stem.dissection.a11y_attempt_replay_controls', "Attempt replay controls"), onKeyDown: function (event) { if (isDissectionPlainEscape(event)) { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
                     React.createElement("strong", null, 'Attempt review'),
                     React.createElement("p", { id: "diss-replay-review-status", role: "status", "aria-live": "polite", "aria-atomic": "true" }, activeProcedureReplay.paused
                       ? 'Paused · Action ' + (activeReplayPosition.index + 1) + ' of ' + activeProcedureReplay.actions.length + ' · ' + (activeProcedureReplay.actions[activeReplayPosition.index].label || procedureActionLabel(activeProcedureReplay.actions[activeReplayPosition.index].action))
@@ -28349,7 +28352,7 @@ var d = labToolData.dissection || {};
                       React.createElement('input', { id: 'diss-observation-search', type: 'search', value: observationSearchValue, placeholder: __alloT('stem.dissection.structure_layer_or_words_in_your_note','Structure, layer, or words in your note'),
                         'aria-controls': 'diss-observation-review-list', 'aria-describedby': 'diss-observation-search-help diss-observation-review-count',
                         onChange: function (event) { upd('_observationReviewSearch', event.target.value); },
-                        onKeyDown: function (event) { if (event.key === 'Escape' && observationSearchValue) { event.preventDefault(); event.stopPropagation(); upd('_observationReviewSearch', ''); } }
+                        onKeyDown: function (event) { if (isDissectionPlainEscape(event) && observationSearchValue) { event.preventDefault(); event.stopPropagation(); upd('_observationReviewSearch', ''); } }
                       }),
                       React.createElement('p', { id: 'diss-observation-search-help' }, 'Search names, layers, and your saved notes. All words must match; punctuation and accents are ignored. Filter counts reflect this search.'),
                       observationSearchValue && React.createElement('button', { type: 'button', onClick: function () { upd('_observationReviewSearch', ''); focusDissectionTarget('diss-observation-search'); } }, 'Clear observation search')

@@ -100,7 +100,7 @@ function fixture(overrides = {}, { canvasPresent = true, recommendedView = 'dors
   for (const name of ['clampTissueMetric', 'tissueVariantDefinition', 'defaultTissueState', 'normalizeTissueState',
     'procedureScenarioRestartScope', 'currentScenarioDefinition', 'activateProcedureScenario',
     'requestProcedureScenarioRestart', 'cancelProcedureScenarioRestart', 'confirmProcedureScenarioRestart',
-    'handleProcedureScenarioRestartKey']) {
+    'isDissectionPlainEscape', 'handleProcedureScenarioRestartKey']) {
     bindings[name] = loadProductionFunction(name, bindings);
   }
   function fire(id) { pending.get(id).callback(); }
