@@ -1579,7 +1579,10 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(log.textContent).toContain('size 30 cm');
     expect(inquiry.querySelector('#diss-inquiry-hypothesis').value).toBe('Depth will matter most.');
     expect(page.querySelector('label[for="diss-inquiry-hypothesis"]')).not.toBeNull();
-    expect(inquiry.querySelector('[aria-controls="diss-inquiry-open-questions"]').getAttribute('aria-expanded')).toBe('false');
+    const questionsToggle = [...inquiry.querySelectorAll('button')].find(button => button.textContent.includes('show open questions'));
+    expect(questionsToggle).toBeDefined();
+    expect(questionsToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(questionsToggle.hasAttribute('aria-controls')).toBe(false);
     expect(inquiry.querySelector('[aria-label="Reset inquiry simulator inputs"]').type).toBe('button');
     expect(inquiry.querySelector('#diss-inquiry-disclaimer').textContent).toContain('not lab-grade rubrics or predictions of an actual specimen');
     expect(inquiry.textContent).not.toContain('Specimen destroyed');
