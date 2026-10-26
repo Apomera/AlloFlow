@@ -56,7 +56,7 @@ function assertRuntimeAssets({ root = ROOT, buildDir } = {}) {
 function policyId(manifest, root = ROOT) { return createHash('sha256').update(canonical(manifest) + '\0' + sources(root).join('\0')).digest('hex'); }
 function buildBlock(manifest, root = ROOT) {
   const json = canonical(manifest).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-  return `${BEGIN}\n${sources(root).join('\n')}\nconst _alloRuntimeGraphDeliveryId = '${policyId(manifest, root)}';\nconst _alloRuntimeGraphManifest = ${json};\nconst _alloRuntimeGraphPolicy = typeof window !== 'undefined' && typeof document !== 'undefined' ? _alloInstallRuntimeGraphHost(_alloRuntimeGraphManifest, window) : null;\n${END}`;
+  return `${BEGIN}\n${sources(root).join('\n')}\nconst _alloRuntimeGraphDeliveryId = '${policyId(manifest, root)}';\nconst _alloRuntimeGraphManifest = ${json};\nconst _alloRuntimeGraphPolicy = typeof window !== 'undefined' && typeof document !== 'undefined' ? _alloInstallRuntimeGraphHost(_alloRuntimeGraphManifest, window) : null;\nif (_alloRuntimeGraphPolicy && typeof document !== 'undefined' && document && document.documentElement && typeof document.documentElement.setAttribute === 'function') {\n  document.documentElement.setAttribute('data-alloflow-runtime-graph-policy', _alloRuntimeGraphDeliveryId);\n}\n${END}`;
 }
 function replaceBlock(source, block) {
   const start = source.indexOf(BEGIN), end = source.indexOf(END);
