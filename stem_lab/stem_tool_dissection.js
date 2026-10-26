@@ -23629,7 +23629,7 @@ var d = labToolData.dissection || {};
 
           // Keyboard shortcuts stay inside the active lab and never intercept form controls.
           var dissectionKeyHandler = function (e) {
-            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+            if (e.defaultPrevented || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || (e.key === 'Escape' && e.shiftKey)) return;
             var target = e.target;
             var tag = target && target.tagName ? target.tagName.toLowerCase() : '';
             if (tag === 'input' || tag === 'textarea' || tag === 'select' || (target && target.isContentEditable)) return;
@@ -25463,6 +25463,13 @@ var d = labToolData.dissection || {};
             setProcedureFeedback('Removal confirmation opened for ' + evidenceLayerLabel(evidence) + '. Download the frame first if you need a separate copy.', 'caution');
             focusEvidenceControl('diss-evidence-confirm-remove-' + evidenceDomToken(evidenceId));
           }
+          function handleEvidenceConfirmationKey(event, evidenceId) {
+            if (event.defaultPrevented || event.key !== 'Escape' || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+            if (evidenceId == null ? !d.evidenceClearPending : d.evidenceRemovePendingId !== evidenceId) return;
+            event.preventDefault(); event.stopPropagation();
+            if (evidenceId == null) cancelClearVisualEvidence();
+            else cancelEvidenceRemoval(evidenceId);
+          }
           function cancelEvidenceRemoval(evidenceId) {
             upd('evidenceRemovePendingId', null);
             setProcedureFeedback('Evidence-frame removal canceled.', 'working');
@@ -26595,13 +26602,13 @@ var d = labToolData.dissection || {};
                   React.createElement("span", { className: "diss-toolbar__label", "aria-hidden": "true" }, 'Controls'),
 
                   // ── View toggle ──
-                  React.createElement("button", { type: "button", tabIndex: !d.toolbarToolsOpen ? 0 : -1, "aria-label": d.quizMode ? "Accessibility options" : "View and accessibility options", "aria-expanded": !!d.toolbarViewOpen, "aria-controls": "diss-view-tools",
+                  React.createElement("button", { type: "button", tabIndex: !d.toolbarToolsOpen ? 0 : -1, "aria-label": d.quizMode ? "Accessibility options" : "View and accessibility options", "aria-expanded": !!d.toolbarViewOpen, "aria-controls": d.toolbarViewOpen ? "diss-view-tools" : undefined,
                     onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
                     className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-blue-50 active:scale-[0.97]')
                   }, (d.quizMode ? '\u267F Accessibility ' : '\uD83D\uDC41 View & access ') + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
 
                   // ── Tools toggle ──
-                  !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": __alloT('stem.dissection.a11y_lab_tool_options', 'Lab tool options'), "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": "diss-lab-tools",
+                  !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": __alloT('stem.dissection.a11y_lab_tool_options', 'Lab tool options'), "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": d.toolbarToolsOpen ? "diss-lab-tools" : undefined,
                     onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
                     className: "diss-advanced-only flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50 active:scale-[0.97]')
                   }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
@@ -26861,7 +26868,7 @@ var d = labToolData.dissection || {};
                 "aria-label": __alloT('stem.dissection.a11y_copy_lab_report_to_clipboard', 'Copy lab report to clipboard'),
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200"
               }, 'Copy lab report'),
-                React.createElement("div", { className: "diss-lab-reset-boundary" }, React.createElement("button", { id: "diss-reset-specimen", "aria-label": __alloT('stem.dissection.a11y_reset_progress_for_this_specimen', 'Reset progress for this specimen'), "aria-expanded": !!d.resetConfirmPending, "aria-controls": "diss-reset-confirmation", onClick: requestSpecimenReset,
+                React.createElement("div", { className: "diss-lab-reset-boundary" }, React.createElement("button", { id: "diss-reset-specimen", "aria-label": __alloT('stem.dissection.a11y_reset_progress_for_this_specimen', 'Reset progress for this specimen'), "aria-expanded": !!d.resetConfirmPending, "aria-controls": d.resetConfirmPending ? "diss-reset-confirmation" : undefined, onClick: requestSpecimenReset,
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-700 border border-red-300"
               }, '\u21BA Reset specimen'), d.resetConfirmPending && !activeDissectionSaveIssue && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
                 React.createElement("p", { id: "diss-reset-confirm-title", role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, 'Reset ' + spec.name + '? This permanently removes viewed structures, verified identifications, notes, inquiry records, evidence frames, quiz progress, and technique attempts. Accessibility preferences are preserved.'),
@@ -27490,8 +27497,8 @@ var d = labToolData.dissection || {};
                       : 'Frames use browser storage. Download important frames, and remove frames you no longer need if saving becomes limited.'
                   ),
                   visualEvidence.length ? React.createElement("div", { className: "diss-evidence__manage" },
-                    React.createElement("button", { id: "diss-evidence-clear-all", type: "button", "aria-expanded": !!d.evidenceClearPending, "aria-controls": "diss-evidence-clear-confirmation", onClick: requestClearVisualEvidence }, 'Clear all evidence frames'),
-                    d.evidenceClearPending && React.createElement("div", { id: "diss-evidence-clear-confirmation", className: "diss-evidence__confirm", role: "group", "aria-labelledby": "diss-evidence-clear-title" },
+                    React.createElement("button", { id: "diss-evidence-clear-all", type: "button", "aria-expanded": !!d.evidenceClearPending, "aria-controls": d.evidenceClearPending ? "diss-evidence-clear-confirmation" : undefined, onClick: requestClearVisualEvidence }, 'Clear all evidence frames'),
+                    d.evidenceClearPending && React.createElement("div", { id: "diss-evidence-clear-confirmation", className: "diss-evidence__confirm", role: "group", "aria-labelledby": "diss-evidence-clear-title", onKeyDown: function (event) { handleEvidenceConfirmationKey(event); } },
                       React.createElement("p", { id: "diss-evidence-clear-title", role: "status", "aria-live": "polite" }, 'Clear all ' + visualEvidence.length + ' evidence frames? Download any frames you need first. Notes, procedure work, and assessment progress will remain.'),
                       React.createElement("button", { id: "diss-evidence-confirm-clear", type: "button", "data-confirm": "true", onClick: confirmClearVisualEvidence }, 'Confirm clear frames'),
                       React.createElement("button", { type: "button", onClick: cancelClearVisualEvidence }, 'Cancel')
@@ -27514,7 +27521,7 @@ var d = labToolData.dissection || {};
                         React.createElement("strong", null, evidenceLayerName),
                         renderEvidenceMetadata(evidence),
                         removalPending && React.createElement("p", { className: "diss-evidence__confirm-copy", role: "status" }, 'Remove ' + evidenceFrameLabel.toLowerCase() + '? Download it first if you need a separate copy.'),
-                        React.createElement("div", { className: "diss-evidence__actions" },
+                        React.createElement("div", { className: "diss-evidence__actions", onKeyDown: removalPending ? function (event) { handleEvidenceConfirmationKey(event, evidence.id); } : undefined },
                           removalPending
                             ? React.createElement("button", { id: "diss-evidence-confirm-remove-" + evidenceToken, type: "button", "data-confirm": "true", "data-evidence-confirm-remove-id": String(evidence.id), onClick: function () { confirmEvidenceRemoval(evidence.id); } }, 'Confirm remove')
                             : React.createElement("button", { id: "diss-evidence-compare-" + evidenceToken, type: "button", "aria-label": (!advancedWorkspace ? 'Open comparison in Advanced for frame ' : 'Compare frame ') + (evidenceIndex + 1) + ': ' + evidenceLayerName, "aria-pressed": isReferenceEvidence, onClick: function () { selectEvidenceReference(evidence.id); } }, !advancedWorkspace ? 'Open comparison in Advanced' : (isReferenceEvidence && splitComparison && !d.quizMode ? 'View comparison' : 'Compare with live view')),
@@ -27909,7 +27916,7 @@ var d = labToolData.dissection || {};
                             ))
                           ),
                           scenarioIsTimed && scenarioDisplayState === 'not-started' && React.createElement("button", { id: "diss-scenario-start", type: "button", "aria-describedby": "diss-scenario-purpose diss-scenario-effects" + (scenarioPlaybackActive ? " diss-scenario-playback-note" : ""), onClick: startProcedureScenarioTimer }, 'Start timer on current attempt'),
-                          React.createElement("button", { id: "diss-scenario-restart", type: "button", onClick: requestProcedureScenarioRestart, "aria-label": "Restart scenario: review changes for " + scenarioDefinition.label, "aria-describedby": "diss-scenario-restart-help" + (scenarioPlaybackActive ? " diss-scenario-playback-note" : ""), "aria-expanded": !!scenarioRestartReview, "aria-controls": "diss-scenario-restart-review" }, '\u21BB Restart scenario')
+                          React.createElement("button", { id: "diss-scenario-restart", type: "button", onClick: requestProcedureScenarioRestart, "aria-label": "Restart scenario: review changes for " + scenarioDefinition.label, "aria-describedby": "diss-scenario-restart-help" + (scenarioPlaybackActive ? " diss-scenario-playback-note" : ""), "aria-expanded": !!scenarioRestartReview, "aria-controls": scenarioRestartReview ? "diss-scenario-restart-review" : undefined }, '\u21BB Restart scenario')
                         ),
                         React.createElement("p", { id: "diss-scenario-effects", className: "diss-scenario-console__help" }, scenarioSelectionEffects),
                         React.createElement("p", { id: "diss-scenario-restart-help", className: "diss-scenario-console__help" }, 'Restart opens a review of the changes before starting a fresh attempt.'),
@@ -29373,7 +29380,7 @@ var d = labToolData.dissection || {};
                     ),
                     React.createElement("label", { htmlFor: "diss-inquiry-hypothesis", className: "block text-[10px] font-bold mb-1" }, 'Your hypothesis: which factor will matter most, and why?'),
                     React.createElement("textarea", { id: "diss-inquiry-hypothesis", value: iq.hypothesis, maxLength: 2000, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.dissection.predict_how_size_depth_care_or_time_pressure','Predict how size, depth, care, or time pressure will change the modeled outcome...'), className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                    React.createElement("button", { type: "button", "aria-expanded": !!iq.stuckRevealed, "aria-controls": "diss-inquiry-open-questions", onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); }, className: "min-h-11 px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #64748b', cursor: 'pointer' } }, iq.stuckRevealed ? 'Hide open questions' : "🤔 I'm stuck — show open questions"),
+                    React.createElement("button", { type: "button", "aria-expanded": !!iq.stuckRevealed, "aria-controls": iq.stuckRevealed ? "diss-inquiry-open-questions" : undefined, onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); }, className: "min-h-11 px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #64748b', cursor: 'pointer' } }, iq.stuckRevealed ? 'Hide open questions' : "🤔 I'm stuck — show open questions"),
                     iq.stuckRevealed && React.createElement("div", { id: "diss-inquiry-open-questions", className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                       React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
                       React.createElement("ul", { className: "pl-4 m-0" },
@@ -29384,7 +29391,7 @@ var d = labToolData.dissection || {};
                       )
                     ),
                     React.createElement("label", { htmlFor: "diss-inquiry-understood", className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
-                      React.createElement("input", { id: "diss-inquiry-understood", type: 'checkbox', checked: iq.understood, "aria-controls": "diss-inquiry-explanation", onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                      React.createElement("input", { id: "diss-inquiry-understood", type: 'checkbox', checked: iq.understood, "aria-controls": iq.understood ? "diss-inquiry-explanation" : undefined, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                       React.createElement("span", null, 'I can explain why this combination of size, depth, care, and time pressure yields this outcome.')
                     ),
                     iq.understood && React.createElement("div", { id: "diss-inquiry-explanation" },
