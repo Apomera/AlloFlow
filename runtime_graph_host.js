@@ -2,10 +2,12 @@
 // select a named graph or data input; they never supply executable authority.
 function _alloInstallRuntimeGraphHost(manifest, target) {
   'use strict';
+  // Canvas blob pages resolve reviewed runtime assets from the CDN.
+  var pageHref = String((target.location && target.location.href) || '');
   var desktop = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(target.location.hostname || '')
     && (target.location.pathname || '').indexOf('/app/') === 0;
   var policy = _alloCreateRuntimeGraphDeliveryPolicy(manifest, {
-    baseUrl: target.location.href, isDesktopBundledApp: desktop,
+    baseUrl: /^https?:\/\//i.test(pageHref) ? pageHref : 'https://alloflow-cdn.pages.dev/', isDesktopBundledApp: desktop,
     fetch: typeof target.fetch === 'function' ? target.fetch.bind(target) : null, crypto: target.crypto, Blob: target.Blob, allowNativeIntegrity: true,
     URL: target.URL, Worker: target.Worker, AbortController: target.AbortController,
     setTimeout: target.setTimeout.bind(target), clearTimeout: target.clearTimeout.bind(target),

@@ -1,0 +1,35 @@
+{
+    "extends": [
+        "react-app"
+    ],
+    "overrides": [
+        {
+            "files": [
+                "src/App.jsx"
+            ],
+            "globals": {
+                "globalThis": "readonly",
+                "__firebase_config": "readonly",
+                "__app_id": "readonly",
+                "__initial_auth_token": "readonly",
+                "isReviewingCharacters": "readonly",
+                "isShopOpen": "readonly",
+                "debateTopic": "readonly",
+                "resetDebate": "readonly",
+                "gradeLevelInput": "readonly",
+                "dokOptions": "readonly",
+                "audioBank": "readonly",
+                "voiceMap": "readonly",
+                "setVocabularyType": "readonly"
+            },
+            "rules": {
+                "react/jsx-no-undef": [
+                    "error",
+                    {
+                        "allowGlobals": true
+                    }
+                ]
+            }
+        }
+    ]
+}
