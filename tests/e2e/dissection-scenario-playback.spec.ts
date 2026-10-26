@@ -136,7 +136,7 @@ for (const mode of ['attempt', 'demonstration', 'comparison']) test(`scenario se
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await mount(page, { reducedMotion: false, procedureScenario: 'precision-access' });
   if (mode === 'attempt') await activate(page, page.locator('#diss-replay-attempt'));
-  else if (mode === 'demonstration') await activate(page, page.getByRole('button', { name: 'Show a generalized safe-technique demonstration on the specimen', exact: true }));
+  else if (mode === 'demonstration') await activate(page, page.getByRole('button', { name: /Show technique$/ }));
   else await activate(page, page.getByRole('button', { name: 'Play comparison replay', exact: true }));
   await page.clock.runFor(160);
   const running = await playback(page), timer = mode === 'attempt' ? 'procedureReplay' : mode === 'demonstration' ? 'procedureDemo' : 'compareReplay';

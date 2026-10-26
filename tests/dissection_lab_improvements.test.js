@@ -5996,7 +5996,7 @@ expect(html).toContain('Scenario center');
 
       const canvasA = hostA.querySelector('[data-diss-canvas]');
       await act(async () => {
-        hostA.querySelector('[aria-label="Show a generalized safe-technique demonstration on the specimen"]').click();
+        [...hostA.querySelectorAll('button')].find(button => button.textContent.includes('Show technique')).click();
         await Promise.resolve();
       });
       const demoTimer = canvasA._dissTimers?.procedureDemo;
