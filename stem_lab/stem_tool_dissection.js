@@ -547,6 +547,8 @@
 .diss-toolbar { gap: .45rem !important; padding: .5rem !important; border-radius: 1rem !important; background: #f8fafc !important; }
 .diss-quiz-option:hover:not(:disabled) { border-color: #b45309; background: #fffbeb; }
 .diss-quiz-option:focus-visible { outline: 3px solid #b45309; outline-offset: 2px; }
+.theme-dark [data-dissection-root] #diss-quiz-title { color: #fde68a; }
+@media (forced-colors: active) { [data-dissection-root] #diss-quiz-title { color: CanvasText !important; } }
 .diss-toolbar__label { padding-left: .35rem; color: #475569; font-size: .68rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .diss-toolbar > button, .diss-tool-panel > button { min-height: 2.75rem !important; }
 .diss-tool-panel { gap: .45rem !important; padding: .65rem !important; }
@@ -26219,6 +26221,7 @@ var d = labToolData.dissection || {};
             }
             clearAssessmentTeachingTimers();
             preserveAssessmentFocus('diss-assessment-summary', 'diss-quiz-panel');
+            preserveAssessmentFocus('diss-review-missed-structures', 'diss-quiz-panel');
             updMany({ eyeStudyMode: false, _practicalCompletion: null, flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null,
               quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0,
               quizFirstAttemptScore: reviewOnly ? assessmentRecordedScore : 0,
@@ -28998,9 +29001,9 @@ var d = labToolData.dissection || {};
                       var sessionFinished = !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit;
                       var completedReviewIds = d.quizReviewMode ? orderedQuizPool.slice(0, quizSessionLimit).map(function (organ) { return organ.id; }) : [];
                       var remainingReviewIds = d.quizReviewMode ? quizReviewIds.filter(function (id) { return completedReviewIds.indexOf(id) < 0; }) : quizReviewIds;
+                      preserveAssessmentFocus('diss-quiz-panel', sessionFinished ? 'diss-assessment-summary' : 'diss-quiz-panel');
                       if (sessionFinished) updMany({ quizComplete: true, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null, quizReviewQueue: remainingReviewIds, assessmentCompletedAt: d.quizReviewMode ? (Number(d.assessmentCompletedAt) || 0) : Date.now(), assessmentRecordedScore: d.quizReviewMode ? assessmentRecordedScore : assessmentFirstAttemptScore, assessmentRecordedTotal: d.quizReviewMode ? assessmentRecordedTotal : assessmentFirstAttemptTotal });
                       else updMany({ quizIdx: (d.quizIdx || 0) + 1, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null });
-                      setTimeout(function () { var panel = dissectionNodeById(sessionFinished ? 'diss-assessment-summary' : 'diss-quiz-panel'); if (panel) panel.focus(); }, 0);
                     },
 
                     className: "transition-colors w-full min-h-11 mt-2 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.97]"
@@ -29027,7 +29030,7 @@ var d = labToolData.dissection || {};
                     ? 'Evidence meets the current first-attempt understanding target. Continue linking answers to notes and verified identifications.'
                     : 'Revisit missed structures, record evidence, then try a new scored set when ready.'),
                   React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-2" },
-                    React.createElement("button", { type: "button", className: "min-h-11 rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-800", onClick: function () { setStudyRoute('explore'); } }, 'Return to lab'),
+                    React.createElement("button", { type: "button", className: "min-h-11 rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-800", onClick: function () { preserveAssessmentFocus('diss-assessment-summary', 'diss-canvas'); setStudyRoute('explore'); } }, 'Return to lab'),
                     quizReviewIds.length > 0 && React.createElement("button", { type: "button", className: "min-h-11 rounded-lg border border-amber-600 bg-white px-3 py-2 text-xs font-bold text-amber-900", onClick: function () { restartAssessmentSession(true); } }, d.quizReviewMode ? 'Review remaining structures' : 'Review missed structures'),
                     React.createElement("button", { type: "button", className: "min-h-11 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white", onClick: function () { restartAssessmentSession(false); } }, 'Try a new assessment')
                   )
@@ -29163,7 +29166,7 @@ var d = labToolData.dissection || {};
                     })
                   ),
                   React.createElement("div", { className: "mt-1 text-[11px] text-slate-600" }, verifiedIdentificationCount + '/' + verifiedIdentificationGoal + ' guided identifications verified \u00B7 ' + specimenEvidenceCount + '/' + totalOrgansInSpecimen + ' evidence records \u00B7 completed first-attempt assessment ' + assessmentRecordedScore + '/' + assessmentRecordedTotal),
-                  !d.quizMode && quizReviewIds.length > 0 && React.createElement("button", { type: "button", className: "mt-2 min-h-11 w-full rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100", onClick: function () { restartAssessmentSession(true); } }, 'Review ' + quizReviewIds.length + ' missed ' + (quizReviewIds.length === 1 ? 'structure' : 'structures')),
+                  !d.quizMode && quizReviewIds.length > 0 && React.createElement("button", { id: "diss-review-missed-structures", type: "button", className: "mt-2 min-h-11 w-full rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100", onClick: function () { restartAssessmentSession(true); } }, 'Review ' + quizReviewIds.length + ' missed ' + (quizReviewIds.length === 1 ? 'structure' : 'structures')),
 
                   React.createElement("div", { className: "mt-2" },
 
