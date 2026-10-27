@@ -186,7 +186,7 @@ async function checkTarget(locator: Locator) {
 async function expectSelected(page: Page, index: number) {
   await expect(cycle(page, index)).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-study-stage-cycle-position]')).toHaveAttribute('data-study-stage-cycle-position', String(index));
-  await expect(page.locator('#migration-study-current-context')).toContainText('Cycle position ' + (index + 1) + ' of 8 selected.');
+  await expect(page.locator("[data-migration-id=\"migration-study-current-context\"]")).toContainText('Cycle position ' + (index + 1) + ' of 8 selected.');
 }
 async function inspectWithoutChanges(page: Page, before: any, beforeVisual: any, tips: number[][], touch: boolean) {
   await expect(inspect(page)).toHaveAccessibleName('Inspect current 3D view');

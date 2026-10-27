@@ -13,7 +13,7 @@ const harness = makeHarness('stem_lab/stem_tool_migration.js');
 const guide = (page: Page) => page.locator('[data-scene-guide]');
 const summary = (page: Page) => page.locator('[data-scene-summary]');
 const feedback = (page: Page) => page.locator('[data-scene-feedback]');
-const stage = (page: Page) => page.locator('#migration-flight-stage');
+const stage = (page: Page) => page.locator("[data-migration-id=\"migration-flight-stage\"]");
 const errors = new WeakMap<Page, string[]>();
 
 function unchangedSource() {
@@ -228,11 +228,18 @@ test('learning fields expose their visible prompts and investigation progress is
     ['migration-experiment-evidence', 'Evidence I noticed'],
     ['migration-experiment-explanation', 'How does the evidence support or challenge my prediction?']
   ];
-  for (const [id, name] of labels) {
+  for (const [key, name] of labels) {
     const field = page.getByRole('textbox', { name, exact: true });
-    await expect(field).toHaveAttribute('id', id); await expect(field).toHaveAccessibleName(name);
-    const visible = await field.evaluate(node => Array.from((node as HTMLTextAreaElement).labels || []).map(label => label.textContent?.trim()).join(' '));
-    expect(visible).toContain(name);
+    await expect(field).toHaveAttribute('data-migration-id', key); await expect(field).toHaveAccessibleName(name);
+    const association = await field.evaluate(node => {
+      const control = node as HTMLTextAreaElement, own = control.closest('.migration-tool-shell');
+      return { id: control.id, uniqueId: Array.from(document.querySelectorAll('[id]')).filter(target => target.id === control.id).length,
+        labels: Array.from(control.labels || []).map(label => ({ text: label.textContent?.trim(),
+          target: label.control === control, associationMatches: label.hasAttribute('for') ? label.htmlFor === control.id : label.contains(control), owned: !!own?.contains(label) })) };
+    });
+    expect(association.id).toBeTruthy(); expect(association.uniqueId).toBe(1); expect(association.labels).toHaveLength(1);
+    expect(association.labels[0]).toMatchObject({ target: true, associationMatches: true, owned: true });
+    expect(association.labels[0].text).toContain(name);
   }
   const progress = page.locator('[data-experiment-progress]');
   await expect(progress).toHaveCount(3);

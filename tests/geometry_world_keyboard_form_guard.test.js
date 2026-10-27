@@ -23,6 +23,12 @@ function target(kind){
   }
   return node;
 }
+// WCAG 2.1.4: letter/digit shortcuts act only while focus is inside the world surface.
+function worldTarget(){
+  let wrap=document.getElementById('geoworld-fs-wrap');
+  if(!wrap){wrap=document.createElement('div');wrap.id='geoworld-fs-wrap';document.body.appendChild(wrap);}
+  const node=document.createElement('div');wrap.appendChild(node);return node;
+}
 function press(app,node,key,code){
   const event=new KeyboardEvent('keydown',{key,code,bubbles:true,cancelable:true});
   Object.defineProperty(event,'target',{value:node});app.handle(event);return event;
@@ -45,12 +51,12 @@ describe('native form fields keep their keyboard behavior',()=>{
 
 describe('the world surface still owns its shortcuts',()=>{
   it('U still toggles world controls and consumes the shortcut',()=>{
-    const app=fixture(),event=press(app,target('div'),'u','KeyU');expect(app.engine._toggleHud).toHaveBeenCalledOnce();expect(event.defaultPrevented).toBe(true);
+    const app=fixture(),event=press(app,worldTarget(),'u','KeyU');expect(app.engine._toggleHud).toHaveBeenCalledOnce();expect(event.defaultPrevented).toBe(true);
   });
   it.each([['q','KeyQ','cycle'],['r','KeyR','rotate']])('%s still changes the build shape in the world',(key,code,action)=>{
-    const app=fixture();press(app,target('div'),key,code);expect(app.setBuildShape).toHaveBeenCalledExactlyOnceWith(action);
+    const app=fixture();press(app,worldTarget(),key,code);expect(app.setBuildShape).toHaveBeenCalledExactlyOnceWith(action);
   });
   it('a number still chooses a world material',()=>{
-    const app=fixture();press(app,target('div'),'1','Digit1');expect(app.upd).toHaveBeenCalledExactlyOnceWith('selectedBlock',0);
+    const app=fixture();press(app,worldTarget(),'1','Digit1');expect(app.upd).toHaveBeenCalledExactlyOnceWith('selectedBlock',0);
   });
 });

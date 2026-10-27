@@ -3,6 +3,7 @@ import { describe, expect, it, beforeAll } from 'vitest';
 // allo_command_context_source.js, CDN view sources) put back; every other file reads unchanged.
 import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const moduleSrc = readFileSync(resolve(process.cwd(), 'allo_device_storage_module.js'), 'utf8');
 const bridgeSrc = readFileSync(resolve(process.cwd(), 'storage_bridge.html'), 'utf8');
@@ -21,9 +22,9 @@ describe('device storage bridge — file contracts', () => {
     expect(bridgeSrc).toContain('name="robots" content="noindex');
   });
 
-  it('module and bridge agree on the ds1 protocol and database name', () => {
-    expect(moduleSrc).toContain("var PROTO = 'ds1'");
-    expect(bridgeSrc).toContain("var PROTO = 'ds1'");
+  it('module and bridge agree on the ds2 port protocol and database name', () => {
+    expect(moduleSrc).toContain("var PROTO = 'ds2'");
+    expect(bridgeSrc).toContain("var PROTO = 'ds2'");
     expect(bridgeSrc).toContain("var DB_NAME = 'allo_device_storage'");
     expect(moduleSrc).toContain("var DIRECT_DB = 'allo_device_storage'");
   });
@@ -36,23 +37,19 @@ describe('device storage bridge — file contracts', () => {
     expect(moduleSrc).toContain('event.source !== self.win || event.origin !== self.bridgeOrigin');
   });
 
-  // Replaces the old assertion that a cross-origin iframe is refused with
-  // 'allo/approval-required'. It no longer fails closed: it asks its own
-  // storage partition whether a human already approved this browser profile.
-  // What must stay true is that a cross-origin client is never authorized
-  // without EITHER a stored grant or a fresh answer from a person.
-  it('cross-origin clients need a stored grant or a human, never neither', () => {
-    // Consent lives in the same partition as the data, so it cannot be
-    // replayed from another top-level site.
+  it('cross-origin clients need exact origin/channel approval or a fresh top-level decision', () => {
     expect(bridgeSrc).toContain("var CONSENT_NS = '__bridge'");
     expect(bridgeSrc).toContain('function readConsent()');
     // Auto-approve is still same-origin only.
     expect(bridgeSrc).toContain("origin !== 'null' && origin === location.origin");
     // The only paths out of a hello from a cross-origin client.
-    expect(bridgeSrc).toContain('if (record && record.v === 1 && !denied)');
-    expect(bridgeSrc).toContain('showApproval(helloSource, observedOrigin)');
+    expect(bridgeSrc).toContain('if (matchesConsent(record, origin))');
+    expect(bridgeSrc).toContain('record.v === 2 && record.origin === origin');
+    expect(bridgeSrc).toContain('record.channel === connectionKind');
+    expect(bridgeSrc).toContain('showApproval(source, origin)');
     // The grant is written by the approve handler, never by a message.
-    expect(bridgeSrc).toContain('writeConsent(approved.origin)');
+    expect(bridgeSrc).toContain('writeConsent(approved.origin, function ()');
+    expect(bridgeSrc).toContain("if (connectionKind === 'iframe') { openApprovalWindow(); return; }");
     // And it is revocable from the review UI without erasing any work.
     expect(bridgeSrc).toContain('function forgetConsent()');
     expect(bridgeSrc).toContain("getElementById('btn-forget')");
@@ -65,9 +62,7 @@ describe('device storage bridge — file contracts', () => {
     expect(bridgeSrc).toContain("'allo/reserved-namespace'");
   });
 
-  it('the consent prompt is shown, and only shown, by revealing the bridge frame', () => {
-    // The bridge paints the prompt in its own cross-origin document; the app
-    // may size that frame but can neither read nor click it.
+  it('the bridge frame offers separate-window review when consent is required', () => {
     expect(bridgeSrc).toContain("type: 'allo-bridge-consent-required'");
     expect(moduleSrc).toContain("msg.type === 'allo-bridge-consent-required'");
     expect(moduleSrc).toContain('CONSENT_FRAME_CSS');
@@ -243,10 +238,10 @@ describe('device storage bridge — file contracts', () => {
   it('the bridge cache-buster was bumped so caches refetch the manager protocol', () => {
     // The bridge is loaded from the CDN, so a stale ?v= would keep enforcing
     // the prior fixed-only policy for anyone whose browser cached the page.
-    expect(moduleSrc).toContain('storage_bridge.html?v=ds6-media-removal-intent');
+    expect(moduleSrc).toContain('storage_bridge.html?v=ds8-document-port');
     expect(moduleSrc).not.toContain('ds2-slots8');
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect(anti).toContain('allo_device_storage_module.js?v=ds6-media-removal-intent');
+    expect(anti).toContain('allo_device_storage_module.js?v=' + createHash('sha256').update(moduleSrc).digest('hex').slice(0, 10));
     expect(anti).not.toContain('ds2-slots8');
     const sharedLoaders = [
       'utils_pure_source.jsx',
@@ -318,21 +313,21 @@ describe('device storage adapter — behavior', () => {
     expect(v.validateKey('x'.repeat(513))).toBe(false);
   });
 
-  it('builds ds1 envelopes and recognizes responses', () => {
+  it('builds ds2 envelopes and recognizes responses', () => {
     const v = api._internal;
     const msg = v.buildEnvelope('nonce123', 'r1', 'set', { ns: 'n', key: 'k', value: 42 });
-    expect(msg).toEqual({ allo: 'ds1', nonce: 'nonce123', id: 'r1', op: 'set', ns: 'n', key: 'k', value: 42 });
-    expect(v.isValidResponse({ allo: 'ds1', id: 'r1', ok: true })).toBe(true);
+    expect(msg).toEqual({ allo: 'ds2', nonce: 'nonce123', id: 'r1', op: 'set', ns: 'n', key: 'k', value: 42 });
+    expect(v.isValidResponse({ allo: 'ds2', id: 'r1', ok: true })).toBe(true);
     expect(v.isValidResponse({ allo: 'other', id: 'r1', ok: true })).toBe(false);
     expect(v.isValidResponse(null)).toBe(false);
   });
 
-  it('forwards recovery mutations in ds1 envelopes', () => {
+  it('forwards recovery mutations in ds2 envelopes', () => {
     const mutation = { version: 1, action: 'remove', snapshotId: 'workspace-a' };
     const msg = api._internal.buildEnvelope('nonce123', 'r2', 'mutateRecovery', {
       ns: 'workspace_recovery', key: 'store_v1', mutation
     });
-    expect(msg).toEqual({ allo: 'ds1', nonce: 'nonce123', id: 'r2', op: 'mutateRecovery', ns: 'workspace_recovery', key: 'store_v1', mutation });
+    expect(msg).toEqual({ allo: 'ds2', nonce: 'nonce123', id: 'r2', op: 'mutateRecovery', ns: 'workspace_recovery', key: 'store_v1', mutation });
   });
 
   it('memory backend round-trips get/set/list/clear', async () => {

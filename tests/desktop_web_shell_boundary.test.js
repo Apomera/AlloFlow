@@ -24,7 +24,8 @@ describe('desktop web shell boundary', () => {
     for (const sourcePath of appSources) {
       const source = read(sourcePath);
       expect(source).not.toMatch(/from\s+['"]vexflow['"]/);
-      expect(source).toContain('vendor/vexflow-5.0.0/vexflow.js?v=5.0.0');
+      expect(source).toContain('vendor/vexflow-5.0.0/vexflow.js');
+      expect(source).toContain("window.__alloLoadOptionalScript('vexflow', undefined, ready)");
       expect(source).toContain('using the built-in SVG renderer');
     }
     expect(fs.existsSync(path.join(root, 'vendor/vexflow-5.0.0/vexflow.js'))).toBe(true);

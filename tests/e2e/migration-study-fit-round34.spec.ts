@@ -52,7 +52,7 @@ async function journey(page: Page, phone: boolean) {
   expect(after.view).toEqual({ ...before.view, zoom: 1 });
   for (const key of ['uuid', 'geometry', 'material', 'positions', 'normals', 'colors', 'indices', 'position', 'rotation', 'scale']) expect(afterPortrait.bill[key]).toEqual(beforePortrait.bill[key]);
   await expect(strip.locator('[data-scene-study-zoom]')).toHaveText('Zoom: 100% of fitted view');
-  await expect(strip.locator('#migration-study-fit-help')).toHaveText('100% fits the whole model at this angle. Fitted models do not share a physical size scale.');
+  await expect(strip.locator("[data-migration-id=\"migration-study-fit-help\"]")).toHaveText('100% fits the whole model at this angle. Fitted models do not share a physical size scale.');
   await expect(strip.locator('[data-scene-study-cycle]')).toHaveText('Cycle 3/8 selected');
   await expect(fit).toBeFocused();
   expect(await note.evaluate((element: HTMLTextAreaElement) => ({ same: element === (window as any).__round34Draft, value: element.value, selection: [element.selectionStart, element.selectionEnd] }))).toEqual({ same: true, value: 'My unfinished bill observation stays here.', selection: [3, 14] });

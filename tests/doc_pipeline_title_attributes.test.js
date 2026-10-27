@@ -78,10 +78,18 @@ describe('attributed document titles survive deterministic remediation', () => {
   });
 
   it('primary title preflight recognizes a nonempty attributed title', () => {
-    const html = documentFor('<title lang="en">' + oldTitle + '</title>');
+    const html = documentFor('<title lang="en">Universal Declaration (author title)</title>');
     const result = preflight(html, 'ohchr-udhr-spanish.pdf');
     expect(result).toBe(html);
     expect(inspect(result).titleCount).toBe(1);
+  });
+
+  // The generator's own placeholder is not an author title: with a plain h1 it is replaced, once,
+  // without its stale lang (2026-10-26, every UDHR run shipped the placeholder until the AI flagged it).
+  it('primary title preflight replaces the attributed generator placeholder with the h1', () => {
+    const result = preflight(documentFor('<title lang="en">' + oldTitle + '</title>'), 'ohchr-udhr-spanish.pdf');
+    expect(inspect(result)).toMatchObject({ titleCount: 1, title: sourceTitle, titleLang: null, rootLang: 'es' });
+    assertMetadata(result);
   });
 
   it('explicit repair followed by repeated foundation passes keeps one effective title', () => {

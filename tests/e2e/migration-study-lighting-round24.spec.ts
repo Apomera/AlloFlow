@@ -26,7 +26,7 @@ test.afterEach(async ({ page }) => {
 });
 
 const stage = (page: Page) => page.locator('.migration-flight-stage');
-const context = (page: Page) => page.locator('#migration-study-current-context');
+const context = (page: Page) => page.locator("[data-migration-id=\"migration-study-current-context\"]");
 const note = (page: Page) => page.getByRole('textbox', { name: 'My observation', exact: true });
 const cycle = (page: Page, index: number) => page.getByRole('button', { name: 'Cycle position ' + (index + 1) + ' of 8', exact: true });
 const viewpoint = (page: Page, id: string) => page.locator('[data-study-viewpoint="' + id + '"]');
@@ -210,7 +210,7 @@ async function checkedLearning(page: Page) {
   await expect(checkedCue(page)).toHaveText('Checked comparison: Selected view settings match the mark; wing-cycle position differs.');
   await expect(context(page).locator('[data-study-checked-prompt]')).toHaveText('What visible detail supports your comparison while the selected view settings stayed the same?');
   await expect(note(page)).toHaveValue(beforeText);
-  expect(await field!.evaluate(element => element === document.querySelector('#migration-study-observation-note'))).toBe(true);
+  expect(await field!.evaluate(element => element === document.querySelector("[data-migration-id=\"migration-study-observation-note\"]"))).toBe(true);
   expect(await note(page).evaluate((element: HTMLTextAreaElement) => [element.selectionStart, element.selectionEnd, element.selectionDirection])).toEqual(selection);
   expect(work(await saved(page))).toEqual(work(before));
   await context(page).screenshot({ path: join(report, 'desktop-goose-checked-wing-only-notes.png') });

@@ -56,7 +56,7 @@ async function journey(page: Page, phone: boolean) {
   await expect(toggle).toBeEnabled(); await expect(toggle).not.toBeChecked();
   await expect(toggle).toHaveAttribute('aria-controls', 'migration-flight-stage'); await expect(toggle).toHaveAttribute('aria-describedby', 'migration-study-clean-help');
   const box = await toggle.locator('..').boundingBox(); expect(box!.width).toBeGreaterThanOrEqual(44); expect(box!.height).toBeGreaterThanOrEqual(44);
-  await expect(page.locator('#migration-study-clean-help')).toContainText(/predict/i);
+  await expect(page.locator("[data-migration-id=\"migration-study-clean-help\"]")).toContainText(/predict/i);
   await activate(page, page.getByRole('button', { name: 'Individual’s left: solid path', exact: true }), phone);
   await activate(page, page.getByRole('button', { name: 'Cycle position 3 of 8', exact: true }), phone); await settled(page);
   await activate(page, page.getByRole('button', { name: 'Mark wing pose', exact: true }), phone);
@@ -94,7 +94,7 @@ async function journey(page: Page, phone: boolean) {
     await expect(strip.locator('[data-scene-study-side]')).toHaveAttribute('data-scene-study-side', side);
     await expect(toggle).toBeChecked(); expect((await overlays(page)).visible).toEqual(hiddenOverlay.visible);
   }
-  for (const selector of ['#migration-wingtip-follow-help', '#migration-marked-pose-help', '#migration-study-cycle-help']) {
+  for (const selector of ["[data-migration-id=\"migration-wingtip-follow-help\"]", "[data-migration-id=\"migration-marked-pose-help\"]", "[data-migration-id=\"migration-study-cycle-help\"]"]) {
     await expect(page.locator(selector)).toContainText('Restore the guides'); await expect(page.locator(selector)).toContainText('hidden');
   }
   expect((await writes(page)).length).toBe(writesBefore);

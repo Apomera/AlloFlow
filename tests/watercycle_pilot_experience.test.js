@@ -110,7 +110,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(guideBlock.match(/aria-live/g) || []).toHaveLength(1);
     expect(guideBlock).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
     expect(source).not.toContain("className: 'wc-pilot-objective'");
-    expect(source).toContain('Follow the Next goal panel at the top right of the scene.');
+    expect(source).toContain('Follow the Next goal panel for guidance.');
     expect(source).toContain('Watch Next goal, the phase badge, and the meters explain every transformation.');
     expect(source).not.toContain('Do this next');
   });
@@ -1133,7 +1133,7 @@ describe.each([
     expect(uiSource).toContain('"pilot_now": "Now"');
     expect(uiSource).toContain('"pilot_next_goal": "Next goal"');
     expect(uiSource).toContain('"pilot_do_this_next": "Next goal"');
-    expect(uiSource).toContain('Follow the Next goal panel at the top right of the scene.');
+    expect(uiSource).toContain('Follow the Next goal panel for guidance.');
     expect(uiSource).toContain('Watch Next goal, the phase badge, and the meters explain every transformation.');
     expect(uiSource).toContain('"sect_fly_one_parcel_through_every_form": "Pilot one parcel through changing states and pathways"');
     expect(uiSource).not.toContain('"mode_flagship":');

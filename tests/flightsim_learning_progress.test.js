@@ -130,7 +130,8 @@ describe('Sky School lesson completion evidence', () => {
     expect(latest.preflightChecked).toEqual(unrelated.preflightChecked);
     expect(latest.quizFirstAttempts).toEqual(unrelated.quizFirstAttempts);
     expect(completedLessons).toEqual(before);
-    expect(button('✓ Lesson completed').disabled).toBe(true);
+    expect(button('✓ Lesson completed').disabled).toBe(false);
+    expect(button('✓ Lesson completed').getAttribute('aria-disabled')).toBe('true');
     expect(quest().check(latest)).toBe(true);
   });
 
@@ -143,7 +144,8 @@ describe('Sky School lesson completion evidence', () => {
     expect(writes.filter(patch => Object.hasOwn(patch, 'completedLessons'))).toHaveLength(1);
     const saved = structuredClone(latest);
     await mount(saved);
-    expect(button('✓ Lesson completed').disabled).toBe(true);
+    expect(button('✓ Lesson completed').disabled).toBe(false);
+    expect(button('✓ Lesson completed').getAttribute('aria-disabled')).toBe('true');
     expect(host.querySelector('[aria-live="polite"]').textContent).toContain('1 done');
     expect(quest().check(latest)).toBe(true);
   });

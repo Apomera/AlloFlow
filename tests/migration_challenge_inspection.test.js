@@ -56,7 +56,7 @@ function fixture(seed = {}, options = {}) {
     ctx.toolData = { migration: state }; return tool.render(ctx);
   }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const ui = {
     host, stage, engineRef, refs, writes, queued, announce, awardXP,
@@ -80,7 +80,7 @@ function fixture(seed = {}, options = {}) {
       act(() => { ui.row(index).querySelector('[data-flight-reflection-action="edit"]').click(); });
     },
     type(value) { act(() => { type(ui.field(), value); }); },
-    editCurrent(value) { act(() => { type(host.querySelector('[id="migration-mission-prediction"]'), value); }); },
+    editCurrent(value) { act(() => { type(host.querySelector("[data-migration-id=\"migration-mission-prediction\"]"), value); }); },
     remove(index = 1) { act(() => { ui.row(index).querySelector('.migration-mission-remove').click(); }); },
     flush() { act(() => { state = { ...state, ...queued.shift() }; refresh(n => n + 1); }); },
     async frame(patch = {}) {

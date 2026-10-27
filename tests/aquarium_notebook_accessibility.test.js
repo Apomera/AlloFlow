@@ -50,7 +50,11 @@ describe('Aquarium guided learning and notebooks', () => {
     expect(notebookToggle.getAttribute('aria-controls')).toBe(notebook.id); expect(notebook.hidden).toBe(true); expect(outline.hidden).toBe(true);
     await activate(notebookToggle); expect(document.activeElement).toBe(notebookToggle); expect(notebook.hidden).toBe(false);
     for (const field of ['prediction', 'observation', 'explanation']) { const input = t.field(field); expect(input.labels).toHaveLength(1); expect(input.labels[0].htmlFor).toBe(input.id); }
-    for (const field of ['prediction', 'explanation']) expect(t.host.querySelector('[id="' + t.field(field).getAttribute('aria-describedby') + '"]').textContent).toBeTruthy();
+    for (const field of ['prediction', 'observation', 'explanation']) {
+      const descriptions = t.field(field).getAttribute('aria-describedby').split(' ').map(id => document.getElementById(id));
+      expect(descriptions.every(n => n && t.host.contains(n) && n.textContent)).toBe(true);
+      expect(descriptions.some(n => n.textContent.includes('2,000 characters'))).toBe(true);
+    }
     await t.change('prediction', 'A specific prediction.'); await activate(notebookToggle);
     expect(t.host.querySelector('[data-aquarium-notebook]')).toBe(notebook); expect(notebook.hidden).toBe(true); expect(t.field('prediction').value).toBe('A specific prediction.');
     await activate(outlineToggle); expect(outline.hidden).toBe(false); await activate(outlineToggle); expect(outline.hidden).toBe(true); expect(t.host.querySelector('[id="' + outline.id + '"]')).toBe(outline);
@@ -121,6 +125,51 @@ describe('Aquarium guided learning and notebooks', () => {
     const capture = t.host.querySelector('[data-aquarium-notebook-capture]'); await activate(capture);
     expect(document.activeElement).toBe(capture); expect(t.field('observation').value).toContain('My own evidence.\nDay 0 12:00'); expect(t.field('observation').value).toContain('NH3 0.10 ppm');
     expect(t.state().tutorialNotebook.stock.explanation).toBe('Leave this alone.'); expect(t.addToast).toHaveBeenCalledWith(expect.stringContaining('evidence snapshot saved'), 'success');
+  });
+
+  it.each([1990, 2000])('rejects a complete snapshot when an observation already uses %s characters', async length => {
+    const original = 'x'.repeat(length);
+    const notebook = { habitat: { observation: original, prediction: 'Keep my prediction.', explanation: 'Keep my reasoning.' }, stock: { observation: 'Keep this other lesson.' } };
+    const t = await mount({ tutorialNotebookOpen: true, tutorialNotebook: notebook });
+    t.addToast.mockClear(); const before = JSON.stringify(t.state().tutorialNotebook);
+    const capture = t.host.querySelector('[data-aquarium-notebook-capture]'); await activate(capture);
+    expect(JSON.stringify(t.state().tutorialNotebook)).toBe(before);
+    expect(t.field('observation').value).toBe(original); expect(document.activeElement).toBe(capture);
+    const error = t.host.querySelector('[data-aquarium-notebook-capture-feedback]');
+    expect(error.getAttribute('role')).toBe('alert'); expect(error.textContent).toContain('Snapshot not saved.');
+    expect(error.textContent).toContain((2000 - length) + ' remain.'); expect(error.textContent).toContain('Shorten the observation');
+    expect(t.field('observation').getAttribute('aria-describedby').split(' ')).toContain(error.id);
+    expect(capture.getAttribute('aria-describedby').split(' ')).toContain(error.id);
+    expect(t.addToast).not.toHaveBeenCalled(); expect(t.state().simTick).toBe(10);
+  });
+
+  it('saves a complete snapshot at the exact limit and preserves whitespace in learner writing', async () => {
+    const t = await mount({ tutorialNotebookOpen: true });
+    const capture = t.host.querySelector('[data-aquarium-notebook-capture]');
+    await activate(capture); const snapshot = t.state().tutorialNotebook.habitat.observation;
+    const original = '  ' + 'x'.repeat(2000 - snapshot.length - 5) + '  ';
+    await t.change('observation', original); await activate(capture);
+    expect(t.state().tutorialNotebook.habitat.observation).toBe(original + '\n' + snapshot);
+    expect(t.field('observation').value).toHaveLength(2000);
+    expect(t.host.querySelector('[data-aquarium-notebook-limit="observation"]').textContent).toContain('0 remaining.');
+    expect(t.host.querySelector('[data-aquarium-notebook-capture-feedback]')).toBeNull();
+  });
+
+  it('clears capacity feedback after editing and keeps it scoped to its notebook and lesson', async () => {
+    const a = await mount({ tutorialNotebookOpen: true });
+    const b = await mount({ tutorialNotebookOpen: true, tutorialNotebook: { habitat: { observation: 'x'.repeat(2000) } } });
+    const capture = b.host.querySelector('[data-aquarium-notebook-capture]'); await activate(capture);
+    expect(a.host.querySelector('[data-aquarium-notebook-capture-feedback]')).toBeNull();
+    expect(a.field('observation').value).toBe('');
+    for (const id of b.field('observation').getAttribute('aria-describedby').split(' ')) expect(b.host.contains(document.getElementById(id))).toBe(true);
+    await b.change('observation', '  My own evidence.  ');
+    expect(b.host.querySelector('[data-aquarium-notebook-capture-feedback]')).toBeNull();
+    await activate(capture); expect(b.field('observation').value).toMatch(/^  My own evidence.  \nDay 0/);
+    await b.change('observation', 'x'.repeat(2000)); await activate(capture);
+    expect(b.host.querySelector('[data-aquarium-notebook-capture-feedback]')).toBeTruthy();
+    await b.update({ tutorialStep: 1 });
+    expect(b.host.querySelector('[data-aquarium-notebook-capture-feedback]')).toBeNull();
+    expect(b.state().tutorialNotebook.habitat.observation).toHaveLength(2000);
   });
 
   it('does not steal focus or leave a request pending after another control or mode takes over', async () => {

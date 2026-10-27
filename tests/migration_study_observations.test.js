@@ -15,7 +15,7 @@ function view(seed = {}) {
     get state() { return state; },
     render() { ctx.toolData = { migration: state }; function Component() { tree = tool.render(ctx); return tree; } return ReactDOMServer.renderToStaticMarkup(React.createElement(Component)); },
     node(predicate) { return find(tree, predicate); },
-    label(label) { return find(tree, node => (node.props?.id === label || node.props?.['aria-label'] === label)); },
+    label(label) { return find(tree, node => (node.props?.id === label || node.props?.['data-migration-id'] === label || node.props?.['aria-label'] === label)); },
     button(text) { return find(tree, node => node.type === 'button' && node.props.children === text); },
     region(region) { return find(tree, node => node.props?.['data-study-region'] === region); },
     select(region) { ui.region(region).props.onClick(); ui.render(); },
@@ -170,7 +170,7 @@ describe('Migration shape and motion observations', () => {
     const prompts = new Set();
     for (const region of ['head', 'inner-wing', 'primaries', 'tail']) {
       ui.select(region);
-      prompts.add(ui.node(node => node.props?.id === 'migration-study-observation-prompt').props.children);
+      prompts.add(ui.node(node => node.props?.["data-migration-id"] === 'migration-study-observation-prompt').props.children);
     }
     expect(prompts.size).toBe(4);
     ui.node(node => node.type === 'button' && node.props.children === 'Chase').props.onClick(); ui.render();

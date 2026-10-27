@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+// Each case renders the 3.5 MB tool in jsdom; 5 s fails on an idle machine.
+vi.setConfig({ testTimeout: 30_000 });
 
 const root = process.cwd();
 const harnessPath = path.join(root, 'dev-tools', 'birdlab_visual_qa.mjs');

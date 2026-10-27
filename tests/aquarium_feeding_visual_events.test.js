@@ -160,7 +160,8 @@ describe('Aquarium feeding actions and visual records',()=>{
   });
 
   it('uses dark-period observation language instead of predicting universal fish rest',()=>{
-    const h=renderTank();h.click('Toggle Lights');
+    const h=renderTank();const lights=h.find(node=>node.type==='button'&&node.props?.['data-aquarium-care-lights']==='true');
+      expect(lights.props['aria-pressed']).toBe(true);lights.props.onClick();
     expect(h.state.lightsOn).toBe(false);
     expect(h.state.eventLog.at(-1).msg).toContain('compare oxygen as the dark period progresses');
     expect(h.state.eventLog.at(-1).msg).not.toContain('fish will rest');

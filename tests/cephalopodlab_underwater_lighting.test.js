@@ -186,4 +186,100 @@ describe('Cephalopod Hunter underwater lighting finish',()=>{
     expect(lum(reef.bg)/lum(zoneColor('reef'))).toBeGreaterThan(0.97);
     expect(lum(mid.bg)/lum(zoneColor('midwater'))).toBeLessThan(0.6);
   });
+  // A deep species used to spend its first seconds in eased-in reef blue.
+  it('snaps water and light to the spawn depth on the first live frame',()=>{
+    const live=world();
+    try{
+      live.gameState.verticalY=-6;live.octopus.position.y=-5.45;live.now+=50;frame(live,.05,visualMath);
+      const lum=(c)=>0.2126*c.r+0.7152*c.g+0.0722*c.b;
+      expect(lum(live.scene.background)/lum(new THREE.Color(depth.zones.midwater.fogColor))).toBeLessThan(0.6);
+      expect(live.gameState.waterSettled).toBe(true);
+    }finally{dispose(live);}
+  });
+
+  // Plankton that flash when disturbed are most of the light in dark water.
+  it('lights stimulated bioluminescence only in darkness, only in a swim wake, without touching world RNG',()=>{
+    const start=source.indexOf('        // ─── Stimulated bioluminescence ───');
+    expect(start).toBeGreaterThan(0);
+    const fnAt=source.indexOf('function updateStimulatedBioluminescence(',start);
+    const block=source.slice(start,fnAt)+braced(fnAt);
+    const added=[];
+    const make=new Function('THREE','quality','H','octopus','scene','Math',block+';return {sparks,update:updateStimulatedBioluminescence};');
+    const octopus={position:new THREE.Vector3(42,-12,0)};
+    // visualMath.random throws: the field must use its own seeded generator.
+    const field=make(THREE,'balanced',720,octopus,{add:(o)=>added.push(o)},visualMath);
+    expect(added).toHaveLength(1);
+    const glow=()=>Array.from(field.sparks.geometry.attributes.clGlow.array);
+    const lit=()=>glow().filter(v=>v>0.05).length;
+    try{
+      field.update(.05,0,true);expect(field.sparks.visible).toBe(false);
+      for(let i=0;i<40;i++){octopus.position.z+=0.12;field.update(.05,0,true);} // sunlit swim
+      expect(lit()).toBe(0);
+      for(let i=0;i<40;i++)field.update(.05,1,true);                           // dark, holding still
+      expect(field.sparks.visible).toBe(true);expect(lit()).toBe(0);
+      for(let i=0;i<30;i++){octopus.position.z+=0.12;field.update(.05,1,true);} // dark, swimming
+      expect(lit()).toBeGreaterThan(5);
+      const p=field.sparks.geometry.attributes.position.array;
+      for(let i=0;i<p.length;i+=3){expect(Math.abs(p[i]-octopus.position.x)).toBeLessThanOrEqual(7.0001);expect(Math.abs(p[i+2]-octopus.position.z)).toBeLessThanOrEqual(7.0001);}
+      for(let i=0;i<120;i++)field.update(.05,1,true);
+      const before=lit();octopus.position.x+=10;field.update(.05,1,true);        // a teleport is not a stroke
+      expect(lit()).toBeLessThanOrEqual(before);
+    }finally{field.sparks.geometry.dispose();field.sparks.material.dispose();}
+  });
+  // The night reef had no moonlight at all: shafts and rays were multiplied by
+  // daylight alone, while the bobtail lesson is about matching moonlight.
+  it('keeps faint moonlight shafts at night on the reef, well below daytime and still removed by depth',()=>{
+    const settleDay=(dayTime,y)=>{const live=world();try{live.gameState.dayTime=dayTime;for(let tick=0;tick<80;tick++){live.gameState.verticalY=y;live.octopus.position.y=y+.55;live.now+=50;frame(live,.05,visualMath);}return {shaft:live.shafts[0].mesh.material.opacity,ray:live.lightRays[0].mesh.material.opacity};}finally{dispose(live);}};
+    const noon=settleDay(0,0.55),night=settleDay(0.5,0.55),deepNight=settleDay(0.5,-14);
+    expect(night.shaft).toBeGreaterThan(0);expect(night.ray).toBeGreaterThan(0);
+    expect(night.shaft).toBeLessThan(noon.shaft*0.3);expect(night.ray).toBeLessThan(noon.ray*0.3);
+    expect(deepNight.shaft).toBeLessThan(1e-4);expect(deepNight.ray).toBeLessThan(1e-4);
+  });
+
+  it('casts the bobtail counter-illumination as a floor pool only when it swims above the sand at night',()=>{
+    const start=source.indexOf("        // The bobtail's counter-illumination shines DOWN");
+    expect(start).toBeGreaterThan(0);
+    const fnAt=source.indexOf('function syncCounterLightPool(',start);
+    const block=source.slice(start,fnAt)+braced(fnAt);
+    const ctx2d={createRadialGradient:()=>({addColorStop(){}}),fillRect(){},set fillStyle(v){}};
+    const fakeDocument={createElement:()=>({width:0,height:0,getContext:()=>ctx2d})};
+    const added=[],octopus={position:new THREE.Vector3(4,0.55,-3)},floor=()=>0;
+    const make=new Function('THREE','document','bobtailGlow','scene','octopus','terrainHeight','Math',block+';return {pool:counterLightPool,sync:syncCounterLightPool};');
+    const none=make(THREE,fakeDocument,null,{add:(o)=>added.push(o)},octopus,floor,visualMath);
+    expect(none.pool).toBeNull();expect(added).toHaveLength(0);
+    const {pool,sync}=make(THREE,fakeDocument,{},{add:(o)=>added.push(o)},octopus,floor,visualMath);
+    try{
+      expect(added).toEqual([pool]);
+      sync(1);expect(pool.visible).toBe(false);                       // resting on the sand
+      octopus.position.y=2;sync(0);expect(pool.visible).toBe(false);  // daytime: no counter-illumination
+      sync(1);expect(pool.visible).toBe(true);expect(pool.material.opacity).toBeGreaterThan(0.05);expect(pool.material.opacity).toBeLessThanOrEqual(0.24);
+      expect(pool.position.toArray()).toEqual([4,0.03,-3]);
+      octopus.position.y=9;sync(1);expect(pool.visible).toBe(false);  // too high for a pool to read
+    }finally{pool.geometry.dispose();pool.material.dispose();}
+  });
+  // Jetting was HUD text only; the plume shows water driven out of the siphon.
+  it('streams a jet plume only while jetting, opposite to travel, fading out, without touching world RNG',()=>{
+    const start=source.indexOf('        // ─── Jet plume ───');
+    expect(start).toBeGreaterThan(0);
+    const fnAt=source.indexOf('function updateJetPlume(',start);
+    const block=source.slice(start,fnAt)+braced(fnAt);
+    const siphon=new THREE.Object3D(),octopus=new THREE.Object3D();octopus.add(siphon);siphon.position.set(0,-0.2,0.3);octopus.position.set(5,1,0);
+    const added=[],make=new Function('THREE','H','octopus','scene','Math',block+';return {plume,update:updateJetPlume};');
+    const {plume,update}=make(THREE,720,octopus,{add:(o)=>added.push(o)},visualMath);
+    const alive=()=>Array.from(plume.geometry.attributes.clAlpha.array).filter(a=>a>0.001).length;
+    try{
+      expect(added).toEqual([plume]);
+      for(let i=0;i<20;i++){octopus.position.z+=0.1;octopus.updateMatrixWorld(true);update(.05,false,1,false);} // swimming, not jetting
+      expect(alive()).toBe(0);expect(plume.visible).toBe(false);
+      for(let i=0;i<10;i++){octopus.position.z+=0.25;octopus.updateMatrixWorld(true);update(.05,true,1,false);} // jetting toward +Z
+      expect(alive()).toBeGreaterThan(20);expect(plume.visible).toBe(true);
+      const p=plume.geometry.attributes.position.array,a=plume.geometry.attributes.clAlpha.array;let behind=0,ahead=0;
+      for(let i=0;i<a.length;i++)if(a[i]>0.001){if(p[i*3+2]<octopus.position.z-0.2)behind++;else ahead++;}
+      expect(behind).toBeGreaterThan(ahead*3);                                   // the water goes back, the animal goes forward
+      const before=alive();octopus.position.x+=30;octopus.updateMatrixWorld(true);update(.05,true,1,false);
+      expect(alive()).toBeLessThanOrEqual(before);                               // a teleport is not a jet stroke
+      for(let i=0;i<30;i++)update(.05,false,1,false);
+      expect(alive()).toBe(0);expect(plume.visible).toBe(false);                 // it fades out
+    }finally{plume.geometry.dispose();plume.material.dispose();}
+  });
 });

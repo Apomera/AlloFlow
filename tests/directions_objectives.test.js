@@ -198,8 +198,11 @@ describe('wiring pins', () => {
     expect(directionsViewSource).not.toContain('_isStemStation');
     expect(anti).toContain('const style = _alloStationStyle(resource.type);');
     expect(directionsViewSource).toContain('goalResourceIndex(goal)'); // resourceRef'd goals tether to their station
-    // map items = student-safe pack only, bounded
-    expect(anti).toContain(".filter(resource => resource.type !== 'directions' && validId(resource.id))");
+    // The safe pack excludes invalid/self ids. An explicitly chosen directions
+    // page is now a valid lesson step; unreferenced directions menus stay out.
+    expect(anti).toContain('.filter(resource => validId(resource.id) && String(resource.id) !== String(item.id))');
+    expect(anti).toContain('const explicitChoiceIds = new Set(configuredChoices.map(choice => validId(choice && choice.resourceRef)).filter(Boolean));');
+    expect(anti).toContain(".filter(resource => resource.type !== 'directions' || explicitChoiceIds.has(String(resource.id)))");
     expect(anti).toContain('_alloStudentSafeResources(historyItems)');
   });
   it('TRANSLATION: directions translates goal and choice-board prose while preserving machinery and metadata', () => {
@@ -213,9 +216,11 @@ describe('wiring pins', () => {
     // labels merge back BY INDEX with per-entry fallback; ids/kinds/amounts spread through untouched
     expect(pk).toMatch(/objectives: \(Array\.isArray\(_dSrc\.objectives\) \? _dSrc\.objectives : \[\]\)\.map\(\(o, i\) =>/);
     // meta OBJECT preserved (the generic return would stringify derivedFrom provenance)
-    expect(pk).toContain("meta: (item.meta && typeof item.meta === 'object') ? { ...item.meta, translatedTo: targetLanguage } : item.meta,");
+    expect(pk).toContain("meta: item.meta && typeof item.meta === 'object' && !Array.isArray(item.meta)");
+    expect(pk).toContain('? { ...item.meta, translatedTo: primaryLanguage }');
+    expect(pk).toMatch(/\.\.\.copyBase,\s*\.\.\.copyMetadata,\s*data: _dData/);
     expect(pkm).toContain('Translate these student-facing assignment directions into');
-    expect(pkm).toMatch(/translatedTo: targetLanguage/);
+    expect(pkm).toMatch(/translatedTo: primaryLanguage/);
     expect(pkm).toMatch(/_dLbls\[i\]/);
   });
   it('mirror parity', () => {

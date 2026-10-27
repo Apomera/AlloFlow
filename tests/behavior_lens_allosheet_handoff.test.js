@@ -376,8 +376,9 @@ describe('BehaviorLens -> AlloSheet review UI contract', () => {
   const behaviorSource = readFileSync('behavior_lens_module.js', 'utf8');
   const hostSource = readFileSync('AlloFlowANTI.txt', 'utf8');
 
-  it('uses an injected callback and never stores a sensitive global snapshot', () => {
-    expect(behaviorSource).toContain('onOpenAlloSheet(envelope)');
+  it('uses a guarded transfer and never stores a sensitive global snapshot', () => {
+    expect(behaviorSource).toContain('blOpenProtectedSheetTransfer(envelope, assertCurrent, workspaceSelectionRef, aiRequestContextRef)');
+    expect(behaviorSource).not.toContain('onOpenAlloSheet(envelope)');
     expect(behaviorSource).toContain('onOpenAlloSheetReview: openAlloSheetHandoffReview');
     expect(behaviorSource).not.toMatch(/window\.[A-Za-z0-9_]*AlloSheet[A-Za-z0-9_]*\s*=\s*envelope/);
   });
@@ -417,7 +418,7 @@ describe('BehaviorLens -> AlloSheet review UI contract', () => {
     expect(hostSource).toContain("addToast('AlloSheet is still loading. Try again in a moment.', 'error')");
   });
 
-  it('renders every preview field and keeps focus inside during a pending popup callback', async () => {
+  it.each(['delivered', 'unmount'])('renders the preview and retains protected controls through %s', async outcome => {
     const priorActFlag = globalThis.IS_REACT_ACT_ENVIRONMENT;
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     const host = document.createElement('div');
@@ -425,7 +426,15 @@ describe('BehaviorLens -> AlloSheet review UI contract', () => {
     const root = ReactDOMClient.createRoot(host);
     let resolveOpen;
     let openCalls = 0;
+    let capturedControls;
+    const previousBridge = window.AlloSheetHostBridge;
     const pendingOpen = new Promise((resolvePromise) => { resolveOpen = resolvePromise; });
+    window.AlloSheetHostBridge = { transferControlVersion: 1, openTransfer(options) {
+      openCalls += 1;
+      capturedControls = options.transferControls;
+      expect(capturedControls.beforeTransfer()).toBe(true);
+      return { delivered: pendingOpen, decision: Promise.resolve({ status: 'received' }) };
+    } };
 
     try {
       localStorage.clear();
@@ -447,10 +456,7 @@ describe('BehaviorLens -> AlloSheet review UI contract', () => {
           baseProps({
             studentNickname: 'Eagle',
             isTeacherMode: true,
-            onOpenAlloSheet: () => {
-              openCalls += 1;
-              return pendingOpen;
-            }
+            onOpenAlloSheet: () => { throw new Error('Protected records must not use the unversioned host callback.'); }
           })
         ));
         await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 20));
@@ -513,6 +519,13 @@ describe('BehaviorLens -> AlloSheet review UI contract', () => {
       expect(document.activeElement.disabled).not.toBe(true);
       expect(Array.from(dialog.querySelectorAll('button')).find((button) => button.textContent === 'Cancel').disabled).toBe(true);
 
+      if (outcome === 'unmount') {
+        await React.act(async () => { root.unmount(); });
+        expect(() => capturedControls.beforeTransfer()).toThrow('student changed');
+      } else {
+        expect(capturedControls.beforeTransfer()).toBe(true);
+      }
+
       await React.act(async () => {
         resolveOpen(true);
         await pendingOpen;
@@ -523,6 +536,8 @@ describe('BehaviorLens -> AlloSheet review UI contract', () => {
       await React.act(async () => { root.unmount(); });
       host.remove();
       localStorage.clear();
+      if (previousBridge === undefined) delete window.AlloSheetHostBridge;
+      else window.AlloSheetHostBridge = previousBridge;
       globalThis.IS_REACT_ACT_ENVIRONMENT = priorActFlag;
     }
   });

@@ -300,7 +300,9 @@ describe('the crowd clouds on the real reef', () => {
     expect(['anthias', 'blue_green_chromis']).toContain(found.speciesId);
     expect(found.uids.length).toBeLessThanOrEqual(1);
     found.uids.forEach((uid) => expect(all.get(uid).speciesId).toBe(found.speciesId));
-    expect(found.distanceM).toBeLessThan(4);
+    // A nearby predator can shelter a cloud before the diver reaches it. Moments
+    // retain their established 10 m observation radius for either disturbance.
+    expect(found.distanceM).toBeLessThanOrEqual(10);
     expect(t.errors).toEqual([]);
   });
 });

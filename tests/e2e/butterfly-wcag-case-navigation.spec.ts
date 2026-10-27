@@ -50,18 +50,19 @@ test('case context and citation instructions use the same translated text as the
  await mount(page);
  const group=page.getByRole('group',{name:'3. Cite records from your investigation',exact:true});
  await group.focus();await expect(group).toBeFocused();
- await expect(group).toHaveAccessibleDescription('Select at least two records to compare (up to eight). Only evidence you actually recorded is offered.');
+ await expect(group).toHaveAccessibleDescription('Select at least two records to compare (up to eight). Only evidence you actually recorded is offered. 0 of 8 citations selected.');
  await page.evaluate(()=>{
   const w=window as any,translations:Record<string,string>={
    'stem.butterfly.case_garden_title':'Jardín escolar',
    'stem.butterfly.cs_where_does_it_stop':'¿Dónde termina la generación?',
    'stem.butterfly.cs_why':'¿Por qué?',
-   'stem.butterfly.nb_help_cite_records':'Selecciona al menos dos registros para comparar (hasta ocho). Solo se ofrece evidencia que hayas registrado.'
+   'stem.butterfly.nb_help_cite_records':'Selecciona al menos dos registros para comparar (hasta ocho). Solo se ofrece evidencia que hayas registrado.',
+   'stem.butterfly.nb_citation_count':'{value1} de 8 citas seleccionadas.'
   };
   w.__ctx.t=(key:string,fallback:string)=>translations[key]||fallback;w.__rerender();
  });
  await expect(page.getByRole('article',{name:'Jardín escolar',exact:true})).toHaveCount(1);
  await expect(page.getByRole('combobox',{name:'¿Dónde termina la generación? Jardín escolar',exact:true})).toHaveCount(1);
  await expect(page.getByRole('combobox',{name:'¿Por qué? Jardín escolar',exact:true})).toHaveCount(1);
- await expect(group).toHaveAccessibleDescription('Selecciona al menos dos registros para comparar (hasta ocho). Solo se ofrece evidencia que hayas registrado.');
+ await expect(group).toHaveAccessibleDescription('Selecciona al menos dos registros para comparar (hasta ocho). Solo se ofrece evidencia que hayas registrado. 0 de 8 citas seleccionadas.');
 });

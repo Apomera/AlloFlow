@@ -59,8 +59,8 @@ async function journey(page: Page, phone: boolean) {
     await expect(button).toHaveAttribute('aria-describedby', 'migration-study-adjacent-help');
     const box = await button.boundingBox(); expect(box!.width).toBeGreaterThanOrEqual(44); expect(box!.height).toBeGreaterThanOrEqual(44);
   }
-  await expect(page.locator('#migration-study-adjacent-help')).toContainText('Predict how the wingtip will move');
-  await expect(page.locator('#migration-study-adjacent-help')).toContainText('not measured flight times');
+  await expect(page.locator("[data-migration-id=\"migration-study-adjacent-help\"]")).toContainText('Predict how the wingtip will move');
+  await expect(page.locator("[data-migration-id=\"migration-study-adjacent-help\"]")).toContainText('not measured flight times');
   await activate(page, page.getByRole('button', { name: 'Individual’s left: solid path', exact: true }), phone);
   await activate(page, page.getByRole('button', { name: 'Cycle position 8 of 8', exact: true }), phone); await settled(page);
   await activate(page, page.getByRole('button', { name: 'Mark wing pose', exact: true }), phone);

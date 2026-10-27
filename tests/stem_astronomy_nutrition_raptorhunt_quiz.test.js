@@ -323,11 +323,16 @@ describe('Raptor Hunt contested-science softening', () => {
 });
 
 describe('Raptor Hunt owl hearing lab interaction', () => {
-  const start = rap.indexOf('function RaptorSoundArrivalStudy(props)');
-  const end = parseExpressionAt(rap, start, { ecmaVersion: 'latest' }).end;
-  expect(start).toBeGreaterThan(-1);
-  expect(end).toBeGreaterThan(start);
-  const Study = new Function('return (' + rap.slice(start, end) + ');')();
+  // The arrival study now composes the ambiguity experiment. Load both actual
+  // components so this interaction test exercises the current study tree.
+  const studySource = ['RaptorArrivalAmbiguityStudy', 'RaptorSoundArrivalStudy'].map(name => {
+    const start = rap.indexOf('function ' + name + '(props)');
+    expect(start).toBeGreaterThan(-1);
+    const end = parseExpressionAt(rap, start, { ecmaVersion: 'latest' }).end;
+    expect(end).toBeGreaterThan(start);
+    return rap.slice(start, end);
+  }).join('\n');
+  const Study = new Function(studySource + '\nreturn RaptorSoundArrivalStudy;')();
   const mounted = [];
   afterEach(async () => {
     for (const { host, root, previousAct } of mounted.splice(0).reverse()) {

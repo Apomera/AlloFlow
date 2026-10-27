@@ -72,8 +72,9 @@ async function mount({ touch = false, challenge = false, details = false, width 
   await act(async () => root.render(React.createElement(App)));
   const departure = host.querySelector('button[aria-label="Free Flight from Portland, ME"]');
   expect(departure).toBeTruthy();
-  await act(async () => departure.click());
+  // A launch owns one attempt; starting a second flight while flying is now guarded.
   if (challenge) await act(async () => hooks().startFlightChallenge('first_flight', 'kpwm'));
+  else await act(async () => departure.click());
   for (const canvas of host.querySelectorAll('canvas')) {
     Object.defineProperty(canvas, 'clientWidth', { configurable: true, value: width });
     Object.defineProperty(canvas, 'clientHeight', { configurable: true, value: height });

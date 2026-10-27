@@ -90,7 +90,7 @@ describe('Fire Ecology cultural deep-dive interaction', () => {
   it('reveals and focuses the selected panel, then closes it with Escape', async () => {
     await mountMosaic();
     const trigger = [...host.querySelectorAll('button')].find(
-      (button) => button.getAttribute('aria-label') === 'Learn more about Blueberry Barren'
+      (button) => button.id === 'fireecology-deep-dive-trigger-setup-blueberryBarren'
     );
     expect(trigger).toBeTruthy();
 

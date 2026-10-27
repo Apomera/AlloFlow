@@ -324,7 +324,7 @@ describe('Escape Room lifecycle enhancements', () => {
     for (const file of ['AlloFlowANTI.txt','desktop/web-app/src/App.jsx']) {
       const source=fs.readFileSync(file,'utf8');
       expect(source).toContain('window.AlloModules.startEscapeRoomClock');
-      expect(source).toContain('generatedContent, leveledTextLanguage, selectedLanguages, completedActivities })');
+      expect(source).toContain('generatedContent, leveledTextLanguage, outputLanguagePreference, nativeLanguageDefaultsVersion: 1, appLanguage: currentUiLanguage, selectedLanguages, completedActivities })');
     }
   });
 });

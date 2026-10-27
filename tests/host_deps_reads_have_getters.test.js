@@ -1,19 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+
+const { parseExpression } = createRequire(import.meta.url)('@babel/parser');
+const OPTIONAL_READS = new Set(['assignmentDirections', 'studentLanguage']);
 
 // A handler that reads a host binding the host never exposes gets undefined,
 // silently. handleFetchWordImage read __d.definitionData and __d.activeView
 // with no getters, so the reading-lookup picture button did nothing from
 // 2026-09-26 until 09-28, hidden because the exact-equality test was already
-// red for another reason. This test only asks: is every read provided?
+// red for another reason. Every required read must have a live property; the two
+// optional fields are exercised without getters in host_bridge_dependencies.test.js.
 const HOSTS = ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt'].filter(existsSync);
 const source = readFileSync('host_handlers_source.jsx', 'utf8').replace(/^\s*\/\/.*$/gm, '');
 const reads = [...new Set(Array.from(source.matchAll(/__d\.([A-Za-z_$][\w$]*)/g), m => m[1]))];
 
 function getters(host) {
   const start = host.indexOf('const __alloHostDeps = {');
-  const block = host.slice(start, host.indexOf('\n  };', start));
-  return new Set(Array.from(block.matchAll(/\bget ([A-Za-z_$][\w$]*)\(\)/g), m => m[1]));
+  expect(start).toBeGreaterThan(-1);
+  const end = host.indexOf('\n  };', start);
+  expect(end).toBeGreaterThan(start);
+  const object = parseExpression(host.slice(host.indexOf('{', start), end) + '\n}');
+  return new Set(object.properties.map(property => {
+    if (property.type === 'SpreadElement' || property.computed) throw new Error('Host dependency keys must be explicit');
+    return property.key.name ?? property.key.value;
+  }));
 }
 
 describe('host handler dependencies', () => {
@@ -22,10 +33,10 @@ describe('host handler dependencies', () => {
     expect(HOSTS).toContain('AlloFlowANTI.txt');
   });
 
-  it.each(HOSTS)('%s provides every binding the handlers read', file => {
+  it.each(HOSTS)('%s provides exactly the required properties the handlers read', file => {
     const provided = getters(readFileSync(file, 'utf8'));
     expect(provided.size).toBeGreaterThan(500);
-    expect(reads.filter(name => !provided.has(name))).toEqual([]);
+    expect([...provided].sort()).toEqual(reads.filter(name => !OPTIONAL_READS.has(name)).sort());
   });
 
   it('the reading-lookup picture handler reads its popup and view through getters', () => {

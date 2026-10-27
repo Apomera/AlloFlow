@@ -30,7 +30,7 @@ async function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { renderCount++; refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   if (!stage) throw new Error('Expected the native migration stage');
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const pose = { userData: { captured: false, captureVersion: 0 }, clearPose: vi.fn() };
@@ -51,7 +51,7 @@ async function fixture(seed = {}, options = {}) {
     side() { return host.querySelector('[data-scene-study-side]'); },
     opposite() { return host.querySelector('[data-scene-study-action="opposite"]'); },
     oldOpposite() { return host.querySelector('[data-study-cycle-action="opposite"]'); },
-    field() { return host.querySelector('[id="migration-study-observation-note"]'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
     click(element) { act(() => { element.click(); }); },
     choose(index) { ui.click(host.querySelector('[data-study-cycle-position="' + index + '"]')); },
     follow(side) { ui.click(host.querySelector('[data-wingtip-follow-side="' + side + '"]')); },
@@ -108,7 +108,7 @@ describe('Scene-adjacent migration comparison actions', () => {
     expect(ui.opposite().tagName).toBe('BUTTON'); expect(ui.opposite().type).toBe('button');
     expect(ui.opposite().textContent).toBe('Compare opposite wings');
     expect(ui.oldOpposite().textContent).toBe('Compare opposite position');
-    expect(ui.opposite().getAttribute('aria-controls')).toBe('migration-flight-stage');
+    expect(ui.opposite().getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id);
     expect(getComputedStyle(ui.opposite()).minHeight).toBe('44px');
     expect(ui.opposite().disabled).toBe(true); expect(ui.cycle().getAttribute('data-scene-study-cycle')).toBe('none');
     expect(ui.cycle().textContent).toBe('No numbered cycle position selected.');

@@ -11,6 +11,16 @@ const flush = async (win) => {
   await new Promise((resolve) => win.setTimeout(resolve, 0));
 };
 
+function connectBridge(win, client, origin, nonce, channel) {
+  const port = { postMessage: vi.fn(), start: vi.fn(), close: vi.fn(), onmessage: null, onmessageerror: null };
+  for (const type of ['allo-bridge-hello', 'allo-bridge-connect']) {
+    const event = new win.MessageEvent('message', { data: { allo: 'ds2', type, nonce, channel }, source: client, origin });
+    Object.defineProperty(event, 'ports', { value: type === 'allo-bridge-connect' ? [port] : [] });
+    win.dispatchEvent(event);
+  }
+  return port;
+}
+
 let dom;
 afterEach(() => {
   dom?.window?.close();
@@ -25,23 +35,21 @@ describe('device storage bridge security contract', () => {
     expect(moduleSrc).toContain("parsed.protocol === 'http:' && isLoopbackHostname(parsed.hostname)");
     expect(moduleSrc).toContain('event.source !== self.win || event.origin !== self.bridgeOrigin');
     expect(moduleSrc).toContain('isValidResponse(msg, self.nonce)');
-    expect(moduleSrc).toContain('self.win.postMessage(msg, self.bridgeOrigin)');
+    expect(moduleSrc).toContain('self.port.postMessage(msg)');
     expect(moduleSrc).not.toContain('Math.random');
     expect(moduleSrc).not.toContain("self.win.postMessage(msg, '*')");
   });
 
-  it('requires visible consent for cross-origin/opaque clients and never wildcard-fallbacks', () => {
-    // 2026-08: the flat popup-only rejection became partition-scoped remembered
-    // consent — a cross-origin/opaque client is authorized only by a human
-    // approval recorded in the bridge's OWN partitioned storage, and the
-    // consent record itself is fenced off the client op surface.
+  it('requires bound consent for cross-origin clients and never wildcard-fallbacks', () => {
+    // Persistent approval is exact origin/channel v2; opaque clients require
+    // a fresh top-level decision. Reserved bookkeeping is not client-readable.
     expect(bridgeSrc).toContain("'allo-bridge-consent-required'");
     expect(bridgeSrc).toContain('RESERVED_NS_RE');
     expect(bridgeSrc).toContain("'allo/reserved-namespace'");
     expect(bridgeSrc).toContain('readConsent().then(');
     expect(bridgeSrc).toContain('id="btn-approve"');
-    expect(bridgeSrc).toContain('event.source !== authorizedSource');
-    expect(bridgeSrc).toContain('observedOrigin !== authorizedOrigin');
+    expect(bridgeSrc).toContain('connectionPort !== port');
+    expect(bridgeSrc).toContain('source !== authorizedSource || origin !== authorizedOrigin');
     expect(bridgeSrc).toContain("var targetOrigin = origin === 'null' ? '*' : origin;");
     expect(bridgeSrc).not.toContain("try { source.postMessage(payload, '*')");
     expect(bridgeSrc).toContain('nonce: nonce');
@@ -80,19 +88,19 @@ describe('device storage bridge security contract', () => {
       .toBe('http://127.0.0.1:8080');
     expect(() => internal.parseBridgeUrl('http://attacker.example/bridge.html'))
       .toThrow(/must use HTTPS/i);
-    expect(internal.isValidResponse({ allo: 'ds1', nonce: 'right', id: 'r1', ok: true }, 'right'))
+    expect(internal.isValidResponse({ allo: 'ds2', nonce: 'right', id: 'r1', ok: true }, 'right'))
       .toBe(true);
-    expect(internal.isValidResponse({ allo: 'ds1', nonce: 'wrong', id: 'r1', ok: true }, 'right'))
+    expect(internal.isValidResponse({ allo: 'ds2', nonce: 'wrong', id: 'r1', ok: true }, 'right'))
       .toBe(false);
     expect(internal.buildEnvelope('right', 'r2', 'compareAndSwap', {
       ns: 'vault', key: 'workspace-a', expected: 2, nextValue: { ciphertext: 'v3' },
     })).toEqual({
-      allo: 'ds1', nonce: 'right', id: 'r2', op: 'compareAndSwap',
+      allo: 'ds2', nonce: 'right', id: 'r2', op: 'compareAndSwap',
       ns: 'vault', key: 'workspace-a', expected: 2, nextValue: { ciphertext: 'v3' },
     });
   });
 
-  it('requires a click before authorizing an opaque popup and replies to null only with wildcard', async () => {
+  it('requires a click before authorizing an opaque popup and keeps approval on the document port', async () => {
     const nonce = '0123456789abcdef0123456789abcdef';
     const client = { postMessage: vi.fn() };
     dom = new JSDOM(bridgeSrc.replace(/<script>[\s\S]*<\/script>/, ''), {
@@ -102,31 +110,25 @@ describe('device storage bridge security contract', () => {
     Object.defineProperty(dom.window, 'opener', { configurable: true, value: client });
     dom.window.eval(bridgeScript);
 
-    dom.window.dispatchEvent(new dom.window.MessageEvent('message', {
-      data: { allo: 'ds1', type: 'allo-bridge-hello', nonce, channel: 'popup' },
-      origin: 'null',
-      source: client,
-    }));
+    const port = connectBridge(dom.window, client, 'null', nonce, 'popup');
     // The consent lookup is async; with no remembered grant the bridge shows
     // its own dialog and tells the client consent is pending (so an embedder
     // can reveal the frame) — but nothing is authorized yet.
     await flush(dom.window);
     expect(client.postMessage).toHaveBeenCalledTimes(1);
-    expect(client.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({
-      allo: 'ds1', type: 'allo-bridge-consent-required', nonce,
-    }), '*');
+    expect(client.postMessage).toHaveBeenLastCalledWith({ allo: 'ds2', type: 'allo-bridge-port-required', nonce }, '*');
+    expect(port.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ allo: 'ds2', type: 'allo-bridge-consent-required', nonce }));
     const approve = dom.window.document.getElementById('btn-approve');
     expect(approve.disabled).toBe(false);
     expect(dom.window.document.getElementById('approval-ui').hidden).toBe(false);
 
     approve.click();
     await flush(dom.window);
-    expect(client.postMessage).toHaveBeenLastCalledWith({
-      allo: 'ds1', type: 'allo-bridge-ready', nonce,
-    }, '*');
+    expect(port.postMessage).toHaveBeenLastCalledWith({ allo: 'ds2', type: 'allo-bridge-ready', nonce });
+    expect(client.postMessage).toHaveBeenCalledTimes(1);
   });
 
-  it('rejects a hidden cross-origin iframe and auto-approves only exact same-origin clients', async () => {
+  it('requires iframe approval and auto-approves only exact same-origin clients', async () => {
     const nonce = 'fedcba9876543210fedcba9876543210';
     const iframeClient = { postMessage: vi.fn() };
     dom = new JSDOM(bridgeSrc.replace(/<script>[\s\S]*<\/script>/, ''), {
@@ -135,19 +137,12 @@ describe('device storage bridge security contract', () => {
     });
     Object.defineProperty(dom.window, 'parent', { configurable: true, value: iframeClient });
     dom.window.eval(bridgeScript);
-    dom.window.dispatchEvent(new dom.window.MessageEvent('message', {
-      data: { allo: 'ds1', type: 'allo-bridge-hello', nonce, channel: 'iframe' },
-      origin: 'https://canvas.example',
-      source: iframeClient,
-    }));
-    // 2026-08: a cross-origin iframe is no longer flatly rejected — with no
-    // remembered grant the bridge renders its OWN approval dialog (which the
-    // embedder can size but neither read nor click) and reports
-    // consent-required; nothing is authorized until a human approves.
+    const iframePort = connectBridge(dom.window, iframeClient, 'https://canvas.example', nonce, 'iframe');
+    // The embedded dialog offers separate-window review. It cannot itself
+    // approve storage; the new runtime suite exercises the bound popup.
     await flush(dom.window);
-    expect(iframeClient.postMessage).toHaveBeenCalledWith(expect.objectContaining({
-      allo: 'ds1', type: 'allo-bridge-consent-required', nonce,
-    }), 'https://canvas.example');
+    expect(iframePort.postMessage).toHaveBeenCalledWith(expect.objectContaining({ allo: 'ds2', type: 'allo-bridge-consent-required', nonce }));
+    expect(iframeClient.postMessage).toHaveBeenCalledExactlyOnceWith({ allo: 'ds2', type: 'allo-bridge-port-required', nonce }, 'https://canvas.example');
     expect(dom.window.document.getElementById('approval-ui').hidden).toBe(false);
 
     dom.window.close();
@@ -158,14 +153,8 @@ describe('device storage bridge security contract', () => {
     });
     Object.defineProperty(dom.window, 'opener', { configurable: true, value: sameOriginClient });
     dom.window.eval(bridgeScript);
-    dom.window.dispatchEvent(new dom.window.MessageEvent('message', {
-      data: { allo: 'ds1', type: 'allo-bridge-hello', nonce, channel: 'popup' },
-      origin: 'https://alloflow-cdn.pages.dev',
-      source: sameOriginClient,
-    }));
-    expect(sameOriginClient.postMessage).toHaveBeenCalledWith({
-      allo: 'ds1', type: 'allo-bridge-ready', nonce,
-    }, 'https://alloflow-cdn.pages.dev');
+    const sameOriginPort = connectBridge(dom.window, sameOriginClient, 'https://alloflow-cdn.pages.dev', nonce, 'popup');
+    expect(sameOriginPort.postMessage).toHaveBeenCalledWith({ allo: 'ds2', type: 'allo-bridge-ready', nonce });
   });
 
   it('executes revision and legacy CAS without disclosing the conflicting value', async () => {

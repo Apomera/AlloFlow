@@ -63,7 +63,8 @@ describe('Report Writer outbound transport review', () => {
     expect(ctx.gate.accept(ctx.review().id, { prompt: edited, searchQuery: 'reading supports' })).toEqual({ sent: true, changed: false });
     await expect(pending).resolves.toBe('provider response');
     expect(ctx.transport).toHaveBeenCalledExactlyOnceWith(edited,
-      true, true, 0.25, 'reading supports', controller.signal, true, telemetry, searchOptions);
+      true, true, 0.25, 'reading supports', controller.signal, true, telemetry, { ...searchOptions, requestControls: { beforeRequest: expect.any(Function) } });
+    expect(searchOptions).toEqual({ publicReferenceOnly: true });
   });
 
   it('preserves an absent/null query and requires fresh approval for every later payload', async () => {
@@ -74,7 +75,7 @@ describe('Report Writer outbound transport review', () => {
     expect(firstReview.searchQuery).toBeUndefined();
     ctx.gate.accept(firstReview.id, { prompt: firstReview.prompt });
     await first;
-    expect(ctx.transport).toHaveBeenCalledExactlyOnceWith(firstReview.prompt, false, false, null, null, null, true);
+    expect(ctx.transport).toHaveBeenCalledExactlyOnceWith(firstReview.prompt, false, false, null, null, null, true, undefined, { requestControls: { beforeRequest: expect.any(Function) } });
     expect(ctx.review().prompt).toContain('Second clinical draft');
     expect(ctx.transport).toHaveBeenCalledTimes(1);
     const secondRejected = expect(second).rejects.toMatchObject({ name: 'AbortError', code: 'ALLOFLOW_AI_REVIEW_CANCELLED' });
@@ -187,7 +188,7 @@ describe('Report Writer panel integration', () => {
     expect(button(dialog, 'Send reviewed copy').disabled).toBe(true);
     await click(dialog.querySelector('input[type="checkbox"]'));
     await click(button(dialog, 'Send reviewed copy'));
-    expect(ui.transport).toHaveBeenCalledExactlyOnceWith(outgoing, true, false, null, null, expect.any(AbortSignal), true);
+    expect(ui.transport).toHaveBeenCalledExactlyOnceWith(outgoing, true, false, null, null, expect.any(AbortSignal), true, undefined, { requestControls: { beforeRequest: expect.any(Function) } });
     expect(reviewDialog(ui.host)).toBeNull();
   });
 

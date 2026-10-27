@@ -178,7 +178,7 @@ describe('SkySchool city planning integration', () => {
     await mount(); await input('Kyoto');
     await click(planner().querySelector('button[type="submit"]'));
     const submit = planner().querySelector('button[type="submit"]');
-    expect(submit.textContent).toBe('Searching…'); expect(submit.disabled).toBe(true);
+    expect(submit.textContent).toBe('Searching…'); expect(submit.disabled).toBe(false); expect(submit.getAttribute('aria-disabled')).toBe('true');
     const match = resultButtons().find(item => item.textContent === 'Kyoto');
     expect(match).toBeTruthy(); expect(fetchSpy).toHaveBeenCalledTimes(1);
     const signal = fetchSpy.mock.calls[0][1].signal;
@@ -186,7 +186,7 @@ describe('SkySchool city planning integration', () => {
     await click(match);
     expect(signal.aborted).toBe(true);
     expect(latest.cityDestination.name).toBe('Kyoto'); expect(latest.view).toBe('menu');
-    expect(submit.textContent).toBe('Search'); expect(submit.disabled).toBe(false);
+    expect(submit.textContent).toBe('Search'); expect(submit.disabled).toBe(false); expect(submit.getAttribute('aria-disabled')).toBe('false');
     const chosenId = latest.cityDestination.id;
     await act(async () => pending.resolve(cityResponse('Late Kyoto response', 135.7681, 35.0116, 'Japan')));
     expect(latest.cityDestination.id).toBe(chosenId);
@@ -208,7 +208,7 @@ describe('SkySchool city planning integration', () => {
     await input('Kyoto');
     expect(firstSignal.aborted).toBe(true); expect(resultButtons()).toHaveLength(0);
     const submit = planner().querySelector('button[type="submit"]');
-    expect(submit.textContent).toBe('Search'); expect(submit.disabled).toBe(false);
+    expect(submit.textContent).toBe('Search'); expect(submit.disabled).toBe(false); expect(submit.getAttribute('aria-disabled')).toBe('false');
     expect(fetchSpy).toHaveBeenCalledTimes(1); // Editing never launches autocomplete requests.
     await click(submit);
     expect(resultButtons().some(item => item.textContent === 'Kyoto')).toBe(true);
@@ -216,7 +216,7 @@ describe('SkySchool city planning integration', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     await act(async () => second.resolve(cityResponse('Kyoto', 135.7681, 35.0116, 'Japan')));
     expect(resultButtons().map(item => item.textContent)).toEqual(['Kyoto, Japan']);
-    expect(submit.textContent).toBe('Search'); expect(submit.disabled).toBe(false);
+    expect(submit.textContent).toBe('Search'); expect(submit.disabled).toBe(false); expect(submit.getAttribute('aria-disabled')).toBe('false');
     await act(async () => first.resolve(cityResponse('Stale London response', -.1276, 51.5072, 'United Kingdom')));
     expect(queryInput().value).toBe('Kyoto');
     expect(resultButtons().map(item => item.textContent)).toEqual(['Kyoto, Japan']);
@@ -373,10 +373,10 @@ describe('SkySchool city planning integration', () => {
     expect(field.labels).toHaveLength(1);
     expect(field.labels[0].textContent).toContain('City name');
     expect(field.maxLength).toBe(120); expect(field.parentElement.style.flexWrap).toBe('wrap');
-    expect(parseFloat(field.style.minWidth)).toBe(0); expect(submit.disabled).toBe(true);
+    expect(parseFloat(field.style.minWidth)).toBe(0); expect(submit.disabled).toBe(false); expect(submit.getAttribute('aria-disabled')).toBe('true');
     const controlsBefore = { ...hooks().controlsRef.current };
-    await input('L'); expect(submit.disabled).toBe(true);
-    await input('London'); expect(submit.disabled).toBe(false);
+    await input('L'); expect(submit.disabled).toBe(false); expect(submit.getAttribute('aria-disabled')).toBe('true');
+    await input('London'); expect(submit.disabled).toBe(false); expect(submit.getAttribute('aria-disabled')).toBe('false');
     expect(document.activeElement).toBe(field);
     for (const key of ['w', 'ArrowUp', ' ', 'Enter']) {
       const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });

@@ -19,7 +19,7 @@ async function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; return tool.render(ctx); }
   act(() => root.render(React.createElement(Component)));
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = { host: stage, speciesId: state.flightSpecies, formationMode: 'natural', season: 'fall',
     time: 1.3, wingStepSerial: state.flightWingStep, wingStepPhase: .7, contextLost: false,
@@ -31,7 +31,7 @@ async function fixture(seed = {}, options = {}) {
     get state() { return state; }, get live() { return liveRef.current; },
     strip: () => host.querySelector('[data-scene-study-actions]'),
     toggle: () => host.querySelector('[data-study-guides-hidden]'),
-    note: () => host.querySelector('#migration-study-observation-note'),
+    note: () => host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"),
     click() { act(() => { ui.toggle().focus(); ui.toggle().click(); }); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(n => n + 1); }); },
     choose(index) { act(() => host.querySelector('[data-study-cycle-position="' + index + '"]').click()); }
@@ -58,9 +58,9 @@ describe('Temporarily inspect the migration model without guides', () => {
     const ui = await fixture(), input = ui.toggle(), label = input.closest('label');
     expect(ui.strip().previousElementSibling).toBe(ui.stage); expect(input.tagName).toBe('INPUT'); expect(input.type).toBe('checkbox');
     expect(input.getAttribute('aria-label')).toBe('Inspect without guides'); expect(input.disabled).toBe(false); expect(input.checked).toBe(false);
-    expect(input.getAttribute('aria-controls')).toBe('migration-flight-stage'); expect(input.getAttribute('aria-describedby')).toBe('migration-study-clean-help');
+    expect(input.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id); expect(input.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-clean-help"]').id);
     expect(getComputedStyle(label).minHeight).toBe('44px'); expect(label.textContent).toContain('Inspect without guides');
-    expect(ui.host.querySelector('#migration-study-clean-help').textContent).toMatch(/predict/i); expect(ui.writes).toEqual([]);
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-clean-help\"]").textContent).toMatch(/predict/i); expect(ui.writes).toEqual([]);
   });
   it.each([[true, true, true], [false, true, false], [true, false, true], [false, false, false]])('restores the exact anatomy/path/airflow preference mix %s/%s/%s without host writes', async (anatomy, path, airflow) => {
     const ui = await fixture({ flightShowAnatomy: anatomy, flightShowWingtipPath: path, flightShowAirflow: airflow, ...authored() });
@@ -141,7 +141,7 @@ describe('Temporarily inspect the migration model without guides', () => {
   });
   it('uses temporary inspection guidance for follow, anatomy, marked reference and cycle activities', async () => {
     const ui = await fixture(); act(() => ui.host.querySelector('[data-wingtip-follow-side="0"]').click());
-    const selectors = ['#migration-wingtip-follow-help', '#migration-followed-anatomy-help', '#migration-marked-pose-help', '#migration-study-cycle-help'];
+    const selectors = ["[data-migration-id=\"migration-wingtip-follow-help\"]", "[data-migration-id=\"migration-followed-anatomy-help\"]", "[data-migration-id=\"migration-marked-pose-help\"]", "[data-migration-id=\"migration-study-cycle-help\"]"];
     const original = selectors.map(selector => ui.host.querySelector(selector).textContent); ui.click();
     for (const selector of selectors) {
       const text = ui.host.querySelector(selector).textContent;

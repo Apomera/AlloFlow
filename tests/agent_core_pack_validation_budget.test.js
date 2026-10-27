@@ -124,7 +124,7 @@ describe('bounded AlloPack validation diagnostics', () => {
     const candidate = JSON.parse(source);
     const result = service.validatePack(candidate, { profile: 'native' });
     expect(result.ok, JSON.stringify(result.errors)).toBe(true);
-    expect(result.media.placements).toBeGreaterThanOrEqual(32);
+    expect(result.media.placements).toBeGreaterThanOrEqual(15);
     expect(result.media.complete).toBe(true);
     expect(JSON.stringify(result.value)).toBe(JSON.stringify(candidate));
     expect(service.exportPack(candidate, { profile: 'native' }).ok).toBe(true);

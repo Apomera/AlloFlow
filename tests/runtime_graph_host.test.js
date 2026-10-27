@@ -68,7 +68,7 @@ describe('trusted runtime host adapter', () => {
     target.__alloDisposeVerifiedRuntime('slow');
     const reopened = target.__alloLoadVerifiedRuntime('slow');
     expect(prepare).toHaveBeenCalledTimes(1);
-    resolve(old); await first;
+    resolve(old); await expect(first).rejects.toThrow('runtime session is closing');
     expect(await reopened).toEqual({ version: 42 });
     expect(old.dispose).toHaveBeenCalledTimes(1); expect(prepare).toHaveBeenCalledTimes(2);
   });
@@ -83,5 +83,22 @@ describe('trusted runtime host adapter', () => {
     await expect(target.__alloLoadVerifiedRuntime('pdfjs')).rejects.toThrow('module failed');
     expect(sessions[1].dispose).toHaveBeenCalledTimes(1);
     expect(await target.__alloLoadVerifiedRuntime('pdfjs')).toEqual({ version: 42 });
+  });
+  it.each([
+    ['__alloLoadVerifiedRuntime', 'load', []],
+    ['__alloGetVerifiedRuntimeAsset', 'asset', ['worker']],
+    ['__alloCreateVerifiedWorker', 'createWorker', ['protocol', { type: 'module' }]],
+  ])('cancelled pending %s cannot create activity after close was requested', async (api, method, args) => {
+    const { target, prepare } = setup(); let resolve;
+    const old = { load: vi.fn(), asset: vi.fn(), createWorker: vi.fn(), dispose: vi.fn() };
+    prepare.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+    const pending = target[api]('slow', ...args); pending.catch(() => {});
+    target.__alloDisposeVerifiedRuntime('slow');
+    const fresh = target.__alloLoadVerifiedRuntime('slow');
+    resolve(old);
+    await expect(pending).rejects.toMatchObject({ code: 'ALLO_RUNTIME_INTEGRITY' });
+    expect(await fresh).toEqual({ version: 42 });
+    expect(old[method]).not.toHaveBeenCalled(); expect(old.dispose).toHaveBeenCalledTimes(1);
+    expect(prepare).toHaveBeenCalledTimes(2);
   });
 });

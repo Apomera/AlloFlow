@@ -32,7 +32,13 @@ function hostShimDepNames(host) {
     if (key === '__live') {
       for (const getter of prop.value.properties) live.add(getter.key.name);
     } else {
-      expect(prop.shorthand).toBe(true);
+      if (key === 'nativeLanguageDefaultsVersion') {
+        expect(prop.value.type).toBe('NumericLiteral');
+        expect(prop.value.value).toBe(1);
+      } else if (key === 'appLanguage') {
+        expect(prop.value.type).toBe('Identifier');
+        expect(prop.value.name).toBe('currentUiLanguage');
+      } else expect(prop.shorthand).toBe(true);
       names.add(key);
     }
   }
@@ -72,7 +78,10 @@ describe('command context extraction', () => {
     const source = readFileSync(SOURCE, 'utf8');
     const shim = hostShimDepNames(host);
     const mod = moduleDepNames(source);
-    expect([...mod.names].sort()).toEqual([...shim.names].sort());
+    // The host also supplies native-language context for upgraded consumers.
+    const languageContext = ['outputLanguagePreference', 'nativeLanguageDefaultsVersion', 'appLanguage', 'setOutputLanguagePreference'];
+    expect([...shim.names].filter(name => !mod.names.has(name)).sort()).toEqual(languageContext.sort());
+    expect([...mod.names].filter(name => !shim.names.has(name))).toEqual([]);
     expect([...mod.live].sort()).toEqual([...shim.live].sort());
     expect(shim.live.size).toBeGreaterThan(0);
     // A live name must never also be passed by value (that would pin a pre-upgrade fallback).

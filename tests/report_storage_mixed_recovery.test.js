@@ -77,14 +77,33 @@ function durableBridgeFixture() {
   const operationSource = section(bridgeSource, '  function handleOp(msg)', '  if (isBridge)');
   const freshClient = async () => {
     const bridge = new Function('indexedDB', 'navigator', declarations + '\nvar RESERVED_NS_RE = /^__/;\n' + operationSource + '\nreturn handleOp;')(indexedDB, {});
-    const listeners = new Set(); let frame;
-    const bridgeWindow = { postMessage(message) {
+    const listeners = new Set(); let frame, bridgePort;
+    class MessageChannel {
+      constructor() {
+        const makePort = () => ({ closed: false, onmessage: null, onmessageerror: null, start() {}, close() { this.closed = true; } });
+        this.port1 = makePort(); this.port2 = makePort();
+        for (const [from, to] of [[this.port1, this.port2], [this.port2, this.port1]]) from.postMessage = data => {
+          if (from.closed) return;
+          const copy = structuredClone(data);
+          queueMicrotask(() => { if (!to.closed) to.onmessage?.({ data: copy, ports: [] }); });
+        };
+      }
+    }
+    const bridgeWindow = { postMessage(message, _target, ports = []) {
       const emit = data => listeners.forEach(fn => fn({ source: bridgeWindow, origin: 'https://alloflow-cdn.pages.dev', data }));
-      if (message.type === 'allo-bridge-hello') { queueMicrotask(() => emit({ allo: 'ds1', nonce: message.nonce, type: 'allo-bridge-ready' })); return; }
-      bridge(message).then(value => emit({ allo: 'ds1', nonce: message.nonce, id: message.id, ok: true, value }), error => emit({ allo: 'ds1', nonce: message.nonce, id: message.id, ok: false, error: { code: error.code, message: error.message } }));
+      if (message.type === 'allo-bridge-hello') { queueMicrotask(() => emit({ allo: 'ds2', nonce: message.nonce, type: 'allo-bridge-port-required' })); return; }
+      if (message.type !== 'allo-bridge-connect' || message.allo !== 'ds2' || ports.length !== 1 || bridgePort) return;
+      bridgePort = ports[0];
+      bridgePort.onmessage = event => {
+        const request = event.data;
+        if (request.type === 'allo-bridge-disconnect') { bridgePort.close(); return; }
+        bridge(request).then(value => bridgePort.postMessage({ allo: 'ds2', nonce: request.nonce, id: request.id, ok: true, value }),
+          error => bridgePort.postMessage({ allo: 'ds2', nonce: request.nonce, id: request.id, ok: false, error: { code: error.code, message: error.message } }));
+      };
+      bridgePort.start(); bridgePort.postMessage({ allo: 'ds2', nonce: message.nonce, type: 'allo-bridge-ready' });
     } };
     const document = { body: { appendChild(el) { el.isConnected = true; } }, createElement() { frame = { contentWindow: bridgeWindow, style: {}, setAttribute() {}, removeAttribute() {}, remove() { this.isConnected = false; } }; return frame; } };
-    const window = { crypto: webcrypto, location: { hostname: 'demo.googleusercontent.com', origin: 'https://demo.googleusercontent.com', href: 'https://demo.googleusercontent.com' }, addEventListener: (_name, fn) => listeners.add(fn), removeEventListener: (_name, fn) => listeners.delete(fn) };
+    const window = { crypto: webcrypto, MessageChannel, location: { hostname: 'demo.googleusercontent.com', origin: 'https://demo.googleusercontent.com', href: 'https://demo.googleusercontent.com' }, addEventListener: (name, fn) => { if (name === 'message') listeners.add(fn); }, removeEventListener: (name, fn) => { if (name === 'message') listeners.delete(fn); } };
     new Function('window', 'document', 'navigator', 'crypto', clientSource)(window, document, {}, webcrypto);
     window.alloDeviceStorage.init({ surface: 'canvas' }); await window.alloDeviceStorage.ready(); clients.push(window.alloDeviceStorage); return window.alloDeviceStorage;
   };
@@ -117,7 +136,13 @@ function prefsFixture({ existing = {} } = {}) {
     get length() { return current.size; }, key: index => [...current.keys()][index] ?? null,
   };
   const ds = {
-    ready: vi.fn(() => ready.promise), get: vi.fn(async () => clone(durable)), set: vi.fn(async (_ns, _key, value) => { writes.push(clone(value)); durable = clone(value); return true; }),
+    ready: vi.fn(() => ready.promise), get: vi.fn(async () => clone(durable)),
+    status: vi.fn(() => ({ connected: true, backend: 'bridge-iframe' })),
+    compareAndSwap: vi.fn(async (_ns, _key, expected, value, options) => {
+      expect(options).toEqual({ queue: false });
+      expect(expected).toEqual({ mode: 'value', value: durable });
+      writes.push(clone(value)); durable = clone(value); return { applied: true };
+    }),
   };
   const window = { location: { hostname: 'demo.googleusercontent.com', href: 'https://demo.googleusercontent.com/' }, alloDeviceStorage: ds,
     addEventListener: (name, callback) => { events[name] = callback; }, dispatchEvent() {} };
@@ -254,14 +279,14 @@ describe('preference hydration versus delayed storage acknowledgement', () => {
     reconnect.resolve(); await flush(); expect(f.durable.allo_saved_notes).toBe('Newest edit');
   });
   it('serializes repeated pagehide writes and drains a newer edit after the first acknowledgement', async () => {
-    const f = prefsFixture(); f.ready.resolve(); await flush(); const pending = deferred(), originalSet = f.ds.set.getMockImplementation();
-    f.ds.set.mockImplementationOnce(async (...args) => { await pending.promise; return originalSet(...args); });
+    const f = prefsFixture(); f.ready.resolve(); await flush(); const pending = deferred(), originalSet = f.ds.compareAndSwap.getMockImplementation();
+    f.ds.compareAndSwap.mockImplementationOnce(async (...args) => { await pending.promise; return originalSet(...args); });
     f.current.set('allo_saved_notes', 'First edit'); f.events.pagehide(); await flush(); f.current.set('allo_saved_notes', 'Second edit'); f.events.pagehide(); await flush();
-    expect(f.ds.set).toHaveBeenCalledTimes(1); pending.resolve(); await flush();
-    expect(f.durable.allo_saved_notes).toBe('Second edit'); expect(f.ds.set).toHaveBeenCalledTimes(2);
+    expect(f.ds.compareAndSwap).toHaveBeenCalledTimes(1); pending.resolve(); await flush();
+    expect(f.durable.allo_saved_notes).toBe('Second edit'); expect(f.ds.compareAndSwap).toHaveBeenCalledTimes(2);
   });
   it('leaves failed snapshot signatures retryable and preserves last-good disk values', async () => {
-    const f = prefsFixture(); f.ready.resolve(); await flush(); f.ds.set.mockRejectedValueOnce(Error('Mock failed write'));
+    const f = prefsFixture(); f.ready.resolve(); await flush(); f.ds.compareAndSwap.mockRejectedValueOnce(Error('Mock failed write'));
     f.current.set('allo_saved_notes', 'Teacher edit'); f.events.pagehide(); await flush(); expect(f.durable).toEqual(f.saved);
     f.events.pagehide(); await flush(); expect(f.durable.allo_saved_notes).toBe('Teacher edit');
   });

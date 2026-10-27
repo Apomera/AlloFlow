@@ -1,0 +1,47 @@
+[
+  {
+    "owner": "hunt-notebook-explicit-endpoint-focus",
+    "old": "        var reviewRef = useRef(null);",
+    "new": "        var reviewRef = useRef(null);\n        var reviewSelectedRef = useRef(null), reviewEndpointFocusRef = useRef(false);\n        // A boundary disables the activated navigation button; focus its committed finding.\n        useEffect(function () {\n          if (!reviewEndpointFocusRef.current) return;\n          reviewEndpointFocusRef.current = false;\n          var target = reviewSelectedRef.current;\n          if (target) { try { target.focus(); } catch (_) {} }\n        });"
+  },
+  {
+    "owner": "hunt-notebook-selected-native-ref",
+    "old": "return h('button', { key: id, type: 'button', 'data-hunt-review-pick': id, 'aria-pressed': on, onClick:",
+    "new": "return h('button', { key: id, ref: on ? reviewSelectedRef : null, type: 'button', 'data-hunt-review-pick': id, 'aria-pressed': on, 'aria-controls': 'hunt6-review-reading', onClick:"
+  },
+  {
+    "owner": "hunt-notebook-live-text-result",
+    "old": "            h('dl', { className: 'grid grid-cols-1 gap-2 text-sm' },\n              h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.hunt6_first_call', 'Your committed first call'))",
+    "new": "            h('dl', { id: 'hunt6-review-reading', 'data-hunt-review-reading': '', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'grid grid-cols-1 gap-2 text-sm' },\n              h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.hunt6_first_call', 'Your committed first call'))"
+  },
+  {
+    "owner": "hunt-notebook-result-finding-number",
+    "old": "h('dd', { 'data-hunt-review-truth': reviewMark.type }, dh2MarkName(reviewMark))",
+    "new": "h('dd', { 'data-hunt-review-truth': reviewMark.type }, calls[reviewId] + '. ' + dh2MarkName(reviewMark))"
+  },
+  {
+    "owner": "hunt-notebook-previous-boundary",
+    "old": "'data-hunt-review-prev': true, disabled: selected <= 0, onClick: function () { chooseReview(reviewIds[selected - 1]); },",
+    "new": "'data-hunt-review-prev': true, disabled: selected <= 0, 'aria-controls': 'hunt6-review-reading', onClick: function () { if (selected <= 0) return; if (selected === 1) reviewEndpointFocusRef.current = true; chooseReview(reviewIds[selected - 1]); },"
+  },
+  {
+    "owner": "hunt-notebook-next-boundary",
+    "old": "'data-hunt-review-next': true, disabled: selected >= reviewIds.length - 1, onClick: function () { chooseReview(reviewIds[selected + 1]); },",
+    "new": "'data-hunt-review-next': true, disabled: selected >= reviewIds.length - 1, 'aria-controls': 'hunt6-review-reading', onClick: function () { if (selected >= reviewIds.length - 1) return; if (selected === reviewIds.length - 2) reviewEndpointFocusRef.current = true; chooseReview(reviewIds[selected + 1]); },"
+  },
+  {
+    "owner": "recorded-interval-unfused-shared-path",
+    "old": "            var hole = Math.max(6, w * (0.22 + 0.22 * part.bt));",
+    "new": "            var hole = Math.max(6, w * (0.22 + 0.22 * part.bt));\n            var unfusedPath = 'M' + x0 + ' ' + (sy + 1) + ' L' + (cx - fused / 2) + ' ' + (sy + 1) + ' M' + (cx + fused / 2) + ' ' + (sy + 1) + ' L' + x1 + ' ' + (sy + 1);"
+  },
+  {
+    "owner": "recorded-interval-unfused-two-tone-contrast",
+    "old": "              fused < w - 1 && h('path', { 'data-arc-interval-unfused': '', d: 'M' + x0 + ' ' + (sy + 1) + ' L' + (cx - fused / 2) + ' ' + (sy + 1) + ' M' + (cx + fused / 2) + ' ' + (sy + 1) + ' L' + x1 + ' ' + (sy + 1), stroke: isContrast ? '#ffff00' : '#f87171', strokeWidth: 3, strokeDasharray: '4 3' }),",
+    "new": "              fused < w - 1 && h('g', null,\n                h('path', { 'data-arc-interval-unfused-outline': '', d: unfusedPath, fill: 'none', stroke: '#ffffff', strokeWidth: 5, strokeDasharray: '4 3' }),\n                h('path', { 'data-arc-interval-unfused': '', d: unfusedPath, fill: 'none', stroke: isContrast ? '#000000' : '#0f172a', strokeWidth: 3, strokeDasharray: '4 3' })),"
+  },
+  {
+    "owner": "comparison-unfused-two-tone-contrast",
+    "old": "            if (fused < width - 1) els.push(h('path', { key: 'unfused', d: 'M' + (cx - width / 2) + ' ' + (y + 1) + ' H' + (cx - fused / 2) + ' M' + (cx + fused / 2) + ' ' + (y + 1) + ' H' + (cx + width / 2), stroke: '#f87171', strokeWidth: 3, strokeDasharray: '4 3' }));",
+    "new": "            if (fused < width - 1) {\n              var unfusedPath = 'M' + (cx - width / 2) + ' ' + (y + 1) + ' H' + (cx - fused / 2) + ' M' + (cx + fused / 2) + ' ' + (y + 1) + ' H' + (cx + width / 2);\n              els.push(h('g', { key: 'unfused' },\n                h('path', { 'data-arc-compare-unfused-outline': '', d: unfusedPath, fill: 'none', stroke: '#ffffff', strokeWidth: 5, strokeDasharray: '4 3' }),\n                h('path', { 'data-arc-compare-unfused': '', d: unfusedPath, fill: 'none', stroke: isContrast ? '#000000' : '#0f172a', strokeWidth: 3, strokeDasharray: '4 3' })));\n            }"
+  }
+]

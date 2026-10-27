@@ -218,7 +218,8 @@ describe('SkySchool flight chart gaps', () => {
     const tableAngle = explorer().querySelector('table tbody tr').children[4];
     expect(tableAngle.textContent).toBe('≈12°');
     expect(tableAngle.querySelector('[title]').getAttribute('title')).toBe('11.96°');
-    expect(explorer().textContent).toContain('flow states and exported angles use the saved angle before rounding');
+    expect(explorer().textContent).toContain('flow states and exports use the saved angle before rounding');
+    expect(explorer().querySelector('[data-flight-exact-angles="current"] [data-exact-angle="selected"]').textContent).toBe('11.96 degrees');
   });
 
   it('marks a rounded angle difference and exposes the saved subtraction', async () => {

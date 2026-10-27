@@ -26,17 +26,63 @@ function mounted(initial=R.start()){
  Object.defineProperty(Element.prototype,'scrollIntoView',{configurable:true,value:vi.fn()});
  Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(){this.open=true;}});
  Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:function(){this.open=false;this.dispatchEvent(new Event('close'));}});
- const host={container:document.querySelector('.scene-direct-tools'),tool:()=>tool,locked:()=>locked,getState:()=>s,cancel:vi.fn(),choose:vi.fn(id=>{tool=id;$('sceneKitchenTool').value=id;tools.render(s);})};
+ const host={container:document.querySelector('.scene-direct-tools'),tool:()=>tool,locked:()=>locked,getState:()=>s,cancel:vi.fn(),findStart:vi.fn(),choose:vi.fn(id=>{tool=id;$('sceneKitchenTool').value=id;tools.render(s);})};
  const tools=W.mountTools(host);
- const stageHost={cancel:host.cancel,resize:vi.fn(),view:vi.fn(),ended:()=>ended,apply:vi.fn()};
+ const stageHost={cancel:host.cancel,resize:vi.fn(),view:vi.fn(id=>{$('recipeScene').querySelector('canvas').dataset.cameraView=id;}),ended:()=>ended,apply:vi.fn(),restoreTool:vi.fn(id=>autoTool(id))};
  const stage=W.mountStage(stageHost);stage.render(s,false);host.choose.mockClear();host.cancel.mockClear();stageHost.resize.mockClear();
  function autoTool(id){tool=id;$('sceneKitchenTool').value=id;tools.render(s);}
- return {host,stageHost,tools,stage,original,state:()=>s,tool:()=>tool,autoTool,lock(value=true){locked=value;tools.render(s);},end(value=true){ended=value;stage.render(s,false);},setState(next,historical=false){s=next;tools.render(s);stage.render(s,historical);}};
+ return {host,stageHost,tools,stage,original,state:()=>s,tool:()=>tool,autoTool,lock(value=true){locked=value;tools.render(s);},end(value=true){ended=value;stage.render(s,false);},setState(next,historical=false,reset=false){s=next;tools.render(s);stage.render(s,historical,reset);}};
 }
 function station(name){document.querySelector('[data-tool-group="'+name+'"]').click();}
 function card(name){document.querySelector('[data-kitchen-tool="'+name+'"]').click();}
 function expand(){ $('expandKitchen').click();expect($('expandedKitchen').open).toBe(true); }
 function toggle(id){$(id).querySelector(':scope > summary').click();}
+function externalControls(id='keyboardTask'){
+ const panel=document.createElement('section');panel.id=id+'Lesson';panel.setAttribute('aria-labelledby',id+'Title');panel.innerHTML='<h3 id="'+id+'Title">Equivalent keyboard activity</h3><label for="'+id+'">Practice position</label><input id="'+id+'" type="range" min="0" max="10" value="5">';document.body.append(panel);return {panel,target:$(id)};
+}
+const returnButton=()=>document.querySelector('[data-control-return="button"]');
+
+describe('Equivalent controls return to their 3D activity',()=>{
+ it.each([true,false])('returns with original expansion %s, tool and view, without cooking',expanded=>{
+  const m=mounted(),{target}=externalControls(),before=JSON.stringify(m.state()),canvas=$('recipeScene').firstElementChild;m.autoTool('mince');canvas.dataset.cameraView='garlic';m.stageHost.cancelControls=vi.fn();if(expanded)expand();
+  m.stage.openControls('mince',()=>target.focus());expect(document.activeElement).toBe(target);expect($('expandedKitchen').open).toBe(false);expect(returnButton().textContent).toContain('Mince garlic');canvas.dataset.cameraView='bench';returnButton().focus();returnButton().click();
+  expect(document.activeElement).toBe($('sceneFindStart'));expect($('expandedKitchen').open).toBe(expanded);expect(m.stageHost.restoreTool).toHaveBeenCalledWith('mince');expect(m.stageHost.view).toHaveBeenCalledWith('garlic');expect(m.stageHost.cancelControls).toHaveBeenCalledOnce();expect(returnButton()).toBeNull();expect($('recipeScene').firstElementChild).toBe(canvas);expect(JSON.stringify(m.state())).toBe(before);expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it('retains the return route while ordinary cooking actions update the same activity',()=>{
+  const m=mounted(),{target}=externalControls();m.autoTool('mince');m.stage.openControls('mince',()=>target.focus());const button=returnButton(),next=R.act(m.state(),'wash');m.setState(next);m.stage.refreshControls();expect(returnButton()).toBe(button);button.click();expect(m.state()).toBe(next);expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it.each(['card','selector','automatic'])('drops an old return route after a %s tool change without waiting for a cooking render',method=>{
+  const m=mounted(),{target}=externalControls(),before=JSON.stringify(m.state());m.autoTool('cut');m.stage.openControls('cut',()=>target.focus());const old=returnButton();expect(old).not.toBeNull();
+  if(method==='card'){ $('sceneChooseTool').click();card('mince'); }
+  else if(method==='selector'){const select=$('sceneKitchenTool');select.addEventListener('change',()=>m.autoTool(select.value));m.stage.revealControls(select);select.focus();select.value='mince';select.dispatchEvent(new Event('change',{bubbles:true}));}
+  else m.autoTool('mince');
+  expect(m.tool()).toBe('mince');expect(returnButton()).toBeNull();old.click();expect(m.stageHost.restoreTool).not.toHaveBeenCalled();expect(m.stageHost.apply).not.toHaveBeenCalled();expect(JSON.stringify(m.state())).toBe(before);if(method==='automatic')expect(document.activeElement).toBe(target);
+ });
+ it('keeps the same return destination through repeated selections and renders of the same tool',()=>{
+  const m=mounted(),{target}=externalControls();m.autoTool('cut');m.stage.openControls('cut',()=>target.focus());const button=returnButton();m.host.choose('cut');$('sceneKitchenTool').dispatchEvent(new Event('change'));m.autoTool('cut');m.tools.render(m.state());expect(returnButton()).toBe(button);expect(document.activeElement).toBe(target);expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it('cannot restore an obsolete tool while an automatic selection is waiting for its deferred tool render',()=>{
+  const m=mounted(),{target}=externalControls(),before=JSON.stringify(m.state());m.autoTool('cut');m.stage.openControls('cut',()=>target.focus());$('sceneKitchenTool').value='mince';returnButton().focus();returnButton().click();expect($('sceneKitchenTool').value).toBe('mince');expect(returnButton()).toBeNull();expect(document.activeElement).toBe($('sceneFindStart'));expect(m.stageHost.restoreTool).not.toHaveBeenCalled();expect(m.stageHost.view).not.toHaveBeenCalled();expect(m.stageHost.apply).not.toHaveBeenCalled();expect(JSON.stringify(m.state())).toBe(before);
+ });
+ it.each(['fresh','replay','finished'])('clears return context for a %s cook without stealing external focus',reason=>{
+  const m=mounted(),{target}=externalControls();m.stage.openControls('cut',()=>target.focus());if(reason==='fresh')m.setState(R.start(),false,true);else if(reason==='replay')m.setState(m.state(),true);else m.end();expect(returnButton()).toBeNull();expect(document.activeElement).toBe(target);expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it('repairs return-button focus when graphics become unavailable',()=>{
+  const m=mounted(),{target}=externalControls();m.stage.openControls('cut',()=>target.focus());returnButton().focus();m.stage.set3D(false);expect(returnButton()).toBeNull();expect(document.activeElement).toBe($('sceneNotice'));expect($('sceneNotice').tabIndex).toBe(-1);expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it.each(['removed','hidden'])('drops an unavailable %s destination and repairs return-button focus',reason=>{
+  const m=mounted(),{panel,target}=externalControls();m.stage.openControls('cut',()=>target.focus());returnButton().focus();if(reason==='removed')target.remove();else target.hidden=true;m.stage.refreshControls();expect(returnButton()).toBeNull();expect(document.activeElement).toBe($('sceneFindStart'));expect(panel.isConnected).toBe(true);expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it('does not attach a return route when navigation remains inside the kitchen',()=>{
+  const m=mounted();m.stage.openControls('cut',()=>$('sceneChooseTool').focus());expect(returnButton()).toBeNull();expect(document.activeElement).toBe($('sceneChooseTool'));expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it('offers a return from a lesson that lives in the stage after leaving its expanded view',()=>{
+  const m=mounted(),{panel,target}=externalControls();$('kitchenStage').append(panel);m.autoTool('lid');expand();m.stage.openControls('lid',()=>target.focus());expect($('expandedKitchen').open).toBe(false);expect(panel.contains(returnButton())).toBe(true);expect(document.activeElement).toBe(target);returnButton().click();expect($('expandedKitchen').open).toBe(true);expect(document.activeElement).toBe($('sceneFindStart'));expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it('replaces an old destination with the new route without moving the reached focus',()=>{
+  const m=mounted(),first=externalControls('first'),second=externalControls('second');m.autoTool('cut');m.stage.openControls('cut',()=>first.target.focus());m.autoTool('mince');m.stage.openControls('mince',()=>second.target.focus());expect(document.querySelectorAll('[data-control-return="panel"]')).toHaveLength(1);expect(second.panel.contains(returnButton())).toBe(true);expect(first.panel.querySelector('[data-control-return="button"]')).toBeNull();expect(document.activeElement).toBe(second.target);expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+});
 
 describe('Focused kitchen tool navigation and continuity',()=>{
  it('places only compact station and selected-tool guidance above the kitchen while the complete tools stay in a closed native drawer',()=>{
@@ -105,7 +151,13 @@ describe('Scene-first stage, disclosures and keyboard routes',()=>{
   const m=mounted();document.documentElement.style.overflow='clip';expand();const event=new Event('cancel',{cancelable:true});$('expandedKitchen').dispatchEvent(event);expect(event.defaultPrevented).toBe(true);expect($('expandedKitchen').open).toBe(false);expect(document.documentElement.style.overflow).toBe('clip');expect(document.activeElement).toBe($('expandKitchen'));expect(m.stageHost.apply).not.toHaveBeenCalled();
  });
  it('exits before opening the existing keyboard tool route without stealing focus back from that route',()=>{
-  const m=mounted();m.stage.revealControls($('sceneKeyboardTools'));expand();const route=document.createElement('button');route.id='keyboardTask';document.body.append(route);$('sceneKeyboardTools').addEventListener('click',()=>route.focus());$('sceneKeyboardTools').click();expect($('expandedKitchen').open).toBe(false);expect(document.activeElement).toBe(route);expect(m.stageHost.apply).not.toHaveBeenCalled();
+  const m=mounted();m.autoTool('cut');m.stage.revealControls($('sceneKeyboardTools'));expand();const {target}=externalControls();$('sceneKeyboardTools').addEventListener('click',()=>m.stage.openControls('cut',()=>{expect($('expandedKitchen').open).toBe(false);target.focus();}));$('sceneKeyboardTools').click();expect($('expandedKitchen').open).toBe(false);expect(document.activeElement).toBe(target);expect(returnButton()).not.toBeNull();expect(m.stageHost.apply).not.toHaveBeenCalled();
+ });
+ it.each(['camera','burner','inspect'])('keeps the %s keyboard route inside the expanded stage',tool=>{
+  const m=mounted();m.autoTool(tool);m.stage.revealControls($('sceneKeyboardTools'));expand();
+  const target=document.createElement('button');target.id='localToolControl';$('kitchenStage').append(target);
+  $('sceneKeyboardTools').addEventListener('click',()=>m.stage.openControls(tool,()=>target.focus()));$('sceneKeyboardTools').click();
+  expect($('expandedKitchen').open).toBe(true);expect(document.activeElement).toBe(target);expect(returnButton()).toBeNull();expect(m.stageHost.apply).not.toHaveBeenCalled();
  });
  it('keeps text and graphics fallback controls available and closes expansion without applying any recipe action',()=>{
   const m=mounted(),before=JSON.stringify(m.state());expand();m.stage.set3D(false);expect($('expandedKitchen').open).toBe(false);expect($('expandKitchen').hidden).toBe(true);expect($('play').closest('[hidden]')).toBeNull();expect($('advance').closest('[hidden]')).toBeNull();expect($('sceneToolTray').hidden).toBe(true);expect($('sceneToolDrawer').hidden).toBe(true);expect(document.documentElement.style.overflow).toBe('');expect(JSON.stringify(m.state())).toBe(before);expect(m.stageHost.apply).not.toHaveBeenCalled();

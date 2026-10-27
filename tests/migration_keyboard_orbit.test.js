@@ -73,7 +73,7 @@ function fixture(seed = {}) {
   act(() => root.render(React.createElement(Component)));
   // Attribute selectors stay scoped to each fixture when two decks share the
   // production IDs; jsdom's simple-ID shortcut otherwise returns the first.
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   expect(stage).not.toBeNull();
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1], engine = fakeEngine(stage);
   engineRef.current = engine;
@@ -83,7 +83,7 @@ function fixture(seed = {}) {
     node(predicate) { return walk(tree, predicate)[0] || null; },
     action(name) { return ui.node(node => node.props?.['data-marked-pose-action'] === name); },
     click(node) { act(() => node.props.onClick()); }, mark() { ui.click(ui.action('mark')); }, check() { ui.click(ui.action('check')); },
-    cue() { return host.querySelector('[data-marked-comparison-check]'); }, field() { return host.querySelector('[id="migration-study-observation-note"]'); },
+    cue() { return host.querySelector('[data-marked-comparison-check]'); }, field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
     set(values) { act(() => { state = { ...state, ...values }; refresh(value => value + 1); }); },
     frame() { advance(engine, liveRef.current, num); },
     key(key, modifiers = {}, target = stage) {

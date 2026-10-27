@@ -260,14 +260,16 @@ function coverageFixture() {
   const write = (file, source) => { fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); fs.writeFileSync(path.join(root, file), source); };
   const guard = (name, count) => `function ${name}(){if(typeof window.__alloConfigureTrustedScript!=="function")throw Error("unavailable");${'window.__alloConfigureTrustedScript(script,"https://reviewed.example/asset.js");'.repeat(count)}}\n`;
   const whisper = 'function _getWhisperPipeline(){return window.__alloLoadVerifiedRuntime("transformers331");}\n';
+  const compare = 'const popup=' + JSON.stringify('<script>function _ensurePdfjs(){return (async function(){var broker=window.opener;if(typeof broker.__alloFetchTrustedScriptText!=="function"||typeof broker.__alloGetVerifiedRuntimeAsset!=="function")throw Error("unavailable");var code=await broker.__alloFetchTrustedScriptText("https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js","pdfjs.main");var asset=await broker.__alloGetVerifiedRuntimeAsset("pdfjs","worker");var scriptUrl=URL.createObjectURL(new Blob([code]));script.src=scriptUrl;pdfjs.GlobalWorkerOptions.workerSrc=asset.url;})();}function _renderPdfInto(){pdfjs.getDocument({isEvalSupported:false});}</script>') + ';\n';
+  const lumen = 'function lazyLoadPdfJs(){return (async function(){var configure=window.__alloConfigureTrustedScript;var getAsset=window.__alloGetVerifiedRuntimeAsset;if(typeof configure!=="function"||typeof getAsset!=="function")throw Error("unavailable");var asset=await getAsset("pdfjs","worker");configure(script,"https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js");pdfjs.GlobalWorkerOptions.workerSrc=asset.url;})();}function extractPdfText(){pdfjs.getDocument({isEvalSupported:false});}\n';
   for (const item of coverage.COMPILED) {
     const document = item.document ? 'function documentRuntime(){window.__alloGetVerifiedRuntimeAsset("pdfjs");window.__alloGetVerifiedRuntimeAsset("tesseract");window.__alloCreateVerifiedWorker("raster");window.__alloFetchTrustedScriptText("axe");const opts={workerPath:"blob:fixture"};'
       + '_configureTrustedDocumentScript(script,url);'.repeat(8) + 'pdfjsLib.getDocument({isEvalSupported:false});'.repeat(10) + '}\n' : '';
-    const code = item.loaders.map(([name, count]) => guard(name, count)).join('') + (item.whisper ? whisper : '') + document;
+    const code = item.loaders.map(([name, count]) => guard(name, count)).join('') + (item.whisper ? whisper : '') + document + (item.comparePdf ? compare : '');
     write(item.source, code); write(item.compiled, code); write('desktop/web-app/public/' + item.compiled, code); write('built/' + item.compiled, code);
   }
   for (const item of coverage.STEM) {
-    const code = item.loaders.map(([name, count]) => guard(name, count)).join('');
+    const code = item.lumenPdf ? lumen : item.loaders.map(([name, count]) => guard(name, count)).join('');
     write(item.source, code); write('desktop/web-app/public/' + item.source, code); write('built/' + item.source, code);
   }
   for (const item of coverage.RUNTIME) {
@@ -280,7 +282,7 @@ function coverageFixture() {
 
 describe('read-only private loader publication gate', () => {
   it('accepts hardened callable markers and exact source/compiled/public/built fixtures', () => {
-    const f = coverageFixture(); expect(f.check().ok).toBe(true);
+    const f = coverageFixture(), report = f.check(); expect(report.ok, report.errors.join('\n')).toBe(true);
     expect(coverage.assertPrivateLoaderCoverage({ root: f.root, buildDir: f.buildDir }).errors).toEqual([]);
   });
   it('blocks uncompiled canonical hardening even when source is guarded', () => {
@@ -295,7 +297,7 @@ describe('read-only private loader publication gate', () => {
     const f = coverageFixture(); f.write('desktop/web-app/public/utils_pure_module.js', f.read('utils_pure_module.js') + '// stale');
     expect(f.check().errors.some(error => error.includes('desktop/web-app/public/utils_pure_module.js: bytes differ'))).toBe(true);
   });
-  it('keeps raw STEM parity scoped to the six reviewed canonical modules', () => {
+  it('keeps raw STEM parity scoped to the reviewed canonical modules', () => {
     const f = coverageFixture(); f.write('stem_lab/unrelated.js', 'new work'); f.write('desktop/web-app/public/stem_lab/unrelated.js', 'old work');
     expect(f.check().ok).toBe(true);
     f.write('desktop/web-app/public/stem_lab/stem_tool_birdlab.js', 'old reviewed loader');
@@ -306,6 +308,18 @@ describe('read-only private loader publication gate', () => {
     const unsafe = f.read(file).replace('function ConceptQuestTeacherControlsLoader(){', 'function ConceptQuestTeacherControlsLoader(){script.src="unsigned-fallback.js";');
     f.write(file, unsafe); f.write('desktop/web-app/public/' + file, unsafe); f.write('built/' + file, unsafe);
     expect(f.check().errors.some(error => error.startsWith(file + ':') && error.includes('rawSrcWrites=1'))).toBe(true);
+  });
+  it.each([
+    ['a dynamic import', 'return import("https://unreviewed.invalid/fallback.js");', 'legacyImports=1'],
+    ['Object.assign src', 'Object.assign(script,{src:"https://unreviewed.invalid/fallback.js"});', 'rawSrcWrites=1'],
+    ['Reflect.set src', 'Reflect.set(script,"src","https://unreviewed.invalid/fallback.js");', 'rawSrcWrites=1'],
+  ])('blocks a guarded primary with %s hidden in a fallback callback', (_name, fallback, marker) => {
+    const f = coverageFixture(), file = 'utils_pure_module.js';
+    const unsafe = f.read(file).replace('function _dsBridge(){', 'function _dsBridge(){script.onerror=function(){' + fallback + '};');
+    f.write(file, unsafe); f.write('desktop/web-app/public/' + file, unsafe); f.write('built/' + file, unsafe);
+    const report = f.check();
+    expect(report.errors.some(error => error.startsWith(file + ':') && error.includes(marker))).toBe(true);
+    expect(report.errors.some(error => error.startsWith('utils_pure_source.jsx:'))).toBe(false);
   });
   it('does not accept unguarded raw modules merely because their public copies match', () => {
     const f = coverageFixture(), file = 'stem_lab/stem_tool_universe.js', old = 'function loadUniverseFlight(){script.src="old.js";}';
@@ -341,5 +355,28 @@ describe('read-only private loader publication gate', () => {
     let unsafe = f.read(file); for (let index = 0; index < 4; index++) unsafe = unsafe.replace('_configureTrustedDocumentScript(script,url);', '');
     f.write(file, unsafe); f.write('desktop/web-app/public/' + file, unsafe); f.write('built/' + file, unsafe);
     expect(f.check().errors.some(error => error.startsWith(file + ':') && error.includes('signedCalls=4'))).toBe(true);
+  });
+  it('blocks a compiled Compare popup that loses its opener broker while canonical source stays hardened', () => {
+    const f = coverageFixture(), file = 'view_pdf_audit_module.js';
+    const unsafe = f.read(file).replaceAll('__alloGetVerifiedRuntimeAsset', '__legacyAsset');
+    f.write(file, unsafe); f.write('desktop/web-app/public/' + file, unsafe); f.write('built/' + file, unsafe);
+    const report = f.check();
+    expect(report.errors.some(error => error.startsWith(file + ':') && error.includes('Verified PDF broker incomplete'))).toBe(true);
+    expect(report.errors.some(error => error.startsWith('view_pdf_audit_source.jsx:'))).toBe(false);
+  });
+  it('rejects a Compare popup remote-script assignment beside otherwise valid broker markers', () => {
+    const f = coverageFixture(), file = 'view_pdf_audit_source.jsx';
+    f.write(file, f.read(file).replace('script.src=scriptUrl;', 'script.src=remoteUrl;'));
+    expect(f.check().errors.some(error => error.startsWith(file + ':') && error.includes('unsafeWrites=1'))).toBe(true);
+  });
+  it.each(['view_pdf_audit_source.jsx', 'stem_lab/stem_tool_lumen.js'])('requires the PDF evaluation ceiling in %s', file => {
+    const f = coverageFixture(); f.write(file, f.read(file).replace('isEvalSupported:false', 'isEvalSupported:true'));
+    expect(f.check().errors.some(error => error.startsWith(file + ':') && error.includes('unsafePdf=1'))).toBe(true);
+  });
+  it('blocks a Lumen worker source that stops using the verified asset lease', () => {
+    const f = coverageFixture(), file = 'stem_lab/stem_tool_lumen.js';
+    const unsafe = f.read(file).replace('workerSrc=asset.url', 'workerSrc=workerUrl');
+    f.write(file, unsafe); f.write('desktop/web-app/public/' + file, unsafe); f.write('built/' + file, unsafe);
+    expect(f.check().errors.some(error => error.startsWith(file + ':') && error.includes('unsafeWrites=1'))).toBe(true);
   });
 });

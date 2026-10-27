@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -196,7 +197,7 @@ describe('Qualification opening direction bench', () => {
   });
 
   it('restores every original qualification byte after removing only the one local hook, one helper and one render call', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n');
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8')).replace(/\r\n/g, '\n');
     let region = source.slice(source.indexOf('function WelderQualPrep('), source.indexOf('function PipeWeldingDeepDive('));
     expect(region.match(/var openingDirectionState = useState\(0\);/g)).toHaveLength(1);
     expect(region.match(/function renderOpeningDirectionBench\(\)/g)).toHaveLength(1);

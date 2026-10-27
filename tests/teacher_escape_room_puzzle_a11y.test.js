@@ -22,7 +22,7 @@ describe('student Escape Room puzzle dialog accessibility', () => {
     const source = files[0][1];
     expect(source).toContain('openPuzzleDialog(event, obj.id)');
     expect(source).toContain('onClick={closePuzzleDialog}');
-    expect(source).toContain("closePuzzleDialog();\n        setUserInput('');");
+    expect(source).toMatch(/closePuzzleDialog\(\);\r?\n\s+setUserInput\(''\);/);
     expect(source).not.toContain('onClick={() => setSelectedPuzzle(null)}');
   });
 

@@ -32,7 +32,10 @@ describe('Immersive Reader word-level read-along regressions', () => {
       expect(entry.source, entry.file).toContain('requestAnimationFrame(updateAudioSweep)');
       expect(entry.source, entry.file).toContain('audio.playbackRate = Math.max(0.5, Math.min(2, Number(voiceSpeed) || 1))');
       expect(entry.source, entry.file).toContain('const fallbackRate = Math.max(0.5, Math.min(2, 0.95 * (Number(voiceSpeed) || 1)))');
-      expect(entry.source, entry.file).toContain('selectedVoice, voiceSpeed, leveledTextLanguage, currentUiLanguage]');
+      // Saved text owns its speech language even when the app/default changes.
+      expect(entry.source, entry.file).toContain('selectedVoice, voiceSpeed, getSavedResourceLanguage(generatedContent)]');
+      expect(entry.source, entry.file).toContain('const speechLanguage = sentenceSegments[chunkReaderIdx]?.language || getSavedResourceLanguage(generatedContent);');
+      expect(entry.source, entry.file).toContain('language: speechLanguage,');
     }
   });
 });

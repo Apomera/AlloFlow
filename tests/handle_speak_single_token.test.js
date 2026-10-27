@@ -162,11 +162,16 @@ describe('handleSpeak: a one-token sentence must never crash the click', () => {
     });
   });
 
-  it('the glossary key path still translates (the reason t() is called at all)', async () => {
+  it('translates UI speech keys while preserving authored glossary words', async () => {
     const deps = makeDeps();
-    await PhaseK.handleSpeak('known.key', 'glossary-term', 0, deps, true);
+    await PhaseK.handleSpeak('known.key', 'help-key', 0, deps, true);
     const spokenTexts = deps.calls.callTTS.concat(deps.calls.playSequence.flat().map(String));
     expect(spokenTexts.join(' ')).toContain('translated value');
+    const authoredDeps = makeDeps();
+    await PhaseK.handleSpeak('known.key', 'glossary-term', 0, authoredDeps, true);
+    const authoredTexts = authoredDeps.calls.callTTS.concat(authoredDeps.calls.playSequence.flat().map(String));
+    expect(authoredTexts.join(' ')).toContain('known.key');
+    expect(authoredTexts.join(' ')).not.toContain('translated value');
   });
 });
 

@@ -65,7 +65,7 @@ function fixture(seed = {}, options = {}) {
     open(number = 1) { ui.panel().open = true; host.querySelector('[data-flight-challenge-history]').open = true; ui.details(number).open = true; ui.click('edit', number); },
     type(value) { act(() => { enterText(ui.input(), value); }); },
     invoke(node, element) { act(() => { node.props.onClick({ currentTarget: element }); }); },
-    control(label, value) { const element = [...host.querySelectorAll('textarea')].find(node => (node.id === label || node.getAttribute('aria-label') === label)); act(() => { enterText(element, value); }); },
+    control(label, value) { const element = [...host.querySelectorAll('textarea')].find(node => (node.getAttribute('data-migration-id') === label || node.getAttribute('aria-label') === label)); act(() => { enterText(element, value); }); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(n => n + 1); }); },
     select(goal) { act(() => { host.querySelector('[data-flight-challenge="' + goal + '"]').click(); }); },
     remove(number) { act(() => { ui.row(number).querySelector('.migration-mission-remove').click(); }); },

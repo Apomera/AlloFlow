@@ -175,7 +175,7 @@ test('Migration opt-in speed arrows use one actual geometry scale for tailwind, 
   await expect(page.locator('[data-speed-role=air]')).toHaveText('Airspeed: 40 mph');
   await expect(page.locator('[data-speed-role=wind]')).toHaveText('Along-route wind: +22.4 mph');
   await expect(page.locator('[data-speed-role=ground]')).toHaveText('Ground speed: 62 mph');
-  await expect(page.locator('#migration-flight-stage')).toHaveAttribute('aria-label', /Ground speed: 62 mph/);
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toHaveAttribute('aria-label', /Ground speed: 62 mph/);
   for (const camera of ['Chase', 'Aerial', 'Side']) {
     await page.getByRole('button', { name: camera, exact: true }).click(); await frames(page);
     const state = await vectors(page); expectSpeeds(state, 40, 10); reviewed.push(state);
@@ -226,7 +226,7 @@ function retainedLearning(data: Record<string, unknown>) {
 async function keyboardReview(page: Page, name: string, expected: Record<string, unknown>) {
   const button = page.getByRole('button', { name, exact: true }); await button.focus(); await page.keyboard.press('Enter'); await frames(page);
   const data = await saved(page); expect(data).toMatchObject({ ...expected, flightCamera: 'chase', flightPaused: true, flightShowSpeedVectors: true });
-  await expect(page.locator('#migration-flight-stage')).toBeFocused();
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toBeFocused();
   return data;
 }
 

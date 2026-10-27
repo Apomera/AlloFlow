@@ -30,7 +30,7 @@ async function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { renderCount++; refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   if (!stage) throw new Error('Expected the native migration stage');
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const pose = { userData: { captured: false, captureVersion: 0 }, clearPose: vi.fn() };
@@ -56,7 +56,7 @@ async function fixture(seed = {}, options = {}) {
     side() { return host.querySelector('[data-scene-study-side]'); },
     opposite() { return host.querySelector('[data-scene-study-action="opposite"]'); },
     oldOpposite() { return host.querySelector('[data-study-cycle-action="opposite"]'); },
-    field() { return host.querySelector('[id="migration-study-observation-note"]'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
     click(element) { act(() => { element.click(); }); },
     choose(index) { ui.click(host.querySelector('[data-study-cycle-position="' + index + '"]')); },
     follow(side) { ui.click(host.querySelector('[data-wingtip-follow-side="' + side + '"]')); },
@@ -118,7 +118,7 @@ describe('Study identity beside the canvas preserves the unobstructed model view
     expect(ui.overlay().firstElementChild.classList.contains('migration-flight-route')).toBe(true);
     expect(getComputedStyle(ui.overlay()).justifyContent).toBe('flex-end');
     expect(ui.stage.querySelectorAll('.migration-scene-tools button')).toHaveLength(2);
-    expect(ui.host.querySelectorAll('[id="migration-flight-stage"]')).toHaveLength(1);
+    expect(ui.host.querySelectorAll("[data-migration-id=\"migration-flight-stage\"]")).toHaveLength(1);
   });
 
   it.each([
@@ -167,7 +167,7 @@ describe('Study identity beside the canvas preserves the unobstructed model view
     for (const button of ui.buttons()?.querySelectorAll('button') || []) {
       expect(button.type).toBe('button');
       expect(getComputedStyle(button).minHeight).toBe('44px');
-      expect(button.getAttribute('aria-controls')).toBe(button === noteAction ? 'migration-study-observation-note' : 'migration-flight-stage');
+      expect(button.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="' + (button === noteAction ? 'migration-study-observation-note' : 'migration-flight-stage') + '"]').id);
     }
   });
 

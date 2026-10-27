@@ -320,7 +320,7 @@ describe('published lesson permalinks', () => {
     const sample = JSON.parse(readFileSync('allopacks/academic_discourse_reading_space_grade6.allopack.json', 'utf8')), before = JSON.stringify(sample);
     const parse = html => new DOMParser().parseFromString(html, 'text/html');
     const core = parse(await catalog._generateCatalogPreview(sample, entry, 'core'));
-    expect(core.querySelectorAll('[data-alloflow-resource-id]')).toHaveLength(4);
+    expect(core.querySelectorAll('[data-alloflow-resource-id]')).toHaveLength(5);
     const single = parse(await catalog._generateCatalogPreview(sample, entry, 'resource:reading-space-glossary'));
     expect(single.querySelectorAll('[data-alloflow-resource-id]')).toHaveLength(1);
     expect(single.querySelector('h1').textContent).toContain('Words for Thinking Together');

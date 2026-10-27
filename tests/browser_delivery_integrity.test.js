@@ -383,9 +383,10 @@ describe('final built application delivery gate', () => {
     const source = fs.readFileSync('desktop/web-app/postbuild.js', 'utf8');
     const module = { exports: {} };
     let seen;
+    const postbuildRequire = createRequire(path.resolve('desktop/web-app/postbuild.js'));
     const cliRequire = (name) => name === '../../dev-tools/build_browser_delivery_manifest.cjs'
       ? { assertBuiltDelivery(input) { seen = input; throw new Error('required default delivery gate'); } }
-      : require(name);
+      : postbuildRequire(name);
     cliRequire.main = module;
     expect(() => vm.runInNewContext(source, {
       require: cliRequire, module, __dirname: path.resolve('desktop/web-app'), console,

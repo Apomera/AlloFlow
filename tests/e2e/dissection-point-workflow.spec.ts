@@ -235,7 +235,7 @@ test('specimen changes and confirmed reset clear measurement endpoints and activ
   test.skip(baseline); const saved = { rulerMode: true, rulerStart: firstAnchor, rulerEnd: lastAnchor, annotations: [{ ...firstAnchor, type: 'dot' }] };
   await mount(page, saved); await page.getByRole('tab', { name: /Select specimen: Earthworm/ }).click();
   await expect.poll(async () => (await state(page)).specimen).toBe('earthworm'); let d = await state(page); expect(d.rulerStart || null).toBeNull(); expect(d.rulerEnd || null).toBeNull(); expect(d.rulerMode).toBe(false); expect(d.annotateMode).toBe(false); expect(d.annotations || []).toEqual([]);
-  await harness.unmount(page); await mount(page, saved); await page.getByRole('button', { name: 'Reset progress for this specimen', exact: true }).focus(); await page.keyboard.press('Enter');
+  await harness.unmount(page); await mount(page, saved); await page.getByRole('button', { name: /Reset specimen$/ }).focus(); await page.keyboard.press('Enter');
   await expect(page.locator('#diss-reset-confirm')).toBeFocused(); await page.keyboard.press('Space');
   d = await state(page); expect(d.rulerStart || null).toBeNull(); expect(d.rulerEnd || null).toBeNull(); expect(d.rulerMode).toBe(false); expect(d.annotateMode).toBe(false); expect(d.annotations || []).toEqual([]);
 });

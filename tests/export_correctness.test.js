@@ -26,9 +26,11 @@ const mdInline = (content) => {
 
 describe('M8 — figcaption description/purpose are escaped', () => {
   it('escapes desc and purpose in the figcaption (not just the alt)', () => {
-    expect(src).toContain("<span aria-hidden=\"true\">${desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>");
-    // (2026-10-19: the "Purpose:" label is wrapped <span lang="en">; the purpose text stays escaped)
-    expect(src.includes("Purpose:</span> ' + purpose.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')"), 'purpose escaped').toBe(true);
+    // 2026-10-26: escaped by _alloEscapeTextOnce (& < > escaped, an existing entity not doubled), and the
+    // "Purpose:" line left the delivered caption (Aaron, option B), so no purpose text is interpolated there.
+    expect(src.includes('<span aria-hidden="true">${_alloEscapeTextOnce(desc)}</span></figcaption>'), 'desc escaped').toBe(true);
+    expect(src.includes(".replace(/</g, '&lt;').replace(/>/g, '&gt;');"), 'helper escapes < and >').toBe(true);
+    expect(/<\/span>\$\{purpose \?/.test(src), 'no raw purpose in the caption').toBe(false);
   });
 });
 

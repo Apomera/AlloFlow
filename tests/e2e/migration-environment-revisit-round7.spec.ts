@@ -159,7 +159,7 @@ test('Migration direct anatomy markers select the visible part, while drag, canc
   const primary = await marker(page, 'primaries');
   await page.mouse.click(primary.x, primary.y); await frames(page);
   expect((await state(page)).pose.region).toBe('primaries');
-  await expect(page.locator('#migration-study-observation-part')).toHaveText('Primary feathers');
+  await expect(page.locator("[data-migration-id=\"migration-study-observation-part\"]")).toHaveText('Primary feathers');
   await expect(page.locator('[data-study-region="primaries"]')).toHaveAttribute('aria-pressed', 'true');
   expect((await state(page)).markers.find((item: any) => item.id === 'primaries')?.focused).toBe(true);
 

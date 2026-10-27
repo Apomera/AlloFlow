@@ -23,7 +23,7 @@ async function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; return tool.render(ctx); }
   act(() => root.render(React.createElement(Component)));
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = { host: stage, speciesId: state.flightSpecies, formationMode: 'natural', season: 'fall',
     time: 1.3, wingStepSerial: state.flightWingStep, wingStepPhase: .7, contextLost: false,
@@ -35,7 +35,7 @@ async function fixture(seed = {}, options = {}) {
     get state() { return state; }, get live() { return liveRef.current; },
     strip: () => host.querySelector('[data-scene-study-actions]'),
     turn: () => host.querySelector('[data-scene-study-action="half-turn"]'),
-    note: () => host.querySelector('#migration-study-observation-note'),
+    note: () => host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"),
     click() { act(() => { ui.turn().focus(); ui.turn().click(); }); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(n => n + 1); }); },
     choose(index) { act(() => host.querySelector('[data-study-cycle-position="' + index + '"]').click()); },
@@ -63,8 +63,8 @@ describe('Turn the migration Study view without restarting an observation', () =
     const ui = await fixture(), button = ui.turn();
     expect(ui.strip().previousElementSibling).toBe(ui.stage); expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button');
     expect(button.textContent).toBe('Turn view 180°'); expect(button.disabled).toBe(false); expect(getComputedStyle(button).minHeight).toBe('44px');
-    expect(button.getAttribute('aria-controls')).toBe('migration-flight-stage'); expect(button.getAttribute('aria-describedby')).toBe('migration-study-turn-help');
-    expect(ui.host.querySelector('#migration-study-turn-help').textContent).toContain('Pause and choose Profile'); expect(ui.writes).toEqual([]);
+    expect(button.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id); expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-turn-help"]').id);
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-turn-help\"]").textContent).toContain('Pause and choose Profile'); expect(ui.writes).toEqual([]);
   });
   it.each([[90, -90], [-90, 90], [35, -145], [-145, 35], [0, -180], [180, 0], [-180, 0]])('turns %s to %s and returns to the equivalent orientation', async (start, target) => {
     const ui = await fixture({ flightStudyYaw: start, ...authored() }), before = JSON.parse(JSON.stringify(ui.state));

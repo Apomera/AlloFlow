@@ -9,6 +9,7 @@ const inputs = (patch = {}) => ({ calcPreset: 0, calcSpeed: 100, calcAltitude: 0
 const reference = (patch = {}) => inputs({ calcSpeed: 50, ...patch });
 const action = name => host.querySelector('[data-flight-calculator-reference-action="' + name + '"]');
 const comparison = () => host.querySelector('[data-flight-calculator-compare]');
+const referenceStatus = () => host.querySelector('[data-flight-calculator-reference-status]');
 const range = label => host.querySelector('input[type="range"][aria-label="' + label + '"]');
 const button = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text);
 function handler(node, name = 'onClick') {
@@ -58,6 +59,7 @@ async function mount(seed = {}, options = {}) {
       if (options.delayed) pending.push(apply); else apply();
     };
     return tool.render(makeCtx({ toolData: data, setToolData: options.legacyHost ? undefined : submit, awardXP: xp,
+      t: (key, fallback) => options.translations?.[key] || fallback || key,
       update: (id, name, value) => submit(old => ({ ...old, [id]: { ...old[id], [name]: value } })),
       updateMulti: (id, values) => submit(old => ({ ...old, [id]: { ...old[id], ...values } })),
     }));
@@ -79,6 +81,105 @@ afterEach(async () => {
 });
 
 describe('Sky School calculator reference ownership', () => {
+  it.each([
+    [null, 'No reference conditions are saved.', true],
+    [{ calcSpeed: 50 }, 'Saved reference conditions are unavailable. Save a new reference or clear them.', false],
+    [reference(), 'Reference conditions are saved for comparison.', false],
+  ])('describes the accepted reference state %j without a fabricated action acknowledgement', async (calcReference, text, unavailable) => {
+    await mount({ calcReference });
+    expect(referenceStatus()?.textContent).toBe(text);
+    expect(referenceStatus().getAttribute('role')).toBe('status');
+    expect(referenceStatus().getAttribute('aria-live')).toBe('polite');
+    expect(referenceStatus().getAttribute('aria-atomic')).toBe('true');
+    expect(referenceStatus().querySelector('button,input,a')).toBeNull();
+    expect(action('clear').getAttribute('aria-disabled')).toBe(String(unavailable));
+    expect(action('clear').disabled).toBe(false);
+    expect(latest.calcReference).toEqual(calcReference);
+  });
+
+  it('keeps clear focus and a stable status after an accepted clear, with repeated unavailable clears doing no work', async () => {
+    await mount({}, { delayed: true, strict: true });
+    const clear = action('clear'), status = referenceStatus();
+    await run(() => { clear.focus(); clear.click(); });
+    expect(pending).toHaveLength(1);
+    expect(status?.textContent).toBe('Reference conditions are saved for comparison.');
+    await flush();
+    expect(document.activeElement).toBe(clear);
+    expect(action('clear')).toBe(clear); expect(referenceStatus()).toBe(status);
+    expect(status.textContent).toBe('No reference conditions are saved.');
+    expect(clear.disabled).toBe(false); expect(clear.getAttribute('aria-disabled')).toBe('true');
+    const accepted = copy(latest);
+    await run(() => { clear.click(); handler(clear)(); });
+    expect(pending).toHaveLength(0); expect(latest).toEqual(accepted);
+    expect(document.activeElement).toBe(clear); expect(referenceStatus()).toBe(status);
+  });
+
+  it.each([false, true])('reports only accepted save and clear prefixes in a delayed chain; legacy host: %s', async legacyHost => {
+    await mount({ calcReference: null }, { delayed: true, strict: true, cloneAtCommit: true, legacyHost });
+    const status = referenceStatus(), save = handler(action('save')), clear = handler(action('clear'));
+    expect(status?.textContent).toBe('No reference conditions are saved.');
+    await act(async () => { save(); clear(); clear(); });
+    expect(pending).toHaveLength(2);
+    await run(poke); expect(referenceStatus()).toBe(status);
+    expect(status.textContent).toBe('No reference conditions are saved.');
+    await commit(); expect(status.textContent).toBe('Reference conditions are saved for comparison.');
+    expect(action('clear').getAttribute('aria-disabled')).toBe('false');
+    await flush(); expect(status.textContent).toBe('No reference conditions are saved.');
+    expect(action('clear').getAttribute('aria-disabled')).toBe('true');
+    expect(api.normalizeFlightCalculatorInputs(latest)).toEqual(inputs());
+  });
+
+  it('ignores native Clear activation while its accepted empty state remains unavailable during a pending Save', async () => {
+    await mount({ calcReference: null }, { delayed: true, strict: true });
+    await run(() => action('save').click()); expect(pending).toHaveLength(1);
+    const clear = action('clear');
+    expect(clear.getAttribute('aria-disabled')).toBe('true');
+    await run(() => { clear.focus(); clear.click(); });
+    expect(pending).toHaveLength(1);
+    expect(referenceStatus().textContent).toBe('No reference conditions are saved.');
+    await flush(); expect(latest.calcReference).toEqual(inputs());
+    expect(document.activeElement).toBe(clear);
+    expect(clear.getAttribute('aria-disabled')).toBe('false');
+    await run(() => clear.click()); await flush();
+    expect(latest.calcReference).toBeNull();
+  });
+
+  it.each(['save', 'clear'])('does not claim a delayed %s succeeded after an incompatible host replacement', async name => {
+    await mount({ calcReference: name === 'save' ? null : reference() }, { delayed: true });
+    const status = referenceStatus(), before = status?.textContent;
+    expect(status).not.toBeNull();
+    await run(handler(action(name))); await patch({ calcSpeed: 125 });
+    expect(referenceStatus()).toBe(status); expect(status?.textContent).toBe(before);
+    await flush(); expect(referenceStatus()).toBe(status); expect(status?.textContent).toBe(before);
+    expect(latest.calcReference).toEqual(name === 'save' ? null : reference());
+  });
+
+  it('clears unusable stored conditions and preserves the existing comparison-change feedback for valid references', async () => {
+    await mount({ calcReference: { calcSpeed: 50 } });
+    expect(referenceStatus()?.textContent).toContain('unavailable');
+    await run(handler(action('clear')));
+    expect(referenceStatus().textContent).toBe('No reference conditions are saved.');
+    await run(handler(action('save')));
+    const status = referenceStatus(), changed = comparison().querySelector('[role="status"]');
+    expect(changed.textContent).toContain('Changed: 0');
+    await run(slider('True airspeed (kts)', 125));
+    expect(referenceStatus()).toBe(status); expect(status.textContent).toBe('Reference conditions are saved for comparison.');
+    expect(comparison().querySelector('[role="status"]')).toBe(changed);
+    expect(changed.textContent).toContain('Changed: 1');
+  });
+
+  it('localizes the accepted reference states without altering saved conditions', async () => {
+    await mount({ calcReference: { calcSpeed: 50 } }, { translations: {
+      'stem.flightsim.calculator_reference_invalid_status': 'Référence indisponible.',
+      'stem.flightsim.calculator_reference_empty_status': 'Aucune référence enregistrée.',
+      'stem.flightsim.calculator_reference_saved_status': 'Référence enregistrée pour comparaison.',
+    } });
+    expect(referenceStatus()?.textContent).toBe('Référence indisponible.');
+    await run(handler(action('clear'))); expect(referenceStatus().textContent).toBe('Aucune référence enregistrée.');
+    await run(handler(action('save'))); expect(referenceStatus().textContent).toBe('Référence enregistrée pour comparaison.');
+    expect(latest.calcReference).toEqual(inputs());
+  });
+
   it.each(['save', 'clear'].flatMap(name => ['committed', 'pending'].flatMap(timing =>
     ['inputs', 'reference', 'view'].map(kind => [name, timing, kind]))))
     ('rejects an old %s after a %s host replacement of %s', async (name, timing, kind) => {

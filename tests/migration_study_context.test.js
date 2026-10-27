@@ -73,7 +73,7 @@ function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { renderCount++; refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = makeEngine(stage, { speciesId: state.flightSpecies || 'canada_goose',
     formationMode: state.flightFormation || 'natural', season: state.flightSeason || 'fall', wingStepSerial: state.flightWingStep });
@@ -89,11 +89,11 @@ function fixture(seed = {}, options = {}) {
     follow(side = 0) { ui.click(ui.node(node => node.props?.['data-wingtip-follow-side'] === side)); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(value => value + 1); }); },
     flushOne() { act(() => { state = { ...state, ...queued.shift() }; refresh(value => value + 1); }); },
-    context() { return host.querySelector('#migration-study-current-context'); },
+    context() { return host.querySelector("[data-migration-id=\"migration-study-current-context\"]"); },
     cycle() { return host.querySelector('[data-study-context-cycle]'); },
     side() { return host.querySelector('[data-study-context-side]'); },
     badge() { return host.querySelector('[data-study-stage-cycle-position]'); },
-    field() { return host.querySelector('#migration-study-observation-note'); }
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); }
   };
   ui.set({}); return ui;
 }
@@ -179,8 +179,8 @@ describe('Read-only current 3D study context', () => {
     expect(inspect[0].getAttribute('data-study-action')).toBe('inspect-current-view');
     expect(inspect[0].textContent).toBe('Inspect current 3D view');
     expect(inspect[0].disabled).toBe(false);
-    expect(inspect[0].getAttribute('aria-controls')).toBe('migration-flight-stage');
-    expect(ui.field().getAttribute('aria-describedby').split(/\s+/)).toContain('migration-study-current-context');
+    expect(inspect[0].getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id);
+    expect(ui.field().getAttribute('aria-describedby').split(/\s+/)).toContain(ui.host.querySelector('[data-migration-id="migration-study-current-context"]').id);
   });
 
   it('says no numbered choice is selected without inferring where the rendered wing lies', () => {

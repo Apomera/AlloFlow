@@ -66,7 +66,7 @@ function fixture(seed = {}, options = {}) {
     refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree;
   }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = fakeEngine(stage, { speciesId: state.flightSpecies || 'canada_goose', formationMode: state.flightFormation || 'natural',
     season: state.flightSeason || 'fall', wingStepSerial: state.flightWingStep });
@@ -148,8 +148,8 @@ describe('Study exact illustrative cycle positions', () => {
     for (const [index, button] of ui.positions().entries()) {
       expect(button.type).toBe('button'); expect(button.props.type).toBe('button');
       expect(button.props.children).toBe(index + 1); expect(button.props['aria-label']).toBe(`Cycle position ${index + 1} of 8`);
-      expect(button.props['aria-pressed']).toBe('false'); expect(button.props['aria-controls']).toBe('migration-flight-stage');
-      expect(button.props['aria-describedby']).toBe('migration-study-cycle-help');
+      expect(button.props['aria-pressed']).toBe('false'); expect(button.props['aria-controls']).toBe(ui.node(node => node.props?.['data-migration-id'] === 'migration-flight-stage').props.id);
+      expect(button.props['aria-describedby']).toBe(ui.node(node => node.props?.['data-migration-id'] === 'migration-study-cycle-help').props.id);
     }
     expect(ui.host.textContent).toContain('Predict how positions 3 and 7 will differ');
     expect(ui.host.textContent).toContain('use Compare opposite position to switch between 3 and 7');

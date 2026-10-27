@@ -16,20 +16,12 @@ beforeAll(() => {
  loadAlloModule('instructional_context_module.js'); loadAlloModule('view_simplified_module.js');
  loadAlloModule('karaoke_audio_store_module.js'); loadAlloModule('read_aloud_audio_service_source.jsx');
  let host = readFileSync(resolve('AlloFlowANTI.txt'), 'utf8');
- const patches = JSON.parse(readFileSync(resolve('reports/alloflow-resume-2026-10-01/audio/host-replacements.json'), 'utf8'));
- // The candidates have since landed in ANTI; an already-applied one is skipped (a short `before`
- // can still occur inside its own `after`, and re-applying it duplicated declarations).
- for (const patch of patches) {
-  if (host.includes(patch.after)) continue;
-  if (host.includes(patch.before)) host = host.replace(patch.before, () => patch.after);
-  else throw new Error('Host retention candidate anchor drift');
- }
  const slice = (start, end) => host.slice(host.indexOf(start), host.indexOf(end, host.indexOf(start)));
  const code = slice('  const _karaokePayloadSignature =', '  // Serialize karaoke MP3 work') +
   slice('  const _persistKaraokeAudioField =', '  // Regenerate (or first-generate)') +
   slice('  window.__alloReadAloudLiveHost =', '  // Lesson audio uses');
  renderHost = new Function('env', 'with (env) {' + code + '; return window.__alloGetReadAloudAudioBridge; }');
- enumerateHost = new Function('env', 'with (env) {' + slice('  const _enumerateReadAloudResourceSegments =', '  const _encodeReadAloudBridgeAudio =') + '; return _enumerateReadAloudResourceSegments; }');
+ enumerateHost = new Function('env', 'with (env) {' + slice('const getSavedResourceLanguage =', 'const getSavedReadingSentenceSegments =') + slice('  const _enumerateReadAloudResourceSegments =', '  const _encodeReadAloudBridgeAudio =') + '; return _enumerateReadAloudResourceSegments; }');
 });
 beforeEach(() => {
  const KS = window.AlloModules.KaraokeAudioStore; KS.current = null; KS.studentCurrent = null;

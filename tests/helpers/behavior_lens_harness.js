@@ -36,6 +36,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { attachRequestControlsFixture } from './protected_request_controls_fixture.js';
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
@@ -133,6 +134,7 @@ function installUnlockedClinicalFixture() {
     registerFlush(fn) { callbacks.add(fn); return () => callbacks.delete(fn); },
     flush: async () => {}
   };
+  attachRequestControlsFixture(session);
   window.AlloModules.SensitiveWorkspace = {
     _behaviorLensUnlockedTestFixture: true,
     Boundary: ({ children }) => children(session)
@@ -191,13 +193,7 @@ function installAmbientGlobals() {
 export function setupBehaviorLens() {
   if (_loaded) return api();
 
-  // Freeze nondeterministic primitives. Behavior Lens uses Date.now in a
-  // few places for entry IDs + timestamps; Math.random is mostly absent
-  // from the render path but freezing is cheap insurance.
-  globalThis.Math.random = () => 0.42;
-  globalThis.Date.now = () => FROZEN_EPOCH;
-
-  installAmbientGlobals();
+installAmbientGlobals();
 
   window.AlloModules = window.AlloModules || {};
   installUnlockedClinicalFixture();
@@ -218,8 +214,14 @@ export function setupBehaviorLens() {
   _loaded = true;
   // Bind module-scope storage helpers through the same authorized component
   // entry point. This is a render-only pass; no network effects execute.
-  ReactDOMServer.renderToStaticMarkup(React.createElement(_BehaviorLens, baseProps()));
+  bindUnlockedClinicalFixture();
   return api();
+}
+
+// Rebind after an instrumented test reloads the module closure. Never unlock a real service.
+export function bindUnlockedClinicalFixture() {
+  if (!window.AlloModules?.SensitiveWorkspace?._behaviorLensUnlockedTestFixture) throw new Error('Expected the authorized clinical fixture');
+  ReactDOMServer.renderToStaticMarkup(React.createElement(window.AlloModules.BehaviorLens, baseProps()));
 }
 
 // Translation stub. With no languagePack/UI_STRINGS loaded, the real t()
@@ -292,7 +294,12 @@ export function renderHub(propsOverrides, opts) {
   const profileId = (opts && opts.activeProfileId) || 'test-profile-1';
   resetStorage(profileId);
   const props = baseProps(propsOverrides);
-  return scrub(ReactDOMServer.renderToStaticMarkup(React.createElement(_BehaviorLens, props)));
+  const originalNow = Date.now, originalRandom = Math.random;
+  try {
+    Date.now = () => FROZEN_EPOCH;
+    Math.random = () => 0.42;
+    return scrub(ReactDOMServer.renderToStaticMarkup(React.createElement(_BehaviorLens, props)));
+  } finally { Date.now = originalNow; Math.random = originalRandom; }
 }
 
 /**

@@ -1,6 +1,12 @@
 import {describe,it,expect} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js'),W=require('../stem_lab/kitchen_studio/recipe_lab_weighing.js'),K=require('../stem_lab/kitchen_studio/recipe_lab_garlic.js'),M=require('../stem_lab/kitchen_studio/recipe_lab_crushing.js'),H=require('../stem_lab/kitchen_studio/recipe_lab_hands.js'),S=require('../stem_lab/kitchen_studio/recipe_lab_stir.js'),G=require('../stem_lab/kitchen_studio/recipe_lab_gesture_guide.js');
+const F=require('../stem_lab/kitchen_studio/recipe_lab_folding.js');
+function gather(fold){
+ let trace=F.start({x:.5,z:0},fold);
+ for(let i=1;i<=32;i++){const angle=2*Math.PI*i/32;trace=F.move(trace,{x:.5*Math.cos(angle),z:.5*Math.sin(angle)});}
+ return trace;
+}
 describe('Guidance observes direct kitchen gestures',()=>{
  it('distinguishes carrying, positioning, and flowing pasta without recording a portion',()=>{const s=R.start(),before=JSON.stringify(s),g={kind:'weigh',over:false,tilt:0};expect(G.describe(s,g,{amount:0}).phase).toBe('carry');g.over=true;expect(G.describe(s,g,{amount:0}).phase).toBe('tilt');g.tilt=60;const live=G.describe(s,g,{amount:80});expect(live.phase).toBe('pour');expect(live.progress).toBe(.5);expect(live.detail).toContain('80 g');g.tilt=0;expect(G.describe(s,g,{amount:80}).phase).toBe('tilt');expect(G.describe(s,g,{amount:200}).progress).toBe(1);expect(JSON.stringify(s)).toBe(before);});
  it('only marks a handful return at the actual release-plane destination',()=>{const s=R.start(),g={kind:'handful',moved:true,current:W.scene.packet};expect(G.describe(s,g,{amount:90,releasePoint:{x:0,z:0}}).over).toBe(false);expect(G.describe(s,g,{amount:90,releasePoint:W.scene.packet}).phase).toBe('release');});
@@ -8,6 +14,26 @@ describe('Guidance observes direct kitchen gestures',()=>{
  it('shows a retry for a sideways knife stroke even after full downward travel',()=>{const g={kind:'cut',stroke:H.knifeMove(H.knifeStart(80,20,[40]),110,110)},d=G.describe(R.start(),g);expect(d.invalid).toBe(true);expect(d.phase).toBe('retry');expect(d.progress).toBe(0);});
  it('does not mistake a completed press on firm tomato for released juice',()=>{const s=R.start('tomato'),g={kind:'crush',index:0,press:M.move(M.start({x:0,y:0}),{x:0,y:75})};const d=G.describe(s,g);expect(d.phase).toBe('release');expect(d.detail).toContain('firm piece resists');expect(s.pan.produce).toBe(false);});
  it('follows the stir recognizer when a sweep reverses or leaves the pan',()=>{let trace=S.start(0);trace=S.move(trace,Math.PI/2,true);const s=R.start(),g={kind:'stir',trace};expect(G.describe(s,g).progress).toBeGreaterThan(.24);g.trace=S.move(trace,0,true);expect(G.describe(s,g).progress).toBe(0);g.trace=S.move(trace,Math.PI,false);expect(G.describe(s,g).progress).toBe(0);});
+ it('clears a completed sweep preview when the spoon leaves the valid ring before release',()=>{
+  const state=R.start(),ready=gather(false);
+  expect(F.complete(ready)).toBe(true);expect(G.describe(state,{kind:'stir',trace:ready}).progress).toBe(1);
+  const trace=F.move(ready,{x:.8,z:0}),before=JSON.stringify({state,trace});
+  expect(trace.invalid).toBe(true);expect(trace.progress).toBe(1);expect(F.complete(trace)).toBe(false);
+  const guide=G.describe(state,{kind:'stir',trace});
+  expect(guide).toMatchObject({phase:'retry',invalid:true,progress:0,over:false});
+  expect(guide.instruction).toContain('Release to cancel');expect(guide.detail).toContain('0% of a sweep');
+  expect(JSON.stringify({state,trace})).toBe(before);
+ });
+ it.each([{distance:.18,complete:false},{distance:.1,complete:true}])('clears an invalid inward fold preview after approaching $distance from the center',({distance,complete})=>{
+  const state=R.startRescue('dry',0,'practice'),gathered=gather(true),inward=F.move(gathered,{x:distance,z:0});
+  expect(gathered.phase).toBe('fold');expect(F.complete(inward)).toBe(complete);
+  const validGuide=G.describe(state,{kind:'stir',trace:inward});expect(validGuide.progress).toBeGreaterThan(.9);expect(validGuide.invalid).toBe(false);
+  const trace=F.move(inward,{x:distance,z:.25}),before=JSON.stringify({state,trace});
+  expect(trace.invalid).toBe(true);expect(trace.progress).toBeGreaterThan(.9);expect(F.complete(trace)).toBe(false);
+  const guide=G.describe(state,{kind:'stir',trace});
+  expect(guide).toMatchObject({phase:'retry',invalid:true,progress:0,over:false,progressLabel:'Gather and inward fold'});
+  expect(guide.instruction).toContain('Release to cancel');expect(JSON.stringify({state,trace})).toBe(before);
+ });
  it('requires dipping before a jug drop can save water',()=>{const s=R.start(),g={kind:'ladle',current:{x:-1.2,z:1.06},dipped:false};expect(G.describe(s,g).phase).toBe('dip');expect(G.describe(s,g).over).toBe(false);g.dipped=true;expect(G.describe(s,g).phase).toBe('release');expect(G.describe(s,g).target).toEqual({item:'jug'});});
  it('keeps completed drainage visible while a pot is leveled',()=>{const s=R.start();s.pot.water=750;const g={kind:'drain',over:true,tilt:0,drained:250};const d=G.describe(s,g);expect(d.phase).toBe('tilt');expect(d.progress).toBe(.25);expect(d.detail).toContain('250 mL drained');g.tilt=50;expect(G.describe(s,g).phase).toBe('drain');});
  it('shows the bowl when the drying cloth is full and tracks contact independently',()=>{const s=R.act(R.act(R.start(),'wash'),'rinse');s.prep.clothLoad=8;const g={kind:'dry',target:0,step:{elapsed:225}};expect(G.describe(s,g).phase).toBe('full');expect(G.describe(s,g).target).toEqual({bowl:true});expect(G.describe(s,g).progress).toBe(0);g.target='wring';g.step.elapsed=450;expect(G.describe(s,g).phase).toBe('wring');expect(G.describe(s,g).progress).toBe(.5);});

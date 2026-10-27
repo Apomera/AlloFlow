@@ -186,11 +186,12 @@ describe('The tree is a real WAI-ARIA tree, not a pile of tab stops', () => {
 
   it('keeps the mouse caret out of the tab order and out of the accessibility tree', () => {
     const html = renderView('tree');
-    // every caret button: tabindex -1 and aria-hidden
-    const carets = html.match(/class="oid-caret"[^>]*/g) || [];
+    // Pointer affordances stay nonfocusable; tabindex -1 on a native button
+    // still allowed pointer focus to land on an aria-hidden control.
+    const carets = html.match(/<span class="oid-caret"[^>]*/g) || [];
     expect(carets.length).toBeGreaterThan(3);
     for (const c of carets) {
-      expect(c).toMatch(/tabindex="-1"/);
+      expect(c).not.toMatch(/tabindex=/);
       expect(c).toMatch(/aria-hidden="true"/);
     }
   });

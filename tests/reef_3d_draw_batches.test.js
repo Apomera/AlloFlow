@@ -1,3 +1,4 @@
+import { POST_MERGE_PARTS } from './helpers/reef_post_merge_catalog.js';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { describe, expect, it, vi } from 'vitest';
@@ -19,7 +20,7 @@ const MOTION = { speed: 0.3, turn: 0.25, current: { x: 0.05, z: -0.03, strength:
 const RAYS = ['bluespotted_stingray', 'reef_manta'], TURTLES = ['green_turtle', 'hawksbill_turtle'];
 const SCHOOLS = ['anthias', 'blue_green_chromis', 'bluestripe_snapper', 'bumphead_parrotfish'];
 // These fish have their own rigs rather than the shared lofted-fish anatomy.
-const CUSTOM_FISH = ['spotted_garden_eel', 'banded_pipefish', 'spotted_seahorse', 'ribbon_eel'];
+const CUSTOM_FISH = ['spotted_garden_eel', 'banded_pipefish', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish'];
 const LOFTED = S.ids.filter((id) => S.info(id).group === 'fish' && !RAYS.includes(id) && !CUSTOM_FISH.includes(id));
 
 function visible(o) { for (; o; o = o.parent) if (!o.visible) return false; return true; }
@@ -57,7 +58,8 @@ const CALLS = {
   pajama_cardinalfish: 2, banggai_cardinalfish: 2, giant_triton: 2, blue_velvet_headshield_slug: 2, regal_angelfish: 2,
   mandarin_dragonet: 2, harlequin_shrimp: 2, spotted_seahorse: 2, bennetts_feather_star: 2, peacock_mantis_shrimp: 2, ribbon_eel: 2
 };
-const EXACT = { reef_manta: 3, bluespotted_stingray: 3, green_turtle: 5, hawksbill_turtle: 5, day_octopus: 2 };
+for (const [id, parts] of Object.entries(POST_MERGE_PARTS)) CALLS[id] = parts.length;
+const EXACT = { ...Object.fromEntries(Object.entries(POST_MERGE_PARTS).map(([id, parts]) => [id, parts.length])), reef_manta: 3, bluespotted_stingray: 3, green_turtle: 5, hawksbill_turtle: 5, day_octopus: 2 };
 
 describe('J1 species batches: draw calls', () => {
   it('draws every model in the calls it takes today, on both tiers, and no more in all', () => {
@@ -68,6 +70,7 @@ describe('J1 species batches: draw calls', () => {
         try {
           expect(CALLS[id], id + ' is pinned').toBeDefined();
           if (LOFTED.includes(id)) expect(n, id + ' ' + quality + ': body + one batch of fins, tail, pectorals and eyes').toBe(2);
+          else if (id === 'orange_cup_coral' && health === 'dead') expect(n, 'dead cup coral keeps its skeleton and oral discs, without feeding tentacles').toBe(2);
           else if (EXACT[id]) expect(n, id + ' ' + quality).toBe(EXACT[id]);
           else expect(n, id + ' ' + quality + ' ' + health).toBeLessThanOrEqual(CALLS[id]);
           if (health === 'healthy') total += n;
@@ -79,14 +82,14 @@ describe('J1 species batches: draw calls', () => {
       }
     }
     // Sixteen added specimens each use two draws per tier; the original limits stay fixed.
-    expect(total, 'all models and schools on both tiers').toBeLessThanOrEqual(226 + 16 * 2 * TIERS.length);
+    expect(total, 'all models and schools on both tiers').toBeLessThanOrEqual(226 + 16 * 2 * TIERS.length + Object.values(POST_MERGE_PARTS).reduce((n, parts) => n + parts.length, 0) * TIERS.length);
   });
 });
 
 describe('J1 species batches: the part-name contract', () => {
   // [id, name, kind]: 'mesh' = getObjectByName(id + '-' + name) is a drawn mesh; 'node' = that
   // object exists (a pivot or holder); 'range' = a batch mesh draws a part of that name (n times).
-  const PARTS = [];
+  const PARTS = Object.entries(POST_MERGE_PARTS).flatMap(([id, names]) => names.map(name => [id, name, 'mesh']));
   for (const id of LOFTED) {
     PARTS.push([id, 'body', 'mesh'], [id, 'fins', 'mesh'], [id, 'detail', 'range']);
     if (id === 'giant_moray') PARTS.push([id, 'jaw-pivot', 'node'], [id, 'jaw', 'range']);
@@ -261,6 +264,9 @@ describe('J1 species batches: one shader patch, the same programs', () => {
   // one shader program; a new one stalls the first frame that shows it on a school laptop.
   // The cucumber roughness maps and pipefish flag-tail texture add two explicit families.
   const FAMILIES = [
+    'MeshStandardMaterial,true,true,false,false,false,false,0,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,false,true,false,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
+    'MeshStandardMaterial,true,false,false,false,false,true,2,0,false,false,false,reef3d-species-v7|d',
     'MeshStandardMaterial,false,true,false,true,false,true,0,0,false,false,false,reef3d-species-v7|d',
     'MeshStandardMaterial,true,true,false,true,false,true,2,0,false,false,false,reef3d-species-v7|d',
     'MeshStandardMaterial,false,false,false,false,false,true,0,0,false,false,false,reef3d-species-v7|d',

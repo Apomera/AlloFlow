@@ -13,7 +13,14 @@ describe('Games systemic WCAG safeguards', () => {
   });
 
   it('preserves native focus indicators throughout game controls', () => {
-    expect(source).not.toContain('outline-none');
+    const customFocus = [...source.matchAll(/className="([^"]*\boutline-none\b[^"]*)"/g)];
+    expect(customFocus.length).toBe((source.match(/outline-none/g) || []).length);
+    for (const [, classes] of customFocus) {
+      expect(classes).toContain('focus-visible:outline-none');
+      expect(classes).toContain('focus-visible:ring-2');
+      expect(classes).toContain('focus-visible:ring-indigo-600');
+      expect(classes).toContain('focus-visible:ring-offset-2');
+    }
     expect(source).toContain('focus:ring-2');
   });
 

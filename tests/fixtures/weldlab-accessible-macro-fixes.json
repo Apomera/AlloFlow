@@ -1,0 +1,27 @@
+[
+  {
+    "owner": "macro-unfused-annotation-outline",
+    "old": "            els.push(h('path', { key: 'lof', d: 'M' + x0 + ' ' + (sy + 1) + ' L' + (cx - fusedW / 2) + ' ' + (sy + 1) + ' M' + (cx + fusedW / 2) + ' ' + (sy + 1) + ' L' + x1 + ' ' + (sy + 1), stroke: '#f87171', strokeWidth: 3, strokeDasharray: '4 3' }));",
+    "new": "            var unfusedPath = 'M' + x0 + ' ' + (sy + 1) + ' L' + (cx - fusedW / 2) + ' ' + (sy + 1) + ' M' + (cx + fusedW / 2) + ' ' + (sy + 1) + ' L' + x1 + ' ' + (sy + 1);\n            els.push(h('g', { key: 'lof' },\n              h('path', { 'data-arc-xs-unfused-outline': '', d: unfusedPath, fill: 'none', stroke: '#0f172a', strokeWidth: 6, strokeDasharray: '4 3' }),\n              h('path', { 'data-arc-xs-unfused': '', d: unfusedPath, fill: 'none', stroke: '#f87171', strokeWidth: 3, strokeDasharray: '4 3' })));"
+  },
+  {
+    "owner": "macro-target-annotation-outline",
+    "old": "          els.push(h('line', { key: 'tgt', x1: px0, y1: tgtY, x2: px1, y2: tgtY, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '6 4' }));",
+    "new": "          els.push(h('g', { key: 'tgt' },\n            h('line', { 'data-arc-xs-target-outline': '', x1: px0, y1: tgtY, x2: px1, y2: tgtY, stroke: '#0f172a', strokeWidth: 4.5, strokeDasharray: '6 4' }),\n            h('line', { 'data-arc-xs-target': '', x1: px0, y1: tgtY, x2: px1, y2: tgtY, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '6 4' })));"
+  },
+  {
+    "owner": "macro-pinned-ghost-outline",
+    "old": "            els.push(h('path', { key: 'ghost', d: 'M' + (cx - gw / 2) + ' ' + sy + ' Q' + cx + ' ' + (sy - 2 * gr) + ' ' + (cx + gw / 2) + ' ' + sy + ' A' + (gw / 2) + ' ' + Math.max(1, gp) + ' 0 0 1 ' + (cx - gw / 2) + ' ' + sy, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.6, strokeDasharray: '5 4' }));",
+    "new": "            var ghostPath = 'M' + (cx - gw / 2) + ' ' + sy + ' Q' + cx + ' ' + (sy - 2 * gr) + ' ' + (cx + gw / 2) + ' ' + sy + ' A' + (gw / 2) + ' ' + Math.max(1, gp) + ' 0 0 1 ' + (cx - gw / 2) + ' ' + sy;\n            els.push(h('g', { key: 'ghost' },\n              h('path', { 'data-arc-xs-ghost-outline': '', d: ghostPath, fill: 'none', stroke: '#0f172a', strokeWidth: 4.6, strokeDasharray: '5 4' }),\n              h('path', { 'data-arc-xs-ghost': '', d: ghostPath, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.6, strokeDasharray: '5 4' })));"
+  },
+  {
+    "owner": "macro-callout-leader-outline",
+    "old": "              h('line', { x1: x, y1: y, x2: tx, y2: ty, stroke: '#fde68a', strokeWidth: 1 }),",
+    "new": "              h('line', { 'data-arc-xs-leader-outline': n, x1: x, y1: y, x2: tx, y2: ty, stroke: '#0f172a', strokeWidth: 4 }),\n              h('line', { 'data-arc-xs-leader': n, x1: x, y1: y, x2: tx, y2: ty, stroke: '#fde68a', strokeWidth: 1 }),"
+  },
+  {
+    "owner": "contrast-explicit-selection-indicator",
+    "old": "  // ── Accessibility live region (WCAG 4.1.3) ──",
+    "new": "  // Keep explicit selections visible when the app contrast theme flattens button fills.\n  // Underlining is a non-color cue; leave the native focus ring and hover colors intact.\n  (function () {\n    if (document.getElementById('weldlab-selection-css')) return;\n    var style = document.createElement('style');\n    style.id = 'weldlab-selection-css';\n    style.textContent = '@media screen{.theme-contrast [data-weld-view] button:is([aria-pressed=\"true\"],[aria-selected=\"true\"],[aria-checked=\"true\"]){border-color:#ffffff!important;text-decoration-line:underline!important;text-decoration-style:solid!important;text-decoration-thickness:2px!important;text-underline-offset:3px!important}}';\n    document.head.appendChild(style);\n  })();\n\n  // ── Accessibility live region (WCAG 4.1.3) ──"
+  }
+]

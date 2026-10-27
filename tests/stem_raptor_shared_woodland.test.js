@@ -32,7 +32,16 @@ function geometryState(root) {
 }
 
 describe('Raptor woodland dependency loading', () => {
-  let previous;
+  let previous, previousConfigure;
+  const integrity = 'sha384-' + 'A'.repeat(64);
+  const createPolicy = Function(readFileSync('browser_delivery_policy.js', 'utf8') + '\nreturn _alloCreateBrowserDeliveryPolicy;')();
+  function configureTrustedDelivery() {
+    const policy = createPolicy({ schemaVersion: 1, releaseId: '0'.repeat(64), fallbackCommit: null,
+      allowDesktopRemoteFallback: false,
+      assets: { 'stem_lab/avian_woodland_birds.js': { bytes: 1, integrity } }
+    }, { baseUrl: 'https://local.invalid/offline/' });
+    window.__alloConfigureTrustedScript = vi.fn((script, url) => policy.configureScript(script, url));
+  }
   const scripts = () => [...document.querySelectorAll('script[data-raptor-woodland-birds]')];
   function loader() {
     const host = document.createElement('script');
@@ -41,16 +50,24 @@ describe('Raptor woodland dependency loading', () => {
     const start = source.indexOf('  var RAPTOR_MODULE_BASE'), end = source.indexOf('  // ─── Three.js loader');
     return Function('window', 'document', 'URL', source.slice(start, end) + '\nreturn ensureRaptorWoodlandBirds;')(window, document, URL);
   }
-  beforeEach(() => { vi.useFakeTimers(); previous = window.AvianWoodlandBirds; delete window.AvianWoodlandBirds; });
+  beforeEach(() => {
+    vi.useFakeTimers(); previous = window.AvianWoodlandBirds; delete window.AvianWoodlandBirds;
+    previousConfigure = window.__alloConfigureTrustedScript;
+    configureTrustedDelivery();
+  });
   afterEach(() => {
     document.querySelectorAll('script[data-raptor-woodland-birds],script[data-woodland-fixture]').forEach(script => script.remove());
     if (previous === undefined) delete window.AvianWoodlandBirds; else window.AvianWoodlandBirds = previous;
+    if (previousConfigure === undefined) delete window.__alloConfigureTrustedScript; else window.__alloConfigureTrustedScript = previousConfigure;
     vi.useRealTimers();
   });
   it('shares concurrent requests beside the offline tool and accepts the real module', async () => {
     const load = loader(), first = load(); expect(load()).toBe(first);
     expect(scripts()).toHaveLength(1);
     expect(scripts()[0].src).toBe('https://local.invalid/offline/stem_lab/avian_woodland_birds.js');
+    expect(window.__alloConfigureTrustedScript).toHaveBeenCalledWith(scripts()[0], scripts()[0].src);
+    expect(scripts()[0].integrity).toBe(integrity);
+    expect(scripts()[0].crossOrigin).toBe('anonymous');
     window.AvianWoodlandBirds = sharedWindow.AvianWoodlandBirds;
     scripts()[0].dispatchEvent(new Event('load')); await first;
     expect(vi.getTimerCount()).toBe(0);
@@ -58,6 +75,24 @@ describe('Raptor woodland dependency loading', () => {
   it('uses the actual module already loaded by Bird Lab', async () => {
     window.AvianWoodlandBirds = sharedWindow.AvianWoodlandBirds;
     await loader()(); expect(scripts()).toHaveLength(0);
+  });
+  it('fails closed without trusted delivery and can retry after the host restores it', async () => {
+    delete window.__alloConfigureTrustedScript;
+    const load = loader();
+    await expect(load()).rejects.toThrow('Trusted script delivery is unavailable');
+    expect(scripts()).toHaveLength(0); expect(vi.getTimerCount()).toBe(0);
+    configureTrustedDelivery();
+    const retry = load();
+    window.AvianWoodlandBirds = sharedWindow.AvianWoodlandBirds;
+    scripts()[0].dispatchEvent(new Event('load')); await retry;
+  });
+  it('does not append a script rejected by the trusted delivery policy', async () => {
+    const policy = createPolicy({ schemaVersion: 1, releaseId: '0'.repeat(64), fallbackCommit: null,
+      allowDesktopRemoteFallback: false, assets: { 'stem_lab/stem_tool_raptorhunt.js': { bytes: 1, integrity } }
+    }, { baseUrl: 'https://local.invalid/offline/' });
+    window.__alloConfigureTrustedScript = (script, url) => policy.configureScript(script, url);
+    await expect(loader()()).rejects.toThrow('script is not in the reviewed manifest');
+    expect(scripts()).toHaveLength(0); expect(vi.getTimerCount()).toBe(0);
   });
   it('keeps an existing valid dove/grouse factory usable when it predates blue jays', async () => {
     window.AvianWoodlandBirds = { version: '1.0.0', create: sharedWindow.AvianWoodlandBirds.create,

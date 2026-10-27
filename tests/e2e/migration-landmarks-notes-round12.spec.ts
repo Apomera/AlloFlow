@@ -328,14 +328,14 @@ test('Migration Describe wing motion opens the existing correct draft with nativ
   await expect(button).toHaveAttribute('data-study-action', 'describe-wing-motion');
   await expect(button).toHaveAttribute('aria-controls', 'migration-study-observation-note');
   await expect(button).toHaveAttribute('aria-describedby', 'migration-wing-motion-note-help');
-  await expect(page.locator('#migration-wing-motion-note-help')).toContainText('Primary feathers');
+  await expect(page.locator("[data-migration-id=\"migration-wing-motion-note-help\"]")).toContainText('Primary feathers');
   await keyboardClick(page, button);
   const input = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
   await expect(input).toHaveAttribute('data-study-observation-key', 'canada_goose:primaries');
   await expect(page.locator('[data-study-observation]')).toHaveAttribute('open', '');
   await expect(page.locator('[data-study-region="primaries"]')).toHaveAttribute('aria-pressed', 'true');
-  const prompt = page.locator('#migration-study-motion-evidence-prompt');
+  const prompt = page.locator("[data-migration-id=\"migration-study-motion-evidence-prompt\"]");
   await expect(prompt).toHaveAttribute('data-study-motion-evidence', 'path');
   await expect(input).toHaveAttribute('aria-describedby', /migration-study-motion-evidence-prompt/);
   await expect(prompt).toContainText(/step|Step/);
@@ -354,7 +354,7 @@ test('Migration Describe wing motion opens the existing correct draft with nativ
   const monarchBeforeNotes = await saved(page), latentRegion = monarchBeforeNotes.flightStudyRegion;
   expect(speciesWork(monarchBeforeNotes)).toEqual(speciesWork(before));
   expect(monarchBeforeNotes.aiExplorerText).toBe('');
-  await expect(page.locator('#migration-wing-motion-note-help')).toContainText(/whole-wing/i);
+  await expect(page.locator("[data-migration-id=\"migration-wing-motion-note-help\"]")).toContainText(/whole-wing/i);
   await keyboardClick(page, button); await expect(input).toBeFocused();
   await expect(input).toHaveAttribute('data-study-observation-key', 'monarch:whole-wing');
   await expect(input).toHaveValue(before.flightStudyObservations.drafts['monarch:whole-wing']);
@@ -377,7 +377,7 @@ test('Migration a pending wing-motion note focus cannot steal focus after a sync
     species.value = 'monarch'; species.dispatchEvent(new Event('change', { bubbles: true })); species.focus();
   }); await frames(page, 6);
   await expect(page.getByRole('combobox', { name: '3D migration focus species', exact: true })).toBeFocused();
-  await expect(page.locator('#migration-study-observation-note')).not.toBeFocused();
+  await expect(page.locator("[data-migration-id=\"migration-study-observation-note\"]")).not.toBeFocused();
   const afterSpeciesChange = await saved(page);
   expect(afterSpeciesChange.flightSpecies).toBe('monarch');
   expect(speciesWork(afterSpeciesChange)).toEqual(speciesWork(before));
@@ -388,7 +388,7 @@ test('Migration a pending wing-motion note focus cannot steal focus after a sync
     if (!chase) throw new Error('Actual Chase camera button unavailable'); chase.click(); chase.focus();
   }); await frames(page, 6);
   await expect(page.getByRole('button', { name: 'Chase', exact: true })).toBeFocused();
-  await expect(page.locator('#migration-study-observation-note')).toHaveCount(0);
+  await expect(page.locator("[data-migration-id=\"migration-study-observation-note\"]")).toHaveCount(0);
   expect((await saved(page)).flightCamera).toBe('chase'); expect(work(await saved(page))).toEqual(work(afterSpeciesChange));
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   await writeFile(join(report, 'desktop-pending-note-focus.json'), JSON.stringify({ before, after: await saved(page) }, null, 2));
@@ -409,7 +409,7 @@ for (const dark of [false, true]) test.describe('Migration phone ' + (dark ? 'da
     await button.tap();
     const input = page.getByRole('textbox', { name: 'My observation', exact: true });
     await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
-    await expect(page.locator('#migration-study-motion-evidence-prompt')).toHaveAttribute('data-study-motion-evidence', 'path');
+    await expect(page.locator("[data-migration-id=\"migration-study-motion-evidence-prompt\"]")).toHaveAttribute('data-study-motion-evidence', 'path');
     expect(work(await saved(page))).toEqual(work(before));
     await input.fill('I compared the hollow cycle landmarks with the moving outer tip from above.');
     await page.getByRole('button', { name: 'Record observation', exact: true }).tap();

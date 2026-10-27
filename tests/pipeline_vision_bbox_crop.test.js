@@ -5,7 +5,7 @@
 // white as solid fills and shipped text placeholders ("Skipped near-uniform fallback crop on
 // page 20 (middle)"). The image inventory now asks the model for each figure's bounding box as
 // page fractions; a sane box is cropped with a 1% margin and judged with the non-strict gate,
-// and the blind band with its strict gate remains the last resort.
+// and (since 2026-10-25) an image with no sane box is not cropped at all: it stays a text description.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -31,10 +31,15 @@ describe('_alloImageBbox', () => {
     expect(bbox({ bbox: [0.2, 0.3, 1.3, 0.6] })).toBeNull();
     expect(bbox({ bbox: [-0.2, 0.3, 0.8, 0.6] })).toBeNull();
   });
+  it('accepts small real items (2026-10-25: worksheet birds and tools are ~10% x 10%, 1% of the page)', () => {
+    expect(bbox({ bbox: [0.591, 0.125, 0.691, 0.221] })).toEqual({ x0: 0.591, y0: 0.125, x1: 0.691, y1: 0.221 });
+    expect(bbox({ bbox: [0.1, 0.5, 0.2, 0.6] })).not.toBeNull(); // 1% of the page
+  });
   it('rejects slivers, whole-page boxes, malformed values and missing boxes', () => {
-    expect(bbox({ bbox: [0.1, 0.5, 0.14, 0.9] })).toBeNull(); // 4% wide
-    expect(bbox({ bbox: [0.1, 0.5, 0.9, 0.53] })).toBeNull(); // 3% tall
-    expect(bbox({ bbox: [0.1, 0.5, 0.2, 0.6] })).toBeNull(); // 1% of the page
+    expect(bbox({ bbox: [0.1, 0.5, 0.135, 0.9] })).toBeNull(); // 3.5% wide
+    expect(bbox({ bbox: [0.1, 0.5, 0.9, 0.515] })).toBeNull(); // 1.5% tall
+    expect(bbox({ bbox: [0.385, 0.471, 0.623, 0.496] })).not.toBeNull(); // newsletter calendar key, 2.5% tall
+    expect(bbox({ bbox: [0.1, 0.5, 0.16, 0.56] })).toBeNull(); // 0.36% of the page
     expect(bbox({ bbox: [0.01, 0.01, 0.99, 0.99] })).toBeNull(); // 96% of the page
     expect(bbox({ bbox: [0.1, 0.2, 0.9] })).toBeNull();
     expect(bbox({ bbox: [0.1, 'wide', 0.9, 0.7] })).toBeNull();
@@ -49,15 +54,19 @@ describe('the image inventory asks for the box and the fallback crop uses it', (
     expect(source).toContain('"bbox" is [left, top, right, bottom] as fractions of the page width and height measured from the top-left corner');
     expect(source).toContain('"position": "top/middle/bottom", "bbox": [0.08, 0.34, 0.92, 0.62], "type":');
   });
-  it('crops the reported box with a margin, keeps the strict gate only for the blind band, and records crop geometry', () => {
+  it('crops the reported box with a margin, never a blind page band, and records crop geometry', () => {
     const at = source.indexOf('const _box = _alloImageBbox(img);');
     expect(at).toBeGreaterThan(0);
     const block = source.slice(at, at + 2600);
     expect(block).toContain('const _pad = 0.01;');
-    expect(block).toContain("else if (pos.includes('bottom')) { y = canvas.height * 0.7; h = canvas.height * 0.3; }");
+    // 2026-10-25: the blind top/middle/bottom band put a strip of page under an item-specific alt;
+    // with no box the figure stays a text description.
+    expect(block).toMatch(/if \(!_box\) \{[\s\S]{0,260}continue;\s*\}/);
+    expect(block).not.toContain("pos.includes('bottom')");
+    expect(block).not.toContain('canvas.height * 0.7');
     expect(block).toContain('crop.getContext(\'2d\').drawImage(canvas, x, y, w, h, 0, 0, w, h);');
-    expect(block).toContain('if (_cropIsNearUniform(crop, !_box)) {');
-    expect(block).toContain('if (_box) extractedImages[img.idx].cropData = { page: pg, x: x, y: y, w: w, h: h, canvasW: canvas.width, canvasH: canvas.height };');
+    expect(block).toContain('if (_cropIsNearUniform(crop, false)) {');
+    expect(block).toContain('extractedImages[img.idx].cropData = { page: pg, x: x, y: y, w: w, h: h, canvasW: canvas.width, canvasH: canvas.height };');
     // the non-strict gate is the one with the distinct-colour escape
     expect(source).toContain('return _cropPixelsAreFill(data, strict !== false);');
     expect(source).toContain('if (distinct >= 4) return false;');

@@ -27,7 +27,7 @@ function review(seed = {}, overrides = {}) {
   }
   function all(predicate) { return walk(tree, predicate); }
   function find(predicate) { return all(predicate)[0]; }
-  function control(label, value) { find(node => (node.props?.id === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
+  function control(label, value) { find(node => (node.props?.['data-migration-id'] === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
   function action(name) { find(node => node.props?.['data-flight-challenge-action'] === name).props.onClick(); draw(); }
   function select(id) { find(node => node.props?.['data-flight-challenge'] === id).props.onClick(); draw(); }
   function remove(number) { find(node => node.props?.['aria-label'] === 'Remove challenge attempt ' + number).props.onClick(); draw(); }

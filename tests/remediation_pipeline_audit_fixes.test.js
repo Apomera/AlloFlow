@@ -252,7 +252,9 @@ describe('H11/H14/M10 — the image lane refuses to guess', () => {
   });
 
   it('H14: extracted images without model-authored placeholders are preserved for placement review', () => {
-    expect(dp).toContain('if (imgIdx < extractedImages.length) {');
+    // 2026-10-25: "unplaced" = not paired to a slot (by description alignment, else past the last
+    // ordinal) and not rendered as text by legend repair.
+    expect(dp).toContain('if (_unclaimedIdx.length) {');
     expect(dp).toContain('data-allo-recovered-source-images="true"');
     expect(dp).toContain('They are preserved here so they are not silently lost');
     expect(dp).toContain("_deferredImageMap[_utok] = _im.generatedSrc;");

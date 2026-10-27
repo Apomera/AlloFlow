@@ -243,7 +243,11 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(roster).toBeGreaterThan(read);
     expect(activate).toBeGreaterThan(roster);
     expect(join).toContain('uid: authenticatedUser.uid');
-    expect(join).toContain('[`roster.${authenticatedUser.uid}`]');
+    for (const field of ['uid', 'name', 'joinedAt', 'status']) {
+      expect(join).toContain('[`roster.${authenticatedUser.uid}.' + field + '`]: userEntry.' + field);
+    }
+    // A reconnect must not replace teacher-owned assignments in the roster entry.
+    expect(join).not.toContain('[`roster.${authenticatedUser.uid}`]:');
     expect(join).not.toContain("'anon-' + Date.now()");
     expect(join.slice(join.indexOf('} catch(e)'))).not.toContain("t('session.error_not_found')");
     expect(join).toContain('return true;');

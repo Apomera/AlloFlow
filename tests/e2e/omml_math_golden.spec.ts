@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // OMML math golden (2026-06-10, STEM item 7): proves the real CDN chain —
 // LaTeX → MathML (temml) → OMML (mathml2omml via +esm) — produces Word-native
 // math markup. This validates the one assumption built on faith: the
@@ -8,7 +9,7 @@ import * as path from 'path';
 const VIEW_PATH = path.resolve(__dirname, '../../view_pdf_audit_module.js');
 
 test('LaTeX → OMML chain produces m:oMath with the math namespace', async ({ page }) => {
-  await page.goto('about:blank');
+  await installDocumentRuntime(page);
   // The view module expects React in scope for its components — stub enough
   // for module-level code to evaluate (the seam is module-scope, not a component).
   await page.addScriptTag({ content: 'window.React = { useState: () => [null, () => {}], useEffect: () => {}, useRef: () => ({ current: null }), useCallback: (f) => f, useMemo: (f) => f(), createElement: () => null, Fragment: {} };' });

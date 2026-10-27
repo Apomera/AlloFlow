@@ -92,6 +92,47 @@ describe('Keyboard cookware practice and honest comparison',()=>{
   ui.render(R.startRescue('dry',0),false,false);expect($('panChoiceReceipt').textContent).toBe('Cookware supplied with this rescue.');
  });
 });
+describe('Cookware preview cancellation and focus continuity',()=>{
+ function escape(target,options={}){const event=new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true,...options});target.dispatchEvent(event);return event;}
+ function toggle(panel,open){panel.open=open;panel.dispatchEvent(new Event('toggle'));}
+ it.each(['panChoiceControl','panChoiceSelect','panChoiceCarry','panChoiceLower','panChoicePlace','panChoiceCancel'])('cancels an active preview from %s and keeps focus usable',id=>{
+  const s=R.start(),before=JSON.stringify(s),{ui,host,state}=mounted(s);ui.open();press('ArrowUp');if(['panChoiceLower','panChoicePlace'].includes(id))press('ArrowRight');if(id==='panChoicePlace')press('ArrowDown');
+  const target=$(id);target.focus();expect(document.activeElement).toBe(target);expect(escape(target).defaultPrevented).toBe(true);expect($('panChoiceCancel').disabled).toBe(true);expect($('panChoicePlace').disabled).toBe(true);expect($('panChoiceStatus').textContent).toContain('Pan put back.');expect(document.activeElement).toBe(['panChoiceControl','panChoiceSelect'].includes(id)?target:$('panChoiceKeyboard'));expect($('panChoiceLesson').open).toBe(true);expect(host.apply).not.toHaveBeenCalled();expect(state()).toBe(s);expect(JSON.stringify(s)).toBe(before);
+  const observer=new MutationObserver(()=>{});observer.observe($('panChoiceStatus'),{childList:true,characterData:true,subtree:true});expect(escape(document.activeElement).defaultPrevented).toBe(false);expect(observer.takeRecords()).toHaveLength(0);observer.disconnect();
+ });
+ it('preserves a completed choice, receipt and feedback on idle Escape or put-back shortcut',()=>{
+  const {ui,host,state}=mounted();ui.open();keys();press('Enter');const saved=JSON.stringify(state()),message=$('panChoiceStatus').textContent,receipt=$('panChoiceReceipt').textContent,control=$('panChoiceControl');expect(state().pan.size).toBe('wide');expect(message).toContain('Wide pan selected.');expect(receipt).toContain('completed keyboard practice');control.focus();expect(escape(control).defaultPrevented).toBe(false);press('ArrowLeft');expect($('panChoiceStatus').textContent).toBe(message);expect($('panChoiceReceipt').textContent).toBe(receipt);expect(document.activeElement).toBe(control);toggle($('panChoiceLesson'),false);expect($('panChoiceStatus').textContent).toBe(message);expect(JSON.stringify(state())).toBe(saved);expect(host.apply).toHaveBeenCalledOnce();
+ });
+ it('ignores Escape outside its panel and respects repeat, composition and already-handled events',()=>{
+  const {ui,host}=mounted(),outside=document.createElement('button');outside.textContent='Other activity';document.body.append(outside);ui.open();keys();outside.focus();expect(escape(outside).defaultPrevented).toBe(false);expect(document.activeElement).toBe(outside);
+  const control=$('panChoiceControl');for(const options of [{repeat:true},{isComposing:true}])expect(escape(control,options).defaultPrevented).toBe(false);const handled=new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true});handled.preventDefault();control.dispatchEvent(handled);expect($('panChoicePlace').disabled).toBe(false);press('Enter');expect(host.apply).toHaveBeenCalledOnce();
+ });
+ it('cancels on disclosure close, repairs hidden internal focus and cannot resume the old sequence',()=>{
+  const {ui,host}=mounted();ui.open();keys();const panel=$('panChoiceLesson'),summary=panel.querySelector('summary');$('panChoiceControl').focus();toggle(panel,false);expect(document.activeElement).toBe(summary);expect($('panChoiceCancel').disabled).toBe(true);expect($('panChoiceStatus').textContent).toContain('Carry stopped.');toggle(panel,true);press('ArrowRight');press('ArrowDown');press('Enter');expect(host.apply).not.toHaveBeenCalled();keys();press('Enter');expect(host.apply).toHaveBeenCalledOnce();
+ });
+ it('repairs only internal focus when a fresh cook hides the preview and preserves external focus on close',()=>{
+  const {ui}=mounted(),outside=document.createElement('button');outside.textContent='Other activity';document.body.append(outside);ui.open();press('ArrowUp');ui.render(R.start('tomato',4),false,true);expect($('panChoiceKeyboardPanel').hidden).toBe(true);expect(document.activeElement).toBe($('panChoiceLesson').querySelector('summary'));outside.focus();toggle($('panChoiceLesson'),false);ui.render(R.start(),false,true);expect(document.activeElement).toBe(outside);
+ });
+ it('cancels lifecycle interruptions without taking focus from another control or window',()=>{
+  const {ui,host}=mounted(),outside=document.createElement('button');outside.textContent='Other activity';document.body.append(outside);ui.open();keys();outside.focus();const restartFocus=vi.spyOn($('panChoiceKeyboard'),'focus'),summaryFocus=vi.spyOn($('panChoiceLesson').querySelector('summary'),'focus');window.dispatchEvent(new Event('blur'));expect($('panChoiceCancel').disabled).toBe(true);expect(restartFocus).not.toHaveBeenCalled();expect(summaryFocus).not.toHaveBeenCalled();expect(document.activeElement).toBe(outside);press('Enter');expect(host.apply).not.toHaveBeenCalled();
+ });
+ it('removes panel Escape and close listeners on disposal',()=>{
+  const {ui}=mounted();ui.open();keys();const panel=$('panChoiceLesson'),control=$('panChoiceControl'),status=$('panChoiceStatus'),message=status.textContent;ui.dispose();expect(escape(control).defaultPrevented).toBe(false);toggle(panel,false);expect(status.textContent).toBe(message);
+ });
+ it('moves a focused native button to the next enabled step and returns to restart after release',()=>{
+  const {ui,host,state}=mounted();ui.open();$('panChoiceLift').focus();for(const [from,to] of [['panChoiceLift','panChoiceCarry'],['panChoiceCarry','panChoiceLower'],['panChoiceLower','panChoicePlace'],['panChoicePlace','panChoiceKeyboard']]){expect(document.activeElement).toBe($(from));expect($(from).disabled).toBe(false);$(from).click();expect($(from).disabled).toBe(true);expect(document.activeElement).toBe($(to));expect($(to).disabled).toBe(false);if(from!=='panChoicePlace')expect(host.apply).not.toHaveBeenCalled();}expect(host.apply).toHaveBeenCalledOnce();expect(state().pan.size).toBe('wide');
+ });
+ it.each(['svg','external'])('preserves %s focus while progressing without a focused phase button',mode=>{
+  const {ui,host}=mounted();ui.open();const outside=document.createElement('button');outside.textContent='Other activity';document.body.append(outside);const target=mode==='svg'?$('panChoiceControl'):outside;target.focus();const buttons=['panChoiceLift','panChoiceCarry','panChoiceLower','panChoicePlace'],shortcuts=['ArrowUp','ArrowRight','ArrowDown','Enter'];for(let index=0;index<buttons.length;index++){if(mode==='svg')press(shortcuts[index]);else $(buttons[index]).click();expect(document.activeElement).toBe(target);}expect(host.apply).toHaveBeenCalledOnce();
+ });
+ it('honors focus deliberately moved by the host when a native release commits',()=>{
+  const {ui,host}=mounted(),outside=document.createElement('button');outside.textContent='Host destination';document.body.append(outside);host.apply.mockImplementation(()=>outside.focus());ui.open();keys();$('panChoicePlace').focus();$('panChoicePlace').click();expect(host.apply).toHaveBeenCalledOnce();expect(document.activeElement).toBe(outside);
+ });
+ it('returns a focused Put back button to the enabled practice launcher without recording a choice',()=>{
+  const {ui,host}=mounted();ui.open();keys();$('panChoiceCancel').focus();$('panChoiceCancel').click();expect(document.activeElement).toBe($('panChoiceKeyboard'));expect($('panChoiceCancel').disabled).toBe(true);expect(host.apply).not.toHaveBeenCalled();
+ });
+});
+
 describe('Recognizable cabinet cookware',()=>{
  it('stores each handle at its declared source and restricts picking to the handle ancestry',()=>{
   const {world,canvas,detail}=decorated();for(const choice of P.choices){const group=detail.sources[choice];expect(group.position.toArray()).toEqual([P.sources[choice].x,P.sources[choice].y,P.sources[choice].z]);expect(group.userData.kitchenPanChoice).toBe(choice);const handle=group.getObjectByName(choice+'-pan-handle');expect(handle.position.toArray()).toEqual([0,0,0]);expect(handle.userData.sceneDecoration).toBe(false);expect(group.getObjectByName('empty-pan-interior').userData.sceneDecoration).toBe(true);}expect(canvas.dataset).toMatchObject({panChoicePhase:'idle',panChoiceHeld:'',panChoiceSelected:'standard'});detail.setView('prep');expect(detail.sources.wide.visible).toBe(true);detail.dispose();expect(world.children).toHaveLength(0);

@@ -121,7 +121,7 @@ describe('Sky School quiz retrieval practice', () => {
     expect(firstResponse().textContent).toContain(first[key(0)].choice);
     expect(questionCard().textContent).toContain(practiceCorrect ? '✓ Correct!' : '✗ Not quite.');
     expect(questionCard().textContent).toContain(deck()[0].explanation);
-    expect(choices().every(node => node.disabled)).toBe(true);
+    expect(choices().every(node => !node.disabled && node.getAttribute('aria-disabled') === 'true')).toBe(true);
     expect(latest.quizFirstAttempts).toEqual(first);
     expect([latest.quizScore, latest.quizTotal]).toEqual([practiceCorrect ? 0 : 1, 1]);
   });

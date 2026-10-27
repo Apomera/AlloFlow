@@ -20,7 +20,7 @@ beforeAll(() => {
   window.React = React;
   window.AlloModules = {};
   const registration = '  window.AlloModules.QuizView = QuizView;';
-  const runtime = readFileSync('view_quiz_module.js', 'utf8').replace(registration, registration + '\n window.AlloModules.__AuthoringTest = { create: _quizCreateAuthoringRequests, extract: _quizExtractJson, schema: _quizSchemaForType, matches: _quizAnswerMatches };');
+  const runtime = readFileSync('view_quiz_module.js', 'utf8').replace(registration, registration + '\n window.AlloModules.__AuthoringTest = { create: _quizCreateAuthoringRequests, extract: _quizExtractJson, schema: _quizSchemaForType, matches: _quizAnswerMatches, hasChoice: _quizHasChoiceItems, answerCueRules: _QUIZ_ANSWER_CUE_RULES, authoringPayload: _quizAuthoringPayload, balanceReplacementKeys: _quizBalanceReplacementKeys, keepUnchangedKeyChecks: _quizKeepUnchangedKeyChecks, balanceChoiceKeys: _quizBalanceChoiceKeys };');
   new Function('window', runtime)(window);
   api = window.AlloModules.__AuthoringTest;
 });
@@ -41,6 +41,9 @@ function fixture(spec) {
     props, generatedContent: props.generatedContent, authoringRequests: api.create(() => latest.props),
     assessmentAudit: { requestedMix: { mcq: 1 }, actualMix: { mcq: 1 }, issues: [], questions: [question] },
     _quizExtractJson: api.extract, _quizSchemaForType: api.schema, _quizAnswerMatches: api.matches,
+    _quizHasChoiceItems: api.hasChoice, _QUIZ_ANSWER_CUE_RULES: api.answerCueRules,
+    _quizAuthoringPayload: api.authoringPayload, _quizBalanceReplacementKeys: api.balanceReplacementKeys,
+    _quizKeepUnchangedKeyChecks: api.keepUnchangedKeyChecks, _quizBalanceChoiceKeys: api.balanceChoiceKeys,
     addToast: props.addToast, t: key => key, isImprovingDistractor: {}, isBulkImproving: false,
     quizImageRefineInputs: {}, callGeminiImageEdit: vi.fn(() => request.promise),
     handleQuizChange: vi.fn(), handleQuizImageRefine: vi.fn(), handleQuizBulkOptionChange: vi.fn()

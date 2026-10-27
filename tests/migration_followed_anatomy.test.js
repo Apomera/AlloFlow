@@ -73,7 +73,7 @@ function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = fakeEngine(stage, { speciesId: state.flightSpecies || 'canada_goose', formationMode: state.flightFormation || 'natural',
     season: state.flightSeason || 'fall', wingStepSerial: state.flightWingStep });
@@ -96,7 +96,7 @@ function fixture(seed = {}, options = {}) {
     anatomySide() { return host.querySelector('[data-study-anatomy-side]')?.getAttribute('data-study-anatomy-side') || null; },
     region(id) { ui.click(ui.node(node => node.props?.['data-study-region'] === id)); },
     followStatus() { return host.querySelector('[data-wingtip-follow-status]')?.getAttribute('data-wingtip-follow-status') || null; },
-    path(checked) { act(() => { ui.node(node => node.type === 'input' && node.props['aria-describedby'] === 'migration-wingtip-path-help').props.onChange({ target: { checked } }); }); },
+    path(checked) { act(() => { ui.node(node => node.type === 'input' && node.props['aria-describedby'] === ui.host.querySelector('[data-migration-id="migration-wingtip-path-help"]').id).props.onChange({ target: { checked } }); }); },
     choose(index) { ui.click(ui.node(node => node.props?.['data-study-cycle-position'] === index)); },
     set(values) { act(() => { state = { ...state, ...values }; refresh(value => value + 1); }); },
     flushOne() { act(() => { state = { ...state, ...queued.shift() }; refresh(value => value + 1); }); },
@@ -116,7 +116,7 @@ function anatomyFixture(side = 0) {
   f.live.flightWingtipFollowSide = side; f.live.flightWingtipFollowSourceUuid = selection.context.sourceBirdUuid;
   return { ...f, selection };
 }
-function notePrompt(ui) { return ui.host.querySelector('#migration-study-motion-evidence-prompt')?.textContent || ''; }
+function notePrompt(ui) { return ui.host.querySelector("[data-migration-id=\"migration-study-motion-evidence-prompt\"]")?.textContent || ''; }
 
 describe('Trace anatomy on a validated followed bird wing', () => {
   it.each([0, 1])('resolves exact followed side %s without changing the engine or live values', side => {
@@ -145,7 +145,7 @@ describe('Trace anatomy on a validated followed bird wing', () => {
     expect(ui.anatomyToggle()).toBeNull(); expect(ui.host.querySelector('[data-followed-anatomy-activity]')).toBeNull();
     ui.follow(0); expect(ui.anatomyToggle()).toMatchObject({ type: 'button', props: { type: 'button',
       className: 'migration-wingtip-follow-button', children: 'Show anatomy on followed wing', 'aria-pressed': 'false',
-      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-followed-anatomy-help' } });
+      'aria-controls': ui.stage.id, 'aria-describedby': ui.host.querySelector('[data-migration-id="migration-followed-anatomy-help"]').id } });
     const button = ui.host.querySelector('[data-followed-anatomy-toggle]'); button.focus();
     ui.toggleAnatomy(); expect(ui.anatomyToggle().props['aria-pressed']).toBe('true'); expect(ui.anatomySide()).toBe('left');
     expect(ui.host.querySelector('[data-followed-anatomy-toggle]')).toBe(button); expect(document.activeElement).toBe(button);
@@ -214,7 +214,7 @@ describe('Trace anatomy on a validated followed bird wing', () => {
   it('reflects anatomy preference changes without replacing the mounted control or moving note focus', () => {
     const observations = { drafts: { 'canada_goose:inner-wing': 'Keep my draft.' }, records: {} };
     const ui = fixture({ flightShowAnatomy: false, flightStudyRegion: 'inner-wing', flightStudyObservationOpen: true, flightStudyObservations: observations });
-    ui.follow(1); const toggle = ui.host.querySelector('[data-followed-anatomy-toggle]'), note = ui.host.querySelector('#migration-study-observation-note'); note.focus();
+    ui.follow(1); const toggle = ui.host.querySelector('[data-followed-anatomy-toggle]'), note = ui.host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); note.focus();
     ui.toggleAnatomy(); expect(document.activeElement).toBe(note); expect(note.value).toBe('Keep my draft.');
     expect(ui.host.querySelector('[data-followed-anatomy-toggle]')).toBe(toggle); expect(ui.anatomyToggle().props['aria-pressed']).toBe('true');
     ui.set({ flightShowAnatomy: false }); expect(ui.anatomyToggle().props['aria-pressed']).toBe('false');
@@ -240,10 +240,10 @@ describe('Trace anatomy on a validated followed bird wing', () => {
     expect(activity).toContain('Predict which wing segment'); expect(activity).toContain('Hold the camera fixed');
     expect(activity).toContain('cycle positions 3 and 7'); expect(activity).toContain('Inner wing (2) and Primary feathers (3)');
     expect(notePrompt(ui)).toContain('Name the followed left or right side and the cycle positions in your note');
-    expect(ui.host.querySelector('#migration-study-observation-note').value).toBe('Inner-wing draft.');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-note\"]").value).toBe('Inner-wing draft.');
     expect(ui.node(node => node.props?.['data-study-region'] === 'inner-wing').props['aria-label']).toBe('Observe Inner wing');
     expect(ui.node(node => node.props?.['data-study-region'] === 'primaries').props['aria-label']).toBe('Observe Primary feathers');
-    ui.region('primaries'); expect(ui.host.querySelector('#migration-study-observation-note').value).toBe('Primary-feather draft.');
+    ui.region('primaries'); expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-note\"]").value).toBe('Primary-feather draft.');
     expect(notePrompt(ui)).toContain('Name the followed left or right side'); expect(ui.state.flightStudyObservations).toBe(observations);
     expect(ui.state.flightStudyObservations.records).toEqual({});
   });
@@ -253,10 +253,10 @@ describe('Trace anatomy on a validated followed bird wing', () => {
     expect(notePrompt(ui)).toContain('Distinguish anatomical side from screen side'); expect(notePrompt(ui)).not.toContain('Name the followed');
     ui.toggleAnatomy(); expect(notePrompt(ui)).toContain('Name the followed'); ui.follow(0);
     expect(notePrompt(ui)).toContain('Predict how the outer tips move relative to the body'); expect(notePrompt(ui)).not.toContain('Name the followed');
-    ui.follow(1); ui.region('head'); expect(ui.host.querySelector('#migration-study-motion-evidence-prompt')).toBeNull();
-    expect(ui.host.querySelector('#migration-study-observation-prompt').textContent).toContain('Predict which parts of the white cheek and chinstrap');
-    expect(ui.host.querySelector('#migration-study-observation-prompt').textContent).toContain('Compare Profile with From below');
-    ui.region('tail'); expect(ui.host.querySelector('#migration-study-motion-evidence-prompt')).toBeNull();
+    ui.follow(1); ui.region('head'); expect(ui.host.querySelector("[data-migration-id=\"migration-study-motion-evidence-prompt\"]")).toBeNull();
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-prompt\"]").textContent).toContain('Predict which parts of the white cheek and chinstrap');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-prompt\"]").textContent).toContain('Compare Profile with From below');
+    ui.region('tail'); expect(ui.host.querySelector("[data-migration-id=\"migration-study-motion-evidence-prompt\"]")).toBeNull();
   });
 
   it('hides contextual anatomy tracing after source or camera context loss and keeps the established right-side fallback', () => {
@@ -272,6 +272,6 @@ describe('Trace anatomy on a validated followed bird wing', () => {
     expect(ui.live.flightWingtipFollowSide).toBe(0); expect(ui.anatomyToggle()).toBeNull();
     expect(ui.host.querySelector('[data-followed-anatomy-activity]')).toBeNull(); expect(ui.anatomySide()).toBeNull();
     expect(notePrompt(ui)).not.toContain('Name the followed left or right side and the cycle positions');
-    expect(ui.host.querySelector('#migration-study-observation-prompt').textContent).toContain('These are butterfly wings');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-prompt\"]").textContent).toContain('These are butterfly wings');
   });
 });

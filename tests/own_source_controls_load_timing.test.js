@@ -52,8 +52,13 @@ function loaderHarness(manifest) {
   };
   const win = { __alloDiagLog: [], dispatchEvent() {} };
   class FakeCustomEvent { constructor(type, options) { this.type = type; this.detail = options && options.detail; } }
-  const makeEnsureLoader = new Function('window', 'document', 'CustomEvent', 'pluginCdnBase', 'pluginCdnVersion',
-    loaderFactorySource() + '\nreturn makeEnsureLoader;')(win, doc, FakeCustomEvent, 'https://plugins.test/', 'timing-test');
+  const createPolicy = new Function(fs.readFileSync('browser_delivery_policy.js', 'utf8') + '\nreturn _alloCreateBrowserDeliveryPolicy;')();
+  const deliveryPolicy = createPolicy({ schemaVersion: 1, releaseId: '0'.repeat(64), fallbackCommit: null,
+    allowDesktopRemoteFallback: false,
+    assets: Object.fromEntries(manifest.map(name => [name, { bytes: 1, integrity: 'sha384-' + 'A'.repeat(64) }]))
+  }, { baseUrl: 'https://plugins.test/' });
+  const makeEnsureLoader = new Function('window', 'document', 'CustomEvent', 'pluginCdnBase', 'pluginCdnVersion', '__alloBrowserDelivery',
+    loaderFactorySource() + '\nreturn makeEnsureLoader;')(win, doc, FakeCustomEvent, 'https://plugins.test/', 'timing-test', deliveryPolicy);
   makeEnsureLoader('Stem', manifest, () => true)();
   return { win, history };
 }
@@ -78,6 +83,10 @@ describe('Lumen libraries are not held behind the STEM Lab host', () => {
         'stem_lab/stem_lumen_evidence.js',
         'stem_lab/stem_lumen_documents.js',
       ]);
+      for (const script of harness.history) {
+        expect(script.integrity).toBe('sha384-' + 'A'.repeat(64));
+        expect(script.crossOrigin).toBe('anonymous');
+      }
     } finally {
       vi.useRealTimers();
     }

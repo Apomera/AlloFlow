@@ -16,7 +16,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { mkdtempSync, writeFileSync, statSync, readFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, statSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -75,7 +75,7 @@ async function call(name, args) { return (await callResult(name, args)).structur
 
 beforeAll(async () => {
   writeFileSync(pdfPath, driver._buildSelfTestPdf());
-  const env = { ...process.env, ALLOFLOW_MCP_NO_KEY_FILES: '1' };
+  const env = { ...process.env, ALLOFLOW_MCP_NO_KEY_FILES: '1', ALLOFLOW_MCP_STATE_DIR: join(tmp, 'state') };
   delete env.GEMINI_API_KEY;
   delete env.ALLOFLOW_MCP_ENV_PATH;
   delete env.ALLOFLOW_MCP_GEMINI_BASE;
@@ -85,7 +85,15 @@ beforeAll(async () => {
   child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
 });
 
-afterAll(() => { try { child.kill(); } catch (_) {} });
+afterAll(async () => {
+  if (child && child.exitCode === null) {
+    const closed = new Promise(resolve => child.once('close', resolve));
+    child.kill();
+    await closed;
+  }
+  await driver.close();
+  rmSync(tmp, { recursive: true, force: true });
+});
 
 describe('agent-bridge remediation (client-model transport, keyless)', () => {
   it('runs the full pipeline to a written, delivery-verified result with the client as the model', async () => {

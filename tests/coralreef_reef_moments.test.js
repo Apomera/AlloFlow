@@ -160,7 +160,7 @@ describe('reef moment card', () => {
     expect(await body({ ...M.turtle_breath, phase: 'down' })).toBe('Right now, a Hawksbill turtle is gliding back down after its breaths.');
     expect(await body(M.cots_scar)).toBe('Look at a Crown-of-thorns starfish and the bright white patch beside it: coral it has already eaten.');
     expect(await body(M.anemonefish_hide)).toBe('You came close, so a Clown anemonefish ducked down into the stinging tentacles, where predators cannot follow.');
-    expect(await body(M.cloud_shelter)).toBe('You came close, so a cloud of small fish (Sea goldie) is dropping down into the coral for shelter.');
+    expect(await body(M.cloud_shelter)).toBe('Nearby, a cloud of small fish (Sea goldie) is dropping down into the coral for shelter. Watch it rise again when the disturbance has passed.');
     // Only the cleaner identified: the client stays "a fish".
     const t2 = await mountTool({ speciesLog: { cleaner_wrasse: { firstSeen: 1 } } });
     const e2 = await startDive(t2);

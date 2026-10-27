@@ -10,7 +10,7 @@ const io = files => ({ readdirSync: () => files });
 test('native manifest discovers the CI gap and MCP security suites and keeps emulators separate', () => {
   const files = discoverNativeTests();
   for (const file of ['blueprint_module_preflight', 'catalog_import_completion', 'lesson_deep_link_host', 'project_response_restore',
-    'mcp_ace_browser_security', 'mcp_artifact_source_bytes', 'mcp_bundle_audit_security']) {
+    'mcp_ace_browser_security', 'mcp_artifact_source_bytes', 'mcp_bundle_audit_security', 'runtime_graph_engine_adapters']) {
     assert.ok(files.includes('tests/' + file + '.test.cjs'), file);
   }
   assert.equal(new Set(files).size, files.length);
@@ -54,6 +54,7 @@ test('npm, blocking CI, and full verification retain the native runner entry poi
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/verify.yml'), 'utf8');
   const nativeJob = workflow.slice(workflow.indexOf('\n  native-unit:'), workflow.indexOf('\n  unit:'));
   assert.match(nativeJob, /run: npm run test:native/);
+  assert.match(nativeJob, /run: npm ci --no-audit --no-fund/);
   assert.doesNotMatch(nativeJob, /continue-on-error:\s*true/);
   const verify = fs.readFileSync(path.join(root, 'dev-tools/verify_all.cjs'), 'utf8');
   assert.match(verify, /cmd: \['node', 'dev-tools\/run_native_tests.cjs', '--quiet'\]/);

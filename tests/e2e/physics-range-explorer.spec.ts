@@ -51,6 +51,8 @@ test('prediction gates the curve, and the curve matches flights the canvas flies
   await page.locator('#physics-range-prediction').fill('40');
   await page.keyboard.press('Enter');
   await expect(panel.locator('[data-physics-range-chart]')).toBeVisible();
+  // The form unmounts on reveal; keyboard focus must land on the result, not fall to the page.
+  await expect(panel.locator('[data-physics-range-feedback]')).toBeFocused();
   await expect(panel.locator('[data-physics-range-feedback]')).toContainText('You predicted 40°');
   await expect(panel.locator('[data-physics-range-feedback]')).toContainText('45.0°');
   await expect(panel.locator('[data-physics-range-curve]')).toHaveCount(1);
@@ -112,7 +114,14 @@ test('text and chart marks stay readable in default, dark and contrast themes', 
       (window as any).__rerender();
     };
   });
-  for (const theme of ['default', 'dark', 'contrast']) {
+  const speedKey = 'speed|45|9.8|drag|1|0|25';
+  for (const variant of ['angle', 'speed'] as const) {
+   if (variant === 'speed') {
+     await setState(page, { rangeExplorer: { revealedFor: '25|9.8|drag|1|0', mode: 'speed', sRevealedFor: speedKey, sPredictedFor: speedKey, sGuess: 2, vSquared: true } });
+     await expect(page.locator('[data-physics-range-speed-chart]')).toBeVisible();
+     await expect(page.locator('[data-physics-range-speed-feedback]')).toBeVisible();
+   }
+   for (const theme of ['default', 'dark', 'contrast']) {
     await page.evaluate(t => (window as any).__setTheme(t), theme);
     await page.waitForTimeout(250);
     const result = await page.evaluate(() => {
@@ -127,7 +136,7 @@ test('text and chart marks stay readable in default, dark and contrast themes', 
         const fg = rgb(getComputedStyle(el).color), bg = bgOf(el); if (!fg || !bg) return;
         text++; const r = ratio(fg, bg); if (r < 4.5) failures.push(`${(el.textContent || '').slice(0, 30)} ${r.toFixed(2)}`);
       });
-      root.querySelectorAll('svg[data-physics-range-chart] text, svg[data-physics-range-chart] path, svg[data-physics-range-chart] circle').forEach(el => {
+      root.querySelectorAll(['svg[data-physics-range-chart]', 'svg[data-physics-range-speed-chart]'].flatMap(c => [c + ' text', c + ' path', c + ' circle', c + ' rect']).join(', ')).forEach(el => {
         const cs = getComputedStyle(el), bg = bgOf(el.closest('svg'));
         // A hollow marker (fill = the surface) is drawn by its ring.
         const hollow = el.tagName === 'circle' && (cs.fill === 'none' || String(rgb(cs.fill)) === String(bg));
@@ -139,10 +148,79 @@ test('text and chart marks stay readable in default, dark and contrast themes', 
       });
       return { failures, text, marks };
     });
-    expect(result.text, `${theme}: measurable text`).toBeGreaterThan(10);
-    expect(result.marks, `${theme}: measurable chart marks`).toBeGreaterThan(8);
-    expect(result.failures, theme).toEqual([]);
+    expect(result.text, `${variant}/${theme}: measurable text`).toBeGreaterThan(10);
+    expect(result.marks, `${variant}/${theme}: measurable chart marks`).toBeGreaterThan(8);
+    expect(result.failures, `${variant}/${theme}`).toEqual([]);
+   }
   }
+});
+
+test('speed mode works from the keyboard: choose, lock in, read the result, switch to v²', async ({ page }) => {
+  await mount(page);
+  await setState(page, { angle: 45, velocity: 20, gravity: 9.8, mass: 1, launchHeight: 0, airResist: false, showRangeExplorer: true });
+  const panel = page.locator('[data-physics-range-explorer]');
+  await panel.locator('[data-physics-range-mode-option="speed"]').focus();
+  await page.keyboard.press('Enter');
+  await expect(panel.locator('[data-physics-range-mode-option="speed"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(panel.locator('legend')).toContainText('from 20 to 40 m/s');
+  await expect(panel.locator('[data-physics-range-speed-submit]')).toBeDisabled();
+  await page.getByRole('radio', { name: '×4' }).check();
+  await panel.locator('[data-physics-range-speed-submit]').focus();
+  await page.keyboard.press('Enter');
+  await expect(panel.locator('[data-physics-range-speed-feedback]')).toBeFocused();
+  await expect(panel.locator('[data-physics-range-speed-feedback]')).toContainText('That is the closest choice.');
+  await expect(panel.locator('[data-physics-range-speed-feedback]')).toContainText('×4.00');
+  await expect(panel.locator('[data-physics-range-pair]')).toHaveCount(2);
+  const vsq = panel.locator('[data-physics-range-vsq]');
+  await vsq.focus();
+  await page.keyboard.press('Space');
+  await expect(panel.locator('[data-physics-range-speed-chart]')).toHaveAttribute('data-x-axis', 'v2');
+  await expect(panel.locator('[data-physics-range-speed-findings]')).toContainText('straight line through the origin');
+  // The inspected speed goes to the real launcher, and a launch lands where the curve says.
+  const slider = panel.locator('[data-physics-range-speed-slider]');
+  await slider.focus();
+  for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowRight');
+  await expect(panel.locator('[data-physics-range-reading]')).toContainText('At 30 m/s');
+  await panel.locator('[data-physics-range-apply]').click();
+  await expect.poll(() => page.evaluate(() => (window as any).__ctx.toolData.physics.velocity)).toBe(30);
+  await launchAndLand(page);
+  const check = await page.evaluate(() => {
+    const P = (window as any).StemLab._physics;
+    return { logged: (window as any).__ctx.toolData.physics.lastFlight.range, curve: P.speedSweep(45, 9.8, false, 1, 0).points[25].range };
+  });
+  expect(Math.abs(check.logged - check.curve)).toBeLessThan(1e-6);
+});
+
+test('two ways to hit a target: keyboard target, read a crossing, fly it, land near the target', async ({ page }) => {
+  await mount(page);
+  await setState(page, { angle: 45, velocity: 25, gravity: 9.8, mass: 1, launchHeight: 0, airResist: false, simSpeed: 1, showRangeExplorer: true, rangeExplorer: { revealedFor: '25|9.8|vacuum||0' } });
+  const panel = page.locator('[data-physics-range-explorer]');
+  const card = panel.locator('[data-physics-range-target]');
+  await expect(card).toContainText('Two angles land at 48 m: 24.4° and 65.6°.');
+  await expect(card).toContainText('24.4° + 65.6° = 90.0°');
+  await expect(panel.locator('[data-physics-range-target-hit]')).toHaveCount(2);
+  const slider = panel.locator('[data-physics-range-target-slider]');
+  await slider.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(slider).toHaveValue('50');
+  await expect(slider).toHaveAttribute('aria-valuetext', '50 m: 25.8° and 64.2°');
+  for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowRight');
+  await expect(card).toContainText('No angle reaches 66 m');
+  await expect(panel.locator('[data-physics-range-target-hit]')).toHaveCount(0);
+  for (let i = 0; i < 9; i++) await page.keyboard.press('ArrowLeft');
+  await expect(slider).toHaveValue('48');
+
+  // The high crossing goes to the curve reader, then to the real launcher.
+  await panel.locator('[data-physics-range-target-read="high"]').click();
+  await expect(panel.locator('#physics-range-inspect')).toBeFocused();
+  await expect(panel.locator('#physics-range-inspect')).toHaveValue('66');
+  await panel.locator('[data-physics-range-apply]').click();
+  await expect.poll(() => page.evaluate(() => (window as any).__ctx.toolData.physics.angle)).toBe(66);
+  await launchAndLand(page);
+  // 66° is the whole-degree setting nearest 65.6°, so the ball lands close to, not exactly at, 48 m.
+  const landed = await page.evaluate(() => (window as any).__ctx.toolData.physics.lastFlight.range);
+  expect(Math.abs(landed - 48)).toBeLessThan(1);
+  expect(landed).toBeCloseTo(625 / 9.8 * Math.sin(132 * Math.PI / 180), 6);
 });
 
 test('fits a phone-width column without horizontal scrolling', async ({ page }) => {
@@ -161,4 +239,12 @@ test('fits a phone-width column without horizontal scrolling', async ({ page }) 
   const smallest = await panel.locator('[data-physics-range-chart] text').evaluateAll(nodes =>
     Math.min(...nodes.map(n => n.getBoundingClientRect().height)));
   expect(smallest).toBeGreaterThanOrEqual(11);
+  // Speed mode in the same column.
+  await setState(page, { rangeExplorer: { revealedFor: '25|9.8|drag|1|0', mode: 'speed', sRevealedFor: 'speed|45|9.8|drag|1|0|25' } });
+  await expect(panel.locator('[data-physics-range-speed-chart]')).toBeVisible();
+  const sbox = await panel.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(sbox.scroll).toBeLessThanOrEqual(sbox.client + 1);
+  const ssmall = await panel.locator('[data-physics-range-speed-chart] text').evaluateAll(nodes =>
+    Math.min(...nodes.map(n => n.getBoundingClientRect().height)));
+  expect(ssmall).toBeGreaterThanOrEqual(11);
 });

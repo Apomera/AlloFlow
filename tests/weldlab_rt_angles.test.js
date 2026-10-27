@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -49,7 +50,7 @@ describe('Local radiography angle comparison', () => {
     for (const input of panel().querySelectorAll('input')) expect(panel().querySelector(`label[for="${input.id}"]`)).toBeTruthy();
   });
   it('recovers the original complete inspection region and renderer exactly', () => {
-    const source = stripRtAnglePair(readFileSync(resolve(SRC), 'utf8'));
+    const source = stripRtAnglePair(stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8')));
     const region = source.slice(source.indexOf('      function InspectionCWIPrep() {'), source.indexOf('      function ConsumablesDeepDive() {'));
     const hashes = JSON.parse(readFileSync(resolve('tests/fixtures/weldlab-sequence-region-hashes.json'), 'utf8'));
     expect(createHash('sha256').update(region).digest('hex')).toBe(hashes.inspection);

@@ -82,13 +82,13 @@ afterEach(() => {
 describe('Migration scene-adjacent saved flight pair review', () => {
   it('opens only through an explicit recorded-flight action and places native review controls below the scene', () => {
     const ui = fixture(); expect(ui.review()).toBeNull();
-    expect(ui.node(node => node.props?.id === 'migration-flight-deck').props['data-pair-review-open']).toBe('false');
+    expect(ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-deck').props['data-pair-review-open']).toBe('false');
     ui.click(ui.revisit());
     expect(ui.review().props['aria-label']).toBe('Saved trial review');
     expect(ui.review().props['data-review-trial']).toBe(1);
     expect(ui.review().props['data-review-active']).toBe('trial');
-    expect(ui.node(node => node.props?.id === 'migration-flight-deck').props['data-pair-review-open']).toBe('true');
-    const stage = ui.host.querySelector('#migration-flight-stage'), panel = ui.host.querySelector('[data-experiment-pair-review]');
+    expect(ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-deck').props['data-pair-review-open']).toBe('true');
+    const stage = ui.host.querySelector("[data-migration-id=\"migration-flight-stage\"]"), panel = ui.host.querySelector('[data-experiment-pair-review]');
     expect(stage.parentElement).toBe(panel.parentElement);
     expect(stage.contains(panel)).toBe(false); expect(stage.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     for (const name of ['baseline', 'trial', 'evidence']) { expect(ui.pair(name).type).toBe('button'); expect(ui.pair(name).props.type).toBe('button'); }
@@ -103,8 +103,8 @@ describe('Migration scene-adjacent saved flight pair review', () => {
     expect(ui.pair('close').props.type).toBe('button');
     ui.click(ui.pair('close'));
     expect(ui.review()).toBeNull(); expect(ui.writes).toEqual([]); expect(ui.state).toBe(state);
-    expect(ui.state.flightInvestigation).toBe(work); expect(document.activeElement?.id).toBe('migration-flight-stage');
-    expect(ui.node(node => node.props?.id === 'migration-flight-deck').props['data-pair-review-open']).toBe('false');
+    expect(ui.state.flightInvestigation).toBe(work); expect(document.activeElement).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]'));
+    expect(ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-deck').props['data-pair-review-open']).toBe('false');
   });
 
   it('shows the selected historical pair and original prediction even after the current baseline and prediction change', () => {
@@ -129,7 +129,7 @@ describe('Migration scene-adjacent saved flight pair review', () => {
     expect(ui.review().props['data-review-active']).toBe('baseline'); expect(ui.pair('baseline').props['aria-pressed']).toBe('true');
     ui.click(ui.pair('trial'));
     expect(ui.writes).toHaveLength(2); expect(ui.state.flightWind).toBe(8); expect(ui.review().props['data-review-active']).toBe('trial');
-    expect(document.activeElement?.id).toBe('migration-flight-stage');
+    expect(document.activeElement).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]'));
     expect(ui.state.flightInvestigation).toBe(work); expect(ui.state.flightStudyObservations).toBe(observations); expect(ui.state.flightChallenges).toBe(challenges);
     expect(ui.state.selectedSpecies).toBe('snow_goose'); expect(ui.state.aiExplorerText).toBe('Keep these route facts.'); expect(ui.awardXP).not.toHaveBeenCalled();
   });
@@ -138,7 +138,7 @@ describe('Migration scene-adjacent saved flight pair review', () => {
     const work = notebook(); const ui = fixture({ flightInvestigation: work }); ui.click(ui.revisit()); ui.writes.length = 0;
     const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]');
     evidenceAction.focus(); act(() => evidenceAction.click());
-    expect(document.activeElement?.id).toBe('migration-experiment-evidence'); expect(ui.writes).toEqual([]);
+    expect(document.activeElement).toBe(ui.host.querySelector('[data-migration-id="migration-experiment-evidence"]')); expect(ui.writes).toEqual([]);
     expect(ui.state.flightInvestigation).toBe(work); expect(work.evidence).toBe('Recorded evidence.'); expect(work.explanation).toBe('My explanation.');
   });
 
@@ -174,8 +174,8 @@ describe('Migration scene-adjacent saved flight pair review', () => {
 
   it('retains its source while current notes and prediction are revised without rewriting the captured prediction', () => {
     const ui = fixture(); ui.click(ui.revisit());
-    act(() => { ui.node(node => node.props?.id === 'migration-experiment-evidence').props.onChange({ target: { value: 'My new evidence.' } }); });
-    act(() => { ui.node(node => node.props?.id === 'migration-experiment-prediction').props.onChange({ target: { value: 'My revised current prediction.' } }); });
+    act(() => { ui.node(node => node.props?.["data-migration-id"] === 'migration-experiment-evidence').props.onChange({ target: { value: 'My new evidence.' } }); });
+    act(() => { ui.node(node => node.props?.["data-migration-id"] === 'migration-experiment-prediction').props.onChange({ target: { value: 'My revised current prediction.' } }); });
     expect(ui.review()).not.toBeNull(); expect(ui.state.flightInvestigation.evidence).toBe('My new evidence.');
     expect(ui.host.querySelector('[data-experiment-pair-review]').textContent).toContain('The wind will change modeled ground speed.');
     expect(ui.host.querySelector('[data-experiment-pair-review]').textContent).not.toContain('My revised current prediction.');
@@ -190,7 +190,7 @@ describe('Migration scene-adjacent saved flight pair review', () => {
     if (change === 'remove') nextRows = [rows[0]];
     if (change === 'reindex') nextRows = [rows[1]];
     ui.set({ flightInvestigation: notebook(nextRows) });
-    expect(ui.review()).toBeNull(); expect(ui.node(node => node.props?.id === 'migration-flight-deck').props['data-pair-review-open']).toBe('false');
+    expect(ui.review()).toBeNull(); expect(ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-deck').props['data-pair-review-open']).toBe('false');
   });
 
   it('normalizes readable imported snapshots, rejects malformed sources and never substitutes the current prediction', () => {
@@ -210,7 +210,7 @@ describe('Migration scene-adjacent saved flight pair review', () => {
     ui.click(ui.node(node => node.props?.['aria-label'] === 'Remove trial 1'));
     act(() => { vi.runOnlyPendingTimers(); });
     expect(ui.action('record').props.disabled).toBe(true);
-    expect(document.activeElement?.id).toBe('migration-experiment-prediction');
+    expect(document.activeElement).toBe(ui.host.querySelector('[data-migration-id="migration-experiment-prediction"]'));
     expect(document.activeElement.disabled).toBe(false); expect(ui.state.flightInvestigation.trials).toHaveLength(0);
   });
 
@@ -226,22 +226,22 @@ describe('Migration scene-adjacent saved flight pair review', () => {
 
   it('exits native fullscreen before focusing evidence outside the deck', async () => {
     const ui = fixture(); ui.click(ui.revisit()); ui.writes.length = 0;
-    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: ui.host.querySelector('#migration-flight-deck') });
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: ui.host.querySelector("[data-migration-id=\"migration-flight-deck\"]") });
     document.exitFullscreen = vi.fn(() => { delete document.fullscreenElement; return Promise.resolve(); });
     const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]');
     evidenceAction.focus();
     await act(async () => { evidenceAction.click(); await Promise.resolve(); });
-    expect(document.exitFullscreen).toHaveBeenCalledOnce(); expect(document.activeElement?.id).toBe('migration-experiment-evidence'); expect(ui.writes).toEqual([]);
+    expect(document.exitFullscreen).toHaveBeenCalledOnce(); expect(document.activeElement).toBe(ui.host.querySelector('[data-migration-id="migration-experiment-evidence"]')); expect(ui.writes).toEqual([]);
   });
 
   it('leaves custom deck fullscreen before focusing evidence and keeps device Reduce motion enabled', () => {
     vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
     const ui = fixture({ deviceReduceMotion: true }); ui.click(ui.revisit()); ui.writes.length = 0;
-    const deck = ui.host.querySelector('#migration-flight-deck'); deck.setAttribute('data-allo-fullscreen-active', 'true');
+    const deck = ui.host.querySelector("[data-migration-id=\"migration-flight-deck\"]"); deck.setAttribute('data-allo-fullscreen-active', 'true');
     vi.stubGlobal('__alloStemFS', vi.fn(node => node.removeAttribute('data-allo-fullscreen-active')));
     const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]');
     evidenceAction.focus(); act(() => evidenceAction.click());
-    expect(window.__alloStemFS).toHaveBeenCalledWith(deck); expect(document.activeElement?.id).toBe('migration-experiment-evidence');
+    expect(window.__alloStemFS).toHaveBeenCalledWith(deck); expect(document.activeElement).toBe(ui.host.querySelector('[data-migration-id="migration-experiment-evidence"]'));
     expect(ui.writes).toEqual([]); expect(ui.state.deviceReduceMotion).toBe(true); expect(ui.state.flightPaused).toBe(true);
   });
 });

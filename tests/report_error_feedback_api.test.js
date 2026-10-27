@@ -155,11 +155,11 @@ describe('truthful API classification and recovery', () => {
     expect(history().map(entry => entry.state)).toEqual(['pending', 'cancelled']);
   });
 
-  it('an absent direct API key is an actionable auth failure instead of an empty success', async () => {
+  it('an absent direct API key is an actionable configuration failure instead of an empty success', async () => {
     localStorage.removeItem('alloflow_ai_config');
     const fetch = vi.fn();
     const api = makeApi(fetch, { apiKey: '' });
-    await expect(api.callGemini('x')).rejects.toMatchObject({ isAuth: true });
+    await expect(api.callGemini('x')).rejects.toMatchObject({ message: 'API_CONNECTION_NOT_CONFIGURED', isConfig: true, isAuth: false, classification: { kind: 'config', reason: 'missing-api-key' } });
     expect(fetch).not.toHaveBeenCalled();
     expect(history().map(entry => entry.state)).toEqual(['pending', 'failed']);
     expect(history().at(-1).message).toMatch(/key|connection/i);

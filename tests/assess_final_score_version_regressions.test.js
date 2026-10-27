@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const babel = require('@babel/core');
+const React = require('../desktop/web-app/node_modules/react');
 let aggs, quiz, inbox;
 const mcq = { type: 'mcq', question: 'Choose A.', options: ['A', 'B'], correctAnswer: 'A' };
 const cases = [
@@ -32,7 +33,7 @@ beforeAll(() => {
   new Function('window', readFileSync('quiz_live_aggregators.js', 'utf8'))(fakeWindow);
   aggs = fakeWindow.AlloModules.QuizLiveAggregators;
   const compiled = babel.transformSync(readFileSync('view_quiz_source.jsx', 'utf8'), { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
-  quiz = new Function('React', 'window', compiled + ';return { snapshot:_quizResponseSnapshot, answer:_quizAttemptAnswer };')({}, fakeWindow);
+  quiz = new Function('React', 'window', compiled + ';return { snapshot:_quizResponseSnapshot, answer:_quizAttemptAnswer };')({ createContext: () => ({}) }, fakeWindow);
   const source = readFileSync('view_submission_inbox_source.jsx', 'utf8');
   inbox = new Function('window', 'siResponseText', source.slice(source.indexOf('var SI_ASSESSMENT_KIND'), source.indexOf('var SI_ASSESSMENT_VERDICT_STYLE')) + ';return siAssessmentReport;')(fakeWindow, (value, max) => typeof value === 'string' ? value.slice(0, max) : '');
 });

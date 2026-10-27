@@ -90,7 +90,8 @@ test('iconic Maine birds: ten scenes, each with its bird', async ({ page }) => {
 
 test('physiology, feeders and art: every card carries a sized drawing', async ({ page }) => {
   for (const [view, sel, count] of [
-    ['physiology', '[data-birdlab-physiology-diagram]', 8],
+    // Respiratory System is drawn by the interactive breathing study above the cards.
+    ['physiology', '[data-birdlab-physiology-diagram]', 7],
     ['feeder', '[data-birdlab-feeder-art]', 10],
     ['art', '[data-birdlab-art-era]', 6],
   ] as const) {

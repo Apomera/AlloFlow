@@ -51,6 +51,43 @@ describe('guarded canvas ref classification', () => {
 });
 
 describe('live announcer classification', () => {
+  function ownedLiveWriter() {
+    return `function Feedback(props) {
+      var feedback = React.useState({text: ''}), owner = props.owner;
+      var writer = {report: function(message) { feedback[1]({text: message}); }};
+      return h('div', {'aria-live': 'polite', ref: function(node) { if (node) owner.current = writer; }}, feedback[0].text);
+    }
+    function render() {
+      var feedbackRef = React.useRef(null), otherRef = React.useRef(null);
+      function announce(message) { var writer = feedbackRef.current; if (writer) writer.report(message); }
+      announce('ready');
+      return h(Feedback, {owner: feedbackRef});
+    }`;
+  }
+  it('follows a mounted component writer from the same owner ref to its live state', () => {
+    expect(scan('scan_silent_announcer.cjs', ownedLiveWriter()).status).toBe(0);
+  });
+  it('follows a local useRef alias and proves each same-named announcer independently', () => {
+    const source = ownedLiveWriter().replace('var feedbackRef = React.useRef(null)', 'var useRef = React.useRef; var feedbackRef = useRef(null)');
+    const sibling = source.slice(source.indexOf('function render()')).replace('function render()', 'function sibling()');
+    expect(scan('scan_silent_announcer.cjs', source + sibling).status).toBe(0);
+    expect(scan('scan_silent_announcer.cjs', source + sibling.replace('writer.report(message)', 'discard(message)')).status).toBe(1);
+  });
+  it.each([
+    ['different owner', source => source.replace('h(Feedback, {owner: feedbackRef})', 'h(Feedback, {owner: otherRef})')],
+    ['unrendered state', source => source.replace('}, feedback[0].text)', "}, 'Unrelated status')")],
+    ['unpublished method', source => source.replace('owner.current = writer', 'owner.current = {report: function() {}}')],
+    ['unmounted component', source => source.replace('h(Feedback, {owner: feedbackRef})', "h('p', null, 'ordinary view')")],
+    ['shadowed writer', source => source.replace('if (writer) writer.report(message);', 'writer = discard; if (writer) writer.report(message);')],
+    ['overwritten method', source => source.replace('if (writer) writer.report(message);', 'if (writer) { writer.report = discard; writer.report(message); }')],
+    ['overwritten owner', source => source.replace("announce('ready');", "feedbackRef.current = {report: discard}; announce('ready');")],
+    ['unknown live props', source => source.replace("'aria-live': 'polite',", "'aria-live': 'polite', ...unknown,")],
+    ['unknown owner props', source => source.replace('{owner: feedbackRef}', '{owner: feedbackRef, ...unknown}')],
+    ['unknown factory', source => source.replace('h(Feedback,', 'makeFactory()(Feedback,')],
+    ['unused state setter', source => source.replace('feedback[1]({text: message});', 'function unused() { feedback[1]({text: message}); }')],
+  ])('rejects a ref writer with %s', (_label, change) => {
+    expect(scan('scan_silent_announcer.cjs', change(ownedLiveWriter())).status).toBe(1);
+  });
   it('follows a local function expression that updates a live ref on its timer', () => {
     expect(scan('scan_silent_announcer.cjs', `function render(ref) {
       var skyAnnounce = function(message) { ref.current.textContent = ''; setTimeout(function() { ref.current.textContent = message; }, 50); };

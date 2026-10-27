@@ -116,10 +116,15 @@ describe('quiz navigation clears the Student Tools launcher on phones', () => {
 
 describe('AI-only affordances stay hidden when student AI is off', () => {
   it('the glossary health check runs and renders for teachers only', () => {
-    const effect = anti.slice(anti.indexOf('const glossaryHealthCheckIdRef ='), anti.indexOf('const resilientJsonParse ='));
-    expect(effect).toContain("if (activeView !== 'glossary') return;\n      // Teacher-only (2026-09-14)");
-    expect(effect).toContain('if (!isTeacherMode) return;');
-    expect(effect).toContain('}, [activeView, isTeacherMode, generatedContent?.id, glossaryHealthSignature, runGlossaryHealthCheck]);');
+    const start = anti.indexOf('const glossaryHealthTaskRef =');
+    expect(start).toBeGreaterThan(-1);
+    const block = anti.slice(start, anti.indexOf('const resilientJsonParse =', start));
+    expect(block).toContain("if (!isTeacherMode || !module?.runGlossaryHealthCheck || live?.type !== 'glossary') return null;");
+    expect(block).toContain('if (!resolveAiCapability().text)');
+    const effect = block.slice(block.indexOf('useEffect(() => {'));
+    expect(effect).not.toContain('runGlossaryHealthCheck(');
+    expect(effect).toContain('glossaryHealthTaskRef.current?.cancel()');
+    expect(effect).toContain('}, [activeView, isTeacherMode, generatedContent?.id, glossaryHealthSignature]);');
     const glossary = read('view_glossary_source.jsx');
     expect(glossary).toContain("{isTeacherMode && (glossaryHealthCheck || isRunningHealthCheck) && activeView === 'glossary' && <div");
     expect(read('view_glossary_module.js')).toBe(read('desktop/web-app/public/view_glossary_module.js'));

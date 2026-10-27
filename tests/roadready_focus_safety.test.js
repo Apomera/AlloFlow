@@ -3,6 +3,8 @@ import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js'
 
 let R;
 const cleanups = [];
+// WCAG 2.1.4: drill letter/Space keys act only while focus is inside a drill root.
+function drillRoot() { let r = document.querySelector('[data-rr-drill]'); if (!r) { r = document.createElement('div'); r.setAttribute('data-rr-drill', 'true'); document.body.appendChild(r); } return r; }
 beforeAll(() => {
   resetStemLab(); window.__RR_TEST_EXPORTS__ = {};
   loadTool('stem_lab/stem_tool_roadready.js', 'roadReady');
@@ -23,7 +25,7 @@ it('reserves activation keys for focused controls, including nested button conte
   }
   expect(keys.current).toEqual({});
   const brake = new window.KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
-  document.body.dispatchEvent(brake);
+  drillRoot().dispatchEvent(brake);
   expect(brake.defaultPrevented).toBe(true); expect(keys.current[' ']).toBe(true);
 });
 

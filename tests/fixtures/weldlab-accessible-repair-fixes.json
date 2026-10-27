@@ -1,0 +1,67 @@
+[
+  {
+    "owner": "repair-explicit-apply-focus",
+    "old": "        var repairProbeState = useState(null);",
+    "new": "        var repairProbeState = useState(null);\n        var repairCandidateRef = useRef(null), repairApplyFocusRef = useRef(false);\n        // Applying disables its own button; consume only that explicit focus request.\n        useEffect(function () {\n          if (!repairApplyFocusRef.current) return;\n          repairApplyFocusRef.current = false;\n          var target = repairCandidateRef.current;\n          if (target) { try { target.focus(); } catch (_) {} }\n        });"
+  },
+  {
+    "owner": "repair-axis-result-relation",
+    "old": "'data-repair-axis': item.id, 'aria-pressed': on, onClick:",
+    "new": "'data-repair-axis': item.id, 'aria-pressed': on, 'aria-controls': 'repair6-preview-readings', onClick:"
+  },
+  {
+    "owner": "repair-candidate-native-description",
+    "old": "h('input', { id: 'repair6-candidate', 'data-repair-candidate': '', type: 'range',",
+    "new": "h('input', { id: 'repair6-candidate', ref: repairCandidateRef, 'data-repair-candidate': '', 'aria-describedby': 'repair6-preview-readings', type: 'range',"
+  },
+  {
+    "owner": "repair-preview-live-text",
+    "old": "              h('div', { className: 'rounded-xl border p-3 space-y-2', style: { flex: '1 1 180px', minWidth: 0, borderColor: edge, background: paper } },\n                h('h5', { className: 'font-black text-sm', style: { color: ink } }, __alloT('stem.weldlab.repair6_preview_title', 'Candidate preview')),",
+    "new": "              h('div', { id: 'repair6-preview-readings', 'data-repair-preview-readings': '', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-xl border p-3 space-y-2', style: { flex: '1 1 180px', minWidth: 0, borderColor: edge, background: paper } },\n                h('h5', { className: 'font-black text-sm', style: { color: ink } }, __alloT('stem.weldlab.repair6_preview_title', 'Candidate preview')),"
+  },
+  {
+    "owner": "repair-apply-focus-handoff",
+    "old": "'data-repair-apply': '', disabled: value === dials[axis.id], onClick: function () { setDial(axis.id, value); },",
+    "new": "'data-repair-apply': '', disabled: value === dials[axis.id], 'aria-controls': 'repair6-preview-readings', onClick: function () { if (value === dials[axis.id]) return; repairApplyFocusRef.current = true; setDial(axis.id, value); },"
+  },
+  {
+    "owner": "repair-current-result-relation",
+    "old": "'data-repair-use-current': '', onClick:",
+    "new": "'data-repair-use-current': '', 'aria-controls': 'repair6-preview-readings', onClick:"
+  },
+  {
+    "owner": "code-reader-focus-refs",
+    "old": "        var wpsFieldSelectRef = useRef(null), workflowSelectedStepRef = useRef(null);",
+    "new": "        var wpsFieldSelectRef = useRef(null), workflowSelectedStepRef = useRef(null);\n        var codeReaderSearchRef = useRef(null), codeReaderSectionRef = useRef(null);"
+  },
+  {
+    "owner": "code-reader-post-commit-focus-dispatch",
+    "old": "          var target = request && (request.target === 'sort' ? sortStepRef.current : request.target === 'clause' ? clauseStepRef.current : request.target === 'wps-field' ? wpsFieldSelectRef.current : request.target === 'workflow' ? workflowSelectedStepRef.current : null);",
+    "new": "          var target = request && (request.target === 'sort' ? sortStepRef.current : request.target === 'clause' ? clauseStepRef.current : request.target === 'wps-field' ? wpsFieldSelectRef.current : request.target === 'workflow' ? workflowSelectedStepRef.current : request.target === 'reader-search' ? codeReaderSearchRef.current : request.target === 'reader-section' ? codeReaderSectionRef.current : null);"
+  },
+  {
+    "owner": "code-reader-search-native-ref",
+    "old": "h('input', { id: 'code3-reader-search', 'data-code-reader-search': '', type: 'search',",
+    "new": "h('input', { id: 'code3-reader-search', ref: codeReaderSearchRef, 'data-code-reader-search': '', type: 'search',"
+  },
+  {
+    "owner": "code-reader-explicit-clear-focus",
+    "old": "'data-code-reader-clear': '', disabled: !query, onClick: function () { search(''); },",
+    "new": "'data-code-reader-clear': '', disabled: !query, onClick: function () { search(''); focusCodesStep('reader-search'); },"
+  },
+  {
+    "owner": "code-reader-selected-native-ref",
+    "old": "return h('button', { key: s.num, type: 'button', 'data-code-reader-section': s.num,",
+    "new": "return h('button', { key: s.num, ref: on ? codeReaderSectionRef : null, type: 'button', 'data-code-reader-section': s.num,"
+  },
+  {
+    "owner": "code-reader-navigation-endpoint-focus",
+    "old": "'data-code-reader-nav': nav[0], disabled: !available, onClick: function () { if (available) choose(matches[nav[1]].num); },",
+    "new": "'data-code-reader-nav': nav[0], disabled: !available, onClick: function () {\n                    if (!available) return;\n                    choose(matches[nav[1]].num);\n                    if ((nav[0] === 'previous' && nav[1] === 0) || (nav[0] === 'next' && nav[1] === matches.length - 1)) focusCodesStep('reader-section');\n                  },"
+  },
+  {
+    "owner": "robot-sensing-laser-plate-and-ray-separation",
+    "old": "                line(focusX, 183, focusX, 257, '#fda4af', 5),\n                path('M' + (torchX + 25) + ' 127 L' + focusX + ' 183 M' + (torchX + 25) + ' 127 L' + focusX + ' 257', '#e2e8f0', 2, { strokeDasharray: '6 5' }),",
+    "new": "                path('M' + (torchX + 25) + ' 127 L' + focusX + ' 183 M' + (torchX + 25) + ' 127 L' + focusX + ' 257', '#e2e8f0', 2, { strokeDasharray: '6 5' }),\n                line(focusX, 183, focusX, 257, '#0f172a', 9, { 'data-robot-sensing-projection-outline': '' }),\n                line(focusX, 183, focusX, 257, '#ffe4e6', 5, { 'data-robot-sensing-projection': '' }),"
+  }
+]

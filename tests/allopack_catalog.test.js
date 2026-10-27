@@ -34,10 +34,11 @@ const LEGAL_GAMES = new Set(['crossword', 'wordScramble', 'memory', 'matching', 
 const files = readdirSync(resolve(process.cwd(), 'allopacks')).filter((f) => f.endsWith('.allopack.json'));
 expect(files.length).toBeGreaterThan(0);
 const readPack = file => JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', file), 'utf8'));
-const draftFiles = files.filter(file => /\bdraft\b/i.test(readPack(file).allopack.reviewStatus || ''));
+const isTeachingDraft = status => /\bdraft\b|\breview pending\b/i.test(status || '');
+const draftFiles = files.filter(file => isTeachingDraft(readPack(file).allopack.reviewStatus));
 
 // The original catalog follows a compact, text-only authoring policy. Exported
-// teaching drafts may contain multiple lesson directions and embedded artwork;
+// teaching drafts may contain multiple directions, artwork and a teacher guide;
 // validate that supported format below without claiming content approval.
 describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', (file) => {
   const pack = JSON.parse(readFileSync(resolve(process.cwd(), 'allopacks', file), 'utf8'));
@@ -250,9 +251,11 @@ describe.each(files.filter(file => !draftFiles.includes(file)))('AlloPack: %s', 
 describe.each(draftFiles)('Exported teaching draft: %s', file => {
   const pack = readPack(file);
   it('retains its draft disclosure and passes the real import contract without data loss', () => {
-    expect(pack.allopack.reviewStatus).toMatch(/\bdraft\b/i);
-    expect(pack.allopack.author).toMatch(/review pending/i);
-    expect(pack.allopack.license).toMatch(/review required/i);
+    expect(isTeachingDraft(pack.allopack.reviewStatus)).toBe(true);
+    expect(pack.allopack.author).toMatch(/draft|review pending/i);
+    // The reuse license and educational review status are separate metadata.
+    expect(pack.allopack.license).toBeTypeOf('string');
+    expect(pack.allopack.license.trim()).not.toBe('');
     expect(pack.allopack.spec).toBe('0.1');
     expect(pack.allopack.language).toBe('en');
     expect(pack.sourceTopic).toBeTypeOf('string');
@@ -263,9 +266,18 @@ describe.each(draftFiles)('Exported teaching draft: %s', file => {
       title: pack.allopack.title, language: pack.allopack.language, data: pack });
     expect(report.ok, JSON.stringify(report.errors)).toBe(true);
     expect(report.value.data).toEqual(pack);
+    // A draft may carry ONE teacher guide (lesson-plan): TEACHER_ONLY_TYPES strips it from every
+    // student channel. Every other teacher-only type stays out of shared drafts.
+    expect(pack.history.filter(item => item.type === 'lesson-plan').length).toBeLessThanOrEqual(1);
     for (const item of pack.history) {
-      expect(REGISTERED.has(item.type) || item.type === 'image', item.type).toBe(true);
-      expect(TEACHER_ONLY).not.toContain("'" + item.type + "'");
+      expect(REGISTERED.has(item.type) || item.type === 'image' || item.type === 'lesson-plan', item.type).toBe(true);
+      if (item.type === 'lesson-plan') {
+        // Native teacher guides must retain the host's learner-view exclusion.
+        expect(TEACHER_ONLY).toContain("'lesson-plan'");
+        expect(item.data.essentialQuestion).toBeTypeOf('string');
+        expect(item.data.objectives.length).toBeGreaterThan(0);
+        expect(item.data.hook).toBeTypeOf('string');
+      } else expect(TEACHER_ONLY).not.toContain("'" + item.type + "'");
       expect(item.title).toBeTypeOf('string');
       expect(new Date(item.timestamp).toString()).not.toBe('Invalid Date');
       if (item.meta !== undefined) expect(item.meta).toBeTypeOf('string');
@@ -316,6 +328,12 @@ describe.each(draftFiles)('Exported teaching draft: %s', file => {
 });
 
 describe('catalog-wide', () => {
+  it('recognizes explicit pending review without treating approved status as a draft', () => {
+    expect(isTeachingDraft('Educator review pending')).toBe(true);
+    expect(isTeachingDraft('Original teaching draft; educator review pending')).toBe(true);
+    expect(isTeachingDraft('Educator reviewed')).toBe(false);
+    expect(isTeachingDraft('')).toBe(false);
+  });
   it('applies the same learner privacy rules to teaching drafts', () => {
     for (const file of draftFiles) {
       // Scan authored prose, not random base64 bytes; artwork is bounded and

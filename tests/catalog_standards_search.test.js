@@ -71,12 +71,13 @@ describe('the real catalog index', () => {
       expect(entry.standards || [], entry.path).toEqual(parseStandards(pack.allopack.standards));
     }
   });
-  it('finds both Novak-informed packs by SL.6.1 and licenses them CC-BY-4.0', () => {
-    const novak = entries.filter(e => /\/(?:academic_discourse_reading_space|reading_decisions)_grade6\.allopack\.json$/.test(e.path));
-    expect(novak).toHaveLength(2);
+  it('finds the three Novak-informed packs by SL.6.1 and keeps them under review until Katie agrees', () => {
+    const novak = entries.filter(e => /\/(?:academic_discourse_reading_space|academic_discourse_more_practice|reading_decisions)_grade6\.allopack\.json$/.test(e.path));
+    expect(novak).toHaveLength(3);
     for (const e of novak) {
       expect(matches(e, { search: 'SL.6.1' }), e.path).toBe(true);
-      expect(e.license).toBe('CC-BY-4.0');
+      expect(e.license, e.path).toBe('Not specified');
+      expect(e.review_status, e.path).toMatch(/review pending/i);
     }
   });
   it('makes codes searchable on the public library page', () => {

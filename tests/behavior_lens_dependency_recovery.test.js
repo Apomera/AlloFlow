@@ -114,9 +114,11 @@ describe('BehaviorLens workspace dependency recovery', () => {
       ['bl-mobile-css', 'bl-a11y-css'].filter((id) => document.getElementById(id)),
     );
     const harness = createReactHarness();
+    const runtimeHarness = createReactHarness();
 
     restoreEnvironment = () => {
       harness.cleanup();
+      runtimeHarness.cleanup();
       window.AlloModules = originalRegistry;
       window.React = originalWindowReact;
       if (hadGlobalReact) globalThis.React = originalGlobalReact;
@@ -145,7 +147,17 @@ describe('BehaviorLens workspace dependency recovery', () => {
     expect(warning).toHaveBeenCalledWith(expect.stringContaining('runtime boundary will wait'));
 
     const props = { onClose: vi.fn(), t: () => '', addToast: vi.fn() };
-    const waiting = harness.render(Boundary, props);
+    const protectedWait = harness.render(Boundary, props);
+    expect(protectedWait.props).toMatchObject({ role: 'status', 'aria-live': 'polite', 'data-behavior-lens-protection': 'waiting' });
+    expect(elementText(protectedWait)).toContain('protected clinical workspace');
+    const session = {};
+    window.AlloModules.SensitiveWorkspace = { Boundary: ({ children }) => children(session) };
+    window.dispatchEvent(new window.CustomEvent('alloflow:module-registry-changed'));
+    const protectedReady = harness.render(Boundary, props);
+    const runtime = protectedReady.type(protectedReady.props);
+    // Each component owns separate hook slots, as it does in React.
+    Object.assign(harness.React, runtimeHarness.React);
+    const waiting = runtimeHarness.render(runtime.type, runtime.props);
     expect(waiting.type).toBe('div');
     expect(waiting.props).toMatchObject({
       role: 'status',
@@ -159,7 +171,7 @@ describe('BehaviorLens workspace dependency recovery', () => {
     // intentionally retained across both renders.
     window.AlloModules.BehaviorLensWorkspace = Object.freeze({ ready: true });
     window.dispatchEvent(new window.CustomEvent('alloflow:module-registry-changed'));
-    const recovered = harness.render(Boundary, props);
+    const recovered = runtimeHarness.render(runtime.type, runtime.props);
 
     expect(recovered.type).toBeTypeOf('function');
     expect(recovered.type).not.toBe(Boundary);

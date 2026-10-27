@@ -3,17 +3,19 @@ import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js'
 let R, detach, field;
 beforeAll(() => { resetStemLab(); window.__RR_TEST_EXPORTS__ = {}; loadTool('stem_lab/stem_tool_roadready.js', 'roadReady'); R = window.__RR_TEST_EXPORTS__.roadReady; });
 afterEach(() => { if(detach) detach(); if(field) field.remove(); field = null; });
+// WCAG 2.1.4: drill letter/Space keys act only while focus is inside a drill root.
+function drillRoot() { let r = document.querySelector('[data-rr-drill]'); if (!r) { r = document.createElement('div'); r.setAttribute('data-rr-drill', 'true'); document.body.appendChild(r); } return r; }
 function harness() { const ref={current:{}}; let resets=0; detach=R.attachDrillKeys(ref,()=>resets++); return {ref,resets:()=>resets}; }
 function key(target,type,key,extra={}) { const e=new window.KeyboardEvent(type,{key,bubbles:true,cancelable:true,...extra}); target.dispatchEvent(e); return e; }
 it('clears held controls and queued actions on entering a form field', () => {
-  const {ref}=harness(); key(document.body,'keydown','w'); key(document.body,'keydown','g');
+  const {ref}=harness(); key(drillRoot(),'keydown','w'); key(drillRoot(),'keydown','g'); expect(ref.current.w).toBe(true);
   field=document.createElement('input'); document.body.appendChild(field); field.focus();
   expect(ref.current).toEqual({});
   key(field,'keyup','w'); key(field,'keydown','s'); expect(ref.current.s).toBeUndefined();
 });
 it('releases a held key even when its keyup originates in a select or has modifiers', () => {
   const {ref}=harness(); field=document.createElement('select'); document.body.appendChild(field);
-  key(document.body,'keydown','a'); key(field,'keyup','a',{ctrlKey:true}); expect(ref.current.a).toBe(false);
+  key(drillRoot(),'keydown','a'); key(field,'keyup','a',{ctrlKey:true}); expect(ref.current.a).toBe(false);
   expect(key(field,'keydown','ArrowDown').defaultPrevented).toBe(false); expect(ref.current.arrowdown).toBeUndefined();
 });
 it('does not turn browser shortcuts into driving, gear, Park or reset actions', () => {

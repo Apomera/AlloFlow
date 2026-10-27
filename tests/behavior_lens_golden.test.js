@@ -222,7 +222,7 @@ describe('layer 6 — should-fix sweep regressions (2026-06-02 pass 2)', () => {
   });
 
   it('callGeminiWithContext routes through callGeminiGuarded (single chokepoint)', () => {
-    expect(MODULE_SRC).toMatch(/return\s+callGeminiGuarded\(enrichedPrompt,\s*jsonMode\)/);
+    expect(MODULE_SRC).toMatch(/return\s+callGeminiGuarded\(enrichedPrompt,\s*jsonMode(?:,\s*operationGuard)?\)/);
   });
 
   it('root handleAiAnalyze checks aiConsent before calling Gemini', () => {
@@ -263,7 +263,7 @@ describe('layer 6 — should-fix sweep regressions (2026-06-02 pass 2)', () => {
     expect(MODULE_SRC).toMatch(/const\s+\[includeAi,\s*setIncludeAi\]\s*=\s*useState\(false\)/);
   });
 
-  it('destructive and recording-exit actions use the accessible confirmation service (41 sites)', () => {
+  it('destructive and recording-exit actions use the accessible confirmation service (43 sites)', () => {
     // 15 since 2026-09-23: replacing typed crisis-plan text with an AI draft, resetting an
     // edited consent form, and replacing or resetting a personalized escalation cycle ask first too.
     // 32 since pass 4 (same day): AI drafts over typed work, deleting saved records, clearing
@@ -272,9 +272,9 @@ describe('layer 6 — should-fix sweep regressions (2026-06-02 pass 2)', () => {
     // 38: clearing quick switch, using the cloud copy, replacing saved work with a file.
     // 40 since pass 7: replacing graph points with pasted ones, importing a consent template.
     // 41 since pass 8: closing an edited ABC entry with changes.
-    // 42 since pass 9: adding a report export's or share file's records to saved work.
+    // 43 includes explicit other-tool reference import; pass 9 added: adding a report export's or share file's records to saved work.
     const confirmations = (MODULE_SRC.match(/await askBehaviorLensConfirmation\(/g) || []).length;
-    expect(confirmations).toBe(42);
+    expect(confirmations).toBe(43);
     expect(MODULE_SRC).not.toMatch(/(?<![\w.])(?:window\.)?confirm\s*\(/);
   });
 

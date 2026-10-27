@@ -157,7 +157,8 @@ describe('Sky School lesson action ownership', () => {
     expect(pending).toHaveLength(1); await flushHost();
     expect(latest.completedLessons).toEqual({ lift: true, weather: true }); expect(latest.lessonsCompleted).toBe(2);
     expect(writes).toHaveLength(1);
-    await mount(copy(latest)); expect(button('✓ Lesson completed').disabled).toBe(true);
+    await mount(copy(latest)); expect(button('✓ Lesson completed').disabled).toBe(false);
+    expect(button('✓ Lesson completed').getAttribute('aria-disabled')).toBe('true');
     await click(nav('drag')); await click(complete());
     expect(latest.completedLessons).toEqual({ lift: true, drag: true, weather: true }); expect(latest.lessonsCompleted).toBe(3);
     expect(host.querySelector('[aria-live="polite"]').textContent).toContain('3 done');

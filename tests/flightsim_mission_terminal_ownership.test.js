@@ -126,7 +126,8 @@ afterEach(async () => {
 });
 
 function tapFlightKey(keyName) {
-  const cockpit = host.querySelector('#skyschool-flight-container'); expect(cockpit).toBeTruthy(); cockpit.focus();
+  const cockpit = host.querySelector('#skyschool-flight-container canvas[role="application"]'); expect(cockpit).toBeTruthy(); cockpit.focus();
+  expect(document.activeElement).toBe(cockpit);
   cockpit.dispatchEvent(new KeyboardEvent('keydown', { key: keyName, bubbles: true, cancelable: true }));
   cockpit.dispatchEvent(new KeyboardEvent('keyup', { key: keyName, bubbles: true, cancelable: true }));
 }

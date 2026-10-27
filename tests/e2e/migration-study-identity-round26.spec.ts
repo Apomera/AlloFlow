@@ -26,7 +26,7 @@ test.afterEach(async ({ page }) => {
 });
 
 const stage = (page: Page) => page.locator('.migration-flight-stage');
-const context = (page: Page) => page.locator('#migration-study-current-context');
+const context = (page: Page) => page.locator("[data-migration-id=\"migration-study-current-context\"]");
 const note = (page: Page) => page.getByRole('textbox', { name: 'My observation', exact: true });
 const cycle = (page: Page, index: number) => page.getByRole('button', { name: 'Cycle position ' + (index + 1) + ' of 8', exact: true });
 const viewpoint = (page: Page, id: string) => page.locator('[data-study-viewpoint="' + id + '"]');
@@ -228,7 +228,7 @@ async function toggleStudy(page: Page, touch: boolean) {
 }
 
 const review = (page: Page) => context(page).locator('[data-study-action="review-marked-comparison"]');
-const comparison = (page: Page) => page.locator('#migration-marked-comparison-controls');
+const comparison = (page: Page) => page.locator("[data-migration-id=\"migration-marked-comparison-controls\"]");
 const comparisonCheck = (page: Page) => comparison(page).locator('[data-marked-pose-action="check"]');
 const continueNote = (page: Page) => comparison(page).locator('[data-study-scene-action="continue-comparison-note"]');
 async function selection(page: Page) {
@@ -352,7 +352,7 @@ async function learningFlow(page: Page, touch: boolean, stem: string) {
   results.push(await checkedState(page, 'same', markedView, markedView, touch));
   await activate(page, continueNote(page), touch);
   await expect(note(page)).toBeFocused(); expect(await selection(page)).toEqual(caret);
-  expect(await field!.evaluate(element => element === document.querySelector('#migration-study-observation-note'))).toBe(true);
+  expect(await field!.evaluate(element => element === document.querySelector("[data-migration-id=\"migration-study-observation-note\"]"))).toBe(true);
   await expect(note(page)).toHaveValue(text); expect(await saved(page)).toEqual(beforeNavigation);
 
   await activate(page, viewpoint(page, 'front'), touch);

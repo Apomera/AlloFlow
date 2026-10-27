@@ -9,16 +9,9 @@
 // 40 of 40 (C:/tmp/bl_scratch/print_probe.cjs).
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
-import { loadAlloModule } from './setup.js';
+import { setupBehaviorLens } from './helpers/behavior_lens_harness.js';
 
-const require = createRequire(import.meta.url);
-beforeAll(() => {
-  const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
-  globalThis.React = window.React = React;
-  try { loadAlloModule('behavior_lens_module.js'); } catch (e) { /* UI half may need a host */ }
-});
+beforeAll(() => { setupBehaviorLens(); });
 afterEach(() => { document.body.innerHTML = ''; document.head.querySelectorAll('[data-bl-print-style]').forEach(s => s.remove()); });
 const src = readFileSync('behavior_lens_module.js', 'utf8');
 const P = () => window.AlloModules.BehaviorLensPrint;

@@ -49,14 +49,14 @@ async function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; return tool.render(ctx); }
   act(() => root.render(React.createElement(Component)));
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1], engine = makeEngine(stage, state.flightSpecies);
   const liveRef = refs.find(ref => ref.current && typeof ref.current === 'object' && 'flightSpeedValues' in ref.current);
   const ui = { host, stage, engine, engineRef, liveRef, writes, queued, announce,
     get state() { return state; }, get live() { return liveRef.current; },
     strip: () => host.querySelector('[data-scene-study-actions]'),
     action: direction => host.querySelector('[data-scene-study-action="' + direction + '"]'),
-    note: () => host.querySelector('#migration-study-observation-note'),
+    note: () => host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"),
     cycle: () => host.querySelector('[data-scene-study-cycle]'),
     button: text => [...host.querySelectorAll('button')].find(button => button.textContent === text),
     click(direction) { act(() => { ui.action(direction).focus(); ui.action(direction).click(); }); },
@@ -116,10 +116,10 @@ describe('Scene-adjacent cycle navigation', () => {
     for (const [direction, label] of [['previous', 'Previous cycle position'], ['next', 'Next cycle position']]) {
       const button = ui.action(direction); expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button');
       expect(button.textContent).toBe(label); expect(button.disabled).toBe(true); expect(getComputedStyle(button).minHeight).toBe('44px');
-      expect(button.getAttribute('aria-controls')).toBe('migration-flight-stage'); expect(button.getAttribute('aria-describedby')).toBe('migration-study-adjacent-help');
+      expect(button.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id); expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-adjacent-help"]').id);
     }
-    expect(ui.host.querySelector('#migration-study-adjacent-help').textContent).toContain('Predict');
-    expect(ui.host.querySelector('#migration-study-adjacent-help').textContent).toContain('not measured flight times');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-adjacent-help\"]").textContent).toContain('Predict');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-adjacent-help\"]").textContent).toContain('not measured flight times');
     expect(ui.writes).toEqual([]); expect(ui.cycle().getAttribute('data-scene-study-cycle')).toBe('none');
   });
   it('wraps 8 to 1 and back while preserving the complete learner experiment and textarea identity', async () => {

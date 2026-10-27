@@ -59,17 +59,40 @@ function diskFixture() {
 
 function clientFixture(disk) {
   const listeners = new Set(), sent = [];
-  let bridgeWindow, frame, nonce;
+  let bridgeWindow, frame, nonce, bridgePort;
   const origin = 'https://alloflow-cdn.pages.dev';
   const emit = (data, overrides = {}) => listeners.forEach(fn => fn({ source: bridgeWindow, origin, data, ...overrides }));
-  bridgeWindow = { closed: false, postMessage(message, target) {
+  // The fixture supplies an already-approved bridge after the real adapter
+  // transfers its document port. Storage operations still use the production
+  // bridge functions and their actual transaction-completion acknowledgments.
+  class MessageChannel {
+    constructor() {
+      const makePort = () => ({ closed: false, onmessage: null, onmessageerror: null, start() {}, close() { this.closed = true; } });
+      this.port1 = makePort(); this.port2 = makePort();
+      for (const [from, to] of [[this.port1, this.port2], [this.port2, this.port1]]) from.postMessage = data => {
+        if (from.closed) return;
+        const copy = clone(data);
+        queueMicrotask(() => { if (!to.closed) to.onmessage?.({ data: copy, ports: [] }); });
+      };
+    }
+  }
+  bridgeWindow = { closed: false, postMessage(message, target, ports = []) {
     sent.push({ message, target });
     if (message.type === 'allo-bridge-hello') {
       nonce = message.nonce;
-      queueMicrotask(() => emit({ allo: 'ds1', type: 'allo-bridge-ready', nonce }));
+      queueMicrotask(() => emit({ allo: 'ds2', type: 'allo-bridge-port-required', nonce }));
       return;
     }
-    disk.bridge.handleOp(message).then(value => emit({ allo: 'ds1', nonce: message.nonce, id: message.id, ok: true, value }), error => emit({ allo: 'ds1', nonce: message.nonce, id: message.id, ok: false, error: { code: error.code || 'mock/rejected', message: error.message } }));
+    if (message.type !== 'allo-bridge-connect' || message.allo !== 'ds2' || message.nonce !== nonce || ports.length !== 1 || bridgePort) return;
+    bridgePort = ports[0];
+    bridgePort.onmessage = event => {
+      const request = event.data;
+      if (request.type === 'allo-bridge-disconnect') { bridgePort.close(); return; }
+      sent.push({ message: request, transport: 'port' });
+      disk.bridge.handleOp(request).then(value => bridgePort.postMessage({ allo: 'ds2', nonce: request.nonce, id: request.id, ok: true, value }),
+        error => bridgePort.postMessage({ allo: 'ds2', nonce: request.nonce, id: request.id, ok: false, error: { code: error.code || 'mock/rejected', message: error.message } }));
+    };
+    bridgePort.start(); bridgePort.postMessage({ allo: 'ds2', type: 'allo-bridge-ready', nonce });
   } };
   const document = { body: { appendChild(el) { el.isConnected = true; } }, createElement() {
     frame = { contentWindow: bridgeWindow, isConnected: false, style: {}, setAttribute() {}, removeAttribute() {}, remove() { this.isConnected = false; } };
@@ -77,13 +100,13 @@ function clientFixture(disk) {
   } };
   const window = {
     location: { origin: 'https://canvas.example', hostname: 'canvas.example', href: 'https://canvas.example/app' },
-    crypto: webcrypto, addEventListener(type, fn) { if (type === 'message') listeners.add(fn); }, removeEventListener(type, fn) { if (type === 'message') listeners.delete(fn); },
+    crypto: webcrypto, MessageChannel, addEventListener(type, fn) { if (type === 'message') listeners.add(fn); }, removeEventListener(type, fn) { if (type === 'message') listeners.delete(fn); },
   };
   new Function('window', 'document', 'navigator', 'crypto', clientSource)(window, document, {}, webcrypto);
   const api = window.alloDeviceStorage;
   api.init({ surface: 'canvas' });
   cleanups.push(() => api.disconnect());
-  return { api, sent, emit, window, get nonce() { return nonce; }, get frame() { return frame; } };
+  return { api, sent, emit, emitPort: data => bridgePort.postMessage(data), window, get nonce() { return nonce; }, get frame() { return frame; } };
 }
 
 function snapshot(id = 'pond-workspace', count = 15, at = '2026-09-30T22:00:00.000Z') {
@@ -162,11 +185,12 @@ describe('real bridge commit acknowledgements and reload readback', () => {
     await flush(); await vi.advanceTimersByTimeAsync(8001); await assertion;
     expect(disk.rows.size).toBe(0);
   });
-  it('ignores forged response source, origin and nonce while waiting for the real commit', async () => {
+  it('ignores window acknowledgements and wrong-nonce port replies while waiting for the real commit', async () => {
     const disk = diskFixture(), f = clientFixture(disk); await f.api.ready(); let settled = false;
     const save = f.api.mutateRecovery(ns, key, mutation(snapshot()), { queue: false }).then(value => { settled = true; return value; }); await flush();
-    const message = f.sent.at(-1).message, response = { allo: 'ds1', nonce: f.nonce, id: message.id, ok: true, value: true };
-    f.emit(response, { origin: 'https://other.example' }); f.emit(response, { source: {} }); f.emit({ ...response, nonce: 'different' }); await flush();
+    const message = f.sent.at(-1).message, response = { allo: 'ds2', nonce: f.nonce, id: message.id, ok: true, value: true };
+    f.emit(response, { origin: 'https://other.example' }); f.emit(response, { source: {} }); f.emit(response);
+    f.emitPort({ ...response, nonce: 'different' }); await flush();
     expect(settled).toBe(false); disk.last().commit(); expect((await save).applied).toBe(true);
   });
 });

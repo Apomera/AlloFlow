@@ -342,7 +342,7 @@ for (const dark of [false, true]) test.describe('Migration marked return phone '
       await page.setViewportSize({ width: 1440, height: 1000 }); await frames(page);
       await page.getByRole('button', { name: 'Front', exact: true }).click(); await frames(page);
       await page.locator('[data-study-cycle-controls]').scrollIntoViewIfNeeded();
-      await page.locator('#migration-flight-deck').screenshot({ path: join(report, 'desktop-marked-wingtip-comparison.png') });
+      await page.locator("[data-migration-id=\"migration-flight-deck\"]").screenshot({ path: join(report, 'desktop-marked-wingtip-comparison.png') });
     }
   });
 });

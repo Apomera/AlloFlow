@@ -504,7 +504,9 @@ describe('STEM dynamic active-state contrast', () => {
   it('pins the eight-tool conditional-state batch', () => {
     const treatments = [
       ['stem_tool_ecosystem.js', 'hover:bg-emerald-800'],
-      ['stem_tool_ecosystem.js', 'hover:bg-slate-200 dark:hover:bg-slate-700'],
+      // 10-25 (7bd3c0e41) dropped ecosystem's dark: variants; the host keeps tools
+      // on a light card in dark mode. Same tab pair: slate-600 on slate-200 hover.
+      ['stem_tool_ecosystem.js', 'transition-colors text-slate-600 hover:bg-slate-200'],
       ['stem_tool_ecosystem.js', 'hover:bg-teal-800'],
       ['stem_tool_ecosystem.js', 'bg-orange-100 hover:bg-orange-200 text-orange-800'],
       ['stem_tool_geologyexplorer.js', 'bg-indigo-600 border-indigo-700 text-indigo-50'],
@@ -564,7 +566,8 @@ describe('STEM dynamic active-state contrast', () => {
       // Dissection's keyword-mapped germ-layer and tissue badges (removed in the
       // 09-08 evidence redesign, 0bb48eb97); Semiconductor's Write ON/OFF button (now
       // a native checkbox, same commit); Water Cycle's AI-quiz loading and wrong-answer
-      // panels (semantic .wc-check-* classes since a2ee92525, 10-01).
+      // panels (semantic .wc-check-* classes since a2ee92525, 10-01); DNA's forensic-AI
+      // and "AI Next" loading buttons (deleted with their buttons, 7bd3c0e41, 10-25).
       ['stem_tool_dissection.js', 'bg-red-50 text-red-700'],
       ['stem_tool_dissection.js', 'bg-blue-100 text-blue-700'],
       ['stem_tool_semiconductor.js', 'bg-slate-600 text-slate-200 hover:bg-slate-700'],
@@ -583,8 +586,10 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_dna.js', 'hover:bg-emerald-800'],
       ['stem_tool_dna.js', 'bg-purple-700 text-white cursor-wait'],
       ['stem_tool_dna.js', 'hover:bg-violet-700'],
-      ['stem_tool_dna.js', 'bg-cyan-700 text-white cursor-wait'],
-      ['stem_tool_dna.js', 'bg-purple-200 text-purple-800 cursor-wait'],
+      // DNA's cancellable AI flows keep their controls visible while pending.
+      // Pin the current explanation and AI-next surfaces, not retired spinners.
+      ['stem_tool_dna.js', 'bg-cyan-50 rounded-xl border border-cyan-300 text-xs text-cyan-900'],
+      ['stem_tool_dna.js', 'rounded-xl bg-purple-50 text-purple-800'],
       // dna's control grew utility classes in the 2026-08 sweep; the contrast
       // pair (blue-700 on blue-50, hover blue-100) is unchanged.
       ['stem_tool_dna.js', 'bg-blue-50 px-3 py-1.5 text-[0.6875rem] font-bold text-blue-700 transition-all hover:bg-blue-100'],

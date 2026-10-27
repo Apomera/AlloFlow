@@ -23,13 +23,18 @@ const MODULE_KEY = 'HostHandlers';
 const SOURCE = 'host_handlers_source.jsx';
 const MODULE = 'host_handlers_module.js';
 const MANIFEST = JSON.parse(readFileSync('dev-tools/host_handlers_wave3_manifest.json', 'utf8'));
+const OPTIONAL_READS = new Set(['assignmentDirections', 'studentLanguage']);
 
-function hostGetterNames(host) {
+function hostDependencyNames(host) {
   const start = host.indexOf('  const __alloHostDeps = {');
   expect(start).toBeGreaterThan(0);
   const end = host.indexOf('\n  };\n', start);
-  const block = host.slice(start, end);
-  return new Set(Array.from(block.matchAll(/get ([A-Za-z_$][\w$]*)\(\) \{ return \1; \}/g), m => m[1]));
+  expect(end).toBeGreaterThan(start);
+  const object = parser.parseExpression(host.slice(host.indexOf('{', start), end) + '\n}');
+  return new Set(object.properties.map(property => {
+    if (property.type === 'SpreadElement' || property.computed) throw new Error('Host dependency keys must be explicit');
+    return property.key.name ?? property.key.value;
+  }));
 }
 
 describe('wave-3 host handler extraction', () => {
@@ -70,12 +75,14 @@ describe('wave-3 host handler extraction', () => {
     expect(host).not.toContain("await handleGenerateReflectionPrompt(");
   });
 
-  it('gives the module exactly the getters it reads', () => {
-    const getters = hostGetterNames(host);
+  it('provides every required live property and retains historical dependency coverage', () => {
+    const getters = hostDependencyNames(host);
     const code = source.replace(/^\s*\/\/.*$/gm, ''); // the header comment describes `__d.<binding>`
     const reads = new Set(Array.from(code.matchAll(/__d\.([A-Za-z_$][\w$]*)/g), m => m[1]));
-    expect([...reads].sort()).toEqual([...getters].sort());
-    expect([...getters].sort()).toEqual([...MANIFEST.deps].sort());
+    expect([...reads].filter(name => !OPTIONAL_READS.has(name)).sort()).toEqual([...getters].sort());
+    // The extraction manifest is historical; new live dependencies are covered by
+    // the exact current-read comparison above. Its required entries remain a floor.
+    expect(MANIFEST.deps.filter(name => !OPTIONAL_READS.has(name) && !getters.has(name))).toEqual([]);
     // A getter for a moved handler returns the host shim (a useCallback value, or a wave-3 shim
     // read by a later wave); a wave-3 plain handler is never both moved and read back.
     const hooked = new Set(MANIFEST.useCallbackHandlers || []);
@@ -94,9 +101,19 @@ describe('wave-3 host handler extraction', () => {
     const create = window.AlloModules[MODULE_KEY];
     expect(typeof create).toBe('function');
     const handlers = create(deps);
-    const exported = [...MANIFEST.handlers, ...(MANIFEST.compatibilityHandlers || [])];
-    expect(Object.keys(handlers).sort()).toEqual(exported.sort());
-    for (const name of exported) expect(typeof handlers[name], name).toBe('function');
+    const sourceAst = parser.parse(source, { sourceType: 'script', plugins: ['jsx'] });
+    const factory = sourceAst.program.body.find(node => node.type === 'FunctionDeclaration' && node.id.name === 'createHostHandlers');
+    expect(factory).toBeDefined();
+    const returned = factory.body.body.find(node => node.type === 'ReturnStatement');
+    expect(returned?.argument.type).toBe('ObjectExpression');
+    const currentExports = returned.argument.properties.map(property => {
+      if (property.type === 'SpreadElement' || property.computed) throw new Error('Handler exports must be explicit');
+      return property.key.name ?? property.key.value;
+    });
+    expect(Object.keys(handlers).sort()).toEqual(currentExports.sort());
+    const historicalExports = [...MANIFEST.handlers, ...(MANIFEST.compatibilityHandlers || [])];
+    expect(historicalExports.filter(name => !Object.prototype.hasOwnProperty.call(handlers, name))).toEqual([]);
+    for (const name of currentExports) expect(typeof handlers[name], name).toBe('function');
     expect(touched).toEqual([]);
   });
 

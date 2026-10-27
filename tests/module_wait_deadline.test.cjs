@@ -23,11 +23,11 @@ function fragments(text) {
   };
 }
 const actual = fragments(source);
-function harness({ hidden = true } = {}) {
+function harness({ hidden = true, approvedScript = true } = {}) {
   let now = 0, nextId = 0;
   const timers = new Map(), listeners = new Map(), scripts = [], executions = [], reports = [];
   function schedule(fn, delay, ...args) { const id = ++nextId; timers.set(id, { at: now + delay, fn: () => fn(...args) }); return id; }
-  const document = { hidden, body: { classList: { contains: () => false } }, createElement: () => ({ remove() { this.removed = true; } }), head: { appendChild: s => scripts.push(s) } };
+  const document = { hidden, body: { classList: { contains: () => false } }, createElement: () => ({ remove() { this.removed = true; } }), head: { appendChild: s => { assert.equal(s.integrity, 'sha384-' + 'A'.repeat(64)); assert.equal(s.crossOrigin, 'anonymous'); scripts.push(s); } } };
   const window = {
     document,
     AlloModules: {
@@ -40,13 +40,18 @@ function harness({ hidden = true } = {}) {
     removeEventListener(type, fn) { listeners.get(type)?.delete(fn); },
     dispatchEvent(event) { for (const fn of [...(listeners.get(event.type) || [])]) fn(event); },
   };
+  const createPolicy = new Function(readFileSync(resolve(root, 'browser_delivery_policy.js'), 'utf8') + '\nreturn _alloCreateBrowserDeliveryPolicy;')();
+  const integrity = 'sha384-' + 'A'.repeat(64);
+  const delivery = createPolicy({ schemaVersion: 1, releaseId: '0'.repeat(64), fallbackCommit: '1'.repeat(40),
+    allowDesktopRemoteFallback: false, assets: { [approvedScript ? 'primary.js' : 'unrelated.js']: { bytes: 1, integrity } }
+  }, { baseUrl: 'https://modules.test/' });
   const context = vm.createContext({
-    window, document, Date: class extends Date { static now() { return now; } }, CustomEvent: class { constructor(type) { this.type = type; } },
+    window, document, __alloBrowserDelivery: delivery, moduleFallbackUrl: url => delivery.fallbackUrl(url), Date: class extends Date { static now() { return now; } }, CustomEvent: class { constructor(type) { this.type = type; } },
     console: { log() {}, error() {} }, setTimeout: schedule, clearTimeout: id => timers.delete(id),
-    activeBlueprint: { id: 'original-plan' }, gradeLevel: '6', leveledTextLanguage: 'English', standardsInput: '', studentInterests: [],
+    activeBlueprint: { id: 'original-plan' }, gradeLevel: '6', leveledTextLanguage: 'English', outputLanguagePreference: { mode: 'app' }, currentUiLanguage: 'English', selectedLanguages: [], translationMode: 'none', standardsInput: '', studentInterests: [],
     useRef: value => ({ current: value }), _alloPhaseOHandlersDeps: () => ({}), addToast() {},
   });
-  vm.runInContext("var __alloDeferredModuleNames={};var __alloLazyEnsurePromises={};var pluginCdnVersion='test';var localizeModuleUrl=u=>u;var moduleFallbackUrl=()=>'/fallback.js';var __alloModuleRegistered=name=>!!window.AlloModules[name];\n" + actual.factory + actual.watchdog + actual.registry + actual.loader + actual.ensure + actual.waiter + actual.entry + '\nthis.load=__alloLoadModuleNow;this.run=handleExecuteBlueprint;window.__alloModuleLoadDiagnostics=_alloCreateModuleLoadDiagnostics(window);', context);
+  vm.runInContext("var __alloDeferredModuleNames={};var __alloLazyEnsurePromises={};var pluginCdnVersion='test';var localizeModuleUrl=u=>u;var __alloModuleRegistered=name=>!!window.AlloModules[name];\n" + actual.factory + actual.watchdog + actual.registry + actual.loader + actual.ensure + actual.waiter + actual.entry + '\nthis.load=__alloLoadModuleNow;this.run=handleExecuteBlueprint;window.__alloModuleLoadDiagnostics=_alloCreateModuleLoadDiagnostics(window);', context);
   for (const name of ['GenerationMatrix','AgentCoreContracts','AgentCoreBlueprintService','AgentCoreUIAdapter','PhaseOHandlersModule']) window.__alloModuleLoadDiagnostics.register(name);
   window.__alloPromoteModule = name => { context.load(name, '/primary.js'); return true; };
   function advance(ms) {
@@ -81,6 +86,13 @@ test('all host copies use the same tracked deadline policy and updated diagnosti
     assert.match(text,/hostLoaderRevision: '2026-10-21-stall-v2'/);
   }
 });
+test('an unapproved script fails before append without leaving a watchdog or executing the plan', async () => {
+  const h = harness({ hidden: false, approvedScript: false });
+  await assert.rejects(h.run(), error => error.code === 'allo-lazy-module-failed');
+  assert.equal(h.scripts.length, 0); assert.equal(h.executions.length, 0); assert.equal(h.timers.size, 0);
+  assert.equal(h.window.__alloModuleRegistry.GenerationMatrix.status, 'failed');
+});
+
 test('the actual primary/background/fallback path can complete at 80s without premature 65s rejection', async () => {
   const h = harness({hidden:false}); const first = h.run(); const repeated = h.run();
   h.advance(15000); assert.equal(h.reports.filter(r=>r.level==='warn').length,1);

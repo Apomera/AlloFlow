@@ -46,7 +46,7 @@ function renderPlant(plant, patch = {}) {
   let element;
   function Capture() { element = tool.render(makeCtx({}, store)); return null; }
   ReactDOMServer.renderToStaticMarkup(React.createElement(Capture));
-  const live = findElement(element, item => typeof item.type === 'function' && item.props?.id === 'aquarium-live-tank');
+  const live = findElement(element, item => typeof item.type === 'function' && item.props?.instanceKey?.startsWith('live-'));
   expect(live).toBeTruthy();
   return { live, store, state: () => store.toolData._aquarium };
 }
@@ -113,7 +113,7 @@ describe('Aquarium plant growth forms and actual inspector', () => {
       expect(detail).toBeTruthy(); expect(detail.getAttribute('role')).toBe('status');
       expect(detail.textContent).toContain(item.visualProfile.identification);
       expect(detail.textContent).toContain(item.visualProfile.variation);
-      expect(host.querySelector('#aquarium-resident-inspect').value).toBe('plant:' + plant.id);
+      expect(host.querySelector('[data-aquarium-resident-inspect]').value).toBe('plant:' + plant.id);
       expect(view.state().simTick).toBe(10);
     }
   }, 20000); // Fourteen real full-tool renders; allow source compilation on a busy worker.

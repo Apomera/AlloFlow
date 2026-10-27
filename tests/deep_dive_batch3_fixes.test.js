@@ -75,7 +75,8 @@ describe('M16 — un-escape only after a REAL JSON unwrap (behavioral slice)', (
 
 describe('M17 — fresh-spawn OCR fallback keeps word boxes', () => {
   it('attempts spawn a real worker and use the worker-API output form (blocks + text)', () => {
-    expect(dp).toContain('_wk = await window.Tesseract.createWorker(a.l);');
+    expect(dp).toContain('const _wk = await _createVerifiedTesseractWorker(a.l);');
+    expect(dp).toContain("const asset = await _getTrustedDocumentRuntimeAsset('tesseract', 'worker');");
     expect(dp).toContain("return _wk.recognize(canvas, undefined, a.b ? { blocks: true, text: true } : { text: true });");
   });
   it('the broken static 4-arg call is gone', () => {

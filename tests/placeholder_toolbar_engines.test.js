@@ -21,11 +21,15 @@ const ACE = resolve(process.cwd(), 'node_modules/accessibility-checker-engine/ac
 // Pipeline placeholder: the template literal returned for a figure whose image could not be
 // extracted (hasSrc false), evaluated with the identifiers the template reads.
 function pipelinePlaceholder() {
-  const template = sliceBetween(PIPELINE, 'return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"', '</figure>` + _carriedOut;',
+  // (The decorative-slot return also starts with this figure id; the placeholder's next attribute is the crop data.)
+  const template = sliceBetween(PIPELINE, 'return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"${hasCropData', '</figure>` + _carriedOut;',
     { file: 'doc_pipeline_source.jsx', label: 'pipeline placeholder template' }).slice('return '.length) + '</figure>`';
-  const params = ['imgId', 'imgIdx', 'hasCropData', 'cropJson', 'hasSrc', '_dragOver2', '_dragLeave2', '_dropHandler2', 'srcToken', 'desc', 'imgInfo', '_uploadHandler2', '_pickHandler2', 'isRegenerated', 'purpose'];
+  // The caption escapes with the real helper (2026-10-26: escape an entity only once).
+  const escOnce = new Function(sliceBetween(PIPELINE, 'var _alloEscapeTextOnce = function (s) {', '\n};',
+    { file: 'doc_pipeline_source.jsx', label: 'caption escape helper', includeEnd: true }) + '\nreturn _alloEscapeTextOnce;')();
+  const params = ['imgId', 'imgIdx', 'hasCropData', 'cropJson', 'hasSrc', '_dragOver2', '_dragLeave2', '_dropHandler2', 'srcToken', 'desc', 'imgInfo', '_uploadHandler2', '_pickHandler2', 'isRegenerated', 'purpose', '_alloEscapeTextOnce'];
   const render = new Function(...params, 'return ' + template + ';');
-  return render('pdf-img-1', 1, false, '', false, 'void 0', 'void 0', 'void 0', '', 'Figure 2. Line chart of preprimary enrollment rates, 2010 through 2021.', { page: 20 }, 'void 0', 'void 0', false, 'Shows the pandemic dip in enrollment.');
+  return render('pdf-img-1', 1, false, '', false, 'void 0', 'void 0', 'void 0', '', 'Figure 2. Line chart of preprimary enrollment rates, 2010 through 2021.', { page: 20 }, 'void 0', 'void 0', false, 'Shows the pandemic dip in enrollment.', escOnce);
 }
 
 // Renderer placeholder: the concatenated template for an image block without a source.
@@ -35,8 +39,9 @@ function rendererPlaceholder(shortAlt = '') {
     { file: 'doc_builder_renderer_source.jsx', label: 'renderer placeholder template' }).slice('return '.length) + '+ `</figure>`';
   const escapeTextField = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const _attr = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  const render = new Function('_imgId', '_dragOver', '_dragLeave', '_dropHandler', '_uploadHandler', '_pickHandler', 'escapeTextField', '_imgDesc', '_captionText', '_shortAlt', '_attr', 'return ' + expr + ';');
-  return render('db-img-1', 'void 0', 'void 0', 'void 0', 'void 0', 'void 0', escapeTextField, 'A Venn diagram of interview structures.', 'Figure 1. Interview structures.', shortAlt, _attr);
+  // _decorative: an explicit empty block alt (2026-10-26); these placeholders are not decorative.
+  const render = new Function('_imgId', '_dragOver', '_dragLeave', '_dropHandler', '_uploadHandler', '_pickHandler', 'escapeTextField', '_imgDesc', '_captionText', '_shortAlt', '_attr', '_decorative', 'return ' + expr + ';');
+  return render('db-img-1', 'void 0', 'void 0', 'void 0', 'void 0', 'void 0', escapeTextField, 'A Venn diagram of interview structures.', 'Figure 1. Interview structures.', shortAlt, _attr, false);
 }
 
 const page = (body) => '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Placeholder toolbar check</title></head><body><main id="main-content"><h1>Placeholder toolbar check</h1>' + body + '</main></body></html>';

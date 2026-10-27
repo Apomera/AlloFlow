@@ -26,8 +26,8 @@ describe('the image alt comes from the structure answer', () => {
     expect(altFor(figure(' data-allo-alt="Image"'), LONG)).toBe(LONG);
     expect(altFor(figure(' data-allo-alt="Image (needs description)"'), LONG)).toBe(LONG);
   });
-  it('the caption\'s "Purpose:" label is marked English (the description beside it is in the document\'s language)', () => {
-    expect(SRC.includes('<br><em style="font-size:0.85em;color:#475569"><span lang="en">Purpose:</span> \' + purpose.replace('), 'Purpose label').toBe(true);
+  it('the delivered caption carries no English "Purpose:" line (Aaron, option B, 2026-10-26); the purpose stays in the metadata', () => {
+    expect(SRC.includes('<span lang="en">Purpose:</span>'), 'no Purpose label in the caption').toBe(false);
   });
   it('the figure template, the Replace handler and the recovery metadata all use it', () => {
     expect(SRC.includes('? `<img src="${srcToken}" alt="${imgAlt.replace(/"/g, \'&quot;\')}"'), 'img alt').toBe(true);

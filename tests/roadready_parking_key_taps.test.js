@@ -5,7 +5,9 @@ beforeAll(() => { resetStemLab(); window.__RR_TEST_EXPORTS__ = {}; loadTool('ste
 afterEach(() => { if (detach) detach(); delete window.StemInput; });
 const car = () => ({ x: 200, y: 150, heading: -Math.PI / 2, speed: 0, steering: 0, driveGear: 'D' });
 function input() { const ref = { current: {} }; detach = R.attachDrillKeys(ref, () => {}); return ref; }
-function tap(key) { for (const type of ['keydown', 'keyup']) document.body.dispatchEvent(new window.KeyboardEvent(type, { key, bubbles: true })); }
+// WCAG 2.1.4: drill letter/Space keys act only while focus is inside a drill root.
+function drillRoot() { let r = document.querySelector('[data-rr-drill]'); if (!r) { r = document.createElement('div'); r.setAttribute('data-rr-drill', 'true'); document.body.appendChild(r); } return r; }
+function tap(key) { for (const type of ['keydown', 'keyup']) drillRoot().dispatchEvent(new window.KeyboardEvent(type, { key, bubbles: true })); }
 it('accepts quick gear and Park taps occurring entirely between frames', () => {
   const ref = input(), c = car();
   tap('g'); expect(ref.current.g).toBe(false);

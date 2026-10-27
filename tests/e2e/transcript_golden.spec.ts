@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Transcript-format golden (2026-06-10): audio/video inputs become the
 // 'ALLOTRANSCRIPT' first-class document format. Pins: (1) unicode-safe
 // encode/decode round-trip, (2) the extractPdfTextDeterministic chokepoint
@@ -16,7 +17,7 @@ let r: any = null;
 test.describe('ALLOTRANSCRIPT format — audio/video as first-class pipeline input', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib, null, { timeout: 30000 });
     await page.addScriptTag({ path: PIPELINE_PATH });

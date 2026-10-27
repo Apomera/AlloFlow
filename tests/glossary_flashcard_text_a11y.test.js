@@ -13,9 +13,9 @@ describe('Glossary flashcard definition read-aloud controls', () => {
   it('relies on native keyboard activation instead of duplicate key handlers', () => {
     expect(source.match(/handleGlossarySpeak\(generatedContent\?\.data\[flashcardIndex\], 'definition',[^\n]+ 'fc-front-def'/g)).toHaveLength(1);
     expect(source.match(/handleGlossarySpeak\(generatedContent\?\.data\[flashcardIndex\], 'definition',[^\n]+ 'fc-back-def'/g)).toHaveLength(1);
-    expect(source.match(/handleUncachedGlossarySpeak\(def, `fc-back-def-\$\{standardDeckLang\}`\);/g)).toHaveLength(1);
-    expect(source.match(/handleUncachedGlossarySpeak\(generatedContent\.data\[flashcardIndex\]\.etymology, 'fc-back-etym'\);/g)).toHaveLength(1);
-    expect(source.match(/handleUncachedGlossarySpeak\(transDef, 'fc-back-def'\);/g)).toHaveLength(1);
+    expect(source.match(/handleUncachedGlossarySpeak\(def, `fc-back-def-\$\{standardDeckLang\}`, glossaryHasBaseMetadata\(generatedContent, generatedContent\.data\[flashcardIndex\]\) \? [^;]+ : undefined\);/g)).toHaveLength(1);
+    expect(source.match(/handleUncachedGlossarySpeak\(generatedContent\.data\[flashcardIndex\]\.etymology, 'fc-back-etym', glossaryHasBaseMetadata\(generatedContent, generatedContent\.data\[flashcardIndex\]\) \? [^;]+ : undefined\);/g)).toHaveLength(1);
+    expect(source.match(/handleUncachedGlossarySpeak\(transDef, 'fc-back-def', glossaryHasBaseMetadata\(generatedContent, generatedContent\.data\[flashcardIndex\]\) \? [^;]+ : undefined\);/g)).toHaveLength(1);
   });
 
   it('provides contextual names, large targets, and high-contrast focus', () => {

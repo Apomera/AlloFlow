@@ -22,7 +22,7 @@ beforeAll(() => {
   slice('  const _persistKaraokeAudioField =', '  // Regenerate (or first-generate)') +
   slice('  window.__alloReadAloudLiveHost =', '  // Lesson audio uses');
  renderHost = new Function('env', 'with (env) {' + code + '; return window.__alloGetReadAloudAudioBridge; }');
- enumerateHost = new Function('env', 'with (env) {' + slice('  const _enumerateReadAloudResourceSegments =', '  const _encodeReadAloudBridgeAudio =') + '; return _enumerateReadAloudResourceSegments; }');
+ enumerateHost = new Function('env', 'with (env) {' + slice('const getSavedResourceLanguage =', 'const getSavedReadingSentenceSegments =') + slice('  const _enumerateReadAloudResourceSegments =', '  const _encodeReadAloudBridgeAudio =') + '; return _enumerateReadAloudResourceSegments; }');
 });
 beforeEach(() => {
  const KS = window.AlloModules.KaraokeAudioStore; KS.current = null; KS.studentCurrent = null;

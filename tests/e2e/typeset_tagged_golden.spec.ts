@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Typeset-then-tag golden (2026-06-10, item 8): Office inputs have no source
 // PDF — createTypesetTaggedPdf generates a clean typeset PDF from the
 // accessible HTML and runs the standard tagger on it. Because BOTH sides
@@ -16,7 +17,7 @@ let r: any = null;
 test.describe('createTypesetTaggedPdf — Office-input tagged-PDF chain', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.addScriptTag({ url: PAKO_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).pako, null, { timeout: 30000 });

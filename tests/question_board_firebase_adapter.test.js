@@ -191,7 +191,7 @@ describe('the Firebase path passes the shared conformance suite', () => {
 
 describe('the rules oracle mirrors what firestore.rules actually says', () => {
   it('gates item reads on host, own, or approved', () => {
-    expect(RULES).toContain('allow get, list: if isHost() || isOwn() || resource.data.status == "approved";');
+    expect(RULES).toContain('allow get, list: if authed() && (isHost() || isOwn() || resource.data.status == "approved");');
   });
 
   it('binds authorship to the caller and forbids self-approval', () => {

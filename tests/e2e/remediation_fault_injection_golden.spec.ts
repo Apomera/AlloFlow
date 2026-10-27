@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Fault-injection run goldens (deep dive 2026-07-09, goldens item 4).
 //
 // The deepest previously-uncovered class: what a WHOLE fixAndVerifyPdf run produces when the model
@@ -45,7 +46,7 @@ test.describe('remediation fault injection — scheduled model failures, honest 
   test.beforeAll(async ({ browser }) => {
     // Fixture-builder page (pdf-lib only here; the pipeline page self-loads its own).
     const builder = await browser.newPage();
-    await builder.goto('about:blank');
+    await installDocumentRuntime(builder);
     await builder.addScriptTag({ url: PDFLIB_CDN });
     await builder.waitForFunction(() => !!(window as any).PDFLib?.PDFDocument, null, { timeout: 30000 });
     textB64 = await builder.evaluate(async () => {
@@ -63,7 +64,7 @@ test.describe('remediation fault injection — scheduled model failures, honest 
     await builder.close();
 
     page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ path: VERIFICATION_POLICY_PATH });
     await page.addScriptTag({ path: RENDERER_MODULE_PATH });
     await page.addScriptTag({ path: MODULE_PATH });

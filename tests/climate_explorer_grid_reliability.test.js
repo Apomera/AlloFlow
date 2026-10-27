@@ -346,22 +346,23 @@ describe('Charts of the student’s own work describe their data', () => {
     expect(label.indexOf('Transport')).toBeLessThan(label.indexOf('Waste'));
   });
 
-  it('tracks the emissions trajectory and the 1.5 degree line', () => {
+  it('tracks the emissions trajectory and the activity reference line without predicting temperature', () => {
     const dirty = renderTool('climateExplorer', { climateExplorer: { tab: 'renewables' } }, {});
-    const dirtyLabel = labelFor(dirty, 'Projected global energy');
-    expect(dirtyLabel).toContain('above the 1.5 degree line');
+    const dirtyLabel = labelFor(dirty, 'Modeled annual emissions');
+    expect(dirtyLabel).toContain('above the activity’s 20 gigaton reference line');
+    expect(dirtyLabel).toContain('does not predict temperature');
 
     const clean = renderTool('climateExplorer', {
       climateExplorer: { tab: 'renewables', rsSolar: 40, rsWind: 35, rsHydro: 15, rsNuclear: 10, rsStorage: 80 }
     }, {});
-    expect(labelFor(clean, 'Projected global energy')).toContain('at or below the 1.5 degree line');
+    expect(labelFor(clean, 'Modeled annual emissions')).toContain('at or below the activity’s 20 gigaton reference line');
   });
 
   it('moves the described numbers when the student changes the mix', () => {
-    const a = labelFor(renderTool('climateExplorer', { climateExplorer: { tab: 'renewables' } }, {}), 'Projected');
+    const a = labelFor(renderTool('climateExplorer', { climateExplorer: { tab: 'renewables' } }, {}), 'Modeled annual emissions');
     const b = labelFor(renderTool('climateExplorer', {
       climateExplorer: { tab: 'renewables', rsSolar: 60, rsWind: 30, rsHydro: 5, rsNuclear: 5, rsStorage: 90 }
-    }, {}), 'Projected');
+    }, {}), 'Modeled annual emissions');
     expect(a).not.toBe(b);
   });
 });
@@ -393,7 +394,11 @@ describe('Shared host resources, not private ones', () => {
     // silently. Gated lab-wide by tests/stem_clipboard_route_sweep.test.js.
     for (const path of SOURCES) {
       const source = fs.readFileSync(path, 'utf8');
-      expect(source, path).toContain('window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(');
+      // The helper must be attempted before testing native API availability.
+      // Mounted export tests cover success, rejection and absent native APIs.
+      const helper = source.indexOf("if (typeof helper === 'function') result = helper.call(window.StemLab, report);");
+      expect(helper, path).toBeGreaterThan(-1);
+      expect(source.indexOf('result = navigator.clipboard.writeText(report)',helper),path).toBeGreaterThan(helper);
     }
   });
 });

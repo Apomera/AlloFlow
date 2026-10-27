@@ -132,7 +132,8 @@ describe('STEM quest hooks read what their tool writes', () => {
 // same handler replaced the first (the student saw both toasts and kept one badge).
 describe('badges earned together are all kept', () => {
   it('DNA: a fast replication keeps "Copy Machine" and "Speed Demon"', () => {
-    const m = mountStem('stem_lab/stem_tool_dna.js', 'dnaLab', 'dnaLab', { tab: 'replicate', replPlaying: true, replStep: 9999, speed: 4 });
+    const m = mountStem('stem_lab/stem_tool_dna.js', 'dnaLab', 'dnaLab', { tab: 'replicate', dnaSequence: 'ATGC', replPlaying: false, replStep: 0, speed: 4 });
+    for (let base = 0; base < 4; base++) m.click(m.container.querySelector('#dna-repl-step'));
     expect(Object.keys(m.state().badges || {}).sort()).toEqual(expect.arrayContaining(['copyMachine', 'speedDemon']));
   });
 

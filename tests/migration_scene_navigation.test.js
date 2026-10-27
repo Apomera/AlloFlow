@@ -39,7 +39,7 @@ function fixture(seed = {}) {
   const ui = {
     host, root, writes, award, refs,
     get state() { return state; },
-    get stage() { return host.querySelector('[id="migration-flight-stage"]'); },
+    get stage() { return host.querySelector("[data-migration-id=\"migration-flight-stage\"]"); },
     get deck() { return host.querySelector('.migration-flight-deck'); },
     get focus() { return host.querySelector('[data-scene-focus]'); },
     get fullscreen() { return host.querySelector('[data-scene-fullscreen]'); },

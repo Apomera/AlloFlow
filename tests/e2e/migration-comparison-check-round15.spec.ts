@@ -395,7 +395,7 @@ for (const dark of [false, true]) test.describe('Migration comparison check phon
     if (!dark) {
       await page.setViewportSize({ width: 1440, height: 1000 }); await frames(page); await keyboardClick(page, checkButton(page)); await expectCue(page, 'both');
       await page.locator('[data-study-marked-pose]').scrollIntoViewIfNeeded();
-      await page.locator('#migration-flight-deck').screenshot({ path: join(report, 'desktop-marked-comparison-check.png') });
+      await page.locator("[data-migration-id=\"migration-flight-deck\"]").screenshot({ path: join(report, 'desktop-marked-comparison-check.png') });
     }
   });
 });

@@ -11,8 +11,8 @@ const mirrorPath = join(process.cwd(), 'desktop/web-app/public/stem_lab/stem_too
 const source = readFileSync(sourcePath), hash = createHash('sha256').update(source).digest('hex');
 const harness = makeHarness('stem_lab/stem_tool_migration.js');
 const errors = new WeakMap<Page, string[]>();
-const stage = (page: Page) => page.locator('#migration-flight-stage');
-const evidence = (page: Page) => page.locator('#migration-experiment-evidence');
+const stage = (page: Page) => page.locator("[data-migration-id=\"migration-flight-stage\"]");
+const evidence = (page: Page) => page.locator("[data-migration-id=\"migration-experiment-evidence\"]");
 const evidenceReturn = (page: Page) => page.locator('[data-trial-evidence-return]');
 const challenge = (page: Page) => page.locator('[data-migration-flight-challenges]');
 const row = (page: Page) => page.locator('[data-flight-challenge-attempt="1"]');
@@ -87,13 +87,13 @@ async function scan(page: Page) {
 // Native OS fullscreen transitions remain a manual verification item.
 async function installDeferredFullscreen(page: Page) {
   await page.evaluate(() => {
-    const w = window as any; w.__focus45Exits = []; w.__focus45Fullscreen = document.querySelector('#migration-flight-deck');
+    const w = window as any; w.__focus45Exits = []; w.__focus45Fullscreen = document.querySelector("[data-migration-id=\"migration-flight-deck\"]");
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => w.__focus45Fullscreen });
     document.exitFullscreen = () => new Promise<void>((resolve, reject) => w.__focus45Exits.push({ resolve, reject }));
   });
 }
 async function setFullscreen(page: Page) {
-  await page.evaluate(() => { (window as any).__focus45Fullscreen = document.querySelector('#migration-flight-deck'); });
+  await page.evaluate(() => { (window as any).__focus45Fullscreen = document.querySelector("[data-migration-id=\"migration-flight-deck\"]"); });
 }
 async function settleExit(page: Page, index: number, options: { reject?: boolean; clear?: boolean } = {}) {
   await page.evaluate(({ index, reject, clear }) => {
@@ -114,7 +114,7 @@ test('saved-pair evidence navigation respects focus movement and the latest full
   await installDeferredFullscreen(page);
   await activate(page, evidenceReturn(page)); expect(await exitCount(page)).toBe(1);
   await expect(evidenceReturn(page)).toBeFocused();
-  const other = page.locator('#migration-experiment-prediction'); await other.focus();
+  const other = page.locator("[data-migration-id=\"migration-experiment-prediction\"]"); await other.focus();
   await settleExit(page, 0); await expect(other).toBeFocused();
 
   await setFullscreen(page); await activate(page, evidenceReturn(page));

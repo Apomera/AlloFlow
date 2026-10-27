@@ -64,6 +64,6 @@ describe('presence heartbeat — teacher dock display', () => {
 
 describe('presence heartbeat — rules documentation stays in sync', () => {
   it('firestore.rules documents the new student-written field', () => {
-    expect(RULES).toMatch(/lastSeen \(2026-07-16: ms-timestamp presence heartbeat/);
+    expect(RULES).toContain("!('lastSeen' in changed) || optionalMetric(next, 'lastSeen', 999999999999999)");
   });
 });

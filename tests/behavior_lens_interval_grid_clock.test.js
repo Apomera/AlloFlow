@@ -10,7 +10,7 @@ import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { React, setupBehaviorLens } from './helpers/behavior_lens_harness.js';
+import { React, setupBehaviorLens , bindUnlockedClinicalFixture } from './helpers/behavior_lens_harness.js';
 
 const require = createRequire(import.meta.url);
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
@@ -21,7 +21,7 @@ beforeAll(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   delete window.AlloModules.BehaviorLens;
   const source = readFileSync('behavior_lens_module.js', 'utf8');
-  new Function(source.replace(/\}\)\(\);\s*$/, 'window.__blGridClockTest = { IntervalGrid };})();'))();
+  new Function(source.replace(/\}\)\(\);\s*$/, 'window.__blGridClockTest = { IntervalGrid };})();'))(); bindUnlockedClinicalFixture();
   G = window.__blGridClockTest.IntervalGrid;
   IG = window.AlloModules.BehaviorLensIntervalGrid;
 });

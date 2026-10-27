@@ -1,3 +1,4 @@
+import { POST_MERGE_IDS, POST_MERGE_FAMILIES } from './helpers/reef_post_merge_catalog.js';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -59,7 +60,8 @@ describe('Lane G2: animals with algae partners bleach, the rest do not', () => {
   it('says which health states each model can show', () => {
     for (const id of S.ids) {
       const states = S.info(id).healthStates, group = S.info(id).group;
-      if (group === 'coral') expect(states, id).toEqual(['healthy', 'bleached', 'dead']);
+      if (id === 'orange_cup_coral') expect(states, 'azooxanthellate coral has no algal partner to bleach').toEqual(['healthy', 'dead']);
+      else if (group === 'coral') expect(states, id).toEqual(['healthy', 'bleached', 'dead']);
       else if (PARTNERS.includes(id)) expect(states, id).toEqual(['healthy', 'bleached']);
       else expect(states, id).toEqual(['healthy']);
     }
@@ -141,11 +143,13 @@ describe('Lane G2: animals with algae partners bleach, the rest do not', () => {
   });
 
   it('adds no material family or shader program: bleaching only changes colours, maps and uniforms', () => {
-    const fams = (health) => { const set = new Set(); for (const id of S.ids) for (const quality of ['low', 'high']) build(id, { seed: 3, quality, health }, (h) => meshes(h).forEach((m) => set.add(sig(m)))); return set; };
+    const fams = (health, ids = S.ids) => { const set = new Set(); for (const id of ids) for (const quality of ['low', 'high']) build(id, { seed: 3, quality, health }, (h) => meshes(h).forEach((m) => set.add(sig(m)))); return set; };
     // New specimen textures are present in the healthy catalog too; bleaching adds no family.
     const healthy = fams('healthy'), all = new Set([...healthy, ...fams('bleached'), ...fams('dead')]);
     expect(all, 'bleaching adds no material family to the healthy catalog').toEqual(healthy);
-    expect(all.size, 'eleven pinned specimen families').toBe(11);
+    const legacy = fams('healthy', S.ids.filter(id => !POST_MERGE_IDS.includes(id)));
+    expect(legacy.size, 'earlier eleven pinned specimen families').toBe(11);
+    expect([...all].filter(s => !legacy.has(s)).sort()).toEqual(POST_MERGE_FAMILIES.map(s => s + ',reef3d-species-v7|d').sort());
     expect(new Set([...all].map((k) => k.split(',').pop())), 'one shader patch').toEqual(new Set(['reef3d-species-v7|d']));
     for (const id of PARTNERS) for (const quality of ['low', 'high']) {
       const a = build(id, { seed: 3, quality }, (h) => meshes(h).map(sig)), b = build(id, { seed: 3, quality, health: 'bleached' }, (h) => meshes(h).map(sig));

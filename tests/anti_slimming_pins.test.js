@@ -84,7 +84,7 @@ describe('extraction pins', () => {
     expect(read('live_aac_source.jsx')).toContain('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
     // …and register them.
     expect(read('misc_handlers_source.jsx')).toMatch(/window\.AlloModules\.MiscHandlers = \{ runAutoFixLoop,/);
-    expect(read('udl_chat_source.jsx')).toMatch(/window\.AlloModules\.UdlChat = \{\s*planAndSendUdlMessage,/);
+    expect(read('udl_chat_source.jsx')).toMatch(/window\.AlloModules\.UdlChat = \{[^}]*\bplanAndSendUdlMessage,/);
     expect(read('live_aac_source.jsx')).toContain('serializeResourceForStudentPack: _alloSerializeResourceForStudentPack');
   });
 });

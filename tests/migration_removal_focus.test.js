@@ -70,7 +70,7 @@ function fixture(values = {}, options = {}) {
       return host.querySelector(kind === 'observation' ? '[data-study-remove]' :
         kind === 'challenge' ? '[data-challenge-remove="' + index + '"]' : '[data-trial-remove="' + index + '"]');
     },
-    field(id) { return host.querySelector('[id="' + id + '"]'); },
+    field(id) { return host.querySelector('[data-migration-id="' + id + '"]'); },
     fallback(kind) {
       return kind === 'observation' ? ui.field('migration-study-observation-note') :
         host.querySelector(kind === 'challenge' ? '[data-flight-challenge-action="check"]' : '[data-experiment-action="record"]');

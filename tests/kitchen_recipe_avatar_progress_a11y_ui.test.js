@@ -168,7 +168,7 @@ describe('Chef station progress is readable without border styles or color', () 
         expect(badge(li).getAttribute('aria-hidden')).not.toBe('true');
       }
     }
-  });
+  }, 30000); // Exhaustive rendering of every activity, including the expanded catalog.
 
   it('keeps both completion and current state when recorded cooking remains the active milestone', () => {
     start('moisture-and-browning');

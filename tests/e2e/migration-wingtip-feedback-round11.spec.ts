@@ -234,7 +234,7 @@ test('Migration wingtip paths follow both real outer vertices, reconstruct a com
   const above = await wingtip(page); expectPath(above); expect(above.camera).not.toEqual(initial.camera); expect(above.actual).toEqual(initial.actual);
   await page.locator('.migration-flight-stage').screenshot({ path: join(report, 'desktop-wingtip-path-above.png') });
   await keyboardClick(page, page.getByRole('button', { name: 'Profile', exact: true }));
-  await page.locator('#migration-flight-stage').focus(); await page.keyboard.press('ArrowRight'); await frames(page);
+  await page.locator("[data-migration-id=\"migration-flight-stage\"]").focus(); await page.keyboard.press('ArrowRight'); await frames(page);
   const orbited = await wingtip(page); expectPath(orbited); expect(orbited.actual).toEqual(initial.actual);
   await page.locator('.migration-flight-stage').screenshot({ path: join(report, 'desktop-wingtip-path-profile.png') });
   await theme(page, true); const dark = await wingtip(page); expectPath(dark); expectTheme(dark, true);
@@ -376,7 +376,7 @@ test('Migration historical pair feedback distinguishes controlled, confounded an
   expect(retainedLearning(await saved(page))).toEqual(retainedLearning(before));
   const after = await saved(page);
   await keyboardClick(page, tray.getByRole('button', { name: 'Close saved trial review', exact: true }));
-  await expect(page.locator('[data-experiment-pair-review]')).toHaveCount(0); await expect(page.locator('#migration-flight-stage')).toBeFocused();
+  await expect(page.locator('[data-experiment-pair-review]')).toHaveCount(0); await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toBeFocused();
   expect(await saved(page)).toEqual(after); expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   await writeFile(join(report, 'desktop-historical-pair-feedback-review.json'), JSON.stringify({ before, reviews, after }, null, 2));
 });

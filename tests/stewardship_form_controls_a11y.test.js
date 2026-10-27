@@ -12,7 +12,9 @@ describe('Stewardship inquiry form accessibility', () => {
 
   it('provides accessible names for campaign reflection fields', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("'aria-label': __alloT('stem.stewardship.hypothesis_input', 'Stewardship campaign hypothesis')");
-    expect(source).toContain("'aria-label': __alloT('stem.stewardship.explanation_input', 'Stewardship campaign explanation')");
+    expect(source).toContain("htmlFor: inquiryId + '-hypothesis'");
+    expect(source).toContain("'data-stewardship-inquiry-field': 'hypothesis'");
+    expect(source).toContain("htmlFor: inquiryId + '-explanation'");
+    expect(source).toContain("'data-stewardship-inquiry-field': 'explanation'");
   });
 });

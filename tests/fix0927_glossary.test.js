@@ -179,7 +179,8 @@ describe('G4: glossary names and student strings', () => {
 describe('G3: cloud glossary output is normalized like the local path', () => {
   const cleanJson = s => String(s).replace(/```json|```/g, '').trim();
   async function runBranch(response, overrides = {}) {
-    const scope = {
+    const GLOSSARY_IN_TEXT_RULES = new Function(DISPATCH.match(/const GLOSSARY_IN_TEXT_RULES = [^\n]+/)[0] + '; return GLOSSARY_IN_TEXT_RULES;')();
+    const scope = { GLOSSARY_IN_TEXT_RULES,
       glossaryImageReuseCache: { begin: () => ({ references: [], getOrCreate: async () => null }) }, textToProcess: 'Source.',
       glossaryImageStyle: '', universalImageStyle: '', autoRemoveWords: false, _generationProviderProfile: {}, glossaryTier2Count: 1, glossaryTier3Count: 1,
       addToast: noop, t: k => k, setIsProcessing: noop, configOverride: {}, glossaryDefinitionLevel: 'Same as Global Level', effectiveGrade: '5th Grade',
@@ -190,9 +191,11 @@ describe('G3: cloud glossary output is normalized like the local path', () => {
       localExcerpt: s => s, assertLocalTaskSupported: noop, localSchemaArg: () => null,
       parseJsonLenient: (raw, fallback) => { try { return JSON.parse(cleanJson(raw)); } catch (_) { return fallback; } },
       unwrapArray: (v, keys) => Array.isArray(v) ? v : (keys.map(k => v && v[k]).find(Array.isArray) || []),
-      normalizeGlossaryTerms: Dispatcher.normalizeGlossaryTerms, ...overrides,
+      normalizeGlossaryTerms: Dispatcher.normalizeGlossaryTerms, resolveGlossaryLanguagePlan: Dispatcher.resolveGlossaryLanguagePlan,
+      stampNativeGlossaryTerms: Dispatcher.stampNativeGlossaryTerms, buildNativeGlossaryPrompt: Dispatcher.buildNativeGlossaryPrompt,
+      _nativeLanguageDefaultsVersion: 0, _nativeAppLanguage: 'English', _effectiveLanguageList: ['Spanish'], ...overrides,
     };
-    return new Function('scope', 'with (scope) { return (async () => { let content, metaInfo;\n' + glossaryBranch + '\nreturn { content, metaInfo }; })(); }')(scope);
+    return new Function('scope', 'with (scope) { return (async () => { let content, metaInfo, glossaryLanguagePlan;\n' + glossaryBranch + '\nreturn { content, metaInfo }; })(); }')(scope);
   }
   it('accepts "definition" and "Tier 3", and unwraps a vocabulary wrapper', async () => {
     const out = await runBranch(JSON.stringify({ Vocabulary: [{ term: 'Erosion', definition: 'Wearing away of land.', tier: 'Tier 3', emoji: 'x' }, { term: 'Infer', def: 'Figure out.', tier: 'Tier 2' }] }));

@@ -17,7 +17,7 @@ import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { React, baseProps, setupBehaviorLens } from './helpers/behavior_lens_harness.js';
+import { React, baseProps, setupBehaviorLens , bindUnlockedClinicalFixture } from './helpers/behavior_lens_harness.js';
 
 const require = createRequire(import.meta.url);
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
@@ -28,7 +28,7 @@ beforeAll(() => {
   setupBehaviorLens();
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   delete window.AlloModules.BehaviorLens;
-  new Function(src.replace(/\}\)\(\);\s*$/, 'window.__blA11y = { LiveObsOverlay, IntervalGrid, FrequencyCounter, ABCModal, LatencyRecorder, ChoiceBoard, TokenBoard, askBehaviorLensConfirmation, writeObservationDraft };})();'))();
+  new Function(src.replace(/\}\)\(\);\s*$/, 'window.__blA11y = { LiveObsOverlay, IntervalGrid, FrequencyCounter, ABCModal, LatencyRecorder, ChoiceBoard, TokenBoard, askBehaviorLensConfirmation, writeObservationDraft };})();'))(); bindUnlockedClinicalFixture();
   M = window.__blA11y;
 });
 afterEach(async () => {

@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -111,7 +112,7 @@ describe('Post-answer D1.1 clause lookup tracing', () => {
   });
 
   it('recovers the entire original Codes function after removing only the additive trace', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n');
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8')).replace(/\r\n/g, '\n');
     const start = source.indexOf('function CodesAndStandards('), end = source.indexOf('function WelderQualPrep(', start), region = source.slice(start, end);
     expect(region).toContain('        function renderClauseLookup(q, pick) {');
     expect(createHash('sha256').update(stripClauseTrace(region)).digest('hex')).toBe('c3284dc1db4e58de87cc55d8283c5c281081ed0f2f72fa0d249a35d98b445929');

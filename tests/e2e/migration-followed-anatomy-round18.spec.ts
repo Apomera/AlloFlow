@@ -383,9 +383,9 @@ test('Migration followed anatomy uses exact bilateral articulated anchors for al
       const camera = (await anatomyState(page)).camera; await select(page, 2); const pose3 = await anatomyState(page); await select(page, 6); const pose7 = await anatomyState(page); expectAnatomy(pose3, 0); expectAnatomy(pose7, 0); expect(pose3.camera).toEqual(camera); expect(pose7.camera).toEqual(camera);
       expect(pose3.anatomy.chunks[1]).not.toEqual(pose7.anatomy.chunks[1]); expect(pose3.anatomy.chunks[2]).not.toEqual(pose7.anatomy.chunks[2]); expect(pose3.anatomy.chunks[0]).toEqual(pose7.anatomy.chunks[0]); expect(pose3.anatomy.chunks[3]).toEqual(pose7.anatomy.chunks[3]);
     }
-    if (id === 'canada_goose') { await page.locator('[data-followed-anatomy-activity]').scrollIntoViewIfNeeded(); await page.locator('#migration-flight-deck').screenshot({ path: join(report, 'desktop-followed-anatomy-left.png') }); }
+    if (id === 'canada_goose') { await page.locator('[data-followed-anatomy-activity]').scrollIntoViewIfNeeded(); await page.locator("[data-migration-id=\"migration-flight-deck\"]").screenshot({ path: join(report, 'desktop-followed-anatomy-left.png') }); }
     const explicitRight = await follow(page, 1); expectAnatomy(explicitRight, 1);
-    if (id === 'canada_goose') await page.locator('#migration-flight-deck').screenshot({ path: join(report, 'desktop-followed-anatomy-right.png') });
+    if (id === 'canada_goose') await page.locator("[data-migration-id=\"migration-flight-deck\"]").screenshot({ path: join(report, 'desktop-followed-anatomy-right.png') });
     await follow(page, null); expectAnatomy(await anatomyState(page), 1); await expect(page.locator('[data-study-anatomy-side="right"]')).toBeVisible();
     expect(speciesWork(await saved(page))).toEqual(originalWork); expect((await saved(page)).flightWingStep).toBe(13); species.push({ id, left: anatomyBrief(left), right: anatomyBrief(explicitRight), views });
   }
@@ -435,7 +435,7 @@ for (const dark of [false, true]) test.describe('Migration followed anatomy phon
     await follow(page, 0); const button = anatomyToggle(page), box = await button.boundingBox(); expect(box?.height).toBeGreaterThanOrEqual(44); expect(box?.width).toBeGreaterThanOrEqual(44); expectAnatomy(await toggleAnatomy(page, true), 0);
     const activity = page.locator('[data-followed-anatomy-activity="true"]'); await expect(activity).toBeVisible(); expect((await activity.textContent())?.toLowerCase()).toContain('predict');
     const region = page.locator('[data-study-region="inner-wing"]'); await keyboardClick(page, region); await expect(region).toHaveAttribute('aria-pressed', 'true');
-    const trace = page.locator('#migration-study-motion-evidence-prompt'); await expect(trace).toContainText('Keep the camera fixed'); await expect(trace).toContainText('3 and 7'); await expect(trace).toContainText('side');
+    const trace = page.locator("[data-migration-id=\"migration-study-motion-evidence-prompt\"]"); await expect(trace).toContainText('Keep the camera fixed'); await expect(trace).toContainText('3 and 7'); await expect(trace).toContainText('side');
     await page.getByRole('button', { name: 'From above', exact: true }).tap(); await frames(page); await positionButton(page, 2).tap(); await frames(page); const pose3 = await anatomyState(page); expectAnatomy(pose3, 0);
     await positionButton(page, 6).tap(); await frames(page); const pose7 = await anatomyState(page); expectAnatomy(pose7, 0); expect(pose7.camera).toEqual(pose3.camera); expect(pose7.body).toEqual(pose3.body); expect(pose7.serial).toBe(13); expect(pose7.anatomy.chunks[1]).not.toEqual(pose3.anatomy.chunks[1]); expect(pose7.anatomy.chunks[2]).not.toEqual(pose3.anatomy.chunks[2]);
     await expect(page.locator('[data-study-anatomy-side="left"]')).toBeVisible();

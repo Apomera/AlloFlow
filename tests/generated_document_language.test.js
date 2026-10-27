@@ -42,6 +42,23 @@ describe('Communications Studio documents', () => {
     });
 });
 
+describe('Gemini Bridge printed message', () => {
+    const source = read('view_gemini_bridge_source.jsx');
+    const start = source.indexOf('var BRIDGE_LANG_CODES = {');
+    const end = source.indexOf('var _bridgeActiveRec = null;');
+    const langAttrs = new Function(source.slice(start, end) + '\nreturn _bridgeLangAttrs;')();
+
+    it('tags the translated block with its language and direction', () => {
+        expect(langAttrs('Spanish')).toBe(' lang="es-ES"');
+        expect(langAttrs('Arabic')).toBe(' lang="ar-SA" dir="rtl"');
+        expect(langAttrs('Dari')).toBe(' lang="fa-AF" dir="rtl"');
+        expect(langAttrs('Klingon')).toBe('');
+        for (const file of ['view_gemini_bridge_source.jsx', 'view_gemini_bridge_module.js', 'desktop/web-app/public/view_gemini_bridge_module.js']) {
+            expect(read(file), file).toMatch(/<div class="text-block"' \+ _bridgeLangAttrs\(bridgeMessage\.language\) \+ ['"]>/);
+        }
+    });
+});
+
 describe('print and preview shells declare a language', () => {
     const shells = [
         ['communications_studio', 1],
@@ -50,6 +67,9 @@ describe('print and preview shells declare a language', () => {
         ['view_export_preview', 1],
         ['view_renderers', 2],
         ['view_session_modal', 1],
+        ['host_handlers', 1],
+        ['teacher', 2],
+        ['view_gemini_bridge', 1],
     ];
     const toolShells = [
         ['sel_hub/sel_tool_crisiscompanion.js', 1], ['sel_hub/sel_tool_digitalwellbeing.js', 1], ['sel_hub/sel_tool_upstander.js', 1],
@@ -57,6 +77,7 @@ describe('print and preview shells declare a language', () => {
         ['stem_lab/stem_tool_forge.js', 1], ['stem_lab/stem_tool_fractions.js', 5], ['stem_lab/stem_tool_geometryworld.js', 2],
         ['stem_lab/stem_tool_lifeskills.js', 1], ['stem_lab/stem_tool_openbim.js', 1], ['stem_lab/stem_tool_printingpress.js', 1],
         ['stem_lab/stem_tool_renewables.js', 1], ['stem_lab/stem_tool_typingpractice.js', 1],
+        ['stem_lab/stem_tool_birdlab.js', 1], ['stem_lab/stem_tool_freeforms.js', 1], ['stem_lab/stem_tool_weldlab.js', 1],
     ];
     for (const [file, count] of toolShells) {
         it(file + ' and its public copy', () => {

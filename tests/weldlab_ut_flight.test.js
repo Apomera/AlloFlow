@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { stripRtAnglePair } from './helpers/weldlab_rt_pair_restore.js';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
@@ -166,7 +167,7 @@ describe('Manual UT straight-beam round-trip diagram', () => {
   });
 
   it('restores every original inspection byte with the durable original renderer fixture and only this round’s additions stripped', () => {
-    const source = stripRtAnglePair(readFileSync(resolve(SRC), 'utf8')), restored = restoreUtFlight(source);
+    const source = stripRtAnglePair(stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8'))), restored = restoreUtFlight(source);
     const region = restored.slice(restored.indexOf('      function InspectionCWIPrep() {'), restored.indexOf('      function ConsumablesDeepDive() {'));
     expect(createHash('sha256').update(region).digest('hex')).toBe('24958600efbe8f1f8c10202861f18cb60987280d6c907706a0834fb0a1a5006f');
     expect(UT_FLIGHT_BASELINE.originalRegionSha256).toBe('24958600efbe8f1f8c10202861f18cb60987280d6c907706a0834fb0a1a5006f');

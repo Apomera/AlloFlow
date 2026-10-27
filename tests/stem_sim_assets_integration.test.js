@@ -3,6 +3,8 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+// Whole-course bird simulations; 5 s is too tight when the suite runs in parallel.
+vi.setConfig({ testTimeout: 20_000 });
 
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const read = file => readFileSync(resolve(file), 'utf8');

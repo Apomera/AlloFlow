@@ -12,9 +12,9 @@ const source = readFileSync(sourcePath), hash = createHash('sha256').update(sour
 const harness = makeHarness('stem_lab/stem_tool_migration.js');
 const errors = new WeakMap<Page, string[]>();
 const study = (page: Page) => page.locator('[data-study-observation]');
-const note = (page: Page) => page.locator('#migration-study-observation-note');
-const challenge = (page: Page) => page.locator('#migration-flight-challenges');
-const notebook = (page: Page) => page.locator('#migration-flight-experiment');
+const note = (page: Page) => page.locator("[data-migration-id=\"migration-study-observation-note\"]");
+const challenge = (page: Page) => page.locator("[data-migration-id=\"migration-flight-challenges\"]");
+const notebook = (page: Page) => page.locator("[data-migration-id=\"migration-flight-experiment\"]");
 const challengeRemove = (page: Page, index: number) => page.locator('[data-challenge-remove="' + index + '"]');
 const trialRemove = (page: Page, index: number) => page.locator('[data-trial-remove="' + index + '"]');
 
@@ -55,7 +55,7 @@ async function openScene(page: Page, extra: any = {}, dark = false) {
     flightStudyObservations: { drafts: { 'canada_goose:primaries': 'Keep my current observation draft.', 'canada_goose:tail': 'Keep my tail draft.' },
       records: { 'canada_goose:primaries': observation() } }, ...extra
   } });
-  await expect(page.locator('#migration-flight-stage')).toHaveAttribute('data-flight-ready', 'true');
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toHaveAttribute('data-flight-ready', 'true');
   await settled(page);
 }
 async function patchState(page: Page, patch: any) {
@@ -162,7 +162,7 @@ test('removing an observation retains its draft and its own keyboard destination
   expect(removed.inquiry).toEqual(before.inquiry); expect(removed.flightChallenges).toEqual(before.flightChallenges); expect(removed.flightInvestigation).toEqual(before.flightInvestigation);
   await activate(page, page.locator('[data-migration-tab="vformation"]')); const afterNavigation = await data(page);
   await replayRemoval(page); await expect(page.locator('[data-migration-tab="vformation"]')).toBeFocused(); expect(await data(page)).toEqual(afterNavigation);
-  await activate(page, page.locator('[data-migration-tab="flight3d"]')); await expect(page.locator('#migration-flight-stage')).toHaveAttribute('data-flight-ready', 'true');
+  await activate(page, page.locator('[data-migration-tab="flight3d"]')); await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toHaveAttribute('data-flight-ready', 'true');
   await openDetails(page, study(page)); await page.setViewportSize({ width: 320, height: 1000 }); await enlarge(page, study(page));
   await input.focus(); await expect(input).toBeFocused();
   const narrow = await layoutProof(page, study(page), 'observation'), audit = await scan(page);
@@ -185,7 +185,7 @@ test('challenge removal keeps next, previous, and fallback controls in the keybo
   await expect(challenge(page).locator('[data-challenge-remove]')).toHaveCount(0);
   await patchState(page, { flightChallenges: challenges([attempt(4)], '') }); await openDetails(page, page.locator('[data-flight-challenge-history]'));
   await expect(page.locator('[data-flight-challenge-action="check"]')).toBeDisabled();
-  await activate(page, challengeRemove(page, 1)); await expect(page.locator('#migration-mission-prediction')).toBeFocused();
+  await activate(page, challengeRemove(page, 1)); await expect(page.locator("[data-migration-id=\"migration-mission-prediction\"]")).toBeFocused();
   const final = await data(page); expect(final.flightChallenges.work.formation).toEqual(before.flightChallenges.work.formation);
   expect(final.flightInvestigation).toEqual(before.flightInvestigation); expect(final.flightStudyObservations).toEqual(before.flightStudyObservations); expect(final.inquiry).toEqual(before.inquiry);
   const audit = await scan(page); writeFileSync(join(report, 'challenge-removal-proof.json'), JSON.stringify({ hash, before, afterMiddle, final, audit }, null, 2));
@@ -210,11 +210,11 @@ test('delayed trial deletion never pulls focus back after the learner leaves', a
   });
   await paint(page); await expect(page.locator('[data-migration-tab="vformation"]')).toBeFocused();
   expect((await data(page)).flightInvestigation.trials).toHaveLength(1);
-  await activate(page, page.locator('[data-migration-tab="flight3d"]')); await expect(page.locator('#migration-flight-stage')).toHaveAttribute('data-flight-ready', 'true');
+  await activate(page, page.locator('[data-migration-tab="flight3d"]')); await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toHaveAttribute('data-flight-ready', 'true');
   await activate(page, trialRemove(page, 1)); await expect(page.locator('[data-experiment-action="record"]')).toBeFocused();
   await patchState(page, { flightInvestigation: investigation([trial(5)], null) });
   await expect(page.locator('[data-experiment-action="record"]')).toBeDisabled();
-  await activate(page, trialRemove(page, 1)); await expect(page.locator('#migration-experiment-prediction')).toBeFocused();
+  await activate(page, trialRemove(page, 1)); await expect(page.locator("[data-migration-id=\"migration-experiment-prediction\"]")).toBeFocused();
   const final = await data(page); expect(final.inquiry).toEqual(before.inquiry); expect(final.flightChallenges).toEqual(before.flightChallenges); expect(final.flightStudyObservations).toEqual(before.flightStudyObservations);
   await page.setViewportSize({ width: 320, height: 1000 }); await enlarge(page, page.locator('.migration-experiment-setup'));
   const narrow = await layoutProof(page, page.locator('.migration-experiment-setup'), 'trial-fallback'), audit = await scan(page);

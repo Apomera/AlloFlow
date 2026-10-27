@@ -29,8 +29,8 @@ describe('Quiz accessibility', () => {
 
   it('places accessible names at the opening of generated form controls', () => {
     const text = source();
-    expect(text).toContain('<input aria-label={t("a11y.fill_in_blank")} type="text" value={response}');
-    expect(text).toContain('<textarea aria-label={typeLabel + " response"} value={response}');
+    expect(text).toContain('<input aria-label={_quizResponseLabel(p, _quizGradedCopy(\'a11y.fill_in_blank\', \'Fill in the blank\'))} type="text" value={response}');
+    expect(text).toContain('<textarea aria-label={_quizResponseLabel(p, typeLabel + " response")} value={response}');
     expect(text).toContain('<textarea aria-label="Image refinement instructions" value={inputValue}');
     expect(text).toContain('<input aria-label="Concept to explain" type="text" value={explainerInput}');
   });

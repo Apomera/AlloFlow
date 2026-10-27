@@ -43,7 +43,7 @@ function renderTank(patch = {}) {
 
 function observeHour(patch = {}) {
   const { element, store } = renderTank(patch);
-  const button = findElement(element, item => item.type === 'button' && item.props?.['aria-label'] === 'Pause and observe one aquarium hour');
+  const button = findElement(element, item => item.type === 'button' && item.props?.['data-aquarium-observe-hour'] === 'true');
   expect(button, 'the actual one-hour observation control must be reachable').toBeTruthy();
   button.props.onClick();
   const state = store.toolData._aquarium;
@@ -60,7 +60,7 @@ const source = fs.readFileSync('stem_lab/stem_tool_aquarium.js', 'utf8');
 const sample = { tankFish: ['guppy'], fishInstanceIds: ['fish-1'], nextFishInstanceId: 2, hungerLevels: { 'fish-1': 80 }, fishStress: { 'fish-1': 0 }, fishVitality: { 'fish-1': { score: 90, tick: 10 } }, plantSizeEdits: {}, equipment: { filter: 0, heater: 0, light: 0, airPump: 1 }, aquariumTankConfig: { tankId: 'freshwater', volumeGallons: 20, shape: 'standard' }, ecosystemPrediction: { oxygen: 'rise', nitrate: 'fall', vitality: 'stable' } };
 function tank(patch = {}) {
   const view = renderTank({ ...sample, ...patch });
-  view.live = findElement(view.element, item => typeof item.type === 'function' && item.props?.id === 'aquarium-live-tank');
+  view.live = findElement(view.element, item => typeof item.type === 'function' && item.props?.instanceKey?.startsWith('live-'));
   expect(view.live).toBeTruthy();
   view.state = () => view.store.toolData._aquarium;
   return view;
@@ -82,7 +82,7 @@ afterEach(() => vi.restoreAllMocks());
 describe('Aquarium filter capacity and the nitrogen cycle', () => {
   // Runs the real one-hour tick repeatedly, carrying the whole state forward.
   // The tool is loaded once per run and re-rendered each hour.
-  const hourButton = element => findElement(element, item => item.type === 'button' && item.props?.['aria-label'] === 'Pause and observe one aquarium hour');
+  const hourButton = element => findElement(element, item => item.type === 'button' && item.props?.['data-aquarium-observe-hour'] === 'true');
   // feedEvery: flake-feed on that schedule, so multi-day runs do not starve.
   function runHours(state, hours, feedEvery = 0) {
     const first = renderTank(state);
@@ -315,8 +315,8 @@ describe('Aquarium water change dechlorination', () => {
   // Drives the real controls in the rendered tool: the checkbox, the manual
   // water button and the recommended one. No chemistry is reimplemented here.
   const byLabel = (element, label) => findElement(element, item => item.type === 'button' && item.props?.['aria-label'] === label);
-  const recommended = element => findElement(element, item => item.type === 'button' && /^Perform recommended \d+ percent water change$/.test(item.props?.['aria-label'] || ''));
-  const checkbox = element => findElement(element, item => item.type === 'input' && item.props?.id === 'aquarium-water-change-treated');
+  const recommended = element => findElement(element, item => item.type === 'button' && item.props?.['data-aquarium-water-change-recommended'] === 'true');
+  const checkbox = element => findElement(element, item => item.type === 'input' && item.props?.['data-aquarium-water-change-treated'] === 'true');
   const press = (patch, find) => {
     const { element, store } = renderTank(patch);
     const button = find(element);
@@ -538,7 +538,7 @@ describe('Actual Aquarium sizing controls and simulation', () => {
       expect(detail.textContent).toContain(example.label);
       expect(detail.textContent).toContain(example.anatomy);
       if (example.variation) expect(detail.textContent).toContain(example.variation);
-      expect(host.querySelector('#aquarium-resident-inspect').value).toBe('fish:fish-1');
+      expect(host.querySelector('[data-aquarium-resident-inspect]').value).toBe('fish:fish-1');
       expect(view.state().simTick).toBe(10);
     }
   });
@@ -565,13 +565,15 @@ describe('Actual Aquarium sizing controls and simulation', () => {
     expect(small.live.props.sceneOptions.model.stockMinimumGallons).toBe(5);
     const blocked = hospitalAction(small), before = copy(small.state());
     expect(blocked).toBeTruthy();
-    expect(blocked.props.disabled).toBe(true);
+    expect(blocked.props['aria-disabled']).toBe(true);
+    expect(blocked.props.disabled).not.toBe(true);
     expect(blocked.props['aria-label']).toMatch(/20 US gal/i);
     blocked.props.onClick(); // protect state even if an old UI invokes the disabled action
     expect(small.state()).toEqual(before);
     const enlarged = tank(resize(small.state(),20));
     const release = hospitalAction(enlarged);
     expect(release).toBeTruthy();
+    expect(release.props['aria-disabled']).toBe(false);
     expect(release.props.disabled).not.toBe(true);
     release.props.onClick();
     expect(enlarged.state().quarantinedFish['fish-1']).toBeUndefined();
@@ -592,13 +594,15 @@ describe('Actual Aquarium sizing controls and simulation', () => {
     const smaller = tank(resize(initial.state(),20)), before = copy(smaller.state());
     expect(smaller.live.props.sceneOptions.fish).toHaveLength(7);
     const blocked = atlasAction(smaller);
-    expect(blocked.props.disabled).toBe(true);
+    expect(blocked.props['aria-disabled']).toBe(true);
+    expect(blocked.props.disabled).not.toBe(true);
     expect(blocked.props['aria-label']).toMatch(/capacity|bioload|load/i);
     blocked.props.onClick();
     expect(smaller.state()).toEqual(before);
     // 22 gallons permits projected display load 7 + 4 = 11. Nova's isolated
     // load must not be added to this return calculation.
     const enough = tank(resize(smaller.state(),22));
+    expect(atlasAction(enough).props['aria-disabled']).toBe(false);
     expect(atlasAction(enough).props.disabled).not.toBe(true);
     atlasAction(enough).props.onClick();
     expect(enough.state().quarantinedFish['fish-8']).toBeUndefined();

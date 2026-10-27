@@ -100,12 +100,12 @@ describe('Sky School earlier observation review', () => {
   });
   it('browses the actual next and previous samples across a missing interval without inventing a linked normal-flow event', async () => {
     await mount({ flightPracticeHistory: [earlier({ samples: [row(0, { aoa: 16, stalling: true }), row(20)] })] });
-    expect(step('previous').disabled).toBe(true); expect(step('next').disabled).toBe(false);
+    expect(step('previous').disabled).toBe(false); expect(step('previous').getAttribute('aria-disabled')).toBe('true'); expect(step('next').disabled).toBe(false); expect(step('next').getAttribute('aria-disabled')).toBe('false');
     expect([...eventSelect().options].some(option => option.textContent.startsWith('Normal-flow observation'))).toBe(false);
     await click(step('next'));
     expect(latest.debriefHistorySampleIndex).toBe(1);
     expect(journal().querySelector('#debrief-earlier-time').getAttribute('aria-valuetext')).toBe('0:20.0');
-    expect(step('next').disabled).toBe(true); expect(journal().querySelector('[data-earlier-evidence-comparison]')).toBeNull();
+    expect(step('next').disabled).toBe(false); expect(step('next').getAttribute('aria-disabled')).toBe('true'); expect(journal().querySelector('[data-earlier-evidence-comparison]')).toBeNull();
     await click(step('previous')); expect(latest.debriefHistorySampleIndex).toBe(0);
     expect(field('Recorded state').textContent).toBe('Stall');
   });
@@ -128,7 +128,7 @@ describe('Sky School earlier observation review', () => {
     await change(journal().querySelector('#debrief-earlier-flight'), 1);
     expect(latest.debriefHistorySampleIndex).toBe(0); expect(field('Altitude · ft MSL').textContent).toBe('1,234 ft');
     expect(field('Recorded state').textContent).toBe('On ground'); expect(eventSelect().disabled).toBe(true);
-    expect(step('previous').disabled).toBe(true); expect(step('next').disabled).toBe(true);
+    expect(step('previous').disabled).toBe(false); expect(step('previous').getAttribute('aria-disabled')).toBe('true'); expect(step('next').disabled).toBe(false); expect(step('next').getAttribute('aria-disabled')).toBe('true');
     expect(journal().textContent).toContain('Second explanation.');
     expect(latest.flightPracticeHistory[0].reflection).toBe('Earlier explanation stays with that flight.');
     expect(latest.debriefSampleIndex).toBe(2); expect(latest.debriefCompareIndex).toBe(1);

@@ -73,10 +73,15 @@ describe('explicit Assess skips remain explicit after navigation and submission'
   it('saves a deferred skip, locks responses until Try again, and restores it after navigation', async () => {
     const p = { ...cardProps(questions[2]), feedbackTiming: 'after-submit' };
     await render(api.DeferredAssessmentItem, p); await click(button("I don't know"));
-    expect(host.querySelector('fieldset[disabled]')).toBeTruthy();
+    expect(host.querySelector('[data-assessment-deferred-item] > fieldset').disabled).toBe(true);
     await render(() => null, {}); await render(api.DeferredAssessmentItem, p);
     expect(api.answer(p.q, 0, api.read(p.draftNamespace).items)).toEqual({ idk: true });
-    await click(button('Try again')); expect(host.querySelector('fieldset[disabled]')).toBeNull();
+    await click(button('Try again'));
+    expect(host.querySelector('[data-assessment-deferred-item] > fieldset').disabled).toBe(false);
+    const firstAnswer = host.querySelector('input[type=radio]');
+    expect(firstAnswer.matches(':disabled')).toBe(false);
+    await click(firstAnswer);
+    expect(host.querySelector('fieldset[disabled]')).toBeNull();
   });
 });
 

@@ -76,7 +76,8 @@ describe('Pictionary production integration', () => {
       const pluginPin = text.match(/mod === 'arcade_mode_concept_pictionary\.js' \? '([0-9a-f]+)' : pluginCdnVersion/)?.[1];
       expect(matchesPluginPin(pluginPin, pluginBytes), file).toBe(true);
       pluginPins.push(pluginPin);
-      expect(text.includes("s.src = pluginCdnBase + mod + '?v=' + modeVersion + retrySuffix"), file).toBe(true);
+      expect(text.includes("var requestedPluginUrl = pluginCdnBase + mod + '?v=' + modeVersion + retrySuffix"), file).toBe(true);
+      expect(text, file).toContain('__alloBrowserDelivery.configureScript(s, requestedPluginUrl)');
       const pin = text.match(/allohaven_module\.js\?v=([0-9a-f]+)/)?.[1];
       expect(matchesHavenPin(pin, havenBytes), file).toBe(true);
       havenPins.push(pin);

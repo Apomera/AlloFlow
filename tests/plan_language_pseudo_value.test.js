@@ -37,13 +37,23 @@ beforeAll(() => {
 });
 
 describe('the premise: the pseudo-value is real, selectable, and not a language', () => {
-  it('the Output Language dropdown offers it and writes leveledTextLanguage', () => {
+  it('the Output Language dropdown offers it and records the all-selected preference', () => {
     const i = sidebar.indexOf('<option value="All Selected Languages">');
     expect(i).toBeGreaterThan(-1);
-    // Same <select>, so the value it offers lands in the state the plan reads.
+    // The current selector stores an explicit preference; legacy consumers still
+    // receive the resolved pseudo-value and must not use it as a language name.
     const sel = sidebar.slice(Math.max(0, i - 900), i);
-    expect(sel).toContain('value={leveledTextLanguage}');
-    expect(sel).toContain('onChange={(e) => setLeveledTextLanguage(e.target.value)}');
+    expect(sel).toContain('value={outputSelection}');
+    expect(sel).toContain('onChange={(e) => selectOutputLanguage(e.target.value)}');
+    const start = sidebar.indexOf('const selectOutputLanguage = value => {');
+    const end = sidebar.indexOf('\n  };', start);
+    expect(start).toBeGreaterThan(-1); expect(end).toBeGreaterThan(start);
+    let selected;
+    const select = new Function('setOutputLanguagePreference', 'setLeveledTextLanguage', 'normalizeLanguage', 'appLanguage',
+      sidebar.slice(start, end + 5) + '\nreturn selectOutputLanguage;')(
+      value => { selected = value; }, () => { throw Error('Unexpected legacy setter'); }, value => value, 'French');
+    select('All Selected Languages');
+    expect(selected).toEqual({ mode: 'all-selected' });
   });
 
   it('the dispatcher treats it as a fan-out instruction, and plans are included', () => {

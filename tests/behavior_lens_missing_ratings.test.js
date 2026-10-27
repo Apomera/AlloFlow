@@ -2,10 +2,10 @@ import {afterEach,beforeAll,describe,it,expect,vi} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
-import {React,setupBehaviorLens} from './helpers/behavior_lens_harness.js';
+import {React,ReactDOMServer,baseProps,setupBehaviorLens} from './helpers/behavior_lens_harness.js';
 const require=createRequire(import.meta.url);const {createRoot}=require(resolve('desktop/web-app/node_modules/react-dom/client'));const {Simulate}=require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
 let root,host,components,entries=[];
-beforeAll(()=>{setupBehaviorLens();globalThis.IS_REACT_ACT_ENVIRONMENT=true;delete window.AlloModules.BehaviorLens;new Function(readFileSync('behavior_lens_module.js','utf8').replace(/\}\)\(\);\s*$/,'window.__ratingTests={NaturalLanguageABC,VoiceToABC,WorkspaceSharing};})();'))();components=window.__ratingTests;});
+beforeAll(()=>{setupBehaviorLens();globalThis.IS_REACT_ACT_ENVIRONMENT=true;delete window.AlloModules.BehaviorLens;new Function(readFileSync('behavior_lens_module.js','utf8').replace(/\}\)\(\);\s*$/,'window.__ratingTests={NaturalLanguageABC,VoiceToABC,WorkspaceSharing};})();'))();components=window.__ratingTests;ReactDOMServer.renderToStaticMarkup(React.createElement(window.AlloModules.BehaviorLens,baseProps()));});
 afterEach(async()=>{if(root)await React.act(async()=>root.unmount());host?.remove();root=null;entries=[];delete window.SpeechRecognition;vi.restoreAllMocks();});
 async function mount(name,props={}){host=document.createElement('div');document.body.append(host);root=createRoot(host);await React.act(async()=>root.render(React.createElement(components[name],{abcEntries:[],observationSessions:[],sessionHistory:[],studentRoster:[],studentProfile:{},cloudSync:{},studentName:'Synthetic',selectedStudent:'Synthetic',t:()=>undefined,addToast:()=>{},setAbcEntries:update=>entries=typeof update==='function'?update(entries):update,...props})));}
 async function click(el){expect(el).toBeTruthy();await React.act(async()=>el.click());}
@@ -20,7 +20,7 @@ describe('Missing ratings in import and sharing paths',()=>{
  it('preserves an unrated voice observation through review and saving',async()=>{
   let speech;window.SpeechRecognition=class{constructor(){speech=this;}start(){}stop(){}};
   await mount('VoiceToABC',{callGemini:async()=>JSON.stringify([{antecedent:'Task',behavior:'Help card shown',consequence:'Help offered'}])});
-  await click([...document.querySelectorAll('button')].find(b=>b.textContent.includes('Start Recording')||b.textContent.includes('Stop Recording')));await React.act(async()=>speech.onresult({resultIndex:0,results:[Object.assign([{transcript:'Help card shown during work'}],{isFinal:true})]}));await click([...document.querySelectorAll('button')].find(b=>b.textContent.includes('Start Recording')||b.textContent.includes('Stop Recording')));await click(label('Parse ABC Entries from Transcript'));
+  await React.act(async()=>Simulate.change(label('Observation transcript'),{target:{value:'Help card shown during work'}}));await click(label('Parse ABC Entries from Transcript'));
   expect(host.textContent).toContain('Not rated');await click(label('Add Selected Entries'));expect(entries[0].intensity).toBeNull();
  });
  it.each([[null,null],[null,4]])('shares rated-only summaries for %j and %j',async(a,b)=>{

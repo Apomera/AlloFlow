@@ -26,7 +26,9 @@ describe('Universal live activity progress contract', () => {
     expect(mailbox).toContain("if (field === 'activityProgress') return validActivityProgressValue(value);");
     expect(mailbox).toContain('activityProgress: 1');
     expect(rules).toContain('function validActivityProgress(progress)');
-    expect(rules).toContain("'activityProgress' in request.resource.data");
+    expect(rules).toContain("'activityProgress' in next");
+    expect(rules).toContain('validActivityProgress(next.activityProgress)');
+    expect(rules).toContain('boundedMetric(next.activityProgress.at, 999999999999999)');
     for (const status of ['waiting', 'loading', 'ready', 'working', 'opened', 'attempted', 'submitted', 'revised', 'complete', 'failed', 'paused']) {
       expect(mailbox).toContain(`'${status}'`);
       expect(rules).toContain(`'${status}'`);

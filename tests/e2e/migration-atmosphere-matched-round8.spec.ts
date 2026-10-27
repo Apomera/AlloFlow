@@ -170,7 +170,7 @@ async function matched(page: Page, source: 'first' | 'second', viewpoint: 'profi
   const angle = yaw * Math.PI / 180, elevation = pitch * Math.PI / 180;
   const expectedOffset = [Math.sin(angle) * Math.cos(elevation), Math.sin(elevation), Math.cos(angle) * Math.cos(elevation)];
   state.offset.forEach((coordinate: number, axis: number) => expect(coordinate).toBeCloseTo(expectedOffset[axis], 3));
-  await expect(page.locator('#migration-flight-stage')).toBeFocused();
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toBeFocused();
   return state;
 }
 

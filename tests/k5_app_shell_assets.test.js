@@ -11,6 +11,7 @@
 // /vendor/idb-keyval-6.2.0.umd.min.js at the site root are application/javascript.
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
 
@@ -88,10 +89,18 @@ describe('the published /app/ shell carries the files it asks for', () => {
 
   it('every ./vendor/ script the host asks for exists in the vendor/ folder the shell copies', () => {
     const wanted = [...ANTI.matchAll(/["']\.\/vendor\/([^"'?]+)/g)].map(m => m[1]);
-    expect(wanted).toEqual(expect.arrayContaining(['lz-string-1.4.4.min.js', 'idb-keyval-6.2.0.umd.min.js', 'jszip-3.10.1.min.js']));
+    expect(wanted).toEqual(expect.arrayContaining(['lz-string-1.4.4.min.js', 'idb-keyval-6.2.0.umd.min.js']));
     for (const f of new Set(wanted)) {
       const file = resolve(ROOT, 'desktop/web-app/public/vendor', f);
       expect(existsSync(file), file).toBe(true);
     }
+    // JSZip now follows the same byte-verified document graph as workers/WASM.
+    const jszip = JSON.parse(readFileSync(resolve(ROOT, 'document_runtime_integrity.json'), 'utf8')).assets.jszip;
+    for (const prefix of ['', 'desktop/web-app/public/']) {
+      const bytes = readFileSync(resolve(ROOT, prefix + jszip.path));
+      expect(bytes.length).toBe(jszip.bytes);
+      expect(createHash('sha384').update(bytes).digest('hex')).toBe(jszip.sha384);
+    }
+    expect(BUILD).toContain('runtimeDelivery.records.map(record => record.asset)');
   });
 });

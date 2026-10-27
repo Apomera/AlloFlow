@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import { attachRequestControlsFixture } from './protected_request_controls_fixture.js';
 
 // Business-workflow tests start after an educator has unlocked a synthetic,
 // provider-approved workspace. Browser storage is only this fixture's backing
@@ -35,6 +36,7 @@ export function installReportWriterWorkspaceFixture(React, options = {}) {
     flush: vi.fn(async () => {}),
     consumeTransfer: vi.fn(() => null),
   };
+  attachRequestControlsFixture(session);
   const genuine = new WeakSet([session]);
   const api = {
     Boundary({ children }) { return children(session); },

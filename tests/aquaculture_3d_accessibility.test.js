@@ -236,7 +236,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
   it('provides semantic lesson focus and keyboard-first topic search', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
     expect(source).toContain('var topicSearchRef = useRef(null)');
-    expect(source).toContain("if (event.key === '/' && !isTyping)");
+    expect(source).toContain("if (event.key === '/' && !isTyping && inLab)"); // WCAG 2.1.4: only from inside the lab
     expect(source).toContain("target.matches('input, textarea, select, [contenteditable=\"true\"]')");
     expect(source).toContain("document.addEventListener('keydown', onLabNavigationKeyDown)");
     expect(source).toContain("document.removeEventListener('keydown', onLabNavigationKeyDown)");

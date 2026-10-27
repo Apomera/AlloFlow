@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vite
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { React, baseProps, setupBehaviorLens } from './helpers/behavior_lens_harness.js';
+import { React, baseProps, setupBehaviorLens , bindUnlockedClinicalFixture } from './helpers/behavior_lens_harness.js';
 const require = createRequire(import.meta.url);
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
 const { Simulate } = require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
@@ -18,7 +18,7 @@ const targets = [{ id: 'help', label: 'Requests help', measurement: 'count', ope
 const when = index => { const date = new Date(); date.setDate(date.getDate() - 6 + index); return date.toISOString(); };
 const session = (index, extra = {}) => ({ id: 'session-' + index, timestamp: when(index), behaviorId: 'help', method: 'frequency', duration: 600, phase: index < 3 ? 'Baseline' : 'Visual prompt', data: { count: index }, ...extra });
 function seed(extra = {}) { localStorage.setItem('behaviorLens_workspace_preview-a', JSON.stringify({ targetBehaviors: targets, observationSessions: [session(0), session(1), session(2, { data: {} }), session(3), session(4)], ...extra })); }
-beforeAll(() => { globalThis.IS_REACT_ACT_ENVIRONMENT = true; setupBehaviorLens(); delete window.AlloModules.BehaviorLens; new Function(readFileSync('behavior_lens_module.js', 'utf8').replace(/\}\)\(\);\s*$/, 'window.__previewTests={buildBehaviorReviewSeries};})();'))(); model = window.__previewTests.buildBehaviorReviewSeries; });
+beforeAll(() => { globalThis.IS_REACT_ACT_ENVIRONMENT = true; setupBehaviorLens(); delete window.AlloModules.BehaviorLens; new Function(readFileSync('behavior_lens_module.js', 'utf8').replace(/\}\)\(\);\s*$/, 'window.__previewTests={buildBehaviorReviewSeries};})();'))(); bindUnlockedClinicalFixture(); model = window.__previewTests.buildBehaviorReviewSeries; });
 beforeEach(() => { localStorage.clear(); sessionStorage.clear(); delete window.__alloFirebase; localStorage.setItem('bl_student_roster', JSON.stringify([{ id: 'preview-a', name: 'Student A' }, { id: 'preview-b', name: 'Student B' }])); });
 afterEach(async () => { await unmount(); vi.restoreAllMocks(); });
 

@@ -44,7 +44,7 @@ function harness(ready = []) {
   };
   const plan = { resourcePlan: [{ tool: 'quiz', uiId: 'discourse-quiz' }] };
   const context = vm.createContext({
-    window, activeBlueprint: plan, gradeLevel: '8', leveledTextLanguage: 'English',
+    window, activeBlueprint: plan, gradeLevel: '8', leveledTextLanguage: 'English', outputLanguagePreference: { mode: 'app' }, currentUiLanguage: 'English', selectedLanguages: [], translationMode: 'none',
     standardsInput: '', studentInterests: [],
     addToast: (message, level) => toasts.push({ message, level }),
     _alloPhaseOHandlersDeps: () => ({}),

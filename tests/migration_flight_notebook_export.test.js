@@ -33,7 +33,7 @@ function notebook(seed = {}) {
   function find(predicate) { return walk(tree, predicate)[0]; }
   function action(name) { return find(node => node.props?.['data-experiment-action'] === name); }
   function edit(label, value) {
-    find(node => node.type === 'textarea' && (node.props.id === label || node.props['aria-label'] === label)).props.onChange({ target: { value } });
+    find(node => node.type === 'textarea' && (node.props['data-migration-id'] === label || node.props['aria-label'] === label)).props.onChange({ target: { value } });
     draw();
   }
   function record(wind) {

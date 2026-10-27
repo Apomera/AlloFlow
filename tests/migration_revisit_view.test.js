@@ -39,7 +39,7 @@ describe('Migration recorded view revisit actions', () => {
     expect(ui.action('observation').type).toBe('button');
     expect(ui.action('observation').props.type).toBe('button');
     expect(ui.action('observation').props.children).toBe('Revisit recorded view');
-    expect(ui.action('observation').props['aria-describedby']).toBe('migration-study-revisit-help');
+    expect(ui.action('observation').props['aria-describedby']).toBe(ui.node(node => node.props?.['data-migration-id'] === 'migration-study-revisit-help').props.id);
     expect(ui.render()).toContain('The original animation frame was not recorded');
     expect(ui.node(node => node.props?.['data-study-revisit-status'] != null).props.role).toBe('status');
     const chase = fixture({ flightCamera: 'chase', flightStudyObservations: { records: { 'canada_goose:head': recorded() } } });
@@ -50,13 +50,15 @@ describe('Migration recorded view revisit actions', () => {
     const notebook = { drafts: { 'canada_goose:head': 'An unfinished revision.' }, records: { 'canada_goose:head': recorded() }, comparison: { draft: 'Unfinished comparison.' } };
     const investigation = { prediction: 'Keep this wind evidence.', trials: [] }, challenges = { selected: 'wind', results: {} };
     const ui = fixture({ flightStudyYaw: -80, flightStudyPitch: 50, flightStudyZoom: .7, flightStudyBird: 0, flightWingStep: 12, flightWind: -9, flightSeason: 'spring', flightFormation: 'natural', flightInvestigation: investigation, flightChallenges: challenges, flightStudyObservations: notebook });
-    const host = document.createElement('div'); host.id = 'migration-flight-stage'; host.tabIndex = 0; document.body.append(host);
+    // SSR never commits this scene's ref; a matching document ID is not a focus owner.
+    const host = document.createElement('div'); host.id = ui.node(node => node.props?.['data-migration-id'] === 'migration-flight-stage').props.id; host.tabIndex = 0; document.body.append(host);
+    const focus = vi.spyOn(host, 'focus'), previousFocus = document.activeElement;
     ui.revisit('observation');
     expect(ui.writes).toHaveLength(1);
     expect(ui.writes[0]).toEqual({ flightSpecies: 'canada_goose', flightCamera: 'study', flightPaused: true, flightStudyRegion: 'head', flightStudyBird: 2, flightStudyYaw: 90, flightStudyPitch: 10, flightStudyZoom: 1.2, flightWingStep: 3, flightShowAnatomy: true, flightStudyObservationOpen: true });
     expect(ui.state.flightStudyObservations).toBe(notebook); expect(ui.state.flightInvestigation).toBe(investigation); expect(ui.state.flightChallenges).toBe(challenges);
     expect(ui.state.flightWind).toBe(-9); expect(ui.state.flightSeason).toBe('spring'); expect(ui.state.flightFormation).toBe('natural');
-    expect(document.activeElement).toBe(host);
+    expect(document.activeElement).toBe(previousFocus); expect(focus).not.toHaveBeenCalled();
     expect(ui.announce).toHaveBeenLastCalledWith(expect.stringContaining('Recorded state: Running.'));
     expect(ui.announce).toHaveBeenLastCalledWith(expect.stringContaining('original animation frame was not recorded'));
   });
@@ -110,7 +112,7 @@ describe('Migration recorded view revisit actions', () => {
 
   it('cancels an in-progress orbit before restoring evidence so a late pointerup cannot overwrite it', () => {
     const ui = fixture({ flightStudyObservations: { records: { 'canada_goose:head': recorded() } } });
-    const props = ui.node(node => node.props?.id === 'migration-flight-stage').props;
+    const props = ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-stage').props;
     const host = document.createElement('div'); host.tabIndex = 0; host.setAttribute('data-flight-ready', 'true');
     const canvas = document.createElement('canvas'); host.append(canvas); document.body.append(host);
     let captured = null;

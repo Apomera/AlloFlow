@@ -6,7 +6,7 @@ const origin = 'https://desktop.test';
 const scope = origin + '/app/';
 const workerTemplate = fs.readFileSync('desktop/web-app/public/sw.js', 'utf8');
 const worker = workerTemplate.replace(/__RELEASE_ID__/g, 'new-release')
-  .replace(/__BUILD_TS__/g, '1000').replace('__PRECACHE_PATHS__', '[]');
+  .replace(/__BUILD_TS__/g, '1000').replace('__PRECACHE_PATHS__', '[]').replace('__PRECACHE_DIGESTS__', '{}');
 const moduleUrl = new URL('stem_lab/stem_tool_flightsim.js?v=unchanged-shell-pin', scope).href;
 
 function harness(fetchImplementation) {

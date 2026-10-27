@@ -119,7 +119,7 @@ describe('Aircraft-specific painted instruments', () => {
     const spoken = document.getElementById('skyschool-a11y-live')?.textContent;
     expect(spoken).toMatch(/^Altitude /);
     const expected = rotor ? 10 : Math.round(speed * 0.5924838 * Math.sqrt(Math.pow(1 - 0.0000068756 * altitude, 4.2561)));
-    expect(spoken).toContain('Speed ' + expected + ' knots.');
+    expect(spoken).toContain((rotor ? 'Ground speed ' : 'Indicated airspeed ') + expected + ' knots.');
     if (!rotor) expect(expected).not.toBe(Math.round(speed * 0.5924838));
     expect(errors).not.toHaveBeenCalled();
   });

@@ -187,7 +187,7 @@ async function checkTarget(locator: Locator) {
 async function expectSelected(page: Page, index: number) {
   await expect(cycle(page, index)).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-study-stage-cycle-position]')).toHaveAttribute('data-study-stage-cycle-position', String(index));
-  await expect(page.locator('#migration-study-current-context')).toContainText('Cycle position ' + (index + 1) + ' of 8 selected.');
+  await expect(page.locator("[data-migration-id=\"migration-study-current-context\"]")).toContainText('Cycle position ' + (index + 1) + ' of 8 selected.');
 }
 async function inspectWithoutChanges(page: Page, before: any, beforeVisual: any, tips: number[][], touch: boolean) {
   await expect(inspect(page)).toHaveAccessibleName('Inspect current 3D view');
@@ -236,7 +236,7 @@ async function inspectionFlow(page: Page, dark: boolean, touch: boolean) {
   await note(page).fill(evidence); await frames(page);
   const drafted = await saved(page), beforeInspect = await visualState(page, marked3.actualTips);
   expect(drafted.flightStudyObservations.records).toEqual(originalSaved.flightStudyObservations.records);
-  await page.locator('#migration-study-current-context').screenshot({ path: join(report, stem + '-notes-context.png') });
+  await page.locator("[data-migration-id=\"migration-study-current-context\"]").screenshot({ path: join(report, stem + '-notes-context.png') });
   const firstInspect = await inspectWithoutChanges(page, drafted, beforeInspect, marked3.actualTips, touch);
   await stage(page).screenshot({ path: join(report, stem + '-inspected-stage.png') });
   // Keyboard interaction begins directly from the focused native scene. Only

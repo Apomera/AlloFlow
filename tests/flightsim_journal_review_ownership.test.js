@@ -189,12 +189,12 @@ describe('functional host receipts and valid consecutive journal actions', () =>
     const previousNode = () => family === 'latest' ? button('Previous observation', explorer()) : host.querySelector('[data-earlier-observation-step="previous"]');
     const next = handler(nextNode(), 'onClick');
     await act(async () => { for (let count = 0; count < 8; count++) next(); });
-    expect(latest[field]).toBe(5); expect(nextNode().disabled).toBe(true);
+    expect(latest[field]).toBe(5); expect(nextNode().disabled).toBe(false); expect(nextNode().getAttribute('aria-disabled')).toBe('true');
     const previous = handler(previousNode(), 'onClick');
     await act(async () => { previous(); previous(); previous(); }); expect(latest[field]).toBe(2);
     const toStart = handler(previousNode(), 'onClick');
     await act(async () => { for (let count = 0; count < 8; count++) toStart(); });
-    expect(latest[field]).toBe(0); expect(previousNode().disabled).toBe(true); expect(records()).toEqual(before);
+    expect(latest[field]).toBe(0); expect(previousNode().disabled).toBe(false); expect(previousNode().getAttribute('aria-disabled')).toBe('true'); expect(records()).toEqual(before);
   });
 
   it('accepts consecutive absolute sliders in the same review without replaying an older comparison action', async () => {

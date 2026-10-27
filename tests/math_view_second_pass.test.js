@@ -173,7 +173,9 @@ describe('MathView second-pass state hardening', () => {
     );
     const hints = trackIndexes(Array.from({ length: 30 }, (_, index) => `Hint ${index}`), hintReads);
     const sanitizeHtml = vi.fn(value => value);
-    const { MathView } = loadMathView({ fromSource: true });
+    const sanitizeSvgGraph = vi.fn(value => value);
+    const { MathView, window } = loadMathView({ fromSource: true });
+    window.sanitizeSvgGraph = sanitizeSvgGraph;
     const tree = MathView({
       generatedContent: {
         id: 'bounded',
@@ -193,7 +195,8 @@ describe('MathView second-pass state hardening', () => {
     expect(Math.max(...stepReads)).toBe(49);
     expect(Math.max(...hintReads)).toBe(11);
     expect(nodeText(findNode(tree, node => node.type === 'h2'))).toHaveLength(2000);
-    expect(sanitizeHtml).toHaveBeenCalledWith(expect.stringMatching(/^g{250000}$/));
+    expect(sanitizeSvgGraph).toHaveBeenCalledWith(expect.stringMatching(/^g{120001}$/));
+    expect(sanitizeHtml).not.toHaveBeenCalled();
   });
 
   it('contains hostile fallback resource seeds without requiring a host-supplied id', () => {

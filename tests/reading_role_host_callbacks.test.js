@@ -10,11 +10,12 @@ if (start < 0 || end < 0) throw new Error('Source role host handlers not found')
 const source = shell.slice(start, end);
 const makeHandlers = new Function('deps', `
   const {
-    history, activeUnitId, isTeacherMode, setActiveUnitId, setSelectedReadingSourceId,
+    units, history, activeUnitId, isTeacherMode, setActiveUnitId, setSelectedReadingSourceId,
     addToast, setHistory, setGeneratedContent, stopPlayback, setSelectionMenu,
     setRevisionData, setPhonicsData, setIsEditingLeveledText, setIsFluencyMode,
     setIsCompareMode, setInteractionMode, setActiveView
   } = deps;
+  ${shell.match(/  const _isKnownUnitId = [^\n]+/)[0]}
   ${source}
   return { handleSelectReadingSource, handleReadingRoleChange, openReadingArtifact };
 `);
@@ -48,6 +49,7 @@ function family(id = 'source', unitId = 'unit-a') {
 function harness(items, current, options = {}) {
   const state = { history: items, current, activeUnitId: options.activeUnitId || 'unit-a', selectedReadingSourceId: options.selectedReadingSourceId || '' };
   const deps = {
+    units: options.units || [...new Set(items.map(item => item.unitId).filter(Boolean))].map(id => ({ id })),
     isTeacherMode: options.isTeacherMode !== false,
     setActiveUnitId: vi.fn(value => { state.activeUnitId = value; }),
     setSelectedReadingSourceId: vi.fn(value => { state.selectedReadingSourceId = typeof value === 'function' ? value(state.selectedReadingSourceId) : value; }),

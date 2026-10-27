@@ -345,7 +345,7 @@ for (const dark of [false, true]) test.describe('Migration marked view restore p
     await writeFile(join(report, stem + '.json'), JSON.stringify({ original, reference, before, after, phasePreserved, recorded, audit }, null, 2));
     if (!dark) {
       await page.setViewportSize({ width: 1440, height: 1000 }); await frames(page); await changeView(page, 'Front'); await select(page, 6); await check(page, 'both');
-      await page.locator('[data-study-marked-pose]').scrollIntoViewIfNeeded(); await page.locator('#migration-flight-deck').screenshot({ path: join(report, 'desktop-marked-view-restore.png') });
+      await page.locator('[data-study-marked-pose]').scrollIntoViewIfNeeded(); await page.locator("[data-migration-id=\"migration-flight-deck\"]").screenshot({ path: join(report, 'desktop-marked-view-restore.png') });
     }
   });
 });

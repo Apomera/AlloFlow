@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -107,7 +108,7 @@ describe('Robot Joint move reference lines', () => {
   });
 
   it('restores the complete previous robotics region exactly by removing only the three additive reference blocks', () => {
-    const source = readFileSync(SRC, 'utf8'), region = source.slice(source.indexOf('function RoboticAutomated('), source.indexOf('function InspectionCWIPrep('));
+    const source = stripWeldlabWcagFixes(readFileSync(SRC, 'utf8')), region = source.slice(source.indexOf('function RoboticAutomated('), source.indexOf('function InspectionCWIPrep('));
     const restored = stripRobotReference(region); expect(restored).not.toBe(region.replace(/\r\n/g, '\n'));
     expect(createHash('sha256').update(restored).digest('hex')).toBe('05e9defc2d836897fab4ca835c6f56fef3ac93e20ff61d932ae1b1b8c54e56bd');
     const matches = [...region.matchAll(/__alloT\('stem\.weldlab\.(rob12_[^']+)'/g)].map(match => match[1]); expect(matches).toHaveLength(4); expect(new Set(matches).size).toBe(matches.length);

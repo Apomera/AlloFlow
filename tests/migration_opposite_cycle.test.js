@@ -71,7 +71,7 @@ function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { renderCount++; refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = makeEngine(stage, { speciesId: state.flightSpecies || 'canada_goose',
     formationMode: state.flightFormation || 'natural', season: state.flightSeason || 'fall', wingStepSerial: state.flightWingStep });
@@ -87,7 +87,7 @@ function fixture(seed = {}, options = {}) {
     follow(side = 0) { ui.click(ui.node(node => node.props?.['data-wingtip-follow-side'] === side)); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(value => value + 1); }); },
     flushOne() { act(() => { state = { ...state, ...queued.shift() }; refresh(value => value + 1); }); },
-    context() { return host.querySelector('#migration-study-current-context'); },
+    context() { return host.querySelector("[data-migration-id=\"migration-study-current-context\"]"); },
     cycle() { return host.querySelector('[data-study-context-cycle]'); },
     side() { return host.querySelector('[data-study-context-side]'); },
     badge() { return host.querySelector('[data-study-stage-cycle-position]'); },
@@ -106,7 +106,7 @@ function fixture(seed = {}, options = {}) {
       const flyer = engine.flyers[ui.live.flightStudyBird];
       flyer.userData.lastRenderedWingPhase = engine.time * flyer.userData.flapRate + flyer.userData.phase + engine.wingStepPhase;
     },
-    field() { return host.querySelector('#migration-study-observation-note'); }
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); }
   };
   ui.set({}); return ui;
 }
@@ -151,8 +151,8 @@ describe('Explicit opposite cycle comparison', () => {
     ui.engine.flyers[0].userData.lastRenderedWingPhase = Math.PI / 2;
     expect(ui.opposite().disabled).toBe(true); expect(ui.badge()).toBeNull();
     expect(ui.opposite().textContent).toBe('Compare opposite position');
-    expect(ui.opposite().getAttribute('aria-controls')).toBe('migration-flight-stage');
-    expect(ui.opposite().getAttribute('aria-describedby')).toBe('migration-study-cycle-help');
+    expect(ui.opposite().getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id);
+    expect(ui.opposite().getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-cycle-help"]').id);
     expect(ui.host.querySelectorAll('[data-study-cycle-action="opposite"]')).toHaveLength(1);
     expect(ui.state.flightWingStep).toBe(19); expect(ui.engine.markedWingPose.capturePose).not.toHaveBeenCalled();
     ui.writes.length = 0; ui.click(ui.oppositeNode());

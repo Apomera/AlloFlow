@@ -31,3 +31,49 @@ describe('Equivalent keyboard thermometer and observation notebook',()=>{
  it('clears observations and unfinished work with a fresh cook and keeps native launch separate',()=>{const {ui,host}=mounted();$('thermometerTry').click();expect(host.openNative).toHaveBeenCalledOnce();expect(host.observed).not.toHaveBeenCalled();ui.record(T.reading(water(),completed(),false));$('thermometerKeyboard').click();press('ArrowDown');ui.render(R.start('tomato',4),false,true);expect(host.observed).toHaveBeenLastCalledWith(null);expect($('thermometerReadings').children).toHaveLength(0);expect($('thermometerKeyboardPanel').hidden).toBe(true);expect($('thermometerSummary').textContent).toBe('Try a check');expect($('thermometerCapture').disabled).toBe(true);ui.dispose();});
  it('locks finished and drained cooks, updates fallback launch, and removes listeners on disposal',()=>{const s=water(),{ui,host}=mounted(s);ui.render({...s,plated:true},false,false);expect($('thermometerKeyboard').disabled).toBe(true);expect(ui.record(T.reading(s,completed(),false))).toBe(false);ui.render({...s,pot:{...s.pot,drained:true}},false,false);expect($('thermometerInstruction').textContent).toContain('no cooking water');ui.render(R.start(),false,false);expect($('thermometerInstruction').textContent).toContain('Fill the pot');expect($('thermometerInstruction').textContent).not.toContain('finished');host.has3D=()=>false;ui.set3D();expect($('thermometerTry').hidden).toBe(true);ui.render(s,false,false);const keyboard=$('thermometerKeyboard'),native=$('thermometerTry'),control=$('thermometerControl');ui.dispose();keyboard.click();native.click();control.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));expect(host.cancelNative).not.toHaveBeenCalled();expect(host.openNative).not.toHaveBeenCalled();expect(document.getElementById('waterThermometer')).toBeNull();});
 });
+
+describe('Thermometer preview cancellation and focus',()=>{
+ it('keeps current phase guidance outside the scalable illustration and describes the probe with it',()=>{const {ui}=mounted();ui.open();expect($('thermometerPhase').namespaceURI).toBe('http://www.w3.org/1999/xhtml');expect($('thermometerControl').getAttribute('aria-describedby').split(/\s+/)).toContain('thermometerPhase');expect($('thermometerPhase').closest('svg')).toBeNull();ui.dispose();});
+ it('keeps native focus on partial steps and advances it only when the current phase completes',()=>{
+  const {ui,host}=mounted();ui.open();$('thermometerLower').focus();$('thermometerLower').click();expect(document.activeElement).toBe($('thermometerLower'));$('thermometerLower').click();expect(document.activeElement).toBe($('thermometerLower'));$('thermometerLower').click();expect(document.activeElement).toBe($('thermometerLift'));$('thermometerLift').click();$('thermometerLift').click();expect(document.activeElement).toBe($('thermometerLift'));$('thermometerLift').click();expect(document.activeElement).toBe($('thermometerCapture'));$('thermometerCapture').click();expect(document.activeElement).toBe($('thermometerKeyboard'));expect(host.observed).toHaveBeenCalledOnce();expect($('thermometerReadings').children).toHaveLength(1);ui.dispose();
+ });
+ it('does not move focus for an unfocused button activation or the illustrated keyboard sequence',()=>{
+  const {ui,host}=mounted();ui.open();const control=$('thermometerControl');for(let i=0;i<3;i++)$('thermometerLower').click();for(let i=0;i<3;i++)$('thermometerLift').click();$('thermometerCapture').click();expect(document.activeElement).toBe(control);expect(host.observed).toHaveBeenCalledOnce();ui.open();keyCycle();press('Enter');expect(document.activeElement).toBe(control);ui.dispose();
+ });
+ function escape(target,options={}){const event=new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true,...options});target.dispatchEvent(event);return event;}
+ function toggle(panel,open){panel.open=open;panel.dispatchEvent(new Event('toggle'));}
+ it.each(['thermometerControl','thermometerLower','thermometerLift','thermometerCapture','thermometerCancel'])('cancels an unfinished check from %s while preserving saved observations and usable focus',id=>{
+  const s=water(),before=JSON.stringify(s),{ui,host}=mounted(s);ui.record(T.reading(s,completed(),false));const notebook=$('thermometerReadings').textContent;ui.open();
+  if(id==='thermometerCapture')keyCycle();else{press('ArrowDown');if(id==='thermometerLift'){press('ArrowDown');press('ArrowDown');}}
+  const target=$(id);target.focus();expect(document.activeElement).toBe(target);host.observed.mockClear();
+  expect(escape(target).defaultPrevented).toBe(true);expect($('thermometerPhase').textContent).toBe('Probe at rest');expect($('thermometerCapture').disabled).toBe(true);expect($('thermometerStatus').textContent).toContain('Check cancelled. No reading taken.');
+  expect(document.activeElement).toBe($(id==='thermometerControl'?'thermometerControl':'thermometerKeyboard'));expect($('waterThermometer').open).toBe(true);expect($('thermometerReadings').textContent).toBe(notebook);expect($('thermometerSummary').textContent).toBe('22.0°C');expect(host.observed).not.toHaveBeenCalled();expect(JSON.stringify(s)).toBe(before);
+  const status=$('thermometerStatus'),observer=new MutationObserver(()=>{});observer.observe(status,{childList:true,characterData:true,subtree:true});expect(escape(document.activeElement).defaultPrevented).toBe(false);expect(observer.takeRecords()).toHaveLength(0);observer.disconnect();ui.dispose();
+ });
+ it('does not intercept Escape outside the thermometer, repeated Escape, or an event already handled by another control',()=>{
+  const {ui,host}=mounted(),outside=document.createElement('button');outside.textContent='Another control';document.body.append(outside);ui.open();press('ArrowDown');outside.focus();
+  expect(escape(outside).defaultPrevented).toBe(false);expect(document.activeElement).toBe(outside);expect($('thermometerPhase').textContent).toBe('Lowering probe');
+  const control=$('thermometerControl');control.focus();expect(escape(control,{repeat:true}).defaultPrevented).toBe(false);expect($('thermometerPhase').textContent).toBe('Lowering probe');
+  const handled=new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true});handled.preventDefault();control.dispatchEvent(handled);expect($('thermometerPhase').textContent).toBe('Lowering probe');
+  press('ArrowDown');press('ArrowDown');for(let i=0;i<3;i++)press('ArrowUp');press('Enter');expect(host.observed).toHaveBeenCalledOnce();ui.dispose();outside.remove();
+ });
+ it('leaves Escape and the completed-result message alone after a reading has been recorded',()=>{
+  const {ui,host}=mounted();ui.open();keyCycle();press('Enter');const control=$('thermometerControl'),message=$('thermometerStatus').textContent,notebook=$('thermometerReadings').textContent;control.focus();host.observed.mockClear();
+  expect(escape(control).defaultPrevented).toBe(false);expect(document.activeElement).toBe(control);expect($('thermometerStatus').textContent).toBe(message);expect($('thermometerReadings').textContent).toBe(notebook);expect(host.observed).not.toHaveBeenCalled();ui.dispose();
+ });
+ it('cancels a partial dip when the lesson closes and cannot resume it after reopening the disclosure',()=>{
+  const s=water(),before=JSON.stringify(s),{ui,host}=mounted(s);ui.record(T.reading(s,completed(),false));const panel=$('waterThermometer'),summary=panel.querySelector('summary'),notebook=$('thermometerReadings').textContent;ui.open();press('ArrowDown');$('thermometerControl').focus();host.observed.mockClear();
+  toggle(panel,false);expect(document.activeElement).toBe(summary);expect($('thermometerPhase').textContent).toBe('Probe at rest');expect($('thermometerStatus').textContent).toContain('Check cancelled.');expect($('thermometerReadings').textContent).toBe(notebook);
+  toggle(panel,true);keyCycle();press('Enter');$('thermometerCapture').click();expect(host.observed).not.toHaveBeenCalled();expect($('thermometerCapture').disabled).toBe(true);expect(JSON.stringify(s)).toBe(before);
+  ui.open();keyCycle();press('Enter');expect(host.observed).toHaveBeenCalledOnce();ui.dispose();
+ });
+ it('preserves external focus and recorded observations when an idle lesson closes',()=>{
+  const {ui,host}=mounted();ui.open();keyCycle();press('Enter');const panel=$('waterThermometer'),notebook=$('thermometerReadings').textContent,status=$('thermometerStatus'),message=status.textContent,outside=document.createElement('button');outside.textContent='Another activity';document.body.append(outside);outside.focus();host.observed.mockClear();
+  const observer=new MutationObserver(()=>{});observer.observe(status,{childList:true,characterData:true,subtree:true});toggle(panel,false);toggle(panel,false);
+  expect(document.activeElement).toBe(outside);expect(observer.takeRecords()).toHaveLength(0);observer.disconnect();expect(status.textContent).toBe(message);expect($('thermometerReadings').textContent).toBe(notebook);expect(host.observed).not.toHaveBeenCalled();ui.dispose();outside.remove();
+ });
+ it('removes the panel Escape and disclosure handlers on disposal',()=>{
+  const {ui}=mounted();ui.open();press('ArrowDown');const panel=$('waterThermometer'),control=$('thermometerControl'),status=$('thermometerStatus'),message=status.textContent;ui.dispose();
+  expect(escape(control).defaultPrevented).toBe(false);toggle(panel,false);expect(status.textContent).toBe(message);expect(document.getElementById('waterThermometer')).toBeNull();
+ });
+});

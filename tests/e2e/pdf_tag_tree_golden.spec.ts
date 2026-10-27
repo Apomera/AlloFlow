@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Golden-master / characterization harness for createTaggedPdf's TAG-TREE OUTPUT.
 //
 // WHY THIS EXISTS: createTaggedPdf (doc_pipeline_source.jsx) produces binary tagged-PDF
@@ -48,7 +49,7 @@ test.describe('createTaggedPdf — tag-tree golden master', () => {
     const page = await browser.newPage();
     const pageErrors: string[] = [];
     page.on('pageerror', (e) => pageErrors.push(String(e)));
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });
@@ -229,7 +230,7 @@ let unifySummary: any = null;
 test.describe('createTaggedPdf — tag-tree unify Slice 1 (scanned single-page)', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });
@@ -318,7 +319,7 @@ let perLeafScanSummary: any = null;
 test.describe('createTaggedPdf — per-leaf MCID experiment (scanned)', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });
@@ -456,7 +457,7 @@ let unifyMultiSummary: any = null;
 test.describe('createTaggedPdf — tag-tree unify Slice 2 (scanned multi-page)', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });
@@ -567,7 +568,7 @@ test.describe('createTaggedPdf — non-Latin OCR text layer (Arabic)', () => {
   test.beforeAll(async ({ browser }) => {
     test.setTimeout(120000); // CDN fetch of fontkit (~760KB) + Noto Sans Arabic (~235KB)
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });
@@ -713,7 +714,7 @@ let linkGateSummary: any = null;
 test.describe('createTaggedPdf — link-annot tagging + UA-claim gate', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });
@@ -854,7 +855,7 @@ let perLeafSummary: any = null;
 test.describe('createTaggedPdf — Stage 4b per-leaf re-pointing (born-digital)', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });

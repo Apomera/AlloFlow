@@ -232,7 +232,7 @@ test('Migration Study presets fit the submitted small and wide models and return
   await mount(page, { flightStudyBird: 2, flightShowRoute: true });
   const evidence = await inspectPresets(page);
   await page.getByRole('button', { name: 'Focus 3D scene', exact: true }).click();
-  await expect(page.locator('#migration-flight-stage')).toBeFocused();
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toBeFocused();
   await page.keyboard.press('ArrowRight');
   await expect(page.getByRole('slider', { name: 'Study angle in degrees', exact: true })).toHaveValue('10');
   await page.getByRole('button', { name: 'Chase', exact: true }).click();
@@ -289,18 +289,18 @@ test('Migration playback tab order, recorded evidence progress, motion preferenc
   await page.keyboard.press('Tab');
   await expect(page.getByRole('combobox', { name: '3D migration focus species', exact: true })).toBeFocused();
   await page.getByRole('button', { name: 'Resume flight', exact: true }).click();
-  await expect(page.locator('#migration-flight-stage')).toHaveAttribute('data-motion-reduced', 'true');
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toHaveAttribute('data-motion-reduced', 'true');
   await expect(page.locator('[data-flight-motion-note]')).toBeVisible();
   await expect(page.locator('.migration-flight-route-label')).toContainText('Motion reduced');
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await expect(page.locator('#migration-flight-stage')).toHaveAttribute('data-motion-reduced', 'false');
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toHaveAttribute('data-motion-reduced', 'false');
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(page.locator('#migration-flight-stage')).toHaveAttribute('data-motion-reduced', 'true');
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toHaveAttribute('data-motion-reduced', 'true');
   await completeEvidenceReview(page);
   await page.screenshot({ path: join(report, 'desktop-flight-comparison-review.png'), fullPage: true });
   // Dispatch the actual canvas event without calling loseContext on the GPU.
   await page.locator('.migration-flight-stage canvas').evaluate(element => element.dispatchEvent(new Event('webglcontextlost', { cancelable: true })));
-  await expect(page.locator('#migration-flight-stage')).toHaveAttribute('data-flight-error', 'true');
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toHaveAttribute('data-flight-error', 'true');
   await expect(page.locator('.migration-flight-stage-status')).toBeVisible();
   await expect(page.locator('.migration-flight-stage-status')).toContainText('Switch tabs and return');
 });

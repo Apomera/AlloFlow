@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Validator-parity golden: the in-app self-check (what Canvas users see —
 // they have no Java/veraPDF) must agree with the pipeline's evidence-based
 // gate and the ISO contracts. Before the 2026-06-12 parity rules it actively
@@ -17,7 +18,7 @@ let report: any = null;
 test.describe('in-app validator parity with the evidence-based gate', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib, null, { timeout: 30000 });
     await page.addScriptTag({ path: PIPELINE_PATH });

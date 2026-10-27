@@ -15,7 +15,7 @@ function fixture(seed = {}) {
   ctx.toolData = { migration: state };
   function Component() { tree = tool.render(ctx); return tree; }
   ReactDOMServer.renderToStaticMarkup(React.createElement(Component));
-  const props = find(tree, node => node.props?.id === 'migration-flight-stage').props;
+  const props = find(tree, node => node.props?.["data-migration-id"] === 'migration-flight-stage').props;
   const host = document.createElement('div');
   host.tabIndex = 0; host.setAttribute('data-flight-ready', 'true');
   const canvas = document.createElement('canvas'); host.append(canvas); document.body.append(host);

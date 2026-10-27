@@ -542,7 +542,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain("'NH3 ' + waterChem.ammonia.toFixed(2) + ' ppm'");
     expect(source).toContain("'O2 ' + waterChem.dissolvedO2.toFixed(1) + ' mg/L'");
     expect(source).toContain("equipmentFaultCount + ' equipment faults'");
-    expect(source).toContain("updateTutorialNote('observation', combinedObservation)");
+    expect(source).toContain("updateTutorialNote('observation', existingObservation + appendedSnapshot)");
     expect(source).toContain('notebook: {');
     expect(source).toContain('prediction: !!currentTutorialNote.prediction.trim()');
 
@@ -557,7 +557,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     fields.forEach(field => {
       expect(notebook.querySelector('label[for="' + field.id + '"]').textContent.trim()).not.toBe('');
       const hint = field.getAttribute('aria-describedby');
-      if (hint) expect(notebookDom.querySelector('[id="' + hint + '"]')).toBeTruthy();
+      if (hint) hint.split(/\s+/).forEach(id => expect(notebookDom.querySelector('[id="' + id + '"]')).toBeTruthy());
     });
     expect(source).toContain('Lesson lab notebook');
     expect(source).toContain('"Predict \\u2192 Observe \\u2192 Explain"');
@@ -609,7 +609,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('upd(\'plantLearningAnswers\', nextAnswers)');
     expect(source).toContain('selectedPlantId: plant.id');
 
-    expect(source).toContain("'aria-labelledby': \"aquarium-plant-profile-title\"");
+    expect(source).toContain("'aria-labelledby': workspaceA11yId + '-plant-profile-title'");
     expect(source).toContain('"Identity & habitat"');
     expect(source).toContain('"Light, carbon & nutrition"');
     expect(source).toContain('"Ecology, compatibility & aquascaping"');
@@ -855,8 +855,8 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('conic-gradient(');
     expect(source).toContain('Ring length represents the 0–100 score');
     expect(source).toContain('labels preserve meaning without relying on color');
-    expect(source).toContain("document.getElementById('aquarium-selected-plant-profile')");
-    expect(source).toContain('id: "aquarium-selected-plant-profile"');
+    expect(source).toContain("focusAquariumWorkspaceSection('aquarium-selected-plant-profile')");
+    expect(source).toContain("'data-aquarium-workspace-section': 'aquarium-selected-plant-profile'");
     expect(source).toContain("updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: vitalityItem.id })");
     expect(source).toContain(`role: "group", 'aria-label': __alloT('stem.aquarium.a11y_filtered_organism_vitality_and_plant_health', 'Filtered organism vitality and plant health')`);
     expect(source).not.toContain('key: vitalityItem.key, type: "button", role: "listitem"');
@@ -1039,7 +1039,7 @@ expect(network.links.every((link) => typeof link.strength === 'number' && link.s
     expect(confounded.conditions.find((condition) => condition.id === 'controlled')).toMatchObject({ met: false });
   });
 
-  it('provides a progressive-enhancement 3D habitat studio with a complete accessible editor', () => {
+  it('provides a progressive-enhancement 3D habitat studio with a complete accessible editor', async () => {
     expect(source).toContain('Spatial Habitat Studio');
     expect(source).toContain('function createAquariumHabitatScene(canvas, initialOptions)');
     expect(source).toContain('function AquariumHabitat3DViewport(props)');
@@ -1063,11 +1063,21 @@ expect(network.links.every((link) => typeof link.strength === 'number' && link.s
     expect(source).toContain('3D Habitat Field Missions');
     expect(source).toContain('Predict → build → observe → revise and explain');
     expect(source).toContain('var habitatMissionStage =');
-    expect(source).toContain('function startHabitatMission(missionId)');
-    expect(source).toContain('function chooseHabitatMissionPrediction(metric)');
-    expect(source).toContain('function beginHabitatMissionObservation()');
-    expect(source).toContain('function evaluateActiveHabitatMission()');
-    expect(source).toContain('function recordHabitatMissionReflection()');
+    await withMountedCare({ habitatStudioOpen: true, habitatMissionPanelOpen: true, habitatViewMode: 'plan', habitatLayout: [] }, async ({ host, state, activate }) => {
+      const starts = [...host.querySelectorAll('[data-aquarium-mission-start]')];
+      expect(starts).toHaveLength(4);
+      expect(new Set(starts.map(button => button.getAttribute('aria-label'))).size).toBe(4);
+      const start = host.querySelector('[data-aquarium-mission-start="refuge"]');
+      expect(start.getAttribute('aria-label')).toBe('Start mission: Refuge Rescue');
+      await activate(start);
+      expect(state().habitatMissionId).toBe('refuge'); expect(state().habitatMissionStage).toBe('predict');
+      expect(document.activeElement).toBe(host.querySelector('[data-aquarium-mission-heading="predict"]'));
+      await activate(host.querySelector('[data-aquarium-mission-prediction="shelter"]'));
+      expect(state().habitatMissionPrediction).toBe('shelter'); expect(state().habitatMissionStage).toBe('build');
+      expect(state().habitatViewMode).toBe('plan');
+      expect(document.activeElement).toBe(host.querySelector('[data-aquarium-mission-heading="build"]'));
+      expect(host.querySelector('[data-aquarium-mission-action="lock"]').disabled).toBe(true);
+    });
     expect(source).toContain('Mission learning-loop stages');
     expect(source).toContain('Lock intervention and observe');
     expect(source).toContain('Evaluate mission evidence');
@@ -1536,26 +1546,27 @@ describe('Aquarium workspace hierarchy', () => {
     const workspace = find(ast, node => prop(node, 'data-aquarium-active-workspace', 'true'));
     expect(workspace).toBeTruthy();
     const sections = workspace.arguments.slice(2);
-    const index = id => sections.findIndex(section => find(section, node => prop(node, 'id', id)));
-    const objectiveIndex = index('aquarium-next-step');
-    const tankIndex = index('aquarium-live-tank');
-    const careIndex = index('aquarium-care-actions');
-    const systemsIndex = index('aquarium-systems-investigation');
+    const index = (key, value) => sections.findIndex(section => find(section, node => prop(node, key, value)));
+    const objectiveIndex = index('data-aquarium-next-step', 'true');
+    const tankIndex = sections.findIndex(section => find(section, node => node.type === 'CallExpression' && node.arguments[0]?.name === 'AquariumLiveDisplay'));
+    const careIndex = index('data-aquarium-care-actions', 'true');
+    const systemsIndex = index('data-aquarium-disclosure', 'aquarium-systems-investigation');
     expect(objectiveIndex).toBe(0);
     expect(tankIndex).toBeGreaterThan(objectiveIndex);
     expect(careIndex).toBeGreaterThan(tankIndex);
     expect(systemsIndex).toBeGreaterThan(careIndex);
 
     for (const id of ['aquarium-systems-investigation', 'aquarium-life-support']) {
-      const disclosure = find(workspace, node => prop(node, 'id', id));
+      const disclosure = find(workspace, node => prop(node, 'data-aquarium-disclosure', id));
       expect(disclosure.arguments[0].value).toBe('details');
       expect(disclosure.arguments[2].arguments[0].value).toBe('summary');
       expect(disclosure.arguments[1].properties.some(p => p.key.name === 'open')).toBe(false);
     }
     const systems = sections[systemsIndex];
-    for (const id of ['aquarium-exchange-network-title', 'aquarium-vitality-map-title', 'aquarium-exchange-history-title']) {
+    for (const id of ['aquarium-exchange-network-title', 'aquarium-vitality-map-title']) {
       expect(find(systems, node => prop(node, 'id', id)), id).toBeTruthy();
     }
+    expect(find(systems, node => prop(node, 'data-aquarium-exchange-history-heading', 'true'))).toBeTruthy();
     await withMountedCare({ lightsOn: false }, async ui => {
       const simulation = ui.host.querySelector('[data-aquarium-care-simulation]');
       expect(simulation.tagName).toBe('BUTTON'); expect(simulation.type).toBe('button');

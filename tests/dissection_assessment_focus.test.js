@@ -63,6 +63,30 @@ function observationWork(state) {
     'organConfidence', 'procedureByLayer'].map(key => [key, state[key]])));
 }
 
+function recordedWork(state) {
+  return { ...observationWork(state), ...structuredClone(Object.fromEntries([
+    'assessmentCompletedAt', 'assessmentRecordedScore', 'assessmentRecordedTotal',
+    'assessmentEvidence', 'quizReviewQueue',
+  ].map(key => [key, state[key]]))) };
+}
+
+const assessmentNavigationCases = [
+  { label: 'Return to lab', completed: true },
+  { label: 'Review 1 missed structure', completed: false },
+];
+
+async function mountAssessmentNavigation(completed) {
+  return mountLab({ quizMode: completed, quizComplete: completed, quizTotal: 1,
+    quizScore: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 1,
+    quizSupportedCount: 1, quizReviewQueue: ['nictitating'],
+    assessmentRecordedScore: 0, assessmentRecordedTotal: 1, assessmentCompletedAt: 123,
+    assessmentEvidence: { 'frog|tympanum': { correct: true, at: 100 } } });
+}
+
+function assessmentNavigationTarget(fixture, completed) {
+  return completed ? fixture.host.querySelector('[data-diss-canvas]') : fixture.panel;
+}
+
 beforeEach(() => {
   localStorage.clear(); resetStemLab();
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
@@ -149,6 +173,64 @@ describe('assessment completion focus handoffs', () => {
     expect(f.state.quizReviewMode).toBe(label === 'Review missed structures');
     expect(f.state.quizTotal).toBe(0); expect(observationWork(f.state)).toEqual(before);
     expect(f.awardXP).not.toHaveBeenCalled();
+  });
+
+  it.each(assessmentNavigationCases)('hands off from the removed $label control and preserves recorded work', async ({ label, completed }) => {
+    const f = await mountAssessmentNavigation(completed), before = recordedWork(f.state);
+    const control = f.button(label);
+    expect(control).toBeDefined(); control.focus(); await f.click(control);
+    expect(control.isConnected).toBe(false); expect(f.summary).toBeNull();
+    expect(document.activeElement).toBe(assessmentNavigationTarget(f, completed));
+    expect(f.state.quizMode).toBe(!completed); expect(f.state.quizComplete).toBe(false);
+    if (!completed) {
+      expect(f.state.quizReviewMode).toBe(true); expect(f.state.quizTotal).toBe(0);
+      const prompt = document.getElementById(f.panel.getAttribute('aria-describedby'));
+      expect(f.panel.contains(prompt)).toBe(true); expect(prompt.textContent).toContain('Function clue:');
+    }
+    expect(recordedWork(f.state)).toEqual(before); expect(f.awardXP).not.toHaveBeenCalled();
+  });
+
+  it.each(assessmentNavigationCases)('keeps the $label handoff inside the mounted lab that initiated it', async ({ label, completed }) => {
+    const first = await mountAssessmentNavigation(completed), second = await mountAssessmentNavigation(completed);
+    const firstState = structuredClone(first.state), before = recordedWork(second.state), control = second.button(label);
+    expect(control).toBeDefined(); control.focus(); await second.click(control);
+    expect(control.isConnected).toBe(false);
+    expect(document.activeElement).toBe(assessmentNavigationTarget(second, completed));
+    expect(first.host.contains(document.activeElement)).toBe(false);
+    expect(first.state).toEqual(firstState); expect(recordedWork(second.state)).toEqual(before);
+    expect(second.awardXP).not.toHaveBeenCalled();
+  });
+
+  it.each(assessmentNavigationCases)('preserves an outside control when $label is triggered programmatically', async ({ label, completed }) => {
+    const f = await mountAssessmentNavigation(completed), before = recordedWork(f.state);
+    const outside = f.host.querySelector('button[aria-label="Advanced workspace"]');
+    expect(outside).not.toBeNull(); outside.focus(); await f.click(f.button(label));
+    expect(f.state.quizMode).toBe(!completed); expect(document.activeElement).toBe(outside);
+    expect(recordedWork(f.state)).toEqual(before); expect(f.awardXP).not.toHaveBeenCalled();
+  });
+
+  it.each(assessmentNavigationCases)('does not steal another lab focus when $label is triggered programmatically', async ({ label, completed }) => {
+    const first = await mountLab(), second = await mountAssessmentNavigation(completed);
+    const firstState = structuredClone(first.state), before = recordedWork(second.state), outside = first.correct;
+    outside.focus(); await second.click(second.button(label));
+    expect(second.state.quizMode).toBe(!completed); expect(document.activeElement).toBe(outside);
+    expect(first.state).toEqual(firstState); expect(recordedWork(second.state)).toEqual(before);
+    expect(second.awardXP).not.toHaveBeenCalled();
+  });
+
+  it.each([{ total: 1, label: 'next question' }, { total: 5, label: 'assessment summary' }])('cancels the delayed $label handoff when the learner moves elsewhere', async ({ total }) => {
+    const f = await mountLab({ quizTotal: total, quizReviewMode: true,
+      assessmentCompletedAt: 123, assessmentRecordedScore: 0, assessmentRecordedTotal: 1,
+      quizFeedback: { correct: true, chosen: 'tympanum', supported: false } });
+    const before = recordedWork(f.state), control = f.continuation;
+    const outside = document.createElement('button'); outside.dataset.assessmentTestOutside = 'true';
+    outside.textContent = 'Another task'; document.body.appendChild(outside);
+    expect(control).not.toBeNull(); control.focus();
+    act(() => { control.click(); }); outside.focus();
+    await act(async () => { await settle(); });
+    expect(control.isConnected).toBe(false); expect(document.activeElement).toBe(outside);
+    expect(f.state.quizComplete).toBe(total === 5);
+    expect(recordedWork(f.state)).toEqual(before); expect(f.awardXP).not.toHaveBeenCalled();
   });
 
   it('preserves canvas focus when an answer is submitted from outside the answer controls', async () => {

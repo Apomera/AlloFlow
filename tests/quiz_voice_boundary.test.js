@@ -20,6 +20,7 @@ function loadQuizSourceForVoiceTests() {
   }).code;
   window.React = React;
   window.AlloModules = window.AlloModules || {};
+  new Function('window', readFileSync(resolve(process.cwd(), 'quiz_live_aggregators.js'), 'utf8'))(window);
   window.AlloIcons = window.AlloIcons || {};
   window.__alloT = key => key;
   new Function('window', compiled + '\nwindow.__QuizVoiceTestView = QuizView;')(window);
@@ -412,7 +413,19 @@ describe('ordinary Quiz voice boundary', () => {
     expect(await send('choose-evidence', { choice: 'Water vapor cools into droplets' })).toMatchObject({
       ok: true, part: 'evidence', selectedLabel: 'A',
     });
+    await send('choose-evidence', { choice: 'B' });
+    expect(await send('check')).toMatchObject({ ok: true, state: 'checked', correct: false, score: 1 });
+    expect(scope.getCommands().map(command => command.id)).toContain('quiz_revise_choices');
+    expect(QuizView.voiceBoundary.parseScopedUtterance('revise these choices')).toEqual({ commandId: 'quiz_revise_choices' });
+    let revision;
+    await React.act(async () => {
+      revision = await scope.execute('quiz_revise_choices', {}, { getCurrentLearnerResource: () => ({ id: 'quiz-voice-evidence-reflections', type: 'quiz', frontmost: true }) }, { confirmed: true });
+    });
+    expect(revision).toMatchObject({ ok: true, state: 'revising' });
+    expect((await send('status')).itemState).toMatchObject({ answerIndex: 1, evidenceIndex: 1 });
+    await send('choose-evidence', { choice: 'A' });
     expect(await send('check')).toMatchObject({ ok: true, state: 'checked', correct: true, score: 2 });
+    expect(scope.getCommands().map(command => command.id)).not.toContain('quiz_revise_choices');
     expect(await send('try-again')).toMatchObject({ state: 'confirmation-required', confirmationToken: 'reset-answer-evidence' });
     expect(await send('try-again', { confirmed: true })).toMatchObject({ ok: true, state: 'reset' });
 

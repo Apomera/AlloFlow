@@ -136,7 +136,7 @@ describe('Native Study action feedback and wingtip names', () => {
       expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button'); expect(button.textContent).toBe(label);
       expect(button.hasAttribute('aria-label')).toBe(false); expect(button.hasAttribute('aria-labelledby')).toBe(false);
       expect(button.querySelector('i').getAttribute('aria-hidden')).toBe('true');
-      expect(button.getAttribute('aria-describedby')).toBe('migration-wingtip-follow-help');
+      expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-wingtip-follow-help"]').id);
     }
   });
 

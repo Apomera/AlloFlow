@@ -154,7 +154,7 @@ describe('separate catalog teacher-guide printing', () => {
   });
 
   it.each([
-    ['academic_discourse_reading_space_grade6', 'reading-space-teaching-playbook', 'One device with teacher facilitation can support the pair’s work.', 'Sort reference', 1],
+    ['academic_discourse_reading_space_grade6', 'reading-space-teaching-playbook', 'One device with teacher facilitation can support the pair’s work.', 'More practice in a separate pack', 1],
     ['reading_decisions_grade6', 'decision-unit-teacher-faq', 'saving on the device does not submit work to the teacher.', 'Interpret reflection proportionately.', 3],
   ])('preserves the complete native educator narrative and source links for %s', async (filename, id, preparation, teaching, sourceCount) => {
     win.AlloModules.InstructionalContext = require(resolve('instructional_context_module.js'));
@@ -173,9 +173,10 @@ describe('separate catalog teacher-guide printing', () => {
     const headings = [...renderedGuide.querySelectorAll('h2,h3,h4')].map(node => node.textContent.trim());
     expect(headings.some(heading => heading.includes('Materials Needed'))).toBe(true);
     expect(headings.some(heading => /materials header/i.test(heading))).toBe(false);
-    expect(headings.some(heading => /\bExtensions\b/.test(heading))).toBe(false);
+    const guideData = pack.history.find(item => item.id === id).data, extensions = guideData.extensions || [];
+    expect(headings.some(heading => /\bExtensions\b/.test(heading))).toBe(extensions.length > 0);
+    for (const extension of extensions) expect(renderedGuide.textContent).toContain(typeof extension === 'string' ? extension : extension.title);
     expect(text).toContain(preparation); expect(text).toContain(teaching);
-    const guideData = pack.history.find(item => item.id === id).data;
     expect(text).toContain(guideData.assessmentIdeas[0]);
     for (const field of ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure']) {
       const firstParagraph = guideData[field].split(/\n\s*\n/).find(paragraph => paragraph.trim() && !/^\s*#/.test(paragraph));

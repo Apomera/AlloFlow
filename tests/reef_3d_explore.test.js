@@ -13,8 +13,8 @@ vi.setConfig({ testTimeout: 45000 });
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const SOURCE = readFileSync(process.env.REEF3D_EXPLORE_SOURCE || 'stem_lab/reef_3d_explore.js', 'utf8');
 const SPECIES_FILE = 'stem_lab/reef_3d_species.js', HAS_SPECIES = existsSync(SPECIES_FILE);
-const CONTROLLER_KEYS = ['clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'lookCamera', 'resetCamera', 'resize', 'setInput', 'setLight', 'setPaused', 'setReducedMotion', 'setView', 'setVision', 'swimTo', 'zoomCamera'];
-const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'moments', 'nearby', 'paused', 'quality', 'ready', 'reducedMotion', 'triangles', 'view', 'vision'];
+const CONTROLLER_KEYS = ['cancelSwim', 'captureImage', 'clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'lookAtFocused', 'lookCamera', 'resetCamera', 'resize', 'setInput', 'setLight', 'setMagnification', 'setPaused', 'setReducedMotion', 'setView', 'setVision', 'swimTo', 'zoomCamera'];
+const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'magnification', 'moments', 'navigation', 'nearby', 'paused', 'quality', 'ready', 'reducedMotion', 'triangles', 'view', 'vision'];
 const POP = [
   { id: 'clownfish', count: 4 }, { id: 'magnificent_anemone', count: 2 }, { id: 'blue_tang', count: 2 }, { id: 'brain_coral', count: 6 },
   { id: 'staghorn_coral', count: 4 }, { id: 'giant_moray', count: 1 }, { id: 'green_turtle', count: 2 }, { id: 'reef_manta', count: 1 },
@@ -657,8 +657,10 @@ describe('Reef3DExplore focus, swimTo and picking', () => {
       const target = census(t).filter((o) => o.speciesId === id).sort((a, b) => Math.hypot(b.pos[0], b.pos[2]) - Math.hypot(a.pos[0], a.pos[2]))[0];
       expect(t.controller.swimTo(target.uid)).toBe(true);
       expect(t.controller.getState().focused.uid).toBe(target.uid);
+      expect(t.controller.getState().navigation).toEqual({ uid: target.uid });
       t.run(20);
       const s = t.controller.getState();
+      expect(s.navigation, id + ' arrived').toBeNull();
       expect(s.focused.distanceM, id + ' distance').toBeLessThan(4.5);
       const d = s.diver, want = bearingDeg(target.pos[0] - d.x, target.pos[2] - d.z);
       expect(angleGap(d.headingDeg, want), id + ' facing').toBeLessThan(30);
@@ -668,6 +670,52 @@ describe('Reef3DExplore focus, swimTo and picking', () => {
       expect(e.y).toBeGreaterThan(floorBelow(t, e.x, e.z) + 0.35);
     }
     expect(t.controller.swimTo('missing')).toBe(false);
+  });
+
+  it('cancels a swim immediately without clearing the specimen or leaving forward drift', () => {
+    const t = runtime(), c = t.controller;
+    const target = census(t).filter((o) => o.speciesId === 'brain_coral').sort((a, b) => Math.hypot(b.pos[0], b.pos[2]) - Math.hypot(a.pos[0], a.pos[2]))[0];
+    expect(c.cancelSwim(), 'idle').toBe(false);
+    c.swimTo(target.uid); t.run(1);
+    expect(c.getState().navigation).toEqual({ uid: target.uid });
+    expect(c.cancelSwim()).toBe(true);
+    const stopped = c.getState().diver;
+    expect(c.getState().navigation).toBeNull();
+    expect(c.getState().focused.uid).toBe(target.uid);
+    t.run(3);
+    const end = c.getState().diver;
+    expect(Math.hypot(end.x - stopped.x, end.z - stopped.z), 'stops rather than coasting').toBeLessThan(0.01);
+    expect(t.states.at(-1).navigation, 'subscribers receive cancellation').toBeNull();
+    expect(c.cancelSwim(), 'already stopped').toBe(false);
+    c.dispose(); expect(c.cancelSwim(), 'disposed').toBe(false);
+  });
+
+  it('retains its destination while paused and permits cancellation before resuming', () => {
+    const t = runtime(), c = t.controller, target = census(t).find((o) => o.speciesId === 'giant_clam');
+    c.swimTo(target.uid); t.run(0.5); c.setPaused(true);
+    const stopped = c.getState().diver;
+    t.run(2);
+    expect(c.getState().diver).toEqual(stopped);
+    expect(c.getState().navigation).toEqual({ uid: target.uid });
+    expect(c.cancelSwim()).toBe(true);
+    expect(c.getState().paused).toBe(true);
+    c.setPaused(false); t.run(2);
+    const resumed = c.getState().diver;
+    expect(Math.hypot(resumed.x - stopped.x, resumed.z - stopped.z)).toBeLessThan(0.01);
+    expect(c.getState().navigation).toBeNull();
+  });
+
+  it('stops the glide with Escape and rejects cancellation before staged loading is ready', () => {
+    const loading = runtime({ staged: true });
+    expect(loading.controller.getState().ready).toBe(false);
+    expect(loading.controller.cancelSwim()).toBe(false);
+    loading.controller.dispose();
+    const t = runtime(), c = t.controller, target = census(t).find((o) => o.speciesId === 'giant_clam');
+    c.swimTo(target.uid); t.run(0.5); t.key(t.canvas, 'Escape');
+    const stopped = c.getState().diver;
+    t.run(2);
+    expect(c.getState().navigation).toBeNull();
+    expect(Math.hypot(c.getState().diver.x - stopped.x, c.getState().diver.z - stopped.z)).toBeLessThan(0.01);
   });
 
   it('cancels the glide when the student takes over, and Enter swims to the focus', () => {
@@ -1137,6 +1185,87 @@ describe('Reef3DExplore live motion preference', () => {
 
 describe('Reef3DExplore accessible camera controller', () => {
   const cameraPose = t => ({ position: t.renderer.camera.position.toArray(), rotation: t.renderer.camera.quaternion.toArray(), fov: t.renderer.camera.fov });
+  const centreOf = o => new THREE.Box3().setFromObject(o.object).getCenter(new THREE.Vector3());
+
+  it('aims either camera at selected organisms around the reef without moving the paused dive', () => {
+    for (const view of ['first', 'third']) {
+      const t = runtime({ reducedMotion: true, view }), c = t.controller, cam = t.renderer.camera;
+      c.setPaused(true); t.step();
+      const diver = c.getState().diver, organisms = fingerprint(t), frames = c.getState().frames;
+      const targets = census(t).filter(o => o.object && !['reef_star', 'sea_fan', 'barrel_sponge'].includes(o.speciesId));
+      expect(targets.length).toBeGreaterThan(8);
+      const distances = [], bearings = [];
+      for (const target of targets) {
+        const centre = centreOf(target);
+        distances.push(centre.distanceTo(new THREE.Vector3(diver.x, diver.y, diver.z)));
+        bearings.push(Math.atan2(centre.x - diver.x, centre.z - diver.z));
+        c.focus(target.uid);
+        expect(c.lookAtFocused(), view + ' ' + target.speciesId).toBe(true);
+        const projected = centre.clone().project(cam);
+        // A school's logical anchor can differ slightly from its members' box
+        // center; the visible animal/group must still occupy the center of view.
+        expect(Math.abs(projected.x), target.speciesId + ' horizontal framing').toBeLessThan(0.1);
+        expect(Math.abs(projected.y), target.speciesId + ' vertical framing').toBeLessThan(0.1);
+        expect(projected.z).toBeGreaterThan(-1); expect(projected.z).toBeLessThan(1);
+        expect([...cam.position.toArray(), ...cam.quaternion.toArray()].every(Number.isFinite)).toBe(true);
+        if (view === 'third') expect(cam.position.y, 'camera stays above terrain').toBeGreaterThan(floorBelow(t, cam.position.x, cam.position.z));
+      }
+      expect(Math.max(...distances) - Math.min(...distances), 'near and distant targets').toBeGreaterThan(10);
+      expect(Math.max(...bearings) - Math.min(...bearings), 'different bearings').toBeGreaterThan(Math.PI);
+      expect(c.getState().frames, 'camera action never advances a frame itself').toBe(frames);
+      t.run(1);
+      expect(c.getState()).toMatchObject({ paused: true, reducedMotion: true, diver });
+      expect(fingerprint(t)).toBe(organisms);
+      expect(t.errors).toEqual([]);
+    }
+  });
+
+  it('keeps a selected observation centered in portrait view and throughout the normal zoom range', () => {
+    const t = runtime({ reducedMotion: true }), c = t.controller, cam = t.renderer.camera;
+    c.setPaused(true);
+    t.canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 360, height: 780 }); c.resize();
+    const target = census(t).find(o => o.speciesId === 'giant_clam'), centre = centreOf(target);
+    c.focus(target.uid); expect(c.lookAtFocused()).toBe(true);
+    for (const zoom of [-1, -1, 1, 1, 1]) {
+      c.zoomCamera(zoom);
+      const p = centre.clone().project(cam);
+      expect(Math.hypot(p.x, p.y)).toBeLessThan(0.001);
+    }
+    c.setView('first'); expect(c.lookAtFocused()).toBe(true);
+    expect(Math.hypot(...centre.clone().project(cam).toArray().slice(0, 2))).toBeLessThan(0.001);
+    expect(c.getState().paused).toBe(true);
+  });
+
+  it('captures a single observation and lets manual look, reset, and swimming take over', () => {
+    const t = runtime(), c = t.controller, cam = t.renderer.camera;
+    const target = census(t).find(o => o.speciesId === 'whitetip_reef_shark'), point = centreOf(target);
+    c.focus(target.uid); c.setPaused(true); c.lookAtFocused();
+    c.setPaused(false); t.run(2);
+    expect(centreOf(target).distanceTo(point), 'the animal continues swimming').toBeGreaterThan(0.2);
+    expect(Math.hypot(...point.clone().project(cam).toArray().slice(0, 2)), 'camera holds the captured point rather than tracking').toBeLessThan(0.001);
+    c.setPaused(true); c.lookCamera(120, 0);
+    expect(Math.hypot(...point.clone().project(cam).toArray().slice(0, 2)), 'manual look releases the observation').toBeGreaterThan(0.05);
+    c.lookAtFocused(); c.resetCamera(); const reset = cameraPose(t);
+    c.lookAtFocused(); c.resetCamera(); expect(cameraPose(t)).toEqual(reset);
+    c.lookAtFocused(); c.setPaused(false); c.setInput({ turn: 1 }); t.run(1); c.setInput(null);
+    expect(Math.hypot(...point.clone().project(cam).toArray().slice(0, 2)), 'swimming releases the observation').toBeGreaterThan(0.05);
+  });
+
+  it('rejects unavailable selections and active swims without changing navigation or pause', () => {
+    const loading = runtime({ staged: true }); expect(loading.controller.lookAtFocused()).toBe(false); loading.controller.dispose();
+    const t = runtime(), c = t.controller;
+    expect(c.lookAtFocused()).toBe(false);
+    const target = census(t).find(o => o.speciesId === 'giant_clam'); c.swimTo(target.uid);
+    const before = cameraPose(t), navigation = c.getState().navigation;
+    expect(c.lookAtFocused()).toBe(false); expect(cameraPose(t)).toEqual(before); expect(c.getState().navigation).toEqual(navigation);
+    c.setPaused(true); expect(c.lookAtFocused()).toBe(false); expect(c.getState().paused).toBe(true);
+    c.cancelSwim(); expect(c.lookAtFocused()).toBe(true);
+    c.clearFocus(); expect(c.lookAtFocused()).toBe(false);
+    c.focus(target.uid); t.canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    expect(c.lookAtFocused()).toBe(false);
+    c.dispose(); expect(c.lookAtFocused()).toBe(false);
+  });
+
   it('uses the same look response as a pointer drag', () => {
     const t = runtime({ reducedMotion: true }); t.controller.setPaused(true); t.controller.resetCamera();
     expect(t.controller.lookCamera(40, -30)).toBe(true); const fromButton = cameraPose(t);
@@ -1177,5 +1306,380 @@ describe('Reef3DExplore accessible camera controller', () => {
     c.dispose(); const renders = t.counts.render;
     for (const method of ['lookCamera', 'zoomCamera', 'resetCamera']) expect(c[method](40, 40)).toBe(false);
     t.step(); expect(t.counts.render).toBe(renders); expect(t.errors).toEqual([]);
+  });
+});
+
+describe('Reef3DExplore image capture', () => {
+  const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aUxQAAAAASUVORK5CYII=';
+  const cameraPose = t => ({ position: t.renderer.camera.position.toArray(), rotation: t.renderer.camera.quaternion.toArray(), fov: t.renderer.camera.fov });
+
+  it('redraws and encodes the existing camera without changing a paused observation in either view', () => {
+    for (const view of ['first', 'third']) {
+      const t = runtime({ reducedMotion: true, view }), c = t.controller, renderer = t.renderer;
+      c.setPaused(true); c.focus(census(t).find(o => o.speciesId === 'giant_clam').uid); c.lookAtFocused();
+      c.setLight(true); c.setVision('vivid');
+      const before = c.getState(), pose = cameraPose(t), organisms = fingerprint(t), notifications = t.states.length, renders = t.counts.render;
+      const draw = vi.spyOn(renderer, 'render');
+      t.canvas.toDataURL = vi.fn(type => {
+        expect(type).toBe('image/png'); expect(cameraPose(t)).toEqual(pose);
+        expect(t.counts.render).toBe(renders + 1); return PNG;
+      });
+      expect(c.captureImage()).toBe(PNG);
+      expect(draw).toHaveBeenCalledExactlyOnceWith(t.scene, t.renderer.camera);
+      expect(draw.mock.invocationCallOrder[0]).toBeLessThan(t.canvas.toDataURL.mock.invocationCallOrder[0]);
+      expect(c.getState()).toEqual(before); expect(cameraPose(t)).toEqual(pose); expect(fingerprint(t)).toBe(organisms);
+      expect(t.states).toHaveLength(notifications); expect(t.errors).toEqual([]);
+      expect(t.renderer).toBe(renderer); expect(renderer.params.preserveDrawingBuffer).not.toBe(true);
+      t.run(1); expect(cameraPose(t)).toEqual(pose); expect(c.getState().focused).toEqual(before.focused);
+    }
+  });
+
+  it('captures repeatedly during an automatic swim without pausing, advancing or caching it', () => {
+    const t = runtime(), c = t.controller, target = census(t).find(o => o.speciesId === 'giant_clam');
+    c.swimTo(target.uid); t.run(0.5);
+    const before = c.getState(), pose = cameraPose(t), organisms = fingerprint(t), renders = t.counts.render, notifications = t.states.length;
+    expect(before.navigation).toEqual({ uid: target.uid });
+    t.canvas.toDataURL = vi.fn(() => PNG);
+    expect(c.captureImage()).toBe(PNG); expect(c.captureImage()).toBe(PNG);
+    expect(t.canvas.toDataURL).toHaveBeenCalledTimes(2); expect(t.counts.render).toBe(renders + 2);
+    expect(c.getState()).toEqual(before); expect(cameraPose(t)).toEqual(pose); expect(fingerprint(t)).toBe(organisms);
+    expect(t.states).toHaveLength(notifications); expect(t.errors).toEqual([]);
+  });
+
+  it('contains render and encoding failures without notifying, pausing, or disposing the dive', () => {
+    const t = runtime(), c = t.controller, before = c.getState(), notifications = t.states.length;
+    t.canvas.toDataURL = vi.fn(() => PNG);
+    vi.spyOn(t.renderer, 'render').mockImplementationOnce(() => { throw new Error('Temporary render failure'); });
+    expect(c.captureImage()).toBeNull(); expect(t.canvas.toDataURL).not.toHaveBeenCalled();
+    t.canvas.toDataURL.mockImplementationOnce(() => { throw new DOMException('Canvas cannot be exported', 'SecurityError'); });
+    expect(c.captureImage()).toBeNull(); expect(c.getState()).toEqual(before);
+    expect(t.states).toHaveLength(notifications); expect(t.errors).toEqual([]); expect(t.counts.dispose).toBe(0);
+    expect(c.captureImage(), 'a later attempt can succeed').toBe(PNG);
+    t.run(0.5); expect(c.getState().frames).toBeGreaterThan(before.frames); expect(c.getState().paused).toBe(false);
+  });
+
+  it('rejects blank, malformed and non-PNG exports', () => {
+    const t = runtime(), c = t.controller, before = c.getState();
+    for (const result of [null, undefined, '', 'data:,', 'data:image/png;base64,', 'data:image/png;base64,iVBORw0KGgo=',
+      'data:image/png;base64,not-png', 'data:image/png;base64,iVBORw0KGgo%%%%=', PNG.slice(0, -1), PNG.replace('image/png', 'image/jpeg')]) {
+      t.canvas.toDataURL = vi.fn(() => result);
+      expect(c.captureImage(), String(result)).toBeNull();
+    }
+    expect(c.getState()).toEqual(before); expect(t.errors).toEqual([]); expect(t.counts.dispose).toBe(0);
+  });
+
+  it('does not render unavailable, empty, unfinished, lost or disposed canvases', () => {
+    const loading = runtime({ staged: true });
+    loading.canvas.toDataURL = vi.fn(() => PNG);
+    const loadRenders = loading.counts.render;
+    expect(loading.controller.captureImage()).toBeNull(); expect(loading.counts.render).toBe(loadRenders);
+    expect(loading.canvas.toDataURL).not.toHaveBeenCalled(); loading.controller.dispose();
+    const t = runtime(), c = t.controller, renders = t.counts.render;
+    t.canvas.toDataURL = undefined; expect(c.captureImage()).toBeNull();
+    t.canvas.toDataURL = vi.fn(() => PNG);
+    const width = t.canvas.width; t.canvas.width = 0; expect(c.captureImage()).toBeNull(); t.canvas.width = width;
+    t.renderer.getContext = () => ({ isContextLost: () => true }); expect(c.captureImage()).toBeNull();
+    t.canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    const errors = t.errors.length;
+    expect(c.captureImage()).toBeNull(); c.dispose(); expect(c.captureImage()).toBeNull();
+    expect(t.counts.render).toBe(renders); expect(t.canvas.toDataURL).not.toHaveBeenCalled(); expect(t.errors).toHaveLength(errors);
+  });
+});
+
+describe('Reef3DExplore observation magnification', () => {
+  const pose = t => ({ position: t.renderer.camera.position.toArray(), quaternion: t.renderer.camera.quaternion.toArray() });
+  const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aUxQAAAAASUVORK5CYII=';
+
+  it('keeps a close organism centered without the third-person diver blocking its observation ray', () => {
+    const t = runtime({ reducedMotion: true, site: site({ population: [{ id: 'magnificent_anemone', count: 1 }, { id: 'porcelain_anemone_crab', count: 1 }, { id: 'nudibranch', count: 1 }], restoration: null }) }, { species: 'real' });
+    const c = t.controller, camera = t.renderer.camera, ring = t.scene.getObjectByName('reef-explore-focus');
+    const solids = ['reef-explore-diver-body', 'reef-explore-diver-equipment'].map(name => t.scene.getObjectByName(name));
+    for (const id of ['porcelain_anemone_crab', 'nudibranch']) {
+      const target = c.findSpecies(id); c.setPaused(false); expect(c.swimTo(target.uid)).toBe(true); t.run(2);
+      expect(c.getState().navigation).toBeNull(); c.setPaused(true); t.step();
+      const before = c.getState(), reef = fingerprint(t);
+      expect(c.lookAtFocused()).toBe(true); t.step(); t.scene.updateMatrixWorld(true);
+      const point = ring.position.clone(), projected = point.clone().project(camera), direction = point.clone().sub(camera.position);
+      expect(Math.hypot(projected.x, projected.y), id + ' remains centered').toBeLessThan(.001);
+      const ray = new THREE.Raycaster(camera.position.clone(), direction.clone().normalize(), .01, direction.length() - .01);
+      expect(ray.intersectObjects(solids, false).map(hit => hit.object.name), id + ' is not hidden by the diver').toEqual([]);
+      expect(c.getState().diver).toEqual(before.diver); expect(c.getState().paused).toBe(true); expect(fingerprint(t)).toBe(reef);
+      const widePose = pose(t); c.setMagnification(8);
+      expect(pose(t)).toEqual(widePose);
+      expect(ray.intersectObjects(solids, false)).toEqual([]);
+    }
+    expect(t.errors).toEqual([]);
+  });
+
+  it('enlarges the existing projection at exact ratios without moving either paused camera or its reef', () => {
+    for (const view of ['third', 'first']) {
+      const t = runtime({ reducedMotion: true, view }), c = t.controller, camera = t.renderer.camera;
+      c.setPaused(true); c.focus(census(t).find(o => o.speciesId === 'giant_clam').uid); c.lookAtFocused();
+      const before = c.getState(), initial = pose(t), reef = fingerprint(t), renders = t.counts.render;
+      const projection = camera.projectionMatrix.elements.slice();
+      expect(before.magnification).toBe(1);
+      for (const factor of [2, 4, 8, 1]) {
+        expect(c.setMagnification(factor)).toBe(true);
+        expect(c.getState().magnification).toBe(factor);
+        expect(camera.projectionMatrix.elements[0] / projection[0]).toBeCloseTo(factor, 10);
+        expect(camera.projectionMatrix.elements[5] / projection[5]).toBeCloseTo(factor, 10);
+        expect(pose(t)).toEqual(initial); expect(fingerprint(t)).toBe(reef);
+        for (const key of ['diver', 'focused', 'paused', 'view', 'navigation', 'frames', 'buoyancy']) expect(c.getState()[key]).toEqual(before[key]);
+      }
+      expect(t.counts.render).toBe(renders);
+      c.setMagnification(4); t.run(1);
+      expect(t.states.at(-1).magnification).toBe(4);
+      expect(pose(t)).toEqual(initial); expect(fingerprint(t)).toBe(reef); expect(t.errors).toEqual([]);
+    }
+  });
+
+  it('keeps the selected magnification through portrait and landscape resizing, with the normal mask projection as its base', () => {
+    const normal = runtime({ reducedMotion: true, view: 'first' }), close = runtime({ reducedMotion: true, view: 'first' });
+    normal.controller.setPaused(true); close.controller.setPaused(true); close.controller.setMagnification(8);
+    for (const [width, height] of [[390, 844], [1200, 500], [844, 390]]) {
+      for (const t of [normal, close]) { t.canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width, height }); t.controller.resize(); }
+      const a = normal.renderer.camera, b = close.renderer.camera;
+      expect(b.projectionMatrix.elements[0] / a.projectionMatrix.elements[0]).toBeCloseTo(8, 10);
+      expect(b.projectionMatrix.elements[5] / a.projectionMatrix.elements[5]).toBeCloseTo(8, 10);
+      expect(close.controller.getState().magnification).toBe(8);
+      expect(pose(close)).toEqual(pose(normal));
+    }
+    expect(close.controller.zoomCamera(-1), 'ordinary orbit zoom stays unavailable in Mask view').toBe(false);
+    expect(close.controller.getState().magnification).toBe(8);
+  });
+
+  it('returns to wide view for selection, view, manual camera movement and reset without unpausing', () => {
+    const t = runtime({ reducedMotion: true }), c = t.controller;
+    c.setPaused(true); const animals = census(t).filter(o => o.object), first = animals[0].uid, second = animals[1].uid;
+    c.focus(first); c.setMagnification(8); c.focus(first);
+    expect(c.getState().magnification, 'repeating an unchanged selection preserves the lens').toBe(8);
+    c.focus(second); expect(c.getState().magnification).toBe(1);
+    const resetActions = [() => c.clearFocus(), () => c.setView('first'), () => c.setView('third'),
+      () => c.lookCamera(40, 0), () => c.zoomCamera(-.18), () => c.resetCamera(),
+      () => { t.pointer('pointerdown', 300, 200); t.pointer('pointermove', 340, 200); t.pointer('pointerup', 340, 200); },
+      () => t.canvas.dispatchEvent(new WheelEvent('wheel', { deltaY: 40, bubbles: true, cancelable: true }))];
+    for (const reset of resetActions) {
+      c.setMagnification(8); reset();
+      expect(c.getState()).toMatchObject({ magnification: 1, paused: true });
+    }
+    c.setMagnification(4); c.lookCamera(0, 0); c.zoomCamera(0);
+    expect(c.getState().magnification, 'zero camera movement preserves the lens').toBe(4);
+    c.setMagnification(1); expect(t.renderer.camera.fov).toBe(60);
+  });
+
+  it('restores wide view when swimming begins, and never lets magnification interrupt an automatic swim', () => {
+    const t = runtime({ reducedMotion: true }), c = t.controller, target = census(t).find(o => o.speciesId === 'giant_clam');
+    c.setPaused(true); c.setMagnification(4); c.setInput({ forward: 1 });
+    expect(c.getState().magnification, 'held movement while paused is not a swim').toBe(4);
+    c.setPaused(false); t.step();
+    expect(c.getState().magnification).toBe(1); c.setInput(null);
+    c.setMagnification(8); t.key(t.canvas, 'r');
+    expect(c.getState().magnification).toBe(1); t.keyUp(t.canvas, 'r');
+    c.setMagnification(8); c.swimTo(target.uid);
+    expect(c.getState().magnification).toBe(1);
+    const navigation = c.getState().navigation, before = pose(t);
+    expect(c.setMagnification(4)).toBe(false); expect(c.setMagnification(1)).toBe(true);
+    expect(c.getState().navigation).toEqual(navigation); expect(pose(t)).toEqual(before);
+    c.setPaused(true); expect(c.setMagnification(2)).toBe(false);
+    c.cancelSwim(); expect(c.setMagnification(2)).toBe(true);
+  });
+
+  it('rejects unsupported and unavailable lens requests without changing the dive', () => {
+    const loading = runtime({ staged: true }); expect(loading.controller.setMagnification(2)).toBe(false); loading.controller.dispose();
+    const t = runtime({ reducedMotion: true }), c = t.controller;
+    c.setPaused(true); c.setMagnification(4); const before = c.getState(), camera = pose(t), fov = t.renderer.camera.fov;
+    for (const value of [undefined, null, '2', true, 0, -1, 1.5, 3, 16, NaN, Infinity, -Infinity]) expect(c.setMagnification(value)).toBe(false);
+    expect(c.getState()).toEqual(before); expect(pose(t)).toEqual(camera); expect(t.renderer.camera.fov).toBe(fov);
+    t.canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    expect(c.setMagnification(1)).toBe(false); c.dispose(); expect(c.setMagnification(2)).toBe(false);
+  });
+
+  it('exports the magnified view immediately and returns all scenery to the wide projection before another frame', () => {
+    const t = runtime({ reducedMotion: true }), c = t.controller, camera = t.renderer.camera;
+    c.setPaused(true); c.focus(census(t).find(o => o.speciesId === 'giant_clam').uid); c.lookAtFocused(); t.step();
+    const fullDraw = drawn(t), wideFov = camera.fov;
+    c.setMagnification(8); const before = c.getState(), closeFov = camera.fov, cameraPose = pose(t), reef = fingerprint(t);
+    expect(closeFov).toBeLessThan(wideFov / 7);
+    t.canvas.toDataURL = vi.fn(() => { expect(camera.fov).toBe(closeFov); return PNG; });
+    expect(c.captureImage()).toBe(PNG);
+    expect(c.getState()).toEqual(before); expect(pose(t)).toEqual(cameraPose); expect(fingerprint(t)).toBe(reef);
+    c.setMagnification(1);
+    expect(camera.fov).toBe(wideFov); expect(drawn(t)).toEqual(fullDraw); expect(t.errors).toEqual([]);
+  });
+});
+
+describe('Reef3DExplore expanded living diversity', () => {
+  const added = ['porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'textile_cone', 'orange_cup_coral', 'banded_sea_krait', 'white_spotted_hermit_crab', 'longfin_bannerfish', 'bigfin_reef_squid'];
+  const moving = ['broadclub_cuttlefish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'banded_sea_krait', 'bigfin_reef_squid'];
+  const population = () => [{ id: 'magnificent_anemone', count: 1 }, ...added.map(id => ({ id, count: id === 'bigfin_reef_squid' ? 2 : 1 }))];
+
+  it('builds and locates all eleven real newcomers, moves distinct swimmers, and keeps the crab on its actual host', () => {
+    const t = runtime({ site: site({ population: population(), restoration: null }), reducedMotion: true }, { species: 'real' });
+    expect(t.errors).toEqual([]); expect(t.warnings.filter(message => /placeholder/.test(message))).toEqual([]);
+    const all = census(t), by = id => all.filter(o => o.speciesId === id);
+    for (const id of added) { expect(by(id), id).toHaveLength(id === 'bigfin_reef_squid' ? 2 : 1); expect(t.controller.findSpecies(id)?.speciesId).toBe(id); }
+    const host = by('magnificent_anemone')[0].object, crab = by('porcelain_anemone_crab')[0].object;
+    // The real anemone model's mat is near its center; its generic geometry
+    // bounds also contain templates for instanced tentacles and are misleading.
+    expect(Math.hypot(crab.position.x - host.position.x, crab.position.z - host.position.z)).toBeLessThan(.1);
+    expect(crab.position.y).toBeGreaterThan(host.position.y);
+    t.controller.setPaused(true); const held = fingerprint(t); t.run(.5); expect(fingerprint(t)).toBe(held);
+    const first = Object.fromEntries(moving.map(id => [id, by(id)[0].object.position.clone()]));
+    t.controller.setPaused(false);
+    for (let step = 0; step < 12; step++) {
+      t.run(1);
+      for (const id of moving) {
+        const p = by(id)[0].object.position;
+        expect([...p.toArray(), ...by(id)[0].object.quaternion.toArray()].every(Number.isFinite), id).toBe(true);
+        expect(Math.max(Math.abs(p.x), Math.abs(p.z)), id).toBeLessThan(29);
+        expect(p.y, id + ' under surface').toBeLessThan(-.5);
+        expect(p.y, id + ' clear of bottom').toBeGreaterThan(floorBelow(t, p.x, p.z) + .1);
+      }
+    }
+    for (const id of moving) expect(by(id)[0].object.position.distanceTo(first[id]), id + ' has its own route').toBeGreaterThan(.15);
+    expect(by('banded_sea_krait')[0].object.position.y, 'krait does not inherit turtle surfacing').toBeLessThan(-2);
+    expect(crab.position.toArray()).toEqual(all.find(o => o.speciesId === 'porcelain_anemone_crab').pos);
+    expect(t.errors).toEqual([]);
+  });
+
+  it('keeps fallback newcomer locations consistent across detail tiers and never heat-bleaches orange cup coral', () => {
+    const s = site({ population: population(), restoration: null, health: { coralCover: .55, bleaching: 1, algae: 0 } });
+    const low = runtime({ quality: 'low', reducedMotion: true, site: s }, { species: false });
+    const high = runtime({ quality: 'high', reducedMotion: true, site: s }, { species: false });
+    const a = census(low), b = census(high);
+    expect(a.map(o => [o.uid, o.speciesId])).toEqual(b.map(o => [o.uid, o.speciesId]));
+    for (let i = 0; i < a.length; i++) {
+      expect(Math.hypot(a[i].pos[0] - b[i].pos[0], a[i].pos[2] - b[i].pos[2]), a[i].speciesId).toBeLessThan(.001);
+      expect(Math.abs(a[i].pos[1] - b[i].pos[1]), a[i].speciesId).toBeLessThan(.1);
+    }
+    for (const t of [low, high]) {
+      for (const id of added) expect(t.controller.findSpecies(id)?.speciesId, id).toBe(id);
+      expect(t.controller.findSpecies('orange_cup_coral').health).toBe('healthy');
+      expect(t.errors).toEqual([]);
+    }
+  });
+
+  it('omits a custom orphan crab without inventing a host and still places other requested species', () => {
+    const t = runtime({ reducedMotion: true, site: site({ population: [{ id: 'porcelain_anemone_crab', count: 2 }, { id: 'varicose_phyllidia', count: 1 }], restoration: null }) }, { species: false });
+    expect(census(t).map(o => o.speciesId)).toEqual(['varicose_phyllidia']);
+    expect(t.controller.findSpecies('porcelain_anemone_crab')).toBeNull();
+    expect(t.controller.findSpecies('varicose_phyllidia')?.speciesId).toBe('varicose_phyllidia');
+    expect(t.errors).toEqual([]);
+  });
+
+  it('keeps orange-cup healthy/dead outcomes independent of the heat-bleaching rate', () => {
+    function states(bleaching) {
+      const t = runtime({ reducedMotion: true, site: site({ population: [{ id: 'orange_cup_coral', count: 12 }], restoration: null, health: { coralCover: .1, algae: 1, bleaching } }) }, { species: false });
+      return census(t).map(o => { t.controller.focus(o.uid); return t.controller.getState().focused.health; });
+    }
+    const cold = states(0), hot = states(1);
+    expect(hot).toEqual(cold); expect(new Set(cold)).toEqual(new Set(['healthy', 'dead']));
+  });
+
+  it.each(['low', 'high'])('keeps the small nudibranch and shrimp bodies visible above their actual reef substrate at %s detail', quality => {
+    const ids = ['nudibranch', 'cleaner_shrimp', 'harlequin_shrimp'];
+    const t = runtime({ quality, reducedMotion: true, site: site({ population: ids.map(id => ({ id, count: 1 })), restoration: null }) }, { species: 'real' });
+    const point = new THREE.Vector3();
+    for (const animal of census(t)) {
+      let above = 0, sampled = 0, clearance = -Infinity;
+      animal.object.updateMatrixWorld(true);
+      animal.object.traverse(mesh => {
+        const positions = mesh.geometry?.attributes?.position;
+        if (!positions) return;
+        if (animal.speciesId === 'cleaner_shrimp' && mesh.name !== 'cleaner_shrimp-body') return;
+        const indices = mesh.geometry.index, count = indices ? indices.count : positions.count;
+        for (let i = 0; i < count; i += Math.max(1, Math.floor(count / 40))) {
+          point.fromBufferAttribute(positions, indices ? indices.getX(i) : i).applyMatrix4(mesh.matrixWorld);
+          const gap = point.y - floorBelow(t, point.x, point.z);
+          clearance = Math.max(clearance, gap); sampled++; if (gap > 0) above++;
+        }
+      });
+      expect(Math.abs(animal.object.position.y - floorBelow(t, animal.object.position.x, animal.object.position.z)), animal.speciesId + ' base meets its rendered support').toBeLessThan(.001);
+      expect(clearance, animal.speciesId + ' body above the rendered substrate: ' + above + '/' + sampled).toBeGreaterThan(.006);
+      expect(above / sampled, animal.speciesId + ' visible body samples').toBeGreaterThan(.5);
+    }
+    expect(t.errors).toEqual([]);
+  });
+
+  it('seats multiple small specimens independently on their rendered substrate', () => {
+    const ids = ['nudibranch', 'cleaner_shrimp', 'harlequin_shrimp'];
+    const t = runtime({ reducedMotion: true, site: site({ population: ids.map(id => ({ id, count: 2 })), restoration: null }) }, { species: 'real' });
+    const animals = census(t);
+    expect(animals).toHaveLength(6);
+    for (const animal of animals) {
+      const [x, y, z] = animal.pos;
+      expect(Math.abs(y - floorBelow(t, x, z)), animal.speciesId + ' instance base meets its support').toBeLessThan(.001);
+    }
+    expect(t.errors).toEqual([]);
+  });
+
+  it('turns cuttlefish with their low patrol and keeps the squid companions gliding together', () => {
+    const t = runtime({ site: site({ population: [{ id: 'broadclub_cuttlefish', count: 2 }, { id: 'bigfin_reef_squid', count: 2 }], restoration: null }) }, { species: 'real' });
+    t.step(0); t.run(1);
+    const animals = census(t), cuttle = animals.filter(o => o.speciesId === 'broadclub_cuttlefish'), squid = animals.filter(o => o.speciesId === 'bigfin_reef_squid');
+    const forward = new THREE.Vector3(), delta = new THREE.Vector3();
+    let turn = 0, previous = cuttle[0].object.quaternion.clone();
+    for (let second = 0; second < 70; second++) {
+      const before = animals.map(o => o.object.position.clone());
+      t.run(1);
+      animals.forEach((o, i) => {
+        delta.copy(o.object.position).sub(before[i]); delta.y = 0;
+        forward.set(1, 0, 0).applyQuaternion(o.object.quaternion); forward.y = 0;
+        expect(forward.normalize().dot(delta.normalize()), o.speciesId + ' faces its glide').toBeGreaterThan(.72);
+        expect(o.object.position.y, o.speciesId + ' clears the reef').toBeGreaterThan(floorBelow(t, o.object.position.x, o.object.position.z) + .1);
+      });
+      for (const o of cuttle) expect(Math.abs(new THREE.Vector3(1, 0, 0).applyQuaternion(o.object.quaternion).y), 'level fin-driven hover').toBeLessThan(.001);
+      turn += previous.angleTo(cuttle[0].object.quaternion); previous.copy(cuttle[0].object.quaternion);
+      const separation = Math.hypot(squid[0].object.position.x - squid[1].object.position.x, squid[0].object.position.z - squid[1].object.position.z);
+      expect(separation).toBeGreaterThan(.35); expect(separation).toBeLessThan(1.6);
+    }
+    expect(turn, 'heading follows a full patrol').toBeGreaterThan(4);
+    expect(t.errors).toEqual([]);
+  });
+
+  it('keeps the eagle-ray wing disc above shallow reef edges through its cruise', () => {
+    const t = runtime({ site: site({ depthM: 5, population: [{ id: 'ocellated_eagle_ray', count: 3 }], restoration: null }) }, { species: 'real' });
+    const rays = census(t).map(o => o.object), point = new THREE.Vector3();
+    t.step(0);
+    for (let second = 0; second < 115; second++) {
+      t.run(1);
+      for (const root of rays) {
+        root.updateMatrixWorld(true);
+        let disc; root.traverse(o => { if (o.geometry?.userData.ocellatedEagleRay?.spanRows) disc = o; });
+        const data = disc.geometry.userData.ocellatedEagleRay, positions = disc.geometry.attributes.position;
+        for (const row of [0, data.spanRows / 2, data.spanRows]) {
+          const index = row * (data.chordColumns + 1) + data.chordColumns / 2;
+          point.fromBufferAttribute(positions, index).applyMatrix4(disc.matrixWorld);
+          expect(point.y - floorBelow(t, point.x, point.z), 'disc and wing tips clear the actual reef').toBeGreaterThan(.1);
+          expect(point.y, 'wings remain submerged').toBeLessThan(-.1);
+        }
+        expect(root.position.y).toBeLessThanOrEqual(-.55);
+        expect(root.position.toArray().every(Number.isFinite)).toBe(true);
+      }
+    }
+    expect(t.errors).toEqual([]);
+  });
+
+  it('frames the eagle-ray disc for observation and arrival without centering its long tail', () => {
+    const t = runtime({ reducedMotion: true, site: site({ population: [{ id: 'ocellated_eagle_ray', count: 1 }], restoration: null }) }, { species: 'real' });
+    const c = t.controller, ray = census(t)[0], root = ray.object, ring = t.scene.getObjectByName('reef-explore-focus'), cam = t.renderer.camera;
+    c.focus(ray.uid); c.setPaused(true); t.step(0);
+    for (const view of ['third', 'first']) {
+      c.setView(view); const diver = c.getState().diver, pose = root.position.toArray();
+      expect(c.lookAtFocused()).toBe(true);
+      const projected = root.position.clone().project(cam);
+      expect(Math.hypot(projected.x, projected.y), view + ' frames the wing disc').toBeLessThan(.001);
+      expect(ring.position.distanceTo(root.position)).toBeLessThan(.001);
+      expect(ring.scale.x).toBeLessThan(1.5);
+      expect(c.getState().diver).toEqual(diver); expect(root.position.toArray()).toEqual(pose);
+      const bodyDistance = Math.max(0, root.position.distanceTo(new THREE.Vector3(diver.x, diver.y, diver.z)) - .9 * root.scale.x);
+      expect(Math.abs(c.findSpecies(ray.speciesId).distanceM - bodyDistance)).toBeLessThan(.07);
+    }
+    c.setPaused(false); expect(c.swimTo(ray.uid)).toBe(true); t.run(2);
+    const diver = c.getState().diver;
+    expect(c.getState().navigation).toBeNull();
+    expect(angleGap(diver.headingDeg, bearingDeg(root.position.x - diver.x, root.position.z - diver.z))).toBeLessThan(3);
+    expect(Math.hypot(root.position.x - diver.x, root.position.z - diver.z)).toBeLessThan(3.4);
+    expect(t.errors).toEqual([]);
   });
 });

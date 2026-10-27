@@ -1265,6 +1265,9 @@ test.describe('Bridge Lab — real WebGL', () => {
     await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
   });
 
+  // The 320px pass taps the lanes, and Playwright refuses tap() in a context without touch.
+  test.describe('cycle tap', () => {
+  test.use({ hasTouch: true });
   for (const width of [1280, 320]) {
     test('cycle tap: direct event exploration preserves evidence at ' + width + 'px', async ({ page }) => {
       test.setTimeout(180_000);
@@ -1382,6 +1385,7 @@ test.describe('Bridge Lab — real WebGL', () => {
       await writeFile(join(report, 'cycle-tap-' + width + '-evidence.json'), JSON.stringify({ aTime, bTime, tinyRoots, fallbackRoots }, null, 2));
     });
   }
+  });
 
   for (const width of [1280, 320]) {
     test('cycle readout: precise event identity follows the selected timeline at ' + width + 'px', async ({ page }) => {
@@ -3192,7 +3196,9 @@ test.describe('Bridge Lab — real WebGL', () => {
       await expect(report.locator('[data-seismic-trial]')).toHaveCount(2);
       await expect(report).toContainText('Near resonance');
       await expect(report).toContainText('Added damping');
-      await expect(report).toContainText('Energy at the inspected time (J/kg)');
+      // The report now lists energy as a labelled table of readings rather than one "(J/kg): a / b / c" sentence.
+      await expect(report.locator('[data-seismic-saved-energy]').first()).toContainText('Energy at the inspected time');
+      await expect(report.locator('[data-seismic-saved-energy]').first()).toContainText('J/kg');
       await expect(report.locator('input,textarea,button')).toHaveCount(0);
       await captureImmersiveRegion(page, report, 'bridge-' + width + '-earthquake-report.png', INVESTIGATION_REPORT);
       await checkWorkflowHealth(page);
@@ -3721,7 +3727,7 @@ test.describe('Bridge Lab — real WebGL', () => {
       await stage.screenshot({ path: join(ENHANCEMENT_REPORT, 'bridge-' + width + '-key-moments-fullscreen.png') });
       await readout.locator(':scope > summary').press('Enter');
       await select.selectOption('free');
-      await expect(readout).toContainText('16.00 s');
+      await expect(readout).toContainText('16.000 s'); // inspected times are shown to the millisecond everywhere
       await expect(select).not.toHaveAttribute('aria-describedby');
       await readout.locator(':scope > summary').press('Enter');
       await expect(page.locator('[data-bridge-moment-insight="free"]')).toContainText('Ground motion has ended');
@@ -3782,7 +3788,9 @@ test.describe('Bridge Lab — real WebGL', () => {
         await expect(frame).toHaveAttribute('aria-live', 'off');
         await expect(frame).toHaveAttribute('aria-labelledby', 'bridge-seismic-moment-title');
         await expect(frame.getByRole('heading', { name: 'Motion at this moment', exact: true })).toBeVisible();
-        await expect(frame.locator('[data-moment-readout-caption]')).toHaveText('Current experiment · ' + timeText);
+        // The caption names the response mode, so a reading can be told apart from a saved trial in another mode.
+        const modeName = ({ flexible: 'Flexible response', balanced: 'Intermediate response', stiff: 'Stiffer response' } as Record<string, string>)[inputs.archetype];
+        await expect(frame.locator('[data-moment-readout-caption]')).toHaveText('Current experiment · ' + modeName + ' · ' + timeText);
         await expect(frame.locator(':scope > dl')).toHaveCount(2);
         await expect(frame.locator('[data-moment-reading]')).toHaveCount(5);
         const actual: Record<string, number> = {};
@@ -4116,7 +4124,7 @@ test.describe('Bridge Lab — real WebGL', () => {
           expect(await check({ ...normal, intensityG: 1e-9 }, 'balanced', 'tiny-at-641-breakpoint')).toEqual(tinyValues);
           for (const button of await comparison.getByRole('button').all()) {
             expect(await button.evaluate(node => {
-              const bounds = node.getBoundingClientRect(), cell = node.closest('th')!.getBoundingClientRect();
+              const bounds = node.getBoundingClientRect(), cell = node.closest('th,td')!.getBoundingClientRect(); // rows now also hold "Inspect recorded maximum" buttons in td cells
               return { height: bounds.height, inside: bounds.left >= cell.left && bounds.right <= cell.right,
                 overflow: node.scrollWidth - node.clientWidth };
             })).toMatchObject({ inside: true, overflow: 0 });

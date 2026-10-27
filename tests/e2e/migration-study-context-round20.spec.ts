@@ -81,7 +81,7 @@ function work(data: any) {
 function cycle(page: Page, index: number) {
   return page.getByRole('button', { name: 'Cycle position ' + (index + 1) + ' of 8', exact: true });
 }
-const currentContext = (page: Page) => page.locator('#migration-study-current-context');
+const currentContext = (page: Page) => page.locator("[data-migration-id=\"migration-study-current-context\"]");
 const stage = (page: Page) => page.locator('.migration-flight-stage');
 async function expectContext(page: Page, region: string, index: number | null, side = 'left') {
   const context = currentContext(page);

@@ -37,7 +37,7 @@ function harness(options = {}) {
   if (options.reporter !== false) window.AlloModules.ErrorReporter = { record: (level, message, stack, origin) => reports.push({ level, message, stack, origin }) };
   const plan = { resourcePlan: [{ tool: 'quiz', uiId: 'PRIVATE_STUDENT_CONTENT' }], source: 'PRIVATE_SOURCE_TEXT' };
   const context = vm.createContext({
-    window, document, activeBlueprint: plan, gradeLevel: '6', leveledTextLanguage: 'English', standardsInput: '', studentInterests: [],
+    window, document, activeBlueprint: plan, gradeLevel: '6', leveledTextLanguage: 'English', outputLanguagePreference: { mode: 'app' }, currentUiLanguage: 'English', selectedLanguages: [], translationMode: 'none', standardsInput: '', studentInterests: [],
     Date: class extends Date { static now() { return now; } },
     setTimeout(fn, delay) { const id = ++timerId; timers.set(id, { fn, at: now + delay }); return id; },
     clearTimeout: id => timers.delete(id),

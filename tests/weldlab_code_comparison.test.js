@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -215,7 +216,7 @@ describe('Optional classification-code comparison', () => {
   });
 
   it('restores the entire pre-comparison Consumables function including every original decoder and assessment string', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n');
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8')).replace(/\r\n/g, '\n');
     let region = source.slice(source.indexOf('function ConsumablesDeepDive('), source.indexOf('function MaineEcosystem('));
     const helperAt = region.indexOf('        function renderCodeComparison(current, pinned) {'), helperEnd = region.indexOf('        function renderDecoder() {', helperAt); expect(helperAt).toBeGreaterThan(0); expect(helperEnd).toBeGreaterThan(helperAt); region = region.slice(0, helperAt) + region.slice(helperEnd);
     const controlsAt = region.indexOf("            h('div', { 'data-cons-code-controls':"), controlsEnd = region.indexOf("            h('div', { id: 'tech2-dec-result',", controlsAt); expect(controlsAt).toBeGreaterThan(0); expect(controlsEnd).toBeGreaterThan(controlsAt); region = region.slice(0, controlsAt) + region.slice(controlsEnd);

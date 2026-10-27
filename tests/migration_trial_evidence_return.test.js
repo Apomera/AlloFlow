@@ -62,7 +62,7 @@ function fixture(seed = {}, options = {}) {
     click(node) { act(() => { node.props.onClick(); }); },
     // Attribute lookup stays scoped when the duplicate-deck case deliberately
     // mounts duplicate IDs; jsdom's fast #id lookup starts at the document.
-    field() { return host.querySelector('[id="migration-experiment-evidence"]'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-experiment-evidence\"]"); },
     context() { return host.querySelector('[data-trial-evidence-context]'); },
     returnNode() { return ui.action('inspect-saved-comparison'); },
     returnButton() { return host.querySelector('[data-experiment-action="inspect-saved-comparison"]'); },
@@ -104,22 +104,22 @@ function baselineButton(ui) { return ui.host.querySelector('[data-experiment-pai
 
 describe('Saved trial prediction and evidence return path', () => {
   it('shows the contextual reminder only after explicit review and preserves both textarea nodes when it appears or disappears', () => {
-    const ui = fixture(), evidence = ui.field(), explanation = ui.host.querySelector('#migration-experiment-explanation');
+    const ui = fixture(), evidence = ui.field(), explanation = ui.host.querySelector("[data-migration-id=\"migration-experiment-explanation\"]");
     expect(ui.context()).toBeNull(); expect(ui.returnNode()).toBeNull();
     ui.click(ui.revisit()); expect(ui.context().getAttribute('data-trial-evidence-context')).toBe('1');
-    expect(ui.field()).toBe(evidence); expect(ui.host.querySelector('#migration-experiment-explanation')).toBe(explanation);
+    expect(ui.field()).toBe(evidence); expect(ui.host.querySelector("[data-migration-id=\"migration-experiment-explanation\"]")).toBe(explanation);
     expect(ui.context().parentElement.classList.contains('migration-experiment-notes')).toBe(true);
     expect(ui.context().textContent).toContain('Selected saved comparison: Trial 1 · Wind');
     const disclosure = ui.context().querySelector('details[data-trial-evidence-prediction]');
     expect(disclosure.open).toBe(false); expect(disclosure.querySelector('summary').textContent).toBe('Prediction when recorded');
     expect(disclosure.querySelector('p').textContent).toBe('The wind will change modeled ground speed.');
     expect(ui.returnButton().type).toBe('button'); expect(ui.returnButton().textContent).toBe('Inspect saved trial comparison');
-    expect(ui.returnButton().getAttribute('aria-controls')).toBe('migration-flight-trial-review');
-    expect(ui.returnButton().getAttribute('aria-describedby')).toBe('migration-trial-evidence-help');
+    expect(document.getElementById(ui.returnButton().getAttribute('aria-controls'))).toBe(ui.host.querySelector('[data-experiment-pair-review]'));
+    expect(document.getElementById(ui.returnButton().getAttribute('aria-describedby'))).toBe(ui.host.querySelector('[data-migration-id="migration-trial-evidence-help"]'));
     expect(getComputedStyle(ui.returnButton()).minHeight).toBe('44px');
     expect(ui.context().textContent).toContain('Your prediction and explanation are ungraded.');
     ui.click(ui.pair('close')); expect(ui.context()).toBeNull(); expect(ui.field()).toBe(evidence);
-    expect(ui.host.querySelector('#migration-experiment-explanation')).toBe(explanation);
+    expect(ui.host.querySelector("[data-migration-id=\"migration-experiment-explanation\"]")).toBe(explanation);
   });
 
   it('keeps the historical variable and original prediction separate from the newer editable investigation', () => {
@@ -128,7 +128,7 @@ describe('Saved trial prediction and evidence return path', () => {
     const ui = ready({ flightInvestigation: work });
     expect(ui.context().textContent).toContain('Trial 1 · Wind'); expect(ui.context().textContent).toContain('My original wind prediction.');
     expect(ui.context().textContent).not.toContain('My new formation prediction.');
-    expect(ui.host.querySelector('#migration-experiment-prediction').value).toBe('My new formation prediction.');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-experiment-prediction\"]").value).toBe('My new formation prediction.');
     expect(ui.state.flightInvestigation).toBe(work); expect(ui.writes).toEqual([]);
     expect(ui.context().querySelectorAll('textarea,input,select')).toHaveLength(0);
   });
@@ -138,7 +138,11 @@ describe('Saved trial prediction and evidence return path', () => {
     expect(ui.review().props['data-review-active']).toBe(''); expect(ui.context().textContent).toContain('Selected saved comparison: Trial 1');
     const authoredContext = ui.context().cloneNode(true);
     authoredContext.querySelector('details p').remove();
-    expect(authoredContext.textContent).not.toMatch(/Showing saved|Controlled comparison|Ground speed|mph|drafting credit/i);
+    // Historical metrics are explicitly labelled; this context must not claim that the live scene matches.
+    expect(authoredContext.textContent).not.toMatch(/Showing saved/i);
+    expect(authoredContext.querySelector('[data-evidence-summary-scope]').textContent).toBe('Change is saved trial minus saved baseline. Model values come from this recorded pair. The current scene may differ.');
+    expect(authoredContext.querySelector('[data-evidence-metric="ground-speed"] [data-evidence-snapshot="baseline"] strong').textContent).toBe('31 mph');
+    expect(authoredContext.querySelector('[data-evidence-metric="ground-speed"] [data-evidence-snapshot="trial"] strong').textContent).toBe('62 mph');
     expect(ui.context().querySelector('details p').textContent).toBe('The wind will change modeled ground speed.');
     const before = unchanged(ui); ui.inspect(); expect(document.activeElement).toBe(baselineButton(ui)); expectUnchanged(ui, before);
   });
@@ -154,7 +158,9 @@ describe('Saved trial prediction and evidence return path', () => {
     const scroll = target.scrollIntoView = vi.fn();
     ui.inspect(); expect(document.activeElement).toBe(target); expect(focus).toHaveBeenCalledExactlyOnceWith({ preventScroll: true });
     expect(scroll).toHaveBeenCalledExactlyOnceWith({ block: 'center', inline: 'nearest', behavior: 'auto' }); expect(click).not.toHaveBeenCalled();
-    expectUnchanged(ui, before); ui.click(ui.pair('evidence'));
+    expectUnchanged(ui, before);
+    const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]');
+    evidenceAction.focus(); act(() => evidenceAction.click());
     expect(document.activeElement).toBe(field); expectUnchanged(ui, before);
     expect(ui.state.flightStudyObservations).toBe(studyNotes); expect(ui.state.flightChallenges).toBe(challenges); expect(ui.state.inquiry).toBe(inquiry);
     expect(ui.state.aiExplorerText).toBe('Keep research.'); expect(ui.state.deviceReduceMotion).toBe(true);
@@ -188,7 +194,7 @@ describe('Saved trial prediction and evidence return path', () => {
 
   it('rejects an old render callback after notes change while the fresh native action remains usable', () => {
     const ui = ready(), old = ui.returnNode(), button = ui.returnButton();
-    act(() => { ui.node(node => node.props?.id === 'migration-experiment-evidence').props.onChange({ target: { value: 'My revised evidence.' } }); });
+    act(() => { ui.node(node => node.props?.["data-migration-id"] === 'migration-experiment-evidence').props.onChange({ target: { value: 'My revised evidence.' } }); });
     const field = ui.field(); field.focus(); ui.writes.length = 0; const before = unchanged(ui);
     ui.invoke(old, button); expect(document.activeElement).toBe(field); expectUnchanged(ui, before);
     ui.inspect(); expect(document.activeElement).toBe(baselineButton(ui)); expectUnchanged(ui, before);
@@ -202,7 +208,7 @@ describe('Saved trial prediction and evidence return path', () => {
     if (fault === 'replacement-panel') panel.replaceWith(panel.cloneNode(true));
     if (fault === 'missing-target') target.remove();
     if (fault === 'disabled-target') target.disabled = true;
-    if (fault === 'disconnected-stage') ui.host.querySelector('#migration-flight-stage').remove();
+    if (fault === 'disconnected-stage') ui.host.querySelector("[data-migration-id=\"migration-flight-stage\"]").remove();
     ui.invoke(ui.returnNode(), button); expect(document.activeElement).toBe(sentinel); expectUnchanged(ui, before);
   });
 
@@ -263,19 +269,22 @@ describe('Saved trial prediction and evidence return path', () => {
   });
 
   it('preserves the existing native fullscreen exit before evidence and supports returning afterward without replay', async () => {
-    const ui = ready(), before = unchanged(ui), deck = ui.host.querySelector('#migration-flight-deck');
+    const ui = ready(), before = unchanged(ui), deck = ui.host.querySelector("[data-migration-id=\"migration-flight-deck\"]");
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: deck });
     document.exitFullscreen = vi.fn(() => { delete document.fullscreenElement; return Promise.resolve(); });
-    await act(async () => { ui.pair('evidence').props.onClick(); await Promise.resolve(); });
+    const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]'); evidenceAction.focus();
+    await act(async () => { evidenceAction.click(); await Promise.resolve(); });
     expect(document.exitFullscreen).toHaveBeenCalledOnce(); expect(document.activeElement).toBe(ui.field());
     ui.inspect(); expect(document.activeElement).toBe(baselineButton(ui)); expectUnchanged(ui, before);
   });
 
   it('preserves the custom fullscreen exit and all preferences during the evidence return path', () => {
-    const ui = ready({ deviceReduceMotion: true }), deck = ui.host.querySelector('#migration-flight-deck'), before = unchanged(ui);
+    const ui = ready({ deviceReduceMotion: true }), deck = ui.host.querySelector("[data-migration-id=\"migration-flight-deck\"]"), before = unchanged(ui);
     deck.setAttribute('data-allo-fullscreen-active', 'true');
     vi.stubGlobal('__alloStemFS', vi.fn(node => node.removeAttribute('data-allo-fullscreen-active')));
-    ui.click(ui.pair('evidence')); expect(window.__alloStemFS).toHaveBeenCalledWith(deck); expect(document.activeElement).toBe(ui.field());
+    const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]'); evidenceAction.focus();
+    act(() => evidenceAction.click());
+    expect(window.__alloStemFS).toHaveBeenCalledWith(deck); expect(document.activeElement).toBe(ui.field());
     ui.inspect(); expect(document.activeElement).toBe(baselineButton(ui)); expectUnchanged(ui, before);
   });
 });

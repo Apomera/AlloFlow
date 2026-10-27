@@ -32,11 +32,11 @@ function investigation(seed = {}, overrides = {}) {
   function find(predicate) { return walk(tree, predicate)[0]; }
   function action(name) { return find(node => node.props?.['data-experiment-action'] === name); }
   function edit(label, value) {
-    find(node => node.type === 'textarea' && (node.props.id === label || node.props['aria-label'] === label)).props.onChange({ target: { value } });
+    find(node => node.type === 'textarea' && (node.props['data-migration-id'] === label || node.props['aria-label'] === label)).props.onChange({ target: { value } });
     draw();
   }
   function control(label, value) {
-    find(node => (node.props?.id === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } });
+    find(node => (node.props?.['data-migration-id'] === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } });
     draw();
   }
   return {
@@ -192,9 +192,11 @@ describe('Migration 3D flight investigation', () => {
     expect(ui.state.flightInvestigation.trials.map(row => row.snapshot.wind)).toEqual([1, 3, 4, 5, 6]);
     expect(ui.action('record').props.disabled).toBe(false);
     ui.edit('migration-experiment-evidence', 'Keep this until I reset.');
+    const beforeReset = JSON.parse(JSON.stringify(ui.state.flightInvestigation));
+    // An uncommitted SSR handler cannot bypass the native confirmation flow.
     ui.action('reset').props.onClick();
     ui.draw();
-    expect(ui.state.flightInvestigation).toEqual({ variable: 'wind', prediction: '', baseline: null, trials: [], evidence: '', explanation: '' });
+    expect(ui.state.flightInvestigation).toEqual(beforeReset);
     expect(ui.state.inquiry).toEqual({ hypothesis: 'Stay saved' });
     expect(ui.state.flightWind).toBe(6);
     expect(ui.awardXP).not.toHaveBeenCalled();
@@ -216,7 +218,7 @@ describe('Migration 3D flight investigation', () => {
     const ui = investigation({ flightInvestigation });
     expect(() => ui.draw()).not.toThrow();
     expect(ui.action('baseline').props.disabled).toBe(true);
-    expect(ui.all(node => node.type === 'textarea' && ['migration-experiment-prediction', 'migration-experiment-evidence', 'migration-experiment-explanation'].includes(node.props.id))).toHaveLength(3);
+    expect(ui.all(node => node.type === 'textarea' && ['migration-experiment-prediction', 'migration-experiment-evidence', 'migration-experiment-explanation'].includes(node.props['data-migration-id']))).toHaveLength(3);
   });
 
   it('resolves natural formation from canonical IDs even when all formation prose is translated', () => {

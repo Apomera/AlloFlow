@@ -49,10 +49,12 @@ function createHarness(manifest) {
       this.detail = options && options.detail;
     }
   }
+  const createPolicy = new Function(fs.readFileSync('browser_delivery_policy.js', 'utf8') + '\nreturn _alloCreateBrowserDeliveryPolicy;')();
+  const deliveryPolicy = createPolicy({ schemaVersion: 1, releaseId: '0'.repeat(64), fallbackCommit: null, allowDesktopRemoteFallback: false, assets: Object.fromEntries(manifest.map(name => [name, { bytes: 1, integrity: 'sha384-' + 'A'.repeat(64) }])) }, { baseUrl: 'https://plugins.test/' });
   const makeEnsureLoader = new Function(
-    'window', 'document', 'CustomEvent', 'pluginCdnBase', 'pluginCdnVersion',
+    'window', 'document', 'CustomEvent', 'pluginCdnBase', 'pluginCdnVersion', '__alloBrowserDelivery',
     loaderFactorySource() + '\nreturn makeEnsureLoader;'
-  )(window, document, FakeCustomEvent, 'https://plugins.test/', 'dependency-test');
+  )(window, document, FakeCustomEvent, 'https://plugins.test/', 'dependency-test', deliveryPolicy);
   const start = makeEnsureLoader('Stem', manifest, () => true);
   start();
   return { window, history };

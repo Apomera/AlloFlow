@@ -41,7 +41,7 @@ describe('visual captions are readable content in printed resources', () => {
 
   it('keeps every real Katie caption’s meaning without printing source markup', () => {
     let checked = 0;
-    for (const filename of ['academic_discourse_reading_space_grade6', 'reading_decisions_grade6']) {
+    for (const filename of ['academic_discourse_reading_space_grade6', 'academic_discourse_more_practice_grade6', 'reading_decisions_grade6']) {
       const pack = JSON.parse(readFileSync(`allopacks/${filename}.allopack.json`, 'utf8'));
       for (const item of pack.history.filter(resource => resource.type === 'image')) {
         const before = JSON.stringify(item), doc = parse(pipeline.generateResourceHTML(item, false, {}, { isWorksheet: true }));

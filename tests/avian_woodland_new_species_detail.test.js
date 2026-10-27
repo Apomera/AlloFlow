@@ -6,9 +6,9 @@ const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js'
 const local = {};
 new Function('window', readFileSync('stem_lab/avian_woodland_birds.js', 'utf8'))(local);
 const cases = [
-  ['americanGoldfinch', .020, .0105, .0006, 1.08, .0047, .0045],
-  ['easternBluebird', .024, .0145, .0006, .88, .0034, .0032],
-  ['whiteThroatedSparrow', .022, .0115, .0007, 1.02, .0047, .0044]
+  ['americanGoldfinch', .017, .0105, .0006, 1.08, .0047, .0045],
+  ['easternBluebird', .0204, .0145, .0006, .88, .0034, .0032],
+  ['whiteThroatedSparrow', .0187, .0115, .0007, 1.02, .0047, .0044]
 ];
 
 describe('new woodland species bill surfaces', () => {

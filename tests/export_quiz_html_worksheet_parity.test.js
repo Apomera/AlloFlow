@@ -122,6 +122,47 @@ function makeMemoryAidRecallExport() {
 }
 
 describe('quiz parity across HTML and printable worksheet exports', { timeout: 60000 }, () => {
+  it.each([false, true])('preserves enhanced Assess task directions and response space (worksheet: %s)', (isWorksheet) => {
+    const enhanced = structuredClone(quizItem);
+    enhanced.data.questions[2].fillBlankPolicy = 'exact';
+    enhanced.data.questions[4].studentCriteria = ['State a claim <safely>.', 'Connect evidence.'];
+    enhanced.data.questions[5].sequenceMode = 'arrange-explain';
+    enhanced.data.questions[6].requireReasoning = true;
+    enhanced.data.questions[6].explanationPrompt = 'Explain this relationship <safely>.';
+    enhanced.data.questions[7].explanationPrompt = 'Explain how the evidence supports your answer.';
+    enhanced.data.questions[8].numericSettings = { allowEquivalentUnits: true, valueWeight: 0.75 };
+    const html = pipeline.generateFullPackHTML([enhanced], 'Enhanced assessment', isWorksheet, {}, { includeTeacherKey: false, annotations: [] });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const quiz = doc.querySelector('.quiz-box');
+    const sequence = quiz.querySelector('[data-item-type="sequence-sense"]');
+    expect(quiz.querySelector('[data-assessment-student-criteria]').textContent).toContain('State a claim <safely>.');
+    expect(quiz.querySelector('safely')).toBeNull();
+    expect(quiz.querySelector('[data-item-type="fill-blank"]').textContent).toContain('Use exact spelling and capitalization.');
+    expect(quiz.querySelector('[data-item-type="numeric-response"]').textContent).toContain('Equivalent units are accepted.');
+    expect(sequence.textContent).toContain('1. Write the correct order');
+    expect(sequence.textContent).toContain('2. Ordering principle:');
+    expect(sequence.textContent).not.toContain('Is this order correct?');
+    expect(sequence.textContent).not.toContain('misplaced item');
+    expect(sequence.querySelector('[data-allo-response-key$=":sequence-verdict"]')).toBeNull();
+    expect(sequence.querySelector('[data-allo-response-key$=":sequence-item"]')).toBeNull();
+    const reasoning = quiz.querySelectorAll('[data-assessment-reasoning]');
+    expect(reasoning).toHaveLength(2);
+    expect(reasoning[0].textContent).toContain('Explain this relationship <safely>.');
+    expect(reasoning[0].textContent).toContain('(required; reviewed separately from the choice score)');
+    expect(reasoning[1].textContent).toContain('(optional; reviewed separately from the choice score)');
+    if (isWorksheet) {
+      expect(quiz.querySelector('textarea')).toBeNull();
+      expect(reasoning[0].children.length).toBeGreaterThan(1);
+    } else {
+      const required = reasoning[0].querySelector('textarea[required]');
+      expect(required.getAttribute('data-allo-response-key')).toBe('mixed-quiz:q6:reasoning');
+      expect(reasoning[0].querySelector('label').htmlFor).toBe(required.id);
+      expect(reasoning[1].querySelector('textarea').required).toBe(false);
+    }
+    expect(quiz.querySelector('.answer-key')).toBeNull();
+    expect(quiz.textContent).not.toContain('Connect the evidence and claim.');
+  });
+
   it('renders every supported item type as a usable, labeled HTML response', () => {
     const html = render(false);
     const doc = new DOMParser().parseFromString(html, 'text/html');

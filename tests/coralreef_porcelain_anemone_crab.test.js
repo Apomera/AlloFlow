@@ -59,13 +59,13 @@ describe('porcelain anemone crab learning integration', () => {
     expect(JSON.stringify({ bookmarks, log })).toBe(before);
   });
 
-  it('keeps the host-dependent specimen out of reef populations and offers no unavailable locating action', () => {
-    expect(Object.hasOwn(X.POPULATION, id)).toBe(false);
+  it('includes the host-dependent crab in the healthy population while guarding unavailable locating actions', () => {
+    expect(Object.hasOwn(X.POPULATION, id)).toBe(true);
     expect(X.SPECIES_META.findIndex(m => m.id === id)).toBe(X.SPECIES_META.findIndex(m => m.id === 'chocolate_chip_sea_star') + 1);
-    for (const site of X.EXPLORE_SITES) expect(X.populationFor(site).some(p => p.id === id)).toBe(false);
+    expect(X.populationFor(X.EXPLORE_SITES.find(site => site.id === 'healthy')).find(p => p.id === id).count).toBeGreaterThan(0);
     const React = { useState: value => [value, () => {}], useRef: value => ({ current: value }), useId: () => ':crab:', useEffect() {} };
     const h = (type, props, ...children) => ({ type, props: props || {}, children });
-    const env = { React, h, P: {}, t: (key, fallback) => fallback, fill: (s, v) => s.replace(/\{(\w+)\}/g, (_, key) => v[key]), d: { diveSiteId: 'damaged' }, ctx: { reduceMotion: true } };
+    const env = { React, h, P: {}, t: (key, fallback) => fallback, fill: (s, v) => s.replace(/\{(\w+)\}/g, (_, key) => v[key]), d: { diveSiteId: 'healthy' }, ctx: { reduceMotion: true } };
     const rendered = X.MarineObservationDock({ env, id, status: 'ready', ctl: { findSpecies: () => null }, onClose() {}, onReturn() {} });
     const nodes = [];
     function visit(value) { if (!value || typeof value !== 'object') return; if (Array.isArray(value)) { value.forEach(visit); return; } nodes.push(value); visit(value.children); }

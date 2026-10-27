@@ -37,7 +37,7 @@ function fixture(seed = {}, options = {}) {
   const ui = {
     host, writes, announce,
     get state() { return state; },
-    get stage() { return host.querySelector('[id="migration-flight-stage"]'); },
+    get stage() { return host.querySelector("[data-migration-id=\"migration-flight-stage\"]"); },
     get guide() { return host.querySelector('[data-scene-guide]'); },
     get summary() { return host.querySelector('[data-scene-summary]'); },
     get route() { return host.querySelector('[data-scene-route]'); },

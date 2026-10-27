@@ -70,7 +70,7 @@ function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = fakeEngine(stage, { speciesId: state.flightSpecies || 'canada_goose', formationMode: state.flightFormation || 'natural',
     season: state.flightSeason || 'fall', wingStepSerial: state.flightWingStep });
@@ -85,7 +85,7 @@ function fixture(seed = {}, options = {}) {
     returnPose() { ui.click(ui.action('return')); }, check() { ui.click(ui.action('check')); },
     component(key) { return ui.node(node => node.props?.['data-restore-view-component'] === key); },
     restoreComponent(key) { const button = host.querySelector('[data-restore-view-component="' + key + '"]'); act(() => { ui.component(key).props.onClick({ currentTarget: button }); }); },
-    field() { return host.querySelector('#migration-study-observation-note'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
     restore() { const button = host.querySelector('[data-marked-pose-action="restore-view"]'); act(() => { ui.action('restore-view').props.onClick({ currentTarget: button }); }); },
     viewpoint(id) { ui.click(ui.node(node => node.props?.['data-study-viewpoint'] === id)); },
     cue() { return host.querySelector('[data-marked-comparison-check]'); },
@@ -118,7 +118,7 @@ function expectKind(ui, kind, status = 'checked') {
   expect(ui.cue()).not.toBeNull(); expect(ui.cue().getAttribute('data-marked-comparison-status')).toBe(status);
   expect(ui.cue().getAttribute('data-marked-comparison-kind')).toBe(kind);
 }
-function stageProps(ui) { return ui.node(node => node.props?.id === 'migration-flight-stage').props; }
+function stageProps(ui) { return ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-stage').props; }
 function pointer(ui) {
   const canvas = document.createElement('canvas'); ui.stage.append(canvas); let captured = null;
   ui.stage.setPointerCapture = id => { captured = id; }; ui.stage.hasPointerCapture = id => captured === id;
@@ -260,8 +260,8 @@ describe('Restore one explicitly checked marked view component', () => {
     expect(group.classList.contains('migration-study-scene-buttons')).toBe(true);
     expect(componentLabels(ui)).toEqual(['Restore marked study angle', 'Restore marked elevation', 'Restore marked zoom']);
     for (const button of group.querySelectorAll('button')) {
-      expect(button.type).toBe('button'); expect(button.getAttribute('aria-controls')).toBe('migration-flight-stage');
-      expect(button.getAttribute('aria-describedby')).toBe('migration-marked-pose-help migration-marked-pose-status');
+      expect(button.type).toBe('button'); expect(button.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id);
+      expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-marked-pose-help"]').id + ' ' + ui.host.querySelector('[data-migration-id="migration-marked-pose-status"]').id);
     }
     expect(source).toMatch(/\.migration-study-scene-buttons button\{[^}]*min-height:44px/);
     expect(ui.action('restore-view').props.children).toBe('Restore marked view settings');

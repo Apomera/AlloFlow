@@ -78,7 +78,7 @@ describe('Recorded view condition checks', () => {
     for (const source of ['selected', 'saved']) {
       const button = ui.button(source); expect(button.type).toBe('button'); expect(button.textContent).toBe('Check recorded view conditions');
       expect(button.getAttribute('aria-label')).toContain(source === 'saved' ? 'Saved comparison captures' : 'Selected recorded observations');
-      expect(button.getAttribute('aria-describedby')).toBe('migration-study-matched-help-' + source); expect(getComputedStyle(button).minHeight).toBe('44px');
+      expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-matched-help-' + source + '"]').id); expect(getComputedStyle(button).minHeight).toBe('44px');
       expect(button.hasAttribute('role')).toBe(false); expect(button.hasAttribute('tabindex')).toBe(false); expect(committedProps(button).onKeyDown).toBeUndefined();
       expect(ui.result(source)).toBeNull(); expect(ui.status(source)).toBe('');
     }

@@ -241,7 +241,7 @@ describe('Voice-to-ABC', () => {
       const toasts = [];
       const reply = JSON.stringify(Array.from({ length: 105 }, (_, i) => ({ antecedent: 'Math', behavior: i === 0 ? 'x'.repeat(600) : 'Yelled ' + i, consequence: 'Break', time: '9:15' })));
       const q = componentHarness('VoiceToABC', { abcEntries: [], setAbcEntries: () => {}, studentName: 'Kestrel', callGemini: async () => reply, addToast: (m, k) => toasts.push([m, k]), t: () => undefined }, { DualLabel: text => text, ...hostIcons('VoiceToABC') });
-      q.all(n => n.type === 'button' && n.props.onClick && /Start|Record|Mic/i.test((n.props['aria-label'] || '') + q.text(n)))[0].props.onClick(); q.render();
+      q.all(n => n.props['aria-label'] === 'Observation transcript')[0].props.onChange({ target: { value: 'many incidents today' } }); q.render();
       await q.all(n => n.props['aria-label'] === 'Parse ABC Entries from Transcript')[0].props.onClick(); q.render();
       const warning = toasts.find(([, k]) => k === 'warning');
       expect(warning && warning[0]).toContain('5 more entries were left out');              // said nothing

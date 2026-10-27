@@ -371,7 +371,7 @@ test('Migration anatomical wingtip follow isolates the actual side geometry for 
       for (const name of ['Front', 'From above']) {
         const phase = (await followState(page)).phase; await keyboardClick(page, page.getByRole('button', { name, exact: true })); const state = await followState(page);
         await expectFollowControls(page, 0); expectFollowGeometry(state, 0, reference); samePhase(state.phase, phase); expect(markerPool(state)).toEqual(markerPool(both)); views.push({ name, state: brief(state) });
-        if (id === 'canada_goose') { await page.locator('[data-wingtip-follow-controls]').scrollIntoViewIfNeeded(); await page.locator('#migration-flight-deck').screenshot({ path: join(report, 'desktop-left-wingtip-' + (name === 'Front' ? 'front' : 'above') + '.png') }); }
+        if (id === 'canada_goose') { await page.locator('[data-wingtip-follow-controls]').scrollIntoViewIfNeeded(); await page.locator("[data-migration-id=\"migration-flight-deck\"]").screenshot({ path: join(report, 'desktop-left-wingtip-' + (name === 'Front' ? 'front' : 'above') + '.png') }); }
       }
       await toggleFollow(page, 0, null, reference);
     }

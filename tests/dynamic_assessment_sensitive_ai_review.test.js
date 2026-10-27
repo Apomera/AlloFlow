@@ -111,7 +111,8 @@ describe('Dynamic Assessment sensitive outbound review', () => {
     const approvedQuery = h.review.review.searchQuery;
     expect(await accept(h)).toEqual({ sent: true, changed: false });
     await expect(pending).resolves.toEqual({ kind: 'assessment', items: [1, 2], complete: true });
-    expect(h.host.callGemini).toHaveBeenCalledExactlyOnceWith(approvedPrompt, true, true, 0.2, approvedQuery, controller.signal, false, telemetry, searchOptions);
+    expect(h.host.callGemini).toHaveBeenCalledExactlyOnceWith(approvedPrompt, true, true, 0.2, approvedQuery, controller.signal, false, telemetry, { ...searchOptions, requestControls: { beforeRequest: expect.any(Function) } });
+    expect(searchOptions).toEqual({ limit: 4 });
     expect(original).toContain('Ada Learner');
     expect(originalQuery).toBe('Ada Learner learning supports');
   });
@@ -138,7 +139,7 @@ describe('Dynamic Assessment sensitive outbound review', () => {
     expect(h.review).toBeTruthy();
     await accept(h);
     await pending;
-    expect(h.host.callGemini).toHaveBeenCalledExactlyOnceWith('Create a learning probe.', false, false, null, null, controller.signal);
+    expect(h.host.callGemini).toHaveBeenCalledExactlyOnceWith('Create a learning probe.', false, false, null, null, controller.signal, undefined, undefined, { requestControls: { beforeRequest: expect.any(Function) } });
   });
 
   it('keeps clicks inside the actual review overlay from closing the assessment', async () => {

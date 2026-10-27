@@ -16,6 +16,17 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+const trustedScriptStart = source.indexOf('  function _configureTrustedDocumentScript(');
+const trustedScriptEnd = source.indexOf('  const _waitForGlobal =', trustedScriptStart);
+if (trustedScriptStart < 0 || trustedScriptEnd <= trustedScriptStart) throw new Error('Trusted script helper missing');
+const trustedScriptSource = source.slice(trustedScriptStart, trustedScriptEnd);
+const runtimeManifest = JSON.parse(readFileSync(resolve(process.cwd(), 'document_runtime_integrity.json'), 'utf8'));
+const approvedScriptUrls = new Set(Object.values(runtimeManifest.assets).filter(r => r.kind === 'script').flatMap(r => [...(r.mirrors || []).map(m => m.url), ...(r.aliases || [])]));
+const configureTrustedScript = (script, url) => {
+  if (!approvedScriptUrls.has(url)) throw new Error('Unapproved fixture script: ' + url);
+  script.integrity = 'sha384-reviewed-fixture'; script.crossOrigin = 'anonymous'; script.src = url;
+};
+
 describe('canonical remediation residual fixes', () => {
   it('suppresses contradictions only from strict rule provenance, never issue prose', () => {
     const helperSource = sliceBetween(
@@ -111,7 +122,9 @@ describe('canonical remediation residual fixes', () => {
     const wrapperAt = source.indexOf('// Wrap in full HTML document', bodySanitizeAt);
     expect(bodySanitizeAt).toBeGreaterThan(0);
     expect(wrapperAt).toBeGreaterThan(bodySanitizeAt);
-    expect(source).toContain('<title>Accessible Document — ${_safeDocumentTitleHtml}</title>');
+    // 2026-10-26: the printed h1 names the page when there is one; the fallback still uses the ESCAPED name.
+    expect(source.includes('<title>${_wrapTitleHtml}</title>'), 'wrapper title').toBe(true);
+    expect(source.includes("|| ('Accessible Document — ' + _safeDocumentTitleHtml);"), 'escaped file-name fallback').toBe(true);
     // 2026-09-28 (G1): the footer line moved into _alloOutputProvenanceFooterHtml; it still gets the ESCAPED name.
     expect(source).toContain('_alloOutputProvenanceFooterHtml({ fileNameHtml: _safeFileNameHtml, pageCount: pageCount })');
     expect(source).not.toContain("Original: ${(_fileName || 'unknown')}");
@@ -124,7 +137,7 @@ describe('canonical remediation residual fixes', () => {
       'const convertXlsxToMarkdownTables',
     );
     const scripts = [];
-    const fakeWindow = {};
+    const fakeWindow = { __alloConfigureTrustedScript: configureTrustedScript };
     const fakeDocument = {
       head: {
         appendChild(script) {
@@ -141,7 +154,7 @@ describe('canonical remediation residual fixes', () => {
       'document',
       'setTimeout',
       'clearTimeout',
-      `${loaderSource}\nreturn { load: _lazyLoadSheetJS, state: () => ({ pending: !!_sheetJsPromise, owner: _sheetJsOwner }) };`,
+      `${trustedScriptSource}\n${loaderSource}\nreturn { load: _lazyLoadSheetJS, state: () => ({ pending: !!_sheetJsPromise, owner: _sheetJsOwner }) };`,
     )(fakeWindow, fakeDocument, setTimeout, clearTimeout);
 
     const first = runtime.load();

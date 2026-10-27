@@ -119,7 +119,7 @@ describe('Migration selected observations alongside a historical comparison', ()
     const ids = [...ui.host.querySelectorAll('[id]')].map(node => node.id);
     expect(ids.length).toBe(new Set(ids).size);
     for (const source of ['selected', 'saved']) {
-      const panel = ui.panel(source), id = 'migration-study-matched-help-' + source;
+      const panel = ui.panel(source), id = panel.querySelector('[data-migration-id="migration-study-matched-help-' + source + '"]').id;
       expect(panel.getAttribute('role')).toBe('group');
       expect(panel.getAttribute('aria-label')).toBe(source === 'saved' ? 'Matched view for saved comparison' : 'Matched view for selected observations');
       expect(panel.querySelector('[data-study-matched-source]').dataset.studyMatchedSource).toBe(source);
@@ -184,7 +184,7 @@ describe('Migration selected observations alongside a historical comparison', ()
     expect(ui.state.flightStudyObservations).toBe(book); expect(JSON.stringify(book)).toBe(before);
     expect(ui.state.flightInvestigation).toBe(inquiry); expect(ui.state.flightChallenges).toBe(challenge);
     expect(ui.state).toMatchObject({ flightWind: -9, flightFormation: 'v', flightSeason: 'spring' });
-    expect(document.activeElement.id).toBe('migration-flight-stage');
+    expect(document.activeElement.id).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id);
   });
 
   it('shares the chosen matched angle across source groups without persisting a new learning state', () => {

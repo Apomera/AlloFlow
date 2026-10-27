@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { loadAlloModule } from '../setup.js';
+import { attachRequestControlsFixture } from './protected_request_controls_fixture.js';
 
 const require = createRequire(import.meta.url);
 export async function createRealDaWorkspaceFixture(React, options = {}) {
@@ -72,6 +73,7 @@ export function createDaWorkspaceFixture(React, options = {}) {
     transfer: vi.fn((target, payload) => { transfers.set(target, payload); return true; }),
     consumeTransfer: vi.fn(source => transfers.get(source) || null),
   };
+  attachRequestControlsFixture(session);
   const genuine = new WeakSet([session]);
   function Boundary(props) {
     const held = React.useRef(null);

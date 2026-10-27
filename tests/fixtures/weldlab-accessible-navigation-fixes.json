@@ -1,0 +1,107 @@
+[
+  {
+    "owner": "blueprint-pan-retains-boundary-focus",
+    "old": "'data-blueprint-pan': direction.id, disabled: direction.disabled, onClick: function () { if (!direction.disabled) setAt(zoom, x + direction.dx, y + direction.dy); }",
+    "new": "'data-blueprint-pan': direction.id, 'aria-disabled': direction.disabled ? 'true' : 'false', onClick: function () { if (!direction.disabled) setAt(zoom, x + direction.dx, y + direction.dy); }"
+  },
+  {
+    "owner": "blueprint-unavailable-pan-appearance",
+    "old": "style: Object.assign({}, control, { background: paper, color: ink, opacity: direction.disabled ? 0.55 : 1 }) }, direction.label); })),",
+    "new": "style: Object.assign({}, control, { background: paper, color: direction.disabled ? soft : ink, borderStyle: direction.disabled ? 'dashed' : 'solid', cursor: direction.disabled ? 'not-allowed' : 'pointer', opacity: 1 }) }, direction.label); })),"
+  },
+  {
+    "owner": "codes-inspection-focus-refs",
+    "old": "        var sortStepRef = useRef(null), clauseStepRef = useRef(null);",
+    "new": "        var sortStepRef = useRef(null), clauseStepRef = useRef(null);\n        var wpsFieldSelectRef = useRef(null), workflowSelectedStepRef = useRef(null);"
+  },
+  {
+    "owner": "codes-inspection-focus-dispatch",
+    "old": "          var target = request && (request.target === 'sort' ? sortStepRef.current : clauseStepRef.current);",
+    "new": "          var target = request && (request.target === 'sort' ? sortStepRef.current : request.target === 'clause' ? clauseStepRef.current : request.target === 'wps-field' ? wpsFieldSelectRef.current : request.target === 'workflow' ? workflowSelectedStepRef.current : null);"
+  },
+  {
+    "owner": "wps-native-live-result",
+    "old": "h('div', { style: { marginTop: 14, padding: 12, border: '1px solid ' + soft, borderRadius: 10, color: ink, background: panel } },\n              h('p', { 'data-wps-field-label': f.id,",
+    "new": "h('div', { id: 'wps3-field-reading', 'data-wps-field-reading': '', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 14, padding: 12, border: '1px solid ' + soft, borderRadius: 10, color: ink, background: panel } },\n              h('p', { 'data-wps-field-label': f.id,"
+  },
+  {
+    "owner": "wps-remove-duplicate-step-announcement",
+    "old": "function chooseField(id) { wpsFieldState[1](id); announce(WPS_FIELDS.filter(function (field) { return field.id === id; })[0].label); }",
+    "new": "function chooseField(id) { wpsFieldState[1](id); }"
+  },
+  {
+    "owner": "wps-remove-duplicate-form-announcement",
+    "old": "onClick: function () { wpsFieldState[1](fd.id); announce(fd.label); },",
+    "new": "'aria-controls': 'wps3-field-reading', onClick: function () { wpsFieldState[1](fd.id); },"
+  },
+  {
+    "owner": "wps-first-field-focus",
+    "old": "'data-wps-field-prev': true, disabled: fieldIndex === 0, onClick: function () { chooseField(WPS_FIELDS[fieldIndex - 1].id); },",
+    "new": "'data-wps-field-prev': true, disabled: fieldIndex === 0, 'aria-controls': 'wps3-field-reading', onClick: function () { chooseField(WPS_FIELDS[fieldIndex - 1].id); if (fieldIndex === 1) focusCodesStep('wps-field'); },"
+  },
+  {
+    "owner": "wps-last-field-focus",
+    "old": "'data-wps-field-next': true, disabled: fieldIndex === WPS_FIELDS.length - 1, onClick: function () { chooseField(WPS_FIELDS[fieldIndex + 1].id); },",
+    "new": "'data-wps-field-next': true, disabled: fieldIndex === WPS_FIELDS.length - 1, 'aria-controls': 'wps3-field-reading', onClick: function () { chooseField(WPS_FIELDS[fieldIndex + 1].id); if (fieldIndex === WPS_FIELDS.length - 2) focusCodesStep('wps-field'); },"
+  },
+  {
+    "owner": "wps-select-description",
+    "old": "h('select', { id: 'wps3-field', 'data-wps-field-select': true, value: f.id,",
+    "new": "h('select', { id: 'wps3-field', ref: wpsFieldSelectRef, 'data-wps-field-select': true, 'aria-describedby': 'wps3-field-reading', value: f.id,"
+  },
+  {
+    "owner": "workflow-selected-native-target",
+    "old": "return h('button', { key: i, type: 'button', 'data-codes-flow-step': i + 1, 'aria-pressed': on ? 'true' : 'false',",
+    "new": "return h('button', { key: i, id: 'codes6-flow-step-' + (i + 1), ref: on ? workflowSelectedStepRef : null, type: 'button', 'data-codes-flow-step': i + 1, 'aria-pressed': on ? 'true' : 'false', 'aria-controls': 'codes6-flow-result',"
+  },
+  {
+    "owner": "workflow-last-step-focus",
+    "old": "        function followWorkflowConnection() {\n          if (flowNext === null) return;\n          workflowTraceState[1]({ step: flowNext, route: 'forward', last: { from: flowStep, to: flowNext, route: flowRoute } });\n        }",
+    "new": "        function followWorkflowConnection() {\n          if (flowNext === null) return;\n          if (flowNext === 8) focusCodesStep('workflow');\n          workflowTraceState[1]({ step: flowNext, route: 'forward', last: { from: flowStep, to: flowNext, route: flowRoute } });\n        }"
+  },
+  {
+    "owner": "workflow-first-step-focus",
+    "old": "'data-codes-flow-prev': '', disabled: flowStep === 1, onClick: function () { inspectWorkflowStep(flowStep - 1); },",
+    "new": "'data-codes-flow-prev': '', disabled: flowStep === 1, 'aria-controls': 'codes6-flow-result', onClick: function () { inspectWorkflowStep(flowStep - 1); if (flowStep === 2) focusCodesStep('workflow'); },"
+  },
+  {
+    "owner": "workflow-next-result-relation",
+    "old": "'data-codes-flow-next': '', disabled: flowNext === null, onClick: followWorkflowConnection,",
+    "new": "'data-codes-flow-next': '', disabled: flowNext === null, 'aria-controls': 'codes6-flow-result', onClick: followWorkflowConnection,"
+  },
+  {
+    "owner": "workflow-route-result-relation",
+    "old": "'data-codes-flow-route': route, 'aria-pressed': on ? 'true' : 'false', onClick:",
+    "new": "'data-codes-flow-route': route, 'aria-pressed': on ? 'true' : 'false', 'aria-controls': 'codes6-flow-result', onClick:"
+  },
+  {
+    "owner": "workflow-native-live-result",
+    "old": "              h('p', { 'data-codes-flow-lane': '', style: { color: accent, fontSize: 12, fontWeight: 900, margin: '0 0 5px' } }, lane + ' · ' + __alloFill(__alloT('stem.weldlab.codes6_step_count', 'Step {value1} of 8'), { value1: flowStep })),\n              h('h4', { style: { color: ink, fontSize: 16, fontWeight: 900, margin: '0 0 6px' } }, FLOW_LABELS[flowStep - 1]),\n              h('p', { 'data-codes-flow-reading': flowStep, style: { color: ink, fontSize: 14, lineHeight: 1.6, margin: 0 } }, FLOW[flowStep - 1]),\n              flowCanRetry && h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.codes6_route_aria', 'Choose a connection to trace'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 } },\n                routeButton('forward', __alloT('stem.weldlab.codes6_forward', 'Forward continuation')),\n                routeButton('retry', flowStep === 3 ? __alloT('stem.weldlab.codes6_retry_procedure', 'Procedure retry → step 1') : __alloT('stem.weldlab.codes6_retry_welder', 'Welder retest → step 6'))),\n              h('p', { 'data-codes-flow-connection': '', 'data-from': flowConnection ? flowConnection.from : flowStep, 'data-to': flowConnection ? flowConnection.to : '', 'data-path': flowConnection ? flowConnection.route : '', 'data-status': flowTrace.last ? 'followed' : flowConnection ? 'preview' : 'end', style: { color: ink, fontSize: 13, fontWeight: 800, lineHeight: 1.5, margin: '10px 0 0' } }, flowConnection\n                ? __alloFill(flowTrace.last ? __alloT('stem.weldlab.codes6_followed', 'Last followed connection: step {value1} → step {value2}.') : __alloT('stem.weldlab.codes6_preview', 'Connection to explore: step {value1} → step {value2}.'), { value1: flowConnection.from, value2: flowConnection.to })\n                : __alloT('stem.weldlab.codes6_end', 'End of the numbered sequence. Inspect another step to start there.')),\n              flowTrace.last && h('p', { 'data-codes-flow-next-target': '', style: { color: soft, fontSize: 12, lineHeight: 1.5, margin: '5px 0 0' } }, flowNext === null ? __alloT('stem.weldlab.codes6_end', 'End of the numbered sequence. Inspect another step to start there.') : __alloFill(__alloT('stem.weldlab.codes6_next_target', 'Next connection: step {value1} → step {value2}.'), { value1: flowStep, value2: flowNext })),\n",
+    "new": "              h('div', { id: 'codes6-flow-result', 'data-codes-flow-result': '', 'aria-live': 'polite', 'aria-atomic': 'true' },\n                h('p', { 'data-codes-flow-lane': '', style: { color: accent, fontSize: 12, fontWeight: 900, margin: '0 0 5px' } }, lane + ' · ' + __alloFill(__alloT('stem.weldlab.codes6_step_count', 'Step {value1} of 8'), { value1: flowStep })),\n                h('h4', { style: { color: ink, fontSize: 16, fontWeight: 900, margin: '0 0 6px' } }, FLOW_LABELS[flowStep - 1]),\n                h('p', { 'data-codes-flow-reading': flowStep, style: { color: ink, fontSize: 14, lineHeight: 1.6, margin: 0 } }, FLOW[flowStep - 1]),\n                h('p', { 'data-codes-flow-connection': '', 'data-from': flowConnection ? flowConnection.from : flowStep, 'data-to': flowConnection ? flowConnection.to : '', 'data-path': flowConnection ? flowConnection.route : '', 'data-status': flowTrace.last ? 'followed' : flowConnection ? 'preview' : 'end', style: { color: ink, fontSize: 13, fontWeight: 800, lineHeight: 1.5, margin: '10px 0 0' } }, flowConnection\n                  ? __alloFill(flowTrace.last ? __alloT('stem.weldlab.codes6_followed', 'Last followed connection: step {value1} → step {value2}.') : __alloT('stem.weldlab.codes6_preview', 'Connection to explore: step {value1} → step {value2}.'), { value1: flowConnection.from, value2: flowConnection.to })\n                  : __alloT('stem.weldlab.codes6_end', 'End of the numbered sequence. Inspect another step to start there.')),\n                flowTrace.last && h('p', { 'data-codes-flow-next-target': '', style: { color: soft, fontSize: 12, lineHeight: 1.5, margin: '5px 0 0' } }, flowNext === null ? __alloT('stem.weldlab.codes6_end', 'End of the numbered sequence. Inspect another step to start there.') : __alloFill(__alloT('stem.weldlab.codes6_next_target', 'Next connection: step {value1} → step {value2}.'), { value1: flowStep, value2: flowNext }))\n              ),\n              flowCanRetry && h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.codes6_route_aria', 'Choose a connection to trace'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 } },\n                routeButton('forward', __alloT('stem.weldlab.codes6_forward', 'Forward continuation')),\n                routeButton('retry', flowStep === 3 ? __alloT('stem.weldlab.codes6_retry_procedure', 'Procedure retry → step 1') : __alloT('stem.weldlab.codes6_retry_welder', 'Welder retest → step 6'))),\n"
+  },
+  {
+    "owner": "robot-torch-label-overlap",
+    "old": "          var ghost = robShift;",
+    "new": "          // Keep the torch at its true coordinate while leaving nearby point labels readable.\n          var torchAnnotationOverlap = !!torch && robCheck.points.some(function (point) {\n            var dx = (point.x - torch.x) * C, dy = (point.y - torch.y) * C;\n            return dx * dx + dy * dy <= 400;\n          });\n          var ghost = robShift;"
+  },
+  {
+    "owner": "robot-home-foreground-remove",
+    "old": "                // home\n                h('rect', { x: px(TECH2_HOME.x) - 8, y: py(TECH2_HOME.y) - 8, width: 16, height: 16, fill: '#1e293b', stroke: '#e2e8f0', strokeWidth: 1.5 }),\n                h('text', { x: px(TECH2_HOME.x), y: py(TECH2_HOME.y) + 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#f8fafc' }, 'H'),\n                // Inspection marks the selected path without disclosing a verdict.\n",
+    "new": "                // Inspection marks the selected path without disclosing a verdict.\n"
+  },
+  {
+    "owner": "robot-point-foreground-remove",
+    "old": "                robCheck.points.slice(1).map(function (p, i) {\n                  var bad = showFaults && robCheck.segments[i] && robCheck.segments[i].bad;\n                  return h('g', { key: 'p' + i },\n                    h('circle', { cx: px(p.x), cy: py(p.y), r: 7, fill: bad ? '#7f1d1d' : '#0f172a', stroke: bad ? '#fca5a5' : '#e2e8f0', strokeWidth: 1.5 }),\n                    h('text', { x: px(p.x), y: py(p.y) + 3.5, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: '#f8fafc' }, String(i + 1)));\n                }),\n                // cursor\n",
+    "new": "                // cursor\n"
+  },
+  {
+    "owner": "robot-marker-and-label-layer",
+    "old": "                torch && h('g', { 'data-robot-torch': true, 'data-source': inspecting ? 'inspection' : 'run', 'data-arc': torch.w ? 'on' : 'off', 'data-x': torch.x, 'data-y': torch.y },\n                  torch.w && h('circle', { cx: px(torch.x), cy: py(torch.y), r: 10, fill: 'none', stroke: '#fde047', strokeWidth: 2 }),\n                  h('circle', { cx: px(torch.x), cy: py(torch.y), r: 6, fill: torch.w ? '#fde047' : '#0f172a', stroke: '#f8fafc', strokeWidth: 2 }),\n                  !torch.w && h('line', { x1: px(torch.x) - 3, y1: py(torch.y), x2: px(torch.x) + 3, y2: py(torch.y), stroke: '#f8fafc', strokeWidth: 2 })),\n",
+    "new": "                torch && h('g', { 'data-robot-torch': true, 'data-source': inspecting ? 'inspection' : 'run', 'data-arc': torch.w ? 'on' : 'off', 'data-x': torch.x, 'data-y': torch.y, 'data-label-overlap': torchAnnotationOverlap ? 'true' : 'false' },\n                  torchAnnotationOverlap ? h(React.Fragment, null,\n                    h('circle', { cx: px(torch.x), cy: py(torch.y), r: 14, fill: 'none', stroke: '#0f172a', strokeWidth: 6 }),\n                    h('circle', { cx: px(torch.x), cy: py(torch.y), r: 14, fill: 'none', stroke: torch.w ? '#fde047' : '#f8fafc', strokeWidth: 3, strokeDasharray: torch.w ? undefined : '3 2' })\n                  ) : h(React.Fragment, null,\n                    torch.w && h('circle', { cx: px(torch.x), cy: py(torch.y), r: 10, fill: 'none', stroke: '#fde047', strokeWidth: 2 }),\n                    h('circle', { cx: px(torch.x), cy: py(torch.y), r: 6, fill: torch.w ? '#fde047' : '#0f172a', stroke: '#f8fafc', strokeWidth: 2 }),\n                    !torch.w && h('line', { x1: px(torch.x) - 3, y1: py(torch.y), x2: px(torch.x) + 3, y2: py(torch.y), stroke: '#f8fafc', strokeWidth: 2 })\n                  )),\n                // Foreground annotations retain their original coordinates and model values.\n                h('g', { 'data-robot-home-label': true },\n                  h('rect', { x: px(TECH2_HOME.x) - 8, y: py(TECH2_HOME.y) - 8, width: 16, height: 16, fill: '#1e293b', stroke: '#e2e8f0', strokeWidth: 1.5 }),\n                  h('text', { x: px(TECH2_HOME.x), y: py(TECH2_HOME.y) + 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#f8fafc' }, 'H')),\n                robCheck.points.slice(1).map(function (p, i) {\n                  var bad = showFaults && robCheck.segments[i] && robCheck.segments[i].bad;\n                  return h('g', { key: 'p' + i, 'data-robot-point-label': i + 1 },\n                    h('circle', { cx: px(p.x), cy: py(p.y), r: 7, fill: bad ? '#7f1d1d' : '#0f172a', stroke: bad ? '#fca5a5' : '#e2e8f0', strokeWidth: 1.5 }),\n                    h('text', { x: px(p.x), y: py(p.y) + 3.5, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: '#f8fafc' }, String(i + 1)));\n                }),\n"
+  },
+  {
+    "owner": "blueprint-disabled-hover-contrast",
+    "old": "[data-blueprint-magnifier] button:focus-visible{outline:3px solid var(--blueprint-focus);outline-offset:3px}[data-blueprint-magnifier] svg",
+    "new": "[data-blueprint-magnifier] button:focus-visible{outline:3px solid var(--blueprint-focus);outline-offset:3px}[data-blueprint-magnifier] [data-blueprint-pan][aria-disabled=\"true\"]{background:' + paper + '!important;color:' + soft + '!important;border-style:dashed!important;border-color:' + edge + '!important;cursor:not-allowed!important}[data-blueprint-magnifier] svg"
+  }
+]

@@ -87,7 +87,7 @@ const stage = (page: Page) => page.locator('.migration-flight-stage');
 async function selectedPosition(page: Page, index: number) {
   await expect(cycle(page, index)).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-study-stage-cycle-position]')).toHaveAttribute('data-study-stage-cycle-position', String(index));
-  await expect(page.locator('#migration-study-current-context')).toContainText('Cycle position ' + (index + 1) + ' of 8 selected.');
+  await expect(page.locator("[data-migration-id=\"migration-study-current-context\"]")).toContainText('Cycle position ' + (index + 1) + ' of 8 selected.');
 }
 async function checked(page: Page, kind: string, touch = false) {
   const before = await saved(page);

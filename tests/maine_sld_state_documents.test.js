@@ -128,7 +128,7 @@ describe('state-reference documents reuse the local importer', () => {
 
 describe('standalone PDF extraction leaves concurrent remediation source telemetry alone', () => {
   const originals = {};
-  const keys = ['pdfjsLib', '__alloSourceLinkCount', '__alloSourceFormFields', '__alloSourceLinks'];
+  const keys = ['pdfjsLib', '__alloGetVerifiedRuntimeAsset', '__alloSourceLinkCount', '__alloSourceFormFields', '__alloSourceLinks'];
   afterEach(() => {
     for (const key of keys) {
       if (originals[key] && originals[key].present) window[key] = originals[key].value;
@@ -147,6 +147,12 @@ describe('standalone PDF extraction leaves concurrent remediation source telemet
     };
     const pdf = { numPages: 1, getPage: vi.fn(async () => page), destroy: vi.fn() };
     window.pdfjsLib = { GlobalWorkerOptions: {}, getDocument: vi.fn(() => ({ promise: Promise.resolve(pdf) })) };
+    // This seam tests source telemetry with a fake parser, but still supplies
+    // the host's required worker lease rather than relying on an ambient URL.
+    window.__alloGetVerifiedRuntimeAsset = vi.fn(async (graph, binding) => {
+      expect([graph, binding]).toEqual(['pdfjs', 'worker']);
+      return { url: 'blob:http://localhost/reviewed-pdf-worker', revoke: vi.fn() };
+    });
     window.__alloSourceLinkCount = 9;
     const fields = { fields: 7, widgets: 7, withAccessibleName: 7 };
     const links = [{ text: 'Existing source', url: 'https://example.gov/existing' }];
@@ -163,6 +169,8 @@ describe('standalone PDF extraction leaves concurrent remediation source telemet
       .extractPdfTextDeterministic(new Uint8Array([1, 2, 3, 4, 5]));
     expect(result.fullText).toBe(passage);
     expect(result.pageErrors).toEqual([]);
+    expect(window.__alloGetVerifiedRuntimeAsset).toHaveBeenCalledWith('pdfjs', 'worker');
+    expect(window.pdfjsLib.getDocument).toHaveBeenCalledWith(expect.objectContaining({ isEvalSupported: false }));
     expect(window.__alloSourceLinkCount).toBe(9);
     expect(window.__alloSourceFormFields).toBe(setup.fields);
     expect(window.__alloSourceLinks).toBe(setup.links);

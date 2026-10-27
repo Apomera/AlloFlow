@@ -41,7 +41,7 @@ function fixture(seed = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { renders++; refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const hostIndex = refs.findIndex(ref => ref.current === stage), hostRef = refs[hostIndex], engineRef = refs[hostIndex + 1];
   const pose = { userData: { captured: false, capturedPhase: null, captureVersion: 0, sourceBirdUuid: '' } };
   pose.capturePose = vi.fn((flyer, speciesId, individual) => {
@@ -66,13 +66,13 @@ function fixture(seed = {}) {
     mark() { ui.clickNode(ui.action('mark')); }, check() { ui.clickNode(ui.action('check')); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(value => value + 1); }); },
     click(element) { act(() => { element.click(); }); }, frame() { advance(engine, liveRef.current, num); },
-    context() { return host.querySelector('[id="migration-study-current-context"]'); },
+    context() { return host.querySelector("[data-migration-id=\"migration-study-current-context\"]"); },
     deck() { return stage.closest('.migration-flight-deck'); },
-    card() { return host.querySelector('[id="migration-marked-comparison-controls"]'); },
+    card() { return host.querySelector("[data-migration-id=\"migration-marked-comparison-controls\"]"); },
     checkButton() { return ui.card()?.querySelector('[data-marked-pose-action="check"]'); },
     review() { return host.querySelector('[data-study-action="review-marked-comparison"]'); },
     returnNote() { return ui.card()?.querySelector('[data-study-scene-action="continue-comparison-note"]'); },
-    field() { return host.querySelector('[id="migration-study-observation-note"]'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
     panel() { return host.querySelector('[data-study-observation]'); }
   };
   ui.set({}); ui.frame(); return ui;
@@ -115,8 +115,8 @@ describe('Navigate between the current migration note and explicit marked compar
     const button = ui.review();
     expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button'); expect(button.disabled).toBe(false);
     expect(button.textContent).toBe('Review marked comparison');
-    expect(button.getAttribute('aria-controls')).toBe('migration-marked-comparison-controls');
-    expect(button.getAttribute('aria-describedby')).toBe('migration-marked-pose-help');
+    expect(button.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-marked-comparison-controls"]').id);
+    expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-marked-pose-help"]').id);
     expect(getComputedStyle(button).minHeight).toBe('44px'); expect(ui.context().contains(button)).toBe(true);
     expect(ui.card().getAttribute('data-study-marked-pose')).toBe('true');
     expect(ui.host.querySelectorAll('[data-study-scene-action="continue-note"]')).toHaveLength(1);

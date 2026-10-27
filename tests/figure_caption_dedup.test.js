@@ -14,9 +14,8 @@ describe('figure captions do not double-announce the alt text', () => {
   it('the main image-render figcaption wraps the duplicated description in aria-hidden', () => {
     // Harness repair (2026-07-09): a later XSS hardening escapes ${desc} inline — the aria-hidden
     // wrap (the thing under test) is unchanged.
-    expect(src).toContain('<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true">${desc.replace(');
-    // the educational "Purpose:" line is NOT aria-hidden — it adds info beyond the alt
-    expect(src).toMatch(/aria-hidden="true">\$\{desc\.replace\([\s\S]{0,120}?<\/span>\$\{purpose \?/);
+    expect(src.includes('<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true">${_alloEscapeTextOnce(desc)}</span></figcaption>'), 'aria-hidden description').toBe(true);
+    // (2026-10-26, Aaron option B: the English "Purpose:" line no longer follows it in the delivered caption.)
   });
 
   it('the slide/media figcaption (_figFor) wraps the duplicated alt in aria-hidden', () => {

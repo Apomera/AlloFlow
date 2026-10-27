@@ -72,7 +72,7 @@ describe('Cornell print copies preserve guidance and usable response space', () 
   });
 
   it('preserves every authored notebook prompt in both Katie packs without exposing a quiz key', () => {
-    const filenames = ['academic_discourse_reading_space_grade6', 'reading_decisions_grade6'];
+    const filenames = ['academic_discourse_reading_space_grade6', 'academic_discourse_more_practice_grade6', 'reading_decisions_grade6'];
     let checked = 0;
     for (const filename of filenames) {
       const pack = JSON.parse(readFileSync(`allopacks/${filename}.allopack.json`, 'utf8'));

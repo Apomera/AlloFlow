@@ -49,7 +49,7 @@ async function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); roots.add(root);
   function Component() { renderCount++; refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => root.render(React.createElement(Component)));
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const liveRef = refs.find(ref => ref.current && typeof ref.current === 'object' && 'flightSpeedValues' in ref.current);
   const engine = { host: stage, speciesId: state.flightSpecies, formationMode: state.flightFormation, season: state.flightSeason,

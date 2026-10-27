@@ -209,13 +209,148 @@ describe('range explorer panel', () => {
   });
 
   it('normalizes hostile saved explorer state', () => {
-    const app = render({ showRangeExplorer: 'yes', rangeExplorer: { draft: 12, prediction: 400, predictedFor: 7, inspect: 'x', predictions: -3 } });
+    const app = render({ showRangeExplorer: 'yes', rangeExplorer: { draft: 12, prediction: 400, predictedFor: 7, inspect: 'x', predictions: -3, target: -5 } });
     expect(attr(app.draw(), 'data-physics-range-explorer')).toBeUndefined();
     const s = P.normalizeState(app.state());
-    expect(s.rangeExplorer).toEqual({ draft: '', prediction: null, predictedFor: null, revealedFor: null, inspect: null, fitOpen: false, predictions: 0 });
+    expect(s.rangeExplorer).toEqual({ draft: '', prediction: null, predictedFor: null, revealedFor: null, inspect: null, fitOpen: false, predictions: 0,
+      mode: 'angle', sDraft: null, sGuess: null, sPredictedFor: null, sRevealedFor: null, sInspect: null, vSquared: false, target: null });
+    for (const bad of [0, Infinity, '40', 1e9]) expect(P.normalizeState({ rangeExplorer: { target: bad } }).rangeExplorer.target).toBeNull();
+    expect(P.normalizeState({ rangeExplorer: { target: 42.5 } }).rangeExplorer.target).toBe(42.5);
   });
 
   it('keeps the public mirror identical', () => {
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_physics.js', 'utf8')).toBe(readFileSync('stem_lab/stem_tool_physics.js', 'utf8'));
+  });
+});
+
+describe('range-speed sweep and the doubling ratio', () => {
+  it('sweeps every slider speed with the same integrator a launch uses', () => {
+    const s = P.speedSweep(45, 9.8, true, 1, 0);
+    expect(s.points.map(p => p.vel)).toEqual(Array.from({ length: 46 }, (_, i) => i + 5));
+    for (const v of [5, 23, 50]) {
+      const p = s.points[v - 5];
+      expect(p.range).toBe(P.simulate(45, v, 9.8, true, 1, 0).range);
+      expect(p.vacuumRange).toBe(P.vacuum(45, v, 9.8, 0).range);
+    }
+    expect(P.speedSweep(0, 9.8, false, 1, 0)).toBeNull();          // a flat launch from the ground goes nowhere
+    expect(P.speedSweep(45, 0, false, 1, 0)).toBeNull();
+  });
+
+  it('is exactly x4 without drag from the ground, below 4 with drag or a raised launcher', () => {
+    const vac = P.doublingRatio(45, 20, 9.8, false, 1, 0);
+    expect(vac.ratio).toBeCloseTo(4, 9); expect(vac.closest).toBe(4); expect([vac.v1, vac.v2]).toEqual([20, 40]);
+    const air = P.doublingRatio(45, 25, 9.8, true, 1, 0);
+    expect(air.ratio).toBeGreaterThan(2.6); expect(air.ratio).toBeLessThan(3); expect(air.closest).toBe(3);
+    expect(air.vacuumRatio).toBeCloseTo(4, 9);
+    const heavy = P.doublingRatio(45, 25, 9.8, true, 10, 0);
+    expect(heavy.ratio).toBeGreaterThan(air.ratio); expect(heavy.ratio).toBeLessThan(4);
+    const raised = P.doublingRatio(45, 20, 9.8, false, 1, 10);
+    expect(raised.ratio).toBeLessThan(3.6); expect(raised.ratio).toBeGreaterThan(3.4);
+    const flatFromCliff = P.doublingRatio(0, 15, 9.8, false, 1, 20);
+    expect(flatFromCliff.ratio).toBeCloseTo(2, 9);                 // a horizontal launch: range simply scales with speed
+    expect(P.doublingRatio(45, 26, 9.8, false, 1, 0)).toBeNull();  // 2 x 26 is off the slider
+    expect(P.doublingRatio(45, 4, 9.8, false, 1, 0)).toBeNull();
+    expect(P.DOUBLING_CHOICES).toEqual([1.4, 2, 3, 4]);
+  });
+});
+
+describe('range explorer speed mode', () => {
+  const choose = (tree, c) => attr(tree, 'data-physics-range-mode') && find(tree, n => n.type === 'input' && n.props['data-physics-range-choice'] === String(c)).props.onChange({ target: { checked: true } });
+  const mode = (app, m) => find(app.draw(), n => n.props && n.props['data-physics-range-mode-option'] === m).props.onClick();
+
+  it('switches modes with pressed-state buttons and keeps the angle mode unchanged', () => {
+    const app = render({ showRangeExplorer: true });
+    const buttons = all(app.draw(), n => n.props && n.props['data-physics-range-mode-option']);
+    expect(buttons.map(b => [b.props['data-physics-range-mode-option'], b.props['aria-pressed']])).toEqual([['angle', true], ['speed', false]]);
+    expect(attr(app.draw(), 'data-physics-range-prediction')).toBeTruthy();      // angle mode first
+    mode(app, 'speed');
+    expect(app.state().rangeExplorer.mode).toBe('speed');
+    const tree = app.draw();
+    expect(text(tree)).toContain('how does launch speed change the range?');
+    expect(attr(tree, 'data-physics-range-speed-predict')).toBeTruthy();
+    expect(attr(tree, 'data-physics-range-speed-chart')).toBeUndefined();
+    mode(app, 'angle');
+    expect(attr(app.draw(), 'data-physics-range-prediction')).toBeTruthy();
+  });
+
+  it('asks the doubling question first, then reports the closest choice and the measured ratio', () => {
+    const app = render({ showRangeExplorer: true, velocity: 20, rangeExplorer: { mode: 'speed' } });
+    let tree = app.draw();
+    expect(text(tree)).toContain('from 20 to 40 m/s');
+    expect(attr(tree, 'data-physics-range-speed-submit').props.disabled).toBe(true);
+    choose(tree, 2);
+    tree = app.draw();
+    expect(attr(tree, 'data-physics-range-speed-submit').props.disabled).toBe(false);
+    attr(tree, 'data-physics-range-speed-submit').props.onClick();
+    tree = app.draw();
+    expect(attr(tree, 'data-physics-range-speed-chart')).toBeTruthy();
+    expect(app.awardXP).toHaveBeenCalledTimes(1);
+    const fb = text(attr(tree, 'data-physics-range-speed-feedback'));
+    expect(fb).toContain('The closest choice is ×4.');
+    expect(fb).toContain('You predicted ×2. From 20 to 40 m/s the range goes from 40.8 m to 163.3 m: ×4.00.');
+    expect(text(attr(tree, 'data-physics-range-speed-findings'))).toContain('multiplies the range by exactly ×4.00');
+    expect(all(tree, n => n.props && n.props['data-physics-range-pair']).map(n => n.props['data-physics-range-pair'])).toEqual([20, 40]);
+  });
+
+  it('credits the closest answer with drag, explains drag and mass, and asks again when settings change', () => {
+    const app = render({ showRangeExplorer: true, velocity: 25, airResist: true, mass: 1, rangeExplorer: { mode: 'speed' } });
+    choose(app.draw(), 3);
+    attr(app.draw(), 'data-physics-range-speed-submit').props.onClick();
+    let tree = app.draw();
+    expect(text(attr(tree, 'data-physics-range-speed-feedback'))).toContain('That is the closest choice.');
+    const findings = text(attr(tree, 'data-physics-range-speed-findings'));
+    expect(findings).toMatch(/Through air, doubling the speed multiplies the range by ×2\.\d\d instead of ×4\.00/);
+    expect(findings).toMatch(/with 10 kg the same doubling gives ×3\.\d\d/);
+    expect(all(tree, n => n.props && n.props['data-physics-range-curve']).map(n => n.props['data-physics-range-curve'])).toEqual(['vacuum', 'drag']);
+    app.state().velocity = 18;                                                    // new doubling pair 18 -> 36
+    tree = app.draw();
+    expect(attr(tree, 'data-physics-range-speed-predict')).toBeTruthy();
+    expect(text(tree)).toContain('Your settings changed since the last prediction');
+    attr(tree, 'data-physics-range-speed-skip').props.onClick();
+    expect(attr(app.draw(), 'data-physics-range-speed-chart')).toBeTruthy();
+    expect(attr(app.draw(), 'data-physics-range-speed-feedback')).toBeUndefined();
+    expect(app.awardXP).toHaveBeenCalledTimes(1);
+  });
+
+  it('explains a raised launcher and turns the no-drag curve into a straight line against v²', () => {
+    const raised = render({ showRangeExplorer: true, velocity: 20, launchHeight: 10, rangeExplorer: { mode: 'speed', sRevealedFor: 'speed|45|9.8|vacuum||10|20' } });
+    expect(text(attr(raised.draw(), 'data-physics-range-speed-findings'))).toMatch(/From 10 m up, doubling the speed multiplies the no-drag range by ×3\.5\d, less than 4/);
+    const app = render({ showRangeExplorer: true, velocity: 20, rangeExplorer: { mode: 'speed', sRevealedFor: 'speed|45|9.8|vacuum||0|20' } });
+    expect(attr(app.draw(), 'data-physics-range-speed-chart').props['data-x-axis']).toBe('v');
+    find(app.draw(), n => n.props && n.props['data-physics-range-vsq']).props.onChange({ target: { checked: true } });
+    const tree = app.draw();
+    expect(attr(tree, 'data-physics-range-speed-chart').props['data-x-axis']).toBe('v2');
+    expect(text(tree)).toContain('Launch speed squared, v² (m²/s²)');
+    expect(text(attr(tree, 'data-physics-range-speed-findings'))).toContain('straight line through the origin');
+    // The plotted no-drag points really are collinear with the origin when x = v².
+    const d = attr(tree, 'data-physics-range-speed-chart').children.flat(Infinity).find(n => n && n.props && n.props['data-physics-range-curve'] === 'vacuum').props.d;
+    const xy = d.split(/[ML]/).filter(Boolean).map(s => s.trim().split(' ').map(Number));
+    const [x0, y0] = [84, 18 + 226];                                              // chart origin (L, T + plot height)
+    const [xe, ye] = xy[xy.length - 1], k = (y0 - ye) / (xe - x0);                // line from the origin through the far end
+    const worst = Math.max(...xy.map(([x, y]) => Math.abs((y0 - y) - k * (x - x0))));
+    expect(worst).toBeLessThan(0.2);                                              // the path is drawn to 0.1 px
+    // ...and it is a real test: the same check fails against the plain-speed axis.
+    find(app.draw(), n => n.props && n.props['data-physics-range-vsq']).props.onChange({ target: { checked: false } });
+    const dv = attr(app.draw(), 'data-physics-range-speed-chart').children.flat(Infinity).find(n => n && n.props && n.props['data-physics-range-curve'] === 'vacuum').props.d;
+    const xv = dv.split(/[ML]/).filter(Boolean).map(s => s.trim().split(' ').map(Number));
+    const [xf, yf] = xv[xv.length - 1], kv = (y0 - yf) / (xf - x0);
+    expect(Math.max(...xv.map(([x, y]) => Math.abs((y0 - y) - kv * (x - x0))))).toBeGreaterThan(20);
+  });
+
+  it('sets the launcher speed from the inspected point unless a mission fixes the speed', () => {
+    const app = render({ showRangeExplorer: true, velocity: 20, rangeExplorer: { mode: 'speed', sRevealedFor: 'speed|45|9.8|vacuum||0|20' } });
+    find(app.draw(), n => n.props && n.props['data-physics-range-speed-slider']).props.onChange({ target: { value: '33' } });
+    expect(text(attr(app.draw(), 'data-physics-range-reading'))).toContain('At 33 m/s: range');
+    attr(app.draw(), 'data-physics-range-apply').props.onClick();
+    expect(app.state().velocity).toBe(33);
+    const locked = render({ showRangeExplorer: true, velocity: 20, targetMode: true, targetConstraint: { type: 'fixedVelocity', value: 20 }, rangeExplorer: { mode: 'speed', sRevealedFor: 'speed|45|9.8|vacuum||0|20', sInspect: 30 } });
+    expect(attr(locked.draw(), 'data-physics-range-apply').props.disabled).toBe(true);
+  });
+
+  it('normalizes hostile speed-mode state', () => {
+    const app = render({ showRangeExplorer: true, rangeExplorer: { mode: 'sideways', sDraft: 5, sGuess: '4', sPredictedFor: 3, sInspect: 99, vSquared: 'yes' } });
+    app.draw();
+    const s = P.normalizeState(app.state()).rangeExplorer;
+    expect([s.mode, s.sDraft, s.sGuess, s.sPredictedFor, s.sInspect, s.vSquared]).toEqual(['angle', null, null, null, 50, false]);
   });
 });

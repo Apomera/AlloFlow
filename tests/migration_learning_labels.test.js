@@ -38,9 +38,9 @@ function fixture(seed = {}, translate = (_key, fallback) => fallback) {
   draw();
   return {
     host, writes, draw, get state() { return state; },
-    field(id) { return host.querySelector('[id="' + id + '"]'); },
+    field(id) { return host.querySelector('[data-migration-id="' + id + '"]'); },
     edit(id, value) {
-      const element = walk(tree, node => node.type === 'textarea' && node.props.id === id);
+      const element = walk(tree, node => node.type === 'textarea' && node.props['data-migration-id'] === id);
       expect(element, id).not.toBeNull(); element.props.onChange({ target: { value } }); draw();
     },
     action(name) {

@@ -166,7 +166,9 @@ test('investigation confirmations repeat locally without changing focus or unrel
   expect(recorded.flightStudyObservations).toEqual(before.flightStudyObservations);
   const restore = page.locator('[data-experiment-action="restore"]');
   await activate(page, restore); await expect(restore).toBeFocused(); await expect(status).toContainText('Baseline flight controls restored.');
-  const reset = page.locator('[data-experiment-action="reset"]'); await activate(page, reset);
+  const beforeReset = await data(page), reset = page.locator('[data-experiment-action="reset"]'); await activate(page, reset);
+  await expect(page.locator('[data-experiment-action="reset-cancel"]')).toBeFocused(); expect(await data(page)).toEqual(beforeReset);
+  await activate(page, page.locator('[data-experiment-action="reset-confirm"]'));
   await expect(reset).toBeFocused(); await expect(status).toContainText('Flight investigation cleared.');
   expect((await data(page)).flightInvestigation.trials).toEqual([]);
   const audit = await scan(page);

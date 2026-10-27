@@ -104,7 +104,7 @@ describe('Sky School quiz supporting study loop', () => {
     expect([latest.quizScore, latest.quizTotal]).toEqual([correct ? 0 : 1, 1]);
     expect(question().querySelector('[data-quiz-practice]')).toBeTruthy();
     expect(question().textContent).toContain(correct ? '✓ Correct!' : '✗ Not quite.');
-    expect(choices().every(choice => choice.disabled)).toBe(true);
+    expect(choices().every(choice => !choice.disabled && choice.getAttribute('aria-disabled') === 'true')).toBe(true);
   });
 
   it('restores a study visit after remount and returns to the same answered practice with question focus', async () => {

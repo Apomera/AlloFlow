@@ -7,7 +7,7 @@ import { React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquarium.js'), 'utf8');
-const componentNames = ['AquariumHabitat3DViewport', 'AquariumSceneSettings', 'AquariumSceneEvidence', 'AquariumLiveDisplay'];
+const componentNames = ['AquariumPlantSizeControl', 'AquariumModelSizing', 'AquariumHabitat3DViewport', 'AquariumSceneSettings', 'AquariumSceneEvidence', 'AquariumLiveDisplay'];
 const components = new Map();
 function collect(node) {
   if (!node || typeof node !== 'object') return;
@@ -205,17 +205,17 @@ describe('Aquarium live 3D viewport behavior', () => {
     expect(host.querySelector('.aquarium-display-counts').textContent).toContain('2 residents');
     expect(host.querySelectorAll('optgroup[label="Residents"] option')).toHaveLength(2);
     await act(async () => { engines[0].options.onSelectFish('fish-12'); });
-    expect(host.querySelector('#aquarium-resident-inspect').value).toBe('fish:fish-12');
+    expect(host.querySelector('[data-aquarium-resident-inspect]').value).toBe('fish:fish-12');
     expect(host.querySelector('.aquarium-resident-detail').textContent).toContain('Pearl');
     await click(exactButton(host, 'Illustrated view'));
     expect(engines[0].dispose).toHaveBeenCalledTimes(1);
     expect(host.querySelector('#aquarium-illustrated-tank')).toBeTruthy();
-    expect(host.querySelector('#aquarium-resident-inspect').value).toBe('fish:fish-12');
+    expect(host.querySelector('[data-aquarium-resident-inspect]').value).toBe('fish:fish-12');
     await click(exactButton(host, 'Explore anatomy'));
     expect(anatomy).toHaveBeenCalledWith('guppy');
     await click(exactButton(host, '3D aquarium'));
     expect(engines[1].options.fish.find(item => item.selected).instanceId).toBe('fish-12');
-    const inspect = host.querySelector('#aquarium-resident-inspect');
+    const inspect = host.querySelector('[data-aquarium-resident-inspect]');
     await act(async () => { inspect.value = 'plant:java-fern'; inspect.dispatchEvent(new Event('change', { bubbles: true })); });
     expect(selectPlant).toHaveBeenCalledWith('java-fern');
     expect(host.querySelector('.aquarium-resident-detail').textContent).toContain('Java fern');
@@ -223,7 +223,7 @@ describe('Aquarium live 3D viewport behavior', () => {
     expect(exactButton(host, 'Explore anatomy')).toBeUndefined();
     await click(exactButton(host, 'Pause visual motion'));
     expect(engines[1].options.paused).toBe(true);
-    expect(host.querySelector('#aquarium-resident-inspect').value).toBe('plant:java-fern');
+    expect(host.querySelector('[data-aquarium-resident-inspect]').value).toBe('plant:java-fern');
     expect(selectFish).toHaveBeenCalledWith('fish-12');
   });
 
@@ -245,9 +245,9 @@ describe('Aquarium live 3D viewport behavior', () => {
       }, React.createElement('div', { id: 'aquarium-illustrated-tank' }, 'The same habitat'));
     }
     await act(async () => { root.render(React.createElement(HabitatHarness)); });
-    const inspect = host.querySelector('#aquarium-resident-inspect');
+    const inspect = host.querySelector('[data-aquarium-resident-inspect]');
     expect(inspect).toBeTruthy();
-    expect(host.querySelector('label[for="aquarium-resident-inspect"]').textContent).toBe('Inspect life and habitat');
+    expect(inspect.labels[0].textContent).toBe('Inspect life and habitat');
     expect([...inspect.querySelectorAll('optgroup[label="Habitat objects"] option')].map(item => [item.value, item.textContent])).toEqual([
       ['habitat:cave-17', 'Rock cave · object 1'],
       ['habitat:wood-24', 'Branching driftwood · object 2']
@@ -269,10 +269,10 @@ describe('Aquarium live 3D viewport behavior', () => {
     expect(inspect.value).toBe('habitat:cave-17');
     expect(host.querySelector('.aquarium-resident-detail').textContent).toContain('Rock cave.');
     await click(exactButton(host, 'Illustrated view'));
-    expect(host.querySelector('#aquarium-resident-inspect').value).toBe('habitat:cave-17');
+    expect(host.querySelector('[data-aquarium-resident-inspect]').value).toBe('habitat:cave-17');
     await click(exactButton(host, 'Arrange habitat'));
     expect(arrange).toHaveBeenCalledTimes(1);
-    expect(host.querySelector('#aquarium-resident-inspect').value).toBe('habitat:cave-17');
+    expect(host.querySelector('[data-aquarium-resident-inspect]').value).toBe('habitat:cave-17');
   });
 
   it('updates saved appearance and overlays without remounting the tank or resetting its camera and model', async () => {
@@ -299,13 +299,13 @@ describe('Aquarium live 3D viewport behavior', () => {
     expect(settings.querySelector('summary').textContent).toBe('Customize 3D view');
     await click(settings.querySelector('summary'));
     expect(settings.open).toBe(true);
-    for (const [id, value] of [['aquarium-view-substrate', 'dark'], ['aquarium-view-backdrop', 'black'], ['aquarium-view-quality', 'low'], ['aquarium-view-overlay', 'organisms']]) {
-      const control = host.querySelector('#' + id);
-      expect(host.querySelector('label[for="' + id + '"]')).toBeTruthy();
+    for (const [key, value] of [['substrate', 'dark'], ['backdrop', 'black'], ['quality', 'low'], ['overlay', 'organisms']]) {
+      const control = host.querySelector('[data-aquarium-view-control="' + key + '"]');
+      expect(control.labels[0]).toBeTruthy();
       await act(async () => { control.value = value; control.dispatchEvent(new Event('change', { bubbles: true })); });
     }
-    const shimmer = host.querySelector('#aquarium-view-shimmer');
-    const shimmerLabel = host.querySelector('label[for="aquarium-view-shimmer"]');
+    const shimmer = host.querySelector('[data-aquarium-view-control="waterShimmer"]');
+    const shimmerLabel = shimmer.labels[0];
     expect(shimmer.value).toBe('0.4');
     expect(shimmerLabel.textContent).toBe('Water shimmer · 40%');
     const setRangeValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
@@ -319,7 +319,7 @@ describe('Aquarium live 3D viewport behavior', () => {
       expect(engine.options.equipment).toBe(hardware);
       expect(engine.options.fish).toEqual([firstFish]);
     }
-    await click(host.querySelector('#aquarium-view-equipment'));
+    await click(host.querySelector('[data-aquarium-view-control="showEquipment"]'));
     expect(current).toMatchObject({ appearance: { substrate: 'dark', backdrop: 'black', quality: 'low', showEquipment: false }, overlay: 'organisms' });
     expect(engine.options.model).toBe(model);
     expect(engine.options.equipment).toBe(hardware);
@@ -427,24 +427,192 @@ describe('Aquarium live 3D viewport behavior', () => {
 
   it('puts selection next to the scene and opens the exact plant biomass input from its inspector', async () => {
     const onResizePlant = vi.fn();
-    // Native navigation targets use the same public IDs as the separately tested sizing form.
-    await act(async () => { root.render(React.createElement(React.Fragment, null,
-      React.createElement(LiveDisplay, { React, id: 'live', instanceKey: 'freshwater', name: 'Plant inspection', label: 'Selected fern', lightLabel: 'Day', mode: '3d', paused: true,
-        onView: vi.fn(), onPause: vi.fn(), onSelect: vi.fn(), onSelectFish: vi.fn(), onSelectPlant: vi.fn(), onResizePlant,
-        sceneOptions: scene({ fish: [], plants: [{ ...plant, selected: true }] }) }),
-      React.createElement('details', { id: 'aquarium-size-controls' }, React.createElement('summary', null, 'Tank & plant size'),
-        React.createElement('input', { id: 'aquarium-plant-biomass-java-fern', type: 'number', defaultValue: '2' }),
-        React.createElement('input', { id: 'aquarium-plant-biomass-other', type: 'number', defaultValue: '4' })))); });
+    await act(async () => { root.render(React.createElement(LiveDisplay, { React, id: 'live', instanceKey: 'freshwater', name: 'Plant inspection', label: 'Selected fern', lightLabel: 'Day', mode: '3d', paused: true,
+      onView: vi.fn(), onPause: vi.fn(), onSelect: vi.fn(), onSelectFish: vi.fn(), onSelectPlant: vi.fn(), onResizePlant, onResizeTank: vi.fn(),
+      tankConfiguration: { size: 20, shape: 'standard' },
+      sceneOptions: scene({ model: { stockMinimumGallons: 5, chemistry: {}, hour: 12 }, fish: [], plants: [{ ...plant, maxBiomass: 3, biomassRatio: 2 / 3, selected: true }] }) })); });
     const viewport = host.querySelector('.aquarium-3d-viewport'), inspector = host.querySelector('.aquarium-resident-inspector');
     expect(host.querySelector('.aquarium-inspection-picker').nextElementSibling).toBe(viewport);
     expect(viewport.nextElementSibling).toBe(inspector);
-    const input = host.querySelector('#aquarium-plant-biomass-java-fern'); input.scrollIntoView = vi.fn();
+    const input = host.querySelector('[data-aquarium-plant-biomass="java-fern"]'); input.scrollIntoView = vi.fn();
     await click(exactButton(host, 'Adjust plant size'));
-    expect(host.querySelector('#aquarium-size-controls').open).toBe(true);
+    expect(host.querySelector('[data-aquarium-sizing-controls]').open).toBe(true);
     expect(document.activeElement).toBe(input);
     expect(input.value).toBe('2');
     expect(input.scrollIntoView).toHaveBeenCalledWith({ block: 'center', behavior: 'auto' });
     expect(onResizePlant).not.toHaveBeenCalled();
+  });
+
+  it('keeps duplicate resident, appearance and sizing controls scoped to their own aquarium', async () => {
+    const resize = [vi.fn(), vi.fn()], appearances = [vi.fn(), vi.fn()];
+    const defaults = { substrate: 'sand', backdrop: 'depth', quality: 'balanced', lightIntensity: 1, animalScale: 1, waterShimmer: .4, showEquipment: true };
+    await act(async () => root.render(React.createElement(React.Fragment, null, [0, 1].map(index => React.createElement(LiveDisplay, {
+      key: index, React, id: 'live-' + index, instanceKey: 'freshwater', name: 'Plant inspection ' + index, label: 'Selected fern', lightLabel: 'Day', mode: 'illustrated', paused: true,
+      onView: vi.fn(), onPause: vi.fn(), onSelect: vi.fn(), onSelectFish: vi.fn(), onSelectPlant: vi.fn(), onResizePlant: resize[index], onResizeTank: vi.fn(),
+      onAppearance: appearances[index], onResetAppearance: vi.fn(), onOverlay: vi.fn(), tankConfiguration: { size: 20, shape: 'standard' },
+      sceneOptions: scene({ appearance: defaults, model: { stockMinimumGallons: 5, chemistry: {}, hour: 12 }, fish: [], plants: [{ ...plant, maxBiomass: 3, biomassRatio: 2 / 3, selected: true }] })
+    })))));
+    const displays = [...host.querySelectorAll('[data-aquarium-live-tank]')];
+    const ids = [...host.querySelectorAll('[id]')].map(node => node.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const display of displays) {
+      for (const label of display.querySelectorAll('label[for]')) {
+        expect(label.control).toBeTruthy(); expect(display.contains(label.control)).toBe(true);
+      }
+      const adjust = exactButton(display, 'Adjust plant size');
+      expect(document.getElementById(adjust.getAttribute('aria-controls'))).toBe(display.querySelector('[data-aquarium-sizing-controls]'));
+    }
+    const second = displays[1], input = second.querySelector('[data-aquarium-plant-biomass]');
+    const adjust = exactButton(second, 'Adjust plant size');
+    expect(document.activeElement).not.toBe(input);
+    adjust.focus(); await click(adjust);
+    expect(document.activeElement).toBe(input);
+    expect(second.querySelector('[data-aquarium-sizing-controls]').open).toBe(true);
+    expect(displays[0].querySelector('[data-aquarium-sizing-controls]').open).toBe(false);
+    expect(resize.every(callback => callback.mock.calls.length === 0)).toBe(true);
+    const secondSetting = second.querySelector('[data-aquarium-view-control="substrate"]');
+    await act(async () => { secondSetting.value = 'dark'; secondSetting.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(appearances[1]).toHaveBeenCalledWith({ substrate: 'dark' }); expect(appearances[0]).not.toHaveBeenCalled();
+    const firstInput = displays[0].querySelector('[data-aquarium-plant-biomass]');
+    await click(exactButton(displays[0], 'Adjust plant size'));
+    expect(document.activeElement).toBe(firstInput);
+    second.hidden = true;
+    await click(adjust);
+    expect(document.activeElement).toBe(firstInput);
+  });
+
+  it('keeps the visible close-up label in its name and returns owned Whole tank focus to the canvas', async () => {
+    const options = scene({ fish: [{ ...firstFish, selected: true }], paused: true }), before = JSON.stringify(options);
+    await renderViewport({ sceneOptions: options });
+    const focus = host.querySelector('[data-aquarium-3d-focus-selected]');
+    expect(focus.getAttribute('aria-label')).toContain(focus.textContent);
+    expect(focus.getAttribute('aria-label')).toContain('Amber');
+    await click(focus);
+    const whole = host.querySelector('[data-aquarium-3d-whole-tank]');
+    whole.focus(); await click(whole);
+    expect(whole.isConnected).toBe(false);
+    expect(document.activeElement).toBe(host.querySelector('[data-aquarium-3d-canvas]'));
+    expect(host.querySelector('[data-camera-focus]').dataset.cameraFocus).toBe('');
+    expect(JSON.stringify(options)).toBe(before);
+    await renderViewport({ sceneOptions: scene({ fish: [], plants: [] }) });
+    const unavailable = host.querySelector('[data-aquarium-3d-focus-selected]');
+    expect(unavailable.disabled).toBe(true);
+    expect(unavailable.getAttribute('aria-label')).toContain(unavailable.textContent);
+  });
+
+  it('does not move another control focus for a programmatic Whole tank activation', async () => {
+    await renderViewport({ sceneOptions: scene({ fish: [{ ...firstFish, selected: true }] }) });
+    await click(host.querySelector('[data-aquarium-3d-focus-selected]'));
+    const other = document.createElement('button'); other.textContent = 'Another task'; host.appendChild(other); other.focus();
+    await click(host.querySelector('[data-aquarium-3d-whole-tank]'));
+    expect(document.activeElement).toBe(other);
+    expect(engines[0].setView).toHaveBeenLastCalledWith('front');
+  });
+
+  it.each(['canvas', 'zoom', 'options'])('recovers focus from the disappearing %s when the renderer fails', async target => {
+    await renderViewport();
+    const control = target === 'canvas' ? host.querySelector('canvas') : target === 'zoom' ? host.querySelector('[aria-label="Zoom in"]') : host.querySelector('.aquarium-camera-options summary');
+    control.focus();
+    await act(async () => { engines[0].options.onContextLost(); });
+    const error = host.querySelector('[data-aquarium-3d-error]');
+    expect(document.activeElement).toBe(error);
+    expect(error.tabIndex).toBe(-1);
+    expect(error.getAttribute('role')).toBe('status');
+    expect(error.querySelector('[data-aquarium-3d-retry]')).toBeTruthy();
+    expect(control.isConnected).toBe(false);
+  });
+
+  it('leaves another viewport or persistent fullscreen control focused during renderer failure', async () => {
+    await act(async () => { root.render(React.createElement(React.Fragment, null,
+      React.createElement(Viewport, { React, key: 'a', instanceKey: 'a', sceneOptions: scene(), label: 'First aquarium' }),
+      React.createElement(Viewport, { React, key: 'b', instanceKey: 'b', sceneOptions: scene(), label: 'Second aquarium' })));
+    });
+    const viewports = host.querySelectorAll('[data-aquarium-3d-viewport]'), secondCanvas = viewports[1].querySelector('canvas');
+    secondCanvas.focus(); await act(async () => { engines[0].options.onContextLost(); });
+    expect(document.activeElement).toBe(secondCanvas);
+    const fullscreen = viewports[1].querySelector('[data-allo-fs-btn]'); fullscreen.focus();
+    await act(async () => { engines[1].options.onContextLost(); });
+    expect(document.activeElement).toBe(fullscreen);
+    expect(viewports[0].querySelector('[data-aquarium-3d-error]')).not.toBe(document.activeElement);
+  });
+
+  it('does not reclaim focus after the user moves before failure feedback renders or hides the viewport', async () => {
+    await renderViewport();
+    const other = document.createElement('button'); other.textContent = 'Another task'; host.appendChild(other);
+    host.querySelector('canvas').focus();
+    await act(async () => { engines[0].options.onContextLost(); other.focus(); });
+    expect(document.activeElement).toBe(other);
+    await click(host.querySelector('[data-aquarium-3d-retry]'));
+    host.querySelector('canvas').focus(); host.hidden = true;
+    await act(async () => { engines[1].options.onContextLost(); });
+    expect(document.activeElement).not.toBe(host.querySelector('[data-aquarium-3d-error]'));
+    host.hidden = false;
+  });
+
+  it('keeps an explicit retry focused through delayed loading and successful initialization', async () => {
+    sceneFactory.mockReturnValueOnce(null);
+    await renderViewport();
+    expect(document.activeElement).not.toBe(host.querySelector('[data-aquarium-3d-error]'));
+    const load = deferred(); delete window.THREE; window.StemLab.ensureThree = vi.fn(() => load.promise);
+    const retry = host.querySelector('[data-aquarium-3d-retry]'); retry.focus(); await click(retry);
+    expect(document.activeElement).toBe(host.querySelector('[data-aquarium-3d-loading]'));
+    await act(async () => { window.THREE = {}; load.resolve(); await Promise.resolve(); });
+    expect(document.activeElement).toBe(host.querySelector('canvas'));
+    expect(host.querySelector('[data-3d-status]').dataset['3dStatus']).toBe('ready');
+    expect(sceneFactory).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns a failed explicit retry to readable error feedback and keeps the new Retry available', async () => {
+    sceneFactory.mockReturnValueOnce(null).mockReturnValueOnce(null);
+    await renderViewport();
+    const load = deferred(); delete window.THREE; window.StemLab.ensureThree = vi.fn(() => load.promise);
+    const retry = host.querySelector('[data-aquarium-3d-retry]'); retry.focus(); await click(retry);
+    expect(document.activeElement).toBe(host.querySelector('[data-aquarium-3d-loading]'));
+    await act(async () => { window.THREE = {}; load.resolve(); await Promise.resolve(); });
+    const error = host.querySelector('[data-aquarium-3d-error]');
+    expect(document.activeElement).toBe(error);
+    expect(error.textContent).toContain('unavailable');
+    expect(error.querySelector('[data-aquarium-3d-retry]')).not.toBe(retry);
+  });
+
+  it.each(['before loading feedback', 'while loading'])('does not steal focus moved %s during a pending retry', async when => {
+    sceneFactory.mockReturnValueOnce(null); await renderViewport();
+    const load = deferred(); delete window.THREE; window.StemLab.ensureThree = vi.fn(() => load.promise);
+    const other = document.createElement('button'); other.textContent = 'Another task'; host.appendChild(other);
+    const retry = host.querySelector('[data-aquarium-3d-retry]');
+    await act(async () => { retry.focus(); retry.click(); if (when === 'before loading feedback') other.focus(); });
+    if (when === 'while loading') { expect(document.activeElement).toBe(host.querySelector('[data-aquarium-3d-loading]')); other.focus(); }
+    await act(async () => { window.THREE = {}; load.resolve(); await Promise.resolve(); });
+    expect(document.activeElement).toBe(other);
+    expect(host.querySelector('[data-3d-status]').dataset['3dStatus']).toBe('ready');
+  });
+
+  it('cancels retry focus when the aquarium instance changes during loading', async () => {
+    sceneFactory.mockReturnValueOnce(null); await renderViewport();
+    const load = deferred(); delete window.THREE; window.StemLab.ensureThree = vi.fn(() => load.promise);
+    const retry = host.querySelector('[data-aquarium-3d-retry]'); retry.focus(); await click(retry);
+    expect(document.activeElement).toBe(host.querySelector('[data-aquarium-3d-loading]'));
+    await renderViewport({ instanceKey: 'planted', label: 'Different aquarium' });
+    await act(async () => { window.THREE = {}; load.resolve(); await Promise.resolve(); });
+    expect(host.querySelector('[data-3d-status]').dataset['3dStatus']).toBe('ready');
+    expect(document.activeElement).not.toBe(host.querySelector('canvas'));
+    expect(sceneFactory).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores stale renderer loss and never restores focus after retry unmount', async () => {
+    await renderViewport(); const oldEngine = engines[0];
+    host.querySelector('canvas').focus(); await act(async () => { oldEngine.options.onContextLost(); });
+    const retry = host.querySelector('[data-aquarium-3d-retry]'); retry.focus(); await click(retry);
+    const canvas = host.querySelector('canvas'); expect(document.activeElement).toBe(canvas);
+    await act(async () => { oldEngine.options.onContextLost(); });
+    expect(host.querySelector('[data-3d-status]').dataset['3dStatus']).toBe('ready'); expect(document.activeElement).toBe(canvas);
+    await act(async () => { engines[1].options.onContextLost(); });
+    const load = deferred(); delete window.THREE; window.StemLab.ensureThree = vi.fn(() => load.promise);
+    const nextRetry = host.querySelector('[data-aquarium-3d-retry]'); nextRetry.focus(); await click(nextRetry);
+    await act(async () => root.unmount()); root = null;
+    const other = document.createElement('button'); other.textContent = 'Another task'; host.appendChild(other); other.focus();
+    await act(async () => { window.THREE = {}; load.resolve(); await Promise.resolve(); });
+    expect(document.activeElement).toBe(other); expect(sceneFactory).toHaveBeenCalledTimes(2); expect(host.querySelector('canvas')).toBeNull();
   });
 
   it('keeps focus and zoom primary while a native disclosure reveals camera angles and help', async () => {

@@ -146,7 +146,7 @@ describe('protected Dynamic Assessment boundary', () => {
     const h = await adapter(fixture);
     const signal = new AbortController().signal;
     await expect(h.assessment.callGemini('Original', true, false, .2, 'Original query', signal)).resolves.toEqual({ result: ['kept'], complete: true });
-    expect(h.host.callGemini).toHaveBeenCalledExactlyOnceWith('Reviewed', true, false, .2, 'Reviewed query', signal);
+    expect(h.host.callGemini).toHaveBeenCalledExactlyOnceWith('Reviewed', true, false, .2, 'Reviewed query', signal, undefined, undefined, { requestControls: { beforeRequest: expect.any(Function) } });
   });
   it('uses protected Report Writer transfer with export permission instead of plaintext globals', () => {
     const fixture = createDaWorkspaceFixture(React); window.AlloModules.SensitiveWorkspace = fixture.api;
@@ -163,16 +163,16 @@ describe('protected Dynamic Assessment boundary', () => {
   it('guards the AlloSheet host callback itself against canceled exports and stale epochs', async () => {
     const fixture = createDaWorkspaceFixture(React);
     const h = await adapter(fixture);
-    window.AlloSheetHostBridge = { open: vi.fn(() => ({})) };
+    window.AlloSheetHostBridge = { transferControlVersion: 1, openTransfer: vi.fn(() => ({ delivered: Promise.resolve() })) };
     fixture.control.exportAllowed = false;
     expect(() => h.assessment.onOpenAlloSheet({ kind: 'alloflow.tabular.v1' })).toThrow();
-    expect(window.AlloSheetHostBridge.open).not.toHaveBeenCalled();
+    expect(window.AlloSheetHostBridge.openTransfer).not.toHaveBeenCalled();
     fixture.control.exportAllowed = true;
-    expect(h.assessment.onOpenAlloSheet({ kind: 'alloflow.tabular.v1' })).toBe(true);
-    expect(window.AlloSheetHostBridge.open).toHaveBeenCalledTimes(1);
+    await expect(h.assessment.onOpenAlloSheet({ kind: 'alloflow.tabular.v1' })).resolves.toBe(true);
+    expect(window.AlloSheetHostBridge.openTransfer).toHaveBeenCalledTimes(1);
     fixture.control.epoch++;
     expect(() => h.assessment.onOpenAlloSheet({ kind: 'alloflow.tabular.v1' })).toThrow();
-    expect(window.AlloSheetHostBridge.open).toHaveBeenCalledTimes(1);
+    expect(window.AlloSheetHostBridge.openTransfer).toHaveBeenCalledTimes(1);
   });
   it('stages edited clinical work through the real encrypted service, locks the DOM, and restores it after unlock', async () => {
     const fixture = await createRealDaWorkspaceFixture(React);

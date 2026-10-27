@@ -19,7 +19,10 @@ describe('teacher host liveness lease', () => {
     expect(helpers.LIVE_HOST_RECONNECT_GRACE_MS).toBe(45000);
     expect(anti).toContain("'hostPresence',");
     expect(anti).toContain('validLiveHostPresenceValue(safePayload.hostPresence)');
-    expect(rules).toContain('hostPresence is host-owned lease metadata');
+    const participant = rules.slice(rules.indexOf('function participantUpdate()'), rules.indexOf('allow update: if isHost()'));
+    expect(participant).toContain("changed.hasOnly(['roster', 'quizState', 'bridgeReactions', 'democracy', 'escapeRoomState'])");
+    expect(participant).not.toContain('hostPresence');
+    expect(rules).toContain('allow update: if isHost() ? true : (authed() && participantSessionOpen(resource.data) && participantUpdate())');
     expect(publicModule).toBe(moduleSource);
   });
 

@@ -70,7 +70,7 @@ function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = fakeEngine(stage, { speciesId: state.flightSpecies || 'canada_goose', formationMode: state.flightFormation || 'natural',
     season: state.flightSeason || 'fall', wingStepSerial: state.flightWingStep });
@@ -115,7 +115,7 @@ function expectKind(ui, kind, status = 'checked') {
   expect(ui.cue()).not.toBeNull(); expect(ui.cue().getAttribute('data-marked-comparison-status')).toBe(status);
   expect(ui.cue().getAttribute('data-marked-comparison-kind')).toBe(kind);
 }
-function stageProps(ui) { return ui.node(node => node.props?.id === 'migration-flight-stage').props; }
+function stageProps(ui) { return ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-stage').props; }
 function pointer(ui) {
   const canvas = document.createElement('canvas'); ui.stage.append(canvas); let captured = null;
   ui.stage.setPointerCapture = id => { captured = id; }; ui.stage.hasPointerCapture = id => captured === id;
@@ -160,7 +160,7 @@ describe('Contextual restoration of marked selected view settings', () => {
     ui.click(ui.button('Step wingbeat')); ui.frame(); ui.check(); expectKind(ui, 'wing-only'); expect(ui.action('restore-view')).toBeNull();
     ui.set({ flightStudyYaw: 180, flightStudyPitch: 10, flightStudyZoom: 1.4 }); expect(ui.action('restore-view')).toBeNull();
     ui.check(); expectKind(ui, 'both'); expect(ui.action('restore-view')).toMatchObject({ type: 'button', props: {
-      type: 'button', className: 'migration-study-focus', children: 'Restore marked view settings', 'aria-controls': 'migration-flight-stage' } });
+      type: 'button', className: 'migration-study-focus', children: 'Restore marked view settings', 'aria-controls': ui.stage.id } });
     ui.restore(); expect(ui.cue()).toBeNull(); expect(ui.action('restore-view')).toBeNull(); ui.check(); expectKind(ui, 'wing-only');
     ui.returnPose(); ui.frame(); ui.check(); expectKind(ui, 'same');
     ui.set({ flightStudyYaw: 90 }); ui.check(); expectKind(ui, 'view-only'); expect(ui.action('restore-view')).not.toBeNull();
@@ -204,7 +204,10 @@ describe('Contextual restoration of marked selected view settings', () => {
   it('cancels an active captured gesture and pending revisit before restoring, with no later pointer-up write', () => {
     const ui = readyRestore({}, {}, false), p = pointer(ui); let props = stageProps(ui);
     act(() => { props.onPointerDown(p.event()); }); expect(p.captured).toBe(7);
-    const revisitRef = ui.refs[ui.refs.indexOf(ui.engineRef) + 3];
+    const dragRefIndex = ui.refs.findIndex(ref => ref.current?.host === ui.stage && ref.current?.pointerId === 7);
+    expect(dragRefIndex).toBeGreaterThan(-1);
+    // The revisit ref follows the active drag ref; unrelated scene refs can be inserted earlier.
+    const revisitRef = ui.refs[dragRefIndex + 1]; expect(revisitRef.current).toBeNull();
     revisitRef.current = { speciesId: 'canada_goose', bird: 0, wingStep: ui.live.flightWingStep, yaw: 180, pitch: 10, zoom: 1.4 };
     const count = ui.writes.length; ui.restore(); expect(p.captured).toBeNull(); expect(revisitRef.current).toBeNull();
     props = stageProps(ui); act(() => { props.onPointerUp(p.event({ clientX: 240, clientY: 160 })); });

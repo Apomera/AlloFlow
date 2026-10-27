@@ -22,11 +22,20 @@ const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8
 const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
 
+// Use the actual canonical policy when extracting the verdict's shared dependency.
+const policyWindow = { AlloModules: {} };
+for (const name of ['accessibility_evidence_module.js', 'verification_policy_module.js']) {
+  new Function('window', readFileSync(resolve(process.cwd(), name), 'utf8'))(policyWindow);
+}
+const deriveStart = dp.indexOf('function _alloDeriveVerificationState(input) {');
+const deriveSource = dp.slice(deriveStart, dp.indexOf('\n}', deriveStart) + 2);
+if (deriveStart < 0 || !deriveSource.endsWith('}')) throw new Error('Verification helper extraction failed');
+
 // ── R1: extract the real verdict fn ──
 const _vs = dp.indexOf('function _alloDistributionVerdict(r, opts) {');
 const _ve = dp.indexOf('\n}', dp.indexOf('headline: level ===', _vs)) + 2;
 const _pipelineDefaultsPrelude = 'var PIPELINE_DEFAULTS = { targetScore: 95 };\n';
-const verdict = new Function(_pipelineDefaultsPrelude + dp.slice(_vs, _ve) + '\nreturn _alloDistributionVerdict;')();
+const verdict = new Function('window', _pipelineDefaultsPrelude + deriveSource + '\n' + dp.slice(_vs, _ve) + '\nreturn _alloDistributionVerdict;')(policyWindow);
 const _os = dp.indexOf('function _alloRemediationOutcome(r, opts) {');
 const _oe = dp.indexOf('function _alloDistributionVerdict(r, opts) {', _os);
 // _alloRemediationOutcome gained a call to _alloUsableAxeAudit, which is
@@ -55,8 +64,8 @@ describe('remediation outcome is separate from verification completeness', () =>
 
   it('keeps unknown residuals, a missed target, and incomplete AI out of the success numerator', () => {
     expect(remediationOutcome({ afterScore: 96 }, { targetScore: 95 }).state).toBe('incomplete');
-    expect(remediationOutcome({ afterScore: 94, axeAudit: { totalViolations: 0 } }, { targetScore: 95 }).state).toBe('incomplete');
-    expect(remediationOutcome({ afterScore: 96, axeAudit: { totalViolations: 0 }, _aiVerificationIncomplete: true }, { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome({ afterScore: 94, axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0 } }, { targetScore: 95 }).state).toBe('incomplete');
+    expect(remediationOutcome({ afterScore: 96, axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0 }, _aiVerificationIncomplete: true }, { targetScore: 95 }).state).toBe('incomplete');
   });
 
   it('exports one shared classifier for host and pipeline telemetry', () => {
@@ -69,20 +78,26 @@ describe('remediation outcome is separate from verification completeness', () =>
 
 describe('R1 — distribution verdict (BEHAVIORAL, the real fn)', () => {
   it('clean at-target run → ready', () => {
-    const v = verdict({ afterScore: 96, axeAudit: { totalViolations: 0 }, secondEngineAudit: { failViolations: 0 }, integrityCoverage: 100, fidelityNotes: [] }, { targetScore: 95 });
+    const v = verdict({ afterScore: 96, axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0 }, secondEngineAudit: { score: 100, failViolations: 0, potentialViolations: 0, manualViolations: 0 }, integrityCoverage: 100, fidelityNotes: [] }, { targetScore: 95 });
     expect(v.level).toBe('ready');
     expect(v.review).toEqual([]);
     expect(v.cautions).toEqual([]);
   });
   it('below target with clean checkers → caution naming the rubric gap', () => {
-    const v = verdict({ afterScore: 88, axeAudit: { totalViolations: 0 }, secondEngineAudit: { failViolations: 0 }, integrityCoverage: 99, fidelityNotes: [] }, { targetScore: 95 });
+    const v = verdict({ afterScore: 88, axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0 }, secondEngineAudit: { score: 100, failViolations: 0, potentialViolations: 0, manualViolations: 0 }, integrityCoverage: 99, fidelityNotes: [] }, { targetScore: 95 });
     expect(v.level).toBe('caution');
     expect(v.cautions.join(' ')).toMatch(/below your target.*AI-rubric judgment/);
   });
   it('a numeric-fidelity note is REVIEW, never a mere caution (worst case for an assessment)', () => {
-    const v = verdict({ afterScore: 97, axeAudit: { totalViolations: 0 }, integrityCoverage: 99, fidelityNotes: [{ kind: 'numeric', msg: 'x' }] }, { targetScore: 95 });
+    const v = verdict({ afterScore: 97, axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0 }, integrityCoverage: 99, fidelityNotes: [{ kind: 'numeric', msg: 'x' }] }, { targetScore: 95 });
     expect(v.level).toBe('review');
     expect(v.review.join(' ')).toMatch(/numbers may have changed/);
+  });
+  it('does not call deterministic checks clean when their manual-review counts are unknown', () => {
+    const v = verdict({ afterScore: 88, axeAudit: { score: 100, totalViolations: 0 },
+      secondEngineAudit: { score: 100, failViolations: 0 }, integrityCoverage: 99 }, { targetScore: 95 });
+    expect(v.cautions.join(' ')).toMatch(/below your target/);
+    expect(v.cautions.join(' ')).not.toMatch(/automated checks are clean|AI-rubric judgment/);
   });
   it('coverage under 90 / lost tables / refusal text / expert flag → review', () => {
     expect(verdict({ afterScore: 97, integrityCoverage: 84, fidelityNotes: [] }, {}).level).toBe('review');
@@ -90,9 +105,10 @@ describe('R1 — distribution verdict (BEHAVIORAL, the real fn)', () => {
     expect(verdict({ afterScore: 97, integrityCoverage: 99, fidelityNotes: [{ kind: 'refusal', msg: 'x' }] }, {}).level).toBe('review');
     expect(verdict({ afterScore: 97, integrityCoverage: 99, needsExpertReview: true, expertReviewReason: 'why', fidelityNotes: [] }, {}).level).toBe('review');
   });
-  it('incomplete AI verification / EA fails / remaining axe violations → cautions with counts', () => {
+  it('incomplete AI verification with remaining violations requires review and retains counted cautions', () => {
     const v = verdict({ afterScore: 97, _aiVerificationIncomplete: true, axeAudit: { totalViolations: 2 }, secondEngineAudit: { failViolations: 1 }, integrityCoverage: 99, fidelityNotes: [] }, { targetScore: 95 });
-    expect(v.level).toBe('caution');
+    expect(v.level).toBe('review');
+    expect(v.review.join(' ')).toMatch(/WCAG verification/);
     expect(v.cautions.join(' ')).toMatch(/could not fully complete/);
     expect(v.cautions.join(' ')).toMatch(/2 automated \(axe\) violations remain/);
     expect(v.cautions.join(' ')).toMatch(/Equal Access.*1 rule failure/);
@@ -112,7 +128,7 @@ describe('R1 — distribution verdict (BEHAVIORAL, the real fn)', () => {
   // because the verdict only ever saw the result object. One in-flight fact, read by all three
   // surfaces (strip, banner, headline) — a second derivation is how they drifted apart before.
   it('in-flight runs get a provisional verdict, and every status surface reads ONE flag', () => {
-    const clean = { afterScore: 99, verificationState: 'complete', integrityCoverage: 99, fidelityNotes: [], axeAudit: { totalViolations: 0 }, secondEngineAudit: { failViolations: 0 } };
+    const clean = { afterScore: 99, verificationState: 'complete', integrityCoverage: 99, fidelityNotes: [], axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 0 }, secondEngineAudit: { score: 100, failViolations: 0, potentialViolations: 0, manualViolations: 0 } };
     const settled = verdict(clean, { targetScore: 95 });
     expect(settled.level).toBe('ready');
     expect(settled.inProgress).toBe(false);

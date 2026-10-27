@@ -37,7 +37,7 @@ function fixture(seed = {}, options = {}) {
     tree = tool.render(ctx); return tree;
   }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   stage.setAttribute('data-flight-ready', 'true');
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = {
@@ -55,7 +55,7 @@ function fixture(seed = {}, options = {}) {
     node(predicate) { return walk(tree, predicate)[0] || null; },
     action() { return ui.node(node => node.props?.['data-study-action'] === 'describe-wing-segment'); },
     legacy() { return ui.node(node => node.props?.['data-study-action'] === 'describe-wing-motion'); },
-    field() { return host.querySelector('#migration-study-observation-note'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
     click(node = ui.action()) { act(() => { node.props.onClick(); }); },
     follow(side = 0) { ui.click(ui.node(node => node.props?.['data-wingtip-follow-side'] === side)); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(value => value + 1); }); },
@@ -82,10 +82,10 @@ describe('Migration followed-wing segment notes', () => {
     const ui = fixture(); expect(ui.action()).toBeNull();
     ui.follow();
     expect(ui.action()).toMatchObject({ type: 'button', props: { type: 'button', children: 'Describe this wing segment',
-      className: 'migration-wingtip-follow-button', 'aria-controls': 'migration-study-observation-note',
-      'aria-describedby': 'migration-segment-note-help migration-followed-anatomy-help' } });
-    expect(ui.host.querySelector('#migration-segment-note-help').textContent).toContain('selected wing segment’s existing note');
-    expect(ui.host.querySelector('#migration-segment-note-help').textContent).toContain('does not record an observation or change playback');
+      className: 'migration-wingtip-follow-button', 'aria-controls': ui.field().id,
+      'aria-describedby': ['migration-segment-note-help', 'migration-followed-anatomy-help'].map(key => ui.host.querySelector('[data-migration-id="' + key + '"]').id).join(' ') } });
+    expect(ui.host.querySelector("[data-migration-id=\"migration-segment-note-help\"]").textContent).toContain('selected wing segment’s existing note');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-segment-note-help\"]").textContent).toContain('does not record an observation or change playback');
     ui.set({ flightStudyRegion: 'head' }); expect(ui.action()).toBeNull();
     ui.set({ flightStudyRegion: 'tail' }); expect(ui.action()).toBeNull();
     ui.set({ flightStudyRegion: 'primaries' }); expect(ui.action()).not.toBeNull();

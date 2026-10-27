@@ -76,7 +76,7 @@ function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = fakeEngine(stage, { speciesId: state.flightSpecies || 'canada_goose', formationMode: state.flightFormation || 'natural',
     season: state.flightSeason || 'fall', wingStepSerial: state.flightWingStep });
@@ -95,7 +95,7 @@ function fixture(seed = {}, options = {}) {
     followButton(side) { return ui.node(node => node.props?.['data-wingtip-follow-side'] === side); },
     follow(side) { ui.click(ui.followButton(side)); },
     followStatus() { return host.querySelector('[data-wingtip-follow-status]')?.getAttribute('data-wingtip-follow-status') || null; },
-    path(checked) { act(() => { ui.node(node => node.type === 'input' && node.props['aria-describedby'] === 'migration-wingtip-path-help').props.onChange({ target: { checked } }); }); },
+    path(checked) { act(() => { ui.node(node => node.type === 'input' && node.props['aria-describedby'] === ui.host.querySelector('[data-migration-id="migration-wingtip-path-help"]').id).props.onChange({ target: { checked } }); }); },
     choose(index) { ui.click(ui.node(node => node.props?.['data-study-cycle-position'] === index)); },
     set(values) { act(() => { state = { ...state, ...values }; refresh(value => value + 1); }); },
     flushOne() { act(() => { state = { ...state, ...queued.shift() }; refresh(value => value + 1); }); },
@@ -158,7 +158,7 @@ describe('Follow one anatomical wingtip without recording a learner response', (
     const ui = fixture(); expectFollow(ui, undefined);
     for (const side of [0, 1]) {
       expect(ui.followButton(side)).toMatchObject({ type: 'button', props: { type: 'button', disabled: false,
-        className: 'migration-wingtip-follow-button', 'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-wingtip-follow-help' } });
+        className: 'migration-wingtip-follow-button', 'aria-controls': ui.stage.id, 'aria-describedby': ui.host.querySelector('[data-migration-id="migration-wingtip-follow-help"]').id } });
       expect(ui.followButton(side).props['aria-label']).toBeUndefined();
       expect(ui.host.querySelector('[data-wingtip-follow-side="' + side + '"]').textContent)
         .toBe(side === 0 ? 'Individual’s left: solid path' : 'Individual’s right: dashed path');
@@ -226,7 +226,7 @@ describe('Follow one anatomical wingtip without recording a learner response', (
     const ui = fixture(); ui.follow(0); ui.path(false);
     expect(ui.followButton(0)).toBeNull(); expect(ui.live.flightWingtipFollowSide).toBeUndefined(); expect(ui.live.flightWingtipFollowSourceUuid).toBeUndefined();
     ui.path(true); expectFollow(ui, undefined); ui.follow(1);
-    const toggle = ui.node(node => node.type === 'input' && node.props['aria-describedby'] === 'migration-wingtip-path-help');
+    const toggle = ui.node(node => node.type === 'input' && node.props['aria-describedby'] === ui.host.querySelector('[data-migration-id="migration-wingtip-path-help"]').id);
     act(() => { toggle.props.onChange({ target: { checked: false } }); toggle.props.onChange({ target: { checked: true } }); });
     expectFollow(ui, undefined);
   });
@@ -282,8 +282,8 @@ describe('Follow one anatomical wingtip without recording a learner response', (
     expect(activity.textContent).toContain('Predict where one tip'); expect(activity.textContent).toContain('Hold the pose');
     expect(activity.textContent).toContain('Front with From above'); expect(activity.textContent).toContain('Both wings and the marked outline stay visible');
     ui.click(ui.node(node => node.props?.['data-study-action'] === 'describe-wing-motion'));
-    const note = ui.host.querySelector('#migration-study-observation-note'); expect(note.value).toBe('My evidence stays.');
-    expect(ui.host.querySelector('#migration-study-motion-evidence-prompt').textContent).toContain('Distinguish anatomical side from screen side');
+    const note = ui.host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); expect(note.value).toBe('My evidence stays.');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-motion-evidence-prompt\"]").textContent).toContain('Distinguish anatomical side from screen side');
     expect(ui.state.flightStudyObservations).toBe(observations); expect(ui.state.flightStudyObservations.records).toEqual({}); expectFollow(ui, 0);
   });
 });

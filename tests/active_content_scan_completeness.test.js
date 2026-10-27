@@ -49,6 +49,7 @@ describe('active-content scan completeness', () => {
       any: false,
       findings: [],
       externalLinks: 0,
+      allowedFormattingScripts: 0, // 2026-10-25: Acrobat field formatters disclosed, not active
     });
   });
 

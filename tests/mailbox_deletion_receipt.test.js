@@ -93,6 +93,7 @@ describe('offline mailbox deletion evidence review', () => {
     f.receipt.externalReviews.pop(); expect(() => inspectPacket(f.plan, f.receipt)).toThrow();
   });
   it('keeps CLI exit states and diagnostics free of input content', () => {
+    fs.mkdirSync(path.resolve('tmp/mailbox-retention-20261024'), { recursive: true });
     const directory = fs.mkdtempSync(path.resolve('tmp/mailbox-retention-20261024/receipt-'));
     const planFile = path.join(directory, 'plan.json'), receiptFile = path.join(directory, 'receipt.json');
     const run = () => spawnSync(process.execPath, ['dev-tools/security/check_mailbox_deletion_receipt.cjs', planFile, receiptFile], { encoding: 'utf8', timeout: 15000 });

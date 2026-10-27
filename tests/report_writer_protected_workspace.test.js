@@ -153,6 +153,25 @@ describe('Report Writer with the actual encrypted workspace', () => {
     expect(ui.node.textContent).not.toContain('STALE_PRIVATE_RESULT');
   });
 
+  it('keeps the actual session-only draft and close warning after a failed JSON handoff', async () => {
+    await fixture({ persist: false }); const ui = await mount();
+    await type(ui.node.querySelector('input[aria-label="Student code name"]'), 'SYNTHETIC_UNSAVED_OUTPUT');
+    await click(ui.steps()[9]);
+    const clickDownload = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { throw new Error('Synthetic blocked download'); });
+    const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:synthetic-report');
+    await click(ui.node.querySelector('button[aria-label="Export as JSON"]'));
+    expect(clickDownload).toHaveBeenCalledOnce(); expect(revoke).toHaveBeenCalledWith('blob:synthetic-report');
+    expect(document.querySelector('a[href="blob:synthetic-report"]')).toBeNull();
+    expect(ui.addToast).toHaveBeenCalledWith(expect.stringContaining('could not start'), 'error');
+    const unload = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(unload); expect(unload.defaultPrevented).toBe(true);
+    await click(ui.node.querySelector('#rw-dialog-surface > button'));
+    expect(ui.props.onClose).not.toHaveBeenCalled(); expect(ui.node.querySelector('[role="alertdialog"]')).not.toBeNull();
+    await click(button(ui.node.querySelector('[role="alertdialog"]'), 'Keep working'));
+    await click(ui.steps()[0]);
+    expect(ui.node.querySelector('input[aria-label="Student code name"]').value).toBe('SYNTHETIC_UNSAVED_OUTPUT');
+  });
+
   it('requires readable-copy confirmation before creating a JSON browser copy', async () => {
     const f = await fixture(); const ui = await mount(); await click(ui.steps()[9]);
     const exported = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});

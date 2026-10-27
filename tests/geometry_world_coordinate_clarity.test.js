@@ -102,7 +102,13 @@ function coordinateHandler(engine, announce, update) {
     'announceToSR', 'setTimeout', 'return (' + handler + ');')(
     engine, vi.fn(), update, [], vi.fn(), announce, vi.fn());
 }
-function pressC(handler, target = document.createElement('div')) {
+// WCAG 2.1.4: letter shortcuts act only while focus is inside the world surface.
+function worldTarget() {
+  let wrap = document.getElementById('geoworld-fs-wrap');
+  if (!wrap) { wrap = document.createElement('div'); wrap.id = 'geoworld-fs-wrap'; document.body.appendChild(wrap); }
+  const node = document.createElement('div'); wrap.appendChild(node); return node;
+}
+function pressC(handler, target = worldTarget()) {
   const event = new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', bubbles: true, cancelable: true });
   Object.defineProperty(event, 'target', { value: target }); handler(event); return event;
 }

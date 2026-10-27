@@ -109,6 +109,9 @@ export function componentHarness(name, props, extraEnv = {}) {
       if (params && typeof s === 'string') Object.keys(params).forEach(k => { s = s.split('{' + k + '}').join(String(params[k])); });
       return s;
     },
+    // This lightweight business-rule harness does not run a browser speech engine.
+    // Local-only capture and lifecycle behavior use actual React in their own suite.
+    useLocalClinicalDictation: () => ({ listening: false, pending: false, interim: '', message: '', start: () => false, stop() {} }),
     getBehaviorLensWorkspaceRuntime: () => runtime,
     uid: () => 'test-' + (++nextId),
     InfoTooltip: 'span',

@@ -41,7 +41,10 @@ describe('export provenance — the writer records every type', () => {
     expect(dispatcherSrc).toContain('config: _buildItemConfig()');
     expect(dispatcherSrc).toContain('_buildItemConfig({ citationAudit: citationAuditSnapshot() })');
     // Exactly one place still spells the field list out.
-    expect((dispatcherSrc.match(/grade: effectiveGrade,/g) || []).length).toBe(1);
+    const start = dispatcherSrc.indexOf('const _buildItemConfig = (extra) =>');
+      const end = dispatcherSrc.indexOf('rosterGroupId: configOverride.rosterGroupId', start);
+      expect(end).toBeGreaterThan(start);
+      expect((dispatcherSrc.slice(start, end).match(/grade: effectiveGrade,/g) || []).length).toBe(1);
   });
 
   it('records backend and isolation, which make the other fields interpretable', () => {

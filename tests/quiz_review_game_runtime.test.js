@@ -62,6 +62,19 @@ afterEach(async () => {
 });
 
 describe('Review Game mixed-format experience', () => {
+  it('can wait for individual commitments and carries missed ideas into the recap', async () => {
+    awarded = vi.fn();
+    await mount([{ ...fixtures[0], conceptLabel: 'states of matter' }]);
+    await click(host.querySelector('input[type="checkbox"]'));
+    await click(host.querySelector('[data-review-tile="0"]'));
+    expect(button('Reveal answer').disabled).toBe(true);
+    await click(host.querySelector('[role="dialog"] input[type="checkbox"]'));
+    expect(button('Reveal answer').disabled).toBe(false);
+    await click(button('Reveal answer'));
+    await click(button('No points'));
+    expect(host.querySelector('[data-review-learning-recap]').textContent).toContain('states of matter');
+    expect(host.querySelector('[data-review-learning-recap]').textContent).toContain('Team points do not establish individual understanding');
+  });
   it('withholds a disputed key and team points, then scores a corrected key despite old review metadata', async () => {
     awarded = vi.fn();
     const disputed = { ...fixtures[0], keyCheck: { status: 'disputed', checkedKey: 'Solid' } };

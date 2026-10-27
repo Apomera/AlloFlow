@@ -61,6 +61,7 @@ function currentEngineDigest(env) {
     DRIVER_PATH,
     ...['remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_browser.cjs'].map((name) => join(dirname(SERVER), name)),
     ...Driver.MODULE_FILES.map((name) => join(Driver.ASSETS_ROOT, name)),
+    ...['document_runtime_integrity.json', 'runtime_graph_delivery_policy.js', 'runtime_graph_host.js'].map((name) => join(Driver.ASSETS_ROOT, name)),
     vendorManifest,
   ];
   for (const file of files) {

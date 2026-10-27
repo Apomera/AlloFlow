@@ -106,7 +106,7 @@ describe('Behavior Lens safe workspace selection', () => {
     expect(stored().abcEntries.map(entry => entry.id)).toEqual(['real-entry']);
   });
 
-  it('ignores a cloud-copy response after switching students', async () => {
+  it('switches protected student records without contacting legacy plaintext cloud storage', async () => {
     let resolveChoice, reads = 0;
     const chosen = new Promise(resolve => { resolveChoice = resolve; });
     const remoteA = { student: 'Student A', revision: 2, abcEntries: [{ ...record, id: 'cloud-a' }], observationSessions: [] };
@@ -120,13 +120,17 @@ describe('Behavior Lens safe workspace selection', () => {
     };
     localStorage.setItem('bl_student_roster', JSON.stringify([{ id: 'studenta001', name: 'Student A' }, { id: 'studentb002', name: 'Student B' }]));
     localStorage.setItem(workspaceKey, JSON.stringify({ student: 'Student A', revision: 1, abcEntries: [record], observationSessions: [] }));
+    localStorage.setItem('behaviorLens_workspace_studentb002', JSON.stringify({ ...remoteB, abcEntries: [{ ...record, id: 'protected-b' }] }));
     localStorage.setItem('behaviorLens_workspace_dirty_studenta001', JSON.stringify({ pending: true, revision: 1 }));
     await mount({ isCanvasEnv: false, firestore: {}, firebaseAuth: {} });
-    await click(button('Use cloud copy'));
+    expect(button('Use cloud copy')).toBeUndefined();
     const picker = host.querySelector('select[aria-label="Choose a student"]');
     await React.act(async () => { picker.value = 'Student B'; picker.dispatchEvent(new Event('change', { bubbles: true })); }); await tick(350);
-    resolveChoice(snap(remoteA)); await tick(350);
+    await tick(350);
+    expect(window.__alloFirebase.getDoc).not.toHaveBeenCalled();
+    expect(window.__alloFirebase.runTransaction).not.toHaveBeenCalled();
+    expect(stored().abcEntries.map(e => e.id)).toEqual(['real-entry']);
     expect(picker.value).toBe('Student B');
-    expect(stored('behaviorLens_workspace_studentb002').abcEntries.map(e => e.id)).toEqual(['cloud-b']);
+    expect(stored('behaviorLens_workspace_studentb002').abcEntries.map(e => e.id)).toEqual(['protected-b']);
   });
 });

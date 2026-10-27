@@ -31,6 +31,12 @@ const live = () => (document.getElementById('behavior-lens-live-status') || {}).
 const buttonText = (text, scope = document) => [...scope.querySelectorAll('button')].find(el => el.textContent.trim() === text);
 const buttonIncl = (text, scope = document) => [...scope.querySelectorAll('button')].find(el => el.textContent.includes(text));
 const press = async el => { expect(el).toBeTruthy(); el.focus(); await React.act(async () => el.click()); await settle(); };
+async function approveReviewedCopy() {
+  const review = document.querySelector('[role="dialog"][aria-label="Review what AI receives"]');
+  expect(review).toBeTruthy();
+  await press(review.querySelector('input[type="checkbox"]'));
+  await press(buttonText('Send reviewed copy', review));
+}
 const change = async (el, value) => { expect(el).toBeTruthy(); await React.act(async () => Simulate.change(el, { target: { value } })); };
 const lost = () => !document.activeElement || document.activeElement === document.body;
 const daysAgo = (d, hh = 9, mm = 0) => { const x = new Date(); x.setDate(x.getDate() - d); x.setHours(hh, mm, 0, 0); return x.toISOString(); };
@@ -117,6 +123,7 @@ describe('moving around', () => {
   it('the AI analysis from the ABC log ends on its result', async () => {
     await openTool('abc');
     await press(buttonIncl('AI Analyze', panel()));
+    await approveReviewedCopy();
     await settle(600);
     expect(document.activeElement.id).toBe('bl-ai-analysis-title');        // was the tools list, 310 stops away
     expect(live()).toBe('AI analysis complete');
@@ -136,6 +143,7 @@ describe('results that appear', () => {
     expect(document.activeElement.getAttribute('aria-label')).toBe('Effect size results');
     await openTool('iepprep');
     await press(buttonIncl('Generate IEP Prep Packet', panel()));
+    await approveReviewedCopy();
     await settle(400);
     expect(document.activeElement.getAttribute('aria-label')).toBe('IEP prep packet');
     await openTool('overview');

@@ -25,7 +25,7 @@ function fixture(seed = {}) {
   }
   act(() => { root.render(React.createElement(Component)); });
   // Keep this lookup scoped even in the intentionally duplicated-ID fixture.
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const hostIndex = refs.findIndex(ref => ref.current === stage);
   const hostRef = refs[hostIndex], engineRef = refs[hostIndex + 1];
   const pose = { userData: { captured: false, captureVersion: 3 }, clearPose: vi.fn() };
@@ -41,7 +41,7 @@ function fixture(seed = {}) {
     get state() { return state; }, get live() { return liveRef.current; }, get renderCount() { return renderCount; },
     action() { return host.querySelector('[data-study-scene-action="continue-note"]'); },
     inspect() { return host.querySelector('[data-study-action="inspect-current-view"]'); },
-    field() { return host.querySelector('[id="migration-study-observation-note"]'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
     panel() { return host.querySelector('[data-study-observation]'); },
     click(element = ui.action()) { act(() => { element.click(); }); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(value => value + 1); }); }
@@ -80,11 +80,11 @@ describe('Continue the current observation note from the migration Study scene',
     const ui = fixture(), button = ui.action();
     expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button'); expect(button.disabled).toBe(false);
     expect(button.textContent).toBe('Continue observation note');
-    expect(button.getAttribute('aria-controls')).toBe('migration-study-observation-note');
-    expect(button.getAttribute('aria-describedby')).toBe('migration-study-observation-part');
+    expect(button.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-study-observation-note"]').id);
+    expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-observation-part"]').id);
     expect(button.getAttribute('data-study-note-key')).toBe('canada_goose:inner-wing');
     expect(ui.stage.contains(button)).toBe(false); expect(getComputedStyle(button).minHeight).toBe('44px');
-    expect(ui.host.querySelector('[id="migration-study-observation-part"]').textContent).toBe('Inner wing');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-part\"]").textContent).toBe('Inner wing');
   });
 
   it('completes note → inspect → continue with the same draft, caret, selection and experiment', () => {
@@ -132,9 +132,11 @@ describe('Continue the current observation note from the migration Study scene',
     expectPreserved(ui, before);
   });
 
-  it('returns to this deck’s field when another instance has the same textarea id', () => {
+  it('returns to this deck’s field when another migration instance is mounted', () => {
     const first = fixture(), second = fixture();
-    expect(document.getElementById('migration-study-observation-note')).toBe(first.field());
+    expect(first.field().id).not.toBe(second.field().id);
+    expect(document.getElementById(first.field().id)).toBe(first.field());
+    expect(document.getElementById(second.field().id)).toBe(second.field());
     first.field().scrollIntoView = vi.fn(); second.field().scrollIntoView = vi.fn(); second.click();
     expect(document.activeElement).toBe(second.field()); expect(first.field().scrollIntoView).not.toHaveBeenCalled();
     expect(second.field().scrollIntoView).toHaveBeenCalledTimes(1);

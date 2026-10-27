@@ -115,7 +115,7 @@ for (const variant of [
   const before = await preservedState(page);
   const epoch = await page.evaluate(() => Date.now()); await page.clock.install({ time: new Date(epoch) }); await page.clock.pauseAt(new Date(epoch + clockPauseLeadMs));
 
-  await activate(page, page.getByRole('button', { name: 'Show a generalized safe-technique demonstration on the specimen', exact: true }));
+  await activate(page, page.getByRole('button', { name: /Show technique$/ }));
   expect(await page.evaluate(() => (window as any).__ctx.toolData.dissection._procedureDemo)).toBeTruthy();
   await activate(page, launch);
   expect(await page.evaluate(() => (window as any).__ctx.toolData.dissection._procedureDemo)).toBeNull();

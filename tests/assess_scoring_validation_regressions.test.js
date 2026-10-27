@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const babel = require('@babel/core');
+const React = require('../desktop/web-app/node_modules/react');
 let aggregators, audit, normalizeGeneratedNumeric, createExport, exportPreflight;
 
 beforeAll(() => {
@@ -13,7 +14,7 @@ beforeAll(() => {
   const compiled = babel.transformSync(readFileSync('view_quiz_source.jsx', 'utf8'), {
     plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false,
   }).code;
-  const helpers = new Function('React', 'window', compiled + '\nreturn { audit: _quizAuditAssessment };')({}, fakeWindow);
+  const helpers = new Function('React', 'window', compiled + '\nreturn { audit: _quizAuditAssessment };')({ createContext: () => ({}) }, fakeWindow);
   audit = helpers.audit;
   const dispatcher = readFileSync('generate_dispatcher_source.jsx', 'utf8');
   const start = dispatcher.indexOf("                    const hasCorrectValue =");

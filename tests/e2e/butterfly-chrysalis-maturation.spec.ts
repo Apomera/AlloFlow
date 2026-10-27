@@ -52,7 +52,7 @@ function expectMaturation(frame:any,phase:string){
 async function expectUnobscuredChrysalis(page:any){
  const bounds=await page.evaluate(()=>{
   const w=window as any,T=w.THREE,pupa=w.__lifeScene.getObjectByName('lifecycle-chrysalis'),camera=w.__lifeCamera;
-  const stage=document.querySelector('.bf-stage')!.getBoundingClientRect(),caption=document.querySelector('.bf-scene-bottom')!.getBoundingClientRect(),badge=document.querySelector('.bf-scene-badge')!.getBoundingClientRect();
+  const stage=document.querySelector('.bf-viewport')!.getBoundingClientRect(),caption=document.querySelector('.bf-scene-bottom')!.getBoundingClientRect(),badge=document.querySelector('.bf-scene-badge')!.getBoundingClientRect();
   let top=Infinity,bottom=-Infinity;const point=new T.Vector3();pupa.updateMatrixWorld(true);
   pupa.traverse((object:any)=>{const positions=object.geometry?.attributes.position;if(!positions)return;for(let i=0;i<positions.count;i++){point.fromBufferAttribute(positions,i).applyMatrix4(object.matrixWorld).project(camera);const y=stage.top+(1-point.y)*stage.height/2;top=Math.min(top,y);bottom=Math.max(bottom,y);}});
   return {top,bottom,caption:caption.top,badge:badge.bottom};

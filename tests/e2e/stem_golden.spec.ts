@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // STEM golden (2026-06-10): pins the STEM-hardening slice.
 // 1. Vision-classified equation images become /Formula StructElems (not
 //    /Figure) with a spoken-math /Alt, and still ride the count-gated
@@ -20,7 +21,7 @@ let r: any = null;
 test.describe('STEM hardening golden — Formula role, Headers/IDTree, image-intel honesty', () => {
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib, null, { timeout: 30000 });
     await page.addScriptTag({ path: PIPELINE_PATH });

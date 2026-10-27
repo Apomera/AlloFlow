@@ -117,9 +117,7 @@ describe('voice transcript', () => {
       const added = []; const toasts = [];
       const reply = JSON.stringify([{ antecedent: 'Reading group', behavior: 'Threw a pencil', consequence: '', intensity: null, time: '10:40', notes: '' }, { antecedent: 'x', behavior: '', consequence: 'y' }]);
       const q = componentHarness('VoiceToABC', { abcEntries: [], setAbcEntries: fn => added.push(...fn([])), studentName: 'Kestrel', callGemini: async () => reply, addToast: (m, k) => toasts.push([m, k]), t: () => undefined });
-      q.all(n => n.type === 'button' && /Start Recording/.test(q.text(n)))[0].props.onClick(); q.render();
-      const result = Object.assign([{ transcript: 'At 10:40 in reading group he threw a pencil' }], { isFinal: true });
-      rec.onresult({ resultIndex: 0, results: [result] }); q.render();
+      q.all(n => n.props['aria-label'] === 'Observation transcript')[0].props.onChange({ target: { value: 'At 10:40 in reading group he threw a pencil' } }); q.render();
       await q.all(n => n.props['aria-label'] === 'Parse ABC Entries from Transcript')[0].props.onClick(); await flush(); q.render();
       expect(q.text()).toContain('Review 1 Parsed Entries');
       q.all(n => n.type === 'input' && n.props.type === 'date')[0].props.onChange({ target: { value: '2026-09-22' } }); q.render();

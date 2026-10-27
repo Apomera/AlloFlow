@@ -146,6 +146,8 @@ describe('Owned local confirmations for migration learning activities', () => {
 
   it('announces investigation reset locally while preserving other activities', () => {
     const ui = fixture(), before = clone(ui.state), button = ui.action('investigation', 'reset'); ui.click(button);
+    expect(ui.state).toEqual(before); expect(document.activeElement).toBe(ui.action('investigation', 'reset-cancel'));
+    ui.click(ui.action('investigation', 'reset-confirm'));
     expect(ui.status('investigation').textContent).toBe('Flight investigation cleared. Flight settings and other activities are unchanged.');
     expect(ui.state.flightInvestigation).toEqual({ variable: 'wind', prediction: '', baseline: null, trials: [], evidence: '', explanation: '' });
     expect(ui.state.flightStudyObservations).toEqual(before.flightStudyObservations); expect(ui.state.flightChallenges).toEqual(before.flightChallenges);

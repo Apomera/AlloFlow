@@ -32,7 +32,7 @@ test.afterEach(async ({ page }) => {
 });
 
 const stage = (page: Page) => page.locator('.migration-flight-stage');
-const context = (page: Page) => page.locator('#migration-study-current-context');
+const context = (page: Page) => page.locator("[data-migration-id=\"migration-study-current-context\"]");
 const note = (page: Page) => page.getByRole('textbox', { name: 'My observation', exact: true });
 const cycle = (page: Page, index: number) => page.getByRole('button', { name: 'Cycle position ' + (index + 1) + ' of 8', exact: true });
 const viewpoint = (page: Page, id: string) => page.locator('[data-study-viewpoint="' + id + '"]');
@@ -306,12 +306,12 @@ async function toggleStudy(page: Page, touch: boolean) {
   await activate(page, stage(page).getByRole('button', { name: 'Study view', exact: true }), touch);
 }
 
-const comparison = (page: Page) => page.locator('#migration-marked-comparison-controls');
+const comparison = (page: Page) => page.locator("[data-migration-id=\"migration-marked-comparison-controls\"]");
 const comparisonCheck = (page: Page) => comparison(page).locator('[data-marked-pose-action="check"]');
 const breakdown = (page: Page) => comparison(page).locator('[data-marked-comparison-breakdown]');
 const componentRestores = (page: Page) => comparison(page).locator('[data-marked-component-restores="true"]');
-const pair = (page: Page) => page.locator('#migration-flight-trial-review[data-experiment-pair-review]');
-const evidence = (page: Page) => page.locator('#migration-experiment-evidence');
+const pair = (page: Page) => page.locator("[data-migration-id=\"migration-flight-trial-review\"][data-experiment-pair-review]");
+const evidence = (page: Page) => page.locator("[data-migration-id=\"migration-experiment-evidence\"]");
 const reminder = (page: Page) => page.locator('[data-trial-evidence-context="1"]');
 const inspect = (page: Page) => reminder(page).locator('[data-experiment-action="inspect-saved-comparison"]');
 async function writes(page: Page) { return page.evaluate(() => JSON.parse(JSON.stringify((window as any).__round29Writes))); }
@@ -487,7 +487,7 @@ async function captureCheckedComponents(page: Page, name: string) {
 
 async function captureEvidence(page: Page, name: string) {
   const layout = await reminder(page).evaluate(start => {
-    const field = document.querySelector('#migration-experiment-evidence')!;
+    const field = document.querySelector("[data-migration-id=\"migration-experiment-evidence\"]")!;
     const range = document.createRange(); range.setStartBefore(start); range.setEndAfter(field.closest('label')!);
     let rect = range.getBoundingClientRect();
     window.scrollBy({ top: rect.top - 12, left: 0, behavior: 'instant' as ScrollBehavior });
@@ -526,7 +526,7 @@ async function historicalEvidenceFlow(page: Page, touch: boolean, stem: string) 
   await evidence(page).evaluate((element: HTMLTextAreaElement) => element.setSelectionRange(7, 24, 'backward'));
   const caret = await evidence(page).evaluate((element: HTMLTextAreaElement) => [element.selectionStart, element.selectionEnd, element.selectionDirection]);
   await expect(evidence(page)).toHaveValue(original.flightInvestigation.evidence);
-  await expect(page.locator('#migration-experiment-prediction')).toHaveValue('My newer editable formation prediction.');
+  await expect(page.locator("[data-migration-id=\"migration-experiment-prediction\"]")).toHaveValue('My newer editable formation prediction.');
   await activate(page, reminder(page).locator('summary'), touch);
   await expect(reminder(page).locator('[data-trial-evidence-prediction]')).toHaveJSProperty('open', true);
   await expect(reminder(page)).toContainText('My original recorded wind prediction.');
@@ -547,7 +547,7 @@ async function historicalEvidenceFlow(page: Page, touch: boolean, stem: string) 
   expect(afterInspect.pose).toEqual(beforeScene.pose); expect(afterInspect.view).toEqual(beforeScene.view); expectSceneFixed(afterInspect, beforeScene);
   await activate(page, addEvidence, touch);
   await expect(evidence(page)).toBeFocused();
-  expect(await field!.evaluate(element => element === document.querySelector('#migration-experiment-evidence'))).toBe(true);
+  expect(await field!.evaluate(element => element === document.querySelector("[data-migration-id=\"migration-experiment-evidence\"]"))).toBe(true);
   expect(await evidence(page).evaluate((element: HTMLTextAreaElement) => [element.selectionStart, element.selectionEnd, element.selectionDirection])).toEqual(caret);
   expect(await saved(page)).toEqual(beforeNavigation); expect(await writes(page)).toEqual(beforeWrites);
   await activate(page, pair(page).locator('[data-pair-review="close"]'), touch);

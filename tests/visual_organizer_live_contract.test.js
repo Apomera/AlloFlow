@@ -233,7 +233,9 @@ describe('visual organizer live activity contract', () => {
 
   it('shape-validates receipts on Firebase and Class Mailbox paths', () => {
     expect(rules).toContain('function validOrganizerProgress(progress)');
-    expect(rules).toContain("'organizerProgress' in request.resource.data");
+    expect(rules).toContain("'organizerProgress' in next");
+    expect(rules).toContain('validOrganizerProgress(next.organizerProgress)');
+    expect(rules).toContain('boundedMetric(next.organizerProgress.at, 999999999999999)');
     expect(mailbox).toContain('function validOrganizerProgressValue(value)');
     expect(mailbox).toContain("if (field === 'organizerProgress') return validOrganizerProgressValue(value);");
     expect(mailbox).toContain('organizerProgress: 1');

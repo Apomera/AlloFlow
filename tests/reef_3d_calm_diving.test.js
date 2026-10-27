@@ -72,7 +72,11 @@ describe('a calm diver lets fish come closer', () => {
   });
 
   it('a planktivore cloud that sank at the diver comes back up while the diver hangs still beside it', () => {
-    const t = mount({ quality: 'high', site: toolSite('healthy') }, { species: 'real' });
+    // Isolate habituation to the diver: a passing predator is an independent
+    // reason to stay sheltered, covered by reef_3d_predator_awareness.test.js.
+    const reef = toolSite('healthy');
+    reef.population = reef.population.filter((o) => !['whitetip_reef_shark', 'peacock_grouper', 'lionfish'].includes(o.id));
+    const t = mount({ quality: 'high', site: reef }, { species: 'real' });
     t.run(0.5);
     const d0 = diverOf(t);
     const around = (spot) => drawnAmbient(t).filter((f) => Math.hypot(f.pos.x - spot.x, f.pos.z - spot.z) < 1.2);

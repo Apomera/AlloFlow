@@ -17,7 +17,8 @@ const modulesDir = path.resolve(process.cwd(), 'desktop/web-app/node_modules');
 const noop = () => {};
 let React, createRoot, act, FaqView, KS, Dispatcher, faqBranch;
 const enumeration = HOST_SOURCE.slice(HOST_SOURCE.indexOf('  const _enumerateReadAloudResourceSegments ='), HOST_SOURCE.indexOf('  const _encodeReadAloudBridgeAudio ='));
-const hostEnumerator = new Function('window', 'splitTextToSentences', 'leveledTextLanguage', 'currentUiLanguage', enumeration + ';return _enumerateReadAloudResourceSegments;');
+const savedLanguageHelpers = HOST_SOURCE.slice(HOST_SOURCE.indexOf('const getSavedResourceLanguage ='), HOST_SOURCE.indexOf('const getSavedReadingSentenceSegments ='));
+const hostEnumerator = new Function('window', 'splitTextToSentences', 'leveledTextLanguage', 'currentUiLanguage', savedLanguageHelpers + enumeration + ';return _enumerateReadAloudResourceSegments;');
 
 beforeAll(() => {
   React = require(path.resolve(modulesDir, 'react'));
@@ -89,11 +90,13 @@ afterEach(async () => {
 
 describe('F3: regenerating a repeated FAQ sentence targets that occurrence', () => {
   it('regenerates the second FAQ question and leaves same-text clips untouched', async () => {
-    await window.__bridge.prepare(undefined, noop, { profile: profile() });
+    const prepared = await window.__bridge.prepare(undefined, noop, { profile: profile() });
+    expect(prepared).toMatchObject({ generated: 4, remaining: 0 });
     const before = Object.values(store.serialize().entries);
     synthesize.mockClear();
     await render(currentProps);
     expect(regenerateButtons()).toHaveLength(4);
+    expect(regenerateButtons()[2].disabled).toBe(false);
     await act(async () => regenerateButtons()[2].click());
     expect(synthesize).toHaveBeenCalledTimes(1);
     expect(synthesize.mock.calls[0][0].segment.segmentId).toBe('faq/1/question/0');
@@ -102,6 +105,13 @@ describe('F3: regenerating a repeated FAQ sentence targets that occurrence', () 
       const next = after.find(value => value.identity.segmentId === entry.identity.segmentId);
       expect(next.audio === entry.audio).toBe(entry.identity.segmentId !== 'faq/1/question/0');
     }
+  });
+  it('enumerates the saved FAQ language independently of changed app and output settings', () => {
+    const enumerate = hostEnumerator(window, x => KS.splitSentences(x), 'French', 'German');
+    const segments = enumerate({ ...resource(), config: { language: 'Spanish' } });
+    expect(segments).toHaveLength(4);
+    expect(segments.map(segment => segment.language)).toEqual(['Spanish', 'Spanish', 'Spanish', 'Spanish']);
+    expect(segments[2].segmentId).toBe('faq/1/question/0');
   });
 });
 

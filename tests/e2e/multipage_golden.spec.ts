@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Multi-page golden: Stage 4b's block stream is built ACROSS pages by design
 // ("a paragraph may span a page boundary, and /K happily holds MCRs from
 // different pages") — but every fixture was single-page, so the claim was
@@ -14,7 +15,7 @@ const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min
 test.describe('createTaggedPdf — multi-page per-leaf linking', () => {
   test('a paragraph spanning a page boundary links with MCRs on BOTH pages; declaration earned', async ({ page }) => {
     test.setTimeout(120000);
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });

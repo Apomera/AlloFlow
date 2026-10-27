@@ -125,7 +125,7 @@ describe('Sky School calculator controlled comparisons', () => {
 
   it('saves one reference and exposes the actual fourfold lift comparison while preserving current inputs', async () => {
     await mount({ keep: 'preserved', quizScore: 7 }); const before = currentInputs();
-    expect(comparison()).toBeNull(); expect(reference().textContent).toContain('Not recorded'); expect(action('clear').disabled).toBe(true);
+    expect(comparison()).toBeNull(); expect(reference().textContent).toContain('Not recorded'); expect(action('clear').getAttribute('aria-disabled')).toBe('true');
     await click(action('save'));
     expect(latest.calcReference).toEqual(before); expect(currentInputs()).toEqual(before);
     expect(comparison().getAttribute('data-comparison-kind')).toBe('same');

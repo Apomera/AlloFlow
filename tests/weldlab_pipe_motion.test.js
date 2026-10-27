@@ -154,8 +154,8 @@ describe('Rolled and fixed pipe material-point comparison', () => {
     const originalBegin = source.indexOf('      function PipeWeldingDeepDive() {'), originalEnd = source.indexOf('      function RoboticAutomated() {', originalBegin);
     const restoredBegin = restored.indexOf('      function PipeWeldingDeepDive() {'), restoredEnd = restored.indexOf('      function RoboticAutomated() {', restoredBegin);
     expect(source.slice(0, originalBegin)).toBe(restored.slice(0, restoredBegin)); expect(source.slice(originalEnd)).toBe(restored.slice(restoredEnd));
-    expect(source.startsWith('\uFEFF')).toBe(restored.startsWith('\uFEFF')); expect((source.match(/\r\n/g) || []).length - (restored.match(/\r\n/g) || []).length).toBeGreaterThan(0);
-    expect(source.replace(/\r\n/g, '')).not.toContain('\n'); expect(restored.replace(/\r\n/g, '')).not.toContain('\n');
+    expect(source.startsWith('\uFEFF')).toBe(restored.startsWith('\uFEFF')); expect((source.match(/\n/g) || []).length - (restored.match(/\n/g) || []).length).toBeGreaterThan(0);
+    expect(source.replace(/\r\n/g, '\n')).not.toContain('\r'); expect(restored.replace(/\r\n/g, '\n')).not.toContain('\r');
     const helper = source.slice(source.indexOf('        function renderPipeMotionComparison() {'), source.indexOf('        // ⟦/pipe13 rolled and fixed material comparison⟧'));
     expect(helper).not.toMatch(/usePersisted|\bupd\(|\bsetHour\(|\bpickHour\(|\bsetPos\(|\bsetChal\(|\bsetStack\(|requestAnimationFrame|setTimeout|setInterval/);
   });

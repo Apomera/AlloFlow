@@ -46,7 +46,7 @@ describe('generation describes the drawn pixels', () => {
     expect(dispatcher).toContain("card.visualAltSource = 'vision';");
   });
 
-  it('glossary translation columns follow the universal output language, English base column kept', () => {
+  it('legacy glossary columns retain English while native glossaries use their resolved base', () => {
     const start = dispatcher.indexOf("const _glossaryOutput = String(leveledTextLanguage || 'English')");
     expect(start).toBeGreaterThan(-1);
     const block = dispatcher.slice(start, start + 900);
@@ -56,8 +56,9 @@ describe('generation describes the drawn pixels', () => {
     expect(block).not.toContain('langsReq = [];');
     // The panel chip and the help copy describe the same rule.
     const panel = src('view_sidebar_panels_source.jsx');
-    expect(panel).toContain("/^all selected languages$/i.test(output) ? (selectedLanguages || []) : (/^english$/i.test(output) ? [] : [output])");
-    expect(panel).toContain("t('glossary.follows_output_language')");
+    expect(panel).toContain('window.AlloModules?.GenDispatcher?.resolveGlossaryLanguagePlan');
+    expect(panel).toContain('const baseLanguage = plan?.baseLanguage || base;');
+    expect(panel).toContain("text('universal.glossary_next_base', 'Next glossary: {language} definitions', { language: baseLanguage })");
     const host = src('AlloFlowANTI.txt');
     const startOfGenerator = host.indexOf('moduleKey="SidebarPanels.GeneratorActionsView"');
     expect(startOfGenerator).toBeGreaterThan(-1);

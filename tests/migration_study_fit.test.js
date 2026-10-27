@@ -24,7 +24,7 @@ async function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; return tool.render(ctx); }
   act(() => root.render(React.createElement(Component)));
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = { host: stage, speciesId: state.flightSpecies, formationMode: 'natural', season: 'fall',
     time: 1.3, wingStepSerial: state.flightWingStep, wingStepPhase: .7, contextLost: false,
@@ -37,7 +37,7 @@ async function fixture(seed = {}, options = {}) {
     strip: () => host.querySelector('[data-scene-study-actions]'),
     fit: () => host.querySelector('[data-scene-study-action="fit"]'),
     zoom: () => host.querySelector('[data-scene-study-zoom]'),
-    note: () => host.querySelector('#migration-study-observation-note'),
+    note: () => host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"),
     click() { act(() => { ui.fit().focus(); ui.fit().click(); }); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(n => n + 1); }); },
     choose(index) { act(() => host.querySelector('[data-study-cycle-position="' + index + '"]').click()); },
@@ -64,8 +64,8 @@ describe('Fit the migration Study model without restarting the observation', () 
     const ui = await fixture(), button = ui.fit();
     expect(ui.strip().previousElementSibling).toBe(ui.stage); expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button');
     expect(button.textContent).toBe('Fit whole model'); expect(button.disabled).toBe(false); expect(getComputedStyle(button).minHeight).toBe('44px');
-    expect(button.getAttribute('aria-controls')).toBe('migration-flight-stage'); expect(button.getAttribute('aria-describedby')).toBe('migration-study-fit-help');
-    expect(ui.host.querySelector('#migration-study-fit-help').textContent).toBe('100% fits the whole model at this angle. Fitted models do not share a physical size scale.');
+    expect(button.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id); expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-fit-help"]').id);
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-fit-help\"]").textContent).toBe('100% fits the whole model at this angle. Fitted models do not share a physical size scale.');
     expect(ui.zoom().textContent).toBe('Zoom: 160% of fitted view'); expect(ui.writes).toEqual([]);
   });
   it.each([.65, 1.15, 1.6])('fits from zoom %s by changing only zoom while retaining cycle, geometry and work', async zoom => {

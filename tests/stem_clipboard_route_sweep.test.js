@@ -28,6 +28,8 @@ const HELPER_FIRST = {
   'stem_tool_nuclearlab.js': 'var write = (window.StemLab && window.StemLab.writeClipboard)',
   // 10-05: colony history CSV and the study record copy try the host helper first.
   'stem_tool_beehive.js': 'write = window.StemLab && window.StemLab.writeClipboard',
+  // Climate report recovery also supports hosts without navigator.clipboard.
+  'stem_tool_climateExplorer.js': 'var helper = window.StemLab && window.StemLab.writeClipboard;',
 };
 const GUARD_REACH = 700;
 const HELPER_AT = HELPER_CALL.indexOf('navigator.clipboard.writeText(');

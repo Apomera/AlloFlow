@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { React, baseProps, setupBehaviorLens } from './helpers/behavior_lens_harness.js';
+import { attachRequestControlsFixture } from './helpers/protected_request_controls_fixture.js';
 
 const require = createRequire(import.meta.url);
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
@@ -39,6 +40,7 @@ function protectedService() {
     flush: vi.fn(async () => {}),
     registerFlush: callback => { callbacks.add(callback); return () => callbacks.delete(callback); }
   };
+  attachRequestControlsFixture(session);
   const api = {
     session, values, callbacks,
     unlock() { unlocked = true; epoch += 1; notify(); },
@@ -151,6 +153,20 @@ describe('BehaviorLens protected clinical boundary', () => {
     expect(protection.session.flush).toHaveBeenCalled();
   });
 
+  it.each(['lock', 'unmount'])('cleans temporary print content on %s even without afterprint', async transition => {
+    vi.spyOn(window, 'print').mockImplementation(() => {});
+    await mount(); await unlock();
+    const panel = document.createElement('section'); panel.setAttribute('data-bl-panel-content', '');
+    panel.innerHTML = '<textarea>SYNTHETIC PRINT CLEANUP SENTINEL</textarea><button>Print</button>';
+    host.querySelector('.bl-root').appendChild(panel);
+    window.AlloModules.BehaviorLensPrint.blPrintPanel(panel.querySelector('button'));
+    const copy = document.querySelector('[data-bl-print-copy]'); expect(copy.textContent).toBe('SYNTHETIC PRINT CLEANUP SENTINEL');
+    if (transition === 'lock') await React.act(async () => { await protection.lock(); });
+    else { await React.act(async () => root.unmount()); root = null; }
+    expect(copy.textContent).toBe('');
+    expect(document.querySelectorAll('[data-bl-print-copy],[data-bl-print-style],[data-bl-print-path],[data-bl-print-hide]')).toHaveLength(0);
+  });
+
   it('keeps the module open on save failure and waits for durable flush before normal close', async () => {
     const close = vi.fn(); const addToast = vi.fn();
     await mount({ onClose: close, addToast }); await unlock();
@@ -226,7 +242,7 @@ describe('BehaviorLens protected operation adapters', () => {
     protection.session.assertCanTransmit.mockImplementation(() => {});
     const signal = new AbortController().signal;
     await expect(wrapped('reviewed prompt', false, true, signal)).resolves.toBe('reviewed prompt');
-    expect(provider).toHaveBeenCalledWith('reviewed prompt', false, true, signal);
+    expect(provider).toHaveBeenCalledWith('reviewed prompt', false, true, signal, undefined, undefined, undefined, undefined, { requestControls: { beforeRequest: expect.any(Function) } });
     let finish; provider.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
     const pending = wrapped('old session'); protection.expire(); finish('STALE_PRIVATE_RESULT');
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' });

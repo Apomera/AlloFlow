@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -161,7 +162,7 @@ describe('Defect Diagnose local section-plane exploration', () => {
   });
 
   it('recovers every original Diagnose byte by removing only this addition, retaining the baseline digest', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n');
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8')).replace(/\r\n/g, '\n');
     const begin = source.indexOf('      function DefectDiagnose() {'), end = source.indexOf('      // LIVE BEAD RUN', begin);
     const region = source.slice(begin, end), restored = stripDiagnoseSection(region);
     expect(restored).not.toBe(region);

@@ -289,12 +289,12 @@ describe('Chef station names and announcements separate instructions from changi
 });
 
 describe('Chef station section navigation is observational', () => {
-  it('offers four distinct native links to existing, visible, focusable section destinations', () => {
+  it('offers five distinct native links to existing, visible, focusable section destinations', () => {
     const nav = $('testHost').querySelector('nav[aria-label="Chef station sections"]');
     expect(nav).not.toBeNull();
     const links = [...nav.querySelectorAll('a[href^="#"]')];
-    expect(links).toHaveLength(4);
-    expect(new Set(links.map(link => link.hash)).size).toBe(4);
+    expect(links).toHaveLength(5);
+    expect(new Set(links.map(link => link.hash)).size).toBe(5);
     const before = kitchen();
     for (const link of links) {
       const target = $(link.hash.slice(1));
@@ -307,6 +307,6 @@ describe('Chef station section navigation is observational', () => {
       expect(kitchen()).toEqual(before);
       expect(session().pending).toBeNull();
     }
-    expect(links.map(link => link.hash)).toEqual(['#avatarActivity', '#avatarControlsTitle', '#avatarEvidenceTitle', '#avatarSavedAttemptsTitle']);
+    expect(links.map(link => link.hash)).toEqual(['#avatarActivity', '#avatarControlsTitle', '#avatarEvidenceTitle', '#avatarRecordTitle', '#avatarSavedAttemptsTitle']);
   });
 });

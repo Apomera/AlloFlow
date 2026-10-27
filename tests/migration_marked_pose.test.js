@@ -20,7 +20,7 @@ const advance = new Function('engineNow', 'live', 'migrNum', section('          
 const dispose = new Function(section('      function disposeMigrationObject(', '      function releaseMigrationStudyPointer(') + '\nreturn disposeMigrationObject;')();
 const renderControls = new Function('h', 'React', 't', 'species', 'studyView', 'formationMode', 'season',
   'studyMarkedPoseState', '_f3dEngineRef', '_liveVals', 'upd', 'announceToSR', 'migrNum', '_f3dStudyCyclePauseRef',
-  'd', '_f3dHostRef', 'studyCyclePositionState', 'studyWingtipFollowState', 'studyGuidesHidden',
+  'd', '_f3dHostRef', 'studyCyclePositionState', 'studyWingtipFollowState', 'studyGuidesHidden', 'migrationDomId', 'migrationDomIds',
   section('  function MigrationStudyContextReadout(', '  function migrNum(') +
   section('      function migrationStudyCycleContext(', '      function renderFlight3D()') +
   section('        function renderStudySceneNoteAction(', '        function renderStudyObservation()') +
@@ -64,6 +64,7 @@ function expectedBoundary(mesh, boundaryVertexCount) {
 }
 function controls(seed = {}, suppliedFixture) {
   const three = suppliedFixture || fixture(seed.flightSpecies || 'canada_goose');
+  const domId = key => key + '-marked-controls';
   const host = document.createElement('div'); host.setAttribute('data-flight-ready', 'true');
   let state = { flightSpecies: 'canada_goose', flightSeason: 'fall', flightFormation: 'natural', flightStudyBird: 0, flightWingStep: 0, flightPaused: false, ...seed };
   const statuses = [null, value => { statuses[0] = value; }];
@@ -79,10 +80,11 @@ function controls(seed = {}, suppliedFixture) {
       tree = renderControls(React.createElement, React, (_, fallback) => fallback,
         { id: state.flightSpecies }, { bird: state.flightStudyBird, step: state.flightWingStep }, state.flightFormation, state.flightSeason,
         statuses, engineRef, live,
-        (key, value) => { writes.push({ [key]: value }); state = { ...state, [key]: value }; }, announce, num, { current: null }, state, { current: host }, [null], [null], false);
+        (key, value) => { writes.push({ [key]: value }); state = { ...state, [key]: value }; }, announce, num, { current: null }, state, { current: host }, [null], [null], false, domId, keys => keys.split(/\s+/).map(domId).join(' '));
       return ReactDOMServer.renderToStaticMarkup(tree);
     },
-    action(name) { return walk(tree, node => node.props?.['data-marked-pose-action'] === name)[0]; },
+    node(predicate) { return walk(tree, predicate)[0]; },
+    action(name) { return ui.node(node => node.props?.['data-marked-pose-action'] === name); },
     click(name) { ui.action(name).props.onClick(); return ui.draw(); },
     status() { return walk(tree, node => node.props?.['data-marked-pose-status'])[0].props['data-marked-pose-status']; },
     change(values) {
@@ -275,7 +277,7 @@ describe('Migration temporary marked wing pose', () => {
     expect(render('chase')).not.toContain('data-study-marked-pose');
     expect(render('study')).toContain('data-study-marked-pose');
     const ui = controls(); expect(ui.action('mark').type).toBe('button'); expect(ui.action('clear').props.disabled).toBe(true);
-    expect(ui.action('mark').props['aria-describedby']).toBe('migration-marked-pose-help migration-marked-pose-status');
+    expect(ui.action('mark').props['aria-describedby']).toBe(['migration-marked-pose-help', 'migration-marked-pose-status'].map(key => ui.node(node => node.props?.['data-migration-id'] === key).props.id).join(' '));
     expect(ui.status()).toBe('empty');
   });
 

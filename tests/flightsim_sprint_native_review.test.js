@@ -84,20 +84,21 @@ describe('SkySchool native sprint and honest travel evidence', () => {
     await act(async () => answer.click());
     expect(sp.score).toBe(1); expect(sp.results).toHaveLength(1);
     expect(host.querySelector('[data-sprint-feedback]').textContent).toContain(sp.correctAnswer);
-    expect([...host.querySelectorAll('[data-sprint-answer]')].every(item => item.disabled)).toBe(true);
+    expect([...host.querySelectorAll('[data-sprint-answer]')].every(item => !item.disabled && item.getAttribute('aria-disabled') === 'true')).toBe(true);
     await act(async () => answer.click()); expect(sp.results).toHaveLength(1);
   });
-  it('blocks answers while paused, then resumes through the native action', async () => {
+  // WCAG 2.2.1: answering no longer requires resuming the clock.
+  it('accepts an answer while paused without moving the clock, then resumes through the native action', async () => {
     await mount(); const sp = await question();
     await act(async () => host.querySelector('[data-sprint-pause]').click());
     expect(hooks().pausedRef.current).toBe(true);
     const timer = sp.timer;
     await act(async () => host.querySelector('[data-sprint-answer="1"]').click());
-    key('keydown', '2', host.querySelector('[data-sprint-pause]')); await frame();
-    expect(sp.answered).toBe(false); expect(sp.timer).toBe(timer);
+    key('keydown', '3', host.querySelector('[data-sprint-pause]')); await frame();
+    expect(sp.answered).toBe(true); expect(sp.score).toBe(1); expect(sp.results).toHaveLength(1);
+    expect(sp.timer).toBe(timer); expect(hooks().pausedRef.current).toBe(true);
     await act(async () => host.querySelector('[data-sprint-pause]').click());
-    await act(async () => host.querySelector('[data-sprint-answer="1"]').click());
-    expect(sp.score).toBe(1);
+    expect(hooks().pausedRef.current).toBe(false);
   });
   it('rejects stale native choices after the question advances before repaint', async () => {
     await mount(); const sp = await question();

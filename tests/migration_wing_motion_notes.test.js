@@ -41,13 +41,13 @@ function fixture(seed = {}, options = {}) {
     get state() { return state; },
     node(predicate) { return walk(tree, predicate)[0] || null; },
     action() { return ui.node(node => node.props?.['data-study-action'] === 'describe-wing-motion'); },
-    field() { return host.querySelector('#migration-study-observation-note'); },
-    prompt() { return host.querySelector('#migration-study-motion-evidence-prompt'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
+    prompt() { return host.querySelector("[data-migration-id=\"migration-study-motion-evidence-prompt\"]"); },
     click(node = ui.action()) { act(() => { node.props.onClick(); }); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(value => value + 1); }); },
     flush() { act(() => { for (const patch of queued.splice(0)) state = { ...state, ...patch }; refresh(value => value + 1); }); },
     mark() {
-      const stage = host.querySelector('#migration-flight-stage'); stage.setAttribute('data-flight-ready', 'true');
+      const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]"); stage.setAttribute('data-flight-ready', 'true');
       const hostIndex = refs.findIndex(ref => ref.current === stage);
       if (hostIndex < 0) throw new Error('Missing mounted flight host ref');
       refs[hostIndex + 1].current = { host: stage, flyers: [{ visible: true }], speciesId: state.flightSpecies || 'canada_goose',
@@ -75,9 +75,9 @@ describe('Migration direct wing-motion observation notes', () => {
     const ui = fixture();
     expect(ui.action().type).toBe('button'); expect(ui.action().props.type).toBe('button');
     expect(ui.action().props.children).toBe('Describe wing motion');
-    expect(ui.action().props['aria-controls']).toBe('migration-study-observation-note');
-    expect(ui.action().props['aria-describedby']).toBe('migration-wing-motion-note-help');
-    expect(ui.host.querySelector('#migration-wing-motion-note-help').textContent).toContain('Opens Primary feathers notes');
+    expect(ui.action().props['aria-controls']).toBe(ui.host.querySelector('[data-migration-id="migration-study-observation-note"]').id);
+    expect(ui.action().props['aria-describedby']).toBe(ui.host.querySelector('[data-migration-id="migration-wing-motion-note-help"]').id);
+    expect(ui.host.querySelector("[data-migration-id=\"migration-wing-motion-note-help\"]").textContent).toContain('Opens Primary feathers notes');
     expect(ui.host.textContent).toContain('does not record an observation or change playback');
     ui.set({ flightCamera: 'chase' }); expect(ui.action()).toBeNull(); expect(ui.field()).toBeNull();
   });
@@ -104,7 +104,7 @@ describe('Migration direct wing-motion observation notes', () => {
   it('opens Monarch whole-wing notes without changing the latent bird-region selection', () => {
     const observations = { drafts: { 'monarch:whole-wing': 'Butterfly motion.', 'canada_goose:tail': 'Keep tail note.' }, records: {} };
     const ui = fixture({ flightSpecies: 'monarch', flightStudyRegion: 'tail', flightStudyObservations: observations });
-    expect(ui.host.querySelector('#migration-wing-motion-note-help').textContent).toContain('Opens whole-wing notes');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-wing-motion-note-help\"]").textContent).toContain('Opens whole-wing notes');
     ui.click();
     expect(ui.writes).toEqual([{ flightStudyObservationOpen: true }]); expect(ui.state.flightStudyRegion).toBe('tail');
     expect(ui.field().getAttribute('data-study-observation-key')).toBe('monarch:whole-wing');
@@ -160,7 +160,7 @@ describe('Migration direct wing-motion observation notes', () => {
   });
 
   it.each(['native', 'custom'])('focuses the existing note inside %s fullscreen without exiting it', mode => {
-    const ui = fixture(), deck = ui.host.querySelector('#migration-flight-deck');
+    const ui = fixture(), deck = ui.host.querySelector("[data-migration-id=\"migration-flight-deck\"]");
     const exitFullscreen = vi.fn(); Object.defineProperty(document, 'exitFullscreen', { configurable: true, value: exitFullscreen });
     const shellFullscreen = vi.fn(); window.__alloStemFS = shellFullscreen;
     if (mode === 'native') Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => deck });
@@ -190,7 +190,7 @@ describe('Migration direct wing-motion observation notes', () => {
     const ui = fixture({ flightSpecies: 'monarch', flightShowWingtipPath: true });
     ui.click(); expect(ui.prompt().getAttribute('data-study-motion-evidence')).toBe('path');
     expect(ui.prompt().textContent).not.toMatch(/feather|drafting/i);
-    expect(ui.host.querySelector('#migration-study-observation-prompt').textContent).toContain('These are butterfly wings');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-prompt\"]").textContent).toContain('These are butterfly wings');
   });
 
   it('describes a matching marked pose and both aids, then removes stale context on individual or formation changes', () => {

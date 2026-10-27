@@ -18,7 +18,7 @@ const evidence = () => [
 
 beforeEach(() => {
   vi.useFakeTimers(); resetStemLab();
-  tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim');
+  tool = loadTool(process.env.SKYSCHOOL_NUMBER_ENTRY_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim');
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({});
   vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
   vi.stubGlobal('cancelAnimationFrame', vi.fn());
@@ -29,7 +29,7 @@ afterEach(async () => {
   vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers();
 });
 
-async function mount(saved = {}) {
+async function mount(saved = {}, translations = {}) {
   if (root) await act(async () => root.unmount());
   host?.remove(); host = document.createElement('div'); document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
@@ -38,6 +38,7 @@ async function mount(saved = {}) {
       stallInvestigation: { phase: 'experiment', prediction: 'angle', ...canonical(), observations: [], ...saved } } });
     latest = data.flightSim;
     return tool.render(makeCtx({ toolData: data, setToolData: setData,
+      t: (key, fallback) => translations[key] || fallback || key,
       update: (id, key, value) => setData(old => ({ ...old, [id]: { ...old[id], [key]: value } })),
       updateMulti: (id, patch) => setData(old => ({ ...old, [id]: { ...old[id], ...patch } })) }));
   }
@@ -83,6 +84,88 @@ function props(node) {
 }
 
 describe('incremental investigation number entry', () => {
+  it.each([
+    ['airspeed', '80', 80, '150', 150],
+    ['altitude', '10000', 10000, '6500', 6500],
+    ['aoa', '-2.5', -2.5, '20', 20],
+  ])('keeps %s focused after Enter and accepts another edit without refocusing', async (key, first, firstSaved, second, secondSaved) => {
+    await mount(); const input = number(key); input.focus(); await draft(key, first);
+    await commit(key, 'Enter'); expectSynchronized({ [key]: firstSaved });
+    expect(document.activeElement).toBe(input);
+    await draft(key, second); expect(document.activeElement).toBe(input);
+    expect(record()[key]).toBe(firstSaved); expect(input.value).toBe(second);
+    await commit(key, 'Enter'); expectSynchronized({ [key]: secondSaved });
+    expect(document.activeElement).toBe(input); expect(record().observations).toHaveLength(0);
+  });
+
+  it.each([
+    ['airspeed', '', 130], ['altitude', '25000', 20000], ['aoa', '-10', -5],
+  ])('retains %s focus when Enter applies blank or bounded value %j', async (key, value, expected) => {
+    await mount(); const input = number(key); input.focus(); await draft(key, value);
+    await commit(key, 'Enter'); expectSynchronized({ [key]: expected });
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('leaves composition Enter to the input method and commits only the later plain Enter', async () => {
+    await mount(); const input = number('aoa'); input.focus(); await draft('aoa', '14');
+    const event = new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, cancelable: true });
+    await act(async () => input.dispatchEvent(event));
+    expect(event.defaultPrevented).toBe(false); expect(record().aoa).toBe(8);
+    expect(input.value).toBe('14'); expect(document.activeElement).toBe(input);
+    await commit('aoa', 'Enter'); expectSynchronized({ aoa: 14 }); expect(document.activeElement).toBe(input);
+  });
+
+  it('does not change saved conditions or move focus when Enter repeats after a commit', async () => {
+    await mount(); const input = number('airspeed'); input.focus(); await draft('airspeed', '80');
+    await commit('airspeed', 'Enter'); const saved = JSON.stringify(record());
+    await act(async () => {
+      for (let count = 0; count < 3; count++) input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', repeat: true, bubbles: true, cancelable: true }));
+    });
+    expect(JSON.stringify(record())).toBe(saved); expect(document.activeElement).toBe(input);
+  });
+
+  it('describes each numeric field with its visible bounds and commit behavior', async () => {
+    await mount();
+    for (const [key, min, max] of [['airspeed', 40, 250], ['altitude', 0, 20000], ['aoa', -5, 25]]) {
+      const input = number(key);
+      const help = host.querySelector(`[data-investigation-number-help="${key}"]`);
+      expect(help).not.toBeNull();
+      expect(input.getAttribute('aria-describedby')).toBe(help.id);
+      expect(document.getElementById(help.id)).toBe(help);
+      expect(host.querySelectorAll(`[id="${help.id}"]`)).toHaveLength(1);
+      expect(help.textContent).toContain(`Enter ${min} to ${max}.`);
+      expect(help.textContent).toContain('Blank entries keep the saved value.');
+      expect(help.textContent).toContain('Values outside this range are limited to the nearest bound when applied.');
+      expect(help.hidden).toBe(false);
+      expect(help.getAttribute('aria-hidden')).not.toBe('true');
+      expect(range(key).hasAttribute('aria-describedby')).toBe(false);
+    }
+  });
+
+  it('keeps numeric guidance available during incomplete drafts without reporting premature errors', async () => {
+    await mount();
+    for (const [key, value] of [['airspeed', '8'], ['altitude', ''], ['aoa', '-']]) {
+      await draft(key, value);
+      expect(number(key).value).toBe(value === '-' ? '' : value);
+      expect(number(key).getAttribute('aria-invalid')).not.toBe('true');
+      expect(document.getElementById(number(key).getAttribute('aria-describedby'))?.textContent).toContain('Blank entries keep the saved value.');
+      expect(record()[key]).toBe(canonical()[key]);
+    }
+    await click('Record observation');
+    expectSynchronized({ airspeed: 40, altitude: 5000, aoa: 8 });
+    expect(record().observations[0]).toMatchObject({ airspeed: 40, altitude: 5000, aoa: 8 });
+  });
+
+  it('uses translated guidance and substitutes bounds in the translated order', async () => {
+    await mount({}, { 'stem.flightsim.guided_numeric_input_help': 'Maximum {max}; minimum {min}. Conserver la valeur enregistrée si le champ est vide.' });
+    for (const [key, min, max] of [['airspeed', 40, 250], ['altitude', 0, 20000], ['aoa', -5, 25]]) {
+      const help = document.getElementById(number(key).getAttribute('aria-describedby'));
+      expect(help?.textContent).toBe(`Maximum ${max}; minimum ${min}. Conserver la valeur enregistrée si le champ est vide.`);
+      expect(help?.textContent).not.toMatch(/\{(?:min|max)\}/);
+    }
+    expectSynchronized(canonical());
+  });
+
   it.each([
     ['airspeed', ['', '8', '80'], 80],
     ['altitude', ['', '1', '10', '100', '1000', '10000'], 10000],

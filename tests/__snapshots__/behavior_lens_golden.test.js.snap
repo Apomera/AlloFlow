@@ -4,6 +4,10 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 "<div class="bl-root fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
 <div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
 </div>
+<div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-950">
+<span>Clinical records stay in the protected workspace. Other-tool references require an explicit import.</span>
+<button type="button" class="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 font-bold">Import other-tool references</button>
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">
 <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -102,6 +106,10 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 "<div class="bl-root fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
 <div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
 </div>
+<div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-950">
+<span>Clinical records stay in the protected workspace. Other-tool references require an explicit import.</span>
+<button type="button" class="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 font-bold">Import other-tool references</button>
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">
 <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -119,7 +127,6 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 </span>
 </button>
 <div class="w-full flex flex-wrap items-center gap-2">
-<div role="status" aria-label="Cloud sync status" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all bg-slate-50 border-slate-200 text-slate-600" title="Cloud sync idle">💾 Local</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Family Mode" aria-pressed="true" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-blue-700 text-white border-blue-500 shadow-md">👨‍👩‍👧 Family Mode</button>
 </div>
@@ -200,6 +207,10 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 "<div class="bl-root fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
 <div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
 </div>
+<div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-950">
+<span>Clinical records stay in the protected workspace. Other-tool references require an explicit import.</span>
+<button type="button" class="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 font-bold">Import other-tool references</button>
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">
 <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -217,7 +228,6 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </span>
 </button>
 <div class="w-full flex flex-wrap items-center gap-2">
-<div role="status" aria-label="Cloud sync status" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all bg-slate-50 border-slate-200 text-slate-600" title="Cloud sync idle">💾 Local</div>
 <button aria-label="AI is off — click to enable" aria-pressed="false" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100" title="AI OFF — no student data leaves this browser. Click to enable.">🤖 AI: OFF</button>
 <button aria-label="Family Mode" aria-pressed="false" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500">👨‍👩‍👧 Family</button>
 </div>
@@ -299,6 +309,10 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 exports[`layer 1 — Hub render across prop matrix > renders identically: teacher mode in Canvas iframe (snapshot) 1`] = `
 "<div class="bl-root fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
 <div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
+</div>
+<div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-950">
+<span>Clinical records stay in the protected workspace. Other-tool references require an explicit import.</span>
+<button type="button" class="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 font-bold">Import other-tool references</button>
 </div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">
@@ -407,6 +421,10 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 "<div class="bl-root fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
 <div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
 </div>
+<div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-950">
+<span>Clinical records stay in the protected workspace. Other-tool references require an explicit import.</span>
+<button type="button" class="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 font-bold">Import other-tool references</button>
+</div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">
 <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -504,6 +522,10 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 exports[`layer 1 — Hub render across prop matrix > renders identically: with studentNickname set (snapshot) 1`] = `
 "<div class="bl-root fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-labelledby="behavior-lens-dialog-title" aria-describedby="behavior-lens-dialog-subtitle" tabindex="-1">
 <div id="behavior-lens-live-status" role="status" aria-live="polite" aria-atomic="true" class="bl-sr-only">
+</div>
+<div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-950">
+<span>Clinical records stay in the protected workspace. Other-tool references require an explicit import.</span>
+<button type="button" class="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 font-bold">Import other-tool references</button>
 </div>
 <div class="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10">
 <div class="bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">

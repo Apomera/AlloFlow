@@ -201,7 +201,7 @@ describe('Migration signed speed vectors', () => {
     expect(ui.label().props['aria-label']).toBe('Scene layer key');
     expect(ui.values()).toEqual(['Airspeed: 40 mph', 'Along-route wind: +22.4 mph', 'Ground speed: 62 mph']);
     expect(ui.draw()).toContain('Wingtip wake');
-    const stage = ui.nodes(node => node.props?.id === 'migration-flight-stage')[0];
+    const stage = ui.nodes(node => node.props?.["data-migration-id"] === 'migration-flight-stage')[0];
     expect(stage.props['aria-label']).toContain('Along-route wind: +22.4 mph');
     expect(walk(ui.label(), node => node.props?.['aria-hidden'] === 'true').every(node => node.type === 'i')).toBe(true);
   });

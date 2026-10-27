@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Full-AI-path golden: the audit→plan→fix loop with a SCRIPTED Gemini.
 // Every other golden stubs callGemini to '{}', so the chunked-AI fixing
 // contracts had zero coverage: plan parsing, surgical-tool execution,
@@ -56,7 +57,7 @@ const SENTINEL = 'Photosynthesis converts light energy into chemical energy for 
 
 test.describe('full AI path — scripted Gemini', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ path: MODULE_PATH });
     await page.addScriptTag({ content: SETUP });
   });

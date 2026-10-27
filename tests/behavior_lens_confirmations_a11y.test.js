@@ -36,7 +36,7 @@ describe('Behavior Lens destructive confirmations accessibility', () => {
       // Pass 5, workspace: clearing quick switch, using the cloud copy, replacing saved work with a file.
       'Clear quick switch', 'Use cloud copy', 'Replace saved workspace', 'Replace graph data', 'Import consent template', 'Discard entry changes',
       // Pass 9: adding a report export's or share file's records to saved work.
-      'Add records from file'];
+      'Add records from file', 'Import other-tool references'];
     for (const title of titles) expect(source).toContain(`title: '${title}'`);
     expect(source.match(/await askBehaviorLensConfirmation\(/g)).toHaveLength(titles.length);
   });

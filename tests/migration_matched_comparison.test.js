@@ -70,14 +70,14 @@ describe('Migration matched comparison viewing activity', () => {
     expect(section.closest('details').hasAttribute('data-study-comparison')).toBe(true);
     const select = section.querySelector('select');
     expect(select.getAttribute('aria-label')).toBe('Matched comparison view');
-    expect(select.getAttribute('aria-describedby')).toBe('migration-study-matched-help-saved');
+    expect(select.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-matched-help-saved"]').id);
     expect([...select.options].map(option => [option.value, option.textContent])).toEqual([['profile', 'Profile'], ['above', 'From above']]);
     expect(select.value).toBe('profile'); expect(select.hasAttribute('role')).toBe(false);
     expect(ui.node(node => node.type === 'select' && node.props['aria-label'] === 'Matched comparison view').props.onKeyDown).toBeUndefined();
     for (const [which, label] of [['first', 'Compare first in matched view'], ['second', 'Compare second in matched view']]) {
       const action = ui.action(which);
       expect(action.tagName).toBe('BUTTON'); expect(action.type).toBe('button'); expect(action.textContent).toBe(label);
-      expect(action.getAttribute('aria-describedby')).toBe('migration-study-matched-help-saved');
+      expect(action.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-matched-help-saved"]').id);
       expect(action.hasAttribute('tabindex')).toBe(false); expect(action.hasAttribute('role')).toBe(false);
       expect(ui.node(node => node.props?.['data-study-matched'] === which).props.onKeyDown).toBeUndefined();
     }
@@ -114,7 +114,7 @@ describe('Migration matched comparison viewing activity', () => {
     expect(book.comparison.draft).toBe('Unrecorded comparison revision.');
     expect(ui.status()).toContain('Matched view: Canada Goose');
     expect(ui.announce).toHaveBeenLastCalledWith(expect.stringContaining('Paused, fitted view, wing step 0.'));
-    expect(document.activeElement?.id).toBe('migration-flight-stage');
+    expect(document.activeElement?.id).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id);
   });
 
   it('switches captured sources using one selected angle even when current records have different species views and notes', () => {
@@ -201,11 +201,11 @@ describe('Migration matched comparison viewing activity', () => {
 
   it('cancels an active pointer orbit before a matched action so a late release cannot overwrite it', () => {
     const ui = fixture({ flightStudyObservations: notebook() });
-    const stage = ui.host.querySelector('#migration-flight-stage'), canvas = document.createElement('canvas'); stage.append(canvas);
+    const stage = ui.host.querySelector("[data-migration-id=\"migration-flight-stage\"]"), canvas = document.createElement('canvas'); stage.append(canvas);
     stage.setAttribute('data-flight-ready', 'true');
     let captured = null;
     stage.setPointerCapture = id => { captured = id; }; stage.hasPointerCapture = id => captured === id; stage.releasePointerCapture = () => { captured = null; };
-    const props = ui.node(node => node.props?.id === 'migration-flight-stage').props;
+    const props = ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-stage').props;
     const event = values => ({ pointerId: 1, isPrimary: true, button: 0, clientX: 100, clientY: 100, target: canvas, currentTarget: stage, preventDefault() {}, ...values });
     React.act(() => { props.onPointerDown(event()); props.onPointerMove(event({ clientX: 220 })); });
     ui.click('second'); React.act(() => props.onPointerUp(event({ clientX: 220 })));

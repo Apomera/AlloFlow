@@ -47,8 +47,8 @@ describe('escapeTextField neutralizes the scripting vectors a malicious PDF coul
 
 describe('every untrusted element-content sink in the block renderer routes through escapeTextField', () => {
   it('the flat table path escapes caption, headers, and BOTH cell branches', () => {
-    expect(src).toContain('<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+escapeTextField(sanitizeField(block.caption))+`</caption>');
-    expect(src).toContain('text-align:left">`+escapeTextField(sanitizeField(h))+`</th>'); // header cell
+    expect(src).toContain('<caption style="font-weight:bold;text-align:start;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+escapeTextField(sanitizeField(block.caption))+`</caption>');
+    expect(src).toContain('text-align:start">`+escapeTextField(sanitizeField(h))+`</th>'); // header cell
     // #G (2026-07-05): both cell branches route through _cellEsc — _alloCellRichText over the SAME
     // escaper, so list-ish cell markup becomes a real list while every text run is still escaped.
     expect(src).toContain('const _cellEsc = (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t)));');

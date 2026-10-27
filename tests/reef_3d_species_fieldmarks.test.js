@@ -1,3 +1,4 @@
+import { POST_MERGE_IDS, POST_MERGE_FAMILIES } from './helpers/reef_post_merge_catalog.js';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
@@ -37,7 +38,8 @@ describe('Lane D guide portraits', () => {
       expect(p.dir.every(Number.isFinite), id).toBe(true);
       const len = Math.hypot(...p.dir);
       expect(len, id + ' camera stays outside the model and close enough to fill the picture').toBeGreaterThan(1.3);
-      expect(len, id).toBeLessThan(4.5);
+      if (id === 'ocellated_eagle_ray') expect(p.dir, 'the 4.2 m ray needs room for its disc and whip tail').toEqual([5.5, 1.6, 1]);
+      else expect(len, id).toBeLessThan(4.5);
       expect(p.lookY, id).toBeGreaterThanOrEqual(0); expect(p.lookY, id).toBeLessThanOrEqual(1);
     }
     expect(hinted).toBeGreaterThanOrEqual(must.length);
@@ -73,19 +75,21 @@ describe('Lane D load cost', () => {
   });
 
   it('shares one patch key and keeps material feature families within the established budget', () => {
-    const keys = new Set(), sigs = new Set();
-    const add = (h) => h.root.traverse((m) => {
+    const keys = new Set(), sigs = new Set(), legacy = new Set();
+    const add = (h, original = true) => h.root.traverse((m) => {
       if (!m.isMesh) return; const t = m.material;
       keys.add(t.customProgramCacheKey());
-      sigs.add([!!t.map, !!t.bumpMap, !!t.normalMap, !!t.roughnessMap, !!t.vertexColors, t.side, t.alphaTest, !!m.isInstancedMesh, !!m.instanceColor].join());
+      const family = [!!t.map, !!t.bumpMap, !!t.normalMap, !!t.roughnessMap, !!t.vertexColors, t.side, t.alphaTest, !!m.isInstancedMesh, !!m.instanceColor].join();
+      sigs.add(family); if (original) legacy.add(family);
     });
-    for (const id of S.ids) { const h = S.create(THREE, id, { seed: 3, quality: 'high' }); add(h); h.dispose(); }
+    for (const id of S.ids) { const h = S.create(THREE, id, { seed: 3, quality: 'high' }); add(h, !POST_MERGE_IDS.includes(id)); h.dispose(); }
     for (const id of ['anthias', 'bumphead_parrotfish']) { const h = S.createSchool(THREE, id, 5, { seed: 3 }); add(h); h.dispose(); }
     expect([...keys]).toEqual(['reef3d-species-v7|d']);
     // The cucumber's existing roughness map adds the eleventh family. The new
     // firefish and copperband reuse existing signatures. The pipefish's textured
     // fin batch adds the twelfth family (including instanced schools).
-    expect(sigs.size, 'material families across the complete specimen collection').toBeLessThanOrEqual(12);
+    expect(legacy.size, 'earlier models and schools retain their material budget').toBeLessThanOrEqual(12);
+    expect([...sigs].filter(s => !legacy.has(s)).sort()).toEqual([...POST_MERGE_FAMILIES].sort());
   }, 120000);
 });
 

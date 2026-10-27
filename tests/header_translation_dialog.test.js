@@ -100,7 +100,7 @@ describe.each(['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desk
     const glossary = { id: 'glossary', type: 'glossary', data: [{ term: 'Leaf', def: 'Plant part' }] };
     const { node } = await mount(file, { history: [glossary], generatedContent: glossary, translationMode: 'off' });
     expect(node.textContent).toContain('Translate workspace (1)');
-    expect(node.textContent).toContain('keep their English base');
+    expect(node.textContent).toContain('New glossaries translate their terms and definitions. Older English-base glossaries add translation columns.');
     expect(node.querySelector('#header-translate-companion').value).toBe('off');
   }, 15000);
 });

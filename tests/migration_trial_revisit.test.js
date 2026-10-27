@@ -84,7 +84,7 @@ describe('Migration recorded trial and paired baseline revisits', () => {
       const action = ui.revisit(1, baseline);
       expect(action.type).toBe('button'); expect(action.props.type).toBe('button');
       expect(action.props['aria-label']).toBe(baseline ? 'Revisit baseline for trial 1' : 'Revisit trial 1');
-      expect(action.props['aria-describedby']).toBe('migration-experiment-revisit-help');
+      expect(document.getElementById(action.props['aria-describedby'])).toBe(ui.host.querySelector('[data-migration-id="migration-experiment-revisit-help"]'));
     }
     expect(ui.host.textContent).toContain('Revisit a trial and its paired baseline');
     expect(ui.host.textContent).toContain('does not replay the original animation frame');
@@ -104,7 +104,7 @@ describe('Migration recorded trial and paired baseline revisits', () => {
     expect(ui.state.flightInvestigation).toBe(work); expect(ui.state.flightStudyObservations).toBe(observations);
     expect(ui.state.flightChallenges).toBe(challenges); expect(ui.state.inquiry).toBe(inquiry);
     expect(ui.state).toMatchObject({ selectedSpecies: 'monarch', aiExplorerText: 'Keep route facts', aiExplorerReqId: 19, flightWingStep: 13, flightStudyYaw: -80, flightStudyPitch: 50 });
-    expect(document.activeElement?.id).toBe('migration-flight-stage');
+    expect(document.activeElement).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]'));
     expect(ui.status()).toContain('Revisited trial 1. Paused flight view with speed vectors.');
     expect(ui.announce).toHaveBeenLastCalledWith(ui.status());
     expect(ui.awardXP).not.toHaveBeenCalled();
@@ -187,7 +187,7 @@ describe('Migration recorded trial and paired baseline revisits', () => {
 
   it('keeps status while evidence is edited and hides it when the source trial content changes', () => {
     const ui = fixture(); ui.click(ui.revisit());
-    const textarea = ui.node(node => node.props?.id === 'migration-experiment-evidence');
+    const textarea = ui.node(node => node.props?.["data-migration-id"] === 'migration-experiment-evidence');
     act(() => { textarea.props.onChange({ target: { value: 'I noticed a different vector length.' } }); });
     expect(ui.status()).toContain('Revisited trial 1.');
     const work = ui.state.flightInvestigation;
@@ -207,8 +207,8 @@ describe('Migration recorded trial and paired baseline revisits', () => {
 
   it('cancels active Study pointer capture before restoring a pair, so a late pointerup cannot overwrite the view', () => {
     const ui = fixture({ flightStudyYaw: 35, flightStudyPitch: 15 });
-    const props = ui.node(node => node.props?.id === 'migration-flight-stage').props;
-    const host = ui.host.querySelector('#migration-flight-stage'); host.setAttribute('data-flight-ready', 'true');
+    const props = ui.node(node => node.props?.["data-migration-id"] === 'migration-flight-stage').props;
+    const host = ui.host.querySelector("[data-migration-id=\"migration-flight-stage\"]"); host.setAttribute('data-flight-ready', 'true');
     const canvas = document.createElement('canvas'); host.append(canvas); let captured = null;
     host.setPointerCapture = id => { captured = id; }; host.hasPointerCapture = id => captured === id;
     host.releasePointerCapture = () => { captured = null; };

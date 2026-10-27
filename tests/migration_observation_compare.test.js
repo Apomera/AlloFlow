@@ -17,7 +17,7 @@ function view(seed = {}) {
     get state() { return state; }, announce,
     render() { ctx.toolData = { migration: state }; function Component() { tree = tool.render(ctx); return tree; } return ReactDOMServer.renderToStaticMarkup(React.createElement(Component)); },
     node(predicate) { return find(tree, predicate); },
-    label(label) { return find(tree, node => (node.props?.id === label || node.props?.['aria-label'] === label)); },
+    label(label) { return find(tree, node => (node.props?.id === label || node.props?.['data-migration-id'] === label || node.props?.['aria-label'] === label)); },
     button(text) { return find(tree, node => node.type === 'button' && node.props.children === text); },
     set(values) { state = { ...state, ...values }; ui.render(); },
     edit(label, value) { ui.label(label).props.onChange({ target: { value } }); ui.render(); },

@@ -71,45 +71,108 @@ describe('Aquarium physical scenario configuration', () => {
 });
 
 describe('Aquarium size controls', () => {
+  it('owns native labels, bounds and descriptions separately in two mounted aquariums', async () => {
+    await mount();
+    const callbacks = [vi.fn(), vi.fn()];
+    await act(async () => root.render(React.createElement(React.Fragment, null,
+      [0, 1].map(index => React.createElement(Sizing, { key: index, React, tank: configure(base), stockMinimum: index ? 15 : 5,
+        plants: [{ id: 'anubias', name: 'Anubias', biomass: 1, maxBiomass: index ? 4 : 3 }], onTank: callbacks[index], onPlant: callbacks[index]
+      }))
+    )));
+    const panels = [...host.querySelectorAll('[data-aquarium-sizing-controls]')];
+    const ids = [...host.querySelectorAll('[id]')].map(node => node.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const panel of panels) {
+      for (const label of panel.querySelectorAll('label[for]')) {
+        expect(label.control).toBeTruthy();
+        expect(panel.contains(label.control)).toBe(true);
+      }
+      for (const control of panel.querySelectorAll('[aria-describedby]')) {
+        for (const id of control.getAttribute('aria-describedby').split(' ')) expect(panel.contains(document.getElementById(id))).toBe(true);
+      }
+    }
+    const capacity = panels[1].querySelector('[data-aquarium-tank-volume]');
+    expect(capacity.min).toBe('15');
+    await input(capacity, 10);
+    const error = document.getElementById(capacity.getAttribute('aria-describedby').split(' ')[1]);
+    expect(error.textContent).toContain('15 to 200 US gallons');
+    expect(panels[1].contains(error)).toBe(true);
+    expect(panels[0].querySelector('[data-aquarium-tank-volume]').getAttribute('aria-invalid')).toBe('false');
+    const biomass = panels[1].querySelector('[data-aquarium-plant-biomass]');
+    await input(biomass, 4.1);
+    expect(biomass.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(biomass.getAttribute('aria-describedby').split(' ')[1]).textContent).toContain('0 to 4');
+    expect(panels[0].querySelector('[data-aquarium-plant-biomass]').value).toBe('1');
+    await act(async () => panels[1].querySelector('[aria-label="Apply plant size for Anubias"]').click());
+    expect(callbacks[0]).not.toHaveBeenCalled(); expect(callbacks[1]).not.toHaveBeenCalled();
+  });
+  it('does not offer an intervention for rounded natural growth without a user draft', async () => {
+    const events = await mount();
+    await events.grow(1.1234);
+    const action = button('Apply plant size');
+    expect(host.querySelector('[data-aquarium-plant-biomass]').value).toBe('1.12');
+    expect(action.getAttribute('aria-disabled')).toBe('true');
+    await act(async () => action.click());
+    expect(events.changePlant).not.toHaveBeenCalled();
+  });
+  it('preserves Apply focus after a successful edit and prevents unchanged repeat interventions', async () => {
+    const events = await mount();
+    host.querySelector('details').open = true;
+    for (const [selector, actionLabel, value, callback] of [
+      ['[data-aquarium-tank-volume]', 'Apply tank size', 40, events.changeTank],
+      ['[data-aquarium-plant-biomass]', 'Apply plant size', 2, events.changePlant]
+    ]) {
+      await input(host.querySelector(selector), value);
+      const action = button(actionLabel);
+      expect(action.getAttribute('aria-label') || action.textContent).toContain(actionLabel);
+      action.focus();
+      await act(async () => action.click());
+      expect(document.activeElement).toBe(action);
+      expect(action.disabled).toBe(false);
+      expect(action.getAttribute('aria-disabled')).toBe('true');
+      await act(async () => action.click());
+      expect(callback).toHaveBeenCalledTimes(1);
+    }
+  });
   it('keeps tank edits as drafts until Apply, then uses the chosen volume and shape', async () => {
     const events = await mount();
     expect(host.querySelector('details').open).toBe(false);
     expect(host.querySelector('summary').textContent).toBe('Tank & plant size');
-    await input(host.querySelector('#aquarium-tank-volume'), 40);
-    await input(host.querySelector('#aquarium-tank-shape'), 'long');
+    await input(host.querySelector('[data-aquarium-tank-volume]'), 40);
+    await input(host.querySelector('[data-aquarium-tank-shape]'), 'long');
     expect(events.changeTank).not.toHaveBeenCalled();
     expect(events.changePlant).not.toHaveBeenCalled();
     await act(async () => button('Apply tank size').click());
     expect(events.changeTank).toHaveBeenCalledExactlyOnceWith({ volumeGallons: 40, shape: 'long' });
-    expect(host.querySelector('#aquarium-tank-volume').value).toBe('40');
-    expect(button('Apply tank size').disabled).toBe(true);
+    expect(host.querySelector('[data-aquarium-tank-volume]').value).toBe('40');
+    expect(button('Apply tank size').getAttribute('aria-disabled')).toBe('true');
     expect(host.textContent).toContain('water concentrations, resident identities, and health are retained');
   });
   it('rejects empty, nonpositive, oversized and below-current-stock capacity drafts', async () => {
     const events = await mount({ minimum: 15 });
     for (const value of ['', 0, 5, 201]) {
-      await input(host.querySelector('#aquarium-tank-volume'), value);
-      expect(host.querySelector('#aquarium-tank-volume').getAttribute('aria-invalid')).toBe('true');
-      expect(button('Apply tank size').disabled).toBe(true);
+      await input(host.querySelector('[data-aquarium-tank-volume]'), value);
+      expect(host.querySelector('[data-aquarium-tank-volume]').getAttribute('aria-invalid')).toBe('true');
+      expect(button('Apply tank size').getAttribute('aria-disabled')).toBe('true');
       await act(async () => button('Apply tank size').click());
     }
     expect(events.changeTank).not.toHaveBeenCalled();
-    await input(host.querySelector('#aquarium-tank-volume'), 15);
-    expect(button('Apply tank size').disabled).toBe(false);
+    await input(host.querySelector('[data-aquarium-tank-volume]'), 15);
+    expect(button('Apply tank size').getAttribute('aria-disabled')).toBe('false');
   });
   it('keeps a plant draft through natural growth, applies only the targeted biomass and exposes zero', async () => {
     const events = await mount();
-    await input(host.querySelector('#aquarium-plant-biomass-anubias'), 2);
+    await input(host.querySelector('[data-aquarium-plant-biomass="anubias"]'), 2);
     expect(events.changePlant).not.toHaveBeenCalled();
     await events.grow(1.1);
-    expect(host.querySelector('#aquarium-plant-biomass-anubias').value).toBe('2');
-    await act(async () => host.querySelector('[aria-label="Apply size for Anubias"]').click());
+    expect(host.querySelector('[data-aquarium-plant-biomass="anubias"]').value).toBe('2');
+    await act(async () => host.querySelector('[aria-label="Apply plant size for Anubias"]').click());
     expect(events.changePlant).toHaveBeenLastCalledWith('anubias', 2);
-    await input(host.querySelector('#aquarium-plant-biomass-anubias'), 0);
-    await act(async () => host.querySelector('[aria-label="Apply size for Anubias"]').click());
+    await input(host.querySelector('[data-aquarium-plant-biomass="anubias"]'), 0);
+    await act(async () => host.querySelector('[aria-label="Apply plant size for Anubias"]').click());
     expect(events.changePlant).toHaveBeenLastCalledWith('anubias', 0);
-    expect(host.querySelector('#aquarium-plant-size-anubias').getAttribute('aria-valuetext')).toBe('0.00 biomass index');
-    await input(host.querySelector('#aquarium-plant-biomass-anubias'), 3.1);
-    expect(host.querySelector('[aria-label="Apply size for Anubias"]').disabled).toBe(true);
+    expect(host.querySelector('[data-aquarium-plant-size="anubias"]').getAttribute('aria-valuetext')).toBe('0.00 biomass index');
+    await input(host.querySelector('[data-aquarium-plant-biomass="anubias"]'), 3.1);
+    expect(host.querySelector('[aria-label="Apply plant size for Anubias"]').getAttribute('aria-disabled')).toBe('true');
   });
 });

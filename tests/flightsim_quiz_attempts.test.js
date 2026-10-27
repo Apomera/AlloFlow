@@ -54,7 +54,7 @@ describe('SkySchool first-attempt quiz scoring', () => {
     await click(button('Previous'));
     expect(host.querySelector('h3').textContent).toBe(firstQuestion);
     expect(answerButtons()[1].getAttribute('aria-pressed')).toBe('true');
-    expect(answerButtons().every(element => element.disabled)).toBe(true);
+    expect(answerButtons().every(element => !element.disabled && element.getAttribute('aria-disabled') === 'true')).toBe(true);
     expect(host.textContent).toContain('Not quite. The answer was:');
     await click(answerButtons()[0]);
     expect(counts()).toEqual([1, 2, 1, 1]);
@@ -124,7 +124,7 @@ describe('SkySchool first-attempt quiz scoring', () => {
     await click(button('Next'));
     expect(counts()).toEqual([1, 1, 1, 1]);
     await click(button('Previous'));
-    expect(answerButtons().every(element => element.disabled)).toBe(true);
+    expect(answerButtons().every(element => !element.disabled && element.getAttribute('aria-disabled') === 'true')).toBe(true);
     expect(Object.keys(latest.quizFirstAttempts)[0]).toContain(host.querySelector('h3').textContent);
   });
 
@@ -136,7 +136,8 @@ describe('SkySchool first-attempt quiz scoring', () => {
     expect(counts()).toEqual([1, 1, 1, 1]);
     expect(latest.quizLegacySummary).toEqual({ score: 9, total: 12 });
     await click(button('Previous'));
-    expect(answerButtons()[0].disabled).toBe(true);
+    expect(answerButtons()[0].disabled).toBe(false);
+    expect(answerButtons()[0].getAttribute('aria-disabled')).toBe('true');
     await click(button('Start new attempt'));
     expect(latest.quizLegacySummary).toBeNull();
     expect(host.querySelector('[data-quiz-legacy-summary]')).toBeNull();

@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+// Whole-course bird simulations; 5 s is too tight when the suite runs in parallel.
+vi.setConfig({ testTimeout: 20_000 });
 
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const anatomy = readFileSync('stem_lab/avian_woodland_birds.js', 'utf8');

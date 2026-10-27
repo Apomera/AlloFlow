@@ -18,7 +18,8 @@ const stripDataUrls = new Function(closure('_stripDataUrlsForAi') + '\nreturn _s
 const splitForAudit = new Function(closure('_AUDIT_BLOCK_CLOSE') + '\nreturn splitHtmlForAudit;')();
 const restoreDataUrls = new Function(closure('_restoreDataUrlsForAi') + '\nreturn _restoreDataUrlsForAi;')();
 const carryStart = source.indexOf("          let _carriedOut = '';");
-const carryEnd = source.indexOf('\n          {\n            const imgInfo = extractedImages[imgIdx]', carryStart);
+// 2026-10-25: the slot's image may now come from description alignment, so anchor on the declaration only.
+const carryEnd = source.indexOf('\n          {\n            const imgInfo = ', carryStart);
 if (carryStart < 0 || carryEnd < 0) throw new Error('Missing image carry-out boundary');
 const carrySourceBlocks = new Function('match', 'warnLog',
   source.slice(carryStart, carryEnd) + '\nreturn _carriedOut;');

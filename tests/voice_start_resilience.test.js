@@ -7,8 +7,9 @@
 // not fetch external scripts) the promise never settled, beginWebSpeech was
 // never reached, and the mic never opened. start() had ALREADY returned true,
 // so the UI showed voice as ON while nothing was listening.
-import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { loadAlloModule } from './setup.js';
 
 let AC;
@@ -27,7 +28,7 @@ beforeAll(() => {
   if (!AC) throw new Error('AlloCommands failed to register');
 });
 
-afterEach(() => { vi.useRealTimers(); });
+afterEach(() => { vi.useRealTimers(); delete window.__alloConfigureTrustedScript; delete window.__alloDeviceStoragePromise; });
 
 function fakeRecognition() {
   const instances = [];
@@ -43,6 +44,17 @@ function fakeRecognition() {
 }
 
 describe('a hanging on-device probe cannot leave the mic closed', () => {
+  beforeEach(() => {
+    // Each case starts with an unanswered probe, independent of cached script failure.
+    delete window.__alloDeviceStoragePromise;
+    delete window.alloDeviceStorage;
+    const bytes = readFileSync('allo_device_storage_module.js');
+    const createPolicy = new Function(readFileSync('browser_delivery_policy.js', 'utf8') + '\nreturn _alloCreateBrowserDeliveryPolicy;')();
+    const policy = createPolicy({ schemaVersion: 1, releaseId: '0'.repeat(64), fallbackCommit: null, allowDesktopRemoteFallback: false, assets: {
+      'allo_device_storage_module.js': { bytes: bytes.length, integrity: 'sha384-' + createHash('sha384').update(bytes).digest('base64') }
+    } }, { baseUrl: 'https://alloflow-cdn.pages.dev/' });
+    window.__alloConfigureTrustedScript = (script, url) => policy.configureScript(script, url);
+  });
   it('falls back to browser speech instead of waiting forever', async () => {
     vi.useFakeTimers();
     const fake = fakeRecognition();

@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
@@ -107,7 +108,7 @@ describe('Local groove and fillet position pairing', () => {
   });
 
   it('recovers the complete original JointCatalog code after removing only the three local additions', () => {
-    const source = readFileSync(resolve(SRC), 'utf8'); const restored = stripJointPositionPair(source);
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8')); const restored = stripJointPositionPair(source);
     const begin = restored.indexOf('      function JointCatalog() {'), finish = restored.indexOf('      // ─────────────────────────────────────────────────────', begin);
     const expected = JSON.parse(readFileSync(resolve('tests/fixtures/weldlab-position-pair-baseline.json'), 'utf8'));
     expect(createHash('sha256').update(restored.slice(begin, finish)).digest('hex')).toBe(expected.jointCatalogSha256);

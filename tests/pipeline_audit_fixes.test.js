@@ -31,8 +31,8 @@ describe('H-2: image-extraction pdf.js doc is destroyed in a finally (worker/tra
     // Now routed through _awaitImageWork so the render work is tracked, but the
     // point stands: an assignment to the outer pdfDoc, not a fresh const that
     // would shadow it.
-    expect(dp).toMatch(/pdfDoc = await _awaitImageWork\(_withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: pdfBytes \}\)/);
-    expect(dp).not.toMatch(/const pdfDoc = await _withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: pdfBytes \}\)/);
+    expect(dp).toMatch(/pdfDoc = await _awaitImageWork\(_withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: pdfBytes, isEvalSupported: false \}\)/);
+    expect(dp).not.toMatch(/const pdfDoc = await _withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: pdfBytes, isEvalSupported: false \}\)/);
     expect(dp).toMatch(/if \(pdfDoc\) \{ try \{ pdfDoc\.destroy\(\); \} catch \(_\) \{\} pdfDoc = null; \}/);
   });
 });

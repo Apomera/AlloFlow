@@ -71,7 +71,7 @@ function fixture(seed = {}, options = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree; }
   act(() => { root.render(React.createElement(Component)); });
-  const stage = host.querySelector('#migration-flight-stage');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const engine = fakeEngine(stage, { speciesId: state.flightSpecies || 'canada_goose', formationMode: state.flightFormation || 'natural',
     season: state.flightSeason || 'fall', wingStepSerial: state.flightWingStep });
@@ -131,11 +131,11 @@ describe('Study underside viewpoints and surface comparison', () => {
     expect(getComputedStyle(buttons[0].parentElement).gridTemplateColumns).toBe('repeat(2,minmax(0,1fr))');
     for (const button of buttons) {
       expect(getComputedStyle(button).minHeight).toBe('44px');
-      expect(button.getAttribute('aria-describedby')).toBe('migration-study-surface-help');
+      expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-surface-help"]').id);
     }
-    expect(ui.host.querySelector('#migration-study-surface-help').textContent).toContain('compare From above with From below');
-    expect(ui.host.querySelector('#migration-study-surface-help').textContent).toContain('keep zoom fixed');
-    expect(ui.host.querySelector('#migration-study-surface-help').textContent).toContain('do not mean the model changed');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-surface-help\"]").textContent).toContain('compare From above with From below');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-surface-help\"]").textContent).toContain('keep zoom fixed');
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-surface-help\"]").textContent).toContain('do not mean the model changed');
     expect(ui.writes).toEqual([]);
   });
   it.each([[-999, -60], [-61, -60], [-60, -60], [-47, -45], [-10, -10], [0, 0], [61, 60], [Infinity, 15]])('normalizes imported current pitch %s to %s without writing it', (pitch, expected) => {
@@ -154,14 +154,14 @@ describe('Study underside viewpoints and surface comparison', () => {
     const ui = fixture(seed({ flightStudyZoom: 1.25 })); ui.choose(2); ui.frame();
     act(() => ui.host.querySelector('[data-wingtip-follow-side="0"]').click());
     act(() => ui.host.querySelector('[data-study-guides-hidden]').click());
-    const note = ui.host.querySelector('#migration-study-observation-note'); note.focus(); note.setSelectionRange(3, 11);
+    const note = ui.host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); note.focus(); note.setSelectionRange(3, 11);
     const before = ui.state, cycle = ui.live.flightStudyCyclePosition, phase = ui.engine.wingStepPhase, owner = ui.engine.studyGuidesOwner;
     ui.writes.length = 0; ui.viewpoint('below'); ui.frame();
     expect(ui.writes).toEqual([{ flightStudyYaw: 0, flightStudyPitch: -60 }]);
     expect(ui.state).toEqual({ ...before, flightStudyYaw: 0, flightStudyPitch: -60 });
     expect(ui.engine.studyGuidesOwner).toBe(owner); expect(ui.live.flightStudyCyclePosition).toBe(cycle);
     expect(ui.live.flightWingtipFollowSide).toBe(0); expect(ui.engine.wingStepPhase).toBe(phase);
-    expect(ui.host.querySelector('#migration-study-observation-note')).toBe(note);
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-note\"]")).toBe(note);
     expect([note.value, note.selectionStart, note.selectionEnd]).toEqual(['My unfinished surface prediction.', 3, 11]);
     expect(ui.host.querySelector('[data-study-viewpoint="below"]').getAttribute('aria-pressed')).toBe('true');
   });
@@ -213,14 +213,14 @@ describe('Study underside viewpoints and surface comparison', () => {
   });
   it.each([-60, -45, -15])('records and revisits authored evidence at %s degrees without substituting an answer', pitch => {
     const ui = fixture(seed({ flightStudyPitch: pitch, flightStudyZoom: 1.2 }));
-    const note = ui.host.querySelector('#migration-study-observation-note'); note.focus(); note.setSelectionRange(4, 12);
+    const note = ui.host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); note.focus(); note.setSelectionRange(4, 12);
     ui.click(ui.button('Record observation'));
     const notebook = ui.state.flightStudyObservations;
     expect(notebook.records['canada_goose:head']).toMatchObject({ pitch, note: 'My unfinished surface prediction.', zoom: 1.2 });
     ui.viewpoint('above'); ui.writes.length = 0;
     ui.click(ui.node(node => node.props?.['data-study-revisit'] === 'observation'));
     expect(ui.state.flightStudyPitch).toBe(pitch); expect(ui.state.flightStudyObservations).toBe(notebook);
-    expect(ui.host.querySelector('#migration-study-observation-note')).toBe(note);
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-observation-note\"]")).toBe(note);
     expect([note.value, note.selectionStart, note.selectionEnd]).toEqual(['My unfinished surface prediction.', 4, 12]);
     expect(ui.writes).toHaveLength(1); expect(ui.writes[0]).toMatchObject({ flightStudyPitch: pitch, flightPaused: true, flightStudyZoom: 1.2 });
     expect(ui.writes[0]).not.toHaveProperty('flightStudyObservations');

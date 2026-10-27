@@ -14,6 +14,17 @@ const hostMirror = read('desktop/web-app/src/AlloFlowANTI.txt') + read('misc_han
 const module_ = read('doc_pipeline_module.js');
 const occurrences = (text, needle) => text.split(needle).length - 1;
 
+const trustedScriptStart = pipe.indexOf('  function _configureTrustedDocumentScript(');
+const trustedScriptEnd = pipe.indexOf('  const _waitForGlobal =', trustedScriptStart);
+if (trustedScriptStart < 0 || trustedScriptEnd <= trustedScriptStart) throw new Error('Trusted script helper missing');
+const trustedScriptSource = pipe.slice(trustedScriptStart, trustedScriptEnd);
+const runtimeManifest = JSON.parse(readFileSync(resolve(process.cwd(), 'document_runtime_integrity.json'), 'utf8'));
+const approvedScriptUrls = new Set(Object.values(runtimeManifest.assets).filter(r => r.kind === 'script').flatMap(r => [...(r.mirrors || []).map(m => m.url), ...(r.aliases || [])]));
+const configureTrustedScript = (script, url) => {
+  if (!approvedScriptUrls.has(url)) throw new Error('Unapproved fixture script: ' + url);
+  script.integrity = 'sha384-reviewed-fixture'; script.crossOrigin = 'anonymous'; script.src = url;
+};
+
 describe('C3 — stale-download withholding is disclosed, never silent', () => {
   it('all three tagged/typeset stale-HTML guards toast before returning', () => {
     expect(occurrences(view, 'The document changed while this download was being prepared')).toBe(3);
@@ -76,7 +87,7 @@ describe('A3 — futile verification refresh is skipped when EA is environmental
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
     let outcome = 'error';
-    const fakeWindow = {};
+    const fakeWindow = { __alloConfigureTrustedScript: configureTrustedScript };
     const fakeDocument = {
       createElement: () => ({ setAttribute() {}, remove() {} }),
       head: { appendChild: (s) => queueMicrotask(() => {
@@ -84,7 +95,7 @@ describe('A3 — futile verification refresh is skipped when EA is environmental
         else { if (outcome === 'ok') fakeWindow.ace = { Checker: function () {} }; s.onload(); }
       }) },
     };
-    const loader = new Function('window', 'document', pipe.slice(start, end) + '\nreturn { _ensureAce, _equalAccessUnavailable, streak: () => _eaEngineLoadFailStreak };')(fakeWindow, fakeDocument);
+    const loader = new Function('window', 'document', trustedScriptSource + '\n' + pipe.slice(start, end) + '\nreturn { _ensureAce, _equalAccessUnavailable, streak: () => _eaEngineLoadFailStreak };')(fakeWindow, fakeDocument);
     await expect(loader._ensureAce()).rejects.toThrow(/CDN mirrors/);
     expect(loader.streak()).toBe(1);
     expect(loader._equalAccessUnavailable()).toBe(false);
@@ -130,11 +141,20 @@ describe('A1 residual — history CSV carries the verification column', () => {
   });
 });
 
+// Use the actual canonical policy when extracting the verdict's shared dependency.
+const policyWindow = { AlloModules: {} };
+for (const name of ['accessibility_evidence_module.js', 'verification_policy_module.js']) {
+  new Function('window', readFileSync(resolve(process.cwd(), name), 'utf8'))(policyWindow);
+}
+const deriveStart = pipe.indexOf('function _alloDeriveVerificationState(input) {');
+const deriveSource = pipe.slice(deriveStart, pipe.indexOf('\n}', deriveStart) + 2);
+if (deriveStart < 0 || !deriveSource.endsWith('}')) throw new Error('Verification helper extraction failed');
+
 describe('A2 residual — verdict bullet renders a sentence, not a machine token', () => {
   const fnStart = pipe.indexOf('function _alloDistributionVerdict');
   const fnEnd = pipe.indexOf('\n}', fnStart) + 2;
   // The verdict now reads the shared PIPELINE_DEFAULTS.targetScore.
-  const distributionVerdict = new Function('PIPELINE_DEFAULTS', pipe.slice(fnStart, fnEnd) + '\nreturn _alloDistributionVerdict;')({ targetScore: 95 });
+  const distributionVerdict = new Function('window', 'PIPELINE_DEFAULTS', deriveSource + '\n' + pipe.slice(fnStart, fnEnd) + '\nreturn _alloDistributionVerdict;')(policyWindow, { targetScore: 95 });
   it('maps each expertReviewReason token to teacher-readable text', () => {
     const base = { afterScore: 97, needsExpertReview: true };
     const a = distributionVerdict({ ...base, expertReviewReason: 'accessibility' }, {});

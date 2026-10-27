@@ -15,6 +15,13 @@ function uniforms(m) {
   const shader = { vertexShader: '#include <common>\n#include <beginnormal_vertex>\n#include <begin_vertex>', fragmentShader: '#include <common>\n#include <color_fragment>\n#include <roughnessmap_fragment>\n#include <normal_fragment_maps>\n#include <emissivemap_fragment>', uniforms: {} };
   m.material.onBeforeCompile(shader); return shader.uniforms;
 }
+function rigPoint(g, rig, index) {
+  const p = g.attributes.reefPart, offset = (p.getW(index) - 1) * 20;
+  const x = p.getX(index), y = p.getY(index), z = p.getZ(index);
+  return new T.Vector3(rig[offset] * x + rig[offset + 1] * y + rig[offset + 2] * z + rig[offset + 3],
+    rig[offset + 4] * x + rig[offset + 5] * y + rig[offset + 6] * z + rig[offset + 7],
+    rig[offset + 8] * x + rig[offset + 9] * y + rig[offset + 10] * z + rig[offset + 11]);
+}
 
 describe('Singapore spotted seahorse specimen', () => {
   it('appends a nominal posed-height example with a base origin', () => {
@@ -111,6 +118,40 @@ describe('Singapore spotted seahorse specimen', () => {
       expect(buffers(a)).toEqual(geometry); expect(meshes(a).map(m => Object.values(m.geometry.attributes).map(v => v.version))).toEqual(versions);
       a.update(.016, 4); b.update(4, 4); expect(state(a)).toEqual(state(b));
     } finally { a.dispose(); b.dispose(); }
+  });
+  it.each(['low', 'high'])('keeps complete fin attachment rows seated while free edges scull at %s detail', quality => {
+    const h = make(quality);
+    try {
+      const g = meshes(h)[1].geometry, rig = uniforms(meshes(h)[1]).reefRig.value;
+      const rest = Array.from({ length: g.attributes.position.count }, (_, index) => rigPoint(g, rig, index));
+      const groups = g.userData.batch.map(part => {
+        const roots = [], edges = [];
+        for (let index = part.first; index < part.first + part.count; index++) {
+          if (g.attributes.uv.getY(index) === 0) roots.push(index); else edges.push(index);
+        }
+        expect(roots.length).toBeGreaterThan(5);
+        expect(Math.max(...roots.map(index => rest[index].y)) - Math.min(...roots.map(index => rest[index].y))).toBeGreaterThan(.001);
+        return { part: part.part, roots, edges, travel: 0 };
+      });
+      const geometry = buffers(h), versions = Object.values(g.attributes).map(attribute => attribute.version);
+      for (const time of [0, .025, .08, .17, 1.23, 8, 31, 1000]) {
+        h.update(.016, time, { current: { x: .8, z: .6, strength: 1 } });
+        for (const group of groups) {
+          for (const index of group.roots) expect(rigPoint(g, rig, index).distanceTo(rest[index]), group.part + ' root').toBeLessThan(1e-9);
+          for (const index of group.edges) {
+            const point = rigPoint(g, rig, index);
+            group.travel = Math.max(group.travel, point.distanceTo(rest[index]));
+            expect(g.boundingSphere.containsPoint(point)).toBe(true);
+          }
+        }
+      }
+      for (const group of groups) {
+        expect(group.travel, group.part + ' free edge moves').toBeGreaterThan(.0001);
+        expect(group.travel).toBeLessThan(.001);
+      }
+      expect(buffers(h)).toEqual(geometry);
+      expect(Object.values(g.attributes).map(attribute => attribute.version)).toEqual(versions);
+    } finally { h.dispose(); }
   });
   it('shares atlas resources and disposes owned geometry and materials once', () => {
     const a = make(), b = make(), ms = meshes(a), maps = new Set();

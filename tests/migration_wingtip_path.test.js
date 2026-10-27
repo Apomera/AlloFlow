@@ -273,8 +273,8 @@ describe('Migration body-relative wingtip cycle guide', () => {
 
   it('provides a native opt-in checkbox only in Study with linked guidance', () => {
     const ui = view(); expect(ui.checkbox().props.checked).toBe(false);
-    expect(ui.checkbox().props['aria-controls']).toBe('migration-flight-stage');
-    expect(ui.checkbox().props['aria-describedby']).toBe('migration-wingtip-path-help');
+    expect(ui.checkbox().props['aria-controls']).toBe(ui.nodes(node => node.props?.['data-migration-id'] === 'migration-flight-stage')[0].props.id);
+    expect(ui.checkbox().props['aria-describedby']).toBe(ui.nodes(node => node.props?.['data-migration-id'] === 'migration-wingtip-path-help')[0].props.id);
     expect(ui.nodes(node => node.props?.['data-wingtip-path-legend'])).toHaveLength(0);
     ui.change({ flightCamera: 'chase' }); expect(ui.checkbox()).toBeUndefined();
   });

@@ -16,6 +16,8 @@ const transitionSource = [
   between('  const ALLO_SESSION_RESUME_MS =', '  const [launchResume, setLaunchResume] ='),
   between('  const resumeLaunchWorkspace = () => {', '  useEffect(() => {\n      if (!hasSelectedMode || !hasSelectedRole || isGateOpen'),
 ].join('\n');
+const storageSource = between('const safeSetItem =', 'const safeRemoveItem =');
+const quickRosterPersistenceSource = between('  const persistQuickRosterDraft =', '  const [rosterBatchOpenRequest,');
 const quickGroupSource = between('  const quickGroupGradeOptions =', '  const handleBatchGenerateForRoster =');
 const fixedNow = Date.parse('2026-10-14T20:00:00Z');
 const setterNames = [
@@ -41,6 +43,7 @@ function fixture(extra = {}) {
     gateFromPadRef: { current: false }, launchChoiceEpochRef: { current: 0 },
     padFocusTargetRef: { current: null }, studentEntryFromPadRef: { current: false },
     studentHubAfterEntryRef: { current: false }, quickRosterRef: { current: roster }, rosterKey: roster,
+    quickRosterPermissionRef: { current: true },
     inputText: 'A complete reading passage ready for adaptation.',
     isProcessing: false, isExtracting: false, isGeneratingSource: false,
     selectedLanguages: ['Spanish'],
@@ -56,7 +59,7 @@ function fixture(extra = {}) {
     _alloEducatorAccessCodeSettled: vi.fn(() => Promise.resolve()),
     _alloEducatorAccessCodeRequired: vi.fn(() => false),
     _alloCleanLiveSessionCode: value => /^[A-Z0-9]{5}$/.test(String(value || '').trim().toUpperCase()) ? String(value).trim().toUpperCase() : null,
-    t: key => key, addToast: vi.fn(), safeSetItem: vi.fn(() => true), persistQuickRosterDraft: vi.fn(async () => ({ mirrorSaved: true })),
+    t: key => key, addToast: vi.fn(),
     alloNormalizeRosterIdentity: vi.fn(value => value),
     handleApplyRosterGroup: vi.fn(), handleGenerate: vi.fn(),
     ...extra,
@@ -66,7 +69,7 @@ function fixture(extra = {}) {
     ctx['set' + suffix] = vi.fn(value => { ctx[key] = typeof value === 'function' ? value(ctx[key]) : value; });
   }
   vm.createContext(ctx);
-  vm.runInContext(transitionSource + '\n' + quickGroupSource + '\nglobalThis.api = { executeRoleSelect, chooseLaunchRole, onGateUnlock, handleCloseGate, readLaunchResume, resumeLaunchWorkspace, handleQuickAddRosterGroup, handleFamilyReadingAction };', ctx);
+  vm.runInContext(storageSource + '\n' + transitionSource + '\n' + quickRosterPersistenceSource + '\n' + quickGroupSource + '\nglobalThis.api = { executeRoleSelect, chooseLaunchRole, onGateUnlock, handleCloseGate, readLaunchResume, resumeLaunchWorkspace, persistQuickRosterDraft, handleQuickAddRosterGroup, handleFamilyReadingAction };', ctx);
   return { ctx, api: ctx.api, storage, target };
 }
 function expectRole(ctx, expected) {
@@ -198,15 +201,21 @@ describe('resume is validated and explicit on shared devices', () => {
 
 describe('quick groups are optional and durable before success', () => {
   it('adds a normalized group without replacing learner identities or applying its settings', async () => {
-    const { ctx, api } = fixture(); const previous = ctx.quickRosterRef.current;
+    const { ctx, api, storage } = fixture({ alloNormalizeRosterIdentity: vi.fn(value => ({ ...value, normalized: true })) });
+    const previous = ctx.quickRosterRef.current;
+    ctx.setRosterKey.mockImplementation(value => {
+      expect(JSON.parse(storage.get('alloflow_roster_key'))).toEqual(value);
+      ctx.rosterKey = value;
+    });
     expect(await api.handleQuickAddRosterGroup('  Reading   support  ', 'College', 'Spanish')).toBe('added');
     expect(ctx.quickRosterRef.current.students).toBe(previous.students);
     expect(ctx.quickRosterRef.current.learnerIds).toBe(previous.learnerIds);
     expect(ctx.quickRosterRef.current.className).toBe('Science');
     expect(Object.values(ctx.quickRosterRef.current.groups)).toEqual([{ name: 'Reading support', color: '#2563eb', profile: { gradeLevel: 'College', leveledTextLanguage: 'Spanish' } }]);
-    expect(ctx.persistQuickRosterDraft).toHaveBeenCalledWith(ctx.quickRosterRef.current, previous);
-    expect(ctx.persistQuickRosterDraft.mock.invocationCallOrder[0]).toBeLessThan(ctx.setRosterKey.mock.invocationCallOrder[0]);
-    expect(ctx.safeSetItem).not.toHaveBeenCalled();
+    expect(JSON.parse(storage.get('alloflow_roster_key'))).toEqual(ctx.rosterKey);
+    expect(ctx.rosterKey.normalized).toBe(true);
+    expect(ctx.localStorage.setItem).toHaveBeenCalledTimes(1);
+    expect(ctx.localStorage.setItem.mock.invocationCallOrder[0]).toBeLessThan(ctx.setRosterKey.mock.invocationCallOrder[0]);
     expect(ctx.handleApplyRosterGroup).not.toHaveBeenCalled(); expect(ctx.handleGenerate).not.toHaveBeenCalled(); expect(ctx.setGradeLevel).not.toHaveBeenCalled();
     expect(await api.handleQuickAddRosterGroup('READING support', 'College', 'Spanish')).toBe('duplicate');
     expect(ctx.setRosterKey).toHaveBeenCalledTimes(1);
@@ -217,24 +226,70 @@ describe('quick groups are optional and durable before success', () => {
   ])('rejects invalid group input before persistence: %s / %s / %s', async (name, grade, language, reason) => {
     const { ctx, api } = fixture(); const before = ctx.quickRosterRef.current;
     expect(await api.handleQuickAddRosterGroup(name, grade, language)).toBe(reason);
-    expect(ctx.quickRosterRef.current).toBe(before); expect(ctx.safeSetItem).not.toHaveBeenCalled(); expect(ctx.setRosterKey).not.toHaveBeenCalled();
+    expect(ctx.quickRosterRef.current).toBe(before); expect(ctx.localStorage.setItem).not.toHaveBeenCalled(); expect(ctx.setRosterKey).not.toHaveBeenCalled();
   });
   it.each([{ isTeacherMode: false }, { isParentMode: true }, { isIndependentMode: true }])('rejects quick groups outside the class workspace: %j', async mode => {
     const { ctx, api } = fixture(mode);
     expect(await api.handleQuickAddRosterGroup('Group', '5th Grade', 'English')).toBe('unavailable');
-    expect(ctx.safeSetItem).not.toHaveBeenCalled();
+    expect(ctx.localStorage.setItem).not.toHaveBeenCalled();
   });
-  it.each(['refused', 'throws'])('preserves the previous roster when storage %s', async failure => {
-    const { ctx, api } = fixture({ persistQuickRosterDraft: vi.fn(() => { if (failure === 'throws') throw new Error('Quota exceeded'); return Promise.reject(new Error('Roster conflict')); }) });
+  it('preserves the saved roster and view when local storage refuses the write', async () => {
+    const { ctx, api, storage } = fixture();
     const before = ctx.quickRosterRef.current;
+    const savedBefore = JSON.stringify(before);
+    storage.set('alloflow_roster_key', savedBefore);
+    ctx.localStorage.setItem.mockImplementation(() => { throw new Error('Quota exceeded'); });
     expect(await api.handleQuickAddRosterGroup('Group', '5th Grade', 'English')).toBe('unavailable');
     expect(ctx.quickRosterRef.current).toBe(before); expect(ctx.rosterKey).toBe(before); expect(ctx.setRosterKey).not.toHaveBeenCalled();
+    expect(storage.get('alloflow_roster_key')).toBe(savedBefore);
+  });
+  it.each(['normalization', 'serialization'])('does not write or update the view if draft persistence fails during %s', async failure => {
+    const normalize = failure === 'normalization'
+      ? () => { throw new Error('Invalid roster'); }
+      : value => { const cycle = { ...value }; cycle.self = cycle; return cycle; };
+    const { ctx, api } = fixture();
+    ctx.alloNormalizeRosterIdentity.mockImplementationOnce(value => value).mockImplementationOnce(normalize);
+    const before = ctx.quickRosterRef.current;
+    expect(await api.handleQuickAddRosterGroup('Group', '5th Grade', 'English')).toBe('unavailable');
+    expect(ctx.quickRosterRef.current).toBe(before); expect(ctx.rosterKey).toBe(before);
+    expect(ctx.localStorage.setItem).not.toHaveBeenCalled(); expect(ctx.setRosterKey).not.toHaveBeenCalled();
+  });
+  it('refuses a stale roster snapshot before any storage write', () => {
+    const { ctx, api, storage } = fixture();
+    const previous = ctx.quickRosterRef.current;
+    const current = { ...previous, className: 'Newer class name' };
+    ctx.quickRosterRef.current = current; ctx.rosterKey = current;
+    const savedCurrent = JSON.stringify(current);
+    storage.set('alloflow_roster_key', savedCurrent);
+    expect(() => api.persistQuickRosterDraft({ ...previous }, previous)).toThrow('Roster changed before saving');
+    expect(ctx.localStorage.setItem).not.toHaveBeenCalled(); expect(ctx.setRosterKey).not.toHaveBeenCalled();
+    expect(ctx.quickRosterRef.current).toBe(current); expect(ctx.rosterKey).toBe(current);
+    expect(storage.get('alloflow_roster_key')).toBe(savedCurrent);
+  });
+  it('rechecks the current class-workspace permission before writing', async () => {
+    const { ctx, api } = fixture();
+    const before = ctx.quickRosterRef.current;
+    ctx.quickRosterPermissionRef.current = false;
+    expect(await api.handleQuickAddRosterGroup('Group', '5th Grade', 'English')).toBe('unavailable');
+    expect(ctx.localStorage.setItem).not.toHaveBeenCalled(); expect(ctx.setRosterKey).not.toHaveBeenCalled();
+    expect(ctx.quickRosterRef.current).toBe(before); expect(ctx.rosterKey).toBe(before);
+  });
+  it('commits back-to-back groups to storage and the view before yielding', async () => {
+    const { ctx, api, storage } = fixture();
+    ctx.window.crypto.randomUUID.mockReturnValueOnce('first').mockReturnValueOnce('second');
+    const first = api.handleQuickAddRosterGroup('First group', '5th Grade', 'English');
+    const second = api.handleQuickAddRosterGroup('Second group', 'College', 'Spanish');
+    expect(Object.values(ctx.rosterKey.groups).map(group => group.name)).toEqual(['First group', 'Second group']);
+    expect(ctx.quickRosterRef.current).toBe(ctx.rosterKey);
+    expect(JSON.parse(storage.get('alloflow_roster_key'))).toEqual(ctx.rosterKey);
+    expect(ctx.setRosterKey).toHaveBeenCalledTimes(2);
+    expect(await Promise.all([first, second])).toEqual(['added', 'added']);
   });
   it('refuses a twenty-first group without evicting any saved group', async () => {
     const { ctx, api } = fixture();
     const before = { ...ctx.quickRosterRef.current, groups: Object.fromEntries(Array.from({ length: 20 }, (_, index) => [`g${index}`, { name: `Group ${index}` }])) };
     ctx.quickRosterRef.current = before;
     expect(await api.handleQuickAddRosterGroup('Another group', '5th Grade', 'English')).toBe('limit');
-    expect(ctx.quickRosterRef.current).toBe(before); expect(ctx.safeSetItem).not.toHaveBeenCalled();
+    expect(ctx.quickRosterRef.current).toBe(before); expect(ctx.localStorage.setItem).not.toHaveBeenCalled();
   });
 });

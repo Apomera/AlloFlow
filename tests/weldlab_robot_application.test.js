@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -89,7 +90,7 @@ describe('Robot application scope',()=>{
   });
 
   it('restores the complete baseline robotics function after removing only the local explorer and three authorized copy exceptions',()=>{
-    const source=stripRobotReference(readFileSync(SRC,'utf8'));let robot=source.slice(source.indexOf('function RoboticAutomated('),source.indexOf('function InspectionCWIPrep('));
+    const source=stripRobotReference(stripWeldlabWcagFixes(readFileSync(SRC,'utf8')));let robot=source.slice(source.indexOf('function RoboticAutomated('),source.indexOf('function InspectionCWIPrep('));
     // Strip only the later additive time ledger before the unchanged historical restoration.
     if(robot.includes('        function renderRobTimeLedger() {')){
       const ledgerHook="        var robBudgetState = useState({ view: 'sequence', move: 0 });\n",ledgerCall='            renderRobTimeLedger(),\n';

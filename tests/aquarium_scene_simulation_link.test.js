@@ -42,7 +42,7 @@ function renderTank(patch = {}) {
 
 function observeHour(patch = {}) {
   const { element, store } = renderTank(patch);
-  const button = findElement(element, item => item.type === 'button' && item.props?.['aria-label'] === 'Pause and observe one aquarium hour');
+  const button = findElement(element, item => item.type === 'button' && item.props?.['data-aquarium-observe-hour'] === 'true');
   expect(button, 'the actual one-hour observation control must be reachable').toBeTruthy();
   button.props.onClick();
   const state = store.toolData._aquarium;
@@ -119,7 +119,7 @@ describe('Aquarium light output and simulation scene contract', () => {
       fishStress: { 'fish-8': 32, 'fish-9': 5 },
       ecosystemFocusType: 'fish', ecosystemFocusId: 'fish-8'
     });
-    const live = findElement(element, item => typeof item.type === 'function' && item.props?.id === 'aquarium-live-tank');
+    const live = findElement(element, item => typeof item.type === 'function' && item.props?.instanceKey?.startsWith('live-'));
     expect(live).toBeTruthy();
     const sick = live.props.sceneOptions.fish.find(item => item.instanceId === 'fish-8');
     const healthy = live.props.sceneOptions.fish.find(item => item.instanceId === 'fish-9');
@@ -135,14 +135,14 @@ describe('Aquarium light output and simulation scene contract', () => {
     expect(rows['Illness record']).toBe('ich · severity 2');
     expect(rows['Last modeled vitality']).toBe('45/100 · model hour 9');
     expect(rows['Time in tank']).toBe('6 model hours');
-    expect(inspect.querySelector('#aquarium-resident-inspect').value).toBe('fish:fish-8');
+    expect(inspect.querySelector('[data-aquarium-resident-inspect]').value).toBe('fish:fish-8');
 
     live.props.onSelectFish('fish-9');
     const next = renderTank(store.toolData._aquarium);
-    const nextLive = findElement(next.element, item => typeof item.type === 'function' && item.props?.id === 'aquarium-live-tank');
+    const nextLive = findElement(next.element, item => typeof item.type === 'function' && item.props?.instanceKey?.startsWith('live-'));
     inspect.innerHTML = ReactDOMServer.renderToStaticMarkup(nextLive);
     const nextDetail = inspect.querySelector('.aquarium-resident-detail');
-    expect(inspect.querySelector('#aquarium-resident-inspect').value).toBe('fish:fish-9');
+    expect(inspect.querySelector('[data-aquarium-resident-inspect]').value).toBe('fish:fish-9');
     expect(nextDetail.textContent).toContain('Amber');
     expect(nextDetail.textContent).toContain('No recorded illness');
     expect(nextDetail.textContent).toContain('Not yet measured');
@@ -152,7 +152,7 @@ describe('Aquarium light output and simulation scene contract', () => {
   it('shows actual stocked plants and a neutral zero-biomass marker without inventing fallback life', () => {
     function liveFor(patch) {
       const result = renderTank(patch);
-      return findElement(result.element, item => typeof item.type === 'function' && item.props?.id === 'aquarium-live-tank');
+      return findElement(result.element, item => typeof item.type === 'function' && item.props?.instanceKey?.startsWith('live-'));
     }
     for (const selectedTank of ['freshwater', 'reef']) {
       const live = liveFor({ selectedTank, tankFish: [], fishInstanceIds: [], tankPlants: [], plantBiomass: {} });

@@ -130,7 +130,8 @@ describe('OCR accuracy — recovery + verification fold-ins', () => {
     expect(dp).toMatch(/kind: 'lowOcrAccuracy'/);
     const noteIdx = dp.indexOf("kind: 'lowOcrAccuracy'");
     const triageIdx = dp.indexOf('Triage: flag documents that need expert remediation');
-    const concernIdx = dp.indexOf('const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.length > 0');
+    // Notes count unless marked caution (OCR fixes touching no digit, 2026-10-26); lowOcrAccuracy is never caution.
+    const concernIdx = dp.indexOf('const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.some((n) => !(n && n.caution === true))');
     expect(noteIdx).toBeGreaterThan(0);
     expect(triageIdx).toBeGreaterThan(noteIdx);     // note pushed before triage
     expect(concernIdx).toBeGreaterThan(noteIdx);    // ...so _contentFidelityConcern sees it -> needsExpertReview

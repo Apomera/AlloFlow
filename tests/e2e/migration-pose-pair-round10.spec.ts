@@ -158,7 +158,7 @@ test('Migration marked wing pose captures the actual rendered mesh boundaries, s
   await page.locator('.migration-flight-stage').screenshot({ path: join(report, 'desktop-frozen-wing-pose-above.png') });
   await keyboardClick(page, page.getByRole('button', { name: 'Profile', exact: true }));
   const profile = await pose(page); expectCaptured(profile, false); expect(profile.frozen).toEqual(marked.frozen);
-  await page.locator('#migration-flight-stage').focus(); await page.keyboard.press('ArrowRight'); await frames(page);
+  await page.locator("[data-migration-id=\"migration-flight-stage\"]").focus(); await page.keyboard.press('ArrowRight'); await frames(page);
   const orbited = await pose(page); expectCaptured(orbited, false); expect(orbited.frozen).toEqual(marked.frozen);
   await page.locator('.migration-flight-stage').screenshot({ path: join(report, 'desktop-frozen-wing-pose-profile.png') });
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
@@ -223,7 +223,7 @@ test('Migration stage-adjacent pair review switches the historical sources by ke
   await expect(tray.getByRole('button', { name: 'Saved baseline', exact: true })).toHaveAttribute('aria-pressed', 'false');
   const trial = await saved(page); expect(trial).toMatchObject({ flightSpecies: 'snow_goose', flightSeason: 'spring', flightFormation: 'v', flightWind: -10 });
   expect(retainedLearning(trial)).toEqual(retainedLearning(before));
-  await expect(page.locator('#migration-flight-stage')).toBeFocused();
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toBeFocused();
   await page.getByRole('button', { name: 'Study', exact: true }).click(); await frames(page);
   await expect(tray).toHaveAttribute('data-review-active', 'trial');
   await keyboardClick(page, tray.getByRole('button', { name: 'Saved baseline', exact: true }));
@@ -235,7 +235,7 @@ test('Migration stage-adjacent pair review switches the historical sources by ke
   await page.locator('.migration-flight-deck').screenshot({ path: join(report, 'desktop-stage-adjacent-pair-review.png') });
   await keyboardClick(page, tray.getByRole('button', { name: 'Close saved trial review', exact: true }));
   await expect(page.locator('[data-experiment-pair-review]')).toHaveCount(0);
-  await expect(page.locator('#migration-flight-stage')).toBeFocused();
+  await expect(page.locator("[data-migration-id=\"migration-flight-stage\"]")).toBeFocused();
   expect(await saved(page)).toEqual(after);
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   await writeFile(join(report, 'desktop-pair-review.json'), JSON.stringify({ before, baseline, trial, after, stageBounds, trayBounds }, null, 2));

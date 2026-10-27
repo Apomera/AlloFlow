@@ -1,3 +1,4 @@
+import { POST_MERGE_IDS, POST_MERGE_FAMILIES } from './helpers/reef_post_merge_catalog.js';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { describe, expect, it, vi } from 'vitest';
@@ -177,10 +178,11 @@ describe('Lane F4 sizes and cost', () => {
 
   it('adds no material family and keeps every coral one instanceable mesh', () => {
     const sig = (m) => { const t = m.material; return [!!t.map, !!t.bumpMap, !!t.normalMap, !!t.roughnessMap, !!t.vertexColors, t.side, t.alphaTest, !!m.isInstancedMesh, !!m.instanceColor].join(); };
-    const all = new Set(), mine = new Set();
-    for (const id of S.ids) for (const health of ['healthy', 'bleached', 'dead']) build(id, { quality: 'high', seed: 3, health }, (h) => h.root.traverse((m) => { if (!m.isMesh) return; all.add(sig(m)); if (CORALS.includes(id) || SESSILE.includes(id)) mine.add(sig(m)); }));
+    const all = new Set(), legacy = new Set(), mine = new Set();
+    for (const id of S.ids) for (const health of ['healthy', 'bleached', 'dead']) build(id, { quality: 'high', seed: 3, health }, (h) => h.root.traverse((m) => { if (!m.isMesh) return; all.add(sig(m)); if (!POST_MERGE_IDS.includes(id)) legacy.add(sig(m)); if (CORALS.includes(id) || SESSILE.includes(id)) mine.add(sig(m)); }));
     // Cucumber roughness and pipefish fin textures are included in the full catalog.
-    expect(all.size, 'material families across all models').toBeLessThanOrEqual(11);
+    expect(legacy.size, 'earlier models retain their material budget').toBeLessThanOrEqual(11);
+    expect([...all].filter(s => !legacy.has(s)).sort()).toEqual([...POST_MERGE_FAMILIES].sort());
     // The families these species used before this lane, and no others.
     expect([...mine].sort()).toEqual([
       'false,false,false,false,true,0,0,false,false', 'false,false,false,false,true,0,0,true,true', 'false,false,false,false,true,2,0,false,false', 'false,false,false,false,true,2,0,true,true',

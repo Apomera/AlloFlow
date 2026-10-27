@@ -1,0 +1,130 @@
+[
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "return h('button', { key: i, type: 'button', 'data-career-milestone-pick': i, 'aria-pressed': active,",
+    "new": "return h('button', { key: i, id: 'story5-milestone-' + s.id + '-' + i, type: 'button', 'data-career-milestone-pick': i, 'aria-pressed': active, 'aria-controls': 'story5-milestone-readings',"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "                h('h4', { className: 'text-lg font-black' }, kd.name),\n                h('dl', { className: 'text-sm space-y-2' },",
+    "new": "                h('h4', { id: 'story5-milestone-title', className: 'text-lg font-black' }, kd.name),\n                h('dl', { id: 'story5-milestone-readings', 'data-career-milestone-readings': '', 'aria-labelledby': 'story5-milestone-title', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm space-y-2' },"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "'data-career-milestone-prev': true, disabled: milestoneIndex === 0, onClick: function () { chooseMilestone(s.id, milestoneIndex - 1); },",
+    "new": "'data-career-milestone-prev': true, disabled: milestoneIndex === 0, 'aria-controls': 'story5-milestone-readings', onClick: function () { chooseMilestone(s.id, milestoneIndex - 1); if (milestoneIndex === 1) requestStoryFocus('story5-milestone-' + s.id + '-0'); },"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "'data-career-milestone-next': true, disabled: milestoneIndex >= prof.segs.length - 1, onClick: function () { chooseMilestone(s.id, milestoneIndex + 1); },",
+    "new": "'data-career-milestone-next': true, disabled: milestoneIndex >= prof.segs.length - 1, 'aria-controls': 'story5-milestone-readings', onClick: function () { chooseMilestone(s.id, milestoneIndex + 1); if (milestoneIndex === prof.segs.length - 2) requestStoryFocus('story5-milestone-' + s.id + '-' + (milestoneIndex + 1)); },"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "h('input', { 'data-career-age-slider': '', type: 'range', min: a0, max: a1, step: 0.25, value: age,",
+    "new": "h('input', { id: 'story7-age-slider', 'data-career-age-slider': '', type: 'range', min: a0, max: a1, step: 0.25, value: age, 'aria-describedby': 'story7-age-reading-0 story7-age-reading-1',"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "'data-career-age-prev': '', disabled: previous === null, onClick: function () { if (previous !== null) change(previous); },",
+    "new": "'data-career-age-prev': '', disabled: previous === null, 'aria-controls': 'story7-age-reading-0 story7-age-reading-1', onClick: function () { if (previous !== null) { change(previous); if (previous === a0) requestStoryFocus('story7-age-slider'); } },"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "'data-career-age-next': '', disabled: next === null, onClick: function () { if (next !== null) change(next); },",
+    "new": "'data-career-age-next': '', disabled: next === null, 'aria-controls': 'story7-age-reading-0 story7-age-reading-1', onClick: function () { if (next !== null) { change(next); if (next === a1) requestStoryFocus('story7-age-slider'); } },"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "function renderCompareAgeReading(story, profile, a0, a1) {",
+    "new": "function renderCompareAgeReading(story, profile, a0, a1, slot) {"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "return h('div', { 'data-career-age-reading': story.id, 'data-age': age,",
+    "new": "return h('div', { id: 'story7-age-reading-' + slot, 'data-career-age-reading': story.id, 'data-age': age,"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "h('h4', { className: 'text-base font-black' }, __alloFill(__alloT('stem.weldlab.story7_reading_age', 'At age {value1}'), { value1: age })),",
+    "new": "h('h4', { className: 'text-base font-black' }, __alloFill(__alloT('stem.weldlab.car2_cs_name_age', '{value1}, age {value2}'), { value1: story.name, value2: age })),"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "          function card(st, i) {\n            return h('div', { className: 'bg-white rounded-2xl shadow border-2 border-fuchsia-200 p-4 space-y-2 min-w-0' },",
+    "new": "          function card(st, i, slot) {\n            return h('div', { className: 'bg-white rounded-2xl shadow border-2 border-fuchsia-200 p-4 space-y-2 min-w-0' },"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "renderCompareAgeReading(st, P[st.id], a0, a1),",
+    "new": "renderCompareAgeReading(st, P[st.id], a0, a1, slot),"
+  },
+  {
+    "owner": "career-milestone-reader-focus",
+    "old": "h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, card(a, cmp[0]), card(b, cmp[1])),",
+    "new": "h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, card(a, cmp[0], 0), card(b, cmp[1], 1)),"
+  },
+  {
+    "id": "arc-interval-endpoint-focus-hooks",
+    "old": "        var arcIntervalState = useState(0);",
+    "new": "        var arcIntervalState = useState(0);\n        var arcIntervalSelectRef = useRef(null), arcIntervalFocusRef = useRef(false);\n        // Consume only explicit boundary-navigation requests after the native value updates.\n        useEffect(function () {\n          if (!arcIntervalFocusRef.current) return;\n          arcIntervalFocusRef.current = false;\n          var target = arcIntervalSelectRef.current;\n          if (target) { try { target.focus(); } catch (_) {} }\n        });",
+    "owner": "arc-interval-endpoint-focus-hooks"
+  },
+  {
+    "id": "arc-interval-prev-handoff",
+    "old": "'data-arc-interval-prev': '', disabled: index === 0, onClick: function () { choose(index - 1); }",
+    "new": "'data-arc-interval-prev': '', disabled: index === 0, onClick: function () { if (index === 1) arcIntervalFocusRef.current = true; choose(index - 1); }",
+    "owner": "arc-interval-prev-handoff"
+  },
+  {
+    "id": "arc-interval-next-handoff",
+    "old": "'data-arc-interval-next': '', disabled: index === count - 1, onClick: function () { choose(index + 1); }",
+    "new": "'data-arc-interval-next': '', disabled: index === count - 1, onClick: function () { if (index === count - 2) arcIntervalFocusRef.current = true; choose(index + 1); }",
+    "owner": "arc-interval-next-handoff"
+  },
+  {
+    "id": "arc-interval-select-target",
+    "old": "h('select', { 'data-arc-interval-select': '', value: index",
+    "new": "h('select', { ref: arcIntervalSelectRef, 'data-arc-interval-select': '', value: index",
+    "owner": "arc-interval-select-target"
+  },
+  {
+    "id": "robot-time-endpoint-focus-hooks",
+    "old": "        var robBudgetState = useState({ view: 'sequence', move: 0 });",
+    "new": "        var robBudgetState = useState({ view: 'sequence', move: 0 });\n        var robBudgetSelectRef = useRef(null), robBudgetFocusRef = useRef(false);\n        // Time-ledger navigation has its own focus handoff, separate from the move inspector.\n        useEffect(function () {\n          if (!robBudgetFocusRef.current) return;\n          robBudgetFocusRef.current = false;\n          var target = robBudgetSelectRef.current;\n          if (target && !target.disabled) { try { target.focus(); } catch (_) {} }\n        });",
+    "owner": "robot-time-endpoint-focus-hooks"
+  },
+  {
+    "id": "robot-time-prev-handoff",
+    "old": "'data-rob-time-prev': '', disabled: busy || selected === 0, onClick: function () { choose(view, selected - 1); }",
+    "new": "'data-rob-time-prev': '', disabled: busy || selected === 0, onClick: function () { if (!busy && selected === 1) robBudgetFocusRef.current = true; choose(view, selected - 1); }",
+    "owner": "robot-time-prev-handoff"
+  },
+  {
+    "id": "robot-time-next-handoff",
+    "old": "'data-rob-time-next': '', disabled: busy || selected === rows.length - 1, onClick: function () { choose(view, selected + 1); }",
+    "new": "'data-rob-time-next': '', disabled: busy || selected === rows.length - 1, onClick: function () { if (!busy && selected === rows.length - 2) robBudgetFocusRef.current = true; choose(view, selected + 1); }",
+    "owner": "robot-time-next-handoff"
+  },
+  {
+    "id": "robot-time-select-target",
+    "old": "h('select', { 'data-rob-time-select': '', disabled: busy",
+    "new": "h('select', { ref: robBudgetSelectRef, 'data-rob-time-select': '', disabled: busy",
+    "owner": "robot-time-select-target"
+  },
+  {
+    "owner": "heat-width-guide-start",
+    "old": "              h('line', { x1: x0, y1: topY, x2: x0, y2: topY + th + 14, stroke: '#94a3b8', strokeWidth: 0.75, strokeDasharray: '2 2' }),",
+    "new": "              h('g', { 'data-hi-width-guide': 'start' },\n                h('line', { 'data-hi-guide-ground': 'plate', x1: x0, y1: topY, x2: x0, y2: topY + th, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '2 2' }),\n                h('line', { 'data-hi-guide-ground': 'canvas', x1: x0, y1: topY + th, x2: x0, y2: topY + th + 14, stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '2 2', strokeDashoffset: th % 4 })\n              ),"
+  },
+  {
+    "owner": "heat-width-guide-end",
+    "old": "              h('line', { x1: x1, y1: topY, x2: x1, y2: topY + th + 14, stroke: '#94a3b8', strokeWidth: 0.75, strokeDasharray: '2 2' }),",
+    "new": "              h('g', { 'data-hi-width-guide': 'end' },\n                h('line', { 'data-hi-guide-ground': 'plate', x1: x1, y1: topY, x2: x1, y2: topY + th, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '2 2' }),\n                h('line', { 'data-hi-guide-ground': 'canvas', x1: x1, y1: topY + th, x2: x1, y2: topY + th + 14, stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '2 2', strokeDashoffset: th % 4 })\n              ),"
+  },
+  {
+    "owner": "heat-penetration-dimension-contrast",
+    "old": "              h('line', { x1: x0 - 10, y1: topY, x2: x0 - 10, y2: topY + p, stroke: '#e2e8f0', strokeWidth: 1.5 }),",
+    "new": "              h('line', { 'data-hi-penetration-dimension': '', x1: x0 - 10, y1: topY, x2: x0 - 10, y2: topY + p, stroke: '#0f172a', strokeWidth: 1.5 }),"
+  }
+]

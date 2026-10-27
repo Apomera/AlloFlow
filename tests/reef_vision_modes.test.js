@@ -111,7 +111,7 @@ describe('optional reef viewing modes', () => {
           displayed++;
         }
         const shader = compile(t, mesh.material);
-        expect(shader.fragmentShader).toContain('reefGlowLiving*=1.0-step(0.5,vReefSkeleton)');
+        expect(shader.fragmentShader).toContain('reefGlowLiving*=1.0-step(0.5,vReefSkeleton.x)');
       });
       expect(living).toBeGreaterThan(0); expect(skeleton).toBeGreaterThan(0); expect(displayed).toBeGreaterThan(0);
     }

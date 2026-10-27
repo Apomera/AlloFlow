@@ -58,7 +58,7 @@ function fixture(seed = {}) {
   const root = ReactDOMClient.createRoot(host); mounts.add(root);
   function Component() { refresh = React.useState(0)[1]; ctx.toolData = { migration: state }; return tool.render(ctx); }
   act(() => root.render(React.createElement(Component)));
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const engineRef = refs[refs.findIndex(ref => ref.current === stage) + 1];
   const outside = document.createElement('button'); outside.type = 'button'; outside.textContent = 'Continue elsewhere'; document.body.append(outside);
   const ui = {
@@ -72,7 +72,7 @@ function fixture(seed = {}) {
     reflectionAction(name) { return ui.row()?.querySelector('[data-flight-reflection-action="' + name + '"]'); },
     back() { return host.querySelector('[data-flight-challenge-return]'); },
     evidenceReturn() { return host.querySelector('[data-trial-evidence-return]'); },
-    evidence() { return host.querySelector('[id="migration-experiment-evidence"]'); },
+    evidence() { return host.querySelector("[data-migration-id=\"migration-experiment-evidence\"]"); },
     notebook() { return host.querySelector('.migration-experiment'); },
     click(element) { expect(element).not.toBeNull(); element.focus(); act(() => element.click()); },
     openReflection() {
@@ -248,7 +248,7 @@ describe('Shared pending focus intent cancellation', () => {
   });
   it('does not acquire focus from another instance at activation', async () => {
     const first = fixture(), second = fixture(); await second.prepare('trial'); const action = second.action('trial'), before = work(second.state), exit = nativeExit(second);
-    const other = first.host.querySelector('[id="migration-experiment-evidence"]'); other.focus();
+    const other = first.host.querySelector("[data-migration-id=\"migration-experiment-evidence\"]"); other.focus();
     act(() => action.click()); await exit.resolve(); expect(document.activeElement).toBe(other); assertViewingOnly(second, before);
   });
   it('uses its own instance’s evidence field instead of a duplicate global ID', async () => {

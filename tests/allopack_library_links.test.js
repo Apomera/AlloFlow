@@ -100,7 +100,7 @@ describe('complete, generated AlloPack library', () => {
       expect(card.querySelector('.pack-resource-count').textContent).toContain(e.resource_count + ' resources');
     }
     const katie = d.querySelector('[data-pack-id="academic-discourse-reading-space-grade6"]');
-    expect(katie.querySelector('.pack-core-route').textContent).toBe('Start with 4 core resources; supports and later practice included.');
+    expect(katie.querySelector('.pack-core-route').textContent).toBe('Start with 5 core resources; supports included.');
     expect(katie.querySelector('.pack-sources a').href).toBe('https://www.novakeducation.com/blog/how-to-teach-academic-discourse-and-collaboration');
     expect(katie.querySelector('.pack-date').textContent).toContain('Pack updated');
     expect(html).not.toContain('data:image/');

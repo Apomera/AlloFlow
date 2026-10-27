@@ -1,3 +1,4 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Render-verification golden: the safety net veraPDF cannot provide.
 // veraPDF validates STRUCTURE; nothing verified that a tagged PDF still
 // RENDERS its content visibly. The failure class is real: Stage 7 swaps
@@ -20,7 +21,7 @@ const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf
 test.describe('tagged-PDF render verification (ink coverage)', () => {
   test('the tagged output renders page 1 with ink comparable to the source — no invisible-text/blank-page regressions', async ({ page }) => {
     test.setTimeout(180000);
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ url: PDFLIB_CDN });
     await page.waitForFunction(() => !!(window as any).PDFLib, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });

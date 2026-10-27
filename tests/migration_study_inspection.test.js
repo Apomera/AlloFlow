@@ -28,7 +28,7 @@ function fixture(seed = {}, options = {}) {
   act(() => { root.render(React.createElement(Component)); });
   // Attribute lookup stays local when this test intentionally mounts two
   // equal IDs; jsdom's ID fast path consults the first document-wide match.
-  const stage = host.querySelector('[id="migration-flight-stage"]');
+  const stage = host.querySelector("[data-migration-id=\"migration-flight-stage\"]");
   const hostIndex = refs.findIndex(ref => ref.current === stage);
   const hostRef = refs[hostIndex], engineRef = refs[hostIndex + 1];
   const pose = { userData: { captured: false, captureVersion: 3 }, clearPose: vi.fn() };
@@ -44,8 +44,8 @@ function fixture(seed = {}, options = {}) {
   const ui = { host, stage, hostRef, engine, engineRef, liveRef, writes, announce, awardXP,
     get state() { return state; }, get live() { return liveRef.current; }, get renderCount() { return renderCount; },
     action() { return host.querySelector('[data-study-action="inspect-current-view"]'); },
-    field() { return host.querySelector('#migration-study-observation-note'); },
-    context() { return host.querySelector('#migration-study-current-context'); },
+    field() { return host.querySelector("[data-migration-id=\"migration-study-observation-note\"]"); },
+    context() { return host.querySelector("[data-migration-id=\"migration-study-current-context\"]"); },
     click(element = ui.action()) { act(() => { element.click(); }); },
     choose(index) { ui.click(host.querySelector('[data-study-cycle-position="' + index + '"]')); },
     follow(side = 0) { ui.click(host.querySelector('[data-wingtip-follow-side="' + side + '"]')); },
@@ -86,11 +86,11 @@ describe('Inspect the current migration Study scene from a learner note', () => 
     const ui = fixture(), button = ui.action();
     expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button'); expect(button.disabled).toBe(false);
     expect(button.textContent).toBe('Inspect current 3D view');
-    expect(button.getAttribute('aria-controls')).toBe('migration-flight-stage');
-    expect(button.getAttribute('aria-describedby')).toBe('migration-study-inspect-help');
+    expect(button.getAttribute('aria-controls')).toBe(ui.host.querySelector('[data-migration-id="migration-flight-stage"]').id);
+    expect(button.getAttribute('aria-describedby')).toBe(ui.host.querySelector('[data-migration-id="migration-study-inspect-help"]').id);
     expect(ui.context().contains(button)).toBe(true);
-    expect(ui.host.querySelectorAll('#migration-study-inspect-help')).toHaveLength(1);
-    expect(ui.host.querySelector('#migration-study-inspect-help').textContent).toContain('Your view, playback and draft stay as they are.');
+    expect(ui.host.querySelectorAll("[data-migration-id=\"migration-study-inspect-help\"]")).toHaveLength(1);
+    expect(ui.host.querySelector("[data-migration-id=\"migration-study-inspect-help\"]").textContent).toContain('Your view, playback and draft stay as they are.');
     expect(getComputedStyle(button).minHeight).toBe('44px');
   });
 
@@ -135,9 +135,11 @@ describe('Inspect the current migration Study scene from a learner note', () => 
     expect(beforeText).not.toContain('Primary feathers'); expectPreserved(ui, before);
   });
 
-  it('focuses this tool instance even when an earlier instance has the same stage id', () => {
+  it('focuses this tool instance when an earlier migration instance is mounted', () => {
     const first = fixture(), second = fixture();
-    expect(document.getElementById('migration-flight-stage')).toBe(first.stage);
+    expect(first.stage.id).not.toBe(second.stage.id);
+    expect(document.getElementById(first.stage.id)).toBe(first.stage);
+    expect(document.getElementById(second.stage.id)).toBe(second.stage);
     first.stage.scrollIntoView = vi.fn(); second.stage.scrollIntoView = vi.fn();
     second.click(); expect(document.activeElement).toBe(second.stage);
     expect(first.stage.scrollIntoView).not.toHaveBeenCalled(); expect(second.stage.scrollIntoView).toHaveBeenCalledTimes(1);

@@ -57,11 +57,17 @@ describe('attachDrillKeys — behaviour', () => {
   const harness = () => {
     const keysRef = { current: {} };
     let resets = 0;
-    const detach = RR.attachDrillKeys(keysRef, () => { resets += 1; });
+    const detachKeys = RR.attachDrillKeys(keysRef, () => { resets += 1; });
+    // WCAG 2.1.4: letter/Space drill keys act only while focus is inside the drill,
+    // so fire from inside a drill root and let the event bubble to window.
+    const drillRoot = document.createElement('div');
+    drillRoot.setAttribute('data-rr-drill', 'true');
+    document.body.appendChild(drillRoot);
     const fire = (type, ev) => {
-      window.dispatchEvent(Object.assign(new window.Event(type), ev));
+      drillRoot.dispatchEvent(Object.assign(new window.Event(type, { bubbles: true }), ev));
       return ev;
     };
+    const detach = () => { detachKeys(); drillRoot.remove(); };
     return { keysRef, detach, fire, resets: () => resets };
   };
 
@@ -169,8 +175,10 @@ describe('every drill uses the shared contract — no copy left to drift', () =>
     fireFrom(editable, 'a');
     expect(keysRef.current.a).toBeUndefined();
 
-    // Control: the same key from the page itself still drives.
-    const ok = fireFrom(document.createElement('div'), 'w');
+    // Control: the same key from inside the drill still drives (WCAG 2.1.4 focus scope).
+    const drillDiv = document.createElement('div');
+    drillDiv.setAttribute('data-rr-drill', 'true');
+    const ok = fireFrom(drillDiv, 'w');
     expect(keysRef.current.w).toBe(true);
     expect(ok.defaultPrevented).toBe(true);
 

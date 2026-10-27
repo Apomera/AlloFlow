@@ -121,8 +121,8 @@ describe('the Overview matrix', () => {
   });
 });
 
-describe('a workspace too large for one cloud document', () => {
-  it('says so, once, instead of "Offline"', async () => {
+describe('protected workspace backup', () => {
+  it('preserves local data and never uses the legacy plaintext cloud adapter', async () => {
     const { React, baseProps, setupBehaviorLens } = await import('./helpers/behavior_lens_harness.js');
     const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
     globalThis.IS_REACT_ACT_ENVIRONMENT = true; setupBehaviorLens();
@@ -137,7 +137,7 @@ describe('a workspace too large for one cloud document', () => {
       runTransaction: vi.fn(async (_db, update) => { let wrote = null; await update({ get: async () => ({ exists: () => false, data: () => null }), set: (ref, data) => { wrote = ref; } }); if (wrote && !wrote.path.endsWith('__roster__')) { refused += 1; throw tooBig; } return { ok: true, revision: 1 }; })
     };
     const toasts = [];
-    // The backup download goes on to a cloud save: a second refused save.
+    // Exporting an authorized readable backup must not re-enable plaintext cloud sync.
     const realCreate = URL.createObjectURL, realRevoke = URL.revokeObjectURL;
     URL.createObjectURL = () => 'blob:backup'; URL.revokeObjectURL = () => {};
     const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
@@ -148,10 +148,10 @@ describe('a workspace too large for one cloud document', () => {
         await React.act(async () => [...host.querySelectorAll('button')].find(el => el.textContent.trim() === 'Download backup').click());
         for (let i = 0; i < 3; i++) await React.act(async () => { await new Promise(r => setTimeout(r, 300)); });
       }
-      const badges = [...host.querySelectorAll('[role="status"][aria-label]')].map(el => el.getAttribute('aria-label') + ' = ' + el.textContent);
-      expect(badges, JSON.stringify(badges)).toContain('Too large for cloud sync; saved in this browser = Too large to sync');                // was "Offline" while online
-      expect(refused).toBeGreaterThanOrEqual(2);                           // several refused saves, one message
-      expect(toasts.filter(([m]) => /too large for one cloud copy/.test(m))).toHaveLength(1);
+      expect(window.__alloFirebase.getDoc).not.toHaveBeenCalled();
+      expect(window.__alloFirebase.runTransaction).not.toHaveBeenCalled();
+      expect(window.__alloFirebase.setDoc).not.toHaveBeenCalled();
+      expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_big-a')).abcEntries.map(item => item.id)).toEqual(['x']);
     } finally {
       URL.createObjectURL = realCreate; URL.revokeObjectURL = realRevoke;
       await React.act(async () => root.unmount()); host.remove(); delete window.__alloFirebase;
@@ -177,6 +177,11 @@ describe('the AI analysis of a large dataset', () => {
       await React.act(async () => [...host.querySelectorAll('button')].find(el => el.textContent.trim() === 'All tools').click());
       await React.act(async () => [...host.querySelectorAll('button')].find(el => el.textContent.trim() === 'Open AI Pattern Analysis').click());
       await React.act(async () => { await new Promise(r => setTimeout(r, 200)); });
+      const review = document.querySelector('[role="dialog"][aria-label="Review what AI receives"]');
+      expect(review).toBeTruthy();
+      expect(prompts).toEqual([]);
+      await React.act(async () => review.querySelector('input[type="checkbox"]').click());
+      await React.act(async () => [...review.querySelectorAll('button')].find(el => el.textContent === 'Send reviewed copy').click());
       const prompt = prompts.find(p => /DATA COVERAGE/.test(p));
       expect(prompt).toContain('COUNTS OVER ALL 40 ENTRIES');
       expect(prompt).toContain('Antecedents: Math task 30 (75%); Recess 10 (25%)');

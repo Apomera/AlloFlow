@@ -59,7 +59,7 @@ describe('Cephalopod Lab canvas and focus accessibility', () => {
     );
   });
 
-  it('classifies all four canvas declarations by purpose', () => {
+  it('classifies visible canvases and the detached photophore and floor-pool textures by purpose', () => {
     const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);
     const declarations = [];
 
@@ -74,7 +74,10 @@ describe('Cephalopod Lab canvas and focus accessibility', () => {
       }
     });
 
-    expect(declarations).toHaveLength(4);
+    expect(declarations).toHaveLength(6);
+    const textures = declarations.filter(context => /new THREE.CanvasTexture\((haloCv|poolCv)\)/.test(context));
+    expect(textures).toHaveLength(2);
+    for (const texture of textures) expect(texture).not.toMatch(/appendChild|aria-label|role/);
     expect(
       declarations.filter((context) => /aria-hidden/.test(context))
     ).toHaveLength(2);

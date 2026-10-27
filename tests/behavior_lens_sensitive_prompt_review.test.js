@@ -66,7 +66,7 @@ describe('BehaviorLens final outbound clinical review', () => {
     expect(text).toContain('15 minutes'); expect(text).toContain('2nd grade level');
     expect(button('Send reviewed copy').disabled).toBe(true);
     await accept();
-    expect(props.callGemini).toHaveBeenCalledExactlyOnceWith(text, false);
+    expect(props.callGemini).toHaveBeenCalledExactlyOnceWith(text, false, false, null, null, null, false, null, { requestControls: { beforeRequest: expect.any(Function) } });
     expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_jordan')).abcEntries[0].antecedent).toContain('Jordan Rivera');
     expect(host.textContent).toContain('Reviewed summary');
   });
@@ -80,7 +80,7 @@ describe('BehaviorLens final outbound clinical review', () => {
     const edited = textarea.value;
     expect(edited).not.toContain('Alexis'); expect(edited).not.toContain('Pinecrest School');
     await accept();
-    expect(props.callGemini).toHaveBeenCalledExactlyOnceWith(edited, false);
+    expect(props.callGemini).toHaveBeenCalledExactlyOnceWith(edited, false, false, null, null, null, false, null, { requestControls: { beforeRequest: expect.any(Function) } });
   });
 
   it('cancels without a provider call and allows another deliberate request', async () => {
@@ -120,5 +120,23 @@ describe('BehaviorLens final outbound clinical review', () => {
     window.AlloModules.IdentifierRedaction = { ...privacy };
     await accept();
     expect(props.callGemini).not.toHaveBeenCalled();
+  });
+
+  it('withdraws an approved request at the provider dispatch boundary after the active student changes', async () => {
+    let release, controls;
+    const sent = [];
+    const provider = vi.fn(async (...args) => {
+      controls = args[8].requestControls;
+      await new Promise(resolve => { release = resolve; });
+      controls.beforeRequest(); sent.push(args[0]); return 'Stale synthetic summary';
+    });
+    await mount({ callGemini: provider }); await requestSummary(); await accept();
+    expect(provider).toHaveBeenCalledTimes(1);
+    const chooser = host.querySelector('select[aria-label="Choose a student"]');
+    await React.act(async () => { chooser.value = 'Kestrel'; chooser.dispatchEvent(new Event('change', { bubbles: true })); });
+    await tick(350);
+    expect(() => controls.beforeRequest()).toThrow();
+    release(); await tick();
+    expect(sent).toEqual([]); expect(host.textContent).not.toContain('Stale synthetic summary');
   });
 });

@@ -184,7 +184,17 @@ describe('I6: failed panels and the Visual Supports modal', () => {
 
   it('generation and Regenerate mark a panel with no picture as failed', () => {
     const dispatcher = readFileSync(process.env.FIX0927_VS_DISPATCHER_SRC || resolve(process.cwd(), 'generate_dispatcher_source.jsx'), 'utf8');
-    expect(dispatcher).toMatch(/\(executedPlan\?\.panels \|\| \[\]\)\.forEach\(p => \{ if \(p && !p\.imageUrl\) p\.failed = true; \}\);/);
+    const marker = '(executedPlan?.panels || []).forEach';
+    const start = dispatcher.indexOf(marker);
+    expect(start).toBeGreaterThanOrEqual(0);
+    const statement = dispatcher.slice(start, dispatcher.indexOf('});', start) + 3);
+    const markPanels = new Function('executedPlan', 'window', statement);
+    for (const enabled of [true, undefined, false]) {
+      const panels = [{ imageUrl: null }, { imageUrl: 'data:image/png;base64,AA==' }, null];
+      markPanels({ panels }, enabled === undefined ? {} : { AlloImageGeneration: { isEnabled: () => enabled } });
+      expect(panels[0].failed).toBe(enabled !== false);
+      expect(panels[1].failed).toBeUndefined();
+    }
   });
 
   it('the modal shows the host translation', () => {

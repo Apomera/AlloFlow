@@ -348,7 +348,14 @@ ${wrapCss}</style></head>
   window.__events = { toasts: [], errors: [] };
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
   // Kept apart from __events so specs that compare __events wholesale are unaffected.
-  window.__harnessNotes = { ensureThree: [], substitutes: ${JSON.stringify(substitutes)} };
+  window.__harnessNotes = { ensureThree: [], substitutes: ${JSON.stringify(substitutes)}, trustedScripts: [] };
+  // The app shell installs a read-only policy that approves each lazy tool
+  // module (Bird Lab 3D, Raptor, ...). The harness serves the tree itself, so
+  // its stand-in only assigns src; every request is noted for specs to read.
+  if (typeof window.__alloConfigureTrustedScript !== 'function') {
+    Object.defineProperty(window, '__alloConfigureTrustedScript', { configurable: true, writable: false,
+      value: function (script, src) { window.__harnessNotes.trustedScripts.push(String(src)); script.src = src; return script; } });
+  }
 </script>
 ${pre}
 <script>

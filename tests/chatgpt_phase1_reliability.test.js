@@ -122,8 +122,8 @@ describe('finding 9 — cache identity and the polish-pass contract', () => {
     expect(dp).toContain('const _maxPolishPasses = Math.min(3, Math.max(1, Number(_polishPasses) || 1));');
     expect(dp).toContain('Converged after pass');
     expect(dp).not.toContain('const _maxPolishPasses = 1;');
-    // the progress line now reports the REAL denominator:
-    expect(dp).toContain('`Polish pass ${polishIdx + 1}/${_maxPolishPasses} (style + table unification)...`');
+    // The denominator is the contract; the explanation now describes semantic polish.
+    expect(dp).toContain('updateProgress(2, `Polish pass ${polishIdx + 1}/${_maxPolishPasses}');
   });
 });
 

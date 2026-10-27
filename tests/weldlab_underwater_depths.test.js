@@ -163,7 +163,7 @@ describe('Underwater completed-job depth review', () => {
     const end = restored.indexOf('      function ProcessSleuth() {', start);
     expect(createHash('sha256').update(restored.slice(start, end)).digest('hex')).toBe('5ed49401cf21b69cc9905d92b3dbba93056a062bb02820a7c729273af86e0a5c');
     expect(bytes.subarray(0, 3).equals(Buffer.from([0xef, 0xbb, 0xbf]))).toBe(true);
-    expect(source.replace(/\r\n/g, '')).not.toContain('\n');
+    expect(source.replace(/\r\n/g, '\n')).not.toContain('\r');
     expect(source).toContain('if (uwDecAnswered !== uwDecisions.length) return null;');
     expect(source).toContain('var jobDepths = [8, 300, 40, 50];');
     expect(restored).not.toContain('uw13:');

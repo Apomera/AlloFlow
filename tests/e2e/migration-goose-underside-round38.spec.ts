@@ -116,7 +116,7 @@ async function journey(page: Page, phone: boolean) {
   for (const button of await buttons.all()) { const box = await button.boundingBox(); expect(box!.height).toBeGreaterThanOrEqual(44); expect(box!.width).toBeGreaterThanOrEqual(44);
     await expect(button).toHaveAttribute('aria-describedby', 'migration-study-surface-help'); boxes.push(box!); }
   expect(boxes[0].y).toBeCloseTo(boxes[1].y, 1); expect(boxes[2].y).toBeCloseTo(boxes[3].y, 1); expect(boxes[2].y).toBeGreaterThan(boxes[0].y);
-  await expect(page.locator('#migration-study-surface-help')).toContainText('keep zoom fixed');
+  await expect(page.locator("[data-migration-id=\"migration-study-surface-help\"]")).toContainText('keep zoom fixed');
   await presets.scrollIntoViewIfNeeded(); await presets.screenshot({ path: join(report, name + '-viewpoints.png') });
   await activate(page, page.locator('[data-marked-pose-action="check"]'), phone);
   await expect(page.locator('[data-marked-comparison-check]')).toHaveAttribute('data-marked-comparison-kind', 'view-only');

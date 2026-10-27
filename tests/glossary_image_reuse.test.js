@@ -87,13 +87,15 @@ describe('glossary illustration reuse', () => {
 });
 
 const branch = source.slice(source.indexOf("      if (type === 'glossary') {"), source.indexOf(" else if (type === 'simplified') {", source.indexOf("      if (type === 'glossary') {")));
-const runBranch = new Function('deps', 'glossaryImageReuseCache', 'return (async () => { with (deps) { let content, metaInfo; ' + branch + '; return content; } })();');
+const runBranch = new Function('deps', 'glossaryImageReuseCache', 'return (async () => { with (deps) { let content, metaInfo, glossaryLanguagePlan; ' + branch + '; return content; } })();');
 // The branch now shares the module-level glossary normalizer with the local path.
 const normalizerStart = source.indexOf('const _unwrapGeneratedList =');
 const normalizeGlossaryTerms = normalizerStart < 0 ? undefined
   : new Function(source.slice(normalizerStart, source.indexOf('const normalizeFaqItems =', normalizerStart)) + '; return normalizeGlossaryTerms;')();
+const languageHelpers = new Function(source.slice(source.indexOf('const _generationLanguageName ='), source.indexOf('// A resource with nothing to use;')) + '; return { resolveGlossaryLanguagePlan, stampNativeGlossaryTerms, buildNativeGlossaryPrompt, GLOSSARY_IN_TEXT_RULES };')();
 function deps(overrides = {}) {
   return {
+    ...languageHelpers, _nativeLanguageDefaultsVersion: 0, _nativeAppLanguage: 'English', _effectiveLanguageList: ['Spanish', 'French'],
     type: 'glossary', glossaryTier2Count: 1, glossaryTier3Count: 0, configOverride: {},
     glossaryDefinitionLevel: 'Same as Global Level', effectiveGrade: '5th Grade',
     textToProcess: context.sourceText, glossaryImageStyle: context.style, universalImageStyle: '',

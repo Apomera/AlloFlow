@@ -121,14 +121,14 @@ describe('Aquarium action names and matching effects', () => {
     const dismiss = host.querySelector('[aria-label="Dismiss aquarium event outcome"]'); dismiss.focus();
     await act(async () => { dismiss.click(); });
     expect(t.state().aiEvent).toBeNull(); expect(host.querySelector('[role="group"]')).toBeNull();
-    expect(document.activeElement).toBe(host.querySelector('[aria-controls="aquarium-panel-decide"]'));
+    expect(document.activeElement).toBe(host.querySelector('[data-aquarium-workspace-nav="decide"]'));
     expect(t.state().aiEventHistory).toHaveLength(1); expect(t.state().waterChem.nitrate).toBe(22); expect(t.awardXP).toHaveBeenCalledTimes(1);
   });
 
   it('returns dismissal of an unanswered event to Decide without changing chemistry or awarding XP', async () => {
     const t = await mountEvent({ aiEvent: event() }), dismiss = host.querySelector('[aria-label="Dismiss aquarium event"]');
     dismiss.focus(); await act(async () => { dismiss.click(); });
-    expect(document.activeElement).toBe(host.querySelector('[aria-controls="aquarium-panel-decide"]'));
+    expect(document.activeElement).toBe(host.querySelector('[data-aquarium-workspace-nav="decide"]'));
     expect(t.state().aiEvent).toBeNull(); expect(t.state().waterChem.nitrate).toBe(20); expect(t.awardXP).not.toHaveBeenCalled();
   });
 

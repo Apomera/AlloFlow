@@ -1,8 +1,9 @@
+import { installDocumentRuntime } from '../helpers/document_runtime_browser.cjs';
 // Remediation-pipeline E2E corpus (2026-07-02) — REAL PDF bytes in, scripted Gemini,
 // structural assertions on what comes out. Fills the acknowledged gap (DECOUPLING_PLAN
 // §L12: pdf.js/canvas can't run under vitest+jsdom — this is the Playwright vehicle).
 //
-// Self-contained like pdf_tag_tree_golden.spec.ts: about:blank + the LOCAL built
+// Self-contained like pdf_tag_tree_golden.spec.ts: a verified loopback fixture + the LOCAL built
 // doc_pipeline_module.js. Gemini is dependency-injected with a prompt-shape dispatcher
 // (ai_path_golden.spec.ts pattern) that also RECORDS payload sizes — which is how this
 // spec live-verifies the 2026-07-02 "document may be too large" fix:
@@ -51,7 +52,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     // Fixture-BUILDER page: pdf-lib injected HERE only. The pipeline page below stays
     // pdf-lib-free so the self-load fix is actually exercised.
     const builder = await browser.newPage();
-    await builder.goto('about:blank');
+    await installDocumentRuntime(builder);
     await builder.addScriptTag({ url: PDFLIB_CDN });
     await builder.waitForFunction(() => !!(window as any).PDFLib?.PDFDocument, null, { timeout: 30000 });
     fixtures = await builder.evaluate(async () => {
@@ -105,7 +106,7 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     // checker are NOT pdf-lib: the checker runs only AFTER createTaggedPdf, whose ensurePdfLibLoaded
     // self-load (Item 0) is precisely what this page exercises — by then window.PDFLib exists.
     page = await browser.newPage();
-    await page.goto('about:blank');
+    await installDocumentRuntime(page);
     await page.addScriptTag({ path: VERIFICATION_POLICY_PATH });
     await page.addScriptTag({ path: RENDERER_MODULE_PATH });
     await page.addScriptTag({ path: MODULE_PATH });

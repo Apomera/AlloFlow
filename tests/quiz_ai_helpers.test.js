@@ -138,9 +138,10 @@ describe('gradeFillBlank — exact/alternative fast-path (must not call the LLM)
     expect(r.status).toBe('incorrect');
     expect(calls()).toBe(0);
   });
-  it('errors when callGemini missing', async () => {
+  it('gives deterministic feedback when callGemini is missing', async () => {
     const r = await Q.gradeFillBlank({ contextSentence: 'x', expectedFill: 'a', studentFill: 'b', callGemini: undefined });
-    expect(r.status).toBe('error');
+    expect(r.status).toBe('incorrect');
+    expect(r.feedback).toContain('accepted answers');
   });
 });
 

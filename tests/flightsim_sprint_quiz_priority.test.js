@@ -204,20 +204,25 @@ describe('SkySchool sprint owns quiz input and presentation', () => {
     await act(async () => host.querySelector('button[aria-label="Expand the flight deck controls"]').click());
     await act(async () => host.querySelector('[data-flight-open-quiz]').click());
     const options = [...host.querySelectorAll('[data-geoq-answer]')];
+    const feedback = host.querySelector('[data-geoq-feedback]');
     const first = options[0].textContent.replace(/^1\. /, '');
     await act(async () => { options[0].click(); options[1].click(); });
     expect(options[0].getAttribute('aria-pressed')).toBe('true');
-    expect(options.every(item => item.disabled)).toBe(true);
+    expect(options.every(item => !item.disabled && item.getAttribute('aria-disabled') === 'true')).toBe(true);
     expect(host.querySelector('[data-geoq-feedback]').textContent).toContain('Your answer: ' + first);
     expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/Score: [01]\/1/);
     await act(async () => host.querySelector('[data-geoq-next]').click());
     expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/Score: [01]\/2/);
-    expect(host.querySelector('[data-geoq-feedback]')).toBeNull();
+    expect(host.querySelector('[data-geoq-feedback]')).toBe(feedback);
+    expect(feedback.textContent).toBe('');
+    expect(host.querySelector('[data-geoq-feedback]').textContent).toBe('');
+    expect(host.querySelector('[data-geoq-feedback]').getAttribute('role')).toBe('status');
     expect(document.activeElement.id).toBe('skyschool-geoq-question');
   });
 
   it('answers with digits while paused, keeps Space from resuming behind the quiz, and requires explicit resume after close', async () => {
     await mount('free'); await press('q');
+    const feedback = host.querySelector('[data-geoq-feedback]');
     const heldTime = hooks().timeRef.current;
     await press(' ');
     expect(hooks().pausedRef.current).toBe(true);
@@ -226,7 +231,10 @@ describe('SkySchool sprint owns quiz input and presentation', () => {
     await frame(500);
     expect(hooks().timeRef.current).toBe(heldTime);
     await press('q');
-    expect(host.querySelector('[data-geoq-feedback]')).toBeNull();
+    expect(host.querySelector('[data-geoq-feedback]')).toBe(feedback);
+    expect(feedback.textContent).toBe('');
+    expect(host.querySelector('[data-geoq-feedback]').textContent).toBe('');
+    expect(host.querySelector('[data-geoq-feedback]').getAttribute('role')).toBe('status');
     expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/\/2/);
     const close = [...host.querySelectorAll('[data-flight-geography-quiz] button')].find(button => button.textContent === 'Close quiz');
     await act(async () => close.click());

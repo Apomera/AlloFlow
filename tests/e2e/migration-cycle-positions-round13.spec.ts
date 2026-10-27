@@ -259,7 +259,7 @@ test('Migration native cycle activity compares positions one and five with a fro
   await keyboardClick(page, page.getByRole('button', { name: 'Describe wing motion', exact: true }));
   const input = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
-  await expect(page.locator('#migration-study-motion-evidence-prompt')).toHaveAttribute('data-study-motion-evidence', 'path-and-pose');
+  await expect(page.locator("[data-migration-id=\"migration-study-motion-evidence-prompt\"]")).toHaveAttribute('data-study-motion-evidence', 'path-and-pose');
   await expect(positionButton(page, 4)).toHaveAttribute('aria-pressed', 'true');
   expect(work(await saved(page))).toEqual(work(before)); expect((await saved(page)).flightWingStep).toBe(13);
   await page.locator('.migration-flight-controls').screenshot({ path: join(report, 'desktop-cycle-observation-activity.png') });
@@ -369,7 +369,7 @@ for (const dark of [false, true]) test.describe('Migration phone ' + (dark ? 'da
     await page.getByRole('button', { name: 'Describe wing motion', exact: true }).tap();
     const input = page.getByRole('textbox', { name: 'My observation', exact: true });
     await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
-    await expect(page.locator('#migration-study-motion-evidence-prompt')).toHaveAttribute('data-study-motion-evidence', 'path-and-pose');
+    await expect(page.locator("[data-migration-id=\"migration-study-motion-evidence-prompt\"]")).toHaveAttribute('data-study-motion-evidence', 'path-and-pose');
     expect(work(await saved(page))).toEqual(work(before)); expect((await saved(page)).flightWingStep).toBe(13);
     await input.fill('I compared cycle positions one and five with the marked outline from above.');
     await page.getByRole('button', { name: 'Record observation', exact: true }).tap();
@@ -442,7 +442,7 @@ test('Migration remount clears temporary cycle selection while preserving serial
       const element = document.querySelector(selector); if (!element) throw new Error('Missing preview element ' + selector);
       const box = element.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width, height: box.height };
     };
-    return { deck: rect('#migration-flight-deck'), stage: rect('.migration-flight-stage'),
+    return { deck: rect("[data-migration-id=\"migration-flight-deck\"]"), stage: rect('.migration-flight-stage'),
       sidebar: rect('.migration-flight-controls'), checkpoints: rect('[data-study-cycle-controls]') };
   });
   expect(previewLayout.checkpoints.top).toBeGreaterThanOrEqual(previewLayout.sidebar.top - 1);
@@ -450,7 +450,7 @@ test('Migration remount clears temporary cycle selection while preserving serial
   expect(previewLayout.checkpoints.left).toBeGreaterThanOrEqual(previewLayout.stage.right - 1);
   // The deck contains the stage AND its sibling sidebar; the flight-view child
   // contains only the scene and cannot show the new native controls beside it.
-  await page.locator('#migration-flight-deck').screenshot({ path: join(report, 'desktop-cycle-explorer.png') });
+  await page.locator("[data-migration-id=\"migration-flight-deck\"]").screenshot({ path: join(report, 'desktop-cycle-explorer.png') });
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   await writeFile(join(report, 'desktop-cycle-remount-and-preview.json'), JSON.stringify({ initialFreshView, selected, serialized, restored, selectedAgain, layout, previewLayout }, null, 2));
 });

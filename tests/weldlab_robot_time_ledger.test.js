@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -180,7 +181,7 @@ describe('Robot whole-program time ledger', () => {
     await view('commands'); await select(1); expect(host.textContent).toContain('Weld complete: seam fully covered, no faults.');
     await click(named('Point 2: arc on or off')); expect(host.textContent).not.toContain('Weld complete: seam fully covered, no faults.');
     assertLedger(host, expected(app.latest().tech2_rob_prog), 'commands'); expect(num(reading(), 'data-speed')).toBe(100);
-    await click(named('Point 2: switch move type')); assertLedger(host, expected(app.latest().tech2_rob_prog), 'commands'); expect(num(reading(), 'data-speed')).toBe(200);
+    await click(named('Linear: Point 2: switch move type')); assertLedger(host, expected(app.latest().tech2_rob_prog), 'commands'); expect(num(reading(), 'data-speed')).toBe(200);
     expect(host.querySelector('[data-robot-inspect-issues]')).toBeNull();
   });
 
@@ -227,7 +228,7 @@ describe('Robot whole-program time ledger', () => {
   });
 
   it('restores every original robot lesson byte by removing only the one local hook, one helper and one render call', () => {
-    const source = stripRobotReference(readFileSync(resolve(SRC), 'utf8'));
+    const source = stripRobotReference(stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8')));
     let region = source.slice(source.indexOf('function RoboticAutomated('), source.indexOf('function InspectionCWIPrep('));
     const hook = "        var robBudgetState = useState({ view: 'sequence', move: 0 });\n", call = '            renderRobTimeLedger(),\n';
     expect(region.split(hook)).toHaveLength(2); expect(region.split(call)).toHaveLength(2);

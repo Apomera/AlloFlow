@@ -88,7 +88,7 @@ describe('pipeline + UI wiring (source-pinned)', () => {
     // count, which is the correct behaviour for the OCR path.
     expect(src).toContain("_structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml, _srcStructCounts);");
     expect(src).toContain('if (!_sliceRun && Number.isFinite(_lc) && _lc > 0) _srcStructCounts = { links: _lc };');
-    expect(src).toContain('const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.length > 0;');
+    expect(src).toContain('const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.some((n) => !(n && n.caution === true));');
   });
   it('the result carries fidelityNotes + the #1 fidelityLimited score qualifier', () => {
     expect(src).toContain('fidelityNotes: _structuralFidelityNotes,');

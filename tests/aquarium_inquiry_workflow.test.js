@@ -43,7 +43,7 @@ function renderTank(patch = {}, overrides = {}) {
 
 const copy = x => JSON.parse(JSON.stringify(x));
 const seed = { tankFish: ['guppy'], fishInstanceIds: ['fish-1'], nextFishInstanceId: 2, hungerLevels: { 'fish-1': 80 }, coins: 50 };
-function view(patch = {}, overrides = {}) { const v = renderTank({ ...copy(seed), ...patch }, overrides); v.state = () => v.store.toolData._aquarium; v.byId = id => findElement(v.element, n => n.props?.id === id); v.click = label => { const button = findElement(v.element, n => n.type === 'button' && (n.props.children === label || n.props['aria-label'] === label)); expect(button, label).toBeTruthy(); expect(button.props.disabled, label).not.toBe(true); button.props.onClick(); return v.state(); }; return v; }
+function view(patch = {}, overrides = {}) { const v = renderTank({ ...copy(seed), ...patch }, overrides); v.state = () => v.store.toolData._aquarium; v.byId = id => findElement(v.element, n => n.props?.id === id); v.observe = () => { const button = findElement(v.element, n => n.type === 'button' && n.props['data-aquarium-observe-hour'] === 'true'); expect(button).toBeTruthy(); button.props.onClick(); return v.state(); }; v.click = label => { const button = findElement(v.element, n => n.type === 'button' && (n.props.children === label || n.props['aria-label'] === label)); expect(button, label).toBeTruthy(); expect(button.props.disabled, label).not.toBe(true); button.props.onClick(); return v.state(); }; return v; }
 function baseline(patch = {}) { return view(patch).click('Save baseline'); }
 function trial(patch = {}) { return view({ ...baseline(), inquiryPrediction: 'Oxygen in B will fall because the biological lights are off.', ...patch }).click('Create paired trial'); }
 afterEach(() => vi.restoreAllMocks());
@@ -118,16 +118,20 @@ describe('Aquarium paired trials and care evidence', () => {
   it('records actual hourly changes separately and bounds the history', () => {
     vi.spyOn(Math,'random').mockReturnValue(.99);
     const v = view({ careEvidence: Array.from({length:8},(_,i)=>({tick:i})) }), before = copy(v.state());
-    const after = v.click('Pause and observe one aquarium hour'), evidence = after.careEvidence.at(-1);
+    const after = v.observe(), evidence = after.careEvidence.at(-1);
     expect(after.careEvidence).toHaveLength(8); expect(evidence.kind).toBe('hour'); expect(evidence.fromTick).toBe(10); expect(evidence.tick).toBe(11);
     expect(evidence.exchange).toEqual(after.lastEcosystemExchange); expect(evidence.changes.find(m=>m.key==='dissolvedO2').delta).toBeCloseTo(after.waterChem.dissolvedO2-before.waterChem.dissolvedO2,8);
   });
   it('switches workspace views without changing simulation or losing the live display', () => {
     const v = view(), before = copy(v.state()); const nav = findElement(v.element,n=>n.type==='nav'&&n.props['aria-label']==='Aquarium workspace');
-    expect(nav).toBeTruthy(); const button = findElement(nav,n=>n.type==='button'&&n.props['aria-controls']==='aquarium-panel-decide');button.props.onClick();
+    expect(nav).toBeTruthy(); const button = findElement(nav,n=>n.type==='button'&&n.props['data-aquarium-workspace-nav']==='decide');button.props.onClick();
     expect(v.state()).toEqual({...before,aquariumWorkspacePanel:'decide'});
-    const next = view(v.state()); expect(next.byId('aquarium-panel-observe').props.hidden).toBe(true);expect(next.byId('aquarium-panel-decide').props.hidden).toBe(false);
-    expect(next.byId('aquarium-live-tank')).toBeTruthy();expect(next.byId('aquarium-care-actions')).toBeTruthy();
+    const next = view(v.state()); const panel = name => findElement(next.element, n => n.props?.['data-aquarium-workspace-panel'] === name);
+    expect(panel('observe').props.hidden).toBe(true); expect(panel('decide').props.hidden).toBe(false);
+    const nextNav = findElement(next.element, n => n.props?.['data-aquarium-workspace-nav'] === 'decide');
+    expect(nextNav.props['aria-controls']).toBe(panel('decide').props.id);
+    expect(findElement(next.element, n => n.props?.instanceKey === 'live-freshwater')).toBeTruthy();
+    expect(findElement(next.element, n => n.props?.['data-aquarium-care-actions'] === 'true')).toBeTruthy();
   });
   it('trial simulation never calls external XP rewards while live healthy hours still do', () => {
     const awardXP = vi.fn();
@@ -135,11 +139,11 @@ describe('Aquarium paired trials and care evidence', () => {
     const starting = view({ ...baseline(healthy), inquiryPrediction: 'Changing the lights changes the day phase.' }).click('Create paired trial');
     view(starting, { awardXP }).click('Observe both +6 h'); expect(awardXP).not.toHaveBeenCalled();
     vi.spyOn(Math,'random').mockReturnValue(.99);
-    view(healthy, { awardXP }).click('Pause and observe one aquarium hour');
+    view(healthy, { awardXP }).observe();
     expect(awardXP).toHaveBeenCalledWith('aquarium', 2, 'Healthy tank maintenance');
   });
   it('live observation preserves existing experiment snapshots', () => {
-    const initial = trial(), next = view(initial).click('Pause and observe one aquarium hour');
+    const initial = trial(), next = view(initial).observe();
     expect(next.inquiryExperiment).toEqual(initial.inquiryExperiment); expect(next.observationBaseline).toEqual(initial.observationBaseline); expect(next.simTick).toBe(11);
   });
   it('offers only saved plant species and rejects invalid or unchanged biomass', () => {

@@ -99,9 +99,8 @@ describe('SkySchool persistent answer feedback announcements', () => {
     expect(region.textContent).toContain(correct ? 'Correct!' : 'Not quite.');
     if (!correct) expect(region.textContent).toContain(question.correct);
     expect(region.textContent).toContain(question.explanation);
-    // Disabling the clicked answer may natively blur it. Feedback must not
-    // move focus to the announcement or another control.
-    expect([choice, document.body]).toContain(document.activeElement);
+    // Answer feedback leaves the learner on the same focusable control.
+    expect(document.activeElement).toBe(choice);
     expect(host.querySelector('[data-quiz-study-link]')).toBeTruthy();
     expect(region.contains(host.querySelector('[data-quiz-study-link]'))).toBe(false);
     expect([latest.quizScore, latest.quizTotal]).toEqual([correct ? 1 : 0, 1]);
@@ -157,7 +156,7 @@ describe('SkySchool persistent answer feedback announcements', () => {
     await click(choice);
     expect(feedback(kind)).toBe(region); expectStatus(region);
     expect(region.textContent).toBe('Your answer: ' + wrong + '. Correct answer: ' + correct + '.');
-    expect([choice, document.body]).toContain(document.activeElement); expect(state.score).toBe(0);
+    expect(document.activeElement).toBe(choice); expect(state.score).toBe(0);
   });
 
   it('announces checklist completion in the existing status and clears it when a new review begins', async () => {

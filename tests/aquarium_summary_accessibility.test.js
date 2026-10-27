@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { React, ReactDOMServer, loadTool, makeCtx, newStore, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { React, ReactDOMClient, ReactDOMServer, loadTool, makeCtx, newStore, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 function elements(node, predicate, out = []) {
   if (!node || typeof node !== 'object') return out;
@@ -31,7 +31,7 @@ function setup(patch = {}) {
     function Capture() { tree = tool.render(makeCtx({}, store)); return null; }
     ReactDOMServer.renderToStaticMarkup(React.createElement(Capture)); return tree;
   }
-  return { render, state: () => store.toolData._aquarium };
+  return { render, tool, store, state: () => store.toolData._aquarium };
 }
 const named = (tree, pattern) => elements(tree, node => pattern.test(node.props?.['aria-label'] || ''));
 function domFor(node) {
@@ -42,7 +42,7 @@ function domFor(node) {
 describe('Aquarium named summaries and numeric habitat information', () => {
   it('exposes vessel configuration and mission points with supported roles and unchanged visible values', () => {
     const t = setup(), tree = t.render();
-    const liveDisplay = elements(tree, node => typeof node.type === 'function' && node.props?.id === 'aquarium-live-tank')[0];
+    const liveDisplay = elements(tree, node => typeof node.type === 'function' && node.props?.instanceKey?.startsWith('live-'))[0];
     expect(liveDisplay).toBeTruthy();
     // Render the actual display component without its large illustrated tank child.
     const display = domFor(React.cloneElement(liveDisplay, { mode: 'illustrated', children: null }));
@@ -55,15 +55,30 @@ describe('Aquarium named summaries and numeric habitat information', () => {
     expect(t.state().habitatMissionPoints).toBe(12); expect(t.state().observationNotes).toBe('Keep my observation.');
   });
 
-  it('keeps stocked-organism removal buttons inside a named group without suppressing the individual actions', () => {
-    const t = setup(), group = named(t.render(), /^Organisms currently stocked$/)[0];
-    expect(group?.props.role).toBe('group'); expect(group.props['aria-hidden']).toBeUndefined();
-    const buttons = elements(group, node => node.type === 'button');
-    expect(buttons.map(b => b.props['aria-label'])).toEqual(['Remove Amber from tank', 'Remove Pearl from tank']);
-    buttons[0].props.onClick();
-    expect(t.state().fishInstanceIds).toEqual(['fish-2']);
-    expect(t.state().tankFish).toEqual(['guppy']); expect(t.state().fishNames['fish-2']).toBe('Pearl');
-    expect(t.state().observationNotes).toBe('Keep my observation.');
+  it('keeps stocked-organism removal buttons inside a named group without suppressing the individual actions', async () => {
+    const t = setup(), previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host); let latest;
+    function Host() {
+      const [data, setData] = React.useState(t.store.toolData); latest = data._aquarium;
+      return t.tool.render(makeCtx({ toolData: data, setToolData: setData }, t.store));
+    }
+    try {
+      await React.act(async () => root.render(React.createElement(Host)));
+      const group = host.querySelector('[aria-label="Organisms currently stocked"]');
+      expect(group.getAttribute('role')).toBe('group'); expect(group.hasAttribute('aria-hidden')).toBe(false);
+      const buttons = [...group.querySelectorAll('button')];
+      expect(buttons.map(button => button.getAttribute('aria-label'))).toEqual(['Remove Guppy: Amber from tank', 'Remove Guppy: Pearl from tank']);
+      buttons.forEach(button => expect(button.textContent).toContain('Guppy'));
+      await React.act(async () => { buttons[0].focus(); buttons[0].click(); });
+      expect(latest.fishInstanceIds).toEqual(['fish-2']); expect(latest.tankFish).toEqual(['guppy']);
+      expect(latest.fishNames['fish-2']).toBe('Pearl'); expect(latest.observationNotes).toBe('Keep my observation.');
+      expect(document.activeElement).toBe(buttons[1]);
+    } finally {
+      await React.act(async () => root.unmount()); host.remove();
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
   });
 
   it('identifies each resident’s vitality summary and retains the underlying readable detail', () => {

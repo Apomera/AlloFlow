@@ -30,8 +30,8 @@ function mission(seed = {}, overrides = {}) {
   function find(predicate) { return walk(tree, predicate)[0]; }
   function action(name) { return find(node => node.props?.['data-flight-challenge-action'] === name); }
   function select(id) { find(node => node.props?.['data-flight-challenge'] === id).props.onClick(); draw(); }
-  function edit(label, value) { find(node => node.type === 'textarea' && (node.props?.id === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
-  function control(label, value) { find(node => (node.props?.id === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
+  function edit(label, value) { find(node => node.type === 'textarea' && (node.props?.['data-migration-id'] === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
+  function control(label, value) { find(node => (node.props?.['data-migration-id'] === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
   function load(prediction = 'I will change the named control and compare the model measurements.') {
     edit('migration-mission-prediction', prediction); action('load').props.onClick(); draw();
   }
@@ -205,7 +205,7 @@ describe('Migration flight challenges', () => {
     ui.select('formation');
     const translatedView = document.createElement('div');
     translatedView.innerHTML = ui.draw();
-    const prediction = translatedView.querySelector('#migration-mission-prediction');
+    const prediction = translatedView.querySelector("[data-migration-id=\"migration-mission-prediction\"]");
     expect(prediction).not.toBeNull();
     expect(prediction.labels).toHaveLength(1);
     expect(prediction.labels[0].textContent.trim()).toBe('Translated stem.migration.mission_prediction_label');

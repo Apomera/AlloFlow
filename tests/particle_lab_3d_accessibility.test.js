@@ -510,7 +510,9 @@ describe('STEM Lab Three.js loading — single canonical path (sweep)', () => {
     // The host keeps one local-first reference plus two network fallbacks,
     // all inside the single canonical ensureThree path.
     const moduleSource = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
-    expect((moduleSource.match(/three\.min\.js/g) || []).length).toBe(3); // local + cdnjs + jsDelivr
+    const ensureThree = moduleSource.slice(moduleSource.indexOf('ensureThree: function (opts)'), moduleSource.indexOf('ensureThree: function (opts)') + 5000);
+    expect(ensureThree).toContain("cacheKey: 'three-core'");
+    expect(ensureThree).toContain("localThreeUrls.concat(['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'])");
     expect(moduleSource).toContain('ensureThree: function (opts)');
   }, 60000); // reads 100+ tool files synchronously; OneDrive contention blew the 5s default
 

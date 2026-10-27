@@ -121,6 +121,27 @@ describe('resolveReviewFindings through the real pipeline', () => {
     expect(over.skipped).toBe('over-cap');
   });
 
+  // 2026-10-26 (syllabus_sie): a 3-node finding showed the model one element and recorded its verdict for all three.
+  it('a multi-node finding shows the other flagged elements and records how many the model saw', async () => {
+    const prompts = [];
+    const p = makePipeline(async (prompt) => { prompts.push(String(prompt)); return JSON.stringify({ items: [{ key: 'equalAccess|potential|text_block_heading', action: 'not-an-issue', reason: 'Body text.' }] }); });
+    const f = { engine: 'equalAccess', bucket: 'potential', id: 'text_block_heading', description: 'desc', nodes: 3, wcagCriteria: ['1.3.1'], details: [
+      { snippet: '<p>gone</p>', message: 'first: unlocatable', path: { dom: '/html[1]/body[1]/main[1]/p[42]', aria: '' } },
+      { snippet: '<p>Just a paragraph.</p>', message: 'second: located', path: { dom: '/html[1]/body[1]/main[1]/p[3]', aria: '' } },
+      { snippet: '<p>Total 95</p>', message: 'third: also flagged', path: { dom: '/html[1]/body[1]/main[1]/p[2]', aria: '' } },
+    ] };
+    const out = await p.resolveReviewFindings(HTML, [f], {});
+    const sent = JSON.parse(prompts[0].split('UNTRUSTED ITEMS DATA:\n"""\n')[1].split('\n"""')[0]);
+    expect(sent[0].note).toBe('second: located'); // the note belongs to the element shown
+    expect(sent[0].element).toBe('<p>Just a paragraph.</p>');
+    expect(sent[0].alsoFlagged).toEqual([{ note: 'first: unlocatable', element: '<p>gone</p>' }, { note: 'third: also flagged', element: '<p>Total 95</p>' }]);
+    expect(prompts[0]).toContain('"not-an-issue" must hold for every one of them');
+    expect(out.dispositions[0]).toMatchObject({ action: 'not-an-issue', nodesShown: 3 });
+    const single = await p.resolveReviewFindings(HTML, [findingFor('text_quoted_correctly', '/html[1]/body[1]/main[1]/p[1]')], {});
+    expect(JSON.parse(prompts[1].split('UNTRUSTED ITEMS DATA:\n"""\n')[1].split('\n"""')[0])[0].alsoFlagged).toBeUndefined();
+    expect(single.dispositions[0].nodesShown).toBe(1);
+  });
+
   it('a prose reply leaves the document untouched', async () => {
     const p = makePipeline(async () => 'Sorry, I cannot help with that.');
     const out = await p.resolveReviewFindings(HTML, [findingFor('text_quoted_correctly', '/html[1]/body[1]/main[1]/p[1]')], {});
