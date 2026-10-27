@@ -1,0 +1,21 @@
+{
+  "stem.bridgelab.challenge_after_example_note": "Saved after the worked example, so it earns no XP.",
+  "stem.bridgelab.challenge_design_summary": "{style} truss, {height} m deep, {material}, {area} mm² members, bracing every {brace} panel(s)",
+  "stem.bridgelab.challenge_example_locked": "Earn a star, or use all three hints, to unlock a worked example.",
+  "stem.bridgelab.challenge_example_show": "Show the best design this model allows",
+  "stem.bridgelab.challenge_example_cost": "After viewing it you can still record designs, but they earn no XP.",
+  "stem.bridgelab.challenge_example_buckling": "Buckling governs: the members are sized so the most slender compressed one does not bow sideways. Yield alone would allow a smaller section.",
+  "stem.bridgelab.challenge_example_yield": "Yield governs: the members are sized for the material's strength. They are stocky enough that buckling is not the first failure.",
+  "stem.bridgelab.challenge_example_title": "Worked example: the best design this model allows",
+  "stem.bridgelab.challenge_example_result": "Safety factor {sf} (yield {yield}, buckling {buckling}); {value}.",
+  "stem.bridgelab.challenge_example_compare": "The same geometry in each material",
+  "stem.bridgelab.challenge_col_material": "Material",
+  "stem.bridgelab.challenge_col_section": "Smallest safe section",
+  "stem.bridgelab.challenge_none_safe": "None is safe up to 30,000 mm²",
+  "stem.bridgelab.challenge_example_gap": "Your saved best is {pct}% above this.",
+  "stem.bridgelab.challenge_print_title": "Design challenge results",
+  "stem.bridgelab.challenge_print_scope": "Each result is the best design recorded for that challenge. Par is the best score this classroom model allows for the same site and load.",
+  "stem.bridgelab.challenge_print_brief": "Brief",
+  "stem.bridgelab.challenge_print_design": "Recorded design",
+  "stem.bridgelab.challenge_print_result": "Result"
+}

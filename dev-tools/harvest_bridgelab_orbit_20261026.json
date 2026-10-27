@@ -1,0 +1,9 @@
+{
+  "stem.bridgelab.view_orbit_controls": "Turn and zoom the 3D bridge",
+  "stem.bridgelab.orbit_left": "Turn left",
+  "stem.bridgelab.orbit_right": "Turn right",
+  "stem.bridgelab.orbit_up": "Tilt up",
+  "stem.bridgelab.orbit_down": "Tilt down",
+  "stem.bridgelab.orbit_zoom_in": "Zoom in",
+  "stem.bridgelab.orbit_zoom_out": "Zoom out"
+}
