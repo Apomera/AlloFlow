@@ -3922,14 +3922,15 @@ var _lazyIcon = function (name) {
       var options = next[set.field];
       if (!Array.isArray(options) || options.length < 2 || options.some(function (option) { return typeof option !== 'string' || !option.trim(); })) return;
       if (_quizDuplicateStrings(options).length || options.some(_quizNamesOtherOptions) || _quizFixedOrderOptions(options)) return;
-      if (set.parallel.some(function (name) { return next[name] != null && (!Array.isArray(next[name]) || next[name].length !== options.length); })) return;
+      // An empty parallel array (generation's "no optionFeedback") carries nothing to misalign.
+      if (set.parallel.some(function (name) { return next[name] != null && (!Array.isArray(next[name]) || (next[name].length > 0 && next[name].length !== options.length)); })) return;
       var keyIndexes = _quizKeyIndexes(options, set.keys.filter(function (key) { return key != null && String(key).trim(); }));
       if (!keyIndexes || !keyIndexes.length) return;
       var order = chooseOrder(set, options, keyIndexes);
       if (!order) return;
       if (next === q) next = Object.assign({}, q);
       [set.field].concat(set.parallel).forEach(function (name) {
-        if (Array.isArray(next[name])) { var source = next[name]; next[name] = order.map(function (i) { return source[i]; }); }
+        if (Array.isArray(next[name]) && next[name].length) { var source = next[name]; next[name] = order.map(function (i) { return source[i]; }); }
       });
     });
     return next;

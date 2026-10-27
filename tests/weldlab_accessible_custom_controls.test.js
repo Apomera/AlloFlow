@@ -73,6 +73,6 @@ describe('Visible control labels and named information groups',()=>{
   const source=readFileSync('stem_lab/stem_tool_weldlab.js','utf8'),restored=stripWeldlabCoverageFixes(source);
   expect(stripWeldlabCoverageFixes(restored)).toBe(restored);
   expect(createHash('sha256').update(Buffer.from(restored.replace(/\n/g,'\r\n'))).digest('hex')).toBe('93f8f62eaa5cfbaa15d2cac458623116348e81089d95539e2caf086da81e6061');
-  expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_weldlab.js')).toEqual(Buffer.from(source));
+  expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_weldlab.js').equals(Buffer.from(source)), 'public mirror is byte-identical').toBe(true);
  });
 });

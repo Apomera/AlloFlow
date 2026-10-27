@@ -18,6 +18,7 @@
     "quality",
     "a11y-audit",
     "app",
+    "runtime_assets",
     "test_prep",
     "reading_library/books",
     "lang/*.js",

@@ -123,7 +123,8 @@ describe('1b. learner fill-blank card', () => {
       onRecordQuizResponses: vi.fn((id, key, value) => { recorded[key] = value; }),
       callGemini: vi.fn(), gradeLevel: '5th', ...extra
     })));
-    const input = host.querySelector('input[aria-label="a11y.fill_in_blank"]');
+    // The label now names its question: "Fill in the blank — Question 1: …".
+    const input = host.querySelector('input[aria-label^="Fill in the blank — Question 1"]');
     expect(input).toBeTruthy();
     return { packets, recorded, input };
   }

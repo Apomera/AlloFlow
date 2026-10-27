@@ -13,6 +13,14 @@ export function stripWeldlabPhaseFixes(source) {
     if (result.split(mergedBorder).length !== 2) throw Error('Ambiguous merged catalog contrast restoration');
     result = result.replace(mergedBorder, mergedBorder.replace('border-slate-500', 'border-slate-400'));
   }
+  // The cross-tool print-shell language pass (36bfcb8596, gated by
+  // generated_document_language.test.js) tagged the inspection report shell
+  // before the milestone round began; older checkpoints predate that edit.
+  const taggedReport = `var html = '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + esc(REPORT_TITLE) + '</title><style>' +`;
+  if (result.includes(taggedReport)) {
+    if (result.split(taggedReport).length !== 2) throw Error('Ambiguous report language restoration');
+    result = result.replace(taggedReport, () => `var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(REPORT_TITLE) + '</title><style>' +`);
+  }
   for (const change of [...changes].reverse()) {
     if (!result.includes(change.new)) continue;
     if (result.split(change.new).length !== 2) throw Error('Ambiguous phase restoration: ' + change.owner);

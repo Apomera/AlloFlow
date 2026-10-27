@@ -78,7 +78,13 @@ for (const file of files) describe(file + ' protected record host integration', 
       const raw = literals[0];
       // Packaged local files use the reviewed byte-integrity manifest and do
       // not need an HTTP cache identity. Remote URLs must remain content-pinned.
-      if (!raw.startsWith('./') || raw.includes('?')) expect(raw.split('?')[1], asset + ' cache identity').toBe('v=' + digest('sha256', readFileSync(asset), 'hex').slice(0, 10));
+      // A dev build pins the content hash (build.js CONTENT_HASH_PINNED uses 8 hex digits);
+      // deploy.sh's production build pins the release commit (pluginCdnVersion). Each
+      // changes whenever the bytes do; the sha384 integrity below is what guards them.
+      const sha = digest('sha256', readFileSync(asset), 'hex');
+      const releasePin = (source.match(/pluginCdnVersion\s*=\s*'([0-9a-f]{40})'/) || [])[1];
+      const pins = ['v=' + sha.slice(0, 10), 'v=' + sha.slice(0, 8)].concat(releasePin ? ['v=' + releasePin] : []);
+      if (!raw.startsWith('./') || raw.includes('?')) expect(pins, asset + ' cache identity').toContain(raw.split('?')[1]);
       // The shared loader converts CDN URLs to bundled paths on Desktop;
       // the explicit protected-workspace bootstrap already uses ./ there.
       const url = desktop ? raw.replace(/^https:\/\/alloflow-cdn\.pages\.dev\//, './') : raw;

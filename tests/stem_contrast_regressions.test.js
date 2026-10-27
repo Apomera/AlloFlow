@@ -170,7 +170,15 @@ describe('Gradient and exported-card contrast sweep', () => {
   it('pins accessible action treatments in inline-style tools', () => {
     // Arch Studio's pink custom-color Paint button was retired on 09-09 (78fa7484d):
     // choosing a custom color now applies it directly.
-    expect(source('stem_lab/stem_tool_climateExplorer.js')).toContain("fontWeight: 900, color: '#052e16'");
+    // 10-27 (36bfcb859): Climate's green-gradient XP pill (#052e16 on #16a34a, 4.52:1)
+    // joined the themed header tokens; text on raised is AA in light, dark and contrast.
+    expect(source('stem_lab/stem_tool_climateExplorer.js')).toContain("background:quizColors.raised,border:'1px solid '+quizColors.border,fontSize:12,fontWeight:900,color:quizColors.text");
+    expect(source('stem_lab/stem_tool_climateExplorer.js')).toContain("raised:'#111111', text:'#ffffff'");
+    expect(source('stem_lab/stem_tool_climateExplorer.js')).toContain("raised:'#1e293b', text:'#f1f5f9'");
+    expect(source('stem_lab/stem_tool_climateExplorer.js')).toContain("raised:'#f1f5f9', text:'#16201a'");
+    [['#ffffff', '#111111'], ['#f1f5f9', '#1e293b'], ['#16201a', '#f1f5f9']].forEach(([fg, bg]) => {
+      expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5);
+    });
     expect(source('stem_lab/stem_tool_flightsim.js')).toContain('linear-gradient(135deg, #047857, #065f46)');
     expect(source('stem_lab/stem_tool_microbiology.js')).toContain('linear-gradient(135deg, #047857 0%, #065f46 100%)');
     // 10-05: the Orrery challenge Submit became .orr-practice-primary (white on #164e63,

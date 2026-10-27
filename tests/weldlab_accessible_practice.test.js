@@ -19,7 +19,7 @@ describe('Accessible Diagnose practice transitions', () => {
     expect(stripWeldlabPracticeFixes(restored)).toBe(restored);
     const bytes=Buffer.from(restored.replace(/\n/g,'\r\n'),'utf8');
     expect(createHash('sha256').update(bytes).digest('hex')).toBe('9f283a107274dd66498dbf31117c9128f8187eca44aa95d035ecb2077190b3e8');
-    expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_weldlab.js')).toEqual(Buffer.from(source));
+    expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_weldlab.js').equals(Buffer.from(source)), 'public mirror is byte-identical').toBe(true);
   });
   it('focuses the new prompt on Start and Next, then leaves repair exploration focus alone', async () => {
     const app = await mountState({view:'defectDiagnose',dd2Idx:-1});

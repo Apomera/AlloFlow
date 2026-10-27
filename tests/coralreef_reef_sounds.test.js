@@ -277,11 +277,12 @@ describe('Reef sounds follow the dive', () => {
     expect(healthy.ctx.started.filter((s) => s.buffer && s.buffer.duration === 1).length).toBeLessThanOrEqual(seconds + 2);
   });
 
-  it('the panel uses the site: the damaged reef plays fewer shrimp and occasional fish calls, with its own sourced line', async () => {
+  it('the panel uses the site: the damaged reef plays a few shrimp and rare calls, with its own sourced line', async () => {
     const t = await mountTool({ diveSiteId: 'damaged', reefSound: true });
     await startDive(t);
     const note = t.host.querySelector('[data-sound-note]').textContent;
-    expect(note).toContain('Playing: snapping shrimp (a few), fish calls (now and then)');
+    // Fish calls are scaled to the healthy reef's fish, so adding species does not move this word.
+    expect(note).toContain('Playing: snapping shrimp (a few), fish calls (rarely)');
     expect(note).toContain('On this damaged reef you hear fewer shrimp snaps and fewer kinds of fish calls.');
     expect(note).toContain('twice as many young fish moved in');
   });

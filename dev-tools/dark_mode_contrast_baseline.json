@@ -27,6 +27,7 @@
       "DARK-ONLY-DEF|.allo-docsuite [data-reading-options] button:disabled, .theme-contrast": 1,
       "DARK-ONLY-DEF|.allo-docsuite [data-reading-options] button:hover:not(:disabled)": 1,
       "DARK-ONLY-DEF|.allo-docsuite button": 1,
+      "DARK-ONLY-DEF|.allo-docsuite button[class]:hover:not(:disabled)": 1,
       "DARK-ONLY-DEF|.allo-docsuite input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([t": 2,
       "DARK-ONLY-DEF|.border-4.bg-white:not([data-stem-tool-surface] *)": 1,
       "DARK-ONLY-DEF|.prose a:not([data-stem-tool-surface] *)": 1,
@@ -43,9 +44,6 @@
       "DARK-ONLY-DEF|[style*=\"border: 1px solid #334155\"], .theme-contrast [style*=\"border:": 1,
       "DARK-ONLY-DEF|[style*=\"color: #cbd5e1\"], .theme-contrast [style*=\"color:#cbd5e1\"], .": 1,
       "DARK-ONLY-DEF|h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme": 1
-    },
-    "games_source.jsx": {
-      "CSS-LITERAL-VS-VAR|.glossary-crossword-dialog [data-help-key=\"crossword_grid\"]": 1
     },
     "view_header_source.jsx": {
       "PORTAL-ESCAPE|document.body": 1

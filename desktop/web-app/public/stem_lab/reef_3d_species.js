@@ -4974,18 +4974,25 @@
     // remain planted. Their root curves share a vertical hinge in fish space
     // (local X here). Reuse the ordinary batch rig without splitting the draw,
     // changing the rest mesh, or uploading positions/normals every frame.
-    var pectoralRig=new Float32Array(80),pectoralParts=new Float32Array(geo.attributes.position.count*4),pectoralPose=new T.Matrix4();
+    // Each web's pose is a pivot node beside the mesh, as in every batch.
+    var pectoralRig=new Float32Array(80),pectoralParts=new Float32Array(geo.attributes.position.count*4),pectoralPivots=[];
     function posePectoral(part,angle){
-      var at=(part.rigSlot-1)*20;pectoralPose.makeRotationX(angle);pectoralPose.setPosition(0,.08*L,part.side*.052*L);
-      for(var row=0;row<3;row++)batchRow(pectoralRig,at+row*4,pectoralPose,row);
+      var at=(part.rigSlot-1)*20,pv=pectoralPivots[part.rigSlot-1];pv.rotation.x=angle;pv.updateMatrix();
+      for(var row=0;row<3;row++)batchRow(pectoralRig,at+row*4,pv.matrix,row);
     }
     pectorals.forEach(function(part,index){
       part.rigSlot=index+1;part.hingeLocal=[0,.08*L,part.side*.052*L];
+      var pv=kit.node('pectoral-pivot',frame);pv.position.set(0,.08*L,part.side*.052*L);pectoralPivots.push(pv);
       var at=index*20;pectoralRig[at+14]=1;pectoralRig[at+16]=1;pectoralRig[at+17]=pectoralRig[at+18]=pectoralRig[at+19]=-1;
       for(var v=part.first;v<part.first+part.count;v++){var p=v*3,q=v*4;pectoralParts[q]=geo.attributes.position.array[p];pectoralParts[q+1]=geo.attributes.position.array[p+1]-.08*L;pectoralParts[q+2]=geo.attributes.position.array[p+2]-part.side*.052*L;pectoralParts[q+3]=part.rigSlot;}
       posePectoral(part,0);
     });
     geo.setAttribute('reefPart',new T.BufferAttribute(pectoralParts,4));
+    // The batch range table (vertex and index ranges, slot 0 = unrigged).
+    var batchTable=[],idx=geo.index.array,cut=[0];pectorals.forEach(function(part){cut.push(part.first,part.first+part.count);});cut.push(geo.attributes.position.count);
+    for(i=0;i<cut.length-1;i++){var a=cut[i],b=cut[i+1],s=i%2?(i+1)/2:0,start=-1,end=-1;if(b<=a)continue;for(var k=0;k<idx.length;k++)if(idx[k]>=a&&idx[k]<b){if(start<0)start=k;end=k;}
+      batchTable.push({part:s?'pectoral':'fish-and-perch',slot:s,first:a,count:b-a,start:start<0?0:start-start%3,length:start<0?0:end-end%3+3-(start-start%3)});}
+    geo.userData.batch=batchTable;
     geo.userData.longnoseHawkfish.pectoralMaxAngleRad=.093;
     kit.mesh(geo,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.00007*L,roughness:.48,side:T.DoubleSide},{swim:swim,swimShape:shape,batch:c.rm?null:pectoralRig,eye:true,iris:hex(0xc98065)}),'fish-and-perch',frame);geo.boundingBox.expandByScalar(.04*L);geo.boundingSphere.radius+=.04*L;
     var flow={x:0,z:0,pulse:0};c.anim(function(t,dt,motion){currentAt(c.root,motion,t,phase,flow);swim.value.set(phase+t*.62,L*(.002+.004*Math.min(1,Math.hypot(flow.x,flow.z)))*flow.pulse,14/L,t);

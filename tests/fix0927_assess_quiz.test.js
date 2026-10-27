@@ -300,6 +300,8 @@ describe('3. answer-cue guards', () => {
     const counts = [0, 0, 0, 0];
     questions.forEach(q => counts[q.options.indexOf(q.correctAnswer)]++);
     expect(Math.max(...counts)).toBeLessThanOrEqual(3);
+    // No model optionFeedback normalises to []; it must not block balancing or become [undefined x4].
+    expect(questions.every(q => Array.isArray(q.optionFeedback) && q.optionFeedback.length === 0)).toBe(true);
     const disputed = questions.find(q => q.question === 'Generated 3');
     expect(disputed.keyCheck).toMatchObject({ status: 'disputed', suggestedAnswer: 'Beta 3', checkedKey: 'Alpha answer 3' });
     expect(questions.find(q => q.question === 'Generated 0').keyCheck).toMatchObject({ status: 'confirmed' });

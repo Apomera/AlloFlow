@@ -424,8 +424,9 @@ describe('Cloudflare student shell build wiring', () => {
     const messageBlock = serviceWorker.slice(serviceWorker.indexOf("addEventListener('message'"));
     expect(messageBlock).toMatch(/ALLOFLOW_ACTIVATE_UPDATE[\s\S]{0,120}self\.skipWaiting\(\)/);
     const precachePaths = JSON.parse(serviceWorker.match(/const PRECACHE_PATHS = (\[[^;]*\]);/)[1]);
+    // Precache URLs may carry a content pin or loader flag (?v=…, ?autoload); the file is the path before it.
     for (const asset of precachePaths) {
-      expect(readFileSync(resolve(shellDir, asset)).length, 'Missing precache asset: ' + asset).toBeGreaterThan(0);
+      expect(readFileSync(resolve(shellDir, asset.split('?')[0])).length, 'Missing precache asset: ' + asset).toBeGreaterThan(0);
     }
     // postbuild pins the preload to its content hash; the exact pin is checked in
     // tests/maine_sld_state_search_policy.test.js.

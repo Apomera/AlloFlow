@@ -143825,7 +143825,9 @@
     "toast_audit_units_failed": "Accuracy audit inconclusive: {count} of {units} part(s) of the report could not be checked because the AI request failed. The findings below cover the rest. Formal export remains locked.",
     "toast_audit_stopped": "The accuracy check was stopped. The report was not changed.",
     "stop_accuracy_check": "Stop the accuracy check",
-    "a11y_temporary_report_writer_sources": "Temporary Report Writer sources"
+    "a11y_temporary_report_writer_sources": "Temporary Report Writer sources",
+    "toast_download_could_not_start": "The report download could not start. Your work remains open; try saving it again.",
+    "toast_print_could_not_start": "The report could not be printed. Your work remains open; try printing it again."
   },
   "learning_hub": {
     "title": "Learning Tools",

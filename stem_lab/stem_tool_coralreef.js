@@ -5694,10 +5694,17 @@
   }
   // How busy the site sounds: shrimp snaps and their loudness follow live coral, fish calls
   // follow the fish, and the variety of calls the reef's health.
-  function reefSoundMix(site) {
-    var cover = clamp((site && site.health ? +site.health.coralCover || 0 : 0.3) / 0.55, 0, 1.15), fish = 0;
+  // Fish are measured against the healthy reef, so new species never shift a site's word.
+  function reefFishCount(site) {
+    var fish = 0;
     populationFor(site).forEach(function (p) { var m = speciesMeta(p.id); if (m && m.group === 'fish') fish += p.count; });
-    var fishK = clamp(fish / 44, 0, 1.2);
+    return fish;
+  }
+  var reefSoundFishRef = 0;
+  function reefSoundMix(site) {
+    var cover = clamp((site && site.health ? +site.health.coralCover || 0 : 0.3) / 0.55, 0, 1.15), fish = reefFishCount(site);
+    if (!reefSoundFishRef) reefSoundFishRef = reefFishCount(EXPLORE_SITES.filter(function (s) { return s.id === 'healthy'; })[0]) || 1;
+    var fishK = clamp(fish / reefSoundFishRef, 0, 1.2);
     return {
       snapsPerS: Math.round(30 + 330 * Math.pow(cover, 1.4)), snapLevel: round1(0.25 + 0.75 * Math.min(1, cover)),
       callsPerS: Math.round((0.12 + 1.1 * fishK * (0.4 + 0.6 * Math.min(1, cover))) * 100) / 100,

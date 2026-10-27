@@ -7,6 +7,8 @@ const PRIVATE_MARKER = 'SYNTHETIC_PRIVATE_DOCUMENT_4812';
 const PROMPT = `Research the following topic: ${TOPIC}. Teacher document: ${PRIVATE_MARKER}. Return a research brief.`;
 const SOURCE = { title: 'How plants use light', link: 'https://science.example.edu/photosynthesis', snippet: 'Plants use light energy to make sugars.' };
 const BACKENDS = ['openai', 'claude', 'localai', 'ollama'];
+// Search carries the caller's cancellation guard (see gemini_request_controls.test.js); a function, never prompt text.
+const CONTROLS = { requestControls: { beforeRequest: expect.any(Function) } };
 let AIProvider, searchProvider, searchFetch;
 
 beforeAll(() => {
@@ -67,7 +69,7 @@ describe('source research query transport', () => {
     const topicSearch = vi.spyOn(searchProvider, 'searchTopic');
     const controller = new AbortController();
     const result = await api[method](PROMPT, false, true, null, topic, controller.signal, false, null, { intent: 'user-topic' });
-    expect(topicSearch).toHaveBeenCalledWith(topic, 10);
+    expect(topicSearch).toHaveBeenCalledWith(topic, 10, CONTROLS);
     expect(JSON.stringify(searchFetch.mock.calls)).not.toContain(PRIVATE_MARKER);
     expect(JSON.parse(searchFetch.mock.calls[0][1].body).q).toBe(topic);
     expect(transport.mock.calls[0][1].signal).toBe(controller.signal);
@@ -96,7 +98,7 @@ describe('source research query transport', () => {
     const search = vi.spyOn(searchProvider, 'searchTopic');
     const result = await ai.generateText(PROMPT, { search: true, searchQuery: topic, searchIntent: 'user-topic' });
 
-    expect(search).toHaveBeenCalledWith(topic, 10);
+    expect(search).toHaveBeenCalledWith(topic, 10, CONTROLS);
     expect(searchFetch).toHaveBeenCalledOnce();
     expect(JSON.parse(searchFetch.mock.calls[0][1].body)).toEqual({ q: topic, num: 10 });
     expect(JSON.stringify(searchFetch.mock.calls)).not.toContain(PRIVATE_MARKER);
@@ -119,7 +121,7 @@ describe('source research query transport', () => {
     const search = vi.spyOn(searchProvider, 'search');
     const result = await ai.generateText(PROMPT, { search: true, searchQuery: TOPIC });
 
-    expect(search).toHaveBeenCalledWith(TOPIC, 10, TOPIC);
+    expect(search).toHaveBeenCalledWith(TOPIC, 10, TOPIC, CONTROLS);
     expect(searchFetch).toHaveBeenCalledOnce();
     expect(JSON.parse(searchFetch.mock.calls[0][1].body)).toEqual({ q: TOPIC, num: 10 });
     expect(JSON.stringify(searchFetch.mock.calls)).not.toContain(PRIVATE_MARKER);

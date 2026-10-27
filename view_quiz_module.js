@@ -6939,8 +6939,9 @@ function _quizReorderChoiceSets(q, chooseOrder) {
       return typeof option !== 'string' || !option.trim();
     })) return;
     if (_quizDuplicateStrings(options).length || options.some(_quizNamesOtherOptions) || _quizFixedOrderOptions(options)) return;
+    // An empty parallel array (generation's "no optionFeedback") carries nothing to misalign.
     if (set.parallel.some(function (name) {
-      return next[name] != null && (!Array.isArray(next[name]) || next[name].length !== options.length);
+      return next[name] != null && (!Array.isArray(next[name]) || next[name].length > 0 && next[name].length !== options.length);
     })) return;
     var keyIndexes = _quizKeyIndexes(options, set.keys.filter(function (key) {
       return key != null && String(key).trim();
@@ -6950,7 +6951,7 @@ function _quizReorderChoiceSets(q, chooseOrder) {
     if (!order) return;
     if (next === q) next = Object.assign({}, q);
     [set.field].concat(set.parallel).forEach(function (name) {
-      if (Array.isArray(next[name])) {
+      if (Array.isArray(next[name]) && next[name].length) {
         var source = next[name];
         next[name] = order.map(function (i) {
           return source[i];
