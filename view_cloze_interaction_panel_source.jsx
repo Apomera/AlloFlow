@@ -25,6 +25,27 @@ function ClozeInteractionPanel(props) {
   // Defaults to the passage's own language — that is the text the student is
   // reading, and English is one tap away.
   const [bankLang, setBankLang] = React.useState('target');
+  // Tap path (WCAG 2.5.7): tap a chip to pick it up, then tap a blank. The
+  // blanks (ClozeInput, misc_components) read window.__alloClozeBankPick and
+  // the 'allo-cloze-bank-pick' event; a blank sends detail null once placed.
+  const [pickedIdx, setPickedIdx] = React.useState(null);
+  const sendPick = (word) => {
+      window.__alloClozeBankPick = word || null;
+      try { window.dispatchEvent(new CustomEvent('allo-cloze-bank-pick', { detail: word || null })); } catch (_) {}
+  };
+  const pickChip = (idx, word) => {
+      const next = pickedIdx === idx ? null : idx;
+      setPickedIdx(next);
+      sendPick(next === null ? null : word);
+      if (next !== null && playSound) playSound('click');
+  };
+  React.useEffect(() => {
+      const onPick = (e) => { if (!e.detail) setPickedIdx(null); };
+      window.addEventListener('allo-cloze-bank-pick', onPick);
+      return () => { window.removeEventListener('allo-cloze-bank-pick', onPick); sendPick(null); };
+  }, []);
+  // The payload follows the language toggle, so a pick made before a switch is stale.
+  React.useEffect(() => { setPickedIdx(null); sendPick(null); }, [bankLang]);
   return (
               <div
                   ref={wordBankRef}
@@ -50,6 +71,8 @@ function ClozeInteractionPanel(props) {
                                 setClozeCompletedSet(new Set());
                                 // The solved blanks live here; clearing only the set above changed nothing.
                                 if (typeof setClozeInstanceSet === 'function') setClozeInstanceSet(new Set());
+                                setPickedIdx(null);
+                                sendPick(null);
                                 playSound('click');
                             }}
                             className="text-blue-800 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
@@ -113,20 +136,28 @@ function ClozeInteractionPanel(props) {
                             : bankLang === 'both' ? `${translatedTerm} / ${englishTerm}`
                             : showTranslated ? translatedTerm
                             : englishTerm;
+                          const payload = bankLang === 'english' ? englishTerm : dragPayload;
+                          const isPicked = pickedIdx === idx;
                           return (
                               <span
                                 key={idx}
-                                className="px-3 py-1.5 bg-white text-blue-700 font-bold text-sm rounded-lg border border-blue-200 shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none"
+                                role="button"
+                                tabIndex={0}
+                                aria-pressed={isPicked}
+                                data-cloze-bank-chip="true"
+                                className={`px-3 py-1.5 font-bold text-sm rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${isPicked ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-700 ring-offset-1' : 'bg-white text-blue-700 border-blue-200'}`}
                                 draggable="true"
-                                onDragStart={(e) => e.dataTransfer.setData("text/plain", bankLang === 'english' ? englishTerm : dragPayload)}
+                                onDragStart={(e) => e.dataTransfer.setData("text/plain", payload)}
+                                onClick={() => pickChip(idx, payload)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickChip(idx, payload); } }}
                               >
-                                {/* Keyboard alternative: Cloze blanks are focusable text inputs that accept the same word directly; dragging is optional; keyboard users may type directly. */}
+                                {/* Pointer alternative to dragging: tap the chip, then tap a blank. Blanks also accept typing. */}
                                   {label}
                               </span>
                           );
                       })}
                   </div>
-                  <p className="text-[11px] text-blue-500 mt-2 text-center font-medium pointer-events-none">{t('simplified.cloze_instructions')}</p>
+                  <p className="text-[11px] text-blue-500 mt-2 text-center font-medium pointer-events-none">{t('simplified.cloze_instructions_tap')}</p>
               </div>
   );
 }

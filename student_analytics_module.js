@@ -120,10 +120,12 @@ try {
       '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
       '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 textarea:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
       '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
-      // Light-mode-only text tweaks — scoped off dark/contrast so they do not fight
-      // the .theme-dark/.theme-contrast .allo-docsuite remap on the panel root.
-      '.fixed.inset-0:not(.theme-dark):not(.theme-contrast) .text-slate-600 { color: #64748b !important; }',
-      '.fixed.inset-0:not(.theme-dark):not(.theme-contrast) .text-gray-400 { color: #6b7280 !important; }',
+      // Light-mode-only text tweak — scoped off dark/contrast so it does not fight the
+      // .theme-dark/.theme-contrast .allo-docsuite remap. The theme class sits on an ANCESTOR
+      // root, so :not() on the overlay alone matched every theme: every modal's slate-600 text
+      // became #64748b on dark panels (3.1:1). A slate-600 -> slate-500 "tweak" only lowered
+      // contrast, so it is gone; gray-400 -> gray-500 raises it.
+      '.fixed.inset-0:not(.theme-dark):not(.theme-contrast):not(:is(.theme-dark, .theme-contrast) *) .text-gray-400 { color: #6b7280 !important; }',
       // Supplementary theme remaps for the 15 Assessment Center Tailwind tokens not
       // in the shared docsuite union (values mirror dev-tools/gen_docsuite_theme.cjs
       // DARK/CONTRAST; the 232 common tokens are covered by the host docsuite block).

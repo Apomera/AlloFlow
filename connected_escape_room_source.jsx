@@ -73,7 +73,7 @@ export function RoomView({ room, progress, onAction, disabled = false, notice = 
     <p ref={noticeRef} tabIndex={-1} data-action-feedback className={notice ? 'cer-alert' : 'sr-only'} role="status" aria-live="polite" aria-atomic="true">{notice}</p>
     <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{movementNotice}</p>
     <PendingActionNotice room={room} action={pendingAction} onSelect={id => selectObject(id, true)} onControlFocus={element => { pendingControlRef.current = element; }} t={t}/>
-    <RoomDebrief room={room} progress={progress} solo={solo} headingRef={debriefRef} onSelect={id => selectObject(id, true)} t={t}/>
+    <RoomDebrief room={room} progress={progress} solo={solo} reflectionScope={workspaceKey} headingRef={debriefRef} onSelect={id => selectObject(id, true)} t={t}/>
     <DiscoveryUpdate room={room} progress={progress} solo={solo} onSelect={id => selectObject(id, true)} t={t}/>
     <InvestigationGuide room={room} progress={progress} selectedId={node.id} onSelect={id => selectObject(id, true)} t={t}/>
     {activityData && <TeamActivityBoard room={room} progress={progress} {...activityData} onSelect={id => selectObject(id, true)} t={t}/>}

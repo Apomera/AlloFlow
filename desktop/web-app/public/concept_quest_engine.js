@@ -276,7 +276,7 @@
   }
 
   function emptyLearningTotals(completeHistory) {
-    return { version: 1, completeHistory: completeHistory !== false, rounds: 0, totalAnswers: 0, correctAnswers: 0, combos: 0, roleSynergies: 0, peerAssists: 0, puzzlesSolved: 0, concepts: {}, conceptsCleared: [] };
+    return { version: 1, completeHistory: completeHistory !== false, rounds: 0, totalAnswers: 0, correctAnswers: 0, combos: 0, roleSynergies: 0, peerAssists: 0, puzzlesSolved: 0, concepts: {}, conceptsCleared: [], learners: {}, learnerHistoryComplete: completeHistory !== false };
   }
 
   function addLearningRound(totals, round, quest) {
@@ -286,10 +286,18 @@
     concepts[concept] = { concept: concept, correct: previous.correct + (round.correct || 0), total: previous.total + (round.total || 0), rounds: previous.rounds + 1 };
     var cleared = (totals.conceptsCleared || []).slice();
     if (round.enemyDefeated && cleared.indexOf(concept) < 0) cleared.push(concept);
+    var learners = Object.assign(Object.create(null), totals.learners || {});
+    (round.learnerEvidence || []).forEach(function(evidence) {
+      var previousLearner = learners[evidence.uid] || { uid: evidence.uid, responses: 0, correct: 0, firstResponses: 0, firstCorrect: 0, repeatResponses: 0, repeatCorrect: 0, peerSupportReceived: 0, seen: {} };
+      var first = !Object.prototype.hasOwnProperty.call(previousLearner.seen || {}, round.itemEvidenceKey);
+      var seen = Object.assign(Object.create(null), previousLearner.seen || {}); seen[round.itemEvidenceKey] = true;
+      learners[evidence.uid] = Object.assign({}, previousLearner, { seen: seen, responses: previousLearner.responses + 1, correct: previousLearner.correct + Number(evidence.correct), firstResponses: previousLearner.firstResponses + Number(first), firstCorrect: previousLearner.firstCorrect + Number(first && evidence.correct), repeatResponses: previousLearner.repeatResponses + Number(!first), repeatCorrect: previousLearner.repeatCorrect + Number(!first && evidence.correct), peerSupportReceived: previousLearner.peerSupportReceived + Number(evidence.peerSupportReceived) });
+    });
     return Object.assign({}, totals, {
       rounds: totals.rounds + 1, totalAnswers: totals.totalAnswers + (round.total || 0), correctAnswers: totals.correctAnswers + (round.correct || 0),
       combos: totals.combos + (round.combo ? 1 : 0), roleSynergies: totals.roleSynergies + (round.synergyCount || 0), peerAssists: totals.peerAssists + (round.assistedCount || 0),
-      puzzlesSolved: totals.puzzlesSolved + (round.roomKind === 'puzzle' && round.enemyDefeated ? 1 : 0), concepts: concepts, conceptsCleared: cleared
+      puzzlesSolved: totals.puzzlesSolved + (round.roomKind === 'puzzle' && round.enemyDefeated ? 1 : 0), concepts: concepts, conceptsCleared: cleared,
+      learners: learners, learnerHistoryComplete: totals.learnerHistoryComplete !== false && !(totals.rounds > 0 && !totals.learners) && Array.isArray(round.learnerEvidence)
     });
   }
 
@@ -621,6 +629,21 @@
       incoming: Math.max(0, incoming - absorbed), combo: combo, synergyCount: synergyCount,
       assistedCount: assistedCount, roomKind: room.kind, encounterRule: encounterRule, enemyDefeated: enemyDefeated
     };
+    if (!quest.solo) {
+      // Retain first-versus-repeat evidence independently of the capped visual log.
+      // Peer support is a game event, not proof that it caused a correct answer.
+      var itemText = JSON.stringify([challenge.sourceIndex, challenge.prompt || challenge.question, challenge.options, challenge.correctIndex]);
+      var itemHash = 2166136261;
+      for (var hashIndex = 0; hashIndex < itemText.length; hashIndex++) itemHash = Math.imul(itemHash ^ itemText.charCodeAt(hashIndex), 16777619);
+      roundRecord.itemEvidenceKey = 'item-' + (itemHash >>> 0).toString(16);
+      roundRecord.learnerEvidence = Object.keys(actions).map(function(uid) {
+        var peerSupportReceived = Object.keys(actions).some(function(helperUid) {
+          var helper = actions[helperUid];
+          return helperUid !== uid && helper.supportTargetUid === uid && helper.answerIndex === challenge.correctIndex && (helper.supportId === 'guard' || helper.supportId === 'encourage' || helper.supportId === 'clarify' && actions[uid].answerIndex !== challenge.correctIndex);
+        });
+        return { uid: uid, correct: actions[uid].answerIndex === challenge.correctIndex, peerSupportReceived: peerSupportReceived };
+      });
+    }
     return { quest: Object.assign({}, quest, bank ? { assessmentBank: bank } : {}, quest.solo ? {} : { learningTotals: addLearningRound(learningTotals(quest), roundRecord, quest) }, {
       rooms: rooms,
       phase: phase,
@@ -846,7 +869,9 @@
       conceptsCleared: totals.conceptsCleared,
       conceptBreakdown: conceptBreakdown,
       needsReview: conceptBreakdown.length && conceptBreakdown[0].accuracy < 70 ? conceptBreakdown[0] : null,
-      strongestConcept: conceptBreakdown.length ? conceptBreakdown[conceptBreakdown.length - 1] : null
+      strongestConcept: conceptBreakdown.length ? conceptBreakdown[conceptBreakdown.length - 1] : null,
+      learnerEvidence: Object.keys(totals.learners || {}).map(function(uid) { var row = Object.assign({}, totals.learners[uid]); delete row.seen; return row; }),
+      learnerHistoryComplete: totals.learnerHistoryComplete === true
     };
   }
 

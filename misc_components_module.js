@@ -124,20 +124,43 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
   };
   const acceptedList = (Array.isArray(acceptedAnswers) ? acceptedAnswers : []).concat([targetWord, _passage]).filter(Boolean);
   const isAcceptedAnswer = (value) => acceptedList.some((ans) => answerMatches(value, ans));
-  const handleDrop = (e) => {
-    e.preventDefault();
-    if (status === "success") return;
-    const droppedText = String(e.dataTransfer.getData("text/plain") || "").trim();
+  const placeWord = (raw) => {
+    const droppedText = String(raw || "").trim();
     if (isAcceptedAnswer(droppedText)) {
       setVal(droppedText);
       setEntered(droppedText);
       setStatus("success");
       if (onCorrect) onCorrect(targetWord);
-    } else {
-      setStatus("error");
-      setTimeout(() => setStatus("neutral"), 800);
+      return true;
     }
+    setStatus("error");
+    setTimeout(() => setStatus("neutral"), 800);
+    return false;
   };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (status === "success") return;
+    placeWord(e.dataTransfer.getData("text/plain"));
+  };
+  const [bankPick, setBankPick] = useState(() => typeof window !== "undefined" && window.__alloClozeBankPick || null);
+  useEffect(() => {
+    const onPick = (e) => setBankPick(e && e.detail || null);
+    window.addEventListener("allo-cloze-bank-pick", onPick);
+    return () => window.removeEventListener("allo-cloze-bank-pick", onPick);
+  }, []);
+  const placeBankPick = () => {
+    const word = window.__alloClozeBankPick || bankPick;
+    if (!word || status === "success") return false;
+    if (placeWord(word)) {
+      window.__alloClozeBankPick = null;
+      try {
+        window.dispatchEvent(new CustomEvent("allo-cloze-bank-pick", { detail: null }));
+      } catch (_) {
+      }
+    }
+    return true;
+  };
+  const armed = !!bankPick && status === "neutral";
   const handleDragOver = (e) => {
     if (status !== "success") {
       e.preventDefault();
@@ -168,7 +191,8 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
       "data-cloze-solved": status === "success" ? "true" : "false",
       onDrop: handleDrop,
       onDragOver: handleDragOver,
-      onDragLeave: handleDragLeave
+      onDragLeave: handleDragLeave,
+      onClick: placeBankPick
     },
     /* @__PURE__ */ React.createElement(
       "input",
@@ -176,10 +200,13 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
         type: "text",
         value: val,
         onChange: handleChange,
+        onKeyDown: (e) => {
+          if (e.key === "Enter" && placeBankPick()) e.preventDefault();
+        },
         readOnly: status === "success",
         className: `
                   text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all motion-reduce:transition-none outline-none focus:ring-2 focus:ring-indigo-400 rounded-t
-                  ${status === "success" ? "border-green-500 bg-green-50 text-green-800" : status === "error" ? "border-red-500 bg-red-50 animate-pulse motion-reduce:animate-none" : status === "active" ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200" : "border-indigo-300 bg-white focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200"}
+                  ${status === "success" ? "border-green-500 bg-green-50 text-green-800" : status === "error" ? "border-red-500 bg-red-50 animate-pulse motion-reduce:animate-none" : status === "active" || armed ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200" : "border-indigo-300 bg-white focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200"}
               `,
         style: { width },
         placeholder: "?",

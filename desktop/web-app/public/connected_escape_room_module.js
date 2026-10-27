@@ -579,16 +579,102 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
     return {};
   }
 
+  // connected_escape_room_solo.js
+  function soloStorageKey(room, uid = "local") {
+    const value = JSON.stringify(room);
+    let hash = 2166136261;
+    for (let i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+    return "allo-connected-solo:" + encodeURIComponent(uid || "local") + ":" + (hash >>> 0).toString(16);
+  }
+  function restoreSolo(room, raw) {
+    var _a, _b;
+    const fresh = { version: 1, room: JSON.stringify(room), attemptId: identity("solo"), progress: emptyProgress() };
+    if (!raw || raw.version !== 1 || raw.room !== fresh.room || typeof raw.attemptId !== "string" || !/^solo_[a-zA-Z0-9_-]{1,100}$/.test(raw.attemptId)) return fresh;
+    fresh.attemptId = raw.attemptId;
+    for (let pass = 0; pass < room.nodes.length; pass++) for (const node of room.nodes) {
+      if (raw.progress?.solved?.[node.id] === true && available(room, fresh.progress, node)) fresh.progress.solved[node.id] = true;
+    }
+    for (const node of room.nodes) if (available(room, fresh.progress, node)) {
+      for (let h = 1; h <= 3 && raw.progress?.hints?.[node.id]?.["h" + h] === true; h++) {
+        ((_a = fresh.progress.hints)[_b = node.id] || (_a[_b] = {}))["h" + h] = true;
+      }
+    }
+    return fresh;
+  }
+  function soloAction(room, state, nodeId, kind, value) {
+    const request = { attemptId: state.attemptId, requestId: identity("solo_action"), nodeId, kind, value };
+    const patch = planRequest(room, state.progress, request, "solo", { attemptId: state.attemptId, active: true, paused: false });
+    const progress = mergeProgress(state.progress, patch), code = progress.receipts[request.requestId]?.code || "invalid";
+    progress.receipts = {};
+    return { state: { ...state, progress }, code };
+  }
+
+  // connected_escape_room_reflection.js
+  var reflectionKey = (room, scope) => scope ? "reflection:" + soloStorageKey(room, scope) : "";
+  function readReflection(storage, room, scope) {
+    const key = reflectionKey(room, scope);
+    if (!key) return { text: "", status: "preview" };
+    if (!storage) return { text: "", status: "unavailable" };
+    try {
+      const raw = storage?.getItem(key);
+      if (!raw) return { text: "", status: "empty" };
+      const data = JSON.parse(raw);
+      if (data.version !== 1 || typeof data.text !== "string" || data.text.length > 4e3) return { text: "", status: "unavailable" };
+      return { text: data.text, status: "saved" };
+    } catch (_) {
+      return { text: "", status: "unavailable" };
+    }
+  }
+  function saveReflection(storage, room, scope, text2) {
+    const key = reflectionKey(room, scope);
+    if (!key || !storage || typeof text2 !== "string" || text2.length > 4e3) return false;
+    try {
+      storage.setItem(key, JSON.stringify({ version: 1, text: text2 }));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // connected_escape_room_debrief.jsx
   var React3 = window.React;
   var tr3 = (t, key, fallback, params = {}) => {
     const full = "connected_escape." + key, value = typeof t === "function" ? t(full, params) : "";
     return Object.entries(params).reduce((s, [k, v]) => s.replaceAll("{" + k + "}", String(v)), typeof value === "string" && value && value !== full ? value : fallback);
   };
-  function RoomDebrief({ room, progress, solo = false, teacher = false, onSelect, headingRef, t }) {
+  function PersonalReflection({ room, scope, t }) {
+    const storage = () => {
+      try {
+        return window.localStorage;
+      } catch (_) {
+        return null;
+      }
+    };
+    const storageKey = reflectionKey(room, scope);
+    const [entry] = React3.useState(() => readReflection(storage(), room, scope));
+    const [text2, setText] = React3.useState(entry.text);
+    const [status, setStatus] = React3.useState(entry.status);
+    React3.useEffect(() => {
+      const next = readReflection(storage(), room, scope);
+      setText(next.text);
+      setStatus(next.status);
+    }, [storageKey]);
+    const download = () => {
+      const blob = new Blob([room.title + "\n\n" + text2], { type: "text/plain;charset=utf-8" }), url = URL.createObjectURL(blob), link = document.createElement("a");
+      link.href = url;
+      link.download = "escape-room-reflection.txt";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    };
+    return /* @__PURE__ */ React3.createElement("section", { "data-room-personal-reflection": true }, /* @__PURE__ */ React3.createElement("h4", null, tr3(t, "personal_reflection_title", "Your explanation")), /* @__PURE__ */ React3.createElement("p", null, tr3(t, "personal_reflection_help", "Explain how two discoveries connect, then apply the idea to a new example. This response is unscored. Save it on this device or download it to share with your teacher.")), /* @__PURE__ */ React3.createElement("label", null, tr3(t, "personal_reflection_label", "My evidence, connection, and new example"), /* @__PURE__ */ React3.createElement("textarea", { maxLength: 4e3, value: text2, onChange: (event) => {
+      setText(event.target.value);
+      setStatus("unsaved");
+    } })), /* @__PURE__ */ React3.createElement("div", { className: "cer-row" }, /* @__PURE__ */ React3.createElement("button", { type: "button", disabled: !scope, onClick: () => setStatus(saveReflection(storage(), room, scope, text2) ? "saved" : "unavailable") }, tr3(t, "personal_reflection_save", "Save on this device")), /* @__PURE__ */ React3.createElement("button", { type: "button", disabled: !text2.trim(), onClick: download }, tr3(t, "personal_reflection_download", "Download my explanation"))), /* @__PURE__ */ React3.createElement("p", { role: "status", className: "cer-muted" }, status === "saved" ? tr3(t, "personal_reflection_saved", "Saved on this device. This has not been sent to your teacher.") : status === "unavailable" ? tr3(t, "personal_reflection_unavailable", "Device storage is unavailable. Your text remains here; download a copy before leaving.") : status === "preview" ? tr3(t, "personal_reflection_preview", "Preview responses are not saved.") : status === "unsaved" ? tr3(t, "personal_reflection_unsaved", "Changes not yet saved.") : ""));
+  }
+  function RoomDebrief({ room, progress, solo = false, teacher = false, onSelect, headingRef, reflectionScope, t }) {
     const recap = roomDebrief(room, progress);
     if (!recap) return null;
-    return /* @__PURE__ */ React3.createElement("section", { className: "cer-panel cer-debrief", "data-room-debrief": true, "aria-label": tr3(t, "debrief", "Room debrief") }, /* @__PURE__ */ React3.createElement("h3", { ref: headingRef, tabIndex: -1 }, tr3(t, "exit_open", "The exit is open!")), /* @__PURE__ */ React3.createElement("p", null, room.debrief), /* @__PURE__ */ React3.createElement("p", null, solo ? tr3(t, "solo_recap", "You connected {count} discoveries to open the exit.", { count: recap.discoveries }) : tr3(t, "shared_recap", "Your team connected {count} discoveries to open the exit.", { count: recap.discoveries })), /* @__PURE__ */ React3.createElement("p", { className: "cer-muted" }, solo ? tr3(t, "solo_support_recap", "Hints revealed: {hints}", { hints: recap.hints }) : tr3(t, "support_recap", "Hints revealed: {hints} \xB7 Objects completed with teacher support: {supported}", { hints: recap.hints, supported: recap.supported })), /* @__PURE__ */ React3.createElement("details", { "data-debrief-trail": true }, /* @__PURE__ */ React3.createElement("summary", null, tr3(t, "review_discovery_trail", "Review how the discoveries fit together")), /* @__PURE__ */ React3.createElement("p", { className: "cer-muted" }, tr3(t, "debrief_trail_help", "Open an object to connect the evidence you found with its discovery and reasoning.")), recap.objects.map((object) => /* @__PURE__ */ React3.createElement("details", { key: object.id, "data-debrief-object": object.id }, /* @__PURE__ */ React3.createElement("summary", null, object.name), object.objective && /* @__PURE__ */ React3.createElement("p", null, /* @__PURE__ */ React3.createElement("strong", null, tr3(t, "learning_connection", "Learning connection: ")), object.objective), object.evidence.length > 0 && /* @__PURE__ */ React3.createElement("div", { className: "cer-evidence-context" }, /* @__PURE__ */ React3.createElement("h4", null, tr3(t, "evidence_used", "Evidence that connected this object")), object.evidence.map((item) => /* @__PURE__ */ React3.createElement("div", { key: item.id }, /* @__PURE__ */ React3.createElement("strong", null, item.name), /* @__PURE__ */ React3.createElement("p", null, item.text)))), object.explanation && /* @__PURE__ */ React3.createElement(React3.Fragment, null, /* @__PURE__ */ React3.createElement("h4", null, tr3(t, "why_it_worked", "Why it worked")), /* @__PURE__ */ React3.createElement("p", null, object.explanation)), object.sourceQuote && /* @__PURE__ */ React3.createElement(React3.Fragment, null, /* @__PURE__ */ React3.createElement("h4", null, tr3(t, "lesson_connection", "From the lesson")), /* @__PURE__ */ React3.createElement("blockquote", null, object.sourceQuote)), /* @__PURE__ */ React3.createElement("p", null, /* @__PURE__ */ React3.createElement("strong", null, object.discovery.name)), /* @__PURE__ */ React3.createElement("p", null, object.discovery.text), object.supported && /* @__PURE__ */ React3.createElement("p", { className: "cer-muted" }, tr3(t, "teacher_assisted", "Completed with teacher support")), onSelect && /* @__PURE__ */ React3.createElement("button", { type: "button", "data-revisit-object": object.id, onClick: () => onSelect(object.id) }, tr3(t, "revisit_object", "Revisit {name}", { name: object.name }))))), /* @__PURE__ */ React3.createElement("details", { "data-debrief-discussion": true }, /* @__PURE__ */ React3.createElement("summary", null, teacher ? tr3(t, "discuss_learning", "Discuss the learning together") : solo ? tr3(t, "reflect_learning", "Reflect on what you discovered") : tr3(t, "team_reflect_learning", "Reflect with your team")), /* @__PURE__ */ React3.createElement("ul", { className: "cer-facts" }, /* @__PURE__ */ React3.createElement("li", null, tr3(t, "reflection_clue", "Which clue helped you most? Explain how it changed your thinking.")), /* @__PURE__ */ React3.createElement("li", null, tr3(t, "reflection_connections", "Choose two discoveries from different parts of the room. How did they work together to open the exit?")), /* @__PURE__ */ React3.createElement("li", null, tr3(t, "reflection_transfer", "Where else could you use an idea from this lesson? Give an example."))), /* @__PURE__ */ React3.createElement("p", { className: "cer-muted" }, tr3(t, "reflection_help", "Use the discovery review as evidence. You can discuss these prompts or reflect quietly at your own pace."))));
+    return /* @__PURE__ */ React3.createElement("section", { className: "cer-panel cer-debrief", "data-room-debrief": true, "aria-label": tr3(t, "debrief", "Room debrief") }, /* @__PURE__ */ React3.createElement("h3", { ref: headingRef, tabIndex: -1 }, tr3(t, "exit_open", "The exit is open!")), /* @__PURE__ */ React3.createElement("p", null, room.debrief), /* @__PURE__ */ React3.createElement("p", null, solo ? tr3(t, "solo_recap", "You connected {count} discoveries to open the exit.", { count: recap.discoveries }) : tr3(t, "shared_recap", "Your team connected {count} discoveries to open the exit.", { count: recap.discoveries })), /* @__PURE__ */ React3.createElement("p", { className: "cer-muted" }, solo ? tr3(t, "solo_support_recap", "Hints revealed: {hints}", { hints: recap.hints }) : tr3(t, "support_recap", "Hints revealed: {hints} \xB7 Objects completed with teacher support: {supported}", { hints: recap.hints, supported: recap.supported })), /* @__PURE__ */ React3.createElement("details", { "data-debrief-trail": true }, /* @__PURE__ */ React3.createElement("summary", null, tr3(t, "review_discovery_trail", "Review how the discoveries fit together")), /* @__PURE__ */ React3.createElement("p", { className: "cer-muted" }, tr3(t, "debrief_trail_help", "Open an object to connect the evidence you found with its discovery and reasoning.")), recap.objects.map((object) => /* @__PURE__ */ React3.createElement("details", { key: object.id, "data-debrief-object": object.id }, /* @__PURE__ */ React3.createElement("summary", null, object.name), object.objective && /* @__PURE__ */ React3.createElement("p", null, /* @__PURE__ */ React3.createElement("strong", null, tr3(t, "learning_connection", "Learning connection: ")), object.objective), object.evidence.length > 0 && /* @__PURE__ */ React3.createElement("div", { className: "cer-evidence-context" }, /* @__PURE__ */ React3.createElement("h4", null, tr3(t, "evidence_used", "Evidence that connected this object")), object.evidence.map((item) => /* @__PURE__ */ React3.createElement("div", { key: item.id }, /* @__PURE__ */ React3.createElement("strong", null, item.name), /* @__PURE__ */ React3.createElement("p", null, item.text)))), object.explanation && /* @__PURE__ */ React3.createElement(React3.Fragment, null, /* @__PURE__ */ React3.createElement("h4", null, tr3(t, "why_it_worked", "Why it worked")), /* @__PURE__ */ React3.createElement("p", null, object.explanation)), object.sourceQuote && /* @__PURE__ */ React3.createElement(React3.Fragment, null, /* @__PURE__ */ React3.createElement("h4", null, tr3(t, "lesson_connection", "From the lesson")), /* @__PURE__ */ React3.createElement("blockquote", null, object.sourceQuote)), /* @__PURE__ */ React3.createElement("p", null, /* @__PURE__ */ React3.createElement("strong", null, object.discovery.name)), /* @__PURE__ */ React3.createElement("p", null, object.discovery.text), object.supported && /* @__PURE__ */ React3.createElement("p", { className: "cer-muted" }, tr3(t, "teacher_assisted", "Completed with teacher support")), onSelect && /* @__PURE__ */ React3.createElement("button", { type: "button", "data-revisit-object": object.id, onClick: () => onSelect(object.id) }, tr3(t, "revisit_object", "Revisit {name}", { name: object.name }))))), /* @__PURE__ */ React3.createElement("details", { "data-debrief-discussion": true }, /* @__PURE__ */ React3.createElement("summary", null, teacher ? tr3(t, "discuss_learning", "Discuss the learning together") : solo ? tr3(t, "reflect_learning", "Reflect on what you discovered") : tr3(t, "team_reflect_learning", "Reflect with your team")), /* @__PURE__ */ React3.createElement("ul", { className: "cer-facts" }, /* @__PURE__ */ React3.createElement("li", null, tr3(t, "reflection_clue", "Which clue helped you most? Explain how it changed your thinking.")), /* @__PURE__ */ React3.createElement("li", null, tr3(t, "reflection_connections", "Choose two discoveries from different parts of the room. How did they work together to open the exit?")), /* @__PURE__ */ React3.createElement("li", null, tr3(t, "reflection_transfer", "Where else could you use an idea from this lesson? Give an example."))), /* @__PURE__ */ React3.createElement("p", { className: "cer-muted" }, tr3(t, "reflection_help", "Use the discovery review as evidence. You can discuss these prompts or reflect quietly at your own pace."))), !teacher && /* @__PURE__ */ React3.createElement(PersonalReflection, { key: reflectionScope || "preview", room, scope: reflectionScope, t }));
   }
 
   // connected_escape_room_collaboration.jsx
@@ -1027,36 +1113,6 @@ PLAYER MATERIAL END`;
     return { checks, total: nodes.length, complete: checks.length === nodes.length && checks.every((c) => c.status !== "unavailable") };
   }
 
-  // connected_escape_room_solo.js
-  function soloStorageKey(room, uid = "local") {
-    const value = JSON.stringify(room);
-    let hash = 2166136261;
-    for (let i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
-    return "allo-connected-solo:" + encodeURIComponent(uid || "local") + ":" + (hash >>> 0).toString(16);
-  }
-  function restoreSolo(room, raw) {
-    var _a, _b;
-    const fresh = { version: 1, room: JSON.stringify(room), attemptId: identity("solo"), progress: emptyProgress() };
-    if (!raw || raw.version !== 1 || raw.room !== fresh.room || typeof raw.attemptId !== "string" || !/^solo_[a-zA-Z0-9_-]{1,100}$/.test(raw.attemptId)) return fresh;
-    fresh.attemptId = raw.attemptId;
-    for (let pass = 0; pass < room.nodes.length; pass++) for (const node of room.nodes) {
-      if (raw.progress?.solved?.[node.id] === true && available(room, fresh.progress, node)) fresh.progress.solved[node.id] = true;
-    }
-    for (const node of room.nodes) if (available(room, fresh.progress, node)) {
-      for (let h = 1; h <= 3 && raw.progress?.hints?.[node.id]?.["h" + h] === true; h++) {
-        ((_a = fresh.progress.hints)[_b = node.id] || (_a[_b] = {}))["h" + h] = true;
-      }
-    }
-    return fresh;
-  }
-  function soloAction(room, state, nodeId, kind, value) {
-    const request = { attemptId: state.attemptId, requestId: identity("solo_action"), nodeId, kind, value };
-    const patch = planRequest(room, state.progress, request, "solo", { attemptId: state.attemptId, active: true, paused: false });
-    const progress = mergeProgress(state.progress, patch), code = progress.receipts[request.requestId]?.code || "invalid";
-    progress.receipts = {};
-    return { state: { ...state, progress }, code };
-  }
-
   // connected_escape_room_accessibility.jsx
   var { useEffect: useEffect5 } = window.React;
   function useRoomDialog(dialogRef, closeRef) {
@@ -1199,7 +1255,7 @@ PLAYER MATERIAL END`;
     const value = Array.isArray(draft) ? draft.join(",") : String(draft), incomplete = node.type === "configure" ? draft.some((v) => v === "") : node.type === "use-tool" ? draft === "" : false, hintCount = hintLevel(progress, node.id);
     return /* @__PURE__ */ React8.createElement("div", { className: "cer-room" }, /* @__PURE__ */ React8.createElement("header", null, /* @__PURE__ */ React8.createElement("h2", null, room.title), /* @__PURE__ */ React8.createElement("p", null, room.mission), /* @__PURE__ */ React8.createElement("div", { className: "cer-row cer-between" }, /* @__PURE__ */ React8.createElement("span", null, solo ? tr8(t, "solo_room", "Solo room \xB7 Explore at your own pace") : tr8(t, "shared_room", "One room \xB7 Shared discoveries")), /* @__PURE__ */ React8.createElement("span", { "aria-live": "polite" }, tr8(t, "progress", "{count} of {total} discoveries", { count: found.length, total: room.nodes.length }))), /* @__PURE__ */ React8.createElement("div", { className: "cer-progress", role: "progressbar", "aria-label": solo ? tr8(t, "solo_progress", "Your progress") : tr8(t, "team_progress", "Team progress"), "aria-valuemin": 0, "aria-valuemax": room.nodes.length, "aria-valuenow": found.length }, /* @__PURE__ */ React8.createElement("div", { style: { width: 100 * found.length / room.nodes.length + "%" } }))), storageStatus === "unavailable" && /* @__PURE__ */ React8.createElement("p", { className: "cer-alert", role: "status" }, tr8(t, "draft_unavailable", "Draft recovery is unavailable in this tab. Keep the room open to preserve your unfinished settings.")), !finished && workspaceKey && storageStatus === "saved" && Object.keys(drafts).length > 0 && /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "draft_saved", "Your unfinished settings are saved in this tab.")), /* @__PURE__ */ React8.createElement("p", { ref: noticeRef, tabIndex: -1, "data-action-feedback": true, className: notice ? "cer-alert" : "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, notice), /* @__PURE__ */ React8.createElement("p", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, movementNotice), /* @__PURE__ */ React8.createElement(PendingActionNotice, { room, action: pendingAction, onSelect: (id) => selectObject(id, true), onControlFocus: (element) => {
       pendingControlRef.current = element;
-    }, t }), /* @__PURE__ */ React8.createElement(RoomDebrief, { room, progress, solo, headingRef: debriefRef, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement(DiscoveryUpdate, { room, progress, solo, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement(InvestigationGuide, { room, progress, selectedId: node.id, onSelect: (id) => selectObject(id, true), t }), activityData && /* @__PURE__ */ React8.createElement(TeamActivityBoard, { room, progress, ...activityData, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement("nav", { className: "cer-row", "aria-label": tr8(t, "areas", "Room areas") }, room.areas.map((area) => /* @__PURE__ */ React8.createElement("button", { type: "button", key: area.id, "aria-pressed": areaId === area.id, onClick: () => selectObject(room.nodes.find((n) => n.areaId === area.id)?.id || selectedId) }, area.name))), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, room.areas.find((a) => a.id === areaId)?.description), /* @__PURE__ */ React8.createElement("div", { role: "group", className: "cer-objects", "aria-label": tr8(t, "objects", "Objects to inspect") }, room.nodes.filter((n) => n.areaId === areaId).map((n) => /* @__PURE__ */ React8.createElement("button", { type: "button", key: n.id, "data-object": n.id, "aria-pressed": node.id === n.id, onClick: () => selectObject(n.id) }, n.name, /* @__PURE__ */ React8.createElement("small", null, progress.solved?.[n.id] ? tr8(t, "complete", "Complete") : available(room, progress, n) ? tr8(t, "available", "Ready to investigate") : tr8(t, "needs_discoveries", "Needs discoveries"))))), /* @__PURE__ */ React8.createElement("div", { className: "cer-row cer-reading-nav" }, finished && /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => debriefRef.current?.focus() }, tr8(t, "jump_debrief", "Jump to room debrief")), /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => detailRef.current?.focus() }, tr8(t, "jump_object", "Jump to selected object")), /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => journalRef.current?.focus() }, tr8(t, "jump_journal", "Jump to journal"))), /* @__PURE__ */ React8.createElement("div", { className: "cer-layout" }, /* @__PURE__ */ React8.createElement("section", { className: "cer-panel", "aria-label": node.name }, /* @__PURE__ */ React8.createElement("h3", { ref: detailRef, tabIndex: -1 }, node.name), /* @__PURE__ */ React8.createElement("p", null, node.description), !accessible && /* @__PURE__ */ React8.createElement("div", { className: "cer-alert" }, /* @__PURE__ */ React8.createElement("p", null, tr8(t, "requires", "Needed: {items}", { items: missing.join(" \xB7 ") })), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, node.requires.filter((id) => !found.some((item) => item.id === id)).map((id) => {
+    }, t }), /* @__PURE__ */ React8.createElement(RoomDebrief, { room, progress, solo, reflectionScope: workspaceKey, headingRef: debriefRef, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement(DiscoveryUpdate, { room, progress, solo, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement(InvestigationGuide, { room, progress, selectedId: node.id, onSelect: (id) => selectObject(id, true), t }), activityData && /* @__PURE__ */ React8.createElement(TeamActivityBoard, { room, progress, ...activityData, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement("nav", { className: "cer-row", "aria-label": tr8(t, "areas", "Room areas") }, room.areas.map((area) => /* @__PURE__ */ React8.createElement("button", { type: "button", key: area.id, "aria-pressed": areaId === area.id, onClick: () => selectObject(room.nodes.find((n) => n.areaId === area.id)?.id || selectedId) }, area.name))), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, room.areas.find((a) => a.id === areaId)?.description), /* @__PURE__ */ React8.createElement("div", { role: "group", className: "cer-objects", "aria-label": tr8(t, "objects", "Objects to inspect") }, room.nodes.filter((n) => n.areaId === areaId).map((n) => /* @__PURE__ */ React8.createElement("button", { type: "button", key: n.id, "data-object": n.id, "aria-pressed": node.id === n.id, onClick: () => selectObject(n.id) }, n.name, /* @__PURE__ */ React8.createElement("small", null, progress.solved?.[n.id] ? tr8(t, "complete", "Complete") : available(room, progress, n) ? tr8(t, "available", "Ready to investigate") : tr8(t, "needs_discoveries", "Needs discoveries"))))), /* @__PURE__ */ React8.createElement("div", { className: "cer-row cer-reading-nav" }, finished && /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => debriefRef.current?.focus() }, tr8(t, "jump_debrief", "Jump to room debrief")), /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => detailRef.current?.focus() }, tr8(t, "jump_object", "Jump to selected object")), /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => journalRef.current?.focus() }, tr8(t, "jump_journal", "Jump to journal"))), /* @__PURE__ */ React8.createElement("div", { className: "cer-layout" }, /* @__PURE__ */ React8.createElement("section", { className: "cer-panel", "aria-label": node.name }, /* @__PURE__ */ React8.createElement("h3", { ref: detailRef, tabIndex: -1 }, node.name), /* @__PURE__ */ React8.createElement("p", null, node.description), !accessible && /* @__PURE__ */ React8.createElement("div", { className: "cer-alert" }, /* @__PURE__ */ React8.createElement("p", null, tr8(t, "requires", "Needed: {items}", { items: missing.join(" \xB7 ") })), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, node.requires.filter((id) => !found.some((item) => item.id === id)).map((id) => {
       const origin = room.nodes.find((n) => n.reward.id === id);
       return /* @__PURE__ */ React8.createElement("button", { type: "button", key: id, "data-find-clue": id, onClick: () => selectObject(origin.id, true) }, tr8(t, "find_clue", "Investigate {object}", { object: origin.name }));
     }))), !solved && /* @__PURE__ */ React8.createElement(EvidenceContext, { node, found, t }), solved ? /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, node.reward.text), progress.assisted?.[node.id] && /* @__PURE__ */ React8.createElement("small", null, tr8(t, "teacher_assisted", "Completed with teacher support"))) : /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, node.instruction), /* @__PURE__ */ React8.createElement("fieldset", { disabled: blocked, style: { border: 0, padding: 0, margin: 0, minWidth: 0 } }, /* @__PURE__ */ React8.createElement("legend", { className: "sr-only" }, node.name), node.type === "configure" && /* @__PURE__ */ React8.createElement("div", { className: "cer-controls" }, node.controls.map((control, i) => /* @__PURE__ */ React8.createElement("label", { key: i }, control.label, /* @__PURE__ */ React8.createElement("select", { "data-control": i, value: draft[i], onChange: (event) => change(draft.map((v, j) => j === i ? event.target.value : v)) }, /* @__PURE__ */ React8.createElement("option", { value: "" }, tr8(t, "choose_setting", "Choose a setting")), control.options.map((option, j) => /* @__PURE__ */ React8.createElement("option", { key: j, value: j }, option)))))), node.type === "use-tool" && /* @__PURE__ */ React8.createElement("label", null, tr8(t, "inventory_tool", "Tool from your inventory"), /* @__PURE__ */ React8.createElement("select", { "data-tool": true, value: draft, onChange: (event) => change(event.target.value) }, /* @__PURE__ */ React8.createElement("option", { value: "" }, tr8(t, "choose_tool", "Choose a tool")), found.filter((item) => item.kind === "tool").map((item) => /* @__PURE__ */ React8.createElement("option", { key: item.id, value: room.nodes.findIndex((n) => n.reward.id === item.id) }, item.name)))), node.type === "sequence" && /* @__PURE__ */ React8.createElement("ol", { className: "cer-sequence" }, draft.map((itemIndex, i) => /* @__PURE__ */ React8.createElement("li", { key: itemIndex }, /* @__PURE__ */ React8.createElement("span", null, i + 1, ". ", node.items[itemIndex]), /* @__PURE__ */ React8.createElement("button", { type: "button", "data-move-up": itemIndex, "aria-label": tr8(t, "move_up", "Move {item} earlier", { item: node.items[itemIndex] }), disabled: blocked, "aria-disabled": blocked || i === 0, onClick: () => {

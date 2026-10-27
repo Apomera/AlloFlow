@@ -48,6 +48,156 @@ function QuizTranslationText(props) {
   });
 }
 
+// Light markdown for AI-written assessment text: **bold**, __bold__, *italic*, _italic_, `code`,
+// line breaks, and (blocks) lists. No math, links, or HTML, so "$5 and $2", "2 * 3" and "___" stay as written.
+var _QUIZ_MD_RULES = [{
+  re: /\*\*(?=[^\s*])([^\n]*?[^\s*])\*\*/,
+  tag: 'strong',
+  nest: true
+}, {
+  re: /(?<![\w_])__(?=[^\s_])([^\n]*?[^\s_])__(?![\w_])/,
+  tag: 'strong',
+  nest: true
+}, {
+  re: /`([^`\n]+)`/,
+  tag: 'code'
+}, {
+  re: /(?<![\w*])\*(?=[^\s*])([^*\n]*?[^\s*])\*(?![\w*])/,
+  tag: 'em',
+  nest: true
+}, {
+  re: /(?<![\w_])_(?=[^\s_])([^_\n]*?[^\s_])_(?![\w_])/,
+  tag: 'em',
+  nest: true
+}];
+function _quizInlineNodes(text, keyBase) {
+  var out = [],
+    rest = String(text == null ? '' : text),
+    k = 0;
+  function pushText(s) {
+    s.split('\n').forEach(function (line, i) {
+      if (i) out.push(React.createElement('br', {
+        key: keyBase + 'b' + k++
+      }));
+      if (line) out.push(line);
+    });
+  }
+  while (rest) {
+    var best = null;
+    _QUIZ_MD_RULES.forEach(function (rule) {
+      var m = rule.re.exec(rest);
+      if (m && (!best || m.index < best.m.index)) best = {
+        m: m,
+        rule: rule
+      };
+    });
+    if (!best) {
+      pushText(rest);
+      break;
+    }
+    pushText(rest.slice(0, best.m.index));
+    var key = keyBase + 'm' + k++;
+    out.push(React.createElement(best.rule.tag, {
+      key: key,
+      className: best.rule.tag === 'code' ? 'font-mono' : undefined
+    }, best.rule.nest ? _quizInlineNodes(best.m[1], key + '-') : best.m[1]));
+    rest = rest.slice(best.m.index + best.m[0].length);
+  }
+  return out;
+}
+// Inline text: unchanged string when there is nothing to format.
+function _quizRich(text) {
+  if (text == null) return '';
+  var value = String(text);
+  if (!/[*_`\n]/.test(value)) return value;
+  var nodes = _quizInlineNodes(value, 'md');
+  return nodes.length === 1 && typeof nodes[0] === 'string' ? nodes[0] : React.createElement(React.Fragment, null, nodes);
+}
+// Block text (explanations, feedback): paragraphs, "#" headings as bold lines, real bullet and numbered lists.
+function _quizRichBlock(text) {
+  var value = String(text == null ? '' : text).replace(/\r\n?/g, '\n').trim();
+  if (!value) return null;
+  var blocks = [],
+    para = [],
+    list = null;
+  function flushPara() {
+    if (para.length) {
+      blocks.push(React.createElement('p', {
+        key: 'p' + blocks.length,
+        className: 'm-0'
+      }, _quizInlineNodes(para.join('\n'), 'p' + blocks.length)));
+      para = [];
+    }
+  }
+  function flushList() {
+    if (!list) return;
+    var ordered = list.ordered,
+      n = blocks.length;
+    blocks.push(React.createElement(ordered ? 'ol' : 'ul', {
+      key: 'l' + n,
+      start: ordered && list.start !== 1 ? list.start : undefined,
+      className: (ordered ? 'list-decimal' : 'list-disc') + ' ps-5 m-0 space-y-0.5'
+    }, list.items.map(function (item, i) {
+      return React.createElement('li', {
+        key: i
+      }, _quizInlineNodes(item, 'l' + n + '-' + i));
+    })));
+    list = null;
+  }
+  value.split('\n').forEach(function (line) {
+    var bullet = /^\s*[-*•]\s+(.+)$/.exec(line),
+      numbered = /^\s*(\d{1,3})[.)]\s+(.+)$/.exec(line),
+      heading = /^\s*#{1,6}\s+(.+)$/.exec(line);
+    if (!line.trim()) {
+      flushPara();
+      flushList();
+      return;
+    }
+    if (bullet || numbered) {
+      flushPara();
+      if (!list || list.ordered !== !!numbered) {
+        flushList();
+        list = {
+          ordered: !!numbered,
+          start: numbered ? Number(numbered[1]) : 1,
+          items: []
+        };
+      }
+      list.items.push(bullet ? bullet[1] : numbered[2]);
+      return;
+    }
+    flushList();
+    if (heading) {
+      flushPara();
+      blocks.push(React.createElement('p', {
+        key: 'h' + blocks.length,
+        className: 'm-0 font-bold'
+      }, _quizInlineNodes(heading[1], 'h' + blocks.length)));
+      return;
+    }
+    para.push(line);
+  });
+  flushPara();
+  flushList();
+  return React.createElement('div', {
+    className: 'space-y-1.5'
+  }, blocks);
+}
+// Plain text for aria-labels, speech, and <option> elements: the markers go, the words stay.
+function _quizPlain(text) {
+  var value = String(text == null ? '' : text).replace(/\r\n?/g, '\n').split('\n').map(function (line) {
+    return line.replace(/^\s*#{1,6}\s+/, '').replace(/^(\s*)[-*•]\s+/, '$1• ');
+  }).join('\n');
+  _QUIZ_MD_RULES.forEach(function (rule) {
+    var global = new RegExp(rule.re.source, 'g');
+    for (var i = 0; i < 3 && global.test(value); i++) {
+      global.lastIndex = 0;
+      value = value.replace(global, '$1');
+    }
+  });
+  return value;
+}
+
 // i18n accessor for module-level code (2026-06-11): components/handlers below call t('key')
 // without binding it (only some do `var t = props.t`), so a free t() throws ReferenceError
 // when they run — latent crashes the SSR golden tests never fire. Bind once at module scope
@@ -127,17 +277,304 @@ function _quizAuthoredImageAlt(value) {
 }
 function AssessmentQuestionSupport(p) {
   var q = p.q || {};
+  var criteria = Array.isArray(q.studentCriteria) ? q.studentCriteria.filter(value => typeof value === 'string' && value.trim()) : [];
   return /*#__PURE__*/React.createElement(React.Fragment, null, p.translation !== false && q.question_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
     as: "p",
     "data-assessment-question-translation": true,
     className: "mt-2 text-sm font-normal italic text-slate-600"
-  }, q.question_en), q.imageUrl && /*#__PURE__*/React.createElement("img", {
+  }, _quizRich(q.question_en)), q.imageUrl && /*#__PURE__*/React.createElement("img", {
     "data-assessment-question-image": true,
     src: q.imageUrl,
     alt: _quizAuthoredImageAlt(q.imageAltText),
     loading: "lazy",
     className: "my-3 max-h-80 w-full rounded-lg bg-white object-contain"
+  }), criteria.length > 0 && /*#__PURE__*/React.createElement("div", {
+    id: p.criteriaId,
+    "data-assessment-student-criteria": true,
+    className: "my-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-950"
+  }, /*#__PURE__*/React.createElement("strong", null, "What to show in your response"), /*#__PURE__*/React.createElement("ul", {
+    className: "mt-1 list-disc ps-5"
+  }, criteria.map((value, index) => /*#__PURE__*/React.createElement("li", {
+    key: index
+  }, value)))));
+}
+function _quizFillBlankPolicy(q) {
+  return q && (q.fillBlankPolicy || (q.spellingPolicy === 'exact' ? 'exact' : 'normalized')) || 'normalized';
+}
+function _quizFillBlankInstruction(q) {
+  var policy = _quizFillBlankPolicy(q);
+  if (policy === 'exact') return 'Use exact spelling and capitalization.';
+  var normal = 'Capitalization, extra spacing, and punctuation around the answer are ignored.';
+  return policy === 'review-variants' ? normal + ' Other answers are saved for teacher review.' : normal;
+}
+function _quizResponseLabel(p, label) {
+  var q = p.q || {};
+  var number = p.itemNumber != null ? p.itemNumber : Number.isInteger(p.questionIdx) ? p.questionIdx + 1 : null;
+  var context = number != null ? _quizGradedCopy('quiz.review.question_number', 'Question {number}').replace('{number}', String(number)) : '';
+  return _quizPlain([label, [context, q.question || ''].filter(Boolean).join(': ')].filter(Boolean).join(' — '));
+}
+function AssessmentReasoningInput(p) {
+  var q = p.q || {};
+  var reasoningHelpId = React.useId();
+  if (!q.requireReasoning && !q.explanationPrompt) return null;
+  return /*#__PURE__*/React.createElement("label", {
+    className: "my-3 block text-sm font-semibold text-slate-800"
+  }, q.explanationPrompt || 'Explain why your answer fits.', /*#__PURE__*/React.createElement("span", {
+    id: reasoningHelpId,
+    className: "block text-xs font-normal text-slate-600"
+  }, q.requireReasoning ? 'Required explanation; reviewed separately from the choice score.' : 'Optional explanation; reviewed separately from the choice score.'), /*#__PURE__*/React.createElement("textarea", {
+    ref: p.inputRef,
+    "aria-label": _quizResponseLabel(p, q.explanationPrompt || 'Explain why your answer fits.'),
+    required: !!q.requireReasoning,
+    "aria-describedby": reasoningHelpId,
+    value: p.value || '',
+    onChange: event => p.onChange(event.target.value),
+    disabled: p.disabled,
+    rows: 3,
+    maxLength: 4000,
+    className: "mt-2 block w-full rounded-lg border border-slate-400 bg-white p-3 font-normal text-slate-800 disabled:bg-slate-50"
   }));
+}
+function AssessmentLearningOptions(p) {
+  var q = p.q || {},
+    patch = p.patch,
+    type = q.type || 'mcq';
+  var numeric = Object.assign({
+    allowEquivalentUnits: false,
+    valueWeight: 0.5
+  }, q.numericSettings || {});
+  return /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3"
+  }, ['mcq', 'multi-select'].includes(type) && /*#__PURE__*/React.createElement("fieldset", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "text-xs font-bold text-slate-800"
+  }, "Feedback after checking each choice"), (q.options || []).map((option, index) => /*#__PURE__*/React.createElement("label", {
+    key: index,
+    className: "block text-xs font-semibold text-slate-800"
+  }, option, /*#__PURE__*/React.createElement("textarea", {
+    rows: 2,
+    value: q.optionFeedback?.[index] || '',
+    onChange: event => {
+      var feedback = (q.options || []).map((_, i) => q.optionFeedback?.[i] || '');
+      feedback[index] = event.target.value;
+      patch({
+        optionFeedback: feedback
+      });
+    },
+    className: "mt-1 block w-full rounded border border-slate-400 bg-white p-2 font-normal"
+  })))), type === 'fill-blank' && /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-slate-800"
+  }, "Answer matching", /*#__PURE__*/React.createElement("select", {
+    value: q.fillBlankPolicy || 'normalized',
+    onChange: e => patch({
+      fillBlankPolicy: e.target.value
+    }),
+    className: "mt-1 block w-full rounded border border-slate-400 bg-white p-2"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "normalized"
+  }, "Ignore capitalization, spacing and punctuation"), /*#__PURE__*/React.createElement("option", {
+    value: "exact"
+  }, "Exact spelling and capitalization"), /*#__PURE__*/React.createElement("option", {
+    value: "review-variants"
+  }, "Send other wording for teacher review"))), ['short-answer', 'self-explanation'].includes(type) && /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-slate-800"
+  }, "Student-visible success criteria (one per line)", /*#__PURE__*/React.createElement("textarea", {
+    value: (q.studentCriteria || []).join('\n'),
+    onChange: e => patch({
+      studentCriteria: e.target.value.split('\n')
+    }),
+    rows: 3,
+    className: "mt-1 block w-full rounded border border-slate-400 bg-white p-2"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "font-normal"
+  }, "Describe the evidence to show without including the answer.")), type === 'sequence-sense' && /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-slate-800"
+  }, "Sequence activity", /*#__PURE__*/React.createElement("select", {
+    value: q.sequenceMode || 'diagnostic',
+    onChange: e => patch({
+      sequenceMode: e.target.value
+    }),
+    className: "mt-1 block w-full rounded border border-slate-400 bg-white p-2"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "diagnostic"
+  }, "Diagnose, repair and identify the principle"), /*#__PURE__*/React.createElement("option", {
+    value: "arrange-explain"
+  }, "Arrange and identify the principle"))), ['relation-mismatch', 'answer-evidence'].includes(type) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    className: "flex gap-2 text-xs font-bold text-slate-800"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: !!q.requireReasoning,
+    onChange: e => patch({
+      requireReasoning: e.target.checked
+    })
+  }), "Require a brief explanation"), /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-slate-800"
+  }, "Explanation prompt", /*#__PURE__*/React.createElement("input", {
+    value: q.explanationPrompt || '',
+    onChange: e => patch({
+      explanationPrompt: e.target.value
+    }),
+    className: "mt-1 block w-full rounded border border-slate-400 bg-white p-2"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700"
+  }, "The explanation is saved for review and does not change the automatic choice score.")), type === 'numeric-response' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    className: "flex gap-2 text-xs font-bold text-slate-800"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: numeric.allowEquivalentUnits,
+    onChange: e => patch({
+      numericSettings: {
+        ...numeric,
+        allowEquivalentUnits: e.target.checked
+      }
+    })
+  }), "Accept equivalent units with conversion"), /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-slate-800"
+  }, "Value share of partial credit", /*#__PURE__*/React.createElement("select", {
+    value: numeric.valueWeight,
+    onChange: e => patch({
+      numericSettings: {
+        ...numeric,
+        valueWeight: Number(e.target.value)
+      }
+    }),
+    className: "mt-1 block w-full rounded border border-slate-400 bg-white p-2"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: 0.5
+  }, "50% value / 50% unit"), /*#__PURE__*/React.createElement("option", {
+    value: 0.75
+  }, "75% value / 25% unit"), /*#__PURE__*/React.createElement("option", {
+    value: 0.9
+  }, "90% value / 10% unit"), /*#__PURE__*/React.createElement("option", {
+    value: 1
+  }, "100% value")))));
+}
+function AssessmentTransferPractice(p) {
+  var q = p.q || {},
+    key = 'q-' + p.questionIdx;
+  var [response, setResponse] = _quizUseDraftField(p.draftNamespace, key, 'transferResponse', '');
+  return /*#__PURE__*/React.createElement("details", {
+    className: "mt-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-950"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-bold"
+  }, "Apply this idea to a new example (unscored)"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2"
+  }, q.transferPrompt || 'Describe a different example of ' + (q.conceptLabel || 'this idea') + ' and explain how the idea applies. Use the lesson to check your reasoning.'), Array.isArray(q.transferCriteria) && /*#__PURE__*/React.createElement("ul", {
+    className: "my-2 list-disc ps-5"
+  }, q.transferCriteria.map((text, i) => /*#__PURE__*/React.createElement("li", {
+    key: i
+  }, text))), /*#__PURE__*/React.createElement("label", {
+    className: "mt-2 block font-semibold"
+  }, "Your new example", /*#__PURE__*/React.createElement("textarea", {
+    value: response,
+    onChange: e => setResponse(e.target.value),
+    rows: 3,
+    className: "mt-1 block w-full rounded border border-slate-400 bg-white p-2 font-normal text-slate-800"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs"
+  }, "Practice is separate from your assessment score. Compare your example with the lesson, or ask your teacher for feedback."));
+}
+function _quizRecordPracticeAttempt(p, answer, confidence) {
+  if (!p.draftNamespace || p.draftNamespace.startsWith('assess-preview:')) return;
+  var q = p.q || {},
+    summary = '';
+  if (answer.idk) summary = 'I do not know yet';else if (Array.isArray(answer.selectedIndices)) summary = answer.selectedIndices.map(i => (q.options || [])[i]).join('; ');else if (answer.optionIdx != null) summary = (q.options || [])[answer.optionIdx] || answer.optionText || '';else if (answer.answerIdx != null) summary = ((q.answerOptions || [])[answer.answerIdx] || '') + ' — ' + ((q.evidenceOptions || [])[answer.evidenceIdx] || '');else if (answer.partnerAnswer) summary = 'Pair ' + (Number(answer.clickedPairIdx) + 1) + ': ' + answer.partnerAnswer;else if (Array.isArray(answer.orderAnswer)) summary = answer.orderAnswer.map(i => (q.items || [])[i]).join(' → ') + '; ' + (answer.principleAnswer || '');else summary = String(answer.text || '');
+  if (answer.explanation) summary += '. ' + answer.explanation;
+  var key = 'q-' + p.questionIdx,
+    prior = _quizReadDraftField(p.draftNamespace, key, 'practiceAttempts').value;
+  var attempts = Array.isArray(prior) ? prior : [];
+  if (attempts.length && attempts[attempts.length - 1].response === summary) return;
+  var entry = {
+    response: summary,
+    confidence: confidence || null,
+    timestamp: Date.now()
+  };
+  _quizWriteDraftField(p.draftNamespace, key, 'practiceAttempts', attempts.length >= 10 ? [attempts[0]].concat(attempts.slice(-8), entry) : attempts.concat(entry));
+}
+function AssessmentPracticeHistory(p) {
+  function readAttempts() {
+    return _quizReadWorkingDraft(p.draftNamespace)?.items?.['q-' + p.questionIdx]?.practiceAttempts || [];
+  }
+  var [attempts, setAttempts] = React.useState(readAttempts);
+  React.useEffect(function () {
+    function sync(event) {
+      if (event && (event.type === 'storage' ? event.key !== p.draftNamespace : event.detail?.namespace !== p.draftNamespace)) return;
+      setAttempts(readAttempts());
+    }
+    sync();
+    // History is read-only. Observe local staged writes without changing draft-save timers.
+    window.addEventListener('alloflow:assessment-draft-changed', sync);
+    window.addEventListener('alloflow:assessment-draft-synced', sync);
+    window.addEventListener('storage', sync);
+    return function () {
+      window.removeEventListener('alloflow:assessment-draft-changed', sync);
+      window.removeEventListener('alloflow:assessment-draft-synced', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, [p.draftNamespace, p.questionIdx]);
+  if (!Array.isArray(attempts) || attempts.length < 2) return null;
+  return /*#__PURE__*/React.createElement("details", {
+    className: "my-3 rounded border border-slate-300 bg-slate-50 p-3 text-sm text-slate-800"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-semibold"
+  }, "First response and revisions"), /*#__PURE__*/React.createElement("ol", {
+    className: "mt-2 list-decimal ps-5"
+  }, attempts.map((attempt, i) => /*#__PURE__*/React.createElement("li", {
+    key: i
+  }, /*#__PURE__*/React.createElement("strong", null, i === 0 ? 'First response: ' : 'Revision: '), attempt.response))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs"
+  }, "Your first response is preserved separately from practice after feedback."));
+}
+function AssessmentLearningContext(p) {
+  var data = p.data || {},
+    coverage = data.criteriaCoverage,
+    review = data.reviewContext,
+    content = data.contentReview;
+  if (!coverage && !review && !content) return null;
+  var strategies = window.AlloModules && window.AlloModules.QuizModeStrategies;
+  if (coverage && strategies && typeof strategies.resolveCriteriaCoverage === 'function') coverage = strategies.resolveCriteriaCoverage(coverage.available || [], coverage.selectedIds || [], (data.questions || []).length, data.questions || []);
+  return /*#__PURE__*/React.createElement("details", {
+    "data-assessment-learning-context": true,
+    className: "mb-4 rounded-xl border border-indigo-200 bg-white p-4 text-sm text-slate-800"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-bold"
+  }, "Learning targets and source review"), coverage && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3"
+  }, /*#__PURE__*/React.createElement("strong", null, "Criteria sampled by this check"), /*#__PURE__*/React.createElement("ul", {
+    className: "list-disc ps-5"
+  }, (coverage.available || []).map((criterion, i) => /*#__PURE__*/React.createElement("li", {
+    key: criterion.id || i
+  }, criterion.statement || criterion.text || criterion.id, (coverage.coveredIds || []).includes(criterion.id) ? ' — included' : ' — not sampled'))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-xs"
+  }, "A short check samples the selected criteria. Uncovered criteria need a separate check.")), review && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3"
+  }, /*#__PURE__*/React.createElement("strong", null, "Review sources"), review.fallback ? /*#__PURE__*/React.createElement("p", null, "No earlier lesson was selected. This review uses the current source; it does not establish retention over time.") : /*#__PURE__*/React.createElement("ul", {
+    className: "list-disc ps-5"
+  }, (review.sources || []).map((source, i) => /*#__PURE__*/React.createElement("li", {
+    key: source.id || i
+  }, source.title || 'Earlier lesson', source.date ? ' · ' + source.date : ''))), Array.isArray(review.concepts) && /*#__PURE__*/React.createElement("p", null, review.concepts.join(', '))), content && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3"
+  }, /*#__PURE__*/React.createElement("strong", null, "Teacher content review"), /*#__PURE__*/React.createElement("p", {
+    className: "my-2"
+  }, "Local checks can locate source quotations. Review accuracy, ambiguity and scoring yourself before sharing."), (content.items || []).map((item, index) => {
+    var q = (data.questions || [])[item.questionIdx];
+    var stale = !q || !strategies || typeof strategies.contentReviewSignature !== 'function' || typeof strategies.contentReviewSignature === 'function' && item.itemSignature !== strategies.contentReviewSignature(q);
+    return /*#__PURE__*/React.createElement("details", {
+      key: index,
+      className: "my-2 rounded border border-slate-300 p-3"
+    }, /*#__PURE__*/React.createElement("summary", {
+      className: "cursor-pointer font-semibold"
+    }, 'Question ' + (item.questionIdx + 1) + (stale ? ' — changed since this review' : ' — needs teacher review')), !stale && /*#__PURE__*/React.createElement(React.Fragment, null, item.reason && /*#__PURE__*/React.createElement("p", {
+      className: "mt-2"
+    }, item.reason), item.evidenceQuote && /*#__PURE__*/React.createElement("blockquote", {
+      className: "my-2 border-s-4 border-indigo-300 ps-3"
+    }, item.evidenceQuote), /*#__PURE__*/React.createElement("ul", {
+      className: "list-disc ps-5"
+    }, (item.checklist || []).map((text, i) => /*#__PURE__*/React.createElement("li", {
+      key: i
+    }, text)))), stale && /*#__PURE__*/React.createElement("p", null, "Review the current item and its answer guide against the source."));
+  })));
 }
 function AssessmentChoiceContent(p) {
   var q = p.q || {},
@@ -155,9 +592,7 @@ function AssessmentChoiceContent(p) {
   var descriptions = q[stem + 'ImageAltTexts'] || (field === 'answerOptions' ? q.answerImageAltTexts || q.optionImageAltTexts : field === 'evidenceOptions' ? q.evidenceImageAltTexts : null) || [];
   var translations = q[field + '_en'] || [];
   var value = p.text == null ? (q[field] || [])[index] : p.text;
-  var renderText = typeof p.renderText === 'function' ? p.renderText : function (text) {
-    return String(text == null ? '' : text);
-  };
+  var renderText = typeof p.renderText === 'function' ? p.renderText : _quizRich;
   return /*#__PURE__*/React.createElement("span", {
     "data-assessment-choice-field": field,
     "data-assessment-choice-index": index,
@@ -178,9 +613,7 @@ function AssessmentPairSide(p) {
     translated = (q.pairs_en || [])[p.index] || {};
   var side = p.side,
     translation = pair[side + '_en'] || translated[side];
-  var renderText = typeof p.renderText === 'function' ? p.renderText : function (text) {
-    return String(text == null ? '' : text);
-  };
+  var renderText = typeof p.renderText === 'function' ? p.renderText : _quizRich;
   return /*#__PURE__*/React.createElement("span", {
     className: "min-w-0 flex-1 break-words"
   }, /*#__PURE__*/React.createElement("span", null, renderText(pair[side])), translation && /*#__PURE__*/React.createElement(QuizTranslationText, {
@@ -306,6 +739,8 @@ function _quizVoiceParseScopedUtterance(rawText) {
     'go back a question': 'quiz_previous',
     'repeat feedback': 'quiz_repeat_feedback',
     'repeat response': 'quiz_repeat_feedback',
+    'revise these choices': 'quiz_revise_choices',
+    'revise choices': 'quiz_revise_choices',
     'try again': 'quiz_try_again',
     'reset answer': 'quiz_try_again',
     'clear answer': 'quiz_try_again',
@@ -713,7 +1148,7 @@ function _quizStableAssessmentData(data) {
   // Response identity follows authored stimuli and grading rules. Editorial
   // labels, explanations, translations, and check timestamps do not move an
   // answer to a different item; an actively disputed key still needs review.
-  var fields = ['type', 'itemType', 'question', 'contextSentence', 'prompt', 'instructions', 'evidencePrompt', 'unit', 'imageUrl', 'options', 'answerOptions', 'evidenceOptions', 'items', 'presentedOrder', 'pairs', 'candidatePartners', 'principleOptions', 'optionImageUrls', 'answerOptionImageUrls', 'answerImageUrls', 'evidenceOptionImageUrls', 'evidenceImageUrls', 'itemImageUrls', 'candidatePartnerImageUrls', 'principleOptionImageUrls', 'principleOptionsImageUrls', 'correctAnswer', 'correctAnswers', 'correctIndex', 'correctEvidence', 'expectedFill', 'acceptableAlternatives', 'expectedAnswer', 'exemplarAnswer', 'sampleAnswer', 'modelAnswer', 'referenceAnswer', 'rubric', 'correctValue', 'tolerance', 'acceptableUnits', 'correctOrder', 'correctSequence', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong'];
+  var fields = ['type', 'itemType', 'question', 'contextSentence', 'prompt', 'instructions', 'evidencePrompt', 'unit', 'imageUrl', 'options', 'answerOptions', 'evidenceOptions', 'items', 'presentedOrder', 'pairs', 'candidatePartners', 'principleOptions', 'optionImageUrls', 'answerOptionImageUrls', 'answerImageUrls', 'evidenceOptionImageUrls', 'evidenceImageUrls', 'itemImageUrls', 'candidatePartnerImageUrls', 'principleOptionImageUrls', 'principleOptionsImageUrls', 'correctAnswer', 'correctAnswers', 'correctIndex', 'correctEvidence', 'expectedFill', 'acceptableAlternatives', 'expectedAnswer', 'exemplarAnswer', 'sampleAnswer', 'modelAnswer', 'referenceAnswer', 'rubric', 'fillBlankPolicy', 'numericSettings', 'sequenceMode', 'requireReasoning', 'explanationPrompt', 'studentCriteria', 'correctValue', 'tolerance', 'acceptableUnits', 'correctOrder', 'correctSequence', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong'];
   var choiceFields = ['options', 'answerOptions', 'evidenceOptions', 'items', 'pairs', 'candidatePartners', 'principleOptions'];
   function stableValue(value, choice) {
     if (Array.isArray(value)) return value.map(function (entry) {
@@ -760,7 +1195,7 @@ function _quizPreviousStableAssessmentData(data) {
 }
 // Fields a withheld copy never carries (mirrors withholdGradedQuizKeys in
 // live_aac and firestore_sync). The release payload sends the learner-safe rest.
-var _QUIZ_WITHHELD_KEY_FIELDS = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits', 'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey', 'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
+var _QUIZ_WITHHELD_KEY_FIELDS = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits', 'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey', 'sourceEvidence', 'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
 var _QUIZ_RELEASE_KEY_FIELDS = _QUIZ_WITHHELD_KEY_FIELDS.filter(function (field) {
   return ['answerKey', 'factCheck', 'keyCheck', 'distractorQuality'].indexOf(field) < 0;
 });
@@ -1275,15 +1710,15 @@ function _quizQuestionAnswered(question, questionIdx, draft) {
   if (type === 'multi-select') return Array.isArray(item.selected) && item.selected.length > 0 && item.selected.every(function (value) {
     return validChoice(value, question.options);
   }) && new Set(item.selected).size === item.selected.length;
-  if (type === 'answer-evidence') return validChoice(item.answerIdx, question.answerOptions || question.options) && validChoice(item.evidenceIdx, question.evidenceOptions);
+  if (type === 'answer-evidence') return validChoice(item.answerIdx, question.answerOptions || question.options) && validChoice(item.evidenceIdx, question.evidenceOptions) && (!question.requireReasoning || hasText(item.explanation));
   // Completion records an attempted response, not whether its content is
   // correct. In particular, numeric parsing and units belong to grading.
   if (type === 'numeric-response' || type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') return hasText(item.response);
   if (type === 'sequence-sense') {
     if (item.grade && item.grade.status === 'idk') return true;
     var sequenceItems = Array.isArray(question.items) ? question.items : [];
-    if (item.verifyAnswer !== 'yes' && item.verifyAnswer !== 'no') return false;
-    if (item.verifyAnswer === 'no' && !validChoice(item.clickedIdx, sequenceItems)) return false;
+    if (question.sequenceMode !== 'arrange-explain' && item.verifyAnswer !== 'yes' && item.verifyAnswer !== 'no') return false;
+    if (question.sequenceMode !== 'arrange-explain' && item.verifyAnswer === 'no' && !validChoice(item.clickedIdx, sequenceItems)) return false;
     var principles = Array.isArray(question.principleOptions) ? question.principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
     if (!hasText(item.principleAnswer) || principles.indexOf(item.principleAnswer) < 0) return false;
     // An unchanged arrangement is valid: both renderers initialize it from
@@ -1295,7 +1730,7 @@ function _quizQuestionAnswered(question, questionIdx, draft) {
   }
   if (type === 'relation-mismatch') {
     if (item.grade && item.grade.status === 'idk') return true;
-    if (!validChoice(item.clickedPairIdx, question.pairs) || !hasText(item.partnerAnswer)) return false;
+    if (!validChoice(item.clickedPairIdx, question.pairs) || !hasText(item.partnerAnswer) || question.requireReasoning && !hasText(item.explanation)) return false;
     return !Array.isArray(question.candidatePartners) || question.candidatePartners.length === 0 || question.candidatePartners.indexOf(item.partnerAnswer) >= 0;
   }
   return false;
@@ -2295,8 +2730,19 @@ function describeSequenceMisplaced(misplaced) {
   if (numbers.length === 2 && numbers[1] === numbers[0] + 1) return 'items ' + numbers[0] + ' and ' + numbers[1] + ' were swapped';
   return 'items ' + numbers.slice(0, -1).join(', ') + ' and ' + numbers[numbers.length - 1] + ' were out of place';
 }
+function _quizUseStageFocus(stage) {
+  var targetRef = React.useRef(null);
+  var previousStageRef = React.useRef(stage);
+  React.useEffect(function () {
+    if (previousStageRef.current === stage) return;
+    previousStageRef.current = stage;
+    if (targetRef.current && typeof targetRef.current.focus === 'function') targetRef.current.focus();
+  }, [stage]);
+  return targetRef;
+}
 function SequenceSenseCard(p) {
   var q = p.q;
+  var shortSequence = q.sequenceMode === 'arrange-explain';
   var canonicalItems = Array.isArray(q.items) ? q.items.filter(Boolean) : [];
   var intentionallyWrongIndex = typeof q.intentionallyWrongIndex === 'number' ? q.intentionallyWrongIndex : null;
   var orderingPrinciple = q.orderingPrinciple || 'chronological';
@@ -2403,18 +2849,36 @@ function SequenceSenseCard(p) {
   var arrangedItems = orderAnswer.map(function (canonicalIdx) {
     return canonicalItems[canonicalIdx];
   });
-  function moveOrderItem(position, delta) {
+  var orderButtonRefs = React.useRef({});
+  var pendingOrderFocus = React.useRef(null);
+  var [orderAnnouncement, setOrderAnnouncement] = React.useState('');
+  React.useEffect(function () {
+    var pending = pendingOrderFocus.current;
+    pendingOrderFocus.current = null;
+    if (!pending) return;
+    var controls = orderButtonRefs.current[pending.item] || {};
+    var preferred = controls[pending.direction];
+    var target = preferred && !preferred.disabled ? preferred : controls[-pending.direction];
+    if (target && !target.disabled) target.focus();
+  }, [orderAnswer]);
+  function moveOrderItem(position, delta, preserveFocus) {
     var target = position + delta;
     if (position < 0 || position >= orderAnswer.length || target < 0 || target >= orderAnswer.length) return false;
     var next = orderAnswer.slice();
     next[position] = orderAnswer[target];
     next[target] = orderAnswer[position];
+    if (preserveFocus) pendingOrderFocus.current = {
+      item: orderAnswer[position],
+      direction: delta
+    };
     setOrderAnswer(next);
+    setOrderAnnouncement(String(canonicalItems[orderAnswer[position]]) + ' moved to position ' + (target + 1) + ' of ' + orderAnswer.length + '.');
     return true;
   }
-  var stepState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'step', 1);
+  var stepState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'step', shortSequence ? 3 : 1);
   var step = stepState[0];
   var setStep = stepState[1];
+  var stageFocusRef = _quizUseStageFocus(step);
   var verifyState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'verifyAnswer', null);
   var verifyAnswer = verifyState[0];
   var setVerifyAnswer = verifyState[1];
@@ -2451,18 +2915,24 @@ function SequenceSenseCard(p) {
       return canonicalIdx === position;
     });
     var step3Correct = p2 === orderingPrinciple;
-    var rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
+    var maxScore = shortSequence ? 2 : 4;
+    var rawScore = (shortSequence ? 0 : (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0)) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
     var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
-    var score = partialCredit ? rawScore : rawScore === 4 ? 4 : 0;
-    var status = score === 4 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
+    var score = partialCredit ? rawScore : rawScore === maxScore ? maxScore : 0;
+    var status = score === maxScore ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
     var gradeResult = {
       step1Correct: step1Correct,
       step2Correct: step2Correct,
       arrangeCorrect: arrangeCorrect,
       step3Correct: step3Correct,
       status: status,
-      score: score
+      score: score,
+      maxScore: maxScore
     };
+    _quizRecordPracticeAttempt(p, {
+      orderAnswer: orderAnswer,
+      principleAnswer: p2
+    }, null);
     setGrade(gradeResult);
     setStep('done');
     if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
@@ -2487,10 +2957,11 @@ function SequenceSenseCard(p) {
   }
   function reset() {
     setIdkMarked(false);
-    setStep(1);
+    setStep(shortSequence ? 3 : 1);
     setVerifyAnswer(null);
     setClickedIdx(null);
     setOrderAnswer(null);
+    setOrderAnnouncement('');
     setPrincipleAnswer(null);
     setGrade(null);
   }
@@ -2623,11 +3094,18 @@ function SequenceSenseCard(p) {
       };
     }
   });
+  var stageAnnouncement = step === 1 ? 'Step 1 of 4. Is this order correct?' : step === 2 ? 'Step 2 of 4. Choose an item that is out of place.' : step === 3 ? shortSequence ? 'Step 1 of 2. Arrange the items using the Move up and Move down buttons, then choose Done arranging.' : 'Step 3 of 4. Arrange the items using the Move up and Move down buttons, then choose Done arranging.' : step === 4 ? shortSequence ? 'Step 2 of 2. Choose the ordering principle.' : 'Step 4 of 4. Choose the ordering principle.' : '';
   if (canonicalItems.length === 0) return null;
   var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-5 rounded-xl border border-slate-300 shadow-sm"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("p", {
+    "data-assessment-step-status": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, stageAnnouncement), /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("span", {
     className: "flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5"
@@ -2637,7 +3115,7 @@ function SequenceSenseCard(p) {
     className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
   }, "Sequence Sense"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, q.question || 'Below is a sequence. Verify and explain.'), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
+  }, _quizRich(q.question || 'Below is a sequence. Verify and explain.')), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
     q: q
   }))), /*#__PURE__*/React.createElement("ol", {
     className: "space-y-1.5 mb-3"
@@ -2657,6 +3135,7 @@ function SequenceSenseCard(p) {
     }
     return /*#__PURE__*/React.createElement("li", {
       key: displayIdx,
+      ref: isClickable && displayIdx === 0 ? stageFocusRef : null,
       onClick: isClickable ? function () {
         answerMisplaced(displayIdx);
       } : null,
@@ -2689,6 +3168,7 @@ function SequenceSenseCard(p) {
     className: "flex gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    ref: stageFocusRef,
     onClick: function () {
       answerVerify('yes');
     },
@@ -2711,11 +3191,21 @@ function SequenceSenseCard(p) {
     className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900"
-  }, "Step 2 of 4 — Click an item that's out of place above.")), step === 3 && /*#__PURE__*/React.createElement("div", {
+  }, "Step 2 of 4 — Click an item that's out of place above.")), shortSequence && step === 3 && allowIDK && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: markIDK,
+    className: "mb-2 min-h-9 rounded border border-sky-300 bg-sky-50 px-3 text-sky-900"
+  }, "I don’t know"), step === 3 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900 mb-2"
-  }, "Step 3 of 4 — Put the items in the correct order. If they are already right, leave them."), /*#__PURE__*/React.createElement("ol", {
+  }, shortSequence ? 'Step 1 of 2 — Arrange the items.' : 'Step 3 of 4 — Put the items in the correct order. If they are already right, leave them.'), /*#__PURE__*/React.createElement("p", {
+    "data-assessment-order-status": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, orderAnnouncement), /*#__PURE__*/React.createElement("ol", {
     className: "space-y-1.5 mb-2",
     "aria-label": "Your order"
   }, orderAnswer.map(function (canonicalIdx, position) {
@@ -2730,35 +3220,46 @@ function SequenceSenseCard(p) {
       index: canonicalIdx
     }), /*#__PURE__*/React.createElement("button", {
       type: "button",
+      ref: function (node) {
+        var controls = orderButtonRefs.current[canonicalIdx] || (orderButtonRefs.current[canonicalIdx] = {});
+        controls[-1] = node;
+      },
       disabled: position === 0,
-      "aria-label": 'Move up: ' + canonicalItems[canonicalIdx],
+      "aria-label": 'Move up: ' + _quizPlain(canonicalItems[canonicalIdx]),
       onClick: function () {
-        moveOrderItem(position, -1);
+        moveOrderItem(position, -1, true);
       },
       className: "px-2 py-1 rounded border border-indigo-300 bg-white text-xs font-bold text-indigo-800 disabled:opacity-40"
     }, "▲"), /*#__PURE__*/React.createElement("button", {
       type: "button",
+      ref: function (node) {
+        var controls = orderButtonRefs.current[canonicalIdx] || (orderButtonRefs.current[canonicalIdx] = {});
+        controls[1] = node;
+        if (position === 0) stageFocusRef.current = node;
+      },
       disabled: position === orderAnswer.length - 1,
-      "aria-label": 'Move down: ' + canonicalItems[canonicalIdx],
+      "aria-label": 'Move down: ' + _quizPlain(canonicalItems[canonicalIdx]),
       onClick: function () {
-        moveOrderItem(position, 1);
+        moveOrderItem(position, 1, true);
       },
       className: "px-2 py-1 rounded border border-indigo-300 bg-white text-xs font-bold text-indigo-800 disabled:opacity-40"
     }, "▼"));
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    ref: orderAnswer.length < 2 ? stageFocusRef : null,
     onClick: finishArrange,
     className: "px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none"
   }, "Done arranging")), step === 4 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900 mb-2"
-  }, "Step 4 of 4 — What's the ordering principle?"), /*#__PURE__*/React.createElement("div", {
+  }, shortSequence ? 'Step 2 of 2 — Identify the ordering principle.' : "Step 4 of 4 — What's the ordering principle?"), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 md:grid-cols-3 gap-2"
   }, principleOptions.map(function (opt) {
     return /*#__PURE__*/React.createElement("button", {
       key: opt,
       type: "button",
+      ref: principleOptions.indexOf(opt) === 0 ? stageFocusRef : null,
       onClick: function () {
         answerPrinciple(opt);
       },
@@ -2776,10 +3277,13 @@ function SequenceSenseCard(p) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("span", {
-    className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
-  }, grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 4 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
+    ref: stageFocusRef,
+    tabIndex: -1,
+    "data-assessment-stage-result": true,
+    className: 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
+  }, grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / ' + (shortSequence ? 2 : 4) + ' — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
     className: 'space-y-1 text-sm text-' + statusColor + '-900'
-  }, /*#__PURE__*/React.createElement("li", null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (actualOrderIsCorrect ? 'order was correct' : describeSequenceMisplaced(misplacedPositions)) + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')), verifyAnswer === 'no' && /*#__PURE__*/React.createElement("li", null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found a misplaced item' : actualOrderIsCorrect ? 'nothing was misplaced' : describeSequenceMisplaced(misplacedPositions) + (misplacedPositions.length > 1 ? ' (either one counts)' : ''))), /*#__PURE__*/React.createElement("li", null, (grade.arrangeCorrect ? '✓ ' : '✗ ') + 'Arrange: ' + (grade.arrangeCorrect ? 'your order matched' : 'correct order is ' + canonicalItems.join(' → '))), /*#__PURE__*/React.createElement("li", null, (grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")'))), /*#__PURE__*/React.createElement("div", {
+  }, !shortSequence && /*#__PURE__*/React.createElement("li", null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (actualOrderIsCorrect ? 'order was correct' : describeSequenceMisplaced(misplacedPositions)) + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')), !shortSequence && verifyAnswer === 'no' && /*#__PURE__*/React.createElement("li", null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found a misplaced item' : actualOrderIsCorrect ? 'nothing was misplaced' : describeSequenceMisplaced(misplacedPositions) + (misplacedPositions.length > 1 ? ' (either one counts)' : ''))), /*#__PURE__*/React.createElement("li", null, (grade.arrangeCorrect ? '✓ ' : '✗ ') + 'Arrange: ' + (grade.arrangeCorrect ? 'your order matched' : 'correct order is ' + canonicalItems.join(' → '))), /*#__PURE__*/React.createElement("li", null, (grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")'))), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex items-center gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2795,9 +3299,9 @@ function SequenceSenseCard(p) {
     className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
   }, "🤖 Quick explanation"), explainer.loading && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-700 italic"
-  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("p", {
+  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, explainer.text), explainer.error && /*#__PURE__*/React.createElement("p", {
+  }, _quizRichBlock(explainer.text)), explainer.error && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-rose-700"
   }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2807,7 +3311,7 @@ function SequenceSenseCard(p) {
       // discarded the audio. Route through AlloSpeechPlayer instead: it
       // plays, respects mute, allows click-stop, and toasts on failure.
       try {
-        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);else p.callTTS(explainer.text);
+        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_quizPlain(explainer.text));else p.callTTS(_quizPlain(explainer.text));
       } catch (e) {}
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
@@ -2823,12 +3327,14 @@ function RelationMismatchCard(p) {
   var correctPartnerForWrong = q.correctPartnerForWrong || '';
   var candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
   var draftItemKey = 'q-' + p.questionIdx;
+  var [explanation, setExplanation] = _quizUseDraftField(p.draftNamespace, draftItemKey, 'explanation', '');
   var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
   var idkMarked = idkState[0] === true;
   var setIdkMarked = idkState[1];
   var stepState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'step', 1);
   var step = stepState[0];
   var setStep = stepState[1];
+  var stageFocusRef = _quizUseStageFocus(step);
   var clickedPairState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'clickedPairIdx', null);
   var clickedPairIdx = clickedPairState[0];
   var setClickedPairIdx = clickedPairState[1];
@@ -2918,6 +3424,7 @@ function RelationMismatchCard(p) {
     setStep(2);
   }
   function answerPartner(ans) {
+    if (q.requireReasoning && !explanation.trim()) return null;
     setPartnerAnswer(ans);
     var step1Correct = clickedPairIdx === wrongPairIndex;
     var step2Correct = ans === correctPartnerForWrong;
@@ -2931,6 +3438,11 @@ function RelationMismatchCard(p) {
       status: status,
       score: score
     };
+    _quizRecordPracticeAttempt(p, {
+      clickedPairIdx: clickedPairIdx,
+      partnerAnswer: ans,
+      explanation: explanation
+    }, null);
     setGrade(gradeResult);
     setStep('done');
     if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
@@ -2942,6 +3454,7 @@ function RelationMismatchCard(p) {
           answer: {
             clickedPairIdx: clickedPairIdx,
             partnerAnswer: ans,
+            explanation: explanation,
             score: score,
             status: status
           },
@@ -2974,6 +3487,7 @@ function RelationMismatchCard(p) {
         selectedPairIndex: typeof clickedPairIdx === 'number' ? clickedPairIdx : null,
         partnerOptions: step === 2 ? partnerOptions : [],
         partnerAnswer: partnerAnswer,
+        explanation: explanation,
         graded: !!grade,
         gradeStatus: grade && grade.status || null,
         score: grade && typeof grade.score === 'number' ? grade.score : null,
@@ -3032,6 +3546,11 @@ function RelationMismatchCard(p) {
         state: 'invalid-choice',
         message: 'Choose an available replacement partner by number or exact name.'
       };
+      if (q.requireReasoning && !explanation.trim()) return {
+        ok: false,
+        state: 'incomplete',
+        message: 'Add your explanation in the labeled field before choosing a replacement.'
+      };
       var result = answerPartner(partnerOptions[partnerIdx]);
       var resultMessage = result.status === 'correct' ? 'Relation response checked. Both parts are correct.' : result.status === 'partially-correct' ? 'Relation response checked. You earned ' + result.score + ' of 2 points.' : 'Relation response checked. Both parts need review.';
       return {
@@ -3043,12 +3562,19 @@ function RelationMismatchCard(p) {
       };
     }
   });
+  var stageAnnouncement = step === 1 ? 'Step 1 of 2. Choose the mismatched pair.' : step === 2 ? 'Step 2 of 2. Choose the replacement partner.' + (q.requireReasoning ? ' First, enter the required explanation.' : q.explanationPrompt ? ' You may also enter an explanation.' : '') : '';
   if (pairs.length === 0) return null;
   var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
   var wrongPairLeft = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-5 rounded-xl border border-slate-300 shadow-sm"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("p", {
+    "data-assessment-step-status": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, stageAnnouncement), /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("span", {
     className: "flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5"
@@ -3058,7 +3584,7 @@ function RelationMismatchCard(p) {
     className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
   }, "Relation Mismatch"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, q.question || 'One of these pairs is wrong. Find it and fix it.'), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
+  }, _quizRich(q.question || 'One of these pairs is wrong. Find it and fix it.')), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
     q: q
   }))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-1.5 mb-3"
@@ -3077,6 +3603,7 @@ function RelationMismatchCard(p) {
     }
     return /*#__PURE__*/React.createElement("div", {
       key: idx,
+      ref: isClickable && idx === 0 ? stageFocusRef : null,
       onClick: isClickable ? function () {
         answerWhichWrong(idx);
       } : null,
@@ -3124,16 +3651,25 @@ function RelationMismatchCard(p) {
     title: t("tooltips.skip_ai_explain")
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤔 "), t("ui_common.i_dont_know")))), step === 2 && /*#__PURE__*/React.createElement("div", {
+  }, "🤔 "), t("ui_common.i_dont_know")))), step === 2 && /*#__PURE__*/React.createElement(AssessmentReasoningInput, {
+    inputRef: stageFocusRef,
+    q: q,
+    itemNumber: p.itemNumber,
+    questionIdx: p.questionIdx,
+    value: explanation,
+    onChange: setExplanation
+  }), step === 2 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 rounded-lg bg-indigo-50 border border-indigo-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-semibold text-indigo-900 mb-2"
   }, 'Step 2 of 2 — Which item should "' + (clickedPairIdx !== null && pairs[clickedPairIdx] ? pairs[clickedPairIdx].left : wrongPairLeft) + '" have been paired with?'), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-2"
-  }, (candidatePartners.length > 0 ? candidatePartners : [correctPartnerForWrong]).map(function (cand) {
+  }, (candidatePartners.length > 0 ? candidatePartners : [correctPartnerForWrong]).map(function (cand, candidateIndex) {
     return /*#__PURE__*/React.createElement("button", {
       key: cand,
       type: "button",
+      ref: !q.requireReasoning && !q.explanationPrompt && candidateIndex === 0 ? stageFocusRef : null,
+      disabled: !!q.requireReasoning && !explanation.trim(),
       onClick: function () {
         answerPartner(cand);
       },
@@ -3151,7 +3687,10 @@ function RelationMismatchCard(p) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("span", {
-    className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
+    ref: stageFocusRef,
+    tabIndex: -1,
+    "data-assessment-stage-result": true,
+    className: 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
   }, grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
     className: 'space-y-1 text-sm text-' + statusColor + '-900'
   }, /*#__PURE__*/React.createElement("li", null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Find: ' + (grade.step1Correct ? 'you spotted the wrong pair' : 'the wrong pair was "' + wrongPairLeft + ' ↔ ' + (pairs[wrongPairIndex] ? pairs[wrongPairIndex].right : '') + '"')), /*#__PURE__*/React.createElement("li", null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Fix: ' + (grade.step2Correct ? 'correct partner — "' + correctPartnerForWrong + '"' : 'correct partner was "' + correctPartnerForWrong + '" (you picked "' + partnerAnswer + '")'))), /*#__PURE__*/React.createElement("div", {
@@ -3170,9 +3709,9 @@ function RelationMismatchCard(p) {
     className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
   }, "🤖 Quick explanation"), explainer.loading && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-700 italic"
-  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("p", {
+  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, explainer.text), explainer.error && /*#__PURE__*/React.createElement("p", {
+  }, _quizRichBlock(explainer.text)), explainer.error && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-rose-700"
   }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -3182,7 +3721,7 @@ function RelationMismatchCard(p) {
       // discarded the audio. Route through AlloSpeechPlayer instead: it
       // plays, respects mute, allows click-stop, and toasts on failure.
       try {
-        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);else p.callTTS(explainer.text);
+        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_quizPlain(explainer.text));else p.callTTS(_quizPlain(explainer.text));
       } catch (e) {}
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
@@ -3268,7 +3807,7 @@ function McqEnhancements(p) {
   function markIDK() {
     setIdkMarked(true);
     _quizWriteDraftField(p.draftNamespace, 'q-' + p.questionIdx, 'idk', true);
-    requestExplainer();
+    if (aiExplainerEnabled) requestExplainer();
     if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
       try {
         p.onSubmitLiveAnswer({
@@ -3285,7 +3824,15 @@ function McqEnhancements(p) {
   }
   return /*#__PURE__*/React.createElement("div", {
     className: "mt-3 ml-9 space-y-2"
-  }, (aiExplainerEnabled || allowIDK) && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    "data-assessment-option-feedback-status": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, p.feedbackShown && !idkMarked && Array.isArray(p.q?.optionFeedback) && p.q.optionFeedback[p.selectedOptionIdx] && /*#__PURE__*/React.createElement("p", {
+    "data-assessment-option-feedback": true,
+    className: "rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-950"
+  }, _quizRich(p.q.optionFeedback[p.selectedOptionIdx]))), p.feedbackShown && !idkMarked && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(AssessmentPracticeHistory, p), /*#__PURE__*/React.createElement(AssessmentTransferPractice, p)), (aiExplainerEnabled || allowIDK) && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-wrap"
   }, aiExplainerEnabled && !explainer.open && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -3300,7 +3847,7 @@ function McqEnhancements(p) {
     onClick: markIDK,
     className: "text-xs font-semibold px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 transition-colors motion-reduce:transition-none",
     "aria-label": "I don't know — skip without penalty",
-    title: "Skip — no penalty. The AI will explain the concept."
+    title: "Skip without penalty."
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "🤔 "), _quizGradedCopy('ui_common.i_dont_know', "I don't know")), idkMarked && /*#__PURE__*/React.createElement("span", {
@@ -3311,15 +3858,15 @@ function McqEnhancements(p) {
     className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
   }, "🤖 Quick explanation"), explainer.loading && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-700 italic"
-  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("p", {
+  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, explainer.text), explainer.error && /*#__PURE__*/React.createElement("p", {
+  }, _quizRichBlock(explainer.text)), explainer.error && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-rose-700"
   }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       // Route through AlloSpeechPlayer for mute respect / click-stop / toast.
-      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);else p.callTTS(explainer.text);
+      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_quizPlain(explainer.text));else p.callTTS(_quizPlain(explainer.text));
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
     "aria-label": t("a11y.read_aloud")
@@ -3327,18 +3874,20 @@ function McqEnhancements(p) {
     className: "flex items-center gap-2 flex-wrap text-xs"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-slate-600 font-semibold"
-  }, _quizGradedCopy('quiz.student.how_sure', 'How sure were you?')), ['knew', 'guessed', 'no-idea'].map(function (lvl) {
+  }, _quizGradedCopy('quiz.student.confidence_before', 'Before checking: how sure are you?')), ['knew', 'guessed', 'no-idea'].map(function (lvl) {
     var labels = {
-      knew: _quizGradedCopy('quiz.student.confidence_knew', 'I knew this'),
-      guessed: _quizGradedCopy('quiz.student.confidence_guessed', 'I guessed'),
-      'no-idea': _quizGradedCopy('quiz.student.confidence_no_idea', 'No idea')
+      knew: _quizGradedCopy('quiz.student.confidence_know_now', 'I know this'),
+      guessed: _quizGradedCopy('quiz.student.confidence_unsure_now', 'I am unsure'),
+      'no-idea': _quizGradedCopy('quiz.student.confidence_need_support', 'I need support')
     };
     var active = confidence === lvl;
     return /*#__PURE__*/React.createElement("button", {
       key: lvl,
       type: "button",
+      "aria-pressed": active,
+      disabled: !!p.feedbackShown || idkMarked,
       onClick: function () {
-        setConfidence(lvl);
+        if (!p.feedbackShown && !idkMarked) setConfidence(lvl);
       },
       className: 'px-2 py-0.5 rounded border transition-colors motion-reduce:transition-none ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
     }, labels[lvl]);
@@ -3973,7 +4522,7 @@ function LiveResultsDashboard(p) {
   function playExplainer() {
     if (!explainerModal.text || typeof p.callTTS !== 'function') return;
     try {
-      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainerModal.text);else p.callTTS(explainerModal.text);
+      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_quizPlain(explainerModal.text));else p.callTTS(_quizPlain(explainerModal.text));
     } catch (e) {}
   }
   var pushStateState = React.useState({
@@ -4436,7 +4985,7 @@ function LiveResultsDashboard(p) {
       className: "space-y-2"
     }, data.conceptCards.map(function (card) {
       var color = card.totalAnswered === 0 ? 'slate' : card.unscored ? 'purple' : card.scorePercent == null ? 'slate' : card.scorePercent >= 80 ? 'emerald' : card.scorePercent >= 50 ? 'amber' : 'rose';
-      var urgency = card.totalAnswered === 0 ? 'no responses' : card.unscored ? 'Unscored poll' : card.scorePercent == null ? dashboardCopy('quiz.live_no_scores', 'No scored responses') : card.scorePercent < 50 ? '⚠ Needs pre-teaching' : card.scorePercent < 80 ? 'Review with class' : 'Class is ready';
+      var urgency = card.totalAnswered === 0 ? 'No responses yet' : card.unscored ? 'Unscored poll' : card.scorePercent == null ? dashboardCopy('quiz.live_no_scores', 'No scored responses') : card.coverageStatus !== 'complete-coverage' ? 'Early signal — keep collecting responses' : card.scorePercent < 50 ? 'Consider prerequisite support' : card.scorePercent < 80 ? 'Review this prerequisite together' : 'Responses suggest readiness';
       var showExplainBtn = !card.unscored && card.totalPossible > 0 && card.scorePercent < 80 && typeof p.callGemini === 'function';
       return /*#__PURE__*/React.createElement("div", {
         key: card.questionIdx,
@@ -4451,7 +5000,10 @@ function LiveResultsDashboard(p) {
         percent: card.scorePercent
       }))), /*#__PURE__*/React.createElement("p", {
         className: "text-sm text-slate-800 mb-2"
-      }, card.conceptText), /*#__PURE__*/React.createElement("div", {
+      }, card.conceptText), /*#__PURE__*/React.createElement("p", {
+        "data-assessment-readiness-coverage": true,
+        className: "text-xs text-slate-700 mb-2"
+      }, card.totalAnswered + ' of ' + (card.expectedCount || data.totalStudents || 0) + ' learners responded; ' + (card.evaluatedCount || 0) + ' evaluated; ' + (card.awaitingReviewCount || 0) + ' awaiting review. Scores describe evaluated responses only.'), /*#__PURE__*/React.createElement("div", {
         className: 'flex items-center gap-3 text-xs text-' + color + '-900'
       }, !card.unscored && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, card.correctCount + ' ✓'), card.partialCount > 0 && /*#__PURE__*/React.createElement("span", null, _quizFill(dashboardCopy('quiz.live_partial_count', '{count} partially correct'), {
         count: card.partialCount
@@ -4804,6 +5356,7 @@ function LiveResultsDashboard(p) {
   }), reflectionsEl, explainerModalEl);
 }
 function _quizEmitDeterministicAnswer(p, itemType, answer, confidence) {
+  _quizRecordPracticeAttempt(p, answer, confidence);
   if (typeof p.onSubmitLiveAnswer !== 'function' || typeof p.questionIdx !== 'number') return;
   try {
     p.onSubmitLiveAnswer({
@@ -4817,37 +5370,50 @@ function _quizEmitDeterministicAnswer(p, itemType, answer, confidence) {
   } catch (e) {}
 }
 function _quizConfidenceButtons(p) {
-  if (!p.enabled || !p.grade || p.grade.status === 'idk') return null;
+  if (!p.enabled || p.grade && p.grade.status === 'idk') return null;
   var labels = {
-    knew: _quizGradedCopy('quiz.student.confidence_knew', 'I knew this'),
-    guessed: _quizGradedCopy('quiz.student.confidence_guessed', 'I guessed'),
-    'no-idea': _quizGradedCopy('quiz.student.confidence_no_idea', 'No idea')
+    knew: _quizGradedCopy('quiz.student.confidence_know_now', 'I know this'),
+    guessed: _quizGradedCopy('quiz.student.confidence_unsure_now', 'I am unsure'),
+    'no-idea': _quizGradedCopy('quiz.student.confidence_need_support', 'I need support')
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex items-center gap-2 flex-wrap text-xs"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-slate-600 font-semibold"
-  }, _quizGradedCopy('quiz.student.how_sure', 'How sure were you?')), ['knew', 'guessed', 'no-idea'].map(function (level) {
+  }, _quizGradedCopy('quiz.student.confidence_before', 'Before checking: how sure are you?')), ['knew', 'guessed', 'no-idea'].map(function (level) {
     return /*#__PURE__*/React.createElement("button", {
       key: level,
       type: "button",
+      "aria-pressed": p.value === level,
+      disabled: !!p.grade,
       onClick: function () {
-        p.onChange(level);
+        if (!p.grade) p.onChange(level);
       },
-      className: 'px-2 py-0.5 rounded border transition-colors motion-reduce:transition-none ' + (p.value === level ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+      className: 'min-h-9 px-2 py-1 rounded border transition-colors motion-reduce:transition-none disabled:opacity-70 ' + (p.value === level ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
     }, labels[level]);
   }));
 }
 function MultiSelectCard(p) {
   var q = p.q;
   var options = Array.isArray(q.options) ? q.options : [];
-  var correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+  var progressId = React.useId();
+  var instructionsId = progressId + '-instructions';
+  var revisionTargetRef = React.useRef(null);
+  var [checkError, setCheckError] = React.useState('');
+  var [revisionNotice, setRevisionNotice] = React.useState('');
   var draftItemKey = 'q-' + p.questionIdx;
   var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
   var idkMarked = idkState[0] === true;
   var setIdkMarked = idkState[1];
   var selectedState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'selected', []);
-  var selected = selectedState[0];
+  function validSelections(value) {
+    return Array.isArray(value) ? Array.from(new Set(value.filter(function (idx) {
+      return Number.isInteger(idx) && idx >= 0 && idx < options.length;
+    }))).sort(function (a, b) {
+      return a - b;
+    }) : [];
+  }
+  var selected = validSelections(selectedState[0]);
   var setSelected = selectedState[1];
   var gradeState = React.useState(null);
   var grade = idkMarked ? {
@@ -4855,6 +5421,7 @@ function MultiSelectCard(p) {
     score: 0
   } : gradeState[0];
   var setGrade = gradeState[1];
+  var responseFocusRef = _quizUseStageFocus(grade ? 'feedback' : 'response');
   var submittedAnswerState = React.useState(null);
   var submittedAnswer = submittedAnswerState[0];
   var setSubmittedAnswer = submittedAnswerState[1];
@@ -4864,7 +5431,11 @@ function MultiSelectCard(p) {
   var renderRules = p.modeStrategy && p.modeStrategy.render || {};
   function toggleOption(idx) {
     if (grade) return;
+    setCheckError('');
+    setRevisionNotice('');
+    revisionTargetRef.current = null;
     setSelected(function (prev) {
+      prev = validSelections(prev);
       return prev.indexOf(idx) === -1 ? prev.concat([idx]).sort(function (a, b) {
         return a - b;
       }) : prev.filter(function (n) {
@@ -4873,41 +5444,48 @@ function MultiSelectCard(p) {
     });
   }
   function submit() {
-    if (selected.length === 0 || correctAnswers.length === 0) return;
-    var correctIndices = options.map(function (opt, idx) {
-      return correctAnswers.indexOf(opt) !== -1 ? idx : -1;
-    }).filter(function (idx) {
-      return idx >= 0;
-    });
-    var selectedCorrect = selected.filter(function (idx) {
-      return correctIndices.indexOf(idx) !== -1;
-    }).length;
-    var selectedWrong = selected.length - selectedCorrect;
-    var earned = Math.max(0, selectedCorrect - selectedWrong);
-    var exact = selectedWrong === 0 && selectedCorrect === correctIndices.length;
-    var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
-    var score = partialCredit ? Math.round(100 * earned / Math.max(1, correctIndices.length)) : exact ? 100 : 0;
-    var status = exact ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
-    var answer = {
+    if (selected.length === 0) return;
+    setCheckError('');
+    setRevisionNotice('');
+    var grader = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    if (!grader || typeof grader.gradePresentationResponse !== 'function') {
+      var unavailableMessage = 'Checking is not available yet. Your selections are kept. Try checking again when it has loaded.';
+      setCheckError(unavailableMessage);
+      return {
+        status: 'unavailable',
+        message: unavailableMessage
+      };
+    }
+    var response = {
       selectedIndices: selected.slice(),
       selectedTexts: selected.map(function (idx) {
         return options[idx];
-      }),
-      status: status,
-      score: score
+      })
     };
-    setGrade({
-      status: status,
-      score: score,
-      selectedCorrect: selectedCorrect,
-      selectedWrong: selectedWrong,
-      totalCorrect: correctIndices.length
+    var checked = grader.gradePresentationResponse({
+      itemType: 'multi-select',
+      answer: response
+    }, q, p.scoringPolicy);
+    if (!checked || checked.evaluable !== true || !Array.isArray(checked.correctIndices)) {
+      var reviewMessage = 'This question needs teacher review before it can be checked. Your selections are kept.';
+      setCheckError(reviewMessage);
+      return {
+        status: 'unavailable',
+        message: reviewMessage
+      };
+    }
+    var answer = Object.assign({}, response, {
+      status: checked.status,
+      score: checked.score
     });
+    setGrade(checked);
     setSubmittedAnswer(answer);
     _quizEmitDeterministicAnswer(p, 'multi-select', answer, confidence);
     return answer;
   }
   function markIDK() {
+    setCheckError('');
+    setRevisionNotice('');
     setIdkMarked(true);
     var answer = {
       idk: true
@@ -4924,11 +5502,27 @@ function MultiSelectCard(p) {
     if (submittedAnswer) _quizEmitDeterministicAnswer(p, 'multi-select', submittedAnswer, level);
   }
   function reset() {
+    revisionTargetRef.current = null;
+    setCheckError('');
+    setRevisionNotice('');
     setIdkMarked(false);
     setSelected([]);
     setGrade(null);
     setSubmittedAnswer(null);
     setConfidence(null);
+  }
+  var canRevise = !!grade && ['incorrect', 'partially-correct'].includes(grade.status);
+  function revise() {
+    if (!canRevise) return false;
+    var nextIndex = options.findIndex(function (_, idx) {
+      return selected.includes(idx) !== grade.correctIndices.includes(idx);
+    });
+    revisionTargetRef.current = nextIndex >= 0 ? nextIndex : 0;
+    setCheckError('');
+    setRevisionNotice('Your selections are kept. Review the choice that needs work, then check your selections again.');
+    setSubmittedAnswer(null);
+    setGrade(null);
+    return true;
   }
   _quizUseVoiceController(p, {
     getState: function () {
@@ -4943,11 +5537,21 @@ function MultiSelectCard(p) {
         graded: !!grade,
         gradeStatus: grade && grade.status || null,
         score: grade && typeof grade.score === 'number' ? grade.score : null,
-        actions: grade ? ['try-again'] : selected.length > 0 ? ['choose', 'check'] : ['choose'],
-        prompt: grade ? 'These selections have been checked. Say try again to reset them.' : 'Select or deselect every answer that applies, then say check selections.'
+        actions: grade ? canRevise ? ['revise', 'try-again'] : ['try-again'] : selected.length > 0 ? ['choose', 'check'] : ['choose'],
+        resetRequiresConfirmation: !!(grade || selected.length),
+        prompt: grade ? canRevise ? 'These selections have been checked. Say revise these choices to keep your selections and improve them, or try again to clear them.' : grade.status === 'idk' ? 'This question was skipped. Say try again to answer it.' : 'These selections have been checked. Say try again to reset them.' : checkError || revisionNotice || 'Select or deselect every answer that applies, then say check selections.'
       };
     },
     execute: function (action, request) {
+      if (action === 'revise') return revise() ? {
+        ok: true,
+        state: 'revising',
+        message: 'Your selections are kept. Review the choice that needs work, then check your selections again.'
+      } : {
+        ok: false,
+        state: 'inapplicable',
+        message: 'Revision is available after checking a response that needs review.'
+      };
       if (action === 'try-again' || action === 'reset') {
         reset();
         return {
@@ -4981,6 +5585,9 @@ function MultiSelectCard(p) {
         }) : selected.filter(function (idx) {
           return idx !== optionIdx;
         });
+        setCheckError('');
+        setRevisionNotice('');
+        revisionTargetRef.current = null;
         setSelected(nextSelected);
         var label = String.fromCharCode(65 + optionIdx);
         return {
@@ -4996,12 +5603,12 @@ function MultiSelectCard(p) {
           state: 'inapplicable',
           message: 'Select at least one option before checking.'
         };
-        if (correctAnswers.length === 0) return {
-          ok: false,
-          state: 'unsupported',
-          message: 'This multi-select item has no answer key to check.'
-        };
         var result = submit();
+        if (!result || result.status === 'unavailable') return {
+          ok: false,
+          state: 'unavailable',
+          message: result && result.message || 'Checking is not available yet. Your selections are kept.'
+        };
         var resultMessage = result.status === 'correct' ? 'Selections checked. All selections are correct.' : result.status === 'partially-correct' ? 'Selections checked. You earned ' + result.score + ' percent partial credit.' : 'Selections checked. Review the selected options and try again.';
         return {
           ok: true,
@@ -5020,6 +5627,7 @@ function MultiSelectCard(p) {
   });
   if (options.length === 0) return null;
   var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
+  var progress = checkError || (grade ? '' : revisionNotice || (selected.length ? selected.length + ' option' + (selected.length === 1 ? ' selected.' : 's selected.') + ' Ready to check selections.' : 'Select at least one option before checking.'));
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-5 rounded-xl border border-slate-300 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
@@ -5032,26 +5640,40 @@ function MultiSelectCard(p) {
     className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
   }, "Multi-select"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, q.question || ''), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
+  }, _quizRich(q.question || '')), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
     q: q
   }), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-500 mt-1"
-  }, !p.scoringPolicy || p.scoringPolicy.partialCredit !== false ? 'Select every correct answer. Incorrect selections reduce partial credit.' : 'Select every correct answer. This item uses all-or-nothing scoring.'))), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-2"
+    id: instructionsId,
+    className: "text-sm text-slate-600 mt-1"
+  }, !p.scoringPolicy || p.scoringPolicy.partialCredit !== false ? 'Select every correct answer. Incorrect selections reduce partial credit.' : 'Select every correct answer. This item uses all-or-nothing scoring.'))), /*#__PURE__*/React.createElement("p", {
+    id: progressId,
+    "data-assessment-multi-progress": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "mb-3 text-sm font-semibold text-indigo-900"
+  }, progress), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2",
+    role: "group",
+    "aria-label": "Answer choices",
+    "aria-describedby": instructionsId
   }, options.map(function (opt, idx) {
     var active = selected.indexOf(idx) !== -1;
     return /*#__PURE__*/React.createElement("button", {
       key: idx,
       type: "button",
+      ref: node => {
+        if (!grade && idx === (revisionTargetRef.current === null ? 0 : revisionTargetRef.current)) responseFocusRef.current = node;
+      },
       "aria-pressed": active,
       disabled: !!grade,
       onClick: function () {
         toggleOption(idx);
       },
-      className: 'w-full flex items-start gap-2 text-left px-3 py-2 rounded-lg border text-sm transition-colors motion-reduce:transition-none disabled:cursor-default ' + (active ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')
+      className: 'min-h-11 w-full flex items-start gap-2 text-left px-3 py-2 rounded-lg border text-sm transition-colors motion-reduce:transition-none disabled:cursor-default ' + (active ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true",
-      className: 'mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black ' + (active ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-400')
+      className: 'mt-0.5 flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black ' + (active ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-400')
     }, active ? '✓' : ''), /*#__PURE__*/React.createElement(AssessmentChoiceContent, {
       q: q,
       field: "options",
@@ -5062,26 +5684,51 @@ function MultiSelectCard(p) {
     className: "mt-3 flex items-center gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-describedby": progressId,
     onClick: submit,
     disabled: selected.length === 0,
-    className: "px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50"
+    className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50"
   }, _quizGradedCopy('quiz.student.check_selections', 'Check selections')), renderRules.allowIDontKnow && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: markIDK,
-    className: "px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold"
+    className: "min-h-11 px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-sm font-semibold"
   }, _quizGradedCopy('ui_common.i_dont_know', "I don't know"))), grade && /*#__PURE__*/React.createElement("div", {
     className: 'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300',
     role: "status",
     "aria-live": "polite"
   }, /*#__PURE__*/React.createElement("div", {
-    className: 'text-xs font-bold text-' + color + '-900'
-  }, grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ All correct' : grade.status === 'partially-correct' ? grade.score + '% partial credit' : 'Not yet — review your selections'), grade.status !== 'idk' && /*#__PURE__*/React.createElement("p", {
-    className: 'text-xs mt-1 text-' + color + '-900'
-  }, grade.selectedCorrect + ' of ' + grade.totalCorrect + ' correct choices selected' + (grade.selectedWrong ? '; ' + grade.selectedWrong + ' incorrect choice' + (grade.selectedWrong === 1 ? '' : 's') + ' selected.' : '.')), /*#__PURE__*/React.createElement("button", {
+    ref: grade ? responseFocusRef : null,
+    tabIndex: -1,
+    "data-assessment-multi-result": true,
+    className: 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-sm font-bold text-' + color + '-900'
+  }, grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ All correct' : grade.status === 'partially-correct' ? grade.score + '% partial credit' : 'Not yet — review your selections'), grade.status !== 'idk' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ul", {
+    className: "mt-2 space-y-1 text-sm",
+    "aria-label": "Feedback for each option"
+  }, options.map((option, index) => {
+    var expected = grade.correctIndices.includes(index);
+    var chosen = selected.includes(index);
+    return /*#__PURE__*/React.createElement("li", {
+      key: index
+    }, /*#__PURE__*/React.createElement("strong", null, _quizRich(option), ": "), chosen && expected ? 'Correct selection.' : chosen ? 'This choice does not belong.' : expected ? 'This correct choice was missing.' : 'Correctly left unselected.', q.optionFeedback?.[index] && /*#__PURE__*/React.createElement("span", null, ' ', _quizRich(q.optionFeedback[index])));
+  })), /*#__PURE__*/React.createElement("p", {
+    className: 'text-sm mt-2 text-' + color + '-900'
+  }, grade.selectedCorrect + ' of ' + grade.totalCorrect + ' correct choices selected' + (grade.selectedWrong ? '; ' + grade.selectedWrong + ' incorrect choice' + (grade.selectedWrong === 1 ? '' : 's') + ' selected.' : '.')), p.scoringPolicy?.partialCredit === false && /*#__PURE__*/React.createElement("p", {
+    "data-assessment-multi-score-policy": true,
+    className: "mt-2 text-sm"
+  }, "All correct choices, and no incorrect choices, must be selected for credit.")), canRevise && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    id: progressId + '-revision-help',
+    className: "mt-3 text-sm"
+  }, "Review the feedback for each option. Keep the correct selections and change the choices that need work."), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assessment-revise-multi": true,
+    "aria-describedby": progressId + '-revision-help',
+    onClick: revise,
+    className: "mt-3 me-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-indigo-900"
+  }, "Revise these choices")), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: reset,
-    className: "mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold"
-  }, "Try again")), _quizConfidenceButtons({
+    className: "mt-3 min-h-11 rounded-lg bg-white border border-slate-400 px-3 py-2 text-sm font-semibold text-slate-800"
+  }, "Try again")), grade && grade.status !== 'idk' && /*#__PURE__*/React.createElement(AssessmentTransferPractice, p), _quizConfidenceButtons({
     enabled: !!renderRules.allowConfidenceRating,
     grade: grade,
     value: confidence,
@@ -5090,9 +5737,17 @@ function MultiSelectCard(p) {
 }
 function AnswerEvidenceCard(p) {
   var q = p.q;
+  var answerEvidenceProgressId = React.useId();
+  var answerEvidenceInstructionsId = answerEvidenceProgressId + '-instructions';
+  var evidenceFirstRef = React.useRef(null);
+  var revisionTargetRef = React.useRef(null);
+  var [checkError, setCheckError] = React.useState('');
+  var [revisionNotice, setRevisionNotice] = React.useState('');
+  var [answerChanged, setAnswerChanged] = React.useState(false);
   var answers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
   var evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
   var draftItemKey = 'q-' + p.questionIdx;
+  var [explanation, setExplanation] = _quizUseDraftField(p.draftNamespace, draftItemKey, 'explanation', '');
   var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
   var idkMarked = idkState[0] === true;
   var setIdkMarked = idkState[1];
@@ -5108,6 +5763,7 @@ function AnswerEvidenceCard(p) {
     score: 0
   } : gradeState[0];
   var setGrade = gradeState[1];
+  var answerEvidenceFocusRef = _quizUseStageFocus(grade ? 'feedback' : 'response');
   var submittedState = React.useState(null);
   var submitted = submittedState[0];
   var setSubmitted = submittedState[1];
@@ -5115,30 +5771,73 @@ function AnswerEvidenceCard(p) {
   var confidence = confidenceState[0];
   var setConfidence = confidenceState[1];
   var renderRules = p.modeStrategy && p.modeStrategy.render || {};
+  function chooseAnswer(index) {
+    if (grade || !Number.isInteger(index) || index < 0 || index >= answers.length) return;
+    setCheckError('');
+    setRevisionNotice('');
+    revisionTargetRef.current = null;
+    if (index !== answerIdx) {
+      // Clear the dependent draft first so observers never see the new answer with stale evidence.
+      setEvidenceIdx(null);
+      setAnswerChanged(evidenceIdx !== null);
+      setAnswerIdx(index);
+    }
+  }
+  function chooseEvidence(index) {
+    if (grade || answerIdx === null || !Number.isInteger(index) || index < 0 || index >= evidence.length) return;
+    setCheckError('');
+    setRevisionNotice('');
+    revisionTargetRef.current = null;
+    setEvidenceIdx(index);
+    setAnswerChanged(false);
+  }
   function submit() {
+    if (q.requireReasoning && !explanation.trim()) return null;
     if (answerIdx === null || evidenceIdx === null) return null;
-    var answerCorrect = _quizAnswerMatches(answers[answerIdx], q.correctAnswer);
-    var evidenceCorrect = evidence[evidenceIdx] === q.correctEvidence;
-    var rawScore = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
-    var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
-    var score = partialCredit ? rawScore : rawScore === 2 ? 2 : 0;
-    var status = score === 2 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
-    var payload = {
+    setCheckError('');
+    setRevisionNotice('');
+    var grader = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    if (!grader || typeof grader.gradePresentationResponse !== 'function') {
+      var unavailableMessage = 'Checking is not available yet. Your choices and explanation are kept. Try checking again when it has loaded.';
+      setCheckError(unavailableMessage);
+      return {
+        status: 'unavailable',
+        message: unavailableMessage
+      };
+    }
+    var response = {
+      explanation: explanation,
       answerIdx: answerIdx,
       answerText: answers[answerIdx],
       evidenceIdx: evidenceIdx,
-      evidenceText: evidence[evidenceIdx],
-      answerCorrect: answerCorrect,
-      evidenceCorrect: evidenceCorrect,
-      score: score,
-      status: status
+      evidenceText: evidence[evidenceIdx]
     };
+    var checked = grader.gradePresentationResponse({
+      itemType: 'answer-evidence',
+      answer: response
+    }, q, p.scoringPolicy);
+    if (!checked || checked.evaluable !== true) {
+      var reviewMessage = 'This question needs teacher review before it can be checked. Your choices and explanation are kept.';
+      setCheckError(reviewMessage);
+      return {
+        status: 'unavailable',
+        message: reviewMessage
+      };
+    }
+    var payload = Object.assign({}, response, {
+      answerCorrect: checked.answerCorrect,
+      evidenceCorrect: checked.evidenceCorrect,
+      score: checked.score,
+      status: checked.status
+    });
     setGrade(payload);
     setSubmitted(payload);
     _quizEmitDeterministicAnswer(p, 'answer-evidence', payload, confidence);
     return payload;
   }
   function markIDK() {
+    setCheckError('');
+    setRevisionNotice('');
     setIdkMarked(true);
     var payload = {
       idk: true
@@ -5155,6 +5854,10 @@ function AnswerEvidenceCard(p) {
     if (submitted) _quizEmitDeterministicAnswer(p, 'answer-evidence', submitted, level);
   }
   function reset() {
+    revisionTargetRef.current = null;
+    setCheckError('');
+    setRevisionNotice('');
+    setAnswerChanged(false);
     setIdkMarked(false);
     setAnswerIdx(null);
     setEvidenceIdx(null);
@@ -5162,11 +5865,26 @@ function AnswerEvidenceCard(p) {
     setSubmitted(null);
     setConfidence(null);
   }
+  var canRevise = !!grade && ['incorrect', 'partially-correct'].includes(grade.status);
+  function revise() {
+    if (!canRevise) return false;
+    var part = grade.answerCorrect ? 'evidenceOptions' : 'answerOptions';
+    revisionTargetRef.current = {
+      field: part,
+      index: part === 'evidenceOptions' ? evidenceIdx : answerIdx
+    };
+    setCheckError('');
+    setAnswerChanged(false);
+    setRevisionNotice('Your choices and explanation are kept. Review your ' + (part === 'evidenceOptions' ? 'supporting evidence' : 'answer') + ', then check both parts again.');
+    setSubmitted(null);
+    setGrade(null);
+    return true;
+  }
   _quizUseVoiceController(p, {
     getState: function () {
-      var actions = grade ? ['try-again'] : ['choose-answer'];
+      var actions = grade ? canRevise ? ['revise', 'try-again'] : ['try-again'] : ['choose-answer'];
       if (!grade && answerIdx !== null) actions.push('choose-evidence');
-      if (!grade && answerIdx !== null && evidenceIdx !== null) actions.push('check');
+      if (!grade && answerIdx !== null && evidenceIdx !== null && (!q.requireReasoning || explanation.trim())) actions.push('check');
       return {
         type: 'answer-evidence',
         answerOptions: answers.slice(0, 8),
@@ -5178,11 +5896,20 @@ function AnswerEvidenceCard(p) {
         score: grade && typeof grade.score === 'number' ? grade.score : null,
         actions: actions,
         resetRequiresConfirmation: !!(grade || answerIdx !== null || evidenceIdx !== null),
-        prompt: grade ? 'Both parts have been checked. Say try again to clear both selections and answer again.' : answerIdx === null ? 'Choose the answer part explicitly, for example choose answer B.' : evidenceIdx === null ? 'Now choose the evidence part explicitly, for example choose evidence A.' : 'Both parts are selected. Say check both parts.'
+        prompt: grade ? canRevise ? 'Both parts have been checked. Say revise these choices to keep your work and improve it, or try again to clear both selections.' : grade.status === 'idk' ? 'This question was skipped. Say try again to answer it.' : 'Both parts have been checked. Say try again to clear both selections and answer again.' : answerIdx === null ? 'Choose the answer part explicitly, for example choose answer B.' : evidenceIdx === null ? 'Now choose the evidence part explicitly, for example choose evidence A.' : q.requireReasoning && !explanation.trim() ? 'Add the required explanation before checking both parts.' : 'Both parts are selected. Say check both parts.'
       };
     },
     execute: function (action, request) {
       var input = request && typeof request === 'object' ? request : {};
+      if (action === 'revise') return revise() ? {
+        ok: true,
+        state: 'revising',
+        message: 'Your choices and explanation are kept. Review the part that needs work, then check both parts again.'
+      } : {
+        ok: false,
+        state: 'inapplicable',
+        message: 'Revision is available after checking a response that needs review.'
+      };
       if (action === 'try-again' || action === 'reset') {
         if ((grade || answerIdx !== null || evidenceIdx !== null) && input.confirmed !== true) {
           return {
@@ -5233,12 +5960,7 @@ function AnswerEvidenceCard(p) {
             message: 'Choose an available ' + part + ' option by letter A through H, number, ordinal, or exact option text.'
           };
         }
-        if (part === 'answer') {
-          setAnswerIdx(chosenIndex);
-          if (answerIdx !== chosenIndex) setEvidenceIdx(null);
-        } else {
-          setEvidenceIdx(chosenIndex);
-        }
+        if (part === 'answer') chooseAnswer(chosenIndex);else chooseEvidence(chosenIndex);
         var label = String.fromCharCode(65 + chosenIndex);
         return {
           ok: true,
@@ -5246,7 +5968,7 @@ function AnswerEvidenceCard(p) {
           part: part,
           selectedIndex: chosenIndex,
           selectedLabel: label,
-          message: (part === 'answer' ? 'Answer' : 'Evidence') + ' option ' + label + ' selected.' + (part === 'answer' ? ' Now choose supporting evidence.' : ' Both parts are selected. Say check both parts.')
+          message: (part === 'answer' ? 'Answer' : 'Evidence') + ' option ' + label + ' selected.' + (part === 'answer' && (chosenIndex !== answerIdx || evidenceIdx === null) ? ' Now choose supporting evidence.' : q.requireReasoning && !explanation.trim() ? ' Add the required explanation before checking both parts.' : ' Both parts are selected. Say check both parts.')
         };
       }
       if (action === 'check') {
@@ -5257,13 +5979,24 @@ function AnswerEvidenceCard(p) {
             message: 'Choose one answer and one evidence option before checking both parts.'
           };
         }
+        if (q.requireReasoning && !explanation.trim()) return {
+          ok: false,
+          state: 'inapplicable',
+          message: 'Add the required explanation before checking both parts.'
+        };
         var result = submit();
         if (!result) return {
           ok: false,
           state: 'error',
           message: 'Both parts could not be checked.'
         };
-        var message = result.status === 'correct' ? 'Both parts checked. The answer and supporting evidence are correct.' : result.status === 'partially-correct' ? 'Both parts checked. One part is correct and one part needs review.' : 'Both parts checked. The answer and supporting evidence need review.';
+        if (result.status === 'unavailable') return {
+          ok: false,
+          state: 'unavailable',
+          message: result.message
+        };
+        var message = result.answerCorrect && result.evidenceCorrect ? 'Both parts checked. The answer and supporting evidence are correct.' : result.answerCorrect ? 'Both parts checked. Your answer is correct. Review the supporting evidence.' : result.evidenceCorrect ? 'Both parts checked. Your supporting evidence is correct. Review the answer.' : 'Both parts checked. The answer and supporting evidence need review.';
+        if (p.scoringPolicy && p.scoringPolicy.partialCredit === false && result.answerCorrect !== result.evidenceCorrect) message += ' Both parts must be correct for credit.';
         return {
           ok: true,
           state: 'checked',
@@ -5279,6 +6012,7 @@ function AnswerEvidenceCard(p) {
       };
     }
   });
+  var answerEvidenceProgress = checkError || (grade ? '' : revisionNotice || (answerIdx === null ? 'Choose an answer, then supporting evidence.' : evidenceIdx === null ? answerChanged ? 'Answer changed. Choose supporting evidence again.' + (explanation.trim() ? ' Your explanation is kept.' : '') : 'Answer selected. Now choose supporting evidence.' : q.requireReasoning && !explanation.trim() ? 'Both parts selected. Add the required explanation before checking.' : 'Both parts selected. Ready to check.'));
   if (answers.length === 0 || evidence.length === 0) return null;
   var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
   function optionGrid(items, selectedIdx, setter, disabled, field) {
@@ -5288,6 +6022,10 @@ function AnswerEvidenceCard(p) {
       return /*#__PURE__*/React.createElement("button", {
         key: idx,
         type: "button",
+        ref: node => {
+          if (field === 'evidenceOptions' && idx === 0) evidenceFirstRef.current = node;
+          if (!grade && (revisionTargetRef.current ? field === revisionTargetRef.current.field && idx === revisionTargetRef.current.index : field === 'answerOptions' && idx === 0)) answerEvidenceFocusRef.current = node;
+        },
         disabled: disabled,
         "aria-pressed": selectedIdx === idx,
         onClick: function () {
@@ -5300,7 +6038,11 @@ function AnswerEvidenceCard(p) {
         index: idx,
         text: opt,
         prefix: String.fromCharCode(65 + idx) + '. '
-      }));
+      }), selectedIdx === idx && /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": "true",
+        "data-assessment-choice-selected": true,
+        className: "ms-2 inline-block text-xs font-bold"
+      }, "✓ ", _quizGradedCopy('quiz.student.selected', 'Selected')));
     }));
   }
   return /*#__PURE__*/React.createElement("div", {
@@ -5315,23 +6057,57 @@ function AnswerEvidenceCard(p) {
     className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
   }, "Answer + evidence"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, q.question || ''), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
+  }, _quizRich(q.question || '')), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
     q: q
-  }))), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("p", {
+    id: answerEvidenceInstructionsId,
+    "data-assessment-answer-evidence-instructions": true,
+    className: "mb-2 text-sm text-slate-600"
+  }, "Choose an answer, then evidence that supports it. If you change your answer, choose the evidence again."), /*#__PURE__*/React.createElement("p", {
+    id: answerEvidenceProgressId,
+    "data-assessment-answer-evidence-progress": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "mb-3 text-sm font-semibold text-indigo-900"
+  }, answerEvidenceProgress), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("fieldset", {
+    "aria-describedby": answerEvidenceInstructionsId
+  }, /*#__PURE__*/React.createElement("legend", {
     className: "text-xs font-bold text-slate-700 mb-2"
-  }, "Part 1 — Choose the best answer"), optionGrid(answers, answerIdx, setAnswerIdx, !!grade, "answerOptions")), answerIdx !== null && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, "Part 1 — Choose the best answer"), optionGrid(answers, answerIdx, chooseAnswer, !!grade, "answerOptions")), answerIdx !== null && !grade && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assessment-continue-evidence": true,
+    "aria-controls": answerEvidenceProgressId + '-choices',
+    onClick: () => evidenceFirstRef.current?.focus(),
+    className: "min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-indigo-900"
+  }, "Go to supporting evidence"), answerIdx !== null && /*#__PURE__*/React.createElement("fieldset", {
+    id: answerEvidenceProgressId + '-choices',
+    "aria-describedby": answerEvidenceInstructionsId
+  }, /*#__PURE__*/React.createElement("legend", {
     className: "text-xs font-bold text-slate-700 mb-2"
   }, 'Part 2 — ' + (q.evidencePrompt || 'Which evidence or reason best supports your answer?')), q.evidencePrompt_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
     as: "p",
     className: "mb-2 text-sm italic text-slate-600"
-  }, q.evidencePrompt_en), optionGrid(evidence, evidenceIdx, setEvidenceIdx, !!grade, "evidenceOptions"))), !grade && /*#__PURE__*/React.createElement("div", {
+  }, q.evidencePrompt_en), optionGrid(evidence, evidenceIdx, chooseEvidence, !!grade, "evidenceOptions"))), /*#__PURE__*/React.createElement(AssessmentReasoningInput, {
+    q: q,
+    itemNumber: p.itemNumber,
+    questionIdx: p.questionIdx,
+    value: explanation,
+    onChange: value => {
+      setCheckError('');
+      setRevisionNotice('');
+      setExplanation(value);
+    },
+    disabled: !!grade
+  }), !grade && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-describedby": answerEvidenceProgressId,
     onClick: submit,
-    disabled: answerIdx === null || evidenceIdx === null,
+    disabled: answerIdx === null || evidenceIdx === null || !!q.requireReasoning && !explanation.trim(),
     className: "px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50"
   }, _quizGradedCopy('quiz.student.check_both_parts', 'Check both parts')), renderRules.allowIDontKnow && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -5342,13 +6118,37 @@ function AnswerEvidenceCard(p) {
     role: "status",
     "aria-live": "polite"
   }, /*#__PURE__*/React.createElement("div", {
-    className: 'text-xs font-bold text-' + color + '-900'
-  }, grade.status === 'idk' ? 'Marked “I don’t know”' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'both parts correct' : grade.status === 'partially-correct' ? 'one part correct' : 'needs review')), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
+    ref: grade ? answerEvidenceFocusRef : null,
+    tabIndex: -1,
+    "data-assessment-answer-evidence-result": true,
+    className: 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-xs font-bold text-' + color + '-900'
+  }, grade.status === 'idk' ? 'Marked “I don’t know”' : grade.score + ' / 2 — ' + (grade.answerCorrect && grade.evidenceCorrect ? 'both parts correct' : grade.answerCorrect || grade.evidenceCorrect ? 'one part correct' : 'both parts need review')), grade.status !== 'idk' && /*#__PURE__*/React.createElement("ul", {
     className: 'mt-1 text-xs text-' + color + '-900'
-  }, /*#__PURE__*/React.createElement("li", null, (grade.answerCorrect ? '✓ ' : '✗ ') + 'Answer'), /*#__PURE__*/React.createElement("li", null, (grade.evidenceCorrect ? '✓ ' : '✗ ') + 'Supporting evidence or reason')), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("strong", null, 'Answer: ' + (grade.answerCorrect ? 'correct' : 'needs review')), /*#__PURE__*/React.createElement("p", {
+    "data-assessment-checked-answer": true,
+    className: "mt-1 break-words"
+  }, grade.answerText)), /*#__PURE__*/React.createElement("li", {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement("strong", null, 'Supporting evidence or reason: ' + (grade.evidenceCorrect ? 'correct' : 'needs review')), /*#__PURE__*/React.createElement("p", {
+    "data-assessment-checked-evidence": true,
+    className: "mt-1 break-words"
+  }, grade.evidenceText))), grade.status !== 'idk' && p.scoringPolicy?.partialCredit === false && /*#__PURE__*/React.createElement("p", {
+    "data-assessment-evidence-score-policy": true,
+    className: "mt-2 text-sm"
+  }, "Both parts must be correct for credit."), canRevise && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    id: answerEvidenceProgressId + '-revision-help',
+    "data-assessment-evidence-revision-help": true,
+    className: "mt-3 text-sm"
+  }, grade.answerCorrect ? 'Your answer was correct. Look for evidence that directly supports it.' : grade.evidenceCorrect ? 'Your evidence choice was correct. Reconsider your answer, then confirm the evidence.' : 'Review your answer and its supporting evidence together.'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assessment-revise-evidence": true,
+    "aria-describedby": answerEvidenceProgressId + '-revision-help',
+    onClick: revise,
+    className: "mt-3 me-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-indigo-900"
+  }, "Revise these choices")), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: reset,
-    className: "mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold"
+    className: "mt-3 min-h-11 rounded-lg bg-white border border-slate-400 px-3 py-2 text-sm font-semibold text-slate-800"
   }, "Try again")), _quizConfidenceButtons({
     enabled: !!renderRules.allowConfidenceRating,
     grade: grade,
@@ -5517,18 +6317,37 @@ function _quizParseSpokenNumber(raw) {
   return integer ? done(integer.value, integer.consumed) : null;
 }
 function _quizParseNumericResponse(raw) {
-  var text = String(raw || '').trim().replace(/,/g, '');
-  var fraction = text.match(/^([+-]?\d+)\s*\/\s*(\d+)(?:\s+(.+))?$/);
+  var text = String(raw == null ? '' : raw).trim().replace(/\u2212/g, '-').replace(/[\u00a0\u202f]/g, ' ');
+  var mixed = text.match(/^([+-]?)(\d+)\s+(\d+)\s*\/\s*(\d+)(?:\s+([^\d\s].*))?$/);
+  if (mixed) {
+    var denominator = Number(mixed[4]);
+    if (!denominator || Number(mixed[3]) >= denominator) return null;
+    return {
+      value: (Number(mixed[2]) + Number(mixed[3]) / denominator) * (mixed[1] === '-' ? -1 : 1),
+      unit: String(mixed[5] || '').trim()
+    };
+  }
+  var fraction = text.match(/^([+-]?\d+)\s*\/\s*(\d+)(?:\s+([^\d\s].*))?$/);
   if (fraction && Number(fraction[2]) !== 0) return {
     value: Number(fraction[1]) / Number(fraction[2]),
     unit: String(fraction[3] || '').trim()
   };
+  // A single comma followed by three digits is ambiguous across locales.
+  // Ask for a decimal point or ungrouped number instead of guessing.
+  var numberPart = text.match(/^([+-]?[\d.,]+)(.*)$/);
+  if (numberPart && numberPart[1].includes(',')) {
+    var digits = numberPart[1];
+    if (/^[+-]?\d+,\d{1,2}$/.test(digits) || /^[+-]?\d+,\d{4,}$/.test(digits)) digits = digits.replace(',', '.');else if (/^[+-]?\d{1,3}(,\d{3})+\.\d+$/.test(digits) || /^[+-]?\d{1,3}(,\d{3}){2,}$/.test(digits)) digits = digits.replace(/,/g, '');else if (/^[+-]?\d{1,3}(\.\d{3})+,\d+$/.test(digits)) digits = digits.replace(/\./g, '').replace(',', '.');else return null;
+    text = digits + numberPart[2];
+  }
   var decimal = text.match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(?:\s*(.*))?$/i);
   if (decimal) {
     var value = Number(decimal[1]);
+    var unit = String(decimal[2] || '').trim();
+    if (/^[\d.,/+\-¼½¾⅐-⅞]/.test(unit) || /^e[+-]?\d/i.test(unit)) return null;
     return Number.isFinite(value) ? {
       value: value,
-      unit: String(decimal[2] || '').trim()
+      unit: unit
     } : null;
   }
   return _quizParseSpokenNumber(text);
@@ -5538,6 +6357,20 @@ function _quizNormalizeUnit(unit) {
 }
 function NumericResponseCard(p) {
   var q = p.q;
+  function numericErrorMessage(result) {
+    if (!result || result.status !== 'invalid') return '';
+    return result.graderUnavailable ? 'Numeric checking is not available yet. Your response is saved; retry when it has loaded.' : result.invalidKey ? 'This item needs a valid answer key. Ask your teacher to review it.' : 'Enter a number, optionally followed by its unit.';
+  }
+  function numericPartsFeedback(result) {
+    if (!result || result.status === 'invalid' || result.status === 'idk') return '';
+    var parts = result.valueCorrect ? 'The value is correct.' : 'The value needs review.';
+    var hasUnits = [q.unit || ''].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).some(function (unit) {
+      return !!_quizNormalizeUnit(unit);
+    });
+    if (hasUnits) parts += result.unitCorrect ? ' The units are correct.' : ' The units need review.';
+    return parts;
+  }
+  var numericErrorId = React.useId();
   var draftItemKey = 'q-' + p.questionIdx;
   var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
   var idkMarked = idkState[0] === true;
@@ -5551,6 +6384,7 @@ function NumericResponseCard(p) {
     score: 0
   } : gradeState[0];
   var setGrade = gradeState[1];
+  var responseFocusRef = _quizUseStageFocus(grade && grade.status !== 'invalid' ? 'feedback' : 'response');
   var submittedState = React.useState(null);
   var submitted = submittedState[0];
   var setSubmitted = submittedState[1];
@@ -5577,6 +6411,15 @@ function NumericResponseCard(p) {
       setGrade(unavailable);
       return unavailable;
     }
+    var loadedGrader = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    if (q.numericSettings && (!loadedGrader || typeof loadedGrader.gradeNumericAnswer !== 'function')) {
+      var pending = {
+        status: 'invalid',
+        graderUnavailable: true
+      };
+      setGrade(pending);
+      return pending;
+    }
     var expected = Number(q.correctValue);
     var tolerance = Math.max(0, Number(q.tolerance) || 0);
     var valueCorrect = Number.isFinite(expected) && Math.abs(parsed.value - expected) <= tolerance + 1e-9;
@@ -5586,15 +6429,18 @@ function NumericResponseCard(p) {
     var rawScore = valueCorrect && unitCorrect ? 100 : valueCorrect || unitCorrect && expectedUnits.length > 0 ? 50 : 0;
     var score = partialCredit ? rawScore : rawScore === 100 ? 100 : 0;
     var status = score === 100 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
-    var payload = {
-      text: response,
-      numericValue: parsed.value,
-      unit: parsed.unit,
+    var sharedGrader = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    var checked = sharedGrader && typeof sharedGrader.gradeNumericAnswer === 'function' ? sharedGrader.gradeNumericAnswer(parsed, q, p.scoringPolicy) : {
       valueCorrect: valueCorrect,
       unitCorrect: unitCorrect,
       status: status,
       score: score
     };
+    var payload = Object.assign({
+      text: response,
+      numericValue: parsed.value,
+      unit: parsed.unit
+    }, checked);
     setGrade(payload);
     setSubmitted(payload);
     _quizEmitDeterministicAnswer(p, 'numeric-response', payload, confidence);
@@ -5623,6 +6469,10 @@ function NumericResponseCard(p) {
     setSubmitted(null);
     setConfidence(null);
   }
+  function updateResponse(value) {
+    setResponse(value);
+    if (grade && grade.status === 'invalid') setGrade(null);
+  }
   _quizUseVoiceController(p, {
     getState: function () {
       var parsed = response ? _quizParseNumericResponse(response) : null;
@@ -5636,7 +6486,7 @@ function NumericResponseCard(p) {
         gradeStatus: locked && grade ? grade.status : null,
         score: locked && grade && typeof grade.score === 'number' ? grade.score : null,
         actions: locked ? ['try-again'] : parsed ? ['enter-response', 'check'] : ['enter-response'],
-        prompt: locked ? 'This numeric response has been checked. Say try again to reset it.' : 'Say response followed by a number' + (q.unit ? ' and units such as ' + q.unit : '') + ', then say check value.'
+        prompt: numericErrorMessage(grade) || (locked ? 'This numeric response has been checked. Say try again to reset it.' : 'Say response followed by a number' + (q.unit ? ' and units such as ' + q.unit : '') + ', then say check value.')
       };
     },
     execute: function (action, request) {
@@ -5666,7 +6516,7 @@ function NumericResponseCard(p) {
             message: 'I could not identify a number. Say response followed by a number and optional units.'
           };
         }
-        setResponse(text);
+        updateResponse(text);
         return {
           ok: true,
           state: 'response-entered',
@@ -5685,10 +6535,11 @@ function NumericResponseCard(p) {
         var result = submit();
         if (!result || result.status === 'invalid') return {
           ok: false,
-          state: 'invalid-response',
-          message: 'I could not identify a number and optional units in that response.'
+          state: result && (result.graderUnavailable || result.invalidKey) ? 'unavailable' : 'invalid-response',
+          message: numericErrorMessage(result) || 'Enter a number, optionally followed by its unit.'
         };
-        var resultMessage = result.status === 'correct' ? 'Numeric response checked. The value and units are correct.' : result.status === 'partially-correct' ? 'Numeric response checked. Either the value or units needs review.' : 'Numeric response checked. The value and units need review.';
+        var resultMessage = result.status === 'correct' ? 'Numeric response checked. Correct response under this scoring policy. ' : result.status === 'partially-correct' ? 'Numeric response checked. Partially correct. ' : 'Numeric response checked. Not yet correct under this scoring policy. ';
+        resultMessage += numericPartsFeedback(result);
         return {
           ok: true,
           state: 'checked',
@@ -5717,17 +6568,20 @@ function NumericResponseCard(p) {
     className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
   }, "Numeric response"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, q.question || ''), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
+  }, _quizRich(q.question || '')), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
     q: q
   }), q.unit && /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mt-1"
   }, 'Include units (' + q.unit + ').'))), /*#__PURE__*/React.createElement("input", {
+    ref: !grade || grade.status === 'invalid' ? responseFocusRef : null,
     type: "text",
     inputMode: "decimal",
-    "aria-label": "Numeric response",
+    "aria-label": _quizResponseLabel(p, 'Numeric response'),
+    "aria-invalid": grade && grade.status === 'invalid' && !grade.graderUnavailable && !grade.invalidKey ? true : undefined,
+    "aria-describedby": grade && grade.status === 'invalid' ? numericErrorId : undefined,
     value: response,
     onChange: function (e) {
-      setResponse(e.target.value);
+      updateResponse(e.target.value);
     },
     onKeyDown: function (e) {
       if (e.key === 'Enter') {
@@ -5738,9 +6592,16 @@ function NumericResponseCard(p) {
     disabled: !!grade && grade.status !== 'invalid',
     placeholder: q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number',
     className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
-  }), /*#__PURE__*/React.createElement(QuizVoiceInputButton, {
+  }), /*#__PURE__*/React.createElement("p", {
+    id: numericErrorId,
+    "data-assessment-numeric-error": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "text-xs text-rose-700"
+  }, numericErrorMessage(grade)), /*#__PURE__*/React.createElement(QuizVoiceInputButton, {
     value: response,
-    onChange: setResponse,
+    onChange: updateResponse,
     disabled: !!grade && grade.status !== 'invalid',
     allowDictation: p.allowDictation,
     label: "Dictate number or units"
@@ -5755,15 +6616,19 @@ function NumericResponseCard(p) {
     type: "button",
     onClick: markIDK,
     className: "px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold"
-  }, _quizGradedCopy('ui_common.i_dont_know', "I don't know")), grade && grade.status === 'invalid' && /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-rose-700 self-center"
-  }, grade.invalidKey ? 'This item needs a valid answer key. Ask your teacher to review it.' : 'Enter a number, optionally followed by its unit.')) : null, grade && grade.status !== 'invalid' && /*#__PURE__*/React.createElement("div", {
+  }, _quizGradedCopy('ui_common.i_dont_know', "I don't know"))) : null, grade && grade.status !== 'invalid' && /*#__PURE__*/React.createElement("div", {
     className: 'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300',
     role: "status",
     "aria-live": "polite"
   }, /*#__PURE__*/React.createElement("div", {
-    className: 'text-xs font-bold text-' + color + '-900'
-  }, grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct value and units' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'), grade.status !== 'idk' && /*#__PURE__*/React.createElement("p", {
+    ref: grade && grade.status !== 'invalid' ? responseFocusRef : null,
+    tabIndex: -1,
+    "data-assessment-numeric-result": true,
+    className: 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-xs font-bold text-' + color + '-900'
+  }, grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct response under this scoring policy' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'), grade.status !== 'idk' && /*#__PURE__*/React.createElement("p", {
+    "data-assessment-numeric-details": true,
+    className: 'text-xs mt-1 text-' + color + '-900'
+  }, numericPartsFeedback(grade)), grade.status !== 'idk' && /*#__PURE__*/React.createElement("p", {
     className: 'text-xs mt-1 text-' + color + '-900'
   }, 'Expected ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + (Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '') + '.'), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -5992,7 +6857,7 @@ function _quizChoiceSets(q) {
   var type = q && q.type || 'mcq';
   if (type === 'mcq') return [{
     field: 'options',
-    parallel: ['options_en', 'optionImagePrompts', 'optionImageAltTexts', 'optionImageUrls'],
+    parallel: ['optionFeedback', 'options_en', 'optionImagePrompts', 'optionImageAltTexts', 'optionImageUrls'],
     keys: [q.correctAnswer],
     group: 'mcq'
   }];
@@ -6009,7 +6874,7 @@ function _quizChoiceSets(q) {
   }];
   if (type === 'multi-select') return [{
     field: 'options',
-    parallel: ['options_en', 'optionImagePrompts', 'optionImageAltTexts', 'optionImageUrls'],
+    parallel: ['optionFeedback', 'options_en', 'optionImagePrompts', 'optionImageAltTexts', 'optionImageUrls'],
     keys: Array.isArray(q.correctAnswers) ? q.correctAnswers : [],
     group: ''
   }];
@@ -6175,6 +7040,79 @@ function _quizHasChoiceItems(types) {
   return (types || []).some(function (type) {
     return ['mcq', 'multi-select', 'answer-evidence'].indexOf(type || 'mcq') >= 0;
   });
+}
+// Types a teacher can add or convert to, in menu order (each has a schema and an editor).
+var _QUIZ_AUTHOR_TYPES = [['mcq', 'Multiple Choice'], ['multi-select', 'Multi-Select'], ['fill-blank', 'Fill-in-the-Blank'], ['short-answer', 'Brief Written Response'], ['self-explanation', 'Explain Your Reasoning'], ['numeric-response', 'Numeric Response'], ['answer-evidence', 'Answer + Evidence'], ['sequence-sense', 'Sequence Sense'], ['relation-mismatch', 'Relation Mismatch']];
+function _quizAuthorTypeLabel(type) {
+  var match = _QUIZ_AUTHOR_TYPES.filter(function (entry) {
+    return entry[0] === (type || 'mcq');
+  })[0];
+  return match ? match[1] : String(type || 'mcq');
+}
+// An empty item of each type, shaped for its editor; the quality review lists what is still missing.
+function _quizBlankItem(type) {
+  var fields = {
+    mcq: {
+      options: ['', '', '', ''],
+      correctAnswer: ''
+    },
+    'multi-select': {
+      options: ['', '', '', ''],
+      correctAnswers: []
+    },
+    'fill-blank': {
+      expectedFill: '',
+      acceptableAlternatives: []
+    },
+    'short-answer': {
+      expectedAnswer: ''
+    },
+    'self-explanation': {
+      rubric: ''
+    },
+    'numeric-response': {
+      correctValue: '',
+      tolerance: 0,
+      unit: '',
+      acceptableUnits: []
+    },
+    'answer-evidence': {
+      answerOptions: ['', '', '', ''],
+      correctAnswer: '',
+      evidencePrompt: '',
+      evidenceOptions: ['', '', '', ''],
+      correctEvidence: ''
+    },
+    'sequence-sense': {
+      items: ['', '', ''],
+      presentedOrder: [0, 1, 2],
+      intentionallyWrongIndex: null,
+      orderingPrinciple: '',
+      principleOptions: ['chronological', 'cause-effect', 'process', 'size', 'hierarchy']
+    },
+    'relation-mismatch': {
+      pairs: [{
+        left: '',
+        right: ''
+      }, {
+        left: '',
+        right: ''
+      }, {
+        left: '',
+        right: ''
+      }],
+      wrongPairIndex: null,
+      correctPartnerForWrong: '',
+      candidatePartners: ['', '']
+    }
+  };
+  var key = fields[type] ? type : 'mcq';
+  return Object.assign({
+    id: 'assessment-item-' + Date.now(),
+    type: key,
+    question: '',
+    conceptLabel: ''
+  }, JSON.parse(JSON.stringify(fields[key])));
 }
 // AI rewrite payloads never carry a key check: the rewrite would echo a
 // verdict about wording it is about to change.
@@ -6478,6 +7416,10 @@ function _quizH5PPreflight(data) {
       });
     } else if (type === 'fill-blank') {
       okay = !!prompt && !!String(q.expectedFill || '').trim();
+      if (okay && ['normalized', 'review-variants'].includes(q.fillBlankPolicy)) {
+        adapted += 1;
+        manualReview += 1;
+      }
     } else if (type === 'short-answer') {
       okay = !!prompt;
       manualReview += okay ? 1 : 0;
@@ -6492,13 +7434,15 @@ function _quizH5PPreflight(data) {
       var wrongIndex = Number(q.wrongPairIndex);
       okay = !!prompt && Array.isArray(q.pairs) && q.pairs.length >= 2 && Number.isInteger(wrongIndex) && wrongIndex >= 0 && wrongIndex < q.pairs.length && Array.isArray(q.candidatePartners) && q.candidatePartners.length >= 2 && q.candidatePartners.indexOf(q.correctPartnerForWrong) !== -1;
       adapted += okay ? 1 : 0;
+      manualReview += okay && (q.requireReasoning || q.explanationPrompt) ? 1 : 0;
     } else if (type === 'answer-evidence') {
       okay = !!prompt && Array.isArray(q.answerOptions) && q.answerOptions.length >= 2 && q.answerOptions.indexOf(q.correctAnswer) !== -1 && Array.isArray(q.evidenceOptions) && q.evidenceOptions.length >= 2 && q.evidenceOptions.indexOf(q.correctEvidence) !== -1;
       adapted += okay ? 1 : 0;
+      manualReview += okay && (q.requireReasoning || q.explanationPrompt) ? 1 : 0;
     } else if (type === 'numeric-response') {
       okay = !!prompt && _quizHasNumericKey(q.correctValue);
       adapted += okay ? 1 : 0;
-      manualReview += okay && Number(q.tolerance) > 0 ? 1 : 0;
+      manualReview += okay && (Number(q.tolerance) > 0 || q.numericSettings?.allowEquivalentUnits || q.numericSettings?.valueWeight != null && Number(q.numericSettings.valueWeight) !== 0.5) ? 1 : 0;
     }
     if (okay) valid += 1;
   });
@@ -6912,6 +7856,60 @@ function AssessmentTextListEditor(p) {
     className: "text-[11px] font-semibold text-indigo-700 hover:text-indigo-900"
   }, "+ Add ", p.itemLabel || 'item'));
 }
+// With every item deleted there is no edit bar left, so the list offers the first item here.
+function AssessmentEmptyAddPanel(p) {
+  var a = p.authoring || {};
+  var typeState = React.useState('mcq');
+  var busy = !!(a.addingAfter && a.addingAfter[-1]);
+  if (typeof a.onAddItem !== 'function') return null;
+  return /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": "Add the first item",
+    "data-assess-empty-add": true,
+    className: "rounded-xl border-2 border-dashed border-indigo-300 bg-indigo-50/60 p-4 space-y-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-bold text-slate-800"
+  }, "This assessment has no items. Add one to continue."), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-end gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-[11px] font-semibold text-slate-700",
+    htmlFor: "assess-empty-add-type"
+  }, "Item type", /*#__PURE__*/React.createElement("select", {
+    id: "assess-empty-add-type",
+    value: typeState[0],
+    onChange: function (event) {
+      typeState[1](event.target.value);
+    },
+    className: "block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"
+  }, _QUIZ_AUTHOR_TYPES.map(function (entry) {
+    return /*#__PURE__*/React.createElement("option", {
+      key: entry[0],
+      value: entry[0]
+    }, entry[1]);
+  }))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: busy,
+    onClick: function () {
+      a.onAddItem(-1, typeState[0], 'ai');
+    },
+    className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40"
+  }, busy ? 'Writing item…' : 'Write it for me'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      a.onAddItem(-1, typeState[0], 'blank');
+    },
+    className: "px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold"
+  }, "Start blank")));
+}
+// The edit bar's add/retype handlers and per-item state from the view's `authoring` bundle.
+function _quizAuthoringActionProps(authoring, questionIdx) {
+  if (!authoring) return {};
+  return {
+    onChangeType: authoring.onChangeType,
+    onAddItem: authoring.onAddItem,
+    adding: !!(authoring.addingAfter && authoring.addingAfter[questionIdx])
+  };
+}
 function AssessmentItemActions(p) {
   var action = p.onAction;
   var disabled = typeof action !== 'function';
@@ -6919,31 +7917,48 @@ function AssessmentItemActions(p) {
   var deleteConfirmState = React.useState(false);
   var deleteConfirmOpen = deleteConfirmState[0];
   var setDeleteConfirmOpen = deleteConfirmState[1];
+  var currentType = q.type || 'mcq';
+  var targetTypeState = React.useState(currentType);
+  var targetType = targetTypeState[0];
+  var convertConfirmState = React.useState(false);
+  var addOpenState = React.useState(false);
+  var addTypeState = React.useState(currentType);
+  // While a quiz is live the teacher sees the live dashboard, not this list, so
+  // structure changes cannot renumber items students are answering.
+  var structureDisabled = disabled;
+  var idBase = 'assess-item-' + p.questionIdx;
+  var smallButton = 'px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold disabled:opacity-30';
+  var typeOptions = _QUIZ_AUTHOR_TYPES.map(function (entry) {
+    return /*#__PURE__*/React.createElement("option", {
+      key: entry[0],
+      value: entry[0]
+    }, entry[1]);
+  });
   return /*#__PURE__*/React.createElement("div", {
     className: "ml-9 mb-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2 space-y-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    disabled: disabled || p.questionIdx <= 0,
+    disabled: structureDisabled || p.questionIdx <= 0,
     onClick: function () {
       action(p.questionIdx, 'move', -1);
     },
-    className: "px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold disabled:opacity-30"
+    className: smallButton
   }, "Move up"), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    disabled: disabled || p.questionIdx >= p.totalQuestions - 1,
+    disabled: structureDisabled || p.questionIdx >= p.totalQuestions - 1,
     onClick: function () {
       action(p.questionIdx, 'move', 1);
     },
-    className: "px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold disabled:opacity-30"
+    className: smallButton
   }, "Move down"), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    disabled: disabled,
+    disabled: structureDisabled,
     onClick: function () {
       action(p.questionIdx, 'duplicate');
     },
-    className: "px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold disabled:opacity-30"
+    className: smallButton
   }, "Duplicate"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: disabled || p.regenerating,
@@ -6953,7 +7968,7 @@ function AssessmentItemActions(p) {
     className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40"
   }, p.regenerating ? 'Regenerating…' : 'Regenerate item'), !deleteConfirmOpen ? /*#__PURE__*/React.createElement("button", {
     type: "button",
-    disabled: disabled,
+    disabled: structureDisabled,
     onClick: function () {
       setDeleteConfirmOpen(true);
     },
@@ -6966,6 +7981,7 @@ function AssessmentItemActions(p) {
     type: "button",
     autoFocus: true,
     onClick: function () {
+      setDeleteConfirmOpen(false);
       action(p.questionIdx, 'delete');
     },
     className: "px-2 py-1 rounded bg-rose-700 text-white text-xs font-semibold"
@@ -6975,7 +7991,105 @@ function AssessmentItemActions(p) {
       setDeleteConfirmOpen(false);
     },
     className: "px-2 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold"
-  }, "Cancel"))), q.type === 'mcq' && Array.isArray(q.options) && /*#__PURE__*/React.createElement("div", {
+  }, "Cancel"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-end gap-2 flex-wrap",
+    "data-assess-type-tools": true
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-[11px] font-semibold text-slate-700",
+    htmlFor: idBase + '-type'
+  }, "Change type", /*#__PURE__*/React.createElement("select", {
+    id: idBase + '-type',
+    "data-assess-change-type": true,
+    value: targetType,
+    disabled: structureDisabled || p.regenerating,
+    onChange: function (event) {
+      targetTypeState[1](event.target.value);
+      convertConfirmState[1](false);
+    },
+    className: "block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"
+  }, typeOptions)), !convertConfirmState[0] ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assess-convert": true,
+    disabled: structureDisabled || p.regenerating || targetType === currentType || typeof p.onChangeType !== 'function',
+    onClick: function () {
+      convertConfirmState[1](true);
+    },
+    className: smallButton
+  }, p.regenerating ? 'Rewriting…' : 'Rewrite as ' + _quizAuthorTypeLabel(targetType)) : /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex items-center gap-1 flex-wrap",
+    role: "group",
+    "aria-label": "Confirm type change"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] text-slate-700"
+  }, 'Replace question ' + (p.questionIdx + 1) + ' with an AI rewrite as ' + _quizAuthorTypeLabel(targetType) + '?'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    autoFocus: true,
+    "data-assess-convert-confirm": true,
+    onClick: function () {
+      convertConfirmState[1](false);
+      p.onChangeType(p.questionIdx, q, targetType);
+    },
+    className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold"
+  }, "Rewrite"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      convertConfirmState[1](false);
+    },
+    className: smallButton
+  }, "Cancel")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assess-add-toggle": true,
+    "aria-expanded": addOpenState[0],
+    "aria-controls": idBase + '-add',
+    disabled: structureDisabled || typeof p.onAddItem !== 'function',
+    onClick: function () {
+      addOpenState[1](!addOpenState[0]);
+    },
+    className: smallButton + ' ml-auto'
+  }, "+ Add item below")), addOpenState[0] && /*#__PURE__*/React.createElement("div", {
+    id: idBase + '-add',
+    role: "group",
+    "aria-label": 'Add an item after question ' + (p.questionIdx + 1),
+    className: "rounded-md border border-indigo-200 bg-white p-2 space-y-2",
+    "data-assess-add-panel": true
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-end gap-2 flex-wrap"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-[11px] font-semibold text-slate-700",
+    htmlFor: idBase + '-add-type'
+  }, "New item type", /*#__PURE__*/React.createElement("select", {
+    id: idBase + '-add-type',
+    "data-assess-add-type": true,
+    value: addTypeState[0],
+    onChange: function (event) {
+      addTypeState[1](event.target.value);
+    },
+    className: "block mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"
+  }, typeOptions)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assess-add-ai": true,
+    disabled: !!p.adding,
+    onClick: function () {
+      p.onAddItem(p.questionIdx, addTypeState[0], 'ai');
+    },
+    className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40"
+  }, p.adding ? 'Writing item…' : 'Write it for me'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assess-add-blank": true,
+    onClick: function () {
+      addOpenState[1](false);
+      p.onAddItem(p.questionIdx, addTypeState[0], 'blank');
+    },
+    className: smallButton
+  }, "Start blank"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      addOpenState[1](false);
+    },
+    className: smallButton
+  }, "Cancel")), /*#__PURE__*/React.createElement("p", {
+    className: "text-[11px] text-slate-600"
+  }, "\"Write it for me\" drafts a new item from the source text on an idea the other items do not cover. \"Start blank\" adds an empty item to fill in; the quality review lists anything still missing.")), q.type === 'mcq' && Array.isArray(q.options) && /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700"
@@ -7431,16 +8545,19 @@ function AssessmentItemEditor(p) {
   }), /*#__PURE__*/React.createElement(AssessmentDiagnosticFields, {
     q: q,
     patch: patch
+  }), /*#__PURE__*/React.createElement(AssessmentLearningOptions, {
+    q: q,
+    patch: patch
   })), /*#__PURE__*/React.createElement("div", {
     className: "mt-4"
-  }, /*#__PURE__*/React.createElement(AssessmentItemActions, {
+  }, /*#__PURE__*/React.createElement(AssessmentItemActions, _extends({
     q: q,
     questionIdx: p.questionIdx,
     totalQuestions: p.totalQuestions,
     onAction: action,
     onRegenerate: p.onRegenerate,
     regenerating: p.regenerating
-  })));
+  }, _quizAuthoringActionProps(p.authoring, p.questionIdx)))));
 }
 function AssessmentQualityPanel(p) {
   var audit = p.audit;
@@ -7563,7 +8680,8 @@ function FreeformItemsBlock(p) {
         totalQuestions: allQuestions.length,
         onAction: p.onQuestionAction,
         onRegenerate: p.onRegenerateQuestion,
-        regenerating: !!(p.regeneratingQuestions && p.regeneratingQuestions[entry.idx])
+        regenerating: !!(p.regeneratingQuestions && p.regeneratingQuestions[entry.idx]),
+        authoring: p.authoring
       });
     } else if (p.deferFeedback) {
       card = /*#__PURE__*/React.createElement(DeferredAssessmentItem, _extends({}, p, {
@@ -7661,11 +8779,19 @@ function FreeformItemsBlock(p) {
       onToggle: function () {
         p.onToggleFlag(entry.idx);
       }
-    })), card);
+    })), card, /*#__PURE__*/React.createElement(AssessmentPracticeHistory, {
+      q: entry.q,
+      questionIdx: entry.idx,
+      draftNamespace: p.draftNamespace
+    }));
   }));
 }
 function FreeformItemCard(p) {
   var q = p.q;
+  var responseHelpId = React.useId();
+  var criteriaId = responseHelpId + '-criteria',
+    policyId = responseHelpId + '-policy';
+  var responseDescription = [q.type === 'fill-blank' ? policyId : null, Array.isArray(q.studentCriteria) && q.studentCriteria.some(value => typeof value === 'string' && value.trim()) ? criteriaId : null].filter(Boolean).join(' ') || undefined;
   var modeStrat = p.modeStrategy || null;
   var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
   var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
@@ -7699,6 +8825,16 @@ function FreeformItemCard(p) {
     if (value && value.status === null) setIdkMarked(false);
     gradeState[1](value);
   }
+  var responseFocusRef = React.useRef(null);
+  var feedbackFocusRef = React.useRef(null);
+  var pendingFocusRef = React.useRef('');
+  React.useEffect(function () {
+    var action = pendingFocusRef.current;
+    if (!action) return;
+    pendingFocusRef.current = '';
+    var target = action === 'response' ? responseFocusRef.current : feedbackFocusRef.current;
+    if (target) target.focus();
+  }, [grade]);
   var confidenceState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'confidence', null);
   var confidence = confidenceState[0];
   var setConfidence = confidenceState[1];
@@ -7733,7 +8869,11 @@ function FreeformItemCard(p) {
     } catch (e) {}
   }
   function submitGrade() {
-    if (!response || !response.trim()) return;
+    if (!response || !response.trim() || grade.loading || ['correct', 'idk', 'submitted'].includes(grade.status)) return;
+    pendingFocusRef.current = 'feedback';
+    _quizRecordPracticeAttempt(p, {
+      text: response
+    }, confidence);
     var isFill = q.type === 'fill-blank',
       gradedText = response;
     if (isFill) aiVerdictState[1](null);
@@ -7756,6 +8896,14 @@ function FreeformItemCard(p) {
       });
       return;
     }
+    if (typeof p.callGemini !== 'function' && !isFill) {
+      setGrade({
+        status: 'submitted',
+        feedback: 'Saved for teacher review. Use the success criteria to review and improve your response.',
+        loading: false
+      });
+      return;
+    }
     if (!p.QuizAIHelpers) {
       setGrade({
         status: 'error',
@@ -7771,13 +8919,15 @@ function FreeformItemCard(p) {
     });
     var graderArgs = {
       callGemini: p.callGemini,
-      gradeLevel: p.gradeLevel
+      gradeLevel: p.gradeLevel,
+      studentCriteria: q.studentCriteria || []
     };
     var promise;
     if (q.type === 'fill-blank') {
       graderArgs.contextSentence = q.question;
       graderArgs.expectedFill = q.expectedFill || '';
       graderArgs.acceptableAlternatives = q.acceptableAlternatives || [];
+      graderArgs.fillBlankPolicy = _quizFillBlankPolicy(q);
       graderArgs.studentFill = response;
       promise = p.QuizAIHelpers.gradeFillBlank(graderArgs);
     } else if (q.type === 'self-explanation') {
@@ -7806,6 +8956,7 @@ function FreeformItemCard(p) {
       setGrade({
         status: status,
         feedback: feedback,
+        criteriaFeedback: result.criteriaFeedback || [],
         loading: false
       });
     }).catch(function (err) {
@@ -7817,16 +8968,17 @@ function FreeformItemCard(p) {
     });
   }
   function markIDK() {
+    pendingFocusRef.current = 'feedback';
     setIdkMarked(true);
     _quizEmitDeterministicAnswer(p, q.type || 'short-answer', {
       idk: true
     }, confidence);
     setGrade({
       status: 'idk',
-      feedback: 'No worries — here\'s a quick explanation.',
+      feedback: aiExplainerEnabled ? 'You can review a quick explanation.' : 'Marked as not known yet. Your teacher can help you review this idea.',
       loading: false
     });
-    requestExplainer();
+    if (aiExplainerEnabled) requestExplainer();
   }
   function requestExplainer() {
     if (typeof p.callGemini !== 'function') {
@@ -7885,12 +9037,12 @@ function FreeformItemCard(p) {
           state: 'busy',
           message: 'Wait for grading to finish before revising this response.'
         };
+        pendingFocusRef.current = 'response';
         setGrade({
           status: null,
           feedback: '',
           loading: false
         });
-        if (grade.status !== 'submitted') setResponse('');
         setExplainer({
           open: false,
           loading: false,
@@ -7959,12 +9111,18 @@ function FreeformItemCard(p) {
     className: "inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1"
   }, typeLabel), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, q.question || ''), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
-    q: q
-  }))), q.type === 'fill-blank' ? /*#__PURE__*/React.createElement("input", {
-    "aria-label": t("a11y.fill_in_blank"),
+  }, _quizRich(q.question || '')), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
+    q: q,
+    criteriaId: criteriaId
+  }))), q.type === 'fill-blank' && /*#__PURE__*/React.createElement("p", {
+    id: policyId,
+    className: "mb-2 text-sm text-slate-700"
+  }, _quizFillBlankInstruction(q)), q.type === 'fill-blank' ? /*#__PURE__*/React.createElement("input", {
+    "aria-label": _quizResponseLabel(p, _quizGradedCopy('a11y.fill_in_blank', 'Fill in the blank')),
     type: "text",
     value: response,
+    ref: responseFocusRef,
+    "aria-describedby": responseDescription,
     onChange: function (ev) {
       setResponse(ev.target.value);
     },
@@ -7978,8 +9136,10 @@ function FreeformItemCard(p) {
     disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted',
     className: "w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50"
   }) : /*#__PURE__*/React.createElement("textarea", {
-    "aria-label": typeLabel + " response",
+    "aria-label": _quizResponseLabel(p, typeLabel + " response"),
     value: response,
+    ref: responseFocusRef,
+    "aria-describedby": responseDescription,
     onChange: function (ev) {
       setResponse(ev.target.value);
     },
@@ -8002,7 +9162,7 @@ function FreeformItemCard(p) {
     onClick: submitGrade,
     disabled: !response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted',
     className: "px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
-  }, grade.loading ? _quizGradedCopy('quiz.student.grading', 'Grading…') : grade.status === 'submitted' ? _quizGradedCopy('quiz.student.submitted', 'Submitted') : grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? _quizGradedCopy('quiz.student.recheck', 'Re-check') : teacherReviewWritten ? _quizGradedCopy('quiz.student.submit_response', 'Submit response') : _quizGradedCopy('quiz.student.grade_my_answer', 'Grade my answer')), allowIDK && !grade.status && /*#__PURE__*/React.createElement("button", {
+  }, grade.loading ? _quizGradedCopy('quiz.student.grading', 'Grading…') : grade.status === 'submitted' ? _quizGradedCopy('quiz.student.submitted', 'Submitted') : grade.status === 'correct' ? _quizGradedCopy('quiz.student.checked', 'Response checked') : grade.status === 'idk' ? _quizGradedCopy('quiz.student.skipped', 'Response skipped') : grade.status ? _quizGradedCopy('quiz.student.recheck', 'Re-check') : teacherReviewWritten ? _quizGradedCopy('quiz.student.submit_response', 'Submit response') : _quizGradedCopy('quiz.student.grade_my_answer', 'Grade my answer')), allowIDK && !grade.status && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: markIDK,
     className: "px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none",
@@ -8013,6 +9173,7 @@ function FreeformItemCard(p) {
   }, "🤔 "), t("ui_common.i_dont_know"))), grade.status && grade.status !== 'correct' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
+      pendingFocusRef.current = 'response';
       setGrade({
         status: null,
         feedback: '',
@@ -8027,55 +9188,66 @@ function FreeformItemCard(p) {
       });
     },
     className: "px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors motion-reduce:transition-none"
-  }, grade.status === 'submitted' ? _quizGradedCopy('quiz.student.revise_response', 'Revise response') : t("ui_common.try_again"))), grade.status && /*#__PURE__*/React.createElement("div", {
-    className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
+  }, grade.status === 'submitted' ? _quizGradedCopy('quiz.student.revise_response', 'Revise response') : t("ui_common.try_again"))), /*#__PURE__*/React.createElement("div", {
+    "data-assessment-written-feedback": true,
+    className: grade.status || grade.loading ? 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300' : '',
     role: "status",
-    "aria-live": "polite"
+    "aria-live": "polite",
+    "aria-atomic": "true"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-1 flex-wrap"
+    className: grade.status || grade.loading ? 'flex items-center gap-2 mb-1 flex-wrap' : ''
   }, /*#__PURE__*/React.createElement("span", {
-    className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'
-  }, statusLabel), aiExplainerEnabled && grade.status !== 'correct' && grade.status !== 'idk' && !explainer.open && /*#__PURE__*/React.createElement("button", {
+    ref: feedbackFocusRef,
+    tabIndex: -1,
+    "data-assessment-written-result": true,
+    className: grade.status || grade.loading ? 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' : ''
+  }, grade.loading ? _quizGradedCopy('quiz.student.grading', 'Grading…') : statusLabel), aiExplainerEnabled && grade.status && grade.status !== 'correct' && grade.status !== 'idk' && !explainer.open && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: requestExplainer,
     className: "ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors motion-reduce:transition-none",
     title: t("tooltips.quick_ai_explanation")
-  }, "🤖 Explain this")), grade.feedback && /*#__PURE__*/React.createElement("p", {
+  }, "🤖 Explain this")), Array.isArray(grade.criteriaFeedback) && grade.criteriaFeedback.length > 0 && /*#__PURE__*/React.createElement("ul", {
+    className: "my-2 space-y-2 text-sm",
+    "aria-label": "Feedback by success criterion"
+  }, grade.criteriaFeedback.map((entry, index) => /*#__PURE__*/React.createElement("li", {
+    key: index
+  }, /*#__PURE__*/React.createElement("strong", null, (q.studentCriteria || [])[entry.index] || 'Criterion ' + (index + 1), ": ", entry.status), entry.feedback && /*#__PURE__*/React.createElement("div", null, _quizRichBlock(entry.feedback))))), grade.feedback && /*#__PURE__*/React.createElement("div", {
     className: 'text-sm text-' + statusColor + '-900 mb-2'
-  }, grade.feedback), explainer.open && /*#__PURE__*/React.createElement("div", {
+  }, _quizRichBlock(grade.feedback)), explainer.open && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 p-3 bg-white border border-indigo-200 rounded-lg"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
   }, "🤖 Quick explanation"), explainer.loading && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-700 italic"
-  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("p", {
+  }, "Generating explanation…"), explainer.text && /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, explainer.text), explainer.error && /*#__PURE__*/React.createElement("p", {
+  }, _quizRichBlock(explainer.text)), explainer.error && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-rose-700"
   }, explainer.error), explainer.text && typeof p.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
-      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);else p.callTTS(explainer.text);
+      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_quizPlain(explainer.text));else p.callTTS(_quizPlain(explainer.text));
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
     "aria-label": t("a11y.read_aloud")
-  }, "🔊 Read aloud"))), allowConfidence && grade.status && grade.status !== 'idk' && /*#__PURE__*/React.createElement("div", {
+  }, "🔊 Read aloud"))), allowConfidence && grade.status !== 'idk' && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex items-center gap-2 flex-wrap text-xs"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-slate-600 font-semibold"
-  }, _quizGradedCopy('quiz.student.how_sure', 'How sure were you?')), ['knew', 'guessed', 'no-idea'].map(function (lvl) {
+  }, _quizGradedCopy('quiz.student.confidence_before', 'Before checking: how sure are you?')), ['knew', 'guessed', 'no-idea'].map(function (lvl) {
     var labels = {
-      knew: _quizGradedCopy('quiz.student.confidence_knew', 'I knew this'),
-      guessed: _quizGradedCopy('quiz.student.confidence_guessed', 'I guessed'),
-      'no-idea': _quizGradedCopy('quiz.student.confidence_no_idea', 'No idea')
+      knew: _quizGradedCopy('quiz.student.confidence_know_now', 'I know this'),
+      guessed: _quizGradedCopy('quiz.student.confidence_unsure_now', 'I am unsure'),
+      'no-idea': _quizGradedCopy('quiz.student.confidence_need_support', 'I need support')
     };
     var active = confidence === lvl;
     return /*#__PURE__*/React.createElement("button", {
       key: lvl,
       type: "button",
+      "aria-pressed": active,
+      disabled: !!grade.status || grade.loading,
       onClick: function () {
         setConfidence(lvl);
-        emitLiveAnswer(lvl);
       },
       className: 'px-2 py-0.5 rounded border transition-colors motion-reduce:transition-none ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
     }, labels[lvl]);
@@ -8327,7 +9499,7 @@ function AssessmentPresentationItem(p) {
       className: "mt-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-slate-700"
     }, /*#__PURE__*/React.createElement("p", {
       className: "mb-1 text-sm font-bold"
-    }, "Explanation"), typeof p.renderFormattedText === 'function' ? p.renderFormattedText(_quizStudentExplanation(q, true)) : _quizPlainExplanation(_quizStudentExplanation(q, true))));
+    }, "Explanation"), typeof p.renderFormattedText === 'function' ? p.renderFormattedText(_quizStudentExplanation(q, true)) : _quizRichBlock(_quizStudentExplanation(q, true))));
   }
   if (p.readOnly) return /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
@@ -8377,7 +9549,7 @@ function AssessmentPresentationItem(p) {
     role: "status"
   }, answerGuide), p.showExplanation && _quizStudentExplanation(q, true) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-slate-700"
-  }, typeof p.renderFormattedText === 'function' ? p.renderFormattedText(_quizStudentExplanation(q, true)) : _quizPlainExplanation(_quizStudentExplanation(q, true)))));
+  }, typeof p.renderFormattedText === 'function' ? p.renderFormattedText(_quizStudentExplanation(q, true)) : _quizRichBlock(_quizStudentExplanation(q, true)))));
 }
 function _quizCreateAuthoringRequests(readProps) {
   var requests = new Map();
@@ -8507,7 +9679,9 @@ function _quizFeedbackSignature(data) {
   return _quizPreviousFeedbackSignature(_quizStableAssessmentData(_quizIdentityData(data)));
 }
 function _quizCompatibleFeedbackSignatures(data) {
-  return Array.from(new Set([_quizFeedbackSignature(data), _quizPreviousFeedbackSignature(_quizStableAssessmentData(data)), _quizPreviousFeedbackSignature(_quizPreviousStableAssessmentData(data)), _quizPreviousFeedbackSignature(data)]));
+  // Responses saved before `shortAnswer` was canonicalized keep restoring.
+  var legacy = _quizLegacyShortAnswerData(data);
+  return Array.from(new Set([_quizFeedbackSignature(data), _quizPreviousFeedbackSignature(_quizStableAssessmentData(data)), _quizPreviousFeedbackSignature(_quizPreviousStableAssessmentData(data)), _quizPreviousFeedbackSignature(data)].concat(legacy ? [_quizFeedbackSignature(legacy), _quizPreviousFeedbackSignature(_quizStableAssessmentData(legacy)), _quizPreviousFeedbackSignature(_quizPreviousStableAssessmentData(legacy)), _quizPreviousFeedbackSignature(legacy)] : [])));
 }
 function _quizPreviousFeedbackSignature(data) {
   var text = JSON.stringify([data && data.questions || [], data && data.reflections || [], data && data.reflection || '']);
@@ -8539,6 +9713,9 @@ function _quizAttemptAnswer(q, index, responses) {
   if (type === 'answer-evidence') return {
     answerIdx: item.answerIdx,
     evidenceIdx: item.evidenceIdx,
+    ...(typeof item.explanation === 'string' ? {
+      explanation: item.explanation
+    } : {}),
     answerText: (q.answerOptions || q.options || [])[item.answerIdx] || '',
     evidenceText: (q.evidenceOptions || [])[item.evidenceIdx] || ''
   };
@@ -8552,7 +9729,10 @@ function _quizAttemptAnswer(q, index, responses) {
   } : {});
   if (type === 'relation-mismatch') return {
     clickedPairIdx: item.clickedPairIdx,
-    partnerAnswer: item.partnerAnswer
+    partnerAnswer: item.partnerAnswer,
+    ...(typeof item.explanation === 'string' ? {
+      explanation: item.explanation
+    } : {})
   };
   if (type === 'numeric-response') {
     var parsed = _quizParseNumericResponse(item.response || '');
@@ -8575,6 +9755,9 @@ function _quizAttemptAnswer(q, index, responses) {
 function _quizFillBlankMatchesKey(text, q) {
   var canonical = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizLiveAggregators;
   if (canonical && typeof canonical.gradeFillBlankAnswer === 'function') return canonical.gradeFillBlankAnswer(text, q).status === 'correct';
+  if (_quizFillBlankPolicy(q) === 'exact') return [q.expectedFill].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []).some(function (key) {
+    return String(key == null ? '' : key).trim() === String(text == null ? '' : text).trim() && !!String(text || '').trim();
+  });
   var answer = String(text == null ? '' : text).trim().toLowerCase();
   return !!answer && [q && q.expectedFill].concat(q && Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []).some(function (key) {
     return String(key == null ? '' : key).trim().toLowerCase() === answer;
@@ -8591,9 +9774,9 @@ function _quizResponseDescription(q, index, responses) {
   if (a.idk) return _quizGradedCopy('quiz.attempt.idk_response', 'I don’t know yet.');
   if ((q.type || 'mcq') === 'mcq') return a.optionText || 'No response';
   if (q.type === 'multi-select') return a.selectedOptions.join('; ') || 'No response';
-  if (q.type === 'answer-evidence') return 'Answer: ' + (a.answerText || 'Not selected') + '. Evidence: ' + (a.evidenceText || 'Not selected');
-  if (q.type === 'sequence-sense') return 'Order correct: ' + (a.verifyAnswer || 'Not selected') + '. Your order: ' + a.orderAnswer.map(i => (q.items || [])[i]).join(' → ') + '. Principle: ' + (a.principleAnswer || 'Not selected');
-  if (q.type === 'relation-mismatch') return 'Pair: ' + (typeof a.clickedPairIdx === 'number' ? a.clickedPairIdx + 1 : 'Not selected') + '. Replacement: ' + (a.partnerAnswer || 'Not selected');
+  if (q.type === 'answer-evidence') return 'Answer: ' + (a.answerText || 'Not selected') + '. Evidence: ' + (a.evidenceText || 'Not selected') + (a.explanation ? '. Explanation: ' + a.explanation : '');
+  if (q.type === 'sequence-sense') return (q.sequenceMode === 'arrange-explain' ? '' : 'Order correct: ' + (a.verifyAnswer || 'Not selected') + '. ') + 'Your order: ' + a.orderAnswer.map(i => (q.items || [])[i]).join(' → ') + '. Principle: ' + (a.principleAnswer || 'Not selected');
+  if (q.type === 'relation-mismatch') return 'Pair: ' + (typeof a.clickedPairIdx === 'number' ? a.clickedPairIdx + 1 : 'Not selected') + '. Replacement: ' + (a.partnerAnswer || 'Not selected') + (a.explanation ? '. Explanation: ' + a.explanation : '');
   return a.text || 'No response';
 }
 // Teacher-readable copy of an attempt: the learner's own responses only,
@@ -8644,6 +9827,15 @@ function _quizAssessmentItemSignature(question, legacy) {
   arrayFields.forEach(function (field) {
     context[field] = Array.isArray(q[field]) ? q[field].map(publicValue) : [];
   });
+  // Add authored task/scoring conditions only when present, so legacy items
+  // retain their signatures while edits to new conditions invalidate drafts.
+  ['fillBlankPolicy', 'sequenceMode', 'requireReasoning', 'explanationPrompt', 'studentCriteria'].forEach(function (field) {
+    if (q[field] != null) context[field] = publicValue(q[field]);
+  });
+  if (q.numericSettings && typeof q.numericSettings === 'object') context.numericSettings = {
+    allowEquivalentUnits: q.numericSettings.allowEquivalentUnits === true,
+    valueWeight: q.numericSettings.valueWeight == null ? 0.5 : Number(q.numericSettings.valueWeight)
+  };
   var serialized = JSON.stringify(context),
     hash = 2166136261;
   for (var i = 0; i < serialized.length; i++) {
@@ -8684,7 +9876,13 @@ function _quizResponseSnapshot(data, items, meta) {
       hasResponse: hasResponse,
       response: response,
       answer: answer,
-      confidence: _quizAttemptConfidence(question, i, responses)
+      confidence: _quizAttemptConfidence(question, i, responses),
+      ...(Array.isArray(responses['q-' + i]?.practiceAttempts) ? {
+        practice: responses['q-' + i].practiceAttempts
+      } : {}),
+      ...(typeof responses['q-' + i]?.transferResponse === 'string' ? {
+        transferResponse: responses['q-' + i].transferResponse
+      } : {})
     };
   });
   return Object.assign({
@@ -8760,6 +9958,12 @@ function _quizProjectResponseCandidate(data, record, context) {
       answer = row.answer,
       item = {};
     items['q-' + index] = item;
+    if (typeof row.transferResponse === 'string') item.transferResponse = row.transferResponse;
+    if (Array.isArray(row.practice)) item.practiceAttempts = row.practice.filter(entry => entry && typeof entry.response === 'string').slice(0, 10).map(entry => ({
+      response: entry.response,
+      confidence: ['knew', 'guessed', 'no-idea'].includes(entry.confidence) ? entry.confidence : null,
+      timestamp: Number(entry.timestamp) || 0
+    }));
     if (['knew', 'guessed', 'no-idea'].includes(row.confidence)) {
       if (type === 'mcq') items.root.mcqConfidence[index] = row.confidence;else item.confidence = row.confidence;
     }
@@ -8768,6 +9972,10 @@ function _quizProjectResponseCandidate(data, record, context) {
     if (answer.idk === true) {
       item.idk = true;
       return true;
+    }
+    if (['answer-evidence', 'relation-mismatch'].includes(type) && answer.explanation != null) {
+      if (typeof answer.explanation !== 'string' || answer.explanation.length > 4000) return false;
+      item.explanation = answer.explanation;
     }
     if (type === 'mcq') {
       if (!choice(answer.optionIdx, q.options)) return false;
@@ -9031,7 +10239,7 @@ function AssessmentAttemptFeedback(p) {
       className: "rounded-xl border border-slate-300 bg-white p-4 text-slate-800"
     }, /*#__PURE__*/React.createElement("h3", {
       className: "font-bold"
-    }, i + 1 + '. ' + q.question), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
+    }, i + 1 + '. ', _quizRich(q.question)), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
       q: q
     }), (q.type || "mcq") === "mcq" && /*#__PURE__*/React.createElement("div", {
       "data-assessment-feedback-stimulus": true,
@@ -9057,31 +10265,69 @@ function AssessmentAttemptFeedback(p) {
       onToggleAnswer: null,
       formatInlineText: p.formatInlineText,
       readOnly: true
-    })), explanation && /*#__PURE__*/React.createElement("p", {
+    })), explanation && /*#__PURE__*/React.createElement("div", {
       "data-assessment-explanation": true,
-      className: "mt-3 text-sm whitespace-pre-wrap"
-    }, _quizPlainExplanation(explanation)));
+      className: "mt-3 text-sm"
+    }, _quizRichBlock(explanation)));
   }));
 }
 function DeferredAssessmentItem(p) {
   var q = p.q,
     type = q.type,
     key = 'q-' + p.questionIdx;
+  var controlId = React.useId();
+  var evidenceGroupRef = React.useRef(null);
+  var [answerChanged, setAnswerChanged] = React.useState(false);
+  var hasCriteria = Array.isArray(q.studentCriteria) && q.studentCriteria.some(value => typeof value === 'string' && value.trim());
+  var responseInstruction = type === 'fill-blank' ? _quizFillBlankInstruction(q) : type === 'numeric-response' && q.unit ? 'Include units (' + q.unit + ').' : '';
+  var groupDescription = [q.question_en ? controlId + '-translation' : '', hasCriteria ? controlId + '-criteria' : '', responseInstruction ? controlId + '-instruction' : '', controlId + '-feedback-timing', type === 'answer-evidence' ? controlId + '-evidence-instructions' : ''].filter(Boolean).join(' ');
+  var responseDescription = controlId + '-question ' + groupDescription;
+  var responseGroupRef = React.useRef(null),
+    questionHeadingRef = React.useRef(null),
+    retryRef = React.useRef(null);
+  var skipFocusRef = React.useRef(''),
+    moveFocusRef = React.useRef(null),
+    moveButtonsRef = React.useRef({});
+  var [moveNotice, setMoveNotice] = React.useState('');
   var [idkMarked, setIdkMarked] = _quizUseDraftField(p.draftNamespace, key, 'idk', function () {
     var legacy = _quizReadDraftField(p.draftNamespace, key, 'grade').value;
     return (type === 'sequence-sense' || type === 'relation-mismatch') && !!legacy && legacy.status === 'idk';
   });
   function markIDK() {
+    skipFocusRef.current = 'retry';
     setIdkMarked(true);
   }
   function clearIDK() {
+    skipFocusRef.current = 'answer';
     setIdkMarked(false);
     _quizWriteDraftField(p.draftNamespace, key, 'grade', null);
   }
+  React.useEffect(function () {
+    var target = skipFocusRef.current;
+    skipFocusRef.current = '';
+    if (target === 'retry') retryRef.current?.focus();
+    if (target === 'answer') (responseGroupRef.current?.querySelector('input:not(:disabled),textarea:not(:disabled),select:not(:disabled),button:not(:disabled)') || questionHeadingRef.current)?.focus();
+  }, [idkMarked]);
+  var [explanation, setExplanation] = _quizUseDraftField(p.draftNamespace, key, 'explanation', '');
   var [response, setResponse] = _quizUseDraftField(p.draftNamespace, key, 'response', '');
   var [selected, setSelected] = _quizUseDraftField(p.draftNamespace, key, 'selected', []);
   var [answerIdx, setAnswerIdx] = _quizUseDraftField(p.draftNamespace, key, 'answerIdx', null);
   var [evidenceIdx, setEvidenceIdx] = _quizUseDraftField(p.draftNamespace, key, 'evidenceIdx', null);
+  function chooseAnswerEvidenceAnswer(index) {
+    var answers = q.answerOptions || q.options || [];
+    if (idkMarked || !Number.isInteger(index) || index < 0 || index >= answers.length) return;
+    if (index !== answerIdx) {
+      setEvidenceIdx(null);
+      setAnswerChanged(evidenceIdx !== null);
+      setAnswerIdx(index);
+    }
+  }
+  function chooseAnswerEvidence(index) {
+    if (idkMarked || answerIdx === null || !Number.isInteger(index) || index < 0 || index >= (q.evidenceOptions || []).length) return;
+    setEvidenceIdx(index);
+    setAnswerChanged(false);
+  }
+  var answerEvidenceProgress = idkMarked ? '' : answerIdx === null ? 'Choose an answer, then supporting evidence.' : evidenceIdx === null ? answerChanged ? 'Answer changed. Choose supporting evidence again.' + (explanation.trim() ? ' Your explanation is kept.' : '') : 'Answer selected. Now choose supporting evidence.' : q.requireReasoning && !explanation.trim() ? 'Both parts selected. Add the required explanation before submitting.' : 'Both parts selected. Ready for review.';
   var [verifyAnswer, setVerifyAnswer] = _quizUseDraftField(p.draftNamespace, key, 'verifyAnswer', null);
   var [clickedIdx, setClickedIdx] = _quizUseDraftField(p.draftNamespace, key, 'clickedIdx', null);
   var [principleAnswer, setPrincipleAnswer] = _quizUseDraftField(p.draftNamespace, key, 'principleAnswer', '');
@@ -9090,9 +10336,33 @@ function DeferredAssessmentItem(p) {
   var [confidence, setConfidence] = _quizUseDraftField(p.draftNamespace, key, 'confidence', '');
   var initialOrder = Array.isArray(q.presentedOrder) && q.presentedOrder.length === (q.items || []).length && new Set(q.presentedOrder).size === q.presentedOrder.length && q.presentedOrder.every(i => Number.isInteger(i) && i >= 0 && i < q.items.length) ? q.presentedOrder : (q.items || []).map((_, i) => i);
   var [orderAnswer, setOrderAnswer] = _quizUseDraftField(p.draftNamespace, key, 'orderAnswer', () => initialOrder.slice());
+  function moveDeferredItem(item, delta) {
+    var position = orderAnswer.indexOf(item),
+      target = position + delta;
+    if (idkMarked || position < 0 || target < 0 || target >= orderAnswer.length) return;
+    var next = orderAnswer.slice();
+    [next[position], next[target]] = [next[target], next[position]];
+    moveFocusRef.current = {
+      item,
+      delta
+    };
+    setMoveNotice(String(q.items[item]) + ' moved to position ' + (target + 1) + ' of ' + next.length + '.');
+    setOrderAnswer(next);
+  }
+  React.useEffect(function () {
+    var pending = moveFocusRef.current;
+    if (!pending) return;
+    moveFocusRef.current = null;
+    var button = moveButtonsRef.current[pending.item + ':' + pending.delta];
+    if (!button || button.disabled) button = moveButtonsRef.current[pending.item + ':' + -pending.delta];
+    if (button && !button.disabled) button.focus();
+  }, [orderAnswer]);
   var inputClass = 'block mt-2 w-full min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-800';
   function choices(label, options, value, update, multiple, field, indices) {
     return /*#__PURE__*/React.createElement("fieldset", {
+      ref: field === 'evidenceOptions' ? evidenceGroupRef : null,
+      id: field === 'evidenceOptions' ? controlId + '-evidence-choices' : undefined,
+      disabled: type === 'answer-evidence' && field === 'evidenceOptions' && answerIdx === null,
       className: "space-y-2"
     }, /*#__PURE__*/React.createElement("legend", {
       className: "text-sm font-semibold text-slate-800 mb-2"
@@ -9102,7 +10372,7 @@ function DeferredAssessmentItem(p) {
     }, /*#__PURE__*/React.createElement("input", {
       className: "mt-1 shrink-0",
       type: multiple ? 'checkbox' : 'radio',
-      name: 'assessment-' + p.questionIdx + '-' + label,
+      name: controlId + '-' + (field || label),
       checked: multiple ? value.includes(i) : value === i,
       onChange: () => update(multiple ? value.includes(i) ? value.filter(n => n !== i) : value.concat(i).sort((a, b) => a - b) : i)
     }), /*#__PURE__*/React.createElement("span", {
@@ -9153,12 +10423,17 @@ function DeferredAssessmentItem(p) {
           message: 'Response saved.'
         };
       }
+      if (type === 'answer-evidence' && action === 'choose' && request.part === 'evidence' && answerIdx === null) return {
+        ok: false,
+        state: 'inapplicable',
+        message: 'Choose an answer before choosing supporting evidence.'
+      };
       var options = type === 'multi-select' ? q.options : type === 'answer-evidence' ? request.part === 'evidence' ? q.evidenceOptions : q.answerOptions : null;
       if (action === 'choose' && Array.isArray(options)) {
         var n = Number.isInteger(request.optionIndex) ? request.optionIndex : _quizVoiceChoiceIndex(request.choice ?? request.value ?? request.text, options.length);
         if (n < 0) n = options.findIndex(value => String(value).toLowerCase() === String(request.choice ?? request.value ?? request.text ?? '').trim().toLowerCase());
         if (n >= 0 && n < options.length) {
-          if (type === 'multi-select') setSelected(selected.includes(n) ? selected.filter(i => i !== n) : selected.concat(n));else if (request.part === 'evidence') setEvidenceIdx(n);else setAnswerIdx(n);
+          if (type === 'multi-select') setSelected(selected.includes(n) ? selected.filter(i => i !== n) : selected.concat(n));else if (request.part === 'evidence') chooseAnswerEvidence(n);else chooseAnswerEvidenceAnswer(n);
           return {
             ok: true,
             state: 'draft',
@@ -9175,6 +10450,8 @@ function DeferredAssessmentItem(p) {
   });
   return /*#__PURE__*/React.createElement("div", {
     "data-assessment-deferred-item": type,
+    role: "group",
+    "aria-labelledby": controlId + '-question',
     className: "rounded-xl border border-slate-300 bg-white p-5 text-slate-800 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3 mb-4"
@@ -9185,31 +10462,60 @@ function DeferredAssessmentItem(p) {
   }, /*#__PURE__*/React.createElement("p", {
     className: "mb-1 text-xs font-semibold text-slate-600"
   }, _quizPresentationTypeLabel(type)), /*#__PURE__*/React.createElement("h3", {
+    ref: questionHeadingRef,
+    id: controlId + '-question',
+    tabIndex: -1,
     className: "font-bold text-slate-800"
-  }, q.question), q.question_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
+  }, _quizRich(q.question)), q.question_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
     as: "p",
+    id: controlId + '-translation',
     className: "mt-1 text-sm text-slate-600"
-  }, q.question_en))), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
+  }, _quizRich(q.question_en)))), /*#__PURE__*/React.createElement(AssessmentQuestionSupport, {
     q: q,
-    translation: false
+    translation: false,
+    criteriaId: controlId + '-criteria'
   }), /*#__PURE__*/React.createElement("fieldset", {
+    ref: responseGroupRef,
+    "aria-labelledby": controlId + '-question',
+    "aria-describedby": groupDescription,
     disabled: idkMarked,
     className: "min-w-0 space-y-4"
   }, type === 'multi-select' && choices('Choose all that apply', q.options || [], selected, setSelected, true, 'options'), type === 'answer-evidence' && /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
-  }, choices('Choose an answer', q.answerOptions || q.options || [], answerIdx, setAnswerIdx, false, q.answerOptions ? 'answerOptions' : 'options'), q.evidencePrompt_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
+  }, /*#__PURE__*/React.createElement("p", {
+    id: controlId + '-evidence-instructions',
+    "data-assessment-answer-evidence-instructions": true,
+    className: "text-sm text-slate-600"
+  }, "Choose an answer, then evidence that supports it. If you change your answer, choose the evidence again."), /*#__PURE__*/React.createElement("p", {
+    "data-assessment-answer-evidence-progress": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "text-sm font-semibold text-indigo-900"
+  }, answerEvidenceProgress), choices('Choose an answer', q.answerOptions || q.options || [], answerIdx, chooseAnswerEvidenceAnswer, false, q.answerOptions ? 'answerOptions' : 'options'), answerIdx !== null && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assessment-continue-evidence": true,
+    "aria-controls": controlId + '-evidence-choices',
+    onClick: () => (evidenceGroupRef.current?.querySelector('input:checked') || evidenceGroupRef.current?.querySelector('input:not(:disabled)'))?.focus(),
+    className: "min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-semibold text-indigo-900"
+  }, "Go to supporting evidence"), q.evidencePrompt_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
     as: "p",
     className: "text-sm italic text-slate-600"
-  }, q.evidencePrompt_en), choices(q.evidencePrompt || 'Choose supporting evidence', q.evidenceOptions || [], evidenceIdx, setEvidenceIdx, false, 'evidenceOptions')), ['numeric-response', 'fill-blank', 'short-answer', 'self-explanation'].includes(type) && /*#__PURE__*/React.createElement("label", {
+  }, q.evidencePrompt_en), choices(q.evidencePrompt || 'Choose supporting evidence', q.evidenceOptions || [], evidenceIdx, chooseAnswerEvidence, false, 'evidenceOptions')), ['numeric-response', 'fill-blank', 'short-answer', 'self-explanation'].includes(type) && /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
-  }, "Your response", type === 'numeric-response' && q.unit && /*#__PURE__*/React.createElement("span", {
-    className: "block mt-1 font-normal"
-  }, 'Include units (' + q.unit + ').'), ['numeric-response', 'fill-blank'].includes(type) ? /*#__PURE__*/React.createElement("input", {
+  }, "Your response", responseInstruction && /*#__PURE__*/React.createElement("span", {
+    id: controlId + '-instruction',
+    "data-assessment-response-instruction": true,
+    className: "block mt-1 text-sm font-normal text-slate-600"
+  }, responseInstruction), ['numeric-response', 'fill-blank'].includes(type) ? /*#__PURE__*/React.createElement("input", {
+    "aria-label": "Your response to question " + p.itemNumber,
+    "aria-describedby": responseDescription,
     className: inputClass,
     value: response,
     onChange: e => setResponse(e.target.value)
   }) : /*#__PURE__*/React.createElement("textarea", {
     "aria-label": "Your response to question " + p.itemNumber,
+    "aria-describedby": responseDescription,
     className: inputClass + ' resize-y',
     rows: type === 'self-explanation' ? 5 : 3,
     value: response,
@@ -9228,9 +10534,15 @@ function DeferredAssessmentItem(p) {
     q: q,
     field: "items",
     index: i
-  })))), choices('Is the displayed order correct?', ['Yes', 'No'], verifyAnswer === 'yes' ? 0 : verifyAnswer === 'no' ? 1 : null, i => setVerifyAnswer(i === 0 ? 'yes' : 'no')), verifyAnswer === 'no' && choices('Choose an item that is out of place', initialOrder.map(i => q.items[i]), clickedIdx, setClickedIdx, false, 'items', initialOrder), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
+  })))), q.sequenceMode !== 'arrange-explain' && choices('Is the displayed order correct?', ['Yes', 'No'], verifyAnswer === 'yes' ? 0 : verifyAnswer === 'no' ? 1 : null, i => setVerifyAnswer(i === 0 ? 'yes' : 'no')), q.sequenceMode !== 'arrange-explain' && verifyAnswer === 'no' && choices('Choose an item that is out of place', initialOrder.map(i => q.items[i]), clickedIdx, setClickedIdx, false, 'items', initialOrder), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
     className: "text-sm font-semibold mb-2"
-  }, _quizGradedCopy('quiz.student.arrange_answer', 'Arrange your answer')), /*#__PURE__*/React.createElement("ol", {
+  }, _quizGradedCopy('quiz.student.arrange_answer', 'Arrange your answer')), /*#__PURE__*/React.createElement("p", {
+    "data-assessment-reorder-status": true,
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, moveNotice), /*#__PURE__*/React.createElement("ol", {
     className: "space-y-2"
   }, orderAnswer.map((i, position) => /*#__PURE__*/React.createElement("li", {
     key: i,
@@ -9242,13 +10554,12 @@ function DeferredAssessmentItem(p) {
   }), [-1, 1].map(delta => /*#__PURE__*/React.createElement("button", {
     key: delta,
     type: "button",
+    ref: node => {
+      moveButtonsRef.current[i + ':' + delta] = node;
+    },
     "aria-label": (delta < 0 ? 'Move up: ' : 'Move down: ') + q.items[i],
     disabled: position + delta < 0 || position + delta >= orderAnswer.length,
-    onClick: () => {
-      var next = orderAnswer.slice();
-      [next[position], next[position + delta]] = [next[position + delta], next[position]];
-      setOrderAnswer(next);
-    },
+    onClick: () => moveDeferredItem(i, delta),
     className: "min-h-11 min-w-11 rounded border border-slate-400 text-slate-800 disabled:opacity-40"
   }, delta < 0 ? '↑' : '↓')))))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
@@ -9270,7 +10581,14 @@ function DeferredAssessmentItem(p) {
     className: inputClass,
     value: partnerAnswer,
     onChange: e => setPartnerAnswer(e.target.value)
-  }))), p.modeStrategy?.render?.allowConfidenceRating && /*#__PURE__*/React.createElement("label", {
+  }))), ['relation-mismatch', 'answer-evidence'].includes(type) && /*#__PURE__*/React.createElement(AssessmentReasoningInput, {
+    q: q,
+    itemNumber: p.itemNumber,
+    questionIdx: p.questionIdx,
+    value: explanation,
+    onChange: setExplanation,
+    disabled: idkMarked
+  }), p.modeStrategy?.render?.allowConfidenceRating && /*#__PURE__*/React.createElement("label", {
     className: "block mt-4 text-sm font-semibold"
   }, "Confidence (optional)", /*#__PURE__*/React.createElement("select", {
     className: inputClass,
@@ -9284,11 +10602,17 @@ function DeferredAssessmentItem(p) {
     value: "guessed"
   }, "I am unsure"), /*#__PURE__*/React.createElement("option", {
     value: "no-idea"
-  }, "I need support")))), idkMarked ? /*#__PURE__*/React.createElement("div", {
+  }, "I need support")))), /*#__PURE__*/React.createElement("p", {
+    "data-assessment-skip-status": true,
     role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, idkMarked ? "Marked as I don’t know yet. Your draft responses are kept. Choose Try again to continue." : ''), idkMarked ? /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex items-center gap-3 text-sm text-sky-900"
   }, /*#__PURE__*/React.createElement("span", null, _quizGradedCopy('quiz.attempt.idk_response', 'I don’t know yet.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    ref: retryRef,
     onClick: clearIDK,
     className: "min-h-11 rounded-lg border border-slate-300 px-3 py-2 font-semibold"
   }, t('ui_common.try_again'))) : p.modeStrategy?.render?.allowIDontKnow && /*#__PURE__*/React.createElement("button", {
@@ -9296,10 +10620,47 @@ function DeferredAssessmentItem(p) {
     onClick: markIDK,
     className: "mt-3 min-h-11 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-900"
   }, t('ui_common.i_dont_know')), /*#__PURE__*/React.createElement("p", {
+    id: controlId + '-feedback-timing',
     className: "mt-4 text-xs text-slate-600"
   }, p.feedbackTiming === 'teacher-graded' ? _quizGradedCopy('quiz.graded.student_note', 'Your teacher will check your answers.') : p.feedbackTiming === 'teacher-release' ? 'Your teacher will release feedback after submission.' : 'Feedback will appear after you submit the assessment.'));
 }
+// The AlloPack spec spells short answers `shortAnswer`; this runtime uses `short-answer`.
+function _quizCanonicalContent(content) {
+  var data = content && content.data,
+    questions = data && Array.isArray(data.questions) ? data.questions : null;
+  if (!questions || !questions.some(function (q) {
+    return q && q.type === 'shortAnswer';
+  })) return content;
+  return Object.assign({}, content, {
+    data: Object.assign({}, data, {
+      questions: questions.map(function (q) {
+        return q && q.type === 'shortAnswer' ? Object.assign({}, q, {
+          type: 'short-answer'
+        }) : q;
+      })
+    })
+  });
+}
+function _quizLegacyShortAnswerData(data) {
+  var questions = data && Array.isArray(data.questions) ? data.questions : null;
+  if (!questions || !questions.some(function (q) {
+    return q && q.type === 'short-answer';
+  })) return null;
+  return Object.assign({}, data, {
+    questions: questions.map(function (q) {
+      return q && q.type === 'short-answer' ? Object.assign({}, q, {
+        type: 'shortAnswer'
+      }) : q;
+    })
+  });
+}
 function QuizView(props) {
+  var canonicalContent = React.useMemo(function () {
+    return _quizCanonicalContent(props.generatedContent);
+  }, [props.generatedContent]);
+  if (canonicalContent !== props.generatedContent) props = Object.assign({}, props, {
+    generatedContent: canonicalContent
+  });
   var identity = JSON.stringify([props.generatedContent?.id, props.activeSessionCode || '', props.sessionData?.quizState?.activityId || '', props.user?.uid || '', props.learnerResponseScope || '', !!props.isTeacherMode, !!props.isParentMode, !!props.isIndependentMode]);
   var [previewScope, setPreviewScope] = React.useState('');
   var [previewNonce, setPreviewNonce] = React.useState(0);
@@ -9554,7 +10915,82 @@ function QuizViewContent(props) {
   var repairingState = React.useState(false);
   var repairingAssessment = repairingState[0];
   var setRepairingAssessment = repairingState[1];
-  async function regenerateAssessmentQuestion(questionIdx, question) {
+  var addingState = React.useState({});
+  var addingAfter = addingState[0];
+  var setAddingAfter = addingState[1];
+  function focusAssessmentItem(index) {
+    setTimeout(function () {
+      var item = document.getElementById('assessment-question-' + index);
+      if (!item) return;
+      if (item.scrollIntoView) item.scrollIntoView({
+        block: 'center',
+        behavior: 'auto'
+      });
+      var field = item.querySelector('textarea');
+      if (field) field.focus({
+        preventScroll: true
+      });
+    }, 60);
+  }
+  // Teacher-added items land right after the chosen item; afterIdx -1 adds the first item.
+  async function addAssessmentItem(afterIdx, type, mode) {
+    if (typeof props.handleQuizQuestionAction !== 'function') return;
+    var questions = props.generatedContent?.data?.questions || [];
+    var label = _quizAuthorTypeLabel(type);
+    var placed = afterIdx + 2;
+    if (mode !== 'ai') {
+      props.handleQuizQuestionAction(afterIdx, 'insert', {
+        question: _quizBlankItem(type)
+      });
+      if (typeof props.addToast === 'function') props.addToast('Blank ' + label + ' item added as question ' + placed + '. Fill it in before sharing.', 'success');
+      focusAssessmentItem(afterIdx + 1);
+      return;
+    }
+    if (typeof props.callGemini !== 'function') return;
+    var anchor = afterIdx >= 0 ? {
+      questionIdx: afterIdx,
+      question: questions[afterIdx]
+    } : null;
+    var request = authoringRequests.begin('add:' + afterIdx, anchor);
+    if (!request) return;
+    setAddingAfter(function (previous) {
+      var next = Object.assign({}, previous);
+      next[afterIdx] = true;
+      return next;
+    });
+    try {
+      var stems = questions.map(function (q) {
+        return q && q.question ? String(q.question).slice(0, 200) : '';
+      }).filter(Boolean);
+      var prompt = 'Write ONE new assessment item for the same lesson. It must check a learning target or idea that the existing items do not already cover, at grade level ' + String(props.gradeLevel || 'unspecified') + ', in the same language as the existing items. Return ONLY valid JSON using this schema: ' + _quizSchemaForType(type) + '. The type must be "' + type + '". ' + (_quizHasChoiceItems([type]) ? _QUIZ_ANSWER_CUE_RULES + ' ' : '') + 'Existing item prompts: ' + JSON.stringify(stems) + '. Source context: ' + String(props.inputText || '').slice(0, 5000);
+      var raw = await props.callGemini(prompt, true);
+      var parsed = _quizExtractJson(raw);
+      var item = parsed && parsed.question && typeof parsed.question === 'object' ? parsed.question : parsed;
+      if (!item || typeof item !== 'object' || Array.isArray(item)) throw new Error('The AI did not return a valid item.');
+      var currentProps = authoringRequests.currentProps(request);
+      if (!currentProps || typeof currentProps.handleQuizQuestionAction !== 'function') {
+        if (typeof props.addToast === 'function') props.addToast('The item was not added because the assessment changed while it was being written. Try again.', 'info');
+        return;
+      }
+      item.type = type;
+      item.id = 'assessment-item-' + Date.now();
+      item = _quizBalanceReplacementKeys(currentProps.generatedContent?.data?.questions, -1, _quizAuthoringPayload(item));
+      currentProps.handleQuizQuestionAction(afterIdx, 'insert', {
+        question: item
+      });
+      if (typeof currentProps.addToast === 'function') currentProps.addToast(label + ' item added as question ' + placed + '. Review it before sharing.', 'success');
+      focusAssessmentItem(afterIdx + 1);
+    } catch (error) {
+      if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Adding the item failed.', 'error');
+    } finally {
+      if (authoringRequests.end(request)) setAddingAfter(function (previous) {
+        var next = Object.assign({}, previous);
+        delete next[afterIdx];
+        return next;
+      });
+    }
+  }
+  async function regenerateAssessmentQuestion(questionIdx, question, targetType) {
     if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function' || !question) return;
     var request = authoringRequests.begin('question:' + questionIdx, {
       questionIdx: questionIdx,
@@ -9567,9 +11003,10 @@ function QuizViewContent(props) {
       return next;
     });
     try {
-      var type = question.type || 'mcq';
+      var converting = !!targetType && targetType !== (question.type || 'mcq');
+      var type = converting ? targetType : question.type || 'mcq';
       var sourceExcerpt = String(props.inputText || '').slice(0, 5000);
-      var prompt = 'Rewrite one assessment item while preserving its learning target and item type. Improve clarity, answer-key validity, and grade-level fit. Return ONLY valid JSON using this schema: ' + _quizSchemaForType(type) + '. The type must remain "' + type + '". ' + (_quizHasChoiceItems([type]) ? _QUIZ_ANSWER_CUE_RULES + ' ' : '') + 'Existing item: ' + JSON.stringify(_quizAuthoringPayload(question)) + '. Source context: ' + sourceExcerpt;
+      var prompt = (converting ? 'Rewrite one assessment item as a different item type. Keep its learning target, content, language, and grade-level fit. Return ONLY valid JSON using this schema: ' + _quizSchemaForType(type) + '. The type must be "' + type + '". ' : 'Rewrite one assessment item while preserving its learning target and item type. Improve clarity, answer-key validity, and grade-level fit. Return ONLY valid JSON using this schema: ' + _quizSchemaForType(type) + '. The type must remain "' + type + '". ') + (_quizHasChoiceItems([type]) ? _QUIZ_ANSWER_CUE_RULES + ' ' : '') + 'Existing item: ' + JSON.stringify(_quizAuthoringPayload(question)) + '. Source context: ' + sourceExcerpt;
       var raw = await props.callGemini(prompt, true);
       var parsed = _quizExtractJson(raw);
       var replacement = parsed && parsed.question && typeof parsed.question === 'object' ? parsed.question : parsed;
@@ -9577,16 +11014,23 @@ function QuizViewContent(props) {
       var currentProps = authoringRequests.currentProps(request);
       if (!currentProps || typeof currentProps.handleQuizQuestionAction !== 'function') return;
       replacement.type = type;
+      // A retyped item keeps its stimulus image; the new type's fields come from the rewrite.
+      if (converting && question.imageUrl && !replacement.imageUrl) Object.assign(replacement, {
+        imageUrl: question.imageUrl
+      }, question.imageAltText ? {
+        imageAltText: question.imageAltText
+      } : {});
       replacement = _quizBalanceReplacementKeys(currentProps.generatedContent?.data?.questions, questionIdx, _quizAuthoringPayload(replacement));
       var result = await currentProps.handleQuizQuestionAction(questionIdx, 'replace', replacement, {
         resourceId: currentProps.generatedContent.id,
         questionIndex: questionIdx,
         question: request.question,
-        questionSignature: request.questionSignature
+        questionSignature: request.questionSignature,
+        retargetMix: converting
       });
       // A functional host update is queued, not confirmed yet. Its visible
       // replacement provides feedback without announcing a rejected commit.
-      if (result !== false && result?.status !== 'queued' && typeof currentProps.addToast === 'function') currentProps.addToast('Question ' + (questionIdx + 1) + ' regenerated. Review it before sharing.', 'success');
+      if (result !== false && result?.status !== 'queued' && typeof currentProps.addToast === 'function') currentProps.addToast('Question ' + (questionIdx + 1) + (converting ? ' rewritten as ' + _quizAuthorTypeLabel(type) : ' regenerated') + '. Review it before sharing.', 'success');
     } catch (error) {
       if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Question regeneration failed.', 'error');
     } finally {
@@ -9598,6 +11042,13 @@ function QuizViewContent(props) {
       });
     }
   }
+  var assessmentAuthoring = {
+    onAddItem: addAssessmentItem,
+    onChangeType: function (questionIdx, question, type) {
+      return regenerateAssessmentQuestion(questionIdx, question, type);
+    },
+    addingAfter: addingAfter
+  };
   async function repairAssessmentQuality() {
     if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function') return;
     var request = authoringRequests.begin('repair');
@@ -9998,7 +11449,13 @@ function QuizViewContent(props) {
         question: q.question,
         type: q.type || 'mcq',
         response: _quizAttemptAnswer(q, i, attemptReceipt.responses || {}),
-        confidence: _quizAttemptConfidence(q, i, attemptReceipt.responses || {})
+        confidence: _quizAttemptConfidence(q, i, attemptReceipt.responses || {}),
+        ...(attemptReceipt.responses?.['q-' + i]?.practiceAttempts ? {
+          practice: attemptReceipt.responses['q-' + i].practiceAttempts
+        } : {}),
+        ...(typeof attemptReceipt.responses?.['q-' + i]?.transferResponse === 'string' ? {
+          transferResponse: attemptReceipt.responses['q-' + i].transferResponse
+        } : {})
       })),
       reflections: attemptReceipt.responses?.root?.reflectionAnswers || {}
     };
@@ -10206,6 +11663,14 @@ function QuizViewContent(props) {
   var studentMcqConfidence = mcqConfidenceState[0];
   var setStudentMcqConfidence = mcqConfidenceState[1];
   function selectMcqOption(qIdx, optIdx, optText, q) {
+    if (!deferFeedback) _quizRecordPracticeAttempt({
+      draftNamespace: draftNamespace,
+      questionIdx: qIdx,
+      q: q
+    }, {
+      optionIdx: optIdx,
+      optionText: optText
+    }, studentMcqConfidence[qIdx]);
     _quizWriteDraftField(draftNamespace, 'q-' + qIdx, 'idk', false);
     setStudentMcqAnswers(function (prev) {
       var next = Object.assign({}, prev);
@@ -10712,22 +12177,54 @@ function QuizViewContent(props) {
   var handleReviewTileClick = props.handleReviewTileClick;
   var handleAwardPoints = props.handleAwardPoints;
   var closeReviewModal = props.closeReviewModal;
+  var [reviewPauseForAnswers, setReviewPauseForAnswers] = React.useState(false);
+  var [reviewLearning, setReviewLearning] = React.useState({});
+  React.useEffect(function () {
+    setReviewLearning({});
+  }, [props.generatedContent?.id]);
+  function recordReviewLearning(index, patch) {
+    setReviewLearning(previous => ({
+      ...previous,
+      [index]: {
+        ...previous[index],
+        ...patch
+      }
+    }));
+  }
   var reviewDialogRef = React.useRef(null);
   var reviewCloseBtnRef = React.useRef(null);
   var reviewPreviousFocusRef = React.useRef(null);
+  var reviewBoardRef = React.useRef(null);
+  var reviewBoardHeadingRef = React.useRef(null);
+  var reviewAwardHelpRef = React.useRef(null);
+  var reviewRevealFocusPendingRef = React.useRef(false);
+  function reviewTeamButtonClass(color) {
+    var family = String(color || '').match(/(?:^|\s)bg-(blue|red|green|yellow|purple|pink|gray|slate)-\d+(?:\s|$)/)?.[1];
+    return {
+      blue: 'bg-blue-700 hover:bg-blue-800 text-white',
+      red: 'bg-red-700 hover:bg-red-800 text-white',
+      green: 'bg-green-700 hover:bg-green-800 text-white',
+      yellow: 'bg-yellow-800 hover:bg-yellow-900 text-white',
+      purple: 'bg-purple-700 hover:bg-purple-800 text-white',
+      pink: 'bg-pink-700 hover:bg-pink-800 text-white'
+    }[family] || 'bg-slate-700 hover:bg-slate-800 text-white';
+  }
   var reviewModalOpen = !!(isReviewGame && reviewGameState && reviewGameState.activeQuestion);
   React.useEffect(function () {
     if (!reviewModalOpen) return;
     try {
       reviewPreviousFocusRef.current = document.activeElement;
     } catch (e) {}
+    var restoreReviewBackground = function () {};
     var raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame(function () {
       try {
         if (reviewCloseBtnRef.current) reviewCloseBtnRef.current.focus();else if (reviewDialogRef.current) reviewDialogRef.current.focus();
+        restoreReviewBackground = _quizIsolateDialog(reviewDialogRef.current);
       } catch (e) {}
     }) : setTimeout(function () {
       try {
         if (reviewCloseBtnRef.current) reviewCloseBtnRef.current.focus();else if (reviewDialogRef.current) reviewDialogRef.current.focus();
+        restoreReviewBackground = _quizIsolateDialog(reviewDialogRef.current);
       } catch (e) {}
     }, 0);
     return function () {
@@ -10738,13 +12235,29 @@ function QuizViewContent(props) {
       } else if (typeof clearTimeout === 'function') {
         clearTimeout(raf);
       }
+      restoreReviewBackground();
       var previous = reviewPreviousFocusRef.current;
       reviewPreviousFocusRef.current = null;
+      reviewRevealFocusPendingRef.current = false;
       try {
-        if (previous && previous.isConnected !== false && typeof previous.focus === 'function') previous.focus();
+        if (previous && previous !== document.body && previous.isConnected !== false && !previous.disabled && typeof previous.focus === 'function') {
+          previous.focus();
+        } else {
+          // Claiming a question disables its opener. Continue on the board instead of losing position.
+          var tiles = Array.from(reviewBoardRef.current?.querySelectorAll('[data-review-tile]') || []);
+          var previousIndex = tiles.indexOf(previous);
+          var next = tiles.slice(previousIndex + 1).concat(tiles.slice(0, previousIndex + 1)).find(tile => !tile.disabled);
+          (next || reviewBoardHeadingRef.current)?.focus();
+        }
       } catch (e) {}
     };
   }, [reviewModalOpen]);
+  React.useEffect(function () {
+    if (reviewModalOpen && reviewGameState?.showAnswer && reviewRevealFocusPendingRef.current) {
+      reviewRevealFocusPendingRef.current = false;
+      reviewAwardHelpRef.current?.focus();
+    }
+  }, [reviewModalOpen, reviewGameState?.showAnswer]);
   function handlePresentationOptionClick(index, option) {
     if (!presentationQuestions[index]?.options?.includes(option)) return;
     updatePresentationItem(index, previous => previous.showAnswer ? previous : {
@@ -10927,15 +12440,15 @@ function QuizViewContent(props) {
     className: "text-[10px] uppercase font-bold tracking-wider text-amber-800 mb-1"
   }, "From your teacher · pause and read"), _pushedExplainer.conceptText && /*#__PURE__*/React.createElement("p", {
     className: "text-xs italic text-amber-700 mb-1"
-  }, '"' + _pushedExplainer.conceptText + '"'), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-800 leading-relaxed whitespace-pre-wrap"
-  }, _pushedExplainer.text), /*#__PURE__*/React.createElement("div", {
+  }, '"' + _pushedExplainer.conceptText + '"'), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-slate-800 leading-relaxed"
+  }, _quizRichBlock(_pushedExplainer.text)), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mt-3 flex-wrap"
   }, typeof props.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       try {
-        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_pushedExplainer.text);else props.callTTS(_pushedExplainer.text);
+        if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_quizPlain(_pushedExplainer.text));else props.callTTS(_quizPlain(_pushedExplainer.text));
       } catch (e) {}
     },
     className: "text-xs font-bold px-3 py-1 rounded bg-white border border-amber-300 text-amber-900 hover:bg-amber-100",
@@ -11042,24 +12555,26 @@ function QuizViewContent(props) {
     className: "mt-3 p-3 bg-white border border-indigo-200 rounded-lg"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1"
-  }, explainerData.topic), /*#__PURE__*/React.createElement("p", {
+  }, explainerData.topic), /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-800 leading-relaxed"
-  }, explainerData.response), typeof props.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, _quizRichBlock(explainerData.response)), typeof props.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
-      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainerData.response);else props.callTTS(explainerData.response);
+      if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(_quizPlain(explainerData.response));else props.callTTS(_quizPlain(explainerData.response));
     },
     className: "mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900",
     "aria-label": t("a11y.read_aloud")
   }, "🔊 Read aloud")), explainerData.error && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-2 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800"
   }, explainerData.error)) : null;
-  var qualityReviewPanel = isTeacherMode && !(activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive) ? /*#__PURE__*/React.createElement(AssessmentQualityPanel, {
+  var qualityReviewPanel = isTeacherMode && !(activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(AssessmentLearningContext, {
+    data: assessmentData
+  }), /*#__PURE__*/React.createElement(AssessmentQualityPanel, {
     audit: assessmentAudit,
     h5p: assessmentH5PPreflight,
     repairing: repairingAssessment,
     onRepairAll: repairAssessmentQuality
-  }) : null;
+  })) : null;
   var deliverySettingsPanel = isTeacherMode && !(activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive) ? /*#__PURE__*/React.createElement(AssessmentDeliveryPanel, {
     settings: deliverySettings,
     onChange: updateAssessmentDelivery,
@@ -11342,6 +12857,7 @@ function QuizViewContent(props) {
       reflectionTotal: reflections.length,
       canEnterFreeformByVoice: itemActions.indexOf('enter-response') >= 0,
       canResetByVoice: itemActions.indexOf('try-again') >= 0,
+      canReviseByVoice: itemActions.indexOf('revise') >= 0,
       reviewOpen: false,
       checked: Boolean(showQuizAnswers),
       message: 'Quiz is ready at question ' + (questionIdx + 1) + ' of ' + questions.length + '.'
@@ -11912,7 +13428,7 @@ function QuizViewContent(props) {
       }
       return handleQuizVoiceCheck(status, question, selectedOptionIdx);
     }
-    if (action === 'enter-response' || action === 'try-again' || action === 'reset') {
+    if (action === 'enter-response' || action === 'revise' || action === 'try-again' || action === 'reset') {
       var itemController = getQuizItemVoiceController(status.questionIndex);
       if (!itemController || typeof itemController.execute !== 'function') return Object.assign({}, status, {
         ok: false,
@@ -11952,6 +13468,11 @@ function QuizViewContent(props) {
       }));
     }
     if (status.actions && status.actions.indexOf('read-question') >= 0) commands.push(command('quiz_read_question', 'Read the current question', ['read question', 'repeat question']));
+    if (status.ready && status.canReviseByVoice) commands.push(command('quiz_revise_choices', 'Revise these choices without clearing them', ['revise these choices', 'revise choices'], {
+      risk: 'state-change',
+      confirmation: 'low-confidence',
+      confirmMessage: 'Keep these choices and reopen them for revision? Say yes or no.'
+    }));
     if (status.ready && status.canResetByVoice) commands.push(command('quiz_try_again', 'Reset this Quiz response', ['try again', 'reset answer', 'clear answer'], status.itemState && status.itemState.resetRequiresConfirmation ? {
       risk: 'destructive',
       confirmation: 'always',
@@ -12208,6 +13729,7 @@ function QuizViewContent(props) {
         var actionMap = {
           quiz_enter_response: 'enter-response',
           quiz_try_again: 'try-again',
+          quiz_revise_choices: 'revise',
           quiz_describe: 'describe',
           quiz_list_actions: 'list-actions',
           quiz_read_question: 'read-question',
@@ -12779,6 +14301,9 @@ function QuizViewContent(props) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-left"
     }, /*#__PURE__*/React.createElement("h2", {
+      ref: reviewBoardHeadingRef,
+      tabIndex: -1,
+      "data-review-board-heading": true,
       className: "text-2xl sm:text-3xl font-black text-yellow-300 tracking-wide uppercase drop-shadow-md flex items-center gap-3"
     }, /*#__PURE__*/React.createElement(Gamepad2, {
       size: 32
@@ -12789,11 +14314,18 @@ function QuizViewContent(props) {
       role: "status",
       "aria-live": "polite",
       className: "mt-2 text-sm font-bold text-yellow-200"
-    }, reviewCompleted + ' of ' + reviewQuestions.length + ' items completed · ' + reviewCategories.length + (reviewCategories.length === 1 ? ' category' : ' categories'))), /*#__PURE__*/React.createElement("div", {
+    }, reviewCompleted + ' of ' + reviewQuestions.length + ' items completed · ' + reviewCategories.length + (reviewCategories.length === 1 ? ' category' : ' categories')), /*#__PURE__*/React.createElement("label", {
+      className: "mt-3 flex items-center gap-2 text-sm text-white"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: reviewPauseForAnswers,
+      onChange: e => setReviewPauseForAnswers(e.target.checked)
+    }), "Pause for individual answers before revealing")), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
-      "aria-label": t('common.volume'),
+      "aria-label": quizCopy('review_game.sound_effects', 'Sound effects'),
+      "aria-pressed": !!soundEnabled,
       onClick: () => {
         setSoundEnabled(!soundEnabled);
         if (!soundEnabled) playSound('click');
@@ -12811,6 +14343,7 @@ function QuizViewContent(props) {
         setConfirmDialog({
           message: t('review_game.reset_confirm') || 'Reset the game?',
           onConfirm: () => {
+            setReviewLearning({});
             setReviewGameState({
               claimed: new Set(),
               activeQuestion: null,
@@ -12870,6 +14403,7 @@ function QuizViewContent(props) {
     }), /*#__PURE__*/React.createElement("span", {
       className: "text-xs font-bold mt-1"
     }, t('review_game.add_team')))), /*#__PURE__*/React.createElement("div", {
+      ref: reviewBoardRef,
       "data-review-board": true,
       className: "grid gap-2 sm:gap-4 max-w-4xl mx-auto w-full flex-grow content-start relative z-10",
       style: {
@@ -12911,7 +14445,20 @@ function QuizViewContent(props) {
           "aria-hidden": "true"
         }) : q.points));
       }));
-    })), reviewQuestions.length === 0 && /*#__PURE__*/React.createElement("p", {
+    })), reviewQuestions.some(q => reviewLearning[q.originalIndex]?.needsReview) && /*#__PURE__*/React.createElement("section", {
+      "data-review-learning-recap": true,
+      className: "mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-left text-slate-900"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-bold"
+    }, "Ideas to revisit"), /*#__PURE__*/React.createElement("ul", {
+      className: "mt-2 list-disc ps-5"
+    }, reviewQuestions.filter(q => reviewLearning[q.originalIndex]?.needsReview).map(q => /*#__PURE__*/React.createElement("li", {
+      key: q.originalIndex
+    }, /*#__PURE__*/React.createElement("strong", null, q.conceptLabel || 'Question ' + (q.originalIndex + 1)), ': ' + q.question, reviewLearning[q.originalIndex]?.notes && /*#__PURE__*/React.createElement("p", {
+      className: "text-sm"
+    }, reviewLearning[q.originalIndex].notes)))), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-sm"
+    }, "Use a fresh example to check each learner after discussion. Team points do not establish individual understanding.")), reviewQuestions.length === 0 && /*#__PURE__*/React.createElement("p", {
       className: "mt-6 text-center text-slate-200"
     }, "No assessment items are available yet. Add questions to start a review game."), activeReviewQuestion && /*#__PURE__*/React.createElement("div", {
       ref: reviewDialogRef,
@@ -12930,7 +14477,7 @@ function QuizViewContent(props) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-start justify-between gap-3"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "rounded-full bg-yellow-400 px-4 py-2 text-lg font-black text-blue-950"
+      className: "rounded-full bg-yellow-400 px-4 py-2 text-lg font-black text-slate-950"
     }, activeReviewQuestion.points + ' points'), /*#__PURE__*/React.createElement("button", {
       type: "button",
       ref: reviewCloseBtnRef,
@@ -12993,22 +14540,57 @@ function QuizViewContent(props) {
       showAnswer: reviewGameState.showAnswer,
       formatInlineText: formatInlineText,
       renderFormattedText: renderFormattedText
-    })), /*#__PURE__*/React.createElement("div", {
+    })), reviewPauseForAnswers && !reviewGameState.showAnswer && /*#__PURE__*/React.createElement("div", {
+      className: "mb-4 rounded-lg border border-blue-400 bg-blue-800 p-4 text-left text-white"
+    }, /*#__PURE__*/React.createElement("p", null, "Everyone writes, draws, or says their own answer before the group discusses it."), /*#__PURE__*/React.createElement("label", {
+      className: "mt-3 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: !!reviewLearning[activeReviewQuestion.originalIndex]?.committed,
+      onChange: e => recordReviewLearning(activeReviewQuestion.originalIndex, {
+        committed: e.target.checked
+      })
+    }), "Individual answers are ready to discuss")), reviewGameState.showAnswer && /*#__PURE__*/React.createElement("div", {
+      className: "mb-4 text-left text-white"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "flex gap-2"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: !!reviewLearning[activeReviewQuestion.originalIndex]?.needsReview,
+      onChange: e => recordReviewLearning(activeReviewQuestion.originalIndex, {
+        needsReview: e.target.checked
+      })
+    }), "Revisit this idea after the game"), /*#__PURE__*/React.createElement("label", {
+      className: "mt-2 block text-sm"
+    }, "Discussion notes (optional)", /*#__PURE__*/React.createElement("textarea", {
+      rows: 2,
+      value: reviewLearning[activeReviewQuestion.originalIndex]?.notes || '',
+      onChange: e => recordReviewLearning(activeReviewQuestion.originalIndex, {
+        notes: e.target.value
+      }),
+      className: "mt-1 block w-full rounded border border-blue-300 bg-white p-2 text-slate-900"
+    }))), /*#__PURE__*/React.createElement("div", {
       className: "mt-auto flex flex-col items-center gap-5 border-t border-blue-700 pt-5"
     }, !reviewGameState.showAnswer ? /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('review_game.reveal_answer'),
+      disabled: reviewPauseForAnswers && !reviewLearning[activeReviewQuestion.originalIndex]?.committed,
       onClick: () => {
+        if (reviewPauseForAnswers && !reviewLearning[activeReviewQuestion.originalIndex]?.committed) return;
+        reviewRevealFocusPendingRef.current = true;
         setReviewGameState(prev => ({
           ...prev,
           showAnswer: true
         }));
         playSound('reveal');
       },
-      className: "min-h-11 rounded-full bg-yellow-400 px-6 py-3 text-lg font-bold text-blue-950 hover:bg-yellow-300"
+      className: "min-h-11 rounded-full bg-yellow-400 px-6 py-3 text-lg font-bold text-slate-950 hover:bg-yellow-300"
     }, t('review_game.reveal_answer')) : /*#__PURE__*/React.createElement("div", {
       className: "w-full"
     }, /*#__PURE__*/React.createElement("p", {
+      ref: reviewAwardHelpRef,
+      tabIndex: -1,
+      "data-review-award-help": true,
       className: "mb-3 text-sm font-bold text-blue-100"
     }, quizCopy('review_game.award_help', 'Use the answer guide to decide which team earned the points.')), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap justify-center gap-3"
@@ -13018,13 +14600,16 @@ function QuizViewContent(props) {
       key: team.id,
       disabled: activeReviewKeyDisputed,
       onClick: () => !activeReviewKeyDisputed && handleAwardPoints(team.id, activeReviewQuestion.points),
-      className: team.color + ' min-h-11 rounded-lg px-4 py-2 font-bold shadow-md border-b-4 border-black/20 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed ' + (team.color.includes('yellow') ? 'text-indigo-900' : 'text-white')
+      className: reviewTeamButtonClass(team.color) + ' min-h-11 rounded-lg px-4 py-2 font-bold shadow-md border-b-4 border-black/20 disabled:opacity-50 disabled:cursor-not-allowed'
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 16,
       className: "mr-2 inline"
     }), team.name)), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => {
+        recordReviewLearning(activeReviewQuestion.originalIndex, {
+          needsReview: true
+        });
         playSound('incorrect');
         closeReviewModal(true);
       },
@@ -13181,10 +14766,11 @@ function QuizViewContent(props) {
       });
       if (isSelected && (!showAnswer || keyUnderReview)) {
         btnClass = "bg-indigo-50 border-2 border-indigo-500 text-indigo-950";
-        icon = /*#__PURE__*/React.createElement("div", {
-          className: "w-6 h-6 rounded-full border-2 border-indigo-600 bg-indigo-100",
+        icon = /*#__PURE__*/React.createElement("span", {
+          "data-assessment-selected-choice": true,
+          className: "inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-current font-bold",
           "aria-hidden": "true"
-        });
+        }, "✓");
       } else if (isSelected) {
         if (isCorrectOption) {
           btnClass = "bg-green-100 border-2 border-green-500 text-green-900 shadow-md transform scale-[1.02]";
@@ -13290,7 +14876,9 @@ function QuizViewContent(props) {
     className: "text-lg text-indigo-200 italic mt-4"
   }, ref.text_en)))))) : /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, generatedContent?.data.questions.map((q, i) => oneQuestionAtATime && i !== currentQuestionIdx ? null : !q ? null : q.type && q.type !== 'mcq' ? /*#__PURE__*/React.createElement(FreeformItemsBlock, {
+  }, isEditingQuiz && !(generatedContent?.data?.questions || []).length && /*#__PURE__*/React.createElement(AssessmentEmptyAddPanel, {
+    authoring: assessmentAuthoring
+  }), generatedContent?.data.questions.map((q, i) => oneQuestionAtATime && i !== currentQuestionIdx ? null : !q ? null : q.type && q.type !== 'mcq' ? /*#__PURE__*/React.createElement(FreeformItemsBlock, {
     questions: generatedContent.data.questions,
     key: i,
     compact: true,
@@ -13313,7 +14901,8 @@ function QuizViewContent(props) {
     isEditingQuiz: isEditingQuiz,
     onQuestionAction: props.handleQuizQuestionAction,
     onRegenerateQuestion: regenerateAssessmentQuestion,
-    regeneratingQuestions: regeneratingQuestions
+    regeneratingQuestions: regeneratingQuestions,
+    authoring: assessmentAuthoring
   }) : /*#__PURE__*/React.createElement("div", {
     key: i,
     id: 'assessment-question-' + i,
@@ -13356,10 +14945,10 @@ function QuizViewContent(props) {
     placeholder: t('common.placeholder_english_trans')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "font-bold text-slate-800 px-2 py-1"
-  }, q.question), q.question_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
+  }, _quizRich(q.question)), q.question_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
     as: "p",
     className: "text-sm text-slate-600 italic px-2"
-  }, q.question_en)))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }, _quizRich(q.question_en))))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'),
     onClick: () => handleFactCheck(i),
@@ -13373,14 +14962,14 @@ function QuizViewContent(props) {
     size: 12
   }) : /*#__PURE__*/React.createElement(ShieldCheck, {
     size: 12
-  }), isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'))), isEditingQuiz && /*#__PURE__*/React.createElement(AssessmentItemActions, {
+  }), isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'))), isEditingQuiz && /*#__PURE__*/React.createElement(AssessmentItemActions, _extends({
     q: q,
     questionIdx: i,
     totalQuestions: generatedContent.data.questions.length,
     onAction: props.handleQuizQuestionAction,
     onRegenerate: regenerateAssessmentQuestion,
     regenerating: !!regeneratingQuestions[i]
-  }), /*#__PURE__*/React.createElement("div", {
+  }, _quizAuthoringActionProps(assessmentAuthoring, i))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3 ml-9"
   }, q.options.map((opt, optIdx) => /*#__PURE__*/React.createElement("div", {
     key: optIdx,
@@ -13402,7 +14991,11 @@ function QuizViewContent(props) {
     alt: _quizAuthoredImageAlt(Array.isArray(q.optionImageAltTexts) ? q.optionImageAltTexts[optIdx] : ''),
     loading: "lazy",
     className: "w-full h-24 object-contain rounded bg-white border border-slate-200"
-  }), renderImageRefineOverlay(i, 'option', optIdx, true)), /*#__PURE__*/React.createElement("div", {
+  }), renderImageRefineOverlay(i, 'option', optIdx, true)), !isEditingQuiz && studentMcqAnswers[i] === optIdx && /*#__PURE__*/React.createElement("span", {
+    "data-assessment-selected-choice": true,
+    "aria-hidden": "true",
+    className: "mb-1 inline-flex items-center gap-1 rounded border border-current px-1.5 py-0.5 text-xs font-bold"
+  }, "✓ ", quizCopy('quiz.selected_choice', 'Selected')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "mt-1.5 text-slate-600"
@@ -13424,10 +15017,10 @@ function QuizViewContent(props) {
     placeholder: t('common.placeholder_option_trans')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: `px-1 py-0.5 ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'text-green-800 font-medium' : 'text-slate-600'}`
-  }, opt), q.options_en && q.options_en[optIdx] && /*#__PURE__*/React.createElement(QuizTranslationText, {
+  }, _quizRich(opt)), q.options_en && q.options_en[optIdx] && /*#__PURE__*/React.createElement(QuizTranslationText, {
     as: "p",
     className: "text-xs text-slate-600 mt-1 px-1 italic"
-  }, q.options_en[optIdx])))), showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) && /*#__PURE__*/React.createElement("div", {
+  }, _quizRich(q.options_en[optIdx]))))), showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-2 right-2 text-green-600"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
@@ -13465,8 +15058,13 @@ function QuizViewContent(props) {
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, "✨ "), isImprovingDistractor[i + ':' + optIdx] ? 'rewriting…' : 'improve')));
-  }()))), !deferFeedback && /*#__PURE__*/React.createElement(McqEnhancements, {
+  }()))), isEditingQuiz && /*#__PURE__*/React.createElement(AssessmentLearningOptions, {
     q: q,
+    patch: changes => props.handleQuizQuestionAction?.(i, 'patch', changes)
+  }), !deferFeedback && /*#__PURE__*/React.createElement(McqEnhancements, {
+    q: q,
+    selectedOptionIdx: studentMcqAnswers[i],
+    feedbackShown: studentMcqAnswers[i] !== undefined && studentMcqAnswers[i] !== null,
     questionIdx: i,
     draftNamespace: draftNamespace,
     modeStrategy: _modeStrat,
@@ -13557,7 +15155,7 @@ function QuizViewContent(props) {
       placeholder: t('common.placeholder_reflection_trans')
     })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
       className: "text-indigo-800 mb-1 italic text-sm px-2 py-1"
-    }, text), textEn && /*#__PURE__*/React.createElement(QuizTranslationText, {
+    }, _quizRich(text)), textEn && /*#__PURE__*/React.createElement(QuizTranslationText, {
       as: "p",
       className: "text-indigo-600 mb-4 text-xs px-2 py-1 italic"
     }, textEn)), !isEditingQuiz && (isPresentationMode ? /*#__PURE__*/React.createElement("div", {
@@ -13672,6 +15270,12 @@ QuizView.voiceBoundary = Object.freeze({
   parseScopedUtterance: _quizVoiceParseScopedUtterance,
   choiceRange: 'A-H / 1-8 / first-eighth'
 });
+// Concept Quest renders the same items, so it shares the assessment text formatting.
+QuizView.markdown = Object.freeze({
+  inline: _quizRich,
+  block: _quizRichBlock,
+  plain: _quizPlain
+});
 QuizView.keyQuality = Object.freeze({
   readFactCheck: _quizReadFactCheck,
   keyCheck: _quizKeyCheck,
@@ -13683,8 +15287,16 @@ QuizView.keyQuality = Object.freeze({
   releaseKeyVersion: _quizReleaseKeyVersion,
   applyReleasedKeys: _quizApplyReleasedKeys,
   answerCueIssues: _quizAnswerCueIssues,
-  auditAssessment: _quizAuditAssessment,
-  responseSnapshot: _quizResponseSnapshot,
+  auditAssessment: function (data, auditOptions) {
+    return _quizAuditAssessment(_quizCanonicalContent({
+      data: data
+    }).data, auditOptions);
+  },
+  responseSnapshot: function (data, items, meta) {
+    return _quizResponseSnapshot(_quizCanonicalContent({
+      data: data
+    }).data, items, meta);
+  },
   isGraded: _quizIsGraded
 });
 

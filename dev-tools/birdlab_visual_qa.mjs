@@ -319,8 +319,15 @@ async function loadSmokeHarness(reducedMotion) {
 export async function renderScenarios(states) {
   let activeReduced = null;
   let harness = null;
-  const results = [];
-  for (const state of states) {
+  const results = new Array(states.length);
+  // Each reduced-motion switch installs a fresh window and re-evaluates the
+  // 3.5 MB tool, and the old windows are never released. The core matrix
+  // alternated 16 times and ran out of a 4 GB heap; grouping by preference
+  // loads the tool at most twice. Results keep the caller's order.
+  const order = states.map((state, index) => index)
+    .sort((a, b) => Number(!!states[a].reducedMotion) - Number(!!states[b].reducedMotion) || a - b);
+  for (const index of order) {
+    const state = states[index];
     if (activeReduced !== state.reducedMotion) {
       installDom(state.reducedMotion);
       harness = await loadSmokeHarness(state.reducedMotion);
@@ -364,12 +371,12 @@ export async function renderScenarios(states) {
     // dawn/day/dusk colour grade — so the shots looked flat and identical
     // across conditions and no screenshot review could ever see those layers.
     const spriteDefsNode = document.getElementById('birdlab-sprite-defs');
-    results.push({
+    results[index] = {
       state,
       markup,
       injectedStyles: document.head.innerHTML,
       spriteDefs: spriteDefsNode ? spriteDefsNode.outerHTML : '',
-    });
+    };
   }
   return results;
 }
@@ -398,7 +405,21 @@ function assertPaintReferencesResolve(result) {
   }
 }
 
+// The checks query one parsed copy of the ~2 MB markup, held in an inert
+// <template> of the window renderScenarios installed. A new JSDOM window per
+// check retained ~70 MB even after close() and exhausted a 4 GB heap.
 function assertRenderedScenario(result) {
+  let parsed = null;
+  const parse = () => {
+    if (parsed) return parsed;
+    const template = globalThis.document.createElement('template');
+    template.innerHTML = result.markup;
+    return (parsed = { window: { document: template.content } });
+  };
+  try { checkRenderedScenario(result, parse); } finally { if (parsed) parsed.window.document.replaceChildren(); }
+}
+
+function checkRenderedScenario(result, parse) {
   const { state, markup } = result;
   assertPaintReferencesResolve(result);
   const expected = [
@@ -416,8 +437,7 @@ function assertRenderedScenario(result) {
     throw new Error(state.id + ' should render with motion paused.');
   }
   if (state.targetScenario) {
-    const { JSDOM } = require('jsdom');
-    const targetDom = new JSDOM('<!doctype html><body>' + markup + '</body>');
+    const targetDom = parse();
     const targetDocument = targetDom.window.document;
     const card = targetDocument.querySelector('[data-birdlab-target-search]');
     const rail = targetDocument.querySelector('[data-birdlab-target-search-state]');
@@ -455,8 +475,7 @@ function assertRenderedScenario(result) {
     }
   }
   if (!state.targetScenario && !state.assignmentSearchActive && !state.assignmentComplete) {
-    const { JSDOM } = require('jsdom');
-    const freeDom = new JSDOM('<!doctype html><body>' + markup + '</body>');
+    const freeDom = parse();
     const freeCard = freeDom.window.document.querySelector('[data-birdlab-target-search="free"]');
     const freeRail = freeDom.window.document.querySelector('[data-birdlab-target-search-state="free"]');
     if (!freeCard || !freeRail || freeCard.hasAttribute('data-birdlab-target-species') || freeRail.hasAttribute('data-birdlab-target-species')) {
@@ -466,8 +485,7 @@ function assertRenderedScenario(result) {
   if (state.behaviorId) {
     const behaviorMarker = 'data-birdlab-behavior="' + state.behaviorId + '" data-birdlab-behavior-state="' + state.behaviorCheckpoint + '"';
     if (!markup.includes(behaviorMarker)) throw new Error(state.id + ' is missing expected checkpoint ' + behaviorMarker);
-    const { JSDOM } = require('jsdom');
-    const behaviorDom = new JSDOM('<!doctype html><body>' + markup + '</body>');
+    const behaviorDom = parse();
     const behaviorNodes = [...behaviorDom.window.document.querySelectorAll('[data-birdlab-behavior="' + state.behaviorId + '"]')];
     const actorNode = behaviorNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
     const targetNode = behaviorNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
@@ -509,8 +527,7 @@ function assertRenderedScenario(result) {
     }
   }
   if (state.hintSpecies) {
-    const { JSDOM } = require('jsdom');
-    const hintDom = new JSDOM('<!doctype html><body>' + markup + '</body>');
+    const hintDom = parse();
     const hintedNodes = [...hintDom.window.document.querySelectorAll('[data-birdlab-species="' + state.hintSpecies + '"]')];
     const hintedActor = hintedNodes.find((node) => node.querySelector('.birdlab-scene-actor'));
     const hintedTarget = hintedNodes.find((node) => node.querySelector('[data-birdlab-kind="bird"]'));
@@ -539,8 +556,10 @@ function extractStage(markup) {
   const dom = new JSDOM('<!doctype html><body>' + markup + '</body>');
   const shell = dom.window.document.querySelector('[data-birdlab-scene-shell="true"]');
   const rail = dom.window.document.querySelector('[data-birdlab-observation-rail="true"]');
-  if (!shell || !rail) throw new Error('BirdLab visual stage could not find scene shell and observation rail.');
-  return shell.outerHTML + rail.outerHTML;
+  try {
+    if (!shell || !rail) throw new Error('BirdLab visual stage could not find scene shell and observation rail.');
+    return shell.outerHTML + rail.outerHTML;
+  } finally { dom.window.close(); }
 }
 
 export async function captureScenarios(results, outputDir) {
@@ -581,12 +600,14 @@ export async function captureScenarios(results, outputDir) {
 function targetSearchSceneSignature(markup) {
   const { JSDOM } = require('jsdom');
   const dom = new JSDOM('<!doctype html><body>' + markup + '</body>');
-  const document = dom.window.document;
-  const svg = document.querySelector('[data-birdlab-realistic-scene]');
-  const actors = [...document.querySelectorAll('[data-birdlab-species][data-birdlab-presence]')].map((node) => [
-    node.getAttribute('data-birdlab-species'), node.getAttribute('data-birdlab-presence'), node.getAttribute('class'), node.getAttribute('style'),
-  ]);
-  return JSON.stringify({ viewBox: svg && svg.getAttribute('viewBox'), actors });
+  try {
+    const document = dom.window.document;
+    const svg = document.querySelector('[data-birdlab-realistic-scene]');
+    const actors = [...document.querySelectorAll('[data-birdlab-species][data-birdlab-presence]')].map((node) => [
+      node.getAttribute('data-birdlab-species'), node.getAttribute('data-birdlab-presence'), node.getAttribute('class'), node.getAttribute('style'),
+    ]);
+    return JSON.stringify({ viewBox: svg && svg.getAttribute('viewBox'), actors });
+  } finally { dom.window.close(); }
 }
 
 function assertTargetSearchDoesNotRewriteScene(rendered) {

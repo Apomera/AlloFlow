@@ -8,6 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
 const parser = require('@babel/parser');
+const acorn = require('acorn');
 const ROOT = path.resolve(__dirname, '..');
 const DISPATCHER = '__alloConfigureTrustedScript';
 const COMPILED = Object.freeze([
@@ -18,6 +19,7 @@ const COMPILED = Object.freeze([
   { source: 'teacher_source.jsx', compiled: 'teacher_module.js', loaders: [['ConceptQuestTeacherControlsLoader', 2]] },
   { source: 'view_educator_hub_modal_source.jsx', compiled: 'view_educator_hub_modal_module.js', loaders: [['_loadEducatorAlloSheetBridge', 1]] },
   { source: 'doc_pipeline_source.jsx', compiled: 'doc_pipeline_module.js', loaders: [['_configureTrustedDocumentScript', 1]], document: true },
+  { source: 'view_pdf_audit_source.jsx', compiled: 'view_pdf_audit_module.js', loaders: [], comparePdf: true },
 ]);
 const STEM = Object.freeze([
   { source: 'stem_lab/stem_tool_birdlab.js', loaders: [['loadBirdlab3D', 1]] },
@@ -26,6 +28,7 @@ const STEM = Object.freeze([
   { source: 'stem_lab/stem_tool_universe.js', loaders: [['loadUniverseFlight', 1]] },
   { source: 'stem_lab/stem_tool_coding.js', loaders: [['loadCodingBlocklyRuntime', 1]] },
   { source: 'stem_lab/stem_tool_freeforms.js', loaders: [['_loadScript', 1]] },
+  { source: 'stem_lab/stem_tool_lumen.js', loaders: [['lazyLoadPdfJs', 1]], lumenPdf: true },
 ]);
 const RUNTIME = Object.freeze([
   { source: 'piper_tts_loader.js', markers: ['__alloLoadVerifiedRuntime'], graphs: ['piper'] },
@@ -87,15 +90,21 @@ function inspectGuard(ast, name, requiredCalls) {
   const scope = callable(ast, name), aliases = new Set();
   walk(scope, node => { if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier' && dispatcherValue(node.init)) aliases.add(node.id.name); });
   const selected = node => dispatcher(node) || node?.type === 'Identifier' && aliases.has(node.name);
-  let references = 0, typeChecks = 0, calls = 0, rawWrites = 0;
+  let references = 0, typeChecks = 0, calls = 0, rawWrites = 0, directImports = 0;
   walk(scope, node => {
     if (dispatcher(node)) references++;
     if (node.type === 'UnaryExpression' && node.operator === 'typeof' && selected(node.argument)) typeChecks++;
     if (node.type === 'CallExpression' && selected(node.callee)) calls++;
     if (node.type === 'AssignmentExpression' && property(node.left, 'src')) rawWrites++;
     if (node.type === 'CallExpression' && property(node.callee, 'setAttribute') && node.arguments[0]?.type === 'StringLiteral' && node.arguments[0].value.toLowerCase() === 'src') rawWrites++;
+    if (node.type === 'ImportExpression' || node.type === 'CallExpression' && node.callee.type === 'Import') directImports++;
+    if (node.type === 'CallExpression' && property(node.callee, 'assign') && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Object'
+      && node.arguments.slice(1).some(argument => argument.type === 'ObjectExpression' && argument.properties.some(prop =>
+        prop.type === 'ObjectProperty' && (prop.computed ? prop.key.value : prop.key.name || prop.key.value) === 'src'))) rawWrites++;
+    if (node.type === 'CallExpression' && property(node.callee, 'set') && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Reflect'
+      && node.arguments[1]?.type === 'StringLiteral' && node.arguments[1].value === 'src') rawWrites++;
   });
-  if (!references || !typeChecks || calls < requiredCalls || rawWrites) throw Error(name + ' lacks guarded delivery (references=' + references + ', typeChecks=' + typeChecks + ', signedCalls=' + calls + ', rawSrcWrites=' + rawWrites + ')');
+  if (!references || !typeChecks || calls < requiredCalls || rawWrites || directImports) throw Error(name + ' lacks guarded delivery (references=' + references + ', typeChecks=' + typeChecks + ', signedCalls=' + calls + ', rawSrcWrites=' + rawWrites + ', legacyImports=' + directImports + ')');
   return { name, calls, typeChecks };
 }
 function runtimeMarkers(ast, markers, graphs, label, forbidImports = true) {
@@ -137,14 +146,93 @@ function inspectDocument(ast) {
   if (dispatches < 8 || pdfCalls < 10 || unsafePdf || !workerPaths) throw Error('Document pipeline hardening incomplete (signedCalls=' + dispatches + ', pdfCalls=' + pdfCalls + ', unsafePdf=' + unsafePdf + ', workerPaths=' + workerPaths + ')');
 }
 
+function embeddedCallable(ast, name) {
+  const matches = [], pattern = new RegExp('\\bfunction\\s+' + name + '\\s*\\(', 'g');
+  walk(ast, node => {
+    const text = node.type === 'StringLiteral' ? node.value : node.type === 'TemplateElement' ? node.value.cooked : null;
+    if (typeof text !== 'string') return;
+    for (const match of text.matchAll(pattern)) {
+      // Parse the literal popup program as code, without evaluating interpolation
+      // or relying on brace matching inside strings, comments or regular expressions.
+      const program = text.slice(match.index).replace(/<\/script\b[^>]*>/i, ';');
+      const expression = acorn.parseExpressionAt(program, 0, { ecmaVersion: 'latest' });
+      const parsed = parse(Buffer.from(program.slice(0, expression.end)), 'embedded ' + name);
+      matches.push(callable(parsed, name));
+    }
+  });
+  if (matches.length !== 1) throw Error('Expected one embedded callable ' + name + '; found ' + matches.length);
+  return matches[0];
+}
+function pdfFloor(scope, label) {
+  let calls = 0, unsafe = 0;
+  walk(scope, node => {
+    if (node.type !== 'CallExpression' || !property(node.callee, 'getDocument')) return;
+    calls++;
+    const props = node.arguments[0]?.type === 'ObjectExpression' ? node.arguments[0].properties : [];
+    const position = props.findLastIndex(prop => prop.type === 'ObjectProperty' && (prop.computed ? prop.key.value : prop.key.name || prop.key.value) === 'isEvalSupported');
+    const value = props[position]?.value;
+    const disabled = value?.type === 'BooleanLiteral' && value.value === false
+      || value?.type === 'UnaryExpression' && value.operator === '!' && value.argument.type === 'NumericLiteral' && value.argument.value !== 0;
+    if (position < 0 || !disabled || props.slice(position + 1).some(prop => prop.type === 'SpreadElement' || prop.computed)) unsafe++;
+  });
+  if (!calls || unsafe) throw Error(label + ' PDF evaluation ceiling is missing (pdfCalls=' + calls + ', unsafePdf=' + unsafe + ')');
+}
+function pdfBroker(scope, { opener = false } = {}) {
+  const brokers = new Set(), methods = new Map(), fetchMethod = '__alloFetchTrustedScriptText', assetMethod = '__alloGetVerifiedRuntimeAsset';
+  const anchor = node => opener ? property(node, 'opener') && node.object.type === 'Identifier' && node.object.name === 'window'
+    || node?.type === 'Identifier' && brokers.has(node.name) : node?.type === 'Identifier' && node.name === 'window';
+  walk(scope, node => { if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier' && property(node.init, 'opener')
+    && node.init.object.type === 'Identifier' && node.init.object.name === 'window') brokers.add(node.id.name); });
+  walk(scope, node => { if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier') for (const name of [fetchMethod, assetMethod]) {
+    if (property(node.init, name) && anchor(node.init.object)) methods.set(node.id.name, name);
+  } });
+  const selected = (node, name) => property(node, name) && anchor(node.object) || node?.type === 'Identifier' && methods.get(node.name) === name;
+  const call = (node, name) => node?.type === 'CallExpression' && selected(node.callee, name);
+  const awaited = node => node?.type === 'AwaitExpression' ? node.argument : node;
+  const codes = new Set(), assets = new Set(), blobs = new Set(); let fetches = 0, workers = 0, typeChecks = 0, srcWrites = 0, workerWrites = 0, unsafeWrites = 0;
+  walk(scope, node => {
+    if (node.type === 'UnaryExpression' && node.operator === 'typeof' && [fetchMethod, assetMethod].some(name => selected(node.argument, name))) typeChecks++;
+    if (call(node, fetchMethod) && node.arguments[0]?.value === 'https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js' && node.arguments[1]?.value === 'pdfjs.main') fetches++;
+    if (call(node, assetMethod) && node.arguments[0]?.value === 'pdfjs' && node.arguments[1]?.value === 'worker') workers++;
+    const target = node.type === 'VariableDeclarator' ? node.id : node.type === 'AssignmentExpression' ? node.left : null;
+    const value = awaited(node.type === 'VariableDeclarator' ? node.init : node.type === 'AssignmentExpression' ? node.right : null);
+    if (target?.type === 'Identifier' && call(value, fetchMethod)) codes.add(target.name);
+    if (target?.type === 'Identifier' && call(value, assetMethod)) assets.add(target.name);
+  });
+  walk(scope, node => {
+    const target = node.type === 'VariableDeclarator' ? node.id : node.type === 'AssignmentExpression' ? node.left : null;
+    const value = node.type === 'VariableDeclarator' ? node.init : node.type === 'AssignmentExpression' ? node.right : null;
+    const blob = value?.type === 'CallExpression' && property(value.callee, 'createObjectURL') && value.callee.object.name === 'URL' ? value.arguments[0] : null;
+    const contents = blob?.type === 'NewExpression' && blob.callee.name === 'Blob' ? blob.arguments[0] : null;
+    if (target?.type === 'Identifier' && contents?.type === 'ArrayExpression' && contents.elements.length === 1 && codes.has(contents.elements[0]?.name)) blobs.add(target.name);
+  });
+  walk(scope, node => {
+    if (node.type !== 'AssignmentExpression') return;
+    if (property(node.left, 'src')) { srcWrites++; if (!blobs.has(node.right.name)) unsafeWrites++; }
+    if (property(node.left, 'workerSrc')) { workerWrites++; if (!property(node.right, 'url') || !assets.has(node.right.object.name)) unsafeWrites++; }
+  });
+  if (!workers || !typeChecks || !workerWrites || unsafeWrites || opener && (!fetches || !srcWrites)) throw Error('Verified PDF broker incomplete (scriptFetches=' + fetches + ', workerAssets=' + workers + ', unsafeWrites=' + unsafeWrites + ')');
+}
+function inspectSecondaryPdf(ast, { comparePdf, lumenPdf }) {
+  if (comparePdf) {
+    pdfBroker(embeddedCallable(ast, '_ensurePdfjs'), { opener: true });
+    pdfFloor(embeddedCallable(ast, '_renderPdfInto'), 'Compare popup');
+  }
+  if (lumenPdf) {
+    pdfBroker(callable(ast, 'lazyLoadPdfJs'));
+    pdfFloor(callable(ast, 'extractPdfText'), 'Lumen');
+  }
+}
+
 function checkPrivateLoaderCoverage({ root = ROOT, buildDir } = {}) {
   root = path.resolve(root); if (buildDir !== undefined) buildDir = path.resolve(buildDir);
   const errors = [], checked = [];
   const check = (file, action) => { try { action(); } catch (error) { errors.push(file + ': ' + error.message); } };
-  const inspect = (file, loaders, whisper, document) => {
+  const inspect = (file, loaders, whisper, document, contracts = {}) => {
     const bytes = regular(root, file), ast = parse(bytes, file), guards = loaders.map(([name, count]) => inspectGuard(ast, name, count));
     if (whisper) runtimeMarkers(callable(ast, '_getWhisperPipeline'), ['__alloLoadVerifiedRuntime'], ['transformers331'], 'Whisper');
     if (document) inspectDocument(ast);
+    inspectSecondaryPdf(ast, contracts);
     checked.push({ file, sha256: createHash('sha256').update(bytes).digest('hex'), guards }); return bytes;
   };
   const parity = (reference, target, targetRoot = root) => {
@@ -153,14 +241,14 @@ function checkPrivateLoaderCoverage({ root = ROOT, buildDir } = {}) {
     checked.push({ file: targetRoot === root ? target : path.join(targetRoot, target), sha256: createHash('sha256').update(actual).digest('hex') });
   };
   for (const item of COMPILED) {
-    check(item.source, () => inspect(item.source, item.loaders, item.whisper, item.document));
-    check(item.compiled, () => inspect(item.compiled, item.loaders, item.whisper, item.document));
+    check(item.source, () => inspect(item.source, item.loaders, item.whisper, item.document, item));
+    check(item.compiled, () => inspect(item.compiled, item.loaders, item.whisper, item.document, item));
     const mirror = 'desktop/web-app/public/' + item.compiled;
     check(mirror, () => parity(item.compiled, mirror));
     if (buildDir) check(path.join(buildDir, item.compiled), () => parity(item.compiled, item.compiled, buildDir));
   }
   for (const item of STEM) {
-    check(item.source, () => inspect(item.source, item.loaders));
+    check(item.source, () => inspect(item.source, item.loaders, false, false, item));
     const mirror = 'desktop/web-app/public/' + item.source;
     check(mirror, () => parity(item.source, mirror));
     if (buildDir) check(path.join(buildDir, item.source), () => parity(item.source, item.source, buildDir));

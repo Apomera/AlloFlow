@@ -18,6 +18,10 @@
     callGemini,
     t
   } = props;
+  // Prompts and events use the Assess view's light markdown when it is loaded; plain text otherwise.
+  const md = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown || {
+    inline: text => text == null ? '' : String(text)
+  };
   const tr = (key, fallback, params = {}) => {
     const fullKey = `concept_quest.${key}`;
     const translated = typeof t === 'function' ? t(fullKey, params) : '';
@@ -326,7 +330,7 @@
     className: "mt-3 rounded-lg border border-cyan-200 bg-cyan-50 p-2 text-xs text-cyan-950"
   }, quest.lastRound.prompt && /*#__PURE__*/React.createElement("p", {
     className: "mb-1 font-bold"
-  }, quest.lastRound.prompt), /*#__PURE__*/React.createElement("strong", null, tr('last_round', 'Last round:')), ' ', tr('round_damage_summary', '{correct}/{total} correct · {damage} damage', {
+  }, md.inline(quest.lastRound.prompt)), /*#__PURE__*/React.createElement("strong", null, tr('last_round', 'Last round:')), ' ', tr('round_damage_summary', '{correct}/{total} correct · {damage} damage', {
     correct: quest.lastRound.correct,
     total: quest.lastRound.total,
     damage: quest.lastRound.damage
@@ -336,7 +340,7 @@
     count: quest.lastRound.assistedCount
   })}` : '', quest.lastRound.encounterRule && /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
-  }, quest.lastRound.encounterRule)), /*#__PURE__*/React.createElement("div", {
+  }, md.inline(quest.lastRound.encounterRule))), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-900"
@@ -383,7 +387,7 @@
     className: "font-bold text-fuchsia-900"
   }, enemy?.emoji, " ", enemy?.name, ": ", enemy?.hp, "/", enemy?.maxHp, " HP"), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-sm text-slate-700"
-  }, currentRoom?.challenge?.prompt), currentRoom?.kind === 'puzzle' && /*#__PURE__*/React.createElement("p", {
+  }, md.inline(currentRoom?.challenge?.prompt)), currentRoom?.kind === 'puzzle' && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs font-bold text-cyan-800"
   }, tr('reasoning_lock_teacher', 'Reasoning Lock: two-thirds accuracy unlocks bonus damage.')), currentRoom?.kind === 'boss' && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs font-bold text-amber-800"
@@ -412,7 +416,7 @@
     className: "text-xs text-slate-600"
   }, tr('ai_draft_notice', 'AI only drafts. You preview, edit, and publish every change.')), quest.activeEvent && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs"
-  }, /*#__PURE__*/React.createElement("strong", null, quest.activeEvent.title), /*#__PURE__*/React.createElement("p", null, quest.activeEvent.description), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("strong", null, md.inline(quest.activeEvent.title)), /*#__PURE__*/React.createElement("p", null, md.inline(quest.activeEvent.description)), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: dismissGmEvent,
     className: "mt-2 min-h-11 rounded-lg border border-amber-300 bg-white px-3 font-bold text-amber-900"
@@ -687,7 +691,36 @@
     count: debrief.rounds
   }) : tr('whole_quest_evidence', 'Learning evidence · whole quest · {count} rounds', {
     count: debrief.rounds
-  })), debrief.completeHistory === false && /*#__PURE__*/React.createElement("p", {
+  })), /*#__PURE__*/React.createElement("details", {
+    className: "mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3",
+    "data-quest-learner-evidence": true
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-bold text-cyan-950"
+  }, tr('individual_evidence', 'Individual participation and practice evidence')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm"
+  }, tr('individual_evidence_help', 'First responses and repeat responses are separate. Peer support counts game events; they do not establish whether an answer was independent or supported.')), !debrief.learnerHistoryComplete && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-2 text-sm text-amber-900"
+  }, tr('individual_history_limit', 'Earlier rounds did not record this detail. First responses below mean the first recorded response in the available evidence.')), /*#__PURE__*/React.createElement("ul", {
+    className: "mt-3 space-y-2"
+  }, [...new Set([...Object.keys(sessionData?.roster || {}), ...(debrief.learnerEvidence || []).map(row => row.uid)])].map(uid => {
+    const row = (debrief.learnerEvidence || []).find(entry => entry.uid === uid),
+      learner = sessionData?.roster?.[uid];
+    return /*#__PURE__*/React.createElement("li", {
+      key: uid,
+      className: "rounded-lg bg-white p-3"
+    }, /*#__PURE__*/React.createElement("strong", null, learner?.displayName || learner?.name || learner?.nickname || tr('unnamed_learner', 'Learner')), row ? /*#__PURE__*/React.createElement("p", {
+      className: "mt-1 text-sm"
+    }, tr('individual_counts', 'First responses: {firstCorrect}/{first} correct. Repeat responses: {repeatCorrect}/{repeat} correct. Peer support received in {supported} rounds.', {
+      firstCorrect: row.firstCorrect,
+      first: row.firstResponses,
+      repeatCorrect: row.repeatCorrect,
+      repeat: row.repeatResponses,
+      supported: row.peerSupportReceived
+    })) : /*#__PURE__*/React.createElement("p", {
+      className: "mt-1 text-sm"
+    }, tr('individual_no_response', 'No recorded responses in the available evidence.')));
+  }))), debrief.completeHistory === false && /*#__PURE__*/React.createElement("p", {
     "data-concept-quest-history-limit": true,
     className: "mt-1 text-xs text-slate-700"
   }, tr('history_limit', 'This older save no longer contains its earliest rounds. These totals include the available saved rounds and all new rounds.')), /*#__PURE__*/React.createElement("div", {
@@ -743,7 +776,7 @@
     key: entry.id
   }, /*#__PURE__*/React.createElement("strong", null, tr('turn_label', 'Turn {turn}:', {
     turn: entry.turn
-  })), " ", entry.text))), /*#__PURE__*/React.createElement("ul", {
+  })), " ", md.inline(entry.text)))), /*#__PURE__*/React.createElement("ul", {
     className: "space-y-2 text-xs text-slate-600"
   }, quest.inventory.length ? quest.inventory.map((item, index) => /*#__PURE__*/React.createElement("li", {
     key: `${item.id}-${index}`,

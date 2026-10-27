@@ -427,6 +427,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
   const [userLabels, setUserLabels] = React.useState(initialAnnotations?.userLabels || {});
   const [draggingLabel, setDraggingLabel] = React.useState(null);
   const [labelMoveStatus, setLabelMoveStatus] = React.useState("");
+  const [placingLabel, setPlacingLabel] = React.useState(null);
   const [aiLabelPositions, setAiLabelPositions] = React.useState(initialAnnotations?.aiLabelPositions || {});
   const [aiLabelAnchors, setAiLabelAnchors] = React.useState(() => {
     const saved = initialAnnotations?.aiLabelAnchors || {};
@@ -887,6 +888,62 @@ Return ONLY valid JSON:
     if (labelType === "ai") setAiLabelAnchors((prev) => ({ ...prev, [panelIdx + "-" + labelKey]: { x, y } }));
     else setUserLabels((prev) => ({ ...prev, [panelIdx]: (prev[panelIdx] || []).map((label) => label.id === labelKey ? { ...label, anchorX: x, anchorY: y } : label) }));
     announceLabelMove(movement, e.shiftKey, "Leader line anchor");
+  };
+  const placeT = (key, fallback, params) => {
+    let s = typeof t === "function" ? t(key) : "";
+    if (typeof s !== "string" || !s || s === key) s = fallback;
+    Object.keys(params || {}).forEach((k) => {
+      s = String(s).split("{" + k + "}").join(String(params[k]));
+    });
+    return s;
+  };
+  const togglePlacingLabel = (panelIdx, kind, key, text) => {
+    const same = placingLabel && placingLabel.panelIdx === panelIdx && placingLabel.kind === kind && placingLabel.key === key;
+    setAddingLabelPanel(null);
+    setPlacingLabel(same ? null : { panelIdx, kind, key, text: String(text || ""), target: "label" });
+    setLabelMoveStatus(same ? "" : placeT("visuals.label_place_prompt", "Click the picture where the label should go. Press Escape to cancel."));
+  };
+  const placeLabelAt = (panelIdx, e) => {
+    const p = placingLabel;
+    if (!p || p.panelIdx !== panelIdx) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const keyboardActivation = e.detail === 0 || !rect.width || !rect.height;
+    const px = keyboardActivation ? 50 : (e.clientX - rect.left) / rect.width * 100;
+    const py = keyboardActivation ? 50 : (e.clientY - rect.top) / rect.height * 100;
+    const round1 = (v) => parseFloat(v.toFixed(1));
+    pushVisualSnapshot();
+    if (p.target === "anchor") {
+      const x = round1(Math.max(0, Math.min(100, px))), y = round1(Math.max(0, Math.min(100, py)));
+      if (p.kind === "ai") setAiLabelAnchors((prev) => ({ ...prev, [panelIdx + "-" + p.key]: { x, y } }));
+      else setUserLabels((prev) => ({ ...prev, [panelIdx]: (prev[panelIdx] || []).map((l) => l.id === p.key ? { ...l, anchorX: x, anchorY: y } : l) }));
+    } else {
+      const x = round1(Math.max(0, Math.min(90, px))), y = round1(Math.max(0, Math.min(90, py)));
+      if (p.kind === "ai") setAiLabelPositions((prev) => ({ ...prev, [panelIdx + "-" + p.key]: { left: x + "%", top: y + "%" } }));
+      else setUserLabels((prev) => ({ ...prev, [panelIdx]: (prev[panelIdx] || []).map((l) => l.id === p.key ? { ...l, x, y } : l) }));
+    }
+    setPlacingLabel(null);
+    setLabelMoveStatus(p.target === "anchor" ? placeT("visuals.label_anchor_placed", "Leader-line anchor placed.") : placeT("visuals.label_placed", "Label placed."));
+  };
+  const renderPlaceLabelButton = (panelIdx, kind, key, text) => {
+    const active = !!placingLabel && placingLabel.panelIdx === panelIdx && placingLabel.kind === kind && placingLabel.key === key;
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "label-place-btn",
+        "data-label-place": kind + "-" + key,
+        onMouseDown: (e) => e.stopPropagation(),
+        onClick: (e) => {
+          e.stopPropagation();
+          togglePlacingLabel(panelIdx, kind, key, text);
+        },
+        "aria-pressed": active,
+        "aria-label": placeT("visuals.label_move_aria", "Move label {text}: select it, then click the picture where it should go", { text }),
+        title: placeT("visuals.label_move_title", "Move: click here, then click the picture"),
+        style: { cursor: "pointer", fontSize: "14px", lineHeight: 1, color: "#5b21b6", padding: 0, marginLeft: "4px", minWidth: "32px", minHeight: "32px", border: "1px solid #c4b5fd", borderRadius: "6px", background: active ? "#ede9fe" : "#ffffff" }
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2725")
+    );
   };
   const handleCaptionTTS = (panelIdx) => {
     const panels = visualPlan.panels || [];
@@ -1543,7 +1600,50 @@ Return ONLY valid JSON:
       style: { position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 8, border: "3px dashed #4f46e5", background: "rgba(238,242,255,0.12)", cursor: "crosshair" }
     },
     /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Place new label")
-  ), imageOverrides[panelIdx] || panel.imageUrl ? (() => {
+  ), placingLabel && placingLabel.panelIdx === panelIdx && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      className: "visual-panel-place-label-target",
+      onClick: (e) => placeLabelAt(panelIdx, e),
+      onKeyDown: (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+          setPlacingLabel(null);
+          setLabelMoveStatus("");
+        }
+      },
+      "aria-label": placingLabel.target === "anchor" ? placeT("visuals.label_anchor_target_aria", "Place the leader-line anchor of label {text} in diagram panel {n}. Keyboard activation places it in the center; pointer activation uses the selected location.", { text: placingLabel.text, n: panelIdx + 1 }) : placeT("visuals.label_place_target_aria", "Place label {text} in diagram panel {n}. Keyboard activation places it in the center; pointer activation uses the selected location.", { text: placingLabel.text, n: panelIdx + 1 }),
+      style: { position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 8, border: "3px dashed #7c3aed", background: "rgba(245,243,255,0.12)", cursor: "crosshair" }
+    },
+    /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, placeT("visuals.label_place_sr", "Place label"))
+  ), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": placeT("visuals.label_placement_group", "Label placement"), style: { position: "absolute", top: 6, right: 6, zIndex: 9, display: "flex", gap: 4, background: "rgba(255,255,255,0.95)", border: "1px solid #c4b5fd", borderRadius: 8, padding: 3 } }, [["label", placeT("visuals.label_target_label", "Label")], ["anchor", placeT("visuals.label_target_anchor", "Leader-line anchor")]].map(([target, name]) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: target,
+      type: "button",
+      "aria-pressed": placingLabel.target === target,
+      onClick: (e) => {
+        e.stopPropagation();
+        setPlacingLabel((prev) => prev ? { ...prev, target } : prev);
+      },
+      style: { minHeight: 28, padding: "2px 8px", borderRadius: 6, border: "1px solid #7c3aed", background: placingLabel.target === target ? "#6d28d9" : "white", color: placingLabel.target === target ? "white" : "#5b21b6", fontSize: 12, fontWeight: 700, cursor: "pointer" }
+    },
+    name
+  )), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: (e) => {
+        e.stopPropagation();
+        setPlacingLabel(null);
+        setLabelMoveStatus("");
+      },
+      style: { minHeight: 28, padding: "2px 8px", borderRadius: 6, border: "1px solid #cbd5e1", background: "white", color: "#334155", fontSize: 12, fontWeight: 700, cursor: "pointer" }
+    },
+    t("common.cancel") || "Cancel"
+  ))), imageOverrides[panelIdx] || panel.imageUrl ? (() => {
     const overrideUrl = imageOverrides[panelIdx];
     const animated = !overrideUrl && isAnimatedPanel(panel);
     if (animated && panel.frames && panel.frames.length > 1) {
@@ -1638,6 +1738,7 @@ Return ONLY valid JSON:
         },
         /* @__PURE__ */ React.createElement("span", { style: { pointerEvents: "none" } }, label.text)
       ),
+      !(isStudentChallenge && isFillBlank) && !isEditing && renderPlaceLabelButton(panelIdx, "ai", labelIdx, label.text || label),
       !(isStudentChallenge && isFillBlank) && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1714,6 +1815,7 @@ Return ONLY valid JSON:
         },
         /* @__PURE__ */ React.createElement("span", { style: { pointerEvents: "none" } }, uLabel.text)
       ),
+      !isUserFillBlank && !(editingLabel?.panelIdx === panelIdx && editingLabel?.labelIdx === `user-${uLabel.id}`) && renderPlaceLabelButton(panelIdx, "user", uLabel.id, uLabel.text),
       !isUserFillBlank && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1870,7 +1972,7 @@ Return ONLY valid JSON:
     "figcaption",
     {
       className: "visual-caption",
-      style: { textAlign: "center", cursor: "pointer", transition: "background 0.2s", background: speakingCaptionIdx === panelIdx ? "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)" : "#f8fafc" },
+      style: { textAlign: "center", cursor: "pointer", transition: "background 0.2s", background: speakingCaptionIdx === panelIdx ? "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)" : "#f8fafc", color: "#1e293b" },
       onClick: () => handleCaptionTTS(panelIdx),
       onDoubleClick: (e) => {
         e.stopPropagation();

@@ -350,10 +350,43 @@
     return error;
   }
 
-  function createTransferEntry(artifact) {
+  function captureTransferControl(options) {
+    var descriptor = Object.getOwnPropertyDescriptor(options, 'transferControls');
+    if (!descriptor) {
+      if ('transferControls' in options) throw transferFailure('The table transfer approval is invalid.', 'allosheet-transfer-not-approved');
+      return null;
+    }
+    if (!Object.prototype.hasOwnProperty.call(descriptor, 'value')) throw transferFailure('The table transfer approval is invalid.', 'allosheet-transfer-not-approved');
+    var controls = descriptor.value;
+    if (controls == null) return null;
+    if (typeof controls !== 'object' || Array.isArray(controls)) throw transferFailure('The table transfer approval is invalid.', 'allosheet-transfer-not-approved');
+    var keys = Reflect.ownKeys(controls), guard = Object.getOwnPropertyDescriptor(controls, 'beforeTransfer');
+    if (keys.length !== 1 || keys[0] !== 'beforeTransfer' || !guard || !Object.prototype.hasOwnProperty.call(guard, 'value') || typeof guard.value !== 'function') {
+      throw transferFailure('The table transfer approval is invalid.', 'allosheet-transfer-not-approved');
+    }
+    return guard.value;
+  }
+
+  function runTransferControl(guard) {
+    if (!guard) return;
+    try {
+      var result = guard();
+      if (result && typeof result.then === 'function') {
+        Promise.resolve(result).catch(function () {});
+        throw transferFailure('The table transfer approval must complete synchronously.', 'allosheet-transfer-not-approved');
+      }
+      if (result !== undefined && result !== true) throw transferFailure('The table transfer is no longer approved.', 'allosheet-transfer-not-approved');
+    } catch (error) {
+      if (error && error.name === 'AbortError') throw error;
+      throw transferFailure('The table transfer is no longer approved. Review the current records before trying again.', 'allosheet-transfer-not-approved');
+    }
+  }
+
+  function createTransferEntry(artifact, beforeTransfer) {
     var entry = {
       id: createBridgeToken(),
       artifact: artifact,
+      beforeTransfer: beforeTransfer,
       posted: false,
       deliveredSettled: false,
       decisionSettled: false,
@@ -407,6 +440,8 @@
     clearTransferTimer(entry);
     settleDelivered(entry, null, error);
     settleDecision(entry, null, error);
+    entry.artifact = null;
+    entry.beforeTransfer = null;
   }
 
   function failAllTransfers(error) {
@@ -439,6 +474,7 @@
       entry.queueTimer = null;
     }
     try {
+      runTransferControl(entry.beforeTransfer);
       source.postMessage({
         type: 'allosheet-import-artifact',
         transferId: entry.id,
@@ -458,9 +494,9 @@
         sendNextTransfer(popup);
       }, TRANSFER_DELIVERY_TIMEOUT_MS);
       return true;
-    } catch (_) {
+    } catch (error) {
       entry.posted = false;
-      failTransfer(entry, transferFailure(
+      failTransfer(entry, error && (error.name === 'AbortError' || error.code === 'allosheet-transfer-not-approved') ? error : transferFailure(
         'AlloSheet could not deliver this transfer to the popup. Reopen AlloSheet and try again.',
         'allosheet-transfer-post-failed'
       ));
@@ -702,6 +738,8 @@
 
   function openTransfer(options) {
     options = options || {};
+    var beforeTransfer = captureTransferControl(Object(options));
+    runTransferControl(beforeTransfer);
     var nextArtifact = null;
     if (Object.prototype.hasOwnProperty.call(options, 'artifact') && options.artifact != null) {
       try {
@@ -768,7 +806,8 @@
     }
     var entry = null;
     if (nextArtifact) {
-      entry = createTransferEntry(nextArtifact);
+      runTransferControl(beforeTransfer);
+      entry = createTransferEntry(nextArtifact, beforeTransfer);
       if (!entry.id) {
         try { window.alert('AlloSheet could not create a secure transfer identifier.'); } catch (_) {}
         return null;
@@ -799,6 +838,7 @@
   var bridge = {
     version: 1,
     transferProtocolVersion: 1,
+    transferControlVersion: 1,
     open: open,
     openTransfer: openTransfer,
     isOpen: function () { return !!(popup && !popup.closed); },

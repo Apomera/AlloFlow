@@ -1210,7 +1210,7 @@ function MathView(props) {
     onClick: handleToggleMathSelfGrade,
     "aria-pressed": mathSelfGradeMode,
     disabled: !canToggleMathSelfGrade,
-    className: `flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50'}`
+    className: `flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-700 border border-emerald-700 hover:bg-emerald-50'}`
   }, "✏️ ", mathSelfGradeMode ? t('math.exit_self_grade') : t('math.self_grade')), mathSelfGradeMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => submitMathSelfGrade(mathResourceId, mathProblems),

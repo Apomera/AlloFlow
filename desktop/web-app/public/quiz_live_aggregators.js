@@ -114,6 +114,7 @@
     if (!raw && response && typeof response === 'object' && !Array.isArray(response)) raw = response.itemType;
     var type = String(raw || 'mcq').trim().toLowerCase();
     if (type === 'multiple-choice' || type === 'true-false' || type === 'tf') return 'mcq';
+    if (type === 'shortanswer' || type === 'short_answer') return 'short-answer';
     if (type === 'fill-in-blank' || type === 'text') return 'fill-blank';
     if (type === 'numeric') return 'numeric-response';
     if (type === 'sequence' || type === 'order') return 'order';
@@ -184,6 +185,15 @@
     }
     textFields.forEach(function (field) { context[field] = String(q[field] == null ? '' : q[field]); });
     arrayFields.forEach(function (field) { context[field] = Array.isArray(q[field]) ? q[field].map(publicValue) : []; });
+    // Add authored task/scoring conditions only when present, so legacy items
+    // retain their signatures while edits to new conditions invalidate drafts.
+    ['fillBlankPolicy', 'sequenceMode', 'requireReasoning', 'explanationPrompt', 'studentCriteria'].forEach(function (field) {
+      if (q[field] != null) context[field] = publicValue(q[field]);
+    });
+    if (q.numericSettings && typeof q.numericSettings === 'object') context.numericSettings = {
+      allowEquivalentUnits: q.numericSettings.allowEquivalentUnits === true,
+      valueWeight: q.numericSettings.valueWeight == null ? 0.5 : Number(q.numericSettings.valueWeight)
+    };
     var serialized = JSON.stringify(context), hash = 2166136261;
     for (var i = 0; i < serialized.length; i++) { hash ^= serialized.charCodeAt(i); hash = Math.imul(hash, 16777619); }
     return 'assess-item-v1:' + (hash >>> 0).toString(36);
@@ -228,8 +238,9 @@
     else if (type === 'order') reviewed = extractOrderAnswer(response);
     else if (type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') reviewed = { text: extractTextAnswer(response) };
     else reviewed = answer;
+    if ((type === 'relation-mismatch' || type === 'answer-evidence') && typeof a.explanation === 'string') reviewed.explanation = a.explanation;
     var keys = {};
-    ['correctAnswer', 'correctIndex', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits', 'expectedFill', 'acceptableAlternatives', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence', 'expectedAnswer', 'referenceAnswer', 'modelAnswer', 'sampleAnswer', 'rubric'].forEach(function (key) {
+    ['correctAnswer', 'correctIndex', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits', 'expectedFill', 'acceptableAlternatives', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence', 'expectedAnswer', 'referenceAnswer', 'modelAnswer', 'sampleAnswer', 'rubric', 'fillBlankPolicy', 'numericSettings', 'sequenceMode', 'requireReasoning', 'explanationPrompt', 'studentCriteria'].forEach(function (key) {
       if (question[key] != null) keys[key] = question[key];
     });
     function stable(value) {
@@ -414,17 +425,84 @@
   // (a typo, a synonym, or a different real word such as affect/effect) goes
   // to teacher review instead of contradicting what the learner was shown.
   function gradeFillBlankAnswer(text, question, studentAiVerdict) {
-    var answer = normalizeFillBlankComparable(text);
+    var policy = question && (question.fillBlankPolicy || (question.spellingPolicy === 'exact' ? 'exact' : 'normalized')) || 'normalized';
+    var normalize = policy === 'exact' ? function (value) { return String(value == null ? '' : value).trim(); } : normalizeFillBlankComparable;
+    var answer = normalize(text);
     var targets = [question && question.expectedFill || ''].concat(question && Array.isArray(question.acceptableAlternatives) ? question.acceptableAlternatives : [])
-      .map(normalizeFillBlankComparable).filter(Boolean);
+      .map(normalize).filter(Boolean);
     if (!answer || !targets.length) return { status: 'submitted', evaluable: false };
     if (targets.indexOf(answer) !== -1) return { status: 'correct', evaluable: true };
+    if (policy === 'exact') return { status: 'incorrect', evaluable: true };
+    if (policy === 'review-variants') return { status: 'submitted', evaluable: false, needsReview: true };
     if (String(studentAiVerdict || '').trim().toLowerCase() === 'correct') return { status: 'submitted', evaluable: false, needsReview: true, studentAiVerdict: 'correct' };
     return { status: 'incorrect', evaluable: true };
   }
 
   function normalizePresentationUnit(value) {
     return normalizePresentationComparable(value).replace(/\./g, '').replace(/\s+/g, ' ');
+  }
+
+  // Small, explicit unit table. Never infer conversions for unknown units,
+  // dimensions, ambiguous abbreviations, temperature offsets, or currencies.
+  function numericUnitDefinition(raw) {
+    var unit = normalizePresentationUnit(raw);
+    var groups = [
+      ['length', 0.001, ['mm', 'millimeter', 'millimeters', 'millimetre', 'millimetres']],
+      ['length', 0.01, ['cm', 'centimeter', 'centimeters', 'centimetre', 'centimetres']],
+      ['length', 1, ['m', 'meter', 'meters', 'metre', 'metres']],
+      ['length', 1000, ['km', 'kilometer', 'kilometers', 'kilometre', 'kilometres']],
+      ['length', 0.0254, ['in', 'inch', 'inches']],
+      ['length', 0.3048, ['ft', 'foot', 'feet']],
+      ['length', 0.9144, ['yd', 'yard', 'yards']],
+      ['length', 1609.344, ['mi', 'mile', 'miles']],
+      ['mass', 0.001, ['mg', 'milligram', 'milligrams']],
+      ['mass', 1, ['g', 'gram', 'grams']],
+      ['mass', 1000, ['kg', 'kilogram', 'kilograms']],
+      ['mass', 453.59237, ['lb', 'lbs', 'pound', 'pounds']],
+      ['mass', 28.349523125, ['oz', 'ounce', 'ounces']],
+      ['volume', 0.001, ['ml', 'milliliter', 'milliliters', 'millilitre', 'millilitres']],
+      ['volume', 1, ['l', 'liter', 'liters', 'litre', 'litres']],
+      ['time', 1, ['s', 'sec', 'second', 'seconds']],
+      ['time', 60, ['min', 'minute', 'minutes']],
+      ['time', 3600, ['h', 'hr', 'hour', 'hours']],
+      ['time', 86400, ['d', 'day', 'days']]
+    ];
+    for (var i = 0; i < groups.length; i++) {
+      if (groups[i][2].indexOf(unit) >= 0) return { dimension: groups[i][0], factor: groups[i][1] };
+    }
+    return null;
+  }
+
+  function gradeNumericAnswer(parsed, question, scoringPolicy) {
+    var q = question || {}, policy = normalizeLiveScoringPolicy(scoringPolicy);
+    if (!parsed || typeof parsed.value !== 'number' || !Number.isFinite(parsed.value)) return { status: 'invalid', evaluable: false, score: 0 };
+    if (!hasNumericAnswerKey(q)) return { status: 'invalid', evaluable: false, invalidKey: true, score: 0 };
+    var settings = q.numericSettings && typeof q.numericSettings === 'object' ? q.numericSettings : {};
+    var expected = Number(q.correctValue), tolerance = Math.max(0, Number(q.tolerance) || 0);
+    var expectedUnits = [q.unit || ''].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(normalizePresentationUnit).filter(Boolean);
+    var submittedUnit = normalizePresentationUnit(parsed.unit);
+    var comparableValue = parsed.value;
+    var unitCorrect = expectedUnits.length === 0 || expectedUnits.indexOf(submittedUnit) >= 0;
+    var converted = false;
+    if (settings.allowEquivalentUnits === true && expectedUnits.length && submittedUnit) {
+      var source = numericUnitDefinition(submittedUnit), target = numericUnitDefinition(q.unit);
+      // Convert even when the alternate unit is also an accepted spelling;
+      // numeric equivalence is always measured in the authored key's unit.
+      if (source && target && source.dimension === target.dimension) {
+        comparableValue = parsed.value * source.factor / target.factor;
+        unitCorrect = true;
+        converted = source.factor !== target.factor;
+      }
+    }
+    var valueCorrect = Math.abs(comparableValue - expected) <= tolerance + 1e-9;
+    var configuredWeight = settings.valueWeight == null ? q.valueWeight : settings.valueWeight;
+    var valueWeight = typeof configuredWeight === 'number' && Number.isFinite(configuredWeight) ? Math.max(0, Math.min(1, configuredWeight)) : 0.5;
+    if (!expectedUnits.length) valueWeight = 1;
+    var rawScore = Math.round(100 * ((valueCorrect ? valueWeight : 0) + (unitCorrect ? 1 - valueWeight : 0)));
+    var exact = (valueWeight === 0 || valueCorrect) && (valueWeight === 1 || unitCorrect);
+    var score = policy.partialCredit ? rawScore : exact ? 100 : 0;
+    return { status: exact ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect', evaluable: true, score: score,
+      scoreFraction: score / 100, valueCorrect: valueCorrect, unitCorrect: unitCorrect, convertedValue: comparableValue, converted: converted };
   }
 
   function hasNumericAnswerKey(question) {
@@ -608,7 +686,13 @@
       var multiStatus = selectedWrong === 0 && selectedCorrect === correct.length
         ? 'correct'
         : multiScore > 0 ? 'partially-correct' : 'incorrect';
-      return result(multiStatus, true, multiScore, { scoreFraction: multiScore / 100 });
+      return result(multiStatus, true, multiScore, {
+        scoreFraction: multiScore / 100,
+        correctIndices: correct.slice(),
+        selectedCorrect: selectedCorrect,
+        selectedWrong: selectedWrong,
+        totalCorrect: correct.length,
+      });
     }
     if (type === 'fill-blank') {
       var fill = gradeFillBlankAnswer(extractTextAnswer(response), question, answerObject.aiVerdict);
@@ -617,25 +701,9 @@
     }
     if (type === 'numeric-response') {
       var value = extractNumericAnswer(response);
-      var expected = question ? Number(question.correctValue) : NaN;
       if (value == null || !hasNumericAnswerKey(question)) return result('submitted', false, null);
-      var tolerance = question && Number.isFinite(Number(question.tolerance)) ? Math.abs(Number(question.tolerance)) : 0;
-      var valueCorrect = Math.abs(value - expected) <= tolerance + 1e-9;
-      var acceptedUnits = [question && question.unit || '']
-        .concat(question && Array.isArray(question.acceptableUnits) ? question.acceptableUnits : [])
-        .map(normalizePresentationUnit)
-        .filter(Boolean);
-      var submittedUnit = normalizePresentationUnit(extractNumericUnit(response));
-      var unitCorrect = acceptedUnits.length === 0 || acceptedUnits.indexOf(submittedUnit) >= 0;
-      var numericPartialScore = valueCorrect && unitCorrect
-        ? 100
-        : valueCorrect || (unitCorrect && acceptedUnits.length > 0) ? 50 : 0;
-      var numericScore = policy.partialCredit ? numericPartialScore : (numericPartialScore === 100 ? 100 : 0);
-      return result(numericScore === 100 ? 'correct' : numericScore > 0 ? 'partially-correct' : 'incorrect', true, numericScore, {
-        valueCorrect: valueCorrect,
-        unitCorrect: unitCorrect,
-        scoreFraction: numericScore / 100,
-      });
+      var numericGrade = gradeNumericAnswer({ value: value, unit: extractNumericUnit(response) }, question, policy);
+      return result(numericGrade.status, numericGrade.evaluable, numericGrade.score, numericGrade);
     }
     if (type === 'order') {
       var submittedOrder = extractOrderAnswer(response);
@@ -650,7 +718,8 @@
       if (!presentationQuestionIsGameScorable(question)) return result('submitted', false, null);
       var verifyAnswer = normalizeComparable(answerObject.verifyAnswer);
       var principleAnswer = normalizeComparable(answerObject.principleAnswer);
-      if ((verifyAnswer !== 'yes' && verifyAnswer !== 'no') || !principleAnswer) return result('submitted', false, null);
+      var compactSequence = question.sequenceMode === 'arrange-explain';
+      if ((!compactSequence && verifyAnswer !== 'yes' && verifyAnswer !== 'no') || !principleAnswer) return result('submitted', false, null);
       var sequenceItemCount = Array.isArray(question.items) ? question.items.length : 0;
       var truth = sequenceSenseTruth(question.presentedOrder, question.intentionallyWrongIndex, sequenceItemCount);
       var step1Correct = verifyAnswer === 'yes' ? truth.orderIsCorrect : !truth.orderIsCorrect;
@@ -665,8 +734,10 @@
         ? orderAnswer.length === sequenceItemCount && orderAnswer.every(function (value, index) { return value === index; })
         : null;
       var step3Correct = principleAnswer === normalizeComparable(question.orderingPrinciple);
-      var sequenceMax = orderAnswer ? 4 : 3;
-      var sequenceRawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
+      if (compactSequence && (!orderAnswer || orderAnswer.length !== sequenceItemCount || new Set(orderAnswer).size !== sequenceItemCount
+          || orderAnswer.some(function (value) { return !Number.isInteger(value) || value < 0 || value >= sequenceItemCount; }))) return result('submitted', false, null);
+      var sequenceMax = compactSequence ? 2 : orderAnswer ? 4 : 3;
+      var sequenceRawScore = (compactSequence ? 0 : (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0)) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
       var sequenceScore = policy.partialCredit ? sequenceRawScore : (sequenceRawScore === sequenceMax ? sequenceMax : 0);
       return result(sequenceScore === sequenceMax ? 'correct' : sequenceScore > 0 ? 'partially-correct' : 'incorrect', true, sequenceScore, {
         step1Correct: step1Correct,
@@ -678,6 +749,7 @@
     }
     if (type === 'relation-mismatch') {
       if (!presentationQuestionIsGameScorable(question)) return result('submitted', false, null);
+      if (question.requireReasoning === true && !String(answerObject.explanation || '').trim()) return result('submitted', false, null, { needsReasoning: true });
       if (!Number.isInteger(answerObject.clickedPairIdx) || !normalizeComparable(answerObject.partnerAnswer)) {
         return result('submitted', false, null);
       }
@@ -693,6 +765,7 @@
     }
     if (type === 'answer-evidence') {
       if (!presentationQuestionIsGameScorable(question)) return result('submitted', false, null);
+      if (question.requireReasoning === true && !String(answerObject.explanation || '').trim()) return result('submitted', false, null, { needsReasoning: true });
       var answerOptions = question.answerOptions;
       var evidenceOptions = question.evidenceOptions;
       var answerIdx = Number.isInteger(answerObject.answerIdx)
@@ -1097,6 +1170,11 @@
       var changedOrder = Array.isArray(a.orderAnswer) && JSON.stringify(canonicalOrderAnswer(question, a)) !== JSON.stringify(question && question.presentedOrder || []);
       hasResponse = verify || index(a.clickedIdx) || text(a.principleAnswer) || changedOrder;
       answered = verify && text(a.principleAnswer) && (a.verifyAnswer === 'yes' || index(a.clickedIdx));
+      if (question && question.sequenceMode === 'arrange-explain') {
+        var arranged = canonicalOrderAnswer(question, a), count = Array.isArray(question.items) ? question.items.length : 0;
+        answered = !!(arranged && count > 0 && arranged.length === count && new Set(arranged).size === count && arranged.every(function (value) { return Number.isInteger(value) && value >= 0 && value < count; }) && text(a.principleAnswer));
+        hasResponse = hasResponse || text(a.principleAnswer) || answered;
+      }
     } else if (type === 'relation-mismatch') {
       hasResponse = index(a.clickedPairIdx) || text(a.partnerAnswer);
       answered = index(a.clickedPairIdx) && text(a.partnerAnswer);
@@ -1113,10 +1191,16 @@
     } else {
       hasResponse = answered = text(extractTextAnswer(response)) || typeof answer === 'number' && Number.isFinite(answer);
     }
+    if (type === 'relation-mismatch' || type === 'answer-evidence') {
+      hasResponse = hasResponse || text(a.explanation);
+      if (question && question.requireReasoning === true) answered = answered && text(a.explanation);
+    }
     // Final packets carry the same completion decision as the learner review.
     // Preserve useful partial work without promoting it to a completed answer.
     if (response && typeof response.answered === 'boolean') answered = response.answered && hasResponse;
     else if (response && typeof response.submitted === 'boolean') answered = response.submitted && hasResponse;
+    // A completion flag cannot replace the authored required explanation.
+    if ((type === 'relation-mismatch' || type === 'answer-evidence') && question && question.requireReasoning === true && !text(a.explanation)) answered = false;
     return { answered: !!answered, hasResponse: !!hasResponse };
   }
 
@@ -1229,12 +1313,12 @@
       return Array.isArray(indices) ? indices.map(function (index) { return originalChoice(index, '', question && question.options); }).filter(Boolean).join('; ') : '';
     }
     if (typeof a.text === 'string') return a.text;
-    if (type === 'sequence-sense') return (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '');
-    if (type === 'relation-mismatch') return (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '');
+    if (type === 'sequence-sense') return (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '') + (Array.isArray(a.orderAnswer) ? ' · Order: ' + canonicalOrderAnswer(question, a).map(function (index) { return compatible && question && Array.isArray(question.items) ? question.items[index] || String(index + 1) : String(index + 1); }).join(' → ') : '');
+    if (type === 'relation-mismatch') return (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '') + (a.explanation ? ' · Reasoning: ' + a.explanation : '');
     if (type === 'answer-evidence') {
       var answerText = originalChoice(a.answerIdx, a.answerText, question && (question.answerOptions || question.options));
       var evidenceText = originalChoice(a.evidenceIdx, a.evidenceText, question && question.evidenceOptions);
-      return (answerText ? 'Answer: ' + answerText : '') + (evidenceText ? ' · Evidence: ' + evidenceText : '');
+      return (answerText ? 'Answer: ' + answerText : '') + (evidenceText ? ' · Evidence: ' + evidenceText : '') + (a.explanation ? ' · Reasoning: ' + a.explanation : '');
     }
     if (type === 'numeric-response') return typeof a.numericValue === 'number' ? String(a.numericValue) + (a.unit ? ' ' + a.unit : '') : '';
     if (typeof answer === 'string' || typeof answer === 'number') return String(answer);
@@ -1332,6 +1416,9 @@
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
     var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
     var rosterCount = roster ? Object.keys(roster).length : 0;
+    var participantIds = new Set(graded.filter(function (g) { return g.responseState.hasResponse; }).map(function (g) { return g.uid; }));
+    var expectedIds = new Set((roster ? Object.keys(roster) : []).concat(Array.from(participantIds)));
+    var expectedCount = expectedIds.size;
     var perQuestion = questions.map(function (q, idx) {
       // Best-effort concept label: first 80 chars of question text or expectedFill
       var conceptText = q.question || q.expectedFill || ('Question ' + (idx + 1));
@@ -1351,20 +1438,39 @@
         scorePercent: null,
         idkCount: 0,
         percentCorrect: 0,
+        expectedCount: expectedCount,
+        responseCount: 0,
+        incompleteCount: 0,
+        evaluatedCount: 0,
+        awaitingReviewCount: 0,
+        omittedCount: expectedCount,
+        participationPercent: expectedCount > 0 ? 0 : null,
+        evaluatedPercent: expectedCount > 0 ? 0 : null,
+        coverageStatus: 'no-responses',
       };
     });
     graded.forEach(function (g) {
       var card = perQuestion[g.questionIdx];
       if (!card) return;
       if (g.responseState.answered) card.totalAnswered++;
+      if (g.responseState.hasResponse) card.responseCount++;
+      if (g.responseState.hasResponse && !g.responseState.answered) card.incompleteCount++;
       if (g.grade.status === 'correct') card.correctCount++;
       else if (g.grade.status === 'incorrect') card.incorrectCount++;
       else if (g.grade.status === 'partially-correct') card.partialCount++;
       else if (g.grade.status === 'idk') card.idkCount++;
+      if (g.grade.maxPoints > 0) card.evaluatedCount++;
+      else if (g.responseState.hasResponse && g.grade.status === 'submitted' && !g.grade.unscored) card.awaitingReviewCount++;
       card.totalEarned += g.grade.earnedPoints;
       card.totalPossible += g.grade.maxPoints;
     });
     perQuestion.forEach(function (card) {
+      card.omittedCount = Math.max(0, card.expectedCount - card.responseCount);
+      card.participationPercent = card.expectedCount > 0 ? Math.round(100 * card.responseCount / card.expectedCount) : null;
+      card.evaluatedPercent = card.expectedCount > 0 ? Math.round(100 * card.evaluatedCount / card.expectedCount) : null;
+      card.coverageStatus = card.totalAnswered === 0 && card.awaitingReviewCount === 0 ? 'no-responses'
+        : card.evaluatedCount === 0 && card.awaitingReviewCount > 0 ? 'awaiting-review'
+        : card.evaluatedCount < card.expectedCount ? 'partial-coverage' : 'complete-coverage';
       card.scorePercent = card.totalPossible > 0 ? Math.round(card.totalEarned / card.totalPossible * 100) : null;
       if (card.unscored) {
         card.percentCorrect = null;
@@ -1386,6 +1492,7 @@
       conceptCards: sorted,
       totalQuestions: questions.length,
       totalStudents: rosterCount,
+      participatingStudents: participantIds.size,
     };
   }
 
@@ -2296,6 +2403,7 @@
     keyCheckShape: keyCheckShape,
     normalizeFillBlankComparable: normalizeFillBlankComparable,
     gradeFillBlankAnswer: gradeFillBlankAnswer,
+    gradeNumericAnswer: gradeNumericAnswer,
     presentationQuestionIsGameScorable: presentationQuestionIsGameScorable,
     aggregatePresentationResponses: aggregatePresentationResponses,
     isUnscoredPollQuestion: isUnscoredPollQuestion,

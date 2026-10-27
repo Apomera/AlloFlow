@@ -260,30 +260,96 @@
     }
   }
 
-  // ── Read-aloud (Gemini TTS via the host's shared AlloSpeechPlayer) ──
-  // DA had no TTS. These delegate to window.AlloSpeechPlayer (Gemini TTS →
-  // Kokoro → browser fallback, mute- and abort-aware) so a student can HEAR
-  // an item/scaffold instead of reading it. This is both an accessibility
-  // feature and the foundation for the "modality" access contrast (does
-  // performance change when the reading demand is removed?).
-  function daSpeak(text, lang) {
-    try {
-      var sp = (typeof window !== "undefined") ? window.AlloSpeechPlayer : null;
-      if (sp && typeof sp.speak === "function") {
-        // Pass a language so home-language (L1) read-aloud speaks in the L1,
-        // not the default voice. AlloSpeechPlayer reads opts.language.
-        sp.speak(String(text || ""), lang ? { language: lang } : undefined);
+  // Clinical read-aloud uses an explicitly selected on-device browser voice.
+  // Never pass clinical text through the shared cloud/fallback player or cache.
+  function daCreateLocalReadAloud(host, options) {
+    var owned = null, disposed = false;
+    function current() { if (disposed) throw Object.assign(new Error('Read-aloud is closed.'), { name: 'AbortError' }); return options.capture(); }
+    function notice(message) { try { current()(); options.notice(message); } catch (_) {} }
+    function muted() {
+      try { return typeof host.__alloIsGlobalMuted === 'function' && host.__alloIsGlobalMuted() === true; }
+      catch (_) { return true; }
+    }
+    function clear(utterance) {
+      utterance.onstart = utterance.onboundary = utterance.onend = utterance.onerror = null;
+      try { utterance.text = ''; } catch (_) {}
+    }
+    function stop() {
+      var entry = owned; owned = null;
+      if (!entry) return;
+      entry.utterance.onstart = entry.utterance.onboundary = entry.utterance.onend = entry.utterance.onerror = null;
+      // The browser API cancels its queue globally; never invoke it while this
+      // view owns no utterance, and never stop or clear the shared host player.
+      try { entry.synthesis.cancel(); } catch (_) {}
+      clear(entry.utterance);
+    }
+    function localeFor(language, voices) {
+      var raw = String(language || 'English').trim(), lower = raw.toLowerCase();
+      if (/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(raw)) return lower;
+      if (lower === 'english') return 'en';
+      try {
+        var extras = host.AlloModules && host.AlloModules.ModuleScopeExtras;
+        var mapped = extras && typeof extras.getSpeechLangCode === 'function' ? String(extras.getSpeechLangCode(raw)).toLowerCase() : '';
+        // The legacy language utility falls back to en-US for unknown names.
+        if (mapped && mapped !== 'en-us' && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/.test(mapped)) return raw.indexOf('(') >= 0 ? mapped : mapped.split('-')[0];
+      } catch (_) {}
+      try {
+        var names = new Intl.DisplayNames(['en'], { type: 'language' });
+        for (var i = 0; i < voices.length; i++) {
+          var tag = String(voices[i].lang || '').toLowerCase(), base = tag.split('-')[0];
+          if (names.of(base).toLowerCase() === lower) return base;
+          if (names.of(tag).toLowerCase() === lower) return tag;
+        }
+      } catch (_) {}
+      return null;
+    }
+    function speak(text, language) {
+      var assertCurrent;
+      try { assertCurrent = current(); assertCurrent(); } catch (_) { return false; }
+      stop();
+      if (muted()) { notice('Read-aloud is muted. Unmute audio to use an on-device voice.'); return false; }
+      var synthesis = host.speechSynthesis, Utterance = host.SpeechSynthesisUtterance;
+      if (!synthesis || typeof synthesis.speak !== 'function' || typeof synthesis.cancel !== 'function' || typeof synthesis.getVoices !== 'function' || typeof Utterance !== 'function') {
+        notice('On-device read-aloud is unavailable in this browser. The text remains available to read.'); return false;
       }
-    } catch (_) {}
-  }
-  function daStopSpeak() {
-    try {
-      var sp = (typeof window !== "undefined") ? window.AlloSpeechPlayer : null;
-      if (sp && typeof sp.stop === "function") sp.stop();
-    } catch (_) {}
-  }
-  function daTtsAvailable() {
-    return (typeof window !== "undefined") && !!(window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function");
+      var voices;
+      try { voices = Array.from(synthesis.getVoices() || []).filter(function (voice) { return voice && voice.localService === true; }); }
+      catch (_) { voices = []; }
+      var locale = localeFor(language, voices);
+      var voice = locale && voices.find(function (candidate) {
+        var tag = String(candidate.lang || '').toLowerCase();
+        return tag === locale || (locale.indexOf('-') < 0 && tag.split('-')[0] === locale);
+      });
+      if (!voice) { notice('No on-device voice is available for this language. Install a matching device voice, then select Read aloud again.'); return false; }
+      var value = String(text || ''); if (!value.trim()) return false;
+      var utterance = null;
+      try {
+        assertCurrent();
+        utterance = new Utterance(value);
+        utterance.voice = voice; utterance.lang = voice.lang;
+        if (utterance.voice !== voice || utterance.voice.localService !== true) throw new Error('The on-device voice could not be selected.');
+        utterance.rate = Number.isFinite(host.__alloPlaybackRate) && host.__alloPlaybackRate > 0 ? Math.max(0.1, Math.min(10, host.__alloPlaybackRate)) : 1;
+        utterance.volume = Number.isFinite(host.__alloVoiceVolume) ? Math.max(0, Math.min(1, host.__alloVoiceVolume)) : 1;
+        owned = { utterance: utterance, synthesis: synthesis };
+        function verify() {
+          if (!owned || owned.utterance !== utterance) return false;
+          try { assertCurrent(); if (muted() || voice.localService !== true) throw new Error('Read-aloud stopped.'); return true; }
+          catch (_) { stop(); return false; }
+        }
+        function finish() { if (!owned || owned.utterance !== utterance) return; owned = null; clear(utterance); }
+        utterance.onstart = utterance.onboundary = verify;
+        utterance.onend = finish;
+        utterance.onerror = function () { if (!verify()) return; finish(); notice('On-device read-aloud could not finish. No cloud voice was used.'); };
+        if (!verify()) return false;
+        synthesis.speak(utterance);
+        if (owned && owned.utterance === utterance) notice('');
+        return true;
+      } catch (_) {
+        stop(); if (utterance) clear(utterance);
+        notice('On-device read-aloud could not start. No cloud voice was used.'); return false;
+      }
+    }
+    return { speak: speak, stop: stop, dispose: function () { stop(); disposed = true; } };
   }
 
   // ── Host theme detection ──
@@ -6528,8 +6594,20 @@
         workspace.assertCanTransmit("ai");
         args[promptIndex] = approved.prompt;
         if (kind === "text" && typeof args[4] === "string") args[4] = approved.searchQuery;
+        // Delegated directives and image generation remain closed until their
+        // providers expose the same request-scoped dispatch contract.
+        if (kind !== "text" && kind !== "imageEdit") throw new Error("This protected resource route is unavailable.");
+        var optionsIndex = kind === "text" ? 8 : 5;
+        var previousOptions = args[optionsIndex];
+        var signal = kind === "text" ? args[5] : previousOptions && previousOptions.signal;
+        var approvedApi = live.api, approvedGate = live.gate;
+        var requestControls = workspace.createRequestControls(workspaceEpoch, function () {
+          if (!live.mounted || version !== live.version || live.providers[kind] !== provider || live.api !== approvedApi || live.gate !== approvedGate
+            || approvedApi !== (window.AlloModules && window.AlloModules.IdentifierRedaction) || (signal && signal.aborted)) throw cancelled();
+        }, previousOptions && previousOptions.requestControls);
+        args[optionsIndex] = Object.freeze(Object.assign({}, previousOptions, { requestControls: requestControls }));
         var result = await provider.apply(this, args);
-        workspace.assertCurrent(workspaceEpoch);
+        requestControls.beforeRequest();
         if (!live.mounted || version !== live.version) throw cancelled();
         return result;
       };
@@ -6548,7 +6626,19 @@
         onCancel: function (id) { if (live.gate) live.gate.cancel(id); }
       });
     }
-    return { wrap: wrap, request: request, render: renderReview, updateContext: live.updateContext };
+    function captureContextGuard() {
+      var version = live.version;
+      return function () {
+        if (!live.mounted || version !== live.version) {
+          var error = new Error("The Dynamic Assessment case changed before this transfer completed.");
+          error.name = "AbortError";
+          error.code = "PROTECTED_EXPORT_CANCELLED";
+          throw error;
+        }
+        return true;
+      };
+    }
+    return { wrap: wrap, request: request, render: renderReview, updateContext: live.updateContext, captureContextGuard: captureContextGuard };
   }
 
   function DynamicAssessmentHostAdapter(props) {
@@ -6569,25 +6659,25 @@
       outputLanguage: host.leveledTextLanguage || "English",
       onOpenAlloSheet: function (artifact) {
         workspace.assertCurrent(epoch);
+        var assertContext = aiReview.captureContextGuard();
+        var beforeTransfer = function () { workspace.assertCurrent(epoch); assertContext(); return true; };
         workspace.assertCanExport("allosheet");
         var bridge = window.AlloSheetHostBridge;
-        if (!bridge || typeof bridge.open !== "function") throw new Error("AlloSheet is still loading. Try again in a moment.");
+        if (!bridge || typeof bridge.openTransfer !== "function" || bridge.transferControlVersion !== 1) throw new Error("AlloSheet must finish updating before protected tables can be transferred. Reload and try again.");
         var root = document.documentElement;
         var body = document.body;
         var theme = ((root && root.classList.contains("theme-contrast")) || (body && body.classList.contains("theme-contrast"))) ? "contrast"
           : ((root && root.classList.contains("theme-light")) || (body && body.classList.contains("theme-light"))) ? "light" : "dark";
-        var transfer = typeof bridge.openTransfer === "function" ? bridge.openTransfer({ theme: theme, artifact: artifact }) : null;
+        var transfer = bridge.openTransfer({ theme: theme, artifact: artifact, transferControls: Object.freeze({ beforeTransfer: beforeTransfer }) });
         if (transfer) {
           if (transfer.decision && typeof transfer.decision.then === "function") transfer.decision.then(function (decision) {
             if (!workspace.isCurrent(epoch) || typeof host.addToast !== "function") return;
             if (decision && decision.status === "accepted") host.addToast("Dynamic Assessment tables opened in AlloSheet for review.", "success");
             else if (decision && decision.status === "cancelled") host.addToast("AlloSheet review canceled. Dynamic Assessment data did not change.", "info");
           }).catch(function () {});
-          return Promise.resolve(transfer.delivered).then(function () { workspace.assertCurrent(epoch); return true; });
+          return Promise.resolve(transfer.delivered).then(function () { beforeTransfer(); return true; });
         }
-        if (typeof bridge.openTransfer === "function") throw new Error("AlloSheet could not open. Allow pop-ups and try again.");
-        if (!bridge.open({ theme: theme, artifact: artifact })) throw new Error("AlloSheet could not open. Allow pop-ups and try again.");
-        return true;
+        throw new Error("AlloSheet could not open. Allow pop-ups and try again.");
       }
     }, daBlockedParentCallbacks(host.addToast));
     DA_GUARDED_EXPORT_CALLBACKS.add(childProps.onOpenAlloSheet);
@@ -7563,7 +7653,7 @@
           // Top-level start screen with no active session → close the dialog
           // (standard modal Escape behavior; host wrapper never wired it).
           if (startScreenView === "start" && typeof props.onClose === "function") {
-            props.onClose(); e.preventDefault(); return;
+            daCloseView(); e.preventDefault(); return;
           }
         }
         // Cmd/Ctrl+Enter — submit response in active item phase
@@ -7961,6 +8051,42 @@
       state.activeSession ? state.activeSession.studentNickname : null,
       viewingSessionId, nicknameDraft, codenameMode, rosterChoice
     ]);
+    var daSpeechStatusTuple = useState(''), daSpeechStatus = daSpeechStatusTuple[0], setDaSpeechStatus = daSpeechStatusTuple[1];
+    var daSpeechLive = React.useRef({ mounted: false, key: null, context: null, workspace: workspace, epoch: daRenderEpoch });
+    var daSpeechKey = JSON.stringify([daAiCaseKey, startScreenView, daOutputLanguage,
+      state.activeSession ? state.activeSession.currentPhase : null,
+      state.activeSession ? state.activeSession.currentItemIdx : null,
+      state.activeSession ? !!state.activeSession.paused : false]);
+    if (daSpeechLive.current.key !== daSpeechKey || daSpeechLive.current.workspace !== workspace) {
+      daSpeechLive.current.key = daSpeechKey; daSpeechLive.current.context = {};
+    }
+    daSpeechLive.current.workspace = workspace; daSpeechLive.current.epoch = daRenderEpoch;
+    var daSpeechRef = React.useRef(null);
+    if (!daSpeechRef.current) daSpeechRef.current = daCreateLocalReadAloud(window, {
+      capture: function () {
+        var live = daSpeechLive.current, owner = live.workspace, epoch = live.epoch, context = live.context;
+        return function () {
+          var now = daSpeechLive.current;
+          if (!now.mounted || now.workspace !== owner || now.context !== context) throw Object.assign(new Error('The assessment changed before read-aloud completed.'), { name: 'AbortError' });
+          owner.assertCurrent(epoch);
+        };
+      },
+      notice: function (message) { setDaSpeechStatus(message); }
+    });
+    function daSpeak(text, language) { return daSpeechRef.current.speak(text, language || daOutputLanguage); }
+    function daStopSpeak() { if (daSpeechRef.current) daSpeechRef.current.stop(); }
+    function daTtsAvailable() { return !!(window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function'); }
+    function daCloseView() { daStopSpeak(); if (typeof props.onClose === 'function') props.onClose(); }
+    useEffect(function () {
+      daSpeechLive.current.mounted = true;
+      function onMute(event) { if (event && event.detail && event.detail.muted === true) daStopSpeak(); }
+      window.addEventListener('alloflow-mute-changed', onMute);
+      return function () {
+        daSpeechLive.current.mounted = false; daStopSpeak();
+        window.removeEventListener('alloflow-mute-changed', onMute);
+      };
+    }, [workspace]);
+    useEffect(function () { daStopSpeak(); setDaSpeechStatus(''); }, [daSpeechKey]);
     var daOwnAiReview = useDaSensitiveAiReview(React, daAiCaseKey, daAiCaseName, !DA_REVIEWED_PROVIDERS.has(props.callGemini), workspace);
     useEffect(function () {
       if (typeof props.onSensitiveContextChange !== "function") return;
@@ -7985,7 +8111,7 @@
     useEffect(function () {
       // Lock invalidates operation epochs before staging. This callback uses
       // the validated facade captured while ready; the service flushes next.
-      return workspace.registerFlush(function () { stageProtectedState(localStorage); });
+      return workspace.registerFlush(function () { daStopSpeak(); stageProtectedState(localStorage); });
     }, [workspace, localStorage]);
     useEffect(function () {
       return function () {
@@ -9663,7 +9789,7 @@
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 720, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
           props.onClose ? h("button", {
-            onClick: props.onClose, "aria-label": "Close Dynamic Assessment Studio",
+            onClick: daCloseView, "aria-label": "Close Dynamic Assessment Studio",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back") : null,
           h("div", { style: { flex: 1, minWidth: 200 } },
@@ -10287,13 +10413,7 @@
                 var csv = buildSessionStatsCsv(state.sessions || []);
                 if (!daCanExport("csv")) return;
                 var blob = new Blob([csv], { type: "text/csv" });
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement("a");
-                a.href = url;
-                a.download = "da-sessions-" + new Date().toISOString().slice(0, 10) + ".csv";
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function () { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 100);
+                daDownloadBlob(blob, "da-sessions-" + new Date().toISOString().slice(0, 10) + ".csv");
                 addToast("📥 Downloaded session-level CSV.");
               } catch (e) { addToast("CSV export failed: " + (e && e.message ? e.message : "unknown")); }
             },
@@ -10436,13 +10556,7 @@
                   var csv = buildItemAnalyticsCsv(allStats);
                   if (!daCanExport("csv")) return;
                   var blob = new Blob([csv], { type: "text/csv" });
-                  var url = URL.createObjectURL(blob);
-                  var a = document.createElement("a");
-                  a.href = url;
-                  a.download = "da-item-analytics-" + new Date().toISOString().slice(0, 10) + ".csv";
-                  document.body.appendChild(a);
-                  a.click();
-                  setTimeout(function () { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 100);
+                  daDownloadBlob(blob, "da-item-analytics-" + new Date().toISOString().slice(0, 10) + ".csv");
                   addToast("📥 Downloaded item analytics CSV.");
                 } catch (e) { addToast("CSV export failed: " + (e && e.message ? e.message : "unknown")); }
               },
@@ -12224,6 +12338,39 @@
     // ─── Phase F — JSON export ───
     // Triggers a browser download of the full session record. Useful for
     // archiving outside AlloFlow and for sharing with colleagues.
+    function daDownloadBlob(blob, fileName) {
+      daAssertOperation();
+      var url = null, anchor = null, cleanupScheduled = false;
+      function cleanup() {
+        // A failed click or a removed anchor must not keep the Blob URL readable.
+        try {
+          if (anchor) {
+            anchor.removeAttribute("href");
+            if (anchor.parentNode) anchor.parentNode.removeChild(anchor);
+          }
+        } catch (_) {}
+        if (url) {
+          try { URL.revokeObjectURL(url); } catch (_) {}
+          url = null;
+        }
+      }
+      try {
+        url = URL.createObjectURL(blob);
+        anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = fileName;
+        document.body.appendChild(anchor);
+        daAssertOperation();
+        anchor.click();
+        // Keep the successful download's existing browser-consumption window.
+        setTimeout(cleanup, 100);
+        cleanupScheduled = true;
+        return true;
+      } finally {
+        if (!cleanupScheduled) cleanup();
+      }
+    }
+
     function exportSessionAsJson(sessionRecord, mode) {
       var exportMode = mode === "redacted" ? "redacted" : "full";
       var performExport = function () {
@@ -12238,18 +12385,10 @@
           });
           var json = JSON.stringify(payload, null, 2);
           var blob = new Blob([json], { type: "application/json" });
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement("a");
-          a.href = url;
           var safeName = (source.studentNickname || "anonymous").replace(/[^A-Za-z0-9_-]/g, "_") || "anonymous";
           var dateStr = new Date(source.dateCompleted || source.dateStarted || Date.now())
             .toISOString().slice(0, 10);
-          a.download = "da-session-" + safeName + "-" + exportMode + "-" + dateStr + ".json";
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(function () {
-            try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) { /* ignore */ }
-          }, 100);
+          daDownloadBlob(blob, "da-session-" + safeName + "-" + exportMode + "-" + dateStr + ".json");
           addToast("📥 Downloaded " + exportMode + " DA session export.");
         } catch (e) {
           addToast("JSON export failed: " + (e && e.message ? e.message : "unknown error"));
@@ -12274,15 +12413,7 @@
       workspace.assertCanExport("encrypted-backup");
       var json = JSON.stringify(value, null, 2);
       var blob = new Blob([json], { type: "application/json" });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function () {
-        try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (_) {}
-      }, 100);
+      return daDownloadBlob(blob, fileName);
     }
 
     function exportAllSessionsEncrypted(password) {
@@ -13991,15 +14122,16 @@
               item.construct + " · " + item.difficulty + " · grades " + item.gradeBand),
             // Read-aloud: lets the student HEAR the item instead of reading it
             // (accessibility + the modality access lever).
-            daTtsAvailable() ? h("button", {
+            h("button", {
               type: "button",
               onClick: function () { daSpeak(item.prompt); },
-              title: "Read this item aloud (Gemini voice)",
+              title: "Read this item aloud with an on-device voice",
               "aria-label": "Read this item aloud",
               style: { flexShrink: 0, padding: "2px 8px", borderRadius: 6, border: "1px solid var(--da-indigo-border)", background: "var(--da-indigo-tint)", color: "var(--da-indigo-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-            }, "🔊 Read aloud") : null
+            }, "🔊 Read aloud")
           ),
           h("p", { style: { margin: 0, fontSize: 16, color: "var(--da-ink)", lineHeight: 1.65 } }, item.prompt),
+          daSpeechStatus ? h("p", { role: "status", "aria-live": "polite", style: { margin: "6px 0 0", fontSize: 12, color: "var(--da-ink-3)" } }, daSpeechStatus) : null,
           // Access contrast (linguistic load): on-demand simpler-language version.
           h("div", { style: { marginTop: 8 } },
             !simplifiedTextDraft ? h("button", {

@@ -5678,6 +5678,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _quizMode = (configOverride && configOverride.quizMode) || 'exit-ticket';
         const _qmStrategies = (window.AlloModules && window.AlloModules.QuizModeStrategies) || null;
         const _modeStrategy = _qmStrategies ? _qmStrategies.getStrategy(_quizMode) : null;
+        const _assessmentOptions = _qmStrategies && _qmStrategies.normalizeAssessmentOptions
+            ? _qmStrategies.normalizeAssessmentOptions(configOverride.assessmentOptions)
+            : { fillBlankPolicy: 'normalized', sequenceMode: 'diagnostic', sequenceMaxSteps: 6, numericSettings: { allowEquivalentUnits: false, valueWeight: 0.5 }, requireReasoning: false };
+        const _reviewSelection = _quizMode === 'review' && _qmStrategies && _qmStrategies.resolveReviewContext
+            ? _qmStrategies.resolveReviewContext(generationHistory, configOverride.reviewSourceIds, configOverride.reviewConcepts)
+            : { sources: [], sourceIds: [], concepts: [], fallback: true };
+        const _quizSourceText = _quizMode === 'review' && !_reviewSelection.fallback
+            ? _reviewSelection.sources.map(source => 'LESSON: ' + source.title + '\n' + source.text).join('\n\n')
+            : textToProcess;
         const _modeFraming = _modeStrategy ? _modeStrategy.generation.promptFrame : 'Create a short "Exit Ticket" quiz based on this text.';
         const _modeQuestionTargets = _modeStrategy ? _modeStrategy.generation.questionTargets : 'today\'s lesson content';
         // Pre-check + review modes draw on different context: pre-check needs
@@ -5700,6 +5709,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                      analysisContext = `\n                 PRIORITY CONTEXT FROM SOURCE ANALYSIS:\n                 - Key Concepts Identified: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Detected Source Level: ${levelStr}\n                 INSTRUCTION: Ensure the quiz questions specifically target these identified concepts to check for understanding.\n                 `;
                  }
              }
+        }
+        if (_quizMode === 'review') {
+            analysisContext = _reviewSelection.fallback
+                ? '\nCURRENT-SOURCE REVIEW: No earlier lesson was explicitly selected. Review the current source. Do not claim this proves delayed retention.\n'
+                : '\nEXPLICITLY SELECTED EARLIER LESSONS: ' + _reviewSelection.sources.map(source => source.title).join('; ')
+                    + '\nSelected concepts: ' + (_reviewSelection.concepts.length ? _reviewSelection.concepts.join(', ') : 'Sample central concepts from the selected lessons.')
+                    + '\nAssess only these selected earlier sources/concepts. Keep their stable concept wording; do not substitute today\'s lesson.\n';
         }
         let dokInstruction = "";
         if (dokLevel === "Mixed") {
@@ -5802,7 +5818,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (_fillBlankCount > 0) _itemTypeBlocks.push(_fillBlankCount + ' Fill-in-the-Blank Question(s)');
         if (_shortAnswerCount > 0) _itemTypeBlocks.push(_shortAnswerCount + ' Short-Answer Question(s) (1-2 sentence response)');
         if (_selfExplanationCount > 0) _itemTypeBlocks.push(_selfExplanationCount + ' Self-Explanation Prompt(s) (3-5 sentence explanation in own words)');
-        if (_sequenceSenseCount > 0) _itemTypeBlocks.push(_sequenceSenseCount + ' Sequence Sense Question(s) (4-6 items where the student verifies order, diagnoses misplacement, and identifies the ordering principle)');
+        if (_sequenceSenseCount > 0) _itemTypeBlocks.push(_sequenceSenseCount + ' Sequence Sense Question(s) (' + (_assessmentOptions.sequenceMaxSteps === 3 ? 'exactly 3' : '4-6') + ' steps; ' + (_assessmentOptions.sequenceMode === 'arrange-explain' ? 'arrange the steps and identify the ordering principle' : 'verify order, diagnose misplacement, arrange, and identify the ordering principle') + ')');
         if (_relationMismatchCount > 0) _itemTypeBlocks.push(_relationMismatchCount + ' Relation Mismatch Question(s) (4-5 pre-paired items where ONE pair is wrong; student finds it and picks the correct partner)');
         if (_answerEvidenceCount > 0) _itemTypeBlocks.push(_answerEvidenceCount + ' Answer + Evidence Question(s) (choose an answer, then the evidence or reason that supports it)');
         if (_numericResponseCount > 0) _itemTypeBlocks.push(_numericResponseCount + ' Numeric Response Question(s) with a correct value, tolerance, and optional units');
@@ -5820,18 +5836,21 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // already exists (plan first, quiz second), its criteria become the
         // concept labels the new items must carry, so the two stay joined
         // whichever was generated first.
-        const _criteriaDirective = (function () {
-            try {
-                const plan = sourceRelatedHistory.slice().reverse()
-                    .find(h => h && h.type === 'lesson-plan' && h.data && Array.isArray(h.data.successCriteria) && h.data.successCriteria.length > 0);
-                if (!plan) return '';
-                const lines = plan.data.successCriteria.slice(0, 8)
-                    .map(c => `  - conceptLabel "${String(c.id || '').replace(/"/g, '')}": ${String(c.statement || '').replace(/\s+/g, ' ').trim()}`)
-                    .filter(l => l.indexOf('""') === -1);
-                if (!lines.length) return '';
-                return `SUCCESS CRITERIA TO COVER (from the current lesson plan): give at least one item per criterion and use the criterion id EXACTLY as each item's "conceptLabel":\n${lines.join('\n')}`;
-            } catch (_) { return ''; }
-        })();
+        const _criteriaPlan = _quizMode !== 'review' ? sourceRelatedHistory.slice().reverse().find(h => h && h.type === 'lesson-plan' && h.data && Array.isArray(h.data.successCriteria)) : null;
+        const _criteriaCoverage = _qmStrategies && _qmStrategies.resolveCriteriaCoverage
+            ? _qmStrategies.resolveCriteriaCoverage(_criteriaPlan && _criteriaPlan.data.successCriteria, configOverride.criterionIds, _resolvedItemCount, [])
+            : { available: [], selectedIds: [], coveredIds: [], uncoveredIds: [] };
+        const _criteriaDirective = _criteriaCoverage.selectedIds.length
+            ? 'SUCCESS CRITERIA SAMPLED BY THIS CHECK: Keep the exact requested item count. Cover each selected criterion at least once and add its exact id as both criterionId and conceptLabel, preserving the lesson-plan results link. Other lesson criteria are intentionally outside this short check. '
+                + (_quizMode === 'pre-check' ? 'Probe the prerequisite needed for each criterion, not full mastery of the lesson outcome. ' : '')
+                + '\n' + _criteriaCoverage.available.filter(criterion => _criteriaCoverage.selectedIds.includes(criterion.id)).map(criterion => JSON.stringify(criterion)).join('\n')
+            : '';
+        const _formatOptionsInstruction = 'RESPONSE AND SCORING DESIGN: For short-answer and self-explanation include studentCriteria: an array of 2-4 brief, student-facing success criteria describing the quality of reasoning without revealing the answer. Keep the complete answer and rubric in expectedAnswer/rubric only. '
+            + 'For every item include sourceEvidence: a short exact quotation from the source that supports its key or reasoning. Use an empty string if the source does not supply that evidence, including prerequisites that rely on background knowledge. Do not invent quotations. '
+            + 'For mcq and multi-select include optionFeedback: one concise explanation per option, in exactly the same order, explaining its reasoning or misconception. '
+            + (_quizMode === 'pre-check' ? 'For mcq and multi-select also include transferPrompt: a fresh application of the same prerequisite in a different example, and transferCriteria: 2-3 success criteria that do not disclose its answer. This is optional unscored practice after feedback, not a new scored item. ' : '')
+            + (_assessmentOptions.requireReasoning ? 'For relation-mismatch and answer-evidence include explanationPrompt asking for a brief justification. This explanation is unscored; do not invent a correctness key for its wording. ' : '')
+            + 'Fill-blank policy is ' + _assessmentOptions.fillBlankPolicy + '. Sequence mode is ' + _assessmentOptions.sequenceMode + '; use ' + (_assessmentOptions.sequenceMaxSteps === 3 ? 'exactly three' : 'four to six') + ' steps. Numeric unit aliases must be spellings of the same unit; conversion is handled separately by the app.';
         const _sourceGroundingInstruction = (function () {
             if (_quizMode === 'pre-check') {
                 return `SOURCE-GROUNDED READINESS RULES:
@@ -5841,8 +5860,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             }
             if (_quizMode === 'review') {
                 return `SOURCE-GROUNDED REVIEW RULES:
-          - Prefer earlier concepts from the provided history when available, but keep each item related to the current source's topic, vocabulary, or conceptual neighborhood.
-          - If no earlier concepts are available, quiz the current source directly, like an exit ticket, from a spaced-review angle.
+          - Use the explicitly selected earlier lesson sources and concepts when provided.
+          - If no earlier sources are selected, quiz the current source as a clearly labelled current-source review; do not claim delayed retention.
           - Do not invent unrelated review topics.`;
             }
             return `SOURCE-GROUNDED ASSESSMENT RULES:
@@ -5856,8 +5875,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             mcq: { type: 'mcq', question: 'Question text?', options: ['Option A', 'Option B', 'Option C', 'Option D'], correctAnswer: 'Option A', conceptLabel: 'short concept' },
             'multi-select': { type: 'multi-select', question: 'Select every statement that is supported.', options: ['Correct statement A', 'Distractor B', 'Correct statement C', 'Distractor D'], correctAnswers: ['Correct statement A', 'Correct statement C'], conceptLabel: 'short concept' },
             'fill-blank': { type: 'fill-blank', question: 'Sentence with ___ for the blank.', expectedFill: 'target phrase', acceptableAlternatives: ['accepted alternative'], conceptLabel: 'short concept' },
-            'short-answer': { type: 'short-answer', question: 'Open prompt requiring a 1-2 sentence response.', expectedAnswer: 'Concise reference answer covering the key idea.', conceptLabel: 'short concept' },
-            'self-explanation': { type: 'self-explanation', question: 'Explain the concept in your own words.', rubric: 'Reward the named key elements, relationships, and an accurate example.', conceptLabel: 'short concept' },
+            'short-answer': { type: 'short-answer', question: 'Open prompt requiring a 1-2 sentence response.', expectedAnswer: 'Concise reference answer covering the key idea.', studentCriteria: ['State your claim clearly.', 'Explain how the evidence supports it.'], conceptLabel: 'short concept' },
+            'self-explanation': { type: 'self-explanation', question: 'Explain the concept in your own words.', rubric: 'Reward the named key elements, relationships, and an accurate example.', studentCriteria: ['Explain a relationship.', 'Use an accurate example to support your reasoning.'], conceptLabel: 'short concept' },
             'sequence-sense': { type: 'sequence-sense', question: 'Verify and diagnose this sequence.', items: ['first', 'second', 'third', 'fourth'], presentedOrder: [0, 2, 1, 3], intentionallyWrongIndex: 1, orderingPrinciple: 'process', principleOptions: ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'], conceptLabel: 'short concept' },
             'relation-mismatch': { type: 'relation-mismatch', question: 'Find and repair the incorrect pair.', pairs: [{ left: 'A', right: 'match A' }, { left: 'B', right: 'match B' }, { left: 'C', right: 'wrong match' }, { left: 'D', right: 'match D' }], wrongPairIndex: 2, correctPartnerForWrong: 'correct match C', candidatePartners: ['distractor 1', 'correct match C', 'distractor 2', 'distractor 3'], conceptLabel: 'short concept' },
             'answer-evidence': { type: 'answer-evidence', question: 'Which claim is best supported?', answerOptions: ['Claim A', 'Claim B', 'Claim C', 'Claim D'], correctAnswer: 'Claim B', evidencePrompt: 'Which evidence or reason best supports that answer?', evidenceOptions: ['Evidence A', 'Evidence B', 'Evidence C', 'Evidence D'], correctEvidence: 'Evidence C', conceptLabel: 'short concept' },
@@ -5880,6 +5899,20 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             return (_modeItemMix[key] || 0) > 0;
         }).map(function (key) {
             const example = Object.assign({}, _jsonExamplesByType[key]);
+            example.sourceEvidence = 'Exact quotation from the provided source, or empty when unavailable';
+            if (_criteriaCoverage.selectedIds.length) example.criterionId = _criteriaCoverage.selectedIds[0];
+            if (key === 'mcq' || key === 'multi-select') {
+                example.optionFeedback = ['Reason for option A', 'Reason for option B', 'Reason for option C', 'Reason for option D'];
+                if (_quizMode === 'pre-check') {
+                    example.transferPrompt = 'Apply the same prerequisite to a fresh example.';
+                    example.transferCriteria = ['Explain the relevant relationship.', 'Support the explanation with evidence.'];
+                }
+            }
+            if (key === 'sequence-sense' && _assessmentOptions.sequenceMaxSteps === 3) {
+                example.items = example.items.slice(0, 3);
+                example.presentedOrder = [0, 2, 1];
+            }
+            if ((key === 'relation-mismatch' || key === 'answer-evidence') && _assessmentOptions.requireReasoning) example.explanationPrompt = 'Briefly explain why your choice fits.';
             if (_xlate.enabled) {
                 example.question_en = glossLang + ' translation of the question';
                 if (key === 'mcq' || key === 'multi-select') example.options_en = ['A in ' + glossLang, 'B in ' + glossLang, 'C in ' + glossLang, 'D in ' + glossLang];
@@ -5915,6 +5948,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${analysisContext}
           ${_sourceGroundingInstruction}
           ${_criteriaDirective}
+          ${_formatOptionsInstruction}
           Generate exactly ${_resolvedItemCount} assessed items using this exact item-type recipe:
           ${_itemTypeInstructions}
           ${_reflectionInstruction}
@@ -5932,7 +5966,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           Return ONLY valid JSON matching this shape: ${_jsonShape}
           Source excerpt:
           """
-          ${localExcerpt(textToProcess, 6500)}
+          ${localExcerpt(_quizSourceText, 16000)}
           """
         `;
         setGenerationStatus(t('status_steps.drafting_quiz'), 'build');
@@ -5952,6 +5986,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${analysisContext}
           ${_sourceGroundingInstruction}
           ${_criteriaDirective}
+          ${_formatOptionsInstruction}
           Include the following item types:
           ${_itemTypeInstructions}
           ${_reflectionInstruction}
@@ -5968,7 +6003,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives: synonyms or accepted spellings that should earn full credit; other misspellings are sent to the teacher for review.' : ''}
           ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
           ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
-          ${_sequenceSenseCount > 0 ? 'For each Sequence Sense Question: provide an "items" array of 4-6 strings in the CANONICAL CORRECT ORDER. Then provide "presentedOrder" — an array of indices [0..N-1] representing the order the student will see. Either swap two ADJACENT items or move ONE item to a different position; never scramble more than that. Provide "intentionallyWrongIndex" — the position in presentedOrder where the moved item appears; for an adjacent swap use either swapped position (the grader accepts both). Use null if you want the displayed order to actually be correct. Provide "orderingPrinciple" — one of "chronological", "cause-effect", "process", "size", or "hierarchy" — and "principleOptions" — the same 5 strings (always all 5, in random order is fine). The student will: (1) verify yes/no, (2) click a misplaced item if any, (3) arrange the items into the correct order, (4) identify the principle. Choose content where ordering genuinely matters and the principle is clear.' : ''}
+          ${_sequenceSenseCount > 0 ? 'For each Sequence Sense Question: provide an "items" array of ' + (_assessmentOptions.sequenceMaxSteps === 3 ? 'exactly 3' : '4-6') + ' strings in the CANONICAL CORRECT ORDER. Then provide "presentedOrder" — an array of indices [0..N-1] representing the order the student will see. Either swap two ADJACENT items or move ONE item to a different position; never scramble more than that. Provide "intentionallyWrongIndex" — the position in presentedOrder where the moved item appears; for an adjacent swap use either swapped position (the grader accepts both). Use null if you want the displayed order to actually be correct. Provide "orderingPrinciple" — one of "chronological", "cause-effect", "process", "size", or "hierarchy" — and "principleOptions" — the same 5 strings (always all 5, in random order is fine). Choose content where ordering genuinely matters and the principle is clear.' : ''}
           ${_relationMismatchCount > 0 ? 'For each Relation Mismatch Question: provide a "pairs" array of 4-5 {left, right} objects where ONE pair is intentionally WRONG. Provide "wrongPairIndex" pointing to that pair. Provide "correctPartnerForWrong" — the right column value that SHOULD have been paired with the wrong-pair\'s left item. Provide "candidatePartners" — an array of 4 strings that includes correctPartnerForWrong and 3 distractors. Choose content where genuine left-right relationships exist (term-definition, cause-effect, person-contribution, etc.) and the wrong pair encodes a believable confusion (not an obvious nonsense match).' : ''}
           ${_answerEvidenceCount > 0 ? 'For each Answer + Evidence Question: provide answerOptions (exactly 4), correctAnswer (matching one answer option), evidencePrompt, evidenceOptions (exactly 4), and correctEvidence (matching one evidence option). The evidence must genuinely justify the correct answer; plausible distractors should reflect common reasoning errors.' : ''}
           ${_numericResponseCount > 0 ? 'For each Numeric Response: provide correctValue as a number, tolerance as a non-negative number (0 for exact answers), unit as the preferred unit or an empty string, and acceptableUnits as common equivalent spellings for that SAME unit. Ask only questions with one unambiguous numeric result.' : ''}
@@ -5980,7 +6015,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           Return ONLY valid JSON: ${_jsonShape}
           ${differentiationContext}
           Source text:
-          "${textToProcess}"
+          "${_quizSourceText}"
         `;
         setGenerationStatus(t('status_steps.drafting_quiz'), 'build');
         result = await callGemini(prompt, true);
@@ -6014,7 +6049,25 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     type: itemType,
                     question: q.question || "Question text missing",
                     conceptLabel: _rawConceptLabel,
+                    sourceEvidence: typeof q.sourceEvidence === 'string' ? q.sourceEvidence.trim().slice(0, 600) : '',
                 };
+                if (typeof q.criterionId === 'string' && _criteriaCoverage.selectedIds.includes(q.criterionId)) base.criterionId = q.criterionId;
+                else delete base.criterionId;
+                if (itemType === 'short-answer' || itemType === 'self-explanation') base.studentCriteria = Array.isArray(q.studentCriteria) ? q.studentCriteria.filter(value => typeof value === 'string' && value.trim()).map(value => value.trim().slice(0, 300)).slice(0, 6) : [];
+                if (itemType === 'mcq' || itemType === 'multi-select') {
+                    base.optionFeedback = Array.isArray(q.options) && Array.isArray(q.optionFeedback) && q.optionFeedback.length === q.options.length ? q.optionFeedback.map(value => typeof value === 'string' ? value.slice(0, 500) : '') : [];
+                    if (_quizMode === 'pre-check') {
+                        base.transferPrompt = typeof q.transferPrompt === 'string' ? q.transferPrompt.slice(0, 800) : '';
+                        base.transferCriteria = Array.isArray(q.transferCriteria) ? q.transferCriteria.filter(value => typeof value === 'string' && value.trim()).map(value => value.slice(0, 300)).slice(0, 4) : [];
+                    }
+                }
+                if (itemType === 'fill-blank') base.fillBlankPolicy = _assessmentOptions.fillBlankPolicy;
+                if (itemType === 'numeric-response') base.numericSettings = Object.assign({}, _assessmentOptions.numericSettings);
+                if (itemType === 'sequence-sense') base.sequenceMode = _assessmentOptions.sequenceMode;
+                if (itemType === 'relation-mismatch' || itemType === 'answer-evidence') {
+                    base.requireReasoning = _assessmentOptions.requireReasoning;
+                    base.explanationPrompt = _assessmentOptions.requireReasoning ? String(q.explanationPrompt || 'Explain why your choice fits the relationship or evidence.').slice(0, 500) : '';
+                }
                 const _itemDok = _clampDok(q.dok);
                 if (_itemDok) base.dok = _itemDok; else delete base.dok;
                 if (itemType === 'mcq') {
@@ -6287,6 +6340,17 @@ ${_itemsBlock}`;
             try { content.questions = _keyQualityApi.balanceChoiceKeys(content.questions); } catch (balanceErr) { warnLog('[Quiz] Answer position balance skipped:', balanceErr); }
         }
         const _actualQuestions = content && Array.isArray(content.questions) ? content.questions : [];
+        if (content && typeof content === 'object') {
+            content.assessmentOptions = _assessmentOptions;
+            if (_qmStrategies && _qmStrategies.localContentReview) content.contentReview = _qmStrategies.localContentReview(_actualQuestions, _quizSourceText);
+            content.criteriaCoverage = _qmStrategies && _qmStrategies.resolveCriteriaCoverage
+                ? _qmStrategies.resolveCriteriaCoverage(_criteriaCoverage.available, _criteriaCoverage.selectedIds, _resolvedItemCount, _actualQuestions)
+                : _criteriaCoverage;
+            if (_quizMode === 'review') content.reviewContext = {
+                sourceIds: _reviewSelection.sourceIds.slice(), concepts: _reviewSelection.concepts.slice(), fallback: _reviewSelection.fallback,
+                sources: _reviewSelection.sources.map(source => ({ id: source.id, title: source.title, date: source.date }))
+            };
+        }
         const _actualReflections = content && Array.isArray(content.reflections) ? content.reflections : [];
         const _actualItemMix = {};
         _actualQuestions.forEach(function (question) {

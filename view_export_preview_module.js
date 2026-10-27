@@ -3577,6 +3577,10 @@ function _builderH5PCompatibility(item) {
         ready = !!prompt2 && options.length >= 2 && keys.length > 0 && keys.every((key) => options.includes(key));
       } else if (kind === "fill-blank") {
         ready = !!prompt2 && !!plain(question.expectedFill);
+        if (ready && ["normalized", "review-variants"].includes(question.fillBlankPolicy)) {
+          adapted += 1;
+          manualReview += 1;
+        }
       } else if (kind === "short-answer" || kind === "self-explanation") {
         ready = !!prompt2;
         if (ready) manualReview += 1;
@@ -3588,16 +3592,21 @@ function _builderH5PCompatibility(item) {
         }
       } else if (kind === "relation-mismatch") {
         const wrong = Number(question.wrongPairIndex);
-        ready = !!prompt2 && Array.isArray(question.pairs) && question.pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < question.pairs.length && Array.isArray(question.candidatePartners) && question.candidatePartners.length >= 2 && question.candidatePartners.includes(question.correctPartnerForWrong);
+        const reasoning = !!(question.requireReasoning || question.explanationPrompt);
+        ready = !!prompt2 && Array.isArray(question.pairs) && question.pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < question.pairs.length && (reasoning ? !!plain(question.correctPartnerForWrong) : Array.isArray(question.candidatePartners) && question.candidatePartners.length >= 2 && question.candidatePartners.includes(question.correctPartnerForWrong));
         if (ready) adapted += 1;
+        if (ready && reasoning) manualReview += 1;
       } else if (kind === "answer-evidence") {
         ready = !!prompt2 && Array.isArray(question.answerOptions) && question.answerOptions.length >= 2 && question.answerOptions.includes(question.correctAnswer) && Array.isArray(question.evidenceOptions) && question.evidenceOptions.length >= 2 && question.evidenceOptions.includes(question.correctEvidence);
         if (ready) adapted += 1;
+        if (ready && (question.requireReasoning || question.explanationPrompt)) manualReview += 1;
       } else if (kind === "numeric-response") {
         ready = !!prompt2 && (typeof question.correctValue === "number" || typeof question.correctValue === "string") && String(question.correctValue).trim() !== "" && Number.isFinite(Number(question.correctValue));
         if (ready) {
           adapted += 1;
-          if (Number(question.tolerance) > 0) manualReview += 1;
+          const settings = question.numericSettings || {};
+          const customWeight = typeof settings.valueWeight === "number" && Number.isFinite(settings.valueWeight) && settings.valueWeight !== 0.5;
+          if (Number(question.tolerance) > 0 || settings.allowEquivalentUnits === true || customWeight) manualReview += 1;
         }
       }
       if (ready) valid += 1;

@@ -17944,11 +17944,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         },
         [elkoninBoxes, soundChips, playSound, handleManualAudio],
       );
-      const handleSegDrop = React.useCallback(
-        (e, targetSource, targetIndex = null) => {
-          e.preventDefault();
-          if (!draggedItem) return;
-          const { item, source, index: sourceIndex } = draggedItem;
+      // One move for both drag-drop and tap-to-place (WCAG 2.5.7). Returns
+      // false when nothing moved (a box dropped on itself).
+      const applySegMove = React.useCallback(
+        (moved, targetSource, targetIndex = null) => {
+          const { item, source, index: sourceIndex } = moved;
           let newBoxes = [...elkoninBoxes];
           let newChips = [...soundChips];
           if (source === "pool" && targetSource === "box") {
@@ -17971,7 +17971,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             );
             playSound("woosh");
           } else if (source === "box" && targetSource === "box") {
-            if (sourceIndex === targetIndex) return;
+            if (sourceIndex === targetIndex) return false;
             const targetContent = newBoxes[targetIndex];
             newBoxes[targetIndex] = item;
             newBoxes[sourceIndex] = targetContent;
@@ -17979,11 +17979,54 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           setElkoninBoxes(newBoxes);
           setSoundChips(newChips);
-          setDraggedItem(null);
           setSegmentationErrors([]);
+          return true;
         },
-        [draggedItem, elkoninBoxes, soundChips, handleAudio],
+        [elkoninBoxes, soundChips, handleAudio],
       );
+      const handleSegDrop = React.useCallback(
+        (e, targetSource, targetIndex = null) => {
+          e.preventDefault();
+          if (!draggedItem) return;
+          if (!applySegMove(draggedItem, targetSource, targetIndex)) return;
+          setDraggedItem(null);
+        },
+        [draggedItem, applySegMove],
+      );
+      // Tap path: tap a chip to pick it up (it still plays), then tap a box or
+      // the chip tray to put it down. Tapping the picked chip again drops it.
+      const [segPicked, setSegPicked] = React.useState(null);
+      React.useEffect(() => { setSegPicked(null); }, [currentWordSoundsWord, wordSoundsActivity]);
+      const livePickedSeg = () => {
+        if (!segPicked) return null;
+        const { item, source, index } = segPicked;
+        if (source === "pool") {
+          const c = soundChips.find((x) => x.id === item.id);
+          return c && !c.used ? segPicked : null;
+        }
+        return elkoninBoxes[index] && elkoninBoxes[index].id === item.id ? segPicked : null;
+      };
+      const isSegPicked = (chip, source, index = null) => {
+        const p = livePickedSeg();
+        return !!p && p.item.id === chip.id && p.source === source && (source !== "box" || p.index === index);
+      };
+      const handleSegChipTap = (e, chip, source, index = null) => {
+        e.stopPropagation();
+        const p = livePickedSeg();
+        if (source === "box" && p && !(p.source === "box" && p.index === index)) {
+          applySegMove(p, "box", index);
+          setSegPicked(null);
+          return;
+        }
+        handleManualAudio(chip.phoneme);
+        setSegPicked(isSegPicked(chip, source, index) ? null : { item: chip, source, index });
+      };
+      const handleSegTargetTap = (targetSource, targetIndex = null) => {
+        const p = livePickedSeg();
+        if (!p) return;
+        if (!(targetSource === "pool" && p.source === "pool")) applySegMove(p, targetSource, targetIndex);
+        setSegPicked(null);
+      };
       const handleMoveKey = React.useCallback(
         (item, source, index) => {
           if (source === "pool") {
@@ -18845,6 +18888,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         key: i,
                         onDragOver: handleDragOver,
                         onDrop: (e) => handleSegDrop(e, "box", i),
+                        onClick: () => { if (!chip) handleSegTargetTap("box", i); },
                         className: `w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold transition-all relative ${isError ? "bg-red-50 border-2 border-red-400" : chip ? "scale-100 shadow-md ring-2 ring-violet-200" : "bg-white border-2 border-slate-200 text-slate-600"}`,
                         style: {
                           backgroundColor: chip ? chip.color : undefined,
@@ -18865,9 +18909,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                               handleKeyDown(e, chip, () =>
                                 handleMoveKey(chip, "box", i),
                               ),
-                      onClick: () => handleManualAudio(chip.phoneme),
+                            onClick: (e) => handleSegChipTap(e, chip, "box", i),
                             className:
-                              "w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-105 transition-transform",
+                              "w-full h-full rounded-2xl flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-105 transition-transform" + (isSegPicked(chip, "box", i) ? " ring-4 ring-violet-600 ring-offset-2" : ""),
                             "aria-label": (ts("word_sounds.sr_phoneme") || "Phoneme ") + chip.phoneme + (ts("word_sounds.sr_phoneme_keys") || ". Press Space to hear, Enter to remove."),
                           },
                           showLetterHints
@@ -18919,6 +18963,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "flex justify-center gap-4 flex-wrap mt-6 min-h-[80px] p-4 rounded-xl hover:bg-slate-50 transition-colors",
                     onDragOver: handleDragOver,
                     onDrop: (e) => handleSegDrop(e, "pool"),
+                    onClick: (e) => { if (e.target === e.currentTarget) handleSegTargetTap("pool"); },
                   },
                   availableChips.map((chip, idx) =>
                     isEditing
@@ -18947,7 +18992,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           draggable: true,
                           onDragStart: (e) =>
                             handleDragStart(e, chip, "pool"),
-                          onClick: () => handleManualAudio(chip.phoneme),
+                          onClick: (e) => handleSegChipTap(e, chip, "pool"),
+                          "aria-pressed": isSegPicked(chip, "pool"),
                           onKeyDown: (e) =>
                             handleKeyDown(e, chip, () =>
                               handleMoveKey(chip, "pool"),
@@ -18960,10 +19006,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           title:
                             typeof PHONEME_GUIDE !== "undefined" &&
                               PHONEME_GUIDE[chip.phoneme]
-                              ? `${PHONEME_GUIDE[chip.phoneme].label}: ${PHONEME_GUIDE[chip.phoneme].tip}\n` + (ts("word_sounds.chip_drag_or_listen") || "Drag to box or Click to listen")
-                              : ts("word_sounds.chip_drag_or_listen") || "Drag to box or Click to listen",
+                              ? `${PHONEME_GUIDE[chip.phoneme].label}: ${PHONEME_GUIDE[chip.phoneme].tip}\n` + (ts("word_sounds.chip_drag_or_tap") || "Drag to a box, or click or tap to hear it and pick it up, then click or tap a box.")
+                              : ts("word_sounds.chip_drag_or_tap") || "Drag to a box, or click or tap to hear it and pick it up, then click or tap a box.",
                           className:
-                            "w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all cursor-grab active:cursor-grabbing",
+                            "w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all cursor-grab active:cursor-grabbing" + (isSegPicked(chip, "pool") ? " ring-4 ring-violet-600 ring-offset-2" : ""),
                           style: {
                             backgroundColor: chip.color,
                             borderColor: chip.color.replace("92%", "70%"),

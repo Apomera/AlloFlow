@@ -5632,6 +5632,7 @@ const handleQuizChange = (qIndex, field, value, optIndex = null, isEn = false) =
     if (!isEn && (field === 'question' || field === 'option' || field === 'correctAnswer')) {
         updatedQuestion.factCheck = null;
         updatedQuestion.keyCheck = null;
+        updatedQuestion.optionFeedback = [];
     }
     if (field === 'question') {
         if (isEn) updatedQuestion.question_en = value;
@@ -5728,6 +5729,9 @@ const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = 
                 actualMix[type] = (actualMix[type] || 0) + 1;
             });
             const data = { ...item.data, questions, actualItemTypeMix: actualMix };
+            // A teacher's deliberate type change becomes the recipe, so the audit
+            // and "fix missing items" do not undo it.
+            if (guard.retargetMix && data.requestedItemTypeMix && typeof data.requestedItemTypeMix === 'object') data.requestedItemTypeMix = { ...actualMix };
             if (data.requestedItemTypeMix && typeof data.requestedItemTypeMix === 'object') {
                 const keys = new Set([...Object.keys(data.requestedItemTypeMix), ...Object.keys(actualMix)]);
                 data.itemCountMismatch = Array.from(keys).some(key => (data.requestedItemTypeMix[key] || 0) !== (actualMix[key] || 0));
@@ -5768,10 +5772,27 @@ const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = 
     const newData = { ...__d.generatedContent.data };
     const newQuestions = Array.isArray(newData.questions) ? [...newData.questions] : [];
     const index = Math.max(0, Math.min(newQuestions.length - 1, Number(qIndex) || 0));
-    if (action === 'patch-assessment' && payload && payload.deliverySettings && typeof payload.deliverySettings === 'object') {
+    if (action === 'insert') {
+        // qIndex is the item the new one follows; -1 puts it first.
+        if (!payload || !payload.question || typeof payload.question !== 'object' || Array.isArray(payload.question) || !Number.isInteger(qIndex) || qIndex < -1 || qIndex >= newQuestions.length) return;
+        newQuestions.splice(qIndex + 1, 0, { ...payload.question, factCheck: null, keyCheck: null });
+    } else if (action === 'patch-assessment' && payload && payload.deliverySettings && typeof payload.deliverySettings === 'object') {
         newData.deliverySettings = { ...payload.deliverySettings };
     } else if (action === 'patch' && newQuestions[index]) {
-        newQuestions[index] = { ...newQuestions[index], ...(payload || {}), factCheck: null, keyCheck: null };
+        const previousQuestion = newQuestions[index];
+        const patch = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
+        const updatedQuestion = { ...previousQuestion, ...patch, factCheck: null, keyCheck: null };
+        const feedbackContentChanged = ['question', 'options', 'correctAnswer', 'correctAnswers', 'correctIndex', 'type', 'itemType'].some(field =>
+            Object.prototype.hasOwnProperty.call(patch, field) && JSON.stringify(previousQuestion[field]) !== JSON.stringify(updatedQuestion[field]));
+        // A teacher can supply reviewed replacement feedback in this same edit.
+        // Otherwise a changed stem, choice list, or key invalidates every old
+        // explanation, even when the replacement list happens to be the same length.
+        const suppliedFeedback = Object.prototype.hasOwnProperty.call(patch, 'optionFeedback')
+            && Array.isArray(patch.optionFeedback) && Array.isArray(updatedQuestion.options)
+            && patch.optionFeedback.length === updatedQuestion.options.length
+            && patch.optionFeedback.every(value => typeof value === 'string');
+        if (feedbackContentChanged && !suppliedFeedback) updatedQuestion.optionFeedback = [];
+        newQuestions[index] = updatedQuestion;
     } else if (action === 'replace' && payload && typeof payload === 'object' && newQuestions[index]) {
         newQuestions[index] = { ...payload, type: payload.type || newQuestions[index].type || 'mcq', factCheck: null, keyCheck: null };
     } else if (action === 'delete' && newQuestions[index]) {
@@ -5804,6 +5825,9 @@ const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = 
         actualMix[key] = (actualMix[key] || 0) + 1;
     });
     newData.actualItemTypeMix = actualMix;
+    // Items the teacher adds, copies, or deletes on purpose define the new
+    // recipe; otherwise the audit would report them as missing or extra.
+    if (['insert', 'duplicate', 'delete'].includes(action) && newData.requestedItemTypeMix && typeof newData.requestedItemTypeMix === 'object') newData.requestedItemTypeMix = { ...actualMix };
     if (newData.requestedItemTypeMix && typeof newData.requestedItemTypeMix === 'object') {
         const keys = new Set([...Object.keys(newData.requestedItemTypeMix), ...Object.keys(actualMix)]);
         newData.itemCountMismatch = Array.from(keys).some(key => (newData.requestedItemTypeMix[key] || 0) !== (actualMix[key] || 0));
@@ -7931,7 +7955,7 @@ const handleNodeClick = (e, nodeId) => {
       e.stopPropagation();
       if (__d.connectingSourceId === null) {
           __d.setConnectingSourceId(nodeId);
-          __d.addToast(__d.t('concept_map.overlay.standard_instructions'), "info");
+          __d.addToast(__d.t(__d.generatedContent?.data?.structureType === 'Venn Diagram' ? 'concept_map.overlay.venn_token_selected_tap' : 'concept_map.overlay.node_selected_tap'), "info");
       } else {
           if (__d.connectingSourceId === nodeId) {
               __d.setConnectingSourceId(null);
@@ -8685,7 +8709,7 @@ const printQrSheet = (svg, heading, detail, modeLabel, fallbackCode = '') => {
       const safeMode = escapeText(modeLabel);
       const safeCode = escapeText(String(fallbackCode || '').replace(/[^A-Z0-9-]/gi, ''));
       popup.document.open();
-      popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeHeading}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.detail{font-size:18px;font-weight:700;margin-bottom:8px}.mode{font-weight:700;color:#6d28d9;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 52px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>${safeHeading}</h1><div class="detail">${safeDetail}</div><div class="mode">${safeMode}</div><div class="qr">${svg}</div>${safeCode ? '<div>Fallback class code</div><div class="code">' + safeCode + '</div>' : ''}<div class="note">Scan with a phone or tablet camera. If scanning is unavailable, ask the teacher for the link${safeCode ? ' or class code' : ''}.</div></body></html>`);
+      popup.document.write(`<!doctype html><html lang="${String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '')}"${document.documentElement.dir === 'rtl' ? ' dir="rtl"' : ''}><head><meta charset="utf-8"><title>${safeHeading}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.detail{font-size:18px;font-weight:700;margin-bottom:8px}.mode{font-weight:700;color:#6d28d9;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 52px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>${safeHeading}</h1><div class="detail">${safeDetail}</div><div class="mode">${safeMode}</div><div class="qr">${svg}</div>${safeCode ? '<div>Fallback class code</div><div class="code">' + safeCode + '</div>' : ''}<div class="note">Scan with a phone or tablet camera. If scanning is unavailable, ask the teacher for the link${safeCode ? ' or class code' : ''}.</div></body></html>`);
       popup.document.close();
       setTimeout(() => { try { popup.focus(); popup.print(); } catch (_) {} }, 250);
   };

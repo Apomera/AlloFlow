@@ -565,7 +565,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">🗓️</span>
                 <div>
                   <h3 className="font-bold text-teal-800">{t('educator_hub.activities_title') || 'Polls & Sign-ups'}</h3>
-                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.activities_desc') || 'Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code — no account required.'}</p>
+                  <p className="text-xs text-teal-700 mt-1">{t('educator_hub.activities_desc') || 'Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code — no account required.'}</p>
                 </div>
               </button>
 
@@ -842,7 +842,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">♿</span>
                 <div>
                   <h3 className="font-bold text-teal-800">{t('educator_hub.document_accessibility_title') || 'Document accessibility'}</h3>
-                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.document_accessibility_desc') || 'Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats.'}</p>
+                  <p className="text-xs text-teal-700 mt-1">{t('educator_hub.document_accessibility_desc') || 'Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats.'}</p>
                 </div>
               </button>
 

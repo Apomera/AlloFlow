@@ -2,9 +2,11 @@
 // arrives whole. Route-injects each pack over the catalog's illustrated-pilot entry, one page
 // load per pack, and asserts:
 //   - the toast does not say the load failed
-//   - the history holds exactly the pack's resource count
-//   - every resource title from the file is present in the history list
+//   - the "RESOURCE i OF N" navigator shows exactly the pack's resource count
+//   - every resource title from the file is listed under Class & Materials
 //   - no page errors, and no "Component Error" boundary anywhere
+// The History panel these checks used to read was replaced in October 2026; reading it made
+// every pack (even untouched ones) report "history shows -1 resources".
 //
 // Why this exists: the vitest suite validates SHAPES against the renderers' contracts, which is
 // not the same as the app accepting the file. The illustrated pilot was rejected in July by the
@@ -88,37 +90,42 @@ for (const slug of slugs) {
       .locator('xpath=ancestor::*[.//button[contains(., "Load in AlloFlow")]][1]');
     await card.getByRole('button', { name: 'Load in AlloFlow' }).click();
     await page.waitForTimeout(6500);
-    // The History panel is closed after a load; both the count and the title lookup live in it.
     await page.evaluate(() => { const b = [...document.querySelectorAll("button")].find((x) => x.textContent.trim() === "Close" && x.closest("[role=dialog], .fixed")); if (b) b.click(); });
     await page.waitForTimeout(900);
-    await page.evaluate(() => { const b = [...document.querySelectorAll("button")].find((x) => x.innerText.trim() === "History"); if (b) b.click(); });
-    await page.waitForTimeout(1600);
     const body = await page.evaluate(() => document.body.innerText);
     // break, not continue: these are real findings, so they must not enter the retry.
     if (/Failed to load lesson/i.test(body)) { fail('toast: failed to load lesson'); await ctx.close(); break; }
     if (/Component Error/i.test(body)) { fail('Component Error on screen after load'); await ctx.close(); break; }
     const count = await page.evaluate(() => {
-      const m = document.body.innerText.match(/Resource Pack History\s+(\d+)/);
+      const text = document.body.innerText;
+      const m = text.match(/RESOURCE \d+ OF (\d+)/i) || text.match(/Resource Pack History\s+(\d+)/);
       return m ? Number(m[1]) : -1;
     });
-    const missing = await page.evaluate((ts) => ts.filter((t) => !document.querySelector('div[title="' + t.replace(/"/g, '\\"') + '"]')), titles);
-    if (count !== titles.length) fail('history shows ' + count + ' resources, file has ' + titles.length);
-    else if (missing.length) fail('missing from history: ' + missing.join('; '));
+    // Titles are listed under the Class & Materials tab; open it, read, then return to Create.
+    await step(() => page.getByText('Class & Materials', { exact: true }).first().click({ timeout: 10000 }));
+    await page.waitForTimeout(2500);
+    const listed = await page.evaluate(() => document.body.innerText);
+    const missing = titles.filter((t) => !listed.includes(t));
+    await step(() => page.getByText('Create', { exact: true }).first().click({ timeout: 8000 }));
+    await page.waitForTimeout(1200);
+    if (count !== titles.length) fail('app shows ' + count + ' resources, file has ' + titles.length);
+    else if (missing.length) fail('missing from Class & Materials: ' + missing.join('; '));
     else if (errors.length) fail('page errors: ' + errors.slice(0, 2).join(' | '));
     else if (deep) {
       // QA plan step 2 in full: open EVERY resource and confirm it renders something rather
       // than a blank panel or the error boundary. Costs ~4s per resource on top of the load.
+      // Walk the resources with the app's own Next button, as a teacher would.
       const broken = [];
-      for (const title of titles) {
-        await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => x.innerText.trim() === 'History'); if (b) b.click(); });
-        await page.waitForTimeout(700);
-        await page.evaluate((t) => { const d = document.querySelector('div[title="' + t.replace(/"/g, '\\"') + '"]'); if (d) d.click(); }, title);
+      for (let i = 1; i <= count; i++) {
+        const title = 'resource ' + i + ' (' + (titles[i - 1] || '?') + ')';
         await page.waitForTimeout(3200);
         const state = await page.evaluate(() => {
           const main = document.querySelector('#screenshot-target') || document.querySelector('main');
           const text = main ? main.innerText.replace(/\s+/g, ' ').trim() : '';
-          return { err: /Component Error/i.test(document.body.innerText), len: text.length };
+          const pos = (document.body.innerText.match(/RESOURCE (\d+) OF \d+/i) || [])[1];
+          return { err: /Component Error/i.test(document.body.innerText), len: text.length, pos: Number(pos || -1) };
         });
+        if (state.pos !== i) broken.push(title + ' (navigator shows ' + state.pos + ')');
         if (state.err) {
           // Grab the boundary's own fallback text and the most recent console errors at the moment
           // of failure, so the FLAKY/FAIL line carries a cause a person can act on.
@@ -133,6 +140,12 @@ for (const slug of slugs) {
           broken.push(title + ' (Component Error)');
         }
         else if (state.len < 40) broken.push(title + ' (rendered ' + state.len + ' chars)');
+        // A click during a busy render is sometimes swallowed; retry once before judging.
+        for (let tries = 0; i < count && tries < 2; tries++) {
+          await page.getByRole('button', { name: /^Next/ }).last().click({ timeout: 10000 }).catch(() => {});
+          const moved = await page.waitForFunction((n) => new RegExp('RESOURCE ' + n + ' OF', 'i').test(document.body.innerText), i + 1, { timeout: 8000 }).then(() => true, () => false);
+          if (moved) break;
+        }
       }
       // The ONE assertion here that is allowed a retry, against the rule stated at the top. A
       // Component Error in this loop is not reliably a pack defect: the host drains ~140 deferred

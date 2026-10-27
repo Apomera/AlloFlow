@@ -20,6 +20,86 @@ var BRIDGE_PHRASES = [
   { id: "plan", icon: "\u{1F5D3}\uFE0F", label: "Plan together", phrases: ["Can we set up a time to meet?", "What time works for you?", "Please bring this form back when you can.", "I will send this home with your child."] },
   { id: "close", icon: "\u{1F64F}", label: "Close", phrases: ["Thank you for your time.", "Please reach out anytime.", "We appreciate you.", "Goodbye, and take care."] }
 ];
+var BRIDGE_LANG_CODES = {
+  "English": "en-US",
+  "Spanish": "es-ES",
+  "French": "fr-FR",
+  "Arabic": "ar-SA",
+  "Somali": "so-SO",
+  "Vietnamese": "vi-VN",
+  "Portuguese": "pt-BR",
+  "Mandarin": "zh-CN",
+  "Korean": "ko-KR",
+  "Tagalog": "tl-PH",
+  "Russian": "ru-RU",
+  "Japanese": "ja-JP",
+  "Haitian Creole": "ht-HT",
+  "Swahili": "sw-KE",
+  "Hmong": "hmn",
+  "Burmese": "my-MM",
+  "Nepali": "ne-NP",
+  "German": "de-DE",
+  "Italian": "it-IT",
+  "Polish": "pl-PL",
+  "Ukrainian": "uk-UA",
+  "Hindi": "hi-IN",
+  "Urdu": "ur-PK",
+  "Bengali": "bn-BD",
+  "Thai": "th-TH",
+  "Indonesian": "id-ID",
+  "Malay": "ms-MY",
+  "Turkish": "tr-TR",
+  "Dutch": "nl-NL",
+  "Greek": "el-GR",
+  "Czech": "cs-CZ",
+  "Romanian": "ro-RO",
+  "Hungarian": "hu-HU",
+  "Swedish": "sv-SE",
+  "Norwegian": "nb-NO",
+  "Danish": "da-DK",
+  "Finnish": "fi-FI",
+  "Hebrew": "he-IL",
+  "Persian": "fa-IR",
+  "Pashto": "ps-AF",
+  "Amharic": "am-ET",
+  "Tigrinya": "ti-ET",
+  "Yoruba": "yo-NG",
+  "Igbo": "ig-NG",
+  "Hausa": "ha-NG",
+  "Zulu": "zu-ZA",
+  "Xhosa": "xh-ZA",
+  "Afrikaans": "af-ZA",
+  "Maori": "mi-NZ",
+  "Samoan": "sm-WS",
+  "Tongan": "to-TO",
+  "Hawaiian": "haw-US",
+  "Cherokee": "chr-US",
+  "Navajo": "nv-US",
+  "Marshallese": "mh-MH",
+  "Chuukese": "chk-FM",
+  "Gujarati": "gu-IN",
+  "Punjabi": "pa-IN",
+  "Tamil": "ta-IN",
+  "Telugu": "te-IN",
+  "Kannada": "kn-IN",
+  "Malayalam": "ml-IN",
+  "Sinhala": "si-LK",
+  "Khmer": "km-KH",
+  "Lao": "lo-LA",
+  "Dari": "fa-AF",
+  "Kurdish": "ku-IQ",
+  "Azerbaijani": "az-AZ",
+  "Georgian": "ka-GE",
+  "Armenian": "hy-AM",
+  "Mongolian": "mn-MN",
+  "Kazakh": "kk-KZ",
+  "Uzbek": "uz-UZ"
+};
+function _bridgeLangAttrs(language) {
+  var code = BRIDGE_LANG_CODES[language];
+  if (!code) return "";
+  return ' lang="' + code + '"' + (/^(ar|he|fa|ps|ur)(-|$)/.test(code) ? ' dir="rtl"' : "");
+}
 var _bridgeActiveRec = null;
 function _bridgeStopListening() {
   if (_bridgeActiveRec) {
@@ -1079,81 +1159,7 @@ Concept: ${bridgeSendText}`;
         },
         bridgeSending ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", animation: bridgeReducedMotion ? "none" : "pulse 1.5s ease-in-out infinite", fontSize: "18px" } }, "\u23F3"), " ", t("bridge.generating_bilingual_status") || "Generating bilingual content...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "18px" } }, "\u{1F4E1}"), " ", t("bridge.generate_and_send_button") || "Generate & Send to Class")
       ), bridgeChatOpen && (() => {
-        const _langCodes = {
-          "English": "en-US",
-          "Spanish": "es-ES",
-          "French": "fr-FR",
-          "Arabic": "ar-SA",
-          "Somali": "so-SO",
-          "Vietnamese": "vi-VN",
-          "Portuguese": "pt-BR",
-          "Mandarin": "zh-CN",
-          "Korean": "ko-KR",
-          "Tagalog": "tl-PH",
-          "Russian": "ru-RU",
-          "Japanese": "ja-JP",
-          "Haitian Creole": "ht-HT",
-          "Swahili": "sw-KE",
-          "Hmong": "hmn",
-          "Burmese": "my-MM",
-          "Nepali": "ne-NP",
-          "German": "de-DE",
-          "Italian": "it-IT",
-          "Polish": "pl-PL",
-          "Ukrainian": "uk-UA",
-          "Hindi": "hi-IN",
-          "Urdu": "ur-PK",
-          "Bengali": "bn-BD",
-          "Thai": "th-TH",
-          "Indonesian": "id-ID",
-          "Malay": "ms-MY",
-          "Turkish": "tr-TR",
-          "Dutch": "nl-NL",
-          "Greek": "el-GR",
-          "Czech": "cs-CZ",
-          "Romanian": "ro-RO",
-          "Hungarian": "hu-HU",
-          "Swedish": "sv-SE",
-          "Norwegian": "nb-NO",
-          "Danish": "da-DK",
-          "Finnish": "fi-FI",
-          "Hebrew": "he-IL",
-          "Persian": "fa-IR",
-          "Pashto": "ps-AF",
-          "Amharic": "am-ET",
-          "Tigrinya": "ti-ET",
-          "Yoruba": "yo-NG",
-          "Igbo": "ig-NG",
-          "Hausa": "ha-NG",
-          "Zulu": "zu-ZA",
-          "Xhosa": "xh-ZA",
-          "Afrikaans": "af-ZA",
-          "Maori": "mi-NZ",
-          "Samoan": "sm-WS",
-          "Tongan": "to-TO",
-          "Hawaiian": "haw-US",
-          "Cherokee": "chr-US",
-          "Navajo": "nv-US",
-          "Marshallese": "mh-MH",
-          "Chuukese": "chk-FM",
-          "Gujarati": "gu-IN",
-          "Punjabi": "pa-IN",
-          "Tamil": "ta-IN",
-          "Telugu": "te-IN",
-          "Kannada": "kn-IN",
-          "Malayalam": "ml-IN",
-          "Sinhala": "si-LK",
-          "Khmer": "km-KH",
-          "Lao": "lo-LA",
-          "Dari": "fa-AF",
-          "Kurdish": "ku-IQ",
-          "Azerbaijani": "az-AZ",
-          "Georgian": "ka-GE",
-          "Armenian": "hy-AM",
-          "Mongolian": "mn-MN",
-          "Kazakh": "kk-KZ",
-          "Uzbek": "uz-UZ"
-        };
+        const _langCodes = BRIDGE_LANG_CODES;
         const _resolveBridgeLang = (sel, custom) => {
           const c = (custom || "").trim();
           return c || (sel === "custom" ? "" : sel);
@@ -2078,7 +2084,7 @@ function BridgeMessageModal(props) {
             const safeImg = (u) => typeof u === "string" && /^(data:image\/|blob:|https:)/i.test(u) ? u : "";
             const _img = safeImg(bridgeMessage.imageUrl);
             const printContent = `
-                      <html><head><title>${esc(t("bridge.bridge_message") || "Bridge Message")}</title>
+                      <html lang="en"><head><title>${esc(t("bridge.bridge_message") || "Bridge Message")}</title>
                       <style>
                         body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
                         .lang-label { font-size: 14px; font-weight: bold; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
@@ -2094,7 +2100,7 @@ function BridgeMessageModal(props) {
                       ${_img ? '<img alt="" src="' + esc(_img) + '" />' : ""}
                       <div class="lang-label">\u{1F1FA}\u{1F1F8} English</div>
                       <div class="text-block">${esc(bridgeMessage.english)}</div>
-                      ${bridgeMessage.translated ? '<div class="lang-label">' + esc(bridgeMessage.languageName || bridgeMessage.language) + '</div><div class="text-block">' + esc(bridgeMessage.translated) + "</div>" : ""}
+                      ${bridgeMessage.translated ? '<div class="lang-label">' + esc(bridgeMessage.languageName || bridgeMessage.language) + '</div><div class="text-block"' + _bridgeLangAttrs(bridgeMessage.language) + ">" + esc(bridgeMessage.translated) + "</div>" : ""}
                       ${bridgeMessage.terms?.length ? '<div class="lang-label">\u{1F4D6} Key Terms</div><div class="terms">' + bridgeMessage.terms.map((t2) => {
               const w = typeof t2 === "object" ? t2.word : t2;
               const d = typeof t2 === "object" && t2.definition ? t2.definition : "";

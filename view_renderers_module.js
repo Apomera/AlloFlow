@@ -182,7 +182,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
       const number = numMatch[1];
       const content = numMatch[2];
       elements.push(
-        /* @__PURE__ */ React.createElement("div", { key: lineIdx, className: "flex items-start gap-2 mb-1 ml-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-500 min-w-[1.2em] text-right" }, number, "."), /* @__PURE__ */ React.createElement("div", { className: "text-sm" }, formatInlineText(content, enableGlossary, isDarkBg)))
+        /* @__PURE__ */ React.createElement("div", { key: lineIdx, className: "flex items-start gap-2 mb-1 ml-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-700 min-w-[1.2em] text-right" }, number, "."), /* @__PURE__ */ React.createElement("div", { className: "text-sm" }, formatInlineText(content, enableGlossary, isDarkBg)))
       );
       continue;
     }
@@ -6773,6 +6773,31 @@ const renderInteractiveMap = (deps) => {
   } catch (_) {
   }
   const isVenn = generatedContent?.data?.structureType === "Venn Diagram";
+  const pickedVennToken = isVenn && !isMapLocked && connectingSourceId ? (conceptMapNodes || []).find((n) => n.id === connectingSourceId && n.type === "venn-token") || null : null;
+  const handleVennZoneClick = (e) => {
+    if (!pickedVennToken || e.target !== e.currentTarget) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const w = e.currentTarget.offsetWidth || rect.width || 800;
+    const h = e.currentTarget.offsetHeight || rect.height || 800;
+    let x = Math.max(0, Math.min(w, e.clientX - rect.left));
+    let y = Math.max(0, Math.min(h, e.clientY - rect.top));
+    const inA = Math.hypot(x - VENN_ZONES.A.x, y - VENN_ZONES.A.y) <= VENN_ZONES.A.r;
+    const inB = Math.hypot(x - VENN_ZONES.B.x, y - VENN_ZONES.B.y) <= VENN_ZONES.B.r;
+    if (y <= VENN_ZONES.BANK_Y && !inA && !inB) {
+      x = 100 + Math.random() * 600;
+      y = 530 + Math.random() * 50;
+    }
+    setConceptMapNodes((prev) => prev.map((n) => n.id === pickedVennToken.id ? { ...n, x, y } : n));
+    setConnectingSourceId(null);
+  };
+  const activateMapNode = (e, node) => {
+    if (pickedVennToken && node.type === "venn-token" && node.id !== pickedVennToken.id) {
+      e.stopPropagation();
+      setConnectingSourceId(node.id);
+      return;
+    }
+    handleNodeClick(e, node.id);
+  };
   const handleVennResetBoard = () => {
     setConceptMapNodes((prev) => prev.map((node) => ({
       ...node,
@@ -6993,8 +7018,9 @@ const renderInteractiveMap = (deps) => {
       ref: mapContainerRef,
       className: `relative w-full ${isVenn ? "h-[800px]" : "h-[75vh] min-h-[600px]"} bg-white border border-slate-400 rounded-xl overflow-hidden shadow-inner select-none mb-6 ${isMapLocked ? "cursor-default" : "cursor-crosshair"} ${isChallengeActive ? "ring-4 ring-yellow-100" : ""}`,
       onMouseDown: (e) => {
-        if (e.target === e.currentTarget && !isMapLocked) setConnectingSourceId(null);
-      }
+        if (e.target === e.currentTarget && !isMapLocked && !pickedVennToken) setConnectingSourceId(null);
+      },
+      onClick: pickedVennToken ? handleVennZoneClick : void 0
     },
     /* @__PURE__ */ React.createElement("style", null, `
                       @keyframes vo-node-in { from { opacity: 0; } to { opacity: 1; } }
@@ -7126,7 +7152,7 @@ const renderInteractiveMap = (deps) => {
                               ${connectingSourceId === node.id ? "ring-4 ring-yellow-400 ring-offset-2 scale-105" : ""}
                           `,
         onMouseDown: (e) => !isMapLocked && handleNodeMouseDown(e, node.id),
-        onClick: (e) => handleNodeClick(e, node.id)
+        onClick: (e) => activateMapNode(e, node)
       },
       /* @__PURE__ */ React.createElement(
         "div",
@@ -7155,7 +7181,7 @@ const renderInteractiveMap = (deps) => {
         /* @__PURE__ */ React.createElement(X, { size: 12 })
       )
     )),
-    /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] text-slate-600 pointer-events-none border border-slate-400 shadow-sm" }, isVenn ? t("concept_map.overlay.venn_instructions") : isChallengeActive ? t("concept_map.overlay.challenge_instructions") : t("concept_map.overlay.standard_instructions")),
+    /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] text-slate-600 pointer-events-none border border-slate-400 shadow-sm" }, isVenn ? t("concept_map.overlay.venn_instructions_tap") : isChallengeActive ? t("concept_map.overlay.challenge_instructions") : t("concept_map.overlay.standard_instructions")),
     isChallengeActive && challengeFeedback && challengeFeedback.score === 100 && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none flex items-center justify-center z-50" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null))
   ));
 };

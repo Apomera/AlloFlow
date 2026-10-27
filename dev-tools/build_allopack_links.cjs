@@ -60,7 +60,7 @@ function renderResourceDetails(entry) {
   const types = Array.isArray(entry.resource_types) ? entry.resource_types : [];
   if (!Number.isSafeInteger(entry.resource_count) || !types.length) return '';
   return `<p class="pack-resource-count"><strong>${entry.resource_count} resources</strong> · ${types.length} activity types</p>
-    ${Number.isSafeInteger(entry.core_resource_count) && entry.core_resource_count > 0 && entry.core_resource_count <= entry.resource_count ? `<p class="pack-core-route">Start with <strong>${entry.core_resource_count} core ${entry.core_resource_count === 1 ? 'resource' : 'resources'}</strong>${entry.core_resource_count < entry.resource_count ? '; supports and later practice included.' : '.'}</p>` : ''}
+    ${Number.isSafeInteger(entry.core_resource_count) && entry.core_resource_count > 0 && entry.core_resource_count <= entry.resource_count ? `<p class="pack-core-route">Start with <strong>${entry.core_resource_count} core ${entry.core_resource_count === 1 ? 'resource' : 'resources'}</strong>${entry.core_resource_count < entry.resource_count ? '; supports included.' : '.'}</p>` : ''}
     <details class="pack-resource-list"><summary>See included resources</summary><ul>${types.map(({type,count}) => `<li>${esc(resourceLabel(type))} <span>(${Number(count) || 0})</span></li>`).join('')}</ul></details>`;
 }
 

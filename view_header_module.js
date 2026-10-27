@@ -316,6 +316,24 @@ function HeaderBar(props) {
       else toggle();
     }, 40);
   }, []);
+  const [singleKeyShortcuts, setSingleKeyShortcuts] = React.useState(() => {
+    try {
+      return localStorage.getItem("allo_single_key_shortcuts") !== "off";
+    } catch (_) {
+      return true;
+    }
+  });
+  const toggleSingleKeyShortcuts = React.useCallback(() => {
+    setSingleKeyShortcuts((previous) => {
+      const next = !previous;
+      try {
+        if (next) localStorage.removeItem("allo_single_key_shortcuts");
+        else localStorage.setItem("allo_single_key_shortcuts", "off");
+      } catch (_) {
+      }
+      return next;
+    });
+  }, []);
   const [voiceInputEngine, setVoiceInputEngine] = React.useState(() => {
     try {
       const shared = typeof window !== "undefined" && window.AlloFlowVoice;
@@ -1051,7 +1069,20 @@ function HeaderBar(props) {
         className: `min-h-9 rounded-lg border px-3 text-xs font-bold transition-colors motion-reduce:transition-none ${selectedReadingThemeIsFavorite ? theme === "contrast" ? "border-yellow-400 bg-yellow-400 text-black" : theme === "dark" ? "border-amber-400 bg-amber-950 text-amber-100" : "border-amber-500 bg-amber-100 text-amber-950" : _skin.field + " hover:border-amber-500"}`
       },
       selectedReadingThemeIsFavorite ? "\u2605 Favorite" : "\u2606 Favorite this theme"
-    ), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite", className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, readingThemePreferenceScope ? `Saved for ${readingThemePreferenceScope} when this live class syncs.` : normalizedReadingThemeFavorites.length ? `${normalizedReadingThemeFavorites.length} favorite${normalizedReadingThemeFavorites.length === 1 ? "" : "s"} saved on this device.` : "Favorites appear first in this picker."))))))
+    ), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite", className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, readingThemePreferenceScope ? `Saved for ${readingThemePreferenceScope} when this live class syncs.` : normalizedReadingThemeFavorites.length ? `${normalizedReadingThemeFavorites.length} favorite${normalizedReadingThemeFavorites.length === 1 ? "" : "s"} saved on this device.` : "Favorites appear first in this picker."))), /* @__PURE__ */ React.createElement("div", { className: `border-t ${_skin.divider} pt-3` }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: toggleSingleKeyShortcuts,
+        role: "switch",
+        "aria-checked": singleKeyShortcuts,
+        "aria-describedby": "header-single-key-shortcuts-desc",
+        "data-single-key-shortcuts-toggle": "true",
+        className: `w-full flex items-center justify-between gap-3 p-3 rounded-lg border-2 transition-all ${singleKeyShortcuts ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, t("settings.text.single_key_shortcuts") || "Single-key shortcuts"), /* @__PURE__ */ React.createElement("span", { id: "header-single-key-shortcuts-desc", className: "block text-[11px] mt-0.5" }, t("settings.text.single_key_shortcuts_sub") || "Press ? to turn Help Mode on or off. Turn this off if you use speech input or often press keys by accident. The Help Mode button in the toolbar still works.")),
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `shrink-0 w-10 h-5 rounded-full relative transition-colors ${singleKeyShortcuts ? "bg-indigo-500" : theme === "contrast" ? "bg-yellow-400" : "bg-slate-500"}` }, /* @__PURE__ */ React.createElement("span", { className: `absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${singleKeyShortcuts ? "left-6" : "left-1"}` }))
+    )))))
   )), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {

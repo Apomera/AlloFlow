@@ -10,7 +10,8 @@
 // "Original with supports" showed raw Markdown. Neither showed in the source; only the
 // generated file, read in a real browser after a theme click, shows them.
 //
-// usage: node dev-tools/export_theme_sweep.cjs [--packs a,b | --packs all] [--module file] [--out dir]
+// usage: node dev-tools/export_theme_sweep.cjs [--packs a,b | --packs all] [--wide] [--module file] [--out dir]
+//   --wide adds teacher copies, worksheets, every export style and the resource types no pack carries.
 //        node dev-tools/export_theme_sweep.cjs --selftest
 const fs = require('node:fs');
 const path = require('node:path');
@@ -32,7 +33,7 @@ function arg(name, fallback) {
 }
 
 // ── Export generation (child process: jsdom globals stay out of the Playwright process) ──
-function generate(outDir, moduleFile, packs) {
+function generate(outDir, moduleFile, packs, wide) {
   const { JSDOM } = require(path.join(ROOT, 'node_modules/jsdom'));
   const dom = new JSDOM('<!doctype html><html><head></head><body></body></html>', { url: 'https://example.test/', pretendToBeVisual: true });
   global.window = dom.window;
@@ -60,6 +61,21 @@ function generate(outDir, moduleFile, packs) {
     sourceSnapshot: contract.createSourceSnapshot(source, { sourceArtifactId: 'src-generated', language: 'English' }),
     sourceFamilyId: 'src-generated', instructionalText: { schemaVersion: 1, role: 'supplemental', form: 'adapted' },
   };
+  // Resource types no allopack carries (2026-10-25: fluency word colors and brainstorm badges missed AA).
+  const extraTypes = [
+    { id: 'an1', type: 'analysis', title: 'Source analysis', config: { language: 'English' }, data: { analysisSourceVersion: 1, originalText: 'The Stamp Act of 1765 taxed printed paper.',
+      sourceLanguage: 'English', reportLanguage: 'English', readingLevel: { range: '6th-8th Grade', explanation: 'Civic vocabulary.' },
+      accuracy: { rating: 'High', reason: 'Dates match standard histories.', citations: '[Britannica](https://www.britannica.com/event/Stamp-Act-Great-Britain-1765)' },
+      concepts: ['Taxation'], grammar: ['Consider a comma after the introductory phrase.'] } },
+    { id: 'dbq1', type: 'dbq', title: 'Why did colonists resist?', data: { historicalContext: 'Britain passed a series of taxes.',
+      documents: [{ id: 'A', title: 'Document A', source: 'Boston Gazette, 1765', content: 'No taxation without representation!', questions: ['What does the author demand?'] }],
+      synthesisPrompt: 'Explain why colonists disagreed.', rubric: [{ criterion: 'Claim', description: 'States a clear claim.' }], teacherNotes: 'Watch for one-sided readings.' } },
+    { id: 'udl1', type: 'udl-advice', title: 'UDL Strategies', data: '## Engagement\n\n- Offer a **choice** of source.\n- Use [CAST guidelines](https://udlguidelines.cast.org).' },
+    { id: 'bs1', type: 'brainstorm', title: 'Brainstorm', data: [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ title: 'Idea ' + n, description: 'Why it matters' }))
+      .concat([{ kind: 'discussion', title: 'Talk it over', prompt: 'Was the tax fair?', questions: ['Who paid?'] }]) },
+    { id: 'fl1', type: 'fluency-record', title: 'Fluency check', data: { metrics: { wcpm: 92, accuracy: 94, totalWords: 4, durationSeconds: 3 }, feedback: 'Slow down on names.',
+      wordData: [{ word: 'The', status: 'correct' }, { word: 'colonists', status: 'stumbled' }, { word: 'gathered', status: 'missed' }, { word: 'there', status: 'mispronounced' }] } },
+  ];
   const jobs = [{ name: 'generated-source', items: [generated], topic: 'Justice' }];
   for (const name of packs) {
     const file = path.join(ROOT, 'allopacks', name + '.allopack.json');
@@ -67,19 +83,44 @@ function generate(outDir, moduleFile, packs) {
     const pack = JSON.parse(fs.readFileSync(file, 'utf8'));
     jobs.push({ name, items: pack.history || [], topic: pack.sourceTopic || name });
   }
+  if (wide) jobs.push({ name: 'extra-types', items: extraTypes, topic: 'Extra resource types' });
   const cfg = { includeOriginalReading: true, includeTeacherKey: false, includeSimplified: true, includeGlossary: true, includeQuiz: true,
     includeOutline: true, includeFaq: true, includeSentenceFrames: true, includeImage: true, includeMath: true, includeDbq: true,
-    includeLessonPlan: true, includeMemoryAid: true, includeAppliedChallenge: true, includeConceptSort: true };
+    includeLessonPlan: true, includeMemoryAid: true, includeAppliedChallenge: true, includeConceptSort: true, includeAnalysis: true,
+    includeUdlAdvice: true, includeBrainstorm: true };
+  // Student copy on a light and a Dark base always; --wide adds the teacher copy (answer keys),
+  // the worksheet, and every teacher-chosen export style.
+  const variants = [{ label: '', base: 'light' }, { label: '.base-dark', base: 'dark', state: { exportTheme: 'dark' } }];
+  if (wide) {
+    variants.push({ label: '.teacher', base: 'light', config: { includeTeacherKey: true } }, { label: '.worksheet', base: 'light', worksheet: true });
+    for (const style of ['professional', 'academic', 'elementary', 'minimal', 'highContrast', 'nature', 'print', 'magazine', 'matchOriginal'])
+      variants.push({ label: '.style-' + style, base: 'light', state: { exportTheme: style }, config: { includeTeacherKey: true }, firstJobsOnly: true });
+    // Brand profiles, saved through the real module (so they pass its validation). A dark brand
+    // page switches the export to dark mode; heading-on-page 3.3:1 is legal, the band text is not.
+    try {
+      load(path.join(ROOT, 'brand_profile_module.js'));
+      const BP = dom.window.AlloModules.BrandProfile;
+      for (const [key, colors] of [['brand-dark', { bg: '#0f172a', body: '#e2e8f0', heading: '#fbbf24', accent: '#38bdf8', cardBg: '#1e293b', cardBorder: '#334155' }],
+        ['brand-tinted', { bg: '#f0fdfa', body: '#134e4a', heading: '#0d9488', accent: '#14b8a6', cardBg: '#ccfbf1', cardBorder: '#5eead4' }]]) {
+        const saved = BP.saveBrandProfile({ name: 'Sweep ' + key, colors, header: { text: 'Grade 6 Social Studies', showLogo: false }, footer: { text: 'For families', showPageNumber: true } });
+        if (saved.ok) variants.push({ label: '.' + key, base: key === 'brand-dark' ? 'dark' : 'light', brand: saved.id, state: { exportTheme: saved.id }, config: { includeTeacherKey: true }, firstJobsOnly: true });
+        else process.stderr.write('brand profile rejected: ' + saved.errors.join('; ') + '\n');
+      }
+    } catch (e) { process.stderr.write('brand profiles unavailable: ' + e.message + '\n'); }
+  }
   fs.mkdirSync(outDir, { recursive: true });
   const manifest = [];
-  for (const job of jobs) {
-    for (const base of ['light', 'dark']) {
+  for (const [index, job] of jobs.entries()) {
+    for (const variant of variants) {
+      if (variant.firstJobsOnly && index > 2 && job.name !== 'extra-types') continue;
+      // Header/footer bands come from the ACTIVE brand; match it to the brand style being exported.
+      if (dom.window.AlloModules.BrandProfile) dom.window.AlloModules.BrandProfile.setActiveBrandProfile(variant.brand || null);
       try {
-        const html = pipeline(base === 'dark' ? { exportTheme: 'dark' } : {}).generateFullPackHTML(job.items, job.topic, false, {}, cfg);
-        const file = path.join(outDir, job.name + (base === 'dark' ? '.base-dark' : '') + '.html');
+        const html = pipeline(variant.state).generateFullPackHTML(job.items, job.topic, !!variant.worksheet, {}, { ...cfg, ...(variant.config || {}) });
+        const file = path.join(outDir, job.name + variant.label + '.html');
         fs.writeFileSync(file, html);
-        manifest.push({ name: job.name, base, file });
-      } catch (e) { process.stderr.write('export failed: ' + job.name + ' (' + base + '): ' + e.message + '\n'); }
+        manifest.push({ name: job.name + variant.label.replace(/^\./, ' [') + (variant.label ? ']' : ''), base: variant.base, file });
+      } catch (e) { process.stderr.write('export failed: ' + job.name + variant.label + ': ' + e.message + '\n'); }
     }
   }
   console.warn = quiet;
@@ -199,7 +240,7 @@ async function selftest(outDir) {
 
 (async () => {
   const out = path.resolve(arg('--out', path.join(ROOT, 'reports', 'export-theme-sweep')));
-  if (process.argv.includes('--generate')) return generate(out, path.resolve(arg('--module')), arg('--packs').split(','));
+  if (process.argv.includes('--generate')) return generate(out, path.resolve(arg('--module')), arg('--packs').split(','), process.argv.includes('--wide'));
   if (process.argv.includes('--selftest')) { process.exitCode = (await selftest(path.join(out, 'selftest'))) ? 0 : 1; return; }
   const moduleFile = path.resolve(arg('--module', path.join(ROOT, 'doc_pipeline_module.js')));
   const packsArg = arg('--packs', DEFAULT_PACKS.join(','));
@@ -207,7 +248,7 @@ async function selftest(outDir) {
     ? fs.readdirSync(path.join(ROOT, 'allopacks')).filter(f => f.endsWith('.allopack.json')).map(f => f.replace('.allopack.json', ''))
     : packsArg.split(',');
   fs.rmSync(out, { recursive: true, force: true });
-  const gen = spawnSync(process.execPath, [__filename, '--generate', '--out', out, '--module', moduleFile, '--packs', packs.join(',')], { encoding: 'utf8', maxBuffer: 1 << 26 });
+  const gen = spawnSync(process.execPath, [__filename, '--generate', '--out', out, '--module', moduleFile, '--packs', packs.join(',')].concat(process.argv.includes('--wide') ? ['--wide'] : []), { encoding: 'utf8', maxBuffer: 1 << 26 });
   if (gen.status !== 0) { process.stderr.write(gen.stderr || 'export generation failed\n'); process.exitCode = 2; return; }
   if (gen.stderr && gen.stderr.trim()) process.stderr.write(gen.stderr);
   const manifest = JSON.parse(fs.readFileSync(path.join(out, 'manifest.json'), 'utf8'));

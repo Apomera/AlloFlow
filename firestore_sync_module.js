@@ -668,7 +668,7 @@
   // Teacher working data never enters the session document. A quiz fact check
   // stays only when students could already see it as an explanation.
   // Mirrors _alloStripTeacherOnlyFields in live_aac_source.jsx.
-  const TEACHER_ONLY_RESOURCE_KEYS = ['teacherNotes', 'facilitationNotes', 'visualCheck', 'distractorQuality', 'distractorReview'];
+  const TEACHER_ONLY_RESOURCE_KEYS = ['teacherNotes', 'facilitationNotes', 'visualCheck', 'distractorQuality', 'distractorReview', 'sourceEvidence', 'contentReview'];
   function studentFactCheck(node) {
     const text = typeof node.factCheck === 'string' ? node.factCheck : '';
     if (!text.trim() || typeof node.question !== 'string') return '';
@@ -768,7 +768,7 @@
   // Mirrors withholdGradedQuizKeys in live_aac_source.jsx.
   const GRADED_KEY_FIELDS = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits',
     'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey',
-    'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality',
+    'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality', 'sourceEvidence', 'contentReview',
     'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
   const GRADED_OPTION_FIELDS = ['isCorrect', 'correct', 'isAnswer', 'feedback', 'explanation', 'rationale'];
   // Sequence Sense items in their displayed order: canonical order is the key.
@@ -809,7 +809,7 @@
       });
       return sequenceDisplayOrder(kept);
     }) : data.questions;
-    return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys']), ...(released ? { feedbackReleaseKeys: release } : {}), questions, answerKeysWithheld: true } };
+    return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys', 'contentReview']), ...(released ? { feedbackReleaseKeys: release } : {}), questions, answerKeysWithheld: true } };
   }
 
   function prepareSessionResourcesForWrite(resources, options) {

@@ -345,13 +345,13 @@ function TimelineView(props) {
   }) : '🔍', isVerifyingTimeline ? t('timeline.validation.verifying') || 'Verifying…' : t('timeline.validation.verify') || 'Verify accuracy')), /*#__PURE__*/React.createElement("div", {
     className: "relative pl-12 sm:pl-16 border-l-2 border-indigo-200 space-y-8 my-8"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute left-[-7px] top-0 font-black text-indigo-300 text-[11px] uppercase tracking-widest -translate-y-full"
+    className: "absolute left-[-7px] top-0 font-black text-indigo-700 text-[11px] uppercase tracking-widest -translate-y-full"
   }, t('timeline.start_marker')), !Array.isArray(generatedContent?.data) && generatedContent?.data?.progressionLabel && /*#__PURE__*/React.createElement("div", {
     className: "absolute left-4 top-[-24px] flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "opacity-70"
+    className: "opacity-90"
   }, t('timeline.order_by')), " ", generatedContent?.data.progressionLabel), generatedContent?.data.mode && TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode] && (!isTeacherMode ? /*#__PURE__*/React.createElement("span", {
     "data-timeline-mode-chip": true,
     className: "bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm"

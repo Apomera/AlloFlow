@@ -2329,12 +2329,18 @@ function QuizPanel(props) {
     setQuizItemTypeMix, t
   } = props;
   const [itemMixOpen, setItemMixOpen] = React.useState(false);
+  const itemMixToggleRef = React.useRef(null);
   const [scoringOpen, setScoringOpen] = React.useState(false);
   const [presetsOpen, setPresetsOpen] = React.useState(false);
   const [savedPresets, setSavedPresets] = React.useState(loadAssessmentPresets);
   const [selectedPresetId, setSelectedPresetId] = React.useState('');
   const [presetName, setPresetName] = React.useState('');
   const [presetStatus, setPresetStatus] = React.useState('');
+  const [durationPreset, setDurationPreset] = React.useState('recommended');
+  const [reviewSourceIds, setReviewSourceIds] = React.useState([]);
+  const [reviewConcepts, setReviewConcepts] = React.useState(null);
+  const [criterionIds, setCriterionIds] = React.useState(null);
+  const [assessmentOptions, setAssessmentOptions] = React.useState({ fillBlankPolicy: 'normalized', sequenceMode: 'diagnostic', sequenceMaxSteps: 6, numericSettings: { allowEquivalentUnits: false, valueWeight: 0.5 }, requireReasoning: false });
   const [scoringPolicy, setScoringPolicy] = React.useState({
     accuracy: true,
     confidence: false,
@@ -2385,7 +2391,23 @@ function QuizPanel(props) {
   const effectiveMix = Object.assign({}, quizItemTypeMix || defaultMix, {
     mcq: clampCount(quizMcqCount, 20),
   });
+  const authoring = window.AlloModules && window.AlloModules.QuizModeStrategies;
+  const availableReviewSources = authoring && authoring.reviewSources ? authoring.reviewSources(history) : [];
+  const reviewSelection = authoring && authoring.resolveReviewContext ? authoring.resolveReviewContext(history, reviewSourceIds, reviewConcepts) : { sources: [], concepts: [], fallback: true };
+  const scopeId = generatedContent && (generatedContent.sourceFamilyId || generatedContent.config?.sourceFamilyId);
+  const currentPlan = (Array.isArray(history) ? history : []).slice().reverse().find(item => item && item.type === 'lesson-plan' && Array.isArray(item.data?.successCriteria) && (!scopeId || (item.sourceFamilyId || item.config?.sourceFamilyId) === scopeId));
+  const availableCriteria = currentPlan ? currentPlan.data.successCriteria.filter(criterion => criterion && criterion.id && criterion.statement).slice(0, 20) : [];
+  const applyDuration = (key) => {
+    if (!authoring || !authoring.durationRecipe) return;
+    const recipe = authoring.durationRecipe(quizMode, key);
+    setDurationPreset(key);
+    setQuizMcqCount(recipe.itemTypes.mcq || 0);
+    setQuizItemTypeMix && setQuizItemTypeMix(key === 'recommended' ? null : recipe.itemTypes);
+    setQuizReflectionCount(recipe.reflectionCount);
+    setCriterionIds(null);
+  };
   const handleMixChange = (key, value) => {
+    setDurationPreset('custom');
     const next = clampCount(value, key === 'mcq' ? 20 : 5);
     const newMix = Object.assign({}, effectiveMix);
     if (next <= 0) delete newMix[key];
@@ -2396,6 +2418,8 @@ function QuizPanel(props) {
   };
   const handleReflectionCountChange = (value) => setQuizReflectionCount(clampCount(value, 2));
   const handleModeChange = (nextMode) => {
+    setDurationPreset('recommended');
+    setCriterionIds(null);
     const strategies = window.AlloModules && window.AlloModules.QuizModeStrategies;
     const nextStrategy = strategies ? strategies.getStrategy(nextMode) : null;
     const nextMix = nextStrategy && nextStrategy.generation && nextStrategy.generation.defaultItemTypeMix
@@ -2411,11 +2435,16 @@ function QuizPanel(props) {
     setPresetStatus('');
   };
   const handleResetMix = () => {
+    setDurationPreset('recommended');
+    if (authoring && authoring.normalizeAssessmentOptions) setAssessmentOptions(authoring.normalizeAssessmentOptions({}));
     setQuizMcqCount(clampCount(defaultMix.mcq || 0, 20));
     setQuizReflectionCount(clampCount(defaultReflectionCount, 2));
     setQuizItemTypeMix && setQuizItemTypeMix(null);
     setScoringPolicy({ accuracy: true, confidence: false, partialCredit: true, writtenResponseMode: 'ai-provisional' });
     setPresetStatus('');
+    // Reset disappears when the recommended recipe is restored. Keep keyboard
+    // users at the stable control for the settings they just changed.
+    itemMixToggleRef.current?.focus();
   };
   const assessedTotal = visibleTypes.reduce((sum, item) => sum + clampCount(effectiveMix[item.key] || 0, item.key === 'mcq' ? 20 : 5), 0);
   const reflectionTotal = clampCount(quizReflectionCount, 2);
@@ -2431,7 +2460,13 @@ function QuizPanel(props) {
     || scoringPolicy.accuracy === false
     || scoringPolicy.confidence === true
     || scoringPolicy.partialCredit !== true
-    || scoringPolicy.writtenResponseMode !== 'ai-provisional';
+    || scoringPolicy.writtenResponseMode !== 'ai-provisional'
+    || assessmentOptions.fillBlankPolicy !== 'normalized'
+    || assessmentOptions.sequenceMode !== 'diagnostic'
+    || assessmentOptions.sequenceMaxSteps !== 6
+    || assessmentOptions.numericSettings.valueWeight !== 0.5
+    || assessmentOptions.numericSettings.allowEquivalentUnits
+    || assessmentOptions.requireReasoning;
 
   const savePreset = () => {
     const name = String(presetName || '').trim().slice(0, 50);
@@ -2449,6 +2484,7 @@ function QuizPanel(props) {
       scoringPolicy: Object.assign({}, scoringPolicy),
       mcqVisualMode: mcqVisualMode || 'none',
       imageStyle: imageStyle || '',
+      assessmentOptions,
     };
     const withoutSameName = savedPresets.filter(preset => String(preset.name).toLowerCase() !== name.toLowerCase());
     const next = [nextPreset].concat(withoutSameName).slice(0, 12);
@@ -2469,6 +2505,8 @@ function QuizPanel(props) {
     setQuizReflectionCount(clampCount(preset.reflectionCount || 0, 2));
     if (preset.dokLevel !== undefined) setDokLevel(preset.dokLevel);
     setScoringPolicy(Object.assign({ accuracy: true, confidence: false, partialCredit: true, writtenResponseMode: 'ai-provisional' }, preset.scoringPolicy || {}));
+    if (authoring && authoring.normalizeAssessmentOptions) setAssessmentOptions(authoring.normalizeAssessmentOptions(preset.assessmentOptions));
+    setDurationPreset('custom');
     if (preset.mcqVisualMode) setMcqVisualMode(preset.mcqVisualMode);
     if (preset.imageStyle !== undefined) setImageStyle(preset.imageStyle);
     setPresetStatus('Loaded “' + preset.name + '”.');
@@ -2509,7 +2547,30 @@ function QuizPanel(props) {
             <option value="review">{t('quiz.mode_review') || '🔁 Spaced Review'}</option>
           </select>
           {_modeStrategy && <p className="text-[11px] leading-snug text-slate-600 mt-1.5">{_modeStrategy.description} {qzText('recipe_hint', 'This loads a recommended recipe that you can customize.')}</p>}
+          <label htmlFor="quiz-duration-preset" className="block text-xs font-semibold text-slate-700 mt-3 mb-1">{qzText('duration_label', 'Time and depth')}</label>
+          <select id="quiz-duration-preset" value={durationPreset} onChange={event => applyDuration(event.target.value)} disabled={isProcessing} className="w-full rounded-lg border-slate-300 text-sm">
+            <option value="recommended">{qzText('duration_recommended', 'Recommended recipe')}</option>
+            <option value="two">{qzText('duration_two', 'About 2 minutes — quick recall')}</option>
+            <option value="five">{qzText('duration_five', 'About 5 minutes — explain briefly')}</option>
+            <option value="reasoning">{qzText('duration_reasoning', 'Extended reasoning — evidence and explanation')}</option>
+            {durationPreset === 'custom' && <option value="custom">{qzText('duration_custom', 'Custom question mix')}</option>}
+          </select>
         </div>
+
+        {quizMode === 'review' && <fieldset className="rounded-xl border border-indigo-200 bg-white p-3 space-y-2">
+          <legend className="px-1 text-xs font-bold text-indigo-900">{qzText('review_sources', 'Earlier lessons to revisit')}</legend>
+          <p className="text-[11px] text-slate-600">{qzText('review_sources_help', 'Select up to four analyzed lesson sources. Keep concepts checked to include them in the review.')}</p>
+          <div className="max-h-40 overflow-auto space-y-2">{availableReviewSources.map(source => <label key={source.id} className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={reviewSourceIds.includes(source.id)} disabled={isProcessing || (!reviewSourceIds.includes(source.id) && reviewSourceIds.length >= 4)} onChange={event => { setReviewSourceIds(previous => event.target.checked ? previous.concat(source.id) : previous.filter(id => id !== source.id)); setReviewConcepts(null); }} /><span>{source.title}{source.date && <span className="block text-[10px] text-slate-600">{source.date}</span>}</span></label>)}</div>
+          {reviewSelection.sources.length > 0 && <div className="max-h-36 overflow-auto space-y-1">{Array.from(new Set(reviewSelection.sources.flatMap(source => source.concepts))).map(concept => <label key={concept} className="flex gap-2 text-xs"><input type="checkbox" checked={reviewSelection.concepts.includes(concept)} onChange={event => setReviewConcepts(event.target.checked ? reviewSelection.concepts.concat(concept) : reviewSelection.concepts.filter(value => value !== concept))} />{concept}</label>)}</div>}
+          <p role="status" className={'text-xs font-semibold ' + (reviewSelection.fallback ? 'text-amber-900' : 'text-indigo-900')}>{reviewSelection.fallback ? qzText('review_source_fallback', 'No earlier lesson selected. This will review the current source; it will not demonstrate retention over time.') : qzText('review_source_selected', '{count} earlier lesson sources selected. Choose sources students have already studied.', { count: reviewSelection.sources.length })}</p>
+        </fieldset>}
+
+        {availableCriteria.length > 0 && quizMode !== 'review' && <fieldset className="rounded-xl border border-slate-200 bg-white p-3 space-y-2">
+          <legend className="px-1 text-xs font-bold text-slate-800">{qzText('criteria_sample', 'Success criteria to sample')}</legend>
+          <p className="text-[11px] text-slate-600">{qzText('criteria_sample_help', 'A short check samples up to one criterion per question. Unselected criteria remain outside this check; the question count stays unchanged.')}</p>
+          {availableCriteria.map((criterion, index) => { const selected = criterionIds || availableCriteria.slice(0, assessedTotal).map(item => item.id); return <label key={criterion.id} className="flex gap-2 text-xs"><input type="checkbox" checked={selected.includes(criterion.id)} disabled={isProcessing || (!selected.includes(criterion.id) && selected.length >= assessedTotal)} onChange={event => setCriterionIds(event.target.checked ? selected.concat(criterion.id) : selected.filter(id => id !== criterion.id))} /><span>{criterion.statement}</span></label>; })}
+          <p className="text-[11px] text-slate-700">{qzText('criteria_sample_count', '{selected} of {total} criteria selected.', { selected: Math.min(assessedTotal, (criterionIds || availableCriteria).length), total: availableCriteria.length })}</p>
+        </fieldset>}
 
         <div className="rounded-xl border border-teal-200 bg-white p-3" role="status" aria-live="polite">
           <div className="flex items-center gap-2 flex-wrap">
@@ -2536,6 +2597,7 @@ function QuizPanel(props) {
           <button
             type="button"
             onClick={() => setItemMixOpen(!itemMixOpen)}
+            ref={itemMixToggleRef}
             aria-expanded={itemMixOpen}
             aria-controls="quiz-item-mix-panel"
             data-help-key="quiz_item_mix_toggle"
@@ -2573,6 +2635,29 @@ function QuizPanel(props) {
                   })}
                 </div>
               ))}
+              <div className="border-t border-slate-200 pt-3 space-y-3">
+                <label className="block text-xs font-semibold text-slate-800">{qzText('fill_policy', 'Fill-in-the-blank: what matters?')}
+                  <select value={assessmentOptions.fillBlankPolicy} onChange={event => setAssessmentOptions({ ...assessmentOptions, fillBlankPolicy: event.target.value })} className="block w-full mt-1 text-xs rounded border-slate-300">
+                    <option value="normalized">{qzText('fill_normalized', 'Concept recall — ignore case and surrounding spaces')}</option>
+                    <option value="exact">{qzText('fill_exact', 'Exact spelling and case')}</option>
+                    <option value="review-variants">{qzText('fill_review', 'Concept recall — send other variants for teacher review')}</option>
+                  </select>
+                </label>
+                <label className="block text-xs font-semibold text-slate-800">{qzText('sequence_mode', 'Sequence activity')}
+                  <select value={assessmentOptions.sequenceMode} onChange={event => setAssessmentOptions({ ...assessmentOptions, sequenceMode: event.target.value })} className="block w-full mt-1 text-xs rounded border-slate-300">
+                    <option value="diagnostic">{qzText('sequence_diagnostic', 'Diagnose, arrange, and identify the principle')}</option>
+                    <option value="arrange-explain">{qzText('sequence_short', 'Arrange and identify the principle')}</option>
+                  </select>
+                </label>
+                <label className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={assessmentOptions.sequenceMaxSteps === 3} onChange={event => setAssessmentOptions({ ...assessmentOptions, sequenceMaxSteps: event.target.checked ? 3 : 6 })} />{qzText('sequence_three', 'Keep sequences to three steps')}</label>
+                <label className="block text-xs font-semibold text-slate-800">{qzText('numeric_weight', 'Numeric partial credit: value / units')}
+                  <select value={assessmentOptions.numericSettings.valueWeight} onChange={event => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, valueWeight: Number(event.target.value) } })} className="block w-full mt-1 text-xs rounded border-slate-300">
+                    <option value="0.5">50% / 50%</option><option value="0.75">75% / 25%</option><option value="1">100% / 0%</option>
+                  </select>
+                </label>
+                <label className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={assessmentOptions.numericSettings.allowEquivalentUnits} onChange={event => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, allowEquivalentUnits: event.target.checked } })} />{qzText('numeric_convert', 'Accept supported equivalent units after conversion')}</label>
+                <label className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={assessmentOptions.requireReasoning} onChange={event => setAssessmentOptions({ ...assessmentOptions, requireReasoning: event.target.checked })} />{qzText('require_reasoning', 'Ask for a brief explanation in Relation Mismatch and Answer + Evidence (unscored)')}</label>
+              </div>
             </div>
           )}
         </div>
@@ -2689,7 +2774,11 @@ function QuizPanel(props) {
           itemTypes: effectiveMix,
           scoringPolicy,
           mcqVisualMode,
-          imageStyle
+          imageStyle,
+          assessmentOptions,
+          reviewSourceIds: quizMode === 'review' ? reviewSourceIds : [],
+          reviewConcepts: quizMode === 'review' ? reviewConcepts : null,
+          criterionIds: quizMode !== 'review' ? criterionIds : [],
         })}
         data-help-key="quiz_generate_button"
         disabled={!hasSourceOrAnalysis || isProcessing || assessedTotal <= 0 || !aiTextAvailable}

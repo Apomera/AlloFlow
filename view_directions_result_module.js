@@ -511,7 +511,7 @@ function DirectionsResultView({
   }, goal.label, goal.kind !== 'manual' && /*#__PURE__*/React.createElement("span", {
     className: "sr-only"
   }, goal.done ? ', ' + text('goalDone', 'complete') : ', ' + text('goalOpen', 'not yet complete'))), goal.progressText && !goal.done && /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-amber-600 font-bold ml-auto flex-shrink-0"
+    className: "text-[11px] text-amber-700 font-bold ml-auto flex-shrink-0"
   }, goal.progressText), goal.done && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-emerald-600 font-bold ml-auto flex-shrink-0",
     "aria-hidden": "true"

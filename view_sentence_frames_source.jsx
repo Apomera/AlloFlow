@@ -262,7 +262,7 @@ function SentenceFramesView(props) {
                                         onClick={handleGenerateRubric}
                                         disabled={isGeneratingRubric}
                                         aria-busy={!!isGeneratingRubric}
-                                        className="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                        className="text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-700 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                                         >
                                         {isGeneratingRubric ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={12}/>}
                                         {generatedContent?.data.rubric

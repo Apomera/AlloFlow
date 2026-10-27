@@ -154,6 +154,12 @@
       var abilityId = data.abilityId === undefined ? ABILITIES[ROLES.indexOf(data.roleId)] : data.abilityId;
       requireValue(ABILITIES.indexOf(abilityId) >= 0, 'The saved ability is invalid.');
       var normalized = { version: VERSION, sourceFingerprint: fingerprint, savedAt: data.savedAt, quest: validateQuest(data.quest,context), roleId: data.roleId, abilityId: abilityId, response: validateResponse(data.response), recapOpen: data.recapOpen, gmState: validateGm(data.gmState), aiEnabled: data.aiEnabled };
+      if (data.practice != null) {
+        var practice=data.practice, bank=normalized.quest.solo && normalized.quest.solo.bank || [];
+        requireValue(plain(practice) && Array.isArray(practice.targets) && practice.targets.length > 0 && practice.targets.length <= 5 && new Set(practice.targets).size === practice.targets.length && practice.targets.every(function(index){return bank.some(function(item){return item.sourceIndex===index;});}), 'The focused practice targets are invalid.');
+        requireValue(Array.isArray(practice.entries) && practice.entries.length <= practice.targets.length && typeof practice.checked === 'boolean' && (!practice.checked || practice.entries.length > 0), 'The focused practice progress is invalid.');
+        normalized.practice={targets:practice.targets.slice(),entries:practice.entries.map(validateResponse),response:validateResponse(practice.response),checked:practice.checked,...(practice.closed===true?{closed:true}:{})};
+      }
       requireValue(normalized.gmState === null || plain(normalized.gmState), 'The saved game-master state is invalid.');
       requireValue(!normalized.recapOpen || plain(normalized.quest.lastRound), 'The saved turn recap is missing.');
       requireValue(JSON.stringify(normalized).length <= MAX_CHARS, 'This adventure is too large to save in this browser.');

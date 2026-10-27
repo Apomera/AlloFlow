@@ -11942,6 +11942,10 @@
         }
         reorderBoardWord(wordId, boardWords[to].id);
       };
+      var boardMoveLabel = function (key, fallback, title) {
+        var s = t(key, { title: title });
+        return typeof s === 'string' && s && s !== key && s.indexOf('{title}') < 0 ? s : fallback;
+      };
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '12px' } },
         e('p', { id: 'ss-page-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'To reorder board pages, focus a page and press Alt plus Left or Right Arrow.'),
         e('p', { id: 'ss-cell-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'To reorder a board cell, focus its Speak button and press Alt plus an Arrow key.'),
@@ -12071,6 +12075,13 @@
                 style: { padding: '5px 9px', minHeight: '32px', border: '2px solid ' + (active ? '#92400e' : '#fde68a'), borderRadius: '6px', background: active ? '#92400e' : 'transparent', color: active ? '#fff' : '#92400e', fontSize: '10px', fontWeight: active ? 700 : 400, cursor: 'grab', transition: 'border-color 0.15s' },
                 title: t('symbol_studio.drag_or_press_alt_left_right_arrow_to_reorde','Drag or press Alt+Left/Right Arrow to reorder pages')
               }, pg.title || ('Page ' + (pi + 1)));
+            }),
+            boardPages.length > 1 && [[-1, 'groups.move_earlier_aria', ' earlier', '◀'], [1, 'groups.move_later_aria', ' later', '▶']].map(function (mv) {
+              var pgTitle = (boardPages[activePageIdx] && boardPages[activePageIdx].title) || ('Page ' + (activePageIdx + 1));
+              var atEdge = mv[0] < 0 ? activePageIdx <= 0 : activePageIdx >= boardPages.length - 1;
+              var moveName = boardMoveLabel(mv[1], 'Move ' + pgTitle + mv[2], pgTitle);
+              return e('button', { key: 'mv' + mv[0], type: 'button', disabled: atEdge, 'data-board-page-move': mv[0] < 0 ? 'earlier' : 'later', onClick: function () { moveBoardPage(activePageIdx, activePageIdx + mv[0]); }, 'aria-label': moveName, title: moveName,
+                style: { background: 'none', border: '1px solid #92400e', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', padding: 0, color: '#92400e', fontSize: '12px', cursor: atEdge ? 'default' : 'pointer', opacity: atEdge ? 0.4 : 1 } }, mv[3]);
             }),
             e('button', { type: 'button', onClick: addPage, title: t('symbol_studio.add_a_new_page','Add a new page'), 'aria-label': t('symbol_studio.add_a_new_page_2','Add a new page'), style: { background: 'none', border: '1px dashed #92400e', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', padding: 0, color: '#92400e', fontSize: '15px', fontWeight: 700, cursor: 'pointer' } }, '+'),
             boardPages.length > 1 && e('button', { type: 'button', onClick: function () { deletePage(activePageIdx); }, title: t('symbol_studio.delete_current_page','Delete current page'), 'aria-label': t('symbol_studio.delete_current_board_page','Delete current board page'), style: { background: 'none', border: '1px solid transparent', borderRadius: '6px', width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', color: '#b91c1c', fontSize: '14px', cursor: 'pointer', padding: 0 } }, '✕')
@@ -12375,6 +12386,16 @@
                     e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); recordCellAudio(word.id); }, 'aria-label': (cellRecording === word.id ? 'Stop recording audio for ' : word.audioData ? 'Replace recorded audio for ' : 'Record audio for ') + (word.translatedLabel || word.label), style: { position: 'absolute', top: 4, left: 4, background: cellRecording === word.id ? 'rgba(220,38,38,0.8)' : (word.audioData ? 'rgba(16,185,129,0.2)' : 'rgba(0,0,0,0.1)'), border: 'none', borderRadius: '4px', width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, cursor: 'pointer', fontSize: '12px', color: cellRecording === word.id ? '#fff' : undefined } }, cellRecording === word.id ? '⏹' : (word.audioData ? '🎙️' : '🎤')),
                     // Play custom audio button
                     word.audioData && e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); playCellAudio(word.audioData); }, 'aria-label': 'Play recorded audio for ' + (word.translatedLabel || word.label), style: { position: 'absolute', bottom: 4, left: 4, background: 'rgba(37,99,235,0.1)', border: 'none', borderRadius: '4px', width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, cursor: 'pointer', fontSize: '12px' } }, '🔊'),
+                    // WCAG 2.5.7: single-pointer reorder (drag and Alt+Arrow stay available).
+                    boardWords.length > 1 && e('div', { className: 'ss-no-print', 'data-board-move-row': word.id, style: { marginTop: 'auto', display: 'flex', gap: '4px', justifyContent: 'center' } },
+                      [[-1, 'groups.move_earlier_aria', ' earlier', '◀'], [1, 'groups.move_later_aria', ' later', '▶']].map(function (mv) {
+                        var cellLabel = word.translatedLabel || word.label;
+                        var atEdge = mv[0] < 0 ? wordIndex === 0 : wordIndex === boardWords.length - 1;
+                        var moveName = boardMoveLabel(mv[1], 'Move ' + cellLabel + mv[2], cellLabel);
+                        return e('button', { key: mv[0], type: 'button', disabled: atEdge, 'data-board-move': mv[0] < 0 ? 'earlier' : 'later', onClick: function (ev) { ev.stopPropagation(); moveBoardWordByKeyboard(word.id, mv[0]); }, 'aria-label': moveName, title: moveName,
+                          style: { width: '24px', height: '24px', minWidth: '24px', minHeight: '24px', padding: 0, border: '1px solid #6d28d9', borderRadius: '5px', background: '#fff', color: '#5b21b6', fontSize: '10px', lineHeight: 1, cursor: atEdge ? 'default' : 'pointer', opacity: atEdge ? 0.4 : 1 } }, mv[3]);
+                      })
+                    ),
                     e('button', {
                       className: 'ss-no-print',
                       type: 'button',
@@ -12390,7 +12411,7 @@
                         ev.preventDefault();
                         moveBoardWordByKeyboard(word.id, delta);
                       },
-                      style: { marginTop: 'auto', minHeight: '28px', minWidth: '64px', border: '1px solid #6d28d9', borderRadius: '6px', padding: '3px 8px', background: '#ede9fe', color: '#5b21b6', fontWeight: 700, fontSize: '10px', cursor: 'pointer' }
+                      style: { marginTop: boardWords.length > 1 ? 0 : 'auto', minHeight: '28px', minWidth: '64px', border: '1px solid #6d28d9', borderRadius: '6px', padding: '3px 8px', background: '#ede9fe', color: '#5b21b6', fontWeight: 700, fontSize: '10px', cursor: 'pointer' }
                     }, '\uD83D\uDD0A Speak'),
                     // Remove button
                     e('button', { className: 'ss-no-print', type: 'button', onClick: function (ev) { ev.stopPropagation(); setBoardWords(function (prev) { return prev.filter(function (w) { return w.id !== word.id; }); }); }, 'aria-label': 'Remove ' + (word.translatedLabel || word.label) + ' from board', style: { position: 'absolute', bottom: 4, right: 4, background: 'rgba(220,38,38,0.1)', border: 'none', borderRadius: '4px', width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, cursor: 'pointer', fontSize: '12px', color: '#dc2626' } }, '\u00d7')

@@ -946,6 +946,43 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const endDrag = () => { dragRef.current = null; };
 
+  // WCAG 2.5.7: with an item selected, a click on empty floor moves it there
+  // (centered). Only when the press also began on the floor, so a drag that
+  // ends with pointer capture on the SVG never re-places the item.
+  const floorDownRef = useRef(false);
+  const onSvgPointerDown = (evt) => {
+    floorDownRef.current = !(evt.target && evt.target.closest && evt.target.closest('.seating-map-item'));
+  };
+  const placeSelectedAt = (evt) => {
+    const fromFloor = floorDownRef.current;
+    floorDownRef.current = false;
+    if (mode !== 'edit' || !layout || !selectedItem || !fromFloor) return;
+    if (evt.target && evt.target.closest && evt.target.closest('.seating-map-item')) return;
+    const isSeat = layout.seats.some(s => s.id === selectedItem);
+    const list = isSeat ? layout.seats : layout.furniture;
+    const item = list.filter(it => it.id === selectedItem)[0];
+    if (!item) return;
+    const p = roomPoint(evt);
+    const nx = Math.round(clampNum(p.x - item.w / 2, 0, ROOM_W - item.w, item.x));
+    const ny = Math.round(clampNum(p.y - item.h / 2, 0, ROOM_H - item.h, item.y));
+    if (nx === item.x && ny === item.y) return;
+    pushUndo();
+    patchLayout(isSeat ? { seats: list.map(it => it.id === item.id ? { ...it, x: nx, y: ny } : it) } : { furniture: list.map(it => it.id === item.id ? { ...it, x: nx, y: ny } : it) });
+    announce(tr('{item} moved', { item: isSeat ? tr('Seat {n}', { n: seatNumberOf[item.id] }) : furnitureLabel(item.kind) }));
+  };
+
+  const moveSelectedBy = (dx, dy) => {
+    if (mode !== 'edit' || !layout || !selectedItem) return;
+    pushUndo(800);
+    const isSeat = layout.seats.some(s => s.id === selectedItem);
+    const list = isSeat ? layout.seats : layout.furniture;
+    const nextList = list.map(it => {
+      if (it.id !== selectedItem) return it;
+      return { ...it, x: clampNum(it.x + dx, 0, ROOM_W - it.w, it.x), y: clampNum(it.y + dy, 0, ROOM_H - it.h, it.y) };
+    });
+    patchLayout(isSeat ? { seats: nextList } : { furniture: nextList });
+  };
+
   // Keyboard nudge for the selected item in edit mode (WCAG 2.1.1 — drag has
   // a keyboard path).
   const nudgeSelected = (evt) => {
@@ -959,14 +996,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     else if (evt.key === 'Delete' || evt.key === 'Backspace') { evt.preventDefault(); deleteSelectedItem(); return; }
     else return;
     evt.preventDefault();
-    pushUndo(800);
-    const isSeat = layout.seats.some(s => s.id === selectedItem);
-    const list = isSeat ? layout.seats : layout.furniture;
-    const nextList = list.map(it => {
-      if (it.id !== selectedItem) return it;
-      return { ...it, x: clampNum(it.x + dx, 0, ROOM_W - it.w, it.x), y: clampNum(it.y + dy, 0, ROOM_H - it.h, it.y) };
-    });
-    patchLayout(isSeat ? { seats: nextList } : { furniture: nextList });
+    moveSelectedBy(dx, dy);
   };
 
   // ── Constraints ──
@@ -1123,6 +1153,11 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                       {FURNITURE_KINDS.map(f => <option key={f.kind} value={f.kind}>{FURN_EMOJI[f.kind]} {furnitureLabel(f.kind)}</option>)}
                     </select>
                     <button type="button" onClick={deleteSelectedItem} disabled={!selectedItem} className={btn + ' bg-rose-50 text-rose-700 hover:bg-rose-100'}>🗑 {tr('Remove')}</button>
+                    <span role="group" aria-label={tr('Move selected item')} className="inline-flex gap-1">
+                      {[['←', 'Move left', -1, 0], ['↑', 'Move up', 0, -1], ['↓', 'Move down', 0, 1], ['→', 'Move right', 1, 0]].map(m => (
+                        <button key={m[1]} type="button" data-seating-nudge={m[1]} onClick={() => moveSelectedBy(m[2], m[3])} disabled={!selectedItem} aria-label={tr(m[1])} title={tr(m[1])} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}><span aria-hidden="true">{m[0]}</span></button>
+                      ))}
+                    </span>
                     <button type="button" onClick={duplicateLayout} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>{tr('Duplicate')}</button>
                     <button type="button" onClick={deleteLayout} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>{tr('Delete layout')}</button>
                   </React.Fragment>
@@ -1143,6 +1178,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
               <div className="px-4 py-1.5 text-[11px] text-slate-600 bg-indigo-50/60 border-b border-indigo-100">
                 {overlapCount > 0 && <b className="text-rose-700">{tr('{n} seats overlap furniture (outlined red) — drag them clear or leave them if intended.', { n: overlapCount })} </b>}
                 {tr('Drag desks and furniture to match your room. Click an item then use arrow keys to nudge (Shift = faster), Delete to remove.')}
+                {' '}{tr('Or click an item, then click an empty spot to move it there, or use the arrow buttons.')}
                 {layout && ' '}
                 <label className="inline-flex items-center gap-1 ml-2 font-bold">
                   {tr('Layout name')}:
@@ -1166,6 +1202,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                   <svg ref={svgRef} viewBox={'0 0 ' + ROOM_W + ' ' + ROOM_H} role="group" aria-label={tr('Classroom map — {n} seats', { n: layout.seats.length })}
                     aria-describedby="seating-map-instructions"
                     className="w-full h-auto max-h-full select-none bg-slate-50 rounded-xl border border-slate-200"
+                    onPointerDown={onSvgPointerDown} onClick={placeSelectedAt}
                     onPointerMove={onSvgPointerMove} onPointerUp={endDrag} onPointerLeave={endDrag}>
                     {/* Board / front-of-room marker */}
                     <rect x={ROOM_W * 0.2} y={0} width={ROOM_W * 0.6} height={1.4} fill="#334155" />

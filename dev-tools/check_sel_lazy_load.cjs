@@ -109,10 +109,12 @@ win.__alloModuleRegistry = null;
 
 let api;
 try {
+  const createPolicy = new Function(fs.readFileSync('browser_delivery_policy.js', 'utf8') + '\nreturn _alloCreateBrowserDeliveryPolicy;')();
+  const deliveryPolicy = createPolicy({ schemaVersion: 1, releaseId: '0'.repeat(64), fallbackCommit: null, allowDesktopRemoteFallback: false, assets: Object.fromEntries(manifest.map(name => [name, { bytes: 1, integrity: 'sha384-' + 'A'.repeat(64) }])) }, { baseUrl: 'https://cdn.example/' });
   const runner = new Function(
     'window', 'document', 'console', 'setTimeout', 'clearTimeout', 'setInterval',
     'clearInterval', 'CustomEvent', 'Promise', 'Date', 'Object', 'Array', 'String', 'Number',
-    'selToolModules', 'stemToolModules', 'arcadeModes', 'pluginCdnBase', 'pluginCdnVersion',
+    'selToolModules', 'stemToolModules', 'arcadeModes', 'pluginCdnBase', 'pluginCdnVersion', '__alloBrowserDelivery',
     loaderSrc + '\n; return {' +
     ' ensureAll: window.__alloEnsureSelPluginsLoaded,' +
     ' ensureOne: window.__alloEnsureSelPluginLoaded,' +
@@ -122,7 +124,7 @@ try {
   api = runner(win, win.document, { log() {}, warn() {}, info() {}, error() {} },
     win.setTimeout.bind(win), win.clearTimeout.bind(win), win.setInterval.bind(win),
     win.clearInterval.bind(win), win.CustomEvent, Promise, Date, Object, Array, String, Number,
-    manifest, [], [], 'https://cdn.example/', 'testver');
+    manifest, [], [], 'https://cdn.example/', 'testver', deliveryPolicy);
 } catch (err) {
   die('could not build the loader closure: ' + err.message);
 }

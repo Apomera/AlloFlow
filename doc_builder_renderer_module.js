@@ -89,6 +89,13 @@ const renderJsonToHtml = (blocks) => {
               .replace(/</g, '&lt;').replace(/>/g, '&gt;')
               .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
             const withInline = s
+              // (2026-10-25) A language change marked on an inline run (<em lang='en'>charter</em>,
+              // <span lang="ar" dir="rtl">…</span>, WCAG 3.1.2). The rule below re-allowed the
+              // attribute-less CLOSER only, so the opener shipped as visible "<em lang='en'>" with its
+              // closer gone, and the fix loop's content gate refused the repair. Converted only as a
+              // matched pair whose sole attributes are a BCP-47-shaped lang and optional dir.
+              .replace(/&lt;(span|em|strong|i|b)\s+lang=(&quot;|&#39;)([a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{2,8}){0,3})\2(?:\s+dir=(&quot;|&#39;)(rtl|ltr)\4)?&gt;([\s\S]*?)&lt;\/\1&gt;/gi,
+                (m, tag, q, lang, dq, dir, inner) => '<' + tag.toLowerCase() + ' lang="' + lang + '"' + (dir ? ' dir="' + dir.toLowerCase() + '"' : '') + '>' + inner + '</' + tag.toLowerCase() + '>')
               .replace(/&lt;(\/?(?:strong|em|b|i|u|sub|sup|mark|code|s|small))&gt;/gi, '<$1>')
               .replace(/&lt;br\s*\/?&gt;/gi, '<br>')
               // H9 (audit 2026-07-26): re-allow INLINE ANCHORS. The extraction prompt explicitly
@@ -172,8 +179,8 @@ const renderJsonToHtml = (blocks) => {
             case 'h5': return `<h5${id} style="color:${docStyle.headingColor};font-size:0.95rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h5>`;
             case 'h6': return `<h6${id} style="color:${docStyle.headingColor};font-size:0.9rem;font-weight:bold;margin:1em 0 0.3em">${escapeTextField(block.text)}</h6>`;
             case 'p': return `<p style="margin:0.6em 0;line-height:1.7">${escapeTextField(block.text)}</p>`;
-            case 'ul': return `<ul style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ul>`;
-            case 'ol': return `<ol style="margin:0.6em 0;padding-left:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ol>`;
+            case 'ul': return `<ul style="margin:0.6em 0;padding-inline-start:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ul>`;
+            case 'ol': return `<ol style="margin:0.6em 0;padding-inline-start:1.5em">${(Array.isArray(block.items) ? block.items : [block.text || '']).filter(Boolean).map(i => `<li style="margin:0.3em 0">${escapeTextField(sanitizeField(i))}</li>`).join('')}</ol>`;
             case 'table': {
               // Reconstructed-from-image tables carry a data-allo-reconstructed attribute so the
               // results-panel review gate can list them for human verify/reject (the original image
@@ -234,9 +241,20 @@ const renderJsonToHtml = (blocks) => {
               // it does NOT escape markup. Escape like the headings/lists above (attribute-less safe inline
               // tags survive; every scripting vector is neutralized). The grid path is escaped too — it now
               // passes an escaping sanitize closure to _emitAccessibleTableHtml (see the grid branch above).
-              const cap = block.caption ? `<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+escapeTextField(sanitizeField(block.caption))+`</caption>` : '';
+              const cap = block.caption ? `<caption style="font-weight:bold;text-align:start;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+escapeTextField(sanitizeField(block.caption))+`</caption>` : '';
               const hdrs = Array.isArray(block.headers) ? block.headers : [];
-              const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+escapeTextField(sanitizeField(h))+`</th>`).join('')+`</tr></thead>` : '';
+              // (2026-10-25) Header text gets an AA colour for the header fill, as the grid path already
+              // does: a scheme fill (#c0504d) with the default dark text was ~3.1:1 (expenditure tables).
+              const _flatHdr = _accessibleHeaderColors(docStyle.tableBg);
+              const _flatThFg = _flatHdr ? _flatHdr.fg : (() => {
+                const m = /^#([0-9a-f]{6})$/i.exec(String(docStyle.tableBg || '').trim());
+                if (!m) return '';
+                const ch = [0, 2, 4].map((i) => { const c = parseInt(m[1].slice(i, i + 2), 16) / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
+                const lum = 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+                return (1.05 / (lum + 0.05)) >= ((lum + 0.05) / 0.05) ? '#ffffff' : '#000000';
+              })();
+              const _flatThBg = _flatHdr ? _flatHdr.bg : docStyle.tableBg;
+              const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${_flatThBg};${_flatThFg ? 'color:' + _flatThFg + ';' : ''}border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:start">`+escapeTextField(sanitizeField(h))+`</th>`).join('')+`</tr></thead>` : '';
               const rowsArr = Array.isArray(block.rows) ? block.rows : [];
               // #G: same in-cell list net as the grid path — the model has no JSON shape for a bulleted
               // list inside a cell, so literal "<ul><li>" (or "• " lines) in a cell string is rebuilt as a
@@ -248,29 +266,38 @@ const renderJsonToHtml = (blocks) => {
               const rows = rowsArr.map(row => {
                 if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(row)+`</td></tr>`;
                 return `<tr>`+row.map((cell, ci) => (_rowHdr && ci === 0 && row.length > 1 && String(cell == null ? '' : cell).trim())
-                  ? `<th scope="row" style="border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+_cellEsc(cell)+`</th>`
+                  ? `<th scope="row" style="border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:start">`+_cellEsc(cell)+`</th>`
                   : `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(cell)+`</td>`).join('')+`</tr>`;
               }).join('');
-              return `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
+              const _tableHtml = `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
+              // A wide table (8+ columns) scrolls sideways inside a labelled, keyboard-focusable region
+              // instead of overflowing the page (a 14-column finance table, 2026-10-25).
+              const _cols = Math.max(hdrs.length, ...rowsArr.map((r) => (Array.isArray(r) ? r.length : 1)), 0);
+              if (_cols < 8) return _tableHtml;
+              const _regionLabel = block.caption ? sanitizeField(block.caption).replace(/"/g, '&quot;').replace(/</g, '&lt;') : 'Wide table';
+              return `<div role="region" aria-label="${_regionLabel}" tabindex="0" style="overflow-x:auto;max-width:100%">`+_tableHtml+`</div>`;
             }
             case 'definition_list': {
               // Semantic match for legends/keys: each entry pairs a marker description
               // (color/symbol) with its label. SR users navigate <dl> as "term/definition"
               // pairs which is what a legend semantically IS — better than a flat table.
               // Sections (with optional <h4> heading) preserve any visible subgroupings.
+              const _legBody = docStyle.bodyColor || docStyle.textColor || '#1e293b'; // docStyle carries textColor, not bodyColor: legends shipped color:undefined (2026-10-25)
               const _legCap = block.caption ? `<figcaption style="font-weight:bold;color:${docStyle.headingColor};margin-bottom:0.5rem;font-size:1em">`+escapeTextField(sanitizeField(block.caption))+`</figcaption>` : '';
-              const _legIntro = block.intro ? `<p style="margin:0 0 0.75rem;color:${docStyle.bodyColor};font-size:0.95em;line-height:1.6">`+escapeTextField(sanitizeField(block.intro))+`</p>` : '';
+              const _legIntro = block.intro ? `<p style="margin:0 0 0.75rem;color:${_legBody};font-size:0.95em;line-height:1.6">`+escapeTextField(sanitizeField(block.intro))+`</p>` : '';
               const _legSections = (Array.isArray(block.sections) ? block.sections : []).map(sec => {
                 const _heading = sec && sec.title ? `<h4 style="margin:1em 0 0.4em;color:${docStyle.headingColor};font-size:1em;font-weight:bold">`+escapeTextField(sanitizeField(sec.title))+`</h4>` : '';
                 const _entries = (Array.isArray(sec && sec.entries) ? sec.entries : []).map(e => {
                   const _marker = e && e.marker ? escapeTextField(sanitizeField(e.marker)) : '';
                   const _label = e && e.label ? escapeTextField(sanitizeField(e.label)) : '';
-                  return `<dt style="font-weight:600;color:${docStyle.bodyColor};margin-top:0.4em">`+_marker+`</dt>`
-                       + `<dd style="margin:0 0 0.4em 1.5em;color:${docStyle.bodyColor};line-height:1.5">`+_label+`</dd>`;
+                  return `<dt style="font-weight:600;color:${_legBody};margin-top:0.4em">`+_marker+`</dt>`
+                       + `<dd style="margin:0 0 0.4em 1.5em;color:${_legBody};line-height:1.5">`+_label+`</dd>`;
                 }).join('');
                 return _heading + (_entries ? `<dl style="margin:0">`+_entries+`</dl>` : '');
               }).join('');
-              return `<figure role="group" aria-label="${(block.caption ? sanitizeField(block.caption).replace(/"/g,'&quot;') : 'Figure legend')}" style="margin:1em 0;padding:1em 1.25em;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px">`
+              // A <figure> already has the figure role; role="group" on it is invalid (IBM aria_role_valid,
+              // a confirmed Equal Access fail on every legend). Its figcaption names it; aria-label only without one.
+              return `<figure${block.caption ? '' : ' aria-label="Figure legend"'} style="margin:1em 0;padding:1em 1.25em;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px">`
                 + _legCap + _legIntro + _legSections + `</figure>`;
             }
             case 'image': {
@@ -321,7 +348,9 @@ const renderJsonToHtml = (blocks) => {
               // pipeline can name the image with it; the longer description stays the caption (2026-10-19).
               const _attr = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
               const _shortAlt = typeof block.alt === 'string' ? block.alt.replace(/\s+/g, ' ').trim() : '';
-              return `<figure id="${_imgId}-figure" data-img-placeholder="true"${_shortAlt ? ` data-allo-alt="${_attr(_shortAlt)}"` : ''} style="position:relative;margin:1em 0">`
+              // An explicit empty alt is the prompt's decorative signal (2026-10-26); a missing alt is not.
+              const _decorative = typeof block.alt === 'string' && !_shortAlt;
+              return `<figure id="${_imgId}-figure" data-img-placeholder="true"${_shortAlt ? ` data-allo-alt="${_attr(_shortAlt)}"` : ''}${_decorative ? ' data-allo-decorative="true"' : ''} style="position:relative;margin:1em 0">`
                 + `<button type="button" contenteditable="false" onclick="(function(){var f=document.getElementById('${_imgId}-figure');if(f)f.remove();try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})()" aria-label="Remove this image placeholder" title="Remove this image placeholder" style="position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer">×</button>`
                 + `<div id="${_imgId}-container" style="background:#f1f5f9;border:2px dashed #64748b;border-radius:8px;padding:1rem;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem" ondragover="${_dragOver}" ondragleave="${_dragLeave}" ondrop="${_dropHandler}">`
                 + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`

@@ -48,24 +48,46 @@
         session.assertCurrent(epoch);
         return () => session.assertCurrent(epoch);
     }
+    function blOpenProtectedSheetTransfer(artifact, assertCurrent, selectionRef, mountedRef) {
+        const selection = selectionRef.current;
+        const beforeTransfer = () => {
+            assertCurrent();
+            if (!mountedRef.current.mounted || selectionRef.current !== selection) {
+                throw Object.assign(new Error('The BehaviorLens student changed before this transfer completed.'), { name: 'AbortError', code: 'PROTECTED_EXPORT_CANCELLED' });
+            }
+            return true;
+        };
+        beforeTransfer();
+        const bridge = window.AlloSheetHostBridge;
+        if (!bridge || typeof bridge.openTransfer !== 'function' || bridge.transferControlVersion !== 1) throw new Error('AlloSheet must finish updating before protected tables can be transferred. Reload and try again.');
+        const root = document.documentElement, body = document.body;
+        const theme = (root?.classList.contains('theme-contrast') || body?.classList.contains('theme-contrast')) ? 'contrast'
+            : (root?.classList.contains('theme-light') || body?.classList.contains('theme-light')) ? 'light' : 'dark';
+        const transfer = bridge.openTransfer({ theme, artifact, transferControls: Object.freeze({ beforeTransfer }) });
+        if (!transfer) throw new Error('AlloSheet could not open. Allow pop-ups and try again.');
+        return { delivered: transfer.delivered, decision: transfer.decision, assertCurrent: beforeTransfer };
+    }
     function blCreateDownloadLink() {
         const session = blRequireProtectedSession();
         const epoch = session.captureEpoch();
         const link = document.createElement('a');
         const click = link.click.bind(link);
         link.click = (...args) => {
+            const outputUrl = link.href;
             try {
                 session.assertCurrent(epoch);
                 session.assertCanExport('download');
                 session.assertCurrent(epoch);
+                return click(...args);
             } catch (error) {
-                if (error && error.name === 'AbortError') {
-                    if (link.href && link.href.startsWith('blob:') && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(link.href);
-                    return false;
-                }
+                // Failed handoff and declined export must not leave a readable
+                // body-level link or Blob URL outside the protected editor.
+                try { if (outputUrl && outputUrl.startsWith('blob:') && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(outputUrl); } catch (_) {}
+                try { link.removeAttribute('href'); } catch (_) {}
+                try { link.remove(); } catch (_) {}
+                if (error && error.name === 'AbortError') return false;
                 throw error;
             }
-            return click(...args);
         };
         return link;
     }
@@ -98,15 +120,22 @@
         blActiveReaders.forEach(reader => { try { reader.abort(); } catch (_) {} });
         blActiveReaders.clear();
     }
-    function useProtectedBehaviorLensTransport(provider, session, boundEpoch) {
+    function useProtectedBehaviorLensTransport(provider, session, boundEpoch, kind = 'text') {
         const epoch = boundEpoch === undefined ? session.captureEpoch() : boundEpoch;
         return React.useMemo(() => typeof provider !== 'function' ? provider : async (...args) => {
             session.assertCurrent(epoch);
             session.assertCanTransmit('ai');
+            const index = kind === 'vision' ? 3 : 8;
+            const previousOptions = args[index];
+            const signal = kind === 'vision' ? previousOptions && previousOptions.signal : args[5];
+            const requestControls = session.createRequestControls(epoch, () => {
+                if (signal && signal.aborted) { const error = new Error('Protected AI request cancelled.'); error.name = 'AbortError'; throw error; }
+            }, previousOptions && previousOptions.requestControls);
+            args[index] = Object.freeze({ ...previousOptions, requestControls });
             const result = await provider(...args);
-            session.assertCurrent(epoch);
+            requestControls.beforeRequest();
             return result;
-        }, [provider, session, epoch]);
+        }, [provider, session, epoch, kind]);
     }
     function getBehaviorLensWorkspaceRuntime() {
         return window.AlloModules && window.AlloModules.BehaviorLensWorkspace;
@@ -382,6 +411,85 @@
         }, [context, key]);
         return [value, setValue];
     };
+
+    // Browser speech can use a remote service by default. Clinical dictation
+    // is offered only through the browser's explicit on-device capability.
+    function useLocalClinicalDictation(studentName, onFinal) {
+        const [listening, setListening] = useState(false);
+        const [pending, setPending] = useState(false);
+        const [interim, setInterim] = useState('');
+        const [message, setMessage] = useState('');
+        const state = useRef({ student: studentName, generation: 0, mounted: true, run: null });
+        const finalRef = useRef(onFinal); finalRef.current = onFinal;
+        if (state.current.student !== studentName) { state.current.student = studentName; state.current.generation += 1; }
+        const stop = useCallback((update = true) => {
+            const live = state.current, run = live.run;
+            live.run = null; live.generation += 1;
+            if (run && run.recognition) {
+                const rec = run.recognition;
+                rec.onresult = null; rec.onerror = null; rec.onend = null;
+                try { if (typeof rec.abort === 'function') rec.abort(); else rec.stop(); } catch (_) {}
+            }
+            if (update && live.mounted) { setListening(false); setPending(false); setInterim(''); }
+        }, []);
+        useEffect(() => {
+            state.current.mounted = true;
+            stop();
+            const cancel = () => stop();
+            blObservationFlushers.add(cancel);
+            window.addEventListener('pagehide', cancel);
+            return () => { state.current.mounted = false; stop(false); blObservationFlushers.delete(cancel); window.removeEventListener('pagehide', cancel); };
+        }, [studentName, stop]);
+        const start = async () => {
+            stop(); setMessage('');
+            const live = state.current, generation = live.generation;
+            let session, epoch;
+            try { session = blRequireProtectedSession(); epoch = session.captureEpoch(); } catch (_) { setMessage('Unlock the protected workspace before dictating.'); return false; }
+            const run = { recognition: null }; live.run = run; setPending(true);
+            const current = () => {
+                if (!live.mounted || live.run !== run || live.generation !== generation) return false;
+                try { session.assertCurrent(epoch); return true; } catch (_) { return false; }
+            };
+            const unavailable = () => {
+                if (current()) setMessage('On-device dictation is unavailable in this browser. Type or paste your notes below.');
+                if (live.run === run) stop();
+                return false;
+            };
+            try {
+                const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (typeof SR !== 'function' || typeof SR.available !== 'function') return unavailable();
+                const rec = new SR(); run.recognition = rec;
+                // Check support before assignment: an expando is not evidence
+                // that the browser will honor the local-only requirement.
+                if (!('processLocally' in rec)) return unavailable();
+                rec.processLocally = true;
+                if (rec.processLocally !== true) return unavailable();
+                const available = await SR.available({ langs: ['en-US'], processLocally: true });
+                if (!current()) { if (live.run === run) stop(); return false; }
+                if (available !== 'available' || rec.processLocally !== true) return unavailable();
+                rec.continuous = true; rec.interimResults = true; rec.lang = 'en-US';
+                rec.onresult = event => {
+                    if (!current()) { if (live.run === run) stop(); return; }
+                    let final = '', partial = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const result = event.results[i];
+                        if (!result || !result[0]) continue;
+                        if (result.isFinal) final += result[0].transcript + ' ';
+                        else partial += result[0].transcript;
+                    }
+                    if (final && typeof finalRef.current === 'function') finalRef.current(final);
+                    setInterim(partial);
+                };
+                rec.onerror = () => { if (current()) setMessage('Dictation stopped. Your completed text remains available to edit.'); if (live.run === run) stop(); };
+                rec.onend = () => { if (live.run === run) stop(); };
+                if (!current() || rec.processLocally !== true) { if (live.run === run) stop(); return false; }
+                rec.start();
+                if (!current()) { if (live.run === run) stop(); return false; }
+                setPending(false); setListening(true); return true;
+            } catch (_) { return unavailable(); }
+        };
+        return { start, stop, listening, pending, interim, message };
+    }
 
     // ── UI localization: pack-first, runtime-AI fallback (self-contained) ──
     // BehaviorLab renders t('behavior_lens.*') || 'English' at ~1.6k sites, but
@@ -851,18 +959,26 @@
         try { assertCurrent = blExportGuard('clipboard'); }
         catch (error) { if (error && error.name === 'AbortError') return Promise.resolve(false); throw error; }
         const viaTextarea = () => {
+            let ta = null;
+            const previousFocus = document.activeElement;
             try {
                 assertCurrent();
-                const ta = document.createElement('textarea');
+                ta = document.createElement('textarea');
                 ta.value = String(text == null ? '' : text);
                 ta.setAttribute('readonly', '');
+                ta.setAttribute('aria-label', 'Temporary clipboard text'); ta.tabIndex = -1;
                 ta.style.position = 'fixed'; ta.style.opacity = '0'; ta.style.top = '0';
                 document.body.appendChild(ta);
                 ta.select();
                 const ok = typeof document.execCommand === 'function' && document.execCommand('copy');
-                ta.remove();
                 return !!ok;
             } catch (e) { return false; }
+            finally {
+                if (ta) { ta.value = ''; ta.remove(); }
+                if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+                    try { assertCurrent(); previousFocus.focus({ preventScroll: true }); } catch (_) {}
+                }
+            }
         };
         try {
             if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
@@ -888,6 +1004,7 @@
     const BL_PRINT_CSS = '[data-bl-print-copy] { display: none; } ' +
         '@media print { [data-bl-print-hide], [data-bl-print-field] { display: none !important; } ' +
         '[data-bl-print-path] { position: static !important; display: block !important; overflow: visible !important; height: auto !important; max-height: none !important; min-height: 0 !important; transform: none !important; } ' +
+        '[data-bl-print-path][hidden] { display: none !important; } ' +
         '[data-bl-print-root] { overflow: visible !important; height: auto !important; max-height: none !important; } ' +
         '[data-bl-print-copy] { display: block !important; white-space: pre-wrap !important; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 6px; min-height: 1.2em; } }';
     let blPrintCleanup = null;
@@ -920,21 +1037,24 @@
         const cleanup = () => {
             if (blPrintCleanup !== cleanup) return;
             blPrintCleanup = null;
+            window.removeEventListener('afterprint', cleanup);
             marked.forEach(([el, attr]) => el.removeAttribute(attr));
-            inserted.forEach(el => el.remove());
+            inserted.forEach(el => { el.textContent = ''; el.remove(); });
             style.remove();
         };
         blPrintCleanup = cleanup;
         return cleanup;
     }
     function blPrintPanel(eventOrElement) {
-        try { blExportGuard('print'); }
+        let assertCurrent;
+        try { assertCurrent = blExportGuard('print'); }
         catch (error) { if (error && error.name === 'AbortError') return false; throw error; }
         const from = eventOrElement && (eventOrElement.currentTarget || eventOrElement.target || eventOrElement);
         const root = (from && typeof from.closest === 'function' && from.closest('[data-bl-panel-content]')) || document.querySelector('[data-bl-panel-content]');
         const cleanup = blPreparePrint(root);
         window.addEventListener('afterprint', cleanup, { once: true });
-        window.print();
+        try { assertCurrent(); window.print(); }
+        catch (error) { cleanup(); if (error && error.name === 'AbortError') return false; throw error; }
     }
     window.AlloModules.BehaviorLensPrint = Object.freeze({ blPreparePrint, blPrintPanel, BL_PRINT_CSS });
 
@@ -15700,93 +15820,13 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
 
     // ─── SessionNotes ──────────────────────────────────────────────────
     const SessionNotes = ({ notes, onUpdateNotes, studentName, t, addToast }) => {
-        const [draft, setDraft] = useState('');
+        const [draft, setDraft] = useDurableToolState('sessionNotesDraft', '');
         const [editingId, setEditingId] = useState(null);
         const [editText, setEditText] = useState('');
-        const [isListening, setIsListening] = useState(false);
-        const recognitionRef = useRef(null);
-
-        // SpeechRecognition setup
-        const SpeechRecognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
-
-        const startMic = useCallback(() => {
-            if (!SpeechRecognition) {
-                if (addToast) addToast(tt('behavior_lens.toast.speech_recognition_not_supported_in_this_browser', 'Speech recognition not supported in this browser'), 'error');
-                return;
-            }
-            // Phase 3v.M — shared module path with inline fallback.
-            // Uses the onRichResult callback to preserve interim/final
-            // distinction (the 🎤 indicator pattern needs it).
-            let finalTranscript = '';
-            const handleRich = ({ final, interim }) => {
-                if (final) finalTranscript += final + ' ';
-                setDraft(prev => {
-                    const base = prev.replace(/\s*🎤.*$/, ''); // remove prior interim indicator
-                    const combined = (base ? base + ' ' : '') + finalTranscript;
-                    return interim ? combined + '🎤 ' + interim : combined;
-                });
-            };
-            const handleEnd = () => {
-                setIsListening(false);
-                setDraft(prev => prev.replace(/\s*🎤.*$/, '').trim());
-            };
-            const handleError = (e) => {
-                warnLog('Speech recognition error:', e && e.error);
-                setIsListening(false);
-            };
-            if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
-                const ctrl = window.AlloFlowVoice.initWebSpeechCapture({
-                    lang: 'en-US',
-                    continuous: true,
-                    interimResults: true,
-                    onRichResult: handleRich,
-                    onError: handleError,
-                    onEnd: handleEnd
-                });
-                if (!ctrl.supported) {
-                    if (addToast) addToast(tt('behavior_lens.toast.speech_recognition_not_supported_in_this_browser', 'Speech recognition not supported in this browser'), 'error');
-                    return;
-                }
-                if (ctrl.start()) {
-                    recognitionRef.current = ctrl;
-                    setIsListening(true);
-                }
-                return;
-            }
-            // Inline fallback (pre-3v.M behavior, identical)
-            const rec = new SpeechRecognition();
-            rec.continuous = true;
-            rec.interimResults = true;
-            rec.lang = 'en-US';
-            rec.onresult = (e) => {
-                let interim = '';
-                for (let i = e.resultIndex; i < e.results.length; i++) {
-                    if (e.results[i].isFinal) {
-                        finalTranscript += e.results[i][0].transcript + ' ';
-                    } else {
-                        interim += e.results[i][0].transcript;
-                    }
-                }
-                setDraft(prev => {
-                    const base = prev.replace(/\s*🎤.*$/, '');
-                    const combined = (base ? base + ' ' : '') + finalTranscript;
-                    return interim ? combined + '🎤 ' + interim : combined;
-                });
-            };
-            rec.onerror = handleError;
-            rec.onend = handleEnd;
-            recognitionRef.current = rec;
-            rec.start();
-            setIsListening(true);
-        }, [SpeechRecognition, addToast]);
-
-        const stopMic = useCallback(() => {
-            if (recognitionRef.current) {
-                try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
-                recognitionRef.current = null;
-            }
-            setIsListening(false);
-        }, []);
+        const dictation = useLocalClinicalDictation(studentName, final => setDraft(previous => (previous ? previous.trimEnd() + ' ' : '') + final));
+        const isListening = dictation.listening || dictation.pending;
+        const startMic = dictation.start;
+        const stopMic = () => dictation.stop();
 
         const handleAdd = () => {
             const text = draft.replace(/\s*🎤.*$/, '').trim();
@@ -15863,8 +15903,10 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                 ),
                 isListening && h('div', { className: 'mt-2 flex items-center gap-2 text-xs text-red-500 font-bold', role: 'status', 'aria-live': 'polite' },
                     h('div', { className: 'w-2 h-2 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none', 'aria-hidden': 'true' }),
-                    'Listening... speak now'
-                )
+                    dictation.pending ? 'Checking on-device dictation…' : 'Listening on this device... speak now'
+                ),
+                dictation.interim && h('p', { className: 'mt-2 text-sm text-slate-600', role: 'status' }, dictation.interim),
+                dictation.message && h('p', { className: 'mt-2 text-sm text-slate-700', role: 'status' }, dictation.message)
             ),
 
             // Notes list
@@ -21179,6 +21221,9 @@ Keep it under 150 words.`);
     // ─── IOACalculator ────────────────────────────────────────────────
     // Inter-Observer Agreement Calculator with AI-Assisted Video/Audio IOA
     function IOACalculator(props) {
+        return h(IOACalculatorForStudent, Object.assign({}, props, { key: props.studentName || '' }));
+    }
+    function IOACalculatorForStudent(props) {
         var studentName = props.studentName;
         var abcEntries = props.abcEntries;
         var callGemini = props.callGemini;
@@ -21187,13 +21232,13 @@ Keep it under 150 words.`);
         var addToast = props.addToast;
 
         var _m = useState('traditional'), ioaMode = _m[0], setIoaMode = _m[1];
-        var _me = useState('pointbypoint'), ioaMethod = _me[0], setIoaMethod = _me[1];
-        var _o1 = useState(''), obs1Data = _o1[0], setObs1Data = _o1[1];
-        var _o2 = useState(''), obs2Data = _o2[0], setObs2Data = _o2[1];
-        var _ic = useState(10), intervalCount = _ic[0], setIntervalCount = _ic[1];
-        var _id2 = useState(function() { return Array.from({ length: 10 }, function() { return { obs1: '', obs2: '', label: '' }; }); }), intervalData = _id2[0], setIntervalData = _id2[1];
-        var _dur = useState(5), intervalDuration = _dur[0], setIntervalDuration = _dur[1];
-        var _bm = useState(false), bulkMode = _bm[0], setBulkMode = _bm[1];
+        var _me = useDurableToolState('ioaMethod', 'pointbypoint'), ioaMethod = _me[0], setIoaMethod = _me[1];
+        var _o1 = useDurableToolState('ioaObserver1', ''), obs1Data = _o1[0], setObs1Data = _o1[1];
+        var _o2 = useDurableToolState('ioaObserver2', ''), obs2Data = _o2[0], setObs2Data = _o2[1];
+        var _ic = useDurableToolState('ioaIntervalCount', 10), intervalCount = _ic[0], setIntervalCount = _ic[1];
+        var _id2 = useDurableToolState('ioaIntervalData', function() { return Array.from({ length: 10 }, function() { return { obs1: '', obs2: '', label: '' }; }); }), intervalData = _id2[0], setIntervalData = _id2[1];
+        var _dur = useDurableToolState('ioaIntervalDuration', 5), intervalDuration = _dur[0], setIntervalDuration = _dur[1];
+        var _bm = useDurableToolState('ioaBulkMode', false), bulkMode = _bm[0], setBulkMode = _bm[1];
 
         function updateIntervalCount(newCount) {
             newCount = Math.max(1, Math.min(100, parseInt(newCount) || 1));
@@ -21229,11 +21274,10 @@ Keep it under 150 words.`);
         var _mf = useState(null), mediaFile = _mf[0], setMediaFile = _mf[1];
         var _mt = useState(null), mediaType = _mt[0], setMediaType = _mt[1];
         var _mu = useState(null), mediaUrl = _mu[0], setMediaUrl = _mu[1];
-        useEffect(() => () => { if (mediaUrl) URL.revokeObjectURL(mediaUrl); }, [mediaUrl]);
-        var _sm = useState('partial'), samplingMethod = _sm[0], setSamplingMethod = _sm[1];
-        var _ai = useState(300), aiIntervalSec = _ai[0], setAiIntervalSec = _ai[1];
-        var _tb = useState(''), targetBehaviors = _tb[0], setTargetBehaviors = _tb[1];
-        var _pc = useState(''), practitionerCoding = _pc[0], setPractitionerCoding = _pc[1];
+        var _sm = useDurableToolState('ioaSamplingMethod', 'partial'), samplingMethod = _sm[0], setSamplingMethod = _sm[1];
+        var _ai = useDurableToolState('ioaIntervalSeconds', 300), aiIntervalSec = _ai[0], setAiIntervalSec = _ai[1];
+        var _tb = useDurableToolState('ioaTargetBehaviors', ''), targetBehaviors = _tb[0], setTargetBehaviors = _tb[1];
+        var _pc = useDurableToolState('ioaPractitionerCoding', ''), practitionerCoding = _pc[0], setPractitionerCoding = _pc[1];
         var _ac = useState(null), aiCoding = _ac[0], setAiCoding = _ac[1];
         var _ap = useState(false), aiProcessing = _ap[0], setAiProcessing = _ap[1];
         var _pg = useState(0), aiProgress = _pg[0], setAiProgress = _pg[1];
@@ -21243,100 +21287,134 @@ Keep it under 150 words.`);
         var _ap2 = useState(false), aiProcessing2 = _ap2[0], setAiProcessing2 = _ap2[1];
         var _cp2 = useState(null), ioaComparison2 = _cp2[0], setIoaComparison2 = _cp2[1];
         var _ca = useState(null), aiVsAiComparison = _ca[0], setAiVsAiComparison = _ca[1];
-        var _sd = useState(''), subjectDescription = _sd[0], setSubjectDescription = _sd[1];
-        var _ir = useState('parent'), iaRole = _ir[0], setIaRole = _ir[1];
-        var _irs = useState(''), iaReinfSchedule = _irs[0], setIaReinfSchedule = _irs[1];
-        var _iad = useState(''), iaAdultDesc = _iad[0], setIaAdultDesc = _iad[1];
+        var _sd = useDurableToolState('ioaSubjectDescription', ''), subjectDescription = _sd[0], setSubjectDescription = _sd[1];
+        var _ir = useDurableToolState('ioaInteractionRole', 'parent'), iaRole = _ir[0], setIaRole = _ir[1];
+        var _irs = useDurableToolState('ioaReinforcementSchedule', ''), iaReinfSchedule = _irs[0], setIaReinfSchedule = _irs[1];
+        var _iad = useDurableToolState('ioaAdultDescription', ''), iaAdultDesc = _iad[0], setIaAdultDesc = _iad[1];
         var _iap = useState(false), iaProcessing = _iap[0], setIaProcessing = _iap[1];
         var _iar = useState(null), iaResults = _iar[0], setIaResults = _iar[1];
         var ioaFileRef = useRef(null);
         var iaFileRef = useRef(null);
+        var mediaPlayerRef = useRef(null);
+        function stopMediaPlayer(player) {
+            if (!player) return;
+            try { player.pause(); } catch (_) {} player.removeAttribute('src'); try { player.load(); } catch (_) {}
+        }
+        var bindMediaPlayer = useCallback(function(player) {
+            if (mediaPlayerRef.current && mediaPlayerRef.current !== player) stopMediaPlayer(mediaPlayerRef.current);
+            mediaPlayerRef.current = player;
+        }, []);
+        var mediaOwnerRef = useRef({ mounted: true, generation: 0, file: null, url: null, readers: new Set(), contexts: new Set() });
+        function closeMediaContext(context) {
+            if (!mediaOwnerRef.current.contexts.delete(context)) return;
+            try { if (context && typeof context.close === 'function') Promise.resolve(context.close()).catch(function() {}); } catch (_) {}
+        }
+        function releaseMedia(clearState) {
+            var owner = mediaOwnerRef.current; owner.generation++;
+            owner.readers.forEach(function(reader) { reader.onload = null; reader.onerror = null; try { reader.abort(); } catch (_) {} }); owner.readers.clear();
+            Array.from(owner.contexts).forEach(closeMediaContext);
+            stopMediaPlayer(mediaPlayerRef.current);
+            if (owner.url) { URL.revokeObjectURL(owner.url); owner.url = null; }
+            owner.file = null;
+            if (ioaFileRef.current) ioaFileRef.current.value = '';
+            if (iaFileRef.current) iaFileRef.current.value = '';
+            if (clearState && owner.mounted) {
+                setMediaFile(null); setMediaType(null); setMediaUrl(null); setAiCoding(null); setAiCoding2(null); setIaResults(null);
+                setIoaComparison(null); setIoaComparison2(null); setAiVsAiComparison(null); setDiscrepancies([]);
+                setAiProcessing(false); setAiProcessing2(false); setIaProcessing(false); setAiProgress(0);
+            }
+        }
+        useEffect(function() {
+            var owner = mediaOwnerRef.current; owner.mounted = true;
+            var flush = function() { releaseMedia(true); };
+            blObservationFlushers.add(flush);
+            return function() { owner.mounted = false; blObservationFlushers.delete(flush); releaseMedia(false); };
+        }, []);
+        function selectMedia(file, isVideo) {
+            releaseMedia(true);
+            var url = URL.createObjectURL(file), owner = mediaOwnerRef.current; owner.file = file; owner.url = url;
+            setMediaFile(file); setMediaType(isVideo ? 'video' : 'audio'); setMediaUrl(url);
+        }
+        function captureMediaOperation() {
+            var owner = mediaOwnerRef.current, generation = owner.generation, file = owner.file;
+            var workspace = blRequireProtectedSession(), epoch = workspace.captureEpoch();
+            return function() {
+                if (!owner.mounted || generation !== owner.generation || !file || file !== owner.file) { var error = new Error('The media operation was cancelled.'); error.name = 'AbortError'; throw error; }
+                workspace.assertCurrent(epoch);
+            };
+        }
+        function isMediaOperationCurrent(assertCurrent) { try { assertCurrent(); return true; } catch (_) { return false; } }
+        function createMediaReader() {
+            var reader = blCreateProtectedReader(); mediaOwnerRef.current.readers.add(reader);
+            reader.addEventListener('loadend', function() { mediaOwnerRef.current.readers.delete(reader); });
+            return reader;
+        }
 
         // ─── callGeminiWithMedia — routes media to vision API or audio-extract fallback ───
         // Small files (≤20 MB): send inline base64 to callGeminiVision
         // Large files (>20 MB): extract audio track, transcribe, then analyse text via callGemini
         var INLINE_LIMIT = 20 * 1024 * 1024; // 20 MB
-        function callGeminiWithMedia(prompt, file, base64DataUrl) {
-            // base64DataUrl is the full data-URL from FileReader.readAsDataURL
+        async function callGeminiWithMedia(prompt, file, base64DataUrl, assertCurrent) {
+            assertCurrent();
             var rawBase64 = base64DataUrl.split(',')[1] || base64DataUrl;
             var detectedMime = base64DataUrl.split(';')[0].split(':')[1] || file.type || 'video/mp4';
-            var byteSize = rawBase64.length * 0.75; // approximate decoded size
-
-            if (byteSize <= INLINE_LIMIT && callGeminiVision) {
-                // Small file — send directly as inline data to the vision model
-                return callGeminiVision(prompt, rawBase64, detectedMime);
-            } else if (byteSize <= INLINE_LIMIT && !callGeminiVision) {
-                // Fallback: callGeminiVision not available, warn and try text-only
+            var byteSize = rawBase64.length * 0.75;
+            async function accept(request) { var result = await request; assertCurrent(); return result; }
+            if (byteSize <= INLINE_LIMIT && callGeminiVision) return accept(callGeminiVision(prompt, rawBase64, detectedMime, assertCurrent));
+            if (byteSize <= INLINE_LIMIT) {
                 warnLog('callGeminiVision not available — falling back to text-only callGemini');
-                return callGemini(prompt, false);
+                return accept(callGemini(prompt, false, assertCurrent));
             }
+            var audioCtx = null, audioBuffer = null, decodeError = null;
+            try {
+                var binaryString = atob(rawBase64), bytes = new Uint8Array(binaryString.length);
+                for (var i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+                assertCurrent();
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                mediaOwnerRef.current.contexts.add(audioCtx);
+                audioBuffer = await audioCtx.decodeAudioData(bytes.buffer);
+            } catch (error) { decodeError = error; }
+            finally { if (audioCtx) closeMediaContext(audioCtx); }
+            assertCurrent();
+            if (decodeError) {
+                warnLog('Audio extraction failed, falling back to text-only', decodeError);
+                return accept(callGemini('[NOTE: Audio extraction from the media file failed. Please respond based on the text prompt only.]\n\n' + prompt, false, assertCurrent));
+            }
+            // Encode extracted audio as WAV
+            var numCh = audioBuffer.numberOfChannels;
+            var sampleRate = Math.min(audioBuffer.sampleRate, 16000); // downsample for smaller payload
+            var length = audioBuffer.length;
+            var wavBuffer = new ArrayBuffer(44 + length * 2);
+            var view = new DataView(wavBuffer);
+            // WAV header
+            function writeStr(offset, str) { for (var i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); }
+            writeStr(0, 'RIFF'); view.setUint32(4, 36 + length * 2, true); writeStr(8, 'WAVE');
+            writeStr(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true); view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+            writeStr(36, 'data'); view.setUint32(40, length * 2, true);
+            var channelData = audioBuffer.getChannelData(0);
+            var offset = 44;
+            for (var j = 0; j < length; j++) {
+                var s = Math.max(-1, Math.min(1, channelData[j]));
+                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                offset += 2;
+            }
+            // Convert WAV to base64
+            var wavBytes = new Uint8Array(wavBuffer);
+            var wavBase64 = '';
+            var CHUNK_SZ = 0x8000;
+            for (var k = 0; k < wavBytes.length; k += CHUNK_SZ) {
+                wavBase64 += String.fromCharCode.apply(null, wavBytes.subarray(k, k + CHUNK_SZ));
+            }
+            wavBase64 = btoa(wavBase64);
 
-            // Large file path — extract audio, transcribe, then analyse transcript
-            return new Promise(function(resolve, reject) {
-                try {
-                    // Decode base64 → ArrayBuffer → AudioContext for audio extraction
-                    var binaryString = atob(rawBase64);
-                    var bytes = new Uint8Array(binaryString.length);
-                    for (var i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-                    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    audioCtx.decodeAudioData(bytes.buffer).then(function(audioBuffer) {
-                        // Encode extracted audio as WAV
-                        var numCh = audioBuffer.numberOfChannels;
-                        var sampleRate = Math.min(audioBuffer.sampleRate, 16000); // downsample for smaller payload
-                        var length = audioBuffer.length;
-                        var wavBuffer = new ArrayBuffer(44 + length * 2);
-                        var view = new DataView(wavBuffer);
-                        // WAV header
-                        function writeStr(offset, str) { for (var i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); }
-                        writeStr(0, 'RIFF'); view.setUint32(4, 36 + length * 2, true); writeStr(8, 'WAVE');
-                        writeStr(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
-                        view.setUint16(22, 1, true); view.setUint32(24, sampleRate, true);
-                        view.setUint32(28, sampleRate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
-                        writeStr(36, 'data'); view.setUint32(40, length * 2, true);
-                        var channelData = audioBuffer.getChannelData(0);
-                        var offset = 44;
-                        for (var j = 0; j < length; j++) {
-                            var s = Math.max(-1, Math.min(1, channelData[j]));
-                            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-                            offset += 2;
-                        }
-                        // Convert WAV to base64
-                        var wavBytes = new Uint8Array(wavBuffer);
-                        var wavBase64 = '';
-                        var CHUNK_SZ = 0x8000;
-                        for (var k = 0; k < wavBytes.length; k += CHUNK_SZ) {
-                            wavBase64 += String.fromCharCode.apply(null, wavBytes.subarray(k, k + CHUNK_SZ));
-                        }
-                        wavBase64 = btoa(wavBase64);
 
-                        // Check if WAV fits inline limit
-                        if (wavBase64.length * 0.75 <= INLINE_LIMIT && callGeminiVision) {
-                            resolve(callGeminiVision(
-                                'TRANSCRIBE the following audio, then: ' + prompt,
-                                wavBase64, 'audio/wav'
-                            ));
-                        } else {
-                            // WAV still too large — send as text-only with note
-                            resolve(callGemini(
-                                '[NOTE: The media file was too large for inline analysis. ' +
-                                'Audio extraction yielded a file that is still too large. ' +
-                                'Please respond based on the text prompt only.]\n\n' + prompt,
-                                false
-                            ));
-                        }
-                    }).catch(function(decodeErr) {
-                        // Audio decode failed (e.g. corrupt file) — fall back to text
-                        warnLog('Audio extraction failed, falling back to text-only', decodeErr);
-                        resolve(callGemini(
-                            '[NOTE: Audio extraction from the media file failed. ' +
-                            'Please respond based on the text prompt only.]\n\n' + prompt,
-                            false
-                        ));
-                    });
-                } catch (e) {
-                    reject(e);
-                }
-            });
+            assertCurrent();
+            if (wavBase64.length * 0.75 <= INLINE_LIMIT && callGeminiVision) {
+                return accept(callGeminiVision('TRANSCRIBE the following audio, then: ' + prompt, wavBase64, 'audio/wav', assertCurrent));
+            }
+            return accept(callGemini('[NOTE: The media file was too large for inline analysis. Audio extraction yielded a file that is still too large. Please respond based on the text prompt only.]\n\n' + prompt, false, assertCurrent));
         }
 
         var IOA_METHODS_LIST = IOA_METHODS;
@@ -21392,12 +21470,7 @@ Keep it under 150 words.`);
                 if (addToast) addToast(t('toasts.upload_video_audio_file'), 'error');
                 return;
             }
-            setMediaFile(file);
-            setMediaType(isVideo ? 'video' : 'audio');
-            setMediaUrl(URL.createObjectURL(file));
-            setAiCoding(null);
-            setIoaComparison(null);
-            setDiscrepancies([]);
+            selectMedia(file, isVideo);
             if (addToast) addToast((isVideo ? 'Video' : 'Audio') + ' loaded: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)', 'success');
         }
 
@@ -21407,12 +21480,14 @@ Keep it under 150 words.`);
                 if (addToast) addToast(t('toasts.define_target_behavior_first'), 'error');
                 return;
             }
+            var assertCurrent = captureMediaOperation();
             setAiProcessing(true);
             setAiProgress(0);
             setAiCoding(null);
 
-            var reader = blCreateProtectedReader();
+            var reader = createMediaReader();
             reader.onload = function() {
+                if (!isMediaOperationCurrent(assertCurrent)) return;
                 var base64Data = reader.result;
                 var sampDesc = IOA_SAMPLING.find(function(s) { return s.id === samplingMethod; });
                 var subjectLine = (studentName || 'Subject') + (subjectDescription.trim() ? ' — VISUAL IDENTIFICATION: ' + subjectDescription.trim() : '');
@@ -21430,8 +21505,9 @@ Keep it under 150 words.`);
                     'Return ONLY valid JSON:\n' +
                     '{"intervals": [{"start_sec": 0, "end_sec": ' + aiIntervalSec + ', "code": 0, "confidence": 95, "observation": "brief note", "antecedent": "what preceded", "behavior_topography": "specific description", "consequence": "what followed", "uncertain": false}], "total_intervals": 6, "summary": "brief overall summary", "behavior_rate": "occurrences per minute or % of intervals"}';
 
-                callGeminiWithMedia(prompt, mediaFile, base64Data)
+                callGeminiWithMedia(prompt, mediaFile, base64Data, assertCurrent)
                     .then(function(result) {
+                        assertCurrent();
                         try {
                             var parsed = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
                             setAiCoding(parsed);
@@ -21446,14 +21522,16 @@ Keep it under 150 words.`);
                         }
                     })
                     .catch(function(err) {
+                        if (!isMediaOperationCurrent(assertCurrent) || err.name === 'AbortError') return;
                         warnLog('AI IOA processing failed', err);
                         if (addToast) addToast(t('toasts.processing_failed') + (err.message || 'Unknown error'), 'error');
                     })
                     .finally(function() {
-                        setAiProcessing(false);
+                        if (isMediaOperationCurrent(assertCurrent)) setAiProcessing(false);
                     });
             };
             reader.onerror = function() {
+                if (!isMediaOperationCurrent(assertCurrent)) return;
                 setAiProcessing(false);
                 if (addToast) addToast(t('toasts.failed_read_file'), 'error');
             };
@@ -21463,13 +21541,15 @@ Keep it under 150 words.`);
         // Second pass of the same model: a consistency check, not a second observer.
         function runSecondAIPass() {
             if (!mediaFile || !callGemini) return;
+            var assertCurrent = captureMediaOperation();
             setAiProcessing2(true);
             setAiCoding2(null);
             setIoaComparison2(null);
             setAiVsAiComparison(null);
 
-            var reader2 = blCreateProtectedReader();
+            var reader2 = createMediaReader();
             reader2.onload = function() {
+                if (!isMediaOperationCurrent(assertCurrent)) return;
                 var base64Data2 = reader2.result;
                 var sampDesc2 = IOA_SAMPLING.find(function(s) { return s.id === samplingMethod; });
                 var prompt2 = 'You are a behavioral observation coder performing an INDEPENDENT reliability review of a ' + mediaType + ' recording.\n\n' +
@@ -21487,8 +21567,9 @@ Keep it under 150 words.`);
                     'Return ONLY valid JSON:\n' +
                     '{"intervals": [{"start_sec": 0, "end_sec": ' + aiIntervalSec + ', "code": 0, "confidence": 95, "observation": "brief note", "uncertain": false}], "total_intervals": 6, "summary": "overall summary", "behavior_rate": "rate"}';
 
-                callGeminiWithMedia(prompt2, mediaFile, base64Data2)
+                callGeminiWithMedia(prompt2, mediaFile, base64Data2, assertCurrent)
                     .then(function(result2) {
+                        assertCurrent();
                         try {
                             var parsed2 = JSON.parse(result2.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
                             setAiCoding2(parsed2);
@@ -21501,14 +21582,16 @@ Keep it under 150 words.`);
                         }
                     })
                     .catch(function(err2) {
+                        if (!isMediaOperationCurrent(assertCurrent) || err2.name === 'AbortError') return;
                         warnLog('AI IOA pass 2 failed', err2);
                         if (addToast) addToast(t('toasts.second_pass_failed') + (err2.message || 'Unknown error'), 'error');
                     })
                     .finally(function() {
-                        setAiProcessing2(false);
+                        if (isMediaOperationCurrent(assertCurrent)) setAiProcessing2(false);
                     });
             };
             reader2.onerror = function() {
+                if (!isMediaOperationCurrent(assertCurrent)) return;
                 setAiProcessing2(false);
                 if (addToast) addToast(t('toasts.failed_read_file_second_pass'), 'error');
             };
@@ -21673,10 +21756,7 @@ Keep it under 150 words.`);
                 if (addToast) addToast(t('toasts.upload_video_audio_file'), 'error');
                 return;
             }
-            setMediaFile(file);
-            setMediaType(isVideo ? 'video' : 'audio');
-            setMediaUrl(URL.createObjectURL(file));
-            setIaResults(null);
+            selectMedia(file, isVideo);
             if (addToast) addToast((isVideo ? 'Video' : 'Audio') + ' loaded for interaction analysis', 'success');
         }
 
@@ -21686,11 +21766,13 @@ Keep it under 150 words.`);
                 if (addToast) addToast(t('toasts.define_target_behavior_first'), 'error');
                 return;
             }
+            var assertCurrent = captureMediaOperation();
             setIaProcessing(true);
             setIaResults(null);
 
-            var reader = blCreateProtectedReader();
+            var reader = createMediaReader();
             reader.onload = function() {
+                if (!isMediaOperationCurrent(assertCurrent)) return;
                 var base64 = reader.result;
                 var roleInfo = IA_ROLES.find(function(r) { return r.id === iaRole; });
                 var roleName = roleInfo ? roleInfo.label : 'Caregiver';
@@ -21731,8 +21813,9 @@ Keep it under 150 words.`);
                     '"overall_quality": "excellent/good/developing/needs_support"' +
                     '}';
 
-                callGeminiWithMedia(prompt, mediaFile, base64)
+                callGeminiWithMedia(prompt, mediaFile, base64, assertCurrent)
                     .then(function(result) {
+                        assertCurrent();
                         try {
                             var parsed = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
                             setIaResults(parsed);
@@ -21743,14 +21826,16 @@ Keep it under 150 words.`);
                         }
                     })
                     .catch(function(err) {
+                        if (!isMediaOperationCurrent(assertCurrent) || err.name === 'AbortError') return;
                         warnLog('Interaction analysis failed', err);
                         if (addToast) addToast(t('toasts.analysis_failed_3') + (err.message || 'Unknown error'), 'error');
                     })
                     .finally(function() {
-                        setIaProcessing(false);
+                        if (isMediaOperationCurrent(assertCurrent)) setIaProcessing(false);
                     });
             };
             reader.onerror = function() {
+                if (!isMediaOperationCurrent(assertCurrent)) return;
                 setIaProcessing(false);
                 if (addToast) addToast(t('toasts.failed_read_file'), 'error');
             };
@@ -21964,10 +22049,10 @@ Keep it under 150 words.`);
                                 h('div', { className: 'text-xs font-bold text-emerald-700' }, mediaFile.name),
                                 h('div', { className: 'text-[11px] text-emerald-500' }, (mediaFile.size / 1024 / 1024).toFixed(1) + ' MB')
                             ),
-                            h('button', { onClick: function() { setMediaFile(null); setMediaUrl(null); setAiCoding(null); }, className: 'text-xs text-red-500 hover:text-red-700 font-bold', 'aria-label': 'Remove file' }, '✕')
+                            h('button', { onClick: function() { releaseMedia(true); }, className: 'text-xs text-red-500 hover:text-red-700 font-bold', 'aria-label': 'Remove file' }, '✕')
                         ),
-                    mediaUrl && mediaType === 'video' && h('video', { src: mediaUrl, controls: true, className: 'w-full rounded-xl mt-3 max-h-48' }),
-                    mediaUrl && mediaType === 'audio' && h('audio', { src: mediaUrl, controls: true, className: 'w-full mt-3' })
+                    mediaUrl && mediaType === 'video' && h('video', { ref: bindMediaPlayer, src: mediaUrl, controls: true, className: 'w-full rounded-xl mt-3 max-h-48' }),
+                    mediaUrl && mediaType === 'audio' && h('audio', { ref: bindMediaPlayer, src: mediaUrl, controls: true, className: 'w-full mt-3' })
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -22234,10 +22319,10 @@ Keep it under 150 words.`);
                                 h('div', { className: 'text-xs font-bold text-emerald-700' }, mediaFile.name),
                                 h('div', { className: 'text-[11px] text-emerald-500' }, (mediaFile.size / 1024 / 1024).toFixed(1) + ' MB')
                             ),
-                            h('button', { onClick: function() { setMediaFile(null); setMediaUrl(null); setIaResults(null); }, 'aria-label': 'Remove media file', className: 'text-xs text-red-500 hover:text-red-700 font-bold' }, '✕')
+                            h('button', { onClick: function() { releaseMedia(true); }, 'aria-label': 'Remove media file', className: 'text-xs text-red-500 hover:text-red-700 font-bold' }, '✕')
                         ),
-                    mediaUrl && mediaType === 'video' && h('video', { src: mediaUrl, controls: true, className: 'w-full rounded-xl mt-3 max-h-48' }),
-                    mediaUrl && mediaType === 'audio' && h('audio', { src: mediaUrl, controls: true, className: 'w-full mt-3' })
+                    mediaUrl && mediaType === 'video' && h('video', { ref: bindMediaPlayer, src: mediaUrl, controls: true, className: 'w-full rounded-xl mt-3 max-h-48' }),
+                    mediaUrl && mediaType === 'audio' && h('audio', { ref: bindMediaPlayer, src: mediaUrl, controls: true, className: 'w-full mt-3' })
                 ),
                 // Process Button
                 h('button', { "aria-label": "Process Interaction Analysis", onClick: processInteractionAnalysis, disabled: !mediaFile || !targetBehaviors.trim() || iaProcessing, className: 'w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base' }, iaProcessing ? '🎥 Analyzing interaction...' : '🎥 Analyze Interaction'),
@@ -26372,43 +26457,15 @@ Keep the language professional but accessible.`;
 
     // ─── VoiceToABC ──────────────────────────────────────────────────────
     const VoiceToABC = ({ abcEntries, setAbcEntries, studentName, callGemini, addToast, t }) => {
-        const [isRecording, setIsRecording] = useState(false);
-        const [transcript, setTranscript] = useState('');
-        const [interimText, setInterimText] = useState('');
+        const [transcript, setTranscript] = useDurableToolState('voiceToAbcTranscript', '');
         const [parsedEntries, setParsedEntries] = useState([]);
         const [parsing, setParsing] = useState(false);
         const [notesDate, setNotesDate] = useState(() => blLocalDateKey(new Date()));
-        const recognitionRef = useRef(null);
-        const [supported] = useState(() => !!(window.SpeechRecognition || window.webkitSpeechRecognition));
-
-        const startRecording = () => {
-            if (!supported) return;
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SR();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-            recognition.onresult = (event) => {
-                let interim = '';
-                let final = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) { final += event.results[i][0].transcript + ' '; }
-                    else { interim = event.results[i][0].transcript; }
-                }
-                if (final) setTranscript(prev => prev + final);
-                setInterimText(interim);
-            };
-            recognition.onerror = (e) => { if (addToast) addToast(t('toasts.speech_recognition_error') + e.error, 'error'); setIsRecording(false); };
-            recognition.onend = () => { setIsRecording(false); setInterimText(''); };
-            recognition.start();
-            recognitionRef.current = recognition;
-            setIsRecording(true);
-        };
-
-        const stopRecording = () => {
-            if (recognitionRef.current) { recognitionRef.current.stop(); recognitionRef.current = null; }
-            setIsRecording(false);
-        };
+        const dictation = useLocalClinicalDictation(studentName, final => { setTranscript(previous => previous + final); setParsedEntries([]); });
+        const isRecording = dictation.listening || dictation.pending;
+        const interimText = dictation.interim;
+        const startRecording = dictation.start;
+        const stopRecording = () => dictation.stop();
 
         const parseTranscript = async () => {
             if (!transcript.trim() || !callGemini) return;
@@ -26478,33 +26535,27 @@ Keep the language professional but accessible.`;
         return h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200' },
                 h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_voice_to_abc' }, h('span', { className: 'text-2xl' }, '🎙️'), h('h3', { className: 'text-lg font-black text-rose-800' }, tt('behavior_lens.ui.voicetoabc', 'Voice-to-ABC'))),
-                h('p', { className: 'text-xs text-rose-600' }, tt('behavior_lens.ui.speak_your_observations_naturally_ai_will_extract', 'Speak your observations naturally. AI will extract structured ABC entries from your transcript.'))
-            ),
-            // Not supported fallback
-            !supported && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
-                h('p', { className: 'text-sm font-bold text-amber-800' }, '⚠️ Speech Recognition Not Supported'),
-                h('p', { className: 'text-xs text-amber-600 mt-1' }, tt('behavior_lens.ui.please_use_chrome_edge_or_safari_for_voice_input', 'Please use Chrome, Edge, or Safari for voice input.'))
+                h('p', { className: 'text-xs text-rose-600' }, 'Type or paste observation notes, or use on-device dictation when available. Review the transcript before asking AI to organize ABC entries.')
             ),
             // Record controls
-            supported && h('div', { className: 'flex items-center gap-3' },
+            h('div', { className: 'flex items-center gap-3' },
                 h('button', { onClick: isRecording ? stopRecording : startRecording,
                     className: `flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-md ${isRecording ? 'bg-red-700 text-white hover:bg-red-600 animate-pulse motion-reduce:animate-none' : 'bg-rose-600 text-white hover:bg-rose-700'}`
                 }, isRecording ? '⏹️ Stop Recording' : '🎙️ Start Recording'),
                 isRecording && h('div', { className: 'flex items-center gap-2' },
                     h('div', { className: 'w-3 h-3 bg-red-500 rounded-full animate-pulse motion-reduce:animate-none' }),
-                    h('span', { className: 'text-xs text-red-600 font-bold' }, tt('behavior_lens.ui.recording', 'Recording...'))
+                    h('span', { className: 'text-xs text-red-600 font-bold', role: 'status' }, dictation.pending ? 'Checking on-device dictation…' : 'Recording on this device…')
                 )
             ),
+            dictation.message && h('p', { role: 'status', className: 'text-sm text-slate-700' }, dictation.message),
             // Transcript
-            (transcript || interimText) && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
+            h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
                 h('div', { className: 'flex items-center justify-between mb-2' },
                     h('h4', { className: 'text-xs font-bold text-slate-700 uppercase' }, '📝 Transcript'),
                     transcript && h('button', { "aria-label": "Clear", onClick: () => { setTranscript(''); setParsedEntries([]); }, className: 'text-[11px] text-red-600 hover:text-red-600' }, '✕ Clear')
                 ),
-                h('div', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-wrap min-h-[60px]' },
-                    transcript,
-                    interimText && h('span', { className: 'text-slate-600 italic' }, interimText)
-                )
+                h('textarea', { 'aria-label': 'Observation transcript', value: transcript, onChange: event => { setTranscript(event.target.value); setParsedEntries([]); }, rows: 4, className: 'w-full text-sm text-slate-700 border border-slate-400 rounded-lg p-3', placeholder: 'Type or paste the observation notes to review.' }),
+                interimText && h('p', { role: 'status', className: 'text-sm text-slate-600 italic' }, interimText)
             ),
             // Parse button
             transcript && !parsing && parsedEntries.length === 0 && h('button', { "aria-label": "Parse ABC Entries from Transcript",
@@ -28626,7 +28677,7 @@ IMPORTANT rules for expert keys:
         blProtectedSession = sensitiveWorkspace;
         blProtectedEpoch = protectedEpochRef.current;
         const callGemini = useProtectedBehaviorLensTransport(rawCallGemini, sensitiveWorkspace, protectedEpochRef.current);
-        const callGeminiVision = useProtectedBehaviorLensTransport(rawCallGeminiVision, sensitiveWorkspace, protectedEpochRef.current);
+        const callGeminiVision = useProtectedBehaviorLensTransport(rawCallGeminiVision, sensitiveWorkspace, protectedEpochRef.current, 'vision');
         const protectedCloseInProgress = useRef(false);
         const onClose = useCallback(async () => {
             if (protectedCloseInProgress.current) return;
@@ -28634,6 +28685,7 @@ IMPORTANT rules for expert keys:
             protectedCloseInProgress.current = true;
             try {
                 sensitiveWorkspace.assertCurrent(epoch);
+                if (blPrintCleanup) blPrintCleanup();
                 blCancelProtectedReaders();
                 blPendingConfirmations.forEach(cancel => cancel());
                 blObservationFlushers.forEach(flush => flush());
@@ -29846,6 +29898,15 @@ IMPORTANT rules for expert keys:
         const handleLoadWorkspace = (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
+            const importSession = blRequireProtectedSession();
+            const importEpoch = importSession.captureEpoch();
+            const importSelection = workspaceSelectionRef.current;
+            const assertImportCurrent = () => {
+                importSession.assertCurrent(importEpoch);
+                if (!aiRequestContextRef.current.mounted || workspaceSelectionRef.current !== importSelection) {
+                    throw Object.assign(new Error('The BehaviorLens student changed before this import completed.'), { name: 'AbortError' });
+                }
+            };
             const workspaceRuntime = getBehaviorLensWorkspaceRuntime();
             if (file.size > workspaceRuntime.MAX_WORKSPACE_IMPORT_BYTES) {
                 if (addToast) addToast('Workspace not loaded: file exceeds the ' + workspaceRuntime.formatByteSize(workspaceRuntime.MAX_WORKSPACE_IMPORT_BYTES) + ' safety limit.', 'error');
@@ -29855,6 +29916,7 @@ IMPORTANT rules for expert keys:
             const reader = blCreateProtectedReader();
             reader.onload = async (ev) => {
                 try {
+                    assertImportCurrent();
                     const data = JSON.parse(ev.target.result);
                     // A snapshot keeps its records under "behaviorLens", so it read as "no recognized data".
                     if (data && data.alloflowSnapshot === true) throw new Error('this is a snapshot file. Open Snapshot Exchange to merge its records.');
@@ -29884,6 +29946,7 @@ IMPORTANT rules for expert keys:
                             return;
                         }
                         if (!await askBehaviorLensConfirmation(tt('behavior_lens.workspace.partial_confirm', 'This file is a {kind}, not a backup. It has no targets, notes or plans, so it cannot replace the saved work for {name}. Add its {abc} new ABC entries and {obs} new observation sessions? {skipped} records already here will be skipped.', { kind: partialKind, name: entry.name, abc: abc.fresh.length, obs: obs.fresh.length, skipped }), { title: 'Add records from file', confirmText: 'Add records' })) return;
+                        assertImportCurrent();
                         const byTime = (a, b) => new Date(a.timestamp) - new Date(b.timestamp);
                         if (abc.fresh.length) setAbcEntries(prev => [...prev, ...abc.fresh].sort(byTime));
                         if (obs.fresh.length) setObservationSessions(prev => [...prev, ...obs.fresh].sort(byTime));
@@ -29894,6 +29957,7 @@ IMPORTANT rules for expert keys:
                         const when = iso => (iso && !isNaN(Date.parse(iso)) ? blLocalDateKey(iso) : 'unknown date');
                         if (!await askBehaviorLensConfirmation(tt('behavior_lens.workspace.replace_confirm', 'Replace the saved work for {name} with this file? The file has {fileEntries} ABC entries (saved {fileDate}); this device has {localEntries} (saved {localDate}). Anything only on this device is lost.', { name: entry.name, fileEntries: count(data.abcEntries), fileDate: when(data.savedAt), localEntries: count(saved.abcEntries), localDate: when(saved.savedAt) }), { title: 'Replace saved workspace', confirmText: 'Replace' })) return;
                     }
+                    assertImportCurrent();
                     stageStudentWorkspace(data);
                     if (partialKind && addToast) addToast(tt('behavior_lens.workspace.partial_loaded', 'Loaded from a {kind}: it has entries and sessions only, with no targets, notes or plans.', { kind: partialKind }), 'warning');
                     if (addToast) addToast(t('behavior_lens.toast.workspace_loaded_n_entries_n_notes', {
@@ -29905,11 +29969,13 @@ IMPORTANT rules for expert keys:
                     // Import warnings were computed and never shown.
                     if (Array.isArray(validation.warnings) && validation.warnings.length && addToast) addToast(tt('behavior_lens.toast.workspace_warnings', 'Loaded with {n} warnings. First: {first}', { n: validation.warnings.length, first: String(validation.warnings[0]) }), 'warning');
                 } catch (err) {
+                    if (err && err.name === 'AbortError') return;
                     warnLog('Failed to parse workspace file:', err);
                     if (addToast) addToast('Workspace not loaded: ' + (err && err.message ? err.message : 'invalid BehaviorLens JSON.'), 'error');
                 }
             };
             reader.onerror = () => {
+                try { assertImportCurrent(); } catch (_) { return; }
                 if (addToast) addToast('Workspace not loaded: the file could not be read.', 'error');
             };
             reader.readAsText(file);
@@ -30113,7 +30179,7 @@ IMPORTANT rules for expert keys:
         };
         // null = AI is off (this toasts why) or the request went stale. Tools return quietly on
         // null: they used to show "generated" over an empty result, or an error after this toast.
-        const callGeminiGuarded = useCallback(async (prompt, jsonMode) => {
+        const callGeminiGuarded = useCallback(async (prompt, jsonMode, operationGuard) => {
             if (!callGemini) return null;
             if (!aiConsent) {
                 if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', '🤖 AI is off — toggle it on in the header to use this feature'), 'info');
@@ -30121,9 +30187,14 @@ IMPORTANT rules for expert keys:
             }
             const generation = aiRequestContextRef.current.generation;
             const privacy = window.AlloModules && window.AlloModules.IdentifierRedaction;
+            const requestControls = sensitiveWorkspace.createRequestControls(protectedEpochRef.current, () => {
+                if (window.AlloModules?.IdentifierRedaction !== privacy || !aiRequestContextRef.current.mounted || aiRequestContextRef.current.generation !== generation || aiProviderRef.current.text !== callGemini) throw Object.assign(new Error('Protected AI request cancelled.'), { name: 'AbortError' });
+            }, operationGuard === undefined ? undefined : Object.freeze({ beforeRequest: operationGuard }));
             const reviewed = await reviewSensitiveAiPrompt(prompt);
             if (!reviewed || window.AlloModules?.IdentifierRedaction !== privacy || !aiRequestContextRef.current.mounted || aiRequestContextRef.current.generation !== generation || aiProviderRef.current.text !== callGemini) return null;
-            const result = await callGemini(reviewed.prompt, jsonMode);
+            requestControls.beforeRequest();
+            const result = await callGemini(reviewed.prompt, jsonMode, false, null, null, null, false, null, { requestControls });
+            requestControls.beforeRequest();
             return aiRequestContextRef.current.mounted && aiRequestContextRef.current.generation === generation ? result : null;
         }, [callGemini, aiConsent, addToast, t, reviewSensitiveAiPrompt]);
 
@@ -30133,7 +30204,7 @@ IMPORTANT rules for expert keys:
         // most PII-heavy call in the tool, so it MUST honor the same aiConsent
         // gate as text calls. Previously the raw callGeminiVision prop was
         // threaded straight into IOACalculator, bypassing consent entirely.
-        const callGeminiVisionGuarded = useCallback(async (prompt, base64, mime) => {
+        const callGeminiVisionGuarded = useCallback(async (prompt, base64, mime, operationGuard) => {
             if (!callGeminiVision) return null;
             if (!aiConsent) {
                 if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', '🤖 AI is off — toggle it on in the header to use this feature'), 'info');
@@ -30141,20 +30212,25 @@ IMPORTANT rules for expert keys:
             }
             const generation = aiRequestContextRef.current.generation;
             const privacy = window.AlloModules && window.AlloModules.IdentifierRedaction;
+            const requestControls = sensitiveWorkspace.createRequestControls(protectedEpochRef.current, () => {
+                if (window.AlloModules?.IdentifierRedaction !== privacy || !aiRequestContextRef.current.mounted || aiRequestContextRef.current.generation !== generation || aiProviderRef.current.vision !== callGeminiVision) throw Object.assign(new Error('Protected AI request cancelled.'), { name: 'AbortError' });
+            }, operationGuard === undefined ? undefined : Object.freeze({ beforeRequest: operationGuard }));
             const reviewed = await reviewSensitiveAiPrompt(prompt, { media: { mime: String(mime || 'recording') } });
             if (!reviewed || window.AlloModules?.IdentifierRedaction !== privacy || !aiRequestContextRef.current.mounted || aiRequestContextRef.current.generation !== generation || aiProviderRef.current.vision !== callGeminiVision) return null;
-            const result = await callGeminiVision(reviewed.prompt, base64, mime);
+            requestControls.beforeRequest();
+            const result = await callGeminiVision(reviewed.prompt, base64, mime, { requestControls });
+            requestControls.beforeRequest();
             return aiRequestContextRef.current.mounted && aiRequestContextRef.current.generation === generation ? result : null;
         }, [callGeminiVision, aiConsent, addToast, t, reviewSensitiveAiPrompt]);
 
         // ── Contextual AI wrapper — auto-injects student profile + notes ──
         // Routes through callGeminiGuarded so the consent gate fires for
         // every contextual call too.
-        const callGeminiWithContext = useCallback(async (prompt, jsonMode) => {
+        const callGeminiWithContext = useCallback(async (prompt, jsonMode, operationGuard) => {
             if (!callGemini) return null;
             const ctx = buildStudentContext();
             const enrichedPrompt = ctx ? `${ctx}\n\n${prompt}` : prompt;
-            return callGeminiGuarded(enrichedPrompt, jsonMode);
+            return callGeminiGuarded(enrichedPrompt, jsonMode, operationGuard);
         }, [callGemini, callGeminiGuarded, buildStudentContext]);
 
         // Replies a family or the student reads: the full context added staff notes, known
@@ -30441,6 +30517,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                 const previous = blRegisteredFlushSession;
                 blRegisteredFlushSession = sensitiveWorkspace;
                 try {
+                    if (blPrintCleanup) blPrintCleanup();
                     blCancelProtectedReaders();
                     blPendingConfirmations.forEach(cancel => cancel());
                     blObservationFlushers.forEach(flush => flush());
@@ -30455,6 +30532,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             document.addEventListener('visibilitychange', flushWhenHidden);
             return () => {
                 unregister();
+                if (blPrintCleanup) blPrintCleanup();
                 window.removeEventListener('pagehide', flushForPageLifecycle);
                 document.removeEventListener('visibilitychange', flushWhenHidden);
                 scheduler.flush({ reason: 'unmount', silent: true });
@@ -31040,7 +31118,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             });
 
             // Rebuild at the click boundary so createdAt and provenance match
-            // the actual handoff. The callback opens the popup synchronously.
+            // the actual handoff. The guarded bridge opens the popup synchronously.
             const envelope = buildBehaviorLensAlloSheetEnvelope({
                 studentName: selectedStudent,
                 abcEntries,
@@ -31056,10 +31134,15 @@ Use professional language. Refer to "the student" (not the codename).`;
 
             try {
                 const assertCurrent = blExportGuard('allosheet');
-                const pending = onOpenAlloSheet(envelope);
-                const opened = pending && typeof pending.then === 'function' ? await pending : pending;
-                assertCurrent();
-                if (opened === false || opened == null) throw new Error('AlloSheet did not open.');
+                const transfer = blOpenProtectedSheetTransfer(envelope, assertCurrent, workspaceSelectionRef, aiRequestContextRef);
+                if (transfer.decision && typeof transfer.decision.then === 'function') transfer.decision.then(decision => {
+                    transfer.assertCurrent();
+                    if (typeof addToast !== 'function') return;
+                    if (decision && decision.status === 'accepted') addToast('BehaviorLens tables opened in AlloSheet for review.', 'success');
+                    else if (decision && decision.status === 'cancelled') addToast('AlloSheet review canceled. BehaviorLens data did not change.', 'info');
+                }).catch(() => {});
+                await transfer.delivered;
+                transfer.assertCurrent();
                 const message = tt('behavior_lens.allosheet.received_for_review', 'Reviewed tables were received for destination review in AlloSheet. This did not enable AI or write back to BehaviorLens.');
                 setShowAlloSheetHandoff(false);
                 setAlloSheetHandoffFeedback({ kind: '', text: '' });
@@ -33482,6 +33565,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     alloBotRef,
                 }),
                 activePanel === 'sessionnotes' && h(SessionNotes, {
+                    key: activeStudentId || selectedStudent,
                     notes: sessionNotes,
                     onUpdateNotes: setSessionNotes,
                     studentName: selectedStudent,
@@ -33640,6 +33724,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     abcEntries, observationSessions, sessionHistory, t, addToast
                 }),
                 activePanel === 'voiceabc' && h(VoiceToABC, {
+                    key: activeStudentId || selectedStudent,
                     abcEntries, setAbcEntries, studentName: selectedStudent,
                     callGemini: callGeminiWithContext, addToast, t
                 }),

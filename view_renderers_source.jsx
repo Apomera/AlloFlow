@@ -187,7 +187,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
             const content = numMatch[2];
             elements.push(
                 <div key={lineIdx} className="flex items-start gap-2 mb-1 ml-2">
-                    <span className="text-sm font-bold text-indigo-500 min-w-[1.2em] text-right">{number}.</span>
+                    <span className="text-sm font-bold text-indigo-700 min-w-[1.2em] text-right">{number}.</span>
                     <div className="text-sm">{formatInlineText(content, enableGlossary, isDarkBg)}</div>
                 </div>
             );
@@ -7996,6 +7996,38 @@ const renderInteractiveMap = (deps) => {
   };
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderInteractiveMap fired"); } catch(_) {}
       const isVenn = generatedContent?.data?.structureType === 'Venn Diagram';
+      // Tap path for Venn tokens (WCAG 2.5.7): a click on a token selects it
+      // (connectingSourceId, the existing selection), then a click on a circle,
+      // the overlap or the bank puts it there. Same bank rule as the drag drop.
+      const pickedVennToken = isVenn && !isMapLocked && connectingSourceId
+          ? (conceptMapNodes || []).find(n => n.id === connectingSourceId && n.type === 'venn-token') || null
+          : null;
+      const handleVennZoneClick = (e) => {
+          if (!pickedVennToken || e.target !== e.currentTarget) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const w = e.currentTarget.offsetWidth || rect.width || 800;
+          const h = e.currentTarget.offsetHeight || rect.height || 800;
+          let x = Math.max(0, Math.min(w, e.clientX - rect.left));
+          let y = Math.max(0, Math.min(h, e.clientY - rect.top));
+          const inA = Math.hypot(x - VENN_ZONES.A.x, y - VENN_ZONES.A.y) <= VENN_ZONES.A.r;
+          const inB = Math.hypot(x - VENN_ZONES.B.x, y - VENN_ZONES.B.y) <= VENN_ZONES.B.r;
+          if (y <= VENN_ZONES.BANK_Y && !inA && !inB) {
+              x = 100 + Math.random() * 600;
+              y = 530 + Math.random() * 50;
+          }
+          setConceptMapNodes(prev => prev.map(n => n.id === pickedVennToken.id ? { ...n, x, y } : n));
+          setConnectingSourceId(null);
+      };
+      // With a token picked, a click on another token moves the pick to it
+      // (in a Venn, linking two tokens means nothing).
+      const activateMapNode = (e, node) => {
+          if (pickedVennToken && node.type === 'venn-token' && node.id !== pickedVennToken.id) {
+              e.stopPropagation();
+              setConnectingSourceId(node.id);
+              return;
+          }
+          handleNodeClick(e, node.id);
+      };
       const handleVennResetBoard = () => {
           setConceptMapNodes(prev => prev.map(node => ({
               ...node,
@@ -8230,7 +8262,8 @@ const renderInteractiveMap = (deps) => {
               <div
                   ref={mapContainerRef}
                   className={`relative w-full ${isVenn ? 'h-[800px]' : 'h-[75vh] min-h-[600px]'} bg-white border border-slate-400 rounded-xl overflow-hidden shadow-inner select-none mb-6 ${isMapLocked ? 'cursor-default' : 'cursor-crosshair'} ${isChallengeActive ? 'ring-4 ring-yellow-100' : ''}`}
-                  onMouseDown={(e) => { if(e.target === e.currentTarget && !isMapLocked) setConnectingSourceId(null); }}
+                  onMouseDown={(e) => { if(e.target === e.currentTarget && !isMapLocked && !pickedVennToken) setConnectingSourceId(null); }}
+                  onClick={pickedVennToken ? handleVennZoneClick : undefined}
               >
                   {/* Staggered entrance — nodes fade in on mount (opacity only, so the centring
                       transform is untouched), echoing the static KeyConceptMapView's draw-in. Class-
@@ -8493,7 +8526,7 @@ const renderInteractiveMap = (deps) => {
                               ${connectingSourceId === node.id ? 'ring-4 ring-yellow-400 ring-offset-2 scale-105' : ''}
                           `}
                           onMouseDown={(e) => !isMapLocked && handleNodeMouseDown(e, node.id)}
-                          onClick={(e) => handleNodeClick(e, node.id)}
+                          onClick={(e) => activateMapNode(e, node)}
                       >
                           <div
                               role="button"
@@ -8518,7 +8551,7 @@ const renderInteractiveMap = (deps) => {
                   ))}
                   <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] text-slate-600 pointer-events-none border border-slate-400 shadow-sm">
                       {isVenn
-                          ? t('concept_map.overlay.venn_instructions')
+                          ? t('concept_map.overlay.venn_instructions_tap')
                           : (isChallengeActive ? t('concept_map.overlay.challenge_instructions') : t('concept_map.overlay.standard_instructions'))
                       }
                   </div>

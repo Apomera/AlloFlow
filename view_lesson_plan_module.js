@@ -379,6 +379,57 @@ function LessonPlanListEditor({
     onClick: () => action(-1, 'add')
   }, field === 'objectives' ? tr('add_objective', 'Add objective') : tr('add_material', 'Add material')));
 }
+function _lessonPlanScriptTiming(data) {
+  const versions = Array.isArray(data.teachingScripts) ? data.teachingScripts : [];
+  const latestWhole = [...versions].reverse().find(version => version?.schemaVersion !== 1 && version?.scope === 'lesson');
+  const timed = latestWhole && Number.isInteger(latestWhole.durationMinutes) && latestWhole.durationMinutes > 0 && latestWhole.durationMinutes <= 240 && Array.isArray(latestWhole.steps) && latestWhole.steps.length && latestWhole.steps.every(step => Number.isInteger(step?.minutes) && step.minutes > 0 && step.minutes <= 60) && latestWhole.steps.reduce((sum, step) => sum + step.minutes, 0) === latestWhole.durationMinutes ? latestWhole : null;
+  return {
+    latestWhole,
+    timed
+  };
+}
+// Authored phase timing ({ label, minutes }) for plans without a timed whole-lesson script.
+function _lessonPlanPlannedTiming(data) {
+  return (Array.isArray(data.timing) ? data.timing : []).filter(step => step && typeof step === 'object' && _lessonPlanText(step.label).trim() && Number.isInteger(step.minutes) && step.minutes > 0 && step.minutes <= 240);
+}
+function _lessonPlanPlain(value) {
+  return _lessonPlanText(value).replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*|__/g, '').replace(/^#+\s*/gm, '').trim();
+}
+// The facts of "Lesson at a glance" as one printable page of escaped HTML.
+function _lessonPlanSummaryHtml(plan, {
+  t,
+  normalizeMaterialItem,
+  title,
+  gradeLevel
+}) {
+  const tr = (key, fallback) => t('lesson_plan.' + key) || fallback;
+  const esc = value => String(value).replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[c]);
+  const data = plan.data || {};
+  const list = value => Array.isArray(value) ? value : value == null ? [] : [value];
+  const items = (values, map) => values.map(map || _lessonPlanPlain).map(text => String(text || '').trim()).filter(Boolean);
+  const {
+    timed
+  } = _lessonPlanScriptTiming(data);
+  const steps = timed ? timed.steps.map(step => ({
+    label: _lessonPlanPlain(step.title),
+    minutes: step.minutes
+  })) : _lessonPlanPlannedTiming(data).map(step => ({
+    label: _lessonPlanPlain(step.label),
+    minutes: step.minutes
+  }));
+  const minutes = tr('overview_minutes', 'minutes');
+  const section = (heading, values, ordered) => values.length ? `<section><h2>${esc(heading)}</h2><${ordered ? 'ol' : 'ul'}>${values.map(v => `<li>${esc(v)}</li>`).join('')}</${ordered ? 'ol' : 'ul'}></section>` : '';
+  const body = [section(tr('overview_objectives', 'Objectives'), items(list(data.objectives))), section(tr('summary_success_criteria', 'Success criteria'), items(list(data.successCriteria), value => _lessonPlanPlain(_lessonPlanCriterionText(value)))), section(tr('overview_materials', 'Materials'), items(list(data.materialsNeeded), value => _lessonPlanPlain(normalizeMaterialItem ? normalizeMaterialItem(value) : value))), steps.length ? section(tr('overview_timing', 'Phase timing'), steps.map(step => step.label + ' · ' + step.minutes + ' ' + minutes), true).replace('</ol></section>', `</ol><p class="total">${esc(tr('overview_total', 'Total:') + ' ' + steps.reduce((sum, step) => sum + step.minutes, 0) + ' ' + minutes)}</p></section>`) : '', section(tr('summary_assessment', 'Assessment ideas'), items(list(data.assessmentIdeas)))].join('');
+  const question = _lessonPlanPlain(data.essentialQuestion);
+  const lang = typeof document !== 'undefined' && document.documentElement.lang || 'en';
+  return `<!doctype html><html lang="${esc(lang)}"><head><meta charset="utf-8"><title>${esc(title + ' · ' + tr('summary_title', 'One-page summary'))}</title><style>` + '@page{margin:12mm}body{font:10.5pt/1.35 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#111;margin:0}h1{font-size:15pt;margin:0 0 2px}' + '.meta{color:#444;margin:0 0 8px}.eq{border-left:3px solid #4338ca;background:#eef2ff;padding:4px 8px;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}' + 'section{break-inside:avoid}h2{font-size:11pt;margin:0 0 3px;color:#312e81}ul,ol{margin:0;padding-left:16px}li{margin:0 0 2px}.total{font-weight:700;margin:3px 0 0}footer{margin-top:10px;font-size:8.5pt;color:#555}' + `</style></head><body><h1>${esc(title)}</h1>${gradeLevel ? `<p class="meta">${esc(gradeLevel)}</p>` : ''}` + (question ? `<p class="eq"><strong>${esc(tr('summary_essential_question', 'Essential question:'))}</strong> ${esc(question)}</p>` : '') + `<div class="grid">${body}</div><footer>${esc(tr('summary_footer', 'One-page summary from AlloFlow. The full teacher guide has every step.'))}</footer></body></html>`;
+}
 function LessonPlanOverview({
   plan,
   t,
@@ -388,9 +439,11 @@ function LessonPlanOverview({
   const tr = (key, fallback) => t('lesson_plan.' + key) || fallback;
   const list = value => (Array.isArray(value) ? value : value == null ? [] : [value]).map(_lessonPlanText).filter(text => text.trim());
   const data = plan.data || {};
-  const versions = Array.isArray(data.teachingScripts) ? data.teachingScripts : [];
-  const latestWhole = [...versions].reverse().find(version => version?.schemaVersion !== 1 && version?.scope === 'lesson');
-  const timed = latestWhole && Number.isInteger(latestWhole.durationMinutes) && latestWhole.durationMinutes > 0 && latestWhole.durationMinutes <= 240 && Array.isArray(latestWhole.steps) && latestWhole.steps.length && latestWhole.steps.every(step => Number.isInteger(step?.minutes) && step.minutes > 0 && step.minutes <= 60) && latestWhole.steps.reduce((sum, step) => sum + step.minutes, 0) === latestWhole.durationMinutes ? latestWhole : null;
+  const {
+    latestWhole,
+    timed
+  } = _lessonPlanScriptTiming(data);
+  const planned = timed ? [] : _lessonPlanPlannedTiming(data);
   const criteria = Array.isArray(data.successCriteria) ? data.successCriteria : data.successCriteria == null ? [] : [data.successCriteria];
   const assessment = list(data.assessmentIdeas).concat(criteria.map(_lessonPlanCriterionText).filter(text => text.trim()));
   const sections = [[tr('overview_objectives', 'Objectives'), list(data.objectives)], [tr('overview_materials', 'Materials'), list(data.materialsNeeded).map(normalizeMaterialItem)], [tr('overview_assessment', 'Assessment and success criteria'), assessment]];
@@ -426,7 +479,16 @@ function LessonPlanOverview({
     key: index
   }, _lessonPlanText(step.title), " · ", step.minutes, " ", tr('overview_minutes', 'minutes')))), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm font-bold"
-  }, tr('overview_total', 'Total:'), " ", timed.steps.reduce((sum, step) => sum + step.minutes, 0), " ", tr('overview_minutes', 'minutes'))) : /*#__PURE__*/React.createElement("p", {
+  }, tr('overview_total', 'Total:'), " ", timed.steps.reduce((sum, step) => sum + step.minutes, 0), " ", tr('overview_minutes', 'minutes'))) : planned.length ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    className: "mb-2 text-sm text-slate-700"
+  }, tr('overview_timing_planned', 'Planned timing from this guide; adjust for your group.')), /*#__PURE__*/React.createElement("ol", {
+    className: "space-y-1 text-sm",
+    "data-lesson-planned-timing": true
+  }, planned.map((step, index) => /*#__PURE__*/React.createElement("li", {
+    key: index
+  }, _lessonPlanText(step.label), " · ", step.minutes, " ", tr('overview_minutes', 'minutes')))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm font-bold"
+  }, tr('overview_total', 'Total:'), " ", planned.reduce((sum, step) => sum + step.minutes, 0), " ", tr('overview_minutes', 'minutes'))) : /*#__PURE__*/React.createElement("p", {
     className: 'text-sm ' + (latestWhole ? 'text-amber-900' : 'text-slate-700')
   }, latestWhole ? tr('overview_invalid_timing', 'The latest whole-lesson script has incomplete or inconsistent timing. Review its step times before teaching.') : tr('overview_no_timing', 'No whole-lesson script timing is recorded. Segment scripts cover only part of the lesson.')))));
 }
@@ -491,6 +553,39 @@ function LessonPlanView(props) {
     props.handleLessonPlanChange(field, typeof value === 'string' ? previous => _lessonPlanEditedText(previous, value) : value, index);
   };
   var handleGenerateExtensionGuide = props.handleGenerateExtensionGuide;
+  // Print window first (Canvas ignores window.print on the app frame); hidden iframe if pop-ups are blocked.
+  var printLessonSummary = () => {
+    const html = _lessonPlanSummaryHtml(generatedContent, {
+      t,
+      normalizeMaterialItem,
+      title: _lessonPlanText(generatedContent.title) || sourceTopic || '',
+      gradeLevel
+    });
+    const popup = window.open('', '_blank');
+    if (popup) {
+      popup.document.write(html);
+      popup.document.close();
+      try {
+        popup.focus();
+      } catch (_) {}
+      try {
+        popup.print();
+      } catch (_) {}
+      return;
+    }
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;width:0;height:0;border:0;';
+    document.body.appendChild(frame);
+    frame.contentDocument.open();
+    frame.contentDocument.write(html);
+    frame.contentDocument.close();
+    try {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    } catch (_) {}
+    setTimeout(() => frame.remove(), 60000);
+  };
   var handleExport = props.handleExport;
   var handleGenerateProgression = props.handleGenerateProgression;
   var handleSetProgressionDataToNull = props.handleSetProgressionDataToNull;
@@ -576,7 +671,16 @@ function LessonPlanView(props) {
   }, /*#__PURE__*/React.createElement(Printer, {
     size: 14,
     "aria-hidden": "true"
-  }), " ", t('lesson_plan.print_pdf_button') || 'Print / PDF'))), !audienceView && /*#__PURE__*/React.createElement(LessonPlanOverview, {
+  }), " ", t('lesson_plan.print_pdf_button') || 'Print / PDF'), !audienceView && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: printLessonSummary,
+    "data-lesson-plan-print-summary": true,
+    className: "flex min-h-11 items-center gap-1 text-sm font-bold bg-white text-indigo-700 hover:bg-indigo-100 border border-indigo-300 px-3 py-1.5 rounded-full transition-colors shadow-sm",
+    title: t('lesson_plan.print_summary_tooltip') || 'Prints the objectives, success criteria, materials and timing on one page.'
+  }, /*#__PURE__*/React.createElement(Printer, {
+    size: 14,
+    "aria-hidden": "true"
+  }), " ", t('lesson_plan.print_summary_button') || 'Print 1-page summary'))), !audienceView && /*#__PURE__*/React.createElement(LessonPlanOverview, {
     plan: generatedContent,
     t: t,
     BilingualFieldRenderer: BilingualFieldRenderer,

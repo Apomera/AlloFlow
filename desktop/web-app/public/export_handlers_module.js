@@ -2701,7 +2701,7 @@
   // with a DENY list instead of dumping JSON: never lesson source excerpts or
   // snippets, learner practice evidence, AI feedback, ids/timestamps, or media
   // (data: URLs, base64, image/audio keys). Returns bounded plain-text lines.
-  const _RESOURCE_TEXT_DENY = /^(id|resourceId|schemaVersion|type|mode|status|family|kind|key|layout|chartType|templateType|language|gradeLevel|level|createdAt|updatedAt|generatedAt|reviewedAt|apiKey|token|secret|password|sourceExcerpt|sourceText|sourceTextSnippet|excerpt|lessonRef|factCheck|verdicts|practiceAttempts|retrievalAttempts|feedback|coachHint|visualCheck|visualReview|visualSyncOmission|basisKey|cueKey|factKeys|translations|omittedAssets|omittedAssetManifest)$/i;
+  const _RESOURCE_TEXT_DENY = /^(id|resourceId|schemaVersion|type|mode|status|family|kind|key|layout|chartType|templateType|language|gradeLevel|level|createdAt|updatedAt|generatedAt|reviewedAt|apiKey|token|secret|password|sourceExcerpt|sourceText|sourceTextSnippet|excerpt|lessonRef|factCheck|contentReview|sourceEvidence|verdicts|practiceAttempts|retrievalAttempts|feedback|coachHint|visualCheck|visualReview|visualSyncOmission|basisKey|cueKey|factKeys|translations|omittedAssets|omittedAssetManifest)$/i;
   const _RESOURCE_MEDIA_KEY = /(image|icon|audio|video|thumbnail|avatar|base64|dataurl|blob|portrait|recording|url|src|svg|glb)/i;
   const _RESOURCE_PLAIN_KEY = /^(text|content|body|value|summary|description|label|title|question|prompt|answer|term|def|definition|main|event|item|items|bullets|steps|cues|notes|name|heading|target|essentialFacts|facts)$/i;
   const summarizeResourceText = (item, options) => {

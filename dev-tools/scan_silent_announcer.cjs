@@ -105,7 +105,7 @@ function liveDelegations(src) {
       else if (value && typeof value.type === 'string') walk(value, visit, next);
     }
   }
-  const functions = new Map(), duplicate = new Set(), functionContexts = new Map(), functionIds = new Map();
+  const functions = new Map(), duplicate = new Set(), functionContexts = new Map(), functionIds = new Map(), functionVariants = new Map();
   const reassigned = new Set();
   // Sibling components can reuse hook names without sharing the same state.
   const pairs = new Set(), setters = new Map(), liveStates = new Set(), bindings = new Map();
@@ -137,6 +137,8 @@ function liveDelegations(src) {
   const stateHook = (node) => node && node.type === 'CallExpression'
     && node.callee.type === 'MemberExpression' && node.callee.property.name === 'useState';
   const bindFunction = (name, node, id) => {
+    if (!functionVariants.has(name)) functionVariants.set(name, []);
+    functionVariants.get(name).push(node);
     if (functions.has(name)) duplicate.add(name);
     else { functions.set(name, node); functionIds.set(name, id); }
   };
@@ -203,7 +205,123 @@ function liveDelegations(src) {
     }, ancestors.concat(node));
   });
   for (const [pair, setter] of pairSetters) if (pairStates.has(pair)) setters.set(setter, pairStates.get(pair));
+  // Some components publish a writer through an owner ref. Prove the complete
+  // chain: the method updates rendered live state, that live node publishes the
+  // writer, and the caller mounts that component with the very same ref.
+  const initializers = new Map(), refHooks = new Set(), publishedMethods = new Map(), changedMembers = new Map();
+  const propertyName = (node) => node?.type === 'MemberExpression' && (node.computed ? node.property.value : node.property.name);
+  const keyName = (node) => node?.type === 'Property' && !node.computed ? (node.key.value || node.key.name) : null;
+  const knownProps = (node) => node?.type === 'ObjectExpression' && node.properties.every(p => p.type === 'Property');
+  const member = (node, property) => node && node.type === 'MemberExpression' && propertyName(node) === property;
+  walk(ast, (node, ancestors) => {
+    if (node.type !== 'VariableDeclarator' || node.id.type !== 'Identifier' || !node.init) return;
+    const binding = resolve(node.id.name, ancestors);
+    if (!binding || reassigned.has(binding.id)) return;
+    initializers.set(binding, { node: node.init, ancestors });
+    if (node.init.type === 'CallExpression' && member(node.init.callee, 'useRef')) refHooks.add(binding);
+  });
+  for (const [binding, init] of initializers) {
+    if (init.node.type !== 'CallExpression' || init.node.callee.type !== 'Identifier') continue;
+    const alias = initializers.get(resolve(init.node.callee.name, init.ancestors));
+    if (alias && member(alias.node, 'useRef')) refHooks.add(binding);
+  }
+  walk(ast, (node, ancestors) => {
+    const written = node.type === 'AssignmentExpression' ? node.left : node.type === 'UpdateExpression' ? node.argument : null;
+    if (written?.type !== 'MemberExpression' || written.object.type !== 'Identifier') return;
+    const binding = resolve(written.object.name, ancestors);
+    if (!binding) return;
+    if (!changedMembers.has(binding)) changedMembers.set(binding, new Set());
+    changedMembers.get(binding).add(propertyName(written));
+  });
+  for (const [componentName, component] of functions) {
+    if (duplicate.has(componentName) || component.params[0]?.type !== 'Identifier') continue;
+    const context = functionContexts.get(component).concat(component);
+    const propsBinding = resolve(component.params[0].name, context), candidates = [];
+    walk(component.body, (node, ancestors) => {
+      if (fnTypes.has(node.type)) return false;
+      if (node.type !== 'VariableDeclarator' || node.id.type !== 'Identifier' || node.init?.type !== 'ObjectExpression') return;
+      const writer = resolve(node.id.name, ancestors);
+      if (!writer || reassigned.has(writer.id)) return;
+      for (const prop of node.init.properties) {
+        if (prop.type !== 'Property' || prop.computed || !fnTypes.has(prop.value.type)) continue;
+        let writesLive = false;
+        walk(prop.value.body, (call, chain) => {
+          if (fnTypes.has(call.type)) return false;
+          if (call.type !== 'CallExpression') return;
+          if (call.callee.type === 'Identifier') {
+            const setter = resolve(call.callee.name, chain);
+            if (setters.has(setter) && liveStates.has(setters.get(setter))) writesLive = true;
+          } else if (member(call.callee, 1) && call.callee.object.type === 'Identifier') {
+            const pair = resolve(call.callee.object.name, chain);
+            if (pairs.has(pair) && liveStates.has(pair)) writesLive = true;
+          }
+        }, ancestors.concat(node, node.init, prop, prop.value));
+        const method = prop.key.name || prop.key.value;
+        if (writesLive && !changedMembers.get(writer)?.has(method)) candidates.push({ writer, method });
+      }
+    }, context);
+    if (!candidates.length) continue;
+    walk(component.body, (node, ancestors) => {
+      if (fnTypes.has(node.type)) return false;
+      if (node.type !== 'CallExpression') return;
+      const props = node.arguments[1];
+      if (!knownProps(props) || !props.properties.some(p => keyName(p) === 'aria-live'
+          && p.value.type === 'Literal' && ['polite', 'assertive'].includes(p.value.value))) return;
+      const ref = props.properties.find(p => keyName(p) === 'ref');
+      if (!ref || !fnTypes.has(ref.value.type)) return;
+      walk(ref.value.body, (assignment, chain) => {
+        if (fnTypes.has(assignment.type)) return false;
+        if (assignment.type !== 'AssignmentExpression' || assignment.operator !== '=' || !member(assignment.left, 'current')
+            || assignment.left.object.type !== 'Identifier' || assignment.right.type !== 'Identifier') return;
+        const writer = resolve(assignment.right.name, chain), owner = initializers.get(resolve(assignment.left.object.name, chain));
+        if (!owner || owner.node.type !== 'MemberExpression' || owner.node.object.type !== 'Identifier'
+            || resolve(owner.node.object.name, owner.ancestors) !== propsBinding) return;
+        for (const candidate of candidates) if (candidate.writer === writer) {
+          if (!publishedMethods.has(component)) publishedMethods.set(component, []);
+          publishedMethods.get(component).push({ ownerProp: propertyName(owner.node), method: candidate.method });
+        }
+      }, ancestors.concat(node, props, ref, ref.value));
+    }, context);
+  }
+  const mountedRefMethods = new Map();
+  walk(ast, (node, ancestors) => {
+    if (node.type !== 'CallExpression' || node.arguments[0]?.type !== 'Identifier' || !knownProps(node.arguments[1])) return;
+    const calleeName = node.callee.type === 'Identifier' ? node.callee.name : propertyName(node.callee);
+    if (!['h', 'H', 'el', 'e', 'createElement'].includes(calleeName)) return;
+    const component = functions.get(node.arguments[0].name), binding = resolve(node.arguments[0].name, ancestors);
+    if (!publishedMethods.has(component) || !binding || binding.id !== functionIds.get(node.arguments[0].name) || reassigned.has(binding.id)) return;
+    for (const proof of publishedMethods.get(component)) {
+      const prop = node.arguments[1].properties.find(p => keyName(p) === proof.ownerProp);
+      if (!prop || prop.value.type !== 'Identifier') continue;
+      const ref = resolve(prop.value.name, ancestors);
+      if (!refHooks.has(ref) || changedMembers.get(ref)?.has('current')) continue;
+      if (!mountedRefMethods.has(ref)) mountedRefMethods.set(ref, new Set());
+      mountedRefMethods.get(ref).add(proof.method);
+    }
+  });
+  function writesThroughMountedRef(call, ancestors) {
+    if (call.object.type !== 'Identifier') return false;
+    const binding = resolve(call.object.name, ancestors);
+    if (changedMembers.get(binding)?.has(propertyName(call))) return false;
+    const alias = initializers.get(binding);
+    if (!alias || !member(alias.node, 'current') || alias.node.object.type !== 'Identifier') return false;
+    const ref = resolve(alias.node.object.name, alias.ancestors);
+    return mountedRefMethods.get(ref)?.has(propertyName(call)) || false;
+  }
   const healthy = new Set(), calls = new Map();
+  for (const name of duplicate) {
+    // The final report is by name, so every same-named local function must be
+    // proven separately. One working sibling must not hide a silent sibling.
+    if (functionVariants.get(name).every(fn => {
+      let reachesLive = false;
+      walk(fn.body, (node, ancestors) => {
+        if (fnTypes.has(node.type)) return false;
+        if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression'
+            && writesThroughMountedRef(node.callee, ancestors)) reachesLive = true;
+      }, functionContexts.get(fn).concat(fn));
+      return reachesLive;
+    })) healthy.add(name);
+  }
   for (const [name, fn] of functions) {
     if (duplicate.has(name)) continue;
     const dependencies = new Set();
@@ -227,6 +345,7 @@ function liveDelegations(src) {
             || (setters.has(setter) && liveStates.has(setters.get(setter)))) healthy.add(name);
       } else if (call.type === 'MemberExpression') {
         const object = call.object, property = call.property.name || call.property.value;
+        if (writesThroughMountedRef(call, ancestors)) healthy.add(name);
         if (object.type === 'Identifier' && ((object.name === 'document' && ['getElementById', 'querySelector'].includes(property))
             || (['ctx', 'props'].includes(object.name) && ['announceToSR', 'srSay'].includes(property))
             || (object.name === 'window' && /announce/i.test(property)))) healthy.add(name);

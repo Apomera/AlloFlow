@@ -687,7 +687,7 @@ const createExport = deps => {
     const responseId = 'RESPONSE_' + index;
     const answers = (acceptedAnswers || []).map(value => String(value == null ? '' : value).trim()).filter(Boolean);
     if (!String(q.question == null ? '' : q.question).trim() || !answers.length) return null;
-    const answerConditions = answers.map(answer => '\n        <respcondition continue="No" title="Correct">\n          <conditionvar>\n            <varequal respident="' + responseId + '" case="No">' + _escapeExportText(answer) + '</varequal>\n          </conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>').join('');
+    const answerConditions = answers.map(answer => '\n        <respcondition continue="No" title="Correct">\n          <conditionvar>\n            <varequal respident="' + responseId + '" case="' + (q.fillBlankPolicy === 'exact' ? 'Yes' : 'No') + '">' + _escapeExportText(answer) + '</varequal>\n          </conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>').join('');
     const presentation = '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(q.question) + '</mattext>\n        </material>' + '\n        <response_str ident="' + responseId + '" rcardinality="Single">\n          <render_fib fibtype="String" rows="1" maxchars="250">\n            <response_label ident="' + responseId + '_LABEL"/>\n          </render_fib>\n        </response_str>';
     return _qtiWrapItemXml({
       itemId: 'Q_' + index + '_' + generateUUID().slice(0, 8),
@@ -849,9 +849,10 @@ const createExport = deps => {
       const displayed = order.map((itemIndex, displayIndex) => displayIndex + 1 + '. ' + String(items[itemIndex] == null ? '' : items[itemIndex])).join('\n');
       const canonical = items.map((item, itemIndex) => itemIndex + 1 + '. ' + String(item == null ? '' : item)).join('\n');
       const misplaced = _sequenceMisplacedPositions(order, q.intentionallyWrongIndex, items.length);
+      const compact = q.sequenceMode === 'arrange-explain';
       return {
-        prompt: String(q.question || 'Review the sequence.') + '\n\nDisplayed sequence:\n' + displayed + '\n\nState whether the sequence is correct. If not, identify the misplaced step, write the correct order, and explain the ordering principle.',
-        guide: 'Canonical order:\n' + canonical + (misplaced.length ? '\nMisplaced displayed position' + (misplaced.length > 1 ? 's (either counts): ' : ': ') + misplaced.map(position => position + 1).join(', ') : '\nThe displayed order is correct.') + (q.orderingPrinciple ? '\nOrdering principle: ' + q.orderingPrinciple : '')
+        prompt: String(q.question || 'Review the sequence.') + '\n\nDisplayed sequence:\n' + displayed + (compact ? '\n\nWrite the correct order and identify the ordering principle.' : '\n\nState whether the sequence is correct. If not, identify the misplaced step, write the correct order, and explain the ordering principle.'),
+        guide: 'Canonical order:\n' + canonical + (compact ? '\nScore the arrangement and principle only (two components).' : misplaced.length ? '\nMisplaced displayed position' + (misplaced.length > 1 ? 's (either counts): ' : ': ') + misplaced.map(position => position + 1).join(', ') : '\nThe displayed order is correct.') + (q.orderingPrinciple ? '\nOrdering principle: ' + q.orderingPrinciple : '')
       };
     }
     const pairs = Array.isArray(q.pairs) ? q.pairs : [];
@@ -861,14 +862,70 @@ const createExport = deps => {
       return pairIndex + 1 + '. ' + String(left == null ? '' : left) + ' ↔ ' + String(right == null ? '' : right);
     }).join('\n');
     return {
-      prompt: String(q.question || 'Review the relationships.') + '\n\nDisplayed pairs:\n' + displayedPairs + '\n\nIdentify the mismatched pair and provide the correct partner.',
-      guide: (q.wrongPairIndex == null ? '' : 'Mismatched pair: ' + (Number(q.wrongPairIndex) + 1)) + (q.correctPartnerForWrong ? '\nCorrect partner: ' + q.correctPartnerForWrong : '')
+      prompt: String(q.question || 'Review the relationships.') + '\n\nDisplayed pairs:\n' + displayedPairs + '\n\nIdentify the mismatched pair and provide the correct partner.' + _assessmentExportReasoningPrompt(q),
+      guide: (q.wrongPairIndex == null ? '' : 'Mismatched pair: ' + (Number(q.wrongPairIndex) + 1)) + (q.correctPartnerForWrong ? '\nCorrect partner: ' + q.correctPartnerForWrong : '') + (q.requireReasoning || q.explanationPrompt ? '\nReview the explanation separately; it does not add points to the two-part choice score.' : '')
     };
+  };
+  const _assessmentExportReasoningPrompt = q => q.requireReasoning || q.explanationPrompt ? '\n\n' + (q.requireReasoning ? 'Required explanation: ' : 'Optional explanation: ') + (q.explanationPrompt || 'Explain why your answer fits.') : '';
+  const _assessmentExportCriteriaPrompt = q => {
+    const criteria = Array.isArray(q.studentCriteria) ? q.studentCriteria.filter(value => typeof value === 'string' && value.trim()) : [];
+    return criteria.length ? '\n\nWhat to show in your response:\n' + criteria.map((value, index) => index + 1 + '. ' + value).join('\n') : '';
+  };
+  // Export formats do not share AlloFlow's policy engine. Preserve the task
+  // as an explicitly ungraded response when automatic scoring would differ.
+  const _assessmentManualPolicyAdaptation = q => {
+    const type = q.type || 'mcq';
+    const prompt = String(q.question || '').trim();
+    if (!prompt) return null;
+    if (type === 'fill-blank' && ['normalized', 'review-variants'].includes(q.fillBlankPolicy) && String(q.expectedFill || '').trim()) {
+      return {
+        prompt: prompt + '\n\nTeacher review: enter the missing answer.',
+        guide: 'Accepted answers: ' + [q.expectedFill].concat(q.acceptableAlternatives || []).join('; ') + '\nMatching policy: ' + (q.fillBlankPolicy === 'normalized' ? 'ignore capitalization, spacing, Unicode composition and surrounding punctuation; preserve conceptual distinctions.' : 'other wording requires teacher review.'),
+        reason: 'The selected answer-matching policy requires teacher review in this export.'
+      };
+    }
+    if (type === 'numeric-response' && _hasExportNumericKey(q.correctValue)) {
+      const settings = q.numericSettings || {};
+      const weight = typeof settings.valueWeight === 'number' && Number.isFinite(settings.valueWeight) ? Math.max(0, Math.min(1, settings.valueWeight)) : 0.5;
+      if (settings.allowEquivalentUnits === true || weight !== 0.5) return {
+        prompt: prompt + (q.unit ? '\nInclude units. ' + (settings.allowEquivalentUnits ? 'Equivalent units are accepted.' : 'Use ' + q.unit + '.') : '') + '\nThis exported response will be reviewed by your teacher.',
+        guide: 'Expected: ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + '\nTolerance in the expected unit: ±' + (Number(q.tolerance) || 0) + '\nAccepted unit spellings: ' + [q.unit].concat(q.acceptableUnits || []).filter(Boolean).join('; ') + '\nEquivalent units: ' + (settings.allowEquivalentUnits === true ? 'accepted; convert to the expected unit before comparing.' : 'not enabled.') + '\nValue credit: ' + (q.unit ? Math.round(weight * 100) : 100) + '%. Unit credit: ' + (q.unit ? Math.round((1 - weight) * 100) : 0) + '%. Apply the assessment partial-credit setting.',
+        reason: 'Equivalent units or custom value/unit weighting require teacher review in this export.'
+      };
+    }
+    if ((type === 'relation-mismatch' || type === 'answer-evidence') && (q.requireReasoning || q.explanationPrompt)) {
+      if (type === 'relation-mismatch') {
+        const pairs = q.pairs || [],
+          wrong = q.wrongPairIndex;
+        if (!Array.isArray(pairs) || pairs.length < 2 || !Number.isInteger(wrong) || wrong < 0 || wrong >= pairs.length || !q.correctPartnerForWrong) return null;
+        return Object.assign(_qtiDiagnosticManualPrompt(q, type), {
+          reason: 'The explanation and choice parts are retained together for teacher review.'
+        });
+      }
+      const answers = q.answerOptions || [],
+        evidence = q.evidenceOptions || [];
+      if (!Array.isArray(answers) || answers.length < 2 || !answers.includes(q.correctAnswer) || !Array.isArray(evidence) || evidence.length < 2 || !evidence.includes(q.correctEvidence)) return null;
+      return {
+        prompt: prompt + '\n\nAnswer choices:\n' + answers.map((value, index) => String.fromCharCode(65 + index) + '. ' + value).join('\n') + '\n\n' + (q.evidencePrompt || 'Choose supporting evidence.') + '\n' + evidence.map((value, index) => String.fromCharCode(65 + index) + '. ' + value).join('\n') + _assessmentExportReasoningPrompt(q),
+        guide: 'Answer: ' + q.correctAnswer + '\nEvidence: ' + q.correctEvidence + '\nReview the explanation separately; it does not add points to the two-part choice score.',
+        reason: 'The explanation and choice parts are retained together for teacher review.'
+      };
+    }
+    return null;
   };
   const _qtiQuestionItemXml = (q, index, scoringPolicy) => {
     if (!q || typeof q !== 'object') return null;
+    if (!String(q.question || '').trim()) return null;
     const type = q.type || 'mcq';
     const partialCredit = !scoringPolicy || scoringPolicy.partialCredit !== false;
+    const adaptation = _assessmentManualPolicyAdaptation(q);
+    if (adaptation) return _qtiManualTextItemXml({
+      q,
+      index,
+      itemType: type,
+      prompt: adaptation.prompt + _assessmentExportCriteriaPrompt(q),
+      scoringGuide: adaptation.guide + '\nPartial credit: ' + (partialCredit ? 'enabled.' : 'disabled; use all-or-nothing scoring for the scored components.')
+    });
     if (type === 'mcq') return _qtiSingleChoiceItemXml(q, index);
     if (type === 'multi-select') return _qtiMultiSelectItemXml(q, index, partialCredit);
     if (type === 'fill-blank') {
@@ -884,6 +941,7 @@ const createExport = deps => {
         q,
         index,
         itemType: type,
+        prompt: String(q.question || '') + _assessmentExportCriteriaPrompt(q),
         scoringGuide: q.expectedAnswer
       });
     }
@@ -892,6 +950,7 @@ const createExport = deps => {
         q,
         index,
         itemType: type,
+        prompt: String(q.question || '') + _assessmentExportCriteriaPrompt(q),
         scoringGuide: q.rubric || q.expectedAnswer
       });
     }
@@ -1031,6 +1090,15 @@ const createExport = deps => {
     };
     const questionItems = rawQuestions.map((question, questionIndex) => _qtiWithImages(_qtiQuestionItemXml(question, questionIndex, scoringPolicy), question, questionIndex, media));
     const validQuestionItems = questionItems.filter(Boolean);
+    const policyAdaptations = rawQuestions.map((question, index) => {
+      const adaptation = question && _assessmentManualPolicyAdaptation(question);
+      return adaptation && questionItems[index] ? {
+        question: index + 1,
+        itemType: question.type || 'mcq',
+        scoring: 'manual-review',
+        reason: adaptation.reason
+      } : null;
+    }).filter(Boolean);
     const reflectionEntries = (Array.isArray(generatedContent && generatedContent.data && generatedContent.data.reflections) ? generatedContent.data.reflections : []).map(ref => {
       if (typeof ref === 'string') return ref.trim();
       if (!ref || typeof ref !== 'object') return '';
@@ -1071,6 +1139,14 @@ const createExport = deps => {
     const assessmentXmlContent = assessmentXmlHeader + itemsXml + assessmentXmlFooter;
     zip.file("imsmanifest.xml", manifestXml.replace('<file href="assessment.xml"/>', '<file href="assessment.xml"/>' + media.files.map(file => '\n      <file href="' + file.path + '"/>').join('')));
     zip.file("assessment.xml", assessmentXmlContent);
+    if (policyAdaptations.length) {
+      zip.file('alloflow-assessment-compatibility.json', JSON.stringify({
+        version: 1,
+        format: 'QTI',
+        adaptations: policyAdaptations
+      }, null, 2));
+      addToast(policyAdaptations.length + ' assessment item(s) retain their selected policies as ungraded responses requiring teacher review. See alloflow-assessment-compatibility.json.', 'warning');
+    }
     media.files.forEach(file => zip.file(file.path, file.base64, {
       base64: true
     }));
@@ -1189,6 +1265,7 @@ const createExport = deps => {
     let omitted = 0;
     let adapted = 0;
     let manualReview = 0;
+    const policyAdaptations = [];
     let libraryLabel = '';
     let fileSuffix = 'activity';
     if (type === 'quiz') {
@@ -1332,7 +1409,7 @@ const createExport = deps => {
           used.add('H5P.MultiChoice');
           return true;
         };
-        const addBlanks = (prompt, answerValues) => {
+        const addBlanks = (prompt, answerValues, caseSensitive = false) => {
           const answers = Array.from(new Set((answerValues || []).map(value => plain(value).replace(/[*/:]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean)));
           if (!plain(prompt) || !answers.length) return false;
           const token = 'ALLOFLOWBLANKTOKEN';
@@ -1368,7 +1445,7 @@ const createExport = deps => {
                 enableSolutionsButton: true,
                 enableCheckButton: true,
                 autoCheck: false,
-                caseSensitive: false,
+                caseSensitive,
                 showSolutionsRequiresInput: true,
                 separateLines: false,
                 confirmCheckDialog: false,
@@ -1443,12 +1520,30 @@ const createExport = deps => {
           used.add('H5P.Essay');
           return true;
         };
-        rawQuestions.forEach(question => {
+        rawQuestions.forEach((question, questionIndex) => {
           const q = question || {};
           const kind = q.type || 'mcq';
           const prompt = plain(q.question);
+          if (!prompt) {
+            omitted += 1;
+            return;
+          }
           let included = false;
-          if (kind === 'mcq') {
+          const adaptation = _assessmentManualPolicyAdaptation(q);
+          if (adaptation) {
+            const partialCredit = generatedContent.data?.scoringPolicy?.partialCredit !== false;
+            included = addEssay(adaptation.prompt + _assessmentExportCriteriaPrompt(q), adaptation.guide + '\nPartial credit: ' + (partialCredit ? 'enabled.' : 'disabled; use all-or-nothing scoring for scored components.'));
+            if (included) {
+              adapted += 1;
+              manualReview += 1;
+              policyAdaptations.push({
+                question: questionIndex + 1,
+                itemType: kind,
+                scoring: 'manual-review',
+                reason: adaptation.reason
+              });
+            }
+          } else if (kind === 'mcq') {
             const options = Array.isArray(q.options) ? q.options.map(plain) : [];
             const key = Number.isInteger(q.correctIndex) ? q.correctIndex : options.indexOf(plain(q.correctAnswer));
             included = addMulti(prompt, options, [key]);
@@ -1458,14 +1553,14 @@ const createExport = deps => {
             const indices = options.map((option, index) => keys.includes(option) ? index : -1).filter(index => index >= 0);
             included = indices.length === keys.length && addMulti(prompt, options, indices);
           } else if (kind === 'fill-blank') {
-            included = addBlanks(prompt, [q.expectedFill].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []));
+            included = addBlanks(prompt, [q.expectedFill].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []), q.fillBlankPolicy === 'exact');
           } else if (kind === 'short-answer' || kind === 'self-explanation') {
-            included = addEssay(prompt, plain(q.expectedAnswer || q.rubric));
+            included = addEssay(prompt + _assessmentExportCriteriaPrompt(q), plain(q.expectedAnswer || q.rubric));
             if (included) manualReview += 1;
           } else if (kind === 'sequence-sense') {
             const items = Array.isArray(q.items) ? q.items.map(plain).filter(Boolean) : [];
             const displayed = Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length ? q.presentedOrder.map(index => items[index]).filter(Boolean) : items;
-            included = items.length >= 3 && addEssay(prompt + ' Displayed order: ' + displayed.join(' → ') + '. State whether it is correct, write the correct order, and explain the ordering principle.', 'Expected order: ' + items.join(' → ') + (q.orderingPrinciple ? '. Principle: ' + plain(q.orderingPrinciple) : ''));
+            included = items.length >= 3 && addEssay(prompt + ' Displayed order: ' + displayed.join(' → ') + (q.sequenceMode === 'arrange-explain' ? '. Write the correct order and identify the ordering principle.' : '. State whether it is correct, write the correct order, and explain the ordering principle.'), 'Expected order: ' + items.join(' → ') + (q.orderingPrinciple ? '. Principle: ' + plain(q.orderingPrinciple) : '') + (q.sequenceMode === 'arrange-explain' ? '. Score the arrangement and principle only (two components).' : ''));
             if (included) {
               adapted += 1;
               manualReview += 1;
@@ -1734,6 +1829,7 @@ const createExport = deps => {
     if (manualReview) addToast(h5pText('export.h5p_manual_review', '{count} exported written, sequence, or tolerance-based item(s) are ungraded and require manual review.', {
       count: manualReview
     }), "warning");
+    if (policyAdaptations.length) addToast(policyAdaptations.length + ' item(s) use teacher review to preserve the selected answer-matching, numeric, or explanation policies. See alloflow-assessment-compatibility.json.', 'warning');
     if (mediaOmitted) addToast(h5pText('export.h5p_media_omitted', '{count} external, unsupported, or oversized media asset(s) were omitted from the H5P package.', {
       count: mediaOmitted
     }), "warning");
@@ -1741,6 +1837,11 @@ const createExport = deps => {
       const zip = new window.JSZip();
       zip.file('h5p.json', JSON.stringify(h5pJson, null, 2));
       zip.file('content/content.json', JSON.stringify(contentJson, null, 2));
+      if (policyAdaptations.length) zip.file('alloflow-assessment-compatibility.json', JSON.stringify({
+        version: 1,
+        format: 'H5P',
+        adaptations: policyAdaptations
+      }, null, 2));
       packagedAssets.forEach(asset => zip.file(`content/${asset.path}`, asset.base64, {
         base64: true
       }));

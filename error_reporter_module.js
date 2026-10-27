@@ -282,7 +282,7 @@
       last.lastTs = new Date().toISOString();
       persistBuffer();
       updateBadge();
-      refreshPanelIfOpen();
+      refreshPanelForLog();
       return;
     }
     var entry = {
@@ -303,7 +303,7 @@
     while (buffer.length > MAX_BUFFERED) buffer.shift();
     persistBuffer();
     updateBadge();
-    refreshPanelIfOpen();
+    refreshPanelForLog();
   }
 
   function receiveApiFeedback(detail) {
@@ -318,7 +318,7 @@
       });
       persistBuffer();
       updateBadge();
-      refreshPanelIfOpen();
+      refreshPanelForLog();
       return;
     }
     if (detail.state !== 'retrying' && detail.state !== 'failed') return;
@@ -520,13 +520,18 @@
     }
     steps += '\n\n(Optional: tell me what you were doing when this happened.)';
 
-    return sanitizeDiagnosticValue({
+    var captured = sanitizeDiagnosticValue({
       typeOfIssue: 'Bug Report',
       whatHappened: what.slice(0, 8000),
       stepsRepro: steps.slice(0, 4000),
       browserDevice: redactSecrets(browserDevice).slice(0, 500),
       url: redactSecrets(window.location.href).slice(0, 500)
     });
+    // Redaction can lengthen a cut URL ("https://host" -> "https://host/"). Cap
+    // after it, as review does, or the first confirm reports a false credential removal.
+    captured.whatHappened = captured.whatHappened.slice(0, 8000);
+    captured.stepsRepro = captured.stepsRepro.slice(0, 4000);
+    return captured;
   }
 
   function ensureReportDraft() {
@@ -1207,6 +1212,10 @@
     ].join(';');
     panel.innerHTML = panelHtml();
     panel.onclick = function (ev) { if (ev.target === panel) closePanel(); };
+    panel.addEventListener('pointerdown', holdPanelPress, true);
+    panel.addEventListener('keydown', holdPanelPress, true);
+    ['pointerup', 'pointercancel', 'keyup'].forEach(function (type) { document.addEventListener(type, releasePanelPress, true); });
+    window.addEventListener('blur', releasePanelPress);
     document.body.appendChild(panel);
     wirePanelHandlers();
     // Move focus to close button for keyboard users
@@ -1231,10 +1240,33 @@
     captureOutgoingDraft();
     descriptionComposing = false;
     descriptionRefreshPending = false;
+    panelPressHeld = false;
+    logRefreshPending = false;
     if (panel) { panel.remove(); panel = null; }
     var target = panelTrigger && panelTrigger.isConnected ? panelTrigger : badge;
     panelTrigger = null;
     if (target) target.focus();
+  }
+
+  // Incoming log entries rebuild the panel. A rebuild between press and release
+  // puts the release on a new control and the browser drops the click, so Send
+  // and the review checkbox looked dead while errors kept arriving.
+  var panelPressHeld = false;
+  var logRefreshPending = false;
+  function refreshPanelForLog() {
+    if (panelPressHeld) { logRefreshPending = true; return; }
+    refreshPanelIfOpen();
+  }
+  function holdPanelPress(ev) {
+    if (ev.type === 'pointerdown' || ev.key === ' ') panelPressHeld = true;
+  }
+  function releasePanelPress() {
+    if (!panelPressHeld) return;
+    panelPressHeld = false;
+    // The click from this release dispatches first, in the same task.
+    setTimeout(function () {
+      if (logRefreshPending && !panelPressHeld) { logRefreshPending = false; refreshPanelIfOpen(); }
+    }, 0);
   }
 
   function refreshPanelIfOpen() {
@@ -1629,7 +1661,7 @@
   try {
     window.addEventListener('alloflow:module-registry-changed', function () {
       updateBadge();
-      if (buffer.some(function (e) { return e.load === LOAD_ID && /^\[CDN-TIMEOUT\]/.test(e.message || ''); })) refreshPanelIfOpen();
+      if (buffer.some(function (e) { return e.load === LOAD_ID && /^\[CDN-TIMEOUT\]/.test(e.message || ''); })) refreshPanelForLog();
     });
   } catch (_) {}
 

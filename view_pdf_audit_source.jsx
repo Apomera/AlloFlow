@@ -15010,29 +15010,56 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             // never touches the visual layer; this view exists to SEE that.
                             var _taggedResult = null, _viewingTagged = false, _pdfjsLibReady = null;
                             function _b64ToBytes(b64) { var bin = atob(b64); var u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+                            function _withTimeout(promise, ms, label) {
+                              var timer = null;
+                              var timeout = new Promise(function (_, reject) { timer = setTimeout(function () { reject(new Error('Timed out after ' + ms + 'ms: ' + (label || 'operation'))); }, ms); });
+                              return Promise.race([promise, timeout]).finally(function () { if (timer !== null) clearTimeout(timer); });
+                            }
                             function _ensurePdfjs() {
                               if (_pdfjsLibReady) return _pdfjsLibReady;
-                              _pdfjsLibReady = new Promise(function (resolve, reject) {
-                                var hosts = [
-                                  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/',
-                                  'https://unpkg.com/pdfjs-dist@3.11.174/build/',
-                                  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/'
-                                ];
-                                (function tryLoad(i) {
-                                  if (i >= hosts.length) { reject(new Error('PDF renderer unavailable — all CDN mirrors failed')); return; }
-                                  var s = document.createElement('script');
-                                  s.src = hosts[i] + 'pdf.min.js';
-                                  s.onload = function () {
-                                    var pdfjs = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
-                                    if (!pdfjs) { reject(new Error('renderer global missing')); return; }
-                                    try { pdfjs.GlobalWorkerOptions.workerSrc = hosts[i] + 'pdf.worker.min.js'; } catch (_) {}
-                                    resolve(pdfjs);
-                                  };
-                                  s.onerror = function () { try { s.remove(); } catch (_) {} tryLoad(i + 1); };
-                                  document.head.appendChild(s);
-                                })(0);
-                              });
-                              return _pdfjsLibReady;
+                              var loadingPromise = Promise.resolve().then(async function () {
+                                var workerAsset = null, scriptUrl = null, script = null, disposed = false, cancelLoad = null, loadTimer = null;
+                                var cleanup = function () {
+                                  disposed = true;
+                                  if (loadTimer !== null) { clearTimeout(loadTimer); loadTimer = null; }
+                                  if (cancelLoad) { var rejectLoad = cancelLoad; cancelLoad = null; rejectLoad(new Error('PDF comparison closed')); }
+                                  if (script) { script.onload = script.onerror = null; try { script.remove(); } catch (_) {} script = null; }
+                                  if (scriptUrl) { try { URL.revokeObjectURL(scriptUrl); } catch (_) {} scriptUrl = null; }
+                                  if (workerAsset) { var asset = workerAsset; workerAsset = null; try { Promise.resolve(asset.revoke()).catch(function () {}); } catch (_) {} }
+                                  window.removeEventListener('pagehide', cleanup);
+                                  if (_pdfjsLibReady === loadingPromise) _pdfjsLibReady = null;
+                                };
+                                window.addEventListener('pagehide', cleanup, { once: true });
+                                try {
+                                  var broker = window.opener;
+                                  if (!broker || typeof broker.__alloFetchTrustedScriptText !== 'function' || typeof broker.__alloGetVerifiedRuntimeAsset !== 'function') throw new Error('Verified PDF comparison runtime is unavailable');
+                                  var code = await broker.__alloFetchTrustedScriptText('https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js', 'pdfjs.main');
+                                  if (disposed) throw new Error('PDF comparison closed');
+                                  if (typeof code !== 'string' || !code.trim()) throw new Error('Verified PDF renderer bytes are unavailable');
+                                  workerAsset = await broker.__alloGetVerifiedRuntimeAsset('pdfjs', 'worker');
+                                  if (disposed) throw new Error('PDF comparison closed');
+                                  if (!workerAsset || typeof workerAsset.url !== 'string' || workerAsset.url.indexOf('blob:') !== 0 || typeof workerAsset.revoke !== 'function') throw new Error('Verified PDF worker is unavailable');
+                                  scriptUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+                                  await new Promise(function (resolve, reject) {
+                                    cancelLoad = reject;
+                                    script = document.createElement('script');
+                                    script.src = scriptUrl;
+                                    loadTimer = setTimeout(function () { loadTimer = null; cancelLoad = null; reject(new Error('Verified PDF renderer did not start within 15 s')); }, 15000);
+                                    script.onload = function () { clearTimeout(loadTimer); loadTimer = null; cancelLoad = null; resolve(); };
+                                    script.onerror = function () { clearTimeout(loadTimer); loadTimer = null; cancelLoad = null; reject(new Error('Verified PDF renderer could not start')); };
+                                    document.head.appendChild(script);
+                                  });
+                                  if (disposed) throw new Error('PDF comparison closed');
+                                  var pdfjs = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+                                  if (!pdfjs || pdfjs.version !== '3.11.174' || !pdfjs.GlobalWorkerOptions) throw new Error('Verified PDF renderer version mismatch');
+                                  pdfjs.GlobalWorkerOptions.workerSrc = workerAsset.url;
+                                  URL.revokeObjectURL(scriptUrl); scriptUrl = null;
+                                  script.remove(); script = null;
+                                  return pdfjs;
+                                } catch (error) { cleanup(); throw error; }
+                              }).catch(function (error) { if (_pdfjsLibReady === loadingPromise) _pdfjsLibReady = null; throw error; });
+                              _pdfjsLibReady = loadingPromise;
+                              return loadingPromise;
                             }
                             function _paneStatus(msg) { var host = document.getElementById('before-pane'); if (!host) return null; var d = document.createElement('div'); d.style.cssText = 'color:#e2e8f0;padding:20px;font-size:12px'; d.textContent = msg; host.appendChild(d); return d; }
                             function _renderFail(label, b64, msg) {
@@ -15061,7 +15088,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               host.innerHTML = '';
                               var st = _paneStatus('Rendering ' + label + '…');
                               _ensurePdfjs().then(function (pdfjs) {
-                                _withTimeout(pdfjs.getDocument({ data: _b64ToBytes(b64) }).promise, 30000, 'Compare getDocument').then(function (doc) {
+                                _withTimeout(pdfjs.getDocument({ data: _b64ToBytes(b64), isEvalSupported: false }).promise, 30000, 'Compare getDocument').then(function (doc) {
                                   _cmpPdfDoc = doc;
                                   // Render progressively at a lighter scale (1.0): rasterizing every page
                                   // of a scanned IMAGE PDF is the entire reason Compare's tagged view felt

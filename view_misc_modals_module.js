@@ -321,7 +321,7 @@ function AllobotCommandContext({ summary, tx }) {
   }
   const count = summary.newLesson === true ? 0 : Number(summary.resourceCount);
   if (Number.isInteger(count) && count > 0 && count <= 999) parts.push(String(count) + " " + (count === 1 ? tx("chat_guide.context_resource", "saved resource") : tx("chat_guide.context_resources", "saved resources")));
-  return parts.length ? /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-xs font-medium break-words", "aria-label": tx("chat_guide.context_summary", "Current lesson context"), "data-testid": "command-context-summary", style: { overflowWrap: "anywhere" } }, parts.join(" \xB7 ")) : null;
+  return parts.length ? /* @__PURE__ */ React.createElement("p", { role: "note", className: "mb-2 text-xs font-medium break-words", "aria-label": tx("chat_guide.context_summary", "Current lesson context"), "data-testid": "command-context-summary", style: { overflowWrap: "anywhere" } }, parts.join(" \xB7 ")) : null;
 }
 function AllobotCommandProgress({ progress, tx }) {
   const [now, setNow] = React.useState(() => Date.now());

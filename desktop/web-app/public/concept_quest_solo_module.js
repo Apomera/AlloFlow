@@ -280,7 +280,7 @@
   }
 
   function emptyLearningTotals(completeHistory) {
-    return { version: 1, completeHistory: completeHistory !== false, rounds: 0, totalAnswers: 0, correctAnswers: 0, combos: 0, roleSynergies: 0, peerAssists: 0, puzzlesSolved: 0, concepts: {}, conceptsCleared: [] };
+    return { version: 1, completeHistory: completeHistory !== false, rounds: 0, totalAnswers: 0, correctAnswers: 0, combos: 0, roleSynergies: 0, peerAssists: 0, puzzlesSolved: 0, concepts: {}, conceptsCleared: [], learners: {}, learnerHistoryComplete: completeHistory !== false };
   }
 
   function addLearningRound(totals, round, quest) {
@@ -290,10 +290,18 @@
     concepts[concept] = { concept: concept, correct: previous.correct + (round.correct || 0), total: previous.total + (round.total || 0), rounds: previous.rounds + 1 };
     var cleared = (totals.conceptsCleared || []).slice();
     if (round.enemyDefeated && cleared.indexOf(concept) < 0) cleared.push(concept);
+    var learners = Object.assign(Object.create(null), totals.learners || {});
+    (round.learnerEvidence || []).forEach(function(evidence) {
+      var previousLearner = learners[evidence.uid] || { uid: evidence.uid, responses: 0, correct: 0, firstResponses: 0, firstCorrect: 0, repeatResponses: 0, repeatCorrect: 0, peerSupportReceived: 0, seen: {} };
+      var first = !Object.prototype.hasOwnProperty.call(previousLearner.seen || {}, round.itemEvidenceKey);
+      var seen = Object.assign(Object.create(null), previousLearner.seen || {}); seen[round.itemEvidenceKey] = true;
+      learners[evidence.uid] = Object.assign({}, previousLearner, { seen: seen, responses: previousLearner.responses + 1, correct: previousLearner.correct + Number(evidence.correct), firstResponses: previousLearner.firstResponses + Number(first), firstCorrect: previousLearner.firstCorrect + Number(first && evidence.correct), repeatResponses: previousLearner.repeatResponses + Number(!first), repeatCorrect: previousLearner.repeatCorrect + Number(!first && evidence.correct), peerSupportReceived: previousLearner.peerSupportReceived + Number(evidence.peerSupportReceived) });
+    });
     return Object.assign({}, totals, {
       rounds: totals.rounds + 1, totalAnswers: totals.totalAnswers + (round.total || 0), correctAnswers: totals.correctAnswers + (round.correct || 0),
       combos: totals.combos + (round.combo ? 1 : 0), roleSynergies: totals.roleSynergies + (round.synergyCount || 0), peerAssists: totals.peerAssists + (round.assistedCount || 0),
-      puzzlesSolved: totals.puzzlesSolved + (round.roomKind === 'puzzle' && round.enemyDefeated ? 1 : 0), concepts: concepts, conceptsCleared: cleared
+      puzzlesSolved: totals.puzzlesSolved + (round.roomKind === 'puzzle' && round.enemyDefeated ? 1 : 0), concepts: concepts, conceptsCleared: cleared,
+      learners: learners, learnerHistoryComplete: totals.learnerHistoryComplete !== false && !(totals.rounds > 0 && !totals.learners) && Array.isArray(round.learnerEvidence)
     });
   }
 
@@ -625,6 +633,21 @@
       incoming: Math.max(0, incoming - absorbed), combo: combo, synergyCount: synergyCount,
       assistedCount: assistedCount, roomKind: room.kind, encounterRule: encounterRule, enemyDefeated: enemyDefeated
     };
+    if (!quest.solo) {
+      // Retain first-versus-repeat evidence independently of the capped visual log.
+      // Peer support is a game event, not proof that it caused a correct answer.
+      var itemText = JSON.stringify([challenge.sourceIndex, challenge.prompt || challenge.question, challenge.options, challenge.correctIndex]);
+      var itemHash = 2166136261;
+      for (var hashIndex = 0; hashIndex < itemText.length; hashIndex++) itemHash = Math.imul(itemHash ^ itemText.charCodeAt(hashIndex), 16777619);
+      roundRecord.itemEvidenceKey = 'item-' + (itemHash >>> 0).toString(16);
+      roundRecord.learnerEvidence = Object.keys(actions).map(function(uid) {
+        var peerSupportReceived = Object.keys(actions).some(function(helperUid) {
+          var helper = actions[helperUid];
+          return helperUid !== uid && helper.supportTargetUid === uid && helper.answerIndex === challenge.correctIndex && (helper.supportId === 'guard' || helper.supportId === 'encourage' || helper.supportId === 'clarify' && actions[uid].answerIndex !== challenge.correctIndex);
+        });
+        return { uid: uid, correct: actions[uid].answerIndex === challenge.correctIndex, peerSupportReceived: peerSupportReceived };
+      });
+    }
     return { quest: Object.assign({}, quest, bank ? { assessmentBank: bank } : {}, quest.solo ? {} : { learningTotals: addLearningRound(learningTotals(quest), roundRecord, quest) }, {
       rooms: rooms,
       phase: phase,
@@ -850,7 +873,9 @@
       conceptsCleared: totals.conceptsCleared,
       conceptBreakdown: conceptBreakdown,
       needsReview: conceptBreakdown.length && conceptBreakdown[0].accuracy < 70 ? conceptBreakdown[0] : null,
-      strongestConcept: conceptBreakdown.length ? conceptBreakdown[conceptBreakdown.length - 1] : null
+      strongestConcept: conceptBreakdown.length ? conceptBreakdown[conceptBreakdown.length - 1] : null,
+      learnerEvidence: Object.keys(totals.learners || {}).map(function(uid) { var row = Object.assign({}, totals.learners[uid]); delete row.seen; return row; }),
+      learnerHistoryComplete: totals.learnerHistoryComplete === true
     };
   }
 
@@ -1408,6 +1433,12 @@
       var abilityId = data.abilityId === undefined ? ABILITIES[ROLES.indexOf(data.roleId)] : data.abilityId;
       requireValue(ABILITIES.indexOf(abilityId) >= 0, 'The saved ability is invalid.');
       var normalized = { version: VERSION, sourceFingerprint: fingerprint, savedAt: data.savedAt, quest: validateQuest(data.quest,context), roleId: data.roleId, abilityId: abilityId, response: validateResponse(data.response), recapOpen: data.recapOpen, gmState: validateGm(data.gmState), aiEnabled: data.aiEnabled };
+      if (data.practice != null) {
+        var practice=data.practice, bank=normalized.quest.solo && normalized.quest.solo.bank || [];
+        requireValue(plain(practice) && Array.isArray(practice.targets) && practice.targets.length > 0 && practice.targets.length <= 5 && new Set(practice.targets).size === practice.targets.length && practice.targets.every(function(index){return bank.some(function(item){return item.sourceIndex===index;});}), 'The focused practice targets are invalid.');
+        requireValue(Array.isArray(practice.entries) && practice.entries.length <= practice.targets.length && typeof practice.checked === 'boolean' && (!practice.checked || practice.entries.length > 0), 'The focused practice progress is invalid.');
+        normalized.practice={targets:practice.targets.slice(),entries:practice.entries.map(validateResponse),response:validateResponse(practice.response),checked:practice.checked,...(practice.closed===true?{closed:true}:{})};
+      }
       requireValue(normalized.gmState === null || plain(normalized.gmState), 'The saved game-master state is invalid.');
       requireValue(!normalized.recapOpen || plain(normalized.quest.lastRound), 'The saved turn recap is missing.');
       requireValue(JSON.stringify(normalized).length <= MAX_CHARS, 'This adventure is too large to save in this browser.');
@@ -1784,6 +1815,12 @@ function ConceptQuestSoloGM({
   enabled,
   onEnabledChange
 }) {
+  // Narration uses the Assess view's light markdown (Concept Quest opens from it); plain text without it.
+  const cqMd = window.AlloModules?.QuizView?.markdown || {
+    inline: v => v == null ? '' : String(v),
+    block: v => v == null ? '' : String(v),
+    plain: v => v == null ? '' : String(v)
+  };
   const helpers = ConceptQuestSoloGMHelpers;
   const tr = (key, fallback, params = {}) => {
     const fullKey = 'concept_quest.' + key;
@@ -1940,23 +1977,23 @@ function ConceptQuestSoloGM({
   }, tr('solo_gm_retry', 'Retry AI narration'))), /*#__PURE__*/React.createElement("div", {
     "data-gm-origin": current?.origin || 'scripted',
     className: "space-y-3"
-  }, /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "text-slate-800 leading-relaxed"
-  }, shown.narrative), shown.character?.dialogue && /*#__PURE__*/React.createElement("div", {
+  }, cqMd.block(shown.narrative)), shown.character?.dialogue && /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-indigo-50 p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "font-bold text-indigo-950"
-  }, shown.character.name), /*#__PURE__*/React.createElement("p", {
+  }, shown.character.name), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 text-sm text-indigo-900"
-  }, shown.character.dialogue)), shown.feedback && /*#__PURE__*/React.createElement("p", {
+  }, cqMd.block(shown.character.dialogue))), shown.feedback && /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg border-l-4 border-teal-400 bg-teal-50 p-3 text-sm text-teal-950"
-  }, shown.feedback), shown.evidence && /*#__PURE__*/React.createElement("blockquote", {
+  }, cqMd.block(shown.feedback)), shown.evidence && /*#__PURE__*/React.createElement("blockquote", {
     className: "border-l-4 border-slate-300 pl-3 text-sm text-slate-700"
   }, /*#__PURE__*/React.createElement("p", {
     className: "font-bold"
   }, tr('solo_gm_lesson_evidence', 'From your lesson')), /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
-  }, shown.evidence))), /*#__PURE__*/React.createElement("div", {
+  }, cqMd.inline(shown.evidence)))), /*#__PURE__*/React.createElement("div", {
     role: "group",
     className: "flex flex-wrap gap-2",
     "aria-label": tr('solo_gm_suggestions', 'Suggested actions')
@@ -1969,7 +2006,7 @@ function ConceptQuestSoloGM({
       text: choice.prompt
     }),
     className: controls + ' border border-indigo-200 bg-indigo-50 text-indigo-900'
-  }, choice.label))), transcript.length > 0 && /*#__PURE__*/React.createElement("details", {
+  }, cqMd.inline(choice.label)))), transcript.length > 0 && /*#__PURE__*/React.createElement("details", {
     "data-gm-history": true,
     className: "min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-3"
   }, /*#__PURE__*/React.createElement("summary", {
@@ -1989,9 +2026,9 @@ function ConceptQuestSoloGM({
     className: "font-normal text-slate-600"
   }, tr('solo_gm_turn', 'Turn {turn}', {
     turn: entry.turn
-  }))), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 whitespace-pre-wrap break-words text-sm text-slate-700"
-  }, entry.text))))), /*#__PURE__*/React.createElement("form", {
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 break-words text-sm text-slate-700"
+  }, cqMd.block(entry.text)))))), /*#__PURE__*/React.createElement("form", {
     onSubmit: event => {
       event.preventDefault();
       send({
@@ -2037,6 +2074,12 @@ function ConceptQuestSoloQuestion({
   onGuideOpen,
   t
 }) {
+  // Item text uses the Assess view's light markdown (Concept Quest opens from it); plain text without it.
+  const cqMd = window.AlloModules?.QuizView?.markdown || {
+    inline: v => v == null ? '' : String(v),
+    block: v => v == null ? '' : String(v),
+    plain: v => v == null ? '' : String(v)
+  };
   const tr = (key, fallback) => {
     const value = t?.('concept_quest.' + key);
     return typeof value === 'string' && value !== 'concept_quest.' + key ? value : fallback;
@@ -2073,16 +2116,16 @@ function ConceptQuestSoloQuestion({
       "data-solo-choice-field": field,
       "data-solo-choice-index": index,
       className: "min-w-0 flex-1 break-words"
-    }, /*#__PURE__*/React.createElement("span", null, prefix, text), support.translations[index] && /*#__PURE__*/React.createElement("span", {
+    }, /*#__PURE__*/React.createElement("span", null, prefix, cqMd.inline(text)), support.translations[index] && /*#__PURE__*/React.createElement("span", {
       className: "mt-1 block text-sm font-normal italic opacity-80"
-    }, support.translations[index]), support.images[index] && /*#__PURE__*/React.createElement("img", {
+    }, cqMd.inline(support.translations[index])), support.images[index] && /*#__PURE__*/React.createElement("img", {
       src: support.images[index],
       alt: imageAlt(support.descriptions[index]),
       loading: "lazy",
       className: "my-2 max-h-48 w-full rounded bg-white object-contain"
     }));
   };
-  const optionLabel = (field, index, text) => text + (choiceSupport(field).translations[index] ? ' — ' + choiceSupport(field).translations[index] : '');
+  const optionLabel = (field, index, text) => cqMd.plain(text + (choiceSupport(field).translations[index] ? ' — ' + choiceSupport(field).translations[index] : ''));
   const selectSupports = field => {
     const support = choiceSupport(field);
     return Array.isArray(support.translations) && support.translations.some(Boolean) || Array.isArray(support.images) && support.images.some(Boolean) ? /*#__PURE__*/React.createElement("ol", {
@@ -2099,9 +2142,9 @@ function ConceptQuestSoloQuestion({
     return /*#__PURE__*/React.createElement("span", {
       "data-solo-pair-side": side,
       className: "min-w-0 flex-1 break-words"
-    }, /*#__PURE__*/React.createElement("span", null, pair[side]), translation && /*#__PURE__*/React.createElement("span", {
+    }, /*#__PURE__*/React.createElement("span", null, cqMd.inline(pair[side])), translation && /*#__PURE__*/React.createElement("span", {
       className: "mt-1 block text-sm font-normal italic opacity-80"
-    }, translation), pair[side + 'ImageUrl'] && /*#__PURE__*/React.createElement("img", {
+    }, cqMd.inline(translation)), pair[side + 'ImageUrl'] && /*#__PURE__*/React.createElement("img", {
       src: pair[side + 'ImageUrl'],
       alt: imageAlt(pair[side + 'ImageAltText']),
       loading: "lazy",
@@ -2111,7 +2154,7 @@ function ConceptQuestSoloQuestion({
   const pairLabel = (pair, index) => {
     const left = pair.left_en || item.pairs_en?.[index]?.left,
       right = pair.right_en || item.pairs_en?.[index]?.right;
-    return pair.left + ' / ' + pair.right + (left || right ? ' — ' + (left || pair.left) + ' / ' + (right || pair.right) : '');
+    return cqMd.plain(pair.left + ' / ' + pair.right + (left || right ? ' — ' + (left || pair.left) + ' / ' + (right || pair.right) : ''));
   };
   const choiceClass = selected => 'flex min-h-11 items-start gap-3 rounded-xl border-2 p-3 text-left ' + (selected ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white');
   const textClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-slate-900 focus:ring-4 focus:ring-indigo-200';
@@ -2163,9 +2206,9 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_choose_answer', '2. Respond to the encounter')), /*#__PURE__*/React.createElement("h4", {
     id: uid + '-prompt',
     className: "break-words text-lg font-bold"
-  }, item.prompt || item.question), item.question_en && /*#__PURE__*/React.createElement("p", {
+  }, cqMd.inline(item.prompt || item.question)), item.question_en && /*#__PURE__*/React.createElement("p", {
     className: "text-sm italic text-slate-600"
-  }, item.question_en), item.imageUrl && /*#__PURE__*/React.createElement("img", {
+  }, cqMd.inline(item.question_en)), item.imageUrl && /*#__PURE__*/React.createElement("img", {
     src: item.imageUrl,
     alt: imageAlt(item.imageAltText),
     className: "max-h-72 w-full rounded-xl bg-white object-contain"
@@ -2262,13 +2305,13 @@ function ConceptQuestSoloQuestion({
   }, position + 1, "."), choiceContent('items', canonicalIndex, orderItems[canonicalIndex]), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: position === 0,
-    "aria-label": tr('solo_move_up', 'Move up') + ': ' + orderItems[canonicalIndex],
+    "aria-label": tr('solo_move_up', 'Move up') + ': ' + cqMd.plain(orderItems[canonicalIndex]),
     onClick: () => moveStep(position, -1),
     className: moveClass
   }, "▲"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: position === arranged.length - 1,
-    "aria-label": tr('solo_move_down', 'Move down') + ': ' + orderItems[canonicalIndex],
+    "aria-label": tr('solo_move_down', 'Move down') + ': ' + cqMd.plain(orderItems[canonicalIndex]),
     onClick: () => moveStep(position, 1),
     className: moveClass
   }, "▼"))))), /*#__PURE__*/React.createElement("label", {
@@ -2340,9 +2383,9 @@ function ConceptQuestSoloQuestion({
     className: "space-y-2"
   }, (item.answerOptions || item.options || []).map((option, index) => renderChoice(option, index, 'answerIndex', 'answer', 'answerOptions'))), /*#__PURE__*/React.createElement("h5", {
     className: "font-bold"
-  }, item.evidencePrompt || tr('solo_evidence_part', 'Choose the evidence that supports your answer.')), item.evidencePrompt_en && /*#__PURE__*/React.createElement("p", {
+  }, cqMd.inline(item.evidencePrompt || tr('solo_evidence_part', 'Choose the evidence that supports your answer.'))), item.evidencePrompt_en && /*#__PURE__*/React.createElement("p", {
     className: "text-sm italic text-slate-600"
-  }, item.evidencePrompt_en), /*#__PURE__*/React.createElement("div", {
+  }, cqMd.inline(item.evidencePrompt_en)), /*#__PURE__*/React.createElement("div", {
     role: "group",
     "aria-label": tr('solo_evidence_label', 'Supporting evidence'),
     className: "space-y-2"
@@ -2383,9 +2426,9 @@ function ConceptQuestSoloQuestion({
     className: "space-y-2"
   }, reviewChoices('answerOptions', item.answerOptions || item.options)), /*#__PURE__*/React.createElement("h5", {
     className: "font-bold"
-  }, item.evidencePrompt || tr('solo_evidence_part', 'Choose the evidence that supports your answer.')), item.evidencePrompt_en && /*#__PURE__*/React.createElement("p", {
+  }, cqMd.inline(item.evidencePrompt || tr('solo_evidence_part', 'Choose the evidence that supports your answer.'))), item.evidencePrompt_en && /*#__PURE__*/React.createElement("p", {
     className: "text-sm italic text-slate-600"
-  }, item.evidencePrompt_en), /*#__PURE__*/React.createElement("div", {
+  }, cqMd.inline(item.evidencePrompt_en)), /*#__PURE__*/React.createElement("div", {
     role: "group",
     "aria-label": tr('solo_evidence_label', 'Supporting evidence'),
     className: "space-y-2"
@@ -2416,7 +2459,7 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_compare_guide', 'Compare with answer guide')), guideOpen && response.guideRevealed && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-950",
     role: "status"
-  }, /*#__PURE__*/React.createElement("strong", null, tr('solo_answer_guide', 'Answer guide'), ": "), guide), /*#__PURE__*/React.createElement("label", {
+  }, /*#__PURE__*/React.createElement("strong", null, tr('solo_answer_guide', 'Answer guide'), ": "), cqMd.inline(guide)), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_self_review_label', 'After comparing your explanation'), /*#__PURE__*/React.createElement("select", {
     value: response.selfReview || '',
@@ -2437,6 +2480,134 @@ function ConceptQuestSoloQuestion({
 function createConceptQuestSoloSession(engine, generatedContent, translate) {
   return window.AlloModules.ConceptQuestSoloEngine.createSession(engine, generatedContent, translate);
 }
+function ConceptQuestTargetedPractice({
+  quest,
+  value,
+  onChange,
+  t
+}) {
+  // Item text uses the Assess view's light markdown (Concept Quest opens from it); plain text without it.
+  const cqMd = window.AlloModules?.QuizView?.markdown || {
+    inline: v => v == null ? '' : String(v),
+    block: v => v == null ? '' : String(v),
+    plain: v => v == null ? '' : String(v)
+  };
+  // Explanations can be fact-check text carrying [[KEY:...]] markers; show only the reviewed words.
+  const cqExplanation = text => cqMd.block(window.AlloModules?.QuizView?.keyQuality?.factCheckText ? window.AlloModules.QuizView.keyQuality.factCheckText(text) : text);
+  const engine = window.AlloModules.ConceptQuestSoloEngine;
+  const tr = (key, fallback) => {
+    const result = t?.('concept_quest.' + key);
+    return typeof result === 'string' && result !== 'concept_quest.' + key ? result : fallback;
+  };
+  const heading = React.useRef(null),
+    resume = React.useRef(null),
+    [error, setError] = React.useState('');
+  const bank = quest.solo.bank,
+    targets = (value?.targets || []).map(index => bank.find(item => item.sourceIndex === index)).filter(Boolean);
+  const position = value?.entries?.length || 0,
+    item = targets[position],
+    checked = !!value?.checked,
+    lastItem = checked ? targets[position - 1] : null,
+    last = lastItem ? engine.grade(lastItem, value.entries[position - 1]) : null;
+  const start = () => {
+    const next = engine.coverage(quest).missedItems.slice(0, 5).map(item => item.sourceIndex);
+    onChange({
+      targets: next,
+      entries: [],
+      response: engine.initialResponse(bank.find(item => item.sourceIndex === next[0])),
+      checked: false
+    });
+    setError('');
+  };
+  React.useEffect(() => {
+    if (value) (value.closed ? resume.current : heading.current)?.focus();
+  }, [position, checked, !!value, !!value?.closed]);
+  if (!value || value.closed) return /*#__PURE__*/React.createElement("button", {
+    ref: resume,
+    type: "button",
+    "data-start-targeted-practice": true,
+    onClick: () => value ? onChange({
+      ...value,
+      closed: false
+    }) : start(),
+    className: "mt-3 min-h-11 rounded-lg bg-cyan-800 px-4 py-2 font-bold text-white"
+  }, value ? tr('solo_targeted_resume', 'Resume focused practice') : tr('solo_targeted_start', 'Practice up to five missed ideas'));
+  return /*#__PURE__*/React.createElement("section", {
+    "data-targeted-practice": true,
+    className: "mt-4 space-y-3 rounded-xl border-2 border-cyan-300 bg-white p-4"
+  }, /*#__PURE__*/React.createElement("h4", {
+    ref: heading,
+    tabIndex: -1,
+    className: "font-bold"
+  }, tr('solo_targeted_title', 'Focused practice')), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm"
+  }, tr('solo_targeted_help', 'These checks save with your adventure and stay separate from its original scores, health, and experience.')), /*#__PURE__*/React.createElement("p", {
+    role: "status"
+  }, position + ' / ' + targets.length + ' ' + tr('solo_targeted_checked', 'practice items checked')), checked && lastItem ? /*#__PURE__*/React.createElement("div", {
+    role: "status"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold"
+  }, last.gradable ? last.correct ? tr('solo_targeted_correct', 'Correct practice response') : tr('solo_targeted_review', 'Review this idea again') : tr('solo_targeted_self_review', 'Self-review recorded; no automatic score.')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 whitespace-pre-wrap"
+  }, cqMd.inline(engine.answerGuide(lastItem))), lastItem.explanation && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2"
+  }, cqExplanation(lastItem.explanation)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "mt-3 min-h-11 rounded-lg border px-4 py-2",
+    onClick: () => onChange({
+      ...value,
+      checked: false,
+      response: item ? engine.initialResponse(item) : {}
+    })
+  }, tr('solo_targeted_continue', 'Continue practice'))) : item ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ConceptQuestSoloQuestion, {
+    item: item,
+    response: value.response || {},
+    onChange: response => {
+      onChange({
+        ...value,
+        response
+      });
+      setError('');
+    },
+    guideOpen: value.response?.guideRevealed,
+    onGuideOpen: () => onChange({
+      ...value,
+      response: {
+        ...value.response,
+        guideRevealed: true
+      }
+    }),
+    t: t
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "min-h-11 rounded-lg bg-cyan-800 px-4 py-2 font-bold text-white",
+    onClick: () => {
+      const result = engine.grade(item, value.response || {});
+      if (!result.complete) {
+        setError(tr('solo_targeted_incomplete', 'Complete the response and any self-review before checking.'));
+        return;
+      }
+      onChange({
+        ...value,
+        entries: [...value.entries, value.response],
+        checked: true
+      });
+    }
+  }, tr('solo_targeted_check', 'Check practice response')), error && /*#__PURE__*/React.createElement("p", {
+    role: "alert"
+  }, error)) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", null, tr('solo_targeted_complete', 'Focused practice complete. Explain one connection in your own words, or revisit an idea you still find difficult.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "min-h-11 rounded-lg border px-4 py-2",
+    onClick: start
+  }, tr('solo_targeted_again', 'Start another focused practice'))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "ml-2 min-h-11 rounded-lg border px-4 py-2",
+    onClick: () => onChange({
+      ...value,
+      closed: true
+    })
+  }, tr('solo_targeted_close', 'Close practice')));
+}
 function ConceptQuestSolo({
   generatedContent,
   inputText = '',
@@ -2446,6 +2617,14 @@ function ConceptQuestSolo({
   t,
   onClose
 }) {
+  // Item text uses the Assess view's light markdown (Concept Quest opens from it); plain text without it.
+  const cqMd = window.AlloModules?.QuizView?.markdown || {
+    inline: v => v == null ? '' : String(v),
+    block: v => v == null ? '' : String(v),
+    plain: v => v == null ? '' : String(v)
+  };
+  // Explanations can be fact-check text carrying [[KEY:...]] markers; show only the reviewed words.
+  const cqExplanation = text => cqMd.block(window.AlloModules?.QuizView?.keyQuality?.factCheckText ? window.AlloModules.QuizView.keyQuality.factCheckText(text) : text);
   const tr = (key, fallback, params = {}) => {
     const fullKey = 'concept_quest.' + key;
     const translated = typeof t === 'function' ? t(fullKey, params) : '';
@@ -2506,7 +2685,8 @@ function ConceptQuestSolo({
       response: value.response,
       recapOpen: value.recapOpen,
       gmState: value.gmState,
-      aiEnabled: value.aiEnabled
+      aiEnabled: value.aiEnabled,
+      practice: value.practice || null
     };
   }
   function saveRun(value, explicit = false, quiet = false) {
@@ -2721,7 +2901,7 @@ function ConceptQuestSolo({
     className: "mt-1 text-2xl font-black"
   }, "🗺️ ", tr('title', 'Concept Quest')), quest && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 break-words text-sm text-indigo-100"
-  }, quest.title)), /*#__PURE__*/React.createElement("div", {
+  }, cqMd.inline(quest.title))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, quest && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2894,11 +3074,11 @@ function ConceptQuestSolo({
     className: "mt-3 rounded-lg bg-amber-100 p-3 text-sm text-amber-950"
   }, tr('solo_regrouped', 'Your guide helped you regroup and restored your health so you can explore the remaining assessment items. This recovery does not change your answer results.')), /*#__PURE__*/React.createElement("p", {
     className: "mt-3 font-bold"
-  }, quest.lastRound.prompt), /*#__PURE__*/React.createElement("p", {
+  }, cqMd.inline(quest.lastRound.prompt)), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 whitespace-pre-wrap"
-  }, /*#__PURE__*/React.createElement("strong", null, tr('solo_answer_guide', 'Answer guide'), ": "), quest.lastRound.answerGuide || quest.lastRound.correctAnswer), quest.lastRound.explanation && /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("strong", null, tr('solo_answer_guide', 'Answer guide'), ": "), cqMd.inline(quest.lastRound.answerGuide || quest.lastRound.correctAnswer)), quest.lastRound.explanation && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 text-slate-700"
-  }, quest.lastRound.explanation), quest.lastRound.gradable === false && /*#__PURE__*/React.createElement("p", {
+  }, cqExplanation(quest.lastRound.explanation)), quest.lastRound.gradable === false && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 text-sm text-cyan-950"
   }, quest.lastRound.selfReview === 'needs-practice' ? tr('solo_flagged_practice', 'Added to your ideas for more practice.') : tr('solo_self_review_notice', 'Your own comparison was recorded. This item is excluded from automatic accuracy and correctness XP.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2954,13 +3134,20 @@ function ConceptQuestSolo({
     className: "rounded-lg border border-slate-200 p-3"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer break-words font-semibold"
-  }, entry.sourceIndex + 1, ". ", entry.prompt), /*#__PURE__*/React.createElement("p", {
+  }, entry.sourceIndex + 1, ". ", cqMd.inline(entry.prompt)), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm"
   }, !entry.attempted ? tr('solo_not_reached', 'Not reached') : entry.selfReview ? entry.selfReview === 'needs-practice' ? tr('solo_review_needs_practice', 'Self-reviewed: more practice requested') : tr('solo_review_understood', 'Self-reviewed: key ideas understood') : entry.lastCorrect ? tr('solo_latest_correct', 'Correct on the most recent attempt') : tr('solo_latest_review', 'Review this idea again')), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 whitespace-pre-wrap text-sm"
-  }, /*#__PURE__*/React.createElement("strong", null, tr('solo_answer_guide', 'Answer guide'), ": "), solo.answerGuide(entry)), entry.explanation && /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("strong", null, tr('solo_answer_guide', 'Answer guide'), ": "), cqMd.inline(solo.answerGuide(entry))), entry.explanation && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 text-sm text-slate-700"
-  }, entry.explanation)))))), /*#__PURE__*/React.createElement("button", {
+  }, cqExplanation(entry.explanation))))))), (progress.missedItems?.length > 0 || active.practice) && /*#__PURE__*/React.createElement(ConceptQuestTargetedPractice, {
+    quest: quest,
+    value: active.practice,
+    onChange: practice => updateRun({
+      practice
+    }),
+    t: t
+  }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setConfirmation('restart'),
     className: buttonClass + ' mt-4 bg-indigo-700 text-white'
@@ -3020,9 +3207,9 @@ function ConceptQuestSolo({
   }))), quest.activeEvent && /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "rounded-xl border border-amber-300 bg-amber-50 p-3"
-  }, /*#__PURE__*/React.createElement("strong", null, quest.activeEvent.title), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("strong", null, cqMd.inline(quest.activeEvent.title)), /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
-  }, quest.activeEvent.description)), /*#__PURE__*/React.createElement("fieldset", {
+  }, cqMd.inline(quest.activeEvent.description))), /*#__PURE__*/React.createElement("fieldset", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("legend", {
     className: "font-bold"

@@ -486,7 +486,7 @@ function DirectionsResultView({
                     {goal.label}
                     {goal.kind !== 'manual' && <span className="sr-only">{goal.done ? ', ' + text('goalDone', 'complete') : ', ' + text('goalOpen', 'not yet complete')}</span>}
                   </span>
-                  {goal.progressText && !goal.done && <span className="text-[11px] text-amber-600 font-bold ml-auto flex-shrink-0">{goal.progressText}</span>}
+                  {goal.progressText && !goal.done && <span className="text-[11px] text-amber-700 font-bold ml-auto flex-shrink-0">{goal.progressText}</span>}
                   {goal.done && <span className="text-[11px] text-emerald-600 font-bold ml-auto flex-shrink-0" aria-hidden="true">✓</span>}
                 </li>
               ))}

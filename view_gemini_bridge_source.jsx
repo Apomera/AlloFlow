@@ -33,6 +33,33 @@ var BRIDGE_PHRASES = [
 // "End", and switch-sides paths only flip React state and the recognizer keeps
 // running — its late onresult would then auto-send a phantom message. Stopping
 // it here detaches handlers and aborts so a racing result cannot fire.
+var BRIDGE_LANG_CODES = {
+  'English':'en-US','Spanish':'es-ES','French':'fr-FR','Arabic':'ar-SA',
+  'Somali':'so-SO','Vietnamese':'vi-VN','Portuguese':'pt-BR','Mandarin':'zh-CN',
+  'Korean':'ko-KR','Tagalog':'tl-PH','Russian':'ru-RU','Japanese':'ja-JP',
+  'Haitian Creole':'ht-HT','Swahili':'sw-KE','Hmong':'hmn','Burmese':'my-MM',
+  'Nepali':'ne-NP','German':'de-DE','Italian':'it-IT','Polish':'pl-PL',
+  'Ukrainian':'uk-UA','Hindi':'hi-IN','Urdu':'ur-PK','Bengali':'bn-BD',
+  'Thai':'th-TH','Indonesian':'id-ID','Malay':'ms-MY','Turkish':'tr-TR',
+  'Dutch':'nl-NL','Greek':'el-GR','Czech':'cs-CZ','Romanian':'ro-RO',
+  'Hungarian':'hu-HU','Swedish':'sv-SE','Norwegian':'nb-NO','Danish':'da-DK',
+  'Finnish':'fi-FI','Hebrew':'he-IL','Persian':'fa-IR','Pashto':'ps-AF',
+  'Amharic':'am-ET','Tigrinya':'ti-ET','Yoruba':'yo-NG','Igbo':'ig-NG',
+  'Hausa':'ha-NG','Zulu':'zu-ZA','Xhosa':'xh-ZA','Afrikaans':'af-ZA',
+  'Maori':'mi-NZ','Samoan':'sm-WS','Tongan':'to-TO','Hawaiian':'haw-US',
+  'Cherokee':'chr-US','Navajo':'nv-US','Marshallese':'mh-MH','Chuukese':'chk-FM',
+  'Gujarati':'gu-IN','Punjabi':'pa-IN','Tamil':'ta-IN','Telugu':'te-IN',
+  'Kannada':'kn-IN','Malayalam':'ml-IN','Sinhala':'si-LK','Khmer':'km-KH',
+  'Lao':'lo-LA','Dari':'fa-AF','Kurdish':'ku-IQ','Azerbaijani':'az-AZ',
+  'Georgian':'ka-GE','Armenian':'hy-AM','Mongolian':'mn-MN','Kazakh':'kk-KZ',
+  'Uzbek':'uz-UZ'
+};
+// lang/dir attributes for a translated block in printed bridge messages (WCAG 3.1.2).
+function _bridgeLangAttrs(language) {
+  var code = BRIDGE_LANG_CODES[language];
+  if (!code) return '';
+  return ' lang="' + code + '"' + (/^(ar|he|fa|ps|ur)(-|$)/.test(code) ? ' dir="rtl"' : '');
+}
 var _bridgeActiveRec = null;
 function _bridgeStopListening() {
   if (_bridgeActiveRec) {
@@ -951,27 +978,7 @@ function BridgeSendModal(props) {
                 )}
               </button>
               {bridgeChatOpen && (() => {
-                const _langCodes = {
-                  'English':'en-US','Spanish':'es-ES','French':'fr-FR','Arabic':'ar-SA',
-                  'Somali':'so-SO','Vietnamese':'vi-VN','Portuguese':'pt-BR','Mandarin':'zh-CN',
-                  'Korean':'ko-KR','Tagalog':'tl-PH','Russian':'ru-RU','Japanese':'ja-JP',
-                  'Haitian Creole':'ht-HT','Swahili':'sw-KE','Hmong':'hmn','Burmese':'my-MM',
-                  'Nepali':'ne-NP','German':'de-DE','Italian':'it-IT','Polish':'pl-PL',
-                  'Ukrainian':'uk-UA','Hindi':'hi-IN','Urdu':'ur-PK','Bengali':'bn-BD',
-                  'Thai':'th-TH','Indonesian':'id-ID','Malay':'ms-MY','Turkish':'tr-TR',
-                  'Dutch':'nl-NL','Greek':'el-GR','Czech':'cs-CZ','Romanian':'ro-RO',
-                  'Hungarian':'hu-HU','Swedish':'sv-SE','Norwegian':'nb-NO','Danish':'da-DK',
-                  'Finnish':'fi-FI','Hebrew':'he-IL','Persian':'fa-IR','Pashto':'ps-AF',
-                  'Amharic':'am-ET','Tigrinya':'ti-ET','Yoruba':'yo-NG','Igbo':'ig-NG',
-                  'Hausa':'ha-NG','Zulu':'zu-ZA','Xhosa':'xh-ZA','Afrikaans':'af-ZA',
-                  'Maori':'mi-NZ','Samoan':'sm-WS','Tongan':'to-TO','Hawaiian':'haw-US',
-                  'Cherokee':'chr-US','Navajo':'nv-US','Marshallese':'mh-MH','Chuukese':'chk-FM',
-                  'Gujarati':'gu-IN','Punjabi':'pa-IN','Tamil':'ta-IN','Telugu':'te-IN',
-                  'Kannada':'kn-IN','Malayalam':'ml-IN','Sinhala':'si-LK','Khmer':'km-KH',
-                  'Lao':'lo-LA','Dari':'fa-AF','Kurdish':'ku-IQ','Azerbaijani':'az-AZ',
-                  'Georgian':'ka-GE','Armenian':'hy-AM','Mongolian':'mn-MN','Kazakh':'kk-KZ',
-                  'Uzbek':'uz-UZ'
-                };
+                const _langCodes = BRIDGE_LANG_CODES;
                 // When "Custom..." (sentinel value 'custom') is selected but the text box
                 // is empty, neither the dropdown value nor the custom text is a real
                 // language — resolve to '' so we never send the literal word "custom" to
@@ -1795,7 +1802,7 @@ function BridgeMessageModal(props) {
                     const safeImg = (u) => (typeof u === 'string' && /^(data:image\/|blob:|https:)/i.test(u)) ? u : '';
                     const _img = safeImg(bridgeMessage.imageUrl);
                     const printContent = `
-                      <html><head><title>${esc(t('bridge.bridge_message') || 'Bridge Message')}</title>
+                      <html lang="en"><head><title>${esc(t('bridge.bridge_message') || 'Bridge Message')}</title>
                       <style>
                         body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
                         .lang-label { font-size: 14px; font-weight: bold; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
@@ -1811,7 +1818,7 @@ function BridgeMessageModal(props) {
                       ${_img ? '<img alt="" src="' + esc(_img) + '" />' : ''}
                       <div class="lang-label">🇺🇸 English</div>
                       <div class="text-block">${esc(bridgeMessage.english)}</div>
-                      ${bridgeMessage.translated ? '<div class="lang-label">' + esc(bridgeMessage.languageName || bridgeMessage.language) + '</div><div class="text-block">' + esc(bridgeMessage.translated) + '</div>' : ''}
+                      ${bridgeMessage.translated ? '<div class="lang-label">' + esc(bridgeMessage.languageName || bridgeMessage.language) + '</div><div class="text-block"' + _bridgeLangAttrs(bridgeMessage.language) + '>' + esc(bridgeMessage.translated) + '</div>' : ''}
                       ${bridgeMessage.terms?.length ? '<div class="lang-label">📖 Key Terms</div><div class="terms">' + bridgeMessage.terms.map(t2 => { const w = typeof t2 === 'object' ? t2.word : t2; const d = typeof t2 === 'object' && t2.definition ? t2.definition : ''; return '<span class="term">' + esc(w) + (d ? '<br/><small style="font-weight:400;color:#555">' + esc(d) + '</small>' : '') + '</span>'; }).join('') + '</div>' : ''}
                       </body></html>`;
                     const printWin = window.open('', '_blank', 'width=800,height=600');

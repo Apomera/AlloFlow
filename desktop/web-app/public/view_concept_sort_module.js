@@ -118,7 +118,7 @@ function ConceptSortView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-black text-amber-800"
   }, "📝 ", t('concept_sort.review_title') || 'Pre-Activity Review'), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-amber-700/90"
+    className: "text-[11px] text-amber-800"
   }, t('concept_sort.pre_activity_help') || 'Edit categories and items before students play. AI outputs sometimes need tweaks.')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 flex-wrap"
   }, (generatedContent?.data.items || []).some(it => it && it.image) && /*#__PURE__*/React.createElement("div", {
@@ -207,7 +207,7 @@ function ConceptSortView(props) {
       title: t('concept_sort.rename_category') || 'Rename category',
       "aria-label": `${t('concept_sort.rename_category') || 'Rename category'} ${cat.label}`
     }, cat.label), /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold opacity-75 whitespace-nowrap"
+      className: "text-[10px] font-bold whitespace-nowrap"
     }, t('concept_sort.item_count', {
       count: catItems.length
     }) || `${catItems.length} item(s)`), !cat.__orphans && /*#__PURE__*/React.createElement("button", {

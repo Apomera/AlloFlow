@@ -158,7 +158,13 @@ async function searchFlightCities(query, options) {
     flightCitySearchMemo.set(key, results);
     while (flightCitySearchMemo.size > 16) flightCitySearchMemo.delete(flightCitySearchMemo.keys().next().value);
     return results.map(function(item) { return Object.assign({}, item); });
-  } catch (error) { if (options.signal && options.signal.aborted || error.name === 'AbortError') throw error; return localResults; }
+  } catch (error) {
+    if (options.signal && options.signal.aborted || error && error.name === 'AbortError') throw error;
+    // A failed online lookup is different from a successful empty search.
+    // Keep bundled matches usable without changing the array return contract.
+    if (typeof options.onUnavailable === 'function') { try { options.onUnavailable(); } catch (_) {} }
+    return localResults;
+  }
 }
 function validateFlightCityPack(pack) {
   if (!pack || typeof pack !== 'object') return null;

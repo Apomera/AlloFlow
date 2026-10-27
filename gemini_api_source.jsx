@@ -144,17 +144,50 @@ const createGeminiAPI = (deps) => {
     // including model fallbacks, connection retries and JSON repair calls.
     const _requestSnapshots = new WeakSet();
     const _requestGuards = new WeakMap();
-    const _requestSnapshot = (candidate) => {
+    const _controlsFromOptions = options => {
+      if (options == null) return undefined;
+      const bag = Object(options), descriptor = Object.getOwnPropertyDescriptor(bag, 'requestControls');
+      if (!descriptor) {
+        if ('requestControls' in bag) throw managedAIError();
+        return undefined;
+      }
+      if (!Object.prototype.hasOwnProperty.call(descriptor, 'value')) throw managedAIError();
+      return descriptor.value;
+    };
+    const _captureRequestControls = controls => {
+      if (controls == null) return null;
+      const captured = managedAIRecord(controls, ['beforeRequest'], ['beforeRequest']);
+      if (typeof captured.beforeRequest !== 'function') throw managedAIError();
+      return Object.freeze(captured);
+    };
+    const _runRequestControls = controls => {
+      if (!controls) return;
+      try {
+        const value = controls.beforeRequest();
+        if (value && typeof value.then === 'function') {
+          Promise.resolve(value).catch(() => {});
+          throw managedAIError();
+        }
+        if (value !== undefined && value !== true) throw managedAIError();
+      } catch (error) {
+        if (error && error.name === 'AbortError') throw error;
+        throw managedAIError();
+      }
+    };
+    const _requestSnapshot = (candidate, controls) => {
       if (candidate && _requestSnapshots.has(candidate)) return candidate;
+      const requestControls = _captureRequestControls(controls);
+      _runRequestControls(requestControls);
       const models = {};
       for (const slot of ['default', 'fallback', 'vision', 'flash', 'image']) {
         const value = GEMINI_MODELS && GEMINI_MODELS[slot];
         models[slot] = value == null ? value : String(value);
       }
-      const captured = Object.freeze({ apiKey: String(_resolveApiKey() || ''), models: Object.freeze(models) });
+      const captured = Object.freeze({ apiKey: String(_resolveApiKey() || ''), models: Object.freeze(models), requestControls });
       _requestSnapshots.add(captured); return captured;
     };
     const _authorizeRequest = async (request, operation = 'text', search = false) => {
+      _runRequestControls(request.requestControls);
       let guard = _requestGuards.get(request);
       if (!guard) {
         guard = await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: request.apiKey,
@@ -162,12 +195,13 @@ const createGeminiAPI = (deps) => {
         if (typeof guard !== 'function') throw managedAIError();
         _requestGuards.set(request, guard);
       }
-      guard(); return guard;
+      guard(); _runRequestControls(request.requestControls); guard(); return guard;
     };
     const _guardRequest = request => {
       const guard = _requestGuards.get(request);
       if (typeof guard !== 'function') throw managedAIError();
-      guard(); return guard;
+      const composed = () => { guard(); _runRequestControls(request.requestControls); guard(); };
+      composed(); return composed;
     };
     const _requestUrl = model => {
       const id = String(model == null ? '' : model).replace(/^models\//, '');
@@ -728,7 +762,9 @@ const createGeminiAPI = (deps) => {
           search: false,
           temperature: temperature == null ? null : Number(temperature),
           signal,
+          requestControls: request.requestControls,
         });
+        _guardRequest(request);
         if (typeof value !== 'string' || !value.trim()) throw new Error('Empty response text from local fallback.');
         try {
           window.__alloLocalFallbackLastUsed = {
@@ -750,7 +786,7 @@ const createGeminiAPI = (deps) => {
     // One attempt. The retrying wrapper `callGemini` is defined immediately below —
     // call THAT everywhere, not this.
     const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, searchOptions = null, deferBanner = false, feedbackContext = null, requestState = null) => {
-      const _request = _requestSnapshot(requestState);
+      const _request = _requestSnapshot(requestState, _controlsFromOptions(searchOptions));
       const _models = _request.models;
       const hasVideoInput = !!(searchOptions && Object.prototype.hasOwnProperty.call(searchOptions, 'videoUrl'));
       const videoUrl = hasVideoInput ? searchOptions.videoUrl : null;
@@ -815,9 +851,11 @@ const createGeminiAPI = (deps) => {
               throw unavailable;
           }
           try {
+              const searchRequest = { requestControls: Object.freeze({ beforeRequest: _guardRequest(_request) }) };
               const { contextPrompt, groundingMetadata } = searchOptions?.intent === 'user-topic'
-                  ? await window.WebSearchProvider.searchTopic(searchQuery, 10)
-                  : await window.WebSearchProvider.search(prompt, 10, searchQuery);
+                  ? await window.WebSearchProvider.searchTopic(searchQuery, 10, searchRequest)
+                  : await window.WebSearchProvider.search(prompt, 10, searchQuery, searchRequest);
+              _guardRequest(_request);
               const groundedChunks = Array.isArray(groundingMetadata?.groundingChunks)
                   ? groundingMetadata.groundingChunks
                   : [];
@@ -917,6 +955,7 @@ const createGeminiAPI = (deps) => {
         // 'other' and spammed error reports. Name the condition so the
         // classifier routes it to 'transient' and the retry layers handle it.
         const _rawBody = await response.text();
+        _guardRequest(_request);
         if (_signal && _signal.aborted) throw _abortError();
         if (!_rawBody || !_rawBody.trim()) {
           _emitResponseMeta(_innerTelemetry, { model: _modelUsed, bodyBytes: 0, finishReason: null, empty: true });
@@ -1010,6 +1049,7 @@ const createGeminiAPI = (deps) => {
         }
         if (typeof text !== 'string' || !text.trim()) throw new Error('Empty response text from Gemini. Retry the failed step.');
         _noteApiSuccess(); // a good response clears any transient-401 streak / banner + notifies recovery
+        _guardRequest(_request);
         if (useSearch) {
             return {
                 text: text || "",
@@ -1021,6 +1061,7 @@ const createGeminiAPI = (deps) => {
         }
         return text || "";
       } catch (err) {
+        _guardRequest(_request);
         if (_managedRequestDenied(err)) throw err;
         if (err && err.name === 'AbortError') throw err;
         const cls = _classifyGeminiError(err);
@@ -1082,7 +1123,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
     });
 
     const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, searchOptions = null, requestState = null) => {
-      const _request = _requestSnapshot(requestState);
+      const _request = _requestSnapshot(requestState, _controlsFromOptions(searchOptions));
       const context = _newFeedbackRequest('text');
       const effectiveSignal = signal || (typeof getAbortSignal === 'function' ? getAbortSignal() : null) || null;
       _emitApiFeedback(context, 'pending');
@@ -1099,6 +1140,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
           const rungStartedAt = Date.now();
           try {
             const value = await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, effectiveSignal, useCodeExecution, telemetry, searchOptions, true, context, _request);
+            _guardRequest(_request);
             if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
             _emitApiFeedback(context, 'succeeded', null, attempt + 1);
             return value;
@@ -1137,7 +1179,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
     };
 
     const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null, options = null) => {
-      const _request = _requestSnapshot();
+      const _request = _requestSnapshot(null, _controlsFromOptions(options));
       const imageAllowed = () => {
         if (typeof window !== 'undefined' && window.AlloImageGeneration) return window.AlloImageGeneration.isEnabled();
         try { return localStorage.getItem('alloflow_ai_image_generation_enabled') !== 'false'; } catch (_) { return true; }
@@ -1186,17 +1228,22 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         });
         _guardRequest(_request);
         const response = await fetch(url, requestOptions);
+        _guardRequest(_request);
         _throwIfImageEditAborted();
         const data = await response.json();
+        _guardRequest(_request);
         const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
         if (!imagePart) throw new Error("No image generated in response");
         const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
         const optimized = await optimizeImage(rawUrl, width, qual);
+        _guardRequest(_request);
         if (!imageAllowed()) return null;
         _throwIfImageEditAborted();
         _noteApiSuccess(); // image preparation completed and was not cancelled
+        _guardRequest(_request);
         return optimized;
       } catch (err) {
+        _guardRequest(_request);
         if (!imageAllowed()) return null;
         warnLog("Gemini Image Edit Error", _diagnosticErrorSummary(err));
         throw err;
@@ -1215,7 +1262,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       }).filter(part => part.inlineData.data);
     };
     const callGeminiVision = async (prompt, base64Data, mimeType, options = null) => {
-      const _request = _requestSnapshot();
+      const _request = _requestSnapshot(null, _controlsFromOptions(options));
       await _authorizeRequest(_request, 'media');
       const _explicitSignal = options && options.signal
         ? options.signal
@@ -1293,6 +1340,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         }
         _throwIfVisionAborted();
         const rawText = await response.text();
+        _guardRequest(_request);
         _throwIfVisionAborted();
         let data;
         try {
@@ -1318,6 +1366,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
           if (partialMatch) {
             const partial = partialMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
             warnLog("[Vision] Recovered partial text:", partial.length + ' chars'); // H-3 (audit 2026-06-23): log LENGTH only — this is OCR'd document text (potential student PII) and warnLog feeds the copyable in-app diagnostics buffer (FERPA: egress to Gemini is permitted, replication into a sharable artifact is not)
+            _guardRequest(_request);
             return partial + '\n\n[Note: Document was partially extracted. Some content may be missing due to document size.]';
           }
           throw new Error("Vision API returned invalid response. The document may be too large — try a shorter PDF.");
@@ -1327,14 +1376,17 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
           const blockReason = data.candidates?.[0]?.finishReason;
           if (blockReason === 'MAX_TOKENS') {
             const partial = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            _guardRequest(_request);
             return partial + '\n\n[Note: Document was partially extracted due to length. Some content may be missing.]';
           }
           throw new Error("No text generated from vision." + (blockReason ? ` Reason: ${blockReason}` : ''));
         }
         if (typeof text !== 'string' || !text.trim()) throw new Error('Empty response text from Gemini Vision. Retry the failed step.');
         _noteApiSuccess(); // usable Vision text clears the connection notice
+        _guardRequest(_request);
         return text;
       } catch (err) {
+        _guardRequest(_request);
         if (_managedRequestDenied(err)) throw err;
         if (err && err.name === 'AbortError') throw err;
         const cls = _classifyGeminiError(err);

@@ -4,6 +4,11 @@ import {learningSummary} from './lesson_board_insights.js';
 import {practiceVariant} from './lesson_board_learning.js';
 import {challengeValidDraft} from './lesson_board_challenges.js';
 export const REPLAY_MAX_CHECKS=30;
+// Transfer responses are learner-authored evidence, never an automatic score.
+export function replayTransfer(board,replay){
+ const ids=new Set((replay?.targetIds||[]).map(id=>board.locations.find(node=>node.id===id)?.conceptId));
+ return board.concepts.filter(concept=>ids.has(concept.id)).map(concept=>({concept,example:typeof replay?.transfer?.[concept.id]?.example==='string'?replay.transfer[concept.id].example.slice(0,2000):'',reviewed:replay?.transfer?.[concept.id]?.reviewed===true}));
+}
 export const replayAvailable=(board,run)=>derive(board,run).complete||turnLimit(board,run).reached&&stepOf(run).phase==='review';
 export function replayPriorities(board,run,uid){
  const learner=learningSummary(board,run,{[uid||'practice']: {}}).learners[0];
@@ -21,7 +26,8 @@ export function prepareReplay(board,run,value){
  const targetIds=[...new Set(Array.isArray(value.targetIds)?value.targetIds.filter(id=>board.locations.some(node=>node.id===id)):[])].slice(0,5);if(!targetIds.length)return null;
  const events=[],counts={};for(const event of (Array.isArray(value.events)?value.events:[]).slice(0,REPLAY_MAX_CHECKS)){if(!targetIds.includes(event?.id))break;const node=practiceVariant(board.locations.find(node=>node.id===event.id),(counts[event.id]||0)+1);if(!validValue(node,event.value))break;events.push({id:event.id,value:event.value});counts[event.id]=(counts[event.id]||0)+1;}
  const coveredIds=[...new Set(Array.isArray(value.coveredIds)?value.coveredIds.filter(id=>board.locations.some(node=>node.id===id)):[])].slice(0,12);
- const result={started:true,length:value.length===5?5:3,coveredIds,targetIds,events,checked:value.checked===true&&events.length>0,draft:''},state=replayState(board,result);
+ const transfer=Object.fromEntries(replayTransfer(board,{targetIds,transfer:value.transfer}).map(item=>[item.concept.id,{example:item.example,reviewed:!!item.example.trim()&&item.reviewed}]));
+ const result={started:true,length:value.length===5?5:3,coveredIds,targetIds,events,checked:value.checked===true&&events.length>0,draft:'',transfer},state=replayState(board,result);
  if(state.node&&!result.checked){const draft=value.draft,node=state.node,partial=node.kind==='settings'&&typeof draft==='string'&&draft.split(',').length===node.controls.length&&draft.split(',').every((part,i)=>part===''||/^[0-9]$/.test(part)&&Number(part)<node.controls[i].options.length);result.draft=typeof draft==='string'&&draft.length<=24&&(draft===initialDraft(node)||validValue(node,draft)||partial||challengeValidDraft(node,draft)||puzzleValidDraft(node,draft))?draft:initialDraft(node);}
  return result;
 }

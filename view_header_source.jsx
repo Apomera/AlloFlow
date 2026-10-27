@@ -282,6 +282,21 @@ function HeaderBar(props) {
       else toggle();
     }, 40);
   }, []);
+  // WCAG 2.1.4: the host's "?" help shortcut reads this per-device preference
+  // at keydown time, so turning it off here needs no prop plumbing.
+  const [singleKeyShortcuts, setSingleKeyShortcuts] = React.useState(() => {
+    try { return localStorage.getItem('allo_single_key_shortcuts') !== 'off'; } catch (_) { return true; }
+  });
+  const toggleSingleKeyShortcuts = React.useCallback(() => {
+    setSingleKeyShortcuts(previous => {
+      const next = !previous;
+      try {
+        if (next) localStorage.removeItem('allo_single_key_shortcuts');
+        else localStorage.setItem('allo_single_key_shortcuts', 'off');
+      } catch (_) {}
+      return next;
+    });
+  }, []);
   const [voiceInputEngine, setVoiceInputEngine] = React.useState(() => {
     try {
       const shared = typeof window !== 'undefined' && window.AlloFlowVoice;
@@ -1279,6 +1294,24 @@ function HeaderBar(props) {
                                                         </span>
                                                     </div>
                                                 )}
+                                            </div>
+                                            <div className={`border-t ${_skin.divider} pt-3`}>
+                                                <button type="button"
+                                                    onClick={toggleSingleKeyShortcuts}
+                                                    role="switch"
+                                                    aria-checked={singleKeyShortcuts}
+                                                    aria-describedby="header-single-key-shortcuts-desc"
+                                                    data-single-key-shortcuts-toggle="true"
+                                                    className={`w-full flex items-center justify-between gap-3 p-3 rounded-lg border-2 transition-all ${singleKeyShortcuts ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
+                                                >
+                                                    <span className="text-left">
+                                                        <span className="block text-xs font-bold">{t('settings.text.single_key_shortcuts') || 'Single-key shortcuts'}</span>
+                                                        <span id="header-single-key-shortcuts-desc" className="block text-[11px] mt-0.5">{t('settings.text.single_key_shortcuts_sub') || 'Press ? to turn Help Mode on or off. Turn this off if you use speech input or often press keys by accident. The Help Mode button in the toolbar still works.'}</span>
+                                                    </span>
+                                                    <span aria-hidden="true" className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${singleKeyShortcuts ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
+                                                        <span className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${singleKeyShortcuts ? 'left-6' : 'left-1'}`}></span>
+                                                    </span>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

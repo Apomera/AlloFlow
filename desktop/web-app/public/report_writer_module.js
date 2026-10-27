@@ -3181,8 +3181,13 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
                 const dispatchArgs = args.slice();
                 if (hasSearchQuery) dispatchArgs[3] = reviewed.searchQuery;
                 if (operation) dispatchArgs[4] = signal;
+                const requestControls = workspace.createRequestControls(epoch, () => {
+                    assertCurrent();
+                    if (getGate() !== gate) throw rwReviewUnavailableError();
+                }, dispatchArgs[7] && dispatchArgs[7].requestControls);
+                dispatchArgs[7] = Object.freeze({ ...dispatchArgs[7], requestControls });
                 const result = await rawCallGemini(reviewed.prompt, ...dispatchArgs);
-                assertCurrent();
+                requestControls.beforeRequest();
                 if (getGate() !== gate) throw rwReviewUnavailableError();
                 return result;
             } finally {
@@ -5974,19 +5979,35 @@ Return ONLY valid JSON:
         }, [unsavedWork]);
         const exportJSON = () => {
             if (!allowReadableExport('json')) return;
-            const data = { ...buildReportSnapshot(), exportedAt: new Date().toISOString() };
-            setSavedSnapshot(snapshotKey());
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const a = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            a.href = url;
-            a.download = `report_${sanitizeFilenamePart(effectiveStudentName)}_${new Date().toISOString().slice(0, 10)}.json`;
-            a.hidden = true;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 0);
-            if (addToast) addToast(t('toasts.json_exported'), 'success');
+            let a = null, url = null, started = false;
+            try {
+                const data = { ...buildReportSnapshot(), exportedAt: new Date().toISOString() };
+                const exportedSnapshot = snapshotKey();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                a = document.createElement('a');
+                url = URL.createObjectURL(blob);
+                a.href = url;
+                a.download = `report_${sanitizeFilenamePart(effectiveStudentName)}_${new Date().toISOString().slice(0, 10)}.json`;
+                a.hidden = true;
+                document.body.appendChild(a);
+                a.click();
+                started = true;
+                // A failed browser handoff must keep the unsaved-work warning.
+                setSavedSnapshot(exportedSnapshot);
+                if (addToast) addToast(t('toasts.json_exported'), 'success');
+                return true;
+            } catch (_) {
+                if (addToast) addToast(__alloT('report_writer.toast_download_could_not_start', 'The report download could not start. Your work remains open; try saving it again.'), 'error');
+                return false;
+            } finally {
+                if (a) { try { a.removeAttribute('href'); a.remove(); } catch (_) {} }
+                if (url) {
+                    const revoke = () => { try { URL.revokeObjectURL(url); } catch (_) {} };
+                    // Let a successfully started download consume its Blob.
+                    if (started) { try { setTimeout(revoke, 0); } catch (_) { revoke(); } }
+                    else revoke();
+                }
+            }
         };
         // The incoming JSON is protected while pending, but is not earlier
         // report work that importing that very JSON would overwrite.
@@ -6118,16 +6139,31 @@ Return ONLY valid JSON:
         const printReport = () => {
             if (!requireFormalExportReady()) return;
             if (!allowReadableExport('print')) return;
-            const w = window.open('', '_blank');
-            if (!w) {
-                if (addToast) addToast(__alloT('report_writer.toast_the_print_window_was_blocked_allow', 'The print window was blocked. Allow pop-ups and try again.'), 'error');
-                return;
+            let w = null, started = false;
+            try {
+                w = window.open('', '_blank');
+                if (!w) {
+                    if (addToast) addToast(__alloT('report_writer.toast_the_print_window_was_blocked_allow', 'The print window was blocked. Allow pop-ups and try again.'), 'error');
+                    return false;
+                }
+                try { w.opener = null; } catch { /* browser may prevent opener reassignment */ }
+                const html = buildReportPrintHtml(printHtmlArgs());
+                w.document.write(html);
+                w.document.close();
+                w.print();
+                started = true;
+                return true;
+            } catch (_) {
+                if (addToast) addToast(__alloT('report_writer.toast_print_could_not_start', 'The report could not be printed. Your work remains open; try printing it again.'), 'error');
+                return false;
+            } finally {
+                // Keep successful print previews available. Failed preparation
+                // must not leave an extra readable clinical document behind.
+                if (w && !started) {
+                    try { if (w.document.documentElement) w.document.documentElement.textContent = ''; } catch (_) {}
+                    try { w.close(); } catch (_) {}
+                }
             }
-            try { w.opener = null; } catch { /* browser may prevent opener reassignment */ }
-            const html = buildReportPrintHtml(printHtmlArgs());
-            w.document.write(html);
-            w.document.close();
-            w.print();
         };
         const printHtmlArgs = () => ({
                 reportTitle,
@@ -6194,7 +6230,7 @@ Return ONLY valid JSON:
                 onAccept: (id, payload) => sensitivePromptGateRef.current && sensitivePromptGateRef.current.accept(id, payload),
                 onCancel: (id) => sensitivePromptGateRef.current && sensitivePromptGateRef.current.cancel(id)
             }),
-            hasTemporarySources && h('aside', { role: 'note', 'aria-label': 'Temporary Report Writer sources', className: 'rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm' },
+            hasTemporarySources && h('aside', { role: 'note', 'aria-label': __alloT("report_writer.a11y_temporary_report_writer_sources", 'Temporary Report Writer sources'), className: 'rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm' },
                 h('p', null, 'Temporary source documents, paste previews and uncommitted imports are not included in saved-records backups. Preserve them separately or explicitly discard them before locking.'),
                 h('button', { type: 'button', className: 'mt-2 rounded border border-amber-700 px-3 py-1', onClick: () => setConfirmationRequest({
                     title: 'Discard temporary source materials?',

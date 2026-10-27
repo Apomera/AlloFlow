@@ -198,10 +198,13 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     .prose ul { list-style-type: disc !important; }
     .prose ol { list-style-type: decimal !important; }
     .prose li { margin-top: 0.5em !important; margin-bottom: 0.5em !important; }
-    .prose a { color: #3b82f6 !important; text-decoration: underline; font-weight: 500; }
+    .prose a { color: #1d4ed8 !important; text-decoration: underline; font-weight: 500; }
+    /* Bold keeps the surrounding text color: a fixed #0f172a was invisible in the Dark and
+       Contrast app themes and the reader's dark reading themes (1.0-1.2:1). Weight carries
+       the emphasis; theme rules may still recolor <strong> (e.g. .theme-dark .prose strong). */
     .prose strong, .prose b, .prose [class*="font-bold"], .prose [class*="font-black"] {
       font-weight: 600 !important;
-      color: #0f172a !important;
+      color: inherit !important;
     }
     .prose [role="dialog"] strong { color: #fde047 !important; }
     .prose blockquote {

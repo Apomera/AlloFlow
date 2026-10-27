@@ -717,7 +717,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     // only when the student view could already show it as an explanation (not
     // disputed or stale); keyCheck shrinks to a bare confirmation. Mirrors
     // stripTeacherOnlyResourceFields in firestore_sync_module.js.
-    const teacherOnlyKeys = ['teacherNotes', 'facilitationNotes', 'visualCheck', 'distractorQuality', 'distractorReview'];
+    const teacherOnlyKeys = ['teacherNotes', 'facilitationNotes', 'visualCheck', 'distractorQuality', 'distractorReview', 'sourceEvidence', 'contentReview'];
     const studentFactCheck = (node) => {
         const text = typeof node.factCheck === 'string' ? node.factCheck : '';
         if (!text.trim() || typeof node.question !== 'string') return '';
@@ -757,7 +757,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     // Mirrors withholdGradedQuizKeys in firestore_sync_module.js.
     const gradedKeyFields = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits',
         'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey',
-        'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality',
+        'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality', 'sourceEvidence', 'contentReview',
         'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
     const gradedOptionFields = ['isCorrect', 'correct', 'isAnswer', 'feedback', 'explanation', 'rationale'];
     // Sequence Sense items in their displayed order: canonical order is the key.
@@ -798,7 +798,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
             });
             return sequenceDisplayOrder(kept);
         }) : data.questions;
-        return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys']), ...(released ? { feedbackReleaseKeys: release } : {}), questions, answerKeysWithheld: true } };
+        return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys', 'contentReview']), ...(released ? { feedbackReleaseKeys: release } : {}), questions, answerKeysWithheld: true } };
     };
     const { karaokeStudentAudio, ...safe } = cleaned || {};
     const packedResource = stripUndefined(withholdGradedQuizKeys(stripTeacherOnlyFields(safe)));

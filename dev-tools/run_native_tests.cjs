@@ -21,6 +21,7 @@ const NATIVE_TESTS = Object.freeze([
   'native_test_discovery.test.cjs',
   'npm_audit_reporting.test.cjs',
   'project_response_restore.test.cjs',
+  'runtime_graph_engine_adapters.test.cjs',
 ]);
 const EXTERNAL_TESTS = Object.freeze([
   'firebase_mailbox_image_rules.test.cjs',

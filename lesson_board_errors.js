@@ -4,6 +4,7 @@ import { tr } from './lesson_board_strings.js';
 // trailing ": stop-id") maps to a lesson_board.err_* key, and unknown text is shown unchanged.
 // tests/lesson_board_text_a11y.test.js fails when a thrown message has no entry here.
 export const ERROR_KEYS = new Map([
+  ['This drawing is too large for the Lesson Board. Remove large embedded photos or export it as a PNG to upload.', 'err_drawing_too_large'],
   ['Use three to five distinct challenge items', 'err_use_three_five_distinct_challenge'],
   ['Invalid challenge destinations', 'err_invalid_challenge_destinations'],
   ['Give each item one distinct destination', 'err_give_each_item_one_distinct'],

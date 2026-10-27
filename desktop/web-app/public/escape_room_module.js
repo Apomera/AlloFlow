@@ -226,6 +226,12 @@
     return null;
   };
 
+  var escapeHintLadder = function(puzzle) {
+    return [puzzle.hint].concat(Array.isArray(puzzle.hintSteps) ? puzzle.hintSteps : Array.isArray(puzzle.hints) ? puzzle.hints : []).filter(function(value,index,all) { return typeof value === 'string' && value.trim() && all.indexOf(value) === index; }).slice(0,3).map(function(value) { return value.trim().slice(0,1200); });
+  };
+  var escapeHintLevel = function(state,puzzle) {
+    return Math.min(escapeHintLadder(puzzle).length, Math.max(0, Number.isInteger(state.hintLevels && state.hintLevels[puzzle.id]) ? state.hintLevels[puzzle.id] : state.hintsUsed && state.hintsUsed[puzzle.id] ? 1 : 0));
+  };
   // Checks one puzzle. Returns { puzzle } (possibly a repaired copy) with notes for the
   // teacher, or { error } when the puzzle cannot be played as written.
   var checkEscapePuzzle = function(raw) {
@@ -236,6 +242,7 @@
     if (!type) return { error: 'has an unsupported type "' + escapeText(raw.type) + '"' };
     if (raw.type !== type) edit({ type: type });
     if (p.hint != null && typeof p.hint !== 'string') edit({ hint: escapeText(p.hint) });
+    if (p.hintSteps != null) edit({ hintSteps: Array.isArray(p.hintSteps) ? p.hintSteps.filter(function(value) { return typeof value === 'string' && value.trim(); }).slice(0,2).map(function(value) { return value.trim().slice(0,1200); }) : [] });
     if (type === 'mcq') {
       if (!hasText(p.question)) return { error: 'is missing its question' };
       var options = Array.isArray(p.options) ? p.options.map(escapeText) : [];
@@ -525,7 +532,7 @@
   };
   var escapeRoomAttempt = function() {
     return { selectedObject: null, discoveredClues: {}, finalDoorUnlocked: false, showFinalDoor: false,
-      solvedPuzzles: new Set(), hintsUsed: {}, totalHintsUsed: 0, wrongAttempts: 0,
+      solvedPuzzles: new Set(), hintsUsed: {}, hintLevels: {}, totalHintsUsed: 0, wrongAttempts: 0,
       currentStreak: 0, bestStreak: 0, streakMultiplier: 1, xpEarned: 0, runScore: 0,
       textInput: '', sequenceOrder: [], matchingPairs: [], matchingSelected: null,
       puzzleDrafts: {}, showClueAnimation: false, isEscaped: false, isGameOver: false,
@@ -670,6 +677,7 @@ inputText.substring(0, 6000) + '\n' +
 '- Each object needs a thematic emoji and evocative name\n' +
 '- Questions should test understanding, not just memorization\n' +
 '- HINTS MUST BE VAGUE AND INDIRECT: Hints should NEVER reveal or strongly suggest the correct answer. Good hints encourage thinking about the topic area without pointing to specific answers. Bad: "The answer is the first option" or "It starts with P". Good: "Think about what you learned about energy..." or "Consider the time period...". Hints are a nudge in the right direction, NOT a giveaway.\n' +
+'- Also provide optional "hintSteps": ["a specific cue to inspect relevant lesson evidence", "a worked FIRST reasoning step, leaving the learner to finish"]. These two steps extend the initial "hint" into graduated support. Ground every step in the source and do not give away the final answer.\n' +
 ESCAPE_TYPE_CONTRACT + '\n' +
 'Return ONLY valid JSON (no markdown wrapper):\n' +
 '{\n' +
@@ -985,8 +993,12 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               Green: createLiveTeamProgress(),
               Yellow: createLiveTeamProgress()
             },
+            timerEnabled: room.timerEnabled !== false,
+            // Existing slower-pace signals belong to the previous activity, even if a
+            // learner's clock is ahead. Keep their exact versions out of this run.
+            timeSupportBaseline: Object.fromEntries(Object.entries(live.roster || {}).filter(function(entry) { return entry[1] && entry[1].signal === 'slow' && Number.isFinite(entry[1].signalAt); }).map(function(entry) { return [entry[0],entry[1].signalAt]; })),
             timeRemaining: 300,
-            endsAt: Date.now() + 300000,
+            endsAt: room.timerEnabled === false ? null : Date.now() + 300000,
             isGameOver: false,
             isPaused: false,
             startedAt: Date.now(),
@@ -1419,6 +1431,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         timerPaused: false,
         timeLimit: 300,
         hintsUsed: {},
+        hintLevels: {},
         totalHintsUsed: 0,
         livesEnabled: false,
         livesRemaining: 3,
@@ -1438,30 +1451,33 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
       if (!puzzle || !canPlay(state) || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-      if (escapeRoomState.hintsUsed && escapeRoomState.hintsUsed[puzzleId]) {
-        var hintText = puzzle.hint || (puzzle.hints && puzzle.hints[0]);
+      var ladder = escapeHintLadder(puzzle), level = escapeHintLevel(escapeRoomState,puzzle);
+      if (level >= ladder.length && level > 0) {
+        var hintText = ladder[level - 1];
         if (hintText) {
           addToast('\uD83D\uDCA1 ' + t('escape_room.hint') + ': ' + hintText, 'info');
         }
         return;
       }
-      if ((escapeRoomState.hintsRemaining || 0) <= 0) {
+      if (level === 0 && (escapeRoomState.hintsRemaining || 0) <= 0) {
         addToast(t('escape_room.no_hints_remaining') || 'No hints remaining!', 'warning');
         return;
       }
-      var hintText2 = puzzle.hint || (puzzle.hints && puzzle.hints[0]);
+      var hintText2 = ladder[level];
       if (!hintText2) {
         addToast(t('escape_room.no_hint_available') || 'No hint available for this puzzle', 'info');
         return;
       }
-      // Charge the hint once, as a reduction to this puzzle's reward when solved.
+      // One support budget per puzzle; later scaffold steps never change its
+      // correctness or create another XP penalty. Record depth separately.
       setState.setEscapeRoomState(function(prev) {
         var newHintsUsed = Object.assign({}, prev.hintsUsed);
         newHintsUsed[puzzleId] = true;
         return Object.assign({}, prev, {
-          hintsRemaining: Math.max(0, (prev.hintsRemaining || 0) - 1),
+          hintsRemaining: Math.max(0, (prev.hintsRemaining || 0) - (level === 0 ? 1 : 0)),
           hintsUsed: newHintsUsed,
-          totalHintsUsed: (prev.totalHintsUsed || 0) + 1
+          hintLevels: Object.assign({}, prev.hintLevels, { [puzzleId]: level + 1 }),
+          totalHintsUsed: (prev.totalHintsUsed || 0) + (level === 0 ? 1 : 0)
         });
       });
       addToast('\uD83D\uDCA1 ' + t('escape_room.hint') + ': ' + hintText2, 'info');
@@ -1521,6 +1537,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         if (!old) return prev;
         var p = Object.assign({}, old);
         if (['question', 'hint', 'sentence', 'encodedText'].indexOf(field) >= 0) p[field] = escapeText(value);
+        else if (field === 'hintSteps' && Array.isArray(value)) p.hintSteps = value.slice(0,2).map(function(step) { return escapeText(step).slice(0,1200); });
         else if (field === 'answer') {
           var answer = escapeText(value);
           if (Array.isArray(p.wordbank)) p.wordbank = replaceEscapeAnswer(p.wordbank, p.answer, answer);
@@ -1948,6 +1965,18 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       else if (!isEscapeTimerRunning && handleSetIsEscapeTimerRunningToTrue) handleSetIsEscapeTimerRunningToTrue();
     };
     var outcomeRef = useRef(null);
+    var sequenceFocusRef = useRef(null);
+    var sequenceControlsRef = useRef({});
+    var sequenceNoticeState = useState(''), sequenceNotice = sequenceNoticeState[0], setSequenceNotice = sequenceNoticeState[1];
+    useEffect(function() {
+      var target = sequenceFocusRef.current;
+      if (!target) return;
+      sequenceFocusRef.current = null;
+      var control = sequenceControlsRef.current[target.item + ':' + target.kind];
+      if (control && control.disabled) control = sequenceControlsRef.current[target.item + ':' + -target.kind];
+      if (control) control.focus();
+    }, [escapeRoomState && escapeRoomState.sequenceOrder]);
+    useEffect(function() { sequenceFocusRef.current = null; setSequenceNotice(''); }, [escapeRoomState && escapeRoomState.selectedObject && escapeRoomState.selectedObject.id]);
     var terminal = !!(escapeRoomState && (escapeRoomState.isEscaped || escapeRoomState.isGameOver));
     useEffect(function() { if (terminal && outcomeRef.current) outcomeRef.current.focus(); }, [terminal]);
     var previousPhase = useRef({ running: isEscapeTimerRunning, terminal: terminal });
@@ -1974,7 +2003,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       return h('div', { className: 'flex-grow flex flex-col items-center justify-center gap-4' },
         h(Sparkles, { className: 'animate-spin text-purple-400', size: 48 }),
         h('p', { className: 'text-purple-400 text-lg font-bold' }, t('escape_room.generating')),
-        h('p', { className: 'text-slate-500 text-sm' }, t('escape_room.generating_hint'))
+        h('p', { className: 'text-slate-300 text-sm' }, t('escape_room.generating_hint'))
       );
     };
 
@@ -2067,7 +2096,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
     var renderPuzzleDialog = function() {
       if (!escapeRoomState.selectedObject) return null;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.linkedObjectId === escapeRoomState.selectedObject.id; });
-      if (!puzzle) return h('p', { className: 'text-slate-500' }, t('escape_room.no_puzzle'));
+      if (!puzzle) return h('p', { className: 'text-slate-300' }, t('escape_room.no_puzzle'));
 
       var puzzleContent = [];
 
@@ -2087,7 +2116,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           h('span', { className: 'text-4xl' }, escapeRoomState.selectedObject.emoji),
           h('div', null,
             h('h3', { id: 'escape-room-object-title', className: 'text-xl font-bold text-white' }, escapeRoomState.selectedObject.name),
-            h('p', { className: 'text-slate-500 text-sm' }, escapeRoomState.selectedObject.description)
+            h('p', { className: 'text-slate-300 text-sm' }, escapeRoomState.selectedObject.description)
           )
         )
       );
@@ -2104,8 +2133,9 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       if (props.setIsEscapeTimerRunning) typeHintRow.push(h('button', {
         key: 'pause', onClick: toggleTimer, className: 'px-3 py-2 rounded-lg bg-slate-700 text-white text-sm focus:ring-2 focus:ring-purple-400'
       }, t('escape_room.pause')));
-      if (puzzle.hint || (puzzle.hints && puzzle.hints.length > 0)) {
+      if (escapeHintLadder(puzzle).length > 0) {
         var hintUsed = escapeRoomState.hintsUsed && escapeRoomState.hintsUsed[puzzle.id];
+        var ladder = escapeHintLadder(puzzle), level = escapeHintLevel(escapeRoomState,puzzle);
         var hintsRem = escapeRoomState.hintsRemaining || 0;
         typeHintRow.push(
           h('button', {
@@ -2117,12 +2147,12 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                 ? 'bg-amber-700 text-white cursor-pointer'
                 : hintsRem > 0
                   ? 'bg-amber-900/50 text-amber-400 hover:bg-amber-800 border border-amber-600'
-                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'),
+                  : 'bg-slate-700 text-slate-300 cursor-not-allowed'),
             title: hintUsed ? (t('escape_room.show_hint')) : (t('escape_room.get_hint'))
           },
             h(Lightbulb, { size: 14 }),
             hintUsed
-              ? (t('escape_room.show_hint') || 'Show Hint')
+              ? (level < ladder.length ? 'Next support step (' + (level + 1) + '/' + ladder.length + ')' : (t('escape_room.show_hint') || 'Show Hint'))
               : (t('escape_room.get_hint') || 'Get Hint') + ' (' + hintsRem + ')'
           )
         );
@@ -2134,10 +2164,11 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         h('p', { key: 'question-text', className: 'text-lg text-white font-medium' }, puzzle.question)
       );
       // Show revealed hint
-      if (escapeRoomState.hintsUsed && escapeRoomState.hintsUsed[puzzle.id] && (puzzle.hint || (puzzle.hints && puzzle.hints[0]))) {
+      if (escapeHintLevel(escapeRoomState,puzzle) > 0) {
         questionChildren.push(
-          h('p', { key: 'hint-display', className: 'text-amber-400 text-sm mt-3 bg-amber-900/30 p-2 rounded-lg' },
-            '\uD83D\uDCA1 ' + (puzzle.hint || puzzle.hints[0]))
+          h('div', { key: 'hint-display', role: 'status', 'data-puzzle-support-level': escapeHintLevel(escapeRoomState,puzzle), className: 'text-amber-300 text-sm mt-3 bg-amber-900/30 p-2 rounded-lg' },
+            h('p', null, 'Support steps used: ' + escapeHintLevel(escapeRoomState,puzzle) + '. Support use is separate from whether the puzzle is solved.'),
+            escapeHintLadder(puzzle).slice(0,escapeHintLevel(escapeRoomState,puzzle)).map(function(hint,index) { return h('p', { key: index }, (index + 1) + '. ' + hint); }))
         );
       }
       // Show discovered clue
@@ -2175,16 +2206,29 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       // ── Sequence ──
       if (puzzle.type === 'sequence' && puzzle.items) {
         var seqChildren = [];
-        seqChildren.push(h('p', { key: 'seq-instr', className: 'text-slate-500 text-sm' }, t('escape_room.sequence_instructions')));
+        var sequenceInstructions = 'Use the Move up and Move down buttons, or drag an item. With focus on an item, use the arrow keys to move it.';
+        var translatedInstructions = t('escape_room.sequence_accessible_instructions', { defaultValue: sequenceInstructions });
+        seqChildren.push(h('p', { key: 'seq-instr', className: 'text-slate-300 text-sm' }, translatedInstructions && translatedInstructions !== 'escape_room.sequence_accessible_instructions' ? translatedInstructions : sequenceInstructions));
         // Build the reorderable list
         var currentOrder = (escapeRoomState.sequenceOrder && escapeRoomState.sequenceOrder.length > 0)
           ? escapeRoomState.sequenceOrder
           : (puzzle.shuffledItems || puzzle.items.map(function(_, i) { return i; }));
+        var moveItem = function(from, to, kind) {
+          if (!Number.isInteger(from) || from < 0 || from >= currentOrder.length || to < 0 || to >= currentOrder.length || from === to) return;
+          var next = currentOrder.slice(), item = next.splice(from, 1)[0];
+          next.splice(to, 0, item);
+          sequenceFocusRef.current = { item: item, kind: kind };
+          setEscapeRoomState(function(prev) { return Object.assign({}, prev, { sequenceOrder: next }); });
+          var notice = puzzle.items[item] + ' moved to position ' + (to + 1) + ' of ' + next.length + '.';
+          var translated = t('escape_room.reorder_notice', { item: puzzle.items[item], position: to + 1, total: next.length, defaultValue: notice });
+          setSequenceNotice(translated && translated !== 'escape_room.reorder_notice' ? translated : notice);
+        };
+        seqChildren.push(h('p', { key: 'seq-status', 'data-escape-sequence-status': '', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, sequenceNotice));
 
         var seqItems = currentOrder.map(function(itemIdx, displayIdx) {
           return h('div', {
-            key: displayIdx,
-            id: 'sequence-item-' + displayIdx,
+            key: itemIdx,
+            ref: function(node) { sequenceControlsRef.current[itemIdx + ':row'] = node; },
             role: 'listitem',
             tabIndex: 0,
             draggable: true,
@@ -2192,29 +2236,19 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             onDragOver: function(e) { e.preventDefault(); },
             onDrop: function(e) {
               e.preventDefault();
-              var fromDisplayIdx = parseInt(e.dataTransfer.getData('text/plain'));
-              var newOrder = currentOrder.slice();
-              var removed = newOrder.splice(fromDisplayIdx, 1)[0];
-              newOrder.splice(displayIdx, 0, removed);
-              setEscapeRoomState(function(prev) { return Object.assign({}, prev, { sequenceOrder: newOrder }); });
+              var draggedIndex = e.dataTransfer.getData('text/plain');
+              if (!/^\d+$/.test(draggedIndex)) return;
+              var fromDisplayIdx = Number(draggedIndex);
+              moveItem(fromDisplayIdx, displayIdx, 'row');
             },
             onKeyDown: function(e) {
+              if (e.target !== e.currentTarget) return;
               if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
                 e.preventDefault();
-                if (displayIdx > 0) {
-                  var nOrder = currentOrder.slice();
-                  var tmp = nOrder[displayIdx]; nOrder[displayIdx] = nOrder[displayIdx-1]; nOrder[displayIdx-1] = tmp;
-                  setEscapeRoomState(function(prev) { return Object.assign({}, prev, { sequenceOrder: nOrder }); });
-                  setTimeout(function() { var el = document.getElementById('sequence-item-' + (displayIdx-1)); if(el) el.focus(); }, 50);
-                }
+                moveItem(displayIdx, displayIdx - 1, 'row');
               } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
                 e.preventDefault();
-                if (displayIdx < currentOrder.length - 1) {
-                  var nOrder2 = currentOrder.slice();
-                  var tmp2 = nOrder2[displayIdx]; nOrder2[displayIdx] = nOrder2[displayIdx+1]; nOrder2[displayIdx+1] = tmp2;
-                  setEscapeRoomState(function(prev) { return Object.assign({}, prev, { sequenceOrder: nOrder2 }); });
-                  setTimeout(function() { var el = document.getElementById('sequence-item-' + (displayIdx+1)); if(el) el.focus(); }, 50);
-                }
+                moveItem(displayIdx, displayIdx + 1, 'row');
               }
             },
             'aria-label': (t('escape_room.position') || 'Position') + ' ' + (displayIdx + 1) + ': ' + puzzle.items[itemIdx] + '. ' + (t('escape_room.use_arrows') || 'Use arrow keys to reorder.'),
@@ -2222,39 +2256,33 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           },
             h('div', { className: 'flex flex-col gap-1', role: 'group', 'aria-label': t('escape_room.reorder_buttons') || 'Reorder buttons' },
               h('button', {
+                type: 'button',
+                ref: function(node) { sequenceControlsRef.current[itemIdx + ':-1'] = node; },
                 onClick: function(e) {
                   e.stopPropagation();
-                  if (displayIdx > 0) {
-                    var nO = currentOrder.slice();
-                    var t2 = nO[displayIdx]; nO[displayIdx] = nO[displayIdx-1]; nO[displayIdx-1] = t2;
-                    setEscapeRoomState(function(prev) { return Object.assign({}, prev, { sequenceOrder: nO }); });
-                    setTimeout(function() { var el = document.getElementById('sequence-item-' + (displayIdx-1)); if(el) el.focus(); }, 50);
-                  }
+                  moveItem(displayIdx, displayIdx - 1, -1);
                 },
                 disabled: displayIdx === 0,
-                className: 'p-1 rounded hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300',
+                className: 'min-w-11 min-h-11 flex items-center justify-center p-1 rounded hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300',
                 'aria-label': (t('escape_room.move_up') || 'Move up') + ': ' + puzzle.items[itemIdx],
                 title: t('escape_room.move_up') || 'Move up'
-              }, h(ChevronUp, { size: 16, className: 'text-slate-600' })),
+              }, h(ChevronUp, { size: 16, className: 'text-slate-200' })),
               h('button', {
+                type: 'button',
+                ref: function(node) { sequenceControlsRef.current[itemIdx + ':1'] = node; },
                 onClick: function(e) {
                   e.stopPropagation();
-                  if (displayIdx < currentOrder.length - 1) {
-                    var nO = currentOrder.slice();
-                    var t2 = nO[displayIdx]; nO[displayIdx] = nO[displayIdx+1]; nO[displayIdx+1] = t2;
-                    setEscapeRoomState(function(prev) { return Object.assign({}, prev, { sequenceOrder: nO }); });
-                    setTimeout(function() { var el = document.getElementById('sequence-item-' + (displayIdx+1)); if(el) el.focus(); }, 50);
-                  }
+                  moveItem(displayIdx, displayIdx + 1, 1);
                 },
                 disabled: displayIdx === currentOrder.length - 1,
-                className: 'p-1 rounded hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300',
+                className: 'min-w-11 min-h-11 flex items-center justify-center p-1 rounded hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-300',
                 'aria-label': (t('escape_room.move_down') || 'Move down') + ': ' + puzzle.items[itemIdx],
                 title: t('escape_room.move_down') || 'Move down'
-              }, h(ChevronDown, { size: 16, className: 'text-slate-600' }))
+              }, h(ChevronDown, { size: 16, className: 'text-slate-200' }))
             ),
-            h(GripVertical, { size: 20, className: 'text-slate-500', 'aria-hidden': 'true' }),
+            h(GripVertical, { size: 20, className: 'text-slate-300', 'aria-hidden': 'true' }),
             h('span', { className: 'inline-flex w-6 h-6 bg-purple-600 text-white text-sm font-bold rounded-full items-center justify-center', 'aria-hidden': 'true' }, displayIdx + 1),
-            h('span', { className: 'flex-grow' }, puzzle.items[itemIdx])
+            h('span', { className: 'flex-grow min-w-0 break-words' }, puzzle.items[itemIdx])
           );
         });
 
@@ -2291,7 +2319,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         if (puzzle.wordbank && puzzle.wordbank.length > 0) {
           cipherChildren.push(
             h('div', { key: 'cipher-wordbank', className: 'space-y-3' },
-              h('p', { className: 'text-xs text-slate-500 text-center uppercase font-bold' }, t('escape_room.select_answer') || 'Select your answer:'),
+              h('p', { className: 'text-xs text-slate-300 text-center uppercase font-bold' }, t('escape_room.select_answer') || 'Select your answer:'),
               h('div', { className: 'grid grid-cols-2 gap-3', role: 'group', 'aria-label': t('escape_room.answer_options') || 'Answer options' },
                 puzzle.wordbank.map(function(word, idx) {
                   var isSelected = escapeRoomState.textInput === word;
@@ -2338,7 +2366,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       // ── Matching ──
       if (puzzle.type === 'matching' && puzzle.pairs) {
         var matchChildren = [];
-        matchChildren.push(h('p', { key: 'match-instr', className: 'text-slate-500 text-sm' }, t('escape_room.matching_instructions')));
+        matchChildren.push(h('p', { key: 'match-instr', className: 'text-slate-300 text-sm' }, t('escape_room.matching_instructions')));
         matchChildren.push(h('p', { key: 'match-hint', className: 'text-purple-400 text-xs' }, t('escape_room.matching_keyboard_hint') || 'Tip: Use Tab to switch columns, Enter to select'));
         // Show matched pairs
         var mp = escapeRoomState.matchingPairs || [];
@@ -2486,7 +2514,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         if (puzzle.wordbank && puzzle.wordbank.length > 0) {
           filChildren.push(
             h('div', { key: 'fil-wordbank', className: 'space-y-3' },
-              h('p', { className: 'text-xs text-slate-500 text-center uppercase font-bold', id: 'fillin-wordbank-label' },
+              h('p', { className: 'text-xs text-slate-300 text-center uppercase font-bold', id: 'fillin-wordbank-label' },
                 t('escape_room.select_word') || 'Select the correct word:'
               ),
               h('div', { className: 'flex flex-wrap gap-2 justify-center', role: 'group', 'aria-labelledby': 'fillin-wordbank-label' },
@@ -2567,7 +2595,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       var answerContent;
       if (fdp.wordbank && fdp.wordbank.length > 0) {
         answerContent = h(React.Fragment, null,
-          h('p', { className: 'text-xs text-slate-500 text-center uppercase font-bold' },
+          h('p', { className: 'text-xs text-slate-300 text-center uppercase font-bold' },
             t('escape_room.select_word') || 'Select the correct answer:'
           ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
@@ -2622,7 +2650,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           h('div', { className: 'text-center mb-8' },
             h('div', { className: 'text-6xl mb-4', 'aria-hidden': 'true' }, '\uD83D\uDEAA'),
             h('h3', { id: 'final-door-title', className: 'text-2xl font-bold text-yellow-400' }, t('escape_room.final_door_title')),
-            h('p', { className: 'text-slate-500 text-sm mt-2' }, t('escape_room.final_door_desc'))
+            h('p', { className: 'text-slate-300 text-sm mt-2' }, t('escape_room.final_door_desc'))
           ),
           h('div', { className: 'bg-slate-900 p-6 rounded-xl mb-6 border-2 border-yellow-500/30' },
             h('p', { id: 'final-door-question', className: 'text-lg text-white font-medium text-center' },
@@ -2648,12 +2676,12 @@ ESCAPE_TYPE_CONTRACT + '\n' +
     var renderRoomContent = function() {
       if (!escapeRoomState.room) {
         return h('div', { className: 'flex-grow flex items-center justify-center' },
-          h('p', { className: 'text-slate-500' }, t('escape_room.loading_error'))
+          h('p', { className: 'text-slate-300' }, t('escape_room.loading_error'))
         );
       }
       return h('div', { className: 'flex-grow flex flex-col' },
         h('div', { className: 'bg-slate-800/50 p-4 rounded-xl mb-6 text-center border border-slate-700' },
-          h('p', { className: 'text-slate-500 italic' }, escapeRoomState.room.description),
+          h('p', { className: 'text-slate-300 italic' }, escapeRoomState.room.description),
           !isEscapeTimerRunning
             ? h('div', { className: 'mt-4' },
                 h('button', {
@@ -2687,9 +2715,9 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                     : 'bg-slate-800 border-2 border-slate-600 hover:border-purple-400 hover:bg-slate-700 cursor-pointer')
             },
               h('span', { className: 'text-4xl' }, obj.emoji),
-              h('span', { className: 'text-xs text-slate-600 font-medium text-center' }, obj.name),
+              h('span', { className: 'text-xs text-slate-300 font-medium text-center' }, obj.name),
               isSolved ? h(CheckCircle, { className: 'absolute top-1 right-1 text-green-700', size: 16 }) : null,
-              !isEscapeTimerRunning && !isSolved ? h(Lock, { className: 'absolute top-1 right-1 text-slate-500', size: 14 }) : null
+              !isEscapeTimerRunning && !isSolved ? h(Lock, { className: 'absolute top-1 right-1 text-slate-300', size: 14 }) : null
             );
           })
         )
@@ -2723,7 +2751,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               t('escape_room.title')
             ),
             escapeRoomState.room
-              ? h('p', { className: 'text-slate-500 text-sm mt-1 font-medium' }, escapeRoomState.room.theme)
+              ? h('p', { className: 'text-slate-300 text-sm mt-1 font-medium' }, escapeRoomState.room.theme)
               : null
           ),
           h('div', { className: 'flex flex-wrap gap-2 items-center' },
@@ -2734,12 +2762,12 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             h('div', { className: 'px-3 py-1.5 rounded-lg bg-slate-800 text-rose-300', 'aria-label': t('escape_room.lives') },
               t('escape_room.lives') + ': ' + ((escapeRoomState.maxLives || 3) >= 99 ? '\u221E' : (Number.isFinite(escapeRoomState.lives) ? escapeRoomState.lives : 3))),
             // Timer
-            h('div', { className: 'px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (escapeTimeLeft <= 60 ? 'bg-red-900/50 animate-pulse' : 'bg-slate-800/50') },
+            escapeRoomState.timerEnabled !== false ? h('div', { className: 'px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (escapeTimeLeft <= 60 ? 'bg-red-900/50 animate-pulse' : 'bg-slate-800/50') },
               h(Clock, { size: 16, className: escapeTimeLeft <= 60 ? 'text-red-400' : 'text-slate-400' }),
               h('span', { className: 'font-mono font-bold ' + (escapeTimeLeft <= 60 ? 'text-red-400' : 'text-white') },
                 Math.floor(escapeTimeLeft / 60) + ':' + (escapeTimeLeft % 60).toString().padStart(2, '0')
               )
-            ),
+            ) : null,
             // Solved count
             h('div', { className: 'bg-purple-900/50 px-3 py-1.5 rounded-lg flex items-center gap-2' },
               h(Trophy, { size: 16, className: 'text-yellow-400' }),
@@ -2747,8 +2775,8 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             ),
             // Hints remaining
             h('div', { className: 'px-3 py-1.5 rounded-lg flex items-center gap-2 ' + ((escapeRoomState.hintsRemaining || 0) > 0 ? 'bg-amber-900/50' : 'bg-slate-800/50') },
-              h(Lightbulb, { size: 16, className: (escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text-slate-500' }),
-              h('span', { className: 'font-bold ' + ((escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text-slate-500') },
+              h(Lightbulb, { size: 16, className: (escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text-slate-300' }),
+              h('span', { className: 'font-bold ' + ((escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text-slate-300') },
                 escapeRoomState.hintsRemaining || 0
               )
             ),
@@ -2756,7 +2784,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             h('button', {
               'aria-label': t('common.volume'),
               onClick: function() { setSoundEnabled(!soundEnabled); if (!soundEnabled) playSound('click'); },
-              className: 'p-2 rounded-full transition-colors ' + (soundEnabled ? 'bg-purple-700 text-white' : 'bg-slate-700 text-slate-500')
+              className: 'p-2 rounded-full transition-colors ' + (soundEnabled ? 'bg-purple-700 text-white' : 'bg-slate-700 text-slate-300')
             }, soundEnabled ? h(Volume2, { size: 20 }) : h(MicOff, { size: 20 }))
           )
         ),
@@ -2845,11 +2873,12 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       var hasSaved = typeof handlers.hasSavedEscapeRoom === 'function' ? handlers.hasSavedEscapeRoom() : false;
       var hasDraft = typeof handlers.hasEscapeRoomDraft === 'function' ? !!handlers.hasEscapeRoomDraft() : false;
       settingsDialog = h('div', {
-        className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300',
+        className: 'fixed inset-0 z-[200] flex items-center justify-center overflow-y-auto py-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300',
         onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); }); }
       },
         h('div', {
-          className: 'bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-hidden max-w-md w-full mx-4 transform transition-all animate-in zoom-in-95 duration-300',
+          className: 'bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-y-auto max-w-md w-full mx-4 transform transition-all animate-in zoom-in-95 duration-300',
+          style: { maxHeight: 'calc(100dvh - 2rem)' },
           ref: settingsDialogRef,
           tabIndex: -1,
           'aria-label': t('escape_room.settings_btn'),
@@ -2874,12 +2903,14 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           // Settings controls
           h('div', { className: 'space-y-4 mb-6' },
             // Difficulty selector
-            h('div', null,
-              h('label', { className: 'block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('escape_room.difficulty')),
+            h('div', { role: 'group', 'aria-labelledby': 'escape-room-difficulty-label' },
+              h('span', { id: 'escape-room-difficulty-label', className: 'block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('escape_room.difficulty')),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 ['easy', 'normal', 'hard'].map(function(diff) {
                   return h('button', {
                     key: diff,
+                    type: 'button',
+                    'aria-pressed': escapeRoomState.difficulty === diff,
                     onClick: function() { handlers.updateEscapeRoomSetting('difficulty', diff); },
                     className: 'p-3 rounded-xl border-2 font-bold text-sm capitalize transition-all ' +
                       (escapeRoomState.difficulty === diff
@@ -2889,17 +2920,35 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                 })
               ),
               h('p', { className: 'text-xs text-slate-500 mt-2 text-center' },
-                t('escape_room.time_remaining', { time: Math.floor(estimatedTime / 60) + ':' + String(estimatedTime % 60).padStart(2, '0') }) +
-                ' \u2022 ' + t('escape_room.lives') + ': ' + (difficultyPreset.lives >= 99 ? '\u221E' : difficultyPreset.lives) +
+                (escapeRoomState.timerEnabled !== false ? t('escape_room.time_remaining', { time: Math.floor(estimatedTime / 60) + ':' + String(estimatedTime % 60).padStart(2, '0') }) + ' \u2022 ' : '') +
+                t('escape_room.lives') + ': ' + (difficultyPreset.lives >= 99 ? '\u221E' : difficultyPreset.lives) +
                 ' \u2022 ' + t('escape_room.hints_remaining', { count: difficultyPreset.hints })
+              )
+            ),
+            // WCAG 2.2.1: the play clock can be turned off; the countdown and clock already honour timerEnabled === false.
+            h('div', { role: 'group', 'aria-labelledby': 'escape-room-time-limit-label' },
+              h('span', { id: 'escape-room-time-limit-label', className: 'block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('common.time_limit')),
+              h('div', { className: 'grid grid-cols-2 gap-2' },
+                [true, false].map(function(on) {
+                  var selected = (escapeRoomState.timerEnabled !== false) === on;
+                  return h('button', {
+                    key: String(on),
+                    type: 'button',
+                    'aria-pressed': selected ? 'true' : 'false',
+                    'data-escape-time-limit': on ? 'on' : 'off',
+                    onClick: function() { handlers.updateEscapeRoomSetting('timerEnabled', on); },
+                    className: 'p-3 rounded-xl border-2 font-bold text-sm transition-all ' +
+                      (selected ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-amber-200 hover:bg-amber-50')
+                  }, t(on ? 'common.on' : 'common.off'));
+                })
               )
             ),
             // Puzzle count slider
             h('div', null,
-              h('label', { className: 'block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('escape_room.puzzle_count')),
+              h('label', { htmlFor: 'escape-room-puzzle-count', className: 'block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('escape_room.puzzle_count')),
               h('div', { className: 'flex items-center gap-3' },
                 h('input', {
-                  'aria-label': t('common.adjust_escape_room_state'),
+                  id: 'escape-room-puzzle-count',
                   type: 'range',
                   min: '5',
                   max: '15',
@@ -2932,12 +2981,10 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                 }, '\uD83D\uDCC2 ' + (t('escape_room.load_saved') || 'Load Saved'))
               : null,
             h('button', {
-              'aria-label': t('common.generate'),
               onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); }); },
               className: 'flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors'
             }, t('common.cancel')),
             h('button', {
-              'aria-label': t('common.launch_escape_room'),
               'aria-busy': !!escapeRoomState.isGenerating,
               onClick: handlers.launchEscapeRoomWithSettings,
               disabled: !hasSourceOrAnalysis,
@@ -3190,6 +3237,10 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             )
           )
         );
+        [0,1].forEach(function(step) {
+          puzzleChildren.push(h('label', { key: 'hint-step-' + step, className: 'block text-xs font-bold text-slate-700' }, step === 0 ? 'Evidence cue (optional)' : 'Worked first step (optional)',
+            h('textarea', { value: puzzle.hintSteps && puzzle.hintSteps[step] || '', maxLength: 1200, 'aria-label': 'Question ' + (idx + 1) + (step === 0 ? ': evidence cue' : ': worked first step'), onChange: function(event) { var steps = (puzzle.hintSteps || []).slice(0,2); steps[step] = event.target.value; handlers.updateEscapeRoomPuzzle(idx, 'hintSteps', steps); }, className: fieldClass })));
+        });
         return h('div', {
           key: (puzzle.id || idx),
           'data-preview-puzzle': puzzle.id,
@@ -3236,6 +3287,16 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             ? h('ul', { 'data-escape-room-checks': '', className: 'mb-4 text-sm text-amber-950 bg-amber-50 border-2 border-amber-400 rounded-xl px-4 py-3 list-disc list-inside space-y-1' },
                 roomChecks.map(function(text, i) { return h('li', { key: i }, text); }))
             : null,
+          liveSession ? h('div', { role: 'group', 'aria-labelledby': 'escape-room-live-time-limit-label', className: 'mb-4 rounded-xl border border-slate-300 p-4' },
+            h('p', { id: 'escape-room-live-time-limit-label', className: 'font-bold text-slate-800 mb-2' }, t('common.time_limit') + ' (5:00)'),
+            h('div', { className: 'flex flex-wrap gap-2' }, [true, false].map(function(on) {
+              return h('button', { key: String(on), type: 'button', 'data-escape-live-time-limit': on ? 'on' : 'off',
+                'aria-pressed': (escapeRoomState.timerEnabled !== false) === on, disabled: previewBusy,
+                onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { timerEnabled: on }); }); },
+                className: 'min-h-11 px-4 py-2 rounded-lg border-2 font-bold focus:ring-4 focus:ring-indigo-300 ' + (((escapeRoomState.timerEnabled !== false) === on) ? 'border-indigo-700 bg-indigo-100 text-indigo-950' : 'border-slate-400 bg-white text-slate-800')
+              }, t(on ? 'common.on' : 'common.off'));
+            }))
+          ) : null,
           // Room theme and description
           h('div', { className: 'mb-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-300 space-y-2' },
             h('label', { className: 'block text-xs font-bold text-amber-900 uppercase' }, t('escape_room.room_theme') || 'Room theme',
@@ -3383,7 +3444,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
   window.AlloModules.createEscapeRoomEngine = createEscapeRoomEngine;
   window.AlloModules.EscapeRoomGameplay = EscapeRoomGameplay;
   window.AlloModules.EscapeRoomDialogs = EscapeRoomDialogs;
-  window.AlloModules.EscapeRoomData = { prepare: prepareEscapeRoomData, process: processEscapeRoomPuzzles, parse: parseEscapeRoomJson, toSaved: savedEscapeRoomFrom };
+  window.AlloModules.EscapeRoomData = { prepare: prepareEscapeRoomData, process: processEscapeRoomPuzzles, parse: parseEscapeRoomJson, toSaved: savedEscapeRoomFrom, hintLadder: escapeHintLadder, hintLevel: escapeHintLevel };
   window.AlloModules.useEscapeRoomTimer = useEscapeRoomTimer;
   window.AlloModules.startEscapeRoomClock = startEscapeRoomClock;
   window.AlloModules.EscapeRoomModule = true;

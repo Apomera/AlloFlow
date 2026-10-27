@@ -1,120 +1,120 @@
 {
   "source": "stem_lab/stem_tool_watercycle.js",
-  "sourceSha256": "63e240b5b9819403f07c89b0e73a85ca7fba6ed57a1546477261bdf91d3933f7",
+  "sourceSha256": "a5f72b1a24587bd68f3d557fdb8e7f37472a079b7b952d74f1d32f47812f8a1a",
   "declarations": [
     {
       "name": "MAINE_WATERSHED_COMPONENTS",
-      "line": 938,
+      "line": 933,
       "sha256": "1cdd061001440a04cc1fa5650a413277adec69faab22eb46497ff7d3dc435619"
     },
     {
       "name": "wcWatershedCopy",
-      "line": 988,
+      "line": 983,
       "sha256": "48aecf282d28072eb48cca17931c55eb40e88b06044cca9adf236844266f55ab"
     },
     {
       "name": "localizeWatershedComponents",
-      "line": 1049,
+      "line": 1044,
       "sha256": "e3c0b6036d7cc4e127bf2b139f32c9f5d54589223df1886bc31af7d0573b51f0"
     },
     {
       "name": "STEWARD_TECHNIQUES",
-      "line": 1062,
+      "line": 1057,
       "sha256": "bb13f34341243b1f51b30bc8c1f0cfc072ab44952bcbd4a222afa2824ae27512"
     },
     {
       "name": "STEWARD_EVENTS",
-      "line": 1075,
+      "line": 1070,
       "sha256": "f4e5aebd977a7e993e84347e833a9898974e37a9c943e714e92768f515020090"
     },
     {
       "name": "_wcById",
-      "line": 1093,
+      "line": 1088,
       "sha256": "5971f10accca4f8e6fda3245d8b551efaeee8b9fca7b616ed884ef535e98640a"
     },
     {
       "name": "STEWARD_FEEDBACK_RULES",
-      "line": 1094,
+      "line": 1089,
       "sha256": "30c8a1edae8147df33915f0afebc9a45b71cb205ccd88067aabbc5d61be65680"
     },
     {
       "name": "STEWARD_CASCADE_HINTS",
-      "line": 1164,
+      "line": 1159,
       "sha256": "182352d7e1105abd2608280498c95eee1ec36f54259712ca1e91c6be64075038"
     },
     {
       "name": "STEWARD_DIFFICULTIES",
-      "line": 1179,
+      "line": 1174,
       "sha256": "dc013ea546ea4caaaf994c2ef6a3cf89769a3b7485fd6e02adad589a2e19dc21"
     },
     {
       "name": "wcStewardCopy",
-      "line": 1188,
+      "line": 1183,
       "sha256": "524e4fe068234d3310b666c5d1d668d597def5bbd1f43a7855f5aa53442e2bf7"
     },
     {
       "name": "applyStewardCopy",
-      "line": 1255,
+      "line": 1250,
       "sha256": "73b36099c7f0824fcb0a2a476a46a4b157609841addd1969b908d75debaf9f1e"
     },
     {
       "name": "defaultStewardState",
-      "line": 1286,
+      "line": 1281,
       "sha256": "965e598ed05fb1456b199e7d857b7024d693446879b96a56226d434abdfa7f19"
     },
     {
       "name": "_wcT",
-      "line": 1316,
+      "line": 1311,
       "sha256": "293da9688fce970d618f5a91a7b0e53f2dcbc2421bb8f1ef9102f62d44420156"
     },
     {
       "name": "_wcLocalizedCache",
-      "line": 1317,
+      "line": 1312,
       "sha256": "4f6b70e092328360b2ee8a8da2e2d7028f9cd8064369e244e2c705321ee4e901"
     },
     {
       "name": "_wcLocalizedFor",
-      "line": 1318,
+      "line": 1313,
       "sha256": "4f6a0f3d6956c23e90184b5842de885f46615ae7cfb343c62e75170ee0f97a12"
     },
     {
       "name": "watershedComponents",
-      "line": 1320,
+      "line": 1315,
       "sha256": "f849135da8151e7bb03a3dbe61391e84f1de82f8a4318bdecf46d9c1822f48b6"
     },
     {
       "name": "getWatershedComponent",
-      "line": 1408,
+      "line": 1403,
       "sha256": "fca9c1f5ca4a7ac6beced78e29fbd93bc857214bb85ad7588305df389ac7387c"
     },
     {
       "name": "stewardRng",
-      "line": 1414,
+      "line": 1409,
       "sha256": "58513c2e33d6bc54fe54b8b572120af9b14d1c446a9b5abb396112a2c2d2f0be"
     },
     {
       "name": "stewardClamp",
-      "line": 2945,
+      "line": 2940,
       "sha256": "b7d88e92780096999af8bd2b8213586ae296998326c03cc706e7b644e9694933"
     },
     {
       "name": "startStewardCampaign",
-      "line": 6508,
+      "line": 6548,
       "sha256": "9daa9fab30d4f1fc246fc476a1a569be87dab87042baee4c06677fd7372a8632"
     },
     {
       "name": "applyStewardTech",
-      "line": 6526,
+      "line": 6566,
       "sha256": "aba0f7987e30d7e169e4d2bbf57a27d900392456b3099e28c496249ee7820493"
     },
     {
       "name": "endStewardYear",
-      "line": 6556,
+      "line": 6596,
       "sha256": "e5d481f999f4e269dee447489e984e8fd0dcaca1d936f946f77782d4b2a36cba"
     },
     {
       "name": "advanceFromStewardReview",
-      "line": 6622,
+      "line": 6662,
       "sha256": "af3d29b439204da8cfc221da4152aed2c52b75cb5360de4b4c191c77b5309033"
     }
   ]
