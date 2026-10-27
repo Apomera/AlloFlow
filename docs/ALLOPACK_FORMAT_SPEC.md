@@ -82,7 +82,7 @@ Every `categoryId` must resolve; 2-4 categories, 6-12 items.
 ### `quiz`
 `data`: `{ "questions": [ … ], "reflections": [{ "text" }] }`.
 MCQ: `{ "type": "mcq", "question", "options": [4 strings], "correctAnswer": <exact option text>, "conceptLabel": "2-4 lowercase words" }`.
-Short answer: `{ "type": "shortAnswer", "question", "expectedAnswer", "conceptLabel" }`.
+Short answer: `{ "type": "shortAnswer", "question", "expectedAnswer", "conceptLabel" }`. The app also accepts `"short-answer"` (its internal spelling) and treats the two the same.
 `correctAnswer` must equal one option **byte-for-byte**. Distractors should encode real
 misconceptions, not random wrong answers. `conceptLabel` is stable across items testing the
 same concept (retention tracking).

@@ -180,8 +180,13 @@
 </tr>
 <tr>
 <td><strong>Output language</strong></td>
-<td>Sets the language generated content is written in.</td>
+<td>Starts on <strong>Use app language</strong>; a named language stays fixed until you change it.</td>
 <td>The text students read.</td>
+</tr>
+<tr>
+<td><strong>Languages</strong></td>
+<td>Shows the current app language automatically and up to four added languages.</td>
+<td>Glossary columns, output choices, and app-and-added-language generation.</td>
 </tr>
 <tr>
 <td><strong>Translations</strong></td>
@@ -213,6 +218,11 @@
 <td>Sets the lesson-wide visual default for resources that create images.</td>
 <td>Visuals, Glossary, Timeline, Concept Sort, Word Sounds, and Adventure when it uses the Universal style.</td>
 </tr>
+<tr>
+<td><strong>Allow AI image generation</strong></td>
+<td>Starts on and remembers your choice on this device. Turn it off to skip new AI images and AI image edits, including local generation.</td>
+<td>Existing pictures remain available. Uploads and drawings work with either setting.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -224,7 +234,8 @@
 <li>Keep <strong>Output language</strong> set to <strong>English</strong>.</li>
 <li>Open the target tool and read its language summary before generating. The Glossary panel, for example, states which languages from the shared list it will include.</li>
 </ol>
-<p>That shared language list and the <strong>Translations</strong> policy are related but not interchangeable. The list supplies languages to tools such as Glossary and to <strong>All Selected Languages</strong> output. The Translations control governs an additional companion version where that control is relevant; it can remain hidden when its automatic target would duplicate the primary output. Custom Instructions can narrow terms, tone, examples, or format, but they do not add a language to either control. If a language is missing, return to Universal Settings rather than typing “make this bilingual” into the resource prompt.</p>
+<p>The app-language pill is included automatically and does not use one of the four added-language slots. Changing App Language updates that automatic pill; your added languages stay saved. Choosing a named output language, including English, keeps that choice fixed when App Language changes.</p>
+<p>That shared language list and the <strong>Translations</strong> policy are related but not interchangeable. The list supplies languages to tools such as Glossary and to <strong>App and added languages</strong> output. The Translations control governs an additional companion version where that control is relevant; it can remain hidden when its automatic target would duplicate the primary output. Custom Instructions can narrow terms, tone, examples, or format, but they do not add a language to either control. If a language is missing, return to Universal Settings rather than typing “make this bilingual” into the resource prompt.</p>
 <p>You can collapse the card once you are done. The summary line stays visible, so you can check your choices without opening the panel again.</p>
 <h2 id="the-rule-that-surprises-teachers">The rule that surprises teachers</h2>
 <p><strong>Universal Settings applies to new work only.</strong></p>
@@ -237,9 +248,9 @@
 </ol>
 <p>This is worth checking before you conclude a tool got something wrong. A mismatched pack is usually a settings history problem, not a generation problem.</p>
 <h2 id="set-image-style-once-unless-a-resource-needs-an-exception">Set image style once unless a resource needs an exception</h2>
-<p><strong>Allow AI image generation</strong> starts on and remembers your choice on this device, across projects. Turn it off to skip new AI pictures and AI image edits, including local generation. Existing images, text generation, uploads, and drawings remain available.</p>
-<p>Open <strong>Resource images — upload or draw</strong> above a resource to add or replace a picture. Upload a PNG, JPEG, or WebP, crop or resize it, and choose <strong>Use edited image</strong>. Or choose <strong>Draw with Excalidraw</strong>, draw in the Whiteboard, and select <strong>Use drawing</strong> to save into that image slot. Saved drawings can be reopened with <strong>Edit drawing</strong>. Add an image description for readers who cannot see the picture. Story Forge and Lesson Board offer these controls beside their artwork; document remediation lists the images in the accessible document.</p>
-<p>The drawing window uses the same AlloFlow installation and needs pop-ups enabled. If an embedded host cannot open the Whiteboard, open the browser or desktop app, or upload an exported drawing.</p>
+<p>Use <strong>Allow AI image generation</strong> in Universal Settings to choose whether AlloFlow can create new AI pictures. Turning it off keeps your existing images and leaves text generation available. The choice also applies when you open another project.</p>
+<p>Open <strong>Resource images — upload or draw</strong> above a resource to add or replace a picture. Choose <strong>Upload image</strong> for a PNG, JPEG, or WebP, then crop or resize it and choose <strong>Use edited image</strong>. Choose <strong>Draw with Excalidraw</strong> to open the Whiteboard, draw, and select <strong>Use drawing</strong> to save into that image slot. Saved drawings have an <strong>Edit drawing</strong> button so you can change their shapes later. Add an image description for readers who cannot see the picture. Story Forge and Lesson Board provide these controls beside their own artwork; document remediation lists the images in the accessible document.</p>
+<p>The drawing window uses the same AlloFlow installation and needs pop-ups enabled. If AlloFlow is embedded in a host that cannot open its Whiteboard, open the browser or desktop app, or upload an exported drawing.</p>
 <p>Use <strong>Image style</strong> in Universal Settings to keep one lesson visually coherent. Visuals, Glossary, and Word Sounds begin on <strong>Use Universal style</strong>; their own preset and custom-style controls appear only after you choose <strong>Override for this resource</strong>. Timeline and Concept Sort use the Universal style directly. Adventure keeps story-specific presets, with <strong>Use Universal style</strong> available when continuity matters more than a separate story look.</p>
 <p>Choose an override for an instructional reason, for example, a simple line-drawing style for a worksheet that must photocopy clearly, not merely because the same selector is visible. Return the resource to <strong>Use Universal style</strong> when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.</p>
 <h2 id="separate-the-requested-grade-from-internal-calibration">Separate the requested grade from internal calibration</h2>
@@ -262,15 +273,17 @@
 <p>If an adapted version is used as a companion, leave its role as <strong>Supplemental access version</strong> and keep the linked primary text available as required by the lesson, standard, and local policy. Designating an adapted version as a primary replacement requires an explicit educator choice; AlloFlow does not infer an IEP, modification, or authorization. Lowering language load is not the same as lowering the learning goal. See <a href="prepare-a-lesson.html">Prepare a lesson</a> for how to protect the intellectual target while changing text complexity.</p>
 <h2 id="set-the-language-and-decide-about-translations">Set the language and decide about translations</h2>
 <p>Two separate controls do two different jobs.</p>
-<p><strong>Output language</strong> is the language the resource is written in. If your class works in Spanish, set it to Spanish and the content comes back in Spanish.</p>
+<p><strong>Output language</strong> is the language the resource is written in. It starts on <strong>Use app language</strong>, so a French app produces French resources by default. Choose Spanish explicitly for Spanish output regardless of the app language. <strong>App and added languages</strong> uses the current app language plus the languages you added, without duplicates or a compulsory English version.</p>
 <p><strong>Translations</strong> decides whether a second version rides along with it. It offers three kinds of answer:</p>
 <ul>
 <li><strong>Automatic</strong> attaches a version in the language you set the app interface to, whenever the content is in a different language. This is the default.</li>
-<li><strong>None</strong> turns second-language versions off everywhere.</li>
+<li><strong>None</strong> turns companion translations off for new resources that use this setting.</li>
 <li><strong>A named language</strong> attaches a version in exactly that language.</li>
 </ul>
 <p>A hint line under the control always says in plain words what will happen, such as &quot;Resources in Spanish will also include an English version.&quot; You do not have to open the list to know where you stand.</p>
 <p>The Translations control appears only when it would do something, or when a previously selected explicit policy needs to remain editable. With <strong>Automatic</strong>, if the interface and output language match, its automatic target would duplicate the primary content, so the control stays hidden. Adding a language to the shared list can still affect tools such as Glossary even while this companion-translation control is hidden.</p>
+<p>New glossaries use the selected output language for their terms and definitions. With <strong>App and added languages</strong>, the app language is the base and the other selected languages become columns. Added glossary languages remain independent of the optional companion policy: <strong>None</strong> turns off the automatic companion but keeps explicitly added columns. English is available like any other language. Saved glossaries retain their existing base and columns, including the English base of older glossaries.</p>
+<p>The header's <strong>Translate</strong> action lets you choose a new primary language for existing resources and override the companion choice for that action. It begins with your Universal Settings preference. Saved resources keep their recorded languages when you later change the app language or generation settings. See <a href="the-workspace.html">The workspace</a> for translation scope.</p>
 <p>Two cautions:</p>
 <ul>
 <li>A translation is generated text. Check it the way you would check any other generated content, especially for subject vocabulary. A word that is correct in general use can be wrong in a science or mathematics context.</li>
@@ -296,7 +309,7 @@
 <td>One version at each grade, but only for the resource types selected for differentiation.</td>
 </tr>
 <tr>
-<td><strong>All Selected Languages</strong> with three languages</td>
+<td><strong>App and added languages</strong> with three distinct languages</td>
 <td>One version in each language for multilingual resources. Resources that do not fan out by language remain one resource.</td>
 </tr>
 <tr>

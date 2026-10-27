@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-25T15:59:22.077Z",
+  "generated_at": "2026-10-26T23:50:26.431Z",
   "entries": [
     {
       "slug": "reading-decisions-grade6",
@@ -20,7 +20,7 @@
         "illustrated"
       ],
       "credit": "Independent AI-authored AlloFlow teaching draft informed by Katie Novak’s writing. Original activities and cut-paper illustrations; educator review pending. Not authored, reviewed, or endorsed by Katie Novak or Novak Education.",
-      "license": "CC-BY-4.0",
+      "license": "Not specified",
       "submitted_at": "2026-10-23T12:02:23.839Z",
       "path": "allopacks/reading_decisions_grade6.allopack.json",
       "standards": [
@@ -31,6 +31,10 @@
         {
           "code": "CCSS.ELA-LITERACY.SL.6.1.A",
           "description": "come to discussions prepared and explicitly draw on that preparation by referring to evidence on the topic"
+        },
+        {
+          "code": "CCSS.ELA-LITERACY.SL.6.1.B",
+          "description": "follow rules for collegial discussions, set specific goals and deadlines, and define individual roles as needed"
         },
         {
           "code": "CCSS.ELA-LITERACY.SL.6.1.C",
@@ -96,7 +100,7 @@
         }
       ],
       "created_at": "2026-10-23T12:02:23.839Z",
-      "updated_at": "2026-10-24T16:23:52.703Z",
+      "updated_at": "2026-10-26T21:00:00.000Z",
       "audience": "Grade 6 learners with teacher facilitation; a four-session alternative to the shorter Thinking Together lesson.",
       "learning_purpose": "Explain a decision with evidence, respond to another idea, use feedback, and compare work to choose a next step."
     },
@@ -9018,11 +9022,10 @@
         "illustrated",
         "feedback-and-revision",
         "visual-reasoning",
-        "cut-paper",
-        "applied-challenge"
+        "cut-paper"
       ],
       "credit": "Independent AI-authored AlloFlow teaching draft informed by Katie Novak’s writing. Original activities and cut-paper illustrations; educator review pending. Not authored, reviewed, or endorsed by Katie Novak or Novak Education.",
-      "license": "CC-BY-4.0",
+      "license": "Not specified",
       "submitted_at": "2026-10-21T18:24:44.058Z",
       "path": "allopacks/academic_discourse_reading_space_grade6.allopack.json",
       "standards": [
@@ -9049,8 +9052,100 @@
       ],
       "share_slug": "reading-space",
       "review_status": "Educator review pending",
-      "resource_count": 21,
-      "core_resource_count": 4,
+      "resource_count": 9,
+      "core_resource_count": 5,
+      "resource_types": [
+        {
+          "type": "anchor-chart",
+          "count": 1
+        },
+        {
+          "type": "directions",
+          "count": 1
+        },
+        {
+          "type": "glossary",
+          "count": 1
+        },
+        {
+          "type": "image",
+          "count": 1
+        },
+        {
+          "type": "lesson-plan",
+          "count": 1
+        },
+        {
+          "type": "note-taking",
+          "count": 1
+        },
+        {
+          "type": "quiz",
+          "count": 1
+        },
+        {
+          "type": "simplified",
+          "count": 2
+        }
+      ],
+      "source_links": [
+        {
+          "url": "https://www.novakeducation.com/blog/how-to-teach-academic-discourse-and-collaboration",
+          "title": "Beyond Turn & Talk: How to Teach Academic Discourse and Collaboration",
+          "author": "Katie Novak"
+        }
+      ],
+      "created_at": "2026-10-21T18:24:44.058Z",
+      "updated_at": "2026-10-26T21:00:00.000Z",
+      "audience": "Grade 6 learners, with teacher facilitation; begin in pairs. Accessible wording supports a shared reasoning goal.",
+      "learning_purpose": "Explain an idea with evidence, respond to a partner’s meaning, and use feedback before making a shared recommendation."
+    },
+    {
+      "slug": "academic-discourse-more-practice-grade6",
+      "title": "Thinking Together: More Practice",
+      "subject": "English Language Arts",
+      "grade_level": "6",
+      "tags": [
+        "academic-discourse",
+        "collaboration",
+        "udl",
+        "evidence-and-reasoning",
+        "feedback-and-revision",
+        "transfer",
+        "teacher-review-draft",
+        "illustrated",
+        "cut-paper",
+        "applied-challenge"
+      ],
+      "credit": "Independent AI-authored AlloFlow teaching draft informed by Katie Novak’s writing. Original activities and cut-paper illustrations; educator review pending. Not authored, reviewed, or endorsed by Katie Novak or Novak Education.",
+      "license": "Not specified",
+      "submitted_at": "2026-10-25T20:00:00.000Z",
+      "path": "allopacks/academic_discourse_more_practice_grade6.allopack.json",
+      "standards": [
+        {
+          "code": "CCSS.ELA-LITERACY.SL.6.1",
+          "description": "engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on others’ ideas and expressing their own clearly"
+        },
+        {
+          "code": "CCSS.ELA-LITERACY.SL.6.1.A",
+          "description": "come to discussions prepared and explicitly draw on that preparation by referring to evidence on the topic"
+        },
+        {
+          "code": "CCSS.ELA-LITERACY.SL.6.1.B",
+          "description": "follow rules for collegial discussions, set specific goals and deadlines, and define individual roles as needed"
+        },
+        {
+          "code": "CCSS.ELA-LITERACY.SL.6.1.C",
+          "description": "pose and respond to specific questions with elaboration and detail by making comments that contribute to the topic under discussion"
+        },
+        {
+          "code": "CCSS.ELA-LITERACY.SL.6.1.D",
+          "description": "review the key ideas expressed and demonstrate understanding of multiple perspectives through reflection and paraphrasing"
+        }
+      ],
+      "share_slug": "reading-space-practice",
+      "review_status": "Educator review pending",
+      "resource_count": 16,
       "resource_types": [
         {
           "type": "anchor-chart",
@@ -9066,15 +9161,11 @@
         },
         {
           "type": "directions",
-          "count": 4
-        },
-        {
-          "type": "glossary",
           "count": 1
         },
         {
           "type": "image",
-          "count": 5
+          "count": 4
         },
         {
           "type": "lesson-plan",
@@ -9082,15 +9173,15 @@
         },
         {
           "type": "note-taking",
-          "count": 4
+          "count": 3
         },
         {
           "type": "quiz",
-          "count": 2
+          "count": 1
         },
         {
           "type": "simplified",
-          "count": 1
+          "count": 3
         }
       ],
       "source_links": [
@@ -9100,10 +9191,10 @@
           "author": "Katie Novak"
         }
       ],
-      "created_at": "2026-10-21T18:24:44.058Z",
-      "updated_at": "2026-10-24T20:01:50.935Z",
-      "audience": "Grade 6 learners, with teacher facilitation; begin in pairs. Accessible wording supports a shared reasoning goal.",
-      "learning_purpose": "Explain an idea with evidence, respond to a partner’s meaning, and use feedback before making a shared recommendation."
+      "created_at": "2026-10-25T20:00:00.000Z",
+      "updated_at": "2026-10-26T21:00:00.000Z",
+      "audience": "Grade 6 learners who have finished Thinking Together or A Decision We Can Explain, with teacher facilitation.",
+      "learning_purpose": "Practice explaining, responding and using feedback in new situations, read discussion records closely, use the same moves in a science investigation, and try them on a real class decision."
     },
     {
       "slug": "weather_vs_climate_grade5_illustrated",

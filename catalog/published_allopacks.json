@@ -570,6 +570,27 @@
     "submitted_at": "2026-09-13T00:00:00.000Z"
   },
   {
+    "path": "allopacks/academic_discourse_more_practice_grade6.allopack.json",
+    "slug": "academic-discourse-more-practice-grade6",
+    "title": "Thinking Together: More Practice",
+    "subject": "English Language Arts",
+    "grade_level": "6",
+    "tags": [
+      "academic-discourse",
+      "collaboration",
+      "udl",
+      "evidence-and-reasoning",
+      "feedback-and-revision",
+      "transfer",
+      "teacher-review-draft",
+      "illustrated",
+      "cut-paper"
+    ],
+    "credit": "Independent AI-authored AlloFlow teaching draft informed by Katie Novak’s writing. Original activities and cut-paper illustrations; educator review pending. Not authored, reviewed, or endorsed by Katie Novak or Novak Education.",
+    "submitted_at": "2026-10-25T20:00:00.000Z",
+    "share_slug": "reading-space-practice"
+  },
+  {
     "path": "allopacks/academic_discourse_reading_space_grade6.allopack.json",
     "slug": "academic-discourse-reading-space-grade6",
     "title": "Thinking Together: A Reading-Space Decision",
@@ -587,7 +608,6 @@
       "cut-paper"
     ],
     "credit": "Independent AI-authored AlloFlow teaching draft informed by Katie Novak’s writing. Original activities and cut-paper illustrations; educator review pending. Not authored, reviewed, or endorsed by Katie Novak or Novak Education.",
-    "license": "CC-BY-4.0",
     "submitted_at": "2026-10-21T18:24:44.058Z",
     "share_slug": "reading-space"
   },
@@ -1014,7 +1034,6 @@
       "teacher-review-draft"
     ],
     "credit": "Independent AI-authored AlloFlow teaching draft informed by Katie Novak’s writing. Original activities and cut-paper illustrations; educator review pending. Not authored, reviewed, or endorsed by Katie Novak or Novak Education.",
-    "license": "CC-BY-4.0",
     "submitted_at": "2026-10-23T12:02:23.839Z",
     "share_slug": "reading-decisions"
   }

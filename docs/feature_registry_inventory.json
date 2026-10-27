@@ -1,21 +1,28 @@
 {
   "schema": "feature-registry-inventory/v1",
   "counts": {
-    "commands": 198,
+    "commands": 203,
     "panels": 34,
     "resourceTypes": 24,
     "sidebarControls": 18,
     "stemTools": 152,
     "selTools": 72,
-    "alloPacks": 63,
+    "alloPacks": 64,
     "hubCards": 73,
     "appsScripts": 6,
-    "modules": 219,
+    "modules": 220,
     "langPacks": 63,
-    "unitTestFiles": 7598,
-    "e2eSpecs": 1607
+    "unitTestFiles": 7978,
+    "e2eSpecs": 1718
   },
   "commands": [
+    {
+      "id": "advice",
+      "label": "",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
     {
       "id": "app_tour",
       "label": "Show me around the app",
@@ -230,6 +237,13 @@
       "id": "launch_flashcards",
       "label": "Study with flashcards",
       "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "lesson",
+      "label": "",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
@@ -489,7 +503,7 @@
       "id": "open_history",
       "label": "Open history",
       "roles": "all",
-      "opensPanel": "exportPreview",
+      "opensPanel": "",
       "gated": false
     },
     {
@@ -525,6 +539,13 @@
       "label": "Open Learning Web: Explore",
       "roles": "all",
       "opensPanel": "learningWebExplorer",
+      "gated": false
+    },
+    {
+      "id": "open_lesson_revision",
+      "label": "Revise an existing lesson",
+      "roles": "teacher",
+      "opensPanel": "",
       "gated": false
     },
     {
@@ -609,6 +630,13 @@
       "label": "Open Poet Tree",
       "roles": "all",
       "opensPanel": "poetTree",
+      "gated": false
+    },
+    {
+      "id": "open_project_save",
+      "label": "Save project",
+      "roles": "",
+      "opensPanel": "exportPreview",
       "gated": false
     },
     {
@@ -775,7 +803,7 @@
     {
       "id": "open_udl_guide",
       "label": "Open the UDL Guide",
-      "roles": "",
+      "roles": "teacher",
       "opensPanel": "",
       "gated": true
     },
@@ -937,6 +965,13 @@
       "id": "report_problem",
       "label": "Report a problem",
       "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource",
+      "label": "",
+      "roles": "",
       "opensPanel": "",
       "gated": false
     },
@@ -1475,8 +1510,8 @@
     {
       "panel": "exportPreview",
       "openers": [
-        "Open history",
-        "Open the Document Builder"
+        "Open the Document Builder",
+        "Save project"
       ]
     },
     {
@@ -1819,7 +1854,7 @@
       "control": "simplified_language",
       "options": [
         "All Selected Languages",
-        "English"
+        "__app__"
       ]
     },
     {
@@ -3009,9 +3044,9 @@
   "packs": [
     {
       "file": "academic_discourse_reading_space_grade6",
-      "title": "A Reading Space We Can Share: Discourse and Collaboration Learning Lab",
+      "title": "Thinking Together: A Reading-Space Decision",
       "grade": "6th Grade",
-      "standards": ""
+      "standards": "CCSS.ELA-LITERACY.SL.6.1 (engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on othe"
     },
     {
       "file": "american_revolution_causes_grade5",
@@ -3306,6 +3341,12 @@
       "title": "Ratios in Real Life — Recipes, Maps, and Best Buys",
       "grade": "6th Grade",
       "standards": "CCSS.MATH.CONTENT.6.RP.A.1 (understand the concept of a ratio and use ratio language); CCSS.MATH.CONTENT.6.RP.A.2 (understand the concept of a unit rate); CCSS."
+    },
+    {
+      "file": "reading_decisions_grade6",
+      "title": "A Decision We Can Explain: Plan, Discuss, Revise, Reflect",
+      "grade": "6th Grade",
+      "standards": "CCSS.ELA-LITERACY.SL.6.1 (engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on othe"
     },
     {
       "file": "rules_and_fairness_grade1",
@@ -3946,6 +3987,7 @@
     "school_rewards_module.js",
     "seating_chart_module.js",
     "semantic_review_module.js",
+    "sensitive_workspace_module.js",
     "session_transport_module.js",
     "shared_activity_module.js",
     "standards_context_module.js",
@@ -4115,7 +4157,7 @@
     "yoruba"
   ],
   "tests": {
-    "unit": 7598,
-    "e2e": 1607
+    "unit": 7978,
+    "e2e": 1718
   }
 }

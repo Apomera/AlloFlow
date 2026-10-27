@@ -300,13 +300,17 @@ So if a control is missing from the header, it is almost certainly in the expand
 
 ### Changing the language, and the setting people mix up
 
-There are two different language settings, they do different jobs, and confusing them is the single most common source of "why is this in the wrong language".
+Keep three choices separate: the app interface language, the primary resource language, and the optional companion language.
 
-**App Language** is in the header. It changes the interface: buttons, menus, labels. Open it and you get a searchable list, your current language, and a **Custom** option if your language is not listed. Changing it may offer to regenerate the content you already have so it matches, and it warns you first, because unsaved changes to the current text can be lost in that regeneration.
+**App Language** is in the header. It sets the app's language environment: buttons, menus, labels, and the default language for new resources. Open it and you get a searchable list, your current language, and a **Custom** option if your language is not listed. Its regeneration command refreshes the interface language pack. This choice is remembered on your device. Changing it updates output set to **Use app language** and automatic companion translations for future generation. Named output choices stay fixed. Newly written Source material uses the app language; supplied original source text stays intact.
 
-**Output and translation languages** live in **Universal Settings**, not the header. These decide what language the resources you generate come out in, and which translations get attached. A glossary panel will tell you directly when none are set, with a line reading that no translation languages are set and pointing you to Universal Settings.
+**Output and translation language defaults** live in **Universal Settings**. The language pills include the current app language automatically, with room for four added languages. **Use app language** is the default output choice; choose a named language to keep output fixed, or **App and added languages** for the combined list. Glossary shows a summary of the base and columns it will create.
 
-So: header for the language *you* read the app in, Universal Settings for the language *students* receive.
+Use **Output language** for the primary language of derived student resources and **Translations** for their optional companion. Changing these defaults does not rewrite saved resources or their recorded audio languages. Opening an older pack preserves its explicit output choice and resource languages without changing your personal App Language.
+
+To translate existing resources, open **Translate** in the header. **Translate into** selects the new primary language. **Companion translation** starts with the Universal Settings choice and offers **Automatic (app language)**, **None**, or a specific language. A change here applies to this translation action.
+
+Choose **Translate Current** for the selected resource. The batch button names the **current pack** and shows its eligible resource count when the selected resource has saved unit, source, or pack membership. When no pack can be identified, it explicitly offers the **workspace** instead. Batch actions skip saved translated copies. Ordinary resources become separate copies; source analysis gains translated language views while its source text stays intact. Links within the translated batch follow the successfully translated resources; links to resources outside that batch keep their original destination.
 
 ### The left column: settings, then tools
 
@@ -1014,13 +1018,15 @@ The panel gathers the settings that would otherwise repeat in every tool.
 | Setting | What it does | Where you notice it |
 | --- | --- | --- |
 | **Grade level** | Sets the reading and complexity target for new resources. | Sentence length, vocabulary, and question difficulty. |
-| **Output language** | Sets the language generated content is written in. | The text students read. |
+| **Output language** | Starts on **Use app language**; a named language stays fixed until you change it. | The text students read. |
+| **Languages** | Shows the current app language automatically and up to four added languages. | Glossary columns, output choices, and app-and-added-language generation. |
 | **Translations** | Decides whether a second-language version is attached. | A translation block beside the main content. |
 | **Standards** | Supplies the standard or framework the content should align to. | Quiz items, objectives, and lesson plans. |
 | **Student interests** | Adds a theme or context to examples. | Word problems, scenarios, and prompts. |
 | **Depth of Knowledge** | Sets the level of thinking the task should demand. | Question stems and task verbs. |
 | **Emoji** | Adds emoji as visual cues in generated material. | Glossary terms, headings, and directions. |
 | **Image style** | Sets the lesson-wide visual default for resources that create images. | Visuals, Glossary, Timeline, Concept Sort, Word Sounds, and Adventure when it uses the Universal style. |
+| **Allow AI image generation** | Starts on and remembers your choice on this device. Turn it off to skip new AI images and AI image edits, including local generation. | Existing pictures remain available. Uploads and drawings work with either setting. |
 
 Each control tells you how many kinds of resource actually use it. Read that number before you spend time on a setting. Some controls reach almost everything; others reach two or three tools.
 
@@ -1032,7 +1038,9 @@ For an English resource with Arabic support:
 2. Keep **Output language** set to **English**.
 3. Open the target tool and read its language summary before generating. The Glossary panel, for example, states which languages from the shared list it will include.
 
-That shared language list and the **Translations** policy are related but not interchangeable. The list supplies languages to tools such as Glossary and to **All Selected Languages** output. The Translations control governs an additional companion version where that control is relevant; it can remain hidden when its automatic target would duplicate the primary output. Custom Instructions can narrow terms, tone, examples, or format, but they do not add a language to either control. If a language is missing, return to Universal Settings rather than typing “make this bilingual” into the resource prompt.
+The app-language pill is included automatically and does not use one of the four added-language slots. Changing App Language updates that automatic pill; your added languages stay saved. Choosing a named output language, including English, keeps that choice fixed when App Language changes.
+
+That shared language list and the **Translations** policy are related but not interchangeable. The list supplies languages to tools such as Glossary and to **App and added languages** output. The Translations control governs an additional companion version where that control is relevant; it can remain hidden when its automatic target would duplicate the primary output. Custom Instructions can narrow terms, tone, examples, or format, but they do not add a language to either control. If a language is missing, return to Universal Settings rather than typing “make this bilingual” into the resource prompt.
 
 You can collapse the card once you are done. The summary line stays visible, so you can check your choices without opening the panel again.
 
@@ -1051,6 +1059,12 @@ So if a pack looks inconsistent:
 This is worth checking before you conclude a tool got something wrong. A mismatched pack is usually a settings history problem, not a generation problem.
 
 ### Set image style once unless a resource needs an exception
+
+Use **Allow AI image generation** in Universal Settings to choose whether AlloFlow can create new AI pictures. Turning it off keeps your existing images and leaves text generation available. The choice also applies when you open another project.
+
+Open **Resource images — upload or draw** above a resource to add or replace a picture. Choose **Upload image** for a PNG, JPEG, or WebP, then crop or resize it and choose **Use edited image**. Choose **Draw with Excalidraw** to open the Whiteboard, draw, and select **Use drawing** to save into that image slot. Saved drawings have an **Edit drawing** button so you can change their shapes later. Add an image description for readers who cannot see the picture. Story Forge and Lesson Board provide these controls beside their own artwork; document remediation lists the images in the accessible document.
+
+The drawing window uses the same AlloFlow installation and needs pop-ups enabled. If AlloFlow is embedded in a host that cannot open its Whiteboard, open the browser or desktop app, or upload an exported drawing.
 
 Use **Image style** in Universal Settings to keep one lesson visually coherent. Visuals, Glossary, and Word Sounds begin on **Use Universal style**; their own preset and custom-style controls appear only after you choose **Override for this resource**. Timeline and Concept Sort use the Universal style directly. Adventure keeps story-specific presets, with **Use Universal style** available when continuity matters more than a separate story look.
 
@@ -1082,17 +1096,21 @@ If an adapted version is used as a companion, leave its role as **Supplemental a
 
 Two separate controls do two different jobs.
 
-**Output language** is the language the resource is written in. If your class works in Spanish, set it to Spanish and the content comes back in Spanish.
+**Output language** is the language the resource is written in. It starts on **Use app language**, so a French app produces French resources by default. Choose Spanish explicitly for Spanish output regardless of the app language. **App and added languages** uses the current app language plus the languages you added, without duplicates or a compulsory English version.
 
 **Translations** decides whether a second version rides along with it. It offers three kinds of answer:
 
 - **Automatic** attaches a version in the language you set the app interface to, whenever the content is in a different language. This is the default.
-- **None** turns second-language versions off everywhere.
+- **None** turns companion translations off for new resources that use this setting.
 - **A named language** attaches a version in exactly that language.
 
 A hint line under the control always says in plain words what will happen, such as "Resources in Spanish will also include an English version." You do not have to open the list to know where you stand.
 
 The Translations control appears only when it would do something, or when a previously selected explicit policy needs to remain editable. With **Automatic**, if the interface and output language match, its automatic target would duplicate the primary content, so the control stays hidden. Adding a language to the shared list can still affect tools such as Glossary even while this companion-translation control is hidden.
+
+New glossaries use the selected output language for their terms and definitions. With **App and added languages**, the app language is the base and the other selected languages become columns. Added glossary languages remain independent of the optional companion policy: **None** turns off the automatic companion but keeps explicitly added columns. English is available like any other language. Saved glossaries retain their existing base and columns, including the English base of older glossaries.
+
+The header's **Translate** action lets you choose a new primary language for existing resources and override the companion choice for that action. It begins with your Universal Settings preference. Saved resources keep their recorded languages when you later change the app language or generation settings. See [The workspace](#the-workspace-part-by-part) for translation scope.
 
 Two cautions:
 
@@ -1107,7 +1125,7 @@ Full Pack and Blueprint freeze the Universal Settings used to prepare their revi
 | --- | --- |
 | One target grade and one output language | One version of an eligible resource. |
 | A Differentiation Set with three grades | One version at each grade, but only for the resource types selected for differentiation. |
-| **All Selected Languages** with three languages | One version in each language for multilingual resources. Resources that do not fan out by language remain one resource. |
+| **App and added languages** with three distinct languages | One version in each language for multilingual resources. Resources that do not fan out by language remain one resource. |
 | Three differentiated grades and three output languages | A three-by-three matrix: nine versions for a resource that supports both settings. |
 | An exact resource already made from the same source and generation context | **Reuse**: the existing resource is linked into the run and adds no new AI call. |
 

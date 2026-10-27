@@ -279,6 +279,79 @@ every figure the tool prints for that star.
 
 - Unit suite 73; browser suite 16; other astronomy suites 155.
 
+## Enhancement slice 16 (2026-10-25): engagement, and a measured WCAG pass
+Written for whoever touches this tool next. Nothing here is committed. Source, both live mirrors and both
+`ui_strings.js` copies are in step.
+
+### Engagement (all on Tonight, all additive)
+- **Today's sky question** (`dailySkyQuestion`, pure). One question a day, computed from the same sky model the
+  Observatory draws, for the learner's chosen place at a fixed 21:00 local time, so it cannot change while open.
+  Six kinds: waxing or waning, which of two bodies is higher, which planet is up, hours of full darkness, which
+  compass direction a star is in, Moon phase name. Every answer is recomputed independently in
+  `tests/astronomy_sky_journey.test.js` (Moon model, planet altitudes, a separate Sun scan, star azimuths).
+  A saved answer carries a signature of the exact question, so changing the place cannot mis-grade it.
+- **Your sky journey**: 13 optional missions (open the 3D sky, identify, plan a night, another place, deep time,
+  constellations, traditions, simulators, daily question, quiz) and five ranks. Gentle by design: nothing expires,
+  nothing is ranked against anyone, and "days exploring" never shows a lost streak.
+  State is `d.journey`, normalised on every read (`normalizeJourney`) and advanced inside `upd()` from the patch
+  keys the tool already writes (`journeyAdvance`), so no existing handler changed. `JourneyWatcher` sits at the
+  tool root and pays each finished mission once.
+- **Quiz**: optional **practice mode** (feedback after each answer, first answer locks and still counts), a
+  progress meter, and mastery-oriented result copy.
+
+### Two real bugs found and fixed on the way
+- ★★ **One click answered the whole quiz.** Saved answers use `null` for "not answered" but restore did
+  `Number(null)` = 0, so after the first click every other question showed choice A pressed, Submit unlocked, and
+  a learner could submit 14 blanks scored as A. Reproduced in Chromium before the fix.
+- ★★ **Quiz XP never credited.** The host's `awardXP` is `(activityId, points, reason, onCredited)`; the tool called
+  `awardXP(correct * 5)`, so the score was read as the activity id and no points arrived. Now
+  `awardXP('astronomyQuiz', …)`. Each activity id is capped at 100 XP, so the mission XP is sized to total exactly
+  100 and a toast can never promise what the cap refuses.
+
+### WCAG: what was measured, what was wrong
+`dev-tools/astronomy_a11y_audit.cjs` (new) mounts every tab in both themes, clicks every picker, and measures
+contrast against what is really painted behind each text run, including SVG text over shapes. **axe cannot do this
+here**: it reports 824 contrast checks as "incomplete" and fails none.
+
+| | before | after |
+|---|---|---|
+| axe violations (all states, both themes) | 2 | 0 |
+| text under 4.5:1 (non-disabled) | 20 | 0 |
+| interactive targets under 24 px | 72 | 0 |
+| clipped text at 1.4.12 spacing / overflow at 320 px | 0 / 0 | 0 / 0 |
+
+Fixed: Sun cross-section labels on orange and yellow rings were 1.09:1 and 1.54:1; Sky Map labels fell to about
+2.9:1 whenever another object was focused (marker dimming also dimmed the text; labels now floor at 0.8, since
+0.72 still left the yellow "Sun" label at 4.44:1);
+"CORONA REVEALED" on the glow was 1.87:1 (now on a dark backing); the selected exoplanet card assumed the wrong
+background for its habitability text; an invalid `<dl>` in Galaxies; `aria-label` on a role-less div; sliders,
+checkboxes and standalone reference links now have a 24 px minimum target; a quiz submit that was `disabled`
+(unfocusable, no reason given) is now `aria-disabled` and names the first open question; focus no longer drops to
+`<body>` when Submit or Retake unmounts.
+- Probe rules, each learned the hard way: transitions are switched off before measuring (a button caught mid-fade
+  looks like a failure); disabled controls are exempt (WCAG 1.4.3) and skipped; an SVG label's `paint-order: stroke`
+  halo of 2+ units counts as its background (Sky Map labels have one, so Mercury beside the Sun is legible).
+  Two copies of axe exist; the audit and spec use the newer `desktop/web-app/node_modules/axe-core`.
+- Gate: `tests/e2e/astronomy-journey-a11y.spec.ts` (13: contrast incl. SVG, axe on new surfaces, keyboard flows,
+  320 px). Mutation-verified: reverting the Sun label colour or the 0.8 label floor turns it red. Its first Sky Map
+  test was vacuous (filtered on visible text; "horizon" is only in `aria-label`) until mutation exposed it; it now
+  asserts it measured dimmed labels. Unit: `tests/astronomy_sky_journey.test.js` (51), also mutation-verified.
+  100 new `stem.astronomy` keys are registered (both copies). The astronomy golden digest was re-baselined for the
+  new cards only (+3 buttons, +3 radio inputs).
+
+### Traps worth keeping
+- ★★ Choosing the question kind from `seed % 6` and shuffling its options from `seed % 3` fixed the shuffle for two
+  kinds, so their right answer sat in one slot forever. The slot-distribution test caught it; selection and
+  arrangement now use independent hashes. Two more cues the same test family caught: the right hour count was
+  always the middle of {h-2, h, h+2}, and moon-phase distractors were always +3 and +5, so the odd one out was the answer.
+- ★ `register_ui_strings.cjs` is safe here only because `JSON.stringify(JSON.parse(f), null, 2)` round-trips this
+  file byte-for-byte; check that before trusting it on a file that other sessions have edited.
+- ★ Pre-existing and not from this slice: `check_stem_aria_i18n` reports astronomy at 53 against a baseline of 48
+  (HEAD itself scans 53), and `check_ui_strings_drift` lists 209 drifted keys across tools.
+- Not done: the section picker still navigates on change (WCAG 3.2.2 is arguable; the tab bar is the equivalent,
+  and existing e2e tests expect it), forced-colors styling covers only the new components, and the 100 new keys
+  have no translations in the language packs yet.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.

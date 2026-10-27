@@ -9,19 +9,19 @@ narrative lives in `FEATURE_INVENTORY.md`; this file is the count-and-name layer
 
 | Registry | Count |
 | --- | ---: |
-| commands | 198 |
+| commands | 203 |
 | panels | 34 |
 | resourceTypes | 24 |
 | sidebarControls | 18 |
 | stemTools | 152 |
 | selTools | 72 |
-| alloPacks | 63 |
+| alloPacks | 64 |
 | hubCards | 73 |
 | appsScripts | 6 |
-| modules | 219 |
+| modules | 220 |
 | langPacks | 63 |
-| unitTestFiles | 7598 |
-| e2eSpecs | 1607 |
+| unitTestFiles | 7978 |
+| e2eSpecs | 1718 |
 
 ## Command palette
 
@@ -29,6 +29,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 
 | id | label | roles | opens | gated |
 | --- | --- | --- | --- | --- |
+| advice |  |  |  |  |
 | app_tour | Show me around the app | all |  |  |
 | apply_lesson_template | Start from a saved template | teacher |  |  |
 | assumptions | Assumptions and uncertainties |  |  |  |
@@ -60,6 +61,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | go_dashboard | Go to the dashboard | all | dashboard |  |
 | jump_to_lesson_plan | Jump to my lesson plan |  |  |  |
 | launch_flashcards | Study with flashcards | all |  |  |
+| lesson |  |  |  |  |
 | line_spacing_less | Decrease line spacing | all | selHub |  |
 | line_spacing_more | Increase line spacing | all |  |  |
 | list_current_actions | List available actions | all |  |  |
@@ -96,12 +98,13 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | open_fluency_maze | Open the Fluency Maze |  |  |  |
 | open_free_forms | Open Free Forms | all | stemLab |  |
 | open_group_tools | Open group tools | teacher |  |  |
-| open_history | Open history | all | exportPreview |  |
+| open_history | Open history | all |  |  |
 | open_it_coach | Coach me through another website | all |  |  |
 | open_jigsaw_builder | Build a jigsaw activity |  |  |  |
 | open_leadership_hub | Open the Leadership Hub | teacher |  |  |
 | open_learning_hub | Open the Learning Hub | all | learningHub |  |
 | open_learning_web_explorer | Open Learning Web: Explore | all | learningWebExplorer |  |
+| open_lesson_revision | Revise an existing lesson | teacher |  |  |
 | open_lingua_practice | Open Lingua Practice | all | linguaPractice |  |
 | open_lit_lab | Open Lit Lab | all | litLab |  |
 | open_live_poll | Start a live poll | teacher |  |  |
@@ -114,6 +117,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | open_persona_chat | Open Persona interview | all |  |  |
 | open_pictionary_host | Start Concept Pictionary | teacher |  |  |
 | open_poet_tree | Open Poet Tree | all | poetTree |  |
+| open_project_save | Save project |  | exportPreview |  |
 | open_project_settings | Open project settings | teacher |  |  |
 | open_quick_check | Run a quick check | teacher |  |  |
 | open_reading_library | Open the Reading Library | all | readingLibrary |  |
@@ -137,7 +141,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | open_text_settings | Open text settings | all | readThisPage |  |
 | open_timeline_studio | Open Timeline Studio | all | timelineStudio |  |
 | open_translate | Open translation | teacher | sessionModal |  |
-| open_udl_guide | Open the UDL Guide |  |  | yes |
+| open_udl_guide | Open the UDL Guide | teacher |  | yes |
 | open_video_studio | Open Video Studio | teacher | videoStudio |  |
 | open_voice_settings | Open voice settings | all | readThisPage |  |
 | open_wizard | Start the lesson wizard | all | notebook |  |
@@ -161,6 +165,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | repeat_last_response | Repeat the last response | all | educatorHub |  |
 | repeat_read_this_page | Repeat the current item | all |  |  |
 | report_problem | Report a problem | all |  |  |
+| resource |  |  |  |  |
 | resource_describe | Describe the current resource |  |  |  |
 | resource_exit | Exit the current resource |  |  |  |
 | resource_feedback | Review feedback for this resource |  |  |  |
@@ -243,7 +248,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | dynamicAssessment | Open Dynamic Assessment |
 | educatorHub | Open the Educator Hub; Repeat the last response |
 | exportMenu | Open the export menu |
-| exportPreview | Open history; Open the Document Builder |
+| exportPreview | Open the Document Builder; Save project |
 | learningHub | Open the Learning Hub |
 | learningWebExplorer | Open Learning Web: Explore |
 | linguaPractice | Open Lingua Practice |
@@ -287,7 +292,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | simplified_dok | Level 1: Recall & Reproduction, Level 2: Skill/Concept, Level 3: Strategic Thinking, Level 4: Extended Thinking, Mixed |
 | simplified_format | Dialogue Script, Keep Source Format and Tone, Mock Advertisement, Narrative Story, News Report, Podcast Script, Poetry, Social Media Thread, Standard Text |
 | simplified_grade_level | 10th Grade, 11th Grade, 12th Grade, 1st Grade, 2nd Grade, 3rd Grade, 4th Grade, 5th Grade, 6th Grade, 7th Grade, 8th Grade, 9th Grade, College, Graduate Level, Kindergarten |
-| simplified_language | All Selected Languages, English |
+| simplified_language | All Selected Languages, __app__ |
 | simplified_length | Condense (50%), Double (200%), Expand (125%), Extend (150%), Same as Source, Shorten (75%) |
 | simplified.diff_label | 1, 2, Both, Custom, None |
 | timeline.settings.mode_label | auto, cause-effect, chronological, hierarchy, intensity, lifecycle, narrative, procedural, size |
@@ -528,11 +533,11 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | windowoftolerance | Window of Tolerance |
 | zones | Emotion Zones Plugin (Enhanced v2) |
 
-## AlloPacks (63)
+## AlloPacks (64)
 
 | file | title | grade | standards |
 | --- | --- | --- | --- |
-| academic_discourse_reading_space_grade6 | A Reading Space We Can Share: Discourse and Collaboration Learning Lab | 6th Grade |  |
+| academic_discourse_reading_space_grade6 | Thinking Together: A Reading-Space Decision | 6th Grade | CCSS.ELA-LITERACY.SL.6.1 (engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on othe |
 | american_revolution_causes_grade5 | Causes of the American Revolution — How a Fight Becomes a War | 5th Grade | C3 D2.His.1.3-5 (create and use a chronological sequence of related events); C3 D2.His.14.3-5 (explain probable causes and effects of events and developments); |
 | ancient_egypt_grade6 | Why Cities Grew on the Nile — Surplus, Specialists, and Writing | 6th Grade | C3 Framework D2.His.14.6-8 (explain multiple causes and effects of events and developments in the past); C3 Framework D2.Geo.5.6-8 (analyze the combinations of |
 | area_perimeter_grade4 | Area and Perimeter — The Fence and the Floor | 3rd-4th Grade | CCSS.MATH.CONTENT.3.MD.C.7 (relate area to the operations of multiplication and addition); CCSS.MATH.CONTENT.3.MD.D.8 (solve real world problems involving perim |
@@ -582,6 +587,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | probability_models_grade7 | Likely Is Not Certain — Probability Models | 7th Grade | CCSS.MATH.CONTENT.7.SP.C.5 (interpret probabilities from zero to one); CCSS.MATH.CONTENT.7.SP.C.6 (compare long-run relative frequencies with predicted probabil |
 | proportional_relationships_grade7 | Proportional Relationships — When Doubling One Doubles the Other | 7th Grade | CCSS.MATH.CONTENT.7.RP.A.2 (recognize and represent proportional relationships between quantities); CCSS.MATH.CONTENT.7.RP.A.2.B (identify the constant of propo |
 | ratios_real_life_grade6 | Ratios in Real Life — Recipes, Maps, and Best Buys | 6th Grade | CCSS.MATH.CONTENT.6.RP.A.1 (understand the concept of a ratio and use ratio language); CCSS.MATH.CONTENT.6.RP.A.2 (understand the concept of a unit rate); CCSS. |
+| reading_decisions_grade6 | A Decision We Can Explain: Plan, Discuss, Revise, Reflect | 6th Grade | CCSS.ELA-LITERACY.SL.6.1 (engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on othe |
 | rules_and_fairness_grade1 | Why We Have Rules — Fair, Safe, and Together | 1st Grade | C3 Framework D2.Civ.1.K-2 (describe roles and responsibilities of people in authority); C3 Framework D2.Civ.6.K-2 (describe how communities work to accomplish c |
 | scarcity_choice_grade7 | Everything Has a Cost — Scarcity, Choice, and What You Gave Up | 7th Grade | C3 Framework D2.Eco.1.6-8 (explain how economic decisions affect the well-being of individuals, businesses, and society); C3 Framework D2.Eco.2.6-8 (evaluate al |
 | simple_machines_grade5 | Simple Machines — Trading Distance for Strength | 5th-6th Grade | NGSS 3-5-ETS1-1 (define a simple design problem reflecting a need, with criteria and constraints); NGSS 3-5-ETS1-2 (generate and compare multiple possible solut |
@@ -640,11 +646,11 @@ choose_practice_set, foundations (Foundations), general (General), id, list_prac
 
 acholi, amharic, arabic, bengali, burmese, chin_falam, chin_hakha, chinese_simplified, chinese_traditional, dari, dutch, esperanto, farsi, french, french_canadian, german, greek, gujarati, haitian_creole, hausa, hebrew, hindi, hmong, igbo, indonesian, italian, japanese, kannada, karen, khmer, kinyarwanda, kirundi, korean, lao, latin, lingala, maay_maay, malayalam, marathi, marshallese, nepali, pashto, polish, portuguese_angola, portuguese_brazil, portuguese_portugal, punjabi, romanian, russian, somali, spanish_castilian, spanish_latin_america, swahili, tagalog, tamil, telugu, thai, tigrinya, turkish, ukrainian, urdu, vietnamese, yoruba
 
-## CDN modules registered in build.js (219)
+## CDN modules registered in build.js (220)
 
-accessibility_evidence_module.js, accessibility_lab_module.js, adaptive_controller_module.js, adventure_handlers_module.js, adventure_module.js, adventure_session_handlers_module.js, agent_core_blueprint_service_module.js, agent_core_contracts_module.js, agent_core_ui_adapter_module.js, allo_command_context_module.js, allo_crypto_module.js, allo_data_module.js, allo_device_vault_module.js, allo_quest_contract_module.js, allo_recovery_vault_integration_module.js, allo_vr_module.js, allobot_module.js, allohaven_module.js, alt_text_module.js, anchor_charts_module.js, annotation_suite_module.js, app_styles_module.js, applied_challenge_module.js, audio_banks_module.js, audio_helpers_module.js, audit_remediator_module.js, behavior_lens_module.js, behavior_lens_workspace_module.js, brand_profile_editor_module.js, brand_profile_module.js, canvas_tips_module.js, catalog_module.js, cinematic_studio_module.js, concept_graph_3d_module.js, concept_graph_engine_module.js, concept_map_handlers_module.js, concept_pictionary_module.js, concept_quest_solo_module.js, concept_quest_teacher_module.js, content_engine_module.js, device_access_code_module.js, doc_builder_renderer_module.js, doc_pipeline_module.js, educator_evaluation_module.js, escape_room_module.js, export_handlers_module.js, export_module.js, firestore_sync_module.js, fluency_module.js, games_module.js, gemini_api_module.js, generate_dispatcher_module.js, generation_helpers_module.js, generation_matrix_module.js, glb_library_module.js, glossary_helpers_module.js, guided_mode_config_module.js, host_handlers_module.js, image_asset_editor_module.js, immersive_reader_module.js, instructional_context_module.js, karaoke_audio_store_module.js, key_concept_map_module.js, label_positions_module.js, landmark_module.js, large_file_module.js, learning_web_explorer_module.js, learning_web_registry_module.js, lesson_teaching_research_module.js, lesson_teaching_script_host_module.js, lesson_teaching_script_module.js, lexical_graph_module.js, lingua_practice_module.js, live_aac_module.js, live_polling_module.js, mailbox_script_source_module.js, maine_sld_practice_module.js, math_create_module.js, math_fluency_module.js, math_helpers_module.js, math_manipulative_grader_module.js, memory_aid_module.js, memory_palace_module.js, mind_map_module.js, misc_components_module.js, misc_handlers_module.js, module_scope_extras_module.js, note_taking_templates_module.js, own_sources_module.js, pd_core_module.js, persona_session_artifact_module.js, persona_ui_module.js, personas_module.js, phase_k_helpers_module.js, phase_n_misc_helpers_module.js, phase_o_misc_handlers_module.js, poet_tree_module.js, prim3d_module.js, printable_model_module.js, prompts_library_module.js, pure_helpers_module.js, question_board_contract_module.js, question_board_transport_module.js, question_board_view_module.js, quickstart_module.js, read_aloud_artifact_audio_module.js, read_aloud_artifact_contract_module.js, read_aloud_audio_service_module.js, reading_library_module.js, remediation_audio_module.js, report_writer_module.js, resource_read_aloud_module.js, review_document_session_module.js, safety_checker_module.js, school_rewards_module.js, seating_chart_module.js, semantic_review_module.js, session_transport_module.js, shared_activity_module.js, standards_context_module.js, standards_provider_module.js, story_forge_module.js, story_stage_module.js, student_analytics_module.js, student_interaction_module.js, studio_module.js, studio_response_module.js, submission_crypto_module.js, symbol_studio_module.js, teacher_module.js, test_prep_hub_module.js, text_pipeline_helpers_module.js, text_utility_helpers_module.js, timeline_revision_module.js, timeline_studio_module.js, tool_catalog_module.js, tts_module.js, udl_chat_module.js, ui_font_library_module.js, ui_language_selector_module.js, ui_modals_module.js, ui_polish_module.js, utils_pure_module.js, verification_policy_module.js, video_studio_host_bridge_module.js, view_adventure_module.js, view_alignment_report_module.js, view_analysis_module.js, view_assignment_center_module.js, view_brainstorm_module.js, view_canvas_recovery_dialog_module.js, view_cloze_interaction_panel_module.js, view_cold_path_surfaces_module.js, view_concept_sort_module.js, view_confirm_dialog_module.js, view_dbq_module.js, view_directions_composer_module.js, view_directions_result_module.js, view_educator_hub_modal_module.js, view_end_session_preview_module.js, view_export_preview_module.js, view_fab_stack_module.js, view_faq_module.js, view_full_pack_run_module.js, view_gemini_bridge_module.js, view_global_level_up_module.js, view_glossary_module.js, view_guided_mode_banner_module.js, view_header_module.js, view_hints_modal_module.js, view_history_panel_module.js, view_image_module.js, view_info_modal_module.js, view_kokoro_offer_modal_module.js, view_launch_pad_module.js, view_learning_hub_modal_module.js, view_lesson_plan_module.js, view_lesson_teaching_script_module.js, view_live_lesson_run_module.js, view_live_session_dock_module.js, view_math_module.js, view_misc_modals_module.js, view_misc_panels_module.js, view_outline_module.js, view_pdf_audit_module.js, view_persona_chat_module.js, view_persona_workspace_module.js, view_project_settings_module.js, view_prompt_dialog_module.js, view_quiz_module.js, view_renderers_module.js, view_sentence_frames_module.js, view_session_modal_module.js, view_share_session_surfaces_module.js, view_sidebar_panels_module.js, view_sidebar_tabs_nav_module.js, view_simplified_module.js, view_socratic_chat_module.js, view_spotlight_tour_module.js, view_storybook_export_modal_module.js, view_student_join_panel_module.js, view_student_save_adventure_module.js, view_study_timer_modal_module.js, view_submission_inbox_module.js, view_teacher_history_tab_module.js, view_timeline_module.js, view_udl_guide_button_module.js, view_video_library_module.js, view_video_ref_player_module.js, view_visual_supports_modal_module.js, view_word_sounds_preview_module.js, view_xp_modal_module.js, visual_panel_module.js, voice_config_module.js, voice_module.js, word_practice_module.js, word_sounds_module.js, word_sounds_setup_module.js, word_timing_module.js
+accessibility_evidence_module.js, accessibility_lab_module.js, adaptive_controller_module.js, adventure_handlers_module.js, adventure_module.js, adventure_session_handlers_module.js, agent_core_blueprint_service_module.js, agent_core_contracts_module.js, agent_core_ui_adapter_module.js, allo_command_context_module.js, allo_crypto_module.js, allo_data_module.js, allo_device_vault_module.js, allo_quest_contract_module.js, allo_recovery_vault_integration_module.js, allo_vr_module.js, allobot_module.js, allohaven_module.js, alt_text_module.js, anchor_charts_module.js, annotation_suite_module.js, app_styles_module.js, applied_challenge_module.js, audio_banks_module.js, audio_helpers_module.js, audit_remediator_module.js, behavior_lens_module.js, behavior_lens_workspace_module.js, brand_profile_editor_module.js, brand_profile_module.js, canvas_tips_module.js, catalog_module.js, cinematic_studio_module.js, concept_graph_3d_module.js, concept_graph_engine_module.js, concept_map_handlers_module.js, concept_pictionary_module.js, concept_quest_solo_module.js, concept_quest_teacher_module.js, content_engine_module.js, device_access_code_module.js, doc_builder_renderer_module.js, doc_pipeline_module.js, educator_evaluation_module.js, escape_room_module.js, export_handlers_module.js, export_module.js, firestore_sync_module.js, fluency_module.js, games_module.js, gemini_api_module.js, generate_dispatcher_module.js, generation_helpers_module.js, generation_matrix_module.js, glb_library_module.js, glossary_helpers_module.js, guided_mode_config_module.js, host_handlers_module.js, image_asset_editor_module.js, immersive_reader_module.js, instructional_context_module.js, karaoke_audio_store_module.js, key_concept_map_module.js, label_positions_module.js, landmark_module.js, large_file_module.js, learning_web_explorer_module.js, learning_web_registry_module.js, lesson_teaching_research_module.js, lesson_teaching_script_host_module.js, lesson_teaching_script_module.js, lexical_graph_module.js, lingua_practice_module.js, live_aac_module.js, live_polling_module.js, mailbox_script_source_module.js, maine_sld_practice_module.js, math_create_module.js, math_fluency_module.js, math_helpers_module.js, math_manipulative_grader_module.js, memory_aid_module.js, memory_palace_module.js, mind_map_module.js, misc_components_module.js, misc_handlers_module.js, module_scope_extras_module.js, note_taking_templates_module.js, own_sources_module.js, pd_core_module.js, persona_session_artifact_module.js, persona_ui_module.js, personas_module.js, phase_k_helpers_module.js, phase_n_misc_helpers_module.js, phase_o_misc_handlers_module.js, poet_tree_module.js, prim3d_module.js, printable_model_module.js, prompts_library_module.js, pure_helpers_module.js, question_board_contract_module.js, question_board_transport_module.js, question_board_view_module.js, quickstart_module.js, read_aloud_artifact_audio_module.js, read_aloud_artifact_contract_module.js, read_aloud_audio_service_module.js, reading_library_module.js, remediation_audio_module.js, report_writer_module.js, resource_read_aloud_module.js, review_document_session_module.js, safety_checker_module.js, school_rewards_module.js, seating_chart_module.js, semantic_review_module.js, sensitive_workspace_module.js, session_transport_module.js, shared_activity_module.js, standards_context_module.js, standards_provider_module.js, story_forge_module.js, story_stage_module.js, student_analytics_module.js, student_interaction_module.js, studio_module.js, studio_response_module.js, submission_crypto_module.js, symbol_studio_module.js, teacher_module.js, test_prep_hub_module.js, text_pipeline_helpers_module.js, text_utility_helpers_module.js, timeline_revision_module.js, timeline_studio_module.js, tool_catalog_module.js, tts_module.js, udl_chat_module.js, ui_font_library_module.js, ui_language_selector_module.js, ui_modals_module.js, ui_polish_module.js, utils_pure_module.js, verification_policy_module.js, video_studio_host_bridge_module.js, view_adventure_module.js, view_alignment_report_module.js, view_analysis_module.js, view_assignment_center_module.js, view_brainstorm_module.js, view_canvas_recovery_dialog_module.js, view_cloze_interaction_panel_module.js, view_cold_path_surfaces_module.js, view_concept_sort_module.js, view_confirm_dialog_module.js, view_dbq_module.js, view_directions_composer_module.js, view_directions_result_module.js, view_educator_hub_modal_module.js, view_end_session_preview_module.js, view_export_preview_module.js, view_fab_stack_module.js, view_faq_module.js, view_full_pack_run_module.js, view_gemini_bridge_module.js, view_global_level_up_module.js, view_glossary_module.js, view_guided_mode_banner_module.js, view_header_module.js, view_hints_modal_module.js, view_history_panel_module.js, view_image_module.js, view_info_modal_module.js, view_kokoro_offer_modal_module.js, view_launch_pad_module.js, view_learning_hub_modal_module.js, view_lesson_plan_module.js, view_lesson_teaching_script_module.js, view_live_lesson_run_module.js, view_live_session_dock_module.js, view_math_module.js, view_misc_modals_module.js, view_misc_panels_module.js, view_outline_module.js, view_pdf_audit_module.js, view_persona_chat_module.js, view_persona_workspace_module.js, view_project_settings_module.js, view_prompt_dialog_module.js, view_quiz_module.js, view_renderers_module.js, view_sentence_frames_module.js, view_session_modal_module.js, view_share_session_surfaces_module.js, view_sidebar_panels_module.js, view_sidebar_tabs_nav_module.js, view_simplified_module.js, view_socratic_chat_module.js, view_spotlight_tour_module.js, view_storybook_export_modal_module.js, view_student_join_panel_module.js, view_student_save_adventure_module.js, view_study_timer_modal_module.js, view_submission_inbox_module.js, view_teacher_history_tab_module.js, view_timeline_module.js, view_udl_guide_button_module.js, view_video_library_module.js, view_video_ref_player_module.js, view_visual_supports_modal_module.js, view_word_sounds_preview_module.js, view_xp_modal_module.js, visual_panel_module.js, voice_config_module.js, voice_module.js, word_practice_module.js, word_sounds_module.js, word_sounds_setup_module.js, word_timing_module.js
 
 ## Tests
 
-- Unit test files: 7598
-- End-to-end specs: 1607
+- Unit test files: 7978
+- End-to-end specs: 1718

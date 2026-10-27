@@ -1,6 +1,6 @@
 # Device Storage Bridge (Canvas-persistent, on-device)
 
-**Status 2026-07-13: built, unwired, awaiting the two-session Canvas probe.**
+**Current security update, October 26, 2026:** the bridge is integrated with the app. See the [stored-data boundary follow-up](audits/2026-10-26-school-district/storage-boundaries-followup.md) for approval controls and the subsequent [document-channel follow-up](audits/2026-10-26-school-district/storage-document-channel-followup.md) for the current `ds2` protocol, verification and coordinated release requirements. The July design/probe plan below is historical; its broad privacy and compliance statements are not current assurance evidence. Use the [data-flow inventory](audits/2026-10-24-school-district/data-flow-inventory.md) for present storage and deletion responsibilities.
 
 ## Why
 
@@ -35,12 +35,22 @@ origin and could read the students' data.
 
 ## Security model
 
-Canvas app origins are opaque (`"null"`), so the bridge cannot pin an origin.
-Instead: the opener mints a random nonce into the bridge URL *fragment*
-(`#allo-ds=<nonce>`, never sent to a server); the bridge only answers
-messages that (a) come from its opener/parent window reference and (b) echo
-that nonce. Replies go to `event.source` only. Protocol tag: `ds1` — keep
-`storage_bridge.html` and `allo_device_storage_module.js` in sync.
+The bridge binds its initial handshake to the observed opener/parent, origin and nonce,
+then accepts one MessagePort for that connection. Approval and record traffic use
+only the port, so navigation cannot deliver a window reply to a replacement document.
+Same-origin clients connect automatically. Cross-origin clients require a
+fresh approval or a v2 grant matching the exact concrete origin and channel.
+An opaque (`"null"`) origin cannot identify an app or reuse a saved grant.
+Legacy v1 blanket approvals are ignored without deleting records.
+
+An iframe opens a separate approval-only window for its confirmation. That
+window sends only a bound decision; all record operations stay in the original
+iframe partition. Denial, closure and stale callbacks do not authorize access.
+Direct popup connections use their own visible approval UI. The protocol
+is `ds2`; keep the bridge and adapter synchronized at release. Old `ds1`
+clients receive an upgrade-required error without record access. This is
+browser routing/access control, not staff identity. The follow-ups document
+the remaining shared-origin scope and deployment requirements.
 
 ## The probe (do this first — two Canvas sessions, no DevTools)
 
