@@ -1,3 +1,21 @@
 .water-thermometer{margin:14px 0;border:1px solid #9bb9ad;border-radius:15px;background:#eef4eb;color:#254535;overflow:hidden}.water-thermometer>summary{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:64px;padding:13px 17px;list-style:none;background:linear-gradient(115deg,#e0eddf,#f7f6e6)}.water-thermometer>summary::after{content:'+';font-size:23px}.water-thermometer[open]>summary::after{content:'−'}.water-thermometer summary strong{font-size:16px;display:block}.water-thermometer summary small{font-size:11px;letter-spacing:.06em}.water-thermometer summary>span:nth-child(2){margin-left:auto;font-size:14px;font-variant-numeric:tabular-nums}.thermometer-body{padding:17px}.water-thermometer p{font-size:13px;line-height:1.6}.thermometer-actions{display:flex;flex-wrap:wrap;gap:8px}.water-thermometer button{min-height:44px;font-size:12px;white-space:normal}.water-thermometer section{margin-top:15px}.water-thermometer h3{font-size:15px}.water-thermometer svg{display:block;width:100%;max-width:380px;border:1px solid #a4bba7;border-radius:10px;margin:12px auto;background:#fffdf2;touch-action:manipulation}.thermometer-status{padding:10px 12px;background:#e1ecdc;border-left:3px solid #56856d}.thermometer-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.thermometer-readings>div{padding:14px;border:1px solid #b4c6ac;border-radius:10px;background:#fffdf3;min-width:0}.thermometer-readings span,.thermometer-readings small{display:block;font-size:11px;line-height:1.6}.thermometer-readings strong{display:block;font-size:28px;font-variant-numeric:tabular-nums;margin:5px 0}.water-thermometer .thermometer-note{font-size:11px}.water-thermometer :is(button,summary,svg):focus-visible{outline:3px solid #315b44;outline-offset:3px}.water-thermometer button:disabled{opacity:.65}@media(max-width:500px){.thermometer-body{padding:12px}.thermometer-actions button{flex:1 1 100px}.thermometer-readings>div{padding:10px}.thermometer-readings strong{font-size:24px}.water-thermometer>summary{padding:12px}.kitchen-gesture-coach[data-tool="probe"]{top:auto;bottom:9px}}@media(forced-colors:active){.water-thermometer,.water-thermometer>summary,.water-thermometer svg,.thermometer-status,.thermometer-readings>div{background:Canvas;color:CanvasText;border-color:CanvasText}.water-thermometer svg text{fill:CanvasText}.water-thermometer :is(button,summary,svg):focus-visible{outline-color:Highlight}}
 
 .thermometer-readings>div:only-child{grid-column:1 / -1}
+
+/* Keep observations and the next movement usable at text and browser zoom. */
+.water-thermometer{min-width:0;overflow:visible;overflow-wrap:anywhere}
+.water-thermometer>summary{flex-wrap:wrap;gap:.5rem .75rem;border-radius:.85rem;min-width:0}
+.water-thermometer>summary>span:first-child{flex:1 1 10rem;min-width:0}
+.water-thermometer summary strong{font-size:1rem;line-height:1.5}
+.water-thermometer summary small{font-size:.75rem;line-height:1.5}
+.water-thermometer summary>span:nth-child(2){font-size:.875rem;line-height:1.5;max-width:100%;margin-left:0}
+.water-thermometer>summary::after{font-size:1.5rem;margin-left:auto}
+.water-thermometer p{font-size:.875rem;line-height:1.6}
+.water-thermometer h3{font-size:1rem;line-height:1.5}
+.water-thermometer button{font-size:.875rem;line-height:1.5;max-width:100%;min-width:0;overflow-wrap:anywhere}
+.thermometer-actions{min-width:0}.thermometer-actions button{flex:1 1 10rem}
+.thermometer-readings{grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr))}
+.thermometer-readings span,.thermometer-readings small,.water-thermometer .thermometer-note{font-size:.75rem}
+.thermometer-readings strong{font-size:1.75rem;line-height:1.4}
+.water-thermometer .thermometer-phase{font-size:.875rem;font-weight:700;padding:.5rem .75rem;border:1px solid #a4bba7;border-radius:.5rem;background:#fffdf2;color:#254535}
+@media(forced-colors:active){.water-thermometer button:disabled{opacity:1;color:GrayText;border-color:GrayText}}

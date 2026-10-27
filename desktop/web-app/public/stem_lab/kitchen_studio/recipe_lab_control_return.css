@@ -1,0 +1,10 @@
+/* Contextual navigation stays in the normal flow beside the reached controls. */
+.kitchen-control-return{box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .875rem;min-width:0;max-width:100%;margin:.75rem 0;padding:.75rem;border:1px solid #8da27f;border-left:4px solid #527448;border-radius:.5rem;background:#f3f6ec;color:#294b34;overflow-wrap:anywhere}
+.kitchen-control-return .kitchen-control-return-title{flex:1 1 13rem;min-width:0;margin:0;font-size:.9375rem;font-weight:700;line-height:1.5;color:inherit}
+.kitchen-control-return .kitchen-control-return-help{flex:1 1 100%;min-width:0;margin:0;font-size:.8125rem;line-height:1.5;color:#405b43}
+.kitchen-control-return .kitchen-control-return-button{box-sizing:border-box;flex:0 1 auto;min-width:44px;min-height:44px;max-width:100%;margin:0;padding:.5625rem .75rem;border:1px solid #527448;border-radius:.4375rem;background:#fffdf6;color:#294b34;font-size:.875rem;font-weight:650;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+.kitchen-control-return .kitchen-control-return-button:focus-visible{outline:3px solid #285439;outline-offset:3px}
+@media(max-width:40rem){.kitchen-control-return .kitchen-control-return-button{flex:1 1 100%}}
+@media(forced-colors:active){.kitchen-control-return{background:Canvas;color:CanvasText;border-color:CanvasText}.kitchen-control-return .kitchen-control-return-title,.kitchen-control-return .kitchen-control-return-help{color:CanvasText}.kitchen-control-return .kitchen-control-return-button{background:ButtonFace;color:ButtonText;border-color:ButtonText}.kitchen-control-return .kitchen-control-return-button:focus-visible{outline-color:Highlight}}
+@media(prefers-reduced-motion:reduce){.kitchen-control-return,.kitchen-control-return *{scroll-behavior:auto;transition:none;animation:none}}
+@media print{.kitchen-control-return{display:none}}

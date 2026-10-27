@@ -973,6 +973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           cnv.setAttribute('role', 'img');
           cnv.setAttribute('aria-label', t('stem.echolocation.cave_3d_visualization', '3D echolocation cave visualization. Use the camera controls and sonar pulse button to explore.'));
           cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block';
+          cnv.tabIndex = 0; // keyboard flight needs a focus target (WCAG 2.1.4 focus scope)
           container.appendChild(cnv);
           try {
             eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
@@ -1197,6 +1198,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng.keys = {};
           var _CAVE_FLIGHT_CODES = { KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1, KeyE: 1, KeyP: 1, KeyR: 1, Space: 1, ShiftLeft: 1, ShiftRight: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
           eng._keyDown = function(e) {
+            // WCAG 2.1.4: flight keys act only while the cave has focus or the mouse is locked.
+            if (!eng._locked && (e.ctrlKey || e.metaKey || e.altKey || !e.target || !e.target.nodeType || !container.contains(e.target))) return;
             if (_CAVE_FLIGHT_CODES[e.code]) {
               eng.keys[e.code] = true;
               e.preventDefault();
@@ -1221,7 +1224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             eng.camera.quaternion.setFromEuler(eng.euler);
           };
           document.addEventListener('mousemove', eng._mouseMove);
-          cnv.addEventListener('click', function() { cnv.requestPointerLock(); });
+          cnv.addEventListener('click', function() { try { cnv.focus({ preventScroll: true }); } catch (_e) {} cnv.requestPointerLock(); });
 
           // ── Touch controls for 3D cave (mobile) ──
           var _caveTouchLookId = null, _caveTouchLookStart = null;
@@ -2552,11 +2555,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var onKey = function(e) {
           var k = (e.key || '').toLowerCase();
           if (FLIGHT_KEYS[k]) {
-            sonarKeysRef.current[k] = e.type === 'keydown';
             if (e.type === 'keydown') {
-              e.preventDefault();
-              if (k === ' ' || k === 'spacebar') emitSonarPulse();
+              // WCAG 2.1.4: flight keys act only while focus is inside the sonar workspace.
+              // Space is handled by the focused canvas's own onKeyDown (it fired twice before).
+              var ws = document.getElementById('echo-sonar-fs-workspace');
+              if (e.ctrlKey || e.metaKey || e.altKey || !ws || !e.target || !e.target.nodeType || !ws.contains(e.target)) return;
+              if (k === ' ' || k === 'spacebar') return;
             }
+            sonarKeysRef.current[k] = e.type === 'keydown';
+            if (e.type === 'keydown') e.preventDefault();
           }
         };
         window.addEventListener('keydown', onKey);

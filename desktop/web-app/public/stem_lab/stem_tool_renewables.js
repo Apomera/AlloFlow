@@ -9326,7 +9326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // MENU
       // ─────────────────────────────────────────
       var MENU_TILES = [
-        { id: 'tycoon', icon: '🏝️', label: __alloT('stem.renewables.tycoon', 'Renewables Tycoon'), desc: __alloT('stem.renewables.tycoon_desc', 'Build a renewable island cooperative. Acquire solar, wind and batteries, maintain your fleet, respond to events, and complete a twelve-month campaign.') },
+        { id: 'tycoon', icon: '🏝️', label: __alloT('stem.renewables.tycoon_label', 'Renewables Tycoon'), desc: __alloT('stem.renewables.tycoon_desc', 'Build a renewable island cooperative. Acquire solar, wind and batteries, maintain your fleet, respond to events, and complete a twelve-month campaign.') },
         { id: 'microgrid', icon: '🔌', label: 'Storage & demand lab', desc: 'Connect generation to demand, dispatch a battery bank, and explore grid outages with a minute-by-minute energy balance.' },
         { id: 'energy3d', icon: '⚙️', label: 'Individual 3D energy simulations', desc: 'Nine mechanisms: adjust the resource, inspect components, trace losses, and compare readings.' },
         { id: 'transition', icon: '🌎', label: __alloT('stem.renewables.transition_studio', 'US transition sandbox'), desc: __alloT('stem.renewables.transition_studio_desc', 'Site new capacity, explore a 3D energy landscape, and stress-test three to seven days of electricity demand.') },

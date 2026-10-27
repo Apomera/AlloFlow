@@ -134,7 +134,7 @@
     // Dimensions/cadence are illustrative model tuning, not measured kinematics.
     americanGoldfinch: {
       body: [.022, .027, .039], bodyY: .057, bodyZ: -.008,
-      head: [.016, .0185, .020], headY: .092, headZ: .036,
+      head: [.0136, .0157, .017], headY: .092, headZ: .036,
       leg: .025, stance: .0095, shoulder: [.017, .067, .007], wing: .46,
       tailY: .055, tailZ: -.038, tailLength: .054, tailWidth: .0074,
       neckBase: [.070, .017], neckWidth: .015, billLength: .0105,
@@ -143,12 +143,12 @@
       tune: { hop: true, walkReach: .013, stepLift: .008, strideRate: 13, wingbeatCruise: 7.5, wingbeatBurst: 9.0, sizeM: .13,
         eyeRing: '#b69a34', bill: '#d8a47a', iris: '#111211', crown: '#17191b', cheek: '#edc832', throat: '#efd03b',
         billWidth: .0047, billHeight: .0045, billDroop: .0006, billTaper: 1.08, eye: [.0028, .0029, .0022, .0023],
-        peckDrop: .0654, peckForward: .028, upperLeg: .028, footScale: .68, tailShape: [1.5, -.10], fan: .33,
+        peckDrop: .0675, peckForward: .028, upperLeg: .028, footScale: .68, tailShape: [1.5, -.10], fan: .33,
         vent: true, wingRound: .18, tailRound: .18, plumage: 'Breeding adult male' }
     },
     easternBluebird: {
       body: [.028, .034, .050], bodyY: .071, bodyZ: -.010,
-      head: [.0195, .0225, .024], headY: .116, headZ: .047,
+      head: [.0166, .0191, .0204], headY: .116, headZ: .047,
       leg: .033, stance: .0115, shoulder: [.022, .084, .009], wing: .60,
       tailY: .068, tailZ: -.047, tailLength: .078, tailWidth: .0095,
       neckBase: [.087, .022], neckWidth: .018, billLength: .0145,
@@ -157,12 +157,12 @@
       tune: { hop: true, walkReach: .018, stepLift: .010, strideRate: 11.5, wingbeatCruise: 6.6, wingbeatBurst: 8.0, sizeM: .18,
         eyeRing: '#344358', bill: '#292e34', iris: '#101214', crown: '#2e70b1', cheek: '#3269a0', throat: '#b35c32',
         billWidth: .0034, billHeight: .0032, billDroop: .0006, billTaper: .88, eye: [.0033, .0034, .0027, .0028],
-        peckDrop: .0833, peckForward: .036, upperLeg: .036, footScale: .81, tailShape: [1.7, .06], fan: .34,
+        peckDrop: .0858, peckForward: .036, upperLeg: .036, footScale: .81, tailShape: [1.7, .06], fan: .34,
         wingRound: .23, tailRound: .28, plumage: 'Adult male' }
     },
     whiteThroatedSparrow: {
       body: [.026, .031, .047], bodyY: .065, bodyZ: -.010,
-      head: [.0175, .021, .022], headY: .105, headZ: .043,
+      head: [.0149, .0179, .0187], headY: .105, headZ: .043,
       leg: .030, stance: .011, shoulder: [.021, .077, .008], wing: .50,
       tailY: .062, tailZ: -.045, tailLength: .085, tailWidth: .0086,
       neckBase: [.079, .020], neckWidth: .0168, billLength: .0115,
@@ -172,7 +172,7 @@
         // Cornell specifies a gray bill; a pink bill would suggest White-crowned Sparrow.
         eyeRing: '#353333', bill: '#898783', iris: '#141313', crown: '#222020', cheek: '#a6a29a', throat: '#f3efe4',
         billWidth: .0047, billHeight: .0044, billDroop: .0007, billTaper: 1.02, eye: [.0030, .0031, .0024, .0025],
-        peckDrop: .0759, peckForward: .032, upperLeg: .033, footScale: .76, tailShape: [1.8, .055], fan: .36,
+        peckDrop: .0782, peckForward: .032, upperLeg: .033, footScale: .76, tailShape: [1.8, .055], fan: .36,
         wingRound: .23, tailRound: .28, plumage: 'White-striped adult' }
     }
   };
@@ -512,6 +512,36 @@
       // All three species share one program; their physical scales are uniforms.
       details.customProgramCacheKey = function () { return 'avian-woodland-resident-bill-v1'; };
     }
+    // A living eye reflects the sky. The iris is a flat disc, so a virtual
+    // cornea sphere over it supplies the normal; the glint then moves with
+    // head turns and the viewpoint. Vertex colours and geometry stay as built.
+    var irisY = p.head[1] * .13, irisZ = p.head[2] * .34 + .0002, irisX = p.head[0] * .905 + .0006;
+    var irisRadius = [tune ? tune.eye[2] : grouse ? .0038 : cardinal ? .0025 : .0029, tune ? tune.eye[3] : grouse ? .0039 : cardinal ? .0026 : .0030];
+    var faceProgram = details.onBeforeCompile;
+    details.onBeforeCompile = function (shader, renderer) {
+      faceProgram.call(this, shader, renderer);
+      shader.uniforms.awEyeIris = { value: new THREE.Vector4(irisX, irisY, irisZ, 0) };
+      shader.uniforms.awEyeRadius = { value: new THREE.Vector2(irisRadius[0], irisRadius[1]) };
+      shader.vertexShader = 'uniform vec4 awEyeIris;\nuniform vec2 awEyeRadius;\nvarying vec3 awEyeNormal;\nvarying float awEyeMask;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', [
+        '#include <begin_vertex>',
+        'float awEyeSide = position.x < 0. ? -1. : 1.;',
+        'vec3 awEyeOffset = position - vec3(awEyeSide * awEyeIris.x, awEyeIris.y, awEyeIris.z);',
+        'vec2 awEyeDisc = awEyeOffset.yz / awEyeRadius;',
+        'float awEyeR2 = dot(awEyeDisc, awEyeDisc);',
+        'awEyeMask = step(abs(awEyeOffset.x), .0012) * (1. - smoothstep(.55, 1., awEyeR2));',
+        'awEyeNormal = normalize(normalMatrix * vec3(awEyeSide * sqrt(max(0., 1. - awEyeR2)), awEyeDisc.x * 1.25, awEyeDisc.y * 1.25));'
+      ].join('\n'));
+      shader.fragmentShader = 'varying vec3 awEyeNormal;\nvarying float awEyeMask;\n' + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace('#include <tonemapping_fragment>', [
+        'if (awEyeMask > .01) {',
+        '  vec3 awEyeReflect = reflect(-normalize(vViewPosition), normalize(awEyeNormal));',
+        '  vec3 awEyeSky = normalize((viewMatrix * vec4(.3, 1., .4, 0.)).xyz);',
+        '  gl_FragColor.rgb += vec3(smoothstep(.82, .97, dot(awEyeReflect, awEyeSky)) * awEyeMask * 1.6);',
+        '}',
+        '#include <tonemapping_fragment>'
+      ].join('\n'));
+    };
     var feetMaterial = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .79 }));
     feetMaterial.extensions = { derivatives: true };
     feetMaterial.onBeforeCompile = function (shader) {
@@ -1080,7 +1110,54 @@
       var bo = billOffset + bi * billSegments + bj, bn = billOffset + bi * billSegments + (bj + 1) % billSegments;
       quad(face, bo, bn, bo + billSegments, bn + billSegments);
     }
-    mesh(head, 'woodland-eyes-and-bill', face, details);
+    var faceMesh = mesh(head, 'woodland-eyes-and-bill', face, details);
+    // Song gape. The lower mandible is built on first use, so a bird that
+    // never sings keeps its single closed bill. While open, the bill's lower
+    // half folds flat onto the commissure and the jaw hinges at the base.
+    var billRest = null, faceNormals = null, jaw = null, jawPivot = null;
+    function setGape(g) {
+      var positions = faceMesh.geometry.attributes.position.array, half = billSegments / 2, count = (billRings + 1) * billSegments;
+      if (!billRest) {
+        if (!(g > 0)) return;
+        billRest = new Float32Array(positions.subarray(billOffset * 3, (billOffset + count) * 3));
+        faceNormals = new Float32Array(faceMesh.geometry.attributes.normal.array);
+        var colors = faceMesh.geometry.attributes.color.array, uvs = faceMesh.geometry.attributes.uv.array;
+        var lower = data(), mouth = color('#5b2f2c'), row = half + 1;
+        lower.kind = face.kind;
+        var rest = function (r, s, k) { return billRest[(r * billSegments + s % billSegments) * 3 + k]; };
+        for (var r = 0; r <= billRings; r++) for (var s = half; s <= billSegments; s++) {
+          var at = billOffset + r * billSegments + s % billSegments;
+          vertex(lower, rest(r, s, 0), rest(r, s, 1), rest(r, s, 2), { r: colors[at * 3], g: colors[at * 3 + 1], b: colors[at * 3 + 2] }, uvs[at * 2], uvs[at * 2 + 1]);
+        }
+        for (var cr = 0; cr < billRings; cr++) for (var cs = 0; cs < half; cs++) {
+          var o = cr * row + cs; quad(lower, o, o + 1, o + row, o + row + 1);
+        }
+        // A dark mouth floor between the two cutting edges, faced both ways.
+        var floor = lower.p.length / 3;
+        for (var fr = 0; fr <= billRings; fr++) for (var edge = 0; edge < 2; edge++) {
+          var fs = edge ? 0 : half;
+          vertex(lower, rest(fr, fs, 0), rest(fr, fs, 1), rest(fr, fs, 2), mouth, edge, fr / billRings);
+        }
+        for (var ff = 0; ff < billRings; ff++) {
+          var fa = floor + ff * 2; quad(lower, fa, fa + 1, fa + 2, fa + 3); quad(lower, fa, fa + 2, fa + 1, fa + 3);
+        }
+        jawPivot = new THREE.Group(); jawPivot.name = 'woodland-song-jaw';
+        jawPivot.position.set(0, rest(0, 0, 1), rest(0, 0, 2)); head.add(jawPivot);
+        jaw = new THREE.Mesh(geometry(lower, false), details); jaw.name = 'woodland-lower-mandible';
+        jaw.position.set(0, -jawPivot.position.y, -jawPivot.position.z); jawPivot.add(jaw);
+      }
+      var open = g > 0;
+      for (var rr = 0; rr <= billRings; rr++) {
+        var seamY = billRest[rr * billSegments * 3 + 1];
+        for (var ss = half + 1; ss < billSegments; ss++) {
+          var vi = rr * billSegments + ss;
+          positions[(billOffset + vi) * 3 + 1] = open ? seamY : billRest[vi * 3 + 1];
+        }
+      }
+      if (open) refresh(faceMesh.geometry);
+      else { faceMesh.geometry.attributes.position.needsUpdate = true; faceMesh.geometry.attributes.normal.array.set(faceNormals); faceMesh.geometry.attributes.normal.needsUpdate = true; }
+      jawPivot.visible = open; jawPivot.rotation.x = g * .42;
+    }
 
     // A curved crop-to-nape surface carries its own small, overlapping contour
     // feathers. Coordinates are retained in profile space, so the whole tract
@@ -1572,6 +1649,13 @@
       var preenSide = preen > 0 && number(pose.preenSide, 1) < 0 ? -1 : 1;
       var preenStroke = preen > 0 ? smooth(clamp(number(pose.preenStroke, 0), 0, 1)) : 0;
       var groomingChanged = previous.preen !== preen || previous.preenSide !== preenSide || previous.preenStroke !== preenStroke;
+      // Calling is a perched display subordinate to every other action: the
+      // head lifts, the bill opens with each syllable and a grouse beats its
+      // cupped wings. Zero/absent inputs take the historical path.
+      var song = flight > 0 || walking > 0 || peck > 0 || landing > 0 || preen > 0 ? 0 : smooth(clamp(number(pose.song, 0), 0, 1));
+      var gape = song > 0 && !grouse ? clamp(number(pose.gape, 0), 0, 1) * song : 0;
+      var drum = song > 0 && grouse ? clamp(number(pose.drum, 0), 0, 1) * song : 0;
+      var songChanged = (previous.song || 0) !== song || (previous.gape || 0) !== gape || (previous.drum || 0) !== drum;
       var targets = pose.footTargets, hasTargets = !!(targets && targets[0] && targets[1]);
       if (hasTargets) for (var targetIndex = 0; targetIndex < 2; targetIndex++) {
         var target = targets[targetIndex];
@@ -1586,7 +1670,7 @@
             previousFootTargets[targetOffset + 4] !== number(checkedTarget.yaw, 0)) targetsChanged = true;
       }
       if (previous.flight === flight && previous.phase === phase && previous.effort === effort && previous.bank === bank &&
-          previous.yaw === yaw && previous.pitch === pitch && previous.peck === peck && previous.stride === stride && previous.walking === walking && previous.fan === fan && previous.landing === landing && previous.targetBlend === targetBlend && !targetsChanged && !groomingChanged && !hopChanged && !crestChanged && !flightLoadChanged && !settlingChanged) return;
+          previous.yaw === yaw && previous.pitch === pitch && previous.peck === peck && previous.stride === stride && previous.walking === walking && previous.fan === fan && previous.landing === landing && previous.targetBlend === targetBlend && !targetsChanged && !groomingChanged && !songChanged && !hopChanged && !crestChanged && !flightLoadChanged && !settlingChanged) return;
       // Transfer the torso toward the supporting foot. External contacts can
       // run independently of stride (for example while turning in RaptorLab),
       // so their actual swing envelopes determine the weight transfer.
@@ -1608,7 +1692,7 @@
       walkY = Math.min(1, walkY) * walkAmount * (grouse ? .0009 : .00065);
       if (hopper && hopPhase >= 0) { walkX = 0; walkY = hopAir * .00065; }
       var neckChanged = previous.flight !== flight || previous.peck !== peck || previous.yaw !== yaw ||
-        previous.walkX !== walkX || previous.walkY !== walkY || groomingChanged || hopChanged || flightLoadChanged ||
+        previous.walkX !== walkX || previous.walkY !== walkY || groomingChanged || songChanged || hopChanged || flightLoadChanged ||
         (cardinal && flight > 0 && (previous.phase !== phase || previous.effort !== effort || previous.landing !== landing));
       var wingChanged = previous.flight !== flight || (flight > 0 && (previous.phase !== phase || previous.effort !== effort || previous.bank !== bank || previous.landing !== landing));
       var tailChanged = previous.flight !== flight || previous.fan !== fan || (hopper && hopChanged) || settlingChanged || (flight > 0 && (previous.phase !== phase || previous.effort !== effort || previous.bank !== bank || previous.landing !== landing));
@@ -1616,6 +1700,7 @@
       previous.yaw = yaw; previous.pitch = pitch; previous.peck = peck; previous.stride = stride; previous.walking = walking; previous.fan = fan; previous.landing = landing;
       previous.walkX = walkX; previous.walkY = walkY;
       previous.preen = preen; previous.preenSide = preenSide; previous.preenStroke = preenStroke;
+      previous.song = song; previous.gape = gape; previous.drum = drum;
       if (hopper) previous.hopPhase = hopPhase;
       if (cardinal) {
         previous.crestFold = crestFold;
@@ -1662,6 +1747,12 @@
         head.position.z += .002 * launchLoad + .0015 * landing * unfold;
         head.rotation.x += -.015 * launchLoad + .015 * landing * unfold;
       }
+      if (song > 0) {
+        body.rotation.x -= song * (grouse ? .10 : .05);
+        head.position.y += song * (grouse ? .005 : .0025); head.position.z -= song * .0015;
+        head.rotation.x -= song * (grouse ? .10 : .36);
+      }
+      if (songChanged && (gape > 0 || billRest)) setGape(gape);
       if (crestChanged) {
         var crestPositions = headMesh.geometry.attributes.position.array;
         if (crestFold === 0) crestPositions.set(crestRest, cardinalCrestStart * 3);
@@ -1752,6 +1843,7 @@
           group.rotation.z += sign * unfold * launchLoad * .28;
         }
         if (preen > 0 && sign === preenSide) group.rotation.z -= sign * preenWingLift;
+        if (drum > 0) { group.rotation.z += sign * drum * .62; group.rotation.y -= sign * drum * .30; }
         var pos = state.mesh.geometry.attributes.position.array;
         // Pressure deepens the section on the power stroke, then its elastic
         // recoil relaxes it during hand recovery. This follows the existing

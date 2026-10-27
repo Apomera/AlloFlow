@@ -363,10 +363,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         React.useEffect(function() {
           if ((d.tab || 'integral') !== 'visualize') return;
           function onKey(e) {
-            if (!e.shiftKey || !/^[0-9]$/.test(e.key)) return;
+            // Physical digit keys, so AZERTY (where Shift+digit types the digit) cannot switch views while typing.
+            var m = /^Digit([0-9])$/.exec(e.code || '');
+            if (!e.shiftKey || !m || e.ctrlKey || e.altKey || e.metaKey) return;
+            var tgt = e.target;
+            // WCAG 2.1.4: only while focus is in this tool, and never from a text field.
+            if (!tgt || !tgt.closest || !tgt.closest('[data-stem-tool-shell]') || tgt.closest('input, textarea, select, [contenteditable="true"]')) return;
             var views = ['zoom','tangent','motion','riemann','ftc','slope','chain','taylor','optim','related'];
             e.preventDefault();
-            var idx = e.key === '0' ? 9 : parseInt(e.key, 10) - 1;
+            var idx = m[1] === '0' ? 9 : parseInt(m[1], 10) - 1;
             if (views[idx]) upd('vizView', views[idx]);
           }
           window.addEventListener('keydown', onKey);

@@ -43,6 +43,7 @@ window.StemLab = window.StemLab || {
   }
 
   window.StemLab.registerTool('wave', {
+    darkRemap: true, // paints its own dark panels; keeps the hub's dark text remap (WCAG 1.4.3)
     icon: '\u3030\uFE0F',
     label: "Wave Simulator",
     desc: "Animate sound and water waves across Free, Standing, Ripple Tank, Reflection, Longitudinal, Doppler, and Spectrum modes.",
@@ -1875,7 +1876,7 @@ const d = labToolData.wave;
 
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.wave.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold tracking-tight" + (ctx.isDark ? "" : " text-slate-800") + onHostInk, style: ctx.isDark ? { color: '#1e293b' } : undefined }, "\uD83C\uDF0A " + __alloT('stem.wave.title', 'Wave Simulator')),
+              React.createElement("h3", { className: "text-lg font-bold tracking-tight" + (ctx.isDark ? "" : " text-slate-800") + onHostInk, style: ctx.isDark ? { color: '#f1f5f9', backgroundColor: '#0f172a' } : undefined }, "\uD83C\uDF0A " + __alloT('stem.wave.title', 'Wave Simulator')),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[0.6875rem] font-bold rounded-full" }, __alloT('stem.wave.badge_animated', 'ANIMATED'))
 

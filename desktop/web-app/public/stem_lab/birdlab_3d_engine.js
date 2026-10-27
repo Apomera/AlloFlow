@@ -680,6 +680,7 @@
     var observer={position:new THREE.Vector3(1.8,1.65,4.8),speed:0,crouching:false},walk={yaw:.36,pitch:-.20,eyeHeight:1.65},moveKeys=Object.create(null);
     var quality=selectQuality(options.quality);
     var listeners=[], resizeObserver=null, visibilityObserver=null, habitat=null, bird=null, wildlife=null, mammals=null;
+    var feedingStudy=false,guidedFoodSpots=null;
     var orbit={yaw:2.4,pitch:.21,distance:2.65}, pointerMap=new Map(), pinchDistance=0;
     var scenePickRay=new THREE.Raycaster(),scenePickPoint=new THREE.Vector2(),scenePickMeshes=[],scenePickOwners=new Map();
     var surfaceRuler=false,surfacePoints=[],surfaceTime=null,surfaceGuide=null,surfaceMeasureMode='distance';
@@ -736,7 +737,7 @@
       scene.add(sun); scene.add(sun.target);
       var rim=new THREE.DirectionalLight('#d3e6f2',.75); rim.position.set(12,15,-24); scene.add(rim);
       var sky=createWoodlandSky(THREE,quality);scene.add(sky);
-      habitat=global.BirdLab3DHabitat.create(THREE,scene,{quality:quality});
+      habitat=global.BirdLab3DHabitat.create(THREE,scene,{quality:quality,reducedMotion:!!options.reducedMotion});
       if(habitat.root&&!habitat.root.parent) scene.add(habitat.root);
       bird=global.BirdLab3DBird.create(THREE); bird.root.name='birdlab-red-tailed-hawk'; scene.add(bird.root);
       wildlife=global.BirdLab3DWildlife.create(THREE,scene,{quality:quality,groundHeight:habitat.groundSurfaceHeight||habitat.groundHeight,isBlocked:habitat.isBlocked});
@@ -798,7 +799,7 @@
         altitude:bird.root.position.y-terrain(bird.root.position.x,bird.root.position.z),
         airspeed:phase.airspeed,wingbeat:phase.wingbeat,position:bird.root.position.toArray(),orientation:bird.root.quaternion.toArray(),wind:phase.wind.slice(),
         cameraPosition:camera.position.toArray(),cameraTarget:followTarget.toArray(),pose:Object.assign({},phase.pose,{flapPhase:wingPhase}),
-        wildlife:wildlife.snapshot(),residentInspection:residentInspectionSnapshot(),animals:mammals&&mode==='free'?mammals.snapshot():[],
+        wildlife:wildlife.snapshot(),feedingStudy:feedingStudy,foodSources:feedingStudy&&wildlife.foodLevels?wildlife.foodLevels():[],residentInspection:residentInspectionSnapshot(),animals:mammals&&mode==='free'?mammals.snapshot():[],
         frames:frames,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:quality,hidden:!!document.hidden};
     }
     function notify(force) { if(disposed)return;updateWingtipPaths();updateSurfaceRuler();updateAnatomyFrozenSurface();updateResidentFrozenSurface();if(force){updateCourseLens();updateAttitudeGuide();}if(!options.onState) return; if(force||time-stateStamp>=.2||stateStamp<0){stateStamp=time;options.onState(snapshot());} }
@@ -1523,7 +1524,7 @@
         mode='guided';time=savedGuided.time;paused=savedGuided.paused;speed=savedGuided.speed;cameraMode=savedGuided.camera;repeatFlights=savedGuided.repeat;
         orbit.yaw=savedGuided.yaw;orbit.pitch=savedGuided.pitch;orbit.distance=savedGuided.distance;
       }
-      if(wildlife.setMode)wildlife.setMode(mode);if(mammals)mammals.setMode(mode);stateStamp=-1;lastStamp=null;updateBird(0,true);updateCamera(1,true);notify(true);refresh();
+      if(wildlife.setMode)wildlife.setMode(mode);if(mammals)mammals.setMode(mode);syncGuidedFood();stateStamp=-1;lastStamp=null;updateBird(0,true);updateCamera(1,true);notify(true);refresh();
     }
     function setBinoculars(value){if(mode!=='free'||disposed)return;binoculars=!!value;if(!binoculars){fieldObserver.reset();observationKey='';}notify(true);refresh();}
     function setCrouching(value){if(mode!=='free'||disposed)return;observer.crouching=!!value;notify(true);refresh();}
@@ -1531,7 +1532,7 @@
       if(disposed||contextLost||mode!=='free'||!binoculars)return false;
       updateCamera(0,false);var observed=fieldObserver.update(0,camera,true,observer.speed,true);
       if(!observed||!observed.identified||sightings.some(function(entry){return entry.id===observed.id;})){notify(true);return false;}
-      sightings.push({id:observed.id,name:observed.name,scientificName:observed.scientificName,category:observed.category||'bird',behavior:observed.behavior,distance:observed.distance,time:fieldVisitTime});notify(true);return true;
+      sightings.push({id:observed.id,name:observed.name,scientificName:observed.scientificName,category:observed.category||'bird',behavior:observed.behavior,distance:observed.distance,time:fieldVisitTime,food:sightingFood(observed.id)});notify(true);return true;
     }
     function setMove(direction,pressed){if(mode!=='free'||disposed||['forward','back','left','right'].indexOf(direction)<0)return;moveKeys[direction]=!!pressed;refresh();}
     function moveObserver(forward,side,dt){
@@ -1580,6 +1581,27 @@
       paused=true;repeatFlights=false;time=clamp(Number(value),0,DURATION);stateStamp=-1;lastStamp=null;
       updateBird(0,true);updateCamera(1,true);notify(true);refresh();
     }
+    // Feeding study: food sources in Free roam, and each guided neighbor's
+    // main food where its scripted visit already feeds. Off by default.
+    function syncGuidedFood(){
+      if(!habitat||!habitat.setGuidedFood||!wildlife||!wildlife.guidedForageSpots)return;
+      if(feedingStudy&&mode==='guided'){if(!guidedFoodSpots)guidedFoodSpots=wildlife.guidedForageSpots(time);habitat.setGuidedFood(guidedFoodSpots,true);}
+      else habitat.setGuidedFood(null,false);
+    }
+    function setFeedingStudy(value){
+      value=!!value;
+      if(disposed||value===feedingStudy||!habitat||!habitat.getFoodSources||!wildlife||!wildlife.setFeedingStudy)return;
+      feedingStudy=value;habitat.setFoodVisible(value);
+      wildlife.setFeedingStudy(value?habitat.getFoodSources():null);
+      syncGuidedFood();notify(true);refresh();
+    }
+    // The sound layer cues a resident's visible call to match what it plays.
+    function cueSong(id,notes,delay){return !disposed&&!!wildlife&&!!wildlife.cueSong&&wildlife.cueSong(id,notes,delay);}
+    function sightingFood(id){
+      if(!feedingStudy)return undefined;
+      var entry=wildlife.snapshot().filter(function(value){return value.id===id;})[0];
+      return entry&&entry.food?{kind:entry.food.kind,label:entry.food.label}:undefined;
+    }
     function setLighting(value) {
       if(disposed||['daylight','golden'].indexOf(value)===-1)return;
       lighting=value;lightingDirectionCustom=false;var warm=value==='golden';
@@ -1605,7 +1627,7 @@
     controller.setResidentStudio=setResidentStudio;controller.setResidentExplore=setResidentExplore;
     controller.setResidentPart=setResidentPart;controller.setResidentView=setResidentView;controller.setResidentAngle=setResidentAngle;
     controller.pinResidentShape=pinResidentShape;controller.clearResidentShape=clearResidentShape;controller.setResidentFrozenSurface=setResidentFrozenSurface;controller.setResidentFrozenOpacity=setResidentFrozenOpacity;
-    controller.setWingtipPaths=setWingtipPaths;
+    controller.setWingtipPaths=setWingtipPaths;controller.setFeedingStudy=setFeedingStudy;controller.cueSong=cueSong;
     controller.setSurfaceRuler=setSurfaceRuler;controller.setSurfaceMeasureMode=setSurfaceMeasureMode;controller.clearSurfaceRuler=clearSurfaceRuler;controller.undoSurfacePoint=undoSurfacePoint;controller.placeSurfaceCenter=placeSurfaceCenter;
     controller.setAnatomyFrozenSurface=setAnatomyFrozenSurface;controller.setAnatomyFrozenOpacity=setAnatomyFrozenOpacity;
     controller.setCourseLens=setCourseLens;controller.pinCourseStation=pinCourseStation;controller.clearCourseStation=clearCourseStation;
@@ -1635,7 +1657,9 @@
       var weatherTime=options.reducedMotion?0:time;
       sky.material.uniforms.cloudOffset.value.set((weatherTime*.00045)%1,(weatherTime*.00019)%1);
       wildlife.update(time,dt,mode==='free'?observer:null);
+      if(feedingStudy&&habitat.setFoodLevels&&wildlife.foodLevels)habitat.setFoodLevels(wildlife.foodLevels());
       if(mammals)mammals.update(time,dt,mode==='free'?observer:null);
+      if(wildlife.setExtraContactShadow){var squirrel=mammals&&mode==='free'?mammals.snapshot()[0]:null;wildlife.setExtraContactShadow(squirrel&&squirrel.visible?{x:squirrel.position[0],z:squirrel.position[2],heading:squirrel.heading,halfWidth:.08,halfLength:.17}:null);}
       updateStudyOverlay();anatomyCache=null;residentCache=null;applyAnatomyVisibility();
     }
     function updateCamera(dt,snap) {

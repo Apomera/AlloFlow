@@ -3528,7 +3528,7 @@
                   }
                 },
                 placeholder: 'Ask about ' + sel.name + '...',
-                className: 'flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-400 bg-white text-slate-800 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
+                className: 'flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-500 bg-white text-slate-800 text-sm focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-200'
               }),
               h('button', { type: 'button', style: { minWidth: 44, minHeight: 44 }, 'aria-label': __alloT('stem.decomposer.send_question', 'Send question'), onClick: function() {
                   if (aiInput.trim()) handleAiQuestion(aiInput.trim());
@@ -3653,7 +3653,7 @@
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.decomposer.hypothesis_which_condition_is_most_important','Hypothesis: Which condition is most important for decomposition?'),
                   'aria-label': __alloT('stem.decomposer.a11y_decomposition_hypothesis', 'Decomposition hypothesis'),
-                  className: 'w-full bg-white text-slate-800 text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  className: 'w-full bg-white text-slate-800 text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
                 h('button', { type: 'button', id: 'decomposer-discovery-prompts-toggle', 'data-decomposer-prompts-toggle': true,
                   'aria-expanded': !!iq.stuckRevealed, 'aria-controls': 'decomposer-discovery-prompts',
                   onClick: function() { setIQ(function(current) { return { stuckRevealed: !current.stuckRevealed }; }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' },
@@ -3668,7 +3668,7 @@
                   'I understand — explain in own words'),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.decomposer.explain_how_temperature_humidity_and_oxygen','Explain how temperature, humidity, and oxygen jointly drive decomposition.'),
                   'aria-label': __alloT('stem.decomposer.a11y_explain_decomposition_conditions', 'Explain decomposition conditions'),
-                  className: 'w-full bg-white text-slate-800 text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                  className: 'w-full bg-white text-slate-800 text-[0.75rem] border border-emerald-600 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('p', { className: 'text-[0.6875rem] italic text-slate-600' }, __alloT('stem.decomposer.discovery_model_note', 'This simplified model groups estimated rates into four categories. Real decomposition also depends on the material and decomposers.'))
               )
             );

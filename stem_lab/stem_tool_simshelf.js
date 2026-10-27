@@ -191,9 +191,9 @@
           t('stem.simShelf.blocked_note', 'Pop-up blocked — allow pop-ups for this page and try again.')),
         popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
           t('stem.simShelf.open_note', 'Sim Shelf is open. Keep this AlloFlow window open too — it powers the AI coach.')),
-        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
+        popupState === 'closed' && h('p', { className: 'text-xs text-slate-300' },
           t('stem.simShelf.closed_note', 'Sim Shelf was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[0.6875rem] text-slate-400 leading-relaxed' },
+        h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
           t('stem.simShelf.credit', 'Simulations by PhET Interactive Simulations, University of Colorado Boulder (phet.colorado.edu) — free and open, used billions of times worldwide. Sims load from PhET, so the shelf needs internet; several include PhET’s own keyboard navigation, spoken descriptions, and sonification.'))
       );
     }

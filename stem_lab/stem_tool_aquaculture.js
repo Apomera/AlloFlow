@@ -9458,7 +9458,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
         var target = event.target;
         var isTyping = target && target.matches && target.matches('input, textarea, select, [contenteditable="true"]');
-        if (event.key === '/' && !isTyping) {
+        // WCAG 2.1.4: "/" acts only while focus is inside the lab.
+        var inLab = !!(target && target.closest && target.closest('.aq-lab-shell'));
+        if (event.key === '/' && !isTyping && inLab) {
           event.preventDefault();
           setLibraryOpen(true);
           setTimeout(function() {

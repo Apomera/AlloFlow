@@ -5282,7 +5282,312 @@
     q.answer = (q.answer - shift + len) % len;
   });
 
+  // ──────────────────────────────────────────────────────────────────
+  // SKY JOURNEY: missions, a rank, and a daily sky question
+  // Pure (state in, state out), so the rules are testable and a hostile saved
+  // state cannot corrupt progress. Gentle by design: nothing expires, nothing is
+  // ranked against anyone else, and a missed day is never shown as a loss.
+  // ──────────────────────────────────────────────────────────────────
+  var JOURNEY_TAB_IDS = ['tonight', 'skymap', 'constellations', 'meteors', 'observatory', 'moon', 'planets', 'exoplanets', 'seasons', 'stars', 'galaxies', 'eclipses', 'indigenous', 'history', 'observe', 'quiz', 'print', 'hrDiagram'];
+  var JOURNEY_SIM_TABS = ['moon', 'eclipses', 'exoplanets', 'seasons', 'hrDiagram'];
+  var JOURNEY_FLAG_IDS = ['drift', 'planned', 'daily', 'quiz80', 'quizDone'];
+  // The host caps each STEM activity id at 100 XP, so the missions add up to exactly that:
+  // an amount promised in a toast can never be refused by the cap.
+  var JOURNEY_MAX_FOUND = 200, JOURNEY_MAX_DAYS = 90, JOURNEY_MAX_SITES = 12, JOURNEY_MAX_TRADITIONS = 12;
+  var JOURNEY_WATCHED_KEYS = ['tab', 'selectedTradition', 'obsPicked', 'obsSite', 'obsLat', 'obsLon', 'obsDrift', 'obsTargets', 'observingList', 'quizSubmitted', 'dailyAnswer', 'journeyPaid'];
+  // Order is the suggested path; the learner may do them in any order.
+  var JOURNEY_MISSIONS = [
+    { id: 'first_look', xp: 4, tab: 'observatory', test: function(j) { return !!j.seen.observatory; } },
+    { id: 'name_it', xp: 6, tab: 'observatory', test: function(j) { return j.found.length >= 1; } },
+    { id: 'wanderer', xp: 6, tab: 'observatory', test: function(j) { return j.found.some(function(k) { return /^(planet|moon):/.test(k); }); } },
+    { id: 'five_lights', xp: 10, tab: 'observatory', test: function(j) { return j.found.length >= 5; } },
+    { id: 'deep_sky', xp: 10, tab: 'observatory', test: function(j) { return j.found.some(function(k) { return k.indexOf('deepsky:') === 0; }); } },
+    { id: 'plan_night', xp: 8, tab: 'observatory', test: function(j) { return !!j.flags.planned; } },
+    { id: 'new_place', xp: 8, tab: 'observatory', test: function(j) { return j.sites.some(function(s) { return s !== OBSERVATORY_SITES[0].id; }); } },
+    { id: 'time_traveler', xp: 8, tab: 'observatory', test: function(j) { return !!j.flags.drift; } },
+    { id: 'pattern_finder', xp: 8, tab: 'constellations', test: function(j) { return j.patterns >= 3; } },
+    { id: 'sky_traditions', xp: 8, tab: 'indigenous', test: function(j) { return j.traditions.length >= 2; } },
+    { id: 'simulators', xp: 10, tab: 'moon', test: function(j) { return JOURNEY_SIM_TABS.filter(function(id) { return j.seen[id]; }).length >= 3; } },
+    { id: 'daily_question', xp: 4, tab: 'tonight', test: function(j) { return !!j.flags.daily; } },
+    { id: 'quiz_ace', xp: 10, tab: 'quiz', test: function(j) { return !!j.flags.quiz80; } }
+  ];
+  var JOURNEY_RANKS = [{ id: 'stargazer', min: 0 }, { id: 'sky_watcher', min: 3 }, { id: 'navigator', min: 6 }, { id: 'astronomer', min: 9 }, { id: 'cosmic_explorer', min: JOURNEY_MISSIONS.length }];
+  // Local calendar day, never UTC: toISOString() would roll over at 8 pm in New York.
+  function journeyDayKey(date) {
+    var t = date instanceof Date && Number.isFinite(date.getTime()) ? date : new Date();
+    return t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2);
+  }
+  // Whole days since 1970 for a YYYY-MM-DD key, or NaN when it is not a real date.
+  function journeyDayNumber(key) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof key === 'string' ? key : '');
+    if (!m) return NaN;
+    var ms = Date.UTC(+m[1], +m[2] - 1, +m[3]), back = new Date(ms);
+    return back.getUTCFullYear() === +m[1] && back.getUTCMonth() === +m[2] - 1 && back.getUTCDate() === +m[3] ? Math.round(ms / 86400000) : NaN;
+  }
+  function normalizeJourney(raw) {
+    var r = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    var out = { seen: {}, found: [], sites: [], traditions: [], patterns: 0, flags: {}, done: {}, paid: {}, days: [], daily: null };
+    function strings(value, max, valid) {
+      var list = [];
+      (Array.isArray(value) ? value : []).forEach(function(item) {
+        if (list.length < max && typeof item === 'string' && item.length > 0 && item.length <= 60 && list.indexOf(item) === -1 && (!valid || valid(item))) list.push(item);
+      });
+      return list;
+    }
+    var seenSource = r.seen && typeof r.seen === 'object' && !Array.isArray(r.seen) ? r.seen : {};
+    JOURNEY_TAB_IDS.forEach(function(id) { if (seenSource[id] === true) out.seen[id] = true; });
+    out.found = strings(r.found, JOURNEY_MAX_FOUND, function(key) { return /^(star|planet|moon|sun|deepsky|other):[A-Za-z0-9_.\- ]+$/.test(key); });
+    out.sites = strings(r.sites, JOURNEY_MAX_SITES, function(key) { return OBSERVATORY_SITES.some(function(site) { return site.id === key; }); });
+    out.traditions = strings(r.traditions, JOURNEY_MAX_TRADITIONS, function(key) { return /^[a-z0-9_]+$/.test(key); });
+    var patterns = Number(r.patterns);
+    out.patterns = Number.isInteger(patterns) && patterns >= 0 && patterns <= CONSTELLATIONS.length ? patterns : 0;
+    var flagSource = r.flags && typeof r.flags === 'object' && !Array.isArray(r.flags) ? r.flags : {};
+    JOURNEY_FLAG_IDS.forEach(function(id) { if (flagSource[id] === true) out.flags[id] = true; });
+    var doneSource = r.done && typeof r.done === 'object' && !Array.isArray(r.done) ? r.done : {};
+    var paidSource = r.paid && typeof r.paid === 'object' && !Array.isArray(r.paid) ? r.paid : {};
+    JOURNEY_MISSIONS.forEach(function(mission) {
+      if (typeof doneSource[mission.id] === 'string' && !Number.isNaN(journeyDayNumber(doneSource[mission.id]))) {
+        out.done[mission.id] = doneSource[mission.id];
+        if (paidSource[mission.id] === true) out.paid[mission.id] = true;
+      }
+    });
+    out.days = strings(r.days, JOURNEY_MAX_DAYS, function(key) { return !Number.isNaN(journeyDayNumber(key)); }).sort();
+    var daily = r.daily;
+    if (daily && typeof daily === 'object' && !Number.isNaN(journeyDayNumber(daily.day)) && typeof daily.sig === 'string' && /^[a-z0-9]{1,12}$/.test(daily.sig) && Number.isInteger(daily.pick) && daily.pick >= 0 && daily.pick < 8) {
+      out.daily = { day: daily.day, sig: daily.sig, pick: daily.pick, correct: daily.correct === true };
+    }
+    return out;
+  }
+  // Stable identity for something the learner identified, so the same star twice counts once.
+  function journeyObjectKey(pick) {
+    if (!pick || typeof pick !== 'object') return '';
+    var kind = ['star', 'planet', 'moon', 'sun', 'deepsky'].indexOf(pick.kind) >= 0 ? pick.kind : 'other';
+    var raw = pick.hip ? pick.hip : pick.id !== undefined && pick.id !== null ? pick.id : pick.name;
+    var id = String(raw === undefined || raw === null ? '' : raw).replace(/[^A-Za-z0-9_.\- ]/g, '').slice(0, 40);
+    return id ? kind + ':' + id : '';
+  }
+  function quizCorrectCount(answers) {
+    var list = Array.isArray(answers) ? answers : [];
+    return QUIZ_QUESTIONS.reduce(function(total, question, index) { return total + (Number.isInteger(list[index]) && list[index] === question.answer ? 1 : 0); }, 0);
+  }
+  function journeyDaysInARow(days, todayKey) {
+    var set = {}, today = journeyDayNumber(todayKey);
+    (Array.isArray(days) ? days : []).forEach(function(key) { var n = journeyDayNumber(key); if (!Number.isNaN(n)) set[n] = true; });
+    if (Number.isNaN(today)) return 0;
+    var cursor = set[today] ? today : set[today - 1] ? today - 1 : NaN, run = 0;
+    if (Number.isNaN(cursor)) return 0;
+    while (set[cursor]) { run++; cursor--; }
+    return run;
+  }
+  // Fold one state change into the journey. `patch` is what the tool just wrote,
+  // `next` is the merged state. Returns a new journey, or null when nothing changed
+  // (so ordinary edits never write an empty journey into saved state).
+  function journeyAdvance(previous, next, patch, todayKey) {
+    patch = patch && typeof patch === 'object' ? patch : {};
+    if (!JOURNEY_WATCHED_KEYS.some(function(key) { return patch[key] !== undefined; })) return null;
+    var j = normalizeJourney(previous && previous.journey), changed = false;
+    function mark() { changed = true; }
+    var day = Number.isNaN(journeyDayNumber(todayKey)) ? journeyDayKey(new Date()) : todayKey;
+    if (typeof patch.tab === 'string' && JOURNEY_TAB_IDS.indexOf(patch.tab) >= 0) {
+      if (!j.seen[patch.tab]) { j.seen[patch.tab] = true; mark(); }
+      if (patch.tab === 'indigenous') {
+        var shown = typeof next.selectedTradition === 'string' && /^[a-z0-9_]+$/.test(next.selectedTradition) ? next.selectedTradition : 'wabanaki';
+        if (j.traditions.indexOf(shown) === -1 && j.traditions.length < JOURNEY_MAX_TRADITIONS) { j.traditions.push(shown); mark(); }
+      }
+    }
+    if (typeof patch.selectedTradition === 'string' && /^[a-z0-9_]+$/.test(patch.selectedTradition) && j.traditions.indexOf(patch.selectedTradition) === -1 && j.traditions.length < JOURNEY_MAX_TRADITIONS) { j.traditions.push(patch.selectedTradition); mark(); }
+    if (patch.obsPicked && typeof patch.obsPicked === 'object') {
+      var key = journeyObjectKey(patch.obsPicked);
+      if (key && j.found.indexOf(key) === -1 && j.found.length < JOURNEY_MAX_FOUND) { j.found.push(key); mark(); }
+    }
+    if (typeof patch.obsSite === 'string' && OBSERVATORY_SITES.some(function(site) { return site.id === patch.obsSite; }) && j.sites.indexOf(patch.obsSite) === -1 && j.sites.length < JOURNEY_MAX_SITES) { j.sites.push(patch.obsSite); mark(); }
+    if ((patch.obsLat !== undefined || patch.obsLon !== undefined) && j.sites.indexOf('custom') === -1 && j.sites.length < JOURNEY_MAX_SITES) { j.sites.push('custom'); mark(); }
+    if (patch.obsDrift !== undefined && Number(patch.obsDrift) !== 0 && Number.isFinite(Number(patch.obsDrift)) && !j.flags.drift) { j.flags.drift = true; mark(); }
+    if (Array.isArray(patch.obsTargets) && normalizeObsTargets(patch.obsTargets).length > 0 && !j.flags.planned) { j.flags.planned = true; mark(); }
+    if (Array.isArray(patch.observingList)) {
+      var saved = patch.observingList.filter(function(id, index, list) { return typeof id === 'string' && list.indexOf(id) === index && CONSTELLATIONS.some(function(c) { return c.id === id; }); }).length;
+      if (saved > j.patterns) { j.patterns = saved; mark(); }
+    }
+    if (patch.quizSubmitted === true && Array.isArray(next.quizAnswers) && next.quizAnswers.length === QUIZ_QUESTIONS.length && next.quizAnswers.every(function(a) { return Number.isInteger(a); })) {
+      if (!j.flags.quizDone) { j.flags.quizDone = true; mark(); }
+      if (quizCorrectCount(next.quizAnswers) / QUIZ_QUESTIONS.length >= 0.8 && !j.flags.quiz80) { j.flags.quiz80 = true; mark(); }
+    }
+    var answer = patch.dailyAnswer;
+    if (answer && typeof answer === 'object' && !Number.isNaN(journeyDayNumber(answer.day)) && typeof answer.sig === 'string' && /^[a-z0-9]{1,12}$/.test(answer.sig) && Number.isInteger(answer.pick) && answer.pick >= 0 && answer.pick < 8) {
+      if (!j.daily || j.daily.day !== answer.day || j.daily.sig !== answer.sig) { j.daily = { day: answer.day, sig: answer.sig, pick: answer.pick, correct: answer.correct === true }; mark(); }
+      if (!j.flags.daily) { j.flags.daily = true; mark(); }
+    }
+    if (changed && j.days.indexOf(day) === -1) { j.days.push(day); j.days = j.days.slice(-JOURNEY_MAX_DAYS); }
+    JOURNEY_MISSIONS.forEach(function(mission) { if (!j.done[mission.id] && mission.test(j)) { j.done[mission.id] = day; changed = true; } });
+    if (Array.isArray(patch.journeyPaid)) {
+      patch.journeyPaid.forEach(function(id) { if (j.done[id] && !j.paid[id]) { j.paid[id] = true; changed = true; } });
+    }
+    return changed ? j : null;
+  }
+  function journeyCompleted(j) { return JOURNEY_MISSIONS.filter(function(mission) { return !!j.done[mission.id]; }); }
+  function journeyXp(j) { return journeyCompleted(j).reduce(function(total, mission) { return total + mission.xp; }, 0); }
+  function journeyRank(count) {
+    var rank = JOURNEY_RANKS[0];
+    JOURNEY_RANKS.forEach(function(candidate) { if (count >= candidate.min) rank = candidate; });
+    return rank;
+  }
+  function journeyNext(j) { return JOURNEY_MISSIONS.find(function(mission) { return !j.done[mission.id]; }) || null; }
+
+  // ── Daily sky question ───────────────────────────────────────────
+  // Every answer is computed from the same sky model the Observatory draws, for
+  // the learner's chosen place at a fixed 21:00 local time, so the answer cannot
+  // change while the question is open and cannot disagree with the 3D sky.
+  var DAILY_HOUR = 21;
+  var DAILY_DIRECTIONS = ['north', 'east', 'south', 'west'];
+  function dailyInstant(dayKey, timeZone) {
+    var n = journeyDayNumber(dayKey);
+    if (Number.isNaN(n)) return NaN;
+    var date = new Date(n * 86400000);
+    return wallTimeToUtcMs(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate(), DAILY_HOUR, 0, timeZone);
+  }
+  // Arrange options so the correct one does not sit in a predictable slot.
+  function dailyArrange(options, correctIndex, seed) {
+    var n = options.length, shift = ((seed % n) + n) % n, arranged = [], answer = 0;
+    for (var i = 0; i < n; i++) {
+      var source = (i + shift) % n;
+      arranged.push(options[source]);
+      if (source === correctIndex) answer = i;
+    }
+    return { options: arranged, answer: answer };
+  }
+  function dailyBodyAlt(sky, id) {
+    if (id === 'moon') return sky.moon.alt;
+    var planet = sky.planets.find(function(p) { return p.id === id; });
+    return planet ? planet.alt : NaN;
+  }
+  var DAILY_GENERATORS = [
+    function dailyMoonDirection(ctx) {
+      var phase = ctx.sky.moon.phase;
+      if (phase.illum < 0.04 || phase.illum > 0.96) return null;
+      var arranged = dailyArrange(['waxing', 'waning'], phase.waxing ? 0 : 1, ctx.arrange);
+      return { id: 'moon_direction', params: { pct: Math.round(phase.illum * 100), age: Math.round(phase.ageDays) }, options: arranged.options, answer: arranged.answer, tab: 'moon' };
+    },
+    function dailyHigherInSky(ctx) {
+      var ids = ['moon', 'venus', 'mars', 'jupiter', 'saturn', 'mercury'].filter(function(id) { return dailyBodyAlt(ctx.sky, id) > 5; }), pairs = [];
+      for (var i = 0; i < ids.length; i++) for (var k = i + 1; k < ids.length; k++) if (Math.abs(dailyBodyAlt(ctx.sky, ids[i]) - dailyBodyAlt(ctx.sky, ids[k])) >= 6) pairs.push([ids[i], ids[k]]);
+      if (!pairs.length) return null;
+      var pair = pairs[ctx.pick % pairs.length], a = pair[0], b = pair[1];
+      var arranged = dailyArrange([a, b], dailyBodyAlt(ctx.sky, a) > dailyBodyAlt(ctx.sky, b) ? 0 : 1, ctx.arrange);
+      return { id: 'higher_in_sky', params: { a: a, b: b, aAlt: Math.round(dailyBodyAlt(ctx.sky, a)), bAlt: Math.round(dailyBodyAlt(ctx.sky, b)) }, options: arranged.options, answer: arranged.answer, tab: 'observatory' };
+    },
+    function dailyPlanetUp(ctx) {
+      var up = ctx.sky.planets.filter(function(p) { return p.alt > 5; }), down = ctx.sky.planets.filter(function(p) { return p.alt < -3; });
+      if (!up.length || down.length < 2) return null;
+      var correct = up[ctx.pick % up.length], others = down.slice().sort(function(x, y) { return x.id < y.id ? -1 : 1; });
+      var start = ctx.pick % others.length, picks = [others[start], others[(start + 1) % others.length]];
+      var arranged = dailyArrange([correct.id, picks[0].id, picks[1].id], 0, ctx.arrange);
+      return { id: 'planet_up', params: { alt: Math.round(correct.alt), answerId: correct.id, other1: picks[0].id, other2: picks[1].id }, options: arranged.options, answer: arranged.answer, tab: 'observatory' };
+    },
+    function dailyDarkHours(ctx) {
+      var wall = utcMsToWallTime(ctx.utcMs, ctx.place.timeZone);
+      var noon = wallTimeToUtcMs(wall.year, wall.month, wall.day, 12, 0, ctx.place.timeZone);
+      if (!Number.isFinite(noon)) return null;
+      var dark = 0;
+      for (var step = 0; step < 144; step++) {
+        var i = skyInstant(noon + step * 600000), sun = sunRaDec(i.d);
+        if (equToHorizon(sun.ra, sun.dec, siderealTime(i.Y, i.M, i.D, i.UTh, ctx.place.lon), ctx.place.lat).alt < -18) dark++;
+      }
+      var hours = Math.round(dark / 6);
+      // Rotate where the answer sits in the ordered three (lowest, middle or highest) so "pick the middle" never works.
+      var spreads = [[-4, -2, 0], [-2, 0, 2], [0, 2, 4]], picks = null;
+      for (var turn = 0; turn < spreads.length && !picks; turn++) {
+        var candidate = spreads[(ctx.arrange + turn) % spreads.length].map(function(offset) { return hours + offset; });
+        if (candidate[0] >= 0 && candidate[2] <= 24) picks = candidate;
+      }
+      if (!picks) return null;
+      return { id: 'dark_hours', params: { hours: hours }, options: picks, answer: picks.indexOf(hours), tab: 'observatory', ordered: true };
+    },
+    function dailyStarDirection(ctx) {
+      var centers = [0, 90, 180, 270];
+      var candidates = ctx.sky.stars.filter(function(s) {
+        if (s.mag > 1.6 || s.alt < 15) return false;
+        var off = Math.min.apply(null, centers.map(function(c) { var d = Math.abs(s.az - c); return Math.min(d, 360 - d); }));
+        return off <= 20;
+      });
+      if (!candidates.length) return null;
+      var star = candidates[ctx.pick % candidates.length], best = 0, bestOff = 999;
+      centers.forEach(function(c, index) { var d = Math.abs(star.az - c); d = Math.min(d, 360 - d); if (d < bestOff) { bestOff = d; best = index; } });
+      return { id: 'star_direction', params: { star: star.name, alt: Math.round(star.alt), az: Math.round(star.az) }, options: DAILY_DIRECTIONS.slice(), answer: best, tab: 'skymap', ordered: true };
+    },
+    function dailyMoonPhaseName(ctx) {
+      var phase = ctx.sky.moon.phase, names = MOON_PHASES.map(function(p) { return p.name; }), at = names.indexOf(phase.name);
+      if (at < 0) return null;
+      var others = names.filter(function(name) { return name !== phase.name; });
+      var first = ctx.pick % others.length, second = (first + 1 + (Math.floor(ctx.pick / 8) % (others.length - 1))) % others.length;
+      var picks = [phase.name, others[first], others[second]];
+      var arranged = dailyArrange(picks, 0, ctx.arrange);
+      return { id: 'moon_phase', params: { pct: Math.round(phase.illum * 100), age: Math.round(phase.ageDays), phase: phase.name }, options: arranged.options, answer: arranged.answer, tab: 'moon' };
+    }
+  ];
+  // Short fingerprint of a question's options and key. A saved answer only counts for
+  // the exact question it answered, so changing the place cannot mis-grade it.
+  function dailySignature(q) {
+    var text = q ? q.id + ':' + q.options.join('|') + ':' + q.answer : '', hash = 5381;
+    for (var i = 0; i < text.length; i++) hash = ((hash * 33) ^ text.charCodeAt(i)) >>> 0;
+    return hash.toString(36);
+  }
+  var DAILY_MEMORY = {}, DAILY_MEMORY_KEYS = [];
+  function dailySkyQuestion(dayKey, place) {
+    var memoKey = place ? [dayKey, place.lat, place.lon, place.timeZone].join('|') : '';
+    if (memoKey && Object.prototype.hasOwnProperty.call(DAILY_MEMORY, memoKey)) return DAILY_MEMORY[memoKey];
+    var made = dailySkyQuestionUncached(dayKey, place);
+    if (memoKey) {
+      DAILY_MEMORY[memoKey] = made; DAILY_MEMORY_KEYS.push(memoKey);
+      if (DAILY_MEMORY_KEYS.length > 32) delete DAILY_MEMORY[DAILY_MEMORY_KEYS.shift()];
+    }
+    return made;
+  }
+  function dailySkyQuestionUncached(dayKey, place) {
+    var number = journeyDayNumber(dayKey);
+    if (Number.isNaN(number) || !place || !Number.isFinite(place.lat) || !Number.isFinite(place.lon) || !validTimeZone(place.timeZone)) return null;
+    var utcMs = dailyInstant(dayKey, place.timeZone);
+    if (!Number.isFinite(utcMs)) return null;
+    var sky = observatoryBodies(utcMs, place.lat, place.lon);
+    var seed = ((number % 100000) + 100000) % 100000;
+    // The generator comes from seed % 6, so anything else drawn from the seed is correlated with it.
+    // Selection and arrangement each get their own hash instead.
+    var ctx = { sky: sky, utcMs: utcMs, place: place, seed: seed, pick: Math.imul(seed + 7, 2246822519) >>> 12, arrange: Math.imul(seed + 3, 2654435761) >>> 14 };
+    for (var i = 0; i < DAILY_GENERATORS.length; i++) {
+      var q = DAILY_GENERATORS[(seed + i) % DAILY_GENERATORS.length](ctx);
+      if (q) return Object.assign({ day: dayKey, utcMs: utcMs, hour: DAILY_HOUR }, q);
+    }
+    return null;
+  }
+  if (window.__alloAstroPure) Object.assign(window.__alloAstroPure, {
+    JOURNEY_MISSIONS: JOURNEY_MISSIONS, JOURNEY_RANKS: JOURNEY_RANKS, normalizeJourney: normalizeJourney, journeyAdvance: journeyAdvance, journeyObjectKey: journeyObjectKey,
+    journeyDayKey: journeyDayKey, journeyDayNumber: journeyDayNumber, journeyDaysInARow: journeyDaysInARow, journeyXp: journeyXp, journeyRank: journeyRank, journeyNext: journeyNext, journeyCompleted: journeyCompleted,
+    quizCorrectCount: quizCorrectCount, QUIZ_QUESTIONS: QUIZ_QUESTIONS, dailySkyQuestion: dailySkyQuestion, dailySignature: dailySignature, DAILY_GENERATORS: DAILY_GENERATORS
+  });
+  // Pays out finished missions exactly once. It lives at the tool's root so a mission
+  // completed in the Observatory is acknowledged there, not only back on Tonight.
+  function JourneyWatcher(props) {
+    var React = props.React, claimed = React.useRef({});
+    var owed = JOURNEY_MISSIONS.filter(function(mission) { return props.journey.done[mission.id] && !props.journey.paid[mission.id] && !claimed.current[mission.id]; });
+    var signature = owed.map(function(mission) { return mission.id; }).join(',');
+    React.useEffect(function() {
+      if (!signature) return;
+      owed.forEach(function(mission) { claimed.current[mission.id] = true; });
+      props.onClaim(owed);
+    }, [signature]);
+    return null;
+  }
+
+
   // Plugin registration
+  // WCAG 1.4.3 high contrast (generated by gen_hc.cjs)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-astronomy-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-astronomy-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"astronomy\"] :is(.astr-primary,.astr-meter>span,.selh-astronomy[data-astronomy-theme=contrast] .astr-meter>span,.selh-astronomy[data-astronomy-theme=contrast] .astr-primary):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"astronomy\"] [style]:is([style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(165, 243, 252)\"],[style*=\"background-color: rgb(165, 243, 252)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(250, 204, 21)\"],[style*=\"background-color: rgb(250, 204, 21)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"],[style*=\"background: rgb(253, 186, 116)\"],[style*=\"background-color: rgb(253, 186, 116)\"],[style*=\"background: rgb(254, 252, 232)\"],[style*=\"background-color: rgb(254, 252, 232)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"astronomy\"] :is(.astr-primary,.selh-astronomy[data-astronomy-theme=contrast] .astr-primary){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"astronomy\"] [style]:is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(8, 47, 73)\"],[style*=\"; color: rgb(8, 47, 73)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(161, 98, 7)\"],[style*=\"; color: rgb(161, 98, 7)\"],[style^=\"color: rgb(127, 29, 29)\"],[style*=\"; color: rgb(127, 29, 29)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"astronomy\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(8, 47, 73)\"],[style*=\"; color: rgb(8, 47, 73)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(161, 98, 7)\"],[style*=\"; color: rgb(161, 98, 7)\"],[style^=\"color: rgb(127, 29, 29)\"],[style*=\"; color: rgb(127, 29, 29)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(165, 243, 252)\"],[style*=\"background-color: rgb(165, 243, 252)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(250, 204, 21)\"],[style*=\"background-color: rgb(250, 204, 21)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"],[style*=\"background: rgb(253, 186, 116)\"],[style*=\"background-color: rgb(253, 186, 116)\"],[style*=\"background: rgb(254, 252, 232)\"],[style*=\"background-color: rgb(254, 252, 232)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"astronomy\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(167, 139, 250)\"],[style*=\"background-color: rgb(167, 139, 250)\"],[style*=\"background: rgb(249, 115, 22)\"],[style*=\"background-color: rgb(249, 115, 22)\"],[style*=\"background: rgb(236, 72, 153)\"],[style*=\"background-color: rgb(236, 72, 153)\"],[style*=\"background: rgb(168, 85, 247)\"],[style*=\"background-color: rgb(168, 85, 247)\"],[style*=\"background: rgb(6, 182, 212)\"],[style*=\"background-color: rgb(6, 182, 212)\"],[style*=\"background: rgb(14, 165, 233)\"],[style*=\"background-color: rgb(14, 165, 233)\"],[style*=\"background: rgb(20, 184, 166)\"],[style*=\"background-color: rgb(20, 184, 166)\"],[style*=\"background: rgb(16, 185, 129)\"],[style*=\"background-color: rgb(16, 185, 129)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"astronomy\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    document.head.appendChild(st);
+  })();
+  // end WCAG 1.4.3 high contrast
   window.StemLab.registerTool('astronomy', {
     icon: '🔭',
     label: 'Night Sky & Astronomy',
@@ -5334,8 +5639,15 @@
       }, []) : [];
 
       function upd(patch) {
+        var today = journeyDayKey(new Date());
         setLabToolData(function(prev) {
-          var s = Object.assign({}, (prev && prev.astronomy) || {}, patch);
+          var before = (prev && prev.astronomy) || {};
+          var s = Object.assign({}, before, patch);
+          try {
+            var advanced = journeyAdvance(before, s, patch, today);
+            if (advanced) s.journey = advanced;
+          } catch (journeyError) { /* progress is a bonus: it must never break an ordinary edit */ }
+          delete s.dailyAnswer; delete s.journeyPaid;
           return Object.assign({}, prev, { astronomy: s });
         });
       }
@@ -5573,7 +5885,8 @@
         for (var step = 1; step <= 20; step++) {
           var amount = step / 20;
           var mixed = fg.map(function(channel, index) { return channel + (target[index] - channel) * amount; });
-          if (ratio(mixed, bg) >= 4.5) return toHex(mixed);
+          // A little over 4.5: rounding the mixed channels to a hex colour can shave off the last hundredth.
+          if (ratio(mixed, bg) >= 4.6) return toHex(mixed);
         }
         return toHex(target);
       }
@@ -5614,7 +5927,34 @@
             '.selh-astronomy[data-astronomy-theme=contrast] :is(.astr-observation-bar,.astr-time-tools,.astr-observation-meta span){background:#000;color:#fff;border-color:#fbbf24}' +
             '.selh-astronomy[data-astronomy-theme=night] :is(input:not([type]),input[type=text],input[type=search],input[type=number],textarea,select){border-color:#64748b!important}' +
             '@media screen{.selh-astronomy[data-astronomy-theme="contrast"] #astro-print-region{background:#000!important;color:#fff!important;border-color:#fbbf24!important}.selh-astronomy[data-astronomy-theme="contrast"] #astro-print-region *{background:transparent!important;color:#fff!important;border-color:#fbbf24!important}}' +
-            '.selh-astronomy[data-astronomy-theme="contrast"] :is(button,input,textarea,select){border-color:#fbbf24!important}'
+            '.selh-astronomy[data-astronomy-theme="contrast"] :is(button,input,textarea,select){border-color:#fbbf24!important}' +
+            // WCAG 2.5.8: sliders, checkboxes and standalone reference links get a 24px minimum target.
+            '.selh-astronomy input[type=range]{min-height:24px}.selh-astronomy input[type=checkbox]{width:24px;height:24px;flex:none}' +
+            '.selh-astronomy a[target=_blank]:not(:is(p,li,span,strong,em,small,label,td,th,dd,dt,figcaption) a){display:inline-flex;align-items:center;min-height:24px;max-width:100%;overflow-wrap:anywhere}' +
+            // Sky journey, daily question, quiz
+            '.astr-journey-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px;margin-bottom:16px}' +
+            '.astr-card{padding:16px;border:1px solid #36506d;border-radius:14px;background:#101e32;min-width:0;color:#e2e8f0}' +
+            '.astr-card h2{margin:0 0 6px;font-size:18px;line-height:1.3;color:#f8fafc}.astr-card h3{margin:0 0 4px;font-size:14px;line-height:1.4;color:#f8fafc}' +
+            '.astr-card-note{margin:0 0 10px;font-size:12.5px;line-height:1.6;color:#cbd5e1}' +
+            '.astr-card button{min-height:44px;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}' +
+            '.astr-primary{background:#fbbf24;color:#0b1220;border:1px solid #fbbf24}.astr-secondary{background:#0b1628;color:#f8fafc;border:1px solid #94a3b8}' +
+            '.astr-meter{height:12px;border:1px solid #94a3b8;border-radius:8px;background:#0b1628;overflow:hidden}.astr-meter>span{display:block;height:100%;background:#fbbf24}' +
+            '.astr-next-mission{margin:0 0 12px;padding:12px;border:1px solid #475569;border-radius:10px;background:#0b1628}.astr-next-mission p{margin:0 0 10px;font-size:13px;line-height:1.6;color:#cbd5e1}' +
+            '.astr-mission-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}' +
+            '.astr-mission{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;border:1px solid #475569;border-radius:10px;background:#0b1628}' +
+            '.astr-mission strong{display:block;font-size:14px;color:#f8fafc}.astr-mission-status{display:block;font-size:12px;font-weight:700;color:#fde68a}.astr-mission-done .astr-mission-status{color:#86efac}.astr-mission-hint{display:block;font-size:12.5px;line-height:1.55;color:#cbd5e1;margin-top:2px}' +
+            '.astr-fieldset{border:0;margin:0 0 10px;padding:0;min-width:0}.astr-fieldset legend{padding:0;margin:0 0 10px;font-size:15px;line-height:1.5;font-weight:700;color:#f8fafc}' +
+            '.astr-choice{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;margin:0 0 8px;border:1px solid #64748b;border-radius:10px;background:#0b1628;color:#f8fafc;font-size:14px;cursor:pointer}.astr-choice input{width:24px;height:24px;margin:0;flex:none;accent-color:#fbbf24}.astr-choice:focus-within{outline:2px solid #fbbf24;outline-offset:2px}' +
+            '.astr-error{margin:0 0 10px;padding:8px 10px;border-left:4px solid #fca5a5;background:#2a1216;color:#fecaca;font-size:13px}' +
+            '.astr-answer-list{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}.astr-answer-list li{padding:8px 12px;border:1px solid #475569;border-radius:10px;background:#0b1628;color:#f8fafc;font-size:14px}.astr-answer-list .astr-answer-right{border-color:#86efac}.astr-answer-list .astr-answer-wrong{border-color:#fca5a5}.astr-answer-tag{font-size:12px;font-weight:700;color:#cbd5e1}' +
+            '.astr-quiz-q{padding:12px;border:1px solid #475569;border-radius:10px;background:#1e293b;margin-bottom:10px;color:#e2e8f0}.astr-quiz-num{color:#c7d2fe}.astr-quiz-right{border-left:4px solid #86efac}.astr-quiz-wrong{border-left:4px solid #fca5a5}' +
+            '.astr-quiz-choice{display:block;width:100%;min-height:44px;text-align:left;padding:8px 12px;margin:0 0 6px;border:1px solid #64748b;border-radius:8px;background:#0f172a;color:#e2e8f0;font-size:13px;line-height:1.5;cursor:pointer}.astr-quiz-choice[aria-pressed=true]{border-color:#fbbf24;background:#1b2a44;box-shadow:inset 0 0 0 1px #fbbf24}.astr-quiz-locked{cursor:default}' +
+            '.astr-quiz-feedback{margin-top:6px;font-size:12.5px;line-height:1.6;color:#e2e8f0}.astr-quiz-feedback:empty{display:none}' +
+            '.selh-astronomy[data-astronomy-theme=contrast] :is(.astr-card,.astr-next-mission,.astr-mission,.astr-choice,.astr-answer-list li,.astr-meter,.astr-quiz-q,.astr-quiz-choice){background:#000;color:#fff;border-color:#fbbf24}' +
+            '.selh-astronomy[data-astronomy-theme=contrast] .astr-meter>span{background:#ffff00}.selh-astronomy[data-astronomy-theme=contrast] .astr-primary{background:#ffff00;color:#000;border-color:#ffff00}' +
+            '.selh-astronomy[data-astronomy-theme=contrast] :is(.astr-card h2,.astr-card h3,.astr-mission strong,.astr-fieldset legend,.astr-quiz-num){color:#ffff00}' +
+            '.selh-astronomy[data-astronomy-theme=contrast] .astr-quiz-choice[aria-pressed=true]{background:#1a1a00}' +
+            '@media (forced-colors:active){.astr-meter>span{forced-color-adjust:none;background:Highlight}.astr-primary,.astr-secondary{border:2px solid ButtonText}}'
           }
         });
       }
@@ -5654,6 +5994,212 @@
             style: { width: '100%', accentColor: accent, cursor: 'pointer' }
           })
         );
+      }
+
+      // ──────────────────────────────────────────────────────────────
+      // SKY JOURNEY + TODAY'S SKY QUESTION (shown on Tonight)
+      // ──────────────────────────────────────────────────────────────
+      var journeyToday = journeyDayKey(new Date());
+      var journey = normalizeJourney(d.journey);
+      function journeyFill(text, values) {
+        return String(text).replace(/\{([a-zA-Z0-9]+)\}/g, function(whole, key) { return values && values[key] !== undefined ? String(values[key]) : whole; });
+      }
+      // Static keys only: a concatenated i18n key is invisible to the extraction tooling.
+      function missionText(id) {
+        switch (id) {
+          case 'first_look': return { title: __alloT('stem.astronomy.journey_m_first_look', 'Open the 3D sky'), hint: __alloT('stem.astronomy.journey_m_first_look_hint', 'Visit the Observatory and look around the sky for your place and time.') };
+          case 'name_it': return { title: __alloT('stem.astronomy.journey_m_name_it', 'Name what you see'), hint: __alloT('stem.astronomy.journey_m_name_it_hint', 'In the Observatory, select any star, planet or the Moon to learn what it is.') };
+          case 'wanderer': return { title: __alloT('stem.astronomy.journey_m_wanderer', 'Catch a wanderer'), hint: __alloT('stem.astronomy.journey_m_wanderer_hint', 'Select a planet or the Moon in the Observatory. The word planet comes from a Greek word for wanderer, because planets drift against the stars.') };
+          case 'five_lights': return { title: __alloT('stem.astronomy.journey_m_five_lights', 'Five different lights'), hint: __alloT('stem.astronomy.journey_m_five_lights_hint', 'Identify five different objects in the Observatory. Selecting the same one twice counts once.') };
+          case 'deep_sky': return { title: __alloT('stem.astronomy.journey_m_deep_sky', 'Find a faraway cloud'), hint: __alloT('stem.astronomy.journey_m_deep_sky_hint', 'Select a deep-sky object, such as a nebula, star cluster or galaxy, in the Observatory.') };
+          case 'plan_night': return { title: __alloT('stem.astronomy.journey_m_plan_night', 'Plan a night'), hint: __alloT('stem.astronomy.journey_m_plan_night_hint', 'Select an object in the Observatory and add it to tonight’s list. The Print section turns the list into a timetable.') };
+          case 'new_place': return { title: __alloT('stem.astronomy.journey_m_new_place', 'Visit another sky'), hint: __alloT('stem.astronomy.journey_m_new_place_hint', 'Change the Observatory place. The same night looks different from Maine, Chile or Norway.') };
+          case 'time_traveler': return { title: __alloT('stem.astronomy.journey_m_time_traveler', 'Travel through time'), hint: __alloT('stem.astronomy.journey_m_time_traveler_hint', 'Move the deep-time control in the Observatory to watch the stars drift over thousands of years.') };
+          case 'pattern_finder': return { title: __alloT('stem.astronomy.journey_m_pattern_finder', 'Collect three patterns'), hint: __alloT('stem.astronomy.journey_m_pattern_finder_hint', 'Save three constellations to your observing list from the Constellations section.') };
+          case 'sky_traditions': return { title: __alloT('stem.astronomy.journey_m_sky_traditions', 'Hear other sky stories'), hint: __alloT('stem.astronomy.journey_m_sky_traditions_hint', 'Read about two different traditions in Sky Traditions.') };
+          case 'simulators': return { title: __alloT('stem.astronomy.journey_m_simulators', 'Try three simulators'), hint: __alloT('stem.astronomy.journey_m_simulators_hint', 'Open three of the simulators: Moon, Eclipses, Exoplanets, Seasons or Star diagram.') };
+          case 'daily_question': return { title: __alloT('stem.astronomy.journey_m_daily_question', 'Answer today’s question'), hint: __alloT('stem.astronomy.journey_m_daily_question_hint', 'Answer the sky question at the top of the Tonight page.') };
+          default: return { title: __alloT('stem.astronomy.journey_m_quiz_ace', 'Ace the quiz'), hint: __alloT('stem.astronomy.journey_m_quiz_ace_hint', 'Score at least 80% on the quiz.') };
+        }
+      }
+      function rankName(id) {
+        switch (id) {
+          case 'sky_watcher': return __alloT('stem.astronomy.journey_rank_sky_watcher', 'Sky Watcher');
+          case 'navigator': return __alloT('stem.astronomy.journey_rank_navigator', 'Navigator');
+          case 'astronomer': return __alloT('stem.astronomy.journey_rank_astronomer', 'Astronomer');
+          case 'cosmic_explorer': return __alloT('stem.astronomy.journey_rank_cosmic_explorer', 'Cosmic Explorer');
+          default: return __alloT('stem.astronomy.journey_rank_stargazer', 'Stargazer');
+        }
+      }
+      function bodyName(id) {
+        switch (id) {
+          case 'moon': return __alloT('stem.astronomy.journey_body_moon', 'Moon');
+          case 'mercury': return __alloT('stem.astronomy.planet_mercury', 'Mercury');
+          case 'venus': return __alloT('stem.astronomy.planet_venus', 'Venus');
+          case 'mars': return __alloT('stem.astronomy.planet_mars', 'Mars');
+          case 'jupiter': return __alloT('stem.astronomy.planet_jupiter', 'Jupiter');
+          default: return __alloT('stem.astronomy.planet_saturn', 'Saturn');
+        }
+      }
+      function directionName(id) {
+        switch (id) {
+          case 'east': return __alloT('stem.astronomy.journey_dir_east', 'East');
+          case 'south': return __alloT('stem.astronomy.journey_dir_south', 'South');
+          case 'west': return __alloT('stem.astronomy.journey_dir_west', 'West');
+          default: return __alloT('stem.astronomy.journey_dir_north', 'North');
+        }
+      }
+      function hoursText(n) {
+        return n === 1 ? __alloT('stem.astronomy.journey_hours_one', '1 hour') : journeyFill(__alloT('stem.astronomy.journey_hours', '{n} hours'), { n: n });
+      }
+      // Question, option labels and explanation for one daily question, in the learner's language.
+      function dailyTexts(q, place) {
+        var wall = utcMsToWallTime(q.utcMs, place.timeZone), p = q.params, v = { time: wall.timeText, place: place.site.name, date: wall.dateText };
+        var labels = q.options.map(function(value) {
+          switch (q.id) {
+            case 'moon_direction': return value === 'waxing' ? __alloT('stem.astronomy.journey_waxing', 'Waxing') : __alloT('stem.astronomy.journey_waning', 'Waning');
+            case 'higher_in_sky': case 'planet_up': return bodyName(value);
+            case 'dark_hours': return hoursText(value);
+            case 'star_direction': return directionName(value);
+            default: return value;
+          }
+        });
+        var question, explain;
+        if (q.id === 'moon_direction') {
+          question = journeyFill(__alloT('stem.astronomy.dq_moon_direction_q', 'At {time} tonight the Moon is {pct}% lit. Is it waxing (growing) or waning (shrinking)?'), Object.assign({ pct: p.pct }, v));
+          explain = journeyFill(q.options[q.answer] === 'waxing'
+            ? __alloT('stem.astronomy.dq_moon_waxing_e', 'It is waxing. About {age} days after new Moon, the lit part is still growing night by night toward full Moon.')
+            : __alloT('stem.astronomy.dq_moon_waning_e', 'It is waning. About {age} days after new Moon is past the halfway point of the cycle, so the lit part is shrinking toward the next new Moon.'), { age: p.age });
+        } else if (q.id === 'higher_in_sky') {
+          var aHigher = p.aAlt > p.bAlt;
+          question = journeyFill(__alloT('stem.astronomy.dq_higher_q', 'At {time} tonight from {place}, which is higher above the horizon: {a} or {b}?'), Object.assign({ a: bodyName(p.a), b: bodyName(p.b) }, v));
+          explain = journeyFill(__alloT('stem.astronomy.dq_higher_e', '{high} is about {highAlt}° above the horizon and {low} is about {lowAlt}°.'), { high: bodyName(aHigher ? p.a : p.b), highAlt: aHigher ? p.aAlt : p.bAlt, low: bodyName(aHigher ? p.b : p.a), lowAlt: aHigher ? p.bAlt : p.aAlt });
+        } else if (q.id === 'planet_up') {
+          question = journeyFill(__alloT('stem.astronomy.dq_planet_q', 'Which of these planets is above the horizon at {time} tonight from {place}?'), v);
+          explain = journeyFill(__alloT('stem.astronomy.dq_planet_e', '{planet} is about {alt}° above the horizon. The other two are below it at that time, so they are hidden from view.'), { planet: bodyName(p.answerId), alt: p.alt });
+        } else if (q.id === 'dark_hours') {
+          question = journeyFill(__alloT('stem.astronomy.dq_dark_q', 'About how many hours will the sky be fully dark (the Sun more than 18° below the horizon) at {place} on the night that begins on {date}?'), v);
+          explain = p.hours === 0
+            ? __alloT('stem.astronomy.dq_dark_zero_e', 'None. At this place and date the Sun never sinks more than 18° below the horizon, so the sky never gets fully dark.')
+            : journeyFill(__alloT('stem.astronomy.dq_dark_e', 'About {hours}. The Sun’s calculated height is checked every 10 minutes from noon to noon, and the sky counts as fully dark when the Sun is more than 18° below the horizon.'), { hours: hoursText(p.hours) });
+        } else if (q.id === 'star_direction') {
+          question = journeyFill(__alloT('stem.astronomy.dq_star_q', 'At {time} tonight from {place}, which direction do you face to find the star {star}?'), Object.assign({ star: p.star }, v));
+          explain = journeyFill(__alloT('stem.astronomy.dq_star_e', '{star} is about {alt}° above the horizon, at compass bearing {az}° ({dir}).'), { star: p.star, alt: p.alt, az: p.az, dir: labels[q.answer] });
+        } else {
+          question = journeyFill(__alloT('stem.astronomy.dq_phase_q', 'The Moon is {pct}% lit tonight and about {age} days past new Moon. What phase is it in?'), { pct: p.pct, age: p.age });
+          explain = journeyFill(__alloT('stem.astronomy.dq_phase_e', '{phase}. {pct}% of the Moon’s face is lit about {age} days into its cycle.'), { phase: p.phase, pct: p.pct, age: p.age });
+        }
+        return { question: question, labels: labels, explain: explain, scope: journeyFill(__alloT('stem.astronomy.journey_daily_scope', 'Calculated for {place} at {time} on {date}, using the same sky model as the Observatory.'), v) };
+      }
+      function claimMissions(owed) {
+        var total = 0;
+        owed.forEach(function(mission) { total += mission.xp; });
+        var after = journeyCompleted(journey).length, before = Math.max(0, after - owed.length);
+        var rankNow = journeyRank(after), rankUp = rankNow.id !== journeyRank(before).id ? ' ' + journeyFill(__alloT('stem.astronomy.journey_rank_up', 'New rank: {rank}.'), { rank: rankName(rankNow.id) }) : '';
+        var message = owed.length === 1
+          ? journeyFill(__alloT('stem.astronomy.journey_toast', 'Mission complete: {title}.'), { title: missionText(owed[0].id).title })
+          : journeyFill(__alloT('stem.astronomy.journey_toast_many', '{count} missions complete.'), { count: owed.length });
+        upd({ journeyPaid: owed.map(function(mission) { return mission.id; }) });
+        if (typeof awardXP === 'function') awardXP('astronomyJourney', total, __alloT('stem.astronomy.journey_xp_reason', 'Night Sky missions'));
+        if (typeof addToast === 'function') addToast(message + rankUp, 'success');
+      }
+      function renderMeter(done, total, label, valueText) {
+        var pct = total > 0 ? Math.max(0, Math.min(100, Math.round(done / total * 100))) : 0;
+        return h('div', { role: 'progressbar', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': total, 'aria-valuenow': done, 'aria-valuetext': valueText, className: 'astr-meter' },
+          h('span', { style: { width: pct + '%' } }));
+      }
+      // The daily-question mission is on the page the learner is already on, so "Start" brings it into view.
+      function goMission(mission) {
+        if (mission.id === 'daily_question' && activeTab === 'tonight') {
+          var target = document.querySelector('input[name="astronomy-daily-choice"]') || document.getElementById('astronomy-daily-open');
+          if (target && typeof target.focus === 'function') { target.focus(); if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'center' }); }
+          return;
+        }
+        activateAstronomyTab(mission.tab);
+      }
+      function renderJourneyCard() {
+        var completed = journeyCompleted(journey), total = JOURNEY_MISSIONS.length;
+        var rank = journeyRank(completed.length), next = journeyNext(journey), open = d.journeyOpen === true;
+        var run = journeyDaysInARow(journey.days, journeyToday);
+        var progressText = journeyFill(__alloT('stem.astronomy.journey_progress', '{done} of {total} missions complete'), { done: completed.length, total: total });
+        return h('section', { 'aria-labelledby': 'astronomy-journey-title', className: 'astr-card', id: 'astronomy-journey' },
+          h('h2', { id: 'astronomy-journey-title' }, __alloT('stem.astronomy.journey_title', 'Your sky journey')),
+          h('p', { className: 'astr-card-note' }, __alloT('stem.astronomy.journey_intro', 'Missions are optional, never expire and can be done in any order. They point you at interesting things to try.')),
+          h('p', { style: { margin: '0 0 8px', fontSize: 14, color: '#f8fafc' } }, __alloT('stem.astronomy.journey_rank', 'Rank') + ': ', h('strong', null, rankName(rank.id))),
+          renderMeter(completed.length, total, __alloT('stem.astronomy.journey_meter', 'Missions complete'), progressText),
+          h('p', { className: 'astr-card-note', style: { margin: '6px 0 12px' } }, progressText + ' · ' + journeyFill(__alloT('stem.astronomy.journey_xp', '{xp} XP earned from missions'), { xp: journeyXp(journey) })),
+          next ? h('div', { className: 'astr-next-mission' },
+            h('h3', null, __alloT('stem.astronomy.journey_next', 'Try next') + ': ' + missionText(next.id).title),
+            h('p', null, missionText(next.id).hint),
+            a11yButton({ type: 'button', className: 'astr-primary', onClick: function() { goMission(next); } }, __alloT('stem.astronomy.journey_start', 'Start') + ' →'))
+            : h('p', { className: 'astr-card-note' }, __alloT('stem.astronomy.journey_all_done', 'Every mission is complete. Keep exploring: the sky is different every night.')),
+          a11yButton({ type: 'button', className: 'astr-secondary', 'aria-expanded': open, 'aria-controls': 'astronomy-journey-list', onClick: function() { upd({ journeyOpen: !open }); } },
+            open ? __alloT('stem.astronomy.journey_hide_all', 'Hide missions') : __alloT('stem.astronomy.journey_show_all', 'Show all missions')),
+          open ? h('ul', { id: 'astronomy-journey-list', className: 'astr-mission-list' },
+            JOURNEY_MISSIONS.map(function(mission) {
+              var done = !!journey.done[mission.id], text = missionText(mission.id);
+              return h('li', { key: mission.id, className: 'astr-mission' + (done ? ' astr-mission-done' : '') },
+                h('div', { style: { minWidth: 0, flex: '1 1 200px' } },
+                  h('strong', null, text.title),
+                  h('span', { className: 'astr-mission-status' }, (done ? '✓ ' + __alloT('stem.astronomy.journey_status_done', 'Complete') : __alloT('stem.astronomy.journey_status_todo', 'Not started')) + ' · ' + mission.xp + ' XP'),
+                  h('span', { className: 'astr-mission-hint' }, text.hint)),
+                done ? null : a11yButton({ type: 'button', className: 'astr-secondary', 'aria-label': __alloT('stem.astronomy.journey_start', 'Start') + ': ' + text.title, onClick: function() { goMission(mission); } }, __alloT('stem.astronomy.journey_start', 'Start')));
+            })) : null,
+          h('p', { className: 'astr-card-note', style: { margin: '12px 0 0' } },
+            journeyFill(__alloT('stem.astronomy.journey_days', 'Days exploring: {n}. There is no streak to lose; come back whenever you like.'), { n: journey.days.length }),
+            run >= 2 ? ' ' + journeyFill(__alloT('stem.astronomy.journey_days_run', 'Days in a row right now: {n}.'), { n: run }) : ''));
+      }
+      var dailyPlace = null, dailyQ = null;
+      if (activeTab === 'tonight') {
+        try {
+          dailyPlace = observatoryResolve(d, Date.now());
+          dailyQ = dailySkyQuestion(journeyToday, { lat: dailyPlace.lat, lon: dailyPlace.lon, timeZone: dailyPlace.timeZone });
+        } catch (dailyError) { dailyQ = null; }
+      }
+      function renderDailyCard() {
+        var title = h('h2', { id: 'astronomy-daily-title' }, __alloT('stem.astronomy.journey_daily_title', 'Today’s sky question'));
+        if (!dailyQ) return h('section', { 'aria-labelledby': 'astronomy-daily-title', className: 'astr-card' }, title, h('p', { className: 'astr-card-note' }, __alloT('stem.astronomy.journey_daily_unavailable', 'Today’s question could not be calculated for this place. Choose another place in the Observatory.')));
+        var signature = dailySignature(dailyQ), texts = dailyTexts(dailyQ, dailyPlace);
+        var record = journey.daily && journey.daily.day === journeyToday && journey.daily.sig === signature && journey.daily.pick < dailyQ.options.length ? journey.daily : null;
+        var pick = Number.isInteger(d.dailyPick) && d.dailyPick >= 0 && d.dailyPick < dailyQ.options.length ? d.dailyPick : null;
+        var showError = d.dailyError === true && pick === null;
+        function check() {
+          if (pick === null) {
+            upd({ dailyError: true });
+            setTimeout(function() { var first = document.querySelector('input[name="astronomy-daily-choice"]'); if (first && first.focus) first.focus(); }, 0);
+            return;
+          }
+          upd({ dailyPick: null, dailyError: false, dailyAnswer: { day: dailyQ.day, sig: signature, pick: pick, correct: pick === dailyQ.answer } });
+          setTimeout(function() { var go = document.getElementById('astronomy-daily-open'); if (go && go.focus) go.focus(); }, 60);
+        }
+        var run = journeyDaysInARow(journey.days, journeyToday);
+        return h('section', { 'aria-labelledby': 'astronomy-daily-title', className: 'astr-card', id: 'astronomy-daily' },
+          title,
+          h('p', { className: 'astr-card-note' }, texts.scope),
+          record ? h('div', null,
+            h('p', { style: { margin: '0 0 10px', fontSize: 15, lineHeight: 1.5, fontWeight: 700, color: '#f8fafc' } }, texts.question),
+            h('ul', { className: 'astr-answer-list' }, dailyQ.options.map(function(value, index) {
+              var isRight = index === dailyQ.answer, isPick = index === record.pick;
+              return h('li', { key: index, className: isRight ? 'astr-answer-right' : isPick ? 'astr-answer-wrong' : '' },
+                h('span', { 'aria-hidden': 'true' }, isRight ? '✓ ' : isPick ? '✗ ' : '○ '), texts.labels[index],
+                isRight ? h('span', { className: 'astr-answer-tag' }, ' — ' + __alloT('stem.astronomy.journey_right_answer', 'Correct answer') + (isPick ? ' · ' + __alloT('stem.astronomy.journey_your_answer', 'Your answer') : '')) : isPick ? h('span', { className: 'astr-answer-tag' }, ' — ' + __alloT('stem.astronomy.journey_your_answer', 'Your answer')) : null);
+            })),
+            h('p', { style: { margin: '10px 0', fontSize: 13, lineHeight: 1.65, color: '#e2e8f0' } },
+              h('strong', null, (record.correct ? __alloT('stem.astronomy.journey_correct', 'Correct.') : __alloT('stem.astronomy.journey_not_quite', 'Not quite.')) + ' '), texts.explain),
+            a11yButton({ type: 'button', id: 'astronomy-daily-open', className: 'astr-primary', onClick: function() { activateAstronomyTab(dailyQ.tab); } }, __alloT('stem.astronomy.journey_daily_open', 'See it in the sky') + ' →'),
+            h('p', { className: 'astr-card-note', style: { margin: '10px 0 0' } }, __alloT('stem.astronomy.journey_daily_tomorrow', 'A new question arrives tomorrow. Changing the place in the Observatory gives that place its own question.')))
+          : h('form', { onSubmit: function(event) { event.preventDefault(); check(); }, noValidate: true },
+            h('fieldset', { className: 'astr-fieldset', 'aria-describedby': showError ? 'astronomy-daily-error' : undefined },
+              h('legend', null, texts.question),
+              dailyQ.options.map(function(value, index) {
+                return h('label', { key: index, className: 'astr-choice' },
+                  h('input', { type: 'radio', name: 'astronomy-daily-choice', value: String(index), checked: pick === index, className: 'astr-focus', onChange: function() { upd({ dailyPick: index, dailyError: false }); } }),
+                  h('span', null, texts.labels[index]));
+              })),
+            showError ? h('p', { id: 'astronomy-daily-error', role: 'alert', className: 'astr-error' }, __alloT('stem.astronomy.journey_daily_choose_first', 'Choose an answer first.')) : null,
+            a11yButton({ type: 'submit', className: 'astr-primary' }, __alloT('stem.astronomy.journey_daily_check', 'Check my answer'))),
+          h('div', { role: 'status', 'aria-live': 'polite', className: 'astr-sr-only' }, record ? (record.correct ? __alloT('stem.astronomy.journey_correct', 'Correct.') : __alloT('stem.astronomy.journey_not_quite', 'Not quite.')) + ' ' + texts.explain : ''),
+          run >= 2 ? h('p', { className: 'astr-card-note', style: { margin: '10px 0 0' } }, journeyFill(__alloT('stem.astronomy.journey_days_run', 'Days in a row right now: {n}.'), { n: run })) : null);
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -5705,6 +6251,8 @@
             h('figure', { style: { margin: 0 } }, previewDrawing,
               h('figcaption', { style: { textAlign: 'center', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginTop: 6 } }, previewPlace.site.name + ' · ' + previewPlace.wall.dateText + ' ' + previewPlace.wall.timeText + ' ' + previewPlace.wall.offsetText,
                 h('div', { style: { color: '#a5f3fc' } }, previewSky.sun.alt > 0 ? __alloT('stem.astronomy.start_day', 'Daylight · star positions shown as guides') : __alloT('stem.astronomy.start_reference', 'Bright reference stars · overhead view'))))),
+
+          h('div', { className: 'astr-journey-grid' }, renderDailyCard(), renderJourneyCard()),
 
           h('section', { id: 'astronomy-simulator-starts', 'aria-labelledby': 'astronomy-simulator-starts-title', style: { marginBottom: 16 } },
             h('h2', { id: 'astronomy-simulator-starts-title', style: { fontSize: 18, color: '#f8fafc', margin: '0 0 6px' } }, __alloT('stem.astronomy.start_simulators', 'Try a simulator')),
@@ -6024,7 +6572,8 @@
         }
 
         function addLabel(key, point, text, color, priority, fontSize, fontWeight, opacity) {
-          var candidate = { key: key, x: point[0], y: point[1], text: text, color: color, priority: priority, fontSize: fontSize, fontWeight: fontWeight, opacity: opacity == null ? 1 : opacity };
+          // Markers dim to put the chosen target in front; their labels must stay readable (WCAG 1.4.3).
+          var candidate = { key: key, x: point[0], y: point[1], text: text, color: color, priority: priority, fontSize: fontSize, fontWeight: fontWeight, opacity: opacity == null ? 1 : Math.max(0.8, opacity) };
           var existingIndex = labelCandidates.findIndex(function(existing) { return existing.key === key; });
           if (existingIndex < 0) labelCandidates.push(candidate);
           else if (priority >= labelCandidates[existingIndex].priority) labelCandidates[existingIndex] = candidate;
@@ -8896,8 +9445,8 @@
                     style: { padding: 10, borderRadius: 8, textAlign: 'left', background: active ? 'rgba(99,102,241,0.20)' : '#1e293b', border: '1px solid ' + (active ? INDIGO : '#334155'), cursor: 'pointer', color: '#e2e8f0' }
                   },
                     h('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 2 } }, p.name),
-                    h('div', { style: { fontSize: 10, color: readableAccent(habitableColor(p.habitable), '#1e293b'), fontWeight: 700 } }, p.habitable),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, p.distance)
+                    h('div', { style: { fontSize: 11, color: readableAccent(habitableColor(p.habitable), active ? '#2c355f' : '#1e293b'), fontWeight: 700 } }, p.habitable),
+                    h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, p.distance)
                   );
                 })
               ),
@@ -10276,16 +10825,16 @@
                     h('text', { x: cx, y: cy - 130, textAnchor: 'middle', fill: layerIdx === 5 ? '#7dd3fc' : '#94a3b8', fontSize: 11, fontWeight: layerIdx === 5 ? 800 : 500 }, __alloT('stem.astronomy.corona_2', 'Corona')),
                     // Chromosphere
                     h('circle', { cx: cx, cy: cy, r: 105, fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: layerIdx === 4 ? 3 : 1, opacity: 0.7 }),
-                    h('text', { x: cx + 115, y: cy - 25, fill: layerIdx === 4 ? '#fca5a5' : '#94a3b8', fontSize: 10, fontWeight: layerIdx === 4 ? 800 : 500 }, __alloT('stem.astronomy.chromosphere_2', 'Chromosphere')),
+                    h('text', { x: cx + 115, y: cy - 25, fill: layerIdx === 4 ? '#fca5a5' : '#94a3b8', fontSize: 11, fontWeight: layerIdx === 4 ? 800 : 500 }, __alloT('stem.astronomy.chromosphere_2', 'Chromosphere')),
                     // Photosphere
                     h('circle', { cx: cx, cy: cy, r: 100, fill: '#fef3c7', stroke: layerIdx === 3 ? '#fbbf24' : '#92400e', strokeWidth: layerIdx === 3 ? 3 : 1, opacity: 0.85 }),
-                    h('text', { x: cx + 105, y: cy + 5, fill: layerIdx === 3 ? '#fde68a' : '#94a3b8', fontSize: 10, fontWeight: layerIdx === 3 ? 800 : 500 }, __alloT('stem.astronomy.photosphere_2', 'Photosphere')),
+                    h('text', { x: cx + 105, y: cy + 5, fill: layerIdx === 3 ? '#fde68a' : '#94a3b8', fontSize: 11, fontWeight: layerIdx === 3 ? 800 : 500 }, __alloT('stem.astronomy.photosphere_2', 'Photosphere')),
                     // Convective zone
                     h('circle', { cx: cx, cy: cy, r: 80, fill: '#f97316', stroke: '#9a3412', strokeWidth: layerIdx === 2 ? 3 : 1 }),
-                    h('text', { x: cx, y: cy + 70, textAnchor: 'middle', fill: layerIdx === 2 ? '#fdba74' : '#94a3b8', fontSize: 10, fontWeight: layerIdx === 2 ? 800 : 500 }, __alloT('stem.astronomy.convective_zone_2', 'Convective zone')),
+                    h('text', { x: cx, y: cy + 66, textAnchor: 'middle', fill: '#1c1917', fontSize: 11, fontWeight: layerIdx === 2 ? 900 : 700 }, __alloT('stem.astronomy.convective_zone_2', 'Convective zone')),
                     // Radiative zone
                     h('circle', { cx: cx, cy: cy, r: 55, fill: '#fbbf24', stroke: '#92400e', strokeWidth: layerIdx === 1 ? 3 : 1 }),
-                    h('text', { x: cx, y: cy + 45, textAnchor: 'middle', fill: layerIdx === 1 ? '#fde68a' : '#94a3b8', fontSize: 9, fontWeight: layerIdx === 1 ? 800 : 500 }, __alloT('stem.astronomy.radiative_zone_2', 'Radiative zone')),
+                    h('text', { x: cx, y: cy + 38, textAnchor: 'middle', fill: '#1c1917', fontSize: 10.5, fontWeight: layerIdx === 1 ? 900 : 700 }, __alloT('stem.astronomy.radiative_zone_2', 'Radiative zone')),
                     // Core
                     h('circle', { cx: cx, cy: cy, r: 25, fill: '#fde047', stroke: '#facc15', strokeWidth: layerIdx === 0 ? 3 : 1 }),
                     h('text', { x: cx, y: cy + 4, textAnchor: 'middle', fill: '#7c2d12', fontSize: 11, fontWeight: 800 }, __alloT('stem.astronomy.core_2', 'Core')),
@@ -10923,7 +11472,7 @@
         }
         var buttonStyle = { padding: '9px 12px', minHeight: 44, borderRadius: 8, border: '1px solid #64748b', background: '#0f172a', color: '#e2e8f0', cursor: 'pointer', fontSize: 13 };
         function exampleStyle(active, measured) { return Object.assign({}, buttonStyle, { borderColor: active ? '#fbbf24' : measured ? '#7dd3fc' : '#64748b', background: active ? '#422006' : '#0f172a', color: active ? '#fde68a' : '#e2e8f0', fontWeight: active ? 800 : 500 }); }
-        function metric(label, value, extra) { return h('div', { style: { padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#0a1425', minWidth: 0 } }, h('dt', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 6 } }, label), h('dd', { style: { margin: 0, color: '#f8fafc', fontSize: 17, fontWeight: 800, overflowWrap: 'anywhere' } }, value), extra ? h('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, extra) : null); }
+        function metric(label, value, extra) { return h('div', { style: { padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#0a1425', minWidth: 0 } }, h('dt', { style: { color: '#cbd5e1', fontSize: 12, marginBottom: 6 } }, label), h('dd', { style: { margin: 0, color: '#f8fafc', fontSize: 17, fontWeight: 800, overflowWrap: 'anywhere' } }, value, extra ? h('span', { style: { display: 'block', margin: '6px 0 0', color: '#cbd5e1', fontSize: 12, fontWeight: 400, lineHeight: 1.5 } }, extra) : null)); }
         return h('section', { id: 'astronomy-redshift-lab', tabIndex:-1, className:'astr-focus', 'aria-label': __alloT('stem.astronomy.redshift_title', 'Cosmic redshift lab'), style: { padding: 14, border: '1px solid #475569', borderRadius: 14, background: '#111c30', marginBottom: 16, minWidth: 0 } },
           h('h2', { style: { margin: '0 0 6px', fontSize: 20, color: '#f8fafc' } }, __alloT('stem.astronomy.redshift_title', 'Cosmic redshift lab')),
           h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#cbd5e1', lineHeight: 1.65 } }, __alloT('stem.astronomy.redshift_intro', 'As space expands, traveling light stretches to longer wavelengths. Choose a line, then change redshift z to compare its emitted and observed positions.')),
@@ -11045,7 +11594,7 @@
           h('dl',{id:'astronomy-lens-measurements',style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,180px),1fr))',gap:8,margin:'14px 0'}},metric(__alloT('stem.astronomy.lens_radius_label','Einstein radius'),number(model.einsteinRadiusArcsec)+' arcsec'),metric(__alloT('stem.astronomy.lens_flux_label','Total flux magnification'),number(model.magnification)+'×'),metric(__alloT('stem.astronomy.lens_pattern_label','Image pattern'),appearance),model.appearance==='images'?metric(__alloT('stem.astronomy.lens_outer_offset','Outer image offset'),signed(model.centerImages[0].arcsec)+' arcsec'):null,model.appearance==='images'?metric(__alloT('stem.astronomy.lens_inner_offset','Inner image offset'),signed(model.centerImages[1].arcsec)+' arcsec'):null),
           h('div',{id:'astronomy-lens-status',role:'status','aria-live':'polite','aria-atomic':'true',style:{padding:12,color:'#e2e8f0',fontSize:13,lineHeight:1.65,border:'1px solid #475569',borderRadius:10,background:'#0a1425'}},summary),
           h('p',{id:'astronomy-lens-help',style:{margin:'10px 0 0',fontSize:12,color:'#cbd5e1',lineHeight:1.65}},__alloT('stem.astronomy.lens_model_help','Both panels keep the same fixed angular scale. A point-mass lens maps a uniformly bright disk of radius 0.918 arcseconds into the blue shapes. Magnification is the ratio of lensed area to source area; surface brightness stays constant. The finite disk keeps the aligned magnification finite.')),
-          h('aside',{id:'astronomy-lens-reference','aria-label':__alloT('stem.astronomy.lens_reference_title','Measured angular reference'),style:{marginTop:12,padding:12,border:'1px solid #475569',borderRadius:10,background:'#0a1425',color:'#e2e8f0',fontSize:12,lineHeight:1.65}},
+          h('div',{id:'astronomy-lens-reference',role:'group','aria-label':__alloT('stem.astronomy.lens_reference_title','Measured angular reference'),style:{marginTop:12,padding:12,border:'1px solid #475569',borderRadius:10,background:'#0a1425',color:'#e2e8f0',fontSize:12,lineHeight:1.65}},
             h('h3',{style:{margin:'0 0 5px',fontSize:14,color:'#f8fafc'}},__alloT('stem.astronomy.lens_reference_title','Measured angular reference')+' · Cosmic Horseshoe'),
             h('p',{style:{margin:'0 0 6px'}},__alloT('stem.astronomy.lens_reference_data','Belokurov et al. (2007), Table 1: a ring diameter of 10.2 arcseconds spanning about 300°. Half that diameter gives this lab its 5.1 arcsecond reference radius.')),
             h('p',{style:{margin:'0 0 8px'}},__alloT('stem.astronomy.lens_scope','The angular reference is measured. Mass ratios, source size and alignments are teaching choices. This point-mass model illustrates lensing; the actual Cosmic Horseshoe requires a detailed galaxy mass distribution and source model.')),
@@ -13336,7 +13885,7 @@
         return h('div', { style: { padding: 16 } },
           sectionCard('🔭 ' + __alloT('stem.astronomy.obs_title', '3D Observatory: the real sky for a place and time'),
             h('div', { className: 'astr-observatory-controls' },
-              h('div', { className: 'astr-observation-bar', 'aria-label': __alloT('stem.astronomy.obs_conditions', 'Selected sky conditions') },
+              h('div', { className: 'astr-observation-bar', role: 'group', 'aria-label': __alloT('stem.astronomy.obs_conditions', 'Selected sky conditions') },
                 h('div', { style: { fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } },
                   deepTime ? __alloT('stem.astronomy.obs_drift_scene', 'Deep-time star field: solar-system objects hidden.') : daylightText),
                 h('div', { className: 'astr-observation-meta' },
@@ -13935,8 +14484,9 @@
               h('text', { x: 24, y: 328, fill: '#cbd5e1', fontSize: 13 }, 'Moon moves across the Sun →'),
               h('text', { x: 576, y: 30, fill: '#fde68a', fontSize: 13, textAnchor: 'end' }, geometryLabel + ' geometry'),
               // Annotation lines
-              solarTotal ? h('text', { x: cx, y: 72, fill: '#fef3c7', fontSize: 15, fontWeight: 700, textAnchor: 'middle' }, 'CORONA REVEALED') : null,
-              solarAnnular ? h('text', { x: cx, y: 62, fill: '#fdba74', fontSize: 15, fontWeight: 700, textAnchor: 'middle' }, 'BRIGHT RING REMAINS') : null
+              // The labels sit on a bright glow, so each gets its own dark backing to keep 4.5:1.
+              solarTotal ? h('g', null, h('rect', { x: cx - 100, y: 53, width: 200, height: 26, rx: 6, fill: '#0b1220', opacity: 0.88 }), h('text', { x: cx, y: 72, fill: '#fef3c7', fontSize: 15, fontWeight: 700, textAnchor: 'middle' }, 'CORONA REVEALED')) : null,
+              solarAnnular ? h('g', null, h('rect', { x: cx - 120, y: 43, width: 240, height: 26, rx: 6, fill: '#0b1220', opacity: 0.88 }), h('text', { x: cx, y: 62, fill: '#fdba74', fontSize: 15, fontWeight: 700, textAnchor: 'middle' }, 'BRIGHT RING REMAINS')) : null
             );
           }
 
@@ -16057,78 +16607,107 @@
       // QUIZ
       // ──────────────────────────────────────────────────────────────
       function renderQuiz() {
-        var answers = Array.isArray(d.quizAnswers) ? QUIZ_QUESTIONS.map(function(question, questionIndex) {
-          var restoredAnswer = Number(d.quizAnswers[questionIndex]);
+        // null means unanswered. Number(null) is 0, which once turned a single click
+        // into fifteen answers (every other question looked answered with choice A).
+        var answers = QUIZ_QUESTIONS.map(function(question, questionIndex) {
+          var restoredAnswer = Array.isArray(d.quizAnswers) ? d.quizAnswers[questionIndex] : null;
           return Number.isInteger(restoredAnswer) && restoredAnswer >= 0 && restoredAnswer < question.choices.length ? restoredAnswer : null;
-        }) : QUIZ_QUESTIONS.map(function() { return null; });
-        var allAnswered = QUIZ_QUESTIONS.every(function(_, questionIndex) { return answers[questionIndex] !== null; });
+        });
+        var total = QUIZ_QUESTIONS.length;
+        var answeredCount = answers.filter(function(answer) { return answer !== null; }).length;
+        var allAnswered = answeredCount === total;
         var done = d.quizSubmitted === true && allAnswered;
+        var practice = d.quizPractice === true;
+        var firstOpen = answers.indexOf(null);
+        var showOpenNote = d.quizOpenNote === true && !allAnswered;
 
+        function focusSoon(id) { setTimeout(function() { var node = document.getElementById(id); if (node && typeof node.focus === 'function') node.focus(); }, 0); }
         function selectChoice(qIdx, cIdx) {
+          if (practice && answers[qIdx] !== null) return;
           var newAns = answers.slice();
           newAns[qIdx] = cIdx;
-          upd({ quizAnswers: newAns });
+          upd({ quizAnswers: newAns, quizOpenNote: false });
         }
         function submit() {
-          if (!allAnswered) return;
-          var correct = 0;
-          QUIZ_QUESTIONS.forEach(function(q, i) {
-            if (answers[i] === q.answer) correct++;
-          });
-          upd({ quizSubmitted: true, quizCorrect: correct });
-          if (addToast) addToast('Quiz complete: ' + correct + '/' + QUIZ_QUESTIONS.length, correct >= 9 ? 'success' : 'info');
-          if (awardXP) awardXP(correct * 5);
+          if (!allAnswered) {
+            upd({ quizOpenNote: true });
+            focusSoon('astronomy-quiz-q-' + firstOpen + '-c-0');
+            return;
+          }
+          var correct = quizCorrectCount(answers);
+          upd({ quizSubmitted: true, quizCorrect: correct, quizOpenNote: false });
+          if (addToast) addToast(journeyFill(__alloT('stem.astronomy.quiz_toast', 'Quiz complete: {score} of {total}'), { score: correct, total: total }), correct >= 9 ? 'success' : 'info');
+          // The host takes (activityId, points, reason): the score alone used to be read as the id and credited nothing.
+          if (awardXP && correct > 0) awardXP('astronomyQuiz', correct * 5, __alloT('stem.astronomy.quiz_xp_reason', 'Night Sky quiz'));
+          focusSoon('astronomy-quiz-results-title');
         }
         function reset() {
-          upd({ quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0 });
+          upd({ quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0, quizOpenNote: false });
+          focusSoon('astronomy-quiz-intro');
         }
 
+        var correctNow = quizCorrectCount(answers), pct = Math.round(correctNow / total * 100);
+        // One live region, present in both views, so the result is announced as a change.
+        var statusRegion = h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'astr-sr-only' },
+          done ? journeyFill(__alloT('stem.astronomy.quiz_result_sr', 'Quiz results: {score} of {total} correct, {pct} percent.'), { score: correctNow, total: total, pct: pct }) : '');
+
         if (done) {
-          var correct = QUIZ_QUESTIONS.reduce(function(total, question, questionIndex) { return total + (answers[questionIndex] === question.answer ? 1 : 0); }, 0);
-          var pct = Math.round(correct / QUIZ_QUESTIONS.length * 100);
-          return h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 16 } },
-            h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center', marginBottom: 16 } },
-              h('div', { style: { fontSize: 36, marginBottom: 4 } }, pct >= 80 ? '🌟' : pct >= 60 ? '⭐' : '🌙'),
-              h('h2', { style: { margin: '0 0 4px', color: '#c7d2fe', fontSize: 22 } }, correct + ' / ' + QUIZ_QUESTIONS.length),
-              h('div', { style: { fontSize: 14, color: '#94a3b8' } }, pct + '%')
-            ),
+          return h('div', { style: { padding: 16 } }, statusRegion,
+            h('div', { className: 'astr-card', style: { textAlign: 'center', marginBottom: 16 } },
+              h('div', { style: { fontSize: 36, marginBottom: 4 }, 'aria-hidden': 'true' }, pct >= 80 ? '🌟' : pct >= 60 ? '⭐' : '🌙'),
+              h('h2', { id: 'astronomy-quiz-results-title', tabIndex: -1, style: { margin: '0 0 4px', fontSize: 22 } }, correctNow + ' / ' + total),
+              h('div', { style: { fontSize: 14, color: '#cbd5e1' } }, pct + '%'),
+              h('p', { className: 'astr-card-note', style: { margin: '10px 0 0' } }, pct >= 80
+                ? __alloT('stem.astronomy.quiz_feedback_high', 'Excellent work. You know this sky well.')
+                : pct >= 60
+                  ? __alloT('stem.astronomy.quiz_feedback_mid', 'A solid start. Read the explanations below, then try again whenever you like.')
+                  : __alloT('stem.astronomy.quiz_feedback_low', 'Every astronomer starts here. The explanations below show how each answer works, and you can retake the quiz at any time.'))),
             QUIZ_QUESTIONS.map(function(q, i) {
               var got = answers[i] === q.answer;
-              return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid ' + (got ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'), borderLeft: '3px solid ' + (got ? '#22c55e' : '#ef4444'), marginBottom: 10 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: got ? '#86efac' : '#fca5a5', marginBottom: 4 } }, (got ? '✓ ' : '✗ ') + 'Q' + (i + 1)),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 6 } }, q.q),
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } }, 'Correct: ', h('strong', null, q.choices[q.answer])),
-                !got ? h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, __alloT('stem.astronomy.your_answer', 'Your answer: '), q.choices[answers[i] != null ? answers[i] : 0]) : null,
-                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
+              return h('div', { key: i, className: 'astr-quiz-q ' + (got ? 'astr-quiz-right' : 'astr-quiz-wrong') },
+                h('div', { style: { fontSize: 13, fontWeight: 700, marginBottom: 4 } }, (got ? '✓ ' : '✗ ') + 'Q' + (i + 1) + ' · ' + (got ? __alloT('stem.astronomy.quiz_correct', 'Correct') : __alloT('stem.astronomy.quiz_not_quite', 'Not quite'))),
+                h('div', { style: { fontSize: 13, marginBottom: 6 } }, q.q),
+                h('div', { style: { fontSize: 12.5, marginBottom: 4 } }, __alloT('stem.astronomy.quiz_right_answer', 'Correct answer: '), h('strong', null, q.choices[q.answer])),
+                !got ? h('div', { style: { fontSize: 12.5, marginBottom: 4, color: '#cbd5e1' } }, __alloT('stem.astronomy.your_answer', 'Your answer: '), q.choices[answers[i] != null ? answers[i] : 0]) : null,
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic' } }, q.explain)
               );
             }),
-            h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.astronomy.retake_quiz', 'Retake quiz'))
+            a11yButton({ type: 'button', className: 'astr-primary', onClick: reset, style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, fontWeight: 800, fontSize: 14 } }, __alloT('stem.astronomy.retake_quiz', 'Retake quiz'))
           );
         }
 
-
-
-        return h('div', { style: { padding: 16 } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, marginBottom: 12 } }, QUIZ_QUESTIONS.length + ' questions covering everything in this tool. Take your time.'),
+        return h('div', { style: { padding: 16 } }, statusRegion,
+          h('p', { id: 'astronomy-quiz-intro', tabIndex: -1, style: { color: '#cbd5e1', fontSize: 13, margin: '0 0 12px' } }, total + ' questions covering everything in this tool. Take your time.'),
+          h('label', { className: 'astr-choice', style: { marginBottom: 6 } },
+            h('input', { type: 'checkbox', className: 'astr-focus', checked: practice, 'aria-describedby': 'astronomy-quiz-practice-help', onChange: function(e) { upd({ quizPractice: e.target.checked }); } }),
+            h('span', null, __alloT('stem.astronomy.quiz_practice', 'Practice mode: show feedback after each answer'))),
+          h('p', { id: 'astronomy-quiz-practice-help', className: 'astr-card-note', style: { margin: '0 0 12px' } }, __alloT('stem.astronomy.quiz_practice_help', 'Each answer locks once you choose it and the explanation appears right away. Your first answers still count toward your score.')),
+          renderMeter(answeredCount, total, __alloT('stem.astronomy.quiz_meter', 'Questions answered'), journeyFill(__alloT('stem.astronomy.quiz_answered', '{n} of {total} answered'), { n: answeredCount, total: total })),
+          h('p', { className: 'astr-card-note', style: { margin: '6px 0 12px' } }, journeyFill(__alloT('stem.astronomy.quiz_answered', '{n} of {total} answered'), { n: answeredCount, total: total })),
           QUIZ_QUESTIONS.map(function(q, i) {
-            return h('div', { key: i, role: 'group', 'aria-labelledby': 'astronomy-quiz-q-' + i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 10 } },
-              h('div', { id: 'astronomy-quiz-q-' + i, style: { fontSize: 13, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#c7d2fe' } }, 'Q' + (i + 1) + '. '), q.q),
+            var picked = answers[i], showFeedback = practice && picked !== null, right = picked === q.answer;
+            return h('div', { key: i, role: 'group', 'aria-labelledby': 'astronomy-quiz-q-' + i, className: 'astr-quiz-q' },
+              h('div', { id: 'astronomy-quiz-q-' + i, style: { fontSize: 13.5, marginBottom: 8, lineHeight: 1.55 } }, h('strong', { className: 'astr-quiz-num' }, 'Q' + (i + 1) + '. '), q.q),
               q.choices.map(function(c, ci) {
-                var picked = answers[i] === ci;
+                var isPicked = picked === ci, isAnswer = showFeedback && ci === q.answer;
                 return h('button', {
-                  key: ci, type: 'button', 'aria-pressed': picked, 'aria-describedby': 'astronomy-quiz-q-' + i,
-                  onClick: function() { selectChoice(i, ci); },
-                  style: { display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: picked ? 'rgba(99,102,241,0.20)' : '#0f172a', border: '1px solid ' + (picked ? INDIGO : '#334155'), color: '#e2e8f0', fontSize: 12.5, cursor: 'pointer', lineHeight: 1.5 }
-                }, c);
-              })
+                  key: ci, type: 'button', id: 'astronomy-quiz-q-' + i + '-c-' + ci, 'aria-pressed': isPicked, 'aria-describedby': 'astronomy-quiz-q-' + i,
+                  className: 'astr-focus astr-btn astr-quiz-choice' + (showFeedback && picked !== null ? ' astr-quiz-locked' : ''),
+                  onClick: function() { selectChoice(i, ci); }
+                }, c, showFeedback && (isAnswer || isPicked) ? h('span', { className: 'astr-answer-tag' }, ' — ' + (isAnswer ? __alloT('stem.astronomy.quiz_right_answer_tag', 'correct answer') : __alloT('stem.astronomy.quiz_your_answer_tag', 'your answer'))) : null);
+              }),
+              h('div', { role: 'status', 'aria-live': 'polite', className: 'astr-quiz-feedback' }, showFeedback ? [
+                h('strong', { key: 'v' }, (right ? '✓ ' + __alloT('stem.astronomy.quiz_correct', 'Correct') : '✗ ' + __alloT('stem.astronomy.quiz_not_quite', 'Not quite')) + '. '),
+                h('span', { key: 'e' }, q.explain)
+              ] : null)
             );
           }),
+          showOpenNote ? h('p', { role: 'alert', className: 'astr-error' }, journeyFill(__alloT('stem.astronomy.quiz_open_note', 'Question {n} needs an answer before you can submit. {count} questions are still open.'), { n: firstOpen + 1, count: total - answeredCount })) : null,
           h('button', {
-            onClick: submit,
-            disabled: !allAnswered,
+            type: 'button', onClick: submit, 'aria-disabled': allAnswered ? undefined : 'true',
             className: 'astr-focus astr-btn',
-            style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: allAnswered ? '#4f46e5' : '#475569', color: '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
-          }, allAnswered ? 'Submit quiz' : 'Answer all questions to submit (' + answers.filter(function(a) { return a != null; }).length + '/' + QUIZ_QUESTIONS.length + ')')
+            style: { padding: '10px 24px', minHeight: 44, borderRadius: 10, border: 'none', background: allAnswered ? '#4f46e5' : '#475569', color: '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
+          }, allAnswered ? 'Submit quiz' : 'Answer all questions to submit (' + answeredCount + '/' + total + ')')
         );
       }
 
@@ -16684,6 +17263,7 @@
       },
         // WCAG style block (focus rings, reduced-motion respect)
         wcagStyleBlock(),
+        h(JourneyWatcher, { React: React, journey: journey, onClaim: claimMissions }),
         // Header
         h('div', { style: { padding: '12px 16px', borderBottom: '1px solid #334155', background: astronomyContrast ? '#000' : '#101c30', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 } },
           h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.astronomy.a11y_back_to_stem_tools', 'Back to STEM tools'), className: 'astr-focus astr-btn', style: { width: 40, height: 40, borderRadius: 12, border: '1px solid #334155', background: 'rgba(15,23,42,.7)', color: '#cbd5e1', cursor: 'pointer', fontSize: 18, flexShrink: 0 } }, '←'),

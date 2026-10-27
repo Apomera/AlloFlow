@@ -1404,6 +1404,8 @@
     [data-coralreef-root] .cr-dive-stage{padding:12px!important;overflow:hidden}
     [data-coralreef-root] .cr-dive-stage>h3{margin:7px 10px 16px!important}
     [data-coralreef-root] .cr-dive-stage canvas{height:clamp(340px,52vw,620px)!important;border-radius:12px!important}
+    [data-coralreef-root] .cr-dive-stage canvas.cr-dive-expanded{height:clamp(340px,76vh,900px)!important}
+    [data-coralreef-root] [data-dive-navigation] button:disabled,[data-coralreef-root] [data-habitat-trail] button:disabled{opacity:.5;cursor:not-allowed}
     [data-coralreef-root] .cr-dive-stage .cr-hero{margin:0;min-height:390px;border-radius:12px;box-shadow:none}
     [data-coralreef-root] .cr-dive-stage .cr-hero h3{font-size:clamp(32px,4vw,50px)}
     [data-coralreef-root] .cr-dive-controls{background:var(--reef-alt);border:1px solid var(--reef-border);border-radius:12px;padding:12px}
@@ -1982,6 +1984,7 @@
     var at = React.useState(0), attempt = at[0], setAttempt = at[1];
     var pr = React.useState(0), progress = pr[0], setProgress = pr[1];
     var ps = React.useState(reduce), paused = ps[0], setPaused = ps[1];
+    var cm = React.useState('diver'), cameraMode = cm[0], setCameraMode = cm[1];
     var uid = 'cr-survey-' + React.useId().replace(/:/g, ''), cameraHelpId = uid + '-camera-help', motionHelpId = uid + '-motion-help';
     var layout = props.layout;
     function focusTitle() { guideReveal(titleRef.current, titleRef.current, reduceRef.current); }
@@ -1998,13 +2001,14 @@
       function acceptState(snap) {
         if (!snap || cancelled) return;
         if (snap.ready) setStatus('ready');
+        if (snap.cameraMode === 'diver' || snap.cameraMode === 'overview') setCameraMode(snap.cameraMode);
         if (typeof snap.paused === 'boolean') setPaused(snap.paused || !!snap.reducedMotion);
         if (typeof snap.pointIndex !== 'number') return;
         if (!syncedRef.current) { if (snap.pointIndex === indexRef.current) syncedRef.current = true; return; }
         if (snap.pointIndex !== indexRef.current && onPointRef.current) onPointRef.current(snap.pointIndex);
       }
       syncedRef.current = false;
-      setStatus('loading'); setProgress(0); setPaused(reduceRef.current);
+      setStatus('loading'); setProgress(0); setPaused(reduceRef.current); setCameraMode('diver');
       ensureReef3D().then(function (THREE) {
         if (cancelled || !canvasRef.current) return;
         try {
@@ -2056,6 +2060,10 @@
         ? __alloT('stem.coralreef.dive_status_paused', 'Survey reef paused. You can still change points and use the camera controls.')
         : __alloT('stem.coralreef.dive_status_ready', 'Survey reef ready. Use Pause the reef to stop movement.') : ''),
       status === 'ready' ? h('div', { ref: controlsRef, 'data-survey-dive-controls': 'true', style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
+        ctlRef.current && typeof ctlRef.current.setCameraMode === 'function' ? h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.dive_view_group', 'Survey viewpoint'), style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          [['diver', __alloT('stem.coralreef.dive_view_diver', 'Diver view')], ['overview', __alloT('stem.coralreef.dive_view_overview', 'Whole transect')]].map(function (item) {
+            return h('button', { key: item[0], type: 'button', 'aria-pressed': cameraMode === item[0] ? 'true' : 'false', style: btnStyle(P, cameraMode === item[0]), onClick: function () { cameraAction('setCameraMode', item[0]); setCameraMode(item[0]); } }, item[1]);
+          })) : null,
         h('button', { type: 'button', 'aria-disabled': reduce ? 'true' : undefined, 'data-survey-pause': 'true', 'aria-describedby': reduce ? motionHelpId : undefined, style: btnStyle(P, paused || reduce), onClick: togglePause },
           paused || reduce ? __alloT('stem.coralreef.dive_resume', 'Resume the reef') : __alloT('stem.coralreef.ex_pause', 'Pause the reef')),
         reduce ? h('p', { id: motionHelpId, style: { flexBasis: '100%', margin: '0 0 4px', color: P.muted } }, __alloT('stem.coralreef.dive_motion_help', 'Reduce motion is on. The reef stays still; turn it off in your accessibility settings to enable Resume.')) : null,
@@ -5276,7 +5284,15 @@
     ribbon_eel: [3, 0.25],
     leaf_scorpionfish: [3, 0.25],
     longnose_hawkfish: [3, 0.25],
-    chocolate_chip_sea_star: [3, 0.25]
+    chocolate_chip_sea_star: [3, 0.25],
+    // A few of each newer specimen broaden the kinds of life to observe.
+    // Keep these explicit and modest: counts are teaching assumptions, and
+    // the explore engine gives each one its own habitat and movement profile.
+    porcelain_anemone_crab: [2, 0.4], varicose_phyllidia: [2, 0.3],
+    broadclub_cuttlefish: [1, 0.4], blackspotted_puffer: [2, 0.35],
+    ocellated_eagle_ray: [1, 0.1], textile_cone: [2, 0.2],
+    orange_cup_coral: [3, 0.15], banded_sea_krait: [1, 0.25],
+    white_spotted_hermit_crab: [2, 0.15], longfin_bannerfish: [3, 0.5], bigfin_reef_squid: [2, 0.2]
   };
   function populationFor(site) {
     var out = [], cover = site.health.coralCover / 0.55;
@@ -5288,6 +5304,13 @@
       if (site.id === 'damaged' && (id === 'crown_of_thorns' || id === 'long_spined_urchin')) n = base + 2;
       if (n > 0) out.push({ id: id, count: n });
     }
+    // Porcelain crabs settle on actual anemone hosts. A sparse modeled reef
+    // cannot acquire a hostless crab merely through abundance rounding.
+    var hosts = out.find(function (p) { return p.id === 'magnificent_anemone'; });
+    out = out.filter(function (p) {
+      if (p.id !== 'porcelain_anemone_crab') return true;
+      p.count = Math.min(p.count, hosts ? hosts.count : 0); return p.count > 0;
+    });
     return out;
   }
   function exploreSiteFromModel(row, settings) {
@@ -5504,7 +5527,7 @@
     } else if (m.kind === 'anemonefish_hide') {
       body = __alloFill(__alloT('stem.coralreef.rm_body_clown', 'You came close, so {fish} ducked down into the stinging tentacles, where predators cannot follow.'), { fish: noun(main, __alloT('stem.coralreef.rm_noun_fish', 'a fish'), named) });
     } else {
-      body = __alloFill(__alloT('stem.coralreef.rm_body_cloud', 'You came close, so {cloud} is dropping down into the coral for shelter.'),
+      body = __alloFill(__alloT('stem.coralreef.rm_body_cloud_refuge', 'Nearby, {cloud} is dropping down into the coral for shelter. Watch it rise again when the disturbance has passed.'),
         { cloud: noun(main, __alloT('stem.coralreef.rm_noun_cloud', 'a cloud of small fish'), __alloT('stem.coralreef.rm_noun_cloud_named', 'a cloud of small fish ({name})')) });
     }
     var where = __alloFill(__alloT('stem.coralreef.rm_where', '{m} m {where}'), { m: Math.max(1, Math.round(+m.distanceM || 0)), where: cueWords(__alloT, m) || '' });
@@ -5971,6 +5994,196 @@
           h('a', { href: 'https://australian.museum/blog/amri-news/news-from-lirs-damselfishes-in-colour/', target: '_blank', rel: 'noopener noreferrer', style: { color: P.accent } }, __alloT('stem.coralreef.ex_vision_source_uv', 'Australian Museum: fish and UV')))));
   }
 
+  // Image data is handed straight to the browser, never kept in learning data.
+  function DiveImageCapture(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, c = props.ctl;
+    var saved = React.useState({ status: 'idle', attempt: 0 }), result = saved[0], setResult = saved[1], busy = React.useRef(false);
+    var helpId = 'cr-capture-' + React.useId().replace(/:/g, '');
+    if (!c || typeof c.captureImage !== 'function') return null;
+    function saveImage() {
+      if (busy.current) return;
+      busy.current = true;
+      var link = null;
+      try {
+        var image = c.captureImage();
+        if (typeof image !== 'string' || !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(image)) throw new Error('Reef image unavailable.');
+        link = document.createElement('a'); link.href = image; link.download = 'coral-reef-view.png'; link.hidden = true;
+        document.body.appendChild(link); link.click();
+        setResult(function (previous) { return { status: 'saved', attempt: previous.attempt + 1 }; });
+      } catch (error) { setResult(function (previous) { return { status: 'error', attempt: previous.attempt + 1 }; }); }
+      finally { if (link && link.parentNode) link.parentNode.removeChild(link); busy.current = false; }
+    }
+    return h('div', { 'data-dive-capture-controls': 'true', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 12px', marginTop: 12 } },
+      h('button', { type: 'button', 'data-dive-capture': 'true', 'aria-describedby': helpId, style: btnStyle(P, false), onClick: saveImage }, __alloT('stem.coralreef.ex_capture', 'Save reef image')),
+      h('p', { id: helpId, style: { flex: '1 1 260px', margin: 0, fontSize: 13, color: P.muted } }, __alloT('stem.coralreef.ex_capture_help', 'Download a PNG of the current 3D view, including its angle and lighting. The image contains the reef scene only.')),
+      h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-dive-capture-status': result.status, style: { flexBasis: '100%', margin: 0, color: P.text, fontSize: 14 } },
+        h('span', { key: result.attempt }, result.status === 'saved' ? __alloT('stem.coralreef.ex_capture_saved', 'PNG download started.') : result.status === 'error' ? __alloT('stem.coralreef.ex_capture_error', 'The image could not be saved. Try again; you can keep exploring.') : '')));
+  }
+
+  // A heading-relative locator: it uses the same public direction cues as the
+  // nearby list, never discloses an unidentified species, and creates no renderer.
+  function DiveNavigator(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t, fill = env.fill, s = props.snap || {}, c = props.ctl;
+    var helpId = 'cr-nav-' + env.React.useId().replace(/:/g, '');
+    var near = s.nearby || [], f = s.focused, log = env.d.speciesLog || {}, navigating = !!s.navigation;
+    var dots = near.filter(function (n) { return hasCue(n) && typeof n.distanceM === 'number' && isFinite(n.distanceM) && n.distanceM >= 0; });
+    if (f && hasCue(f) && typeof f.distanceM === 'number' && isFinite(f.distanceM) && f.distanceM >= 0 && !dots.some(function (n) { return n.uid === f.uid; })) dots.push(f);
+    var range = Math.max(8, dots.reduce(function (m, n) { return Math.max(m, n.distanceM); }, 0));
+    var known = f && log[f.speciesId] && props.TX[f.speciesId];
+    function supported(method) { return c && typeof c[method] === 'function'; }
+    function call(method, value) { if (supported(method)) c[method](value); }
+    var distance = f && typeof f.distanceM === 'number' && isFinite(f.distanceM) ? Math.max(0, Math.round(f.distanceM)) : null;
+    var direction = f && cueWords(__alloT, f);
+    var magnification = [1, 2, 4, 8].indexOf(s.magnification) >= 0 ? s.magnification : 1;
+    return h('div', { 'data-dive-navigation': 'true', style: { display: 'flex', flexWrap: 'wrap', gap: '12px 20px', alignItems: 'center', marginTop: 12, padding: 14, border: '1px solid ' + P.border, borderRadius: 12, background: P.cardAlt } },
+      h('svg', { width: 148, height: 148, viewBox: '0 0 148 148', 'aria-hidden': 'true', focusable: 'false', style: { flex: '0 0 148px', color: P.muted } },
+        h('circle', { cx: 74, cy: 74, r: 52, fill: P.card, stroke: P.border, strokeWidth: 1.5 }),
+        h('circle', { cx: 74, cy: 74, r: 26, fill: 'none', stroke: P.border, strokeDasharray: '3 4' }),
+        h('path', { d: 'M74 22V126M22 74H126', stroke: P.border, fill: 'none' }),
+        h('path', { d: 'M74 74L48 29A52 52 0 0 1 100 29Z', fill: P.accent, opacity: 0.1 }),
+        h('text', { x: 74, y: 12, textAnchor: 'middle', fill: 'currentColor', fontSize: 11 }, __alloT('stem.coralreef.nav_ahead', 'Ahead')),
+        h('text', { x: 74, y: 143, textAnchor: 'middle', fill: 'currentColor', fontSize: 11 }, __alloT('stem.coralreef.nav_behind', 'Behind')),
+        dots.map(function (n) {
+          var angle = n.bearingDeg * Math.PI / 180, radius = 8 + 40 * clamp(n.distanceM / range, 0, 1), selected = f && f.uid === n.uid;
+          var x = 74 + Math.sin(angle) * radius, y = 74 - Math.cos(angle) * radius;
+          return h('g', { key: n.uid }, selected ? h('circle', { cx: x, cy: y, r: 8, fill: 'none', stroke: P.text, strokeWidth: 1.5 }) : null,
+            h('circle', { cx: x, cy: y, r: selected ? 4.5 : 3.5, fill: log[n.speciesId] ? P.accent : P.card, stroke: selected ? P.text : P.accent, strokeWidth: 1.8 }));
+        }),
+        h('path', { d: 'M74 66L79 80L74 77L69 80Z', fill: P.text, stroke: P.card, strokeWidth: 1 })),
+      h('div', { style: { flex: '1 1 240px', minWidth: 0 } },
+        h('h4', { style: { margin: '0 0 4px', fontSize: 17, color: P.text } }, __alloT('stem.coralreef.nav_title', 'Dive navigator')),
+        h('p', { style: { margin: '0 0 8px', color: P.muted, fontSize: 13 } }, __alloT('stem.coralreef.nav_hint', 'You are the arrow. Directions turn with you; dots show nearby organisms at relative distances. The ring marks your selection.')),
+        h('p', { 'data-dive-navigation-selection': 'true', style: { margin: '0 0 10px', color: P.text } },
+          f ? h('strong', null, known ? known.name : __alloT('stem.coralreef.nav_selected', 'Selected organism')) : __alloT('stem.coralreef.nav_empty', 'Choose an organism to get your bearings.'),
+          f && distance !== null ? ' · ' + fill(__alloT('stem.coralreef.ex_away_chip', '{m} m away'), { m: distance }) : '', direction ? ' · ' + direction : ''),
+        h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.nav_title', 'Dive navigator'), style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          h('button', { type: 'button', disabled: !near.length || !supported('focusPrevious'), style: btnStyle(P, false), onClick: function () { call('focusPrevious'); } }, __alloT('stem.coralreef.nav_previous', 'Previous organism')),
+          h('button', { type: 'button', disabled: !near.length || !supported('focusNext'), style: btnStyle(P, false), onClick: function () { call('focusNext'); } }, __alloT('stem.coralreef.nav_next', 'Next organism')),
+          supported('lookAtFocused') ? h('button', { type: 'button', disabled: !f || navigating, style: btnStyle(P, false), onClick: function () {
+            if (c.lookAtFocused()) env.say(__alloT('stem.coralreef.nav_aimed', 'Camera aimed toward the selected organism. Your diver has not moved.'));
+          } }, __alloT('stem.coralreef.nav_aim', 'Aim camera at selection')) : null,
+          h('button', { type: 'button', disabled: !f || !!s.paused || !supported('swimTo'), 'aria-describedby': s.paused ? helpId : undefined, style: btnStyle(P, false), onClick: function () { if (f && !s.paused) call('swimTo', f.uid); } }, __alloT('stem.coralreef.nav_swim', 'Swim to selected')),
+          h('button', { type: 'button', disabled: !f || !supported('clearFocus'), style: btnStyle(P, false), onClick: function () { call('clearFocus'); } }, __alloT('stem.coralreef.nav_clear', 'Clear selection')),
+          supported('cancelSwim') ? h('button', { type: 'button', disabled: !navigating, style: btnStyle(P, navigating), onClick: function () { call('cancelSwim'); } }, __alloT('stem.coralreef.nav_stop', 'Stop swimming')) : null),
+        supported('setMagnification') ? h('div', { 'data-dive-lens': 'true', style: { marginTop: 12 } },
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 12px' } },
+            h('label', { htmlFor: helpId + '-lens', style: { fontWeight: 600, color: P.text } }, __alloT('stem.coralreef.nav_lens', 'Observation lens')),
+            h('select', { id: helpId + '-lens', value: magnification, 'aria-describedby': helpId + '-lens-help', style: { minHeight: 44, maxWidth: '100%', padding: '8px 10px', border: '1px solid ' + P.border, borderRadius: 8, background: P.card, color: P.text }, onChange: function (event) {
+              var next = Number(event.target.value);
+              if ([1, 2, 4, 8].indexOf(next) < 0 || navigating && next > 1) return;
+              if (c.setMagnification(next)) env.say(next === 1 ? __alloT('stem.coralreef.nav_lens_reset', 'Observation lens returned to wide view. Your diver has not moved.') : fill(__alloT('stem.coralreef.nav_lens_changed', 'Observation lens: {n} times magnification. Your diver has not moved.'), { n: next }));
+            } },
+              h('option', { value: 1 }, __alloT('stem.coralreef.nav_lens_wide', '1× · Wide view')),
+              h('option', { value: 2, disabled: navigating }, __alloT('stem.coralreef.nav_lens_2', '2×')),
+              h('option', { value: 4, disabled: navigating }, __alloT('stem.coralreef.nav_lens_4', '4×')),
+              h('option', { value: 8, disabled: navigating }, __alloT('stem.coralreef.nav_lens_8', '8×')))),
+          h('p', { id: helpId + '-lens-help', style: { margin: '6px 0 0', color: P.muted, fontSize: 13 } }, navigating
+            ? __alloT('stem.coralreef.nav_lens_swimming', 'Stop the automatic swim to use magnification. Wide view remains available.')
+            : __alloT('stem.coralreef.nav_lens_help', 'Approach a small animal and aim at your selection, then magnify the view. Reef surfaces can still hide it. Swimming, looking around, changing selection, or resetting the camera restores the wide view.'))) : null,
+        h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: navigating ? '8px 0 0' : 0, color: P.text, fontSize: 13 } }, navigating ? s.paused
+          ? __alloT('stem.coralreef.nav_swim_held', 'Automatic swim is on hold while the reef is paused.')
+          : __alloT('stem.coralreef.nav_swimming', 'Swimming to an organism. Use Stop swimming or a movement control to take over.') : ''),
+        s.paused ? h('p', { id: helpId, style: { margin: '8px 0 0', color: P.muted, fontSize: 13 } }, __alloT('stem.coralreef.nav_paused', 'Resume the reef before swimming to your selection. You can keep looking around while paused.')) : null,
+        h('details', { style: { marginTop: 10, color: P.muted, fontSize: 13 } },
+          h('summary', { style: { cursor: 'pointer', minHeight: 32, padding: '6px 0' } }, __alloT('stem.coralreef.nav_keys', 'Keyboard guide')),
+          h('p', { style: { margin: '4px 0' } }, __alloT('stem.coralreef.nav_keys_help', 'Focus the 3D view first. W/S or ↑/↓ swim; A/D or ←/→ turn; R/F rise or sink. N selects the next organism, Shift+N selects the previous one, Enter swims to it, Escape cancels an automatic swim, L toggles the dive light, and Space pauses. Drag to look around.')))));
+  }
+
+  // Optional spatial exploration. Stops are actual organisms in this dive;
+  // choosing one never changes the reef, resumes motion, or awards a sighting.
+  var HABITAT_TRAILS = {
+    habitats: [
+      { id: 'garden', species: ['staghorn_coral', 'brain_coral', 'boulder_coral'] },
+      { id: 'sand', species: ['spotted_garden_eel', 'sea_cucumber', 'bluespotted_stingray'] },
+      { id: 'slope', species: ['sea_fan', 'barrel_sponge', 'foliose_coral'] }
+    ],
+    small: [
+      { id: 'anemone', species: ['porcelain_anemone_crab', 'magnificent_anemone'] },
+      { id: 'rubble', species: ['varicose_phyllidia', 'white_spotted_hermit_crab', 'nudibranch'] },
+      { id: 'attached', species: ['orange_cup_coral', 'christmas_tree_worm', 'cleaner_shrimp'] }
+    ],
+    swimmers: [
+      { id: 'glide', species: ['ocellated_eagle_ray', 'reef_manta'] },
+      { id: 'fins', species: ['bigfin_reef_squid', 'broadclub_cuttlefish'] },
+      { id: 'silhouettes', species: ['longfin_bannerfish', 'moorish_idol', 'blue_tang'] }
+    ]
+  };
+  function DiveHabitatTrail(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, fill = env.fill, c = props.ctl;
+    var state = React.useState(null), trail = state[0], setTrail = state[1];
+    var routeState = React.useState('habitats'), route = routeState[0], setRoute = routeState[1];
+    var message = React.useState(''), notice = message[0], setNotice = message[1];
+    var startRef = React.useRef(null), locateRef = React.useRef(null), pendingFocus = React.useRef(null);
+    var id = 'cr-trail-' + React.useId().replace(/:/g, '');
+    var text = {
+      garden: { title: __alloT('stem.coralreef.trail_garden', 'Coral garden'), prompt: __alloT('stem.coralreef.trail_garden_prompt', 'Trace the shapes around this coral. Where could a small animal find shelter? Compare crevices and overhangs with the open water above.') },
+      sand: { title: __alloT('stem.coralreef.trail_sand', 'Sandy bottom'), prompt: __alloT('stem.coralreef.trail_sand_prompt', 'Compare this open patch with the coral garden. Notice how close animals stay to the seabed and how their shapes blend with the bottom.') },
+      slope: { title: __alloT('stem.coralreef.trail_slope', 'Reef slope'), prompt: __alloT('stem.coralreef.trail_slope_prompt', 'Look at the angle of the reef and the shapes growing here. Compare organisms attached to the reef with animals moving through the water.') },
+      anemone: { title: __alloT('stem.coralreef.trail_anemone', 'Among the tentacles'), prompt: __alloT('stem.coralreef.trail_anemone_prompt', 'Approach slowly and look between the tentacles. Which shapes belong to the host, and which belong to its neighbours? Watch for tiny movements before choosing an identification.') },
+      rubble: { title: __alloT('stem.coralreef.trail_rubble', 'Small life near the bottom'), prompt: __alloT('stem.coralreef.trail_rubble_prompt', 'Look close to the reef surface. Trace the outline of this small animal and compare its colours, texture, and pattern with the ground around it.') },
+      attached: { title: __alloT('stem.coralreef.trail_attached', 'Life on the reef'), prompt: __alloT('stem.coralreef.trail_attached_prompt', 'Look for cups, crowns, legs, or tentacles. Notice where the animal meets the reef. Compare its scale with the much larger colonies around it.') },
+      glide: { title: __alloT('stem.coralreef.trail_glide', 'Broad-winged swimmers'), prompt: __alloT('stem.coralreef.trail_glide_prompt', 'Watch the outline as this animal turns. Compare the movement of its broad fins with its narrow tail. How does that motion differ from a typical fish?') },
+      fins: { title: __alloT('stem.coralreef.trail_fins', 'Rippling fins'), prompt: __alloT('stem.coralreef.trail_fins_prompt', 'Follow the edge of the fins as the animal moves. Look at the body, eyes, and arms. Compare the direction it faces with the direction it travels.') },
+      silhouettes: { title: __alloT('stem.coralreef.trail_silhouettes', 'Fish silhouettes'), prompt: __alloT('stem.coralreef.trail_silhouettes_prompt', 'Watch from the side, then from an angle. Compare body depth, tail shape, and fin length with the other swimmers. Which features help you tell them apart?') }
+    };
+    var routes = {
+      habitats: { title: __alloT('stem.coralreef.trail_route_habitats', 'Reef habitats'), description: __alloT('stem.coralreef.trail_route_habitats_help', 'Compare the coral garden, sandy bottom, and reef slope.') },
+      small: { title: __alloT('stem.coralreef.trail_route_small', 'Small reef life'), description: __alloT('stem.coralreef.trail_route_small_help', 'Look for tiny neighbours among tentacles and close to the reef. Approach gently; these animals can be hard to see from a distance.') },
+      swimmers: { title: __alloT('stem.coralreef.trail_route_swimmers', 'Open-water swimmers'), description: __alloT('stem.coralreef.trail_route_swimmers_help', 'Compare broad gliding fins, rippling fin edges, and fish silhouettes. Moving animals may leave your view; Locate stop finds their current position.') }
+    };
+    React.useEffect(function () {
+      var target = pendingFocus.current === 'start' ? startRef.current : pendingFocus.current === 'locate' ? locateRef.current : null;
+      pendingFocus.current = null;
+      if (target) target.focus();
+    }, [trail]);
+    if (!c || typeof c.findSpecies !== 'function' || typeof c.focus !== 'function') return null;
+    function resolve(stop) {
+      for (var i = 0; i < stop.species.length; i++) {
+        var target = marineObservationTarget(c, stop.species[i]);
+        if (target && target.distanceM >= 0) return { id: stop.id, speciesId: stop.species[i], target: target };
+      }
+      return null;
+    }
+    function locate(next, index, moveFocus) {
+      var step = next.steps[index], target = marineObservationTarget(c, step.speciesId);
+      if (!target || target.distanceM < 0 || c.focus(target.uid) === false) {
+        setNotice(__alloT('stem.coralreef.trail_unavailable', 'This stop cannot be located right now. Try again when the reef is ready.')); return false;
+      }
+      // Use live controller state: a swim may have begun since the last throttled snapshot.
+      var current = c.getState ? c.getState() : props.snap;
+      if (!(current && current.navigation) && typeof c.lookAtFocused === 'function') c.lookAtFocused();
+      if (moveFocus) pendingFocus.current = 'locate';
+      setTrail({ steps: next.steps, index: index });
+      setNotice(fill(__alloT('stem.coralreef.trail_located', '{stop} selected, about {m} m away. Use Swim to selected in the navigator when you want to approach.'), { stop: text[step.id].title, m: Math.round(target.distanceM) }));
+      return true;
+    }
+    function start() {
+      var steps = HABITAT_TRAILS[route].map(resolve).filter(Boolean).map(function (step) { return { id: step.id, speciesId: step.speciesId }; });
+      if (!steps.length) { setNotice(__alloT('stem.coralreef.trail_empty', 'No habitat trail stops are available in this reef. You can keep exploring with the nearby list.')); return; }
+      locate({ steps: steps }, 0, true);
+    }
+    var step = trail && trail.steps[trail.index];
+    return h('details', { 'data-habitat-trail': 'true', style: { marginTop: 12, padding: '8px 14px', border: '1px solid ' + P.border, borderRadius: 12, background: P.cardAlt } },
+      h('summary', { style: { cursor: 'pointer', fontWeight: 700, minHeight: 40, padding: '8px 0', color: P.text } }, __alloT('stem.coralreef.trail_title', 'Explore reef habitats')),
+      h('p', { style: { margin: '8px 0 12px', color: P.muted } }, __alloT('stem.coralreef.trail_intro', 'Choose an optional observation trail. Only stops available in this reef are included. Take your time; species identification stays up to you.')),
+      h('label', { htmlFor: id + '-route', style: { display: 'block', marginBottom: 6, fontWeight: 600, color: P.text } }, __alloT('stem.coralreef.trail_route', 'Choose a trail')),
+      h('select', { id: id + '-route', value: route, 'aria-describedby': id + '-route-help', style: { width: '100%', maxWidth: 360, minHeight: 44, padding: '8px 10px', border: '1px solid ' + P.border, borderRadius: 8, background: P.card, color: P.text }, onChange: function (e) {
+        var next = e.target.value; if (!HABITAT_TRAILS[next]) return;
+        pendingFocus.current = null; setRoute(next); setTrail(null); setNotice('');
+      } }, Object.keys(routes).map(function (key) { return h('option', { key: key, value: key }, routes[key].title); })),
+      h('p', { id: id + '-route-help', style: { margin: '8px 0 14px', color: P.muted } }, routes[route].description),
+      step ? h('div', { 'data-habitat-trail-stop': step.id },
+        h('h4', { id: id, style: { margin: '0 0 8px', color: P.text, fontSize: 17 } }, fill(__alloT('stem.coralreef.trail_step', 'Stop {n} of {total}: {title}'), { n: trail.index + 1, total: trail.steps.length, title: text[step.id].title })),
+        h('p', { style: { margin: '0 0 12px', color: P.text } }, text[step.id].prompt),
+        h('div', { role: 'group', 'aria-labelledby': id, style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          h('button', { type: 'button', disabled: trail.index === 0, style: btnStyle(P, false), onClick: function () { if (trail.index > 0) locate(trail, trail.index - 1, trail.index === 1); } }, __alloT('stem.coralreef.trail_previous', 'Previous stop')),
+          h('button', { ref: locateRef, type: 'button', style: btnStyle(P, false), onClick: function () { locate(trail, trail.index, false); } }, __alloT('stem.coralreef.trail_locate', 'Locate stop')),
+          h('button', { type: 'button', disabled: trail.index === trail.steps.length - 1, style: btnStyle(P, false), onClick: function () { if (trail.index < trail.steps.length - 1) locate(trail, trail.index + 1, trail.index === trail.steps.length - 2); } }, __alloT('stem.coralreef.trail_next', 'Next stop')),
+          h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { pendingFocus.current = 'start'; setTrail(null); setNotice(''); } }, __alloT('stem.coralreef.trail_close', 'Close trail'))))
+        : h('button', { ref: startRef, type: 'button', style: btnStyle(P, false), onClick: start }, __alloT('stem.coralreef.trail_start', 'Start habitat trail')),
+      h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: notice ? '12px 0 4px' : 0, color: P.muted, fontSize: 14 } }, notice));
+  }
+
   function ExploreSection(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t, __alloFill = env.fill;
     var ST = exploreSiteText(__alloT), TX = speciesText(__alloT);
@@ -5982,7 +6195,7 @@
     var studyId = studyMeta && ['fish','reptile','invertebrate','coral'].indexOf(studyMeta.group) >= 0 ? studyMeta.id : null;
     var found = Object.keys(log).filter(function (k) { var meta = speciesMeta(k); return meta && meta.group !== 'structure'; }).length;
     var total = SPECIES_META.filter(function (m) { return m.group !== 'structure'; }).length;
-    var canvasRef = React.useRef(null), ctlRef = React.useRef(null), diveControlsRef = React.useRef(null), diveTitleRef = React.useRef(null), observationCloseFocus = React.useRef(false);
+    var canvasRef = React.useRef(null), ctlRef = React.useRef(null), diveControlsRef = React.useRef(null), diveTitleRef = React.useRef(null), diveStageRef = React.useRef(null), observationCloseFocus = React.useRef(false);
     var motionRef = React.useRef(!!env.ctx.reduceMotion), previousMotion = React.useRef(!!env.ctx.reduceMotion), pendingMotionPause = React.useRef(false);
     motionRef.current = !!env.ctx.reduceMotion;
     var soundHook = React.useRef(null); // Reef sounds hear the dive's bites and breaths here
@@ -5992,6 +6205,8 @@
     var ans = React.useState(null), answer = ans[0], setAnswer = ans[1];
     var pr = React.useState(0), progress = pr[0], setProgress = pr[1];
     var vs = React.useState('natural'), vision = vs[0], setVision = vs[1];
+    var ex = React.useState(false), expanded = ex[0], setExpanded = ex[1];
+    var quality = d.diveQuality === 'low' || d.diveQuality === 'high' ? d.diveQuality : 'auto';
     var view = d.diveView === 'first' ? 'first' : 'third';
     var siteKey = siteId + ':' + (siteId === 'restoration' ? years : '') + ':' + (baseSite && baseSite.modelYear != null ? baseSite.modelYear : '');
     var started = status !== 'idle';
@@ -6030,7 +6245,7 @@
       function failDive() {
         if (cancelled) return;
         // Recover focus only from the canvas or controls that this failure removes.
-        if (document.activeElement === canvasRef.current || diveControlsRef.current && diveControlsRef.current.contains(document.activeElement)) focusDiveTitle();
+        if (diveStageRef.current && diveStageRef.current.contains(document.activeElement)) focusDiveTitle();
         setStatus('error');
         var c = ctlRef.current; ctlRef.current = null;
         if (c) { try { c.dispose(); } catch (e) {} }
@@ -6042,7 +6257,7 @@
         try {
           // A staged mount builds the reef over many short tasks; the dive is ready when its first frame is drawn.
           ctlRef.current = window.Reef3DExplore.mount(canvasRef.current, {
-            THREE: THREE, reducedMotion: motionRef.current, view: view, vision: vision, staged: true,
+            THREE: THREE, reducedMotion: motionRef.current, view: view, vision: vision, quality: quality, staged: true,
             site: { seed: site.seed, depthM: site.depthM, health: site.health, population: populationFor(site),
               restoration: site.restoration ? { kind: site.restoration.kind, units: site.restoration.units, yearsSince: siteId === 'restoration' ? years : 6 } : null },
             onProgress: function (f) { if (!cancelled) setProgress(Math.round(f * 100)); },
@@ -6061,6 +6276,7 @@
       };
     }, [started ? siteKey : 'off', attempt]);
     React.useEffect(function () { if (ctlRef.current && status === 'ready') ctlRef.current.setView(view); }, [view, status]);
+    React.useEffect(function () { var c = ctlRef.current; if (c && status === 'ready' && typeof c.resize === 'function') c.resize(); }, [expanded, status]);
     React.useEffect(function () { var c = ctlRef.current; if (c && status === 'ready' && typeof c.setVision === 'function') c.setVision(vision); }, [vision, status, siteKey, attempt]);
     function changeVision(mode) { if (['natural', 'vivid', 'fluorescence'].indexOf(mode) >= 0) setVision(mode); }
     var focused = snap && snap.focused ? snap.focused : null;
@@ -6068,8 +6284,13 @@
     React.useEffect(function () {
       setAnswer(null);
       var where = cueWords(__alloT, focused);
-      if (focused) env.say(__alloFill(where ? __alloT('stem.coralreef.ex_focus_announce_dir', 'Looking at organism {n}, {m} meters away, {where}.') : __alloT('stem.coralreef.ex_focus_announce', 'Looking at organism {n}, {m} meters away.'),
-        { n: (snap.nearby || []).findIndex(function (n) { return n.uid === focused.uid; }) + 1 || 1, m: Math.round(focused.distanceM), where: where }));
+      if (focused) {
+        var nearbyIndex = (snap.nearby || []).findIndex(function (n) { return n.uid === focused.uid; });
+        var announcement = nearbyIndex < 0
+          ? where ? __alloT('stem.coralreef.ex_focus_selected_dir', 'Selected organism, {m} meters away, {where}.') : __alloT('stem.coralreef.ex_focus_selected', 'Selected organism, {m} meters away.')
+          : where ? __alloT('stem.coralreef.ex_focus_announce_dir', 'Looking at organism {n}, {m} meters away, {where}.') : __alloT('stem.coralreef.ex_focus_announce', 'Looking at organism {n}, {m} meters away.');
+        env.say(__alloFill(announcement, { n: nearbyIndex + 1, m: Math.round(focused.distanceM), where: where }));
+      }
     }, [focusKey]);
     function ctl() { return ctlRef.current; }
     function focusDiveTitle() { guideReveal(diveTitleRef.current, diveTitleRef.current, !!env.ctx.reduceMotion); }
@@ -6149,14 +6370,22 @@
         h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_intro', 'You are a scuba diver on an Indo-Pacific reef in the Coral Triangle. Swim around, look closely, and identify the animals and corals you meet. Each one you identify goes into your species log.')),
         siteGrid,
         h('p', { style: mutedStyle(P, { margin: '8px 0 0' }) }, ST[siteId].about),
+        !started || status === 'error' ? h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 14px', marginTop: 14 } },
+          h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 10, fontWeight: 600 } }, __alloT('stem.coralreef.ex_quality_label', 'Dive detail'),
+            h('select', { value: quality, style: { color: P.text, background: P.card, border: '1px solid ' + P.border, borderRadius: 8, padding: '8px 12px', minHeight: 44 }, onChange: function (event) { env.set({ diveQuality: event.target.value }); } },
+              h('option', { value: 'auto' }, __alloT('stem.coralreef.ex_quality_auto', 'Automatic')),
+              h('option', { value: 'low' }, __alloT('stem.coralreef.ex_quality_low', 'Smoother')),
+              h('option', { value: 'high' }, __alloT('stem.coralreef.ex_quality_high', 'Detailed')))),
+          h('span', { style: { color: P.muted, fontSize: 14 } }, __alloT('stem.coralreef.ex_quality_help', 'Choose Smoother if the dive runs slowly. Your species log is kept.'))) : null,
         siteId === 'restoration' ? h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.ex_years', 'Years since the Reef Stars were put in'), min: 0, max: 8, value: years,
           valueText: __alloFill(__alloT('stem.coralreef.ex_years_value', '{n} years'), { n: years }), onChange: function (v) { env.set({ diveYears: v }); } }) : null,
         h('p', { style: { margin: '8px 0 0', fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.ex_log_count', 'Species log: {n} of {total} found.'), { n: found, total: total }), ' ',
           h('button', { type: 'button', style: btnStyle(P, false, { marginLeft: 6 }), onClick: function () { env.go('guide'); } }, __alloT('stem.coralreef.ex_open_guide', 'Open the species guide')))),
       studyId ? h(MarineObservationDock,{key:studyId,env:env,id:studyId,status:status,snap:snap,ctl:ctl(),onClose:closeObservation,onReturn:returnObservation}) : null,
-      h('section', { className: 'cr-dive-stage', style: cardStyle(P), 'aria-labelledby': 'cr-dive-title' },
+      h('section', { ref: diveStageRef, className: 'cr-dive-stage', style: cardStyle(P), 'aria-labelledby': 'cr-dive-title' },
         h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '8px 14px', marginBottom: 12 } },
           h('h3', { id: 'cr-dive-title', ref:diveTitleRef, tabIndex:-1, style: Object.assign({}, h3Style(P), { margin: 0 }) }, ST[siteId].name),
+          status === 'ready' ? h('button', { type: 'button', 'aria-pressed': expanded ? 'true' : 'false', 'data-dive-expand': 'true', style: btnStyle(P, expanded), onClick: function () { setExpanded(!expanded); } }, __alloT('stem.coralreef.ex_expand_view', 'Expand view')) : null,
           status === 'ready' && vision !== 'natural' && ctl() && typeof ctl().setVision === 'function' ? h('span', { className: 'cr-vision-badge', 'data-reef-vision-badge': vision, 'aria-hidden': 'true' }, reefVisionName(__alloT, vision), ' · ', __alloT('stem.coralreef.ex_vision_illustrative', 'Illustrative view')) : null),
         !started ? h('div', { className: 'cr-hero' },
           h(ReefVista, { env: env }),
@@ -6168,11 +6397,14 @@
         // The HUD hangs from a zero-height anchor over the canvas top, so the canvas block stays as it is.
         status === 'ready' ? h(DiveHud, { env: env, snap: snap, todo: todo }) : null,
         started ? h('div', { style: { position: 'relative' } },
-          h('canvas', { ref: canvasRef, tabIndex: status === 'ready' ? 0 : -1, role: 'application', 'aria-busy': status === 'loading' ? 'true' : 'false',
+          h('canvas', { ref: canvasRef, className: expanded ? 'cr-dive-expanded' : undefined, tabIndex: status === 'ready' ? 0 : -1, role: 'application', 'aria-busy': status === 'loading' ? 'true' : 'false',
             'aria-label': __alloT('stem.coralreef.ex_canvas_label_light', '3D reef dive. W and S or the up and down arrows swim forward and back; A and D or left and right turn; R and F rise and sink; N moves to the next nearby organism; Enter swims to it; L switches the dive light on or off; Space pauses. The list below the view names what is nearby and which way it is.'),
             style: { width: '100%', height: 440, display: status === 'error' ? 'none' : 'block', borderRadius: 10, background: '#0b3a4d', outlineOffset: 3 } }),
           status === 'loading' ? h(DiveLoading, { env: env, value: progress, label: __alloT('stem.coralreef.ex_loading', 'Loading the reef...') }) : null) : null,
         status === 'ready' && !studyId ? h(ReefMomentCard, { env: env, r: moments, canvas: canvasRef }) : null,
+        status === 'ready' ? h(DiveImageCapture, { env: env, ctl: ctl(), key: 'capture:' + siteKey + ':' + attempt }) : null,
+        status === 'ready' ? h(DiveNavigator, { env: env, snap: snap, ctl: ctl(), TX: TX }) : null,
+        status === 'ready' && !studyId ? h(DiveHabitatTrail, { env: env, snap: snap, ctl: ctl(), key: 'trail:' + siteKey + ':' + attempt }) : null,
         status === 'error' ? h('div', { role: 'alert', style: cardStyle(P, { background: P.cardAlt }) },
           h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_error', 'The 3D dive could not start on this device. You can still learn every species in the species guide.')),
           h('button', { type: 'button', style: btnStyle(P, false, { marginRight: 8 }), onClick: function () { focusDiveTitle(); setAttempt(attempt + 1); } }, __alloT('stem.coralreef.dive_retry', 'Try the 3D view again')),
@@ -7436,7 +7668,7 @@
         observe: __alloT("stem.coralreef.dx_broadclub_cuttlefish_observe", "Trace the fin skirt around the mantle and look closely at a pupil. Compare the body outline with the day octopus, then use an underside view to find the rows of arm suckers."),
         sources: ["dx-worms-broadclub_cuttlefish","dx-fao-broadclub_cuttlefish","dx-doris-broadclub_cuttlefish","dx-mba-broadclub_cuttlefish","dx-omura-broadclub_cuttlefish","dx-how-broadclub_cuttlefish","dx-slb-broadclub_cuttlefish"]
       },
-      blackspotted_puffer: { habitat: __alloT("stem.coralreef.dx_blackspotted_puffer_habitat", "Coastal and outer reefs across the Indo-Pacific, especially areas rich in attached invertebrates. Fishes of Australia lists a 3–25 m depth range."),
+      blackspotted_puffer: { habitat: __alloT("stem.coralreef.dx_blackspotted_puffer_habitat", "Coastal and outer reefs across the Indo-Pacific, especially areas rich in attached invertebrates. Fishes of Australia lists a 3 to 25 m depth range."),
         diet: __alloT("stem.coralreef.dx_blackspotted_puffer_diet", "Coral tissue, sponges, molluscs, tunicates and algae."),
         behavior: __alloT("stem.coralreef.dx_blackspotted_puffer_behavior", "Small side, back and belly fins work together during steady swimming. The tail contributes more during faster bursts."),
         observe: __alloT("stem.coralreef.dx_blackspotted_puffer_observe", "Check the pale bar across the snout, then compare its fine skin prickles with the porcupinefish's longer spines. Watch the fins while the rounded body stays comparatively still."),

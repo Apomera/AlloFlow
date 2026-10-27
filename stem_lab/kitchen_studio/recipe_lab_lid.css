@@ -19,3 +19,10 @@
 
 /* Keep the handle, pot and marked rest visible during narrow-screen carries. */
 @media(max-width:500px){.kitchen-gesture-coach[data-tool="lid"]{top:auto;bottom:9px}}
+
+.pot-lid-tools{min-width:0;overflow:visible;overflow-wrap:anywhere}
+.pot-lid-tools>summary{flex-wrap:wrap;min-width:0;line-height:1.5;border-radius:.85rem}
+.pot-lid-tools>summary>span:first-child{flex:1 1 10rem;min-width:0}
+.pot-lid-tools>summary>span:last-child{max-width:100%;text-align:left}
+.pot-lid-actions button{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+@media(forced-colors:active){.pot-lid-actions button:disabled{opacity:1;color:GrayText;border-color:GrayText}}

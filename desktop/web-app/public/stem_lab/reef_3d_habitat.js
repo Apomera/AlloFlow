@@ -839,7 +839,7 @@
       top: { value: new T.Color(0x79c7d1).lerp(new T.Color(0x3a88a6), depthK) }, deep: { value: new T.Color(0x096278).lerp(new T.Color(0x062c4b), depthK) },
       life: { value: new T.Vector2(vitality, bg.algae) }
     };
-    function key(name) { return 'reef3d-' + name + '-v3|' + (derivatives ? 'd' : 'n') + (high ? 'h' : 'l'); }
+    function key(name) { return 'reef3d-' + name + '-v4|' + (derivatives ? 'd' : 'n') + (high ? 'h' : 'l'); }
     function commonFragment(parts, local) {
       parts.waterColumn = true;
       parts.fCommon.push('uniform vec3 reefWaterExtinction;uniform vec3 reefWaterScatter;uniform vec3 reefWaterEye;uniform float reefSurfaceY;');
@@ -857,7 +857,7 @@
     function patch(material, name, build) {
       if (derivatives) material.extensions = { derivatives: true };
       material.onBeforeCompile = function (shader) { build(shader); };
-      material.customProgramCacheKey = function () { return key(name); };
+      material.customProgramCacheKey = function () { return key(name) + (name === 'coral' ? '|tissue-v1' : ''); };
       return material;
     }
     // Puts another module's standard material (the engine's fish) in the same water.
@@ -950,9 +950,15 @@
       return function (shader) {
         var parts = shaderParts(); commonFragment(parts, true); bindCaustics(shader);
         shader.uniforms.reefCoralA = look.a; shader.uniforms.reefCoralB = look.b; shader.uniforms.reefTurfColor = look.turf;
-        parts.vCommon.push('varying vec3 vReefCoralNormal;');
-        parts.vBegin.push('vReefCoralNormal=normal;');
-        parts.fCommon.push('uniform vec4 reefCoralA;uniform vec4 reefCoralB;uniform vec3 reefTurfColor;varying vec3 vReefCoralNormal;');
+        // Separate surface modes preserve the survey's living / bleached / dead
+        // state uniforms. Growth ridges survive bleaching; turf hides them.
+        shader.uniforms.reefCoralSurface = look.surface || { value: new T.Vector2(0, 0) };
+        parts.vCommon.push('varying vec4 vReefCoralNormal;');
+        parts.vBegin.push('vReefCoralNormal=vec4(normal,1.0);');
+        // Sign carries the pale-instance gate, magnitude a stable colony seed.
+        // This fits in the existing normal varying register on small GPUs.
+        parts.vProject.push(['mat4 reefColonyFrame=modelMatrix;float reefPigmented=1.0;','#ifdef USE_INSTANCING','reefColonyFrame=modelMatrix*instanceMatrix;','#endif','#ifdef USE_INSTANCING_COLOR','reefPigmented=1.0-step(0.84,min(min(instanceColor.r,instanceColor.g),instanceColor.b));','#endif','float reefColonySeed=fract(sin(dot(reefColonyFrame[3].xyz,vec3(12.9898,78.233,39.425)))*43758.5453);vReefCoralNormal.w=(1.0+reefColonySeed)*(reefPigmented>0.5?1.0:-1.0);'].join('\n'));
+        parts.fCommon.push('uniform vec4 reefCoralA;uniform vec4 reefCoralB;uniform vec2 reefCoralSurface;uniform vec3 reefTurfColor;varying vec4 vReefCoralNormal;');
         parts.fCommon.push([
           'vec3 reefPolypField(vec2 p,float detail,float aa){',
           'p+=vec2(sin(p.y*0.73+sin(p.x*0.39)),cos(p.x*0.67+sin(p.y*0.43)))*0.13;',
@@ -980,7 +986,7 @@
           'float reefPigment=reefNoise(vReefLocal*11.0+vec3(1.7,5.2,2.9));',
           'float reefAA=0.08,reefDetail=0.55,reefGrooveAA=0.06;',
           'float reefTissue=reefNoise(vReefLocal*6.5+vec3(5.2,1.3,8.1));',
-          'vec3 reefProjection=pow(abs(normalize(vReefCoralNormal)),vec3(8.0));reefProjection/=max(dot(reefProjection,vec3(1.0)),0.0001);',
+          'vec3 reefProjection=pow(abs(normalize(vReefCoralNormal.xyz)),vec3(8.0));reefProjection/=max(dot(reefProjection,vec3(1.0)),0.0001);',
           'float reefGrooveN=0.4;',
           'if(reefCoralB.x>0.0){vec3 maze=vReefLocal*reefCoralB.y;reefGrooveN=reefMeander(maze.yz)*reefProjection.x+reefMeander(maze.xz)*reefProjection.y+reefMeander(maze.xy)*reefProjection.z;}',
           '#ifdef REEF_DERIVATIVES',
@@ -988,14 +994,33 @@
           'reefAA=clamp(reefFootprint*0.6,0.015,0.15);reefDetail=1.0-smoothstep(0.3,0.95,reefFootprint);',
           'reefGrooveAA=max(0.02,fwidth(reefGrooveN)*1.2);',
           '#endif',
-          'vec3 reefPolyps=reefPolypField(reefQ.yz,reefDetail,reefAA)*reefProjection.x+reefPolypField(reefQ.xz+vec2(7.2,3.1),reefDetail,reefAA)*reefProjection.y+reefPolypField(reefQ.xy+vec2(2.3,9.1),reefDetail,reefAA)*reefProjection.z;',
+          'vec3 reefPolyps;',
+          'if(reefCoralSurface.y>0.5){reefPolyps=vec3(smoothstep(0.53-reefAA,0.77+reefAA,reefNoise(reefQ))*reefDetail,0.0,0.0);}',
+          'else {reefPolyps=reefPolypField(reefQ.yz,reefDetail,reefAA)*reefProjection.x+reefPolypField(reefQ.xz+vec2(7.2,3.1),reefDetail,reefAA)*reefProjection.y+reefPolypField(reefQ.xy+vec2(2.3,9.1),reefDetail,reefAA)*reefProjection.z;}',
           'float reefPore=reefPolyps.x,reefRim=reefPolyps.y,reefSepta=reefPolyps.z;',
-          'float reefGrooveRaw=1.0-smoothstep(0.025,0.12,reefGrooveN);',
+          'float reefGrowthBands=0.0;',
+          'if(reefCoralSurface.x>0.0){float reefGrowthPhase=length(vReefLocal.xz)*reefCoralSurface.x+reefTissue*2.1;float reefGrowthDetail=1.0;',
+          '#ifdef REEF_DERIVATIVES',
+          'reefGrowthDetail=1.0-smoothstep(0.45,1.7,fwidth(reefGrowthPhase));',
+          '#endif',
+          'reefGrowthBands=(sin(reefGrowthPhase)+0.23*sin(reefGrowthPhase*2.0+0.6))*reefProjection.y*smoothstep(0.0,0.6,vReefCoralNormal.y)*reefGrowthDetail;}',
           'float reefGroove=(1.0-smoothstep(0.025,0.12+reefGrooveAA,reefGrooveN))*reefCoralB.x*(1.0-smoothstep(0.12,0.6,reefGrooveAA));',
           'float reefMantle=smoothstep(0.18,0.82,reefPigment);',
           'vec3 reefTissueTint=mix(vec3(1.0),mix(vec3(0.91,0.955,0.93),vec3(1.045,1.025,1.02),reefMantle),reefCoralB.w);',
           // Brain-coral valleys are paler than the ridges; dead cups gain crisp septa.
-          'diffuseColor.rgb*=reefTissueTint*(1.0-reefCoralA.x*reefPore+reefCoralA.z*(reefRim+0.26*reefSepta)-reefCoralB.z*0.12*reefSepta)*(0.94+0.12*reefTissue)*(1.0+0.2*reefGroove);',
+          'diffuseColor.rgb*=reefTissueTint*(1.0-reefCoralA.x*reefPore+reefCoralA.z*(reefRim+0.26*reefSepta)-reefCoralB.z*0.12*reefSepta)*(0.94+0.12*reefTissue)*(1.0+0.2*reefGroove+0.026*reefGrowthBands);',
+          // Living colonies gain broad, muted pigment provinces beneath the
+          // fine cups. Bleached tissue, dead skeleton and sponge pores retain
+          // their state-specific colour; no geometry or emissive light changes.
+          'float reefLivingPigment=reefCoralB.w*(1.0-reefCoralB.z)*(1.0-reefCoralSurface.y)*step(0.0,vReefCoralNormal.w);',
+          'float reefColonySeed=abs(vReefCoralNormal.w)-1.0;',
+          'float reefPigmentProvince=smoothstep(0.28,0.76,reefTissue*0.72+reefPigment*0.28);',
+          'vec3 reefPigmentShade=mix(vec3(0.72,0.87,0.85),vec3(0.88,0.72,0.91),smoothstep(0.22,0.78,reefColonySeed));',
+          'vec3 reefPigmentCrown=mix(vec3(1.20,1.07,0.86),vec3(0.95,1.16,1.20),smoothstep(0.30,0.82,reefColonySeed));',
+          'vec3 reefColonyPigment=mix(reefPigmentShade,reefPigmentCrown,reefPigmentProvince);',
+          'float reefCrownFacing=smoothstep(-0.15,0.85,normalize(vReefCoralNormal.xyz).y);',
+          'float reefLivingRidge=(reefRim*0.65+reefSepta*0.25+max(reefGrowthBands,0.0)*0.18)*(0.45+0.55*reefCrownFacing);',
+          'diffuseColor.rgb*=mix(vec3(1.0),reefColonyPigment*(0.93+0.13*reefCrownFacing)*(1.0-0.18*reefPore+0.19*reefLivingRidge),reefLivingPigment);',
           'float reefTurf=0.0;',
           'if(reefCoralA.y>0.0){',
           '  float reefTurfN=reefNoise(vReefLocal*30.0+vec3(2.1,7.7,4.4))*0.65+reefTissue*0.35;',
@@ -1005,16 +1030,22 @@
           '}',
           ABSORB
         ].join('\n'));
-        parts.fRough.push('roughnessFactor=clamp(roughnessFactor+0.25*reefTurf-0.045*reefRim+0.035*reefPore+0.035*reefGroove,0.35,1.0);');
-        parts.fNormal.push(surfaceRelief('((0.0009*reefRim+0.00022*reefSepta-0.0018*reefPore)*reefCoralA.x*2.0-0.0011*reefGrooveRaw*reefCoralB.x)*(1.0-reefTurf*0.6)', '0.32'));
+        parts.fRough.push('roughnessFactor=clamp(roughnessFactor+0.25*reefTurf-0.045*reefRim+0.035*reefPore+0.035*reefGroove-0.012*reefGrowthBands*(1.0-reefTurf)+reefLivingPigment*(0.10*(0.5-reefPigmentProvince)-0.045*reefLivingRidge),0.35,1.0);');
+        // Filter relief with the same footprint as its colour to prevent distant
+        // maze shimmer. No geometry is displaced under the survey plumb line.
+        parts.fNormal.push(surfaceRelief('((0.0009*reefRim+0.00022*reefSepta-0.0018*reefPore)*reefCoralA.x*2.0-0.0011*reefGroove+0.00045*reefGrowthBands)*(1.0-reefTurf*0.6)+reefLivingPigment*(0.004*(reefPigmentProvince-0.5)+0.0006*reefLivingRidge)', '0.32'));
+        parts.fLighting.push('float reefCavity=clamp(1.0-0.22*reefPore*reefCoralA.x-0.22*reefGroove,0.55,1.0);reflectedLight.indirectDiffuse*=reefCavity;reflectedLight.indirectSpecular*=mix(1.0,reefCavity,0.45);');
         applyParts(shader, parts, 'coral');
       };
     }
     // Shared surge pulses carry bounded blade ripples (adapted from shadeCLHuntPlantFlex).
-    function plantShader(motion) {
+    function plantShader(motion, fleshy, blade) {
       return function (shader) {
         var parts = shaderParts(); commonFragment(parts, true); bindCaustics(shader);
         shader.uniforms.reefPlantMotion = motion;
+        shader.uniforms.reefPlantTissue = { value: fleshy ? 1 : 0 };
+        shader.uniforms.reefPlantBlade = { value: blade ? 1 : 0 };
+        parts.fCommon.push('uniform vec4 reefPlantMotion;uniform float reefPlantTissue;uniform float reefPlantBlade;');
         parts.vCommon.push([
           'uniform vec4 reefPlantMotion;attribute float reefBladePhase;',
           'vec2 reefPlantWave(float t,float phase,float travel,float amplitude){float angle=phase-travel*t;float ripple=phase*2.0+0.8-(travel+4.0)*t;',
@@ -1041,11 +1072,21 @@
         parts.vBegin.push('transformed+=reefPlantOffset;');
         parts.fColor.push([
           'float reefTissue=reefNoise(vReefLocal*48.0+vec3(1.7,0.0,2.1));',
+          'float reefPolyp=reefNoise(vReefLocal*185.0+vec3(0.0,7.1,0.0));',
           'float reefPlantDetail=1.0-smoothstep(3.0,11.0,length(vViewPosition));',
-          'diffuseColor.rgb*=0.94+0.12*reefTissue*reefPlantDetail;',
+          '#ifdef REEF_DERIVATIVES',
+          'reefPlantDetail*=1.0-smoothstep(0.4,1.5,max(length(dFdx(vReefLocal)),length(dFdy(vReefLocal)))*185.0);',
+          '#endif',
+          'float reefPolypCups=smoothstep(0.59,0.76,reefPolyp)*reefPlantDetail*(1.0-reefPlantBlade);',
+          'float reefBladeGrain=0.5;',
+          'if(reefPlantBlade>0.5){reefBladeGrain+=(reefNoise(vReefLocal*vec3(96.0,17.0,96.0)+vec3(3.7,0.0,1.9))-0.5)*reefPlantDetail;}',
+          'float reefSoftCrown=reefPlantTissue*smoothstep(0.22,0.72,vReefLocal.y/max(reefPlantMotion.z,0.001));',
+          'float reefPolypCollar=smoothstep(0.46,0.62,reefPolyp)*(1.0-smoothstep(0.62,0.76,reefPolyp))*reefPlantDetail*reefSoftCrown;',
+          'diffuseColor.rgb*=0.94+0.12*reefTissue*reefPlantDetail-0.085*reefPolypCups+0.065*reefPolypCollar+0.11*(reefBladeGrain-0.5)*reefPlantBlade;',
           ABSORB
         ].join('\n'));
-        parts.fRough.push('roughnessFactor=clamp(roughnessFactor+0.04*(reefTissue-0.5),0.5,0.95);');
+        parts.fRough.push('roughnessFactor=clamp(roughnessFactor+0.04*(reefTissue-0.5)+0.035*reefPolypCups+reefPlantBlade*(-0.04+0.06*(reefBladeGrain-0.5)),0.5,0.95);');
+        parts.fNormal.push(surfaceRelief('(reefTissue*0.0007-reefPolypCups*0.00075+reefPolypCollar*0.0005+reefPlantBlade*(reefBladeGrain-0.5)*0.00045)*reefPlantDetail', '0.16'));
         applyParts(shader, parts, 'plant');
       };
     }
@@ -1198,10 +1239,10 @@
       var id = p.category + '|' + p.coralForm + '|' + pc.colonyKey;
       if (colonyMaterials[id]) return colonyMaterials[id];
       var living = p.category === 'hard_coral', bleached = p.category === 'bleached_coral', dead = !living && !bleached, form = p.coralForm;
-      var density = form === 'branching' ? 52 : form === 'plate' ? 46 : form === 'encrusting' ? 44 : pc.brain ? 30 : 46;
+      var density = form === 'branching' ? 52 : form === 'plate' ? 82 : form === 'encrusting' ? 108 : pc.brain ? 30 : 108;
       var groove = form === 'massive' && pc.brain ? 1 : 0;
       var a = living ? [0.3, 0, 0.16] : bleached ? [0.22, 0, 0.06] : [0.4, form === 'branching' ? 0.32 : 0.4, 0];
-      var u = { a: { value: new T.Vector4(a[0], a[1], a[2], density) }, b: { value: new T.Vector4(groove, 22, dead ? 1 : 0, living ? 1 : 0) }, turf: turfColor };
+      var u = { a: { value: new T.Vector4(a[0], a[1], a[2], density) }, b: { value: new T.Vector4(groove, 22, dead ? 1 : 0, living ? 1 : 0) }, surface: { value: new T.Vector2(form === 'plate' ? 135 : 0, 0) }, turf: turfColor };
       var m = new T.MeshStandardMaterial({ color: look.color, vertexColors: true, roughness: living ? 0.72 : bleached ? 0.5 : 0.97, metalness: 0 });
       return (colonyMaterials[id] = M(patch(m, 'coral', coralShader(u))));
     }
@@ -1217,7 +1258,7 @@
         group.add(surveyMesh(geometry, coralMaterial(p, pc, look), 'reef-coral'));
         if (c === 'recently_dead_coral') group.add(turfFuzz(geometry, pc.key));
       } else if (c === 'macroalgae') {
-        algaeMaterial = algaeMaterial || M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.62, side: T.DoubleSide }), 'plant', plantShader(algaeMotion)));
+        algaeMaterial = algaeMaterial || M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.62, side: T.DoubleSide }), 'plant', plantShader(algaeMotion, false, true)));
         group.add(surveyMesh(buildAlgaePiece(T, pc, algaeTints[Math.floor(hash2(pc.colonyKey, 31) * 3) % 3]), algaeMaterial, 'reef-macroalgae'));
       } else if (c === 'rock' || c === 'rubble') {
         rockMaterial = rockMaterial || M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.93 }), 'rock', rockShader));
@@ -1440,11 +1481,13 @@
       var sides = high ? 5 : 4;
       var coralMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.8 }), 'coral', coralShader({ a: { value: new T.Vector4(0.25, 0, 0.1, 60) }, b: { value: new T.Vector4(0, 18, 0, 1) }, turf: turfColor })));
       var brainMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.8 }), 'coral', coralShader({ a: { value: new T.Vector4(0.12, 0, 0.06, 45) }, b: { value: new T.Vector4(0.8, 24, 0, 1) }, turf: turfColor })));
+      var plateMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.8 }), 'coral', coralShader({ a: { value: new T.Vector4(0.2, 0, 0.075, 96) }, b: { value: new T.Vector4(0, 18, 0, 1) }, surface: { value: new T.Vector2(135, 0) }, turf: turfColor })));
+      var encrustMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.8 }), 'coral', coralShader({ a: { value: new T.Vector4(0.17, 0, 0.055, 118) }, b: { value: new T.Vector4(0, 18, 0, 1) }, turf: turfColor })));
       var rockMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.94 }), 'rock', rockShader));
-      var algaeMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.65, side: T.DoubleSide }), 'plant', plantShader(plantMotion(0.22))));
-      var softMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.76, side: T.DoubleSide }), 'plant', plantShader(plantMotion(0.45))));
+      var algaeMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.65, side: T.DoubleSide }), 'plant', plantShader(plantMotion(0.22), false, true)));
+      var softMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.76, side: T.DoubleSide }), 'plant', plantShader(plantMotion(0.45), true, false)));
       var fanMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.7, side: T.DoubleSide }), 'plant', plantShader(plantMotion(0.85))));
-      var spongeMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9 }), 'coral', coralShader({ a: { value: new T.Vector4(0.35, 0, 0.0, 30) }, b: { value: new T.Vector4(0, 18, 0, 0) }, turf: turfColor })));
+      var spongeMat = M(patch(new T.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9 }), 'coral', coralShader({ a: { value: new T.Vector4(0.35, 0, 0.0, 132) }, b: { value: new T.Vector4(0, 18, 0, 0) }, surface: { value: new T.Vector2(0, 1) }, turf: turfColor })));
       // Colonies near the tape get the detailed form on the high tier; the rest
       // of the reef, and every colony on low, the light one.
       var bases = {
@@ -1452,8 +1495,8 @@
         antler: [function (d) { return buildBranching(T, 0.38, 0.5, 1, sides, d); }, coralMat, true],
         corymbose: [function (d) { return buildBranching(T, 0.38, 0.42, 2, sides, d); }, coralMat, true],
         massive: [function (d) { return buildMassive(T, 0.4, 0.42, 3, d); }, brainMat, true],
-        plate: [function (d) { return buildPlate(T, 0.45, 0.4, 5, d); }, coralMat, true],
-        encrusting: [function (d) { return buildEncrusting(T, 0.44, 0.07, 7, d); }, coralMat, true],
+        plate: [function (d) { return buildPlate(T, 0.45, 0.4, 5, d); }, plateMat, true],
+        encrusting: [function (d) { return buildEncrusting(T, 0.44, 0.07, 7, d); }, encrustMat, true],
         rock: [function () { return buildRock(T, 0.4, 7, false, rockPalette); }, rockMat],
         bommie: [function () { var g = buildRock(T, 1, 11, high ? 18 : 12, { stone: lin(0x7e786a), turf: lin(0x5e5840), cca: cca, turfAmount: 0.45 + 0.4 * bg.algae, ccaAmount: 0.3 + 0.4 * vitality }); g.scale(1, 1 / g.boundingBox.max.y, 1); return g; }, rockMat],
         algae: [function () { return buildAlgae(T, 0.18, 0.2, 2, false, algaeTints[0]); }, algaeMat],

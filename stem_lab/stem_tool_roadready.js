@@ -6715,6 +6715,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var k = String(e.key || '').toLowerCase();
       // Space/Enter belong to the focused control; Space still brakes on the scene.
       var target = e.target;
+      // WCAG 2.1.4: letter/Space keys act only while focus is inside the drill.
+      if (k.length === 1 && !(target && typeof target.closest === 'function' && target.closest('[data-rr-drill]'))) return;
       if ((k === ' ' || k === 'enter') && target && typeof target.closest === 'function' &&
           target.closest('button, summary, a[href], [role="button"]')) return;
       if (DRILL_KEYS.indexOf(k) !== -1) e.preventDefault();   // arrows and space scroll the page otherwise
@@ -6944,7 +6946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
     }, [scn.id]);
 
-    return h('div', { style: { padding: '14px', maxWidth: '760px', margin: '0 auto' } },
+    return h('div', { 'data-rr-drill': 'true', tabIndex: -1, style: { padding: '14px', maxWidth: '760px', margin: '0 auto' } },
       h('button', { onClick: props.onExit, style: { fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, marginBottom: '8px' } }, '← Menu'),
       h(RoadReadyControlSettings,{React:React, t: t}),
       h(RoadReadyInputHint,{React:React, t: t}),
@@ -7196,7 +7198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     // rectsOverlap now lives at module scope (shared with ScenarioParkingMode).
 
-    return h('div', { className: 'rr-parking-shell' },
+    return h('div', { 'data-rr-drill': 'true', tabIndex: -1, className: 'rr-parking-shell' },
       h('button', { onClick: props.onExit, className: 'rr-back-link' }, '← Parking practice'),
       h('div', { className: 'rr-lesson-eyebrow' }, __alloRRT('stem.roadready.drill2_maneuver_practice_training_car', 'Maneuver practice · Training car')),
       h('h2', { ref: headingRef, tabIndex: -1 }, __alloRRT('stem.roadready.drill_parallel_parking', 'Parallel parking')),
@@ -7511,7 +7513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
     }, []);
 
-    return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+    return h('div', { 'data-rr-drill': 'true', tabIndex: -1, style: { padding: '14px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
       h(ManeuverDrillSummary, { h: h, React: React, title: t('stem.roadready.3_point_turn',"3-point turn"), score: stVal.score, hits: stVal.hits, done: stVal.done, progress: 'Step ' + Math.min(3, stageRef.current + 1) + ' of 3', onReset: resetCar, t: t }),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #ec4899' } },
@@ -7775,7 +7777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
     }, []);
 
-    return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+    return h('div', { 'data-rr-drill': 'true', tabIndex: -1, style: { padding: '14px', maxWidth: '900px', margin: '0 auto', background: 'var(--allo-stem-canvas, #ffffff)', borderRadius: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
       h(ManeuverDrillSummary, { h: h, React: React, title: t('stem.roadready.straight_backing',"Straight backing"), score: stVal.score, hits: stVal.conesHit, done: stVal.done, progress: __alloRRT('stem.roadready.drill_reverse_straight_then_stop', 'Reverse straight, then stop'), onReset: resetCar, t: t }),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #a3a3a3' } },
@@ -9175,6 +9177,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             (typeof kTarget.closest === 'function' && kTarget.closest('button,a[href],[role="button"],[role="link"]'))
           ));
           if (kEditing || (kActionControl && (keyName === ' ' || keyName === 'enter'))) return;
+          // WCAG 2.1.4: letter/Space shortcuts act only while focus is inside the driving view.
+          if (keyName.length === 1 && (e.ctrlKey || e.metaKey || e.altKey || !(kTarget && typeof kTarget.closest === 'function' && kTarget.closest('.rr-drive-shell')))) return;
           // Ride-Along owns every vehicle-control input on supported courses.
           // Camera, HUD, lights, photo, pause, and Escape remain available;
           // manual throttle/steering/gears cannot silently disable automation.

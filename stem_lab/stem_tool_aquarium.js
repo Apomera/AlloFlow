@@ -14126,6 +14126,7 @@ window.StemLab = window.StemLab || {
       return (value == null) ? (fallback != null ? fallback : key) : value;
     };
     var canvasRef = React.useRef(null), engineRef = React.useRef(null), latestRef = React.useRef(props), focusRef = React.useRef(null);
+    var viewportRef = React.useRef(null), loadingRef = React.useRef(null), errorRef = React.useRef(null), viewportFocusRequest = React.useRef(null);
     latestRef.current = props;
     var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
     var retryState = React.useState(0), retry = retryState[0], setRetry = retryState[1];
@@ -14139,6 +14140,27 @@ window.StemLab = window.StemLab || {
     var subject = fish ? { kind: 'fish', id: fish.instanceId, label: fish.name } : plant ? { kind: 'plant', id: plant.id, label: plant.name } : habitat ? { kind: 'habitat', id: habitat.id, label: habitatType ? habitatType.label : 'Habitat object' } : null;
     var subjectKey = subject ? subject.kind + ':' + subject.id : '';
     var subjectVisible = !!subject && !(subject.kind === 'plant' && (plant.biomass === 0 || plant.biomassRatio === 0));
+    function ownsVisibleFocus(source) {
+      var root = viewportRef.current;
+      return !!(root && root.isConnected && source && source === document.activeElement && root.contains(source) && !root.closest('[hidden], details:not([open])'));
+    }
+    function focusViewportTarget(target) {
+      if (!target || !target.isConnected || target.closest('[hidden], details:not([open])')) return;
+      try { target.focus({ preventScroll: true }); } catch (_) { target.focus(); }
+      if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    }
+    function failViewport() {
+      var root = viewportRef.current, source = document.activeElement;
+      if (root && root.getAttribute('data-3d-status') !== 'error' && ownsVisibleFocus(source) && !source.closest('[data-allo-fs-btn]')) {
+        viewportFocusRequest.current = { kind: 'failure', source: source, instance: latestRef.current.instanceKey, retry: retry };
+      }
+      setStatus('error'); focusRef.current = null; setFocused(null);
+    }
+    function retryViewport(event) {
+      var source = event && event.currentTarget;
+      viewportFocusRequest.current = ownsVisibleFocus(source) ? { kind: 'retry', source: source, instance: props.instanceKey, retry: retry + 1 } : null;
+      setStatus('loading'); setRetry(retry + 1);
+    }
     function reportFocus(next) {
       focusRef.current = next || null; setFocused(next || null); setView(next ? 'closeup' : 'front'); setNotice('');
     }
@@ -14154,7 +14176,7 @@ window.StemLab = window.StemLab || {
     React.useEffect(function() {
       var cancelled = false;
       setStatus('loading'); setView('front'); focusRef.current = null; setFocused(null); setNotice('');
-      function fail() { if (!cancelled) { setStatus('error'); focusRef.current = null; setFocused(null); } }
+      function fail() { if (!cancelled) failViewport(); }
       function start() {
         if (cancelled || !canvasRef.current) return;
         try {
@@ -14176,7 +14198,8 @@ window.StemLab = window.StemLab || {
     }, [props.instanceKey, retry]);
     var sceneSignature = JSON.stringify(props.sceneOptions);
     React.useEffect(function() {
-      if (engineRef.current && engineRef.current.update) engineRef.current.update(optionsWithCallbacks(function() { setStatus('error'); focusRef.current = null; setFocused(null); }));
+      var engine = engineRef.current;
+      if (engine && engine.update) engine.update(optionsWithCallbacks(function() { if (engineRef.current === engine) failViewport(); }));
     }, [sceneSignature]);
     React.useEffect(function() {
       var current = focusRef.current, engine = engineRef.current;
@@ -14184,7 +14207,23 @@ window.StemLab = window.StemLab || {
       if (!subjectVisible) { engine.setView('front'); return; }
       if (current.kind + ':' + current.id !== subjectKey && engine.focusSelection) engine.focusSelection({ kind: subject.kind, id: subject.id });
     }, [subjectKey, subjectVisible]);
+    React.useEffect(function() {
+      var wanted = viewportFocusRequest.current, root = viewportRef.current;
+      if (!wanted) return;
+      if (!root || !root.isConnected || wanted.instance !== props.instanceKey || wanted.retry !== retry || root.closest('[hidden], details:not([open])')) { viewportFocusRequest.current = null; return; }
+      var active = document.activeElement;
+      if (active !== wanted.source && (active !== document.body || (wanted.source && wanted.source.isConnected))) { viewportFocusRequest.current = null; return; }
+      var target = status === 'loading' ? loadingRef.current : status === 'ready' ? canvasRef.current : errorRef.current;
+      focusViewportTarget(target);
+      if (status === 'loading' && wanted.kind === 'retry' && target && document.activeElement === target) wanted.source = target;
+      else viewportFocusRequest.current = null;
+    }, [status, retry, props.instanceKey]);
     function changeView(nextView) { if (engineRef.current) engineRef.current.setView(nextView); setView(nextView); setNotice(''); }
+    function showWholeTank(event) {
+      var source = event && event.currentTarget, ownedFocus = ownsVisibleFocus(source);
+      changeView('front');
+      if (ownedFocus) focusViewportTarget(canvasRef.current);
+    }
     function moveCamera(action) { if (engineRef.current && engineRef.current.nudgeCamera) engineRef.current.nudgeCamera(action); setView(action === 'reset' ? 'front' : focusRef.current ? 'closeup' : 'custom'); }
     function inspectCloseUp() {
       var engine = engineRef.current;
@@ -14199,8 +14238,8 @@ window.StemLab = window.StemLab || {
       var actions = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', '+': 'in', '=': 'in', '-': 'out', Home: 'reset' };
       if (actions[event.key]) { event.preventDefault(); moveCamera(actions[event.key]); }
     }
-    return React.createElement('div', { className: 'aquarium-3d-viewport', 'data-allo-fs-stage': 'true', 'data-3d-status': status, 'data-camera-focus': focused ? focused.kind + ':' + focused.id : '' },
-      React.createElement('style', null, '.aquarium-3d-viewport{position:relative;min-width:0;background:#07151d;color:#e2f4f5;border-radius:16px;overflow:hidden}.aquarium-3d-canvas{display:block;width:100%;height:clamp(320px,44vw,480px);outline-offset:-4px}.aquarium-3d-canvas:focus-visible{outline:3px solid #fbbf24}.aquarium-camera-bar{display:flex;gap:6px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;background:#102a32;border-top:1px solid #31525a}.aquarium-camera-presets{display:flex;flex-wrap:wrap;gap:5px}.aquarium-camera-bar button,.aquarium-3d-error button{min-height:40px;min-width:44px;border:1px solid #54777e;border-radius:9px;background:#183c45;color:#e4f5f4;padding:7px 12px;font-size:12px;font-weight:700}.aquarium-camera-bar button[aria-pressed=true]{background:#b9ebe2;color:#0c333c;border-color:#d8fff6}.aquarium-camera-bar button:focus-visible,.aquarium-3d-error button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-3d-help{margin:0;padding:9px 14px 12px;font-size:12px;line-height:1.5;color:#aecbd1}.aquarium-3d-loading{position:absolute;inset:0;display:grid;place-content:center;background:radial-gradient(ellipse at 50% 30%,#174b5a,#07151d);text-align:center;color:#bdebe8;font-size:14px}.aquarium-3d-error{padding:12px 16px;background:#18303b;font-size:13px;line-height:1.5}.aquarium-3d-error p{margin:0 0 8px}.aquarium-camera-bar button{touch-action:manipulation}@media(max-width:480px){.aquarium-3d-canvas{height:270px}.aquarium-camera-bar{padding:9px}.aquarium-camera-bar button{min-height:44px;padding:7px 10px}}.aquarium-closeup-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 12px;background:#163740;border-top:1px solid #31525a}.aquarium-closeup-controls button{min-height:44px;border:1px solid #76a59f;border-radius:9px;padding:8px 12px;background:#c2eee0;color:#173f3e;font-size:12px;font-weight:750}.aquarium-closeup-controls button:disabled{opacity:.5;cursor:not-allowed}.aquarium-closeup-controls button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-closeup-controls p{flex-basis:100%;min-width:0;margin:0;font-size:12px;line-height:1.5;color:#c1ddda}.aquarium-camera-zoom{display:flex;gap:5px;margin-left:auto}.aquarium-closeup-controls .aquarium-camera-zoom button{min-width:44px;padding:7px 10px;background:#183c45;color:#e4f5f4;border-color:#54777e}.aquarium-camera-options{border-top:1px solid #31525a;background:#102a32}.aquarium-camera-options summary{box-sizing:border-box;min-height:44px;padding:12px 14px;cursor:pointer;font-size:12px;font-weight:750;color:#c1ddda}.aquarium-camera-options summary:focus-visible{outline:3px solid #fbbf24;outline-offset:-3px}.aquarium-camera-options[open] summary{border-bottom:1px solid #31525a}.aquarium-camera-options .aquarium-camera-bar{border-top:0}'),
+    return React.createElement('div', { ref: viewportRef, className: 'aquarium-3d-viewport', 'data-aquarium-3d-viewport': 'true', 'data-allo-fs-stage': 'true', 'data-3d-status': status, 'data-camera-focus': focused ? focused.kind + ':' + focused.id : '' },
+      React.createElement('style', null, '.aquarium-3d-viewport{position:relative;min-width:0;background:#07151d;color:#e2f4f5;border-radius:16px;overflow:hidden}.aquarium-3d-canvas{display:block;width:100%;height:clamp(320px,44vw,480px);outline-offset:-4px}.aquarium-3d-canvas:focus-visible{outline:3px solid #fbbf24}.aquarium-camera-bar{display:flex;gap:6px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;background:#102a32;border-top:1px solid #31525a}.aquarium-camera-presets{display:flex;flex-wrap:wrap;gap:5px}.aquarium-camera-bar button,.aquarium-3d-error button{min-height:40px;min-width:44px;border:1px solid #54777e;border-radius:9px;background:#183c45;color:#e4f5f4;padding:7px 12px;font-size:12px;font-weight:700}.aquarium-camera-bar button[aria-pressed=true]{background:#b9ebe2;color:#0c333c;border-color:#d8fff6}.aquarium-camera-bar button:focus-visible,.aquarium-3d-error button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-3d-help{margin:0;padding:9px 14px 12px;font-size:12px;line-height:1.5;color:#aecbd1}.aquarium-3d-loading{position:absolute;inset:0;display:grid;place-content:center;background:radial-gradient(ellipse at 50% 30%,#174b5a,#07151d);text-align:center;color:#bdebe8;font-size:14px}.aquarium-3d-error{padding:12px 16px;background:#18303b;font-size:13px;line-height:1.5}.aquarium-3d-error p{margin:0 0 8px;padding-right:44px}.aquarium-camera-bar button{touch-action:manipulation}@media(max-width:480px){.aquarium-3d-canvas{height:270px}.aquarium-camera-bar{padding:9px}.aquarium-camera-bar button{min-height:44px;padding:7px 10px}}.aquarium-closeup-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 12px;background:#163740;border-top:1px solid #31525a}.aquarium-closeup-controls button{min-height:44px;border:1px solid #76a59f;border-radius:9px;padding:8px 12px;background:#c2eee0;color:#173f3e;font-size:12px;font-weight:750}.aquarium-closeup-controls button:disabled{opacity:.5;cursor:not-allowed}.aquarium-closeup-controls button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-closeup-controls p{flex-basis:100%;min-width:0;margin:0;font-size:12px;line-height:1.5;color:#c1ddda}.aquarium-camera-zoom{display:flex;gap:5px;margin-left:auto}.aquarium-closeup-controls .aquarium-camera-zoom button{min-width:44px;padding:7px 10px;background:#183c45;color:#e4f5f4;border-color:#54777e}.aquarium-camera-options{border-top:1px solid #31525a;background:#102a32}.aquarium-camera-options summary{box-sizing:border-box;min-height:44px;padding:12px 14px;cursor:pointer;font-size:12px;font-weight:750;color:#c1ddda}.aquarium-camera-options summary:focus-visible{outline:3px solid #fbbf24;outline-offset:-3px}.aquarium-camera-options[open] summary{border-bottom:1px solid #31525a}.aquarium-camera-options .aquarium-camera-bar{border-top:0}.aquarium-3d-loading:focus,.aquarium-3d-error:focus{outline:3px solid #fbbf24;outline-offset:-4px}@media(forced-colors:active){.aquarium-3d-loading:focus,.aquarium-3d-error:focus,.aquarium-3d-canvas:focus-visible{outline-color:Highlight}}'),
       React.createElement('button', {
         type: 'button',
         'data-allo-fs-btn': 'true',
@@ -14214,16 +14253,16 @@ window.StemLab = window.StemLab || {
       }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
       status === 'error' ? React.createElement(React.Fragment, null,
         props.fallback || null,
-        React.createElement('div', { className: 'aquarium-3d-error', role: 'status' }, React.createElement('p', null, props.fallback ? '3D is unavailable on this device right now. Your illustrated aquarium and all care controls are available.' : 'The 3D view is unavailable. Use the accessible habitat plan and object controls.'),
-          React.createElement('button', { type: 'button', onClick: function() { setStatus('loading'); setRetry(retry + 1); } }, 'Retry 3D view')))
+        React.createElement('div', { ref: errorRef, className: 'aquarium-3d-error', role: 'status', tabIndex: -1, 'data-aquarium-3d-error': 'true' }, React.createElement('p', null, props.fallback ? '3D is unavailable on this device right now. Your illustrated aquarium and all care controls are available.' : 'The 3D view is unavailable. Use the accessible habitat plan and object controls.'),
+          React.createElement('button', { type: 'button', 'data-aquarium-3d-retry': 'true', onClick: retryViewport }, 'Retry 3D view')))
         : React.createElement(React.Fragment, null,
-          React.createElement('canvas', { ref: canvasRef, className: 'aquarium-3d-canvas', role: 'img', tabIndex: 0, 'aria-label': props.label + ' Camera: arrow keys rotate, plus and minus zoom, Home resets.', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home', onKeyDown: onCameraKey }),
+          React.createElement('canvas', { ref: canvasRef, className: 'aquarium-3d-canvas', 'data-aquarium-3d-canvas': 'true', role: 'img', tabIndex: 0, 'aria-label': props.label + ' Camera: arrow keys rotate, plus and minus zoom, Home resets.', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home', onKeyDown: onCameraKey }),
           status === 'ready' && React.createElement('div', { className: 'aquarium-stage-caption' }, React.createElement('strong', null, focused && subject ? subject.label : 'Living aquarium'), React.createElement('span', null, focused ? 'Following selected subject' : 'Drag to orbit · select to inspect')),
-          status === 'loading' && React.createElement('div', { className: 'aquarium-3d-loading', role: 'status' }, React.createElement('span', null, 'Lighting your aquarium…'), React.createElement('small', { style: { marginTop: 8, color: '#83aeb6' } }, 'Preparing the water, habitat, and residents')),
+          status === 'loading' && React.createElement('div', { ref: loadingRef, className: 'aquarium-3d-loading', role: 'status', tabIndex: -1, 'data-aquarium-3d-loading': 'true' }, React.createElement('span', null, 'Lighting your aquarium…'), React.createElement('small', { style: { marginTop: 8, color: '#83aeb6' } }, 'Preparing the water, habitat, and residents')),
           status === 'ready' && React.createElement(React.Fragment, null,
             React.createElement('div', { className: 'aquarium-closeup-controls' },
-              React.createElement('button', { type: 'button', disabled: !subjectVisible, 'aria-label': subject ? 'Inspect ' + subject.label + ' close-up' : 'Select a subject for close-up inspection', 'aria-pressed': !!focused, onClick: inspectCloseUp }, 'Focus selected'),
-              focused && React.createElement('button', { type: 'button', onClick: function() { changeView('front'); } }, 'Whole tank'),
+              React.createElement('button', { type: 'button', disabled: !subjectVisible, 'data-aquarium-3d-focus-selected': 'true', 'aria-label': subject ? 'Focus selected: inspect ' + subject.label + ' close-up' : 'Focus selected: select a subject for close-up inspection', 'aria-pressed': !!focused, onClick: inspectCloseUp }, 'Focus selected'),
+              focused && React.createElement('button', { type: 'button', 'data-aquarium-3d-whole-tank': 'true', onClick: showWholeTank }, 'Whole tank'),
               React.createElement('div', { className: 'aquarium-camera-zoom', role: 'group', 'aria-label': __alloT('stem.aquarium.camera_zoom','Camera zoom') }, React.createElement('button', { type: 'button', onClick: function() { moveCamera('in'); }, 'aria-label': __alloT('stem.aquarium.zoom_in','Zoom in') }, '+'), React.createElement('button', { type: 'button', onClick: function() { moveCamera('out'); }, 'aria-label': __alloT('stem.aquarium.zoom_out','Zoom out') }, '−')),
               React.createElement('p', { role: 'status' }, notice || (focused && subject ? 'Close-up: ' + subject.label + '. Camera follows this subject; simulation settings stay unchanged.' : subject && !subjectVisible ? 'No live foliage to inspect at zero biomass.' : 'Select a resident, plant, or habitat object, then focus to examine its details.'))),
             React.createElement('details', { className: 'aquarium-camera-options' },
@@ -14338,35 +14377,42 @@ window.StemLab = window.StemLab || {
 
   function AquariumPlantSizeControl(props) {
     var React = props.React, h = React.createElement, plant = props.plant, pending = React.useState(null), draft = pending[0], setDraft = pending[1];
+    var controlId = 'aquarium-plant-sizing-' + React.useId().replace(/:/g, '');
     var value = draft === null ? Math.round(plant.biomass * 100) / 100 : draft;
     var valid = typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= plant.maxBiomass;
+    var canApply = draft !== null && valid && Math.abs(value - plant.biomass) >= .00001;
+    var sliderValue = valid ? value : plant.biomass;
     function change(event) { setDraft(event.target.value === '' ? '' : Number(event.target.value)); }
     return h('div', { className: 'aquarium-plant-sizing' },
       h('div', { className: 'aquarium-sizing-row' }, h('strong', null, plant.name), h('span', null, plant.biomass.toFixed(2) + ' / ' + plant.maxBiomass.toFixed(2) + ' current biomass')),
-      h('label', { htmlFor: 'aquarium-plant-size-' + plant.id }, 'Plant size · ' + (valid ? Math.round(value / plant.maxBiomass * 100) + '% of modeled maximum' : 'enter a valid biomass')),
-      h('input', { type: 'range', id: 'aquarium-plant-size-' + plant.id, min: 0, max: plant.maxBiomass, step: .05, value: valid ? value : plant.biomass, onChange: change, 'aria-valuetext': valid ? value.toFixed(2) + ' biomass index' : 'Enter a valid biomass' }),
+      h('label', { htmlFor: controlId + '-range' }, 'Plant size · ' + plant.name + ' · ' + (valid ? Math.round(value / plant.maxBiomass * 100) + '% of modeled maximum' : 'enter a valid biomass')),
+      h('input', { type: 'range', id: controlId + '-range', 'data-aquarium-plant-size': plant.id, min: 0, max: plant.maxBiomass, step: .05, value: sliderValue, onChange: change, 'aria-describedby': controlId + '-help', 'aria-valuetext': sliderValue.toFixed(2) + ' biomass index' }),
       h('div', { className: 'aquarium-sizing-row' },
-        h('label', { htmlFor: 'aquarium-plant-biomass-' + plant.id }, 'Biomass index', h('input', { type: 'number', id: 'aquarium-plant-biomass-' + plant.id, min: 0, max: plant.maxBiomass, step: .01, value: value, onChange: change, 'aria-invalid': !valid })),
-        h('button', { type: 'button', disabled: !valid || Math.abs(value - plant.biomass) < .00001, 'aria-label': 'Apply size for ' + plant.name, onClick: function() { if (valid && props.onApply(plant.id, value) !== false) setDraft(null); } }, 'Apply plant size')),
+        h('label', { htmlFor: controlId + '-biomass' }, 'Biomass index · ' + plant.name, h('input', { type: 'number', id: controlId + '-biomass', 'data-aquarium-plant-biomass': plant.id, min: 0, max: plant.maxBiomass, step: .01, value: value, onChange: change, 'aria-invalid': !valid, 'aria-describedby': controlId + '-help' + (!valid ? ' ' + controlId + '-error' : '') })),
+        h('button', { type: 'button', 'aria-disabled': !canApply, 'data-aquarium-apply-plant-size': plant.id, 'aria-label': 'Apply plant size for ' + plant.name, 'aria-describedby': controlId + '-help' + (!valid ? ' ' + controlId + '-error' : ''), onClick: function() { if (canApply && props.onApply(plant.id, value) !== false) setDraft(null); } }, 'Apply plant size')),
+      h('p', { id: controlId + '-help', className: 'aquarium-sizing-note' }, 'Biomass index: 0 to ' + plant.maxBiomass + '. Change the value, then apply it. This relative model index is not a length or mass measurement.'),
       props.count > 1 && h('p', null, props.count + ' clumps of this plant share the same modeled size.'),
-      !valid && h('p', { role: 'status' }, 'Enter a biomass index from 0 to ' + plant.maxBiomass + '.'));
+      !valid && h('p', { id: controlId + '-error', role: 'status' }, 'Enter a biomass index from 0 to ' + plant.maxBiomass + '.'));
   }
   function AquariumModelSizing(props) {
     var React = props.React, h = React.createElement, tank = props.tank;
+    var sizingId = 'aquarium-sizing-' + React.useId().replace(/:/g, '');
     var volumeState = React.useState(null), volumeDraft = volumeState[0], setVolumeDraft = volumeState[1];
     var shapeState = React.useState(null), shapeDraft = shapeState[0], setShapeDraft = shapeState[1];
     var volume = volumeDraft === null ? tank.size : volumeDraft, shape = shapeDraft === null ? tank.shape : shapeDraft;
     var valid = typeof volume === 'number' && Number.isFinite(volume) && volume >= 5 && volume <= 200 && volume >= props.stockMinimum;
     var changed = volume !== tank.size || shape !== tank.shape, seen = {};
-    return h('details', { id: 'aquarium-size-controls', className: 'aquarium-model-sizing', tabIndex: -1 },
+    var volumeDescription = sizingId + '-volume-help' + (!valid ? ' ' + sizingId + '-volume-error' : '');
+    return h('details', { id: props.id || sizingId, ref: props.panelRef, 'data-aquarium-sizing-controls': 'true', className: 'aquarium-model-sizing', tabIndex: -1 },
       h('summary', null, 'Tank & plant size'),
       h('div', { className: 'aquarium-sizing-body' },
         h('p', null, 'Edit the scenario, then observe the consequences. Applying a size pauses the clock and records an intervention. Current water concentrations, resident identities, and health are retained.'),
         h('div', { className: 'aquarium-settings-grid' },
-          h('label', { className: 'aquarium-view-setting', htmlFor: 'aquarium-tank-volume' }, 'Tank capacity · US gallons', h('input', { id: 'aquarium-tank-volume', type: 'number', min: 5, max: 200, step: .5, value: volume, 'aria-describedby': 'aquarium-volume-help', 'aria-invalid': !valid, onChange: function(event) { setVolumeDraft(event.target.value === '' ? '' : Number(event.target.value)); } })),
-          h('label', { className: 'aquarium-view-setting', htmlFor: 'aquarium-tank-shape' }, 'Tank shape', h('select', { id: 'aquarium-tank-shape', value: shape, onChange: function(event) { setShapeDraft(event.target.value); } }, [['standard','Standard'],['long','Long & shallow'],['tall','Tall'],['cube','Cube']].map(function(option) { return h('option', { key: option[0], value: option[0] }, option[1]); })))),
-        h('p', { id: 'aquarium-volume-help', className: 'aquarium-sizing-note' }, '5–200 US gal. Current residents require at least ' + props.stockMinimum + ' US gal in the catalog. Larger volumes reduce concentration changes from the same biological load. Shape changes the surface-area-to-volume exchange estimate.'),
-        h('button', { type: 'button', disabled: !valid || !changed, onClick: function() { if (valid && props.onTank({ volumeGallons: volume, shape: shape }) !== false) { setVolumeDraft(null); setShapeDraft(null); } } }, 'Apply tank size'),
+          h('label', { className: 'aquarium-view-setting', htmlFor: sizingId + '-volume' }, 'Tank capacity · US gallons', h('input', { id: sizingId + '-volume', 'data-aquarium-tank-volume': 'true', type: 'number', min: Math.max(5, props.stockMinimum), max: 200, step: .5, value: volume, 'aria-describedby': volumeDescription, 'aria-invalid': !valid, onChange: function(event) { setVolumeDraft(event.target.value === '' ? '' : Number(event.target.value)); } })),
+          h('label', { className: 'aquarium-view-setting', htmlFor: sizingId + '-shape' }, 'Tank shape', h('select', { id: sizingId + '-shape', 'data-aquarium-tank-shape': 'true', value: shape, onChange: function(event) { setShapeDraft(event.target.value); } }, [['standard','Standard'],['long','Long & shallow'],['tall','Tall'],['cube','Cube']].map(function(option) { return h('option', { key: option[0], value: option[0] }, option[1]); })))),
+        h('p', { id: sizingId + '-volume-help', className: 'aquarium-sizing-note' }, '5–200 US gal. Current residents require at least ' + props.stockMinimum + ' US gal in the catalog. Larger volumes reduce concentration changes from the same biological load. Shape changes the surface-area-to-volume exchange estimate. Change capacity or shape, then apply it.'),
+        !valid && h('p', { id: sizingId + '-volume-error', role: 'status' }, 'Enter a capacity from ' + Math.max(5, props.stockMinimum) + ' to 200 US gallons for the current residents.'),
+        h('button', { type: 'button', 'aria-disabled': !valid || !changed, 'data-aquarium-apply-tank-size': 'true', 'aria-describedby': volumeDescription, onClick: function() { if (valid && changed && props.onTank({ volumeGallons: volume, shape: shape }) !== false) { setVolumeDraft(null); setShapeDraft(null); } } }, 'Apply tank size'),
         h('p', { className: 'aquarium-sizing-note' }, 'This is a scenario resize, not a water change. Shape preserves the selected volume. The vessel, residents, and plants are illustrative; display units are not measured inches or centimeters.'),
         h('h5', null, 'Living plant size'),
         h('p', null, 'Size edits change actual modeled biomass, including photosynthesis, respiration, nutrient uptake, and growth. This relative index is not a length or mass measurement. Zero leaves an empty clump marker; later growth follows the model.'),
@@ -14375,15 +14421,18 @@ window.StemLab = window.StemLab || {
 
   function AquariumSceneSettings(props) {
     var React = props.React, appearance = props.appearance;
+    var viewId = 'aquarium-appearance-' + React.useId().replace(/:/g, '');
     function setting(id, label, key, choices) {
+      id = viewId + '-' + id;
       return React.createElement('label', { className: 'aquarium-view-setting', htmlFor: id }, React.createElement('span', null, label),
-        React.createElement('select', { id: id, value: appearance[key], onChange: function(event) { var patch = {}; patch[key] = event.target.value; props.onAppearance(patch); } },
+        React.createElement('select', { id: id, 'data-aquarium-view-control': key, value: appearance[key], onChange: function(event) { var patch = {}; patch[key] = event.target.value; props.onAppearance(patch); } },
           choices.map(function(choice) { return React.createElement('option', { key: choice[0], value: choice[0] }, choice[1]); })));
     }
     function slider(id, label, key, minimum, maximum, percentage) {
+      id = viewId + '-' + id;
       var value=appearance[key],description=percentage?(value===0?'Off':Math.round(value*100)+'%'):value.toFixed(1)+'×';
       return React.createElement('label', { className: 'aquarium-view-setting', htmlFor: id }, React.createElement('span', null, label + ' · ' + description),
-        React.createElement('input', { type: 'range', id: id, min: minimum, max: maximum, step: .1, value: value, 'aria-valuetext': percentage?description:value.toFixed(1)+' times', onChange: function(event) { var patch = {}; patch[key] = Number(event.target.value); props.onAppearance(patch); } }));
+        React.createElement('input', { type: 'range', id: id, 'data-aquarium-view-control': key, min: minimum, max: maximum, step: .1, value: value, 'aria-valuetext': percentage?description:value.toFixed(1)+' times', onChange: function(event) { var patch = {}; patch[key] = Number(event.target.value); props.onAppearance(patch); } }));
     }
     return React.createElement('details', { className: 'aquarium-view-settings' },
       React.createElement('summary', null, 'Customize 3D view'),
@@ -14393,13 +14442,13 @@ window.StemLab = window.StemLab || {
           setting('aquarium-view-substrate', 'Substrate appearance', 'substrate', [['sand','Pale sand'],['gravel','River gravel'],['dark','Dark substrate']]),
           setting('aquarium-view-backdrop', 'Backdrop', 'backdrop', [['depth','Deep water'],['planted','Botanical backdrop'],['black','Gallery black']]),
           setting('aquarium-view-quality', 'Detail level', 'quality', [['low','Lightweight'],['balanced','Balanced'],['high','High detail']]),
-          React.createElement('label', { className: 'aquarium-view-setting', htmlFor: 'aquarium-view-overlay' }, React.createElement('span', null, 'Learning overlay'),
-            React.createElement('select', { id: 'aquarium-view-overlay', value: props.overlay, onChange: function(event) { props.onOverlay(event.target.value); } },
+          React.createElement('label', { className: 'aquarium-view-setting', htmlFor: viewId + '-overlay' }, React.createElement('span', null, 'Learning overlay'),
+            React.createElement('select', { id: viewId + '-overlay', 'data-aquarium-view-control': 'overlay', value: props.overlay, onChange: function(event) { props.onOverlay(event.target.value); } },
               [['none','Natural view'],['shelter','Shelter'],['territory','Territory'],['flow','Flow pathways'],['light','Light zones'],['organisms','Habitat fit'],['interactions','Ecological interactions']].map(function(choice) { return React.createElement('option', { key: choice[0], value: choice[0] }, choice[1]); }))),
           slider('aquarium-view-exposure', 'Viewing exposure', 'lightIntensity', .6, 1.4),
           slider('aquarium-view-scale', 'Animal emphasis', 'animalScale', .8, 1.3),
           slider('aquarium-view-shimmer', 'Water shimmer', 'waterShimmer', 0, 1, true)),
-        React.createElement('label', { className: 'aquarium-view-check', htmlFor: 'aquarium-view-equipment' }, React.createElement('input', { type: 'checkbox', id: 'aquarium-view-equipment', checked: appearance.showEquipment, onChange: function(event) { props.onAppearance({ showEquipment: event.target.checked }); } }), 'Show equipment in the scene'),
+        React.createElement('label', { className: 'aquarium-view-check', htmlFor: viewId + '-equipment' }, React.createElement('input', { type: 'checkbox', id: viewId + '-equipment', 'data-aquarium-view-control': 'showEquipment', checked: appearance.showEquipment, onChange: function(event) { props.onAppearance({ showEquipment: event.target.checked }); } }), 'Show equipment in the scene'),
         React.createElement('p', { className: 'aquarium-settings-note' }, 'Backdrop plants are decoration. Substrate appearance does not change substrate chemistry. Exposure changes viewing light, and animal emphasis changes display size; neither changes biological light or growth. Water shimmer controls decorative reflections, not clarity or chemistry; it follows the modeled light being on. Geometry is illustrative, not a physical scale model. Hiding equipment leaves its modeled output active.'),
         React.createElement('button', { type: 'button', onClick: props.onResetAppearance }, 'Reset appearance')));
   }
@@ -14439,26 +14488,28 @@ window.StemLab = window.StemLab || {
   }
 
   function AquariumLiveDisplay(props) {
-    var React = props.React, selectedFish = props.sceneOptions.fish.find(function(fish) { return fish.selected; });
+    var React = props.React;
+    var displayId = 'aquarium-display-' + React.useId().replace(/:/g, '');
+    var sizingPanelRef = React.useRef(null);
+    var selectedFish = props.sceneOptions.fish.find(function(fish) { return fish.selected; });
     var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
     var selectedPlant = props.sceneOptions.plants.find(function(plant) { return plant.selected; });
     var selectedHabitat = props.sceneOptions.layout.find(function(item) { return item.id === props.sceneOptions.selectedId; });
     var selectedHabitatType = selectedHabitat && props.sceneOptions.catalog.find(function(type) { return type.id === selectedHabitat.type; });
     var inspectionValue = selectedFish ? 'fish:' + selectedFish.instanceId : selectedPlant ? 'plant:' + selectedPlant.id : selectedHabitat ? 'habitat:' + selectedHabitat.id : '';
     function adjustSelectedPlant() {
-      if (!selectedPlant || typeof document === 'undefined') return;
-      var panel = document.getElementById('aquarium-size-controls');
-      if (!panel) return;
+      var panel = sizingPanelRef.current;
+      if (!selectedPlant || !panel || !panel.isConnected || panel.closest('[hidden]')) return;
+      var input = Array.prototype.find.call(panel.querySelectorAll('[data-aquarium-plant-biomass]'), function(control) { return control.getAttribute('data-aquarium-plant-biomass') === selectedPlant.id; });
+      if (!input) return;
       panel.open = true;
-      var input = document.getElementById('aquarium-plant-biomass-' + selectedPlant.id);
-      var target = input || panel;
-      if (target.focus) target.focus({ preventScroll: true });
-      if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+      input.focus({ preventScroll: true });
+      if (input.scrollIntoView) input.scrollIntoView({ block: 'center', behavior: 'auto' });
     }
     return React.createElement('section', { id: props.id, tabIndex: -1, className: 'aquarium-live-display' + (props.paused ? ' aquarium-visuals-paused' : ''), 'data-aquarium-live-tank': 'true', 'data-aquarium-view': props.mode, 'aria-label': props.label },
       React.createElement('style', null, '.aquarium-live-display{border:1px solid #bad6d8;border-radius:20px;background:#f4faf9;box-shadow:0 12px 35px -22px #0b526a;overflow:hidden;min-width:0}.aquarium-display-heading{padding:16px 18px 12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.aquarium-display-heading h3{font-size:19px;line-height:1.2;color:#123f49;font-weight:850;margin:0}.aquarium-display-eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#47727a;margin:0 0 5px;font-weight:800}.aquarium-display-counts{font-size:12px;color:#527079;margin:6px 0 0}.aquarium-view-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 18px 14px}.aquarium-view-controls button{min-height:42px;padding:9px 13px;border-radius:10px;border:1px solid #adc7cd;background:#fff;color:#244e59;font-size:12px;font-weight:750}.aquarium-view-controls button[aria-pressed=true]{background:#124d5a;border-color:#124d5a;color:#f0fffd}.aquarium-view-controls button:focus-visible,.aquarium-resident-inspector select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-live-display .aquarium-3d-viewport{border-radius:0}.aquarium-display-mood{font-size:11px;color:#42676e;background:#e4f2ee;padding:7px 10px;border:1px solid #c5dcd4;border-radius:20px}.aquarium-resident-inspector{padding:12px 18px 14px;display:grid;gap:8px;font-size:12px;color:#365d66;border-top:1px solid #cfdfdf}.aquarium-resident-inspector label{font-weight:800;color:#244b55}.aquarium-resident-inspector select{width:100%;max-width:480px;min-height:42px;border:1px solid #98b8c2;border-radius:9px;padding:8px;background:#fff;color:#214953}.aquarium-resident-inspector p{margin:0;line-height:1.5}.aquarium-resident-inspector button{min-height:40px;border:1px solid #6a9896;border-radius:8px;padding:7px 10px;margin:5px 0;background:#fff;color:#184b52;font-size:12px;font-weight:750}.aquarium-resident-inspector button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail{background:#e5f2ed;padding:10px 12px;border-radius:9px;border-left:3px solid #267775}.aquarium-visuals-paused #aquarium-illustrated-tank *{animation-play-state:paused!important}.aquarium-display-footnote{font-size:12px!important;color:#4d6b71}@media(prefers-reduced-motion:reduce){#aquarium-illustrated-tank *{animation:none!important;transition:none!important}}@media(max-width:480px){.aquarium-display-heading{padding:14px 13px 10px}.aquarium-view-controls{padding:0 13px 12px}.aquarium-view-controls button{min-height:44px;padding:8px 10px}.aquarium-resident-inspector{padding:12px 13px}}.aquarium-inspection-picker{display:grid;gap:6px;padding:10px 18px 13px;background:#e8f3ef;border-top:1px solid #c6dcd6;color:#244b55;font-size:12px}.aquarium-inspection-picker label{font-weight:800}.aquarium-inspection-picker select{width:100%;min-height:44px;border:1px solid #8cadae;border-radius:9px;background:#fff;padding:9px;color:#214953;font:inherit}.aquarium-inspection-picker select:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-resident-detail .aquarium-identification{margin-top:7px}.aquarium-resident-detail .aquarium-identification p+p{margin-top:5px}'),
       React.createElement('style', null, ".aquarium-view-settings{border-top:1px solid #cbdedc;background:#eef6f3;color:#244b55}.aquarium-view-settings summary,.aquarium-model-legend summary{cursor:pointer;min-height:44px;padding:13px 18px;font-size:12px;font-weight:800}.aquarium-settings-body{padding:0 18px 16px}.aquarium-settings-body p{margin:0 0 13px;font-size:12px;line-height:1.55}.aquarium-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}.aquarium-view-setting{display:grid;gap:6px;font-size:12px;font-weight:750;min-width:0}.aquarium-view-setting select{width:100%;min-height:42px;border:1px solid #90b2b7;border-radius:8px;background:#fff;color:#244b55;padding:8px;font:inherit}.aquarium-view-setting input[type=range]{width:100%;min-height:32px;accent-color:#246960}.aquarium-view-check{display:flex;gap:9px;align-items:center;min-height:44px;font-size:12px;margin:8px 0}.aquarium-view-check input{width:18px;height:18px;accent-color:#246960}.aquarium-settings-note{font-size:11px!important;color:#4d6b71}.aquarium-settings-body button,.aquarium-model-legend button{min-height:42px;border:1px solid #8aadaf;border-radius:8px;background:#fff;color:#244b55;font-size:12px;font-weight:750;padding:8px 12px}.aquarium-live-display summary:focus-visible,.aquarium-view-settings input:focus-visible,.aquarium-view-settings select:focus-visible,.aquarium-settings-body button:focus-visible,.aquarium-model-legend button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-scene-evidence{padding:15px 18px;border-top:1px solid #cfdfdf;background:#fcfefa;color:#315760}.aquarium-evidence-heading{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.aquarium-evidence-heading h4{margin:0;font-size:13px;color:#204e50}.aquarium-evidence-heading span{font-size:11px;color:#5c7376}.aquarium-evidence-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.aquarium-evidence-grid>div{border-left:2px solid #8fbcb2;padding-left:9px}.aquarium-evidence-grid dt,.aquarium-resident-readings dt,.aquarium-chemistry-readings dt{font-size:10px;color:#547076}.aquarium-evidence-grid dd{font-size:12px;font-weight:750;line-height:1.5;margin:4px 0 0;color:#204e50}.aquarium-feeding-evidence{font-size:11px;line-height:1.6;margin:0;color:#536e74}.aquarium-model-legend{margin-top:9px;border-top:1px solid #e1eae4}.aquarium-model-legend summary{padding:10px 0}.aquarium-model-legend p{font-size:12px;line-height:1.6;margin:0 0 10px}.aquarium-chemistry-readings,.aquarium-resident-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:10px 0}.aquarium-chemistry-readings dd,.aquarium-resident-readings dd{font-size:12px;margin:3px 0 0;line-height:1.5}.aquarium-equipment-readings{background:#e8f3ee;padding:10px;border-radius:8px;margin-bottom:10px}.aquarium-equipment-readings p:last-child{margin-bottom:0}@media(max-width:580px){.aquarium-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.aquarium-scene-evidence{padding:13px}.aquarium-settings-body{padding:0 13px 13px}.aquarium-view-settings summary{padding:13px}.aquarium-settings-grid{grid-template-columns:1fr}}"),
-      React.createElement('style', null, ".aquarium-model-sizing{background:#f1f6ef;color:#274e49;border-top:1px solid #cbd9c9}.aquarium-model-sizing summary{cursor:pointer;padding:13px 18px;min-height:44px;font-size:12px;font-weight:800}.aquarium-sizing-body{padding:0 18px 16px}.aquarium-sizing-body p{font-size:12px;line-height:1.6;margin:0 0 12px}.aquarium-sizing-body h5{margin:20px 0 9px;font-size:13px}.aquarium-sizing-body input[type=number]{display:block;box-sizing:border-box;min-height:42px;padding:8px;border-radius:8px;border:1px solid #91ada0;background:#fff;color:#254b45;font:inherit;width:100%}.aquarium-sizing-body button{min-height:42px;padding:8px 12px;border:1px solid #6c9584;border-radius:8px;background:#fff;color:#235345;font-size:12px;font-weight:750}.aquarium-sizing-body button:disabled{opacity:.5;cursor:not-allowed}.aquarium-sizing-note{font-size:11px!important;color:#526e60;margin-top:10px!important}.aquarium-sizing-body input:focus-visible,.aquarium-sizing-body select:focus-visible,.aquarium-sizing-body button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-plant-sizing{border:1px solid #c0d4c5;border-radius:10px;padding:12px;margin-top:10px;background:#fafdf8}.aquarium-plant-sizing label{font-size:12px;line-height:1.6;font-weight:650}.aquarium-plant-sizing input[type=range]{width:100%;min-height:32px;accent-color:#276d52}.aquarium-sizing-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;font-size:12px}.aquarium-sizing-row>span{font-size:11px;color:#587166}.aquarium-sizing-row input[type=number]{max-width:130px}.aquarium-sizing-notice{padding:12px 18px;font-size:12px;line-height:1.6;color:#24534a;background:#e5f4e6;border-top:1px solid #b9d9bf;margin:0}@media(max-width:580px){.aquarium-sizing-body{padding:0 13px 13px}.aquarium-model-sizing summary{padding:13px}.aquarium-sizing-notice{padding:12px 13px}}"),
+      React.createElement('style', null, ".aquarium-model-sizing{background:#f1f6ef;color:#274e49;border-top:1px solid #cbd9c9}.aquarium-model-sizing summary{cursor:pointer;padding:13px 18px;min-height:44px;font-size:12px;font-weight:800}.aquarium-sizing-body{padding:0 18px 16px}.aquarium-sizing-body p{font-size:12px;line-height:1.6;margin:0 0 12px}.aquarium-sizing-body h5{margin:20px 0 9px;font-size:13px}.aquarium-sizing-body input[type=number]{display:block;box-sizing:border-box;min-height:42px;padding:8px;border-radius:8px;border:1px solid #91ada0;background:#fff;color:#254b45;font:inherit;width:100%}.aquarium-sizing-body button{min-height:42px;padding:8px 12px;border:1px solid #6c9584;border-radius:8px;background:#fff;color:#235345;font-size:12px;font-weight:750}.aquarium-sizing-body button[aria-disabled=true]{border-style:dashed;cursor:not-allowed;background:#eaf0e7;color:#4b6556}.aquarium-sizing-note{font-size:11px!important;color:#526e60;margin-top:10px!important}.aquarium-sizing-body input:focus-visible,.aquarium-sizing-body select:focus-visible,.aquarium-sizing-body button:focus-visible{outline:3px solid #be700a;outline-offset:2px}.aquarium-plant-sizing{border:1px solid #c0d4c5;border-radius:10px;padding:12px;margin-top:10px;background:#fafdf8}.aquarium-plant-sizing label{font-size:12px;line-height:1.6;font-weight:650}.aquarium-plant-sizing input[type=range]{width:100%;min-height:32px;accent-color:#276d52}.aquarium-sizing-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;font-size:12px}.aquarium-sizing-row>span{font-size:11px;color:#587166}.aquarium-sizing-row input[type=number]{max-width:130px}.aquarium-sizing-notice{padding:12px 18px;font-size:12px;line-height:1.6;color:#24534a;background:#e5f4e6;border-top:1px solid #b9d9bf;margin:0}@media(max-width:580px){.aquarium-sizing-body{padding:0 13px 13px}.aquarium-model-sizing summary{padding:13px}.aquarium-sizing-notice{padding:12px 13px}}"),
       React.createElement('style', null, ".aquarium-live-display{border-color:#759994;border-radius:22px;box-shadow:0 18px 50px -25px #0a3947}.aquarium-display-heading{padding:21px 22px 15px;background:linear-gradient(115deg,#102f38,#184a50);align-items:flex-start}.aquarium-display-heading h3{font-size:25px;font-weight:800;letter-spacing:-.025em;color:#eefaf3}.aquarium-display-eyebrow{color:#aad0c5;font-size:10px;letter-spacing:.16em}.aquarium-display-counts{color:#bed6d0;margin-top:9px}.aquarium-display-mood{color:#ddf3e5;background:#ffffff0b;border-color:#749e94;font-size:11px}.aquarium-vessel-specs{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}.aquarium-vessel-specs span{border:1px solid #71978f;border-radius:5px;padding:3px 7px;color:#dfefe8;font-size:11px;font-variant-numeric:tabular-nums}.aquarium-view-controls{padding:10px 22px 13px;background:#102f38;gap:7px}.aquarium-view-controls button{border-color:#608981;background:#ffffff08;color:#d6e9e3;min-height:44px}.aquarium-view-controls button[aria-pressed=true]{background:#d0e9da;border-color:#d0e9da;color:#123c40}.aquarium-inspection-picker{grid-template-columns:minmax(135px,.4fr) minmax(0,1fr);align-items:center;padding:13px 22px;background:#e2eee7}.aquarium-inspection-picker select{border-color:#93b3a5;border-radius:9px;font-size:12px}.aquarium-resident-inspector{padding:16px 22px}.aquarium-resident-detail{border:1px solid #aecbbb;border-left:4px solid #477f70;border-radius:12px;padding:15px;background:linear-gradient(120deg,#e5f0e7,#f5f8ef)}.aquarium-resident-detail>p:first-child{font-size:14px;color:#224f4a}.aquarium-resident-readings{border-top:1px solid #bed3c3;padding-top:10px}.aquarium-stage-caption{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 16px;background:#0b252e;color:#b4d3cf;font-size:11px;border-top:1px solid #385953;font-variant-numeric:tabular-nums}.aquarium-stage-caption strong{color:#e1efe6;font-size:11px;font-weight:700}.aquarium-closeup-controls{background:#12353d;padding:12px 16px}.aquarium-closeup-controls button{border-radius:9px}.aquarium-camera-options{background:#102f38}.aquarium-camera-options summary{padding:13px 16px}.aquarium-3d-help{line-height:1.7}@media(max-width:580px){.aquarium-display-heading{padding:17px 14px 13px}.aquarium-display-heading h3{font-size:22px}.aquarium-view-controls{padding:10px 14px 13px}.aquarium-inspection-picker{grid-template-columns:1fr;padding:12px 14px}.aquarium-resident-inspector{padding:13px 14px}.aquarium-stage-caption{padding:10px 12px;flex-wrap:wrap;gap:5px}.aquarium-vessel-specs{margin-top:9px}}"),
       React.createElement('div', { className: 'aquarium-display-heading' }, React.createElement('div', null, React.createElement('p', { className: 'aquarium-display-eyebrow' }, 'A living window'), React.createElement('h3', null, props.name), React.createElement('p', { className: 'aquarium-display-counts' }, props.sceneOptions.fish.length + ' residents · ' + props.sceneOptions.plants.length + ' plants · ' + props.sceneOptions.layout.length + ' habitat objects'), props.tankConfiguration && React.createElement('div', { className: 'aquarium-vessel-specs', role: 'group', 'aria-label': t('stem.aquarium.vessel_configuration','Vessel configuration') }, React.createElement('span', null, props.tankConfiguration.size + ' US gal'), React.createElement('span', null, props.tankConfiguration.shape + ' profile'))), React.createElement('span', { className: 'aquarium-display-mood' }, props.lightLabel)),
       React.createElement('div', { className: 'aquarium-view-controls', role: 'group', 'aria-label': t('stem.aquarium.aquarium_view_controls','Aquarium view controls') },
@@ -14467,8 +14518,8 @@ window.StemLab = window.StemLab || {
         React.createElement('button', { type: 'button', 'aria-pressed': props.paused, onClick: props.onPause }, props.paused ? 'Resume visual motion' : 'Pause visual motion'),
         props.onArrange && React.createElement('button', { type: 'button', onClick: props.onArrange }, 'Arrange habitat')),
       (props.sceneOptions.fish.length || props.sceneOptions.plants.length || props.sceneOptions.layout.length) > 0 && React.createElement('div', { className: 'aquarium-inspection-picker' },
-          React.createElement('label', { htmlFor: 'aquarium-resident-inspect' }, 'Inspect life and habitat'),
-          React.createElement('select', { id: 'aquarium-resident-inspect', value: inspectionValue, onChange: function(event) { var value = event.target.value; if (value.indexOf('fish:') === 0) props.onSelectFish(value.slice(5)); else if (value.indexOf('plant:') === 0) props.onSelectPlant(value.slice(6)); else if (value.indexOf('habitat:') === 0) props.onSelect(value.slice(8)); } }, React.createElement('option', { value: '', disabled: true }, 'Choose an organism or habitat object…'),
+          React.createElement('label', { htmlFor: displayId + '-inspect' }, 'Inspect life and habitat'),
+          React.createElement('select', { id: displayId + '-inspect', 'data-aquarium-resident-inspect': 'true', value: inspectionValue, onChange: function(event) { var value = event.target.value; if (value.indexOf('fish:') === 0) props.onSelectFish(value.slice(5)); else if (value.indexOf('plant:') === 0) props.onSelectPlant(value.slice(6)); else if (value.indexOf('habitat:') === 0) props.onSelect(value.slice(8)); } }, React.createElement('option', { value: '', disabled: true }, 'Choose an organism or habitat object…'),
             props.sceneOptions.fish.length ? React.createElement('optgroup', { label: 'Residents' }, props.sceneOptions.fish.map(function(fish, index) { return React.createElement('option', { key: fish.instanceId, value: 'fish:' + fish.instanceId }, fish.name + ' · resident ' + (index + 1)); })) : null,
             props.sceneOptions.plants.length ? React.createElement('optgroup', { label: 'Plants' }, props.sceneOptions.plants.map(function(plant) { return React.createElement('option', { key: plant.id, value: 'plant:' + plant.id }, plant.name); })) : null,
             props.sceneOptions.layout.length ? React.createElement('optgroup', { label: 'Habitat objects' }, props.sceneOptions.layout.map(function(item, index) { var type = props.sceneOptions.catalog.find(function(candidate) { return candidate.id === item.type; }); return React.createElement('option', { key: item.id, value: 'habitat:' + item.id }, (type ? type.label : item.type) + ' · object ' + (index + 1)); })) : null)),
@@ -14491,12 +14542,12 @@ window.StemLab = window.StemLab || {
                 React.createElement('p', { className: 'aquarium-display-footnote' }, selectedPlant.visualProfile.variation + ' ' + selectedPlant.visualProfile.scaleNote),
                 selectedPlant.visualProfile.modelNote && React.createElement('p', { className: 'aquarium-display-footnote' }, selectedPlant.visualProfile.modelNote)),
               props.sceneOptions.model && React.createElement('p', null, 'Biomass index ' + selectedPlant.biomass.toFixed(2) + ' / ' + selectedPlant.maxBiomass.toFixed(2) + ' · ' + Math.round(selectedPlant.biomassRatio * 100) + '% of modeled maximum. ' + (selectedPlant.biomass === 0 ? 'No foliage at this snapshot.' : selectedPlant.photosynthesisActive ? 'Biological light available for photosynthesis.' : 'Photosynthesis inactive in this snapshot.')),
-              props.onResizePlant && React.createElement('button', { type: 'button', onClick: adjustSelectedPlant }, 'Adjust plant size')) : selectedHabitatType ? React.createElement('p', { className: 'aquarium-resident-detail', role: 'status' }, React.createElement('strong', null, selectedHabitatType.label + '. '), 'Use Arrange habitat to move or rotate this object and explore its shelter and territory effects.') : null)
+              props.onResizePlant && props.onResizeTank && React.createElement('button', { type: 'button', 'aria-controls': displayId + '-sizing', onClick: adjustSelectedPlant }, 'Adjust plant size')) : selectedHabitatType ? React.createElement('p', { className: 'aquarium-resident-detail', role: 'status' }, React.createElement('strong', null, selectedHabitatType.label + '. '), 'Use Arrange habitat to move or rotate this object and explore its shelter and territory effects.') : null)
           : React.createElement('p', null, 'Your tank is ready for its first residents. Add organisms and plants below, or arrange a habitat in the habitat studio.'),
         React.createElement('p', { className: 'aquarium-display-footnote' }, 'Visual motion does not advance the simulation clock. Reduced-motion preferences are respected.')),
       props.onAppearance && React.createElement(AquariumSceneSettings, { React: React, appearance: props.sceneOptions.appearance, overlay: props.sceneOptions.overlay, onAppearance: props.onAppearance, onResetAppearance: props.onResetAppearance, onOverlay: props.onOverlay }),
-      props.onResizeTank && React.createElement(AquariumModelSizing, { key: props.instanceKey, React: React, tank: props.tankConfiguration, stockMinimum: props.sceneOptions.model.stockMinimumGallons, plants: props.sceneOptions.plants, onTank: props.onResizeTank, onPlant: props.onResizePlant }),
-      props.sizingNotice && React.createElement('p', { id: 'aquarium-sizing-notice', className: 'aquarium-sizing-notice', role: 'status' }, props.sizingNotice),
+      props.onResizeTank && React.createElement(AquariumModelSizing, { key: props.instanceKey, React: React, id: displayId + '-sizing', panelRef: sizingPanelRef, tank: props.tankConfiguration, stockMinimum: props.sceneOptions.model.stockMinimumGallons, plants: props.sceneOptions.plants, onTank: props.onResizeTank, onPlant: props.onResizePlant }),
+      props.sizingNotice && React.createElement('p', { id: displayId + '-sizing-notice', 'data-aquarium-sizing-notice': 'true', className: 'aquarium-sizing-notice', role: 'status' }, props.sizingNotice),
       props.sceneOptions.model && React.createElement(AquariumSceneEvidence, { React: React, sceneOptions: props.sceneOptions, onSelectEquipment: props.onSelectEquipment, t: t })
     );
   }
@@ -14769,7 +14820,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               '@keyframes aquaBodySway { 0%, 100% { transform: scaleY(1) scaleX(1); } 30% { transform: scaleY(0.97) scaleX(1.02); } 70% { transform: scaleY(1.02) scaleX(0.98); } }',
               '.aquarium-exchange-network { min-width: 610px; }',
-              "[data-aquarium-trial-heading]:focus { outline: 3px solid #b87312; outline-offset: 3px; } .aquarium-inquiry button[aria-disabled=\"true\"] { opacity: .5; cursor: not-allowed; }",
+              "[data-aquarium-trial-heading]:focus { outline: 3px solid #b87312; outline-offset: 3px; }[data-aquarium-notebook]{font-size:14px;line-height:1.6;min-width:0;overflow-wrap:anywhere}[data-aquarium-notebook] [class*=text-]{font-size:inherit}[data-aquarium-notebook] textarea{font-size:16px;line-height:1.6;min-height:110px}[data-aquarium-notebook] button{min-height:44px;min-width:44px;padding:8px 12px}[data-aquarium-notebook] :is(button,textarea):focus-visible{outline:3px solid #9a5800;outline-offset:3px}[data-aquarium-notebook-capture-feedback]{padding:12px;border:2px solid #b13744;border-radius:8px;background:#fff1f2;color:#881d2b;font-weight:700}[data-aquarium-trial-history]{min-width:0;overflow-wrap:anywhere}[data-aquarium-trial-history-region]{max-height:440px;overflow:auto;border:1px solid #78949a;border-radius:8px;margin:8px 0}[data-aquarium-trial-history-region]:focus-visible{outline:3px solid #9a5800;outline-offset:3px}[data-aquarium-trial-history] table{width:100%;min-width:500px;border-collapse:collapse;font-size:13px;line-height:1.6;font-variant-numeric:tabular-nums}[data-aquarium-trial-history] caption{padding:12px;text-align:left;font-weight:750}[data-aquarium-trial-history] :is(th,td){text-align:left;padding:10px 12px;border-bottom:1px solid #b5cdcc;vertical-align:top}[data-aquarium-trial-history] thead{background:#dcece6}[data-aquarium-trial-history] tbody tr:nth-child(even){background:#edf5f0}[data-aquarium-paired-trial] [aria-invalid=true]{border:2px solid #a92f41}@media(forced-colors:active){[data-aquarium-notebook] :is(button,textarea):focus-visible,[data-aquarium-trial-history-region]:focus-visible{outline-color:Highlight}[data-aquarium-notebook-capture-feedback],[data-aquarium-paired-trial] [aria-invalid=true],[data-aquarium-trial-history-region],[data-aquarium-trial-history] :is(th,td){border-color:CanvasText}[data-aquarium-notebook-capture-feedback]{background:Canvas;color:CanvasText}.aquarium-inquiry-chart text{fill:CanvasText}.aquarium-inquiry-chart polyline{stroke:CanvasText}} .aquarium-inquiry button[aria-disabled=\"true\"] { opacity: .5; cursor: not-allowed; }",
               "@media (forced-colors: active) { [data-aquarium-trial-heading]:focus { outline-color: Highlight; } }",
               '[data-aquarium-care-feed], [data-aquarium-care-treat], [data-aquarium-care-hospital] { min-height: 44px; }',
               '[data-aquarium-care-actions] button:focus-visible, [data-aquarium-care-actions]:focus, [data-aquarium-care-feed]:focus-visible, [data-aquarium-care-treat]:focus-visible, [data-aquarium-care-hospital]:focus-visible { outline: 3px solid #1e40af; outline-offset: 3px; box-shadow: 0 0 0 5px #fff; }',
@@ -18012,6 +18063,32 @@ var d = (labToolData && labToolData._aquarium) || {};
           var feedingFeedback = React.useState(null), feedingFeedbackSerial = React.useRef(0);
           var carePending = React.useRef({}), careTreated = React.useRef({});
           var stockSectionRef = React.useRef(null), stockRemoveRefs = React.useRef({}), stockRemoveFocus = React.useRef(null);
+          var workspaceA11yId = 'aquarium-workspace-' + React.useId().replace(/:/g, '');
+          var workspaceRootRef = React.useRef(null), workspaceFocusRequest = React.useRef(null);
+          var workspaceFocusRevision = React.useState(0);
+          React.useEffect(function () {
+            var wanted = workspaceFocusRequest.current;
+            if (!wanted) return;
+            workspaceFocusRequest.current = null;
+            var panel = ['observe','decide','investigate'].includes(d.aquariumWorkspacePanel) ? d.aquariumWorkspacePanel : 'observe';
+            var root = workspaceRootRef.current;
+            if (!root || !root.isConnected || mode !== 'tank' || selectedTank !== wanted.tank || panel !== wanted.panel) return;
+            var active = document.activeElement;
+            if (active !== wanted.source && (active !== document.body || (wanted.source && wanted.source.isConnected))) return;
+            if (wanted.source && wanted.source !== document.body && !root.contains(wanted.source)) return;
+            var section = root.querySelector('[data-aquarium-workspace-section="' + wanted.section + '"]');
+            if (!section || !section.isConnected || section.closest('[hidden]')) return;
+            var ancestor = section.parentElement;
+            while (ancestor && ancestor !== root) {
+              if (ancestor.tagName === 'DETAILS') ancestor.open = true;
+              ancestor = ancestor.parentElement;
+            }
+            if (section.tagName === 'DETAILS') section.open = true;
+            var target = section.tagName === 'DETAILS' ? section.querySelector('summary') : section;
+            if (!target || typeof target.focus !== 'function') return;
+            try { target.focus({ preventScroll: true }); } catch (error) { target.focus(); }
+            if (section.scrollIntoView) section.scrollIntoView({ block: 'start', behavior: 'auto' });
+          });
           React.useEffect(function () {
             var wanted = stockRemoveFocus.current;
             if (!wanted) return;
@@ -18236,6 +18313,28 @@ var d = (labToolData && labToolData._aquarium) || {};
           var habitatMissionCompleted = d.habitatMissionCompleted && typeof d.habitatMissionCompleted === 'object' ? d.habitatMissionCompleted : {};
           var habitatMissionPoints = Math.max(0, Math.floor(Number(d.habitatMissionPoints) || 0));
           var habitatMissionPanelOpen = d.habitatMissionPanelOpen !== false;
+          var habitatMissionA11yId = 'aquarium-mission-' + React.useId().replace(/:/g, '');
+          var habitatMissionBoardHeadingRef = React.useRef(null), habitatMissionStageRefs = React.useRef({}), habitatMissionFocusRequest = React.useRef(null), habitatMissionActionPending = React.useRef(false);
+          function beginHabitatMissionTransition(source, missionId, stage) {
+            if (habitatMissionActionPending.current) return false;
+            habitatMissionActionPending.current = true;
+            if (source && document.activeElement === source) habitatMissionFocusRequest.current = { source: source, tank: selectedTank, mission: missionId, stage: stage };
+            return true;
+          }
+          React.useEffect(function () {
+            habitatMissionActionPending.current = false;
+            var wanted = habitatMissionFocusRequest.current;
+            if (!wanted) return;
+            habitatMissionFocusRequest.current = null;
+            if (mode !== 'tank' || d.aquariumWorkspacePanel !== 'decide' || selectedTank !== wanted.tank || !d.habitatStudioOpen || !habitatMissionPanelOpen || habitatMissionId !== wanted.mission || habitatMissionStage !== wanted.stage) return;
+            var active = document.activeElement;
+            if (active !== wanted.source && (active !== document.body || (wanted.source && wanted.source.isConnected && !wanted.source.closest('[hidden]')))) return;
+            var target = wanted.stage === 'brief' ? habitatMissionBoardHeadingRef.current : habitatMissionStageRefs.current[wanted.stage];
+            if (target && target.isConnected && !target.closest('[hidden]')) {
+              try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+            }
+          });
           var shopOpen = d.shopOpen || false;
           var shopTab = d.shopTab || 'fish';
 
@@ -18275,6 +18374,12 @@ var d = (labToolData && labToolData._aquarium) || {};
             observation: typeof savedTutorialNote.observation === 'string' ? savedTutorialNote.observation : '',
             explanation: typeof savedTutorialNote.explanation === 'string' ? savedTutorialNote.explanation : ''
           };
+          var tutorialCaptureFeedback = React.useState('');
+          React.useEffect(function () { tutorialCaptureFeedback[1](''); }, [mode, selectedTank, currentTutorialLesson.id, currentTutorialNote.observation]);
+          function tutorialNoteLimit(field) {
+            var length = currentTutorialNote[field].length;
+            return length + ' of 2,000 characters. ' + Math.max(0, 2000 - length) + ' remaining.';
+          }
           var tutorialNotebookSavedCount = TUTORIAL_STEPS.filter(function (lesson) {
             var note = tutorialNotebook[lesson.id] || {};
             return ['prediction', 'observation', 'explanation'].some(function (field) { return typeof note[field] === 'string' && !!note[field].trim(); });
@@ -18343,8 +18448,15 @@ var d = (labToolData && labToolData._aquarium) || {};
               if (noteBaselineAge >= 6 && notePredictionEvaluation.total) snapshotParts.push('Prediction check: ' + notePredictionEvaluation.matched + '/' + notePredictionEvaluation.total + ' directions matched');
             }
             var snapshot = snapshotParts.join(' | ');
-            var combinedObservation = (currentTutorialNote.observation.trim() ? currentTutorialNote.observation.trim() + '\n' : '') + snapshot;
-            updateTutorialNote('observation', combinedObservation);
+            var existingObservation = currentTutorialNote.observation;
+            var appendedSnapshot = (existingObservation.length ? '\n' : '') + snapshot;
+            var remainingCharacters = Math.max(0, 2000 - existingObservation.length);
+            if (appendedSnapshot.length > remainingCharacters) {
+              tutorialCaptureFeedback[1]('Snapshot not saved. It needs ' + appendedSnapshot.length + ' characters, but ' + remainingCharacters + ' remain. Shorten the observation and try again.');
+              return;
+            }
+            tutorialCaptureFeedback[1]('');
+            updateTutorialNote('observation', existingObservation + appendedSnapshot);
             if (addToast) addToast('\uD83D\uDCCB Aquarium evidence snapshot saved to this lesson.', 'success');
           }
 
@@ -18383,6 +18495,33 @@ var d = (labToolData && labToolData._aquarium) || {};
           var vitalityHistory = Array.isArray(d.vitalityHistory) ? d.vitalityHistory.slice(-48) : [];
           var fishVitality = d.fishVitality && typeof d.fishVitality === 'object' ? d.fishVitality : {};
           var ecosystemBaseline = d.ecosystemBaseline && typeof d.ecosystemBaseline === 'object' ? d.ecosystemBaseline : null;
+          var ecosystemHistoryId = 'aquarium-exchange-history-' + React.useId().replace(/:/g, '');
+          var ecosystemHistoryTable = React.useState(false);
+          var ecosystemHistoryHeadingRef = React.useRef(null), ecosystemBaselineMarkRef = React.useRef(null);
+          var ecosystemBaselineClearFocus = React.useRef(null), ecosystemBaselineClearPending = React.useRef(false);
+          function clearEcosystemBaseline(event) {
+            if (!ecosystemBaseline || ecosystemBaselineClearPending.current) return;
+            ecosystemBaselineClearPending.current = true;
+            var source = event && event.currentTarget;
+            if (source === document.activeElement) ecosystemBaselineClearFocus.current = { source: source, tank: selectedTank };
+            upd('ecosystemBaseline', null);
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.aquarium.ecosystem_baseline_cleared', 'Ecosystem comparison baseline cleared. Predictions can be edited.'));
+          }
+          React.useEffect(function () {
+            ecosystemBaselineClearPending.current = false;
+            var wanted = ecosystemBaselineClearFocus.current;
+            if (!wanted) return;
+            ecosystemBaselineClearFocus.current = null;
+            if (ecosystemBaseline || mode !== 'tank' || d.aquariumWorkspacePanel !== 'investigate' || selectedTank !== wanted.tank) return;
+            var active = document.activeElement;
+            if (active !== wanted.source && (active !== document.body || (wanted.source && wanted.source.isConnected))) return;
+            var mark = ecosystemBaselineMarkRef.current;
+            var target = mark && !mark.disabled ? mark : ecosystemHistoryHeadingRef.current;
+            if (target && target.isConnected && !target.closest('[hidden], details:not([open])')) {
+              try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+            }
+          });
           var savedEcosystemPrediction = d.ecosystemPrediction && typeof d.ecosystemPrediction === 'object' ? d.ecosystemPrediction : {};
           var ecosystemPrediction = {
             oxygen: ['rise', 'stable', 'fall'].indexOf(savedEcosystemPrediction.oxygen) !== -1 ? savedEcosystemPrediction.oxygen : null,
@@ -18419,6 +18558,23 @@ var d = (labToolData && labToolData._aquarium) || {};
           var selectedHabitatItemId = typeof d.selectedHabitatItemId === 'string' && habitatLayout.some(function(item) { return item.id === d.selectedHabitatItemId; }) ? d.selectedHabitatItemId : null;
           var selectedHabitatItem = selectedHabitatItemId ? habitatLayout.find(function(item) { return item.id === selectedHabitatItemId; }) : null;
           var selectedHabitatType = selectedHabitatItem ? habitatCatalog.find(function(type) { return type.id === selectedHabitatItem.type; }) : null;
+          var habitatEditorId = 'aquarium-habitat-editor-' + React.useId().replace(/:/g, '');
+          var habitatInspectorRef = React.useRef(null), habitatStructureRefs = React.useRef({});
+          var habitatRemoveFocus = React.useRef(null), habitatRemovePending = React.useRef(false);
+          React.useEffect(function () {
+            habitatRemovePending.current = false;
+            var wanted = habitatRemoveFocus.current;
+            if (!wanted) return;
+            habitatRemoveFocus.current = null;
+            if (mode !== 'tank' || d.aquariumWorkspacePanel !== 'decide' || selectedTank !== wanted.tank || !habitatStudioOpen || selectedHabitatItemId || habitatLayout.some(function (item) { return item.id === wanted.removed; })) return;
+            var active = document.activeElement;
+            if (active !== wanted.source && (active !== document.body || wanted.source.isConnected)) return;
+            var target = wanted.neighbors.map(function (id) { return habitatStructureRefs.current[id]; }).find(function (button) { return button && button.isConnected && !button.closest('[hidden]'); }) || habitatInspectorRef.current;
+            if (target && target.isConnected && !target.closest('[hidden]')) {
+              try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+            }
+          });
           var habitatPlantZones = d.habitatPlantZones && typeof d.habitatPlantZones === 'object' ? d.habitatPlantZones : {};
           var nextHabitatItemId = typeof d.nextHabitatItemId === 'number' && d.nextHabitatItemId > 0 ? Math.floor(d.nextHabitatItemId) : 1;
           var habitatUndoLayout = AquariumEcosystemCore.sanitizeHabitatLayout(d.habitatUndoLayout);
@@ -19884,8 +20040,12 @@ var d = (labToolData && labToolData._aquarium) || {};
             updateSelectedHabitatItem({ x: Math.max(-5.2, Math.min(5.2, selectedHabitatItem.x + dx)), z: Math.max(-2.8, Math.min(2.8, selectedHabitatItem.z + dz)) }, selectedHabitatType.label + ' moved.');
           };
 
-          var removeSelectedHabitatItem = function() {
-            if (!selectedHabitatItem) return;
+          var removeSelectedHabitatItem = function(event) {
+            if (!selectedHabitatItem || habitatRemovePending.current) return;
+            habitatRemovePending.current = true;
+            var source = event && event.currentTarget;
+            var index = habitatLayout.findIndex(function(item) { return item.id === selectedHabitatItem.id; });
+            if (source && document.activeElement === source) habitatRemoveFocus.current = { source: source, tank: selectedTank, removed: selectedHabitatItem.id, neighbors: habitatLayout.slice(index + 1).concat(habitatLayout.slice(0, index).reverse()).map(function(item) { return item.id; }) };
             commitHabitatLayout(habitatLayout.filter(function(item) { return item.id !== selectedHabitatItem.id; }), null, selectedHabitatType.label + ' removed from the habitat.');
           };
 
@@ -22396,7 +22556,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          return React.createElement("div", { className: "space-y-4 max-w-5xl mx-auto animate-in fade-in duration-300", 'data-aquarium-tool': 'true' },
+          return React.createElement("div", { className: "space-y-4 max-w-5xl mx-auto animate-in fade-in duration-300", 'data-aquarium-tool': 'true', ref: workspaceRootRef },
 
 
 
@@ -22657,21 +22817,24 @@ var d = (labToolData && labToolData._aquarium) || {};
                   value: currentTutorialNote.prediction,
                   maxLength: 2000,
                   rows: 2,
-                  'aria-describedby': tutorialId + '-prediction-prompt',
+                  'aria-describedby': tutorialId + '-prediction-prompt ' + tutorialId + '-prediction-limit',
                   onChange: function (event) { updateTutorialNote('prediction', event.target.value); },
                   placeholder: __alloT('stem.aquarium.i_predict_because','I predict... because...'),
                   className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[0.625rem] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 }),
+                React.createElement("p", { id: tutorialId + '-prediction-limit', 'data-aquarium-notebook-limit': 'prediction', className: "text-xs text-slate-600" }, tutorialNoteLimit('prediction')),
                 React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                   React.createElement("label", { htmlFor: tutorialId + '-observation', className: "text-[0.625rem] font-black text-slate-800" }, "2. Observation and evidence"),
                   React.createElement("button", {
                     type: "button",
                     'data-aquarium-notebook-capture': 'true', onClick: captureTutorialObservation,
+                    'aria-describedby': tutorialId + '-observation-limit' + (tutorialCaptureFeedback[0] ? ' ' + tutorialId + '-capture-feedback' : ''),
                     className: "rounded-lg border border-indigo-400 bg-indigo-50 px-2 py-1 text-[0.5625rem] font-bold text-indigo-800 hover:bg-indigo-100"
                   }, "\uD83D\uDCCB Capture live readings")
                 ),
                 React.createElement("textarea", {
                   id: tutorialId + '-observation', 'data-aquarium-notebook-field': 'observation',
+                  'aria-describedby': tutorialId + '-observation-limit' + (tutorialCaptureFeedback[0] ? ' ' + tutorialId + '-capture-feedback' : ''),
                   value: currentTutorialNote.observation,
                   maxLength: 2000,
                   rows: 3,
@@ -22679,6 +22842,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                   placeholder: __alloT('stem.aquarium.i_observed_the_reading_changed_from_to','I observed... The reading changed from... to...'),
                   className: "w-full resize-y rounded-lg border border-slate-300 p-2 font-mono text-[0.5625rem] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 }),
+                React.createElement("p", { id: tutorialId + '-observation-limit', 'data-aquarium-notebook-limit': 'observation', className: "text-xs text-slate-600" }, tutorialNoteLimit('observation')),
+                tutorialCaptureFeedback[0] && React.createElement("p", { id: tutorialId + '-capture-feedback', 'data-aquarium-notebook-capture-feedback': 'true', role: "alert" }, tutorialCaptureFeedback[0]),
                 React.createElement("label", { htmlFor: tutorialId + '-explanation', className: "block text-[0.625rem] font-black text-slate-800" }, "3. Claim, evidence, and reasoning"),
                 React.createElement("p", { id: tutorialId + '-explanation-prompt', className: "text-[0.5625rem] leading-relaxed text-slate-600" }, currentTutorialLesson.explain),
                 React.createElement("textarea", {
@@ -22686,11 +22851,12 @@ var d = (labToolData && labToolData._aquarium) || {};
                   value: currentTutorialNote.explanation,
                   maxLength: 2000,
                   rows: 3,
-                  'aria-describedby': tutorialId + '-explanation-prompt',
+                  'aria-describedby': tutorialId + '-explanation-prompt ' + tutorialId + '-explanation-limit',
                   onChange: function (event) { updateTutorialNote('explanation', event.target.value); },
                   placeholder: __alloT('stem.aquarium.claim_evidence_reasoning','Claim: ... Evidence: ... Reasoning: ...'),
                   className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[0.625rem] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 }),
+                React.createElement("p", { id: tutorialId + '-explanation-limit', 'data-aquarium-notebook-limit': 'explanation', className: "text-xs text-slate-600" }, tutorialNoteLimit('explanation')),
                 React.createElement("p", { className: "text-right text-[0.5625rem] text-slate-600" }, (currentTutorialNote.prediction.length + currentTutorialNote.observation.length + currentTutorialNote.explanation.length) + " characters saved for this lesson")
               ),
               React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
@@ -23434,9 +23600,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                 ? AquariumEcosystemCore.evaluateHabitatMission(activeHabitatMission.id, habitatMissionBaseline, habitatMissionCurrent, habitatMissionElapsedTicks, habitatMissionPrediction)
                 : null;
 
-              function startHabitatMission(missionId) {
+              function startHabitatMission(missionId, source) {
                 var mission = habitatMissionCatalog.find(function(candidate) { return candidate.id === missionId; });
-                if (!mission) return;
+                if (!mission || tankFish.length === 0 || !beginHabitatMissionTransition(source, mission.id, 'predict')) return;
                 updMulti({
                   habitatMissionId: mission.id,
                   habitatMissionStage: 'predict',
@@ -23453,28 +23619,32 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (announceToSR) announceToSR(mission.title + ' started. Make a prediction before changing the habitat.');
               }
 
-              function chooseHabitatMissionPrediction(metric) {
+              function chooseHabitatMissionPrediction(metric, source) {
                 if (!activeHabitatMission || habitatMissionStage !== 'predict' || ['shelter', 'territory', 'openSwim', 'minimum'].indexOf(metric) === -1) return;
-                updMulti({ habitatMissionPrediction: metric, habitatMissionStage: 'build', habitatViewMode: '3d' });
+                if (!beginHabitatMissionTransition(source, activeHabitatMission.id, 'build')) return;
+                updMulti({ habitatMissionPrediction: metric, habitatMissionStage: 'build' });
                 if (announceToSR) announceToSR(__alloT('stem.aquarium.sr_prediction_recorded_build_one_habitat_interventio', 'Prediction recorded. Build one habitat intervention, then lock it for observation.'));
               }
 
-              function beginHabitatMissionObservation() {
+              function beginHabitatMissionObservation(event) {
                 if (!activeHabitatMission || habitatMissionStage !== 'build' || !habitatMissionLayoutChanged) return;
-                updMulti({ habitatMissionStage: 'observe', habitatMissionObservationStartTick: simTick, habitatMissionObservationLayoutSignature: habitatMissionLayoutSignature, habitatMissionOutcome: null, habitatViewMode: '3d', habitatOverlay: 'organisms' });
+                if (!beginHabitatMissionTransition(event && event.currentTarget, activeHabitatMission.id, 'observe')) return;
+                updMulti({ habitatMissionStage: 'observe', habitatMissionObservationStartTick: simTick, habitatMissionObservationLayoutSignature: habitatMissionLayoutSignature, habitatMissionOutcome: null, habitatOverlay: 'organisms' });
                 if (announceToSR) announceToSR('Intervention locked. Run the aquarium for ' + activeHabitatMission.requiredTicks + ' ticks and watch organism paths, stress, and vitality.');
               }
 
-              function evaluateActiveHabitatMission() {
+              function evaluateActiveHabitatMission(event) {
                 if (!activeHabitatMission || habitatMissionStage !== 'observe' || habitatMissionElapsedTicks < activeHabitatMission.requiredTicks) return;
+                if (!beginHabitatMissionTransition(event && event.currentTarget, activeHabitatMission.id, 'reflect')) return;
                 var outcome = AquariumEcosystemCore.evaluateHabitatMission(activeHabitatMission.id, habitatMissionBaseline, habitatMissionCurrent, habitatMissionElapsedTicks, habitatMissionPrediction);
                 stopAquariumRuntime(false);
                 updMulti({ habitatMissionStage: 'reflect', habitatMissionOutcome: outcome, simRunning: false });
                 if (announceToSR) announceToSR(outcome.success ? 'Mission targets met. Review the evidence and write a reflection.' : 'Mission targets are not all met. Review the evidence before revising.');
               }
 
-              function recordHabitatMissionReflection() {
+              function recordHabitatMissionReflection(event) {
                 if (!activeHabitatMission || habitatMissionStage !== 'reflect' || !habitatMissionOutcome || !habitatMissionRevision || habitatMissionReflection.trim().length < 20) return;
+                if (!beginHabitatMissionTransition(event && event.currentTarget, null, 'brief')) return;
                 var previousMissionRecord = habitatMissionCompleted[activeHabitatMission.id] || {};
                 var previousStars = Math.max(0, Number(previousMissionRecord.stars) || 0);
                 var nextStars = Math.max(previousStars, Number(habitatMissionOutcome.stars) || 0);
@@ -23493,8 +23663,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (addToast) addToast(habitatMissionOutcome.success ? activeHabitatMission.title + ' completed! +' + earnedPoints + ' habitat points.' : 'Reflection saved. Revise the design and try again.', habitatMissionOutcome.success ? 'success' : 'info');
               }
 
-              function retryHabitatMission() {
-                if (!activeHabitatMission) return;
+              function retryHabitatMission(event) {
+                if (!activeHabitatMission || !beginHabitatMissionTransition(event && event.currentTarget, activeHabitatMission.id, 'predict')) return;
                 updMulti({
                   habitatMissionStage: 'predict',
                   habitatMissionBaseline: Object.assign({ tick: simTick, layoutSignature: habitatMissionLayoutSignature }, habitatMissionCurrent),
@@ -23505,6 +23675,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                   habitatMissionRevision: '',
                   habitatMissionReflection: ''
                 });
+              }
+
+              function returnToHabitatMissionBoard(event) {
+                if (!activeHabitatMission || !beginHabitatMissionTransition(event && event.currentTarget, null, 'brief')) return;
+                updMulti({ habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionRevision: '', habitatMissionReflection: '' });
               }
 
               var ecosystemCurrentFactors = buildAquariumInterventionFactors(d, tank);
@@ -23631,10 +23806,10 @@ var d = (labToolData && labToolData._aquarium) || {};
               var workspacePanel = ['observe','decide','investigate'].includes(d.aquariumWorkspacePanel) ? d.aquariumWorkspacePanel : 'observe';
               function renderWorkspaceNavigation() {
                 return React.createElement('div', { className: 'aquarium-workflow' },
-                  React.createElement('style', null, '.aquarium-workflow{color:#183e48}.aquarium-workflow-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.aquarium-workflow-nav button{min-height:60px;text-align:left;border:1px solid #aac6ca;border-radius:12px;background:#fff;padding:11px;color:#284f59;font:inherit}.aquarium-workflow-nav button[aria-pressed=true]{background:#144e59;color:#fff;border-color:#144e59}.aquarium-workflow-nav strong{display:block;font-size:14px}.aquarium-workflow-nav span{display:block;font-size:11px;margin-top:4px}.aquarium-workflow button:focus-visible,.aquarium-inquiry button:focus-visible,.aquarium-inquiry input:focus-visible,.aquarium-inquiry select:focus-visible,.aquarium-inquiry textarea:focus-visible{outline:3px solid #b87312;outline-offset:3px}.aquarium-inquiry{min-width:0;border:1px solid #a9c8c8;border-radius:16px;background:#f5faf8;padding:18px;color:#214c52;font-size:13px;line-height:1.55}.aquarium-inquiry h3{font-size:20px;font-weight:800;margin:0 0 6px}.aquarium-inquiry h4{font-size:14px;font-weight:800;margin:0 0 6px}.aquarium-inquiry p{margin:6px 0 12px}.aquarium-inquiry-controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.aquarium-inquiry button{min-height:44px;border-radius:9px;border:1px solid #56817d;background:#fff;padding:9px 13px;font:inherit;font-weight:750;color:#214e52}.aquarium-inquiry button.primary{background:#155963;color:#fff}.aquarium-inquiry button:disabled{opacity:.5;cursor:not-allowed}.aquarium-inquiry label{display:block;font-weight:750;margin:10px 0 5px}.aquarium-inquiry input,.aquarium-inquiry select,.aquarium-inquiry textarea{display:block;width:100%;min-height:44px;border:1px solid #91b3b1;border-radius:9px;padding:9px;background:#fff;color:#214c52;font:inherit;box-sizing:border-box}.aquarium-inquiry-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.aquarium-inquiry-tank{min-width:0;border:1px solid #b9d2d0;border-top:4px solid #246375;border-radius:12px;background:#fff;padding:13px}.aquarium-inquiry-tank.changed{border-top-color:#946123}.aquarium-inquiry-tank p{font-size:12px;margin:4px 0}.aquarium-inquiry-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.aquarium-inquiry-reading{padding:10px;border-radius:9px;background:#e8f3ef}.aquarium-inquiry-reading strong{display:block;font-size:13px}.aquarium-inquiry-reading span{display:block;font-size:12px}.aquarium-inquiry small{font-size:11px}.aquarium-inquiry .inquiry-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#477671}.aquarium-inquiry-chart{display:block;width:100%;height:auto;max-height:180px;background:#fff;border:1px solid #ccded9;border-radius:9px}.aquarium-inquiry details{margin-top:12px}.aquarium-inquiry summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:750}.aquarium-workflow-panel[hidden]{display:none!important}@media(max-width:480px){.aquarium-inquiry{padding:13px}.aquarium-inquiry-pair{grid-template-columns:1fr}.aquarium-workflow-nav span{display:none}.aquarium-workflow-nav button{min-height:48px;padding:8px}.aquarium-workflow-nav strong{font-size:12px}}'),
+                  React.createElement('style', null, '.aquarium-workflow{color:#183e48}.aquarium-workflow-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.aquarium-workflow-nav button{min-height:60px;text-align:left;border:1px solid #aac6ca;border-radius:12px;background:#fff;padding:11px;color:#284f59;font:inherit}.aquarium-workflow-nav button[aria-pressed=true]{background:#144e59;color:#fff;border-color:#144e59}.aquarium-workflow-nav strong{display:block;font-size:14px}.aquarium-workflow-nav span{display:block;font-size:11px;margin-top:4px}.aquarium-workflow button:focus-visible,.aquarium-inquiry button:focus-visible,.aquarium-inquiry input:focus-visible,.aquarium-inquiry select:focus-visible,.aquarium-inquiry textarea:focus-visible{outline:3px solid #b87312;outline-offset:3px}.aquarium-inquiry{min-width:0;border:1px solid #a9c8c8;border-radius:16px;background:#f5faf8;padding:18px;color:#214c52;font-size:13px;line-height:1.55}.aquarium-inquiry h3{font-size:20px;font-weight:800;margin:0 0 6px}.aquarium-inquiry h4{font-size:14px;font-weight:800;margin:0 0 6px}.aquarium-inquiry p{margin:6px 0 12px}.aquarium-inquiry-controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.aquarium-inquiry button{min-height:44px;border-radius:9px;border:1px solid #56817d;background:#fff;padding:9px 13px;font:inherit;font-weight:750;color:#214e52}.aquarium-inquiry button.primary{background:#155963;color:#fff}.aquarium-inquiry button:disabled{opacity:.5;cursor:not-allowed}.aquarium-inquiry label{display:block;font-weight:750;margin:10px 0 5px}.aquarium-inquiry input,.aquarium-inquiry select,.aquarium-inquiry textarea{display:block;width:100%;min-height:44px;border:1px solid #91b3b1;border-radius:9px;padding:9px;background:#fff;color:#214c52;font:inherit;box-sizing:border-box}.aquarium-inquiry-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.aquarium-inquiry-tank{min-width:0;border:1px solid #b9d2d0;border-top:4px solid #246375;border-radius:12px;background:#fff;padding:13px}.aquarium-inquiry-tank.changed{border-top-color:#946123}.aquarium-inquiry-tank p{font-size:12px;margin:4px 0}.aquarium-inquiry-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.aquarium-inquiry-reading{padding:10px;border-radius:9px;background:#e8f3ef}.aquarium-inquiry-reading strong{display:block;font-size:13px}.aquarium-inquiry-reading span{display:block;font-size:12px}.aquarium-inquiry small{font-size:11px}.aquarium-inquiry .inquiry-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#477671}.aquarium-inquiry-chart{display:block;width:100%;height:auto;max-height:180px;background:#fff;border:1px solid #ccded9;border-radius:9px}.aquarium-inquiry details{margin-top:12px}.aquarium-inquiry summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:750}.aquarium-workflow-panel[hidden]{display:none!important}[data-aquarium-event-log]:focus-visible{outline:3px solid #9a5800;outline-offset:3px}@media(forced-colors:active){[data-aquarium-event-log]:focus-visible{outline-color:Highlight}}[data-aquarium-exchange-history]{min-width:0;font-size:14px;line-height:1.6;overflow-wrap:anywhere}[data-aquarium-exchange-history] [class*="text-["]{font-size:inherit}[data-aquarium-exchange-history] h4{font-size:18px;line-height:1.4}[data-aquarium-exchange-history] h5{font-size:15px;line-height:1.5}[data-aquarium-exchange-history] button{min-height:44px;min-width:44px;padding:8px 10px;white-space:normal;line-height:1.5}[data-aquarium-exchange-history] input{min-height:44px;font-size:16px;line-height:1.5}[data-aquarium-exchange-history] :is(button,input,[tabindex]):focus-visible,[data-aquarium-exchange-history-heading]:focus{outline:3px solid #fde68a;outline-offset:3px}[data-aquarium-exchange-history] [aria-pressed=true]{border:2px solid #e0e7ff;font-weight:800}[data-aquarium-investigation-stage]{min-width:0}[data-aquarium-investigation-stage][aria-current=step]{border:2px solid #a5f3fc}[data-aquarium-investigation-stage] .h-4{height:24px;width:24px}[data-aquarium-exchange-history] table{min-width:480px;width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px;line-height:1.6}[data-aquarium-exchange-history] caption{text-align:left;font-weight:700;padding:8px 0}[data-aquarium-exchange-history] :is(th,td){padding:10px;text-align:left;vertical-align:top;border-bottom:1px solid #567a86}[data-aquarium-exchange-history] th{color:#e0f2fe}[data-aquarium-exchange-history] tbody tr:nth-child(even){background:#ffffff08}@media(max-width:600px){[data-aquarium-exchange-history] .grid{min-width:0}[data-aquarium-exchange-history] .grid>*{min-width:0}[data-aquarium-exchange-history] .flex{flex-wrap:wrap}[data-aquarium-exchange-history] [role=group].grid{gap:6px}[data-aquarium-investigation-stage] .flex{align-items:flex-start}[data-aquarium-exchange-history] .shrink-0{flex-shrink:1}}@media(forced-colors:active){[data-aquarium-exchange-history] :is(button,input,[tabindex]):focus-visible,[data-aquarium-exchange-history-heading]:focus{outline-color:Highlight}[data-aquarium-exchange-history] [aria-pressed=true],[data-aquarium-investigation-stage][aria-current=step]{border:2px solid Highlight}[data-aquarium-exchange-history] :is(th,td){border-color:CanvasText}[data-aquarium-exchange-history] th{color:CanvasText}[data-aquarium-exchange-history] svg :is(text,circle){fill:CanvasText}[data-aquarium-exchange-history] svg :is(line,polyline){stroke:CanvasText}[data-aquarium-exchange-history] svg g[aria-hidden=true] :is(text,circle){fill:Highlight}[data-aquarium-exchange-history] svg g[aria-hidden=true] line{stroke:Highlight}}@media(max-width:480px){.aquarium-inquiry{padding:13px}.aquarium-inquiry-pair{grid-template-columns:1fr}.aquarium-workflow-nav span{display:none}.aquarium-workflow-nav button{min-height:48px;padding:8px}.aquarium-workflow-nav strong{font-size:12px}}'),
                   React.createElement('nav', { className: 'aquarium-workflow-nav', 'aria-label': __alloT('stem.aquarium.aquarium_workspace','Aquarium workspace') },
                     [['observe','Observe','Read the tank'],['decide','Decide','Care and customize'],['investigate','Investigate','Predict and compare']].map(function (item) {
-                      return React.createElement('button', { key: item[0], type: 'button', ref: item[0] === 'decide' ? aiEventDecideRef : null, 'aria-pressed': workspacePanel === item[0], 'aria-controls': 'aquarium-panel-' + item[0], onClick: function () { upd('aquariumWorkspacePanel', item[0]); } }, React.createElement('strong', null, item[1]), React.createElement('span', null, item[2]));
+                      return React.createElement('button', { key: item[0], type: 'button', ref: item[0] === 'decide' ? aiEventDecideRef : null, 'aria-pressed': workspacePanel === item[0], 'data-aquarium-workspace-nav': item[0], 'aria-controls': workspaceA11yId + '-panel-' + item[0], onClick: function () { upd('aquariumWorkspacePanel', item[0]); } }, React.createElement('strong', null, item[1]), React.createElement('span', null, item[2]));
                     })
                   ),
                   React.createElement('p', { className: 'mt-2 text-xs leading-relaxed', role: 'status' }, careNextAction)
@@ -23680,7 +23855,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                 var option = options.find(function (item) { return item.id === (d.inquiryFactor || 'lightsOn'); }) || options[0];
                 var factor = option.id, baseValue = option.base;
                 var value = d.inquiryValue === undefined ? option.defaultValue : d.inquiryValue;
-                var valid = saved && AquariumInquiryCore.validateFactor(baseline, factor, value) && String(d.inquiryPrediction || '').trim().length > 0;
+                var factorValid = !!AquariumInquiryCore.validateFactor(baseline, factor, value);
+                var predictionReady = String(d.inquiryPrediction || '').trim().length > 0;
+                var valid = saved && factorValid && predictionReady;
+                var factorProblem = factorValid ? '' : option.kind === 'plant' ? 'Enter a biomass index from 0 to ' + option.max + ', different from the saved value of ' + option.base + '.' : 'Choose a different setting from A (' + AquariumInquiryCore.formatFactor(option, baseValue) + ').';
+                var factorDescription = tutorialId + '-trial-factor-hint' + (factorProblem ? ' ' + tutorialId + '-trial-value-error' : '');
                 var changedLabel = exp ? (exp.changedSetting || (exp.factor === 'lightsOn' ? 'Biological lights ' + (exp.value ? 'on' : 'off') : 'Air pump level ' + exp.value)) : '';
                 var chartMetric = AquariumInquiryCore.metrics.find(function (m) { return m[0] === d.inquiryChartMetric; }) || AquariumInquiryCore.metrics[0];
                 return React.createElement('section', { className: 'aquarium-inquiry', id: tutorialId + '-trial', 'data-aquarium-paired-trial': 'true', 'aria-labelledby': tutorialId + '-trial-title' },
@@ -23693,12 +23872,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement('label', { htmlFor: tutorialId + '-trial-factor' }, 'One setting to change in B'),
                     React.createElement('select', { id: tutorialId + '-trial-factor', 'data-aquarium-trial-field': 'factor', value: factor, onChange: function (event) { updMulti({ inquiryFactor: event.target.value, inquiryValue: undefined }); } }, options.map(function (item) { return React.createElement('option', { key: item.id, value: item.id }, item.label); })),
                     React.createElement('label', { htmlFor: tutorialId + '-trial-value' }, 'Tank B setting'),
-                    option.kind === 'plant' ? React.createElement('input', { id: tutorialId + '-trial-value', 'data-aquarium-trial-field': 'value', type: 'number', min: 0, max: option.max, step: .01, value: value, 'aria-invalid': !AquariumInquiryCore.validateFactor(baseline, factor, value), 'aria-describedby': tutorialId + '-trial-factor-hint', onChange: function (event) { upd('inquiryValue', event.target.value); } }) : React.createElement('select', { id: tutorialId + '-trial-value', 'data-aquarium-trial-field': 'value', 'aria-describedby': tutorialId + '-trial-factor-hint', value: String(value), onChange: function (event) { upd('inquiryValue', event.target.value); } }, (factor === 'lightsOn' ? [['true','Lights on'],['false','Lights off']] : [[0,'Level 0'],[1,'Level 1'],[2,'Level 2'],[3,'Level 3']]).map(function (option) { return React.createElement('option', { key: option[0], value: String(option[0]) }, option[1]); })),
+                    option.kind === 'plant' ? React.createElement('input', { id: tutorialId + '-trial-value', 'data-aquarium-trial-field': 'value', type: 'number', min: 0, max: option.max, step: .01, value: value, 'aria-invalid': !factorValid, 'aria-describedby': factorDescription, onChange: function (event) { upd('inquiryValue', event.target.value); } }) : React.createElement('select', { id: tutorialId + '-trial-value', 'data-aquarium-trial-field': 'value', 'aria-invalid': !factorValid, 'aria-describedby': factorDescription, value: String(value), onChange: function (event) { upd('inquiryValue', event.target.value); } }, (factor === 'lightsOn' ? [['true','Lights on'],['false','Lights off']] : [[0,'Level 0'],[1,'Level 1'],[2,'Level 2'],[3,'Level 3']]).map(function (option) { return React.createElement('option', { key: option[0], value: String(option[0]) }, option[1]); })),
                     React.createElement('p', { id: tutorialId + '-trial-factor-hint' }, option.hint),
+                    factorProblem && React.createElement('p', { id: tutorialId + '-trial-value-error', 'data-aquarium-trial-value-error': 'true', role: 'status' }, factorProblem),
                     React.createElement('label', { htmlFor: tutorialId + '-trial-prediction' }, 'Predict a reading and explain why'),
-                    React.createElement('textarea', { id: tutorialId + '-trial-prediction', 'data-aquarium-trial-field': 'prediction', value: d.inquiryPrediction || '', maxLength: 1000, rows: 2, placeholder: 'I predict oxygen in B will… because…', onChange: function (event) { upd('inquiryPrediction', event.target.value); } }),
-                    React.createElement('div', { className: 'aquarium-inquiry-controls' }, React.createElement('button', { type: 'button', 'data-aquarium-trial-action': 'create', className: 'primary', disabled: !valid, onClick: startInquiryExperiment }, 'Create paired trial')),
-                    !valid && React.createElement('p', null, 'Choose a setting different from A and write a prediction to begin.')),
+                    React.createElement('textarea', { id: tutorialId + '-trial-prediction', 'data-aquarium-trial-field': 'prediction', required: true, 'aria-describedby': tutorialId + '-trial-prediction-help', value: d.inquiryPrediction || '', maxLength: 1000, rows: 2, placeholder: 'I predict oxygen in B will… because…', onChange: function (event) { upd('inquiryPrediction', event.target.value); } }),
+                    React.createElement('p', { id: tutorialId + '-trial-prediction-help' }, 'Required: name a reading and explain your prediction. Up to 1,000 characters; type or use your device’s dictation.'),
+                    React.createElement('div', { className: 'aquarium-inquiry-controls' }, React.createElement('button', { type: 'button', 'data-aquarium-trial-action': 'create', 'aria-describedby': tutorialId + '-trial-create-help', className: 'primary', disabled: !valid, onClick: startInquiryExperiment }, 'Create paired trial')),
+                    React.createElement('p', { id: tutorialId + '-trial-create-help' }, valid ? 'Ready to create two saved tank copies with one changed setting.' : 'Choose a setting different from A and write a prediction to begin.')),
                   exp && React.createElement('div', null,
                     React.createElement('p', { role: 'status', 'aria-live': 'polite' }, 'Both tanks: ' + exp.elapsed + ' of 24 trial hours observed. Starting aquarium hour ' + (exp.baseline.simTick || 0) + '.'),
                     React.createElement('p', null, 'Your prediction: ' + exp.prediction),
@@ -23711,8 +23892,27 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement('p', null, 'Settings are locked for this trial. Replay uses the same baseline and repeatable random events. Different biological outcomes can still lead to different later events.'),
                     React.createElement('label', { htmlFor: tutorialId + '-trial-metric' }, 'Reading to graph'),
                     React.createElement('select', { id: tutorialId + '-trial-metric', 'data-aquarium-trial-field': 'metric', value: chartMetric[0], onChange: function (event) { upd('inquiryChartMetric', event.target.value); } }, AquariumInquiryCore.metrics.map(function (m) { return React.createElement('option', { key: m[0], value: m[0] }, m[1] + (m[2] ? ' (' + m[2] + ')' : '')); })),
-                    (function () { var points = exp.series, values = points.flatMap(function (point) { return [point.a[chartMetric[0]], point.b[chartMetric[0]]]; }); var low = Math.min.apply(Math, values) - .1, high = Math.max.apply(Math, values) + .1; var line = function (side) { return points.map(function (point) { return (36 + point.hour / Math.max(1,exp.elapsed) * 300).toFixed(2) + ',' + (125 - (point[side][chartMetric[0]]-low) / (high-low) * 100).toFixed(2); }).join(' '); }; return React.createElement('figure', null, React.createElement('svg', { className: 'aquarium-inquiry-chart', viewBox: '0 0 360 155', role: 'img', 'aria-label': chartMetric[1] + ' over ' + exp.elapsed + ' trial hours. A ' + exp.a.waterChem[chartMetric[0]].toFixed(3) + ', B ' + exp.b.waterChem[chartMetric[0]].toFixed(3) + ' ' + chartMetric[2] + '. Exact readings follow.' }, React.createElement('text', { x: 6, y: 18, fontSize: 10, fill: '#214c52' }, high.toFixed(2)), React.createElement('text', { x: 6, y: 127, fontSize: 10, fill: '#214c52' }, low.toFixed(2)), React.createElement('polyline', { points: line('a'), fill: 'none', stroke: '#246375', strokeWidth: 3 }), React.createElement('polyline', { points: line('b'), fill: 'none', stroke: '#946123', strokeWidth: 3, strokeDasharray: '6 4' }), React.createElement('text', { x: 36, y: 145, fontSize: 10, fill: '#214c52' }, '0 h'), React.createElement('text', { x: 300, y: 145, fontSize: 10, fill: '#214c52' }, exp.elapsed + ' h')), React.createElement('figcaption', null, chartMetric[1] + ' (' + (chartMetric[2] || 'unitless') + ') · A solid teal · B dashed brown. The vertical scale fits this trial.')); })(),
-                    React.createElement('div', { className: 'aquarium-inquiry-readings', 'aria-label': __alloT('stem.aquarium.paired_tank_readings','Paired tank readings') }, AquariumInquiryCore.metrics.map(function (m) { var a = exp.a.waterChem[m[0]], b = exp.b.waterChem[m[0]], initial = exp.baseline.waterChem[m[0]]; if (!Number.isFinite(a) || !Number.isFinite(b)) return null; return React.createElement('div', { key: m[0], className: 'aquarium-inquiry-reading' }, React.createElement('strong', null, m[1] + ' ' + m[2]), React.createElement('span', null, 'Start: ' + Number(initial).toFixed(3)), React.createElement('span', null, 'A: ' + a.toFixed(3) + ' · B: ' + b.toFixed(3)), React.createElement('span', null, 'B − A: ' + (b-a > 0 ? '+' : '') + (b-a).toFixed(3))); })),
+                    (function () { var points = exp.series, values = points.flatMap(function (point) { return [point.a[chartMetric[0]], point.b[chartMetric[0]]]; }); var low = Math.min.apply(Math, values) - .1, high = Math.max.apply(Math, values) + .1; var line = function (side) { return points.map(function (point) { return (36 + point.hour / Math.max(1,exp.elapsed) * 300).toFixed(2) + ',' + (125 - (point[side][chartMetric[0]]-low) / (high-low) * 100).toFixed(2); }).join(' '); }; return React.createElement('figure', null, React.createElement('svg', { className: 'aquarium-inquiry-chart', viewBox: '0 0 360 155', role: 'img', 'aria-describedby': tutorialId + '-trial-history-help', 'aria-label': chartMetric[1] + ' over ' + exp.elapsed + ' trial hours. A ' + exp.a.waterChem[chartMetric[0]].toFixed(3) + ', B ' + exp.b.waterChem[chartMetric[0]].toFixed(3) + ' ' + chartMetric[2] + '. Hourly readings are available in the data table.' }, React.createElement('text', { x: 6, y: 18, fontSize: 10, fill: '#214c52' }, high.toFixed(2)), React.createElement('text', { x: 6, y: 127, fontSize: 10, fill: '#214c52' }, low.toFixed(2)), React.createElement('polyline', { points: line('a'), fill: 'none', stroke: '#246375', strokeWidth: 3 }), React.createElement('polyline', { points: line('b'), fill: 'none', stroke: '#946123', strokeWidth: 3, strokeDasharray: '6 4' }), React.createElement('text', { x: 36, y: 145, fontSize: 10, fill: '#214c52' }, '0 h'), React.createElement('text', { x: 300, y: 145, fontSize: 10, fill: '#214c52' }, exp.elapsed + ' h')), React.createElement('figcaption', null, chartMetric[1] + ' (' + (chartMetric[2] || 'unitless') + ') · A solid teal · B dashed brown. The vertical scale fits this trial.')); })(),
+                    React.createElement('p', { id: tutorialId + '-trial-history-help', 'data-aquarium-trial-history-help': 'true' }, 'The hourly table contains the same ' + chartMetric[1] + ' readings as the graph, rounded to three decimal places. Trial hour 0 is the saved start at aquarium hour ' + (exp.baseline.simTick || 0) + '. On smaller screens, scroll the table sideways to compare every column.'),
+                    React.createElement('details', { 'data-aquarium-trial-history': 'true' },
+                      React.createElement('summary', { 'data-aquarium-trial-history-toggle': 'true' }, 'View hourly readings: ' + chartMetric[1]),
+                      React.createElement('div', { id: tutorialId + '-trial-history-region', 'data-aquarium-trial-history-region': 'true', role: 'region', 'aria-labelledby': tutorialId + '-trial-history-caption', tabIndex: 0 },
+                        React.createElement('table', { 'data-aquarium-trial-history-table': 'true' },
+                          React.createElement('caption', { id: tutorialId + '-trial-history-caption' }, chartMetric[1] + ' (' + (chartMetric[2] || 'unitless') + ') — paired trial readings'),
+                          React.createElement('thead', null, React.createElement('tr', null,
+                            React.createElement('th', { scope: 'col' }, 'Trial hour'),
+                            React.createElement('th', { scope: 'col' }, 'A · Original (' + (chartMetric[2] || 'unitless') + ')'),
+                            React.createElement('th', { scope: 'col' }, 'B · Changed (' + (chartMetric[2] || 'unitless') + ')'),
+                            React.createElement('th', { scope: 'col' }, 'B − A (' + (chartMetric[2] || 'unitless') + ')'))),
+                          React.createElement('tbody', null, exp.series.map(function (point) {
+                            var a = point.a[chartMetric[0]], b = point.b[chartMetric[0]], delta = b - a;
+                            return React.createElement('tr', { key: point.hour, 'data-aquarium-trial-history-hour': point.hour },
+                              React.createElement('th', { scope: 'row' }, String(point.hour) + (point.hour === 0 ? ' · Start' : '')),
+                              React.createElement('td', null, Number.isFinite(a) ? a.toFixed(3) : 'Not recorded'),
+                              React.createElement('td', null, Number.isFinite(b) ? b.toFixed(3) : 'Not recorded'),
+                              React.createElement('td', null, Number.isFinite(a) && Number.isFinite(b) ? (delta > 0 ? '+' : '') + delta.toFixed(3) : 'Not recorded'));
+                          }))))),
+                    React.createElement('div', { className: 'aquarium-inquiry-readings', role: 'group', 'aria-label': __alloT('stem.aquarium.paired_tank_readings','Paired tank readings') }, AquariumInquiryCore.metrics.map(function (m) { var a = exp.a.waterChem[m[0]], b = exp.b.waterChem[m[0]], initial = exp.baseline.waterChem[m[0]]; if (!Number.isFinite(a) || !Number.isFinite(b)) return null; return React.createElement('div', { key: m[0], className: 'aquarium-inquiry-reading' }, React.createElement('strong', null, m[1] + ' ' + m[2]), React.createElement('span', null, 'Start: ' + Number(initial).toFixed(3)), React.createElement('span', null, 'A: ' + a.toFixed(3) + ' · B: ' + b.toFixed(3)), React.createElement('span', null, 'B − A: ' + (b-a > 0 ? '+' : '') + (b-a).toFixed(3))); })),
                     React.createElement('label', { htmlFor: tutorialId + '-trial-reflection' }, 'Explain the evidence'),
                     React.createElement('textarea', { id: tutorialId + '-trial-reflection', 'data-aquarium-trial-field': 'reflection', rows: 3, maxLength: 2000, value: exp.reflection || '', placeholder: 'After … hours, A measured … and B measured … . This supports/changes my prediction because … . One limitation is … .', onChange: function (event) { var reflection = event.target.value; setLabToolData(function (prev) { var aq = prev._aquarium; return Object.assign({}, prev, { _aquarium: Object.assign({}, aq, { inquiryExperiment: Object.assign({}, aq.inquiryExperiment, { reflection: reflection }) }) }); }); } }),
                     React.createElement('details', null, React.createElement('summary', null, 'Review and share your evidence'),
@@ -23726,18 +23926,12 @@ var d = (labToolData && labToolData._aquarium) || {};
                 );
               }
               function focusAquariumWorkspaceSection(sectionId) {
-                var panel = ['aquarium-care-actions','aquarium-stock-selection','aquarium-life-support','aquarium-habitat-studio','aquarium-selected-plant-profile'].includes(sectionId) ? 'decide' : sectionId === 'aquarium-systems-investigation' ? 'investigate' : 'observe';
+                var sections = { 'aquarium-care-actions': 'decide', 'aquarium-stock-selection': 'decide', 'aquarium-life-support': 'decide', 'aquarium-habitat-studio': 'decide', 'aquarium-selected-plant-profile': 'decide', 'aquarium-systems-investigation': 'investigate', 'aquarium-tank-clock': 'observe', 'aquarium-water-evidence': 'observe' };
+                var panel = sections[sectionId];
+                if (!panel) return;
+                workspaceFocusRequest.current = { section: sectionId, panel: panel, tank: selectedTank, source: document.activeElement };
                 upd('aquariumWorkspacePanel', panel);
-                requestAnimationFrame(function () {
-                var section = document.getElementById(sectionId);
-                if (!section) return;
-                var ancestor = section.parentElement;
-                while (ancestor) { if (ancestor.tagName === 'DETAILS') ancestor.open = true; ancestor = ancestor.parentElement; }
-                if (section.tagName === 'DETAILS') section.open = true;
-                var focusTarget = section.tagName === 'DETAILS' ? section.querySelector('summary') : section;
-                if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus({ preventScroll: true });
-                section.scrollIntoView({ block: 'start' });
-                });
+                workspaceFocusRevision[1](function (revision) { return revision + 1; });
               }
               var tutorialActionTarget = {
                 habitat: { id: 'aquarium-tank-clock', label: 'Review your habitat' },
@@ -23758,13 +23952,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                 // once they've been playing. The hint icon + label make
                 // it easy to find again later.
                 React.createElement("section", {
-                  id: "aquarium-next-step", 'data-aquarium-next-step': "true",
+                  id: workspaceA11yId + "-next-step", 'data-aquarium-next-step': "true",
                   className: "rounded-xl border border-cyan-300 bg-cyan-50 p-3",
-                  'aria-labelledby': "aquarium-next-step-title"
+                  'aria-labelledby': workspaceA11yId + '-next-step-title'
                 },
                   React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                     React.createElement("div", { className: "min-w-0 flex-1" },
-                      React.createElement("h4", { id: "aquarium-next-step-title", className: "text-sm font-black text-cyan-950" }, tutorialCompletedCount === TUTORIAL_STEPS.length ? "Learning path complete" : currentTutorialLesson.title),
+                      React.createElement("h4", { id: workspaceA11yId + '-next-step-title', className: "text-sm font-black text-cyan-950" }, tutorialCompletedCount === TUTORIAL_STEPS.length ? "Learning path complete" : currentTutorialLesson.title),
                       React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-700" }, tutorialCompletedCount === TUTORIAL_STEPS.length ? "Test another prediction and use your notebook to explain the evidence." : currentTutorialLesson.objective)
                     ),
                     React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-xs font-bold text-cyan-900" }, tutorialCompletedCount + "/" + TUTORIAL_STEPS.length + " evidence checks")
@@ -23785,7 +23979,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     React.createElement("button", { type: "button", onClick: function () { focusAquariumWorkspaceSection('aquarium-systems-investigation'); }, className: "min-h-[44px] rounded-lg border border-cyan-300 bg-white px-3 py-2 text-xs font-bold text-cyan-900" }, "Systems investigation")
                   )
                 ),
-React.createElement("div", { id: "aquarium-tank-clock", tabIndex: -1, className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-3 border border-cyan-200/50" },
+React.createElement("div", { id: workspaceA11yId + '-aquarium-tank-clock', 'data-aquarium-workspace-section': 'aquarium-tank-clock', tabIndex: -1, className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-3 border border-cyan-200/50" },
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
@@ -23857,7 +24051,7 @@ React.createElement("div", { id: "aquarium-tank-clock", tabIndex: -1, className:
                       type: "button",
                       onClick: function () { stopAquariumRuntime(false); upd('simRunning', false); simStep(); },
                       className: "min-h-[44px] rounded-lg border border-cyan-600 bg-white px-3 py-1 text-xs font-bold text-cyan-900",
-                      'aria-label': __alloT('stem.aquarium.advance_one_aquarium_hour', 'Pause and observe one aquarium hour')
+                      'data-aquarium-observe-hour': 'true', 'aria-label': __alloT('stem.aquarium.observe_one_hour', 'Observe +1 h') + ': ' + __alloT('stem.aquarium.advance_one_aquarium_hour', 'Pause and observe one aquarium hour')
                     }, __alloT('stem.aquarium.observe_one_hour', 'Observe +1 h')),
                     React.createElement("span", { className: "ml-auto text-xs text-slate-600 font-mono" }, simTick + " h observed")
 
@@ -23893,7 +24087,7 @@ React.createElement("div", {
                   React.createElement("div", { className: "w-full text-xs text-slate-700" }, careGuidance.length ? careGuidance.map(function (item) { return item.label; }).join(", ") + " need attention." : "One reading is a snapshot; observe a trend to establish stability.")
                 ),
 React.createElement(AquariumLiveDisplay, {
-                  React: React, id: 'aquarium-live-tank', instanceKey: 'live-' + selectedTank, name: tank.name,
+                  React: React, id: workspaceA11yId + '-live-tank', instanceKey: 'live-' + selectedTank, name: tank.name,
                   mode: aquariumViewMode, paused: aquariumVisualPaused, sceneOptions: aquariumSceneOptions,
                   lightLabel: aquariumSceneOptions.model.daylight ? 'Model: daylight' : aquariumSceneOptions.model.lightPhase === 'fault' ? 'Model: light unavailable' : aquariumSceneOptions.model.lightPhase === 'off' ? 'Model: lights off' : 'Model: dark period',
                   label: tank.name + ' aquarium. ' + aquariumSceneOptions.fish.length + ' residents, ' + tankPlants.length + ' plants, and ' + habitatLayout.length + ' habitat objects. Use the resident selector for keyboard inspection.',
@@ -23906,7 +24100,7 @@ React.createElement(AquariumLiveDisplay, {
                   tankConfiguration: currentTankDefinition, onResizeTank: applyAquariumTankSize, onResizePlant: applyAquariumPlantSize, sizingNotice: d.aquariumSizingNotice,
                   onOverlay: function(value) { upd('aquariumSceneOverlay', value); },
                   onSelectEquipment: function() { focusAquariumWorkspaceSection('aquarium-life-support'); },
-                  onArrange: function() { upd('habitatStudioOpen', true); requestAnimationFrame(function() { focusAquariumWorkspaceSection('aquarium-habitat-studio'); }); }, t: __alloT
+                  onArrange: function() { upd('habitatStudioOpen', true); focusAquariumWorkspaceSection('aquarium-habitat-studio'); }, t: __alloT
                 },
                 React.createElement("div", {
 
@@ -24377,7 +24571,7 @@ React.createElement(AquariumLiveDisplay, {
                 )),
 renderWorkspaceNavigation(),
 renderCareEvidence(),
-React.createElement('section', { id: 'aquarium-panel-observe', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'observe', 'aria-label': __alloT('stem.aquarium.observe_workspace','observe workspace') }, waterChem && React.createElement("div", { id: "aquarium-water-evidence", tabIndex: -1, className: "bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50 rounded-2xl p-4 border border-cyan-200/60 shadow-sm" },
+React.createElement('section', { id: workspaceA11yId + '-panel-observe', 'data-aquarium-workspace-panel': 'observe', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'observe', 'aria-label': __alloT('stem.aquarium.observe_workspace','observe workspace') }, waterChem && React.createElement("div", { id: workspaceA11yId + '-aquarium-water-evidence', 'data-aquarium-workspace-section': 'aquarium-water-evidence', tabIndex: -1, className: "bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50 rounded-2xl p-4 border border-cyan-200/60 shadow-sm" },
 
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -24641,7 +24835,7 @@ React.createElement('section', { id: 'aquarium-panel-observe', className: 'aquar
                   );
 
                 })(),
-eventLog.length > 0 && React.createElement("div", { role: "log", 'aria-live': "polite", 'aria-relevant': "additions text", 'aria-label': __alloT('stem.aquarium.a11y_aquarium_event_log', 'Aquarium event log'), className: "bg-slate-50 rounded-xl p-2 border border-slate-400 max-h-32 overflow-y-auto" },
+eventLog.length > 0 && React.createElement("div", { role: "log", tabIndex: 0, 'data-aquarium-event-log': 'true', 'aria-live': "polite", 'aria-relevant': "additions text", 'aria-label': __alloT('stem.aquarium.a11y_aquarium_event_log', 'Aquarium event log'), className: "bg-slate-50 rounded-xl p-2 border border-slate-400 max-h-32 overflow-y-auto" },
 
                   React.createElement("h4", { className: "text-[0.6875rem] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
 
@@ -24652,7 +24846,7 @@ eventLog.length > 0 && React.createElement("div", { role: "log", 'aria-live': "p
                   })
 
                 )),
-React.createElement('section', { id: 'aquarium-panel-decide', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'decide', 'aria-label': __alloT('stem.aquarium.decide_workspace','decide workspace') }, React.createElement("section", { id: "aquarium-care-actions", ref: careActionsRef, 'data-aquarium-care-actions': 'true', tabIndex: -1, className: "space-y-2 rounded-xl border border-slate-200 bg-white p-3", "aria-labelledby": "aquarium-care-actions-title" }, React.createElement("h4", { id: "aquarium-care-actions-title", className: "text-sm font-black text-slate-900" }, "Care actions"),
+React.createElement('section', { id: workspaceA11yId + '-panel-decide', 'data-aquarium-workspace-panel': 'decide', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'decide', 'aria-label': __alloT('stem.aquarium.decide_workspace','decide workspace') }, React.createElement("section", { id: workspaceA11yId + '-aquarium-care-actions', 'data-aquarium-workspace-section': 'aquarium-care-actions', ref: careActionsRef, 'data-aquarium-care-actions': 'true', tabIndex: -1, className: "space-y-2 rounded-xl border border-slate-200 bg-white p-3", "aria-labelledby": workspaceA11yId + '-care-actions-title' }, React.createElement("h4", { id: workspaceA11yId + '-care-actions-title', className: "text-sm font-black text-slate-900" }, "Care actions"),
                   waterChem && React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-2" },
                     React.createElement("label", { htmlFor: feedingA11yId + "-water-change-percent", className: "text-[0.6875rem] font-bold text-blue-800" }, "Water change:"),
                     React.createElement("select", { id: feedingA11yId + "-water-change-percent", 'data-aquarium-water-change-percent': 'true', 'aria-describedby': feedingA11yId + '-water-preview', value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "min-h-[44px] rounded-lg border border-blue-500 bg-white px-2 py-1 text-xs font-bold text-blue-900 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-slate-900", 'aria-label': __alloT('stem.aquarium.a11y_water_change_percentage', 'Water change percentage') },
@@ -24814,7 +25008,7 @@ React.createElement('section', { id: 'aquarium-panel-decide', className: 'aquari
                     React.createElement("p", { className: "text-[0.6875rem] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
 
                   )),
-React.createElement("div", { id: "aquarium-stock-selection", ref: stockSectionRef, 'data-aquarium-stock-selection': 'true', role: "region", 'aria-label': "Add living stock", tabIndex: -1, className: "bg-white rounded-xl p-3 border border-slate-400" },
+React.createElement("div", { id: workspaceA11yId + '-aquarium-stock-selection', 'data-aquarium-workspace-section': 'aquarium-stock-selection', ref: stockSectionRef, 'data-aquarium-stock-selection': 'true', role: "region", 'aria-label': __alloT("stem.aquarium.a11y_add_living_stock", "Add living stock"), tabIndex: -1, className: "bg-white rounded-xl p-3 border border-slate-400" },
 
                   React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-1" },
                     React.createElement("div", null,
@@ -24936,7 +25130,7 @@ React.createElement("div", { id: "aquarium-stock-selection", ref: stockSectionRe
                   )
 
                 ),
-React.createElement("details", { id: "aquarium-life-support", className: "rounded-2xl border border-cyan-200 bg-white", "data-aquarium-disclosure": "aquarium-life-support" },
+React.createElement("details", { id: workspaceA11yId + '-aquarium-life-support', 'data-aquarium-workspace-section': 'aquarium-life-support', className: "rounded-2xl border border-cyan-200 bg-white", "data-aquarium-disclosure": "aquarium-life-support" },
                   React.createElement("summary", { className: "cursor-pointer p-3 text-sm font-black text-cyan-950" }, "Life support & maintenance", React.createElement("span", { className: "mt-1 block text-xs font-normal leading-relaxed text-slate-700" }, "Inspect filters, heating, lights and aeration; upgrade, service or repair equipment and review water-change records.")),
                   React.createElement("div", { className: "space-y-3 border-t border-cyan-100 p-2 sm:p-3" },
                     React.createElement("section", {
@@ -25466,10 +25660,10 @@ React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-g
 
                   // Selected plant field guide and live specimen analysis
                   selectedPlant && selectedPlantProfile && React.createElement("section", {
-                    id: "aquarium-selected-plant-profile",
+                    id: workspaceA11yId + '-aquarium-selected-plant-profile', 'data-aquarium-workspace-section': 'aquarium-selected-plant-profile', tabIndex: -1,
                     className: "mt-3 rounded-xl border border-emerald-200 bg-white/95 p-3 shadow-sm",
                     role: "region",
-                    'aria-labelledby': "aquarium-plant-profile-title",
+                    'aria-labelledby': workspaceA11yId + '-plant-profile-title',
                     'aria-live': "polite"
                   },
                     React.createElement("div", { className: "flex items-start justify-between gap-2" },
@@ -25477,7 +25671,7 @@ React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-g
                         React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" },
                           React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, selectedPlant.icon || '\uD83C\uDF3F'),
                           React.createElement("div", null,
-                            React.createElement("h4", { id: "aquarium-plant-profile-title", className: "text-sm font-black text-emerald-950" }, selectedPlant.name),
+                            React.createElement("h4", { id: workspaceA11yId + '-plant-profile-title', className: "text-sm font-black text-emerald-950" }, selectedPlant.name),
                             React.createElement("div", { className: "text-[0.625rem] italic text-slate-600" }, selectedPlantProfile.scientific + " \u2022 " + selectedPlantProfile.family)
                           )
                         ),
@@ -25709,15 +25903,15 @@ React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-g
                 ),
 React.createElement("section", {
                   className: "overflow-hidden rounded-2xl border border-teal-300/40 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 text-white shadow-lg",
-                  id: "aquarium-habitat-studio", tabIndex: -1, 'aria-labelledby': "aquarium-habitat-studio-title"
+                  id: workspaceA11yId + '-aquarium-habitat-studio', 'data-aquarium-workspace-section': 'aquarium-habitat-studio', 'data-aquarium-habitat-studio': 'true', tabIndex: -1, 'aria-labelledby': feedingA11yId + '-habitat-studio-title'
                 },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 p-3" },
                     React.createElement("div", null,
-                      React.createElement("h4", { id: "aquarium-habitat-studio-title", className: "text-sm font-black text-teal-100" }, "\uD83E\uDEA8 Spatial Habitat Studio"),
+                      React.createElement("h4", { id: feedingA11yId + '-habitat-studio-title', className: "text-sm font-black text-teal-100" }, "\uD83E\uDEA8 Spatial Habitat Studio"),
                       React.createElement("p", { className: "mt-0.5 max-w-2xl text-[0.5625rem] leading-relaxed text-cyan-100" }, "Design the tank in three dimensions, then test how shelter, territory boundaries, flow breaks, plant anchors, and open swimming space change living-system vitality.")
                     ),
                     React.createElement("button", {
-                      type: "button", 'aria-expanded': habitatStudioOpen, 'aria-controls': "aquarium-habitat-studio-body",
+                      type: "button", 'data-aquarium-habitat-toggle': 'true', 'aria-expanded': habitatStudioOpen, 'aria-controls': feedingA11yId + '-habitat-studio-body',
                       onClick: function() { upd('habitatStudioOpen', !habitatStudioOpen); },
                       className: "rounded-lg border border-teal-200/40 bg-white/10 px-3 py-1.5 text-[0.625rem] font-black text-teal-50 hover:bg-white/20"
                     }, habitatStudioOpen ? "Close studio" : (habitatLayout.length ? "Edit habitat" : "Build habitat"))
@@ -25736,20 +25930,21 @@ React.createElement("section", {
                       );
                     })
                   ),
-                  habitatStudioOpen && React.createElement("div", { id: "aquarium-habitat-studio-body", className: "space-y-3 border-t border-white/10 p-3" },
-                    React.createElement("section", { className: "overflow-hidden rounded-xl border border-amber-300/30 bg-gradient-to-br from-amber-950/80 via-slate-950/70 to-violet-950/70", 'aria-labelledby': "aquarium-habitat-missions-title" },
+                  React.createElement('style', null, "[data-aquarium-habitat-studio]{font-size:13px;line-height:1.6;overflow-wrap:anywhere}\n[data-aquarium-habitat-studio] [class*=\"text-[0.\"]{font-size:12px;line-height:1.5}\n[data-aquarium-habitat-studio] h4[id]{font-size:17px;line-height:1.4}\n[data-aquarium-habitat-studio] h5[id]{font-size:15px;line-height:1.5}\n[data-aquarium-habitat-studio] h6[id]{font-size:14px;line-height:1.5}\n[data-aquarium-habitat-studio] button:not(.absolute){min-width:44px;min-height:44px;padding:8px 10px;white-space:normal}\n[data-aquarium-habitat-studio] :is(button,textarea,input):focus-visible,[data-aquarium-mission-heading]:focus,[data-aquarium-mission-board-heading]:focus,[data-aquarium-habitat-inspector]:focus{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 5px #0f172a}\n[data-aquarium-habitat-studio] [hidden]{display:none!important}\n[data-aquarium-habitat-studio] textarea{font-size:14px;line-height:1.6;min-height:120px}\n[data-aquarium-mission-revision] label{min-height:44px;align-items:flex-start;gap:8px;padding:10px}\n[data-aquarium-mission-revision] input{flex:none;width:20px;height:20px;margin:0}\n[data-aquarium-mission-heading]{scroll-margin-block:20px}[data-aquarium-mission-section] [aria-current=step]{border:2px solid #fde68a}\n[data-aquarium-habitat-studio] [role=group].w-28{width:148px;grid-template-columns:repeat(3,minmax(44px,1fr))}\n[data-aquarium-habitat-studio] [role=group].max-h-32{max-height:240px;padding:6px}\n[data-aquarium-habitat-structure][aria-pressed=true]{border:2px solid #f0abfc;font-weight:800}\n[data-aquarium-habitat-structure][aria-pressed=true]::before{content:'✓';margin-right:6px}\n[data-aquarium-habitat-studio] .truncate{white-space:normal;overflow:visible;text-overflow:clip}\n@media(max-width:600px){[data-aquarium-habitat-studio] .grid-cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}[data-aquarium-habitat-studio] .flex{flex-wrap:wrap}[data-aquarium-habitat-studio] [role=group].flex{gap:6px}[data-aquarium-habitat-studio] .shrink-0{flex-shrink:1}[data-aquarium-habitat-studio] .grid{min-width:0}[data-aquarium-habitat-studio] .grid>*{min-width:0}}\n@media(forced-colors:active){[data-aquarium-habitat-studio] :is(button,textarea,input):focus-visible,[data-aquarium-mission-heading]:focus,[data-aquarium-mission-board-heading]:focus,[data-aquarium-habitat-inspector]:focus{outline-color:Highlight;box-shadow:none}[data-aquarium-habitat-studio] [aria-pressed=true],[data-aquarium-habitat-studio] [aria-current=step]{border:2px solid Highlight}[data-aquarium-habitat-studio] button[aria-disabled=true]{color:GrayText}}\n"),
+                  React.createElement("div", { id: feedingA11yId + '-habitat-studio-body', 'data-aquarium-habitat-body': 'true', hidden: !habitatStudioOpen, className: "space-y-3 border-t border-white/10 p-3" }, habitatStudioOpen && React.createElement(React.Fragment, null,
+                    React.createElement("section", { className: "overflow-hidden rounded-xl border border-amber-300/30 bg-gradient-to-br from-amber-950/80 via-slate-950/70 to-violet-950/70", 'data-aquarium-mission-section': 'true', 'aria-labelledby': habitatMissionA11yId + '-title' },
                       React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 p-2.5" },
                         React.createElement("div", null,
-                          React.createElement("h5", { id: "aquarium-habitat-missions-title", className: "text-[0.625rem] font-black text-amber-100" }, "🎯 3D Habitat Field Missions"),
+                          React.createElement("h5", { id: habitatMissionA11yId + '-title', ref: habitatMissionBoardHeadingRef, tabIndex: -1, 'data-aquarium-mission-board-heading': 'true', className: "text-[0.625rem] font-black text-amber-100" }, "🎯 3D Habitat Field Missions"),
                           React.createElement("p", { className: "text-[0.5rem] text-amber-200" }, "Predict → build → observe → revise and explain. Stars reflect mission success, fair testing, and organism welfare—not prediction accuracy.")
                         ),
                         React.createElement("div", { className: "flex items-center gap-1.5" },
                           React.createElement("span", { className: "rounded-full bg-amber-300 px-2 py-0.5 text-[0.5rem] font-black text-amber-950", role: "group", 'aria-label': habitatMissionPoints + " habitat mission points" }, "🏅 " + habitatMissionPoints + " pts"),
                           React.createElement("span", { className: "rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[0.5rem] font-bold text-white" }, Object.keys(habitatMissionCompleted).filter(function(missionId) { return habitatMissionCompleted[missionId] && habitatMissionCompleted[missionId].success; }).length + "/" + habitatMissionCatalog.length + " complete"),
-                          React.createElement("button", { type: "button", 'aria-expanded': habitatMissionPanelOpen, 'aria-controls': "aquarium-habitat-mission-body", onClick: function() { upd('habitatMissionPanelOpen', !habitatMissionPanelOpen); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[0.5rem] font-bold text-white" }, habitatMissionPanelOpen ? "Hide" : "Show")
+                          React.createElement("button", { type: "button", 'data-aquarium-mission-toggle': 'true', 'aria-label': habitatMissionPanelOpen ? 'Hide habitat missions' : 'Show habitat missions', 'aria-expanded': habitatMissionPanelOpen, 'aria-controls': habitatMissionA11yId + '-body', onClick: function() { upd('habitatMissionPanelOpen', !habitatMissionPanelOpen); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[0.5rem] font-bold text-white" }, habitatMissionPanelOpen ? "Hide" : "Show")
                         )
                       ),
-                      habitatMissionPanelOpen && React.createElement("div", { id: "aquarium-habitat-mission-body", className: "border-t border-white/10 p-2.5" },
+                      React.createElement("div", { id: habitatMissionA11yId + '-body', hidden: !habitatMissionPanelOpen, 'data-aquarium-mission-body': 'true', className: "border-t border-white/10 p-2.5" },
                         !activeHabitatMission
                           ? React.createElement(React.Fragment, null,
                               tankFish.length === 0 && React.createElement("div", { role: "note", className: "mb-2 rounded-lg border border-amber-300/30 bg-amber-400/10 p-2 text-[0.5rem] text-amber-100" }, "Add at least one resident before starting a mission so the model can evaluate organism-specific consequences."),
@@ -25758,11 +25953,11 @@ React.createElement("section", {
                                 return React.createElement("article", { key: mission.id, role: "listitem", className: "rounded-lg border p-2 " + (missionRecord && missionRecord.success ? "border-emerald-300/35 bg-emerald-400/10" : "border-white/15 bg-white/5") },
                                   React.createElement("div", { className: "flex items-start justify-between gap-1" },
                                     React.createElement("strong", { className: "text-[0.5625rem] text-white" }, mission.icon + " " + mission.title),
-                                    missionRecord && React.createElement("span", { className: "text-[0.5rem] text-amber-300", 'aria-label': missionRecord.stars + " of 3 stars" }, "★".repeat(Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))) + "☆".repeat(3 - Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))))
+                                    missionRecord && React.createElement("span", { className: "text-[0.5rem] text-amber-300", role: 'img', 'aria-label': missionRecord.stars + " of 3 stars" }, "★".repeat(Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))) + "☆".repeat(3 - Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))))
                                   ),
                                   React.createElement("p", { className: "mt-1 min-h-[3.3em] text-[0.4375rem] leading-relaxed text-slate-200" }, mission.brief),
                                   React.createElement("div", { className: "mt-1 text-[0.4375rem] text-slate-400" }, mission.requiredTicks + " observation ticks" + (missionRecord ? " • " + missionRecord.attempts + " attempt" + (missionRecord.attempts === 1 ? "" : "s") : "")),
-                                  React.createElement("button", { type: "button", disabled: tankFish.length === 0, onClick: function() { startHabitatMission(mission.id); }, className: "mt-1.5 w-full rounded border border-amber-200/30 bg-amber-300/15 px-2 py-1 text-[0.5rem] font-black text-amber-100 hover:bg-amber-300 hover:text-amber-950 disabled:opacity-40" }, missionRecord ? "Replay mission" : "Start mission")
+                                  React.createElement("button", { type: "button", 'data-aquarium-mission-action': 'start', 'data-aquarium-mission-start': mission.id, 'aria-label': (missionRecord ? 'Replay mission: ' : 'Start mission: ') + mission.title, disabled: tankFish.length === 0, onClick: function(event) { startHabitatMission(mission.id, event.currentTarget); }, className: "mt-1.5 w-full rounded border border-amber-200/30 bg-amber-300/15 px-2 py-1 text-[0.5rem] font-black text-amber-100 hover:bg-amber-300 hover:text-amber-950 disabled:opacity-40" }, missionRecord ? "Replay mission" : "Start mission")
                                 );
                               }))
                             )
@@ -25772,7 +25967,7 @@ React.createElement("section", {
                                   React.createElement("strong", { className: "text-[0.6875rem] text-white" }, activeHabitatMission.icon + " " + activeHabitatMission.title),
                                   React.createElement("p", { className: "mt-0.5 text-[0.5rem] text-slate-200" }, activeHabitatMission.brief)
                                 ),
-                                React.createElement("button", { type: "button", onClick: function() { updMulti({ habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionRevision: '', habitatMissionReflection: '' }); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[0.5rem] font-bold text-white" }, "Mission board")
+                                React.createElement("button", { type: "button", 'data-aquarium-mission-action': 'board', onClick: returnToHabitatMissionBoard, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[0.5rem] font-bold text-white" }, "Mission board")
                               ),
                               React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1", role: "list", 'aria-label': __alloT('stem.aquarium.a11y_mission_learning_loop_stages', 'Mission learning-loop stages') },
                                 [
@@ -25785,18 +25980,18 @@ React.createElement("section", {
                                 })
                               ),
                               habitatMissionStage === 'predict' && React.createElement("div", { className: "mt-2 rounded-lg border border-violet-300/25 bg-violet-400/10 p-2" },
-                                React.createElement("strong", { className: "text-[0.5625rem] text-violet-100" }, "Prediction: which outcome will improve the most?"),
+                                React.createElement("h6", { id: habitatMissionA11yId + "-predict", ref: function (node) { habitatMissionStageRefs.current.predict = node; }, tabIndex: -1, 'data-aquarium-mission-heading': 'predict', className: "text-[0.5625rem] text-violet-100" }, "Prediction: which outcome will improve the most?"),
                                 React.createElement("p", { className: "mt-0.5 text-[0.4375rem] text-violet-200" }, "Commit before editing. Any prediction can earn full inquiry credit when you run a fair test and revise from evidence."),
                                 React.createElement("div", { className: "mt-1.5 grid grid-cols-2 gap-1 sm:grid-cols-4", role: "group", 'aria-label': __alloT('stem.aquarium.a11y_choose_mission_prediction', 'Choose mission prediction') },
                                   [
                                     { id: 'shelter', label: '🏠 Shelter' }, { id: 'territory', label: '⚑ Territory' }, { id: 'openSwim', label: '🌊 Open swim' }, { id: 'minimum', label: '🛟 Weakest resident' }
-                                  ].map(function(option) { return React.createElement("button", { key: option.id, type: "button", onClick: function() { chooseHabitatMissionPrediction(option.id); }, className: "rounded border border-violet-200/25 bg-slate-950/35 px-2 py-1.5 text-[0.5rem] font-bold text-violet-100 hover:bg-violet-300 hover:text-violet-950" }, option.label); })
+                                  ].map(function(option) { return React.createElement("button", { key: option.id, type: "button", 'data-aquarium-mission-prediction': option.id, onClick: function(event) { chooseHabitatMissionPrediction(option.id, event.currentTarget); }, className: "rounded border border-violet-200/25 bg-slate-950/35 px-2 py-1.5 text-[0.5rem] font-bold text-violet-100 hover:bg-violet-300 hover:text-violet-950" }, option.label); })
                                 )
                               ),
                               habitatMissionStage === 'build' && React.createElement("div", { className: "mt-2 rounded-lg border border-cyan-300/25 bg-cyan-400/10 p-2" },
                                 React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                                   React.createElement("div", null,
-                                    React.createElement("strong", { className: "text-[0.5625rem] text-cyan-100" }, "Build one controlled intervention"),
+                                    React.createElement("h6", { id: habitatMissionA11yId + "-build", ref: function (node) { habitatMissionStageRefs.current.build = node; }, tabIndex: -1, 'data-aquarium-mission-heading': 'build', className: "text-[0.5625rem] text-cyan-100" }, "Build one controlled intervention"),
                                     React.createElement("p", { className: "text-[0.4375rem] text-cyan-200" }, "Prediction locked: " + habitatMissionPrediction + ". Use 3D, plan controls, or a what-if forecast.")
                                   ),
                                   React.createElement("span", { role: "status", className: "rounded-full px-2 py-0.5 text-[0.4375rem] font-black " + (habitatMissionLayoutChanged ? "bg-emerald-300 text-emerald-950" : "bg-slate-700 text-slate-200") }, habitatMissionLayoutChanged ? "Intervention detected" : "No habitat change yet")
@@ -25808,13 +26003,13 @@ React.createElement("section", {
                                     { label: 'Minimum fit', before: habitatMissionBaseline.minimum, now: habitatMissionCurrent.minimum }
                                   ].map(function(metric) { return React.createElement("div", { key: metric.label, className: "rounded bg-slate-950/40 p-1 text-[0.4375rem] text-slate-200" }, React.createElement("strong", { className: "block text-[0.5625rem] text-white" }, metric.before + " → " + metric.now), metric.label); })
                                 ),
-                                React.createElement("button", { type: "button", disabled: !habitatMissionLayoutChanged, onClick: beginHabitatMissionObservation, className: "mt-2 w-full rounded border border-cyan-200/30 bg-cyan-300/15 px-2 py-1.5 text-[0.5rem] font-black text-cyan-100 hover:bg-cyan-300 hover:text-cyan-950 disabled:opacity-40" }, "Lock intervention and observe")
+                                React.createElement("button", { type: "button", disabled: !habitatMissionLayoutChanged, 'data-aquarium-mission-action': 'lock', onClick: beginHabitatMissionObservation, className: "mt-2 w-full rounded border border-cyan-200/30 bg-cyan-300/15 px-2 py-1.5 text-[0.5rem] font-black text-cyan-100 hover:bg-cyan-300 hover:text-cyan-950 disabled:opacity-40" }, "Lock intervention and observe")
                               ),
                               habitatMissionStage === 'observe' && React.createElement("div", { className: "mt-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 p-2" },
                                 React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                                   React.createElement("div", null,
-                                    React.createElement("strong", { className: "text-[0.5625rem] text-emerald-100" }, "Observe organism response in 3D"),
-                                    React.createElement("p", { className: "text-[0.4375rem] text-emerald-200" }, "Behavior paths are active. Watch movement range, stress, vitality, and exchange evidence.")
+                                    React.createElement("h6", { id: habitatMissionA11yId + "-observe", ref: function (node) { habitatMissionStageRefs.current.observe = node; }, tabIndex: -1, 'data-aquarium-mission-heading': 'observe', className: "text-[0.5625rem] text-emerald-100" }, "Observe organism response"),
+                                    React.createElement("p", { className: "text-[0.4375rem] text-emerald-200" }, "Use plan overlays or the 3D view to observe residents. Compare movement range, stress, vitality, and exchange evidence.")
                                   ),
                                   React.createElement("button", { type: "button", onClick: function() { if (simRunning) { upd('simRunning', false); stopAquariumRuntime(false); } else { var missionSpeed = simSpeed || 1; updMulti({ simRunning: true, simSpeed: missionSpeed }); startAquaAmbient(); startAquaSimInterval(missionSpeed); } }, className: "rounded border border-emerald-200/30 px-2 py-1 text-[0.5rem] font-black " + (simRunning ? "bg-rose-400/20 text-rose-100" : "bg-emerald-300 text-emerald-950") }, simRunning ? "Pause observation" : "Run observation")
                                 ),
@@ -25825,15 +26020,15 @@ React.createElement("section", {
                                   React.createElement("span", null, "Vitality " + habitatMissionCurrent.vitality + " (" + (habitatMissionLiveEvaluation.deltas.vitality >= 0 ? "+" : "") + habitatMissionLiveEvaluation.deltas.vitality + ")"),
                                   React.createElement("span", null, "Stress " + habitatMissionCurrent.stress + " (" + (habitatMissionLiveEvaluation.deltas.stress >= 0 ? "+" : "") + habitatMissionLiveEvaluation.deltas.stress + ")")
                                 ),
-                                React.createElement("button", { type: "button", disabled: habitatMissionElapsedTicks < activeHabitatMission.requiredTicks, onClick: evaluateActiveHabitatMission, className: "mt-2 w-full rounded border border-emerald-200/30 bg-emerald-300/15 px-2 py-1.5 text-[0.5rem] font-black text-emerald-100 hover:bg-emerald-300 hover:text-emerald-950 disabled:opacity-40" }, habitatMissionElapsedTicks < activeHabitatMission.requiredTicks ? "Observe " + (activeHabitatMission.requiredTicks - habitatMissionElapsedTicks) + " more ticks" : "Evaluate mission evidence")
+                                React.createElement("button", { type: "button", disabled: habitatMissionElapsedTicks < activeHabitatMission.requiredTicks, 'data-aquarium-mission-action': 'evaluate', onClick: evaluateActiveHabitatMission, className: "mt-2 w-full rounded border border-emerald-200/30 bg-emerald-300/15 px-2 py-1.5 text-[0.5rem] font-black text-emerald-100 hover:bg-emerald-300 hover:text-emerald-950 disabled:opacity-40" }, habitatMissionElapsedTicks < activeHabitatMission.requiredTicks ? "Observe " + (activeHabitatMission.requiredTicks - habitatMissionElapsedTicks) + " more ticks" : "Evaluate mission evidence")
                               ),
                               habitatMissionStage === 'reflect' && habitatMissionOutcome && React.createElement("div", { className: "mt-2 rounded-lg border p-2 " + (habitatMissionOutcome.success ? "border-emerald-300/30 bg-emerald-400/10" : "border-amber-300/30 bg-amber-400/10") },
                                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                                   React.createElement("div", null,
-                                    React.createElement("strong", { className: "text-[0.625rem] text-white" }, habitatMissionOutcome.success ? "Targets met — explain why" : "Revise using the evidence"),
+                                    React.createElement("h6", { id: habitatMissionA11yId + "-reflect", ref: function (node) { habitatMissionStageRefs.current.reflect = node; }, tabIndex: -1, 'data-aquarium-mission-heading': 'reflect', className: "text-[0.625rem] text-white" }, habitatMissionOutcome.success ? "Targets met — explain why" : "Revise using the evidence"),
                                     React.createElement("p", { className: "text-[0.4375rem] text-slate-200" }, "Prediction " + (habitatMissionOutcome.predictionMatched ? "matched" : "differed from") + " the strongest change; this does not affect stars • vitality " + (habitatMissionOutcome.vitalityProtected ? "protected" : "was not protected"))
                                   ),
-                                  React.createElement("span", { className: "text-sm text-amber-300", 'aria-label': habitatMissionOutcome.stars + " of 3 investigation stars earned" }, "★".repeat(habitatMissionOutcome.stars) + "☆".repeat(3 - habitatMissionOutcome.stars))
+                                  React.createElement("span", { className: "text-sm text-amber-300", role: 'img', 'aria-label': habitatMissionOutcome.stars + " of 3 investigation stars earned" }, "★".repeat(habitatMissionOutcome.stars) + "☆".repeat(3 - habitatMissionOutcome.stars))
                                 ),
                                 React.createElement("p", { className: "mt-1 text-[0.4375rem] font-bold text-amber-200" }, "Investigation stars: mission targets • controlled observation • welfare protection"),
                                 React.createElement("div", { className: "mt-1.5 grid gap-1 sm:grid-cols-2", role: "list", 'aria-label': __alloT('stem.aquarium.a11y_mission_success_criteria', 'Mission success criteria') }, habitatMissionOutcome.conditions.map(function(condition) { return React.createElement("div", { key: condition.id, role: "listitem", className: "rounded border px-1.5 py-1 text-[0.4375rem] " + (condition.met ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100" : "border-rose-300/25 bg-rose-400/10 text-rose-100") }, (condition.met ? "✓ " : "○ ") + condition.label); })),
@@ -25846,16 +26041,17 @@ React.createElement("section", {
                                   ].map(function(option) {
                                     var selectedRevision = habitatMissionRevision === option.id;
                                     return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1 rounded border p-1.5 text-[0.4375rem] font-bold " + (selectedRevision ? "border-violet-200 bg-violet-200 text-violet-950" : "border-white/15 text-violet-100") },
-                                      React.createElement("input", { type: "radio", name: "aquarium-habitat-mission-revision", value: option.id, checked: selectedRevision, onChange: function() { upd('habitatMissionRevision', option.id); }, className: "mt-0.5 h-3.5 w-3.5 accent-violet-300" }),
+                                      React.createElement("input", { type: "radio", name: habitatMissionA11yId + '-revision', 'data-aquarium-mission-revision-choice': option.id, value: option.id, checked: selectedRevision, onChange: function() { upd('habitatMissionRevision', option.id); }, className: "mt-0.5 h-3.5 w-3.5 accent-violet-300" }),
                                       React.createElement("span", null, option.label)
                                     );
                                   }))
                                 ),
-                                React.createElement("label", { htmlFor: "aquarium-habitat-mission-reflection", className: "mt-2 block text-[0.5rem] font-black text-white" }, "Prediction revision and evidence"),
-                                React.createElement("textarea", { id: "aquarium-habitat-mission-reflection", value: habitatMissionReflection, maxLength: 600, onChange: function(event) { upd('habitatMissionReflection', event.target.value.slice(0, 600)); }, placeholder: __alloT('stem.aquarium.state_whether_the_evidence_supported_or_chan','State whether the evidence supported or changed your prediction. Cite at least two numbers or observations.'), className: "mt-1 min-h-[66px] w-full rounded-lg border border-white/20 bg-slate-950/60 p-2 text-[0.5rem] text-white placeholder:text-slate-400" }),
+                                React.createElement("label", { htmlFor: habitatMissionA11yId + '-reflection', className: "mt-2 block text-[0.5rem] font-black text-white" }, "Prediction revision and evidence"),
+                                React.createElement("textarea", { id: habitatMissionA11yId + '-reflection', 'data-aquarium-mission-reflection': 'true', 'aria-describedby': habitatMissionA11yId + '-reflection-help', value: habitatMissionReflection, minLength: 20, maxLength: 600, onChange: function(event) { upd('habitatMissionReflection', event.target.value.slice(0, 600)); }, placeholder: __alloT('stem.aquarium.state_whether_the_evidence_supported_or_chan','State whether the evidence supported or changed your prediction. Cite at least two numbers or observations.'), className: "mt-1 min-h-[66px] w-full rounded-lg border border-white/20 bg-slate-950/60 p-2 text-[0.5rem] text-white placeholder:text-slate-400" }),
+                                React.createElement("p", { id: habitatMissionA11yId + '-reflection-help', className: "mt-2 text-xs text-violet-100" }, "Choose a revision option and write at least 20 characters (up to 600) before saving."),
                                 React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-1" },
-                                  React.createElement("button", { type: "button", disabled: !habitatMissionRevision || habitatMissionReflection.trim().length < 20, 'aria-disabled': habitatMissionRevision && habitatMissionReflection.trim().length >= 20 ? 'false' : 'true', onClick: recordHabitatMissionReflection, className: "flex-1 rounded border border-amber-200/30 bg-amber-300 px-2 py-1.5 text-[0.5rem] font-black text-amber-950 disabled:opacity-40" }, habitatMissionOutcome.success ? "Save revision and claim points" : "Record revision and return"),
-                                  !habitatMissionOutcome.success && React.createElement("button", { type: "button", onClick: retryHabitatMission, className: "rounded border border-white/20 bg-white/5 px-2 py-1.5 text-[0.5rem] font-bold text-white" }, "Retry from current tank")
+                                  React.createElement("button", { type: "button", 'aria-describedby': habitatMissionA11yId + '-reflection-help', disabled: !habitatMissionRevision || habitatMissionReflection.trim().length < 20, 'aria-disabled': habitatMissionRevision && habitatMissionReflection.trim().length >= 20 ? 'false' : 'true', 'data-aquarium-mission-action': 'save', onClick: recordHabitatMissionReflection, className: "flex-1 rounded border border-amber-200/30 bg-amber-300 px-2 py-1.5 text-[0.5rem] font-black text-amber-950 disabled:opacity-40" }, habitatMissionOutcome.success ? "Save revision and claim points" : "Record revision and return"),
+                                  !habitatMissionOutcome.success && React.createElement("button", { type: "button", 'data-aquarium-mission-action': 'retry', onClick: retryHabitatMission, className: "rounded border border-white/20 bg-white/5 px-2 py-1.5 text-[0.5rem] font-bold text-white" }, "Retry from current tank")
                                 )
                               )
                             )
@@ -25945,7 +26141,7 @@ React.createElement("section", {
                                   anchorItem && React.createElement("svg", { className: "pointer-events-none absolute inset-0 z-[4] h-full w-full", viewBox: "0 0 100 100", preserveAspectRatio: "none", 'aria-hidden': "true" }, React.createElement("line", { x1: markerLeft, y1: trailTop, x2: anchorLeft, y2: anchorTop, stroke: trailColor, strokeWidth: focused ? 0.9 : 0.45, strokeDasharray: "2 2", opacity: focused ? 0.9 : 0.45 })),
                                   React.createElement("div", { className: "pointer-events-none absolute z-[4] rounded-[50%] border border-dashed", 'aria-hidden': "true", style: { left: trailLeft + '%', top: Math.max(1, Math.min(99 - trailHeight, trailTop - trailHeight / 2)) + '%', width: trailWidth + '%', height: trailHeight + '%', borderColor: trailColor, backgroundColor: trailColor + '12', boxShadow: focused ? '0 0 0 3px ' + trailColor + '55' : 'none' } }),
                                   focused && React.createElement("div", { className: "pointer-events-none absolute z-[8] max-w-[150px] rounded bg-slate-950/90 px-1.5 py-1 text-[0.375rem] font-bold leading-tight text-white", style: { left: Math.min(72, markerLeft + 4) + '%', top: Math.max(2, trailTop - 10) + '%' } }, fitItem.behaviorLabel),
-                                  React.createElement("button", { type: "button", onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': focused, 'aria-label': "Focus " + fitItem.name + ". " + fitItem.behaviorLabel + ". " + fitItem.zone + " water occupancy. Habitat fit " + fitItem.score + " out of 100.", title: fitItem.name + " • " + fitItem.behaviorLabel + " • fit " + fitItem.score, className: "absolute z-[7] flex h-8 w-8 items-center justify-center rounded-full border bg-slate-950/85 text-base shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white", style: { left: markerLeft + '%', top: trailTop + '%', transform: 'translate(-50%, -50%)', borderColor: trailColor, boxShadow: focused ? '0 0 0 4px ' + trailColor + '66' : '0 3px 10px rgba(0,0,0,.45)' } }, fitItem.icon)
+                                  React.createElement("button", { type: "button", 'data-aquarium-habitat-resident': fitItem.id, onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': focused, 'aria-label': "Focus " + fitItem.name + ". " + fitItem.behaviorLabel + ". " + fitItem.zone + " water occupancy. Habitat fit " + fitItem.score + " out of 100.", title: fitItem.name + " • " + fitItem.behaviorLabel + " • fit " + fitItem.score, className: "absolute z-[7] flex h-8 w-8 items-center justify-center rounded-full border bg-slate-950/85 text-base shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white", style: { left: markerLeft + '%', top: trailTop + '%', transform: 'translate(-50%, -50%)', borderColor: trailColor, boxShadow: focused ? '0 0 0 4px ' + trailColor + '66' : '0 3px 10px rgba(0,0,0,.45)' } }, fitItem.icon)
                                 );
                               }),
                               habitatLayout.map(function(item) {
@@ -25972,9 +26168,9 @@ React.createElement("section", {
                           React.createElement("span", null, "green excellent • cyan workable • amber strained • rose poor"),
                           React.createElement("span", null, "Select a resident to trace its ecosystem exchanges")
                         ),
-                        habitatOverlay === 'interactions' && React.createElement("section", { className: "mt-1.5 rounded-lg border border-fuchsia-300/20 bg-slate-950/55 p-2 text-[0.5rem] text-slate-100", 'aria-labelledby': "habitat-interaction-title" },
+                        habitatOverlay === 'interactions' && React.createElement("section", { className: "mt-1.5 rounded-lg border border-fuchsia-300/20 bg-slate-950/55 p-2 text-[0.5rem] text-slate-100", 'aria-labelledby': feedingA11yId + '-habitat-interaction-title' },
                           React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
-                            React.createElement("strong", { id: "habitat-interaction-title", className: "text-[0.5625rem] text-white" }, "Living interaction network"),
+                            React.createElement("strong", { id: feedingA11yId + '-habitat-interaction-title', className: "text-[0.5625rem] text-white" }, "Living interaction network"),
                             React.createElement("span", { className: "rounded-full bg-fuchsia-300/10 px-2 py-0.5 font-bold text-fuchsia-100" }, habitatVisibleInteractionLinks.length + " shown / " + habitatInteractionNetwork.total + " exchanges")
                           ),
                           React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-1", role: "group", 'aria-label': __alloT('stem.aquarium.a11y_filter_interaction_pathways_by_modeled_strength', 'Filter interaction pathways by modeled strength') },
@@ -26066,39 +26262,39 @@ React.createElement("section", {
                                   React.createElement("p", { className: "mt-0.5 leading-snug text-slate-300" }, interaction.detail + " " + interaction.strength + "% modeled pathway strength. " + interaction.healthSignal),
                                   React.createElement("div", { className: "mt-1 flex items-center justify-between gap-2" },
                                     React.createElement("span", { className: "text-[0.4375rem] text-slate-400" }, interaction.selected ? "Focused in both views" : "Select this pathway to trace it"),
-                                    React.createElement("button", { type: "button", 'aria-pressed': interaction.selected === true, 'aria-label': (interaction.selected ? "Clear focus from " : "Focus ") + interaction.label, onClick: function() { updMulti({ habitatSelectedInteractionId: interaction.selected ? null : interaction.id, habitatOverlay: 'interactions' }); }, className: "rounded border border-fuchsia-200/30 bg-fuchsia-200/10 px-1.5 py-0.5 text-[0.4375rem] font-bold text-fuchsia-100" }, interaction.selected ? "Clear focus" : "Focus path")
+                                    React.createElement("button", { type: "button", 'data-aquarium-habitat-path': interaction.id, 'aria-pressed': interaction.selected === true, 'aria-label': (interaction.selected ? "Clear focus: " : "Focus path: ") + interaction.label, onClick: function() { updMulti({ habitatSelectedInteractionId: interaction.selected ? null : interaction.id, habitatOverlay: 'interactions' }); }, className: "rounded border border-fuchsia-200/30 bg-fuchsia-200/10 px-1.5 py-0.5 text-[0.4375rem] font-bold text-fuchsia-100" }, interaction.selected ? "Clear focus" : "Focus path")
                                   )
                                 );
                               }))
                             : React.createElement("p", { className: "mt-1.5 rounded-md border border-dashed border-white/15 p-2 text-slate-300" }, "No spatial exchanges are visible yet. Add a living plant plus a grazer, browser, cover-dependent resident, cleaner, detritivore, or compatible symbiotic pair.")
                         )
                       ),
-                      React.createElement("aside", { className: "rounded-xl border border-white/10 bg-slate-950/45 p-2", 'aria-label': __alloT('stem.aquarium.a11y_selected_habitat_object_inspector', 'Selected habitat object inspector') },
+                      React.createElement("aside", { ref: habitatInspectorRef, tabIndex: -1, 'data-aquarium-habitat-inspector': 'true', className: "rounded-xl border border-white/10 bg-slate-950/45 p-2", 'aria-label': __alloT('stem.aquarium.a11y_selected_habitat_object_inspector', 'Selected habitat object inspector') },
                         selectedHabitatItem && selectedHabitatType
                           ? React.createElement(React.Fragment, null,
-                              React.createElement("div", { className: "flex items-center justify-between gap-2" }, React.createElement("strong", { className: "text-[0.625rem] text-white" }, selectedHabitatType.icon + " " + selectedHabitatType.label), React.createElement("button", { type: "button", onClick: removeSelectedHabitatItem, className: "rounded border border-rose-300/30 bg-rose-400/10 px-1.5 py-0.5 text-[0.5rem] font-bold text-rose-200" }, "Remove")),
-                              React.createElement("p", { className: "mt-1 text-[0.5rem] text-slate-300" }, "Position " + selectedHabitatItem.x.toFixed(1) + " wide, " + selectedHabitatItem.z.toFixed(1) + " deep \u2022 rotation " + Math.round(selectedHabitatItem.rotation) + "\u00B0 \u2022 scale " + selectedHabitatItem.scale.toFixed(2)),
+                              React.createElement("div", { className: "flex items-center justify-between gap-2" }, React.createElement("strong", { className: "text-[0.625rem] text-white" }, selectedHabitatType.icon + " " + selectedHabitatType.label), React.createElement("button", { type: "button", 'data-aquarium-habitat-remove': 'true', 'aria-label': "Remove " + selectedHabitatType.label, onClick: removeSelectedHabitatItem, className: "rounded border border-rose-300/30 bg-rose-400/10 px-1.5 py-0.5 text-[0.5rem] font-bold text-rose-200" }, "Remove")),
+                              React.createElement("p", { id: habitatEditorId + '-position', 'data-aquarium-habitat-position': 'true', className: "mt-1 text-[0.5rem] text-slate-300" }, "Position " + selectedHabitatItem.x.toFixed(1) + " wide, " + selectedHabitatItem.z.toFixed(1) + " deep \u2022 rotation " + Math.round(selectedHabitatItem.rotation) + "\u00B0 \u2022 scale " + selectedHabitatItem.scale.toFixed(2)),
                               React.createElement("div", { className: "mx-auto mt-2 grid w-28 grid-cols-3 gap-1", role: "group", 'aria-label': __alloT('stem.aquarium.a11y_move_selected_habitat_object', 'Move selected habitat object') },
-                                React.createElement("span", null), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0, -0.5); }, 'aria-label': __alloT('stem.aquarium.a11y_move_toward_the_back', 'Move toward the back'), className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2191"), React.createElement("span", null),
-                                React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(-0.5, 0); }, 'aria-label': __alloT('stem.aquarium.a11y_move_left', 'Move left'), className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2190"), React.createElement("span", { className: "flex items-center justify-center text-xs", 'aria-hidden': "true" }, selectedHabitatType.icon), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0.5, 0); }, 'aria-label': __alloT('stem.aquarium.a11y_move_right', 'Move right'), className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2192"),
-                                React.createElement("span", null), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0, 0.5); }, 'aria-label': __alloT('stem.aquarium.a11y_move_toward_the_front', 'Move toward the front'), className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2193"), React.createElement("span", null)
+                                React.createElement("span", null), React.createElement("button", { type: "button", 'data-aquarium-habitat-move': 'back', 'aria-describedby': habitatEditorId + '-position', onClick: function() { moveSelectedHabitatItem(0, -0.5); }, 'aria-label': __alloT('stem.aquarium.a11y_move_toward_the_back', 'Move toward the back'), className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2191"), React.createElement("span", null),
+                                React.createElement("button", { type: "button", 'data-aquarium-habitat-move': 'left', 'aria-describedby': habitatEditorId + '-position', onClick: function() { moveSelectedHabitatItem(-0.5, 0); }, 'aria-label': __alloT('stem.aquarium.a11y_move_left', 'Move left'), className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2190"), React.createElement("span", { className: "flex items-center justify-center text-xs", 'aria-hidden': "true" }, selectedHabitatType.icon), React.createElement("button", { type: "button", 'data-aquarium-habitat-move': 'right', 'aria-describedby': habitatEditorId + '-position', onClick: function() { moveSelectedHabitatItem(0.5, 0); }, 'aria-label': __alloT('stem.aquarium.a11y_move_right', 'Move right'), className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2192"),
+                                React.createElement("span", null), React.createElement("button", { type: "button", 'data-aquarium-habitat-move': 'front', 'aria-describedby': habitatEditorId + '-position', onClick: function() { moveSelectedHabitatItem(0, 0.5); }, 'aria-label': __alloT('stem.aquarium.a11y_move_toward_the_front', 'Move toward the front'), className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2193"), React.createElement("span", null)
                               ),
                               React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1" },
-                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation - 15 }, selectedHabitatType.label + ' rotated left.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "\u21BA Rotate"),
-                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation + 15 }, selectedHabitatType.label + ' rotated right.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "Rotate \u21BB"),
-                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ scale: Math.max(0.65, selectedHabitatItem.scale - 0.1) }, selectedHabitatType.label + ' made smaller.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "\u2212 Size"),
-                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ scale: Math.min(1.6, selectedHabitatItem.scale + 0.1) }, selectedHabitatType.label + ' made larger.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "+ Size")
+                                React.createElement("button", { type: "button", 'data-aquarium-habitat-transform': 'rotate-left', 'aria-label': "Rotate left: " + selectedHabitatType.label, 'aria-describedby': habitatEditorId + '-position', onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation - 15 }, selectedHabitatType.label + ' rotated left.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "\u21BA Rotate"),
+                                React.createElement("button", { type: "button", 'data-aquarium-habitat-transform': 'rotate-right', 'aria-label': "Rotate right: " + selectedHabitatType.label, 'aria-describedby': habitatEditorId + '-position', onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation + 15 }, selectedHabitatType.label + ' rotated right.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "Rotate \u21BB"),
+                                React.createElement("button", { type: "button", 'data-aquarium-habitat-transform': 'smaller', 'aria-label': "Size: decrease: " + selectedHabitatType.label, 'aria-describedby': habitatEditorId + '-position', onClick: function() { updateSelectedHabitatItem({ scale: Math.max(0.65, selectedHabitatItem.scale - 0.1) }, selectedHabitatType.label + ' made smaller.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "\u2212 Size"),
+                                React.createElement("button", { type: "button", 'data-aquarium-habitat-transform': 'larger', 'aria-label': "Size: increase: " + selectedHabitatType.label, 'aria-describedby': habitatEditorId + '-position', onClick: function() { updateSelectedHabitatItem({ scale: Math.min(1.6, selectedHabitatItem.scale + 0.1) }, selectedHabitatType.label + ' made larger.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[0.5rem] font-bold" }, "+ Size")
                               ),
                               React.createElement("div", { className: "mt-2 rounded-lg border border-white/10 bg-white/5 p-1.5 text-[0.5rem] leading-relaxed text-slate-200" }, "Effects: shelter " + selectedHabitatType.shelter + ", territory " + selectedHabitatType.territory + ", flow break " + selectedHabitatType.flowBreak + ", plant anchors " + selectedHabitatType.plantAnchors + ", spawning " + selectedHabitatType.spawning + ".")
                             )
                           : React.createElement("p", { className: "text-[0.5625rem] leading-relaxed text-slate-300" }, "Select a structure in either view or from this list to move, rotate, resize, or remove it."),
-                        habitatLayout.length > 0 && React.createElement("div", { className: "mt-2 max-h-32 space-y-1 overflow-y-auto", role: "group", 'aria-label': __alloT('stem.aquarium.a11y_habitat_structures', 'Habitat structures') }, habitatLayout.map(function(item) { var type = habitatCatalog.find(function(candidate) { return candidate.id === item.type; }); return type && React.createElement("button", { key: item.id, type: "button", onClick: function() { upd('selectedHabitatItemId', item.id); }, className: "flex w-full items-center justify-between rounded border px-1.5 py-1 text-left text-[0.5rem] " + (item.id === selectedHabitatItemId ? "border-fuchsia-300 bg-fuchsia-300/15 text-fuchsia-100" : "border-white/10 bg-white/5 text-slate-200") }, React.createElement("span", null, type.icon + " " + type.label), React.createElement("span", { className: "text-[0.4375rem] text-slate-400" }, item.x.toFixed(1) + ", " + item.z.toFixed(1))); }))
+                        habitatLayout.length > 0 && React.createElement("div", { className: "mt-2 max-h-32 space-y-1 overflow-y-auto", role: "group", 'aria-label': __alloT('stem.aquarium.a11y_habitat_structures', 'Habitat structures') }, habitatLayout.map(function(item) { var type = habitatCatalog.find(function(candidate) { return candidate.id === item.type; }); return type && React.createElement("button", { key: item.id, type: "button", ref: function(node) { habitatStructureRefs.current[item.id] = node; }, 'data-aquarium-habitat-structure': item.id, 'aria-pressed': item.id === selectedHabitatItemId, onClick: function() { upd('selectedHabitatItemId', item.id); }, className: "flex w-full items-center justify-between rounded border px-1.5 py-1 text-left text-[0.5rem] " + (item.id === selectedHabitatItemId ? "border-fuchsia-300 bg-fuchsia-300/15 text-fuchsia-100" : "border-white/10 bg-white/5 text-slate-200") }, React.createElement("span", null, type.icon + " " + type.label), React.createElement("span", { className: "text-[0.4375rem] text-slate-400" }, item.x.toFixed(1) + ", " + item.z.toFixed(1))); }))
                       )
                     ),
-                    React.createElement("section", { className: "rounded-xl border border-violet-300/30 bg-violet-950/35 p-2.5", 'aria-labelledby': "aquarium-habitat-forecast-title" },
+                    React.createElement("section", { className: "rounded-xl border border-violet-300/30 bg-violet-950/35 p-2.5", 'aria-labelledby': feedingA11yId + '-aquarium-habitat-forecast-title' },
                       React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                         React.createElement("div", null,
-                          React.createElement("h5", { id: "aquarium-habitat-forecast-title", className: "text-[0.625rem] font-black text-violet-100" }, "🔭 What-if Habitat Forecast"),
+                          React.createElement("h5", { id: feedingA11yId + '-aquarium-habitat-forecast-title', className: "text-[0.625rem] font-black text-violet-100" }, "🔭 What-if Habitat Forecast"),
                           React.createElement("p", { className: "mt-0.5 max-w-2xl text-[0.5rem] leading-relaxed text-violet-200" }, "Compare modeled consequences before changing the tank. Forecasts protect the weakest resident, expose open-water tradeoffs, and never alter the habitat until you apply one.")
                         ),
                         React.createElement("div", { className: "rounded-lg border border-violet-200/25 bg-slate-950/50 px-2 py-1 text-[0.4375rem] text-violet-100" }, "Current: average " + habitatCommunityFit.average + " • minimum " + habitatCommunityFit.minimum + " • open swim " + habitatSummary.openSwimScore)
@@ -26134,13 +26330,13 @@ React.createElement("section", {
                       })),
                       React.createElement("p", { className: "mt-2 text-[0.4375rem] leading-relaxed text-slate-300" }, "Forecasts are comparative model outputs, not guarantees. Apply one change, observe stress and vitality across several ticks, then use Undo or compare against your experimental baseline.")
                     ),
-                    React.createElement("section", { className: "rounded-xl border border-cyan-300/25 bg-cyan-950/35 p-2.5", 'aria-labelledby': "aquarium-habitat-fit-title" },
+                    React.createElement("section", { className: "rounded-xl border border-cyan-300/25 bg-cyan-950/35 p-2.5", 'aria-labelledby': feedingA11yId + '-aquarium-habitat-fit-title' },
                       React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                         React.createElement("div", null,
-                          React.createElement("h5", { id: "aquarium-habitat-fit-title", className: "text-[0.625rem] font-black text-cyan-100" }, "🐟 Organism Habitat Fit"),
+                          React.createElement("h5", { id: feedingA11yId + '-aquarium-habitat-fit-title', className: "text-[0.625rem] font-black text-cyan-100" }, "🐟 Organism Habitat Fit"),
                           React.createElement("p", { className: "mt-0.5 text-[0.5rem] leading-relaxed text-cyan-200" }, "The same layout can help one species and strain another. Each profile compares this organism’s behavioral and breeding needs with available structure, plants, and swimming room.")
                         ),
-                        React.createElement("div", { className: "rounded-lg border border-cyan-200/30 bg-slate-950/50 px-2 py-1 text-center", role: "meter", 'aria-label': "Average organism habitat fit", 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': habitatFitAverage, 'aria-valuetext': habitatFitAverage + " out of 100" },
+                        React.createElement("div", { className: "rounded-lg border border-cyan-200/30 bg-slate-950/50 px-2 py-1 text-center", role: "meter", 'aria-label': __alloT("stem.aquarium.a11y_average_organism_habitat_fit", "Average organism habitat fit"), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': habitatFitAverage, 'aria-valuetext': habitatFitAverage + " out of 100" },
                           React.createElement("strong", { className: "block text-sm " + (habitatFitAverage >= 85 ? "text-emerald-300" : habitatFitAverage >= 65 ? "text-amber-200" : "text-rose-300") }, habitatFitAverage + "/100"),
                           React.createElement("span", { className: "block text-[0.4375rem] uppercase tracking-wide text-cyan-200" }, "stock average")
                         )
@@ -26190,7 +26386,7 @@ React.createElement("section", {
                               })),
                               React.createElement("div", { className: "mt-1.5 flex items-center justify-between gap-2" },
                                 React.createElement("span", { className: "text-[0.4375rem] leading-snug text-slate-200" }, "Limiting: " + fitItem.limiting.label + " • available " + fitItem.limiting.available + ", need " + fitItem.limiting.need),
-                                React.createElement("button", { type: "button", onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id, className: "shrink-0 rounded border border-cyan-200/30 bg-white/5 px-1.5 py-0.5 text-[0.4375rem] font-bold text-cyan-100 hover:bg-white/10" }, "Trace exchanges")
+                                React.createElement("button", { type: "button", 'data-aquarium-habitat-trace': fitItem.id, 'aria-label': 'Trace exchanges: ' + fitItem.name, onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id, className: "shrink-0 rounded border border-cyan-200/30 bg-white/5 px-1.5 py-0.5 text-[0.4375rem] font-bold text-cyan-100 hover:bg-white/10" }, "Trace exchanges")
                               )
                             );
                           }))
@@ -26208,7 +26404,7 @@ React.createElement("section", {
                       habitatLayout.length === 0 ? "The tank currently relies on plants alone for cover. Add structure, but preserve open water." : habitatSummary.openSwimScore < 45 ? "The layout provides structure but crowds the swimming volume. Shrink, remove, or spread objects before adding active fish." : habitatSummary.shelterScore < 25 ? "Open swimming space is strong, but vulnerable or territorial organisms have little retreat cover." : "This layout balances usable structure with open water. Use overlays and organism vitality to test whether the pattern fits the stocked species.",
                       " Habitat changes are recorded as experimental interventions, so change one factor at a time when a baseline is active."
                     )
-                  )
+                  ))
                 ),
 (function () {
 
@@ -26469,7 +26665,7 @@ aiEventLoading && React.createElement("div", { className: "ai-event-card rounded
                   )
 
                 )),
-React.createElement('section', { id: 'aquarium-panel-investigate', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'investigate', 'aria-label': __alloT('stem.aquarium.investigate_workspace','investigate workspace') }, React.createElement("section", {
+React.createElement('section', { id: workspaceA11yId + '-panel-investigate', 'data-aquarium-workspace-panel': 'investigate', className: 'aquarium-workflow-panel space-y-3', hidden: workspacePanel !== 'investigate', 'aria-label': __alloT('stem.aquarium.investigate_workspace','investigate workspace') }, React.createElement("section", {
                   className: "rounded-xl border border-cyan-300 bg-white p-3 space-y-2",
                   'aria-labelledby': "aquarium-care-decision",
                   'data-aquarium-observation-loop': "true"
@@ -26497,7 +26693,7 @@ React.createElement('section', { id: 'aquarium-panel-investigate', className: 'a
                   ),
                   React.createElement("p", { className: "text-xs text-slate-600" }, "Model note: bacteria start pre-seeded. Time is compressed and thresholds describe the chosen habitat; real species have different needs.")
                 ), renderInquiryWorkbench(),
-React.createElement("details", { id: "aquarium-systems-investigation", className: "rounded-2xl border border-cyan-200 bg-white", "data-aquarium-disclosure": "aquarium-systems-investigation" },
+React.createElement("details", { id: workspaceA11yId + '-aquarium-systems-investigation', 'data-aquarium-workspace-section': 'aquarium-systems-investigation', className: "rounded-2xl border border-cyan-200 bg-white", "data-aquarium-disclosure": "aquarium-systems-investigation" },
                   React.createElement("summary", { className: "cursor-pointer p-3 text-sm font-black text-cyan-950" }, "Systems investigation", React.createElement("span", { className: "mt-1 block text-xs font-normal leading-relaxed text-slate-700" }, "Trace matter and energy, inspect organism vitality, and compare a controlled intervention. Expand when you are ready to explain why the tank changed.")),
                   React.createElement("div", { className: "space-y-3 border-t border-cyan-100 p-2 sm:p-3" },
                     React.createElement("section", {
@@ -26734,9 +26930,11 @@ React.createElement("details", { id: "aquarium-systems-investigation", className
 
                   React.createElement("details", { className: "mt-3 rounded-lg border border-white/15 bg-black/20 p-2", open: lastEcosystemExchange !== null },
                     React.createElement("summary", { className: "cursor-pointer text-[0.625rem] font-black text-cyan-100" }, "\uD83D\uDD0D Why did the ecosystem change?"),
-                    React.createElement("ul", { className: "mt-2 space-y-1", role: "log", 'aria-live': "polite" }, ecosystemCausalReasons.map(function (reason, reasonIndex) {
-                      return React.createElement("li", { key: 'exchange-reason-' + reasonIndex, className: "rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[0.5625rem] leading-relaxed text-slate-100" }, reason);
-                    })),
+                    React.createElement("div", { className: "mt-2", role: "log", 'aria-live': "polite", 'aria-label': __alloT('stem.aquarium.ecosystem_change_reasons', 'Ecosystem change evidence'), 'data-aquarium-ecosystem-reasons': 'true' },
+                      React.createElement("ul", { className: "space-y-1", role: "list" }, ecosystemCausalReasons.map(function (reason, reasonIndex) {
+                        return React.createElement("li", { key: 'exchange-reason-' + reasonIndex, className: "rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[0.5625rem] leading-relaxed text-slate-100" }, reason);
+                      }))
+                    ),
                     lastEcosystemExchange && React.createElement("div", { className: "mt-2 flex flex-wrap gap-1 text-[0.5rem] text-slate-300" },
                       Object.keys(lastEcosystemExchange.chemistryDelta || {}).map(function (chemistryKey) {
                         var deltaValue = lastEcosystemExchange.chemistryDelta[chemistryKey];
@@ -26793,7 +26991,7 @@ React.createElement("details", { id: "aquarium-systems-investigation", className
                           onClick: function() {
                             if (vitalityItem.kind === 'plant') {
                               selectPlant(vitalityItem.id);
-                              setTimeout(function() { var profile = document.getElementById('aquarium-selected-plant-profile'); if (profile && profile.scrollIntoView) profile.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 0);
+                              focusAquariumWorkspaceSection('aquarium-selected-plant-profile');
                             } else {
                               updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: vitalityItem.id });
                             }
@@ -26826,25 +27024,25 @@ React.createElement("details", { id: "aquarium-systems-investigation", className
                     ),
                   React.createElement("p", { className: "mt-2 text-[0.4375rem] leading-relaxed text-slate-400" }, "Ring length represents the 0–100 score; labels preserve meaning without relying on color. Organism scores combine chemistry, space, shelter, nutrition, stress, and illness. Plant rings show simulated specimen health.")
                 ),
-                    React.createElement("section", { className: "rounded-2xl border border-cyan-300/30 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 p-3 text-white", 'aria-labelledby': "aquarium-exchange-history-title" },
+                    React.createElement("section", { className: "rounded-2xl border border-cyan-300/30 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 p-3 text-white", 'data-aquarium-exchange-history': 'true', 'aria-labelledby': ecosystemHistoryId + '-title' },
                   React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                     React.createElement("div", null,
-                      React.createElement("h4", { id: "aquarium-exchange-history-title", className: "text-xs font-black text-cyan-100" }, __alloT('stem.aquarium.exchange_history_title', "\uD83D\uDCC8 Ecosystem exchange history")),
+                      React.createElement("h4", { id: ecosystemHistoryId + '-title', ref: ecosystemHistoryHeadingRef, tabIndex: -1, 'data-aquarium-exchange-history-heading': 'true', className: "text-xs font-black text-cyan-100" }, __alloT('stem.aquarium.exchange_history_title', "\uD83D\uDCC8 Ecosystem exchange history")),
                       React.createElement("p", { className: "mt-0.5 text-[0.5625rem] text-cyan-200" }, __alloT('stem.aquarium.exchange_history_desc', "Aligned 24-hour lanes reveal whether chemistry and organism vitality move together."))
                     ),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': __alloT('stem.aquarium.a11y_ecosystem_comparison_baseline_controls', 'Ecosystem comparison baseline controls') },
-                      React.createElement("button", { type: "button", onClick: markEcosystemBaseline, disabled: !ecosystemPredictionReady, title: ecosystemPredictionReady ? "Lock predictions and record this baseline" : "Choose a direction for all three predictions first", className: "rounded-md border border-cyan-300 bg-cyan-400 px-2 py-1 text-[0.5625rem] font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-40" }, ecosystemBaseline ? __alloT('stem.aquarium.replace_baseline', "Replace baseline") : __alloT('stem.aquarium.mark_baseline', "Mark baseline")),
-                      ecosystemBaseline && React.createElement("button", { type: "button", onClick: function () { upd('ecosystemBaseline', null); }, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[0.5625rem] font-bold text-cyan-100" }, __alloT('stem.aquarium.clear_baseline', "Clear")),
+                      React.createElement("button", { type: "button", ref: ecosystemBaselineMarkRef, 'data-aquarium-ecosystem-baseline': 'mark', onClick: markEcosystemBaseline, disabled: !ecosystemPredictionReady, title: ecosystemPredictionReady ? "Lock predictions and record this baseline" : "Choose a direction for all three predictions first", className: "rounded-md border border-cyan-300 bg-cyan-400 px-2 py-1 text-[0.5625rem] font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-40" }, ecosystemBaseline ? __alloT('stem.aquarium.replace_baseline', "Replace baseline") : __alloT('stem.aquarium.mark_baseline', "Mark baseline")),
+                      ecosystemBaseline && React.createElement("button", { type: "button", 'data-aquarium-ecosystem-baseline': 'clear', 'aria-label': __alloT('stem.aquarium.clear_ecosystem_baseline', 'Clear ecosystem comparison baseline'), onClick: clearEcosystemBaseline, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[0.5625rem] font-bold text-cyan-100" }, __alloT('stem.aquarium.clear_baseline', "Clear")),
                       React.createElement("button", { type: "button", onClick: function () { downloadEcosystemEvidence('csv'); }, disabled: ecosystemExchangeHistory.length === 0, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[0.5625rem] font-bold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, __alloT('stem.aquarium.export_csv', "Export CSV")),
                       React.createElement("button", { type: "button", onClick: function () { downloadEcosystemEvidence('json'); }, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[0.5625rem] font-bold text-cyan-100" }, __alloT('stem.aquarium.export_json', "Export JSON"))
                     )
                   ),
-                  React.createElement("div", { className: "mt-3 rounded-xl border border-cyan-300/20 bg-gradient-to-r from-cyan-950/80 via-indigo-950/80 to-emerald-950/80 p-2.5", 'aria-label': __alloT('stem.aquarium.a11y_controlled_investigation_progress', 'Controlled investigation progress') },
+                  React.createElement("div", { className: "mt-3 rounded-xl border border-cyan-300/20 bg-gradient-to-r from-cyan-950/80 via-indigo-950/80 to-emerald-950/80 p-2.5", role: "group", 'data-aquarium-investigation-progress': 'true', 'aria-label': __alloT('stem.aquarium.a11y_controlled_investigation_progress', 'Controlled investigation progress') },
                     React.createElement("div", { className: "flex items-center justify-between gap-2" },
                       React.createElement("strong", { className: "text-[0.5625rem] text-cyan-100" }, "Investigation path"),
                       React.createElement("span", { className: "text-[0.5rem] font-bold text-cyan-200" }, "Stage " + (ecosystemInvestigationStage + 1) + " of 4")
                     ),
-                    React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800", role: "progressbar", 'aria-label': __alloT('stem.aquarium.a11y_controlled_investigation_progress', 'Controlled investigation progress'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': ecosystemInvestigationProgress },
+                    React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800", role: "progressbar", 'aria-label': __alloT('stem.aquarium.a11y_controlled_investigation_progress', 'Controlled investigation progress'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': ecosystemInvestigationProgress, 'aria-valuetext': 'Stage ' + (ecosystemInvestigationStage + 1) + ' of 4: ' + ['Predict', 'Change one factor', 'Observe', 'Explain'][ecosystemInvestigationStage] },
                       React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-400 to-emerald-400 transition-all", style: { width: ecosystemInvestigationProgress + '%' } })
                     ),
                     React.createElement("ol", { className: "mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4", role: "list" },
@@ -26856,12 +27054,12 @@ React.createElement("details", { id: "aquarium-systems-investigation", className
                       ].map(function(stageItem, stageIndex) {
                         var stageComplete = stageIndex < ecosystemInvestigationStage;
                         var stageActive = stageIndex === ecosystemInvestigationStage;
-                        return React.createElement("li", { key: stageItem.label, 'aria-current': stageActive ? "step" : undefined, className: "relative rounded-lg border p-2 " + (stageActive ? "border-cyan-300 bg-cyan-300/15 shadow-[0_0_16px_rgba(34,211,238,0.12)]" : stageComplete ? "border-emerald-300/30 bg-emerald-400/10" : "border-white/10 bg-black/15") },
+                        return React.createElement("li", { key: stageItem.label, 'data-aquarium-investigation-stage': stageIndex, 'aria-current': stageActive ? "step" : undefined, className: "relative rounded-lg border p-2 " + (stageActive ? "border-cyan-300 bg-cyan-300/15 shadow-[0_0_16px_rgba(34,211,238,0.12)]" : stageComplete ? "border-emerald-300/30 bg-emerald-400/10" : "border-white/10 bg-black/15") },
                           React.createElement("div", { className: "flex items-center gap-1" },
                             React.createElement("span", { className: "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-black " + (stageActive ? "bg-cyan-300 text-slate-950" : stageComplete ? "bg-emerald-400 text-emerald-950" : "bg-slate-700 text-slate-300"), 'aria-hidden': "true" }, stageComplete ? "\u2713" : String(stageIndex + 1)),
                             React.createElement("strong", { className: "text-[0.5rem] " + (stageActive ? "text-cyan-100" : stageComplete ? "text-emerald-100" : "text-slate-300") }, stageItem.label.replace(/^\d\s/, ''))
                           ),
-                          React.createElement("div", { className: "mt-1 truncate text-[0.4375rem] " + (stageActive ? "text-cyan-200" : "text-slate-400"), title: stageItem.detail }, stageItem.detail)
+                          React.createElement("div", { className: "mt-1 whitespace-normal break-words text-xs leading-relaxed " + (stageActive ? "text-cyan-200" : "text-slate-300") }, stageItem.detail)
                         );
                       })
                     )
@@ -26909,9 +27107,9 @@ React.createElement("details", { id: "aquarium-systems-investigation", className
                     )
                   ),
                   ecosystemHistoryPoints.length > 1
-                    ? React.createElement("svg", { viewBox: "0 0 640 142", className: "mt-3 w-full", role: "img", 'aria-label': "Last " + ecosystemHistoryPoints.length + " aquarium hours. " + ecosystemHistoryLanes.map(function (lane) { return lane.label + " " + lane.latest.toFixed(lane.id === 'vitality' ? 0 : 1) + " " + lane.unit; }).join('; ') },
+                    ? React.createElement("svg", { viewBox: "0 0 640 142", className: "mt-3 w-full", role: "img", 'aria-describedby': ecosystemHistoryId + '-data-description', 'aria-label': "Last " + ecosystemHistoryPoints.length + " aquarium hours. " + ecosystemHistoryLanes.map(function (lane) { return lane.label + " " + lane.latest.toFixed(lane.id === 'vitality' ? 0 : 1) + " " + lane.unit; }).join('; ') },
                       React.createElement("title", null, "Aquarium oxygen, nitrate, and vitality history"),
-                      React.createElement("desc", null, "Three aligned time lanes ending at the current aquarium hour. Each lane uses its own labeled scale." + (ecosystemBaselineX !== null ? " A vertical baseline marker identifies the preregistered comparison point." : "")),
+                      React.createElement("desc", null, "Three aligned time lanes showing recorded aquarium hours. Each lane uses its own labeled scale." + (ecosystemBaselineX !== null ? " A vertical baseline marker identifies the preregistered comparison point." : "")),
                       ecosystemHistoryLanes.map(function (lane) {
                         var finalPoint = lane.points.split(' ').slice(-1)[0].split(',');
                         return React.createElement("g", { key: lane.id },
@@ -26930,10 +27128,42 @@ React.createElement("details", { id: "aquarium-systems-investigation", className
                         React.createElement("circle", { cx: ecosystemBaselineX, cy: "12", r: "3", fill: "#f0abfc" }),
                         React.createElement("text", { x: ecosystemBaselineX, y: "8", fill: "#f5d0fe", fontSize: "7", fontWeight: "800", textAnchor: "middle" }, "BASELINE")
                       ),
-                      React.createElement("text", { x: "118", y: "140", fill: "#94a3b8", fontSize: "8" }, "\u2190 " + ecosystemHistoryPoints.length + " hours ago"),
-                      React.createElement("text", { x: "622", y: "140", fill: "#94a3b8", fontSize: "8", textAnchor: "end" }, "now \u2192")
+                      React.createElement("text", { x: "118", y: "140", fill: "#94a3b8", fontSize: "8" }, "Hour " + ecosystemHistoryPoints[0].tick),
+                      React.createElement("text", { x: "622", y: "140", fill: "#94a3b8", fontSize: "8", textAnchor: "end" }, "Hour " + ecosystemHistoryPoints[ecosystemHistoryPoints.length - 1].tick)
                     )
                     : React.createElement("div", { className: "mt-3 rounded-lg border border-dashed border-cyan-300/30 p-3 text-center text-[0.625rem] text-cyan-100" }, __alloT('stem.aquarium.run_two_ticks_for_history', "Run two aquarium-hour ticks to begin the exchange history.")),
+                  React.createElement("div", { className: "mt-3", 'data-aquarium-exchange-history-data': 'true' },
+                    React.createElement("p", { id: ecosystemHistoryId + '-data-description', className: "text-xs leading-relaxed text-cyan-100" }, __alloT('stem.aquarium.exchange_history_data_description', 'The data table lists the same recorded aquarium hours as the chart, oldest first. Chemistry is rounded to two decimal places; vitality to one.')),
+                    React.createElement("button", {
+                      type: "button", 'data-aquarium-exchange-history-table-toggle': 'true',
+                      'aria-expanded': ecosystemHistoryTable[0], 'aria-controls': ecosystemHistoryId + '-data',
+                      onClick: function () { ecosystemHistoryTable[1](function (open) { return !open; }); },
+                      className: "mt-2 rounded-lg border border-cyan-200 bg-cyan-100 px-3 py-2 text-xs font-bold text-cyan-950"
+                    }, ecosystemHistoryTable[0] ? __alloT('stem.aquarium.hide_exchange_history_data', 'Hide history data table') : __alloT('stem.aquarium.show_exchange_history_data', 'Show history data table')),
+                    React.createElement("div", { id: ecosystemHistoryId + '-data', hidden: !ecosystemHistoryTable[0], 'data-aquarium-exchange-history-table': 'true', role: "region", 'aria-label': __alloT('stem.aquarium.exchange_history_table_region', 'Ecosystem history data table'), tabIndex: ecosystemHistoryPoints.length ? 0 : undefined, className: "mt-2 overflow-x-auto" },
+                      ecosystemHistoryPoints.length > 0
+                        ? React.createElement("table", { className: "w-full text-left text-xs" },
+                          React.createElement("caption", { className: "pb-2 text-left font-bold text-cyan-100" }, __alloT('stem.aquarium.exchange_history_table_caption', 'Recorded oxygen, nitrate, and vitality') + ' — ' + ecosystemHistoryPoints.length + ' ' + __alloT('stem.aquarium.aquarium_hours', 'aquarium hours')),
+                          React.createElement("thead", null, React.createElement("tr", null,
+                            React.createElement("th", { scope: "col" }, __alloT('stem.aquarium.exchange_history_hour', 'Aquarium hour (tick)')),
+                            React.createElement("th", { scope: "col" }, __alloT('stem.aquarium.exchange_history_oxygen', 'Dissolved O\u2082 (mg/L)')),
+                            React.createElement("th", { scope: "col" }, __alloT('stem.aquarium.exchange_history_nitrate', 'Nitrate NO\u2083 (ppm)')),
+                            React.createElement("th", { scope: "col" }, __alloT('stem.aquarium.exchange_history_vitality', 'Mean vitality (out of 100)'))
+                          )),
+                          React.createElement("tbody", null, ecosystemHistoryPoints.map(function (point, pointIndex) {
+                            var isBaseline = ecosystemBaseline && point.tick === ecosystemBaseline.tick;
+                            return React.createElement("tr", { key: String(point.tick) + '-' + pointIndex, 'data-aquarium-exchange-history-baseline': isBaseline ? 'true' : undefined },
+                              React.createElement("th", { scope: "row" }, String(point.tick), isBaseline && React.createElement("span", { className: "block font-normal" }, __alloT('stem.aquarium.exchange_history_baseline_marker', 'Baseline'))),
+                              React.createElement("td", null, Number(point.chemistry.dissolvedO2).toFixed(2)),
+                              React.createElement("td", null, Number(point.chemistry.nitrate).toFixed(2)),
+                              React.createElement("td", null, Number(point.vitality.average).toFixed(1))
+                            );
+                          }))
+                        )
+                        : React.createElement("p", { className: "text-xs text-cyan-100" }, __alloT('stem.aquarium.exchange_history_no_records', 'No aquarium hours recorded yet. Observe one aquarium hour to add the first data row.')),
+                      ecosystemBaseline && ecosystemBaselinePointIndex < 0 && React.createElement("p", { className: "mt-2 text-xs text-cyan-100" }, __alloT('stem.aquarium.exchange_history_baseline_outside', 'The comparison baseline is outside these displayed records: aquarium hour') + ' ' + ecosystemBaseline.tick + '.')
+                    )
+                  ),
                   ecosystemBaseline && baselineDeltas && React.createElement("div", { className: "mt-3" },
                     React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1 text-[0.5625rem] text-cyan-100" },
                       React.createElement("strong", null, __alloT('stem.aquarium.change_from_baseline', "Change from baseline")),

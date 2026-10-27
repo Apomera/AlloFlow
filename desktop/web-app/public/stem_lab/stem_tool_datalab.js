@@ -274,9 +274,9 @@
           t('stem.dataLab.blocked_note', 'Pop-up blocked — allow pop-ups for this page and try again.')),
         popupState === 'open' && h('p', { className: 'text-xs text-emerald-300', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
           t('stem.dataLab.open_note', 'Data Lab is open. Keep this AlloFlow window open too — it powers the AI tutor.')),
-        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+        popupState === 'closed' && h('p', { className: 'text-xs text-slate-300', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
           t('stem.dataLab.closed_note', 'Data Lab was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[0.6875rem] text-slate-400 leading-relaxed' },
+        h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
           t('stem.dataLab.credit', 'CODAP is free and open source (MIT) from the Concord Consortium. The workspace loads from codap.concord.org, so the Data Lab needs internet; an offline School Box copy is on the roadmap.'))
       );
     }

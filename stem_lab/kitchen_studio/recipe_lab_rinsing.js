@@ -94,7 +94,7 @@
     host.after.after(panel);var $=function(id){return panel.querySelector('#'+id);},ns='http://www.w3.org/2000/svg',dots=[];
     for(var i=0;i<8;i++){var a=(i+.5)*tau/8,dot=document.createElementNS(ns,'circle');dot.setAttribute('cx',String(310+Math.cos(a)*42));dot.setAttribute('cy',String(126+Math.sin(a)*42));dot.setAttribute('r','6');dot.setAttribute('stroke','#476853');dot.setAttribute('stroke-width','2');$('rinseCoverageDots').append(dot);dots.push(dot);}
     function on(el,event,fn){el.addEventListener(event,fn);listeners.push(function(){el.removeEventListener(event,fn);});}
-    function say(message){$('rinseStatus').textContent=message;}
+    function say(message){var status=$('rinseStatus');if(status.textContent!==message)status.textContent=message;}
     function paint(){
       var phase=trace?trace.phase:'idle',inSink=['lower','rinse','lift'].indexOf(phase)!==-1,x=inSink?310:89,y=phase==='carry'||phase==='return'?86:phase==='lower'?86+trace.depth*38:phase==='rinse'?124:phase==='lift'?124-trace.depth*38:phase==='tip'||phase==='done'?86+trace.depth*66:152;
       $('rinseBasketIcon').setAttribute('transform','translate('+x+' '+y+')'+(phase==='tip'||phase==='done'?' rotate('+(-25*trace.depth)+')':''));$('rinseWaterIcon').setAttribute('visibility',phase==='rinse'&&!trace.invalid?'visible':'hidden');var completed=recordedSequence(view),coverage=trace?count(trace.coverage):completed?8:0;

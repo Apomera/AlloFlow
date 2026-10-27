@@ -1607,12 +1607,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           }
 
           // ═══ KEYBOARD HANDLER (delegated to top-level useEffect via window refs) ═══
+          // WCAG 2.1.4: the piano, chord and drum-pad keys act only while focus is
+          // inside the music tool, never with Ctrl/Alt/Meta, and never in a text field.
+          function musicKeyInTool(e) {
+            var tg = e && e.target;
+            if (!tg || !tg.closest || !tg.closest('.allo-music-tool')) return false;
+            if (e.ctrlKey || e.metaKey || e.altKey) return false;
+            return !(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName || '') && tg.type !== 'range' && tg.type !== 'checkbox' && tg.type !== 'button') && !tg.isContentEditable;
+          }
           var KEYBOARD_MAP = {
             'z': 0, 'x': 2, 'c': 4, 'v': 5, 'b': 7, 'n': 9, 'm': 11, ',': 12, '.': 14, '/': 16,
             's': 1, 'd': 3, 'g': 6, 'h': 8, 'j': 10, 'l': 13, ';': 15
           };
           window._alloSynthKeyDown = function (e) {
             if (e.repeat) return;
+            if (!musicKeyInTool(e)) return;
             var semi = KEYBOARD_MAP[e.key.toLowerCase()];
             if (semi !== undefined && synthTab === 'play') {
               var key = KEYS[semi];
@@ -1792,6 +1801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             if (synthTab !== 'harmonypad' && synthTab !== 'beatpad') return;
             function onKeyDown(e) {
               if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              if (!musicKeyInTool(e)) return;
               var k = e.key.toLowerCase();
               if (synthTab === 'harmonypad') {
                 var chord = CHORD_KEY_MAP[k];
@@ -2334,6 +2344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             function handlePadKey(e) {
               if (synthTab !== 'beatpad') return;
               if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              if (!musicKeyInTool(e)) return;
               var padMap = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, '0': 9, '-': 10, '=': 11 };
               var idx = padMap[e.key];
               if (idx !== undefined && BEAT_PAD_SOUNDS[idx]) {

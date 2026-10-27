@@ -193,9 +193,9 @@
           t('stem.circuitShelf.blocked_note', 'Pop-up blocked — allow pop-ups for this page and try again.')),
         popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
           t('stem.circuitShelf.open_note', 'Circuit Shelf is open. Keep this AlloFlow window open too — it powers the AI coach.')),
-        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
+        popupState === 'closed' && h('p', { className: 'text-xs text-slate-300' },
           t('stem.circuitShelf.closed_note', 'Circuit Shelf was closed. You can reopen it whenever you are ready.')),
-        h('p', { className: 'text-[0.6875rem] text-slate-400 leading-relaxed' },
+        h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
           t('stem.circuitShelf.credit', 'Circuit simulator: CircuitJS1 by Paul Falstad and Iain Sharp (github.com/pfalstad/circuitjs1), free and open source under the GPL. The simulator loads from its host, so the shelf needs internet; offline use for School Box is on the roadmap (the GPL permits it).'))
       );
     }

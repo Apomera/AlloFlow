@@ -6693,10 +6693,10 @@ window.StemLab = window.StemLab || {
                 React.createElement('summary', { className: 'text-sm font-black text-cyan-300', style: { cursor: 'pointer' } }, __alloT('stem.throwlab.throw_angle_discovery_summary', 'Throw angle discovery')),
                 React.createElement('h3', { className: 'text-sm font-black text-cyan-300' }, __alloT('stem.throwlab.throw_angle_discovery', '🎯 Throw angle discovery')),
                 React.createElement('p', { className: 'text-[0.6875rem] text-slate-300' }, __alloT('stem.throwlab.sliders_for_angle_velocity_spin_discre', 'Sliders for angle, velocity, spin. Discrete 4-state trajectory. No score, no reveal.')),
-                React.createElement('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
+                React.createElement('div', { className: 'p-2 rounded text-center bg-white', style: { background: sm.bg, border: '1px solid ' + sm.border } },
                   React.createElement('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
-                  React.createElement('div', { className: 'text-[0.625rem] text-slate-700 mt-1' }, sm.desc),
-                  React.createElement('div', { className: 'text-[0.625rem] text-slate-600 font-mono mt-1' }, 'Range ≈ ' + range.toFixed(1) + ' m')
+                  React.createElement('div', { className: 'text-[0.625rem] mt-1', style: { color: '#334155' } }, sm.desc),
+                  React.createElement('div', { className: 'text-[0.625rem] font-mono mt-1', style: { color: '#475569' } }, 'Range ≈ ' + range.toFixed(1) + ' m')
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                   [{ k: 'angle', l: 'Angle (°)', mn: 10, mx: 80, st: 1 },
@@ -6725,7 +6725,7 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.throwlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && React.createElement('textarea', { 'aria-label': __alloT('stem.throwlab.explanation_label', 'Explain the throw trajectory physics'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.throwlab.explain_throw_trajectory_physics', 'Explain throw trajectory physics.'),
                   className: 'w-full text-[0.6875rem] bg-slate-900 text-slate-100 border border-emerald-700 rounded p-1 font-mono mt-1', rows: 3 }),
-                React.createElement('div', { className: 'text-[0.625rem] italic text-slate-400' }, __alloT('stem.throwlab.design_note_discrete_4_state_trajector', 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.'))
+                React.createElement('div', { className: 'text-[0.625rem] italic text-slate-300' }, __alloT('stem.throwlab.design_note_discrete_4_state_trajector', 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.'))
               );
             })(),
             h('section', {

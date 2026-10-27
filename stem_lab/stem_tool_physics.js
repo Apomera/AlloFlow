@@ -50,7 +50,8 @@ window.StemLab = window.StemLab || {
 
   // ── Audio System (auto-injected) ──
   var _phyAC = null;
-  function getPhyAC() { if (!_phyAC) { try { _phyAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_phyAC && _phyAC.state === "suspended") { try { _phyAC.resume(); } catch(e) {} } return _phyAC; }
+  // The host owns and caches the shared context, so ask it every time rather than pinning one copy here.
+  function getPhyAC() { if (window.StemLab && window.StemLab.audioContext) { try { _phyAC = window.StemLab.audioContext(); } catch(e) { _phyAC = null; } } else if (!_phyAC) { try { _phyAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_phyAC && _phyAC.state === "suspended") { try { _phyAC.resume(); } catch(e) {} } return _phyAC; }
   function phyTone(f,d,tp,v) { var ac = getPhyAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxPhyLaunch() { phyTone(200,0.15,"sine",0.07); }
   function sfxPhyCollide() { phyTone(150,0.1,"sawtooth",0.08); }
@@ -612,6 +613,40 @@ window.StemLab = window.StemLab || {
       vacuumWidth: scaleMax > 0 ? (vacuum / scaleMax) * 100 : 0,
       dragWidth: scaleMax > 0 ? (drag / scaleMax) * 100 : 0 });
   }
+  // Range explorer, speed mode: every whole speed the Velocity slider allows (5-50 m/s) at a
+  // fixed angle, and the "double the speed" ratio the prediction step asks about. Without drag,
+  // from the ground, the ratio is exactly 4; a raised launcher or air drag pulls it below 4.
+  var PHYS_DOUBLING_CHOICES = [1.4, 2, 3, 4];
+  var physSpeedSweepCache = { keys: [], values: {} };
+  function physSpeedSweep(angle, grav, dragOn, mass, height) {
+    mass = mass == null ? 1 : mass;
+    height = height === undefined ? 0 : height;
+    dragOn = !!dragOn;
+    if (!physValidLaunch(angle, 25, grav, mass, height) || !(grav > 0) || (angle === 0 && height === 0) || angle >= 90) return null;
+    var key = [angle, grav, dragOn, mass, height].join('|');
+    if (physSpeedSweepCache.values[key]) return physSpeedSweepCache.values[key];
+    var points = [];
+    for (var v = 5; v <= 50; v++) {
+      var vac = physSweepRange(angle, v, grav, false, mass, height);
+      var air = dragOn ? physSweepRange(angle, v, grav, true, mass, height) : vac;
+      if (!vac || !air) return null;
+      points.push(Object.freeze({ vel: v, range: air.range, vacuumRange: vac.range, time: air.time, maxH: air.maxH }));
+    }
+    var result = Object.freeze({ angle: angle, grav: grav, drag: dragOn, mass: mass, launchHeight: height, min: 5, max: 50, points: Object.freeze(points) });
+    physSpeedSweepCache.keys.push(key);
+    physSpeedSweepCache.values[key] = result;
+    if (physSpeedSweepCache.keys.length > 24) delete physSpeedSweepCache.values[physSpeedSweepCache.keys.shift()];
+    return result;
+  }
+  function physDoublingRatio(angle, base, grav, dragOn, mass, height) {
+    if (!physFinite(base) || base < 5 || base > 25) return null;
+    var r1 = physSweepRange(angle, base, grav, !!dragOn, mass, height), r2 = physSweepRange(angle, 2 * base, grav, !!dragOn, mass, height);
+    var v1 = physSweepRange(angle, base, grav, false, mass, height), v2 = physSweepRange(angle, 2 * base, grav, false, mass, height);
+    if (!r1 || !r2 || !v1 || !v2 || !(r1.range > 0) || !(v1.range > 0)) return null;
+    var ratio = r2.range / r1.range;
+    var closest = PHYS_DOUBLING_CHOICES.reduce(function(best, c) { return Math.abs(c - ratio) < Math.abs(best - ratio) ? c : best; });
+    return Object.freeze({ v1: base, v2: 2 * base, r1: r1.range, r2: r2.range, ratio: ratio, vacuumRatio: v2.range / v1.range, closest: closest });
+  }
   // Range explorer: every whole angle the Angle slider allows, flown by the
   // same integrator as a launch, plus each model's continuous best angle.
   var physSweepCache = { keys: [], values: {} };
@@ -663,6 +698,29 @@ window.StemLab = window.StemLab || {
     var inside = sweep.points.filter(function(p) { return p.range >= floor; });
     return inside.length ? { from: inside[0].angle, to: inside[inside.length - 1].angle } : null;
   }
+  // Angles that land exactly `target` metres away: range rises to the peak and falls after it,
+  // so each side of the peak has at most one crossing, found by bisection on the integrator.
+  // A side is null when its crossing lies outside the slider's angles or past the peak.
+  function physTargetAngles(sweep, target, dragOn) {
+    if (!sweep || !physFinite(target) || !(target > 0)) return null;
+    dragOn = !!dragOn && sweep.drag;
+    var peak = dragOn ? sweep.best : sweep.vacuumBest;
+    var at = function(a) { return physSweepRange(a, sweep.vel, sweep.grav, dragOn, sweep.mass, sweep.launchHeight); };
+    function side(from, to) {
+      var rf = at(from), rt = at(to);
+      if (!rf || !rt || (rf.range - target) * (rt.range - target) > 0) return null;
+      for (var i = 0; i < 50; i++) {
+        var mid = (from + to) / 2, rm = at(mid);
+        if (!rm) return null;
+        if ((rm.range - target) * (rf.range - target) > 0) { from = mid; rf = rm; } else to = mid;
+      }
+      var a = (from + to) / 2, r = at(a);
+      return r ? Object.freeze({ angle: a, range: r.range, time: r.time, maxH: r.maxH }) : null;
+    }
+    var reach = target <= peak.range;
+    return Object.freeze({ target: target, drag: dragOn, peak: peak, reachable: reach,
+      low: reach ? side(sweep.min, peak.angle) : null, high: reach ? side(peak.angle, sweep.max) : null });
+  }
   // R = v²·sin(2θ)/g holds only without drag and with landing at launch
   // height, so the gravity fit uses only flights that meet those conditions.
   // A line through the origin fits R against v²·sin(2θ): slope = 1/g.
@@ -698,11 +756,124 @@ window.StemLab = window.StemLab || {
     return Object.freeze(Object.assign(base, { status: 'ok', slope: slope, gFit: gFit,
       errorPct: (gFit - base.gravity) / base.gravity * 100 }));
   }
+  // Flight sonification: a recorded trail becomes a pitch and pan schedule so a student
+  // can hear the arc. Height maps to pitch on a log scale (equal height steps are equal
+  // musical steps), distance maps to stereo pan, and the real flight timing is kept, so a
+  // vacuum arc is symmetric in time and a drag arc peaks before its midpoint.
+  var PHYS_SONIFY = { fMin: 220, fMax: 880, panMax: 0.8, minSeconds: 0.8, maxSeconds: 12, apexHz: 1320, impactHz: 150, launchHz: 200 };
+  function physSonifyPlan(trail, opts) {
+    opts = opts || {};
+    if (!Array.isArray(trail) || trail.length < 2) return null;
+    var pts = trail.filter(function(p) { return p && physFinite(p.t) && physFinite(p.mX) && physFinite(p.mY) && p.t >= 0 && p.mY >= 0; });
+    if (pts.length < 2) return null;
+    var first = pts[0], last = pts[pts.length - 1], T = last.t - first.t;
+    if (!(T > 0)) return null;
+    var apex = first, maxH = first.mY;
+    pts.forEach(function(p) { if (p.mY > maxH) { maxH = p.mY; apex = p; } });
+    var ra = trail.apex;
+    if (ra && physFinite(ra.t) && physFinite(ra.mY) && ra.mY >= maxH - 1e-9 && ra.t >= first.t && ra.t <= last.t) { apex = ra; maxH = Math.max(maxH, ra.mY); }
+    var speed = physFinite(opts.speed) && opts.speed > 0 && opts.speed <= 1 ? opts.speed : 1;
+    // Real time, stretched for very short flights and for slow motion, compressed past 12 s
+    // (a Moon lob would otherwise drone for 20+ s); compression keeps every proportion.
+    var scale = Math.min(Math.max(1, PHYS_SONIFY.minSeconds / T) / speed, PHYS_SONIFY.maxSeconds / T);
+    var ref = Math.max(1, maxH, physFinite(opts.refHeight) ? opts.refHeight : 0);
+    var R = last.mX - first.mX;
+    var ratio = PHYS_SONIFY.fMax / PHYS_SONIFY.fMin;
+    var freqAt = function(h) { return PHYS_SONIFY.fMin * Math.pow(ratio, Math.min(1, Math.max(0, h) / ref)); };
+    var panAt = function(x) { return R > 0 ? PHYS_SONIFY.panMax * (2 * Math.min(1, Math.max(0, (x - first.mX) / R)) - 1) : 0; };
+    var step = Math.max(1, Math.ceil(pts.length / 160)), samples = [], lastT = -1;
+    for (var i = 0; i < pts.length; i += step) pushSample(pts[i]);
+    if (samples[samples.length - 1].t < (last.t - first.t) * scale - 1e-9) pushSample(last);
+    function pushSample(p) {
+      var t = (p.t - first.t) * scale;
+      if (t <= lastT) return;
+      lastT = t; samples.push({ t: t, freq: freqAt(p.mY), pan: panAt(p.mX) });
+    }
+    var duration = T * scale, apexT = apex.t - first.t;
+    var cues = [{ t: 0, kind: 'launch', freq: PHYS_SONIFY.launchHz }];
+    if (apexT > 0.01 * T && apexT < 0.99 * T) cues.push({ t: apexT * scale, kind: 'apex', freq: PHYS_SONIFY.apexHz });
+    cues.push({ t: duration, kind: 'impact', freq: PHYS_SONIFY.impactHz });
+    return Object.freeze({ duration: duration, samples: Object.freeze(samples), cues: Object.freeze(cues), maxH: maxH, range: R, flightTime: T,
+      apexT: apexT, apexFraction: apexT / T, refHeight: ref, timeScale: scale });
+  }
+  // Schedule a plan on a Web Audio context. Returns { duration, stop } or null. `onEnd` runs once,
+  // after the last sound, or immediately after stop().
+  function physSonifyPlay(plan, ac, onEnd) {
+    if (!plan || !ac || typeof ac.createOscillator !== 'function' || typeof ac.createGain !== 'function') return null;
+    var nodes = [], ended = false, timer = null;
+    function finish() { if (ended) return; ended = true; if (timer) clearTimeout(timer); if (typeof onEnd === 'function') { try { onEnd(); } catch (e) {} } }
+    try {
+      var t0 = ac.currentTime + 0.06, end = t0 + plan.duration;
+      var osc = ac.createOscillator(), gain = ac.createGain();
+      var pan = typeof ac.createStereoPanner === 'function' ? ac.createStereoPanner() : null;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(plan.samples[0].freq, t0);
+      if (pan) pan.pan.setValueAtTime(plan.samples[0].pan, t0);
+      for (var i = 1; i < plan.samples.length; i++) {
+        osc.frequency.exponentialRampToValueAtTime(plan.samples[i].freq, t0 + plan.samples[i].t);
+        if (pan) pan.pan.linearRampToValueAtTime(plan.samples[i].pan, t0 + plan.samples[i].t);
+      }
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.09, t0 + 0.04);
+      gain.gain.setValueAtTime(0.09, Math.max(t0 + 0.05, end - 0.06));
+      gain.gain.exponentialRampToValueAtTime(0.0001, end + 0.05);
+      osc.connect(gain); if (pan) { gain.connect(pan); pan.connect(ac.destination); } else gain.connect(ac.destination);
+      osc.start(t0); osc.stop(end + 0.08);
+      nodes.push({ osc: osc, gain: gain });
+      plan.cues.forEach(function(c) {
+        var top = c.kind === 'apex' || c.kind === 'peak';
+        var o = ac.createOscillator(), g = ac.createGain(), at = t0 + c.t, len = top ? 0.07 : 0.1;
+        o.type = c.kind === 'impact' ? 'sawtooth' : (top ? 'triangle' : 'sine'); o.frequency.setValueAtTime(c.freq, at);
+        g.gain.setValueAtTime(top ? 0.08 : 0.06, at); g.gain.exponentialRampToValueAtTime(0.001, at + len);
+        o.connect(g); g.connect(ac.destination); o.start(at); o.stop(at + len + 0.02); nodes.push({ osc: o, gain: g });
+      });
+      timer = setTimeout(finish, (plan.duration + 0.4) * 1000);
+    } catch (e) { finish(); return null; }
+    return { duration: plan.duration, stop: function() {
+      if (ended) return;
+      nodes.forEach(function(n) { try { n.gain.gain.cancelScheduledValues(0); n.gain.gain.setValueAtTime(0.0001, ac.currentTime); } catch (e) {} try { n.osc.stop(); } catch (e) {} try { n.osc.disconnect(); } catch (e) {} });
+      finish();
+    } };
+  }
+  // Range explorer sonification: a curve of { x, y } points is swept left to right in a fixed
+  // time; y maps to pitch on the flight's log scale (against a shared `refY`, so a lower curve
+  // sounds lower) and x to pan. A chime marks the peak.
+  var PHYS_CURVE_SECONDS = 4;
+  var physCurveHearing = null; // { id, handle } of the sweep now playing; the panel has no hooks
+  function physCurveSonifyPlan(points, opts) {
+    opts = opts || {};
+    if (!Array.isArray(points)) return null;
+    var pts = points.filter(function(p) { return p && physFinite(p.x) && physFinite(p.y) && p.y >= 0; });
+    if (pts.length < 2) return null;
+    var x0 = pts[0].x, x1 = pts[pts.length - 1].x;
+    if (!(x1 > x0)) return null;
+    for (var i = 1; i < pts.length; i++) if (!(pts[i].x > pts[i - 1].x)) return null;
+    var duration = physFinite(opts.seconds) && opts.seconds > 0 ? opts.seconds : PHYS_CURVE_SECONDS;
+    var top = pts[0];
+    pts.forEach(function(p) { if (p.y > top.y) top = p; });
+    var peakX = physFinite(opts.peakX) && opts.peakX >= x0 && opts.peakX <= x1 ? opts.peakX : top.x;
+    var peakY = Math.max(top.y, physFinite(opts.peakY) ? opts.peakY : 0);
+    var ref = Math.max(peakY, physFinite(opts.refY) ? opts.refY : 0);
+    if (!(ref > 0)) return null;
+    var ratio = PHYS_SONIFY.fMax / PHYS_SONIFY.fMin;
+    var frac = function(x) { return (x - x0) / (x1 - x0); };
+    var samples = pts.map(function(p) {
+      return { t: frac(p.x) * duration, freq: PHYS_SONIFY.fMin * Math.pow(ratio, Math.min(1, p.y / ref)), pan: PHYS_SONIFY.panMax * (2 * frac(p.x) - 1) };
+    });
+    var peakFraction = frac(peakX);
+    var cues = [{ t: 0, kind: 'start', freq: PHYS_SONIFY.launchHz }];
+    // A peak at the very start would merge with the start tick; one at the end still marks "farthest".
+    if (peakFraction > 0.01) cues.push({ t: peakFraction * duration, kind: 'peak', freq: PHYS_SONIFY.apexHz });
+    return Object.freeze({ duration: duration, samples: Object.freeze(samples), cues: Object.freeze(cues), x0: x0, x1: x1,
+      peakX: peakX, peakY: peakY, peakFraction: peakFraction, refY: ref });
+  }
   try {
     window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, recordSample: physRecordSample, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, recordedMoments: physRecordedMoments, formatSampleValue: physFormatSampleValue, compareMeasurements: physCompareMeasurements,
       RECORDED_FLIGHT_LIMITS: PHYS_RECORDED_FLIGHT_LIMITS, captureRecordedFlight: physCaptureRecordedFlight, normalizeRecordedFlights: physNormalizeRecordedFlights, restoreRecordedFlight: physRestoreRecordedFlight,
       findTrialRun: physFindTrialRun, normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport,
-      rangeSweep: physRangeSweep, rangeBand: physRangeBand, fitGravity: physFitGravity };
+      rangeSweep: physRangeSweep, rangeBand: physRangeBand, targetAngles: physTargetAngles, fitGravity: physFitGravity,
+      sonifyPlan: physSonifyPlan, sonifyPlay: physSonifyPlay, SONIFY: PHYS_SONIFY, curveSonifyPlan: physCurveSonifyPlan, CURVE_SECONDS: PHYS_CURVE_SECONDS,
+      speedSweep: physSpeedSweep, doublingRatio: physDoublingRatio, DOUBLING_CHOICES: PHYS_DOUBLING_CHOICES };
   } catch (e) {}
 
   // One reference run anchors every notebook comparison, including archived
@@ -815,6 +986,7 @@ window.StemLab = window.StemLab || {
 
   // ═══ 🔬 physics (physics) ═══
   window.StemLab.registerTool('physics', {
+    darkRemap: true, // paints its own dark panels; keeps the hub's dark text remap (WCAG 1.4.3)
     icon: '\uD83C\uDFB1',
     label: 'Physics Simulator',
     desc: 'Launch projectiles, explore kinematics, and learn Newtons laws',
@@ -997,7 +1169,15 @@ window.StemLab = window.StemLab || {
               prediction: finite(rx.prediction) && rx.prediction >= 0 && rx.prediction <= 85 ? rx.prediction : null,
               predictedFor: rxKey(rx.predictedFor), revealedFor: rxKey(rx.revealedFor),
               inspect: finite(rx.inspect) ? Math.round(num(rx.inspect, 0, 85, 45)) : null,
-              fitOpen: rx.fitOpen === true, predictions: counter(rx.predictions)
+              fitOpen: rx.fitOpen === true, predictions: counter(rx.predictions),
+              // speed mode
+              mode: rx.mode === 'speed' ? 'speed' : 'angle',
+              sDraft: PHYS_DOUBLING_CHOICES.indexOf(rx.sDraft) >= 0 ? rx.sDraft : null,
+              sGuess: PHYS_DOUBLING_CHOICES.indexOf(rx.sGuess) >= 0 ? rx.sGuess : null,
+              sPredictedFor: rxKey(rx.sPredictedFor), sRevealedFor: rxKey(rx.sRevealedFor),
+              sInspect: finite(rx.sInspect) ? Math.round(num(rx.sInspect, 5, 50, 25)) : null,
+              vSquared: rx.vSquared === true,
+              target: finite(rx.target) && rx.target > 0 && rx.target <= 100000 ? rx.target : null
             };
             var selectedInvestigation = state.investigations.find(function(item) { return String(item.id) === String(raw.selectedInvestigationId); });
             state.selectedInvestigationId = selectedInvestigation ? selectedInvestigation.id : null;
@@ -1206,6 +1386,7 @@ window.StemLab = window.StemLab || {
             cv = cv || (typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null);
             if (!cv || !cv._launch) return false;
             if (!demoLaunch && cv._cancelSymmetryDemo) cv._cancelSymmetryDemo();
+            if (cv._hearing) cv._hearing.stop();
             bump('launchCount', 1);
             sfxPhyLaunch();
             cv._launch(settings);
@@ -3123,6 +3304,39 @@ window.StemLab = window.StemLab || {
           // step carries a `do` that performs or reveals it, so the guidance is
           // operable rather than decorative. Every action is something the
           // student could do by hand — nothing here launches or scores for them.
+          // Hear the flight: the finished trail on screen (the selected recorded flight, else the
+          // latest) played as sound. The handle lives on the canvas element, never in saved state;
+          // `liveTick` only asks React to repaint the button.
+          function physHearTarget(cv) {
+            if (!cv || cv._launched || !Array.isArray(cv._trails)) return null;
+            var selected = !!physSelectedInspection(cv);
+            var trail = selected ? cv._inspection.trail : cv._trails[cv._trails.length - 1];
+            return trail && trail.length >= 2 ? { trail: trail, selected: selected } : null;
+          }
+          function physHearState() {
+            var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+            var hearing = !!(cv && cv._hearing), target = physHearTarget(cv);
+            return { cv: cv, hearing: hearing, target: target, disabled: !hearing && !target };
+          }
+          function physHearFlight() {
+            var st = physHearState(), cv = st.cv;
+            if (!cv) return;
+            if (st.hearing) { cv._hearing.stop(); return; }
+            if (!st.target) return;
+            var P = window.StemLab._physics, ac = getPhyAC(), refHeight = 0;
+            cv._trails.forEach(function(tr) { var q = P.sonifyPlan(tr); if (q && q.maxH > refHeight) refHeight = q.maxH; });
+            var plan = P.sonifyPlan(st.target.trail, { refHeight: refHeight, speed: d.simSpeed > 0 ? d.simSpeed : 1 });
+            var handle = plan && ac ? P.sonifyPlay(plan, ac, function() { if (cv._hearing === handle) cv._hearing = null; bump('liveTick'); }) : null;
+            if (!handle) {
+              if (addToast) addToast('⚠️ ' + __alloT('stem.physics.hear_unavailable', 'Sound is not available here.'), 'warning');
+              return;
+            }
+            cv._hearing = handle; bump('liveTick');
+            var vals = { height: plan.maxH.toFixed(1) + ' m', apex: plan.apexT.toFixed(2), range: plan.range.toFixed(1) + ' m', time: plan.flightTime.toFixed(2) };
+            var msg = __alloT('stem.physics.hear_announce', 'Playing the flight as sound. Highest point {height} at {apex} s; it lands {range} away after {time} s.')
+              .replace(/\{(\w+)\}/g, function(m, k) { return vals[k] != null ? vals[k] : m; });
+            if (typeof announceToSR === 'function') announceToSR(msg);
+          }
           function physScrollTo(sel) {
             try {
               var el = document.querySelector(sel);
@@ -4848,7 +5062,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer [data-physics-controls] legend{font-size:14px;color:var(--phys-ink)}
               @container(max-width:900px){#physics-fs-outer [data-physics-workbench]{grid-template-columns:minmax(0,1fr)}#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(5,minmax(0,1fr))}#physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:auto}#physics-fs-outer [data-physics-controls]>:is([data-physics-display-controls],[data-physics-playback]){grid-column:1/-1}#physics-fs-outer [data-physics-display-controls] .phys-view-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
               @container(max-width:620px){#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(2,minmax(0,1fr));padding:13px}#physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:1/-1}#physics-fs-outer [data-physics-display-controls] .phys-view-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-controls] [data-physics-playback]{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-playback]>:is([data-physics-step],[data-physics-inspect]){grid-column:span 1}#physics-fs-outer .phys-gravity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-display-controls] button[data-physics-view]{padding:10px;min-height:88px}#physics-fs-outer .phys-view-title{display:flex;font-size:12px;gap:6px}#physics-fs-outer .phys-view-title svg{width:16px;height:16px;margin:1px 0 0}#physics-fs-outer [data-physics-display-controls] button[data-physics-view]:last-child{grid-column:1/-1;min-height:68px;flex-direction:row;align-items:center}#physics-fs-outer [data-physics-view]:last-child .phys-view-title{display:flex;align-items:center;gap:8px}#physics-fs-outer [data-physics-view]:last-child svg{margin:0}}
-              @container(max-width:620px){#physics-fs-outer :is([data-physics-range-chart],[data-physics-range-fit-chart]) text{font-size:25px}}
+              @container(max-width:620px){#physics-fs-outer :is([data-physics-range-chart],[data-physics-range-speed-chart],[data-physics-range-fit-chart]) text{font-size:25px}}
               #physics-fs-outer .phys-graph-moments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
               #physics-fs-outer .phys-graph-moments button{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:5px;min-width:0;min-height:72px;padding:10px;border-radius:10px;font:inherit;text-align:left}
               #physics-fs-outer .phys-graph-moments button span{font-size:12px;line-height:1.5}
@@ -5306,6 +5520,15 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     __alloT('stem.physics.inspect_energy_transferred', 'Energy transferred to the air') + ': ' + lost.toFixed(2) + ' J. ' +
                     __alloT('stem.physics.inspect_axes', 'Right and up are positive; potential energy is measured from the ground.'));
                 } }, __alloT('stem.physics.inspect_motion', 'Inspect paused motion & energy')),
+                (function () {
+                  var st = physHearState();
+                  var label = st.hearing ? __alloT('stem.physics.hear_stop', 'Stop the sound')
+                    : st.target && st.target.selected ? __alloT('stem.physics.hear_selected', 'Hear the selected flight')
+                    : __alloT('stem.physics.hear_last', 'Hear the last flight');
+                  return React.createElement('button', { type: 'button', 'data-physics-hear': true, disabled: st.disabled, 'aria-describedby': 'physics-hear-help',
+                    style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg text-xs font-bold bg-white border border-indigo-300 text-indigo-700 disabled:opacity-50',
+                    onClick: physHearFlight }, '🔊 ' + label);
+                })(),
                 React.createElement("button", { 'data-physics-clear': true, "aria-label": __alloT('stem.physics.aria_clear_trails', 'Clear all trajectory trails'),
                   onClick: function () {
                     // Clear IN PLACE. The draw loop keeps its own references to
@@ -5327,7 +5550,8 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200"
                 }, "\u{1F9F9} " + __alloT('stem.physics.clear_trails', 'Clear Trails')),
                 !physSelectedInspection(typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null) && typeof d.inspectionSnapshot === 'string' && d.inspectionSnapshot && React.createElement('p', { 'data-physics-inspection': true, role: 'status', 'aria-live': 'polite', style: { flexBasis: '100%' }, className: 'text-xs leading-relaxed text-indigo-800 rounded-lg bg-white p-3 border border-indigo-200' }, d.inspectionSnapshot),
-                React.createElement('p', { id: 'physics-playback-help', style: { flexBasis: '100%' }, className: 'text-xs text-slate-600' }, __alloT('stem.physics.playback_time_help', 'Choose the playback pace. Pause to inspect recorded points, or use Step to advance the simulation by 0.035 seconds. The launch velocity stays the same.'))
+                React.createElement('p', { id: 'physics-playback-help', style: { flexBasis: '100%' }, className: 'text-xs text-slate-600' }, __alloT('stem.physics.playback_time_help', 'Choose the playback pace. Pause to inspect recorded points, or use Step to advance the simulation by 0.035 seconds. The launch velocity stays the same.')),
+                React.createElement('p', { id: 'physics-hear-help', style: { flexBasis: '100%' }, className: 'text-xs text-slate-600' }, __alloT('stem.physics.hear_help', 'Hear the flight: pitch rises with height and the sound moves from left to right as the ball travels. A bright tick marks the highest point and a low thud marks the landing. It plays once a flight has landed.'))
               ),
 
               // The controller advances this comparison after each landing,
@@ -5917,6 +6141,13 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               function fill(s, map) { return s.replace(/\{(\w+)\}/g, function(m, k) { return map[k] != null ? String(map[k]) : m; }); }
               function deg(a) { return (Math.round(a * 10) / 10).toFixed(1) + '°'; }
               function m1(v) { return v.toFixed(1) + ' m'; }
+              // The prediction form unmounts on reveal, which would drop keyboard focus onto the page.
+              function focusReveal(sel) {
+                setTimeout(function() {
+                  var el = document.querySelector(sel) || document.getElementById('physics-range-title');
+                  if (el && el.focus) el.focus({ preventScroll: true });
+                }, 120);
+              }
               function setRX(patch) {
                 setLabToolData(function(prev) {
                   var cur = physNormalizeState(prev.physics).rangeExplorer;
@@ -5927,13 +6158,202 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               var actionStyle = { minHeight: 44, padding: '9px 13px', borderRadius: 9, border: '1px solid ' + pal.border, background: pal.surface, color: pal.accent, fontSize: 13, fontWeight: 700 };
               var primaryStyle = Object.assign({}, actionStyle, { background: pal.accent, color: pal.surface, borderColor: pal.accent });
               var helpStyle = { margin: '0 0 8px', fontSize: 13, color: pal.muted, lineHeight: 1.45 };
+              // Hear the curve. Each entry: { id, label, points [{x, y}], peakX?, peakY?, refY, from, to, peak, range }.
+              function listenControls(curves, extraHelp) {
+                var playingId = physCurveHearing ? physCurveHearing.id : null;
+                function play(c) {
+                  if (physCurveHearing) { var was = physCurveHearing.id; physCurveHearing.handle.stop(); if (was === c.id) return; }
+                  var ac = getPhyAC(), plan = P.curveSonifyPlan(c.points, { refY: c.refY, peakX: c.peakX, peakY: c.peakY });
+                  var entry = { id: c.id, handle: null };
+                  var handle = plan && ac ? P.sonifyPlay(plan, ac, function() { if (physCurveHearing === entry) { physCurveHearing = null; bump('liveTick'); } }) : null;
+                  if (!handle) {
+                    if (addToast) addToast('⚠️ ' + __alloT('stem.physics.hear_unavailable', 'Sound is not available here.'), 'warning');
+                    return;
+                  }
+                  entry.handle = handle; physCurveHearing = entry; bump('liveTick');
+                  if (typeof announceToSR === 'function') announceToSR(fill(__alloT('stem.physics.range_listen_announce', 'Playing the curve from {from} to {to} in {s} seconds. The pitch is highest at {peak}: {range}.'),
+                    { from: c.from, to: c.to, s: plan.duration, peak: c.peak, range: c.range }));
+                }
+                return h('div', { 'data-physics-range-listen': true, style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
+                  curves.map(function(c) {
+                    var on = playingId === c.id;
+                    return h('button', { key: c.id, type: 'button', 'data-physics-range-listen-curve': c.id, 'data-playing': on ? 'true' : 'false', 'aria-describedby': 'physics-range-listen-help',
+                      onClick: function() { play(c); }, style: actionStyle }, on ? '⏹ ' + __alloT('stem.physics.range_listen_stop', 'Stop the sound') : '🔊 ' + c.label);
+                  }),
+                  h('p', { id: 'physics-range-listen-help', style: Object.assign({}, helpStyle, { margin: 0, flexBasis: '100%' }) },
+                    fill(__alloT('stem.physics.range_listen_help', 'Listen: the sound sweeps along the curve from left to right in {s} seconds, and the pitch rises as the range grows. A bright chime marks the farthest point.'), { s: P.CURVE_SECONDS }) +
+                    (extraHelp ? ' ' + extraHelp : '')));
+              }
               var shell = function(children) {
                 return h('section', { 'data-physics-range-explorer': true, 'aria-labelledby': 'physics-range-title', className: 'mb-3', style: { background: pal.surface, color: pal.ink, border: '1px solid ' + pal.border, borderRadius: 14, padding: 14, display: 'grid', gap: 12, minWidth: 0 } },
                   h('div', null,
-                    h('h4', { id: 'physics-range-title', style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: pal.ink } }, '📈 ' + __alloT('stem.physics.range_title', 'Range explorer: which angle flies farthest?')),
-                    h('p', { style: helpStyle }, __alloT('stem.physics.range_intro', 'Every point on this curve is a full simulated flight with your current speed, gravity, launch height and air setting. Only the angle changes.'))),
+                    h('h4', { id: 'physics-range-title', tabIndex: -1, style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: pal.ink } }, '📈 ' + (rx.mode === 'speed' ? __alloT('stem.physics.range_title_speed', 'Range explorer: how does launch speed change the range?') : __alloT('stem.physics.range_title', 'Range explorer: which angle flies farthest?'))),
+                    h('p', { style: helpStyle }, rx.mode === 'speed'
+                      ? __alloT('stem.physics.range_intro_speed', 'Every point on this curve is a full simulated flight at your current angle, gravity, launch height and air setting. Only the launch speed changes.')
+                      : __alloT('stem.physics.range_intro', 'Every point on this curve is a full simulated flight with your current speed, gravity, launch height and air setting. Only the angle changes.'))),
+                  h('div', { role: 'group', 'aria-labelledby': 'physics-range-mode-label', 'data-physics-range-mode': rx.mode, style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
+                    h('span', { id: 'physics-range-mode-label', style: { fontSize: 13, fontWeight: 700, color: pal.ink } }, __alloT('stem.physics.range_mode_label', 'What to vary')),
+                    [['angle', __alloT('stem.physics.range_axis_angle', 'Launch angle')], ['speed', __alloT('stem.physics.range_mode_speed', 'Launch speed')]].map(function(m) {
+                      var on = rx.mode === m[0];
+                      return h('button', { key: m[0], type: 'button', 'data-physics-range-mode-option': m[0], 'aria-pressed': on, onClick: function() { if (!on) setRX({ mode: m[0] }); }, style: on ? primaryStyle : actionStyle }, m[1]);
+                    })),
                   children);
               };
+              // ── Speed mode: range against launch speed at the current angle, and the doubling question ──
+              function renderSpeedMode() {
+                var angle = d.angle;
+                var ss = P.speedSweep(angle, d.gravity, d.airResist, mass, height);
+                var base = Math.max(5, Math.min(25, Math.round(d.velocity)));
+                var dbl = ss && P.doublingRatio(angle, base, d.gravity, d.airResist, mass, height);
+                if (!ss || !dbl) return h('p', { role: 'status', style: helpStyle }, __alloT('stem.physics.range_unavailable', 'The range curve is not available for these settings.'));
+                var x2 = function(n) { return n.toFixed(2); };
+                var times = function(c) { return '×' + (c % 1 ? c.toFixed(1) : String(c)); };
+                var sKey = ['speed', angle, d.gravity, d.airResist ? 'drag' : 'vacuum', d.airResist ? d.mass : '', height, base].join('|');
+                var sSettings = fill(__alloT('stem.physics.range_speed_settings', 'Settings: angle {angle}°, g = {grav} m/s², launch height {height} m, {air}.'), {
+                  angle: angle, grav: d.gravity, height: height,
+                  air: d.airResist ? fill(__alloT('stem.physics.range_air_on', 'air drag on, {mass} kg'), { mass: d.mass }) : __alloT('stem.physics.range_air_off', 'no air drag') });
+                var question = fill(__alloT('stem.physics.range_speed_question', 'If you double the launch speed from {v1} to {v2} m/s, about how many times farther does the ball land?'), { v1: dbl.v1, v2: dbl.v2 });
+
+                if (rx.sRevealedFor !== sKey) {
+                  var lock = function() {
+                    if (rx.sDraft == null) return;
+                    var rewarded = rx.predictions < 5;
+                    setRX({ sGuess: rx.sDraft, sPredictedFor: sKey, sRevealedFor: sKey, sInspect: Math.round(d.velocity), predictions: rx.predictions + 1 });
+                    if (rewarded && awardStemXP) awardStemXP('physicsRange', 5, 'Range explorer prediction');
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.physics.range_revealed_sr', 'Prediction saved. The range curve and your result are shown below.'));
+                    focusReveal('[data-physics-range-speed-feedback]');
+                  };
+                  return h('div', { 'data-physics-range-speed-predict': true, style: cardStyle },
+                    h('p', { style: { margin: '0 0 6px', fontSize: 14, fontWeight: 700 } }, sSettings),
+                    rx.sPredictedFor && rx.sPredictedFor !== sKey && h('p', { style: helpStyle }, __alloT('stem.physics.range_settings_changed', 'Your settings changed since the last prediction, so the curve changed too. Predict again.')),
+                    h('fieldset', { style: { border: 0, margin: 0, padding: 0, minWidth: 0 } },
+                      h('legend', { style: { fontSize: 14, fontWeight: 700, padding: 0, marginBottom: 8, color: pal.ink } }, question),
+                      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, P.DOUBLING_CHOICES.map(function(c) {
+                        var on = rx.sDraft === c;
+                        return h('label', { key: c, style: { display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, minWidth: 64, padding: '6px 12px', borderRadius: 9, border: '2px solid ' + (on ? pal.accent : pal.border), background: pal.surface, color: pal.ink, fontSize: 15, fontWeight: 700, cursor: 'pointer' } },
+                          h('input', { type: 'radio', name: 'physics-range-doubling', value: String(c), checked: on, 'data-physics-range-choice': String(c), onChange: function() { setRX({ sDraft: c }); }, style: { width: 18, height: 18, accentColor: pal.accent } }),
+                          times(c));
+                      }))),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
+                      h('button', { type: 'button', 'data-physics-range-speed-submit': true, disabled: rx.sDraft == null, 'aria-disabled': rx.sDraft == null, onClick: lock, style: Object.assign({}, primaryStyle, rx.sDraft == null ? { opacity: .6, cursor: 'not-allowed' } : {}) }, __alloT('stem.physics.range_predict_submit', 'Lock in my prediction')),
+                      h('button', { type: 'button', 'data-physics-range-speed-skip': true, onClick: function() { setRX({ sRevealedFor: sKey, sInspect: Math.round(d.velocity) }); focusReveal('#physics-range-title'); }, style: actionStyle }, __alloT('stem.physics.range_skip', 'Show the curve without predicting'))));
+                }
+
+                var pts = ss.points, vsq = rx.vSquared;
+                var inspectV = Math.max(5, Math.min(50, rx.sInspect == null ? Math.round(d.velocity) : rx.sInspect));
+                var ip = pts[inspectV - 5];
+                var W = 640, H = 300, L = 84, R = 18, T = 18, B = 56, pw = W - L - R, ph = H - T - B;
+                function nCeil(v) { var p = Math.pow(10, Math.floor(Math.log10(Math.max(v, 1e-9)))), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+                function nMax(v) { var step = nCeil(v / 5); return { max: Math.ceil(v / step) * step, step: step }; }
+                var xA = vsq ? nMax(2500) : { max: 50 }, xMin = vsq ? 0 : 5;
+                var xs = function(v) { return vsq ? v * v : v; };
+                var X = function(v) { return L + (xs(v) - xMin) / (xA.max - xMin) * pw; };
+                var yA = nMax(Math.max.apply(null, pts.map(function(p) { return p.vacuumRange; })) * 1.05);
+                var Y = function(r) { return T + ph - r / yA.max * ph; };
+                var curve = function(field) { return pts.map(function(p, i) { return (i ? 'L' : 'M') + X(p.vel).toFixed(1) + ' ' + Y(p[field]).toFixed(1); }).join(' '); };
+                var xTicks = vsq ? (function() { var t = []; for (var x = 0; x <= xA.max + 1e-9; x += xA.step) t.push(x); return t; })() : [5, 10, 20, 30, 40, 50];
+                var tickX = function(t) { return L + (t - xMin) / (xA.max - xMin) * pw; };
+                var yTicks = []; for (var yt = 0; yt <= yA.max + 1e-9; yt += yA.step) yTicks.push(yt);
+                var mainColor = d.airResist ? pal.drag : pal.vacuum;
+                var chart = h('svg', { 'data-physics-range-speed-chart': true, 'data-x-axis': vsq ? 'v2' : 'v', viewBox: '0 0 ' + W + ' ' + H, role: 'img', style: { width: '100%', height: 'auto', display: 'block', background: pal.surface, borderRadius: 10 },
+                  'aria-label': fill(__alloT('stem.physics.range_speed_chart_aria', 'Range versus launch speed from 5 to 50 m/s at {angle}°. Doubling the speed from {v1} to {v2} m/s multiplies the range by {ratio}.'), { angle: angle, v1: dbl.v1, v2: dbl.v2, ratio: '×' + x2(dbl.ratio) }) },
+                  yTicks.map(function(v) { return h('g', { key: 'y' + v },
+                    h('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: pal.grid, strokeWidth: 1, 'aria-hidden': true }),
+                    h('text', { x: L - 8, y: Y(v) + 5, fill: pal.ink, fontSize: 15, textAnchor: 'end' }, String(Math.round(v * 10) / 10))); }),
+                  xTicks.map(function(t, i) { return h('text', { key: 'x' + t, x: tickX(t), y: T + ph + 22, fill: pal.ink, fontSize: 15, textAnchor: i === 0 ? 'start' : i === xTicks.length - 1 ? 'end' : 'middle' }, String(t)); }),
+                  h('line', { x1: L, x2: L, y1: T, y2: T + ph, stroke: pal.ink, strokeWidth: 1.5 }),
+                  h('line', { x1: L, x2: W - R, y1: T + ph, y2: T + ph, stroke: pal.ink, strokeWidth: 1.5 }),
+                  h('text', { x: L + pw / 2, y: H - 8, fill: pal.ink, fontSize: 15, fontWeight: 700, textAnchor: 'middle' }, vsq ? __alloT('stem.physics.range_speed_axis_sq', 'Launch speed squared, v² (m²/s²)') : __alloT('stem.physics.range_speed_axis', 'Launch speed (m/s)')),
+                  h('text', { x: 16, y: T + ph / 2, fill: pal.ink, fontSize: 15, fontWeight: 700, textAnchor: 'middle', transform: 'rotate(-90 16 ' + (T + ph / 2) + ')' }, __alloT('stem.physics.range_axis_range', 'Range (m)')),
+                  d.airResist && h('path', { 'data-physics-range-curve': 'vacuum', d: curve('vacuumRange'), fill: 'none', stroke: pal.vacuum, strokeWidth: 2.5, strokeDasharray: '9 6' }),
+                  h('path', { 'data-physics-range-curve': d.airResist ? 'drag' : 'vacuum', d: curve('range'), fill: 'none', stroke: mainColor, strokeWidth: 3.5 }),
+                  h('line', { 'data-physics-range-now': true, x1: X(Math.max(5, Math.min(50, d.velocity))), x2: X(Math.max(5, Math.min(50, d.velocity))), y1: T, y2: T + ph, stroke: pal.muted, strokeWidth: 2, strokeDasharray: '2 5' }),
+                  h('line', { x1: X(inspectV), x2: X(inspectV), y1: T, y2: T + ph, stroke: pal.accent, strokeWidth: 2 }),
+                  [[dbl.v1, dbl.r1], [dbl.v2, dbl.r2]].map(function(pr, i) { return h('rect', { key: 'pair' + i, 'data-physics-range-pair': pr[0], x: X(pr[0]) - 7, y: Y(pr[1]) - 7, width: 14, height: 14, fill: pal.mark, stroke: pal.surface, strokeWidth: 2 }); }),
+                  h('circle', { cx: X(inspectV), cy: Y(ip.range), r: 5.5, fill: pal.accent, stroke: pal.surface, strokeWidth: 2 }));
+
+                var legendItem = function(key, swatch, text) { return h('li', { key: key, style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, minWidth: 0 } },
+                  h('svg', { width: 34, height: 14, viewBox: '0 0 34 14', 'aria-hidden': true, focusable: false, style: { flex: '0 0 auto' } }, swatch), h('span', null, text)); };
+                var legend = h('ul', { 'data-physics-range-legend': true, style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 210px), 1fr))', gap: 6 } },
+                  legendItem('main', h('line', { x1: 2, x2: 32, y1: 7, y2: 7, stroke: mainColor, strokeWidth: 3.5 }), d.airResist ? __alloT('stem.physics.range_key_drag', 'Simulated range through air') : __alloT('stem.physics.range_key_vacuum_only', 'Simulated range (no air drag)')),
+                  d.airResist && legendItem('vac', h('line', { x1: 2, x2: 32, y1: 7, y2: 7, stroke: pal.vacuum, strokeWidth: 2.5, strokeDasharray: '9 6' }), __alloT('stem.physics.range_key_vacuum', 'Same launches without air drag')),
+                  legendItem('pair', h('rect', { x: 10, y: 0, width: 14, height: 14, fill: pal.mark }), fill(__alloT('stem.physics.range_key_pair', 'Doubling pair: {v1} and {v2} m/s'), { v1: dbl.v1, v2: dbl.v2 })),
+                  legendItem('now', h('line', { x1: 17, x2: 17, y1: 0, y2: 14, stroke: pal.muted, strokeWidth: 2, strokeDasharray: '2 3' }), fill(__alloT('stem.physics.range_key_now_speed', 'Launcher now: {v} m/s'), { v: d.velocity })));
+
+                var sPredicted = rx.sPredictedFor === sKey && rx.sGuess != null;
+                var feedback = sPredicted && h('div', { 'data-physics-range-speed-feedback': true, role: 'status', tabIndex: -1, style: cardStyle },
+                  h('p', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800 } }, rx.sGuess === dbl.closest
+                    ? __alloT('stem.physics.range_speed_verdict_right', '🎯 That is the closest choice.')
+                    : fill(__alloT('stem.physics.range_speed_verdict_other', '🔍 The closest choice is {closest}.'), { closest: times(dbl.closest) })),
+                  h('p', { style: { margin: 0, fontSize: 14 } }, fill(__alloT('stem.physics.range_speed_feedback', 'You predicted {guess}. From {v1} to {v2} m/s the range goes from {r1} to {r2}: {ratio}.'), {
+                    guess: times(rx.sGuess), v1: dbl.v1, v2: dbl.v2, r1: m1(dbl.r1), r2: m1(dbl.r2), ratio: '×' + x2(dbl.ratio) })));
+
+                // What the curve shows; every sentence is computed from the simulation.
+                var findings = [];
+                if (!d.airResist && height === 0) findings.push(fill(__alloT('stem.physics.range_speed_find_square', 'With no air drag and landing at launch height, doubling the speed multiplies the range by exactly {ratio}. Range grows with the square of speed: R = v₀²·sin(2θ)/g.'), { ratio: '×' + x2(dbl.vacuumRatio) }));
+                if (height > 0) findings.push(fill(__alloT('stem.physics.range_speed_find_height', 'From {height} m up, doubling the speed multiplies the no-drag range by {ratio}, less than 4. Part of the time in the air comes from falling the extra height, and that part does not depend on speed.'), { height: height, ratio: '×' + x2(dbl.vacuumRatio) }));
+                if (d.airResist) findings.push(fill(__alloT('stem.physics.range_speed_find_drag', 'Through air, doubling the speed multiplies the range by {ratio} instead of {vac}. Drag grows with the square of speed, so faster launches lose a bigger share of their range.'), { ratio: '×' + x2(dbl.ratio), vac: '×' + x2(dbl.vacuumRatio) }));
+                if (d.airResist && d.mass < 10) {
+                  var heavy = P.doublingRatio(angle, base, d.gravity, true, 10, height);
+                  if (heavy) findings.push(fill(__alloT('stem.physics.range_speed_find_mass', 'Try a heavier ball: with 10 kg the same doubling gives {heavy}, closer to the no-drag {vac}.'), { heavy: '×' + x2(heavy.ratio), vac: '×' + x2(dbl.vacuumRatio) }));
+                }
+                if (vsq && height === 0) findings.push(__alloT('stem.physics.range_speed_find_line', 'Plotted against v², the no-drag curve is a straight line through the origin: range is proportional to speed squared.'));
+
+                var velLock = d.targetMode && d.targetConstraint && d.targetConstraint.type === 'fixedVelocity';
+                var vLabel = inspectV + ' m/s';
+                var same = d.velocity === inspectV, applyDisabled = !!velLock || same;
+                var inspector = h('div', { 'data-physics-range-inspect': true, style: cardStyle },
+                  h('label', { htmlFor: 'physics-range-speed-inspect', style: { display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.physics.range_speed_inspect_label', 'Read the curve at a speed')),
+                  h('input', { id: 'physics-range-speed-inspect', 'data-physics-range-speed-slider': true, type: 'range', min: 5, max: 50, step: 1, value: inspectV,
+                    'aria-valuetext': vLabel + ': ' + m1(ip.range), onChange: function(e) { setRX({ sInspect: Math.round(Number(e.target.value)) }); }, style: { width: '100%', accentColor: pal.accent } }),
+                  h('p', { 'data-physics-range-reading': true, style: { margin: '6px 0 8px', fontSize: 14 } },
+                    fill(__alloT('stem.physics.range_reading', 'At {angle}: range {range}, flight time {time} s, highest point {maxH} above the ground.'), { angle: vLabel, range: m1(ip.range), time: ip.time.toFixed(2), maxH: m1(ip.maxH) }) +
+                    (d.airResist ? ' ' + fill(__alloT('stem.physics.range_reading_vacuum', 'Without air drag: {range}.'), { range: m1(ip.vacuumRange) }) : '')),
+                  h('button', { type: 'button', 'data-physics-range-apply': true, disabled: applyDisabled, 'aria-disabled': applyDisabled, style: Object.assign({}, actionStyle, applyDisabled ? { opacity: .6, cursor: 'not-allowed' } : {}),
+                    title: velLock ? __alloT('stem.physics.range_speed_apply_locked', 'This mission fixes the speed.') : undefined,
+                    onClick: function() {
+                      if (applyDisabled) return;
+                      upd('velocity', inspectV);
+                      if (typeof announceToSR === 'function') announceToSR(fill(__alloT('stem.physics.range_apply_done', 'Launcher set to {angle}. Launch to test the curve.'), { angle: vLabel }));
+                    } }, fill(same ? __alloT('stem.physics.range_apply_same', 'The launcher is already at {angle}') : __alloT('stem.physics.range_apply', 'Set the launcher to {angle} and test it'), { angle: vLabel })));
+                var vsqToggle = h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, fontSize: 14, fontWeight: 700, color: pal.ink, cursor: 'pointer' } },
+                  h('input', { type: 'checkbox', 'data-physics-range-vsq': true, checked: vsq, onChange: function(e) { setRX({ vSquared: !!e.target.checked }); }, style: { width: 18, height: 18, accentColor: pal.accent } }),
+                  __alloT('stem.physics.range_speed_vsq', 'Plot against v² (speed squared)'));
+                var table = h('details', { 'data-physics-range-table': true, style: cardStyle },
+                  h('summary', { style: { cursor: 'pointer', fontSize: 14, fontWeight: 700, minHeight: 24 } }, __alloT('stem.physics.range_speed_table_summary', 'Show the numbers (every 5 m/s)')),
+                  h('div', { style: { overflowX: 'auto', marginTop: 8 } },
+                    h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, overflowWrap: 'normal' } },
+                      h('caption', { className: 'sr-only' }, __alloT('stem.physics.range_speed_table_caption', 'Simulated range at each launch speed')),
+                      h('thead', null, h('tr', null, [__alloT('stem.physics.range_fit_col_speed', 'Speed (m/s)'), d.airResist ? __alloT('stem.physics.range_col_drag', 'Range through air (m)') : __alloT('stem.physics.range_col_range', 'Range (m)')].concat(d.airResist ? [__alloT('stem.physics.range_col_vacuum', 'Without drag (m)')] : []).concat([__alloT('stem.physics.range_col_time', 'Flight time (s)')]).map(function(c, i) {
+                        return h('th', { key: i, scope: 'col', style: { textAlign: 'left', padding: '4px 8px', borderBottom: '2px solid ' + pal.border } }, c); }))),
+                      h('tbody', null, pts.filter(function(p) { return p.vel % 5 === 0; }).map(function(p) {
+                        return h('tr', { key: p.vel },
+                          h('th', { scope: 'row', style: { textAlign: 'left', padding: '3px 8px', fontWeight: 700 } }, String(p.vel)),
+                          h('td', { style: { padding: '3px 8px' } }, p.range.toFixed(1)),
+                          d.airResist && h('td', { style: { padding: '3px 8px' } }, p.vacuumRange.toFixed(1)),
+                          h('td', { style: { padding: '3px 8px' } }, p.time.toFixed(2))); })))));
+                return [
+                  h('p', { key: 'set', style: { margin: 0, fontSize: 14, fontWeight: 700 } }, sSettings),
+                  feedback && h('div', { key: 'fb' }, feedback),
+                  h('div', { key: 'chart', style: { display: 'grid', gap: 8, minWidth: 0 } }, chart, vsqToggle, legend, (function() {
+                    var refY = Math.max.apply(null, pts.map(function(p) { return p.vacuumRange; }));
+                    var mk = function(id, label, field) {
+                      var top = pts.reduce(function(b, p) { return p[field] > b[field] ? p : b; }, pts[0]);
+                      return { id: id, label: label, refY: refY, points: pts.map(function(p) { return { x: xs(p.vel), y: p[field] }; }),
+                        from: '5 m/s', to: '50 m/s', peak: top.vel + ' m/s', range: m1(top[field]) };
+                    };
+                    return listenControls([mk(d.airResist ? 'drag' : 'vacuum', __alloT('stem.physics.range_listen', 'Listen to the curve'), 'range')]
+                      .concat(d.airResist ? [mk('vacuum', __alloT('stem.physics.range_listen_vacuum', 'Listen without air drag'), 'vacuumRange')] : []),
+                      d.airResist ? __alloT('stem.physics.range_listen_help_drag_speed', 'Play both curves: through air the pitch climbs more slowly and ends lower.') : '');
+                  })()),
+                  h('div', { key: 'insp' }, inspector),
+                  h('div', { key: 'find', 'data-physics-range-speed-findings': true, style: cardStyle },
+                    h('h5', { style: { margin: '0 0 6px', fontSize: 15, fontWeight: 800 } }, __alloT('stem.physics.range_findings_title', 'What the curve shows')),
+                    h('ul', { style: { margin: 0, paddingLeft: 20, listStyle: 'disc', display: 'grid', gap: 4, fontSize: 14 } }, findings.map(function(f, i) { return h('li', { key: i }, f); }))),
+                  h('div', { key: 'table' }, table)
+                ];
+              }
+              if (rx.mode === 'speed') return shell(renderSpeedMode());
               if (!sweep) return shell(h('p', { role: 'status', style: helpStyle }, __alloT('stem.physics.range_unavailable', 'The range curve is not available for these settings.')));
               var settingsKey = [d.velocity, d.gravity, d.airResist ? 'drag' : 'vacuum', d.airResist ? d.mass : '', height].join('|');
               var revealed = rx.revealedFor === settingsKey;
@@ -5956,6 +6376,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   setRX({ prediction: draftValue, predictedFor: settingsKey, revealedFor: settingsKey, predictions: rx.predictions + 1, inspect: Math.round(draftValue) });
                   if (rewarded && awardStemXP) awardStemXP('physicsRange', 5, 'Range explorer prediction');
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.physics.range_revealed_sr', 'Prediction saved. The range curve and your result are shown below.'));
+                  focusReveal('[data-physics-range-feedback]');
                 };
                 return shell(h('div', { 'data-physics-range-predict': true, style: cardStyle },
                   h('p', { style: { margin: '0 0 6px', fontSize: 14, fontWeight: 700 } }, settingsLine),
@@ -5968,7 +6389,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                       onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                       style: { width: 110, minHeight: 44, background: pal.surface, color: pal.ink, border: '1px solid ' + (isContrast ? '#ffffff' : pal.muted), borderRadius: 9, padding: '8px 10px', fontSize: 15 } }),
                     h('button', { type: 'button', 'data-physics-range-submit': true, disabled: !draftValid, 'aria-disabled': !draftValid, onClick: submit, style: Object.assign({}, primaryStyle, draftValid ? {} : { opacity: .6, cursor: 'not-allowed' }) }, __alloT('stem.physics.range_predict_submit', 'Lock in my prediction')),
-                    h('button', { type: 'button', 'data-physics-range-skip': true, onClick: function() { setRX({ revealedFor: settingsKey, inspect: Math.round(sweep.best.angle) }); }, style: actionStyle }, __alloT('stem.physics.range_skip', 'Show the curve without predicting'))),
+                    h('button', { type: 'button', 'data-physics-range-skip': true, onClick: function() { setRX({ revealedFor: settingsKey, inspect: Math.round(sweep.best.angle) }); focusReveal('#physics-range-title'); }, style: actionStyle }, __alloT('stem.physics.range_skip', 'Show the curve without predicting'))),
                   h('p', { id: 'physics-range-prediction-help', style: Object.assign({}, helpStyle, { margin: '6px 0 0' }) }, fill(__alloT('stem.physics.range_predict_help', 'Enter an angle from {min}° to {max}°. Think about what changes when the launch is higher or the air pushes back.'), { min: sweep.min, max: sweep.max }))));
               }
 
@@ -5976,7 +6397,8 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               var pts = sweep.points, best = sweep.best, vacBest = sweep.vacuumBest;
               var inspectAngle = Math.max(sweep.min, Math.min(sweep.max, rx.inspect == null ? Math.round(best.angle) : rx.inspect));
               var inspectPoint = pts[inspectAngle - sweep.min];
-              var W = 640, H = 300, L = 64, R = 18, T = 18, B = 56, plotW = W - L - R, plotH = H - T - B;
+              // L leaves room for the rotated axis title beside tick labels enlarged at phone width.
+              var W = 640, H = 300, L = 84, R = 18, T = 18, B = 56, plotW = W - L - R, plotH = H - T - B;
               function niceCeil(v) { var p = Math.pow(10, Math.floor(Math.log10(Math.max(v, 1e-9)))), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
               // Axis top: the first whole tick above the data, ticks about a fifth apart.
               function niceMax(v) { var step = niceCeil(v / 5); return { max: Math.ceil(v / step) * step, step: step }; }
@@ -5989,6 +6411,15 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               if (xTicks[0] !== sweep.min) xTicks.unshift(sweep.min);
               var yTicks = [];
               for (var yt = 0; yt <= yMax + 1e-9; yt += yStep) yTicks.push(yt);
+              // Two ways to hit a target: the slider stays on the chart's range axis.
+              var tStep = yStep / 10, tMax = Math.floor(yMax / tStep + 1e-9) * tStep;
+              var snapT = function(v) { return Math.max(tStep, Math.min(tMax, Math.round(v / tStep) * tStep)); };
+              var target = snapT(rx.target == null ? best.range * 0.75 : rx.target);
+              var hits = P.targetAngles(sweep, target, d.airResist);
+              var vacHits = d.airResist ? P.targetAngles(sweep, target, false) : null;
+              var tDec = 0;
+              while (tDec < 3 && Math.abs(Math.round(tStep * Math.pow(10, tDec)) - tStep * Math.pow(10, tDec)) > 1e-9) tDec++;
+              var mT = function(v) { return v.toFixed(tDec) + ' m'; };
               var currentAngle = d.angle;
               var matchingRuns = (Array.isArray(d.runLog) ? d.runLog : []).filter(function(r) {
                 return r.modelVersion === P.MODEL_VERSION && r.vel === d.velocity && r.grav === d.gravity && r.drag === !!d.airResist &&
@@ -6014,6 +6445,8 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 d.airResist && h('circle', { cx: X(vacBest.angle), cy: Y(vacBest.range), r: 7, fill: pal.surface, stroke: pal.vacuum, strokeWidth: 3 }),
                 h('circle', { 'data-physics-range-best': true, cx: X(best.angle), cy: Y(best.range), r: 8, fill: mainColor, stroke: pal.surface, strokeWidth: 2 }),
                 h('circle', { cx: X(inspectAngle), cy: Y(inspectPoint.range), r: 5.5, fill: pal.accent, stroke: pal.surface, strokeWidth: 2 }),
+                h('line', { 'data-physics-range-target-line': true, x1: L, x2: W - R, y1: Y(target), y2: Y(target), stroke: pal.good, strokeWidth: 2, strokeDasharray: '6 4' }),
+                hits && ['low', 'high'].map(function(k) { var p = hits[k]; return p && h('circle', { key: 'hit' + k, 'data-physics-range-target-hit': k, cx: X(p.angle), cy: Y(target), r: 7, fill: 'none', stroke: pal.good, strokeWidth: 3 }); }),
                 matchingRuns.map(function(r) { return h('rect', { key: 'run' + r.n, 'data-physics-range-run': r.n, x: X(r.angle) - 6, y: Y(r.range) - 6, width: 12, height: 12, fill: 'none', stroke: pal.ink, strokeWidth: 2.5 }); }));
 
               var legendItem = function(key, swatch, text) { return h('li', { key: key, style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, minWidth: 0 } },
@@ -6024,6 +6457,8 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 legendItem('best', h('circle', { cx: 17, cy: 7, r: 6, fill: mainColor }), fill(__alloT('stem.physics.range_key_best', 'Farthest: {range} at {angle}'), { range: m1(best.range), angle: deg(best.angle) })),
                 legendItem('now', h('line', { x1: 17, x2: 17, y1: 0, y2: 14, stroke: pal.muted, strokeWidth: 2, strokeDasharray: '2 3' }), fill(__alloT('stem.physics.range_key_now', 'Launcher now: {angle}'), { angle: currentAngle + '°' })),
                 predicted && legendItem('guess', h('line', { x1: 17, x2: 17, y1: 0, y2: 14, stroke: pal.mark, strokeWidth: 2.5, strokeDasharray: '5 2 1 2' }), fill(__alloT('stem.physics.range_key_guess', 'Your prediction: {angle}'), { angle: rx.prediction + '°' })),
+                legendItem('target', h('g', null, h('line', { x1: 2, x2: 32, y1: 7, y2: 7, stroke: pal.good, strokeWidth: 2, strokeDasharray: '6 4' }), h('circle', { cx: 17, cy: 7, r: 5, fill: 'none', stroke: pal.good, strokeWidth: 2.5 })),
+                  fill(__alloT('stem.physics.range_key_target', 'Target distance: {d}'), { d: mT(target) })),
                 matchingRuns.length > 0 && legendItem('runs', h('rect', { x: 11, y: 1, width: 12, height: 12, fill: 'none', stroke: pal.ink, strokeWidth: 2.5 }), fill(__alloT('stem.physics.range_key_runs', 'Your logged flights with these settings ({n})'), { n: matchingRuns.length })));
 
               // Prediction feedback, measured on the same curve.
@@ -6038,7 +6473,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   : off <= 6 ? __alloT('stem.physics.range_verdict_close', '✅ Close to the peak.')
                   : pct != null && pct >= 95 ? __alloT('stem.physics.range_verdict_flat', '📏 Not the peak angle, but almost the full range. The top of the curve is flat.')
                   : __alloT('stem.physics.range_verdict_far', '🔍 The curve peaks somewhere else. Compare your angle with the dot.');
-                feedback = h('div', { 'data-physics-range-feedback': true, role: 'status', style: cardStyle },
+                feedback = h('div', { 'data-physics-range-feedback': true, role: 'status', tabIndex: -1, style: cardStyle },
                   h('p', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800 } }, verdict),
                   h('p', { style: { margin: 0, fontSize: 14 } }, fill(__alloT('stem.physics.range_feedback', 'You predicted {guess}°. The farthest angle for these settings is {best} ({range}). Your angle lands at {yours}, which is {pct}% of the maximum.'), {
                     guess: rx.prediction, best: deg(best.angle), range: m1(best.range), yours: atGuess ? m1(atGuess.range) : '—', pct: pct == null ? '—' : pct.toFixed(pct > 99 ? 1 : 0) })));
@@ -6080,6 +6515,50 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     if (typeof announceToSR === 'function') announceToSR(fill(__alloT('stem.physics.range_apply_done', 'Launcher set to {angle}. Launch to test the curve.'), { angle: inspectAngle + '°' }));
                   } }, fill(currentAngle === inspectAngle ? __alloT('stem.physics.range_apply_same', 'The launcher is already at {angle}') : __alloT('stem.physics.range_apply', 'Set the launcher to {angle} and test it'), { angle: inspectAngle + '°' })));
 
+              // Two ways to hit a target: each crossing of the target line is an angle that lands there.
+              var targetCard = (function() {
+                var both = hits && hits.low && hits.high;
+                var lines = [], pairText;
+                if (!hits || !hits.reachable) {
+                  pairText = __alloT('stem.physics.range_target_out_of_reach', 'out of reach');
+                  lines.push(fill(__alloT('stem.physics.range_target_none', 'No angle reaches {d}: the farthest is {best} at {angle}. Pick a shorter target, or launch faster.'), { d: mT(target), best: m1(best.range), angle: deg(best.angle) }));
+                  if (vacHits && vacHits.reachable) lines.push(fill(__alloT('stem.physics.range_target_none_vac', 'Without air drag it would reach: the no-drag curve peaks at {best}.'), { best: m1(vacBest.range) }));
+                } else if (both) {
+                  // Without drag from the ground the pair sums to 90° exactly; show it that way at 0.1° precision.
+                  var exact90 = !d.airResist && height === 0;
+                  var lowShown = Math.round(hits.low.angle * 10) / 10, highShown = exact90 ? 90 - lowShown : Math.round(hits.high.angle * 10) / 10;
+                  var lowTxt = lowShown.toFixed(1) + '°', highTxt = highShown.toFixed(1) + '°';
+                  pairText = fill(__alloT('stem.physics.range_target_pair', '{low} and {high}'), { low: lowTxt, high: highTxt });
+                  lines.push(fill(__alloT('stem.physics.range_target_two', 'Two angles land at {d}: {low} and {high}.'), { d: mT(target), low: lowTxt, high: highTxt }));
+                  lines.push(fill(__alloT('stem.physics.range_target_compare', 'The low shot is in the air for {tl} s and rises {hl}. The high shot takes {th} s and rises {hh}.'), {
+                    tl: hits.low.time.toFixed(2), hl: m1(hits.low.maxH), th: hits.high.time.toFixed(2), hh: m1(hits.high.maxH) }));
+                  if (exact90) lines.push(fill(__alloT('stem.physics.range_target_sum', 'With no air drag, from the ground, the two angles always add up to 90°: {low} + {high} = {sum}. θ and 90° − θ give the same sin(2θ).'), { low: lowTxt, high: highTxt, sum: '90.0°' }));
+                  if (vacHits && vacHits.low && vacHits.high) lines.push(fill(__alloT('stem.physics.range_target_closer', 'Without air drag the two angles would be {vlow} and {vhigh}. Through air they move closer together: every flight comes up shorter, so the low shot must aim higher and the high shot lower.'), { vlow: deg(vacHits.low.angle), vhigh: deg(vacHits.high.angle) }));
+                } else if (hits.low || hits.high) {
+                  var only = hits.low || hits.high;
+                  pairText = deg(only.angle);
+                  lines.push(fill(__alloT('stem.physics.range_target_one', 'Only one angle on the Angle slider lands at {d}: {angle}. The other crossing is outside the slider ({min}° to {max}°).'), { d: mT(target), angle: deg(only.angle), min: sweep.min, max: sweep.max }));
+                } else {
+                  pairText = __alloT('stem.physics.range_target_out_of_reach', 'out of reach');
+                  lines.push(fill(__alloT('stem.physics.range_target_all_farther', 'Every angle from {min}° to {max}° lands farther than {d}. Pick a longer target.'), { d: mT(target), min: sweep.min, max: sweep.max }));
+                }
+                var reads = hits ? ['low', 'high'].filter(function(k) { return hits[k]; }).map(function(k) {
+                  var whole = Math.max(sweep.min, Math.min(sweep.max, Math.round(hits[k].angle)));
+                  return h('button', { key: k, type: 'button', 'data-physics-range-target-read': k, style: actionStyle,
+                    onClick: function() { setRX({ inspect: whole }); focusReveal('#physics-range-inspect'); } },
+                    fill(__alloT('stem.physics.range_target_read', 'Read the curve at {angle}'), { angle: whole + '°' }));
+                }) : [];
+                return h('div', { 'data-physics-range-target': true, style: cardStyle },
+                  h('h5', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800 } }, '🎯 ' + __alloT('stem.physics.range_target_title', 'Two ways to hit a target')),
+                  h('p', { style: helpStyle }, __alloT('stem.physics.range_target_intro', 'Pick a distance. The dashed line across the chart marks it, and each place where it crosses the curve is a launch angle that lands exactly there.')),
+                  h('label', { htmlFor: 'physics-range-target', style: { display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 6 } }, fill(__alloT('stem.physics.range_target_label', 'Target distance: {d}'), { d: mT(target) })),
+                  h('input', { id: 'physics-range-target', 'data-physics-range-target-slider': true, type: 'range', min: tStep, max: tMax, step: tStep, value: target,
+                    'aria-valuetext': mT(target) + ': ' + pairText,
+                    onChange: function(e) { setRX({ target: snapT(Number(e.target.value)) }); }, style: { width: '100%', accentColor: pal.accent } }),
+                  h('div', { 'data-physics-range-target-result': true, style: { margin: '6px 0 8px', fontSize: 14, display: 'grid', gap: 4 } }, lines.map(function(t, i) { return h('p', { key: i, style: { margin: 0 } }, t); })),
+                  reads.length > 0 && h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, reads));
+              })();
+
               var table = h('details', { 'data-physics-range-table': true, style: cardStyle },
                 h('summary', { style: { cursor: 'pointer', fontSize: 14, fontWeight: 700, minHeight: 24 } }, __alloT('stem.physics.range_table_summary', 'Show the numbers (every 5°)')),
                 h('div', { style: { overflowX: 'auto', marginTop: 8 } },
@@ -6102,7 +6581,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 var fit = P.fitGravity(d.runLog);
                 var reasons = {
                   drag: __alloT('stem.physics.range_ex_drag', 'air drag was on. Drag shortens the flight, so this point sits below the line'),
-                  height: __alloT('stem.physics.range_ex_height', 'launched above the ground. It falls farther than launch height, so it flies past the formula'),
+                  height: __alloT('stem.physics.range_ex_height', 'launched above the ground. It lands below its launch height, so it flies farther than the formula predicts'),
                   model: __alloT('stem.physics.range_ex_model', 'recorded with an older version of the simulation'),
                   gravity: __alloT('stem.physics.range_ex_gravity', 'used a different gravity setting')
                 };
@@ -6116,7 +6595,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   var fxAxis = niceMax(Math.max.apply(null, shown.map(function(p) { return Math.max(p.x, 1); })) * 1.08);
                   var fyAxis = niceMax(Math.max.apply(null, shown.map(function(p) { return p.y; }).concat([fit.slope * fxAxis.max])) * 1.04);
                   var fxMax = fxAxis.max, fyMax = fyAxis.max;
-                  var FW = 640, FH = 280, FL = 64, FR = 18, FT = 16, FB = 56, fw = FW - FL - FR, fh = FH - FT - FB;
+                  var FW = 640, FH = 280, FL = 84, FR = 18, FT = 16, FB = 56, fw = FW - FL - FR, fh = FH - FT - FB;
                   var fX = function(v) { return FL + v / fxMax * fw; }, fY = function(v) { return FT + fh - v / fyMax * fh; };
                   var lineEndX = Math.min(fxMax, fyMax / fit.slope);
                   var fxStep = fxAxis.step, fyStep = fyAxis.step, fxT = [], fyT = [];
@@ -6159,8 +6638,18 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               return shell([
                 h('p', { key: 'set', style: { margin: 0, fontSize: 14, fontWeight: 700 } }, settingsLine),
                 feedback && h('div', { key: 'fb' }, feedback),
-                h('div', { key: 'chart', style: { display: 'grid', gap: 8, minWidth: 0 } }, chart, legend),
+                h('div', { key: 'chart', style: { display: 'grid', gap: 8, minWidth: 0 } }, chart, legend, (function() {
+                  var refY = Math.max(vacBest.range, Math.max.apply(null, pts.map(function(p) { return p.vacuumRange; })));
+                  var mk = function(id, label, field, peak) {
+                    return { id: id, label: label, refY: refY, peakX: peak.angle, peakY: peak.range, points: pts.map(function(p) { return { x: p.angle, y: p[field] }; }),
+                      from: sweep.min + '°', to: sweep.max + '°', peak: deg(peak.angle), range: m1(peak.range) };
+                  };
+                  return listenControls([mk(d.airResist ? 'drag' : 'vacuum', __alloT('stem.physics.range_listen', 'Listen to the curve'), 'range', best)]
+                    .concat(d.airResist ? [mk('vacuum', __alloT('stem.physics.range_listen_vacuum', 'Listen without air drag'), 'vacuumRange', vacBest)] : []),
+                    d.airResist ? fill(__alloT('stem.physics.range_listen_help_drag', 'Play both curves: through air the whole curve sounds lower. Each chime marks that curve\'s farthest angle: {angle} through air, {vac} without drag.'), { angle: deg(best.angle), vac: deg(vacBest.angle) }) : '');
+                })()),
                 h('div', { key: 'insp' }, inspector),
+                h('div', { key: 'target' }, targetCard),
                 h('div', { key: 'find', 'data-physics-range-findings': true, style: cardStyle },
                   h('h5', { style: { margin: '0 0 6px', fontSize: 15, fontWeight: 800 } }, __alloT('stem.physics.range_findings_title', 'What the curve shows')),
                   h('ul', { style: { margin: 0, paddingLeft: 20, listStyle: 'disc', display: 'grid', gap: 4, fontSize: 14 } }, findings.map(function(f, i) { return h('li', { key: i }, f); })),

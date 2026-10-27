@@ -10180,10 +10180,15 @@ function EcoPairMeasurement(props) {
         canvas._dragEntity = null;
         canvas._dragType = '';
 
+        // WCAG 2.5.7: with the Move tool, a tap on an animal (press + release in
+        // place) picks it up and the next tap on the scene drops it there.
+        canvas._moveHeld = null;
+        canvas._suppressMoveClick = false;
         var onMouseMove = function(e) {
           var rect = canvas.getBoundingClientRect();
           canvas._mouseX = e.clientX - rect.left;
           canvas._mouseY = e.clientY - rect.top;
+          if (canvas._dragging && !canvas._dragMoved && Math.abs(canvas._mouseX - canvas._dragStartX) + Math.abs(canvas._mouseY - canvas._dragStartY) > 6) canvas._dragMoved = true;
         };
 
         var onMouseDown = function(e) {
@@ -10214,14 +10219,42 @@ function EcoPairMeasurement(props) {
               canvas._dragging = true;
               canvas._dragEntity = bestEnt;
               canvas._dragType = bestType;
+              canvas._dragStartX = mx;
+              canvas._dragStartY = my;
+              canvas._dragMoved = false;
+              // Touch never sends mousemove first: start from the press point, not a stale cursor.
+              canvas._mouseX = mx;
+              canvas._mouseY = my;
             }
           }
         };
 
-        var onMouseUp = function() {
+        var onMouseUp = function(e, keyboard) {
+          var tapped = canvas._dragging && !canvas._dragMoved && !keyboard && e && (e.type === 'mouseup' || e.type === 'touchend') ? canvas._dragEntity : null;
+          if (canvas._dragging && canvas._dragMoved) canvas._moveHeld = null;
+          var tapX = canvas._dragStartX, tapY = canvas._dragStartY;
           canvas._dragging = false;
           canvas._dragEntity = null;
           canvas._dragType = '';
+          canvas._dragMoved = false;
+          if (!tapped) return;
+          var held = canvas._moveHeld;
+          if (held && held !== tapped) {
+            // Already carrying one: this tap drops it here. A mouse click follows and
+            // does the drop; a touch tap has no click (touchstart prevented it).
+            canvas._suppressMoveClick = false;
+            if (e.type === 'touchend') onClick({ clientX: canvas.getBoundingClientRect().left + tapX, clientY: canvas.getBoundingClientRect().top + tapY });
+            return;
+          }
+          // The click that follows this mouseup must not drop what it just picked up.
+          canvas._suppressMoveClick = e.type === 'mouseup';
+          if (held === tapped) {
+            canvas._moveHeld = null;
+            if (announceToSR) announceToSR(__alloT('stem.ecosystem.kb_dropped', 'Dropped.'));
+          } else {
+            canvas._moveHeld = tapped;
+            if (announceToSR) announceToSR(__alloT('stem.ecosystem.kb_picked_up_tap', 'Picked up. Click or tap where it should go.'));
+          }
         };
 
         var onClick = function(e) {
@@ -10229,6 +10262,18 @@ function EcoPairMeasurement(props) {
           canvas._pendingClick = true;
           canvas._pendingClickX = e.clientX - rect.left;
           canvas._pendingClickY = e.clientY - rect.top;
+          if ((canvas.dataset.sandboxTool || '') !== 'move') { canvas._moveHeld = null; canvas._suppressMoveClick = false; return; }
+          if (canvas._suppressMoveClick) { canvas._suppressMoveClick = false; return; }
+          var held = canvas._moveHeld;
+          if (!held) return;
+          canvas._moveHeld = null;
+          if (!held.alive) return;
+          held.x = canvas._pendingClickX;
+          held.y = canvas._pendingClickY;
+          held.vx = 0;
+          held.vy = 0;
+          if (announceToSR) announceToSR(__alloT('stem.ecosystem.kb_dropped', 'Dropped.'));
+          if (typeof canvas._ecoSchedule === 'function') canvas._ecoSchedule();
         };
 
         // Keyboard parity for the sandbox tools (WCAG 2.1.1). Arrow keys drive the same
@@ -10264,7 +10309,7 @@ function EcoPairMeasurement(props) {
             if (tool === 'move') {
               e.preventDefault();
               if (canvas._dragging) {
-                onMouseUp();
+                onMouseUp(null, true);
                 if (announceToSR) announceToSR(__alloT('stem.ecosystem.kb_dropped', 'Dropped.'));
               } else {
                 onMouseDown({ clientX: rect.left + canvas._mouseX, clientY: rect.top + canvas._mouseY });
@@ -12076,6 +12121,18 @@ function EcoPairMeasurement(props) {
             ctxC.fillStyle = 'rgba(255,255,255,0.85)';
             ctxC.fillText('\u23F8 ' + __alloT('stem.ecosystem.paused_caps', 'PAUSED'), cw / 2, ch / 2);
             ctxC.textAlign = 'start';
+            ctxC.restore();
+          }
+
+          // Picked-up animal (tap-to-move) wears a ring until it is dropped.
+          if (sandboxToolVal === 'move' && canvas._moveHeld && canvas._moveHeld.alive) {
+            ctxC.save();
+            ctxC.strokeStyle = '#facc15';
+            ctxC.lineWidth = 2.5;
+            ctxC.setLineDash([4, 3]);
+            ctxC.beginPath();
+            ctxC.arc(canvas._moveHeld.x, canvas._moveHeld.y, 14, 0, Math.PI * 2);
+            ctxC.stroke();
             ctxC.restore();
           }
 
@@ -13936,7 +13993,7 @@ function EcoPairMeasurement(props) {
             h('ul', { className: 'list-disc pl-4 space-y-0.5' },
               h('li', null, 'Place ' + activeScenario.prey.singular + '/' + activeScenario.predator.singular + '/' + activeScenario.producer.singular + ': click anywhere to spawn'),
               h('li', null, __alloT('stem.ecosystem.instr_erase', 'Erase: Click near an entity to remove it')),
-              h('li', null, __alloT('stem.ecosystem.instr_move', 'Move: Click and drag an entity to reposition it'))
+              h('li', null, __alloT('stem.ecosystem.instr_move_tap', 'Move: Click and drag an entity to reposition it, or click or tap it, then click or tap where it should go.'))
             ),
             h('p', { className: 'text-[0.6875rem] italic text-slate-600' }, __alloT('stem.ecosystem.instr_tip', 'Tip: Pause the simulation first for precise placement!'))
           ),

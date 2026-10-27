@@ -4970,8 +4970,27 @@
     g.map(0,function(p){var x=p[0],y=p[1];p[0]=-y*L;p[1]=x*L;p[2]*=L;});var geo=kit.geo(g,1),frame=kit.node('perched-frame',c.root);frame.rotation.z=-PI/2;
     var swim={value:new T.Vector4(phase,0,14/L,0)},shape={value:new T.Vector4(-.16*L,-.51*L,1,0)};
     geo.userData.longnoseHawkfish={ranges:ranges,nominalTotalLengthM:.12,scaleM:L,appearance:'red-white-unsexed',bodyPoseOffsetUnit:-.055,bodyRows:rows,dorsalRays:dorsal,spines:10,softRays:13,cirrusTufts:tufts,supportRays:supports,pectorals:pectorals,branchPaths:branchPaths,staticEnvelopeHeightM:.16*L};
-    kit.mesh(geo,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.00007*L,roughness:.48,side:T.DoubleSide},{swim:swim,swimShape:shape,eye:true,iris:hex(0xc98065)}),'fish-and-perch',frame);geo.boundingBox.expandByScalar(.009*L);geo.boundingSphere.radius+=.009*L;
-    var flow={x:0,z:0,pulse:0};c.anim(function(t,dt,motion){currentAt(c.root,motion,t,phase,flow);swim.value.set(phase+t*.62,L*(.002+.004*Math.min(1,Math.hypot(flow.x,flow.z)))*flow.pulse,14/L,t);});
+    // The upper pectoral webs can fan quietly while the stout lower rays
+    // remain planted. Their root curves share a vertical hinge in fish space
+    // (local X here). Reuse the ordinary batch rig without splitting the draw,
+    // changing the rest mesh, or uploading positions/normals every frame.
+    var pectoralRig=new Float32Array(80),pectoralParts=new Float32Array(geo.attributes.position.count*4),pectoralPose=new T.Matrix4();
+    function posePectoral(part,angle){
+      var at=(part.rigSlot-1)*20;pectoralPose.makeRotationX(angle);pectoralPose.setPosition(0,.08*L,part.side*.052*L);
+      for(var row=0;row<3;row++)batchRow(pectoralRig,at+row*4,pectoralPose,row);
+    }
+    pectorals.forEach(function(part,index){
+      part.rigSlot=index+1;part.hingeLocal=[0,.08*L,part.side*.052*L];
+      var at=index*20;pectoralRig[at+14]=1;pectoralRig[at+16]=1;pectoralRig[at+17]=pectoralRig[at+18]=pectoralRig[at+19]=-1;
+      for(var v=part.first;v<part.first+part.count;v++){var p=v*3,q=v*4;pectoralParts[q]=geo.attributes.position.array[p];pectoralParts[q+1]=geo.attributes.position.array[p+1]-.08*L;pectoralParts[q+2]=geo.attributes.position.array[p+2]-part.side*.052*L;pectoralParts[q+3]=part.rigSlot;}
+      posePectoral(part,0);
+    });
+    geo.setAttribute('reefPart',new T.BufferAttribute(pectoralParts,4));
+    geo.userData.longnoseHawkfish.pectoralMaxAngleRad=.093;
+    kit.mesh(geo,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.00007*L,roughness:.48,side:T.DoubleSide},{swim:swim,swimShape:shape,batch:c.rm?null:pectoralRig,eye:true,iris:hex(0xc98065)}),'fish-and-perch',frame);geo.boundingBox.expandByScalar(.04*L);geo.boundingSphere.radius+=.04*L;
+    var flow={x:0,z:0,pulse:0};c.anim(function(t,dt,motion){currentAt(c.root,motion,t,phase,flow);swim.value.set(phase+t*.62,L*(.002+.004*Math.min(1,Math.hypot(flow.x,flow.z)))*flow.pulse,14/L,t);
+      for(var i=0;i<pectorals.length;i++){var part=pectorals[i],side=part.side;posePectoral(part,side*(.075*Math.sin(t*1.8+phase+side*.9)+.018*Math.sin(t*.59+phase*.7+side*1.4)));}
+    });
   }
 
 
@@ -5322,7 +5341,12 @@
     var dp = kit.node('dorsal-fin', c.root); dp.position.set(-0.074 * L, (0.46 - baseY) * L, 0); pivots.push({ node: dp, kind: 'dorsal', side: 0 }); entries.push({ geo: dorsal.build(T, L), part: 'dorsal-fin', node: dp, bend: 0, rays: 1 }); reaches.push({ center: dp.position, reach: 0.102 * L, margin: 0.01 * L });
     [-1, 1].forEach(function (side) { var g = new Geo(), roots = [], edges = [], n = high ? 12 : 6; for (var i = 0; i <= n; i++) { var u = i / n, a = lerp(-0.8, 0.8, u), r = 0.035 * Math.pow(Math.sin(PI * u), 0.45); roots.push([0, 0.02 * (u - 0.5), 0]); edges.push([-r * Math.cos(a), r * Math.sin(a), side * r * 0.3]); } g.membrane(roots, edges, 2, function (u, v, out) { mixc(hex(0xa7a58b), hex(0xd1cba9), v * 0.55, out); }); var pv = kit.node(side < 0 ? 'pectoral-left' : 'pectoral-right', c.root); pv.position.set(0.055 * L, (0.867 - baseY) * L, side * 0.041 * L); pv.rotation.y = side * 0.6; pivots.push({ node: pv, kind: 'pectoral', side: side }); entries.push({ geo: g.build(T, L), part: side < 0 ? 'pectoral-left' : 'pectoral-right', node: pv, bend: 0, rays: 1 }); reaches.push({ center: pv.position, reach: 0.041 * L, margin: 0.006 * L }); });
     var finMat = kit.std({ vertexColors: true, roughness: 0.58, side: T.DoubleSide }, { batch: rig, rays: true, finRelief: 0.12 }), batch = batchMesh(kit, entries, finMat, rig, 'fins', c.root); batchReach(batch, reaches); var flow = { x: 0, z: 0, pulse: 0 };
-    c.anim(function (t, dt, motion) { currentAt(c.root, motion, t, phase, flow); for (var i = 0; i < pivots.length; i++) { var p = pivots[i], dorsal = p.kind === 'dorsal', a = dorsal ? 0.065 : 0.055; p.node.rotation.x = a * Math.sin(t * TAU * (dorsal ? 7 : 6) + phase + p.side); p.node.rotation.y = (dorsal ? 0 : p.side * 0.6) + 0.008 * flow.z * flow.pulse; p.node.rotation.z = 0.012 * Math.sin(t * TAU * 3 + phase + i); } batchPose(batch); });
+    // Each fin's attachment is a line along local Y. Scull about that hinge:
+    // rotating around X or Z would lift the root rows off the fixed body.
+    // The existing flutter and current response move only the free web edge.
+    c.anim(function (t, dt, motion) { currentAt(c.root, motion, t, phase, flow); for (var i = 0; i < pivots.length; i++) { var p = pivots[i], dorsal = p.kind === 'dorsal', a = dorsal ? 0.065 : 0.055;
+      p.node.rotation.set(0, (dorsal ? 0 : p.side * 0.6) + a * Math.sin(t * TAU * (dorsal ? 7 : 6) + phase + p.side) + 0.008 * flow.z * flow.pulse + 0.012 * Math.sin(t * TAU * 3 + phase + i), 0);
+    } batchPose(batch); });
   }
 
   // Unsexed Pacific Hymenocera picta, following the 2017 Mexican field
@@ -5562,8 +5586,23 @@
     var tg=kit.geo(tail,W);tg.userData.ocellatedEagleRay={whipTail:true,tailBaseX:-.265*W,nominalTotalLengthM:4.2,maximumDisplacementM:.037*W};
     kit.mesh(tg,kit.std({vertexColors:true,roughness:.59}), 'long-whip-tail',c.root);
     var rest=dg.attributes.position.array.slice(),tailRest=tg.attributes.position.array.slice();dg.boundingBox.expandByVector(new T.Vector3(0,.181*W,.025*W));dg.boundingSphere.radius+=.19*W;tg.boundingBox.expandByScalar(.037*W);tg.boundingSphere.radius+=.037*W;
-    c.anim(function(t,dt,motion){var p=dg.attributes.position.array,power=.85+.15*Math.min(1,effort(motion,W)),turn=turning(motion),beat=t*1.55+phase;for(var i=0;i<p.length;i+=3){var z=rest[i+2],f=Math.abs(z)/(.5*W),x=rest[i]/W,chord=clamp((lead(f)-x)/Math.max(.001,lead(f)-trail(f)),0,1),side=z<0?-1:1,weight=Math.pow(f,1.8),dy=.165*W*weight*Math.sin(beat-f*.85-chord*.65+side*turn*.10)*power;p[i+1]=rest[i+1]+dy;p[i+2]=z*(1-.045*weight*Math.pow(Math.sin(beat-f*.85-chord*.65),2));}dg.computeVertexNormals();dg.attributes.position.needsUpdate=true;
-      var q=tg.attributes.position.array;for(var k=0;k<q.length;k+=3){var u=clamp((-tailRest[k]/W-.265)/2.235,0,1),w=u*u;q[k+1]=tailRest[k+1]+.010*W*w*Math.sin(t*.60-u*2+phase);q[k+2]=tailRest[k+2]+.032*W*w*Math.sin(t*.48-u*2.5+phase);}tg.computeVertexNormals();tg.attributes.position.needsUpdate=true;
+    // Chord coordinates and displacement envelopes depend only on the rest
+    // mesh. Cache them once, preserving double precision and the original
+    // arithmetic order so the animated silhouette and normals stay identical.
+    var discMotion=new Float64Array(rest.length/3*5),tailMotion=new Float64Array(tailRest.length/3*4);
+    for(var v=0,d=0;v<rest.length;v+=3,d+=5){
+      var z=rest[v+2],f=Math.abs(z)/(.5*W),x=rest[v]/W,chord=clamp((lead(f)-x)/Math.max(.001,lead(f)-trail(f)),0,1),weight=Math.pow(f,1.8);
+      discMotion[d]=f*.85;discMotion[d+1]=chord*.65;discMotion[d+2]=z<0?-1:1;discMotion[d+3]=.165*W*weight;discMotion[d+4]=.045*weight;
+    }
+    for(var v=0,d=0;v<tailRest.length;v+=3,d+=4){
+      var u=clamp((-tailRest[v]/W-.265)/2.235,0,1),w=u*u;
+      tailMotion[d]=u*2;tailMotion[d+1]=u*2.5;tailMotion[d+2]=.010*W*w;tailMotion[d+3]=.032*W*w;
+    }
+    kit.keep({dispose:function(){discMotion=null;tailMotion=null;}});
+    if(!c.rm){dg.attributes.position.setUsage(T.DynamicDrawUsage);dg.attributes.normal.setUsage(T.DynamicDrawUsage);tg.attributes.position.setUsage(T.DynamicDrawUsage);tg.attributes.normal.setUsage(T.DynamicDrawUsage);}
+    c.anim(function(t,dt,motion){var p=dg.attributes.position.array,power=.85+.15*Math.min(1,effort(motion,W)),turn=turning(motion),beat=t*1.55+phase;
+      for(var i=0,d=0;i<p.length;i+=3,d+=5){var bend=beat-discMotion[d]-discMotion[d+1],dy=discMotion[d+3]*Math.sin(bend+discMotion[d+2]*turn*.10)*power;p[i+1]=rest[i+1]+dy;p[i+2]=rest[i+2]*(1-discMotion[d+4]*Math.pow(Math.sin(bend),2));}dg.computeVertexNormals();dg.attributes.position.needsUpdate=true;
+      var q=tg.attributes.position.array;for(var k=0,d=0;k<q.length;k+=3,d+=4){q[k+1]=tailRest[k+1]+tailMotion[d+2]*Math.sin(t*.60-tailMotion[d]+phase);q[k+2]=tailRest[k+2]+tailMotion[d+3]*Math.sin(t*.48-tailMotion[d+1]+phase);}tg.computeVertexNormals();tg.attributes.position.needsUpdate=true;
     });
   }
 
@@ -5908,8 +5947,27 @@
     kit.mesh(fg,kit.std({vertexColors:true,map:pigment,roughness:.43,side:T.DoubleSide},{sheen:sheenOf(T,0x9dbcb6,0xd7bd96,.17)}),'broad-oval-fins',c.root);
     kit.mesh(ag,kit.std({vertexColors:true,map:pigment,bumpMap:relief,bumpScale:.00006*k,roughness:.44,side:T.DoubleSide}),'eight-arms-two-feeding-tentacles',c.root);
     var restB=bg.attributes.position.array.slice(),restF=fg.attributes.position.array.slice(),restA=ag.attributes.position.array.slice();[bg,fg,ag].forEach(function(g){g.boundingBox.expandByScalar(.009*k);g.boundingSphere.radius+=.013*k;});
+    // A broad fin rolls through its wave instead of stretching vertically like
+    // a sliding sheet. A small phase lag across the web curls the free edge;
+    // lateral recovery preserves each vertex's span from its attachment row.
+    // Cache the immutable profile once: only two trig evaluations per station,
+    // no extra geometry, draw calls, or normal passes during animation.
+    var finStations=[],finRoll=new Float64Array(restF.length/3*6);
+    finParts.forEach(function(f){for(var q=0;q<=f.longitudinalSegments;q++){
+      var u=q/f.longitudinalSegments,first=f.first+q*(f.widthSegments+1),rootAt=first*3,x=restF[rootAt]/k,a=phase-u*PI*3.4+f.side*.35;prof(x,sample);
+      finStations.push({first:first,count:f.widthSegments+1,side:f.side,phase:a,pulse:f.side*sample[2]*.98*k*Math.sin(PI*clamp((x+.170)/.25,0,1))});
+      for(var j=0;j<=f.widthSegments;j++){var v=j/f.widthSegments,at=(first+j)*3,r=(first+j)*6,lift=restF[at+1]-restF[rootAt+1],reach=Math.abs(restF[at+2]-restF[rootAt+2]),lag=.85*v*v;
+        finRoll[r]=lift;finRoll[r+1]=reach;finRoll[r+2]=.0038*k*Math.sin(PI*u)*v*v;finRoll[r+3]=Math.sin(a+lag);finRoll[r+4]=Math.cos(lag);finRoll[r+5]=Math.sin(lag);
+      }
+    }});
+    kit.keep({dispose:function(){finStations.length=0;finRoll=null;}});
+    if(!c.rm){fg.attributes.position.setUsage(T.DynamicDrawUsage);fg.attributes.normal.setUsage(T.DynamicDrawUsage);}
     c.anim(function(t,dt,motion){var out=bg.attributes.position.array,e=effort(motion,.40),rate=1.10+.23*e,pump=.007*Math.sin(t*1.32+phase);for(var j=ranges.mantle.first;j<ranges.mantle.first+ranges.mantle.count;j++){var at=j*3,x=restB[at]/k,u=clamp((x+.170)/.25,0,1),w=Math.sin(PI*u)*pump;prof(x,sample);var yc=(sample[0]+sample[1])*.5*k;out[at+1]=restB[at+1]+(restB[at+1]-yc)*w;out[at+2]=restB[at+2]*(1+w);}bg.attributes.position.needsUpdate=true;bg.computeVertexNormals();
-      out=fg.attributes.position.array;finParts.forEach(function(f){for(var q=0;q<=f.longitudinalSegments;q++)for(var j=0;j<=f.widthSegments;j++){var u=q/f.longitudinalSegments,v=j/f.widthSegments,at=(f.first+q*(f.widthSegments+1)+j)*3,a=phase-u*PI*3.4+f.side*.35,x=restF[at]/k;prof(x,sample);out[at+1]=restF[at+1]+.0038*k*Math.sin(PI*u)*v*v*(Math.sin(a+t*rate)-Math.sin(a));out[at+2]=restF[at+2]+f.side*sample[2]*.98*k*Math.sin(PI*clamp((x+.170)/.25,0,1))*pump;}});fg.attributes.position.needsUpdate=true;fg.computeVertexNormals();
+      out=fg.attributes.position.array;for(var f=0;f<finStations.length;f++){var station=finStations[f],sn=Math.sin(station.phase+t*rate),cs=Math.cos(station.phase+t*rate),rootShift=station.pulse*pump;
+        for(var j=0;j<station.count;j++){var at=(station.first+j)*3,r=(station.first+j)*6,restLift=finRoll[r],reach=finRoll[r+1],delta=finRoll[r+2]*(sn*finRoll[r+4]+cs*finRoll[r+5]-finRoll[r+3]),lift=restLift+delta;
+          out[at+1]=restF[at+1]+delta;out[at+2]=restF[at+2]+rootShift+station.side*(Math.sqrt(Math.max(0,reach*reach+restLift*restLift-lift*lift))-reach);
+        }
+      }fg.attributes.position.needsUpdate=true;fg.computeVertexNormals();
       out=ag.attributes.position.array;arms.forEach(function(arm){for(var j=arm.first+arm.sides;j<arm.first+arm.count;j++){var at=j*3,u=clamp((restA[at]/k-arm.root[0])/(arm.tip[0]-arm.root[0]),0,1),w=u*u;out[at+1]=restA[at+1]+.0024*k*w*Math.sin(t*.84+phase+arm.index*.54);out[at+2]=restA[at+2]+.0020*k*w*Math.sin(t*.63+phase+arm.index*.57);}});ag.attributes.position.needsUpdate=true;ag.computeVertexNormals();
     });
   }

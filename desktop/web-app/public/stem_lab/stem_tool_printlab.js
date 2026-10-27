@@ -1601,7 +1601,7 @@
                 h('span', { className: 'rounded-full border border-amber-400/50 bg-amber-950 px-3 py-1 text-[0.625rem] font-black text-amber-100' }, 'Default: 5 mm / block')
               ),
               h('dl', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3' },
-                [['Blocks', sourceContext.summary && sourceContext.summary.blockCount || 0], ['STL triangles', sourceContext.summary && sourceContext.summary.triangleCount || 0], ['Mesh envelope', sourceContext.summary && sourceContext.summary.meshDimensions ? sourceContext.summary.meshDimensions.L + ' × ' + sourceContext.summary.meshDimensions.W + ' × ' + sourceContext.summary.meshDimensions.H + ' units' : '-']].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[0.5625rem] font-bold uppercase text-slate-400' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
+                [['Blocks', sourceContext.summary && sourceContext.summary.blockCount || 0], ['STL triangles', sourceContext.summary && sourceContext.summary.triangleCount || 0], ['Mesh envelope', sourceContext.summary && sourceContext.summary.meshDimensions ? sourceContext.summary.meshDimensions.L + ' × ' + sourceContext.summary.meshDimensions.W + ' × ' + sourceContext.summary.meshDimensions.H + ' units' : '-']].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[0.5625rem] font-bold uppercase text-slate-300' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
               ),
               geometryPhysicalSize && h('p', { className: 'mt-3 rounded-xl border border-emerald-400/50 bg-emerald-950/35 p-3 text-sm font-black text-white', 'aria-live': 'polite' }, 'Current physical size: ' + geometryPhysicalSize.label),
               h('div', { className: 'mt-3 flex flex-wrap gap-2' },
@@ -1614,7 +1614,7 @@
               h('h2', { id: 'print-lab-artstudio-source-title', className: 'mt-1 text-lg font-black text-white' }, 'From Art Studio'),
               h('p', { className: 'mt-1 max-w-2xl text-xs leading-5 text-slate-200' }, 'This sculpture arrived as the same editable primitive recipe the Design tab uses, so every part can still be changed here. Nothing was uploaded and nothing about the student travelled with it.'),
               h('dl', { className: 'mt-3 grid grid-cols-2 gap-2' },
-                [['Sculpture', sourceContext.summary && sourceContext.summary.name || title || 'Untitled'], ['Parts', sourceContext.summary && sourceContext.summary.partCount || (recipe && recipe.parts ? recipe.parts.length : 0)]].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[0.5625rem] font-bold uppercase text-slate-400' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
+                [['Sculpture', sourceContext.summary && sourceContext.summary.name || title || 'Untitled'], ['Parts', sourceContext.summary && sourceContext.summary.partCount || (recipe && recipe.parts ? recipe.parts.length : 0)]].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[0.5625rem] font-bold uppercase text-slate-300' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
               ),
               h('div', { className: 'mt-3 flex flex-wrap gap-2' },
                 h('button', { type: 'button', onClick: returnToArtStudio, className: 'min-h-[42px] rounded-xl bg-pink-700 px-4 text-xs font-black text-white' }, 'Revise in Art Studio'),
@@ -1637,7 +1637,7 @@
                   ['Shaped pieces', sourceContext.summary && sourceContext.summary.shapedCount || 0],
                   ['STL triangles', sourceContext.summary && sourceContext.summary.triangleCount || 0],
                   ['Block envelope', sourceContext.summary && sourceContext.summary.dimensions ? sourceContext.summary.dimensions.L + ' × ' + sourceContext.summary.dimensions.W + ' × ' + sourceContext.summary.dimensions.H + ' blocks' : '-']
-                ].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[0.5625rem] font-bold uppercase text-slate-400' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
+                ].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[0.5625rem] font-bold uppercase text-slate-300' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
               ),
               geometryPhysicalSize && h('div', { className: 'mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-400/50 bg-emerald-950/35 p-3', 'aria-live': 'polite' },
                 h('div', null,
@@ -1660,7 +1660,7 @@
               h('h2', { id: 'print-lab-create-title', className: 'text-lg font-black text-white' }, 'Design with primitives'),
               h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Build directly, bring in a Geometry Sandbox sculpture, or ask AI for an editable starting recipe. Every AI result uses the same constrained primitive format.'),
               !sourceContext && h('div', { className: 'mt-3 rounded-xl border border-slate-700 bg-slate-950/50 p-3' },
-                h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-400' }, 'Or start in another tool'),
+                h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-300' }, 'Or start in another tool'),
                 h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Geometry World and Architecture Studio build with blocks; Art Studio sculpts with primitive shapes. Each one has a Print Lab button that brings the model here, and each Print Lab card has a way back.'),
                 h('div', { className: 'mt-2 flex flex-wrap gap-2' },
                   h('button', { type: 'button', onClick: function () { startInTool('geometryWorld'); }, className: 'min-h-[40px] rounded-lg border border-cyan-400/60 px-3 text-xs font-black text-cyan-100' }, 'Start in Geometry World'),
@@ -1706,7 +1706,7 @@
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4' },
               h('h2', { className: 'text-sm font-black text-white' }, 'Physical scale'),
               sourceContext && (sourceContext.sourceTool === 'geometryWorld' || sourceContext.sourceTool === 'archStudio') && h('div', { className: 'mt-3', 'aria-label': sourceContext.sourceTool === 'archStudio' ? 'Architecture Studio scale presets' : 'Geometry World scale presets' },
-                h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-400' }, 'Scale presets'),
+                h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-300' }, 'Scale presets'),
                 h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
                   [
                     { value: 2.5, label: 'Draft', note: '2.5 mm' },
@@ -1720,7 +1720,7 @@
                       'aria-pressed': selected ? 'true' : 'false',
                       onClick: function () { applyUnitScale(preset.value, 'Changed Geometry World scale to ' + preset.value + ' millimeters per block. Run preflight again.'); },
                       className: 'min-h-[48px] rounded-xl border px-2 text-center text-[0.625rem] font-black ' + (selected ? 'border-cyan-300 bg-cyan-950 text-white' : 'border-slate-500 bg-slate-950 text-slate-200')
-                    }, h('span', { className: 'block' }, preset.label), h('span', { className: 'mt-1 block font-medium text-slate-400' }, preset.note + ' / block'));
+                    }, h('span', { className: 'block' }, preset.label), h('span', { className: 'mt-1 block font-medium text-slate-300' }, preset.note + ' / block'));
                   })
                 )
               ),
@@ -1759,9 +1759,9 @@
                   )
                   : 'Revise the model or choose a different printer profile before preflight.'),
                 geometryScaleRecommendation.canFit && geometryScaleRecommendation.recommendedPhysicalSize && h('dl', { className: 'mt-3 grid grid-cols-3 gap-2', 'aria-label': __alloT('stem.printlab.a11y_scale_change_preview', 'Scale change preview') },
-                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, 'Current envelope'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryPhysicalSize.label)),
-                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, 'Suggested envelope'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryScaleRecommendation.recommendedPhysicalSize.label)),
-                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-400' }, 'Scale reduction'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryScaleRecommendation.reductionPercent + '%'))
+                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-300' }, 'Current envelope'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryPhysicalSize.label)),
+                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-300' }, 'Suggested envelope'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryScaleRecommendation.recommendedPhysicalSize.label)),
+                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide text-slate-300' }, 'Scale reduction'), h('dd', { className: 'mt-1 text-[0.625rem] font-bold text-white' }, geometryScaleRecommendation.reductionPercent + '%'))
                 ),
                 geometryScaleRecommendation.canFit && h('details', { className: 'mt-3 rounded-lg border border-cyan-800 bg-slate-950/50 px-3', 'data-geometry-scale-math': 'true' },
                   h('summary', { className: 'flex min-h-[40px] cursor-pointer items-center text-[0.6875rem] font-black text-cyan-100' }, 'How this scale was calculated'),
@@ -1812,7 +1812,7 @@
               field('Planning clearance (mm)', geometryPlanningClearanceMm, function (v) { setProfileField('planningClearanceMm', v); }, { type: 'number', min: 0, max: 50, step: 1 }),
               field('Nozzle diameter (mm)', profile.nozzleMm, function (v) { setProfileField('nozzleMm', v); }, { type: 'number', min: 0.1, max: 2, step: 0.05 })
             ),
-            h('p', { className: 'mt-2 text-[0.625rem] leading-5 text-slate-400' }, 'Planning clearance is a conservative advisory buffer removed from both sides of each profile dimension. Adjust it for clips, purge lines, and local procedures; it is not a machine setting.'),
+            h('p', { className: 'mt-2 text-[0.625rem] leading-5 text-slate-300' }, 'Planning clearance is a conservative advisory buffer removed from both sides of each profile dimension. Adjust it for clips, purge lines, and local procedures; it is not a machine setting.'),
             geometryPhysicalSize && geometryPrinterFit && h('div', {
               className: 'mt-3 rounded-xl border p-3 ' + (geometryClearanceFit ? 'border-emerald-700 bg-emerald-950/30 text-emerald-100' : 'border-amber-600 bg-amber-950/30 text-amber-100'),
               role: 'region',
@@ -1865,7 +1865,7 @@
             !report && h('p', { className: 'mt-3 rounded-xl border border-dashed border-slate-600 p-4 text-sm text-slate-300' }, 'Run preflight after choosing the model and physical scale.'),
             report && h('div', { className: 'mt-3 space-y-3' },
               h('dl', { className: 'grid gap-2 sm:grid-cols-2 xl:grid-cols-4' },
-                [['Width', report.dimensionsMm && report.dimensionsMm.width, 'mm'], ['Depth', report.dimensionsMm && report.dimensionsMm.depth, 'mm'], ['Height', report.dimensionsMm && report.dimensionsMm.height, 'mm'], ['Triangles', report.triangleCount, '']].map(function (row) { return h('div', { key: row[0], className: 'rounded-xl bg-slate-950 p-3' }, h('dt', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-400' }, row[0]), h('dd', { className: 'mt-1 text-lg font-black text-white' }, row[1] == null ? '—' : row[1] + (row[2] ? ' ' + row[2] : ''))); })
+                [['Width', report.dimensionsMm && report.dimensionsMm.width, 'mm'], ['Depth', report.dimensionsMm && report.dimensionsMm.depth, 'mm'], ['Height', report.dimensionsMm && report.dimensionsMm.height, 'mm'], ['Triangles', report.triangleCount, '']].map(function (row) { return h('div', { key: row[0], className: 'rounded-xl bg-slate-950 p-3' }, h('dt', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-300' }, row[0]), h('dd', { className: 'mt-1 text-lg font-black text-white' }, row[1] == null ? '—' : row[1] + (row[2] ? ' ' + row[2] : ''))); })
               ),
               h('ul', { className: 'space-y-2', 'aria-label': __alloT('stem.printlab.a11y_preflight_findings', 'Preflight findings') }, (report.issues || []).map(function (item, index) { return h('li', { key: item.code + index, className: 'rounded-xl border p-3 text-xs leading-5 ' + (item.severity === 'ERROR' ? 'border-rose-700 bg-rose-950/30 text-rose-100' : 'border-amber-600 bg-amber-950/20 text-amber-100') }, h('strong', null, item.severity + ': '), item.message); })),
               !(report.issues || []).length && h('p', { className: 'rounded-xl border border-emerald-700 bg-emerald-950/30 p-3 text-xs text-emerald-100' }, 'No blocking condition was found by these limited checks.')
@@ -1926,7 +1926,7 @@
               )
             ),
             h('div', { className: 'rounded-xl bg-slate-950 p-4' },
-              h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-400' }, chosenMaterial.name + ' estimate'),
+              h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-300' }, chosenMaterial.name + ' estimate'),
               h('p', { className: 'mt-2 text-3xl font-black text-white' }, materialEstimate ? materialEstimate.estimatedGrams + ' g' : 'Slicer needed'),
               h('p', { className: 'mt-2 text-[0.6875rem] leading-5 text-slate-300' }, materialEstimate ? 'Rough scenario estimate, not an upper bound on filament use. It assumes a fixed 22% shell fraction; actual walls, supports, overlaps, and purge waste can change the result in either direction.' : 'Imported mesh reports in this pilot do not estimate solid volume reliably enough to quote material.'),
               h('p', { className: 'mt-3 text-[0.6875rem] leading-5 text-amber-100' }, 'Follow the printer manufacturer, filament manufacturer, school ventilation/enclosure, supervision, burn, moving-parts, and post-processing procedures. This tool does not replace them.')
@@ -1951,7 +1951,7 @@
               h('h3', { id: 'job-ticket-title', className: 'text-base font-black text-white' }, 'Job Ticket'),
               h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'First slice in the approved school slicer, then import its comments. Print Lab reads metadata comments only: it never interprets or executes G-code commands.'),
               h('label', { className: 'mt-3 inline-flex min-h-[44px] cursor-pointer items-center rounded-xl border border-violet-500 px-4 text-xs font-black text-violet-100' }, 'Import local G-code comment metadata', h('input', { type: 'file', accept: '.gcode,.gco,.gc,text/x-gcode', className: 'sr-only', onChange: importGcodeMetadata })),
-              gcodeMetadata && h('dl', { className: 'mt-3 grid gap-2 text-xs sm:grid-cols-2' }, [['Slicer', gcodeMetadata.slicer || 'Not named'], ['Time', Math.round(gcodeMetadata.estimatedTimeSeconds / 60) + ' min'], ['Filament', gcodeMetadata.filamentGrams ? gcodeMetadata.filamentGrams + ' g' : gcodeMetadata.filamentLengthMm ? gcodeMetadata.filamentLengthMm + ' mm' : 'Mass not reported'], ['Layers', gcodeMetadata.layerCount || 'Not reported']].map(function (row) { return h('div', { key: row[0], className: 'rounded-lg bg-slate-900 p-2' }, h('dt', { className: 'text-slate-400' }, row[0]), h('dd', { className: 'font-bold text-white' }, row[1])); })),
+              gcodeMetadata && h('dl', { className: 'mt-3 grid gap-2 text-xs sm:grid-cols-2' }, [['Slicer', gcodeMetadata.slicer || 'Not named'], ['Time', Math.round(gcodeMetadata.estimatedTimeSeconds / 60) + ' min'], ['Filament', gcodeMetadata.filamentGrams ? gcodeMetadata.filamentGrams + ' g' : gcodeMetadata.filamentLengthMm ? gcodeMetadata.filamentLengthMm + ' mm' : 'Mass not reported'], ['Layers', gcodeMetadata.layerCount || 'Not reported']].map(function (row) { return h('div', { key: row[0], className: 'rounded-lg bg-slate-900 p-2' }, h('dt', { className: 'text-slate-300' }, row[0]), h('dd', { className: 'font-bold text-white' }, row[1])); })),
               gcodeMetadata && !gcodeMetadata.filamentGrams && h('p', { className: 'mt-2 rounded-lg border border-amber-600 bg-amber-950/30 p-2 text-[0.6875rem] leading-5 text-amber-100' }, gcodeMetadata.filamentLengthMm ? 'This metadata reports filament length but not mass. Re-export from the approved slicer with filament grams enabled before creating a ticket.' : 'This metadata does not report filament mass. Re-export from the approved slicer with filament grams enabled before creating a ticket.'),
               h('fieldset', { className: 'mt-4 rounded-xl border border-slate-700 p-3' }, h('legend', { className: 'px-1 text-xs font-black text-white' }, 'Configurable point estimate'),
                 h('div', { className: 'grid gap-2 sm:grid-cols-3' },
@@ -1975,7 +1975,7 @@
           h('aside', { className: 'space-y-3 rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'handoff-summary-title' },
             h('h2', { id: 'handoff-summary-title', className: 'text-base font-black text-white' }, 'Handoff summary'),
             h('dl', { className: 'space-y-2 text-xs' },
-              [['Format', format], ['Preflight', report ? report.status : 'Not run'], ['Scale', unitMm + ' mm per unit'], ['Material study', chosenMaterial.name], ['Review JSON embeds model', 'No'], ['School Rewards asset', rewardsAssetCompatibility.compatible ? (rewardsAssetCompatibility.needsAsset ? rewardsAssetSizeLabel + ' ready' : 'Recipe included') : rewardsAssetSizeLabel + ' too large']].map(function (row) { return h('div', { key: row[0], className: 'flex justify-between gap-3 border-b border-slate-800 pb-2' }, h('dt', { className: 'text-slate-400' }, row[0]), h('dd', { className: 'text-right font-bold text-white' }, row[1])); })
+              [['Format', format], ['Preflight', report ? report.status : 'Not run'], ['Scale', unitMm + ' mm per unit'], ['Material study', chosenMaterial.name], ['Review JSON embeds model', 'No'], ['School Rewards asset', rewardsAssetCompatibility.compatible ? (rewardsAssetCompatibility.needsAsset ? rewardsAssetSizeLabel + ' ready' : 'Recipe included') : rewardsAssetSizeLabel + ' too large']].map(function (row) { return h('div', { key: row[0], className: 'flex justify-between gap-3 border-b border-slate-800 pb-2' }, h('dt', { className: 'text-slate-300' }, row[0]), h('dd', { className: 'text-right font-bold text-white' }, row[1])); })
             ),
             h('p', { className: 'rounded-xl border border-cyan-800 bg-cyan-950/30 p-3 text-[0.6875rem] leading-5 text-cyan-100' }, 'The .alloflow-print.json file contains the design recipe when applicable, a generic source-file label, a content hash, scale declaration, AI disclosure, and the advisory report. It contains no account identifier and performs no network submission.'),
             !rewardsAssetCompatibility.compatible && h('div', { className: 'rounded-xl border border-amber-500 bg-amber-950/35 p-3 text-[0.6875rem] leading-5 text-amber-100', role: 'alert', 'data-school-rewards-asset-ready': 'false' },

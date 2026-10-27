@@ -32,6 +32,9 @@
       '.selh-bridgelab,.selh-bridgelab *{box-sizing:border-box;}' +
       '.selh-bridgelab button:focus-visible,.selh-bridgelab select:focus-visible,.selh-bridgelab input:focus-visible,.selh-bridgelab summary:focus-visible,.selh-bridgelab textarea:focus-visible,.selh-bridgelab [data-seismic-trial-comparison]:focus-visible,.selh-bridgelab [data-seismic-chart-slider]:focus-visible,.selh-bridgelab [data-bridge-seismic-readout]:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px;}' +
       '.selh-bridgelab button:disabled{opacity:.5;cursor:default;}' +
+      // WCAG 2.5.8: a 24px minimum for every pointer target the tool draws.
+      '.selh-bridgelab input[type=range]{min-height:24px;}.selh-bridgelab input[type=checkbox],.selh-bridgelab input[type=radio]{width:24px;height:24px;flex:none;}' +
+      '.selh-bridgelab button,.selh-bridgelab summary{min-height:24px;}' +
       '.selh-bridgelab [data-investigation-route-steps]{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}' +
       '.selh-bridgelab [data-energy-map-flow]{display:grid;grid-template-columns:minmax(0,1fr) minmax(72px,.55fr) minmax(0,1.25fr) minmax(72px,.55fr) minmax(0,1fr);gap:8px;align-items:center;}' +
       '@media(max-width:780px){.selh-bridgelab [data-energy-map-flow]{grid-template-columns:minmax(0,1fr);}.selh-bridgelab [data-energy-map-connector]{display:flex;justify-content:center;align-items:center;gap:12px;}.selh-bridgelab [data-energy-map-arrow]{transform:rotate(90deg);}}' +
@@ -50,6 +53,127 @@
   if (!window.StemLab || !window.StemLab.registerTool) {
     console.warn('[StemLab] stem_tool_bridgelab.js loaded before StemLab registry — bailing');
     return;
+  }
+
+  // Per-item accent colours (#dc2626, #a855f7 ...) are chosen for swatches and strokes. Where one becomes TEXT
+  // it is lightened toward white until it reads at 4.5:1 on its ground (aiming at 4.6, since rounding the mixed
+  // channels to hex can shave off the last hundredth). The original colour stays on borders and graphics.
+  function bridgeHexRgb(hex) {
+    var m = /^#([0-9a-f]{6})$/i.exec(String(hex || ''));
+    return m ? [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4, 6), 16)] : null;
+  }
+  function bridgeRgbHex(rgb) { return '#' + rgb.map(function(v) { return ('0' + Math.round(v).toString(16)).slice(-2); }).join(''); }
+  function bridgeLuminance(rgb) {
+    var c = rgb.map(function(v) { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function bridgeContrast(a, b) { var x = bridgeLuminance(a), y = bridgeLuminance(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  // The colour a translucent tint (top at alpha) paints over an opaque ground.
+  function bridgeMixHex(top, ground, alpha) {
+    var t = bridgeHexRgb(top), g = bridgeHexRgb(ground);
+    if (!t || !g) return ground;
+    return bridgeRgbHex(t.map(function(v, i) { return g[i] + (v - g[i]) * alpha; }));
+  }
+  function bridgeReadableInk(color, ground) {
+    var fg = bridgeHexRgb(color), bg = bridgeHexRgb(ground);
+    if (!fg || !bg || bridgeContrast(fg, bg) >= 4.5) return color;
+    for (var step = 1; step <= 20; step++) {
+      var mixed = fg.map(function(v) { return v + (255 - v) * step / 20; });
+      if (bridgeContrast(mixed, bg) >= 4.6) return bridgeRgbHex(mixed);
+    }
+    return '#ffffff';
+  }
+
+  // ── Design challenges ──────────────────────────────────────────────
+  // A fixed site (span, bays, load per joint) with a required safety factor; the learner chooses truss
+  // style, height, material, cross-section and bracing. Bays stay fixed because load is applied PER JOINT,
+  // so more bays would quietly mean more load. Each par is the best score this model allows over every
+  // slider step of the free inputs, using the three materials its axial model represents; the test
+  // re-runs that search, so a model change cannot leave a stale par on screen.
+  var BRIDGE_CHALLENGE_MATERIALS = ['wood', 'steel', 'composite'];
+  var BRIDGE_CHALLENGES = [
+    { id: 'footbridge', span: 20, nBays: 4, loadPerJoint: 20, minSF: 2, objective: 'cost', par: 931.0,
+      parDesign: { trussStyle: 'warren', height: 4, lateralBraceEvery: 1, materialId: 'wood', crossSectionMm2: 16000 } },
+    { id: 'county_road', span: 40, nBays: 6, loadPerJoint: 80, minSF: 2, objective: 'cost', par: 106744.7,
+      parDesign: { trussStyle: 'howe', height: 4, lateralBraceEvery: 1, materialId: 'steel', crossSectionMm2: 17000 } },
+    { id: 'featherweight', span: 30, nBays: 5, loadPerJoint: 50, minSF: 2.5, objective: 'mass', par: 2938.0,
+      parDesign: { trussStyle: 'ktruss', height: 10.5, lateralBraceEvery: 1, materialId: 'wood', crossSectionMm2: 28000 } },
+    { id: 'long_span', span: 70, nBays: 8, loadPerJoint: 60, minSF: 2, objective: 'cost', par: 282897.0,
+      parDesign: { trussStyle: 'howe', height: 7, lateralBraceEvery: 1, materialId: 'steel', crossSectionMm2: 23000 } }
+  ];
+  // One star for a safe bridge; two within 25% of par; three within 5% of par.
+  var BRIDGE_STAR_MARGINS = { two: 1.25, three: 1.05 };
+  var BRIDGE_CHALLENGE_XP_PER_STAR = 5;
+  function bridgeChallengeById(id) { return BRIDGE_CHALLENGES.filter(function(c) { return c.id === id; })[0] || null; }
+  // Score a design against a challenge with the same analysis the design brief shows.
+  function bridgeChallengeScore(challenge, settings) {
+    var s = bridgeNormalizeSettings(settings);
+    var onSite = s.span === challenge.span && s.nBays === challenge.nBays && s.loadPerJoint === challenge.loadPerJoint && (s.loadMode || 'uniform') === 'uniform';
+    var mat = MATERIALS.filter(function(m) { return m.id === s.materialId; })[0] || MATERIALS[3];
+    var materialOk = BRIDGE_CHALLENGE_MATERIALS.indexOf(mat.id) >= 0;
+    var gov = bridgeGoverningAnalysis(s, mat);
+    var volumeM3 = gov.analysis.totalLen * s.crossSectionMm2 / 1e6;
+    var value = challenge.objective === 'mass' ? volumeM3 * mat.densityKgM3 : volumeM3 * mat.costPerM3;
+    var safe = gov.governingSF >= challenge.minSF;
+    var passes = onSite && materialOk && safe;
+    var two = challenge.par * BRIDGE_STAR_MARGINS.two, three = challenge.par * BRIDGE_STAR_MARGINS.three;
+    return {
+      onSite: onSite, materialOk: materialOk, safe: safe, passes: passes, sf: gov.governingSF, value: value,
+      thresholds: { two: two, three: three },
+      stars: !passes ? 0 : value <= three + 1e-6 ? 3 : value <= two + 1e-6 ? 2 : 1,
+      design: { trussStyle: s.trussStyle || 'warren', height: s.height, materialId: mat.id, crossSectionMm2: s.crossSectionMm2, lateralBraceEvery: s.lateralBraceEvery || 1 }
+    };
+  }
+  // Saved records are untrusted: keep only known challenges, whole stars 0-3, finite values and a
+  // design whose every field is one the sliders can produce.
+  function bridgeNormalizeChallengeRecords(raw) {
+    var out = {};
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+    BRIDGE_CHALLENGES.forEach(function(challenge) {
+      var r = raw[challenge.id];
+      if (!r || typeof r !== 'object') return;
+      var stars = Number(r.stars), value = Number(r.value), design = r.design && typeof r.design === 'object' ? r.design : null;
+      if (!Number.isInteger(stars) || stars < 1 || stars > 3 || !(value > 0) || !isFinite(value) || !design) return;
+      var clean = {
+        trussStyle: ['warren', 'pratt', 'howe', 'ktruss'].indexOf(design.trussStyle) >= 0 ? design.trussStyle : null,
+        height: Number(design.height), materialId: BRIDGE_CHALLENGE_MATERIALS.indexOf(design.materialId) >= 0 ? design.materialId : null,
+        crossSectionMm2: Number(design.crossSectionMm2), lateralBraceEvery: Number(design.lateralBraceEvery)
+      };
+      if (!clean.trussStyle || !clean.materialId || !(clean.height >= 2 && clean.height <= 15) || !(clean.crossSectionMm2 >= 1000 && clean.crossSectionMm2 <= 30000)
+        || !Number.isInteger(clean.lateralBraceEvery) || clean.lateralBraceEvery < 1 || clean.lateralBraceEvery > challenge.nBays) return;
+      out[challenge.id] = { stars: stars, value: value, design: clean, afterExample: r.afterExample === true };
+    });
+    return out;
+  }
+  // Recording keeps the better attempt: more stars first, then the lower cost or mass.
+  // The worked example: the par design analysed now, with the check that governs it.
+  function bridgeChallengeExample(challenge) {
+    var design = Object.assign({ span: challenge.span, nBays: challenge.nBays, loadPerJoint: challenge.loadPerJoint, loadMode: 'uniform' }, challenge.parDesign);
+    var mat = MATERIALS.filter(function(m) { return m.id === design.materialId; })[0];
+    var gov = bridgeGoverningAnalysis(design, mat);
+    return { design: design, material: mat, score: bridgeChallengeScore(challenge, design), yieldSF: gov.safetyFactor, bucklingSF: gov.bucklingMargin,
+      governs: gov.bucklingMargin < gov.safetyFactor ? 'buckling' : 'yield' };
+  }
+  // What the example's geometry would need in each allowed material: the smallest passing slider step, and its score.
+  // SF only rises with area, so a binary search over the 500 mm² steps finds it in about six analyses.
+  function bridgeChallengeMaterialOptions(challenge, design) {
+    var steps = []; for (var a = 1000; a <= 30000; a += 500) steps.push(a);
+    return BRIDGE_CHALLENGE_MATERIALS.map(function(materialId) {
+      function at(i) { return bridgeChallengeScore(challenge, Object.assign({}, design, { materialId: materialId, crossSectionMm2: steps[i] })); }
+      if (!at(steps.length - 1).passes) return { materialId: materialId, value: null, crossSectionMm2: null };
+      var lo = 0, hi = steps.length - 1, found = hi;
+      while (lo <= hi) { var mid = (lo + hi) >> 1; if (at(mid).passes) { found = mid; hi = mid - 1; } else lo = mid + 1; }
+      return { materialId: materialId, value: at(found).value, crossSectionMm2: steps[found] };
+    });
+  }
+  function bridgeChallengeRecord(records, challenge, score, afterExample) {
+    var current = records[challenge.id];
+    if (!score.passes) return { records: records, improved: false, newStars: 0 };
+    var better = !current || score.stars > current.stars || (score.stars === current.stars && score.value < current.value - 1e-6);
+    if (!better) return { records: records, improved: false, newStars: 0 };
+    var next = Object.assign({}, records);
+    next[challenge.id] = { stars: score.stars, value: score.value, design: score.design, afterExample: afterExample === true };
+    return { records: next, improved: true, newStars: Math.max(0, score.stars - (current ? current.stars : 0)) };
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -2467,6 +2591,15 @@
   // ──────────────────────────────────────────────────────────────────
   // Plugin registration
   // ──────────────────────────────────────────────────────────────────
+  // WCAG 1.4.3 high contrast (generated by gen_hc.cjs)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-bridgelab-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-bridgelab-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"bridgeLab\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(248, 250, 252)\"],[style*=\"background-color: rgb(248, 250, 252)\"],[style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(125, 211, 252)\"],[style*=\"background-color: rgb(125, 211, 252)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(94, 234, 212)\"],[style*=\"background-color: rgb(94, 234, 212)\"],[style*=\"background: rgb(253, 164, 175)\"],[style*=\"background-color: rgb(253, 164, 175)\"],[style*=\"background: rgb(56, 189, 248)\"],[style*=\"background-color: rgb(56, 189, 248)\"],[style*=\"background: rgb(196, 181, 253)\"],[style*=\"background-color: rgb(196, 181, 253)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(134, 239, 172)\"],[style*=\"background-color: rgb(134, 239, 172)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background: rgb(252, 165, 165)\"],[style*=\"background-color: rgb(252, 165, 165)\"],[style*=\"background: rgb(147, 197, 253)\"],[style*=\"background-color: rgb(147, 197, 253)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"bridgeLab\"] [style]:is([style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(161, 98, 7)\"],[style*=\"; color: rgb(161, 98, 7)\"],[style^=\"color: rgb(30, 64, 175)\"],[style*=\"; color: rgb(30, 64, 175)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(120, 53, 15)\"],[style*=\"; color: rgb(120, 53, 15)\"],[style^=\"color: rgb(127, 29, 29)\"],[style*=\"; color: rgb(127, 29, 29)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"bridgeLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(161, 98, 7)\"],[style*=\"; color: rgb(161, 98, 7)\"],[style^=\"color: rgb(30, 64, 175)\"],[style*=\"; color: rgb(30, 64, 175)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(120, 53, 15)\"],[style*=\"; color: rgb(120, 53, 15)\"],[style^=\"color: rgb(127, 29, 29)\"],[style*=\"; color: rgb(127, 29, 29)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(248, 250, 252)\"],[style*=\"background-color: rgb(248, 250, 252)\"],[style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(125, 211, 252)\"],[style*=\"background-color: rgb(125, 211, 252)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(94, 234, 212)\"],[style*=\"background-color: rgb(94, 234, 212)\"],[style*=\"background: rgb(253, 164, 175)\"],[style*=\"background-color: rgb(253, 164, 175)\"],[style*=\"background: rgb(56, 189, 248)\"],[style*=\"background-color: rgb(56, 189, 248)\"],[style*=\"background: rgb(196, 181, 253)\"],[style*=\"background-color: rgb(196, 181, 253)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(134, 239, 172)\"],[style*=\"background-color: rgb(134, 239, 172)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background: rgb(252, 165, 165)\"],[style*=\"background-color: rgb(252, 165, 165)\"],[style*=\"background: rgb(147, 197, 253)\"],[style*=\"background-color: rgb(147, 197, 253)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"bridgeLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(248, 113, 113)\"],[style*=\"background-color: rgb(248, 113, 113)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(167, 139, 250)\"],[style*=\"background-color: rgb(167, 139, 250)\"],[style*=\"background: rgb(16, 185, 129)\"],[style*=\"background-color: rgb(16, 185, 129)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"bridgeLab\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    document.head.appendChild(st);
+  })();
+  // end WCAG 1.4.3 high contrast
   window.StemLab.registerTool('bridgeLab', {
     icon: '🌉',
     label: 'Bridge Engineering Lab',
@@ -2924,6 +3057,8 @@
           ? __alloT('stem.bridgelab.brief_marginal', 'Needs revision')
           : __alloT('stem.bridgelab.brief_failed', 'Redesign needed');
       var bridgeBriefStatusColor = bridgeBriefStatus === 'safe' ? '#22c55e' : bridgeBriefStatus === 'marginal' ? '#f59e0b' : '#ef4444';
+      // Text in the same hue, light enough for 4.5:1 on the header's darkest and lightest ground.
+      var bridgeBriefStatusInk = bridgeBriefStatus === 'safe' ? '#86efac' : bridgeBriefStatus === 'marginal' ? '#fcd34d' : '#fca5a5';
       var bridgeBriefStyle = ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren');
 
       var tabBar = h('div', {
@@ -2945,6 +3080,172 @@
         })
       );
 
+      // Design challenges (Stress Test). Static keys only: concatenated keys are invisible to extraction.
+      function bridgeChallengeText(id) {
+        switch (id) {
+          case 'footbridge': return { title: __alloT('stem.bridgelab.challenge_footbridge', 'Village footbridge'), story: __alloT('stem.bridgelab.challenge_footbridge_story', 'A 20 m footbridge over a stream. Keep walkers safe and spend as little as possible.') };
+          case 'county_road': return { title: __alloT('stem.bridgelab.challenge_county_road', 'County road bridge'), story: __alloT('stem.bridgelab.challenge_county_road_story', 'A 40 m crossing for farm traffic, modelled as a heavy load at every joint. Make it safe for the lowest cost.') };
+          case 'featherweight': return { title: __alloT('stem.bridgelab.challenge_featherweight', 'Featherweight span'), story: __alloT('stem.bridgelab.challenge_featherweight_story', 'A 30 m bridge that will be flown in by helicopter. It needs extra safety margin, and every kilogram counts.') };
+          default: return { title: __alloT('stem.bridgelab.challenge_long_span', 'Long-span river crossing'), story: __alloT('stem.bridgelab.challenge_long_span_story', 'A 70 m gap with no pier allowed in the river. Make it safe for the lowest cost.') };
+        }
+      }
+      function bridgeChallengeValueText(challenge, value) {
+        return challenge.objective === 'mass' ? Math.round(value).toLocaleString() + ' kg' : '$' + Math.round(value).toLocaleString();
+      }
+      function bridgeStarsText(stars) {
+        return __alloT('stem.bridgelab.challenge_stars', '{n} of 3 stars').replace('{n}', String(stars));
+      }
+      // The glyph row is decoration (the words carry the count); empty stars are grey because the outline
+      // star glyph renders almost solid in common UI fonts, which made "0 of 3" look like three stars.
+      function bridgeStarsNode(stars) {
+        return h('span', null,
+          h('span', { 'aria-hidden': 'true' }, h('span', { style: { color: '#fbbf24' } }, '★'.repeat(stars)), h('span', { style: { color: '#94a3b8' } }, '★'.repeat(3 - stars))),
+          ' ' + bridgeStarsText(stars));
+      }
+      function renderChallenges() {
+        var records = bridgeNormalizeChallengeRecords(d.challengeRecords);
+        var active = bridgeChallengeById(d.challengeId);
+        var hint = Number.isInteger(d.challengeHint) ? Math.max(0, Math.min(3, d.challengeHint)) : 0;
+        var primary = { minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: '#fbbf24', color: '#0b1220', fontWeight: 800, fontSize: 13, cursor: 'pointer' };
+        var secondary = { minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px solid #94a3b8', background: '#0f172a', color: '#e2e8f0', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
+        function siteText(challenge) {
+          return __alloT('stem.bridgelab.challenge_site', 'Span {span} m · {bays} bays · {load} kN at each joint · uniform load')
+            .replace('{span}', String(challenge.span)).replace('{bays}', String(challenge.nBays)).replace('{load}', String(challenge.loadPerJoint));
+        }
+        function goalText(challenge) {
+          return (challenge.objective === 'mass'
+            ? __alloT('stem.bridgelab.challenge_goal_mass', 'Safety factor {sf} or more, as light as possible')
+            : __alloT('stem.bridgelab.challenge_goal_cost', 'Safety factor {sf} or more, as cheap as possible')).replace('{sf}', challenge.minSF.toFixed(1));
+        }
+        function siteState(challenge) { return { span: challenge.span, nBays: challenge.nBays, loadPerJoint: challenge.loadPerJoint, loadMode: 'uniform', autoDriving: false }; }
+        function start(challenge) {
+          var patch = Object.assign({ challengeId: challenge.id, challengeHint: 0, challengeNote: '' }, siteState(challenge));
+          if (BRIDGE_CHALLENGE_MATERIALS.indexOf(d.materialId) < 0) patch.materialId = 'steel';
+          if (!(d.lateralBraceEvery <= challenge.nBays)) patch.lateralBraceEvery = 1;
+          upd(patch);
+          announceStatus(__alloT('stem.bridgelab.challenge_started', 'Challenge started:') + ' ' + bridgeChallengeText(challenge.id).title + '. ' + siteText(challenge) + '. ' + goalText(challenge) + '.');
+        }
+        var intro = h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } },
+          __alloT('stem.bridgelab.challenge_intro', 'Each challenge fixes the site and the load. You choose the truss style, height, material, cross-section and bracing. One star for a safe bridge; more stars for using less money or material.'));
+
+        if (!active) {
+          return sectionCard('🏆 ' + __alloT('stem.bridgelab.challenges_title', 'Design challenges'),
+            h('div', { 'data-bridge-challenges': true }, intro,
+              h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 } }, BRIDGE_CHALLENGES.map(function(challenge) {
+                var text = bridgeChallengeText(challenge.id), record = records[challenge.id];
+                return h('li', { key: challenge.id, 'data-bridge-challenge': challenge.id, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 12px', padding: '10px 12px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a' } },
+                  h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
+                    h('strong', { style: { display: 'block', fontSize: 14, color: '#f8fafc' } }, text.title),
+                    h('span', { style: { display: 'block', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, siteText(challenge) + ' · ' + goalText(challenge)),
+                    h('span', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: record ? '#fbbf24' : '#cbd5e1', marginTop: 2 } },
+                      record ? h('span', null, bridgeStarsNode(record.stars), ' · ' + __alloT('stem.bridgelab.challenge_best', 'best') + ' ' + bridgeChallengeValueText(challenge, record.value))
+                        : __alloT('stem.bridgelab.challenge_not_tried', 'Not attempted yet'))),
+                  h('button', { type: 'button', style: secondary, 'aria-label': __alloT('stem.bridgelab.challenge_start', 'Start') + ': ' + text.title, onClick: function() { start(challenge); } },
+                    __alloT('stem.bridgelab.challenge_start', 'Start')));
+              }))));
+        }
+
+        var text = bridgeChallengeText(active.id), score = bridgeChallengeScore(active, d), record = records[active.id];
+        function check(ok, label, detail) {
+          return h('li', { 'data-challenge-check': ok ? 'met' : 'unmet', style: { display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 0', borderBottom: '1px solid #334155' } },
+            h('span', { 'aria-hidden': 'true', style: { color: ok ? '#86efac' : '#fca5a5', fontWeight: 900, minWidth: 16 } }, ok ? '✓' : '✗'),
+            h('span', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.5 } },
+              h('strong', null, (ok ? __alloT('stem.bridgelab.challenge_met', 'Met') : __alloT('stem.bridgelab.challenge_unmet', 'Not yet')) + ': '), label,
+              detail ? h('span', { style: { display: 'block', color: '#cbd5e1', fontSize: 12 } }, detail) : null));
+        }
+        var revealedMap = d.challengeRevealed && typeof d.challengeRevealed === 'object' && !Array.isArray(d.challengeRevealed) ? d.challengeRevealed : {};
+        var revealed = revealedMap[active.id] === true, canReveal = !!record || hint >= 3;
+        function recordAttempt() {
+          var result = bridgeChallengeRecord(records, active, score, revealed), message;
+          if (!score.passes) message = __alloT('stem.bridgelab.challenge_not_passing', 'Not recorded yet: every requirement must be met first.');
+          else if (!result.improved) message = __alloT('stem.bridgelab.challenge_no_better', 'Your saved design is already as good or better. Try for a lower score.');
+          else message = __alloT('stem.bridgelab.challenge_recorded', 'Recorded:') + ' ' + bridgeStarsText(score.stars) + ', ' + bridgeChallengeValueText(active, score.value) + '.'
+            + (revealed ? ' ' + __alloT('stem.bridgelab.challenge_after_example_note', 'Saved after the worked example, so it earns no XP.') : '');
+          upd(result.improved ? { challengeRecords: result.records, challengeNote: message } : { challengeNote: message });
+          if (result.improved && typeof addToast === 'function') addToast(text.title + ': ' + bridgeStarsText(score.stars), 'success');
+          if (result.newStars > 0 && !revealed && typeof awardXP === 'function') awardXP('bridgeLabChallenges', result.newStars * BRIDGE_CHALLENGE_XP_PER_STAR, __alloT('stem.bridgelab.challenge_xp_reason', 'Bridge design challenge'));
+        }
+        var hints = [
+          __alloT('stem.bridgelab.challenge_hint_1', 'Check the design brief: is the bridge limited by yield (the material crushing or tearing) or by buckling (a slender member bowing sideways)?'),
+          __alloT('stem.bridgelab.challenge_hint_2', 'A deeper truss lowers the chord forces, and closer lateral bracing shortens the length a top chord can buckle over.'),
+          __alloT('stem.bridgelab.challenge_hint_3', 'Compare materials by strength per dollar or per kilogram, not by strength alone. The cost optimizer further down can size a section for your geometry.')
+        ];
+        return sectionCard('🏆 ' + __alloT('stem.bridgelab.challenge_active', 'Challenge') + ': ' + text.title,
+          h('div', { 'data-bridge-challenge-active': active.id },
+            h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } }, text.story),
+            h('ul', { style: { listStyle: 'none', margin: '0 0 10px', padding: 0 } },
+              check(score.onSite, __alloT('stem.bridgelab.challenge_check_site', 'Site'), siteText(active)),
+              check(score.materialOk, __alloT('stem.bridgelab.challenge_check_material', 'Material: wood, steel or FRP composite'),
+                score.materialOk ? null : __alloT('stem.bridgelab.challenge_material_why', 'Stone, cast iron and reinforced concrete are left out because this simple axial model cannot represent how they carry tension.')),
+              check(score.safe, __alloT('stem.bridgelab.challenge_check_sf', 'Safety factor at least') + ' ' + active.minSF.toFixed(1),
+                __alloT('stem.bridgelab.challenge_your_sf', 'Your design:') + ' ' + score.sf.toFixed(2)),
+              h('li', { 'data-challenge-score': true, style: { padding: '6px 0', fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } },
+                h('strong', null, (active.objective === 'mass' ? __alloT('stem.bridgelab.challenge_mass', 'Mass') : __alloT('stem.bridgelab.challenge_cost', 'Material cost')) + ': '),
+                bridgeChallengeValueText(active, score.value),
+                h('span', { style: { display: 'block', color: '#cbd5e1', fontSize: 12 } },
+                  __alloT('stem.bridgelab.challenge_two_at', '2 stars at') + ' ' + bridgeChallengeValueText(active, score.thresholds.two) + ' ' + __alloT('stem.bridgelab.challenge_or_less', 'or less') + ' · '
+                  + __alloT('stem.bridgelab.challenge_three_at', '3 stars at') + ' ' + bridgeChallengeValueText(active, score.thresholds.three) + ' ' + __alloT('stem.bridgelab.challenge_or_less', 'or less')))),
+            h('p', { 'data-challenge-stars-now': score.stars, style: { margin: '0 0 10px', fontSize: 14, fontWeight: 800, color: '#fbbf24' } },
+              __alloT('stem.bridgelab.challenge_now', 'This design earns') + ' ', bridgeStarsNode(score.stars)),
+            record ? h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: '#cbd5e1' } },
+              __alloT('stem.bridgelab.challenge_saved', 'Saved best:') + ' ', bridgeStarsNode(record.stars), ', ' + bridgeChallengeValueText(active, record.value)) : null,
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 } },
+              h('button', { type: 'button', style: primary, onClick: recordAttempt }, __alloT('stem.bridgelab.challenge_record', 'Record this design')),
+              !score.onSite ? h('button', { type: 'button', style: secondary, onClick: function() { upd(siteState(active)); } }, __alloT('stem.bridgelab.challenge_restore_site', 'Restore the challenge site')) : null,
+              record ? h('button', { type: 'button', style: secondary, onClick: function() { upd(Object.assign({}, record.design, siteState(active))); } }, __alloT('stem.bridgelab.challenge_load_best', 'Load my best design')) : null,
+              hint < hints.length ? h('button', { type: 'button', style: secondary, onClick: function() { upd({ challengeHint: hint + 1 }); } },
+                hint === 0 ? __alloT('stem.bridgelab.challenge_hint', 'Show a hint') : __alloT('stem.bridgelab.challenge_another_hint', 'Another hint')) : null,
+              h('button', { type: 'button', style: secondary, onClick: function() { upd({ challengeId: null, challengeNote: '' }); } }, __alloT('stem.bridgelab.challenge_leave', 'Leave challenge'))),
+            hint > 0 ? h('ol', { 'data-challenge-hints': hint, style: { margin: '0 0 8px', paddingLeft: 20, fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 } },
+              hints.slice(0, hint).map(function(text, i) { return h('li', { key: i }, text); })) : null,
+            renderChallengeExample(active, record, canReveal, revealed, revealedMap, secondary),
+            h('p', { role: 'status', 'aria-live': 'polite', 'data-challenge-note': true, style: { margin: 0, fontSize: 13, color: '#e2e8f0', minHeight: 20 } },
+              typeof d.challengeNote === 'string' ? d.challengeNote.slice(0, 300) : '')));
+      }
+
+      function bridgeChallengeDesignText(design) {
+        var mat = MATERIALS.filter(function(m) { return m.id === design.materialId; })[0];
+        return __alloT('stem.bridgelab.challenge_design_summary', '{style} truss, {height} m deep, {material}, {area} mm² members, bracing every {brace} panel(s)')
+          .replace('{style}', ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' })[design.trussStyle] || design.trussStyle)
+          .replace('{height}', String(design.height)).replace('{material}', mat ? mat.name : design.materialId)
+          .replace('{area}', Number(design.crossSectionMm2).toLocaleString()).replace('{brace}', String(design.lateralBraceEvery || 1));
+      }
+      function renderChallengeExample(active, record, canReveal, revealed, revealedMap, buttonStyle) {
+        if (!canReveal) return h('p', { 'data-challenge-example': 'locked', style: { margin: '0 0 8px', fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.6 } },
+          __alloT('stem.bridgelab.challenge_example_locked', 'Earn a star, or use all three hints, to unlock a worked example.'));
+        if (!revealed) return h('div', { 'data-challenge-example': 'available', style: { margin: '0 0 10px' } },
+          h('button', { type: 'button', style: buttonStyle, onClick: function() { var next = Object.assign({}, revealedMap); next[active.id] = true; upd({ challengeRevealed: next }); } },
+            __alloT('stem.bridgelab.challenge_example_show', 'Show the best design this model allows')),
+          h('span', { style: { display: 'block', marginTop: 4, fontSize: 12, color: '#cbd5e1' } },
+            __alloT('stem.bridgelab.challenge_example_cost', 'After viewing it you can still record designs, but they earn no XP.')));
+        var example = bridgeChallengeExample(active), options = bridgeChallengeMaterialOptions(active, example.design);
+        var governs = example.governs === 'buckling'
+          ? __alloT('stem.bridgelab.challenge_example_buckling', 'Buckling governs: the members are sized so the most slender compressed one does not bow sideways. Yield alone would allow a smaller section.')
+          : __alloT('stem.bridgelab.challenge_example_yield', 'Yield governs: the members are sized for the material\'s strength. They are stocky enough that buckling is not the first failure.');
+        return h('section', { 'data-challenge-example': 'open', 'aria-labelledby': 'bridge-challenge-example-title', style: { margin: '0 0 10px', padding: 12, borderRadius: 10, border: '1px solid #64748b', background: '#0f172a' } },
+          h('h4', { id: 'bridge-challenge-example-title', style: { margin: '0 0 6px', fontSize: 14, color: '#f8fafc' } }, __alloT('stem.bridgelab.challenge_example_title', 'Worked example: the best design this model allows')),
+          h('p', { style: { margin: '0 0 6px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } }, bridgeChallengeDesignText(example.design) + '.'),
+          h('p', { style: { margin: '0 0 6px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } },
+            __alloT('stem.bridgelab.challenge_example_result', 'Safety factor {sf} (yield {yield}, buckling {buckling}); {value}.')
+              .replace('{sf}', example.score.sf.toFixed(2)).replace('{yield}', example.yieldSF.toFixed(2)).replace('{buckling}', example.bucklingSF.toFixed(2))
+              .replace('{value}', bridgeChallengeValueText(active, example.score.value))),
+          h('p', { 'data-challenge-example-governs': example.governs, style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } }, governs),
+          h('table', { 'data-challenge-example-materials': true, style: { width: '100%', borderCollapse: 'collapse', fontSize: 12.5, marginBottom: 6 } },
+            h('caption', { style: { textAlign: 'left', fontWeight: 700, padding: '0 0 4px', color: '#f8fafc' } }, __alloT('stem.bridgelab.challenge_example_compare', 'The same geometry in each material')),
+            h('thead', null, h('tr', null,
+              h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid #475569', color: '#e2e8f0' } }, __alloT('stem.bridgelab.challenge_col_material', 'Material')),
+              h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid #475569', color: '#e2e8f0' } }, __alloT('stem.bridgelab.challenge_col_section', 'Smallest safe section')),
+              h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid #475569', color: '#e2e8f0' } }, active.objective === 'mass' ? __alloT('stem.bridgelab.challenge_mass', 'Mass') : __alloT('stem.bridgelab.challenge_cost', 'Material cost')))),
+            h('tbody', null, options.map(function(option) {
+              var mat = MATERIALS.filter(function(m) { return m.id === option.materialId; })[0];
+              return h('tr', { key: option.materialId, 'data-challenge-option': option.materialId },
+                h('th', { scope: 'row', style: { textAlign: 'left', padding: 4, fontWeight: 600, color: '#e2e8f0' } }, mat.name + (option.materialId === example.design.materialId ? ' ✓' : '')),
+                h('td', { style: { padding: 4, color: '#e2e8f0' } }, option.crossSectionMm2 ? option.crossSectionMm2.toLocaleString() + ' mm²' : __alloT('stem.bridgelab.challenge_none_safe', 'None is safe up to 30,000 mm²')),
+                h('td', { style: { padding: 4, color: '#e2e8f0' } }, option.value === null ? '—' : bridgeChallengeValueText(active, option.value)));
+            }))),
+          record ? h('p', { style: { margin: 0, fontSize: 12.5, color: '#cbd5e1' } },
+            __alloT('stem.bridgelab.challenge_example_gap', 'Your saved best is {pct}% above this.').replace('{pct}', String(Math.max(0, Math.round((record.value / example.score.value - 1) * 100))))) : null);
+      }
       function sectionCard(title, children, accent) {
         accent = accent || AMBER;
         return h('section', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + accent, marginBottom: 12 } },
@@ -6663,7 +6964,7 @@
                 h('line', { x1: vxScreen, y1: vTop + 4, x2: vxScreen, y2: ty(d.height) - 2, stroke: '#facc15', strokeWidth: 2, strokeDasharray: '3 2' }),
                 // Load Badge
                 h('g', null,
-                  h('rect', { x: vxScreen - 30, y: vTop - 28, width: 60, height: 16, rx: 8, fill: 'rgba(16,185,129,0.9)', stroke: '#34d399', strokeWidth: 1 }),
+                  h('rect', { x: vxScreen - 30, y: vTop - 28, width: 60, height: 16, rx: 8, fill: '#047857', stroke: '#34d399', strokeWidth: 1 }),
                   h('text', { x: vxScreen, y: vTop - 16, textAnchor: 'middle', fill: '#ffffff', fontSize: 10, fontWeight: 800 }, d.vehicleLoad + ' kN')
                 )
               );
@@ -6785,6 +7086,22 @@
                   onClick: function() { upd({ bridgeView: '2d' }); } }, __alloT('stem.bridgelab.view_2d', 'Labelled 2D view')),
                 show3d && !immersive ? h('button', { type: 'button', style: bridgeActionStyle, onClick: function() { upd({ rot3d: { rotY: 26, rotX: 14 }, zoom3d: 1 }); } }, __alloT('stem.bridgelab.reset_view', 'Reset view')) : null
               ),
+              // WCAG 2.5.7: orbiting needed a drag and zooming a wheel. These buttons do the same with single presses.
+              show3d && !immersive ? (function() {
+                var rot = d.rot3d || { rotY: 26, rotX: 14 }, zoom = d.zoom3d || 1;
+                function orbitButton(key, label, change, disabled) {
+                  return h('button', { key: key, type: 'button', 'data-bridge-orbit': key, disabled: disabled, style: Object.assign({}, bridgeActionStyle, { minHeight: 44, minWidth: 44 }),
+                    onClick: function() { upd(change); } }, label);
+                }
+                return h('div', { role: 'group', 'aria-label': __alloT('stem.bridgelab.view_orbit_controls', 'Turn and zoom the 3D bridge'), 'data-bridge-orbit-controls': true,
+                  style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
+                  orbitButton('left', '↺ ' + __alloT('stem.bridgelab.orbit_left', 'Turn left'), { rot3d: { rotY: rot.rotY - 15, rotX: rot.rotX } }, false),
+                  orbitButton('right', __alloT('stem.bridgelab.orbit_right', 'Turn right') + ' ↻', { rot3d: { rotY: rot.rotY + 15, rotX: rot.rotX } }, false),
+                  orbitButton('up', '▲ ' + __alloT('stem.bridgelab.orbit_up', 'Tilt up'), { rot3d: { rotY: rot.rotY, rotX: Math.min(78, rot.rotX + 8) } }, rot.rotX >= 78),
+                  orbitButton('down', '▼ ' + __alloT('stem.bridgelab.orbit_down', 'Tilt down'), { rot3d: { rotY: rot.rotY, rotX: Math.max(-72, rot.rotX - 8) } }, rot.rotX <= -72),
+                  orbitButton('in', '+ ' + __alloT('stem.bridgelab.orbit_zoom_in', 'Zoom in'), { zoom3d: Math.min(3.2, zoom * 1.12) }, zoom >= 3.2),
+                  orbitButton('out', '− ' + __alloT('stem.bridgelab.orbit_zoom_out', 'Zoom out'), { zoom3d: Math.max(0.45, zoom * 0.89) }, zoom <= 0.45));
+              })() : null,
               immersive ? h('div', { 'data-bridge-immersive-controls': true, style: { padding: 12, border: '1px solid #475569', borderRadius: 10, marginBottom: 10 } },
                 h('p', { 'data-bridge-observer-hint': onBank ? 'bank' : 'deck', style: { fontSize: 12, margin: '0 0 10px', lineHeight: 1.6 } }, onBank
                   ? __alloT('stem.bridgelab.bank_hint', 'Stand at eye level on the riverbank observation pad. Your viewpoint moves with the ground; watch the deck move relative to it. Drag or use arrow keys to look around. Home faces the bridge. Switching viewpoints pauses the experiment at the same moment.')
@@ -6997,6 +7314,8 @@
             h('span', null, __alloT('stem.bridgelab.supports_pin_left_roller_right', 'Supports: pin (left) ▲  ·  roller (right) ▲⊙'))
           ),
 
+          renderChallenges(),
+
           // Load mode toggle
           sectionCard('Loading',
             h('div', null,
@@ -7033,7 +7352,7 @@
                             announceStatus(__alloT('stem.bridgelab.sr_vehicle_starting_automated_drive_across_bridge_sp', 'Vehicle starting automated drive across bridge span'));
                           }
                         },
-                        style: { padding: '5px 12px', borderRadius: 6, background: d.autoDriving ? '#dc2626' : '#10b981', border: 'none', color: '#ffffff', fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }
+                        style: { padding: '5px 12px', borderRadius: 6, background: d.autoDriving ? '#b91c1c' : '#047857', border: 'none', color: '#ffffff', fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }
                       }, bridgeReducedMotion ? __alloT('stem.bridgelab.vehicle_step', 'Advance vehicle 10%') : d.autoDriving ? '⏸ Stop Drive' : '🚗 Auto-Drive Vehicle Across Bridge')
                     ),
                     bridgeReducedMotion && h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.bridgelab.vehicle_reduced_motion', 'Reduced motion is on. Advance the vehicle in steps or use the position slider.')),
@@ -7521,7 +7840,7 @@
               }),
               // Reinforced Deck
               h('rect', { x: tx(0) - 10, y: ty(cSag), width: plotW + 20, height: 8, rx: 2, fill: '#334155', stroke: '#64748b', strokeWidth: 1 }),
-              h('text', { x: padL + plotW / 2, y: ty(cSag) + 20, textAnchor: 'middle', fill: '#38bdf8', fontSize: 10, fontWeight: 700 }, 'Deck (load: ' + cLoad + ' kN/m)'),
+              h('text', { x: padL + plotW / 2, y: ty(cSag) + 20, textAnchor: 'middle', fill: '#e0f2fe', fontSize: 10, fontWeight: 700, style: { paintOrder: 'stroke', stroke: '#0b1220', strokeWidth: 3, strokeLinejoin: 'round' } }, 'Deck (load: ' + cLoad + ' kN/m)'),
               // Tension force vectors at left tower
               (function() {
                 var fx = tx(0), fy = ty(0);
@@ -8515,7 +8834,7 @@
                 ),
                 h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap' } },
-                    h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color } }, sel.name),
+                    h('div', { style: { fontSize: 14, fontWeight: 800, color: bridgeReadableInk(sel.color, '#0f172a') } }, sel.name),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Cost: ' + sel.cost)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
@@ -8704,7 +9023,7 @@
                     var active = soilId === s.id;
                     return h('button', { key: s.id,
                       onClick: function() { upd({ selectedSoil: s.id }); },
-                      style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + 'AA' : '#1e293b', border: '1px solid ' + (active ? s.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + '55' : '#1e293b', border: '1px solid ' + (active ? s.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, s.name);
                   })
                 ),
@@ -9214,12 +9533,12 @@
               var active = d.selectedForce === f.id;
               return h('button', { key: f.id,
                 onClick: function() { upd({ selectedForce: f.id }); },
-                style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#94a3b8'), color: active ? (({ '#dc2626': '#f87171', '#2563eb': '#93c5fd' })[f.color] || f.color) : 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#94a3b8'), color: active ? bridgeReadableInk(f.color, bridgeMixHex(f.color, '#1e293b', 0x33 / 255)) : 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, f.icon + ' ' + f.name);
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + selected.color, marginBottom: 16 } },
-            h('h3', { style: { margin: '0 0 8px', color: ({ '#dc2626': '#f87171', '#2563eb': '#93c5fd' })[selected.color] || selected.color, fontSize: 18 } }, selected.icon + ' ' + selected.name),
+            h('h3', { style: { margin: '0 0 8px', color: bridgeReadableInk(selected.color, '#1e293b'), fontSize: 18 } }, selected.icon + ' ' + selected.name),
             h('p', { style: { margin: '0 0 10px', fontSize: 13.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
               h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)' } },
@@ -9368,7 +9687,7 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
-                  h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
+                  h('div', { style: { fontSize: 15, fontWeight: 800, color: bridgeReadableInk(sel.color, '#0f172a'), marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
                     h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.bridgelab.what_it_measures', 'What it measures')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.measures)
@@ -9995,9 +10314,9 @@
           );
         }
         function sectionInfo(title, body, color) {
-          color = ({ '#dc2626': '#f87171', '#2563eb': '#93c5fd' })[color] || color || '#94a3b8';
+          color = color || '#94a3b8';
           return h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + color, marginBottom: 8 } },
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, title),
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: bridgeReadableInk(color, '#0f172a'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, title),
             h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, body)
           );
         }
@@ -10259,7 +10578,7 @@
           upd({ quizSubmitted: true, quizCorrect: c });
           if (addToast) addToast('Quiz: ' + c + '/' + QUIZ_QUESTIONS.length, c >= 9 ? 'success' : 'info');
           announceStatus(__alloT('stem.bridgelab.quiz_result_v2', 'Quiz result: ') + c + ' / ' + QUIZ_QUESTIONS.length);
-          if (awardXP) awardXP(c * 5);
+          if (awardXP && c > 0) awardXP('bridgeLab', c * 5, __alloT('stem.bridgelab.quiz_xp_reason', 'Bridge Lab quiz'));
         }
         function reset() { upd({ quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0 }); }
 
@@ -10474,7 +10793,7 @@
             // Self-mark
             h('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                h('input', { type: 'checkbox', id: 'iq-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 14, height: 14 } }),
+                h('input', { type: 'checkbox', id: 'iq-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 24, height: 24, flex: 'none' } }),
                 h('label', { htmlFor: 'iq-und', style: { fontSize: 12, fontWeight: 700, color: '#10b981', cursor: 'pointer' } },
                   __alloT('stem.bridgelab.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
               iq.understood && h('textarea', { 'aria-label': __alloT('stem.bridgelab.explanation_input', 'Bridge design explanation'), value: iq.explanation || '',
@@ -10655,6 +10974,24 @@
               })
             ) : null,
 
+            (function() {
+              var printed = bridgeNormalizeChallengeRecords(d.challengeRecords);
+              var ids = BRIDGE_CHALLENGES.filter(function(c) { return printed[c.id]; });
+              if (!ids.length) return null;
+              return h('section', { 'data-bridge-print-challenges': true },
+                h('h3', { style: { fontSize: 16, margin: '18px 0 6px', borderBottom: '2px solid #0f172a', paddingBottom: 6 } }, __alloT('stem.bridgelab.challenge_print_title', 'Design challenge results')),
+                h('p', { style: { fontSize: 12, lineHeight: 1.6 } }, __alloT('stem.bridgelab.challenge_print_scope', 'Each result is the best design recorded for that challenge. Par is the best score this classroom model allows for the same site and load.')),
+                ids.map(function(challenge) {
+                  var r = printed[challenge.id];
+                  return h('article', { key: challenge.id, style: evidenceStyle, 'data-bridge-print-challenge': challenge.id },
+                    h('h4', { style: { fontSize: 14, margin: '0 0 8px' } }, bridgeChallengeText(challenge.id).title),
+                    h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } }, h('tbody', null,
+                      printRow(__alloT('stem.bridgelab.challenge_print_brief', 'Brief'), challenge.span + ' m span; ' + challenge.nBays + ' bays; ' + challenge.loadPerJoint + ' kN per joint; safety factor at least ' + challenge.minSF.toFixed(1)),
+                      printRow(__alloT('stem.bridgelab.challenge_print_design', 'Recorded design'), bridgeChallengeDesignText(r.design)),
+                      printRow(__alloT('stem.bridgelab.challenge_print_result', 'Result'), bridgeStarsText(r.stars) + '; ' + bridgeChallengeValueText(challenge, r.value) + ' against a par of ' + bridgeChallengeValueText(challenge, challenge.par)
+                        + (r.afterExample ? '; recorded after viewing the worked example' : '')))));
+                }));
+            })(),
             renderBridgeDampingGuide(true),
             renderBridgeSeismicNotebook(true),
             (observations.length || inquiry.hypothesis || inquiry.explanation || inquiry.observation) ? h('section', { 'data-bridge-print-inquiry': true },
@@ -10722,7 +11059,7 @@
           h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, '🌉'),
           h('div', null,
             h('h2', { style: { margin: 0, color: '#fbbf24', fontSize: 20, fontWeight: 900 } }, __alloT('stem.bridgelab.bridge_engineering_lab', 'Bridge Engineering Lab')),
-            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, __alloT('stem.bridgelab.engineering_design_structural_mechanic', 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2'))
+            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 2 } }, __alloT('stem.bridgelab.engineering_design_structural_mechanic', 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2'))
           )
         ),
         h('section', { 'data-bridgelab-design-brief': 'true',
@@ -10753,7 +11090,7 @@
                 h('div', null,
                   h('div', { style: { fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 3 } }, __alloT('stem.bridgelab.design_readiness', 'Design readiness')),
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
-                    h('strong', { style: { fontSize: 17, color: bridgeBriefStatusColor } }, bridgeBriefStatusCopy),
+                    h('strong', { style: { fontSize: 17, color: bridgeBriefStatusInk } }, bridgeBriefStatusCopy),
                     h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 800 } }, 'SF ' + bridgeFactor(bridgeBriefSF))
                   ),
                   h('div', { style: { marginTop: 4, fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45 } },
@@ -10766,7 +11103,7 @@
                   h('path', { d: 'M24 62 H144', stroke: bridgeBriefStatusColor, strokeWidth: 5, strokeLinecap: 'round' }),
                   h('circle', { cx: 24, cy: 62, r: 6, fill: '#e2e8f0' }),
                   h('circle', { cx: 144, cy: 62, r: 6, fill: '#e2e8f0' }),
-                  h('text', { x: 80, y: 18, textAnchor: 'middle', fill: bridgeBriefStatusColor, fontSize: 11, fontWeight: 900 }, bridgeBriefGov.analysis.maxForce < 1e-9 ? __alloT('stem.bridgelab.no_demand', 'No demand') : bridgeBriefStatus.toUpperCase())
+                  h('text', { x: 80, y: 18, textAnchor: 'middle', fill: bridgeBriefStatusInk, fontSize: 11, fontWeight: 900 }, bridgeBriefGov.analysis.maxForce < 1e-9 ? __alloT('stem.bridgelab.no_demand', 'No demand') : bridgeBriefStatus.toUpperCase())
                 )
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },

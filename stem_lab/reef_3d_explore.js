@@ -138,14 +138,21 @@
     ribbon_eel: ['fish', 'crevice', 1.0, 1, 57],
     leaf_scorpionfish: ['fish', 'bottom', 0.10, 1, 135],
     longnose_hawkfish: ['fish', 'bottom', 0.12, 10, 100],
-    chocolate_chip_sea_star: ['invertebrate', 'bottom', 0.28, 0, 30]
+    chocolate_chip_sea_star: ['invertebrate', 'bottom', 0.28, 0, 30],
+    porcelain_anemone_crab: ['invertebrate', 'bottom', 0.04, 1, 10], varicose_phyllidia: ['invertebrate', 'bottom', 0.06, 4, 25],
+    broadclub_cuttlefish: ['invertebrate', 'hover', 0.30, 5, 30], blackspotted_puffer: ['fish', 'hover', 0.25, 3, 25],
+    ocellated_eagle_ray: ['fish', 'solitary', 4.2, 0, 60], textile_cone: ['invertebrate', 'bottom', 0.09, 0, 50],
+    orange_cup_coral: ['coral', 'sessile', 0.075, 1, 60], banded_sea_krait: ['reptile', 'solitary', 1.2, 0, 60],
+    white_spotted_hermit_crab: ['invertebrate', 'bottom', 0.20, 0, 50], longfin_bannerfish: ['fish', 'pair', 0.15, 2, 75],
+    bigfin_reef_squid: ['invertebrate', 'hover', 0.40, 0, 100]
   };
   var SPECIAL = {
     whitetip_reef_shark: 'cruise', reef_manta: 'manta', green_turtle: 'turtle', hawksbill_turtle: 'turtle', giant_moray: 'moray',
     bluespotted_stingray: 'ray', clownfish: 'clown', cleaner_wrasse: 'cleaner', cleaner_shrimp: 'cleaner', humphead_wrasse: 'roam', day_octopus: 'den',
     // Living reef interactions: grazers bite the rock, clients visit the cleaning
     // stations, and a crown-of-thorns starfish sits on the coral it is eating.
-    parrotfish: 'graze', bumphead_parrotfish: 'graze', peacock_grouper: 'client', crown_of_thorns: 'cots'
+    parrotfish: 'graze', bumphead_parrotfish: 'graze', peacock_grouper: 'client', crown_of_thorns: 'cots',
+    ocellated_eagle_ray: 'eagle', bigfin_reef_squid: 'squid', broadclub_cuttlefish: 'cuttle', blackspotted_puffer: 'puffer', banded_sea_krait: 'krait'
   };
   // A client's poses at a cleaning station: [pitch, roll] (head up, head down, tilted).
   var POSES = [[0.55, 0], [-0.48, 0], [0.12, 0.5]];
@@ -160,7 +167,10 @@
     mushroom_coral: 'garden', brain_coral: 'garden', staghorn_coral: 'garden', boulder_coral: 'garden', table_coral: 'crest', cauliflower_coral: 'crest', foliose_coral: 'slope',
     reef_star: 'rubble', reef_ball: 'rubble', coral_tree_nursery: 'rubble', lionfish: 'bommieSide', peacock_grouper: 'bommieSide',
     porcupinefish: 'bommieSide', day_octopus: 'rubbleEdge', anthias: 'bommieAbove', blue_green_chromis: 'bommieAbove', yellow_boxfish: 'garden',
-    firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand', leaf_scorpionfish: 'rubble', longnose_hawkfish: 'slope', chocolate_chip_sea_star: 'sand'
+    firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand', leaf_scorpionfish: 'rubble', longnose_hawkfish: 'slope', chocolate_chip_sea_star: 'sand',
+    porcelain_anemone_crab: 'anemone', varicose_phyllidia: 'reef', broadclub_cuttlefish: 'rubbleEdge', blackspotted_puffer: 'garden',
+    ocellated_eagle_ray: 'channel', textile_cone: 'rubbleEdge', orange_cup_coral: 'shadedRock', banded_sea_krait: 'bommieSide',
+    white_spotted_hermit_crab: 'rubble', longfin_bannerfish: 'slope', bigfin_reef_squid: 'channel'
   };
   function speciesInfo(Species, id) {
     var raw = null, fb = INFO[id] || null;
@@ -953,7 +963,7 @@
     'gl_FragColor.rgb*=0.55;',
     'float reefGlowLiving=reefFluorescent;',
     '#ifdef REEF_DECOR_CORAL',
-    'reefGlowLiving*=1.0-step(0.5,vReefSkeleton);',
+    'reefGlowLiving*=1.0-step(0.5,vReefSkeleton.x);',
     '#endif',
     'if(reefGlowLiving>0.5){',
     'float reefGlowSeed=reefFluorSeed,reefGlowStructure=0.62,reefGlowPigment=0.5;',
@@ -1492,7 +1502,7 @@
     var site = normalizeSite(options.site), health = site.health, seed = site.seed, restoration = site.restoration;
     var growth = restoration ? clamp(restoration.yearsSince / 4, 0, 1) : 0;
     var vitality = clamp(0.55 * health.coralCover + 0.25 * (1 - health.bleaching) + 0.2 * (1 - health.algae), 0, 1);
-    var view = options.view === 'first' ? 'first' : 'third', vision = visionMode(options.vision);
+    var view = options.view === 'first' ? 'first' : 'third', vision = visionMode(options.vision), magnification = 1;
     var scene = new T.Scene(), camera = new T.PerspectiveCamera(60, 1, 0.05, 70), renderer = null;
     var disposed = false, contextLost = false, raf = 0, rafIsTimer = false, lastStamp = null, worldTime = 0, visualTime = 0, frames = 0, paused = false;
     var listeners = [], resizeObserver = null, notifyTimer = 0, lastNotify = -Infinity, lastCheck = -Infinity, lastKey = '', pendingNotify = false;
@@ -1509,7 +1519,7 @@
     var shafts = [], U = null, snowU = null, plantMotions = [], fogNear = new T.Color(), fogFar = new T.Color(), topNear = new T.Color(), topFar = new T.Color(), lastWaterDepth = -1;
     var diverPos = new T.Vector3(), bearing = 0, speed = 0, vy = 0, turnRate = 0, bodyPitch = 0, bodyRoll = 0, kick = 0, swimEffort = 0, autopilot = null;
     var keys = { forward: 0, back: 0, left: 0, right: 0, up: 0, down: 0 }, ext = { forward: 0, turn: 0, rise: 0 };
-    var look = { yaw: 0, pitch: 0 }, camDist = 4.2, camPos = new T.Vector3(), camTarget = new T.Vector3(), dragging = false;
+    var look = { yaw: 0, pitch: 0 }, camDist = 4.2, camPos = new T.Vector3(), camTarget = new T.Vector3(), dragging = false, observationAim = null;
     var eyeMotion = { pitch: 0, yaw: 0, roll: 0, heave: 0, sway: 0, surge: 0 };
     var focusedUid = null, cycle = { list: [], at: -Infinity }, pointers = new Map(), pinch = 0, press = null;
     var frustum = new T.Frustum(), projScreen = new T.Matrix4(), sphere = new T.Sphere(), raycaster = new T.Raycaster(), tmpA = { x: 0, y: 0, z: 0 }, tmpB = { x: 0, y: 0, z: 0 }, aheadPoint = { x: 0, y: 0, z: 0 };
@@ -1540,6 +1550,8 @@
       listeners.forEach(function (off) { off(); }); listeners.length = 0;
       if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
       pointers.clear(); autopilot = null;
+      observationAim = null;
+      encounterKit = null;
       organisms.forEach(function (o) { if (o.model && !o.instanced) { try { o.model.dispose(); } catch (ignore) {} } });
       protos.forEach(function (p) { try { p.dispose(); } catch (ignore) {} });
       if (sun && sun.shadow && typeof sun.shadow.dispose === 'function') sun.shadow.dispose();
@@ -1703,7 +1715,7 @@
     function patch(material, name, buildShader) {
       if (derivatives) material.extensions = { derivatives: true };
       material.onBeforeCompile = function (shader) { buildShader(shader); };
-      material.customProgramCacheKey = function () { return key(name); };
+      material.customProgramCacheKey = function () { return key(name) + (name === 'coral' ? '|tissue-v1' : ''); };
       return own(material);
     }
     function floorShader(shader) {
@@ -1792,9 +1804,12 @@
         var parts = shaderParts(); commonFragment(parts, true); bindCaustics(shader);
         shader.uniforms.reefCoralA = look.a; shader.uniforms.reefCoralB = look.b;
         shader.uniforms.reefFluorescent.value = look.a.value.y;
-        parts.vCommon.push('attribute float reefSkeleton;varying float vReefSkeleton;varying vec4 vReefCoralNormal;');
-        parts.vBegin.push('vReefSkeleton=reefSkeleton;');
-        parts.fCommon.push('#define REEF_DECOR_CORAL\n varying float vReefSkeleton;');
+        parts.vCommon.push('attribute float reefSkeleton;varying vec2 vReefSkeleton;varying vec4 vReefCoralNormal;');
+        // Pale bleached instance colours and recently dead skeletons retain
+        // their diagnostic appearance. Pack the pigment gate into the existing
+        // varying slot; no extra varying register or instance buffer is needed.
+        parts.vBegin.push(['vReefSkeleton=vec2(reefSkeleton,1.0);','#ifdef USE_INSTANCING_COLOR','vReefSkeleton.y=1.0-smoothstep(0.72,0.84,min(min(instanceColor.r,instanceColor.g),instanceColor.b));','#endif'].join('\n'));
+        parts.fCommon.push('#define REEF_DECOR_CORAL\n varying vec2 vReefSkeleton;');
         parts.vBegin.push('vReefCoralNormal=vec4(normal,0.0);');
         // A colony keeps its own pigment and cup pattern across near/middle/far
         // LODs. The seed shares the normal varying so mobile varying limits stay
@@ -1862,14 +1877,25 @@
           'float reefMantle=smoothstep(0.18,0.82,reefPigment);',
           'vec3 reefTissueTint=mix(vec3(0.91,0.955,0.93),vec3(1.045,1.025,1.02),reefMantle);',
           'diffuseColor.rgb*=reefTissueTint*(1.0-reefCoralA.x*reefPore+reefCoralA.z*(reefRim+0.26*reefSepta))*(0.92+0.16*reefTissue)*(1.0-0.23*reefGroove+0.026*reefGrowthBands);',
+          // Broad pigment provinces remain visible when individual cups are
+          // subpixel. Every colony keeps one restrained accent family and its
+          // own soft boundaries across LOD; reuse the two existing noise fields.
+          'float reefLivingPigment=reefCoralA.y*(1.0-step(0.5,vReefSkeleton.x))*vReefSkeleton.y;',
+          'float reefPigmentProvince=smoothstep(0.28,0.76,reefTissue*0.72+reefPigment*0.28);',
+          'vec3 reefPigmentShade=mix(vec3(0.72,0.87,0.85),vec3(0.88,0.72,0.91),smoothstep(0.22,0.78,reefColonySeed));',
+          'vec3 reefPigmentCrown=mix(vec3(1.20,1.07,0.86),vec3(0.95,1.16,1.20),smoothstep(0.30,0.82,reefColonySeed));',
+          'vec3 reefColonyPigment=mix(reefPigmentShade,reefPigmentCrown,reefPigmentProvince);',
+          'float reefCrownFacing=smoothstep(-0.15,0.85,normalize(vReefCoralNormal.xyz).y);',
+          'float reefLivingRidge=(reefRim*0.65+reefSepta*0.25+max(reefGrowthBands,0.0)*0.18)*(0.45+0.55*reefCrownFacing);',
+          'diffuseColor.rgb*=mix(vec3(1.0),reefColonyPigment*(0.93+0.13*reefCrownFacing)*(1.0-0.18*reefPore+0.19*reefLivingRidge),reefLivingPigment);',
           ABSORB
         ].join('\n'));
         // Broad tissue folds stay legible after the tiny cups become subpixel.
         // Reuse colony-local fields so texture stays attached across every LOD.
-        parts.fRough.push('roughnessFactor=clamp(roughnessFactor-0.045*reefRim+0.035*reefPore+0.055*reefGroove-0.012*reefGrowthBands+0.065*(0.5-reefTissue)-0.025*reefMantle,0.35,1.0);');
+        parts.fRough.push('roughnessFactor=clamp(roughnessFactor-0.045*reefRim+0.035*reefPore+0.055*reefGroove-0.012*reefGrowthBands+0.065*(0.5-reefTissue)-0.025*reefMantle+reefLivingPigment*(0.10*(0.5-reefPigmentProvince)-0.045*reefLivingRidge),0.35,1.0);');
         // Filter both colour and relief at the same footprint to avoid distant
         // maze shimmer. Raised lips surround recessed, gently folded tissue.
-        parts.fNormal.push(surfaceRelief('(0.0013*reefRim+0.0003*reefSepta-0.0022*reefPore)*reefCoralA.x-0.0024*reefGroove+0.00045*reefGrowthBands+0.0045*(reefTissue-0.5)', '0.28'));
+        parts.fNormal.push(surfaceRelief('(0.0013*reefRim+0.0003*reefSepta-0.0022*reefPore)*reefCoralA.x-0.0024*reefGroove+0.00045*reefGrowthBands+0.0045*(reefTissue-0.5)+reefLivingPigment*(0.004*(reefPigmentProvince-0.5)+0.0006*reefLivingRidge)', '0.28'));
         // Small cavities occlude diffuse skylight rather than baking another
         // dark stripe into the pigment. Direct sun and the torch still light them.
         parts.fLighting.push('float reefCavity=clamp(1.0-0.22*reefPore*reefCoralA.x-0.34*reefGroove,0.55,1.0);reflectedLight.indirectDiffuse*=reefCavity;reflectedLight.indirectSpecular*=mix(1.0,reefCavity,0.45);');
@@ -2183,6 +2209,13 @@
         if (c && zone === 'anemone') c.score = 1 + c.y * 0.05;
         return c;
       }
+      if (zone === 'shadedRock') {
+        bm = bommies[Math.floor(u * bommies.length) % bommies.length];
+        // Opposite the scene's daylight direction (0.42, 1, 0.3): a hard rock
+        // shoulder, not the sun-facing coral garden or an invented cave ceiling.
+        a = Math.atan2(-0.3, -0.42) - Math.atan2(bm.s, bm.c) + (v - 0.5) * 0.7;
+        return onBommie(bm, a, 0.76 + 0.13 * w);
+      }
       if (zone === 'station' || zone === 'stationBase') {
         bm = station; a = v * TAU;
         if (zone === 'station') return onBommie(bm, a, 0.6 + 0.3 * w);
@@ -2225,6 +2258,18 @@
     function placeHome(o, zone, members) {
       var d = o.draws, info = o.info, beh = o.behavior, L = info.lengthM, k;
       o.scale = 0.85 + 0.3 * d[24]; o.yaw = d[25] * TAU; o.phase = d[26] * TAU; o.dir = d[27] < 0.5 ? 1 : -1;
+      if (o.speciesId === 'porcelain_anemone_crab' && anemones.length) {
+        var host = anemones[o.index % anemones.length], mat = anemoneMat(host), side = d[25] * TAU, ring = 0.035 + 0.015 * d[28];
+        o.anchor = host; o.ground = mat.y + 0.002; o.home = new T.Vector3(mat.x + Math.cos(side) * ring, o.ground, mat.z + Math.sin(side) * ring);
+        return;
+      }
+      if (beh === 'squid' && members.length) {
+        o.leader = members[0]; o.home = o.leader.home.clone(); o.ground = o.leader.ground; return;
+      }
+      if (beh === 'eagle') {
+        var ez = 7 + 6 * d[0], ex = terrain.channelX(ez);
+        o.ground = terrain.floorY(ex, ez); o.home = new T.Vector3(ex, o.ground + 2.4, ez); return;
+      }
       if ((beh === 'pair' || beh === 'clown') && o.index % 2 === 1 && members.length) {
         var lead = members[members.length - 1]; o.leader = lead; o.home = lead.home.clone(); o.ground = lead.ground; o.anchor = lead.anchor; return;
       }
@@ -2264,6 +2309,10 @@
       else if (beh === 'hover' || beh === 'cleaner' && info.group === 'fish') alt = 0.3 + 0.7 * d[29];
       else if (beh === 'school') alt = zone === 'bommieAbove' ? 0.6 + 1.2 * d[29] : 1.1 + 2.4 * d[29];
       else if (beh === 'roam') alt = 1.0 + 2.0 * d[29];
+      else if (beh === 'squid') alt = 1.8 + 0.7 * d[29];
+      else if (beh === 'cuttle') alt = 0.45 + 0.3 * d[29];
+      else if (beh === 'puffer') alt = 0.6 + 0.55 * d[29];
+      else if (beh === 'krait') alt = 0.45 + 0.2 * d[29];
       o.home = new T.Vector3(best.x, best.y + alt, best.z);
       if (sessile && best.bommie) {
         var h1 = best.bommie.heightAt(best.x + 0.15, best.z), h0 = best.bommie.heightAt(best.x - 0.15, best.z), h2 = best.bommie.heightAt(best.x, best.z + 0.15), h3 = best.bommie.heightAt(best.x, best.z - 0.15);
@@ -2300,7 +2349,53 @@
         };
         return;
       }
-      if (beh === 'wander' || beh === 'pair' || beh === 'roam') {
+      if (beh === 'eagle') {
+        // The long whip tail is not the wing disc. Keep its complete bounds for
+        // visibility, but use a disc-sized clearance and an open, broad route.
+        var ep = loopPath(h.x, 0, h.z, 7.5 + 2 * d[28], 4.5 + d[30], o.yaw, 0.055, o.phase, o.dir, 0, 0.04), eph = o.phase;
+        o.path = function (t, out) { ep(t, out); out.y = terrain.floorY(out.x, out.z) + 2.0 + 0.35 * Math.sin(t * 0.09 + eph); return out; };
+        o.clear = 0.85; o.bank = 0.16;
+        // The disc is centred on the model origin. Its tail shifts centerLocal,
+        // which is useful for visibility but must not move the wing footprint.
+        o.groundReach = 0.78 * o.scale;
+        o.observationCenter = o.root.position; o.observationRadius = 0.9 * o.scale;
+      } else if (beh === 'squid') {
+        o.clear = 0.45; o.bank = 0.025;
+        if (o.leader) {
+          var sqLead = o.leader, sqAhead = { x: 0, y: 0, z: 0 }, sqSide = (o.index % 2 ? 1 : -1) * (0.5 + 0.18 * d[28]), sqLag = 1.6 + 0.4 * o.index;
+          o.path = function (t, out) {
+            sqLead.path(t - sqLag, out); sqLead.path(t - sqLag + 0.2, sqAhead);
+            var dx = sqAhead.x - out.x, dz = sqAhead.z - out.z, mag = Math.hypot(dx, dz) || 1;
+            out.x -= dz / mag * sqSide; out.z += dx / mag * sqSide; out.y += 0.12 * Math.sin(o.index + t * 0.16); return out;
+          };
+        } else {
+          a = 2.2 + 1.4 * d[28]; b = 1.2 + 0.7 * d[30]; sp = 0.22 + 0.07 * d[29];
+          o.path = loopPath(h.x, h.y, h.z, a, b, o.yaw, sp / ((a + b) / 2), o.phase, o.dir, 0.18, 0.06);
+        }
+      } else if (beh === 'cuttle') {
+        // Keep the fin-driven hover near the smooth rock surface while the
+        // clearance planner anticipates colonies. The small scanning turn
+        // follows the patrol rather than holding one world heading all the way.
+        var cp = loopPath(h.x, h.y, h.z, 0.65 + 0.35 * d[28], 0.4 + 0.25 * d[30], o.yaw, 0.09, o.phase, o.dir, 0.06, 0.05);
+        var cPhase = o.phase, cHere = { x: 0, y: 0, z: 0 }, cAhead = { x: 0, y: 0, z: 0 };
+        o.path = function (t, out) { cp(t, out); out.y += rockSurfaceAt(out.x, out.z) - o.ground; return out; };
+        o.sweep = function (t) {
+          cp(t, cHere); cp(t + 0.3, cAhead);
+          return bearingTo(cAhead.x - cHere.x, cAhead.z - cHere.z) + 0.22 * Math.sin(t * 0.075 + cPhase);
+        };
+        o.clear = 0.22; o.bank = 0.015;
+      } else if (beh === 'puffer') {
+        a = 1.2 + 0.7 * d[28]; b = 0.75 + 0.4 * d[30]; sp = 0.12 + 0.035 * d[29];
+        o.path = loopPath(h.x, h.y, h.z, a, b, o.yaw, sp / ((a + b) / 2), o.phase, o.dir, 0.10, 0.055);
+        o.clear = 0.30; o.bank = 0.025;
+      } else if (beh === 'krait') {
+        // A separate near-reef search path keeps this snake out of the turtle
+        // flipper and scheduled breathing event logic. Body waves come from its
+        // own species model; this route provides only forward progress.
+        var kp = loopPath(h.x, 0, h.z, 2.2 + d[28], 1.4 + 0.6 * d[30], o.yaw, 0.065, o.phase, o.dir, 0, 0.13), kph = o.phase;
+        o.path = function (t, out) { kp(t, out); out.y = terrain.floorY(out.x, out.z) + 0.48 + 0.08 * Math.sin(t * 0.17 + kph); return out; };
+        o.clear = 0.24; o.bank = 0.035;
+      } else if (beh === 'wander' || beh === 'pair' || beh === 'roam') {
         a = clamp((beh === 'roam' ? 5 : 1.2) + 3 * L, 1.2, 9) * (0.7 + 0.6 * d[28]); b = a * (0.55 + 0.35 * d[30]);
         sp = clamp(0.2 + 0.45 * L, 0.15, 0.85) * (0.8 + 0.4 * d[30]);
         o.path = loopPath(h.x, h.y, h.z, a, b, o.yaw, sp / ((a + b) / 2), o.phase, o.dir, 0.3, 0.22);
@@ -3180,7 +3275,12 @@
       var best = null, bd = 0.6;
       organisms.forEach(function (a) { if (a.speciesId === 'magnificent_anemone' && a.center) { var dd = Math.hypot(a.center.x - an.x, a.center.z - an.z); if (dd < bd) { bd = dd; best = a; } } });
       var slots = best && best.model && Array.isArray(best.model.hostSlots) ? best.model.hostSlots : null, m = best && (best.instanced ? best.matrix : best.root && best.root.matrix);
-      if (!slots || !m) return (an.mat = { x: an.x, y: an.top, z: an.z });
+      if (!slots || !m) {
+        // A placeholder's tessellated bounds can move its centre by centimetres
+        // between detail tiers. Its placement origin is the stable host anchor.
+        var base = m ? new T.Vector3().setFromMatrixPosition(m) : null;
+        return (an.mat = { x: base ? base.x : an.x, y: an.top, z: base ? base.z : an.z });
+      }
       var c = new T.Vector3(0, slots[0][1] - 0.12, 0).applyMatrix4(m);
       return (an.mat = { x: c.x, y: c.y, z: c.z });
     }
@@ -3205,7 +3305,7 @@
       healthStatesOf = healthStatesOf || {}; s = healthStatesOf[id];
       if (s) return s;
       if (Species && typeof Species.info === 'function') { try { raw = Species.info(id); } catch (ignore) { raw = null; } }
-      s = raw && Array.isArray(raw.healthStates) ? raw.healthStates : o.info.group === 'coral' ? ['healthy', 'bleached', 'dead'] : ['healthy'];
+      s = raw && Array.isArray(raw.healthStates) ? raw.healthStates : id === 'orange_cup_coral' ? ['healthy', 'dead'] : o.info.group === 'coral' ? ['healthy', 'bleached', 'dead'] : ['healthy'];
       return (healthStatesOf[id] = s);
     }
     // Reef3DSpecies health: 'healthy', 'bleached' or 'dead' (algae-covered), by one
@@ -3215,7 +3315,8 @@
       var states = healthStates(o);
       if (states.length < 2) return 'healthy';
       var r = o.draws[31], dead = 0.45 * health.algae * (1 - 0.5 * health.coralCover);
-      var state = r < health.bleaching ? 'bleached' : r < health.bleaching + dead ? 'dead' : 'healthy';
+      var bleaching = states.indexOf('bleached') >= 0 ? health.bleaching : 0;
+      var state = r < bleaching ? 'bleached' : r < bleaching + dead ? 'dead' : 'healthy';
       return states.indexOf(state) >= 0 ? state : 'healthy';
     }
     // Within info().schoolSize; a degraded reef keeps its smallest schools, and each tier caps the crowd.
@@ -3290,7 +3391,7 @@
     }
     function restQuaternion(o, out) {
       var up = new T.Vector3(0, 1, 0), qy = new T.Quaternion().setFromAxisAngle(up, yawFor(o.yaw));
-      if (o.normal) { var n = up.clone().lerp(o.normal, 0.45).normalize(); out.setFromUnitVectors(up, n).multiply(qy); } else out.copy(qy);
+      if (o.normal) { var n = up.clone().lerp(o.normal, o.substrateMatched ? 1 : 0.45).normalize(); out.setFromUnitVectors(up, n).multiply(qy); } else out.copy(qy);
       return out;
     }
     function register(o) {
@@ -3322,6 +3423,30 @@
         for (var k = 0; k < list.length; k++) list[k].castShadow = on;
       }
     }
+    function baseSeat(o) {
+      // Their feet or mantle are millimetres above the model's base. Keep them
+      // seated on the substrate rather than burying most of the living body.
+      if (o.speciesId === 'nudibranch' || o.speciesId === 'cleaner_shrimp' || o.speciesId === 'harlequin_shrimp') return 0.0005;
+      // A two-centimetre burial hides most of these small real specimens.
+      return o.speciesId === 'porcelain_anemone_crab' || o.speciesId === 'white_spotted_hermit_crab' || o.speciesId === 'varicose_phyllidia' || o.speciesId === 'textile_cone' || o.speciesId === 'orange_cup_coral' ? 0.002 : 0.02;
+    }
+    var substrateProbe;
+    function matchSmallSubstrate(o) {
+      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp')) return;
+      // The rock's rendered triangles can lie centimetres above its smooth
+      // analytic placement surface. Match these centimetre-sized animals to
+      // the actual supporting face once, so their feet and bodies remain above
+      // the reef. Larger colonies retain their established placement and tilt.
+      var surfaces = [floorMesh, bommieMesh].filter(Boolean);
+      surfaces.forEach(function (mesh) { mesh.updateMatrixWorld(true); });
+      var probe = substrateProbe || (substrateProbe = new T.Raycaster());
+      probe.ray.origin.set(o.home.x, 1, o.home.z); probe.ray.direction.set(0, -1, 0);
+      var hits = probe.intersectObjects(surfaces, false), hit = hits[0];
+      if (!hit || !hit.face || !isFinite(hit.point.y)) return;
+      o.ground = hit.point.y; o.home.y = hit.point.y;
+      o.normal = hit.face.normal.clone().applyNormalMatrix(new T.Matrix3().getNormalMatrix(hit.object.matrixWorld));
+      o.substrateMatched = true;
+    }
     function attachObject(o, model) {
       var root = model.root, box = localBounds(root), id = o.speciesId;
       o.model = model; o.root = root; o.instanced = false; root.rotation.order = 'YZX';
@@ -3348,8 +3473,9 @@
         var mo = crevice.mouth, out = origin === 'crevice' ? 0 : Math.max(0.1, box.max.x * o.scale - 0.35 * o.info.lengthM * o.scale);
         root.position.set(mo.x - mo.nx * out, mo.y, mo.z - mo.nz * out); root.rotation.set(0, yawFor(o.yaw), origin === 'crevice' ? 0 : 0.12);
       } else if (!o.path) {
+        if (origin === 'base') matchSmallSubstrate(o);
         restQuaternion(o, root.quaternion);
-        root.position.set(o.home.x, o.ground - (origin === 'base' ? 0 : box.min.y * o.scale) - 0.02, o.home.z);
+        root.position.set(o.home.x, o.ground - (origin === 'base' ? 0 : box.min.y * o.scale) - baseSeat(o), o.home.z);
       }
       root.updateMatrix(); root.updateMatrixWorld(true);
       if (!o.path) o.center.copy(o.centerLocal).applyMatrix4(root.matrix);
@@ -3374,7 +3500,8 @@
         var box = localBounds(model.root), centerLocal = box.getCenter(new T.Vector3()), r0 = num(model.radius, 0) > 0 ? model.radius : box.getBoundingSphere(new T.Sphere()).radius;
         var q = new T.Quaternion(), pv = new T.Vector3(), sv = new T.Vector3(), mtx = new T.Matrix4(), uids = [], lift = model.placeholder || info.origin !== 'base' ? box.min.y : 0;
         list.forEach(function (o) {
-          restQuaternion(o, q); pv.set(o.home.x, o.ground - lift * o.scale - 0.02, o.home.z); sv.setScalar(o.scale);
+          if (!model.placeholder && info.origin === 'base') matchSmallSubstrate(o);
+          restQuaternion(o, q); pv.set(o.home.x, o.ground - lift * o.scale - baseSeat(o), o.home.z); sv.setScalar(o.scale);
           o.matrix = new T.Matrix4().compose(pv, q, sv); o.center = centerLocal.clone().applyMatrix4(o.matrix); o.radius = r0 * o.scale; o.instanced = true; o.model = model;
           o.boxMinY = box.min.y; o.boxMaxY = box.max.y; uids.push(o.uid); register(o);
         });
@@ -3481,6 +3608,9 @@
       if (restoration) loadStep(3, function () { placeRestoration(resUids); });
       // One step per species, in placement order (a staged mount yields between them).
       entries.slice().sort(function (a, b) { return pass(a) - pass(b) || a.order - b.order; }).forEach(function (e) { loadStep(1 + e.uids.length, function () {
+        // This species depends on a host. Explicit custom populations may omit
+        // anemones; do not invent one or place a hostless crab on the seabed.
+        if (e.id === 'porcelain_anemone_crab' && !anemones.length) return;
         var rnd = stream(seed, 3001 + (hashInt(e.id) % 99991)), zone = ZONE[e.id] || defaultZone(e.info, e.behavior), members = [];
         for (var k = 0; k < e.uids.length; k++) {
           var draws = []; for (var q = 0; q < 32; q++) draws.push(rnd());
@@ -3558,17 +3688,27 @@
       var phase = t * 0.35 - o.home.x * 0.075 - o.home.z * 0.055;
       out.x += loose * Math.sin(phase); out.z += loose * 0.65 * Math.sin(phase + 0.4);
       if (o.flight && o.flight.tick !== null) fleeFrom(o, t, out);
+      if (o.encounter && o.encounter.tick !== null) encounterFrom(o, t, out);
       return out;
+    }
+    function mobileGround(o, x, z) {
+      var top = groundTop(x, z), r = o.groundReach;
+      if (!r) return top;
+      // Eight points cover the ray's disc even while its heading and bank
+      // change. This intentionally excludes the long, narrow trailing tail.
+      var d = r * 0.7071067811865476;
+      return Math.max(top, groundTop(x + r, z), groundTop(x - r, z), groundTop(x, z + r), groundTop(x, z - r),
+        groundTop(x + d, z + d), groundTop(x + d, z - d), groundTop(x - d, z + d), groundTop(x - d, z - d));
     }
     // The lift a swimmer needs over the terrain ahead (eight path points, the costly part
     // of a pose). Far and unseen swimmers redo it on their slice (perfRate) and keep the
     // last answer in between; the footprint under them (nowLift) is always current.
     function perfLookAhead(o, q, clear, nowLift, init) {
       if (!init && o.perfAhead !== undefined && !perfDue(o, o.perfM || 1)) return Math.max(nowLift, o.perfAhead);
-      var target = Math.max(nowLift, groundTop(q.x, q.z) + clear - q.y);
+      var target = Math.max(nowLift, mobileGround(o, q.x, q.z) + clear - q.y);
       for (var lead = 1; lead <= 7; lead++) {
         var ahead = mobilePoint(o, worldTime + lead * 0.6, aheadPoint);
-        target = Math.max(target, groundTop(ahead.x, ahead.z) + clear - ahead.y - lead * 0.06);
+        target = Math.max(target, mobileGround(o, ahead.x, ahead.z) + clear - ahead.y - lead * 0.06);
       }
       o.perfAhead = target;
       return target;
@@ -3576,10 +3716,13 @@
     function poseMobile(o, dt, init) {
       if (o.flight === undefined) o.flight = flightState(o);
       if (o.flight) stepFlight(o, init);
+      if (o.encounter === undefined) o.encounter = encounterState(o);
+      if (o.encounter) stepEncounter(o, init);
       // A sheltering planktivore may sink to just above the coral it hides in.
-      var clear = o.flight && o.flight.shelter ? lerp(o.clear, o.flight.shelter, shelterAt(o.flight, worldTime)) : o.clear;
+      var shelter = Math.max(o.flight ? shelterAt(o.flight, worldTime) : 0, o.encounter ? encounterAt(o.encounter, worldTime, 's') : 0);
+      var clear = o.shelterClear ? lerp(o.clear, o.shelterClear, shelter) : o.clear;
       var p = mobilePoint(o, worldTime, tmpA), q = mobilePoint(o, worldTime + 0.3, tmpB), root = o.root;
-      var floor = groundTop(p.x, p.z) + clear, nowLift = Math.max(0, floor - p.y);
+      var floor = mobileGround(o, p.x, p.z) + clear, nowLift = Math.max(0, floor - p.y);
       // Start climbing before a ledge and settle slowly on its far side. Keep
       // the current footprint clear even at a sharp coral-grid boundary.
       var target = perfLookAhead(o, q, clear, nowLift, init);
@@ -3606,6 +3749,95 @@
       currentAt(p.x, p.z, worldTime, o.motion.current);
       root.position.set(p.x, y, p.z); root.rotation.set(o.rollNow, yawFor(bear), o.pitchNow);
       root.updateMatrix(); o.center.copy(o.centerLocal).applyMatrix4(root.matrix);
+    }
+
+    // ---- Encounters between fish ----------------------------------------------------
+    // A close predator changes the living scene even when the diver is still: small
+    // fish give it space, while coral-associated schools dip toward shelter.
+    // This is an illustrative response, not a calibrated predation model; no animals
+    // are removed. Refuge responses are documented in doi:10.1038/s41598-018-26090-4.
+    // Keep this separate from diver habituation: focusing an animal must not turn
+    // off its response to other fish, and being used to divers is not predator tameness.
+    var encounterKit;
+    function encounterCache() {
+      if (encounterKit) return encounterKit;
+      var predators = organisms.filter(function (o) { return o.path && (o.speciesId === 'whitetip_reef_shark' || o.speciesId === 'peacock_grouper' || o.speciesId === 'lionfish'); });
+      return encounterKit = { predators: predators, frames: new Array(32), p: { x: 0, y: 0, z: 0 } };
+    }
+    function encounterState(o) {
+      return flightBase(o) > 0 && o.info.group === 'fish' && o.info.lengthM <= 0.5 && o.speciesId !== 'lionfish' ?
+        { tick: null, x: 0, z: 0, s: 0, tx: 0, tz: 0, ts: 0, r: 0 } : null;
+    }
+    // Cache each fixed-time sample, shared by all fish and ambient clouds. The ring
+    // is bounded, and a predator's route is sampled without calling mobilePoint or
+    // its flight wrapper (which could advance state or depend on update order).
+    function encounterPredators(t) {
+      var K = encounterCache(), tick = Math.floor(t * 60 + 1e-6), slot = ((tick % 32) + 32) % 32, frame = K.frames[slot];
+      if (frame && frame.tick === tick) return frame.list;
+      var list = [];
+      K.predators.forEach(function (o) {
+        var visit = o.eco && o.eco.station && clientVisit(o, t);
+        if (visit && visitWeight(visit, t) > 0.25) return; // clients and cleaners can meet safely
+        var p = { x: 0, y: 0, z: 0 };
+        (o.pathRaw || o.path)(t, p);
+        p.y = Math.min(o.ceiling, Math.max(p.y, groundTop(p.x, p.z) + o.clear));
+        p.length = o.info.lengthM; p.uid = o.uid;
+        list.push(p);
+      });
+      K.frames[slot] = { tick: tick, list: list };
+      return list;
+    }
+    // Return the strongest visible encounter; a rock between two animals blocks
+    // the cue. Distance is measured in all three dimensions so a shark cruising
+    // far below a shallow coral head does not empty its school.
+    function encounterCue(length, x, y, z, t, uid) {
+      var list = encounterPredators(t), best = null, amount = 0;
+      for (var i = 0; i < list.length; i++) {
+        var p = list[i];
+        if (p.uid === uid || length > p.length * 0.72) continue;
+        var dx = x - p.x, dy = y - p.y, dz = z - p.z, d = Math.hypot(dx, dy, dz), reach = clamp(1.1 + p.length * 1.9, 1.6, 4.8);
+        var strength = 1 - smooth(reach * 0.25, reach, d);
+        if (strength <= amount) continue;
+        var blocked = false;
+        for (var j = 1; j <= 3; j++) { var f = j / 4; if (rockSurfaceAt(lerp(x, p.x, f), lerp(z, p.z, f)) > lerp(y, p.y, f) - 0.08) { blocked = true; break; } }
+        if (!blocked) { best = p; amount = strength; }
+      }
+      return best ? { predator: best, amount: amount } : null;
+    }
+    function stepEncounter(o, init) {
+      var e = o.encounter, tick = Math.floor(worldTime * 60 + 1e-6);
+      if (init || e.tick === null) { e.tick = tick; return; }
+      var K = encounterCache(), p = K.p;
+      if (!K.predators.length) { e.tick = tick; return; }
+      for (var k = Math.max(e.tick + 1, tick - 29); k <= tick; k++) {
+        var t = k / 60;
+        o.path(t, p);
+        if (o.flight && o.flight.tick !== null) fleeFrom(o, t, p);
+        var cue = encounterCue(o.info.lengthM, p.x, Math.max(p.y, groundTop(p.x, p.z) + o.clear), p.z, t, o.uid);
+        e.tx = 0; e.tz = 0; e.ts = 0;
+        if (cue) {
+          var dx = p.x - cue.predator.x, dz = p.z - cue.predator.z, d = Math.hypot(dx, dz);
+          if (d < 0.01) { dx = Math.cos(o.phase); dz = Math.sin(o.phase); d = 1; }
+          var amount = cue.amount * (reducedMotion ? 0.35 : 1), distance = amount * Math.min(1.7, 0.6 + o.info.lengthM * 2) * (o.shelterClear ? 0.3 : 1);
+          e.tx = dx / d * distance; e.tz = dz / d * distance; e.ts = o.shelterClear ? amount : 0;
+        }
+        var increasing = e.tx * e.tx + e.tz * e.tz + e.ts * e.ts > e.x * e.x + e.z * e.z + e.s * e.s;
+        e.r = increasing ? (reducedMotion ? 1.3 : 2.3) : 0.35;
+        var a = damp(e.r, 1 / 60);
+        e.x += (e.tx - e.x) * a; e.z += (e.tz - e.z) * a; e.s += (e.ts - e.s) * a;
+      }
+      e.tick = Math.max(e.tick, tick);
+    }
+    function encounterAt(e, t, key) {
+      if (e.tick === null) return 0;
+      var target = e['t' + key], ahead = Math.max(0, t - e.tick / 60);
+      return target + (e[key] - target) * Math.exp(-e.r * ahead);
+    }
+    function encounterFrom(o, t, out) {
+      var e = o.encounter;
+      out.x = clamp(out.x + encounterAt(e, t, 'x'), -28, 28); out.z = clamp(out.z + encounterAt(e, t, 'z'), -28, 28);
+      if (o.shelterClear) out.y -= encounterAt(e, t, 's') * Math.max(0, out.y - groundTop(out.x, out.z) - o.shelterClear);
+      return out;
     }
 
     // ---- Diver awareness ------------------------------------------------------------
@@ -3988,7 +4220,9 @@
         for (i = 0; i < c.clouds.length; i++) {
           cl = c.clouds[i];
           var dd = Math.hypot(cl.x - diverPos.x, cl.top + cl.alt - diverPos.y, cl.z - diverPos.z) - cl.R * 0.7, Fc = F * calmFactor(cl.h);
-          cl.ta = 1 - smooth(Fc * 0.8, Fc * 1.5, dd); cl.r = cl.ta > cl.a ? (reducedMotion ? 1.6 : 2.2) : (reducedMotion ? 0.35 : 0.45);
+          var threat = encounterCue(owner.info.lengthM, cl.x, cl.top + cl.alt, cl.z, tk / 60, owner.uid);
+          cl.ta = Math.max(1 - smooth(Fc * 0.8, Fc * 1.5, dd), threat ? threat.amount * (reducedMotion ? 0.35 : 1) : 0);
+          cl.r = cl.ta > cl.a ? (reducedMotion ? 1.6 : 2.2) : (reducedMotion ? 0.35 : 0.45);
           cl.a += (cl.ta - cl.a) * (1 - Math.exp(-cl.r / 60));
           cl.h = calmHabituate(cl.h, dd, dd < Fc * 0.8, true);
         }
@@ -4661,7 +4895,7 @@
       else {
         torchAt.copy(HEAD).applyMatrix4(diver.matrixWorld); torchFwd.set(1, 0, 0).transformDirection(diver.matrixWorld);
         var fo = focusedUid && byUid[focusedUid];
-        if (fo) torchAim.copy(fo.center).sub(torchAt);
+        if (fo) torchAim.copy(observationCenter(fo)).sub(torchAt);
         var reach = fo ? torchAim.length() : 0;
         if (reach > 0.2 && reach < TORCH_REACH * 0.8 && torchAim.x * fwdX(bearing) + torchAim.z * fwdZ(bearing) > 0) torchFwd.copy(torchAim);
         else torchFwd.y -= 0.58;
@@ -5126,7 +5360,9 @@
     }
     function updateDiver(dt) {
       var input = currentInput(), active = Math.abs(input.forward) > 0.02 || Math.abs(input.turn) > 0.02 || Math.abs(input.rise) > 0.02, ease = reducedMotion ? 2.5 : 1;
-      if (autopilot && active) { autopilot = null; notify(true); }
+      if (active && restoreWideLens()) notify(true);
+      if (active || Math.abs(speed) > 0.15 || Math.abs(vy) > 0.15) observationAim = null;
+      if (autopilot && active) cancelSwim();
       if (autopilot) stepAutopilot(dt);
       else {
         var targetV = input.forward >= 0 ? input.forward * 1.5 : input.forward * 0.7;
@@ -5399,15 +5635,21 @@
       // each speck to about a fifth (it is made for faint motes), so the peak is above 1.
       p.points.material.opacity = (p.sandy ? 3.4 : 2.8) * smooth(0, 0.06, u) * (1 - smooth(0.3, 1, u));
     }
-    function viewDistance(o) { return clamp(0.9 + o.radius * 2.2, 1.4, 5); }
+    // A long trailing appendage still belongs to the visibility bounds. Guide
+    // cues and deliberate observation can frame the animal's body separately.
+    function observationCenter(o) { return o.observationCenter || o.center; }
+    function observationRadius(o) { return o.observationRadius || o.radius; }
+    function viewDistance(o) { return clamp(0.9 + observationRadius(o) * 2.2, 1.4, 5); }
     function spotFor(ap, out) {
-      var c = ap.o.center, D = ap.D;
+      var c = observationCenter(ap.o), D = ap.D;
       out.x = clamp(c.x + ap.dirX * D, -HARD_EDGE + 0.5, HARD_EDGE - 0.5); out.z = clamp(c.z + ap.dirZ * D, -HARD_EDGE + 0.5, HARD_EDGE - 0.5);
       out.y = Math.min(SURFACE_Y, Math.max(c.y + 0.25 + 0.2 * D, groundTop(out.x, out.z) + DIVER_CLEAR));
       return out;
     }
     function startAutopilot(o) {
-      var dx = diverPos.x - o.center.x, dz = diverPos.z - o.center.z, d = Math.hypot(dx, dz);
+      observationAim = null;
+      restoreWideLens();
+      var c = observationCenter(o), dx = diverPos.x - c.x, dz = diverPos.z - c.z, d = Math.hypot(dx, dz);
       if (o.viewDir) { dx = o.viewDir.x; dz = o.viewDir.z; d = 1; }
       if (d < 0.01) { dx = -fwdX(bearing); dz = -fwdZ(bearing); d = 1; }
       var ap = { o: o, dirX: dx / d, dirZ: dz / d, from: diverPos.clone(), fromBearing: bearing, t: 0, D: viewDistance(o), lift: 0 }, spot = spotFor(ap, {});
@@ -5425,7 +5667,7 @@
       var ox = diverPos.x, oz = diverPos.z;
       diverPos.set(px, py + ap.lift * (1 - e * e), pz);
       speed = dt > 0 ? Math.hypot(diverPos.x - ox, diverPos.z - oz) / dt : 0;
-      var face = bearingTo(ap.o.center.x - diverPos.x, ap.o.center.z - diverPos.z);
+      var c = observationCenter(ap.o), face = bearingTo(c.x - diverPos.x, c.z - diverPos.z);
       bearing = wrapAngle(ap.fromBearing + wrapAngle(face - ap.fromBearing) * smooth(0, 0.7, u));
       if (u >= 1) {
         bearing = face; speed = 0; vy = 0; turnRate = 0; autopilot = null;
@@ -5434,7 +5676,7 @@
         [1, -1].forEach(function (sgn) { var yw = face + 0.62 * sgn, top = groundTop(diverPos.x - fwdX(yw) * camDist, diverPos.z - fwdZ(yw) * camDist); if (top < best) { best = top; side = sgn; } });
         look.yaw = view === 'third' ? 0.62 * side : 0; look.pitch = view === 'third' ? 0.06 : 0;
         // Small animals get a closer camera (the wheel or a pinch still changes it).
-        camDist = clamp(1.9 + ap.o.radius * 3.5, 2.2, 6.5);
+        camDist = clamp(1.9 + observationRadius(ap.o) * 3.5, 2.2, 6.5);
         notify(true);
       }
     }
@@ -5449,10 +5691,20 @@
     var LENS_WATER = 4 / 3;
     function lensWaterFov(airFov) { return 2 * Math.atan(Math.tan(airFov * Math.PI / 360) / LENS_WATER) * 180 / Math.PI; }
     function lensMaskFov(aspect) { return clamp(2 * Math.atan(Math.tan(27 * Math.PI / 180) / aspect) * 180 / Math.PI, lensWaterFov(60), 82); }
+    function baseLensFov() { return view === 'first' ? lensMaskFov(camera.aspect) : 60; }
     function updateLens() {
-      // Changes only on resize/view selection; breathing never zooms or distorts the reef.
-      camera.fov = view === 'first' ? lensMaskFov(camera.aspect) : 60;
+      // Optical magnification narrows the projection at the existing eye point.
+      // Dividing its tangent gives the same image-size ratio in either camera
+      // and any aspect ratio; breathing never zooms or distorts the reef.
+      var base = baseLensFov();
+      camera.fov = magnification === 1 ? base : 2 * Math.atan(Math.tan(base * Math.PI / 360) / magnification) * 180 / Math.PI;
       camera.updateProjectionMatrix();
+    }
+    function restoreWideLens() {
+      if (magnification === 1) return false;
+      magnification = 1; updateLens();
+      if (loaded) refreshDecor(true);
+      return true;
     }
     // The dive starts facing a striking bommie, chosen for the view from behind; through
     // the mask it is a wall of rock. Until the diver first swims, the eyes lift so the top
@@ -5468,7 +5720,7 @@
       if (paused && !snap) return lensOpen.lift;
       var input = currentInput();
       if (autopilot || Math.abs(input.forward) > 0.02 || Math.abs(input.rise) > 0.02 || Math.hypot(diverPos.x - terrain.spawn.x, diverPos.z - terrain.spawn.z) > 0.6) lensOpen.on = false;
-      var aim = lensOpen.on ? clamp(lensSkyline(yaw) - Math.atan(Math.tan(camera.fov * Math.PI / 360) * 0.15) + 0.12, 0, 0.45) : 0;
+      var aim = lensOpen.on ? clamp(lensSkyline(yaw) - Math.atan(Math.tan(baseLensFov() * Math.PI / 360) * 0.15) + 0.12, 0, 0.45) : 0;
       lensOpen.lift += (aim - lensOpen.lift) * (snap ? 1 : damp(lensOpen.on ? 3 : 1.2, dt));
       return lensOpen.lift;
     }
@@ -5495,7 +5747,8 @@
         camPos.lerp(desired, a); lookAt.set(tx + fwdX(yaw) * 1.8 * cp, ty, tz + fwdZ(yaw) * 1.8 * cp);
         // A focused organism close by pulls the framing toward itself.
         var fo = focusedUid && byUid[focusedUid];
-        if (fo && !autopilot && fo.center.distanceTo(diverPos) < 7) lookAt.lerp(fo.center, 0.45);
+        if (fo && !autopilot && observationCenter(fo).distanceTo(diverPos) < 7) lookAt.lerp(observationCenter(fo), 0.45);
+        if (observationAim) lookAt.copy(observationAim);
         camTarget.lerp(lookAt, snap ? 1 : damp(reducedMotion ? 12 : 8, dt));
         camera.position.copy(camPos); camera.lookAt(camTarget);
       } else {
@@ -5508,6 +5761,7 @@
         var p = clamp(-0.12 + lift + look.pitch + bodyPitch * 0.5 + eyeMotion.pitch, -1.2, 1.2);
         camera.position.copy(headW); camPos.copy(headW);
         lookAt.set(headW.x + fwdX(yaw) * Math.cos(p), headW.y + Math.sin(p), headW.z + fwdZ(yaw) * Math.cos(p)); camTarget.copy(lookAt);
+        if (observationAim) { lookAt.copy(observationAim); camTarget.copy(observationAim); }
         camera.lookAt(lookAt); camera.rotateZ(eyeMotion.roll);
       }
       if (mask && mask.material.uniforms.breath) mask.material.uniforms.breath.value = reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(visualTime * TAU / 4.2);
@@ -5610,21 +5864,21 @@
       var f = focusedUid ? byUid[focusedUid] : null;
       focusRing.visible = !!f;
       if (f) {
-        var r = f.radius * 1.15 + 0.12; focusRing.position.copy(f.center); focusRing.scale.set(r, r, r); focusRing.quaternion.copy(camera.quaternion);
+        var r = observationRadius(f) * 1.15 + 0.12; focusRing.position.copy(observationCenter(f)); focusRing.scale.set(r, r, r); focusRing.quaternion.copy(camera.quaternion);
         focusRing.material.uniforms.opacity.value = reducedMotion ? 0.85 : 0.72 + 0.2 * Math.sin(visualTime * 2.6);
       }
     }
 
     // ---- State ------------------------------------------------------------------------------
     function updateFrustum() { camera.updateMatrixWorld(); projScreen.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse); frustum.setFromProjectionMatrix(projScreen); }
-    function surfaceDistance(o) { return Math.max(0, o.center.distanceTo(diverPos) - o.radius); }
+    function surfaceDistance(o) { return Math.max(0, observationCenter(o).distanceTo(diverPos) - observationRadius(o)); }
     function nearbyList(limitM) {
       if (disposed) return [];
       updateFrustum();
       var out = [], kinds = {}, res = [], lim = limitM || NEAR_M;
       organisms.forEach(function (o) {
         var d = surfaceDistance(o); if (d > lim) return;
-        out.push({ o: o, d: d, inView: frustum.intersectsSphere(sphere.set(o.center, Math.max(o.radius, 0.05))) });
+        out.push({ o: o, d: d, inView: frustum.intersectsSphere(sphere.set(observationCenter(o), Math.max(observationRadius(o), 0.05))) });
       });
       out.sort(function (a, b) { return a.d - b.d || a.o.serial - b.o.serial; });
       // A restoration patch counts once per structure kind, so its units never crowd out animals.
@@ -5640,9 +5894,9 @@
     var cueEye = new T.Vector3();
     function cueFrom() { if (diver) cueEye.copy(HEAD).applyMatrix4(diver.matrixWorld); else cueEye.copy(diverPos); return cueEye; }
     function cue(o, eye, out) {
-      var dx = o.center.x - eye.x, dz = o.center.z - eye.z;
+      var c = observationCenter(o), dx = c.x - eye.x, dz = c.z - eye.z;
       out.bearingDeg = Math.hypot(dx, dz) < 0.05 ? 0 : Math.round(wrapAngle(bearingTo(dx, dz) - bearing) * 180 / Math.PI) || 0;
-      out.riseM = r1(o.center.y - eye.y) || 0;
+      out.riseM = r1(c.y - eye.y) || 0;
       return out;
     }
     // A change of 30 degree sector (rounded the same way both sides, so ahead ends at
@@ -5716,7 +5970,10 @@
         if (!o.center || !(o.eco.hide > 0.4)) return;
         offer('anemonefish_hide', o, k.clowns.filter(function (p) { return p !== o && p.anchor === o.anchor && p.eco.hide > 0.4; }).concat([momentHost(k, o)]));
       });
-      k.schools.forEach(function (o) { var f = o.flight; if (o.center && f && f.shelter && f.tick !== null && shelterAt(f, t) > 0.35) offer('cloud_shelter', o); });
+      k.schools.forEach(function (o) {
+        var f = o.flight, shelter = Math.max(f && f.shelter ? shelterAt(f, t) : 0, o.encounter ? encounterAt(o.encounter, t, 's') : 0);
+        if (o.center && shelter > 0.35) offer('cloud_shelter', o);
+      });
       // The crowd's clouds are scenery: the moment points at the cloud, and Look picks
       // the nearest school of its species.
       if (crowdKit && crowdKit.list) crowdKit.list.forEach(function (c) {
@@ -5737,7 +5994,7 @@
         var o = m.o, lead = m.scenery ? m.school : o, actors = (lead ? [lead] : []).concat(m.with);
         // speciesIds runs alongside uids; speciesId is the main animal's (a crowd cloud's species).
         var out = cue(o, eye, { kind: m.kind, speciesId: o.speciesId, uids: actors.map(function (a) { return a.uid; }), speciesIds: actors.map(function (a) { return a.speciesId; }),
-          distanceM: r1(surfaceDistance(o)), inView: frustum.intersectsSphere(sphere.set(o.center, Math.max(o.radius || 0, 0.05))) });
+          distanceM: r1(surfaceDistance(o)), inView: frustum.intersectsSphere(sphere.set(observationCenter(o), Math.max(observationRadius(o) || 0, 0.05))) });
         if (m.phase) out.phase = m.phase;
         if (m.group) out.group = true;
         if (m.scenery) out.scenery = true;
@@ -5748,19 +6005,20 @@
     function snapshot() {
       var info = renderer && renderer.info && renderer.info.render, near = loaded ? nearbyList() : [], f = focusedUid && byUid[focusedUid], eye = cueFrom();
       return {
-        ready: !disposed && !contextLost && loaded, paused: paused, view: view, quality: quality, reducedMotion: reducedMotion, light: !!lightOn, vision: vision,
+        ready: !disposed && !contextLost && loaded, paused: paused, view: view, quality: quality, reducedMotion: reducedMotion, light: !!lightOn, vision: vision, magnification: magnification,
         diver: { x: r2(diverPos.x), y: r2(diverPos.y), z: r2(diverPos.z), depthM: r1(-diverPos.y), headingDeg: (Math.round(bearing * 180 / Math.PI) % 360 + 360) % 360 },
         // health ('healthy' | 'bleached' | 'dead') is fixed for the dive, so stateKey leaves it out.
         nearby: near.map(function (n) { return cue(n.o, eye, { uid: n.o.uid, speciesId: n.o.speciesId, distanceM: r1(n.d), inView: n.inView, health: coralState(n.o) }); }),
         focused: f ? cue(f, eye, { uid: f.uid, speciesId: f.speciesId, distanceM: r1(surfaceDistance(f)), health: coralState(f) }) : null,
+        navigation: autopilot ? { uid: autopilot.o.uid } : null,
         buoyancy: buoyancyState(),
         moments: loaded ? momentList(eye) : [],
         frames: frames, drawCalls: info ? info.calls : 0, triangles: info ? info.triangles : 0
       };
     }
     function stateKey(s) {
-      return [s.ready, s.paused, s.view, s.quality, s.light, s.vision, s.focused ? s.focused.uid + ':' + Math.round(s.focused.distanceM * 2) + ':' + cueKey(s.focused) : '-', s.nearby.map(function (n) { return n.uid + (n.inView ? '+' : '-') + cueKey(n); }).join(','),
-        momentKey(s.moments),
+      return [s.ready, s.paused, s.view, s.quality, s.light, s.vision, s.magnification, s.focused ? s.focused.uid + ':' + Math.round(s.focused.distanceM * 2) + ':' + cueKey(s.focused) : '-', s.nearby.map(function (n) { return n.uid + (n.inView ? '+' : '-') + cueKey(n); }).join(','),
+        momentKey(s.moments), s.navigation ? s.navigation.uid : '-',
         Math.round(s.diver.x), Math.round(s.diver.z), Math.round(s.diver.depthM * 2), Math.round(s.diver.headingDeg / 15), buoyancyKey(s.buoyancy)].join('|');
     }
     function emit(s, t) { pendingNotify = false; lastNotify = t; lastKey = stateKey(s); try { options.onState(s); } catch (error) { reportError(error); } }
@@ -5946,14 +6204,14 @@
       if (!best) return null;
       updateFrustum();
       return cue(best, cueFrom(), { uid: best.uid, speciesId: best.speciesId, distanceM: r1(distance),
-        inView: frustum.intersectsSphere(sphere.set(best.center, Math.max(best.radius, 0.05))), health: coralState(best) });
+        inView: frustum.intersectsSphere(sphere.set(observationCenter(best), Math.max(observationRadius(best), 0.05))), health: coralState(best) });
     }
     function focus(uid) {
       if (disposed || !loaded || uid === null || uid === undefined || !byUid[uid]) return false;
-      if (focusedUid !== uid) { focusedUid = uid; notify(true); }
+      if (focusedUid !== uid) { focusedUid = uid; observationAim = null; restoreWideLens(); notify(true); }
       refresh(); return true;
     }
-    function clearFocus() { if (disposed) return; if (focusedUid !== null) { focusedUid = null; notify(true); } refresh(); }
+    function clearFocus() { if (disposed) return; var wide = restoreWideLens(); if (focusedUid !== null || wide) { focusedUid = null; observationAim = null; notify(true); } refresh(); }
     function candidates() {
       var near = nearbyList(), front = near.filter(function (n) { return n.inView; }), list = front.length ? front : near;
       if (!list.length) list = nearbyList(20).slice(0, 6);
@@ -5973,8 +6231,15 @@
       var o = byUid[uid]; if (!o) return false;
       focus(uid); startAutopilot(o); notify(true); refresh(); return true;
     }
+    function cancelSwim() {
+      if (disposed || contextLost || !loaded || !autopilot) return false;
+      autopilot = null; speed = 0; vy = 0; turnRate = 0;
+      notify(true); refresh(); return true;
+    }
     function setView(v) {
       if (disposed || (v !== 'third' && v !== 'first')) return;
+      if (v !== view) restoreWideLens();
+      observationAim = null;
       if (!loaded) { view = v; notify(true); return; } // the first frame applies it
       view = v; diver.visible = v === 'third'; mask.visible = v === 'first'; look.pitch = 0;
       updateLens(); animateDiver(0); updateCamera(0, true); notify(true); refresh();
@@ -5994,7 +6259,9 @@
       if (disposed) return;
       if (!input) { ext.forward = ext.turn = ext.rise = 0; return; }
       ['forward', 'turn', 'rise'].forEach(function (k) { if (input[k] !== undefined) ext[k] = clamp(num(input[k], 0), -1, 1); });
-      if ((ext.forward || ext.turn || ext.rise) && autopilot) autopilot = null;
+      var active = currentInput();
+      if (!paused && (Math.abs(active.forward) > 0.02 || Math.abs(active.turn) > 0.02 || Math.abs(active.rise) > 0.02) && restoreWideLens()) notify(true);
+      if ((ext.forward || ext.turn || ext.rise) && autopilot) cancelSwim();
       refresh();
     }
     // Button equivalents of drag-look and wheel-zoom. Camera-only changes stay available while paused.
@@ -6003,15 +6270,76 @@
       lookBy(clamp(num(dx, 0), -1000, 1000), clamp(num(dy, 0), -1000, 1000));
       updateCamera(0, true); return true;
     }
+    // A deliberate observation frames the animal where it is now. It never turns
+    // or moves the diver, advances the simulation, follows a swimming animal, or
+    // competes with automatic swimming. Drag-look, reset, selection/view changes
+    // and swimming restore the ordinary camera. Terrain can still obscure a target;
+    // this turns the existing camera, rather than moving through a reef to reveal it.
+    function lookAtFocused() {
+      if (disposed || contextLost || !loaded || autopilot || !focusedUid) return false;
+      var o = byUid[focusedUid], target = o && observationCenter(o);
+      if (!target || !isFinite(target.x) || !isFinite(target.y) || !isFinite(target.z) || target.distanceToSquared(camera.position) < 0.0025) return false;
+      var from = view === 'first' ? camera.position : diverPos;
+      var dx = target.x - from.x, dy = target.y - from.y, dz = target.z - from.z, horizontal = Math.hypot(dx, dz);
+      var yaw = horizontal > 0.001 ? bearingTo(dx, dz) : bearing + look.yaw;
+      // Keep the stored manual angles inside their established limits so releasing
+      // the observation never leaves drag-look with an unbounded pitch or yaw.
+      look.pitch = view === 'first' ? clamp(Math.atan2(dy, horizontal) + 0.12 - lensOpen.lift - bodyPitch * 0.5 - eyeMotion.pitch, -1, 1)
+        : clamp(-Math.atan2(dy, horizontal) * 0.45, -0.3, 0.65);
+      if (view === 'third' && horizontal > 0.001) {
+        // Keep the rear-quarter view established on arrival. A camera directly
+        // behind the diver aims through its tank at a close, small organism.
+        // When there is no existing quarter to preserve, use the lower terrain
+        // side of the same orbit; the ordinary camera clearance still applies.
+        var quarter = wrapAngle(bearing + look.yaw - yaw), side = Math.abs(quarter) >= 0.4 && Math.abs(quarter) <= 0.9 ? Math.sign(quarter) : 0;
+        if (!side) {
+          var reach = camDist * Math.cos(clamp(0.32 + look.pitch, -0.35, 1.25));
+          var rightTop = groundTop(diverPos.x - fwdX(yaw + 0.62) * reach, diverPos.z - fwdZ(yaw + 0.62) * reach);
+          var leftTop = groundTop(diverPos.x - fwdX(yaw - 0.62) * reach, diverPos.z - fwdZ(yaw - 0.62) * reach);
+          side = leftTop < rightTop ? -1 : 1;
+        }
+        yaw += 0.62 * side;
+      }
+      look.yaw = wrapAngle(yaw - bearing - (view === 'first' ? eyeMotion.yaw : 0));
+      observationAim = target.clone();
+      updateCamera(0, true); notify(true); refresh(); return true;
+    }
     function zoomCamera(amount) {
       if (disposed || !loaded || view !== 'third') return false;
       zoomBy(clamp(num(amount, 0), -1, 1));
       updateCamera(0, true); return true;
     }
+    function setMagnification(value) {
+      if (disposed || contextLost || !loaded || typeof value !== 'number' || [1, 2, 4, 8].indexOf(value) < 0 || value > 1 && autopilot) return false;
+      if (magnification === value) return true;
+      magnification = value; updateLens();
+      // Refill visibility only, without a world/camera update. This also makes
+      // an immediate image capture complete when returning to the wide view.
+      refreshDecor(true); notify(true); refresh(); return true;
+    }
     function resetCamera() {
       if (disposed || !loaded) return false;
+      observationAim = null;
+      var wide = restoreWideLens();
       look.yaw = 0; look.pitch = 0; camDist = 4.2;
-      updateCamera(0, true); refresh(); return true;
+      updateCamera(0, true); if (wide) { refreshDecor(true); notify(true); } refresh(); return true;
+    }
+    // Encode immediately after a render-only redraw: WebGL may discard its
+    // default drawing buffer once the browser presents it. Do not run tick or
+    // camera/animation updates here; a photograph must preserve the current dive,
+    // including paused observations and automatic swimming. Keep no image cache.
+    function captureImage() {
+      if (disposed || contextLost || !loaded || !renderer || !canvas.width || !canvas.height || typeof canvas.toDataURL !== 'function') return null;
+      try {
+        var context = typeof renderer.getContext === 'function' ? renderer.getContext() : null;
+        if (context && typeof context.isContextLost === 'function' && context.isContextLost()) return null;
+        renderer.render(scene, camera);
+        if (disposed || contextLost || context && typeof context.isContextLost === 'function' && context.isContextLost()) return null;
+        var data = canvas.toDataURL('image/png'), prefixLength = 22;
+        // Reject empty/unsupported canvas results and malformed PNG encodings.
+        return typeof data === 'string' && data.length > prefixLength + 12 && (data.length - prefixLength) % 4 === 0 &&
+          /^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/.test(data) ? data : null;
+      } catch (error) { return null; } // An export failure must not end a healthy dive.
     }
     function resize() {
       if (disposed || !renderer) return;
@@ -6024,9 +6352,9 @@
       refresh();
     }
     controller = {
-      lookCamera: lookCamera, zoomCamera: zoomCamera, resetCamera: resetCamera,
+      lookCamera: lookCamera, lookAtFocused: lookAtFocused, zoomCamera: zoomCamera, setMagnification: setMagnification, resetCamera: resetCamera, captureImage: captureImage,
       setView: setView, setPaused: setPaused, setReducedMotion: setReducedMotion, setInput: setInput, focusNext: function () { return cycleFocus(1); }, focusPrevious: function () { return cycleFocus(-1); },
-      focus: focus, findSpecies: findSpecies, clearFocus: clearFocus, swimTo: swimTo, setLight: setLight, setVision: setVision, getState: snapshot, resize: resize, dispose: dispose
+      focus: focus, findSpecies: findSpecies, clearFocus: clearFocus, swimTo: swimTo, cancelSwim: cancelSwim, setLight: setLight, setVision: setVision, getState: snapshot, resize: resize, dispose: dispose
     };
 
     // ---- Picking ---------------------------------------------------------------------------------
@@ -6065,23 +6393,25 @@
     listen(canvas, 'keydown', function (event) {
       if (event.ctrlKey || event.altKey || event.metaKey) return;
       var k = String(event.key || '').toLowerCase(), held = HELD[k];
-      if (held) { keys[held] = 1; if (autopilot) autopilot = null; refresh(); }
+      if (held) { keys[held] = 1; if (!paused && restoreWideLens()) notify(true); if (autopilot) cancelSwim(); refresh(); }
       else if (k === ' ' || k === 'spacebar') { if (!event.repeat) setPaused(!paused); }
       else if (k === 'n') { if (!event.repeat) cycleFocus(event.shiftKey ? -1 : 1); }
       else if (k === 'l') { if (!event.repeat) setLight(!lightOn); }
       else if (k === 'enter') { if (!focusedUid) return; if (!event.repeat) swimTo(focusedUid); }
-      else { if (k === 'escape' && autopilot) { autopilot = null; notify(true); } return; }
+      else { if (k === 'escape' && autopilot) cancelSwim(); return; }
       if (event.preventDefault) event.preventDefault();
     });
     listen(canvas, 'keyup', function (event) { var held = HELD[String(event.key || '').toLowerCase()]; if (held) keys[held] = 0; });
     listen(canvas, 'blur', function () { clearKeys(); pointers.clear(); pinch = 0; press = null; dragging = false; });
     function pid(event) { return event.pointerId !== undefined && event.pointerId !== null ? event.pointerId : 1; }
     function lookBy(dx, dy) {
+      if ((dx || dy) && restoreWideLens()) notify(true);
+      observationAim = null;
       look.yaw += dx * 0.005; look.pitch = clamp(look.pitch + (view === 'third' ? dy : -dy) * 0.004, view === 'third' ? -0.6 : -1.0, view === 'third' ? 0.9 : 1.0);
       if (loaded && (view === 'first' || reducedMotion)) updateCamera(0, true);
       refresh();
     }
-    function zoomBy(amount) { if (view !== 'third') return; camDist = clamp(camDist * Math.exp(amount), 2.2, 9); refresh(); }
+    function zoomBy(amount) { if (view !== 'third') return; if (amount && restoreWideLens()) notify(true); camDist = clamp(camDist * Math.exp(amount), 2.2, 9); refresh(); }
     listen(canvas, 'pointerdown', function (event) {
       if (event.button && event.pointerType !== 'touch') return;
       var id = pid(event); pointers.set(id, { x: event.clientX, y: event.clientY });

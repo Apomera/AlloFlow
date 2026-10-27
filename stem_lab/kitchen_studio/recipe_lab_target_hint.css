@@ -1,0 +1,10 @@
+/* Hover guidance can be reached and read without pointing through it. */
+#sceneTargetHint{box-sizing:border-box;pointer-events:auto;cursor:default;z-index:5;left:1rem;bottom:1rem;max-width:min(25rem,calc(100% - 2rem));max-height:calc(100% - 2rem);overflow:auto;overscroll-behavior:contain;padding:.75rem .875rem;background:#fffef5;color:#20382f;line-height:1.5;overflow-wrap:anywhere}
+#sceneTargetHint[hidden]{display:none}
+#sceneTargetHint strong{font-size:.875rem;line-height:1.5}
+#sceneTargetHint span{font-size:.8125rem;line-height:1.5;margin-top:.25rem}
+#sceneTargetHint small{display:block;font-size:.75rem;line-height:1.5;margin-top:.5rem;color:#49604c}
+#sceneTargetHint[data-ready=false]{background:#fff7e7}
+#sceneTargetHint[data-layout=below]{position:static;width:100%;max-width:none;max-height:none;margin:.75rem 0;overflow:visible;box-shadow:none}
+@media(forced-colors:active){#sceneTargetHint,#sceneTargetHint[data-ready=false]{background:Canvas;color:CanvasText;border:1px solid CanvasText}#sceneTargetHint small{color:CanvasText}}
+@media print{#sceneTargetHint{display:none}}

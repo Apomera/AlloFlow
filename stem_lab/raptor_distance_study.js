@@ -445,7 +445,7 @@
               h('button', { type: 'button', 'data-distance-results-remove': id, onClick: function () { removeResult(id); } }, 'Remove saved ' + id + ' result')) : h('p', null, 'Complete and keep the ' + id + ' challenge to add its evidence.'));
         })),
         comparison && h('section', { className: 'rh-distance-results-comparison', 'data-distance-results-comparison': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_compare_saved_reference_crossings", 'Compare saved reference crossings') },
-          h('svg', { viewBox: '0 0 640 210', className: 'rh-distance-results-plot', 'data-distance-results-plot': 'true', role: 'img', 'aria-label': 'Saved distance brackets for the same pattern. Each bar starts at zero metres; its marked end interval is the recorded bracket. Exact endpoints are in the saved result cards.' },
+          h('svg', { viewBox: '0 0 640 210', className: 'rh-distance-results-plot', 'data-distance-results-plot': 'true', role: 'img', 'aria-label': __alloT("stem.raptorhunt.a11y_saved_distance_brackets_for_the_same_pattern_each_bar_starts_at_zero_metres_its_marked_end_inter", 'Saved distance brackets for the same pattern. Each bar starts at zero metres; its marked end interval is the recorded bracket. Exact endpoints are in the saved result cards.') },
             [0, 100, 200, 300].map(function (distance) { return h('g', { key: distance }, h('line', { x1: x(distance), x2: x(distance), y1: 40, y2: 170, stroke: '#45665a' }), h('text', { x: x(distance), y: 188, textAnchor: 'middle' }, distance)); }),
             ['human', 'eagle'].map(function (id, index) { var result = comparison[id], y = 65 + index * 72; return h('g', { key: id, 'data-distance-results-range': id, 'data-low': result.below.distance, 'data-high': result.above.distance },
               h('text', { x: 54, y: y - 12 }, (id === 'human' ? 'Human' : 'Eagle') + ' reference · ' + result.below.distance + '–' + result.above.distance + ' m'),
@@ -590,7 +590,7 @@
           h('h4', null, 'Move through the same patch in both views'),
           h('p', null, 'Enlarge the revealed images together. The factor is relative to the full-frame display: both crops cover the same image coordinates and reuse their saved pixels. This changes display size, while the scene, viewing distance, animal size and detail filters stay fixed.'),
           h('p', { className: 'rh-distance-magnifier-condition', 'data-distance-magnifier-condition': 'true', role: 'status' }, inspectorLabel + (inspectorSettings ? ': ' + conditionLabel(inspectorSettings) : ': no pin available')),
-          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': 'Display enlargement relative to full frame' }, [1, 2, 4].map(function (zoom) {
+          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': __alloT("stem.raptorhunt.a11y_display_enlargement_relative_to_full_frame", 'Display enlargement relative to full frame') }, [1, 2, 4].map(function (zoom) {
             return h('button', { key: zoom, type: 'button', 'data-distance-magnifier-zoom': zoom, 'aria-pressed': magnifierZoom === zoom, disabled: !inspectorImages, onClick: function () { setMagnifierZoom(zoom); } }, zoom + '× display' + (zoom === 1 ? ' · full frame' : ''));
           })),
           h('div', { className: 'rh-distance-magnifier-pans' }, panControl('x', 'Move crop horizontally', magnifierX, setMagnifierX), panControl('y', 'Move crop vertically', magnifierY, setMagnifierY)),
@@ -607,7 +607,7 @@
                     style: { width: (magnifierZoom * 100) + '%', height: (magnifierZoom * 100) + '%', maxWidth: 'none', left: (-(magnifierZoom - 1) * magnifierX) + '%', top: (-(magnifierZoom - 1) * magnifierY) + '%' } })));
             })),
             h('figure', { className: 'rh-distance-magnifier-map' }, h('figcaption', null, 'Crop location · eagle-reference full frame'),
-              h('svg', { 'data-distance-magnifier-overview': 'true', viewBox: '0 0 1024 512', role: 'img', 'aria-label': 'Full eagle-reference image with the shared crop outlined. Move the crop using the horizontal and vertical controls.' },
+              h('svg', { 'data-distance-magnifier-overview': 'true', viewBox: '0 0 1024 512', role: 'img', 'aria-label': __alloT("stem.raptorhunt.a11y_full_eagle_reference_image_with_the_shared_crop_outlined_move_the_crop_using_the_horizontal_and_", 'Full eagle-reference image with the shared crop outlined. Move the crop using the horizontal and vertical controls.') },
                 h('image', { href: inspectorImages.eagleImage, width: 1024, height: 512 }),
                 h('rect', { x: cropX, y: cropY, width: cropWidth, height: cropHeight, fill: 'none', stroke: '#10291e', strokeWidth: 16 }),
                 h('rect', { 'data-distance-magnifier-region': 'true', x: cropX, y: cropY, width: cropWidth, height: cropHeight, fill: 'none', stroke: '#fff0b8', strokeWidth: 6 }))),
@@ -706,14 +706,14 @@
           h('h5', null, 'Does a fading pattern make every pixel darker?'),
           h('p', null, 'Kept: ' + conditionLabel(before.settings) + '. Current: ' + conditionLabel(after.settings) + '. Both readings sample the same positions.'),
           h('p', { id: 'rh-distance-pair-help' }, 'Choose a position, then use arrow keys to inspect neighboring pixels. The low and high shortcuts use the kept reading’s first matching sample from the left. All four values refer to the same image pixel; moving this comparison probe leaves the current-only probe unchanged.'),
-          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': 'Choose a shared pixel position' }, positions.map(function (item) {
+          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': __alloT("stem.raptorhunt.a11y_choose_a_shared_pixel_position", 'Choose a shared pixel position') }, positions.map(function (item) {
             return h('button', { key: item[0], type: 'button', 'data-distance-pair-jump': item[0], 'data-index': item[2], 'aria-describedby': 'rh-distance-pair-help', onClick: function () { move(item[2], true); } }, item[1]);
           })),
           h('label', { htmlFor: 'rh-distance-pair-probe', className: 'rh-distance-signal-probe' },
-            h('strong', null, 'Compare the same pixel'),
+            h('strong', null, __alloT("stem.raptorhunt.a11y_compare_the_same_pixel", 'Compare the same pixel')),
             h('output', { htmlFor: 'rh-distance-pair-probe', 'aria-live': 'off', 'data-distance-pair-pixel': 'true', 'data-x': before.region.x0 + index, 'data-y': before.region.y }, 'Image pixel ' + (before.region.x0 + index) + ', row ' + before.region.y),
             h('input', { id: 'rh-distance-pair-probe', 'data-distance-pair-probe': 'true', type: 'range', min: 0, max: before.region.count - 1, step: 1, value: index,
-              'aria-label': 'Compare the same pixel', 'aria-describedby': 'rh-distance-pair-help',
+              'aria-label': __alloT("stem.raptorhunt.a11y_compare_the_same_pixel", 'Compare the same pixel'), 'aria-describedby': 'rh-distance-pair-help',
               'aria-valuetext': 'Image pixel ' + (before.region.x0 + index) + ', row ' + before.region.y + '. ' + valueText('human') + '. ' + valueText('eagle') + '. Mean RGB code values.',
               onChange: function (event) { move(event.target.value, false); } })),
           h('table', { className: 'rh-distance-text-table', 'data-distance-pair-samples': 'true' },
@@ -768,7 +768,7 @@
               fill: kind === 'kept' ? '#142e24' : '#ffffff', stroke: '#ffffff', strokeWidth: 2 }); }),
             [0, 50, 100].map(function (value) { return h('text', { key: value, x: 54 + value / 100 * 566, y: 245, textAnchor: value === 0 ? 'start' : value === 100 ? 'end' : 'middle' }, value + '%'); })));
       }
-      return h('section', { className: 'rh-distance-signal-kept', 'data-distance-signal-kept': 'true', 'aria-label': 'Kept pixel reading and contrast comparison' },
+      return h('section', { className: 'rh-distance-signal-kept', 'data-distance-signal-kept': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_kept_pixel_reading_and_contrast_comparison", 'Kept pixel reading and contrast comparison') },
         h('h4', { tabIndex: -1, 'data-distance-signal-kept-heading': 'true' }, 'What changes when the pattern fades?'),
         h('p', { 'data-distance-signal-kept-label': 'true' }, 'Kept reading: ' + conditionLabel(before.settings) + ' · ' + before.region.count + ' pixels'),
         h('dl', { className: 'rh-distance-signal-kept-ranges' }, ['human', 'eagle'].map(function (id) { return h('div', { key: id }, h('dt', null, (id === 'human' ? 'Human' : 'Eagle') + ' kept range'), h('dd', { 'data-distance-signal-kept-range': id, 'data-range': before[id].range }, before[id].range.toFixed(1))); })),
@@ -809,7 +809,7 @@
           h('h5', null, 'Find the low and high points without tracing the graph'),
           h('p', null, 'Current reading: ' + conditionLabel(data.settings) + '. These measurements come from the same pixel strip as the graph.'),
           h('p', { id: 'rh-distance-signal-explore-help' }, 'Choose a sample to move and focus the pixel probe. Its value gives both references at the same image position; arrow keys inspect neighboring pixels. Repeated lowest or highest values use their first position from the left. Each reference can reach its extreme at a different position.'),
-          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': 'Move probe to a measured sample' }, positions.map(function (item) {
+          h('div', { className: 'rh-distance-actions', role: 'group', 'aria-label': __alloT("stem.raptorhunt.a11y_move_probe_to_a_measured_sample", 'Move probe to a measured sample') }, positions.map(function (item) {
             return h('button', { key: item[0], type: 'button', 'data-distance-signal-jump': item[0], 'data-index': item[2], 'aria-describedby': 'rh-distance-signal-explore-help',
               onClick: function () {
                 if (item[2] === index) { focus('[data-distance-signal-probe]'); return; }
@@ -869,12 +869,12 @@
           announcement('signal', !currentImages ? h('p', { 'data-distance-signal-unavailable': 'true' }, snapshotMessage && revealed ? 'Image copies are unavailable. The original canvases remain above; reveal again to retry before reading this signal.' : 'Predict and reveal the current condition before reading its pixels. This inspector measures the current view only.') :
             currentSignalError ? h('p', { className: 'rh-distance-signal-error', 'data-distance-signal-error': 'true' }, currentSignalError) :
             data ? h('p', { className: 'rh-distance-signal-condition' }, 'Sampled: ' + conditionLabel(data.settings) + ' · ' + data.region.count + ' image pixels') : null),
-          data && h('section', { 'data-distance-signal-evidence': 'true', 'aria-label': 'Measured stripe signal' },
+          data && h('section', { 'data-distance-signal-evidence': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_measured_stripe_signal", 'Measured stripe signal') },
             h('div', { className: 'rh-distance-signal-images' }, ['human', 'eagle'].map(sampledImage)),
             h('p', null, 'The marked line samples the central 60% of the plaque at image row 256. The graph spreads that strip across its width; the images keep their original scale. Changing distance changes the strip’s angular size and pixel count.'),
             h('div', { className: 'rh-distance-signal-legend' }, h('span', null, '– – Human reference'), h('span', null, '━━ Eagle reference')),
             h('div', { style: { fontSize: 13, marginBottom: 6 } }, 'Mean RGB code value · fixed 0–255 scale'),
-            h('svg', { className: 'rh-distance-signal-chart', 'data-distance-signal-chart': 'true', viewBox: '0 0 640 300', role: 'img', 'aria-label': 'Actual mean RGB code values across the same sampled strip. Fixed vertical scale zero to 255. Human trace is dashed; eagle trace is solid.', 'data-plot-left': 50, 'data-plot-right': 620, 'data-plot-top': 24, 'data-plot-bottom': 246, 'data-max': 255, 'data-count': data.region.count },
+            h('svg', { className: 'rh-distance-signal-chart', 'data-distance-signal-chart': 'true', viewBox: '0 0 640 300', role: 'img', 'aria-label': __alloT("stem.raptorhunt.a11y_actual_mean_rgb_code_values_across_the_same_sampled_strip_fixed_vertical_scale_zero_to_255_human", 'Actual mean RGB code values across the same sampled strip. Fixed vertical scale zero to 255. Human trace is dashed; eagle trace is solid.'), 'data-plot-left': 50, 'data-plot-right': 620, 'data-plot-top': 24, 'data-plot-bottom': 246, 'data-max': 255, 'data-count': data.region.count },
               [0, 64, 128, 192, 255].map(function (value) { return h('g', { key: value }, h('line', { x1: 50, x2: 620, y1: plotY(value), y2: plotY(value), stroke: '#4c7362' }), h('text', { x: 42, y: plotY(value) + 5, textAnchor: 'end' }, value)); }),
               ['human', 'eagle'].map(function (id) { return h('polyline', { key: id, 'data-distance-signal-line': id, points: data[id].values.map(function (value, i) { return plotX(i).toFixed(3) + ',' + plotY(value).toFixed(3); }).join(' '), fill: 'none', stroke: colors[id], strokeWidth: 2.5, strokeDasharray: id === 'human' ? '6 3' : undefined }); }),
               h('line', { 'data-distance-signal-cursor': 'true', x1: plotX(index), x2: plotX(index), y1: 24, y2: 246, stroke: '#ffffff', strokeWidth: 1, strokeDasharray: '3 4' }),
@@ -882,9 +882,9 @@
               [0, 25, 50, 75, 100].map(function (percent) { return h('text', { key: percent, x: 50 + percent / 100 * 570, y: 269, textAnchor: percent === 0 ? 'start' : percent === 100 ? 'end' : 'middle' }, percent + '%'); }),
               h('text', { x: 335, y: 294, textAnchor: 'middle' }, 'Position along the sampled strip')),
             h('label', { htmlFor: 'rh-distance-signal-probe', className: 'rh-distance-signal-probe' },
-              h('strong', null, 'Move the pixel probe'),
+              h('strong', null, __alloT("stem.raptorhunt.a11y_move_the_pixel_probe", 'Move the pixel probe')),
               h('output', { htmlFor: 'rh-distance-signal-probe', 'aria-live': 'off', 'data-distance-signal-pixel': 'true', 'data-x': data.region.x0 + index, 'data-y': data.region.y }, 'Image pixel ' + (data.region.x0 + index) + ', row ' + data.region.y),
-              h('input', { id: 'rh-distance-signal-probe', 'data-distance-signal-probe': 'true', type: 'range', min: 0, max: data.region.count - 1, step: 1, value: index, 'aria-label': 'Move the pixel probe', 'aria-describedby': 'rh-distance-signal-explore-help', 'aria-valuetext': 'Image pixel ' + (data.region.x0 + index) + '. Human ' + data.human.values[index].toFixed(1) + '; eagle ' + data.eagle.values[index].toFixed(1) + ' mean RGB code value.', onChange: function (event) { setProbe(Math.max(0, Math.min(data.region.count - 1, Math.round(Number(event.target.value) || 0)))); } })),
+              h('input', { id: 'rh-distance-signal-probe', 'data-distance-signal-probe': 'true', type: 'range', min: 0, max: data.region.count - 1, step: 1, value: index, 'aria-label': __alloT("stem.raptorhunt.a11y_move_the_pixel_probe", 'Move the pixel probe'), 'aria-describedby': 'rh-distance-signal-explore-help', 'aria-valuetext': 'Image pixel ' + (data.region.x0 + index) + '. Human ' + data.human.values[index].toFixed(1) + '; eagle ' + data.eagle.values[index].toFixed(1) + ' mean RGB code value.', onChange: function (event) { setProbe(Math.max(0, Math.min(data.region.count - 1, Math.round(Number(event.target.value) || 0)))); } })),
             h('table', { className: 'rh-distance-signal-table' }, h('caption', null, 'Measured RGB code values · each value is the mean of red, green and blue'),
               h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Reference'), h('th', { scope: 'col' }, 'At probe'), h('th', { scope: 'col' }, 'Sampled range (max − min)'))),
               h('tbody', null, ['human', 'eagle'].map(function (id) { return h('tr', { key: id }, h('th', { scope: 'row' }, id === 'human' ? 'Human' : 'Eagle'), h('td', { 'data-distance-signal-value': id }, data[id].values[index].toFixed(1)), h('td', { 'data-distance-signal-range': id, 'data-range': data[id].range }, data[id].range.toFixed(1))); }))),
@@ -935,7 +935,7 @@
       }
       return h('details', { className: 'rh-distance-exact', 'data-distance-exact': 'true' },
         h('summary', null, 'Set exact conditions · Plan a controlled change'),
-        h('form', { noValidate: true, onSubmit: submit, 'data-distance-exact-form': 'true', 'aria-label': 'Exact investigation conditions', 'aria-describedby': 'rh-distance-exact-help' },
+        h('form', { noValidate: true, onSubmit: submit, 'data-distance-exact-form': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_exact_investigation_conditions", 'Exact investigation conditions'), 'aria-describedby': 'rh-distance-exact-help' },
           h('p', { id: 'rh-distance-exact-help' }, 'Type whole numbers, then apply. To test one cause, pin a revealed starter and change just one factor. Typing here leaves the live scene and collected evidence unchanged.'),
           fields.map(function (field) {
             var id = 'rh-distance-exact-' + field.id, error = exactErrors[field.id];
@@ -987,7 +987,7 @@
         h('h3', { tabIndex: -1 }, 'Find the distant detail'), h('p', null, 'A bird can remain in view while its fine details disappear. Keep the scene fixed and investigate what distance does to a pattern.')),
         h('button', { type: 'button', 'data-raptor-distance-close': 'true', onClick: props.onClose }, 'Close investigation')),
       h('p', { className: 'rh-distance-boundary' }, 'This display models spatial detail. It is not a view through an eagle’s eyes or a test of your eyesight. Resolving stripes is different from detecting an animal.'),
-      h('nav', { className: 'rh-distance-nav', 'data-distance-nav': 'true', 'aria-label': 'Investigation shortcuts' },
+      h('nav', { className: 'rh-distance-nav', 'data-distance-nav': 'true', 'aria-label': __alloT("stem.raptorhunt.a11y_investigation_shortcuts", 'Investigation shortcuts') },
         h('p', null, 'Jump to a part of the investigation. The image comparison also offers the model values as text.'),
         h('div', { className: 'rh-distance-actions' }, [
           ['conditions', 'Conditions', '#rh-distance-distance'], ['prediction', 'Prediction', '[data-distance-prediction-heading]'],

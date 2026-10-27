@@ -244,6 +244,14 @@ body.avatar-page{margin:0;background:radial-gradient(ellipse at top left,#fff9e9
 .avatar-stage-heading{flex-wrap:wrap}
 .avatar-task-focus>strong,.avatar-task-focus>span{min-width:0;overflow-wrap:anywhere}
 .avatar-catalog-results{margin:.55rem 0 .75rem;font-size:.8rem;line-height:1.6;color:#465b40}
+.avatar-catalog-item{display:flex;flex-direction:column;gap:.4rem;min-width:0}
+.avatar-kitchen .avatar-catalog-item>.avatar-catalog-card{width:100%;flex:1;flex-wrap:wrap}
+.avatar-catalog-card-copy{flex:1 1 12em}
+.avatar-kitchen .avatar-catalog-read,.avatar-kitchen .avatar-catalog-return{min-height:44px;white-space:normal;overflow-wrap:anywhere;font-size:.8rem}
+.avatar-catalog-return{margin-top:.75rem}
+.avatar-catalog-preview{scroll-margin-block:1rem}
+.avatar-catalog-preview h3{scroll-margin-block-start:1rem}
+.avatar-kitchen .avatar-catalog>summary:focus-visible{outline-offset:-6px}
 .avatar-workflow li,.avatar-pending li{max-width:100%;align-items:flex-start}
 .avatar-step-body{min-width:0;overflow-wrap:anywhere}
 .avatar-step-status{display:block;margin-top:.15rem;font-size:.72rem;line-height:1.5;font-weight:650}
@@ -281,6 +289,21 @@ body.avatar-page{margin:0;background:radial-gradient(ellipse at top left,#fff9e9
 .avatar-notebook-scroll-help{margin:.7rem 0 .4rem;font-size:.75rem;line-height:1.5;color:#46603d}
 #avatarWorkflowHelp{margin:.65rem 0 0}
 .avatar-notebook .avatar-notebook-status:empty{display:block;margin:0;min-height:0}
+.avatar-notebook-view-choice{display:flex!important;flex-wrap:wrap;align-items:flex-start;gap:.65rem;min-height:44px;margin:.8rem 0;padding:.55rem;border:1px solid #64785c;border-radius:7px;font-size:.8rem;line-height:1.5;cursor:pointer}
+.avatar-kitchen .avatar-notebook-view-choice input{flex:0 0 auto;width:20px;height:20px;margin:.1rem 0 0;accent-color:#315f45}
+.avatar-notebook-view-choice span{flex:1 1 12em;min-width:0;overflow-wrap:anywhere}
+.avatar-notebook-observation h6{overflow-wrap:anywhere}
+.avatar-notebook-detail:focus-visible{outline:3px solid #254e37;outline-offset:3px;scroll-margin-block:1rem}
+.avatar-notebook-quantity-summaries{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:.75rem;padding:0;margin:1rem 0;list-style:none}
+.avatar-records .avatar-notebook-quantity-summaries>li{min-width:0;padding:.8rem;border:1px solid #b4c2a6;border-radius:8px;background:#f4f5eb}
+.avatar-notebook-quantity-summaries h6{margin:0 0 .6rem;font-size:.85rem;overflow-wrap:anywhere}
+.avatar-kitchen .avatar-notebook-quantity-summaries dl:has(>div){display:grid;grid-template-columns:minmax(0,1fr);gap:.45rem;margin:0}
+.avatar-notebook-quantity-summaries dl>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,7rem),1fr));gap:.2rem .5rem;border-top:1px solid #c4ceb7;padding-top:.4rem}
+.avatar-notebook-quantity-summaries dt,.avatar-notebook-quantity-summaries dd{min-width:0;margin:0;font-size:.78rem;line-height:1.5;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.avatar-notebook-quantity-summaries dt{font-weight:650}
+.avatar-notebook-quantity-summaries [data-changed=true] dl>div:last-child dd{font-weight:750}
+.avatar-history .avatar-history-note{display:block;margin:.4rem 0 .75rem;font-size:.8rem;line-height:1.5;overflow-wrap:anywhere}
+@media(forced-colors:active){.avatar-notebook-view-choice,.avatar-records .avatar-notebook-quantity-summaries>li{background:Canvas;color:CanvasText;border-color:CanvasText}.avatar-notebook-quantity-summaries dl>div{border-color:CanvasText}.avatar-notebook-detail:focus-visible{outline-color:Highlight}.avatar-kitchen .avatar-notebook-view-choice input{accent-color:auto}}
 .avatar-kitchen #avatarControlsTitle:focus,.avatar-kitchen[data-phase]:not([data-phase=idle]) #avatarControlsTitle:focus{position:static;width:auto;height:auto;padding:0;margin:.3rem 0 .8rem;overflow:visible;clip:auto;clip-path:none;white-space:normal;border:0}
 @media(max-width:800px),(max-height:700px){
  .avatar-kitchen[data-phase]:not([data-phase=idle]) .avatar-stage,.avatar-kitchen[data-parking=true] .avatar-stage{position:static;top:auto;z-index:auto;box-shadow:0 8px 25px #55432609}

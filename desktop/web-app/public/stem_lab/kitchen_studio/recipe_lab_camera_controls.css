@@ -1,0 +1,22 @@
+.recipe-camera-controls{box-sizing:border-box;flex:1 1 100%;width:100%;min-width:0;max-width:100%;margin:.75rem 0;border:1px solid #869b7d;border-radius:.65rem;background:#fffdf5;color:#203e2d;overflow:visible}
+.recipe-camera-controls[hidden]{display:none!important}
+.recipe-camera-controls>summary{box-sizing:border-box;min-height:44px;padding:.75rem;cursor:pointer;font-size:.9rem;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
+.recipe-camera-controls>summary:focus-visible,.recipe-camera-controls button:focus-visible{outline:3px solid #234d35;outline-offset:3px}
+.recipe-camera-body{min-width:0;padding:0 .85rem .85rem}
+.recipe-camera-help,.recipe-camera-current,.recipe-camera-status{font-size:.85rem;line-height:1.6;overflow-wrap:anywhere}
+.recipe-camera-current{font-weight:700}
+.recipe-camera-readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:.65rem;margin:.75rem 0}
+.recipe-camera-readings>div{min-width:0;padding:.6rem;border:1px solid #bac8ad;border-radius:.4rem;background:#f0f4e8}
+.recipe-camera-readings dt,.recipe-camera-readings dd{margin:0;min-width:0;font-size:.8rem;line-height:1.6;overflow-wrap:anywhere}
+.recipe-camera-readings dd{font-size:.95rem;font-weight:700;font-variant-numeric:tabular-nums}
+.recipe-camera-control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:.75rem}
+.recipe-camera-control-grid>fieldset{min-width:0;margin:0;padding:.65rem;border:1px solid #a8b99a;border-radius:.4rem}
+.recipe-camera-control-grid legend{max-width:100%;padding:0 .3rem;font-size:.9rem;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
+.recipe-camera-buttons,.recipe-camera-actions{display:flex;flex-wrap:wrap;gap:.5rem}
+.recipe-camera-actions{margin-top:.75rem}
+.recipe-camera-controls .recipe-camera-buttons button,.recipe-camera-controls .recipe-camera-actions button{box-sizing:border-box;min-width:44px;min-height:44px;max-width:100%;flex:1 1 8.5rem;padding:.6rem .75rem;border:1px solid #6e8763;border-radius:.4rem;background:#fffdf5;color:#244631;font-size:.85rem;font-weight:650;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+#kitchenStage .camera-row .recipe-camera-controls button{padding:.6rem .75rem;font-size:.85rem}
+.recipe-camera-controls button[aria-disabled=true]{border-style:dashed;background:#eef1e8;color:#4a5c43;cursor:default}
+.recipe-camera-status:empty{margin:0}
+@media(forced-colors:active){.recipe-camera-controls,.recipe-camera-readings>div,.recipe-camera-control-grid>fieldset{background:Canvas;color:CanvasText;border-color:CanvasText}.recipe-camera-controls .recipe-camera-buttons button,.recipe-camera-controls .recipe-camera-actions button{background:ButtonFace;color:ButtonText;border-color:ButtonText}.recipe-camera-controls button[aria-disabled=true]{color:GrayText;border-color:GrayText}.recipe-camera-controls>summary:focus-visible,.recipe-camera-controls button:focus-visible{outline-color:Highlight}}
+@media(prefers-reduced-motion:reduce){.recipe-camera-controls,.recipe-camera-controls *{scroll-behavior:auto;transition:none;animation:none}}

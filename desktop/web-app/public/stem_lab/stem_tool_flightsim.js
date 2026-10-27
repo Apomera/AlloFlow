@@ -22,6 +22,9 @@
   // Dialogs and question panels sit outside the command rail. They need the
   // same visible keyboard focus treatment on this dark cockpit background.
   st.textContent += '.skyschool-learn-topics:focus-within [data-learn-scroll-hint]{position:static!important}.skyschool-learn-search::placeholder{color:#94a3b8;opacity:1}#skyschool-flight-container :is(button,summary,a[href],input,select,textarea,[tabindex]):focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(forced-colors:active){#skyschool-flight-container :is(button,summary,a[href],input,select,textarea,[tabindex]):focus-visible{outline-color:Highlight}}';
+  // Preserve selection when forced colors replace the blue fills. A double
+  // system-color border remains distinct from the separate keyboard focus ring.
+  st.textContent += '[data-flightsim-lesson] :is(button,[tabindex]):focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(forced-colors:active){[data-flightsim-lesson] :is(button,[tabindex]):focus-visible{outline-color:Highlight}#skyschool-calculator button[aria-pressed="true"],#skyschool-sec-aircraft button[aria-pressed="true"],.skyschool-learn-topics button[aria-current="page"],[data-flight-lesson-navigation] button[aria-current="page"],[data-flightsim-city-planner] button[data-city-result][aria-pressed="true"]{border:3px double Highlight!important}}';
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -5296,7 +5299,13 @@ async function searchFlightCities(query, options) {
     flightCitySearchMemo.set(key, results);
     while (flightCitySearchMemo.size > 16) flightCitySearchMemo.delete(flightCitySearchMemo.keys().next().value);
     return results.map(function(item) { return Object.assign({}, item); });
-  } catch (error) { if (options.signal && options.signal.aborted || error.name === 'AbortError') throw error; return localResults; }
+  } catch (error) {
+    if (options.signal && options.signal.aborted || error && error.name === 'AbortError') throw error;
+    // A failed online lookup is different from a successful empty search.
+    // Keep bundled matches usable without changing the array return contract.
+    if (typeof options.onUnavailable === 'function') { try { options.onUnavailable(); } catch (_) {} }
+    return localResults;
+  }
 }
 function validateFlightCityPack(pack) {
   if (!pack || typeof pack !== 'object') return null;
@@ -15904,6 +15913,161 @@ function getFlightCityLayout(city) {
         journalReviewRef.current = { view: view, key: journalReviewKey, revision: journalReviewRef.current.revision + 1 };
       }
       var journalReviewRevision = journalReviewRef.current.revision;
+      var journalExportRef = useRef({ mounted: true, request: null, sequence: 0, resources: [] });
+      var journalExportState = useState(null), journalExportFeedback = journalExportState[0], setJournalExportFeedback = journalExportState[1];
+      var journalExportActionState = useState(null), journalExportAction = journalExportActionState[0], setJournalExportAction = journalExportActionState[1];
+      var handledJournalExportRef = useRef(null);
+      function isCurrentJournalExport(request) {
+        return journalExportRef.current.mounted && journalExportRef.current.request === request &&
+          journalReviewRef.current.revision === request.revision && journalStateKey(dataRef.current) === request.key &&
+          liveRouteData().view === 'debrief' && !hasPendingDepartureOrBriefing();
+      }
+      // An export describes one payload. Reflection edits retain the review's
+      // controls, but retire a message about an older downloaded explanation.
+      var journalExportRequest = journalExportRef.current.request;
+      if (journalExportRequest) {
+        if (journalReviewRevision !== journalExportRequest.revision || journalReviewKey !== journalExportRequest.key) journalExportRef.current.request = null;
+        else if (journalExportFeedback && journalExportFeedback.request === journalExportRequest) {
+          var acceptedJournalPayload = JSON.stringify(createFlightPracticeJournalExport(d, null));
+          if (acceptedJournalPayload === journalExportRequest.payloadKey) journalExportRequest.awaitingPayloadReceipt = false;
+          // A reflection captured before its host receipt may still have the
+          // old accepted prefix. Once acknowledged, that prefix is obsolete.
+          else if (!journalExportRequest.awaitingPayloadReceipt || acceptedJournalPayload !== journalExportRequest.beforePayloadKey)
+            journalExportRef.current.request = null;
+        }
+      }
+      function releaseJournalExport(resource) {
+        if (resource.timer != null) window.clearTimeout(resource.timer);
+        resource.timer = null;
+        if (resource.anchor) { try { resource.anchor.remove(); } catch (e) {} resource.anchor = null; }
+        if (resource.url != null) { try { URL.revokeObjectURL(resource.url); } catch (e) {} resource.url = null; }
+        journalExportRef.current.resources = journalExportRef.current.resources.filter(function(item) { return item !== resource; });
+      }
+      useEffect(function() {
+        journalExportRef.current.mounted = true;
+        return function() {
+          journalExportRef.current.mounted = false;
+          journalExportRef.current.request = null;
+          journalExportRef.current.resources.slice().forEach(releaseJournalExport);
+        };
+      }, []);
+      // Let a queued host replacement or navigation render before starting a
+      // file. Effects never replay the download, even under Strict Mode.
+      useEffect(function() {
+        if (!journalExportAction || handledJournalExportRef.current === journalExportAction) return;
+        handledJournalExportRef.current = journalExportAction;
+        setJournalExportAction(null);
+        var request = journalExportAction.request;
+        if (!isCurrentJournalExport(request)) return;
+        var payloadKey = JSON.stringify(createFlightPracticeJournalExport(dataRef.current, null));
+        // A pending reflection edit can be newer than the host's rendered
+        // data; a different accepted payload instead retires this request.
+        if (payloadKey === request.payloadKey || payloadKey === request.beforePayloadKey) journalExportAction.run();
+      }, [journalExportAction, d]);
+      // CSV downloads belong to the displayed flight, not the selected moment
+      // or reflection text. Keep current and earlier requests independent.
+      function observationExportContext(state, scope) {
+        if (!state || state.view !== 'debrief') return null;
+        var current = normalizeFlightPracticeRecord(state.lastDebrief), record = current, index = null;
+        if (scope === 'earlier') {
+          var history = normalizeFlightPracticeHistory(state.flightPracticeHistory);
+          if (!history.length) return null;
+          var defaultIndex = history.length - 1;
+          for (var i = history.length - 1; i >= 0; i--) {
+            if (flightPracticeComparison(current, history[i]).comparable) { defaultIndex = i; break; }
+          }
+          index = typeof state.debriefHistoryIndex === 'number' && Number.isFinite(state.debriefHistoryIndex)
+            ? Math.max(0, Math.min(history.length - 1, Math.floor(state.debriefHistoryIndex))) : defaultIndex;
+          record = history[index];
+        }
+        if (!record || !record.samples.length) return null;
+        return { record: record, key: JSON.stringify([index, flightReflectionReviewKey(record)]) };
+      }
+      var observationExportRef = useRef({ mounted: true, sequence: 0, owners: {
+        current: { key: null, revision: 0 }, earlier: { key: null, revision: 0 }
+      }, requests: {}, resources: [] });
+      var observationExportFeedbackState = useState({}), observationExportFeedback = observationExportFeedbackState[0], setObservationExportFeedback = observationExportFeedbackState[1];
+      var observationExportActionState = useState({}), observationExportActions = observationExportActionState[0], setObservationExportActions = observationExportActionState[1];
+      var observationExportContexts = {};
+      ['current', 'earlier'].forEach(function(scope) {
+        var context = observationExportContext(d, scope), key = context ? context.key : null;
+        observationExportContexts[scope] = context;
+        var owner = observationExportRef.current.owners[scope];
+        if (owner.key !== key) {
+          owner.key = key; owner.revision++;
+          observationExportRef.current.requests[scope] = null;
+        }
+      });
+      function isCurrentObservationExport(request) {
+        if (!request || !observationExportRef.current.mounted || observationExportRef.current.requests[request.scope] !== request) return false;
+        var owner = observationExportRef.current.owners[request.scope], context = observationExportContext(dataRef.current, request.scope);
+        return owner.revision === request.revision && context && context.key === request.key &&
+          liveRouteData().view === 'debrief' && !hasPendingDepartureOrBriefing();
+      }
+      function releaseObservationExport(resource) {
+        if (resource.timer != null) window.clearTimeout(resource.timer);
+        resource.timer = null;
+        if (resource.anchor) { try { resource.anchor.remove(); } catch (e) {} resource.anchor = null; }
+        if (resource.url != null) { try { URL.revokeObjectURL(resource.url); } catch (e) {} resource.url = null; }
+        observationExportRef.current.resources = observationExportRef.current.resources.filter(function(item) { return item !== resource; });
+      }
+      useEffect(function() {
+        observationExportRef.current.mounted = true;
+        return function() {
+          observationExportRef.current.mounted = false;
+          observationExportRef.current.requests = {};
+          observationExportRef.current.resources.slice().forEach(releaseObservationExport);
+        };
+      }, []);
+      useEffect(function() {
+        ['current', 'earlier'].forEach(function(scope) {
+          var request = observationExportActions[scope];
+          if (!request || request.handled) return;
+          request.handled = true;
+          if (!isCurrentObservationExport(request)) return;
+          var resource = { url: null, anchor: null, timer: null }, started = false;
+          observationExportRef.current.resources.push(resource);
+          try {
+            var record = observationExportContext(dataRef.current, scope).record;
+            var blob = new Blob([flightEvidenceCsv(record.samples, record)], { type: scope === 'earlier' ? 'text/csv;charset=utf-8;' : 'text/csv' });
+            resource.url = URL.createObjectURL(blob); resource.anchor = document.createElement('a');
+            resource.anchor.href = resource.url; resource.anchor.download = request.filename;
+            document.body.appendChild(resource.anchor); resource.anchor.click(); started = true;
+          } catch (e) {
+            // The observations remain available when a browser cannot start
+            // the file. Retry uses a fresh request and the current owner.
+          } finally {
+            if (resource.anchor) { try { resource.anchor.remove(); } catch (e) {} resource.anchor = null; }
+            if (started) resource.timer = window.setTimeout(function() { releaseObservationExport(resource); }, 1000);
+            else releaseObservationExport(resource);
+          }
+          if (isCurrentObservationExport(request)) setObservationExportFeedback(function(previous) {
+            var next = Object.assign({}, previous); next[scope] = { request: request, started: started }; return next;
+          });
+        });
+      }, [observationExportActions, d]);
+      function renderObservationDownload(scope, label, style) {
+        var context = observationExportContexts[scope], revision = observationExportRef.current.owners[scope].revision;
+        if (!context) return null;
+        var feedback = observationExportFeedback[scope];
+        return h('div', { 'data-flight-observation-export-controls': scope, style: { minWidth: 0, overflowWrap: 'anywhere' } },
+          h('button', { type: 'button', 'data-flight-observation-export': scope,
+            style: Object.assign({}, style, { maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflowWrap: 'anywhere' }),
+            onClick: function() {
+              var lane = observationExportRef.current, owner = lane.owners[scope], live = observationExportContext(dataRef.current, scope);
+              if (!lane.mounted || owner.revision !== revision || !live || live.key !== context.key ||
+                  liveRouteData().view !== 'debrief' || hasPendingDepartureOrBriefing()) return;
+              var request = { id: ++lane.sequence, scope: scope, key: context.key, revision: revision, handled: false,
+                filename: scope === 'earlier' ? 'SkySchool-earlier-flight.csv' : 'flight_data_' + new Date().toISOString().slice(0, 10) + '.csv' };
+              lane.requests[scope] = request;
+              setObservationExportFeedback(function(previous) { var next = Object.assign({}, previous); next[scope] = null; return next; });
+              setObservationExportActions(function(previous) { var next = Object.assign({}, previous); next[scope] = request; return next; });
+            } }, label),
+          h('p', { 'data-flight-observation-export-status': scope, role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { margin: '8px 0', color: '#e2e8f0', lineHeight: 1.6 } },
+            feedback && isCurrentObservationExport(feedback.request) && h('span', { key: feedback.request.id }, feedback.started
+              ? __alloT('stem.flightsim.observation_export_started', 'Observation download started. Check your browser’s downloads for the CSV file.')
+              : __alloT('stem.flightsim.observation_export_failed', 'The observation download could not start. Your recorded observations are still here. Try the download again.'))));
+      }
       var saveFlightJournalView = function(patchOrUpdate, ownsSelection) {
         if (hasPendingDepartureOrBriefing()) return;
         var canSave = function(state) {
@@ -16050,6 +16214,29 @@ function getFlightCityLayout(city) {
       var investigationActionOwnerRef = useRef({ token: 0 });
       var investigationActionState = useState(null), investigationAction = investigationActionState[0], setInvestigationAction = investigationActionState[1];
       var handledInvestigationActionRef = useRef(null);
+      var investigationExportRef = useRef({ mounted: true, request: null, sequence: 0, resources: [] });
+      var investigationExportState = useState(null), investigationExportFeedback = investigationExportState[0], setInvestigationExportFeedback = investigationExportState[1];
+      function isCurrentInvestigationExport(request) {
+        return investigationExportRef.current.mounted && investigationExportRef.current.request === request &&
+          dataRef.current.view === 'stallHunt' && investigationActionOwnerRef.current.token === request.owner &&
+          investigationRevisionRef.current === request.revision &&
+          stallInvestigationRecord(investigationRecordSource(dataRef.current)).phase === request.phase;
+      }
+      function releaseInvestigationExport(resource) {
+        if (resource.timer != null) window.clearTimeout(resource.timer);
+        resource.timer = null;
+        if (resource.anchor) { try { resource.anchor.remove(); } catch (e) {} resource.anchor = null; }
+        if (resource.url != null) { try { URL.revokeObjectURL(resource.url); } catch (e) {} resource.url = null; }
+        investigationExportRef.current.resources = investigationExportRef.current.resources.filter(function(item) { return item !== resource; });
+      }
+      useEffect(function() {
+        investigationExportRef.current.mounted = true;
+        return function() {
+          investigationExportRef.current.mounted = false;
+          investigationExportRef.current.request = null;
+          investigationExportRef.current.resources.slice().forEach(releaseInvestigationExport);
+        };
+      }, []);
       var investigationWritesRef = useRef({ base: null, pending: [], head: null });
       // Symbols survive immutable host merges but stay out of saved JSON. Each
       // accepted write has a distinct proof, even when a selector is unchanged.
@@ -16319,7 +16506,17 @@ function getFlightCityLayout(city) {
         calculatorRenderRef.current = { key: calculatorKey, proof: calculatorProof, revision: calculatorRenderRef.current.revision + 1 };
       }
       var calculatorRenderRevision = calculatorRenderRef.current.revision;
+      var calculatorReadButtonRef = useRef(null);
+      var calculatorResultState = useState(null);
+      var calculatorResult = calculatorResultState[0];
+      var calculatorResultRef = useRef(null);
+      calculatorResultRef.current = calculatorResult;
       function liveCalculatorData() { return calculatorWritesRef.current.head || dataRef.current; }
+      function calculatorResultCurrent(result) {
+        var lane = calculatorWritesRef.current, live = liveCalculatorData();
+        return !!result && result === calculatorResultRef.current && live.view === 'calculator' && lane.owner === result.owner
+          && lane.headProof === result.proof && calculatorStateKey(live) === result.key;
+      }
       function commitCalculatorPatch(patchFor) {
         var lane = calculatorWritesRef.current, before = liveCalculatorData();
         if (before.view !== 'calculator' || calculatorRenderRef.current.revision !== calculatorRenderRevision) return;
@@ -16329,6 +16526,12 @@ function getFlightCityLayout(city) {
         var write = { beforeKey: calculatorStateKey(before), beforeProof: lane.headProof, after: after, afterKey: calculatorStateKey(after),
           proof: legacy ? lane.headProof : {}, owner: lane.owner, legacy: legacy };
         lane.pending.push(write); lane.head = after; lane.headProof = write.proof; dataRef.current = after;
+        // A delayed host receipt must not leave an earlier requested summary
+        // beside newly edited controls while the next value is being saved.
+        if (calculatorResultRef.current) {
+          calculatorResultRef.current = null;
+          if (skyA11yRef.current && skyA11yRef.current.isConnected) calculatorResultState[1](null);
+        }
         if (legacy) { updMulti(patch); return; }
         ctx.setToolData(function(previous) {
           var state = previous && previous.flightSim;
@@ -16566,6 +16769,7 @@ function getFlightCityLayout(city) {
       var [cityResults, setCityResults] = useState([]);
       var [citySearchBusy, setCitySearchBusy] = useState(false);
       var [citySearchDone, setCitySearchDone] = useState(false);
+      var [citySearchUnavailable, setCitySearchUnavailable] = useState(false);
       var [cityStatus, setCityStatus] = useState({ phase: 'idle' });
       var [renderedCitySource, setRenderedCitySource] = useState(null);
       var renderedCitySourceRef = useRef(null);
@@ -16615,7 +16819,7 @@ function getFlightCityLayout(city) {
       useEffect(function() {
         citySearchRef.current.generation++;
         if (citySearchRef.current.controller) citySearchRef.current.controller.abort();
-        setCitySearchBusy(false); setCitySearchDone(false); setCityResults([]);
+        setCitySearchBusy(false); setCitySearchDone(false); setCitySearchUnavailable(false); setCityResults([]);
       }, [d.cityOnline]);
       useEffect(function() {
         var delay = Math.max(0, (cityStatus.retryAt || 0) - Date.now());
@@ -16629,11 +16833,11 @@ function getFlightCityLayout(city) {
         if (citySearchRef.current.controller) citySearchRef.current.controller.abort();
         citySearchRef.current.controller = null;
         setCitySearchBusy(false);
-        if (clearResults) { setCitySearchDone(false); setCityResults([]); }
+        if (clearResults) { setCitySearchDone(false); setCitySearchUnavailable(false); setCityResults([]); }
       };
       var searchCity = function(event) {
         if (event) event.preventDefault();
-        if (!currentRouteControl() || citySearchGeneration !== citySearchRef.current.generation) return;
+        if (!currentRouteControl() || citySearchBusy || citySearchGeneration !== citySearchRef.current.generation) return;
         var query = cityQuery.trim();
         if (query.length < 2 || query.length > 120) return;
         var pending = citySearchRef.current;
@@ -16642,10 +16846,11 @@ function getFlightCityLayout(city) {
         var generation = ++pending.generation, owner = routeWritesRef.current.owner, controller = pending.controller;
         function ownsSearch() { return generation === citySearchRef.current.generation && owner === routeWritesRef.current.owner &&
           (liveRouteData().view || 'menu') === 'menu' && !controller.signal.aborted; }
-        setCitySearchBusy(true); setCitySearchDone(false); setCityResults([]);
+        setCitySearchBusy(true); setCitySearchDone(false); setCitySearchUnavailable(false); setCityResults([]);
         searchFlightCities(query, { fetch: typeof window.fetch === 'function' ? window.fetch.bind(window) : null,
           signal: pending.controller.signal, endpoints: cityServicesRef.current, cities: REAL_CITIES,
           enabled: dataRef.current.cityOnline !== false,
+          onUnavailable: function() { if (ownsSearch()) setCitySearchUnavailable(true); },
           onResults: function(results) {
             if (!ownsSearch()) return;
             setCityResults(results.map(getFlightCityTarget).filter(Boolean));
@@ -16666,7 +16871,7 @@ function getFlightCityLayout(city) {
             });
             setCitySearchDone(true);
           }).catch(function() {
-            if (ownsSearch()) setCitySearchDone(true);
+            if (ownsSearch()) { setCitySearchUnavailable(true); setCitySearchDone(true); }
           }).finally(function() {
             if (ownsSearch()) setCitySearchBusy(false);
           });
@@ -19163,6 +19368,10 @@ function getFlightCityLayout(city) {
       var skyA11yRef = useRef(null);
       var skyAnnounceTimerRef = useRef(null);
       var requestedStatusUntilRef = useRef(0);
+      var requestedStatusCurrentRef = useRef(null);
+      var flightStatusButtonRef = useRef(null);
+      var flightStatusState = useState(null);
+      var flightStatusSnapshot = flightStatusState[0];
       useEffect(function() {
         if (skyA11yRef.current) return;
         var region = document.createElement('div');
@@ -19184,17 +19393,23 @@ function getFlightCityLayout(city) {
           skyA11yRef.current = null;
         };
       }, []);
-      var skyAnnounce = function(msg, priority) {
+      var skyAnnounce = function(msg, priority, isCurrent) {
         if (!skyA11yRef.current) return;
         // A requested status must survive incidental discoveries and milestones
         // in the same frame. Controls and warnings can still interrupt it.
-        if (priority === 'ambient' && Date.now() < requestedStatusUntilRef.current) return;
-        if (priority === 'requested') requestedStatusUntilRef.current = Date.now() + 6000;
-        else if (priority !== 'ambient') requestedStatusUntilRef.current = 0;
+        if (priority === 'ambient' && Date.now() < requestedStatusUntilRef.current
+            && (!requestedStatusCurrentRef.current || requestedStatusCurrentRef.current())) return;
+        if (priority === 'requested') {
+          requestedStatusUntilRef.current = Date.now() + 6000;
+          requestedStatusCurrentRef.current = isCurrent || null;
+        } else if (priority !== 'ambient') {
+          requestedStatusUntilRef.current = 0;
+          requestedStatusCurrentRef.current = null;
+        }
         skyA11yRef.current.textContent = '';
         if (skyAnnounceTimerRef.current) clearTimeout(skyAnnounceTimerRef.current);
         skyAnnounceTimerRef.current = setTimeout(function() {
-          if (skyA11yRef.current) skyA11yRef.current.textContent = msg;
+          if (skyA11yRef.current && (!isCurrent || isCurrent())) skyA11yRef.current.textContent = msg;
           skyAnnounceTimerRef.current = null;
         }, 50);
       };
@@ -25209,9 +25424,11 @@ function getFlightCityLayout(city) {
         return true;
       };
 
-      var answerGeoQuiz = function(index) {
+      var answerGeoQuiz = function(index, questionToken) {
         var quiz = geoQuizRef.current;
-        if (sprintRef.current.active || sprintRef.current.phase === 'result' || !quiz.active || quiz.showResult ||
+        // Each generated options array owns its answer callbacks. A retained
+        // control or key event must never answer a later geography question.
+        if (sprintRef.current.active || sprintRef.current.phase === 'result' || !quiz.active || quiz.showResult || dataRef.current.showHelp || questionToken !== quiz.options ||
             !Number.isInteger(index) || index < 0 || index >= quiz.options.length) return false;
         quiz.answer = quiz.options[index];
         quiz.showResult = true;
@@ -25244,6 +25461,7 @@ function getFlightCityLayout(city) {
       var renderGeoQuiz = function() {
         var quiz = geoQuizRef.current;
         if (!quiz.active || sprintRef.current.active || sprintRef.current.phase === 'result') return null;
+        var questionToken = quiz.options;
         return h('section', { 'data-flight-geography-quiz': 'true', 'aria-labelledby': 'skyschool-geoq-title',
           onKeyDown: function(event) {
             if (event.defaultPrevented || event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.ctrlKey || event.altKey || event.metaKey || dataRef.current.showHelp) return;
@@ -25254,7 +25472,7 @@ function getFlightCityLayout(city) {
               // The focused question keeps its documented answer keys; digits
               // on its buttons and other widgets retain their native behavior.
               event.preventDefault(); event.stopPropagation();
-              if (!event.repeat) answerGeoQuiz(Number(event.key) - 1);
+              if (!event.repeat) answerGeoQuiz(Number(event.key) - 1, questionToken);
             }
           },
           style: { position: 'absolute', zIndex: 45, top: '54px', left: '50%', transform: 'translateX(-50%)', width: 'min(500px, calc(100% - 24px))', maxHeight: 'calc(100% - 80px)', overflowY: 'auto', boxSizing: 'border-box', padding: '16px', border: '2px solid #fbbf24', borderRadius: '14px', background: '#0f172a', color: '#f8fafc', boxShadow: '0 18px 60px rgba(0,0,0,0.7)', fontSize: '14px', lineHeight: 1.5 } },
@@ -25264,7 +25482,7 @@ function getFlightCityLayout(city) {
           h('div', { style: { display: 'grid', gap: '8px', margin: '14px 0' } }, quiz.options.map(function(option, index) {
             var correct = quiz.showResult && option === quiz.correct;
             var chosen = quiz.answer === option;
-            return h('button', { key: index, onClick: function() { answerGeoQuiz(index); }, disabled: quiz.showResult,
+            return h('button', { key: index, type: 'button', onClick: function() { answerGeoQuiz(index, questionToken); }, 'aria-disabled': quiz.showResult,
               'data-geoq-answer': index, 'aria-pressed': chosen,
               'aria-label': __alloT('stem.flightsim.answer_choice', 'Answer {letter}: {text}').replace('{letter}', index + 1).replace('{text}', option),
               style: { minHeight: '44px', padding: '10px', borderRadius: '8px', border: '2px solid ' + (correct ? '#4ade80' : chosen ? '#fbbf24' : '#64748b'), background: correct ? '#14532d' : '#1e293b', color: '#f8fafc', font: 'inherit', textAlign: 'left', cursor: quiz.showResult ? 'default' : 'pointer', overflowWrap: 'anywhere' } }, (index + 1) + '. ' + option + (correct ? ' ✓' : chosen ? ' ✗' : ''));
@@ -26780,6 +26998,26 @@ function getFlightCityLayout(city) {
         correct: null, results: [], phase: 'flying', // 'flying' | 'question' | 'result'
         autopilotTarget: null, speed: 2000
       });
+      /* @fs-sprinttimer-start */
+      // WCAG 2.2.1: the sprint clock can run, be relaxed (3x) or be turned off.
+      var sprintTimerMode = function(v) { return v === 'relaxed' || v === 'off' ? v : 'on'; };
+      var setSprintTimerMode = function(sp, mode) {
+        mode = sprintTimerMode(mode);
+        if (mode !== 'off') {
+          var scale = mode === 'relaxed' ? 3 : 1, f = scale / (sp.timedScale || 1);
+          sp.timer *= f; sp.maxTime *= f; sp.timedScale = scale;
+        }
+        sp.timerMode = mode;
+        return mode;
+      };
+      // Open question: relaxed flies 3x slower; off eases to a 6 nm hold (skip line is 5 nm).
+      var sprintTravelFps = function(sp, dist) {
+        var fps = Math.max(sp.speed, dist * 6076.12 / 6);
+        if (sp.phase !== 'question' || sp.answered) return fps;
+        if (sp.timerMode === 'off') return Math.max(0, dist - 6) * 6076.12 / 6;
+        return sp.timerMode === 'relaxed' ? fps / 3 : fps;
+      };
+      /* @fs-sprinttimer-end */
       var sprintKeyRef = useRef({});
       var sprintUiKeyRef = useRef('');
       var sprintUiState = useState(0), sprintUiVersion = sprintUiState[0], refreshSprintUi = sprintUiState[1];
@@ -26864,8 +27102,9 @@ function getFlightCityLayout(city) {
           score: 0, streak: 0, bestStreak: 0, timer: sprintTime,
           maxTime: sprintTime, approaching: null, options: [],
           answered: false, correct: null, results: [], phase: 'flying',
-          speed: route.speed
+          speed: route.speed, timedScale: 1
         };
+        setSprintTimerMode(sprintRef.current, dataRef.current.sprintTimer);
         timeRef.current = 0;
         flyingRef.current = true;
         // A geography sprint is a new session, not a continuation of a
@@ -26930,8 +27169,10 @@ function getFlightCityLayout(city) {
         var sp = sprintRef.current;
         if (!sp.active || pausedRef.current || dataRef.current.showHelp || !(dt > 0)) return;
 
-        sp.timer -= dt;
-        if (sp.timer <= 0) { sp.timer = 0; sp.active = false; sp.phase = 'result'; syncSprintUi(); return; }
+        if (sp.timerMode !== 'off') {
+          sp.timer -= dt;
+          if (sp.timer <= 0) { sp.timer = 0; sp.active = false; sp.phase = 'result'; syncSprintUi(); return; }
+        }
 
         var targetPlace = sp.places[sp.placeIndex];
         if (!targetPlace) { sp.active = false; sp.phase = 'result'; syncSprintUi(); return; }
@@ -26954,7 +27195,7 @@ function getFlightCityLayout(city) {
         // out during leg one. Scale speed with distance-to-target so a leg
         // closes in ~12-15 s while still decelerating through the sub-50 nm
         // question window.
-        sp.travelSpeedFps = Math.max(sp.speed, dist * 6076.12 / 6);
+        sp.travelSpeedFps = sprintTravelFps(sp, dist);
         flightRef.current.speed = sp.speed;
         flightRef.current.altitude = 35000;
 
@@ -27007,7 +27248,7 @@ function getFlightCityLayout(city) {
         }
 
         // Auto-advance after answering or passing
-        if (sp.phase === 'question' && dist < 5) {
+        if (sp.phase === 'question' && dist < 5 && (sp.answered || sp.timerMode !== 'off')) {
           if (!sp.answered) {
             // Time's up for this question — mark as missed
             sp.results.push({ place: targetPlace.name, correct: false, answer: 'SKIPPED', expected: sp.correctAnswer });
@@ -27026,7 +27267,7 @@ function getFlightCityLayout(city) {
         var sp = sprintRef.current;
         // A unique options array belongs to each generated question. Both DOM
         // callbacks and keydown capture it before a later frame can advance.
-        if (!sp.active || sp.phase !== 'question' || sp.answered || pausedRef.current || dataRef.current.showHelp ||
+        if (!sp.active || sp.phase !== 'question' || sp.answered || dataRef.current.showHelp ||
             questionToken !== sp.options || !Number.isInteger(optionIdx) || optionIdx < 0 || optionIdx >= sp.options.length) return false;
         var answer = sp.options[optionIdx];
         sp.answered = true;
@@ -27041,6 +27282,24 @@ function getFlightCityLayout(city) {
         sp.results.push({ place: sp.approaching.name, correct: sp.correct, answer: answer, expected: sp.correctAnswer });
         syncSprintUi();
         return true;
+      };
+
+      // live: re-times the running sprint too. Both persist the choice as d.sprintTimer.
+      var renderSprintTimerSelect = function(id, live) {
+        var value = sprintTimerMode(live ? sprintRef.current.timerMode : d.sprintTimer);
+        return h('label', { htmlFor: id, style: { display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', color: '#f8fafc', fontSize: '13px' } },
+          __alloT('stem.flightsim.sprint_timer_label', 'Timer'),
+          h('select', { id: id, 'data-sprint-timer-mode': live ? 'live' : 'menu', value: value,
+            onChange: function(e) {
+              var mode = sprintTimerMode(e.target.value);
+              if (live) { setSprintTimerMode(sprintRef.current, mode); refreshSprintUi(function(n) { return n + 1; }); }
+              dataRef.current = Object.assign({}, dataRef.current, { sprintTimer: mode });
+              upd('sprintTimer', mode);
+            },
+            style: { minHeight: '44px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #7dd3fc', background: '#1e293b', color: '#f8fafc', font: 'inherit' } },
+            h('option', { value: 'on' }, __alloT('stem.flightsim.sprint_timer_on', 'On')),
+            h('option', { value: 'relaxed' }, __alloT('stem.flightsim.sprint_timer_relaxed', 'Relaxed (3×)')),
+            h('option', { value: 'off' }, __alloT('stem.flightsim.sprint_timer_off', 'Off'))));
       };
 
       var renderSprint = function() {
@@ -27065,23 +27324,26 @@ function getFlightCityLayout(city) {
           style: { position: 'absolute', zIndex: 45, top: '62px', left: '50%', transform: 'translateX(-50%)', width: 'min(520px, calc(100% - 24px))', maxHeight: 'calc(100% - 86px)', overflowY: 'auto', boxSizing: 'border-box', padding: '16px', border: '2px solid #a78bfa', borderRadius: '14px', background: '#0f172a', color: '#f8fafc', boxShadow: '0 18px 60px rgba(0,0,0,0.7)', fontSize: '14px', lineHeight: 1.5, overflowWrap: 'anywhere' } },
           h('h2', { id: 'skyschool-sprint-title', style: { margin: '0 0 8px', fontSize: '16px', color: '#ddd6fe' } }, __alloT('stem.flightsim.sprint_native_title', 'Geography sprint') + ' · ' + routeName),
           h('p', { 'data-sprint-score': 'true', style: { margin: '8px 0', color: '#fde68a' } }, __alloT('stem.flightsim.hud_sprint_score', 'Score: {n}/{total}  |  🔥 Streak: {streak}').replace('{n}', score.score).replace('{total}', score.total).replace('{streak}', sp.streak)),
-          !resultReady && h('p', { 'data-sprint-timer': 'true', 'aria-live': 'off', style: { margin: '8px 0', fontVariantNumeric: 'tabular-nums' } }, __alloT('stem.flightsim.sprint_time_remaining', 'Time remaining: {seconds} seconds').replace('{seconds}', Math.max(0, Math.ceil(sp.timer)))),
-          !resultReady && h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' } },
+          !resultReady && h('p', { 'data-sprint-timer': 'true', 'aria-live': 'off', style: { margin: '8px 0', fontVariantNumeric: 'tabular-nums' } }, sp.timerMode === 'off' ? __alloT('stem.flightsim.sprint_no_time_limit', 'No time limit') : __alloT('stem.flightsim.sprint_time_remaining', 'Time remaining: {seconds} seconds').replace('{seconds}', Math.max(0, Math.ceil(sp.timer)))),
+          !resultReady && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', margin: '12px 0' } },
             h('button', { 'data-sprint-pause': 'true', style: buttonStyle, onClick: function() { setFlightPaused(!pausedRef.current); } }, pausedUi ? __alloT('stem.flightsim.label_resume_flight', 'Resume flight') : __alloT('stem.flightsim.label_pause_flight', 'Pause flight')),
-            h('button', { 'data-sprint-help': 'true', style: buttonStyle, onClick: function() { setFlightHelp(true); } }, __alloT('stem.flightsim.help_reference_title', 'Controls and help'))),
+            h('button', { 'data-sprint-help': 'true', style: buttonStyle, onClick: function() { setFlightHelp(true); } }, __alloT('stem.flightsim.help_reference_title', 'Controls and help')),
+            renderSprintTimerSelect('skyschool-sprint-timer-live', true)),
           h('h3', { id: 'skyschool-sprint-question', tabIndex: -1, style: { margin: '12px 0', fontSize: '18px' } }, resultReady
             ? __alloT('stem.flightsim.hud_sprint_complete', '🚀 SPRINT COMPLETE!')
             : questionReady ? sp.question : __alloT('stem.flightsim.sprint_next_stop', 'Next stop: {place}').replace('{place}', sp.places[sp.placeIndex] ? sp.places[sp.placeIndex].name : '')),
-          !resultReady && h('p', { style: { color: '#cbd5e1', margin: '8px 0' } }, __alloT('stem.flightsim.sprint_timed_hint', 'The route moves while you answer. Pause to read; resume before choosing an answer.')),
+          !resultReady && h('p', { 'data-sprint-hint': 'true', style: { color: '#cbd5e1', margin: '8px 0' } }, sp.timerMode === 'off'
+            ? __alloT('stem.flightsim.sprint_untimed_hint', 'No time limit: the jet waits near each stop until you answer. You can answer while paused.')
+            : __alloT('stem.flightsim.sprint_timed_pause_hint', 'The route moves while you answer. Pause any time to read; you can answer while paused.')),
           questionReady && h('div', { style: { display: 'grid', gap: '8px', margin: '14px 0' } }, sp.options.map(function(option, index) {
             var correct = sp.answered && option === sp.correctAnswer;
             var lastAnswer = sp.results[sp.results.length - 1];
             var chosen = sp.answered && lastAnswer && lastAnswer.answer === option;
-            return h('button', { key: index, 'data-sprint-answer': index, disabled: sp.answered || pausedUi,
+            return h('button', { key: index, type: 'button', 'data-sprint-answer': index, 'aria-disabled': sp.answered,
               'aria-pressed': !!chosen,
               'aria-label': __alloT('stem.flightsim.answer_choice', 'Answer {letter}: {text}').replace('{letter}', index + 1).replace('{text}', option),
               onClick: function() { answerSprint(index, questionToken); },
-              style: Object.assign({}, buttonStyle, { textAlign: 'left', border: '2px solid ' + (correct ? '#4ade80' : chosen ? '#fbbf24' : '#64748b'), background: correct ? '#14532d' : '#1e293b' })
+              style: Object.assign({}, buttonStyle, { cursor: sp.answered ? 'default' : 'pointer', textAlign: 'left', border: '2px solid ' + (correct ? '#4ade80' : chosen ? '#fbbf24' : '#64748b'), background: correct ? '#14532d' : '#1e293b' })
             }, (index + 1) + '. ' + option + (correct ? ' ✓' : chosen ? ' ✗' : ''));
           })),
           h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-sprint-feedback': 'true', style: { margin: questionReady && sp.answered ? '1em 0' : 0, color: sp.correct ? '#86efac' : '#fde68a' } }, questionReady && sp.answered ? __alloT('stem.flightsim.geoq_answer_feedback', 'Your answer: {answer}. Correct answer: {expected}.').replace('{answer}', sp.results[sp.results.length - 1].answer).replace('{expected}', sp.correctAnswer) : ''),
@@ -27114,13 +27376,13 @@ function getFlightCityLayout(city) {
         var timerPct = sp.timer / sp.maxTime;
         gfx.fillStyle = 'rgba(2,6,23,0.95)'; gfx.fillRect(0, 0, W, 36);
         gfx.fillStyle = timerPct > 0.3 ? '#22d3ee' : timerPct > 0.1 ? '#fbbf24' : '#ef4444';
-        gfx.fillRect(0, 32, W * timerPct, 4);
+        if (sp.timerMode !== 'off') gfx.fillRect(0, 32, W * timerPct, 4);
 
         // Sprint status
         gfx.font = 'bold 13px system-ui'; gfx.fillStyle = '#fff'; gfx.textAlign = 'left';
         // The native panel carries the full route, score and time. Keep the
         // small canvas header quiet so duplicate labels cannot overlap.
-        gfx.fillText(W < 700 ? '🚀 HYPERJET' : '🚀 HYPERJET  |  ' + sp.route.name + '  |  ' + Math.ceil(sp.timer) + 's', 10, 22);
+        gfx.fillText(W < 700 ? '🚀 HYPERJET' : '🚀 HYPERJET  |  ' + sp.route.name + '  |  ' + (sp.timerMode === 'off' ? __alloT('stem.flightsim.sprint_no_time_limit', 'No time limit') : Math.ceil(sp.timer) + 's'), 10, 22);
         if (W >= 700) {
           gfx.textAlign = 'right'; gfx.fillStyle = '#fbbf24';
           gfx.fillText(__alloT('stem.flightsim.hud_sprint_score', "Score: {n}/{total}  |  🔥 Streak: {streak}").replace('{n}', scoreSummary.score).replace('{total}', scoreSummary.total).replace('{streak}', sp.streak), W - 10, 22);
@@ -27632,6 +27894,44 @@ function getFlightCityLayout(city) {
         var telemetry = computeFlightTelemetry(state, controlsRef.current, weatherRef.current, hudRef.current.jetKts || 0, 0, null, null, currentAC);
         var text = flightMissionText(getFlightMissionGuidance(state, dataRef.current, telemetry));
         if (text) skyAnnounce(text.spoken, 'requested');
+      };
+
+      // A deliberate snapshot works with touch, speech, keyboard and screen
+      // readers. Only the shared announcer speaks it; the visible copy stays
+      // still while the simulation continues and is scoped to this flight.
+      var requestFlightStatus = function(session, controls, node) {
+        function current() {
+          return !!skyA11yRef.current && skyA11yRef.current.isConnected && flyingRef.current
+            && dataRef.current.view === 'flying' && !dataRef.current.showHelp
+            && session === flightSessionRef.current && controls === controlsRef.current;
+        }
+        if (!current() || node && (node !== flightStatusButtonRef.current || !node.isConnected || dataRef.current.railCollapsed !== false)) return;
+        var st = flightRef.current, live = dataRef.current;
+        var aircraft = AIRCRAFT.find(function(item) { return item.id === (session && session.aircraftId || live.aircraft); }) || AIRCRAFT[0];
+        var rotor = !!(aircraft.isHelicopter || aircraft.isDrone);
+        var scripted = !!(session && session.activityId === 'geography_sprint');
+        var telemetry = computeFlightTelemetry(st, controls, weatherRef.current, hudRef.current.jetKts || 0, 0, null, null, aircraft);
+        var speed = scripted ? Math.max(0, Number(sprintRef.current.speed) || 0) * 0.5924838 : rotor ? telemetry.gsKts : telemetry.iasKts;
+        var speedText = scripted ? __alloT('stem.flightsim.status_route_speed', 'Route speed {kts} knots.')
+          : rotor ? __alloT('stem.flightsim.status_ground_speed', 'Ground speed {kts} knots.')
+          : __alloT('stem.flightsim.status_indicated_speed', 'Indicated airspeed {kts} knots.');
+        var text = __alloT('stem.flightsim.status_altitude', 'Altitude {alt} feet above sea level.').replace('{alt}', Math.round(Number(st.altitude) || 0))
+          + ' ' + speedText.replace('{kts}', Math.round(speed))
+          + ' ' + __alloT('stem.flightsim.status_heading', 'Heading {hdg} degrees.').replace('{hdg}', ((Math.round(Number(st.heading) || 0) % 360) + 360) % 360)
+          + ' ' + __alloT('stem.flightsim.status_vertical', 'Height above ground {agl} feet. Vertical speed {fpm} feet per minute.').replace('{agl}', Math.round(telemetry.aglFt)).replace('{fpm}', Math.round(telemetry.fpm))
+          + (st.stalling ? ' ' + __alloT('stem.flightsim.announce_status_stalling', 'Warning: stalling!') : '')
+          + (st.lowAirspeed && !st.stalling ? ' ' + __alloT('stem.flightsim.announce_status_low_airspeed', 'Low airspeed advisory. Monitor lift and angle of attack.') : '')
+          + (!rotor && !scripted ? ' ' + __alloT('stem.flightsim.announce_status_aoa', 'Angle of attack {aoa} degrees.').replace('{aoa}', (Number(st.aoa) || 0).toFixed(1)) : '')
+          + (st.hitCeiling ? ' ' + __alloT('stem.flightsim.announce_status_ceiling', 'Holding at the Part 107 ceiling: 400 feet is a legal limit, not a limit of the drone.') : '')
+          + (st.onGround ? ' ' + __alloT('stem.flightsim.announce_status_on_ground', 'On ground.') : '')
+          + ' ' + __alloT('stem.flightsim.announce_status_discovered', 'Places discovered: {n}.').replace('{n}', Object.keys(geoDiscoveredRef.current).length);
+        var filedRoute = updateFiledRouteDescription(st, telemetry);
+        var mission = flightMissionText(getFlightMissionGuidance(st, live, telemetry));
+        var route = flightChallengeRouteText(getFlightChallengeNavigation(flightChallengeRef.current, st, live.challengeApproachAirport));
+        var destination = mission ? mission.spoken : route ? route.spoken : filedRoute || flightDiscoveryDescription(getActiveFlightDiscovery(st));
+        if (destination) text += ' ' + destination;
+        flightStatusState[1]({ session: session, controls: controls, text: text });
+        skyAnnounce(text, 'requested', current);
       };
 
       var updateMissionGuidanceText = function(guide) {
@@ -28681,26 +28981,7 @@ function getFlightCityLayout(city) {
           }
           if (keys['i']) {
             keys['i'] = false;
-            var st = flightRef.current;
-            var spokenTelemetry = computeFlightTelemetry(st, controlsRef.current, weatherRef.current,
-              hudRef.current.jetKts || 0, 0, null, null, currentAC);
-            var ktsInfo = Math.round(currentAC.isHelicopter || currentAC.isDrone
-              ? spokenTelemetry.gsKts : spokenTelemetry.iasKts);
-            skyAnnounce(__alloT('stem.flightsim.announce_status_core', "Altitude {alt} feet. Speed {kts} knots. Heading {hdg} degrees.").replace('{alt}', Math.round(st.altitude)).replace('{kts}', ktsInfo).replace('{hdg}', Math.round(st.heading))
-            + (st.stalling ? ' ' + __alloT('stem.flightsim.announce_status_stalling', "Warning: stalling!") : '')
-            + (st.lowAirspeed && !st.stalling ? ' ' + __alloT('stem.flightsim.announce_status_low_airspeed', 'Low airspeed advisory. Monitor lift and angle of attack.') : '')
-            + (!currentAC.isHelicopter && !currentAC.isDrone ? ' ' + __alloT('stem.flightsim.announce_status_aoa', 'Angle of attack {aoa} degrees.').replace('{aoa}', (Number(st.aoa) || 0).toFixed(1)) : '')
-            + (st.hitCeiling ? ' ' + __alloT('stem.flightsim.announce_status_ceiling', "Holding at the Part 107 ceiling: 400 feet is a legal limit, not a limit of the drone.") : '')
-            + (st.onGround ? ' ' + __alloT('stem.flightsim.announce_status_on_ground', "On ground.") : '')
-            + ' ' + __alloT('stem.flightsim.announce_status_discovered', "Places discovered: {n}.").replace('{n}', Object.keys(geoDiscoveredRef.current).length)
-            + (function() {
-              var filedRoute = updateFiledRouteDescription(st, spokenTelemetry);
-              var mission = flightMissionText(getFlightMissionGuidance(st, dataRef.current, spokenTelemetry));
-              if (mission) return ' ' + mission.spoken;
-              var route = flightChallengeRouteText(getFlightChallengeNavigation(flightChallengeRef.current, st, dataRef.current.challengeApproachAirport));
-              var destination = route ? route.spoken : filedRoute || flightDiscoveryDescription(getActiveFlightDiscovery(st));
-              return destination ? ' ' + destination : '';
-            })(), 'requested');
+            requestFlightStatus(flightSessionRef.current, controlsRef.current);
           }
           // Escape must work before the paused-frame early return, too.
           if (keys['escape']) {
@@ -28739,7 +29020,7 @@ function getFlightCityLayout(city) {
             if (!sprintOwnsOrdinaryQuiz) openedOrdinaryQuiz = triggerGeoQuiz(flightRef.current);
           }
           if (!sprintOwnsOrdinaryQuiz) ['1', '2', '3', '4'].forEach(function(key, index) {
-            if (keys[key] && !openedOrdinaryQuiz && ordinaryQuiz.active) answerGeoQuiz(index);
+            if (keys[key] && !openedOrdinaryQuiz && ordinaryQuiz.active) answerGeoQuiz(index, ordinaryQuiz.options);
             keys[key] = false;
           });
           // Consume B during a held pause without queuing an unexpected
@@ -28919,7 +29200,8 @@ function getFlightCityLayout(city) {
             state.altitude = 35000;
             state.vsi = 0;
             state.speed = sprintRef.current.speed;
-            var travelNm = (sprintRef.current.travelSpeedFps || state.speed) * dt / 6076.12;
+            var travelFps = sprintRef.current.travelSpeedFps; // 0 = untimed hold
+            var travelNm = (Number.isFinite(travelFps) ? travelFps : state.speed) * dt / 6076.12;
             var travelHeading = state.heading * Math.PI / 180;
             state.lat += travelNm * Math.cos(travelHeading) / 60;
             state.lon += travelNm * Math.sin(travelHeading) / (60 * Math.max(0.05, Math.cos(state.lat * Math.PI / 180)));
@@ -32452,6 +32734,7 @@ function getFlightCityLayout(city) {
           h('section', { id: 'skyschool-sec-sprints', style: { minWidth: 0, padding: '0 clamp(12px,4%,24px) 24px', scrollMarginTop: '52px' } },
             secHead('sprints', __alloT('stem.flightsim.hyperjet_geography_sprint', '🚀 HyperJet Geography Sprint'), SPRINT_ROUTES.length + ' routes'),
             secOpen('sprints') && h('p', { id: 'skyschool-secbody-sprints', style: { fontSize: '11px', color: '#cbd5e1', marginBottom: '8px' } }, __alloT('stem.flightsim.fly_at_mach_3_on_autopilot_name_countr', 'Fly at Mach 3 on autopilot — name countries, capitals, and cities as you zoom past! Press 1-4 to answer before you fly by.')),
+            secOpen('sprints') && h('div', { style: { marginBottom: '8px' } }, renderSprintTimerSelect('skyschool-sprint-timer-menu', false)),
             secOpen('sprints') && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px,100%), 1fr))', gap: '8px' } },
               SPRINT_ROUTES.map(function(route) {
                 return h('button', { key: route.id, onClick: function() { startSprint(route.id); },
@@ -32611,7 +32894,9 @@ function getFlightCityLayout(city) {
               var _doneMap = normalizeFlightLessonCompletions(d.completedLessons);
               var _isDone = !!_doneMap[selectedLesson];
               return h('button', {
+                type: 'button',
                 onClick: function() {
+                  if (_isDone) return;
                   saveLessonAction(function(state) {
                     var next = normalizeFlightLessonCompletions(state.completedLessons);
                     if (next[selectedLesson] === true) return null;
@@ -32619,7 +32904,7 @@ function getFlightCityLayout(city) {
                     return { completedLessons: next, lessonsCompleted: Object.keys(next).length };
                   });
                 },
-                disabled: _isDone,
+                'aria-disabled': _isDone,
                 'aria-pressed': _isDone,
                 style: { width: '100%', minWidth: 0, minHeight: '44px', boxSizing: 'border-box', overflowWrap: 'anywhere', marginTop: '8px', padding: '10px', borderRadius: '10px', border: '1px solid ' + (_isDone ? '#22c55e' : '#475569'), background: _isDone ? 'rgba(34,197,94,0.15)' : 'rgba(15,23,42,0.6)', color: _isDone ? '#4ade80' : '#cbd5e1', fontSize: '13px', fontWeight: 700, cursor: _isDone ? 'default' : 'pointer' }
               }, _isDone ? __alloT('stem.flightsim.lesson_completed', '✓ Lesson completed') : __alloT('stem.flightsim.mark_lesson_complete', '📚 Mark lesson complete'));
@@ -32665,8 +32950,8 @@ function getFlightCityLayout(city) {
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
               h('input', { id: 'skyschool-city-query', value: cityQuery, maxLength: 120, autoComplete: 'off',
                 onChange: function(event) { if (currentRouteControl()) { cancelCitySearch(true); setCityQuery(event.target.value); } }, style: Object.assign({}, controlStyle, { flex: '1 1 180px', width: '100%', minWidth: 0, boxSizing: 'border-box', cursor: 'text' }) }),
-              h('button', { type: 'submit', disabled: citySearchBusy || cityQuery.trim().length < 2,
-                style: Object.assign({}, controlStyle, { opacity: citySearchBusy || cityQuery.trim().length < 2 ? 0.55 : 1 }) },
+              h('button', { type: 'submit', 'aria-disabled': citySearchBusy || cityQuery.trim().length < 2,
+                style: Object.assign({}, controlStyle, citySearchBusy || cityQuery.trim().length < 2 ? { color: '#94a3b8', cursor: 'default' } : {}) },
                 citySearchBusy ? __alloT('stem.flightsim.city_searching', 'Searching…') : __alloT('stem.flightsim.city_search', 'Search')))),
           h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', fontSize: '13px', color: '#cbd5e1' } },
             h('input', { type: 'checkbox', checked: d.cityOnline !== false && cityServicesRef.current.enabled !== false, disabled: cityServicesRef.current.enabled === false,
@@ -32677,7 +32962,8 @@ function getFlightCityLayout(city) {
           h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-flight-city-search-status': 'true',
             style: { fontSize: '13px', color: '#cbd5e1', margin: citySearchBusy || citySearchDone ? '8px 0' : 0 } },
             citySearchBusy ? __alloT('stem.flightsim.city_searching', 'Searching…') : citySearchDone
-              ? cityResults.length ? __alloT('stem.flightsim.city_results', 'City results') + ': ' + cityResults.length
+              ? citySearchUnavailable ? __alloT('stem.flightsim.city_search_unavailable', 'Online city search is unavailable. Offline matches: {count}. Try searching again, or enter latitude, longitude.').replace('{count}', cityResults.length)
+                : cityResults.length ? __alloT('stem.flightsim.city_results', 'City results') + ': ' + cityResults.length
                 : __alloT('stem.flightsim.city_no_results', 'No city found. Try adding a country, or enter latitude, longitude. Offline search includes major cities.')
               : ''),
           cityResults.length > 0 && h('ul', { ref: cityResultsRef, 'aria-label': __alloT('stem.flightsim.city_results', 'City results'), style: { listStyle: 'none', margin: '6px 0', padding: 0, display: 'grid', gap: '6px' } },
@@ -32786,6 +33072,7 @@ function getFlightCityLayout(city) {
             : __alloT('stem.flightsim.help_paused_reference', 'Flight stays paused while you read. Closing help restores the previous pause state and focuses the cockpit.')),
           h('p', null, __alloT('stem.flightsim.help_input_ownership', 'Keyboard flight controls work when the cockpit has focus. Tab moves to buttons; their normal keyboard behavior is preserved.')),
           h('p', null, __alloT('stem.flightsim.tap_help', 'Expand the flight deck and open Tap flight controls for pitch, bank, and power buttons and sliders. Each button works with one click or tap, without dragging. Center pitch and bank stops those tap settings.')),
+          h('p', null, __alloT('stem.flightsim.status_help', 'Choose Read flight status in the expanded flight deck, or press I from the cockpit, for a snapshot of altitude, speed, heading, and guidance. The snapshot stays available in the deck until you request another one or start a new flight.')),
           h('details', null,
             h('summary', { style: { minHeight: '44px', alignContent: 'center', cursor: 'pointer', color: '#bae6fd' } }, __alloT('stem.flightsim.scenery_sources', 'Scenery and map sources')),
             h('p', null, __alloT('stem.flightsim.scenery_scope', 'Portland includes offline street and building footprints. Selected city centers can download OpenStreetMap detail on approach. Heights may be estimated; waterfront detail is limited by the coarser terrain. Elsewhere, skylines are illustrative.')),
@@ -33173,18 +33460,42 @@ function getFlightCityLayout(city) {
         var dateText = function(record) { return record.endedAt ? new Date(record.endedAt).toLocaleString() : __alloT('stem.flightsim.journal_no_date', 'Date not recorded'); };
         var title = h('h3', { style: { margin: '0 0 8px', color: '#fff' } }, __alloT('stem.flightsim.flight_practice_journal', 'Flight practice journal'));
         var retention = h('p', { style: { margin: '8px 0', color: '#cbd5e1' } }, __alloT('stem.flightsim.journal_retention', 'Keep the latest flight and four earlier flights for review. When the journal fills, finishing a flight replaces the oldest saved attempt.'));
-        var exportJournal = h('button', { type: 'button', 'data-flight-journal-export': 'true', disabled: !current && !history.length,
+        var exportJournal = h('div', { 'data-flight-journal-export-controls': true }, h('button', { type: 'button', 'data-flight-journal-export': 'true', disabled: !current && !history.length,
           onClick: function() {
+            if (!journalExportRef.current.mounted || journalReviewKey == null || journalReviewRef.current.revision !== journalReviewRevision ||
+                journalStateKey(dataRef.current) !== journalReviewKey || liveRouteData().view !== 'debrief' || hasPendingDepartureOrBriefing()) return;
+            var request = { id: ++journalExportRef.current.sequence, revision: journalReviewRevision, key: journalReviewKey,
+              payloadKey: JSON.stringify(createFlightPracticeJournalExport(dataRef.current, null)),
+              beforePayloadKey: JSON.stringify(createFlightPracticeJournalExport(d, null)) };
+            request.awaitingPayloadReceipt = request.payloadKey !== request.beforePayloadKey;
             var journal = createFlightPracticeJournalExport(dataRef.current, new Date().toISOString());
-            var blob = new Blob([JSON.stringify(journal, null, 2)], { type: 'application/json' });
-            var url = URL.createObjectURL(blob), anchor = document.createElement('a');
-            anchor.href = url; anchor.download = 'skyschool-flight-practice-journal.json';
-            document.body.appendChild(anchor);
-            try { anchor.click(); } finally {
-              anchor.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-            }
+            journalExportRef.current.request = request;
+            setJournalExportFeedback(null);
+            setJournalExportAction({ request: request, run: function() {
+              var resource = { url: null, anchor: null, timer: null }, started = false;
+              journalExportRef.current.resources.push(resource);
+              try {
+                var blob = new Blob([JSON.stringify(journal, null, 2)], { type: 'application/json' });
+                resource.url = URL.createObjectURL(blob); resource.anchor = document.createElement('a');
+                resource.anchor.href = resource.url; resource.anchor.download = 'skyschool-flight-practice-journal.json';
+                document.body.appendChild(resource.anchor); resource.anchor.click(); started = true;
+              } catch (e) {
+                // Keep the review and its evidence available when the browser
+                // cannot start a download; the same control can safely retry.
+              } finally {
+                if (resource.anchor) { try { resource.anchor.remove(); } catch (e) {} resource.anchor = null; }
+                if (started) resource.timer = window.setTimeout(function() { releaseJournalExport(resource); }, 1000);
+                else releaseJournalExport(resource);
+              }
+              if (isCurrentJournalExport(request)) setJournalExportFeedback({ request: request, started: started });
+            } });
           }, style: { minHeight: '44px', maxWidth: '100%', boxSizing: 'border-box', margin: '8px 0', padding: '10px 12px', color: '#fff', background: '#1e293b', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', font: 'inherit', overflowWrap: 'anywhere' } },
-          __alloT('common.download', 'Download') + ' ' + __alloT('stem.flightsim.flight_practice_journal', 'Flight practice journal') + ' (JSON)');
+          __alloT('common.download', 'Download') + ' ' + __alloT('stem.flightsim.flight_practice_journal', 'Flight practice journal') + ' (JSON)'),
+          h('p', { 'data-flight-journal-export-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { margin: '8px 0', color: '#e2e8f0' } },
+            journalExportFeedback && isCurrentJournalExport(journalExportFeedback.request) &&
+              h('span', { key: journalExportFeedback.request.id }, journalExportFeedback.started ?
+                __alloT('stem.flightsim.journal_export_started', 'Download started. Check your browser’s downloads for the file.') :
+                __alloT('stem.flightsim.journal_export_failed', 'The download could not start. Your flight journal is still here. Try the download again.'))));
         if (!history.length) return h('section', { 'aria-label': __alloT('stem.flightsim.flight_practice_journal', 'Flight practice journal'), style: panelStyle }, title, retention, exportJournal,
           h('p', { style: { margin: '8px 0' } }, __alloT('stem.flightsim.journal_first_attempt', 'This flight is your first saved review. Finish another flight to compare attempts; your observations and final explanation will remain with this attempt.'))
         );
@@ -33236,7 +33547,7 @@ function getFlightCityLayout(city) {
           low_airspeed: __alloT('stem.flightsim.evidence_event_low_speed', 'Recorded low-airspeed advisory'),
           normal_after_stall: __alloT('stem.flightsim.evidence_event_normal_flow', 'Normal-flow observation after stall')
         };
-        var observationButtonStyle = { minHeight: '44px', padding: '8px 12px', color: '#fff', background: '#1e293b', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', font: 'inherit' };
+        var observationButtonStyle = { minHeight: '44px', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', overflowWrap: 'anywhere', padding: '8px 12px', color: '#fff', background: '#1e293b', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', font: 'inherit' };
         var noReflection = __alloT('stem.flightsim.journal_no_reflection', 'No explanation saved for this attempt.');
         return h('section', { 'aria-label': __alloT('stem.flightsim.flight_practice_journal', 'Flight practice journal'), style: panelStyle }, title, retention, exportJournal,
           h('style', null, '.skyschool-evidence-scroll:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;border-radius:4px}'),
@@ -33286,10 +33597,10 @@ function getFlightCityLayout(city) {
               h('p', { style: { color: '#cbd5e1', margin: '0 0 12px', fontSize: '12px' } }, __alloT('stem.flightsim.evidence_event_scope', 'Shortcuts identify sampled observations, not exact event onset. A normal-flow observation does not establish sustained recovery; selecting it uses the recorded stall as your comparison moment.')),
               h('label', { htmlFor: 'debrief-earlier-time', style: { display: 'block', margin: '8px 0', fontWeight: 700 } }, __alloT('stem.flightsim.journal_earlier_time', 'Earlier observation time')),
               h('input', { id: 'debrief-earlier-time', type: 'range', className: 'skyschool-range', min: 0, max: observations.length - 1, step: 1, value: sampleIndex, disabled: observations.length === 1, 'aria-valuetext': timeText(observations[sampleIndex].t), onChange: function(e) { saveJournalView({ debriefHistorySampleIndex: Number(e.target.value) }, true); }, style: { width: '100%', boxSizing: 'border-box', margin: 0, minHeight: '44px' } }),
-              h('p', { role: 'status', style: { color: '#bae6fd', margin: '8px 0' } }, __alloT('stem.flightsim.evidence_selection', 'Observation {n} of {total} · {time}').replace('{n}', sampleIndex + 1).replace('{total}', observations.length).replace('{time}', timeText(observations[sampleIndex].t))),
+              h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-flight-observation-selection': 'earlier', style: { color: '#bae6fd', margin: '8px 0' } }, __alloT('stem.flightsim.evidence_selection', 'Observation {n} of {total} · {time}').replace('{n}', sampleIndex + 1).replace('{total}', observations.length).replace('{time}', timeText(observations[sampleIndex].t))),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' } },
-                h('button', { 'data-earlier-observation-step': 'previous', style: observationButtonStyle, disabled: sampleIndex === 0, onClick: function() { saveJournalView(function(state) { return { debriefHistorySampleIndex: Math.max(0, Math.min(observations.length - 1, Math.floor(Number(state.debriefHistorySampleIndex) || 0)) - 1) }; }, true); } }, __alloT('stem.flightsim.evidence_previous', 'Previous observation')),
-                h('button', { 'data-earlier-observation-step': 'next', style: observationButtonStyle, disabled: sampleIndex === observations.length - 1, onClick: function() { saveJournalView(function(state) { return { debriefHistorySampleIndex: Math.min(observations.length - 1, Math.max(0, Math.floor(Number(state.debriefHistorySampleIndex) || 0)) + 1) }; }, true); } }, __alloT('stem.flightsim.evidence_next', 'Next observation'))
+                h('button', { type: 'button', 'data-earlier-observation-step': 'previous', style: Object.assign({}, observationButtonStyle, { cursor: sampleIndex === 0 ? 'default' : 'pointer' }), 'aria-disabled': sampleIndex === 0, onClick: function() { if (sampleIndex === 0) return; saveJournalView(function(state) { return { debriefHistorySampleIndex: Math.max(0, Math.min(observations.length - 1, Math.floor(Number(state.debriefHistorySampleIndex) || 0)) - 1) }; }, true); } }, __alloT('stem.flightsim.evidence_previous', 'Previous observation')),
+                h('button', { type: 'button', 'data-earlier-observation-step': 'next', style: Object.assign({}, observationButtonStyle, { cursor: sampleIndex === observations.length - 1 ? 'default' : 'pointer' }), 'aria-disabled': sampleIndex === observations.length - 1, onClick: function() { if (sampleIndex === observations.length - 1) return; saveJournalView(function(state) { return { debriefHistorySampleIndex: Math.min(observations.length - 1, Math.max(0, Math.floor(Number(state.debriefHistorySampleIndex) || 0)) + 1) }; }, true); } }, __alloT('stem.flightsim.evidence_next', 'Next observation'))
               ),
               h('dl', { 'data-earlier-observation-details': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(135px,100%),1fr))', gap: '8px', margin: '12px 0' } }, [
                 [__alloT('stem.flightsim.evidence_altitude_axis', 'Altitude · ft MSL'), numberText(selectedObservation.alt, ' ft')],
@@ -33312,7 +33623,7 @@ function getFlightCityLayout(city) {
                     (Number(eventAngleChange.toFixed(1)) !== eventAngleChange ? '≈' : '') +
                     (eventAngleChange > 0 ? '+' : '') + numberText(eventAngleChange, '°'))),
               eventReference && renderFlightControlComparison(observations, sampleIndex, comparisonEvent.referenceIndex, 'earlier'),
-              observations.some(function(row) { return row.aoa != null; }) && h('p', { style: { color: '#cbd5e1', margin: '8px 0', fontSize: '12px' } }, __alloT('stem.flightsim.evidence_angle_precision', 'Angles marked ≈ are rounded to one decimal place. Hover over an angle for its saved value; flow states and exported angles use the saved angle before rounding.')),
+              renderFlightExactAngles(selectedObservation, eventReference, 'earlier', timeText),
               observations[0].t > 2 && h('p', null, __alloT('stem.flightsim.evidence_trimmed', 'The earliest available observation is after departure. Earlier moments are not available in this log.')),
               h('div', { tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.flightsim.journal_observations_scroll', 'Earlier flight observations'), className: 'skyschool-evidence-scroll', style: { overflowX: 'auto' } }, h('table', { 'aria-label': __alloT('stem.flightsim.journal_earlier_observations', 'Earlier recorded observations'), style: { borderCollapse: 'collapse', minWidth: '690px', width: '100%', fontSize: '13px' } },
                 h('caption', { style: { textAlign: 'left', padding: '8px 0' } }, __alloT('stem.flightsim.evidence_table_page', 'Observations {first}–{last} of {total}. Move the time control to inspect another group.').replace('{first}', tableStart + 1).replace('{last}', Math.min(observations.length, tableStart + 10)).replace('{total}', observations.length)),
@@ -33321,12 +33632,36 @@ function getFlightCityLayout(city) {
               ))
             ) : h('p', null, __alloT('stem.flightsim.journal_no_observations', 'No recorded observations are available for this earlier attempt.'))
           ),
-          observations.length > 0 && h('button', { onClick: function() {
-            var blob = new Blob([flightEvidenceCsv(observations, previous)], { type: 'text/csv;charset=utf-8;' });
-            var url = URL.createObjectURL(blob), anchor = document.createElement('a');
-            anchor.href = url; anchor.download = 'SkySchool-earlier-flight.csv'; anchor.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-          }, style: { minHeight: '44px', marginTop: '12px', padding: '8px 12px', color: '#fff', background: '#1e293b', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', font: 'inherit' } }, __alloT('stem.flightsim.journal_download_earlier', 'Download earlier observations (CSV)'))
+          observations.length > 0 && renderObservationDownload('earlier', __alloT('stem.flightsim.journal_download_earlier', 'Download earlier observations (CSV)'),
+            { minHeight: '44px', marginTop: '12px', padding: '8px 12px', color: '#fff', background: '#1e293b', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', font: 'inherit' })
         );
+      };
+
+      // Keep the overview short while making saved precision available with
+      // native keyboard and single-tap disclosure, not only a hover tooltip.
+      var renderFlightExactAngles = function(selected, reference, scope, timeText) {
+        var missing = __alloT('stem.flightsim.evidence_not_recorded', 'Not recorded');
+        var degrees = function(value, signed) {
+          return value == null ? missing : __alloT('stem.flightsim.tap_degrees_value', '{value} degrees')
+            .replace('{value}', (signed && value > 0 ? '+' : '') + String(value));
+        };
+        var rows = [
+          ['selected', __alloT('common.selected', 'Selected') + ' · ' + timeText(selected.t), degrees(selected.aoa)]
+        ];
+        if (reference) {
+          rows.push(['reference', __alloT('stem.flightsim.guided_reference_conditions', 'Reference conditions') + ' · ' + timeText(reference.t), degrees(reference.aoa)]);
+          rows.push(['change', __alloT('stem.flightsim.evidence_angle_change', 'Change in angle of attack'),
+            degrees(selected.aoa == null || reference.aoa == null ? null : selected.aoa - reference.aoa, true)]);
+        }
+        return h('details', { 'data-flight-exact-angles': scope, style: { minWidth: 0, margin: '12px 0', padding: '10px', border: '1px solid #64748b', borderRadius: '8px', background: '#172033', color: '#f8fafc', overflowWrap: 'anywhere' } },
+          h('summary', { style: { minHeight: '44px', alignContent: 'center', cursor: 'pointer', color: '#bae6fd', fontWeight: 700 } }, __alloT('stem.flightsim.evidence_exact_angles', 'Exact saved angles')),
+          h('style', null, '[data-flight-exact-angles]>summary:focus-visible{outline:3px solid #f8fafc;outline-offset:2px;border-radius:4px}'),
+          h('p', { style: { margin: '8px 0', color: '#cbd5e1', fontSize: '13px' } }, __alloT('stem.flightsim.evidence_angle_precision_accessible', 'Angles marked ≈ are rounded to one decimal place. These values retain the saved precision; flow states and exports use the saved angle before rounding.')),
+          h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: '10px', margin: '12px 0 0' } }, rows.map(function(row) {
+            return h('div', { key: row[0], style: { minWidth: 0 } },
+              h('dt', { style: { color: '#cbd5e1', fontSize: '13px' } }, row[1]),
+              h('dd', { 'data-exact-angle': row[0], style: { margin: '4px 0 0', fontWeight: 700 } }, row[2]));
+          })));
       };
 
       var renderFlightEvidence = function(db, observations) {
@@ -33417,7 +33752,6 @@ function getFlightCityLayout(city) {
           segments.length > 1 && h('p', { 'data-evidence-gap-note': 'true', style: { color: '#fde68a', margin: '8px 0' } }, segments.length === 2
             ? __alloT('stem.flightsim.evidence_chart_gap', 'The charts leave a gap longer than 4 seconds between recorded observations; conditions between those points were not recorded.')
             : __alloT('stem.flightsim.evidence_chart_gaps', 'The charts leave {count} gaps longer than 4 seconds between recorded observations; conditions between those points were not recorded.').replace('{count}', segments.length - 1)),
-          observations.some(function(row) { return row.aoa != null; }) && h('p', { style: { color: '#cbd5e1', margin: '8px 0', fontSize: '12px' } }, __alloT('stem.flightsim.evidence_angle_precision', 'Angles marked ≈ are rounded to one decimal place. Hover over an angle for its saved value; flow states and exported angles use the saved angle before rounding.')),
           first.t > 2 && h('p', { style: { color: '#fde68a', margin: '8px 0' } }, __alloT('stem.flightsim.evidence_trimmed', 'The earliest available observation is after departure. Earlier moments are not available in this log.')),
           h('label', { htmlFor: 'debrief-recorded-event', style: { display: 'block', fontWeight: 700, marginTop: '12px' } }, __alloT('stem.flightsim.evidence_event_selector', 'Jump to a recorded event')),
           h('select', { id: 'debrief-recorded-event', value: selectedEvent < 0 ? '' : String(selectedEvent), disabled: !recordedEvents.length,
@@ -33436,10 +33770,12 @@ function getFlightCityLayout(city) {
           h('label', { htmlFor: 'debrief-observation-time', style: { display: 'block', fontWeight: 700 } }, __alloT('stem.flightsim.evidence_time_control', 'Observation time')),
           h('input', { id: 'debrief-observation-time', className: 'skyschool-range', type: 'range', min: 0, max: observations.length - 1, step: 1, value: selectedIndex, disabled: observations.length === 1,
             'aria-valuetext': timeText(selected.t), onChange: function(e) { saveFlightJournalView({ debriefSampleIndex: Number(e.target.value) }); }, style: { display: 'block', width: '100%', boxSizing: 'border-box', margin: 0, minHeight: '44px', accentColor: '#38bdf8' } }),
-          h('p', { role: 'status', style: { margin: '8px 0', color: '#bae6fd', fontWeight: 700 } }, __alloT('stem.flightsim.evidence_selection', 'Observation {n} of {total} · {time}').replace('{n}', selectedIndex + 1).replace('{total}', observations.length).replace('{time}', timeText(selected.t))),
+          h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-flight-observation-selection': 'current', style: { margin: '8px 0', color: '#bae6fd', fontWeight: 700 } }, __alloT('stem.flightsim.evidence_selection', 'Observation {n} of {total} · {time}').replace('{n}', selectedIndex + 1).replace('{total}', observations.length).replace('{time}', timeText(selected.t))),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' } },
-            h('button', { style: buttonStyle, disabled: selectedIndex === 0, onClick: function() { saveFlightJournalView(function(state) { return { debriefSampleIndex: Math.max(0, Math.min(observations.length - 1, Math.floor(Number(state.debriefSampleIndex) || 0)) - 1) }; }); } }, __alloT('stem.flightsim.evidence_previous', 'Previous observation')),
-            h('button', { style: buttonStyle, disabled: selectedIndex === observations.length - 1, onClick: function() { saveFlightJournalView(function(state) { return { debriefSampleIndex: Math.min(observations.length - 1, Math.max(0, Math.floor(Number(state.debriefSampleIndex) || 0)) + 1) }; }); } }, __alloT('stem.flightsim.evidence_next', 'Next observation')),
+            // Boundary actions stay focusable; their visible state and the live
+            // journal updater both keep repeated steps within this recording.
+            h('button', { type: 'button', 'data-current-observation-step': 'previous', style: Object.assign({}, buttonStyle, { cursor: selectedIndex === 0 ? 'default' : 'pointer' }), 'aria-disabled': selectedIndex === 0, onClick: function() { if (selectedIndex === 0) return; saveFlightJournalView(function(state) { return { debriefSampleIndex: Math.max(0, Math.min(observations.length - 1, Math.floor(Number(state.debriefSampleIndex) || 0)) - 1) }; }); } }, __alloT('stem.flightsim.evidence_previous', 'Previous observation')),
+            h('button', { type: 'button', 'data-current-observation-step': 'next', style: Object.assign({}, buttonStyle, { cursor: selectedIndex === observations.length - 1 ? 'default' : 'pointer' }), 'aria-disabled': selectedIndex === observations.length - 1, onClick: function() { if (selectedIndex === observations.length - 1) return; saveFlightJournalView(function(state) { return { debriefSampleIndex: Math.min(observations.length - 1, Math.max(0, Math.floor(Number(state.debriefSampleIndex) || 0)) + 1) }; }); } }, __alloT('stem.flightsim.evidence_next', 'Next observation')),
             h('button', { style: buttonStyle, onClick: function() { saveFlightJournalView({ debriefCompareIndex: selectedIndex }, function(state) { return Math.max(0, Math.min(observations.length - 1, Math.floor(Number(state.debriefSampleIndex) || 0))) === selectedIndex; }); } }, __alloT('stem.flightsim.evidence_set_comparison', 'Use this moment for comparison'))
           ),
           h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(135px,100%),1fr))', gap: '8px', margin: '12px 0' } }, [
@@ -33454,6 +33790,7 @@ function getFlightCityLayout(city) {
             [__alloT('stem.flightsim.evidence_state', 'Recorded state'), stateText(selected)]
           ].map(function(item) { return h('div', { key: item[0], style: { minWidth: 0, padding: '10px', border: '1px solid #475569', borderRadius: '8px', background: '#172033', overflowWrap: 'anywhere' } }, h('dt', { style: { color: '#cbd5e1', fontSize: '12px' } }, item[0]), h('dd', { style: { margin: '4px 0 0', color: '#fff', fontWeight: 700 } }, item[1])); })),
           h('p', { 'data-evidence-comparison': 'true', title: angleChange == null ? undefined : String(angleChange) + '°', style: { padding: '12px', borderLeft: '3px solid #c4b5fd', background: '#172033', color: '#ede9fe' } }, __alloT('stem.flightsim.evidence_comparison', 'Compared with {time}: altitude {alt}; true airspeed {speed}; angle of attack {aoa}.').replace('{time}', timeText(reference.t)).replace('{alt}', changeText(selected.alt - reference.alt, ' ft')).replace('{speed}', changeText(selected.spd - reference.spd, ' kts')).replace('{aoa}', angleChangeText)),
+          renderFlightExactAngles(selected, reference, 'current', timeText),
           renderFlightControlComparison(observations, selectedIndex, comparisonIndex, 'current'),
           h('details', null,
             h('summary', { style: { minHeight: '44px', alignContent: 'center', cursor: 'pointer', color: '#bae6fd', fontWeight: 700 } }, __alloT('stem.flightsim.evidence_table', 'Recorded observations table')),
@@ -33463,14 +33800,7 @@ function getFlightCityLayout(city) {
               h('tbody', null, observations.slice(tableStart, tableStart + 10).map(function(row, index) { return h('tr', { key: row.t, style: { background: tableStart + index === selectedIndex ? '#1e3a5f' : 'transparent' } }, [timeText(row.t), valueText(row.alt, ' ft'), valueText(row.spd, ' kts'), valueText(row.fpm, ' fpm'), angleText(row.aoa), stateText(row), valueText(row.pitch, '°', 1)].map(function(value, column) { return h(column === 0 ? 'th' : 'td', { key: column, scope: column === 0 ? 'row' : undefined, style: { textAlign: 'left', padding: '8px', borderBottom: '1px solid #334155', fontWeight: column === 0 ? 700 : 400 } }, value); })); }))
             ))
           ),
-          h('button', { style: Object.assign({}, buttonStyle, { marginTop: '12px' }), onClick: function() {
-            var blob = new Blob([flightEvidenceCsv(observations, db)], { type: 'text/csv' });
-            var url = URL.createObjectURL(blob);
-            var link = document.createElement('a'); link.href = url; link.download = 'flight_data_' + new Date().toISOString().slice(0, 10) + '.csv';
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-            if (addToast) addToast(__alloT('stem.flightsim.toast_data_exported', '📊 Flight data exported!'), 'success');
-          } }, __alloT('stem.flightsim.export_flight_data_csv', '📊 Export Flight Data (CSV)'))
+          renderObservationDownload('current', __alloT('stem.flightsim.export_flight_data_csv', '📊 Export Flight Data (CSV)'), Object.assign({}, buttonStyle, { marginTop: '12px' }))
         );
       };
 
@@ -33513,6 +33843,9 @@ function getFlightCityLayout(city) {
           return { minHeight: '27px', padding: '5px 10px', borderRadius: '999px', background: 'rgba(2,6,23,0.7)', color: color, border: '1px solid ' + color + '44', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)', fontSize: '10px', fontWeight: 850, letterSpacing: '0.02em', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' };
         };
         var railOpen = d.railCollapsed === false;
+        var statusSession = flightSessionRef.current, statusControls = controlsRef.current;
+        var requestedFlightStatus = flightStatusSnapshot && flightStatusSnapshot.session === statusSession
+          && flightStatusSnapshot.controls === statusControls ? flightStatusSnapshot.text : '';
         var sprintResultReady = !sprintRef.current.active && sprintRef.current.phase === 'result';
         // Takeoff card: rotorcraft lift vertically — no runway roll, no Vr.
         var tkRotor = !!(currentAC.isHelicopter || currentAC.isDrone);
@@ -33589,7 +33922,7 @@ function getFlightCityLayout(city) {
           // The scrollport must show the whole collapsed Pause/Help row, and
           // the command rail stays ahead of optional lesson/status content.
           h('style', null, '@media(min-width:568px) and (max-width:820px) and (max-height:520px){#skyschool-flight-container .skyschool-hud-dock{left:88px!important;right:auto!important;width:144px!important;box-sizing:border-box;max-height:max(68px,calc(100% - 178px))!important}#skyschool-flight-container .skyschool-hud-dock> *{flex-shrink:0}#skyschool-flight-container .skyschool-command-rail{order:-1!important;width:100%!important;max-width:100%!important;min-width:0;box-sizing:border-box;grid-template-columns:minmax(0,1fr)!important;padding:3px!important}#skyschool-flight-container .skyschool-command-rail .skyschool-rail-label{flex-wrap:nowrap!important;gap:3px!important;justify-content:center!important}#skyschool-flight-container .skyschool-rail-label>span{display:none}#skyschool-flight-container .skyschool-rail-label>button{flex-shrink:0}#skyschool-flight-container .skyschool-rail-label>button[aria-expanded]{width:28px;height:28px;min-height:28px;padding:0!important}#skyschool-flight-container .skyschool-rail-collapsed .skyschool-rail-label>button:not([aria-expanded]){width:44px;height:44px;padding:0!important}#skyschool-flight-container .skyschool-caption-short{display:inline}#skyschool-flight-container .skyschool-caption-long{display:none}#skyschool-flight-container .skyschool-command-rail>button{min-height:44px!important;min-width:0;white-space:normal;overflow-wrap:anywhere}#skyschool-flight-container .skyschool-command-rail select{min-width:0;max-width:100%;box-sizing:border-box}#skyschool-flight-container .skyschool-command-rail label{min-width:0;overflow-wrap:anywhere}#skyschool-flight-container [data-flight-yaw-controls]{grid-template-columns:1fr!important}}'),
-          !d.showHelp && h('div', { className: 'skyschool-hud-dock', ref: hudDockRef, 'data-flightsim-hud-dock': 'true', style: { position: 'absolute', top: '66px', left: '10px', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '6px', width: railOpen ? '224px' : 'auto', maxHeight: 'calc(100% - 285px)', overflowY: 'auto', scrollbarWidth: 'thin', padding: '3px' } },
+          !d.showHelp && h('div', { className: 'skyschool-hud-dock', ref: hudDockRef, 'data-flightsim-hud-dock': 'true', style: { position: 'absolute', top: '66px', left: '10px', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '6px', width: railOpen ? '224px' : 'auto', maxHeight: 'calc(100% - 285px)', overflowY: 'auto', scrollbarWidth: 'thin', padding: '3px', scrollPadding: '8px' } },
           // Status chips. This was a five-line stack of shouting uppercase
           // diagnostics — "● RENDER · CANVAS", "WORLD · TEMPERATE LOWLANDS" —
           // stacked under a seven-button rail, and RENDER in particular is a
@@ -33705,6 +34038,15 @@ function getFlightCityLayout(city) {
               style: flightGlassButton(pausedUi, '#fbbf24')
             }, sprintResultReady ? __alloT('stem.flightsim.replay_geography_sprint', 'Replay geography sprint') : pausedUi ? __alloT('stem.flightsim.caption_resume', "▶ Resume") : __alloT('stem.flightsim.caption_pause', "⏸ Pause")),
             railOpen && renderTapFlightControls(),
+            railOpen && h('div', { 'data-flight-status-reader': 'true', style: { gridColumn: '1 / -1', minWidth: 0 } },
+              h('button', { ref: flightStatusButtonRef, type: 'button', 'data-flight-read-status': 'true', 'aria-controls': 'skyschool-flight-status',
+                onClick: function(event) { requestFlightStatus(statusSession, statusControls, event.currentTarget); },
+                style: Object.assign({}, flightGlassButton(false, '#7dd3fc'), { minHeight: '44px', width: '100%', boxSizing: 'border-box', overflowWrap: 'anywhere', scrollMargin: '8px' })
+              }, __alloT('stem.flightsim.read_flight_status', 'Read flight status')),
+              h('div', { id: 'skyschool-flight-status', 'data-flight-status-snapshot': 'true', 'aria-live': 'off', hidden: !requestedFlightStatus,
+                style: { marginTop: '8px', padding: '10px', background: '#0f172a', color: '#f8fafc', border: '1px solid #7dd3fc', borderRadius: '8px', fontSize: '13px', lineHeight: 1.6, overflowWrap: 'anywhere' } },
+                h('p', { 'data-flight-status-note': 'true', style: { margin: '0 0 8px', color: '#bae6fd' } }, __alloT('stem.flightsim.status_snapshot_note', 'Snapshot from your last request. Read flight status again to update. You can pause flight while reading.')),
+                h('p', { 'data-flight-status-text': 'true', style: { margin: 0 } }, requestedFlightStatus))),
             railOpen && h('button', { onClick: toggleFlightAssistance, 'data-flight-assistance': 'true',
               'aria-pressed': assistanceActive, 'aria-describedby': assistanceActive ? 'skyschool-assistance-targets' : undefined,
               disabled: pausedUi || !!sprintRef.current.active || sprintResultReady || assistanceGroundedUi && !assistanceActive,
@@ -34940,7 +35282,7 @@ function getFlightCityLayout(city) {
           id: 'skyschool-quiz', 'data-flightsim-quiz-deck': 'true',
           style: { minHeight: 0, minWidth: 0, boxSizing: 'border-box', containerType: 'inline-size', containerName: 'skyschool-quiz', overflowWrap: 'anywhere', height: 'calc(100vh - 80px)', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 85% 0%, rgba(124,58,237,0.36), transparent 30%), linear-gradient(145deg, #07111f, #172554 58%, #0c1630)', borderRadius: '16px', padding: 'clamp(12px, 4%, 24px)', overflow: 'auto', color: '#fff', scrollbarColor: '#8b5cf6 #0f172a' }
         },
-          h('style', null, '#skyschool-quiz button{min-width:0;max-width:100%;min-height:44px;box-sizing:border-box;overflow-wrap:anywhere;white-space:normal;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}#skyschool-quiz button:not(:disabled):hover{transform:translateY(-1px);filter:brightness(1.08)}#skyschool-quiz button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:620px){.skyschool-quiz-nav{display:grid!important;grid-template-columns:minmax(0,1fr)!important}.skyschool-quiz-nav>div{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr))}.skyschool-quiz-nav button{width:100%}}@container skyschool-quiz (max-width:620px){.skyschool-quiz-nav{display:grid!important;grid-template-columns:minmax(0,1fr)!important}.skyschool-quiz-nav>div{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr))}.skyschool-quiz-nav button{width:100%}}'),
+          h('style', null, '#skyschool-quiz button{min-width:0;max-width:100%;min-height:44px;box-sizing:border-box;overflow-wrap:anywhere;white-space:normal;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}#skyschool-quiz button:not(:disabled):not([aria-disabled="true"]):hover{transform:translateY(-1px);filter:brightness(1.08)}#skyschool-quiz button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:620px){.skyschool-quiz-nav{display:grid!important;grid-template-columns:minmax(0,1fr)!important}.skyschool-quiz-nav>div{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr))}.skyschool-quiz-nav button{width:100%}}@container skyschool-quiz (max-width:620px){.skyschool-quiz-nav{display:grid!important;grid-template-columns:minmax(0,1fr)!important}.skyschool-quiz-nav>div{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr))}.skyschool-quiz-nav button{width:100%}}'),
           // Header
           h('div', { style: { display: 'flex', flexWrap: 'wrap', minWidth: 0, alignItems: 'center', gap: '12px', marginBottom: '20px' } },
             h('button', {
@@ -35028,9 +35370,11 @@ function getFlightCityLayout(city) {
                   else if (oi === qPicked) { bg = 'rgba(220,38,38,0.2)'; border = '#dc2626'; color = '#fca5a5'; }
                 }
                 return h('button', {
-                  key: oi,
+                  key: oi, type: 'button',
                   onClick: function() { pickAnswer(oi); },
-                  disabled: answered,
+                  // Keep the chosen answer focused and readable after saving.
+                  // pickAnswer also rejects repeats against the live attempt.
+                  'aria-disabled': answered,
                   'aria-pressed': oi === qPicked,
                   'aria-label': __alloT('stem.flightsim.answer_choice', 'Answer {letter}: {text}').replace('{letter}', String.fromCharCode(65 + oi)).replace('{text}', opt),
                   style: {
@@ -35043,9 +35387,8 @@ function getFlightCityLayout(city) {
                 },
                   // The letter used to inherit the button's pale red/green text and
                   // sit on the SOLID red/green pill — 2.54:1 and 2.35:1. These
-                  // buttons are `disabled` once answered, which WCAG 1.4.3 would
-                  // exempt, but that exemption is for controls you cannot use, not
-                  // for the feedback telling a student which answer was right.
+                  // answers remain readable once unavailable: the result is
+                  // feedback telling a student which answer was right.
                   // Darker pill + white letter: 6.5:1 and 5.0:1.
                   h('span', { style: { width: '30px', height: '30px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '13px', fontWeight: 900, color: answered && (thisCorrect || oi === qPicked) ? '#fff' : 'inherit', background: answered && thisCorrect ? '#15803d' : answered && oi === qPicked ? '#b91c1c' : 'rgba(99,102,241,0.2)', border: '1px solid ' + border } }, String.fromCharCode(65 + oi)),
                   h('span', { style: { flex: 1, minWidth: 0 } }, opt),
@@ -35347,6 +35690,18 @@ function getFlightCityLayout(city) {
       // FORCE CALCULATOR VIEW — interactive lift/drag computation
       // ═══════════════════════════════════════════════════════════════
       if (view === 'calculator') {
+        function calculatorBalanceText(value) {
+          var closeToWeight = Math.abs(value - 1) < 0.005;
+          return {
+            label: closeToWeight ? __alloT('stem.flightsim.lift_balanced', 'Lift approximately balances weight')
+              : value > 1 ? __alloT('stem.flightsim.lift_above_weight', 'Lift exceeds weight') : __alloT('stem.flightsim.lift_below_weight', 'Lift is below weight'),
+            explanation: closeToWeight
+              ? __alloT('stem.flightsim.lift_balanced_explanation', 'With lift vertical and no other vertical force, vertical acceleration is approximately zero. This does not tell us whether the aircraft is already climbing, level, or descending.')
+              : value > 1
+                ? __alloT('stem.flightsim.lift_above_explanation', 'With lift vertical and no other vertical force, the net force accelerates the aircraft upward. An existing descent can slow before a climb begins.')
+                : __alloT('stem.flightsim.lift_below_explanation', 'With lift vertical and no other vertical force, the net force accelerates the aircraft downward. An existing climb can slow before a descent begins.')
+          };
+        }
         var calculatorCondition = flightCalculatorCondition(d);
         var calculatorInputs = calculatorCondition.inputs;
         var calcPreset = calculatorInputs.calcPreset;
@@ -35368,13 +35723,9 @@ function getFlightCityLayout(city) {
         var ratio = calculatorCondition.liftWeightRatio;
         var balanced = Math.abs(ratio - 1) < 0.005;
         var balanceColor = balanced ? '#86efac' : '#fbbf24';
-        var balanceLabel = balanced ? __alloT('stem.flightsim.lift_balanced', 'Lift approximately balances weight')
-          : (ratio > 1 ? __alloT('stem.flightsim.lift_above_weight', 'Lift exceeds weight') : __alloT('stem.flightsim.lift_below_weight', 'Lift is below weight'));
-        var balanceExplanation = balanced
-          ? __alloT('stem.flightsim.lift_balanced_explanation', 'With lift vertical and no other vertical force, vertical acceleration is approximately zero. This does not tell us whether the aircraft is already climbing, level, or descending.')
-          : (ratio > 1
-            ? __alloT('stem.flightsim.lift_above_explanation', 'With lift vertical and no other vertical force, the net force accelerates the aircraft upward. An existing descent can slow before a climb begins.')
-            : __alloT('stem.flightsim.lift_below_explanation', 'With lift vertical and no other vertical force, the net force accelerates the aircraft downward. An existing climb can slow before a descent begins.'));
+        var balanceText = calculatorBalanceText(ratio);
+        var balanceLabel = balanceText.label;
+        var balanceExplanation = balanceText.explanation;
 
         var calculatorComparison = flightCalculatorComparison(calculatorInputs, d.calcReference);
         var calculatorReferenceLabel = __alloT('stem.flightsim.guided_reference_conditions', 'Reference conditions');
@@ -35383,13 +35734,53 @@ function getFlightCityLayout(city) {
           calcSpeed: __alloT('stem.flightsim.guided_practice_tas_units', 'True airspeed (kts)'),
           calcAltitude: __alloT('stem.flightsim.evidence_altitude_axis', 'Altitude · ft MSL'),
           calcWingArea: __alloT('stem.flightsim.wing_area', 'Wing area'),
-          calcCl: 'Cₗ'
+          calcCl: __alloT('stem.flightsim.calculator_lift_coefficient', 'Lift coefficient (Cₗ)')
         };
+        var requestedCalculatorResult = calculatorResultCurrent(calculatorResult) ? calculatorResult.text : '';
+        function readCalculatorResults(event) {
+          var node = event.currentTarget, lane = calculatorWritesRef.current, live = liveCalculatorData();
+          if (!skyA11yRef.current || !skyA11yRef.current.isConnected || node !== calculatorReadButtonRef.current
+              || !node.isConnected || live.view !== 'calculator' || calculatorRenderRef.current.revision !== calculatorRenderRevision) return;
+          // Read the ordered pending inputs too. Matching host receipts keep
+          // this summary; rejected or superseded edits retire it before speech.
+          var result = { owner: lane.owner, proof: lane.headProof, key: calculatorStateKey(live) };
+          var condition = flightCalculatorCondition(live), inputs = condition.inputs;
+          var namedPreset = FORCE_CALCULATOR_PRESETS[inputs.calcPreset];
+          var balance = calculatorBalanceText(condition.liftWeightRatio);
+          function number(value, decimals) {
+            if (Math.abs(value) < Math.pow(10, -decimals) / 2) value = 0;
+            return value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+          }
+          var text = __alloT('stem.flightsim.calculator_read_inputs', '{aircraft}. True airspeed {speed} knots. Altitude {altitude} feet above sea level. Wing area {area} square feet. Lift coefficient {coefficient}.')
+            .replace('{aircraft}', namedPreset.name).replace('{speed}', number(inputs.calcSpeed, 0)).replace('{altitude}', number(inputs.calcAltitude, 0))
+            .replace('{area}', number(inputs.calcWingArea, 0)).replace('{coefficient}', number(inputs.calcCl, 2))
+            + ' ' + __alloT('stem.flightsim.calculator_read_outputs', 'Air density {density} slugs per cubic foot. Lift {lift} pounds. Aircraft weight {weight} pounds. Lift-to-weight ratio {ratio}.')
+              .replace('{density}', number(condition.density, 5)).replace('{lift}', number(condition.liftLb, 0)).replace('{weight}', number(condition.weightLb, 0)).replace('{ratio}', number(condition.liftWeightRatio, 2))
+            + ' ' + balance.label + '. ' + balance.explanation;
+          var comparison = flightCalculatorComparison(live, live.calcReference);
+          if (comparison) {
+            function names(keys) { return keys.length ? keys.map(function(key) { return calculatorInputLabels[key]; }).join(', ') : __alloT('stem.flightsim.guided_compare_none', 'None'); }
+            text += ' ' + __alloT('stem.flightsim.guided_compare_variables', 'Changed: {changed}. Held fixed: {held}.')
+              .replace('{changed}', names(comparison.changed)).replace('{held}', names(comparison.held));
+            text += ' ' + __alloT('stem.flightsim.calculator_read_reference', 'Reference lift {reference} pounds. Change in lift {change} pounds.')
+              .replace('{reference}', number(comparison.reference.liftLb, 0)).replace('{change}', (comparison.liftChange >= 0.5 ? '+' : '') + number(comparison.liftChange, 0));
+            text += ' ' + (comparison.liftFactor == null
+              ? __alloT('stem.flightsim.calculator_read_zero_reference', 'Reference lift is zero, so a lift multiplier cannot be calculated.')
+              : __alloT('stem.flightsim.calculator_read_factor', 'Current lift is {factor} times the reference lift.').replace('{factor}', number(comparison.liftFactor, 2)));
+          } else {
+            text += ' ' + __alloT('stem.flightsim.calculator_read_no_reference', 'No usable reference conditions are saved.');
+          }
+          result.text = text;
+          calculatorResultRef.current = result;
+          calculatorResultState[1](result);
+          skyAnnounce(text, 'requested', function() { return calculatorResultCurrent(result); });
+        }
         function saveCalculatorReference() {
           commitCalculatorPatch(function(state) { return { calcReference: normalizeFlightCalculatorInputs(state) }; });
         }
-        function clearCalculatorReference() {
-          commitCalculatorPatch(function() { return { calcReference: null }; });
+        function clearCalculatorReference(event) {
+          if (event && event.currentTarget && event.currentTarget.getAttribute('aria-disabled') === 'true') return;
+          commitCalculatorPatch(function(state) { return state.calcReference == null ? null : { calcReference: null }; });
         }
         function renderCalculatorComparison() {
           if (!calculatorComparison) return h('p', { style: { margin: '12px 0 0', color: '#cbd5e1' } }, __alloT('stem.flightsim.evidence_not_recorded', 'Not recorded'));
@@ -35429,7 +35820,7 @@ function getFlightCityLayout(city) {
               __alloT('stem.flightsim.lift_force', 'Lift force') + ' · ' +
               __alloT('stem.flightsim.journal_latest_value', 'Latest: {value}').replace('{value}', 'L') + ' / ' +
               __alloT('stem.flightsim.journal_earlier_value', 'Earlier: {value}').replace('{value}', 'L') + ' = ',
-              h('output', { 'data-flight-calculator-lift-factor': 'true' }, calculatorComparison.liftFactor == null ? __alloT('stem.flightsim.evidence_not_recorded', 'Not recorded') : calculatorComparison.liftFactor.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '×'))
+              h('span', { 'data-flight-calculator-lift-factor': 'true', 'aria-live': 'off' }, calculatorComparison.liftFactor == null ? __alloT('stem.flightsim.evidence_not_recorded', 'Not recorded') : calculatorComparison.liftFactor.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '×'))
           );
         }
 
@@ -35511,12 +35902,19 @@ function getFlightCityLayout(city) {
               slider('speed', calculatorInputLabels.calcSpeed, calcSpeed, 0, preset.maxSpeed * 1.5, 1, function(v) { setCalculatorInput('calcSpeed', v); }, 'kts'),
               slider('altitude', __alloT('stem.flightsim.guided_altitude_label', 'Altitude'), calcAltitude, 0, 50000, 500, function(v) { setCalculatorInput('calcAltitude', v); }, 'ft MSL'),
               slider('wing-area', calculatorInputLabels.calcWingArea, calcWingArea, 5, Math.max(600, Math.ceil(preset.wingArea * 1.5)), 1, function(v) { setCalculatorInput('calcWingArea', v); }, 'ft²'),
-              slider('lift-coefficient', 'Lift coefficient (Cₗ)', calcCl, 0.1, 2.0, 0.05, function(v) { setCalculatorInput('calcCl', v); }, '')
+              slider('lift-coefficient', calculatorInputLabels.calcCl, calcCl, 0.1, 2.0, 0.05, function(v) { setCalculatorInput('calcCl', v); }, '')
             ),
 
             // Outputs
             h('div', { style: { minWidth: 0, boxSizing: 'border-box', padding: 'clamp(10px,4%,16px)', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', border: '1px solid #1e293b' } },
               h('h3', { style: { fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '14px' } }, __alloT('stem.flightsim.outputs', 'Outputs')),
+              h('button', { ref: calculatorReadButtonRef, type: 'button', 'data-flight-calculator-read-results': 'true', 'aria-controls': 'skyschool-calculator-results', 'aria-describedby': 'skyschool-calculator-read-help',
+                onClick: readCalculatorResults, style: { minHeight: '44px', padding: '10px 14px', border: '1px solid #7dd3fc', borderRadius: '8px', background: '#0c4a6e', color: '#fff', font: 'inherit', fontWeight: 700, cursor: 'pointer', scrollMargin: '8px' }
+              }, __alloT('stem.flightsim.calculator_read_results', 'Read results')),
+              h('p', { id: 'skyschool-calculator-read-help', style: { margin: '10px 0', color: '#cbd5e1', fontSize: '13px', lineHeight: 1.6 } }, __alloT('stem.flightsim.calculator_read_help', 'Read a summary of the current inputs, lift, weight, and saved comparison. Changing the inputs or reference clears the summary.')),
+              h('div', { id: 'skyschool-calculator-results', 'data-flight-calculator-results': 'true', 'aria-live': 'off', hidden: !requestedCalculatorResult,
+                style: { margin: '12px 0', padding: '12px', border: '1px solid #7dd3fc', borderRadius: '8px', background: '#0f172a', color: '#f8fafc', fontSize: '14px', lineHeight: 1.65, overflowWrap: 'anywhere' } },
+                h('p', { 'data-flight-calculator-result-text': 'true', style: { margin: 0 } }, requestedCalculatorResult)),
               h('div', { style: { marginBottom: '12px' } },
                 h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.air_density', 'Air density')),
                 h('div', { style: { fontSize: '15px', color: '#22d3ee', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, rho.toFixed(5) + ' slug/ft³'),
@@ -35545,7 +35943,11 @@ function getFlightCityLayout(city) {
             h('h3', { id: 'skyschool-calculator-reference-title', style: { margin: '0 0 12px', color: '#fff', fontSize: '16px' } }, calculatorReferenceLabel),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
               h('button', { type: 'button', 'data-flight-calculator-reference-action': 'save', onClick: saveCalculatorReference, style: { minHeight: '44px', maxWidth: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #7dd3fc', background: '#0c4a6e', color: '#fff', font: 'inherit', cursor: 'pointer', textAlign: 'start' } }, __alloT('common.save', 'Save') + ' · ' + calculatorReferenceLabel),
-              h('button', { type: 'button', 'data-flight-calculator-reference-action': 'clear', onClick: clearCalculatorReference, disabled: d.calcReference == null, style: { minHeight: '44px', maxWidth: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #94a3b8', background: '#172033', color: '#fff', font: 'inherit', cursor: d.calcReference == null ? 'default' : 'pointer', textAlign: 'start', opacity: d.calcReference == null ? 0.5 : 1 } }, __alloT('common.clear', 'Clear') + ' · ' + calculatorReferenceLabel)),
+              h('button', { type: 'button', 'data-flight-calculator-reference-action': 'clear', onClick: clearCalculatorReference, 'aria-disabled': d.calcReference == null, style: { minHeight: '44px', maxWidth: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #94a3b8', background: '#172033', color: d.calcReference == null ? '#94a3b8' : '#fff', font: 'inherit', cursor: d.calcReference == null ? 'default' : 'pointer', textAlign: 'start' } }, __alloT('common.clear', 'Clear') + ' · ' + calculatorReferenceLabel)),
+            h('p', { id: 'skyschool-calculator-reference-status', 'data-flight-calculator-reference-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { margin: '12px 0 0', color: '#cbd5e1', lineHeight: 1.6, overflowWrap: 'anywhere' } },
+              d.calcReference == null ? __alloT('stem.flightsim.calculator_reference_empty_status', 'No reference conditions are saved.')
+                : calculatorComparison ? __alloT('stem.flightsim.calculator_reference_saved_status', 'Reference conditions are saved for comparison.')
+                : __alloT('stem.flightsim.calculator_reference_invalid_status', 'Saved reference conditions are unavailable. Save a new reference or clear them.')),
             renderCalculatorComparison()),
 
           // Pedagogical reminder
@@ -35614,7 +36016,11 @@ function getFlightCityLayout(city) {
           h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', margin: '8px 0' } }, columns.map(function(label, index) {
             return h('div', { key: label }, h('dt', { style: { color: '#cbd5e1', fontSize: '13px' } }, label), h('dd', { title: index === 1 ? String(selected.aoa) + '°' : undefined, style: { margin: '4px 0 0', color: '#f8fafc', fontWeight: 700, overflowWrap: 'anywhere' } }, String(values[index])));
           })),
-          h('p', { style: { color: '#cbd5e1', fontSize: '14px', margin: '12px 0' } }, __alloT('stem.flightsim.guided_practice_angle_precision', 'Displayed angles are rounded to two decimal places; flow states use the saved angle before rounding.')),
+          h('details', { 'data-flight-exact-angles': 'practice-' + scope, 'aria-live': 'off', style: { minWidth: 0, margin: '12px 0', padding: '10px', border: '1px solid #64748b', borderRadius: '8px', background: '#172033', color: '#f8fafc', overflowWrap: 'anywhere' } },
+            h('summary', { style: { minHeight: '44px', alignContent: 'center', cursor: 'pointer', color: '#bae6fd', fontWeight: 700 } }, scopedLabel(__alloT('stem.flightsim.evidence_exact_angles', 'Exact saved angles'))),
+            h('p', { style: { color: '#cbd5e1', fontSize: '14px', margin: '8px 0' } }, __alloT('stem.flightsim.guided_practice_angle_precision', 'Displayed angles are rounded to two decimal places; flow states use the saved angle before rounding.')),
+            h('p', { 'data-exact-angle': 'selected', style: { margin: '8px 0 0', fontWeight: 700 } },
+              __alloT('stem.flightsim.guided_angle_label', 'Angle of attack') + ': ' + __alloT('stem.flightsim.tap_degrees_value', '{value} degrees').replace('{value}', String(selected.aoa)))),
           h('p', { style: { color: '#cbd5e1', fontSize: '14px', margin: '12px 0' } }, __alloT('stem.flightsim.guided_practice_single_point_limit', 'One normal-flow point does not establish sustained recovery. The session summary records whether five continuous seconds were observed.')),
           h('div', { role: 'region', tabIndex: 0, 'data-stall-practice-region': earlierScope ? 'earlier' : 'true', 'aria-label': scopedLabel(__alloT('stem.flightsim.guided_practice_table_region', 'Flight practice observations table')), style: { overflowX: 'auto', maxWidth: '100%' } },
             h('table', { style: { minWidth: '540px', width: '100%', borderCollapse: 'collapse', fontSize: '14px' } },
@@ -35696,23 +36102,41 @@ function getFlightCityLayout(city) {
           } });
         }
         function exportIQ() {
-          if (!isCurrentIQAction()) return;
+          if (!investigationExportRef.current.mounted || !isCurrentIQAction()) return;
+          var exportRequest = { id: ++investigationExportRef.current.sequence, owner: investigationActionOwnerToken,
+            revision: investigationRevision, phase: iq.phase };
+          investigationExportRef.current.request = exportRequest;
+          setInvestigationExportFeedback(null);
           var owner = JSON.stringify(liveIQ()), drafts = Object.assign({}, investigationNumberDraftRef.current), draftKey = JSON.stringify(drafts);
           var writes = investigationWritesRef.current.pending, priorWrite = writes.length ? writes[writes.length - 1] : null;
           function download(expected) {
-            if (!isCurrentIQAction(expected) || JSON.stringify(stallInvestigationRecord(investigationRecordSource(dataRef.current))) !== expected ||
+            if (!isCurrentInvestigationExport(exportRequest) || !isCurrentIQAction(expected) || JSON.stringify(stallInvestigationRecord(investigationRecordSource(dataRef.current))) !== expected ||
                 JSON.stringify(investigationNumberDraftRef.current) !== draftKey) return;
-            if (Object.keys(drafts).length) {
-              investigationNumberDraftRef.current = {};
-              setInvestigationNumberDrafts({});
+            var resource = { url: null, anchor: null, timer: null }, started = false;
+            investigationExportRef.current.resources.push(resource);
+            try {
+              var blob = new Blob([JSON.stringify(liveIQ(), null, 2)], { type: 'application/json' });
+              resource.url = URL.createObjectURL(blob);
+              resource.anchor = document.createElement('a');
+              resource.anchor.href = resource.url; resource.anchor.download = 'skyschool-stall-investigation.json';
+              document.body.appendChild(resource.anchor); resource.anchor.click();
+              started = true;
+              if (Object.keys(drafts).length) {
+                investigationNumberDraftRef.current = {};
+                setInvestigationNumberDrafts({});
+              }
+            } catch (e) {
+              // A browser can refuse a download. Keep the activity and drafts
+              // available so the learner can retry without losing their work.
+            } finally {
+              if (resource.anchor) { try { resource.anchor.remove(); } catch (e) {} resource.anchor = null; }
+              if (started) resource.timer = window.setTimeout(function() { releaseInvestigationExport(resource); }, 1000);
+              else releaseInvestigationExport(resource);
             }
-            var blob = new Blob([JSON.stringify(liveIQ(), null, 2)], { type: 'application/json' });
-            var url = URL.createObjectURL(blob), anchor = document.createElement('a');
-            anchor.href = url; anchor.download = 'skyschool-stall-investigation.json';
-            document.body.appendChild(anchor); anchor.click(); anchor.remove(); window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+            if (isCurrentInvestigationExport(exportRequest)) setInvestigationExportFeedback({ request: exportRequest, started: started });
           }
           setInvestigationAction({ ready: function() { return !priorWrite || priorWrite.status !== 'pending'; }, run: function() {
-            if (!isCurrentIQAction(owner) || JSON.stringify(investigationNumberDraftRef.current) !== draftKey) return;
+            if (!isCurrentInvestigationExport(exportRequest) || !isCurrentIQAction(owner) || JSON.stringify(investigationNumberDraftRef.current) !== draftKey) return;
             if (!Object.keys(drafts).length) { download(owner); return; }
             var next = liveIQ();
             trialControls.forEach(function(control) {
@@ -36074,7 +36498,12 @@ function getFlightCityLayout(city) {
           })),
           h('div', { 'data-stall-investigation-export': true },
             iqButton(__alloT('stem.flightsim.guided_export', 'Export investigation'), exportIQ),
-            h('p', { style: { color: '#cbd5e1', fontSize: '14px', margin: '8px 0' } }, __alloT('stem.flightsim.guided_export_scope', 'Export includes your current draft and earlier attempts. Exporting does not complete the investigation.'))),
+            h('p', { style: { color: '#cbd5e1', fontSize: '14px', margin: '8px 0' } }, __alloT('stem.flightsim.guided_export_scope', 'Export includes your current draft and earlier attempts. Exporting does not complete the investigation.')),
+            h('p', { 'data-stall-export-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { color: '#e2e8f0', fontSize: '14px', margin: '8px 0' } },
+              investigationExportFeedback && isCurrentInvestigationExport(investigationExportFeedback.request) &&
+                h('span', { key: investigationExportFeedback.request.id }, investigationExportFeedback.started ?
+                  __alloT('stem.flightsim.guided_export_started', 'Download started. Check your browser’s downloads for the file.') :
+                  __alloT('stem.flightsim.guided_export_failed', 'The download could not start. Your investigation is still here. Try Export investigation again.')))),
           h('section', { style: cardStyle, 'aria-labelledby': 'stall-phase-title' },
             h('h3', { id: 'stall-phase-title', tabIndex: -1, style: { marginTop: 0, fontSize: '22px' } }, __alloT("stem.flightsim.guided_phase_heading", "{step}. {phase}").replace('{step}', phaseIndex + 1).replace('{phase}', phaseLabels[phaseIndex])),
             iq.phase === 'predict' && h(React.Fragment, null,
@@ -36096,11 +36525,18 @@ function getFlightCityLayout(city) {
                 function change(e) { if (e.target.value === '') return; var patch = {}; patch[control.key] = Number(e.target.value); setIQ(patch); }
                 return h('div', { key: control.key }, h('label', { htmlFor: 'trial-' + control.key }, control.label),
                   h('input', { id: 'trial-' + control.key, type: 'range', min: control.min, max: control.max, step: control.step, value: iq[control.key], onChange: change, style: { width: '100%', minHeight: '44px' } }),
-                  h('input', { type: 'number', 'data-investigation-number': control.key, 'aria-label': __alloT("stem.flightsim.guided_numeric_input_label", "{label} number").replace('{label}', control.label), min: control.min, max: control.max, step: control.step,
+                  h('input', { type: 'number', 'data-investigation-number': control.key, 'aria-label': __alloT("stem.flightsim.guided_numeric_input_label", "{label} number").replace('{label}', control.label), 'aria-describedby': 'trial-' + control.key + '-number-help', min: control.min, max: control.max, step: control.step,
                     value: Object.prototype.hasOwnProperty.call(investigationNumberDrafts, control.key) ? investigationNumberDrafts[control.key] : iq[control.key],
                     onChange: function(e) { changeIQNumber(control.key, e.target.value); },
                     onBlur: flushIQNumberDrafts,
-                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); if (flushIQNumberDrafts()) e.currentTarget.blur(); } }, style: fieldStyle }));
+                    onKeyDown: function(e) {
+                      if (e.key !== 'Enter' || e.isComposing || e.nativeEvent && e.nativeEvent.isComposing) return;
+                      e.preventDefault();
+                      // Apply the draft without discarding the learner's focus.
+                      if (!e.repeat) flushIQNumberDrafts();
+                    }, style: fieldStyle }),
+                  h('p', { id: 'trial-' + control.key + '-number-help', 'data-investigation-number-help': control.key, style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: '14px', lineHeight: 1.5, overflowWrap: 'anywhere' } },
+                    __alloT("stem.flightsim.guided_numeric_input_help", "Enter {min} to {max}. Blank entries keep the saved value. Values outside this range are limited to the nearest bound when applied.").replace('{min}', control.min).replace('{max}', control.max)));
               })),
               liftCurve(),
               h('div', { role: 'status', 'aria-live': 'polite', style: { padding: '16px', background: '#172554', borderRadius: '8px', margin: '16px 0' } },

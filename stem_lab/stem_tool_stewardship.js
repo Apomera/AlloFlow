@@ -101,8 +101,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
     if (status === 'complete') return 'Complete';
     return status;
   }
+  function stewardshipAccent(color) { return ({ '#15803d': '#86efac', '#166534': '#86efac', '#a855f7': '#d8b4fe', '#dc2626': '#fca5a5', '#ef4444': '#fca5a5' })[color] || color; }
   function statusColor(status) {
-    if (status === 'notStarted') return '#64748b';
+    if (status === 'notStarted') return '#94a3b8';
     if (status === 'inProgress') return '#fbbf24';
     if (status === 'complete') return '#86efac';
     return '#94a3b8';
@@ -1031,10 +1032,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       '@media(max-width:760px){.stewardship-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.stewardship-command-top{flex-direction:column;}.stewardship-tour{white-space:normal;}}',
       '@media(max-width:520px){.stewardship-menu-shell{padding:8px 0;border-radius:14px;}.stewardship-command{padding:14px;border-radius:16px;}.stewardship-command-title{flex-direction:column;}.stewardship-primary{width:100%;}.stewardship-actions{align-items:stretch;}.stewardship-action-note{width:100%;}}',
       '@media(prefers-reduced-motion:reduce){.stewardship-primary{transition:none;}.stewardship-primary:hover{transform:none;}}',
+      "\n[data-stewardship-view]{min-width:0;overflow-wrap:anywhere;line-height:1.6;--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#a8b8cc;--allo-stem-border:#64748b}\n[data-stewardship-view] *,[data-stewardship-view] *:before,[data-stewardship-view] *:after{box-sizing:border-box}\n[data-stewardship-view] :is(button,summary){min-height:44px;min-width:44px}\n[data-stewardship-view] button{white-space:normal;line-height:1.5}\n[data-stewardship-view] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-heading]:focus{outline:3px solid #fde68a;outline-offset:3px}\n[data-stewardship-heading]{scroll-margin-block:18px}\n[data-stewardship-view] [aria-pressed=true]{border-width:3px!important}\n[data-stewardship-inquiry] input[type=range]{min-height:32px;accent-color:#facc15}\n[data-stewardship-inquiry] textarea{font-size:16px!important;line-height:1.6;min-height:100px}\n[data-stewardship-inquiry] label{font-size:13px!important;line-height:1.6}\n[data-stewardship-inquiry] [data-stewardship-inquiry-log]{font-size:12px!important;line-height:1.6!important;max-height:200px!important}\n[data-stewardship-inquiry-log] ol{margin:0;padding:0 0 0 22px}[data-stewardship-inquiry-log] li{padding:6px 2px}\n[data-stewardship-inquiry] p{opacity:1!important;font-size:13px!important;line-height:1.6!important}\n[data-stewardship-inquiry-questions]{font-size:13px!important;line-height:1.6!important}\n[data-stewardship-view^=report]{--allo-stem-text:#0f172a;--allo-stem-text-soft:#475569;--allo-stem-border:#94a3b8;color:#0f172a}\n[data-stewardship-view^=report] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-view^=report] [data-stewardship-heading]:focus{outline-color:#9a5800}\n[data-stewardship-view] [data-stewardship-primary-action]{background:#166534!important;color:#fff!important;border:1px solid #86efac!important}\n@media(max-width:600px){.stewardship-inquiry-parameters{grid-template-columns:minmax(0,1fr)!important}.stewardship-comparison-grid{grid-template-columns:minmax(0,1fr)!important}[data-stewardship-view] div[style*=\"display: flex\"]{flex-wrap:wrap}[data-stewardship-view] div[style*=\"min-width\"]{min-width:0!important}[data-stewardship-view] div[style*=\"display: grid\"]>*{min-width:0}[data-stewardship-view^=report]>div{padding:14px!important}.stewardship-metric-value{white-space:normal;overflow:visible}.stewardship-metric-label{font-size:11px}}\n@media(forced-colors:active){[data-stewardship-view] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-heading]:focus{outline-color:Highlight}[data-stewardship-view] [aria-pressed=true]{border-color:Highlight!important}[data-stewardship-view] svg text{fill:CanvasText}[data-stewardship-view] [data-stewardship-primary-action]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}\n",
+      "\n[data-stewardship-view] .stewardship-inquiry>summary:focus-visible,[data-stewardship-view] .stewardship-scenario-data>summary:focus-visible{outline-offset:-5px!important}\n.stewardship-scenario-data{margin:14px 0;border:1px solid var(--allo-stem-border,#64748b);border-radius:12px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data>summary{padding:12px 14px;cursor:pointer;font-size:14px;font-weight:700;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data p{margin:4px 14px 12px;font-size:13px;line-height:1.6;color:var(--allo-stem-text-soft,#a8b8cc)}\n.stewardship-scenario-data-scroll{margin:0 12px 12px;max-height:none;overflow:auto;scroll-margin-block:16px;border:1px solid var(--allo-stem-border,#64748b);border-radius:8px}\n[data-stewardship-view] .stewardship-scenario-data-scroll:focus-visible{outline-offset:-4px!important}\n.stewardship-scenario-data-table{width:100%;min-width:620px;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.6;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table caption{text-align:left;padding:12px;font-size:14px;font-weight:700;background:var(--allo-stem-panel,#1e293b);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table :is(th,td){padding:10px 12px;vertical-align:top;text-align:left;border-bottom:1px solid var(--allo-stem-border,#64748b);overflow-wrap:normal}\n.stewardship-scenario-data-table td{white-space:nowrap}.stewardship-scenario-data-table th{font-weight:700}.stewardship-scenario-data-detail{display:block;font-size:12px;font-weight:400;line-height:1.5;color:var(--allo-stem-text-soft,#a8b8cc);margin-top:3px}.stewardship-scenario-data-table thead{background:var(--allo-stem-panel,#1e293b)}\n.stewardship-scenario-data-table tbody tr:nth-child(even){background:rgba(148,163,184,.06)}\n@media(max-width:600px){[data-stewardship-view] [data-stewardship-report-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-report-header]>.no-print{grid-column:1/-1}}.theme-contrast [data-stewardship-report-header] [data-stewardship-heading=report]{margin-bottom:14px!important}.theme-contrast [data-stewardship-view]{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00}\n.theme-contrast [data-stewardship-inquiry-outcome],.theme-contrast [data-stewardship-report-metadata]{background:#000!important;color:#ffff00!important;border:1px solid #ffff00!important}\n.theme-contrast [data-stewardship-view] [data-stewardship-primary-action]{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast .stewardship-scenario-data :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast [data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:#ffff00}\n@media(forced-colors:active){.stewardship-scenario-data,.stewardship-scenario-data-scroll,.stewardship-scenario-data-table :is(th,td){border-color:CanvasText}.stewardship-scenario-data-table,.stewardship-scenario-data-table caption,.stewardship-scenario-data-table thead{background:Canvas;color:CanvasText}[data-stewardship-system-map] circle{fill:Canvas;stroke:CanvasText}[data-stewardship-system-map] line{stroke:CanvasText;opacity:1}[data-stewardship-inquiry-chart] rect{fill:Canvas;stroke:CanvasText}[data-stewardship-inquiry-chart] rect:nth-of-type(2){fill:Highlight;opacity:1}[data-stewardship-inquiry-chart] rect:nth-of-type(3){fill:Canvas}[data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:CanvasText!important}}\n",
+      "@media(max-width:600px){[data-stewardship-view] [data-stewardship-scenario-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-scenario-header]>span{justify-self:end}[data-stewardship-scenario-header]>div{grid-column:1/-1}}@media(forced-colors:active){[data-stewardship-view] [data-stewardship-inquiry-chart]{background:Canvas!important}[data-stewardship-view] .stewardship-scenario-data :is(table,caption,th,td){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}",
+      ".stewardship-model-explanation{margin:0 0 14px;border:1px solid var(--allo-stem-border,#64748b);border-radius:10px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}.stewardship-model-explanation>summary{padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer}[data-stewardship-view] .stewardship-model-explanation>summary:focus-visible{outline-offset:-5px!important}.stewardship-model-body{padding:0 12px 12px}.stewardship-model-body table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.6;margin-bottom:12px}.stewardship-model-body caption{text-align:left;font-weight:700;padding:8px 0}.stewardship-model-body :is(th,td){padding:8px 6px;text-align:left;vertical-align:top;border-bottom:1px solid var(--allo-stem-border,#64748b)}.stewardship-model-body td{white-space:nowrap;font-variant-numeric:tabular-nums}.stewardship-model-body th[scope=row]{font-weight:400}.stewardship-model-body [data-stewardship-model-displayed]{font-weight:700}.stewardship-model-body p{margin:8px 0}.theme-contrast .stewardship-model-explanation :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){[data-stewardship-view] .stewardship-model-explanation :is(table,caption,th,td){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}",
       '.theme-contrast .stewardship-command,.theme-contrast .stewardship-inquiry{box-shadow:none;border-width:2px;}'
     ].join('\n');
     if (document.head) document.head.appendChild(stewardshipStyle);
   }
+
+  // Only one report can own the browser print lifecycle at a time.
+  var stewardshipActivePrint = null;
 
   window.StemLab.registerTool('stewardshipHub', {
     icon: '\u267B\uFE0F',
@@ -1063,10 +1071,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
       var hub = labToolData.stewardshipHub || {};
+      var stewardshipRootRef = React.useRef(null), stewardshipFocusRequest = React.useRef(null), stewardshipReturnAction = React.useRef(null);
+      function stewardshipViewKey(state) {
+        if (state.comparing) return 'comparison:' + state.comparing.mode + (state.comparing.mode === 'viewing' ? ':' + state.comparing.a + ':' + state.comparing.b : '');
+        if (state.viewingReport) return 'report:' + state.viewingReport;
+        if (state.playingScenario) {
+          var scenarioState = state.scenarioStates && state.scenarioStates[state.playingScenario];
+          return 'scenario:' + state.playingScenario + ':' + (scenarioState && scenarioState.phase || 'briefing') + ':' + (scenarioState && scenarioState.step || 0);
+        }
+        if (state.tutorialStep !== null && state.tutorialStep !== undefined) return 'tutorial:' + Math.min(4, Math.max(0, state.tutorialStep || 0));
+        var firstVisit = !state.tutorialSeen && !state.launchedAny && !CAMPAIGNS.some(function(c) { return readCampaignState(labToolData, c).status !== 'notStarted'; });
+        return firstVisit ? 'tutorial:0' : 'hub';
+      }
+      var stewardshipView = stewardshipViewKey(hub);
+      function requestStewardshipFocus(destination, returning) {
+        var root = stewardshipRootRef.current, source = document.activeElement;
+        if (!root || !root.isConnected || !source || !root.contains(source) || root.closest('[hidden]')) return;
+        if (stewardshipView === 'hub' && destination !== 'hub') stewardshipReturnAction.current = source.getAttribute('data-stewardship-action');
+        stewardshipFocusRequest.current = { source: source, destination: destination, returnAction: returning ? stewardshipReturnAction.current : null };
+      }
+      function transitionHub(patch, returning) {
+        requestStewardshipFocus(stewardshipViewKey(Object.assign({}, hub, patch)), returning);
+        setHub(patch);
+      }
+      function stewardshipSubview(content) {
+        return h('div', { ref: stewardshipRootRef, 'data-stewardship-view': stewardshipView }, content);
+      }
+      React.useEffect(function () {
+        var wanted = stewardshipFocusRequest.current;
+        if (!wanted) return;
+        stewardshipFocusRequest.current = null;
+        var root = stewardshipRootRef.current;
+        if (!root || !root.isConnected || root.closest('[hidden]') || stewardshipView !== wanted.destination) return;
+        var active = document.activeElement;
+        if (active !== wanted.source && (active !== document.body || wanted.source.isConnected)) return;
+        var target = wanted.returnAction && Array.prototype.find.call(root.querySelectorAll('[data-stewardship-action]'), function(button) { return button.getAttribute('data-stewardship-action') === wanted.returnAction && !button.disabled && !button.closest('[hidden]'); });
+        if (!target) target = root.querySelector('[data-stewardship-heading]');
+        if (!target || !target.isConnected || target.closest('[hidden]')) return;
+        try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+        if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+        if (stewardshipView === 'hub') stewardshipReturnAction.current = null;
+      });
+      var inquiryId = 'stewardship-inquiry-' + React.useId().replace(/:/g, '');
+      var reportPrintSession = React.useRef(null);
+      var reportPrintState = React.useState(''), reportPrintError = reportPrintState[0], setReportPrintError = reportPrintState[1];
+      var reportPrintAttemptState = React.useState(0), reportPrintAttempt = reportPrintAttemptState[0], setReportPrintAttempt = reportPrintAttemptState[1];
+      React.useEffect(function() {
+        setReportPrintError('');
+        return function() { if (reportPrintSession.current) reportPrintSession.current.finish(false); };
+      }, [hub.viewingReport]);
       function setHub(patch) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { stewardshipHub: Object.assign({}, (prev && prev.stewardshipHub) || {}, patch) });
         });
+      }
+
+      function campaignPeriodLabel(campaign) {
+        return campaign.id === 'pathway' ? __alloT('stem.stewardship.period_label', 'Period') : campaign.yearField === 'week' ? __alloT('stem.stewardship.week_label', 'Week') : __alloT('stem.stewardship.year_label', 'Year');
       }
 
       // ── Campaign Comparison: pair-specific reflection prompts ──
@@ -1122,8 +1183,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         return ia < ib ? a + '+' + b : b + '+' + a;
       }
 
-      function startComparison() { setHub({ comparing: { mode: 'selecting', a: null, b: null } }); }
-      function closeComparison() { setHub({ comparing: null }); }
+      function startComparison() { transitionHub({ comparing: { mode: 'selecting', a: null, b: null } }); }
+      function closeComparison() { transitionHub({ comparing: null }, true); }
       function pickComparisonCampaign(id) {
         var cmp = hub.comparing || { mode: 'selecting', a: null, b: null };
         if (!cmp.a) {
@@ -1132,7 +1193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           // Deselect
           setHub({ comparing: { mode: 'selecting', a: null, b: null } });
         } else {
-          setHub({ comparing: { mode: 'viewing', a: cmp.a, b: id } });
+          transitionHub({ comparing: { mode: 'viewing', a: cmp.a, b: id } });
         }
       }
 
@@ -1149,11 +1210,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
-              h('button', { onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.cancel_comparison', 'Cancel comparison'),
+              h('button', { 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back_to_hub', '← Back to hub'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub', '← Back to hub')),
-              h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.compare_two_campaigns', '🔀 Compare two campaigns'))
+              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.compare_two_campaigns', '🔀 Compare two campaigns'))
             ),
-            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+            h('div', { id: inquiryId + '-comparison-selection', 'data-stewardship-comparison-selection': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
               cmp.a
                 ? 'Selected: ' + (CAMPAIGNS.find(function(c) { return c.id === cmp.a; }) || {}).label + '. Pick a second completed campaign to compare against.'
                 : 'Pick any two of your completed campaigns. The hub will show them side-by-side with a pair-specific reflection prompt.'
@@ -1162,15 +1223,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               completedSnaps.map(function(snap) {
                 var c = snap.campaign;
                 var picked = cmp.a === c.id;
-                return h('button', { key: c.id, onClick: function() { pickComparisonCampaign(c.id); },
+                return h('button', { key: c.id, 'data-stewardship-action': 'pick:' + c.id, 'aria-pressed': picked, 'aria-describedby': inquiryId + '-comparison-selection', onClick: function() { pickComparisonCampaign(c.id); },
                   style: { padding: 12, borderRadius: 10, border: '2px solid ' + (picked ? c.color : '#94a3b8'), background: picked ? c.color + '22' : '#0f172a', cursor: 'pointer', textAlign: 'left' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     h('span', { style: { fontSize: 22 } }, c.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontWeight: 800, color: c.color, fontSize: 13 } }, c.label),
+                      h('div', { style: { fontWeight: 800, color: stewardshipAccent(c.color), fontSize: 13 } }, c.label),
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, c.scale)
                     ),
-                    picked ? h('span', { style: { fontSize: 16, color: c.color } }, '✓') : null
+                    picked ? h('span', { style: { fontSize: 16, color: stewardshipAccent(c.color) } }, '✓') : null
                   )
                 );
               })
@@ -1200,12 +1261,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           var logB = stateB.yearLog || stateB.weekLog || [];
 
           function tallyRules(log) {
-            var counts = {};
-            log.forEach(function(snap) {
-              var cs = snap.cascades || snap.feedbacks || snap.cascadesFired || [];
-              cs.forEach(function(c) {
-                var k = c.id || c.msg || 'unknown';
-                counts[k] = (counts[k] || 0) + 1;
+            var counts = Object.create(null);
+            (Array.isArray(log) ? log : []).forEach(function(snap) {
+              var cs = snap && (snap.cascades || snap.feedbacks || snap.cascadesFired);
+              (Array.isArray(cs) ? cs : []).forEach(function(c) {
+                if (!c || (typeof c !== 'string' && typeof c !== 'object') || Array.isArray(c)) return;
+                var message = typeof c === 'string' ? c.trim() : typeof c.msg === 'string' ? c.msg.trim() : '';
+                var id = typeof c.id === 'string' ? c.id.trim() : '';
+                if (!message && !id) return;
+                // Stable rule IDs keep repeated events together; readers see
+                // the recorded description, including older string-only logs.
+                var k = id ? 'id:' + id : 'message:' + message;
+                if (!counts[k]) counts[k] = { count: 0, label: message || id };
+                counts[k].count += 1;
+                if (message) counts[k].label = message;
               });
             });
             return counts;
@@ -1213,14 +1282,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           var rulesA = tallyRules(logA);
           var rulesB = tallyRules(logB);
 
-          function ruleList(counts, color) {
-            var keys = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
-            if (keys.length === 0) return h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, __alloT('stem.stewardship.no_feedback_rules_fired_or_no_log_capt', 'No feedback rules fired (or no log captured).'));
-            return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          function ruleList(counts, color, headingId) {
+            var keys = Object.keys(counts).sort(function(a, b) { return counts[b].count - counts[a].count; });
+            if (keys.length === 0) return h('p', { 'data-stewardship-feedback-empty': 'true', style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, __alloT('stem.stewardship.no_feedback_rules_fired_or_no_log_capt', 'No feedback rules fired (or no log captured).'));
+            return h('ul', { 'data-stewardship-feedback-list': 'true', 'aria-labelledby': headingId, style: { margin: 0, paddingLeft: 20, listStyle: 'disc', display: 'flex', flexDirection: 'column', gap: 6 } },
               keys.map(function(k) {
-                return h('div', { key: k, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                  h('span', { style: { color: color, fontWeight: 700, marginRight: 6 } }, '· ' + counts[k] + 'x'),
-                  k
+                var recorded = counts[k].count === 1 ? __alloT('stem.stewardship.feedback_recorded_once', 'Recorded once') : __alloT('stem.stewardship.feedback_recorded_times', 'Recorded {count} times').replace('{count}', counts[k].count);
+                return h('li', { key: k, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                  h('span', { style: { color: stewardshipAccent(color), fontWeight: 700, marginRight: 6 } }, recorded + ': '),
+                  counts[k].label
                 );
               })
             );
@@ -1229,7 +1299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           function outcomeChip(c, outcome) {
             if (!outcome) return h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.no_outcome', 'No outcome'));
             return h('div', { style: { padding: 10, borderRadius: 8, background: (outcome.color || '#86efac') + '15', borderLeft: '3px solid ' + (outcome.color || '#86efac') } },
-              h('div', { style: { fontSize: 13, fontWeight: 700, color: outcome.color || '#86efac' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
+              h('div', { style: { fontSize: 13, fontWeight: 700, color: stewardshipAccent(outcome.color || '#86efac') } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
               h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } }, outcome.desc || '')
             );
           }
@@ -1239,10 +1309,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 900, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
-              h('button', { onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back_to_hub_2', 'Back to hub'),
+              h('button', { 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back', '← Back'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back', '← Back')),
-              h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison')),
-              h('button', { onClick: function() { setHub({ comparing: { mode: 'selecting', a: null, b: null } }); },
+              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison')),
+              h('button', { 'data-stewardship-action': 'pick-again', onClick: function() { transitionHub({ comparing: { mode: 'selecting', a: null, b: null } }); },
                 style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, __alloT('stem.stewardship.pick_different_pair', 'Pick different pair'))
             ),
 
@@ -1254,21 +1324,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
               }
             },
-              h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.pair_reflection', 'Pair reflection')),
+              h('div', { style: { fontSize: 11, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.pair_reflection', 'Pair reflection')),
               h('h3', { style: { margin: '0 0 6px', color: '#e9d5ff', fontSize: 16, fontWeight: 800 } }, reflection.title),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.65 } }, reflection.text)
             ) : null,
 
             // Side-by-side outcome and state cards
-            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 } },
+            h('div', { className: 'stewardship-comparison-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 } },
               [{ c: cA, s: sA, log: logA, rules: rulesA }, { c: cB, s: sB, log: logB, rules: rulesB }].map(function(side) {
-                return h('div', { key: side.c.id,
+                return h('section', { key: side.c.id, 'data-stewardship-comparison-card': side.c.id, 'aria-labelledby': inquiryId + '-comparison-' + side.c.id,
                   style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, borderLeft: '3px solid ' + side.c.color }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
                     h('span', { style: { fontSize: 24 } }, side.c.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontWeight: 800, color: side.c.color, fontSize: 14 } }, side.c.label),
+                      h('h3', { id: inquiryId + '-comparison-' + side.c.id, style: { margin: 0, fontWeight: 800, color: stewardshipAccent(side.c.color), fontSize: 14 } }, side.c.label),
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, side.c.scale)
                     )
                   ),
@@ -1276,11 +1346,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                   h('div', { style: { marginTop: 10, padding: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     h('div', null, 'Difficulty: ' + (side.s.difficulty || 'Standard')),
                     h('div', null, 'Periods played: ' + side.log.length),
-                    h('div', { style: { color: side.s.outcome && isTopTier(side.s.outcome) ? '#a855f7' : '#64748b', fontWeight: 700, marginTop: 4 } }, side.s.outcome && isTopTier(side.s.outcome) ? '🌟 Top-tier outcome' : '')
+                    h('div', { style: { color: side.s.outcome && isTopTier(side.s.outcome) ? '#d8b4fe' : '#94a3b8', fontWeight: 700, marginTop: 4 } }, side.s.outcome && isTopTier(side.s.outcome) ? '🌟 Top-tier outcome' : '')
                   ),
                   h('div', { style: { marginTop: 10 } },
-                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.feedback_rules_fired', 'Feedback rules fired')),
-                    ruleList(side.rules, side.c.color)
+                    h('h4', { id: inquiryId + '-comparison-feedback-' + side.c.id, style: { margin: '0 0 4px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.feedback_rules_fired', 'Feedback rules fired')),
+                    ruleList(side.rules, side.c.color, inquiryId + '-comparison-feedback-' + side.c.id)
                   )
                 );
               })
@@ -1325,25 +1395,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         }
       ];
 
-      function startTutorial() { setHub({ tutorialStep: 0, tutorialSeen: false }); }
+      function startTutorial() { transitionHub({ tutorialStep: 0, tutorialSeen: false }); }
       function advanceTutorial() {
         var step = (hub.tutorialStep || 0);
         if (step + 1 >= TUTORIAL_STEPS.length) {
-          setHub({ tutorialStep: null, tutorialSeen: true });
+          transitionHub({ tutorialStep: null, tutorialSeen: true }, true);
         } else {
-          setHub({ tutorialStep: step + 1 });
+          transitionHub({ tutorialStep: step + 1 });
         }
       }
       function backTutorial() {
         var step = (hub.tutorialStep || 0);
-        if (step > 0) setHub({ tutorialStep: step - 1 });
+        if (step > 0) transitionHub({ tutorialStep: step - 1 });
       }
-      function dismissTutorial() { setHub({ tutorialStep: null, tutorialSeen: true }); }
+      function dismissTutorial() { transitionHub({ tutorialStep: null, tutorialSeen: true }, true); }
 
       function renderTutorial() {
         var step = hub.tutorialStep || 0;
         if (step >= TUTORIAL_STEPS.length) step = TUTORIAL_STEPS.length - 1;
         var s = TUTORIAL_STEPS[step];
+        var tutorialNextLabel = step === TUTORIAL_STEPS.length - 1 ? __alloT('stem.stewardship.finish_tour_action', 'Got it, take me to the hub →') : __alloT('stem.stewardship.next_tour_action', 'Next →');
         return h('div', {
           // Dark shell — see hub view for WCAG rationale
           style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
@@ -1352,15 +1423,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
             h('div', null,
-              h('h2', { style: { margin: 0, color: 'var(--allo-stem-text, #166534)', fontSize: 22, fontWeight: 900 } }, __alloT('stem.stewardship.welcome_to_environmental_stewardship_c', '🌍 Welcome to Environmental Stewardship Campaigns')),
+              h('h2', { style: { margin: 0, color: 'var(--allo-stem-text, #f0fdf4)', fontSize: 22, fontWeight: 900 } }, __alloT('stem.stewardship.welcome_to_environmental_stewardship_c', '🌍 Welcome to Environmental Stewardship Campaigns')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, __alloT('stem.stewardship.a_5_step_tour_before_your_first_campai', 'A 5-step tour before your first campaign or scenario.'))
             ),
-            h('button', { onClick: dismissTutorial, 'aria-label': __alloT('stem.stewardship.skip_tutorial', 'Skip tutorial'),
+            h('button', { 'data-stewardship-action': 'tutorial-skip', onClick: dismissTutorial, 'aria-label': __alloT('stem.stewardship.skip_tour', 'Skip tour'),
               style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, __alloT('stem.stewardship.skip_tour', 'Skip tour'))
           ),
 
           // Step counter
-          h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
+          h('div', { 'aria-hidden': 'true', style: { display: 'flex', gap: 6, marginBottom: 14 } },
             TUTORIAL_STEPS.map(function(_, i) {
               return h('div', { key: i,
                 style: { flex: 1, height: 4, borderRadius: 2, background: i <= step ? '#86efac' : '#334155', transition: 'background 0.3s' }
@@ -1380,8 +1451,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
               h('span', { style: { fontSize: 36 } }, s.icon),
               h('div', null,
-                h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Step ' + (step + 1) + ' of ' + TUTORIAL_STEPS.length),
-                h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 18, fontWeight: 800 } }, s.title)
+                h('div', { id: inquiryId + '-tour-step', 'data-stewardship-tour-step': 'true', style: { fontSize: 11, color: '#86efac', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, __alloT('stem.stewardship.tour_step_counter', 'Step {step} of {total}').replace('{step}', String(step + 1)).replace('{total}', String(TUTORIAL_STEPS.length))),
+                h('h3', { tabIndex: -1, 'data-stewardship-heading': 'tutorial', 'aria-describedby': inquiryId + '-tour-step', style: { margin: '2px 0 0', color: '#fff', fontSize: 18, fontWeight: 800 } }, s.title)
               )
             ),
             h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.7 } }, s.body)
@@ -1389,12 +1460,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
           // Navigation
           h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-            step > 0 ? h('button', { onClick: backTutorial, 'aria-label': __alloT('stem.stewardship.previous_step', 'Previous step'),
+            step > 0 ? h('button', { 'data-stewardship-action': 'tutorial-back', onClick: backTutorial, 'aria-label': __alloT('stem.stewardship.back_2', '← Back'),
               style: { padding: '8px 16px', borderRadius: 10, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.back_2', '← Back')) : null,
             h('div', { style: { flex: 1 } }),
-            h('button', { onClick: advanceTutorial, 'aria-label': step === TUTORIAL_STEPS.length - 1 ? 'Finish tutorial' : 'Next step',
+            h('button', { 'data-stewardship-action': 'tutorial-next', onClick: advanceTutorial, 'aria-label': tutorialNextLabel,
               style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
-              step === TUTORIAL_STEPS.length - 1 ? 'Got it, take me to the hub →' : 'Next →')
+              tutorialNextLabel)
           )
         )); // close inner maxWidth + outer dark shell
       }
@@ -1404,9 +1475,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       // clean printable summary of that completed campaign (instead of the
       // main hub view). The report is designed for browser print preview
       // and EL-style "exhibitions of learning" portfolios.
-      function viewReport(id) { setHub({ viewingReport: id }); }
-      function closeReport() { setHub({ viewingReport: null }); }
-      function printReport() { try { window.print(); } catch (e) { /* print not available */ } }
+      function viewReport(id) { transitionHub({ viewingReport: id }); }
+      function closeReport() { transitionHub({ viewingReport: null }, true); }
+      function printReport(event) {
+        // A fresh alert node also announces an identical error after a retry.
+        setReportPrintAttempt(function(attempt) { return attempt + 1; });
+        setReportPrintError('');
+        if (stewardshipActivePrint) {
+          setReportPrintError(__alloT('stem.stewardship.print_busy', 'Another report is waiting for the print dialog. Close that dialog, then try Print again.'));
+          return;
+        }
+        var root = stewardshipRootRef.current;
+        var report = root && root.querySelector('[data-stewardship-report]');
+        if (!report || !report.isConnected || report.closest('[hidden]')) return;
+        var trigger = event && event.currentTarget;
+        var ownedFocus = !!trigger && document.activeElement === trigger;
+        var copy = null, style = null, session = null;
+        var token = report.id + '-print', priorOwner = document.body.getAttribute('data-stewardship-print-owner');
+        function finish(restoreFocus) {
+          if (session && session.finished) return;
+          if (session) session.finished = true;
+          window.removeEventListener('beforeprint', beforePrint);
+          window.removeEventListener('afterprint', afterPrint);
+          var active = document.activeElement;
+          var mayRestore = ownedFocus && restoreFocus && (active === trigger || active === document.body || (copy && copy.contains(active)));
+          if (copy && copy.parentNode) copy.parentNode.removeChild(copy);
+          if (style && style.parentNode) style.parentNode.removeChild(style);
+          if (document.body.getAttribute('data-stewardship-print-owner') === token) {
+            if (priorOwner == null) document.body.removeAttribute('data-stewardship-print-owner');
+            else document.body.setAttribute('data-stewardship-print-owner', priorOwner);
+          }
+          if (stewardshipActivePrint === session) stewardshipActivePrint = null;
+          if (reportPrintSession.current === session) reportPrintSession.current = null;
+          if (mayRestore && trigger.isConnected && root.isConnected && !trigger.closest('[hidden]') && !trigger.closest('[inert]')) {
+            try { trigger.focus({ preventScroll: true }); } catch (e) { trigger.focus(); }
+          }
+        }
+        function beforePrint() { if (session) session.started = true; }
+        function afterPrint() { finish(true); }
+        try {
+          if (typeof window.print !== 'function') throw new Error('Print unavailable');
+          copy = report.cloneNode(true);
+          copy.id = token;
+          copy.removeAttribute('data-stewardship-report');
+          copy.setAttribute('data-stewardship-print-copy', token);
+          copy.style.display = 'none';
+          // The screen-only controls and live feedback do not belong in the report.
+          Array.prototype.forEach.call(copy.querySelectorAll('.no-print'), function(node) { node.remove(); });
+          // Preserve any future labelled report content without duplicating IDs.
+          var copiedIds = {};
+          Array.prototype.forEach.call(copy.querySelectorAll('[id]'), function(node, index) { copiedIds[node.id] = token + '-item-' + index; node.id = copiedIds[node.id]; });
+          Array.prototype.forEach.call(copy.querySelectorAll('[aria-labelledby],[aria-describedby],[headers],[for]'), function(node) {
+            ['aria-labelledby', 'aria-describedby', 'headers', 'for'].forEach(function(attr) {
+              var value = node.getAttribute(attr);
+              if (value) node.setAttribute(attr, value.split(/\s+/).map(function(id) { return copiedIds[id] || id; }).join(' '));
+            });
+          });
+          var ownerSelector = 'body[data-stewardship-print-owner="' + token + '"]';
+          var copySelector = ownerSelector + ' > [data-stewardship-print-copy="' + token + '"]';
+          style = document.createElement('style');
+          style.setAttribute('data-stewardship-print-style', token);
+          style.textContent = '@media print {' +
+            ownerSelector + ' { margin:0!important; padding:0!important; background:#fff!important; }' +
+            ownerSelector + ' > :not([data-stewardship-print-copy="' + token + '"]) { display:none!important; }' +
+            copySelector + ' { display:block!important; position:static!important; width:auto!important; max-width:none!important; margin:0!important; padding:10mm!important; border:0!important; border-radius:0!important; --allo-stem-text:#0f172a; --allo-stem-text-soft:#475569; --allo-stem-border:#64748b; }' +
+            copySelector + ', ' + copySelector + ' * { color:#0f172a!important; background-color:transparent!important; background-image:none!important; box-shadow:none!important; text-shadow:none!important; outline:0!important; border-color:#64748b!important; }' +
+            copySelector + ' h2, ' + copySelector + ' h3 { break-after:avoid; }' +
+            copySelector + ' .no-print { display:none!important; } }';
+          session = { finish: finish, started: false, finished: false };
+          stewardshipActivePrint = session;
+          reportPrintSession.current = session;
+          window.addEventListener('beforeprint', beforePrint);
+          window.addEventListener('afterprint', afterPrint);
+          document.head.appendChild(style);
+          document.body.appendChild(copy);
+          document.body.setAttribute('data-stewardship-print-owner', token);
+          window.print();
+          // Browsers without print lifecycle events return after their dialog.
+          // If beforeprint did fire, keep the copy until afterprint (including
+          // browsers whose print() returns before the dialog closes).
+          if (!session.started) finish(true);
+        } catch (e) {
+          finish(true);
+          setReportPrintError(__alloT('stem.stewardship.print_failed', 'Printing could not start. Your report and saved progress are unchanged. Try Print again.'));
+        }
+      }
 
       function renderCampaignReport(campaignId) {
         var c = CAMPAIGNS.find(function(x) { return x.id === campaignId; });
@@ -1438,59 +1591,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           return 0;
         }
 
+        function readableReportFeedback(entries) {
+          return (Array.isArray(entries) ? entries : []).map(function(entry) {
+            if (typeof entry === 'string') return entry.trim();
+            if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return '';
+            var message = typeof entry.msg === 'string' ? entry.msg.trim() : '';
+            var id = typeof entry.id === 'string' ? entry.id.trim() : '';
+            return message || id;
+          }).filter(function(text) { return !!text; });
+        }
+
         // Collect the year-by-year event log highlights
         var eventHighlights = yearLog.map(function(snap) {
           return {
-            label: snap.year ? ('Year/Period ' + snap.year) : 'Period',
+            label: campaignPeriodLabel(c) + (snap[c.yearField] != null ? ' ' + snap[c.yearField] : ''),
             event: (snap.event || snap.eventName || 'quiet'),
-            cascades: snap.cascades || snap.feedbacks || snap.cascadesFired || []
+            cascades: readableReportFeedback(snap.cascades || snap.feedbacks || snap.cascadesFired)
           };
         });
 
         return h('div', {
-          id: 'stewardship-campaign-report',
+          id: inquiryId + '-campaign-report-' + campaignId, 'data-stewardship-report': campaignId,
           style: {
             maxWidth: 720, margin: '0 auto', padding: 24,
             background: '#fff', color: '#0f172a',
             borderRadius: 14, border: '1px solid var(--allo-stem-border, #cbd5e1)'
           }
         },
-          // Print-only CSS: hide everything except this report
-          h('style', null,
-            '@media print { body * { visibility: hidden !important; } ' +
-            '#stewardship-campaign-report, #stewardship-campaign-report * { visibility: visible !important; } ' +
-            '#stewardship-campaign-report { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; } ' +
-            '.no-print { display: none !important; } }'
-          ),
-
           // Header
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, paddingBottom: 14, borderBottom: '2px solid ' + c.color } },
+          h('div', { 'data-stewardship-report-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, paddingBottom: 14, borderBottom: '2px solid ' + c.color } },
             h('span', { style: { fontSize: 40 } }, c.icon),
             h('div', { style: { flex: 1 } },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.maine_stewardship_campaign_report', 'Maine Stewardship Campaign Report')),
-              h('h2', { style: { margin: '4px 0 0', color: c.color, fontSize: 24, fontWeight: 900 } }, c.label),
+              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'report', style: { margin: '4px 0 0', color: c.color === '#0ea5e9' ? '#0369a1' : '#166534', fontSize: 24, fontWeight: 900 } }, c.label),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4 } }, c.scale + ' · ' + c.mechanic)
             ),
             h('div', { className: 'no-print', style: { display: 'flex', gap: 6 } },
-              h('button', { onClick: printReport, 'aria-label': __alloT('stem.stewardship.print_this_report', 'Print this report'),
+              h('button', { 'data-stewardship-action': 'print', onClick: printReport, 'aria-label': __alloT('stem.stewardship.print', '🖨 Print') + ': ' + c.label,
                 style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #15803d', background: '#15803d', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, __alloT('stem.stewardship.print', '🖨 Print')),
-              h('button', { onClick: closeReport, 'aria-label': __alloT('stem.stewardship.close_report', 'Close report'),
+              h('button', { 'data-stewardship-action': 'return', onClick: closeReport, 'aria-label': __alloT('stem.stewardship.back_3', '← Back'),
                 style: { padding: '6px 14px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', color: 'var(--allo-stem-text-soft, #475569)', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, __alloT('stem.stewardship.back_3', '← Back'))
             )
           ),
+
+          reportPrintError ? h('p', { key: reportPrintAttempt, className: 'no-print', 'data-stewardship-print-error': 'true', role: 'alert', style: { margin: '0 0 16px', padding: 12, borderRadius: 8, border: '1px solid #b91c1c', color: '#7f1d1d', background: '#fff', fontSize: 14, lineHeight: 1.6 } }, reportPrintError) : null,
 
           // Final outcome
           outcome ? h('div', {
             style: { padding: 14, borderRadius: 10, marginBottom: 16, background: (outcome.color || '#86efac') + '18', border: '1px solid ' + (outcome.color || '#86efac') + '66' }
           },
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.final_outcome', 'Final outcome')),
-            h('div', { style: { fontSize: 18, fontWeight: 800, color: outcome.color || '#0f172a' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
+            h('div', { style: { fontSize: 18, fontWeight: 800, color: '#14532d' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
             h('p', { style: { margin: '6px 0 0', color: '#475569', fontSize: 13, lineHeight: 1.55 } }, outcome.desc || '')
           ) : null,
 
           // Campaign metadata
           h('div', {
-            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 16, padding: 12, background: '#f1f5f9', borderRadius: 8 }
+            'data-stewardship-report-metadata': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 16, padding: 12, background: '#f1f5f9', borderRadius: 8 }
           },
             h('div', null,
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.difficulty', 'Difficulty')),
@@ -1528,8 +1685,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 return h('div', { key: i, style: { padding: '6px 10px', background: '#f8fafc', borderLeft: '3px solid ' + c.color, borderRadius: 4, fontSize: 12, color: '#334155' } },
                   h('strong', null, eh.label + ': '),
                   eh.event,
-                  eh.cascades && eh.cascades.length > 0 ? h('div', { style: { marginTop: 2, fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } },
-                    '↳ ' + eh.cascades.map(function(c) { return c.msg; }).join(' · ')
+                  eh.cascades.length > 0 ? h('div', { 'data-stewardship-report-feedback': 'true', style: { marginTop: 2, fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } },
+                    '↳ ' + eh.cascades.join(' · ')
                   ) : null
                 );
               })
@@ -1574,11 +1731,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           });
         });
       }
-      function openScenario(scenarioId) {
+      function openScenario(scenarioId, fresh) {
+        var destinationState = Object.assign({}, hub, { playingScenario: scenarioId, launchedAny: true });
+        if (fresh) { destinationState.scenarioStates = Object.assign({}, hub.scenarioStates); delete destinationState.scenarioStates[scenarioId]; }
+        requestStewardshipFocus(stewardshipViewKey(destinationState));
         setHub({ playingScenario: scenarioId, launchedAny: true });
         if (announceToSR) announceToSR(__alloT('stem.stewardship.sr_opening_scenario', 'Opening scenario'));
       }
-      function closeScenario() { setHub({ playingScenario: null }); }
+      function closeScenario() { transitionHub({ playingScenario: null }, true); }
       function resetScenario(scenarioId) {
         setLabToolData(function(prev) {
           var hubPrev = (prev && prev.stewardshipHub) || {};
@@ -1589,6 +1749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         });
       }
       function beginScenarioPlay(scenario) {
+        requestStewardshipFocus('scenario:' + scenario.id + ':playing:0');
         var initial = {};
         scenario.entities.forEach(function(ent) { initial[ent.id] = ent.init; });
         setScenarioState(scenario.id, { phase: 'playing', step: 0, entities: initial, decisionLog: [] });
@@ -1597,12 +1758,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       function chooseScenarioOption(scenario, decisionIndex, option) {
         var st = (hub && hub.scenarioStates && hub.scenarioStates[scenario.id]) || {};
         var entities = Object.assign({}, st.entities || {});
+        var entityValuesBefore = Object.assign({}, entities);
         Object.keys(option.effects || {}).forEach(function(k) {
           var curr = entities[k] != null ? entities[k] : 0;
           entities[k] = Math.max(0, Math.min(100, curr + option.effects[k]));
         });
-        var newLog = (st.decisionLog || []).concat([{ step: decisionIndex, optionId: option.id, label: option.label, narrative: option.narrative }]);
+        var newLog = (st.decisionLog || []).concat([{ step: decisionIndex, optionId: option.id, label: option.label, narrative: option.narrative, entityValuesBefore: entityValuesBefore, entityValuesAfter: Object.assign({}, entities) }]);
         var nextStep = decisionIndex + 1;
+        requestStewardshipFocus('scenario:' + scenario.id + ':' + (nextStep >= scenario.decisions.length ? 'debrief' : 'playing') + ':' + nextStep);
         if (nextStep >= scenario.decisions.length) {
           var outcome = computeScenarioOutcome(scenario, entities);
           setScenarioState(scenario.id, { phase: 'debrief', step: nextStep, entities: entities, decisionLog: newLog, outcome: outcome });
@@ -1612,6 +1775,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           setScenarioState(scenario.id, { phase: 'playing', step: nextStep, entities: entities, decisionLog: newLog });
           if (announceToSR) announceToSR('Decision recorded. Moving to step ' + (nextStep + 1));
         }
+      }
+
+      // Read recorded values first; older decisions can be replayed without
+      // mutating their saved entries. Unreadable decisions stay unavailable.
+      function scenarioEvidence(scenario, st) {
+        var entries = Array.isArray(st.decisionLog) ? st.decisionLog : [];
+        var series = {}, changes = {};
+        function recorded(values, id) { var value = values && values[id]; return typeof value === 'number' && isFinite(value) ? value : null; }
+        scenario.entities.forEach(function(ent) {
+          var first = entries[0] && recorded(entries[0].entityValuesBefore, ent.id);
+          series[ent.id] = [first != null ? first : ent.init];
+        });
+        entries.forEach(function(entry) {
+          var decision = entry && scenario.decisions[entry.step];
+          var option = decision && decision.options.filter(function(opt) { return opt.id === entry.optionId; })[0];
+          scenario.entities.forEach(function(ent) {
+            var points = series[ent.id];
+            var before = entry && recorded(entry.entityValuesBefore, ent.id);
+            if (before == null) before = points[points.length - 1];
+            var after = entry && recorded(entry.entityValuesAfter, ent.id);
+            if (after == null && before != null && option) after = Math.max(0, Math.min(100, before + ((option.effects && option.effects[ent.id]) || 0)));
+            points.push(after);
+            changes[ent.id] = before != null && after != null ? after - before : null;
+          });
+        });
+        return { entries: entries, series: series, rows: scenario.entities.map(function(ent) {
+          var value = recorded(st.entities, ent.id);
+          if (value == null) value = ent.init;
+          var inverted = !!(scenario.entityInverted && scenario.entityInverted[ent.id]);
+          var effective = inverted ? 100 - value : value;
+          return { entity: ent, value: value, inverted: inverted, status: effective >= 60 ? 'Healthy' : effective >= 30 ? 'Stressed' : 'Critical', lastChange: entries.length ? changes[ent.id] : null };
+        }) };
+      }
+      function scenarioChangeMeaning(delta, inverted) {
+        if (typeof delta !== 'number' || !isFinite(delta)) return { state: 'unavailable', label: __alloT('stem.stewardship.change_unavailable', 'Change unavailable'), color: '#a8b8cc' };
+        if (delta === 0) return { state: 'unchanged', label: __alloT('stem.stewardship.no_change', 'No change (0 points)'), color: '#a8b8cc' };
+        var improving = inverted ? delta < 0 : delta > 0;
+        return { state: improving ? 'improving' : 'worsening', label: improving ? __alloT('stem.stewardship.change_improving', 'Improving') : __alloT('stem.stewardship.change_worsening', 'Worsening'), color: improving ? '#86efac' : '#fca5a5' };
+      }
+      function scenarioChangeText(delta, inverted) {
+        var meaning = scenarioChangeMeaning(delta, inverted);
+        if (meaning.state === 'unavailable' || meaning.state === 'unchanged') return meaning.label;
+        return (delta > 0 ? '+' : '') + Math.round(delta) + ' points · ' + meaning.label;
+      }
+      function renderScenarioEvidence(scenario, st, mode) {
+        var evidence = scenarioEvidence(scenario, st);
+        var id = inquiryId + '-scenario-' + scenario.id + '-' + mode;
+        var history = mode === 'trajectory';
+        var summary = history ? __alloT('stem.stewardship.decision_data', 'Decision-by-decision system data') : __alloT('stem.stewardship.system_data', 'System data: scores and latest changes');
+        function score(value) { return value == null ? __alloT('stem.stewardship.data_unavailable', 'Unavailable') : Math.round(value) + ' / 100'; }
+        function direction(row) { return row.inverted ? __alloT('stem.stewardship.lower_healthier', 'Lower is healthier') : __alloT('stem.stewardship.higher_healthier', 'Higher is healthier'); }
+        function change(row) {
+          if (!evidence.entries.length) return __alloT('stem.stewardship.no_decision_yet', 'No decision yet');
+          return scenarioChangeText(row.lastChange, row.inverted);
+        }
+        return h('details', { className: 'stewardship-scenario-data', 'data-stewardship-scenario-data': mode },
+          h('summary', { id: id + '-summary' }, summary),
+          h('p', { id: id + '-help' }, history ? __alloT('stem.stewardship.history_data_help', 'Initial scores and the values after each recorded decision. Unavailable means an older decision could not be read. Scroll horizontally to review all columns.') : __alloT('stem.stewardship.current_data_help', 'Scores range from 0 to 100. Condition accounts for whether higher or lower values are healthier. Latest changes show the points actually applied after the score limits, with improving or worsening based on the healthier direction.')),
+          h('div', { className: 'stewardship-scenario-data-scroll', role: 'region', tabIndex: 0, 'aria-labelledby': id + '-summary', 'aria-describedby': id + '-help' },
+            h('table', { className: 'stewardship-scenario-data-table' },
+              h('caption', null, scenario.label + ' · ' + (history ? __alloT('stem.stewardship.recorded_scores', 'Recorded system scores') : __alloT('stem.stewardship.current_scores', 'Current system scores'))),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col' }, __alloT('stem.stewardship.system_part', 'System part')),
+                history ? h(React.Fragment, null,
+                  h('th', { scope: 'col' }, __alloT('stem.stewardship.initial_score', 'Initial')),
+                  evidence.entries.map(function(entry, index) {
+                    var decision = entry && scenario.decisions[entry.step];
+                    return h('th', { key: index, scope: 'col' }, scenario.yearLabel + ' ' + (entry && typeof entry.step === 'number' ? entry.step + 1 : index + 1), decision ? h('span', { className: 'stewardship-scenario-data-detail' }, decision.period) : null);
+                  })
+                ) : h(React.Fragment, null,
+                  h('th', { scope: 'col' }, __alloT('stem.stewardship.current_score', 'Current score')),
+                  h('th', { scope: 'col' }, __alloT('stem.stewardship.condition', 'Condition')),
+                  h('th', { scope: 'col' }, __alloT('stem.stewardship.last_decision', 'Last decision'))
+                )
+              )),
+              h('tbody', null, evidence.rows.map(function(row) {
+                return h('tr', { key: row.entity.id, 'data-stewardship-entity-row': row.entity.id },
+                  h('th', { scope: 'row' }, row.entity.name, h('span', { className: 'stewardship-scenario-data-detail' }, row.entity.label), history ? h('span', { className: 'stewardship-scenario-data-detail' }, direction(row)) : null),
+                  history ? evidence.series[row.entity.id].map(function(value, index) { return h('td', { key: index }, score(value)); }) : h(React.Fragment, null,
+                    h('td', null, score(row.value)),
+                    h('td', null, __alloT('stem.stewardship.condition_' + row.status.toLowerCase(), row.status), h('span', { className: 'stewardship-scenario-data-detail' }, direction(row))),
+                    h('td', null, change(row))
+                  )
+                );
+              }))
+            )
+          )
+        );
       }
 
       function renderScenarioPlay(scenarioId) {
@@ -1628,20 +1879,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
             role: 'region', 'aria-label': scenario.label + ' briefing'
           }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_3', 'Back to hub'),
+            h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
+              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_4', '← Back to hub'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_4', '← Back to hub')),
               h('span', { style: { fontSize: 36 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, scenario.regionFlag + ' ' + scenario.region),
-                h('h2', { style: { margin: '2px 0 0', color: scenario.color, fontSize: 22, fontWeight: 900 } }, scenario.label),
+                h('h2', { tabIndex: -1, 'data-stewardship-heading': 'scenario', style: { margin: '2px 0 0', color: stewardshipAccent(scenario.color), fontSize: 22, fontWeight: 900 } }, scenario.label),
                 h('div', { style: { fontSize: 12, color: '#fbbf24', marginTop: 4, fontStyle: 'italic' } }, scenario.scale + ' · ' + scenario.mechanic)
               )
             ),
             h('div', {
               style: { padding: 16, borderRadius: 12, background: 'rgba(15,23,42,0.7)', border: '1px solid ' + scenario.color + '55', borderLeft: '4px solid ' + scenario.color, marginBottom: 14 }
             },
-              h('div', { style: { fontSize: 11, color: scenario.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.stewardship.briefing', 'Briefing')),
+              h('div', { style: { fontSize: 11, color: stewardshipAccent(scenario.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.stewardship.briefing', 'Briefing')),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.7 } }, scenario.briefing)
             ),
             h('div', { style: { marginBottom: 14 } },
@@ -1667,9 +1918,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               scenario.aiDisclaimer
             ),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { beginScenarioPlay(scenario); }, 'aria-label': __alloT('stem.stewardship.begin_scenario', 'Begin scenario'),
+              h('button', { 'data-stewardship-action': 'scenario-begin', onClick: function() { beginScenarioPlay(scenario); }, 'data-stewardship-primary-action': 'true', 'aria-label': __alloT('stem.stewardship.begin_scenario_2', 'Begin scenario →') + ': ' + scenario.label,
                 style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } }, __alloT('stem.stewardship.begin_scenario_2', 'Begin scenario →')),
-              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.cancel', 'Cancel'),
+              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.cancel_2', 'Cancel'),
                 style: { padding: '10px 16px', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.cancel_2', 'Cancel'))
             )
           )); // close inner maxWidth + outer dark shell
@@ -1686,12 +1937,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             role: 'region', 'aria-label': scenario.label + ', decision ' + (step + 1)
           }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             // Header bar
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.pause_and_return_to_hub', 'Pause and return to hub'),
+            h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
+              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.pause', '← Pause') + ': ' + scenario.label,
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.pause', '← Pause')),
               h('span', { style: { fontSize: 28 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('div', { style: { fontWeight: 800, color: scenario.color, fontSize: 16 } }, scenario.label),
+                h('div', { style: { fontWeight: 800, color: stewardshipAccent(scenario.color), fontSize: 16 } }, scenario.label),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, scenario.region)
               ),
               h('div', { style: { fontSize: 12, color: '#fbbf24', fontWeight: 700 } }, scenario.yearLabel + ' ' + (step + 1) + ' of ' + scenario.decisions.length)
@@ -1712,26 +1963,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', { style: { marginBottom: 14, padding: 10, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
               (function() {
                 var ents = scenario.entities, N = ents.length, W = 330, Hh = 210, cx = W / 2, cy = Hh / 2, R = Math.min(cx, cy) - 34;
-                var lastEntry = (st.decisionLog && st.decisionLog.length) ? st.decisionLog[st.decisionLog.length - 1] : null;
-                var lastFx = null;
-                if (lastEntry) {
-                  var dec = scenario.decisions[lastEntry.step];
-                  var optn = dec && dec.options.filter(function(o) { return o.id === lastEntry.optionId; })[0];
-                  lastFx = optn && optn.effects;
-                }
+                var evidenceRows = scenarioEvidence(scenario, st).rows;
                 var nodes = ents.map(function(ent, i) {
                   var ang = (i / N) * Math.PI * 2 - Math.PI / 2;
                   var v = (st.entities && st.entities[ent.id] != null) ? st.entities[ent.id] : ent.init;
                   var inv = scenario.entityInverted && scenario.entityInverted[ent.id];
                   var hv = inv ? (100 - v) : v;
-                  var col = hv >= 60 ? '#86efac' : hv >= 30 ? '#fbbf24' : '#dc2626';
-                  return { ent: ent, x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang), v: Math.round(v), col: col, d: lastFx ? (lastFx[ent.id] || 0) : 0 };
+                  var col = hv >= 60 ? '#86efac' : hv >= 30 ? '#fbbf24' : '#fca5a5';
+                  return { ent: ent, x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang), v: Math.round(v), col: col, d: evidenceRows[i].lastChange != null ? evidenceRows[i].lastChange : 0, change: scenarioChangeMeaning(evidenceRows[i].lastChange, !!inv) };
                 });
-                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 470, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'System map of ' + scenario.label + ': ' + N + ' interconnected parts; your last decision shifted the highlighted ones.' },
+                return h('svg', { 'data-stewardship-system-map': 'true', 'aria-describedby': inquiryId + '-scenario-' + scenario.id + '-current-summary', width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 470, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'System map of ' + scenario.label + ': ' + N + ' interconnected parts; your last decision shifted the highlighted ones.' },
                   nodes.map(function(nd, i) {
-                    var ec = nd.d > 0 ? '#22c55e' : nd.d < 0 ? '#dc2626' : '#334155';
+                    var ec = nd.d === 0 ? '#64748b' : nd.change.color;
                     var ew = nd.d !== 0 ? Math.min(5, 1 + Math.abs(nd.d) / 6) : 1;
-                    return h('line', { key: 'e' + i, x1: cx, y1: cy, x2: nd.x, y2: nd.y, stroke: ec, strokeWidth: ew, opacity: nd.d !== 0 ? 0.85 : 0.5 });
+                    return h('line', { key: 'e' + i, 'data-stewardship-map-change': nd.ent.id, 'data-change-direction': nd.change.state, x1: cx, y1: cy, x2: nd.x, y2: nd.y, stroke: ec, strokeWidth: ew, strokeDasharray: nd.change.state === 'worsening' ? '4 3' : undefined, opacity: nd.d !== 0 ? 0.85 : 0.5 });
                   }),
                   h('circle', { cx: cx, cy: cy, r: 16, fill: 'rgba(15,23,42,0.95)', stroke: scenario.color, strokeWidth: 2 }),
                   h('text', { x: cx, y: cy + 6, textAnchor: 'middle', fontSize: 15 }, scenario.icon),
@@ -1741,24 +1986,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                       h('circle', { cx: nd.x, cy: nd.y, r: 16, fill: 'rgba(15,23,42,0.95)', stroke: nd.col, strokeWidth: 2.5 }),
                       h('text', { x: nd.x, y: nd.y + 5, textAnchor: 'middle', fontSize: 13 }, nd.ent.icon),
                       h('text', { x: nd.x, y: nd.y + 27, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: nd.col }, '' + nd.v),
-                      nd.d !== 0 ? h('text', { x: nd.x + 17, y: nd.y - 9, textAnchor: 'start', fontSize: 9.5, fontWeight: 800, fill: nd.d > 0 ? '#86efac' : '#fca5a5' }, (nd.d > 0 ? '+' : '') + nd.d) : null
+                      nd.d !== 0 ? h('text', { x: nd.x + 17, y: nd.y - 9, textAnchor: 'start', fontSize: 9.5, fontWeight: 800, fill: nd.change.color }, (nd.d > 0 ? '+' : '') + nd.d) : null
                     );
                   })
                 );
               })(),
-              h('div', { style: { fontSize: 9.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 4, lineHeight: 1.4 } }, __alloT('stem.stewardship.each_ring_is_one_part_of_the_system_he', 'each ring is one part of the system (🟢 healthy · 🟡 stressed · 🔴 critical). After a choice, lit spokes + ±deltas show how it rippled through.'))
+              h('div', { 'data-stewardship-change-legend': 'true', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 8, lineHeight: 1.5 } }, __alloT('stem.stewardship.system_map_change_legend', 'Ring colors show condition. Solid green spokes mean improving; dashed rose spokes mean worsening. Numbers show score changes: lower can be healthier. Open System data for full names, conditions, and changes.'))
             ),
+            renderScenarioEvidence(scenario, st, 'current'),
             // Decision prompt
             h('div', {
               style: { padding: 14, borderRadius: 12, background: 'rgba(15,23,42,0.7)', border: '1px solid ' + scenario.color + '55', borderLeft: '4px solid ' + scenario.color, marginBottom: 14 }
             },
-              h('div', { style: { fontSize: 11, color: scenario.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, decision.period),
-              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.65 } }, decision.prompt)
+              h('div', { style: { fontSize: 11, color: stewardshipAccent(scenario.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, decision.period),
+              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'scenario', style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.65, fontWeight: 600 } }, decision.prompt)
             ),
             // Options
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               decision.options.map(function(opt) {
-                return h('button', { key: opt.id, onClick: function() { chooseScenarioOption(scenario, step, opt); }, 'aria-label': 'Choose: ' + opt.label,
+                return h('button', { key: opt.id, 'data-stewardship-action': 'option:' + opt.id, onClick: function() { chooseScenarioOption(scenario, step, opt); }, 'aria-label': 'Choose: ' + opt.label,
                   style: {
                     padding: 14, borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer',
                     background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'left',
@@ -1775,7 +2021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
                 st.decisionLog.map(function(entry, i) {
                   return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', borderLeft: '3px solid ' + scenario.color } },
-                    h('div', { style: { fontSize: 11, color: scenario.color, fontWeight: 700, marginBottom: 2 } }, scenario.yearLabel + ' ' + (entry.step + 1) + ' · ' + (scenario.decisions[entry.step] ? scenario.decisions[entry.step].period : '')),
+                    h('div', { style: { fontSize: 11, color: stewardshipAccent(scenario.color), fontWeight: 700, marginBottom: 2 } }, scenario.yearLabel + ' ' + (entry.step + 1) + ' · ' + (scenario.decisions[entry.step] ? scenario.decisions[entry.step].period : '')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, entry.label),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '↳ ' + entry.narrative)
                   );
@@ -1793,13 +2039,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
             role: 'region', 'aria-label': scenario.label + ' debrief'
           }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_5', 'Back to hub'),
+            h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
+              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_6', '← Back to hub'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_6', '← Back to hub')),
               h('span', { style: { fontSize: 36 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 200 } },
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, scenario.regionFlag + ' ' + scenario.region),
-                h('h2', { style: { margin: '2px 0 0', color: scenario.color, fontSize: 20, fontWeight: 900 } }, scenario.label + ' · Debrief')
+                h('h2', { tabIndex: -1, 'data-stewardship-heading': 'scenario', style: { margin: '2px 0 0', color: stewardshipAccent(scenario.color), fontSize: 20, fontWeight: 900 } }, scenario.label + ' · Debrief')
               )
             ),
             // Outcome tier
@@ -1810,7 +2056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 h('span', { style: { fontSize: 36 } }, outcome.icon || '🏆'),
                 h('div', null,
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.final_outcome_2', 'Final outcome')),
-                  h('h3', { style: { margin: '2px 0 0', color: outcome.color || '#86efac', fontSize: 20, fontWeight: 900 } }, outcome.label)
+                  h('h3', { style: { margin: '2px 0 0', color: stewardshipAccent(outcome.color || '#86efac'), fontSize: 20, fontWeight: 900 } }, outcome.label)
                 )
               ),
               h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, outcome.desc)
@@ -1822,24 +2068,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 // Reconstruct each entity's trajectory by replaying the decision
                 // log's effects from the initial values — so the debrief shows
                 // the TREND the tutorial promises, not just the final delta.
-                var traj = {};
-                scenario.entities.forEach(function(e) { traj[e.id] = [e.init]; });
-                (st.decisionLog || []).forEach(function(entry) {
-                  var dec = scenario.decisions[entry.step];
-                  var opt = dec && dec.options.filter(function(o) { return o.id === entry.optionId; })[0];
-                  var fx = (opt && opt.effects) || {};
-                  scenario.entities.forEach(function(e) {
-                    var prev = traj[e.id][traj[e.id].length - 1];
-                    traj[e.id].push(Math.max(0, Math.min(100, prev + (fx[e.id] || 0))));
-                  });
-                });
+                var traj = scenarioEvidence(scenario, st).series;
                 return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
                   scenario.entities.map(function(ent) {
                     var v = (st.entities && st.entities[ent.id] != null) ? st.entities[ent.id] : ent.init;
                     var inverted = scenario.entityInverted && scenario.entityInverted[ent.id];
                     var effective = inverted ? 100 - v : v;
-                    var barColor = effective >= 60 ? '#86efac' : effective >= 30 ? '#fbbf24' : '#dc2626';
-                    var delta = Math.round(v - ent.init);
+                    var barColor = effective >= 60 ? '#86efac' : effective >= 30 ? '#fbbf24' : '#fca5a5';
+                    var initialValue = traj[ent.id] && traj[ent.id][0] != null ? traj[ent.id][0] : ent.init;
+                    var delta = Math.round(v - initialValue);
+                    var netChange = scenarioChangeMeaning(delta, !!inverted);
                     var pts = traj[ent.id] || [v], n = pts.length;
                     var SW = 100, SH = 24, px = function(i) { return (n <= 1 ? 0.5 : i / (n - 1)) * SW; }, pyv = function(val) { return SH - 3 - (val / 100) * (SH - 6); };
                     return h('div', { key: ent.id, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
@@ -1850,12 +2088,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                           h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ent.label)
                         ),
                         h('div', { style: { textAlign: 'right' } },
-                          h('div', { style: { fontSize: 14, fontWeight: 900, color: barColor } }, Math.round(v)),
-                          h('div', { style: { fontSize: 10, color: delta >= 0 ? '#86efac' : '#f87171', fontWeight: 700 } }, (delta >= 0 ? '+' : '') + delta)
+                          h('div', { style: { fontSize: 14, fontWeight: 900, color: barColor } }, Math.round(v))
                         )
                       ),
-                      n >= 2 ? h('svg', { width: '100%', viewBox: '0 0 ' + SW + ' ' + SH, preserveAspectRatio: 'none', style: { display: 'block', height: 24 }, 'aria-hidden': 'true' },
-                        h('line', { x1: 0, y1: pyv(ent.init), x2: SW, y2: pyv(ent.init), stroke: '#475569', strokeWidth: 0.75, strokeDasharray: '2 2', opacity: 0.6 }),
+                      h('div', { 'data-stewardship-net-change': ent.id, 'data-change-direction': netChange.state, style: { fontSize: 12, color: netChange.color, lineHeight: 1.5, marginBottom: 6, overflowWrap: 'anywhere' } }, __alloT('stem.stewardship.since_start', 'Since start') + ': ' + scenarioChangeText(delta, !!inverted)),
+                      n >= 2 && pts.every(function(value) { return value != null; }) ? h('svg', { width: '100%', viewBox: '0 0 ' + SW + ' ' + SH, preserveAspectRatio: 'none', style: { display: 'block', height: 24 }, 'aria-hidden': 'true' },
+                        h('line', { x1: 0, y1: pyv(initialValue), x2: SW, y2: pyv(initialValue), stroke: '#475569', strokeWidth: 0.75, strokeDasharray: '2 2', opacity: 0.6 }),
                         h('polyline', { points: pts.map(function(val, i) { return px(i).toFixed(1) + ',' + pyv(val).toFixed(1); }).join(' '), fill: 'none', stroke: barColor, strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' }),
                         h('circle', { cx: px(n - 1), cy: pyv(pts[n - 1]), r: 2, fill: barColor })
                       ) : h('div', { style: { height: 4, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 2, overflow: 'hidden' } },
@@ -1865,13 +2103,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 );
               })()
             ),
+            renderScenarioEvidence(scenario, st, 'trajectory'),
             // Decision log
             (st.decisionLog && st.decisionLog.length > 0) ? h('div', { style: { marginBottom: 16 } },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, __alloT('stem.stewardship.your_decision_path', 'Your decision path')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 st.decisionLog.map(function(entry, i) {
                   return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + scenario.color, fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                    h('div', { style: { fontWeight: 700, color: scenario.color, marginBottom: 3 } }, scenario.yearLabel + ' ' + (entry.step + 1) + ' · ' + (scenario.decisions[entry.step] ? scenario.decisions[entry.step].period : '')),
+                    h('div', { style: { fontWeight: 700, color: stewardshipAccent(scenario.color), marginBottom: 3 } }, scenario.yearLabel + ' ' + (entry.step + 1) + ' · ' + (scenario.decisions[entry.step] ? scenario.decisions[entry.step].period : '')),
                     h('div', { style: { marginBottom: 4 } }, entry.label),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '↳ ' + entry.narrative)
                   );
@@ -1882,7 +2121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', {
               style: { padding: 14, borderRadius: 12, marginBottom: 16, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7' }
             },
-              h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.stewardship.cross_region_synthesis', '🧠 Cross-region synthesis')),
+              h('div', { style: { fontSize: 11, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.stewardship.cross_region_synthesis', '🧠 Cross-region synthesis')),
               h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13.5, lineHeight: 1.65 } }, scenario.synthesis)
             ),
             // Sources
@@ -1897,9 +2136,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ),
             // Actions
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { resetScenario(scenario.id); beginScenarioPlay(scenario); }, 'aria-label': __alloT('stem.stewardship.replay_scenario', 'Replay scenario'),
-                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + scenario.color, cursor: 'pointer', background: 'transparent', color: scenario.color, fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.replay', '↻ Replay')),
-              h('button', { onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_7', 'Back to hub'),
+              h('button', { 'data-stewardship-action': 'scenario-replay', onClick: function() { resetScenario(scenario.id); beginScenarioPlay(scenario); }, 'aria-label': __alloT('stem.stewardship.replay', '↻ Replay') + ': ' + scenario.label,
+                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + scenario.color, cursor: 'pointer', background: 'transparent', color: stewardshipAccent(scenario.color), fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.replay', '↻ Replay')),
+              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'data-stewardship-primary-action': 'true', 'aria-label': __alloT('stem.stewardship.back_to_hub_8', '← Back to hub'),
                 style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_8', '← Back to hub'))
             )
           )); // close inner maxWidth + outer dark shell
@@ -1946,17 +2185,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
       // If the user is comparing two campaigns, render that
       if (hub.comparing) {
-        return renderComparison();
+        return stewardshipSubview(renderComparison());
       }
 
       // If the user is viewing a campaign report, render that instead of the main hub
       if (hub.viewingReport) {
-        return renderCampaignReport(hub.viewingReport);
+        return stewardshipSubview(renderCampaignReport(hub.viewingReport));
       }
 
       // If the user is playing a self-contained scenario, render that
       if (hub.playingScenario) {
-        return renderScenarioPlay(hub.playingScenario);
+        return stewardshipSubview(renderScenarioPlay(hub.playingScenario));
       }
 
       // Compute scenario snapshots (self-contained scenarios from SCENARIOS_LIBRARY)
@@ -1975,11 +2214,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       // OR show when the user explicitly relaunches the tour (tutorialStep is a number).
       var firstTimeUser = !hub.tutorialSeen && !hub.launchedAny && completedCount === 0 && inProgressCount === 0;
       if (hub.tutorialStep !== null && hub.tutorialStep !== undefined) {
-        return renderTutorial();
+        return stewardshipSubview(renderTutorial());
       }
       if (firstTimeUser) {
         // Auto-show tutorial on very first visit
-        return renderTutorial();
+        return stewardshipSubview(renderTutorial());
       }
 
       var scenarioInProgress = scenarioSnaps.filter(function(s) { return s.state.status === 'inProgress'; }).length;
@@ -1997,7 +2236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           h('strong', { className: 'stewardship-metric-value' }, value));
       }
 
-      return h('main', { className: 'stewardship-menu-shell', 'data-stewardship-mission': 'true',
+      return h('main', { ref: stewardshipRootRef, 'data-stewardship-view': stewardshipView, className: 'stewardship-menu-shell', 'data-stewardship-mission': 'true',
         // Dark self-contained shell: this tool's color palette assumes a dark
         // navy background (greens like #86efac, slates like #94a3b8 / #cbd5e1
         // fail WCAG AA on white). Wrapping the panel in #0f172a guarantees the
@@ -2008,12 +2247,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         h('header', { className: 'stewardship-command' },
           h('div', { className: 'stewardship-command-top' },
             h('div', { className: 'stewardship-command-title' },
-              ArrowLeft ? h('button', { type: 'button', className: 'stewardship-back', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_to_stem_lab', 'Back to STEAM Lab') }, __alloT('stem.stewardship.back_4', 'Back')) : null,
+              ArrowLeft ? h('button', { type: 'button', className: 'stewardship-back', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_4', 'Back') + ': ' + __alloT('stem.stewardship.steam_lab_destination', 'STEAM Lab') }, __alloT('stem.stewardship.back_4', 'Back')) : null,
               h('div', null,
                 h('p', { className: 'stewardship-eyebrow' }, __alloT('stem.stewardship.mission_label', 'Systems stewardship mission')),
-                h('h2', { className: 'stewardship-title' }, __alloT('stem.stewardship.environmental_stewardship_campaigns', 'Environmental Stewardship Campaigns')),
+                h('h2', { tabIndex: -1, 'data-stewardship-heading': 'hub', className: 'stewardship-title' }, __alloT('stem.stewardship.environmental_stewardship_campaigns', 'Environmental Stewardship Campaigns')),
                 h('p', { className: 'stewardship-subtitle' }, __alloT('stem.stewardship.mission_blurb', 'Compare how ecological feedback, community trust, time horizons, and local authority shape fifteen campaigns across eleven regions.')))),
-            h('button', { type: 'button', className: 'stewardship-tour', onClick: startTutorial, 'aria-label': __alloT('stem.stewardship.take_the_5_step_tour', 'Take the 5-step tour') }, __alloT('stem.stewardship.take_the_tour', 'Take the tour'))),
+            h('button', { type: 'button', className: 'stewardship-tour', 'data-stewardship-action': 'tour', onClick: startTutorial, 'aria-label': __alloT('stem.stewardship.take_the_tour', 'Take the tour') }, __alloT('stem.stewardship.take_the_tour', 'Take the tour'))),
           h('div', { className: 'stewardship-metrics', role: 'list', 'aria-label': __alloT('stem.stewardship.portfolio_progress', 'Stewardship portfolio progress') },
             missionMetric(__alloT('stem.stewardship.complete', 'Complete'), totalComplete + ' / ' + totalAvailable),
             missionMetric(__alloT('stem.stewardship.in_progress', 'In progress'), String(totalInProgress)),
@@ -2026,7 +2265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         ),
 
         // ══ STEWARDSHIP INQUIRY widget (H7b'') ══
-        h('details', { className: 'stewardship-inquiry' },
+        h('details', { className: 'stewardship-inquiry', 'data-stewardship-inquiry': 'true' },
           h('summary', null, __alloT('stem.stewardship.advanced_inquiry', 'Advanced inquiry: model a stewardship investment')),
           h('div', { className: 'stewardship-inquiry-body' },
             (function() {
@@ -2035,14 +2274,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           // biodiversity. Higher biodiversity generally INCREASES ecosystem resilience
           // (Tilman/Cardinale/Loreau/IPBES); higher project complexity / uncertainty
           // generally REDUCES the odds that any one campaign succeeds on its first plan.
-          var iq = hub.stewIQ || { investment: 50, timeHorizon: 10, communityBuyin: 5, interventionComplexity: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-          // Back-compat: prior state used `ecologicalComplex`. Carry forward without breaking saved hypotheses.
-          if (iq.interventionComplexity == null && iq.ecologicalComplex != null) iq.interventionComplexity = iq.ecologicalComplex;
+          var iq = Object.assign({ investment: 50, timeHorizon: 10, communityBuyin: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, hub.stewIQ || {});
+          // Resolve older saved field names without mutating the saved project.
+          if (iq.interventionComplexity == null) iq.interventionComplexity = iq.ecologicalComplex != null ? iq.ecologicalComplex : 5;
+          if (!Array.isArray(iq.log)) iq.log = [];
           function setIQ(patch) { setHub({ stewIQ: Object.assign({}, iq, patch) }); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
           // outcome heuristics
           var successOdds = (iq.investment / 100) * 0.3 + (Math.min(50, iq.timeHorizon) / 50) * 0.35 + (iq.communityBuyin / 10) * 0.25 - (iq.interventionComplexity / 10) * 0.15;
-          successOdds = Math.max(0, Math.min(1, successOdds + 0.2));
+          var successUnbounded = successOdds + 0.2;
+          successOdds = Math.max(0, Math.min(1, successUnbounded));
           var roi = (iq.timeHorizon * iq.communityBuyin * 0.05) - (iq.investment / 1000);
           var state = successOdds > 0.75 ? 'flourishing' : successOdds > 0.55 ? 'positive' : successOdds > 0.35 ? 'tenuous' : successOdds > 0.15 ? 'struggling' : 'failing';
           var sm = ({
@@ -2055,48 +2296,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           return h('div', { style: { padding: 14, marginBottom: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.stewardship.stewardship_inquiry_predict_the_trajec', '🔬 Stewardship Inquiry — Explore the Trajectory')),
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.stewardship.pick_a_hypothetical_project_setting_pr', 'Pick a project setting, then observe how investment, time, community, and intervention complexity affect the modeled trajectory. The result updates live; record a hypothesis or pattern. This slider is intervention complexity, not biodiversity; higher biodiversity generally increases resilience.')),
-            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
+            h('div', { id: inquiryId + '-outcome', 'data-stewardship-inquiry-outcome': 'true', role: 'status', 'aria-atomic': 'true', style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': __alloT('stem.stewardship.trajectory_chart', 'Stewardship trajectory chart showing projected success odds and ROI proxy.'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+            h('svg', { 'data-stewardship-inquiry-chart': 'true', width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': __alloT('stem.stewardship.trajectory_chart', 'Stewardship trajectory chart showing projected success odds and ROI proxy.'), 'aria-describedby': inquiryId + '-outcome', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
               h('rect', { x: 30, y: 30, width: 260, height: 60, fill: '#0f172a', stroke: '#1e293b' }),
               h('rect', { x: 30, y: 30, width: (successOdds * 260).toFixed(1), height: 60, fill: sm.color, opacity: 0.7 }),
+              h('rect', { x: 98, y: 46, width: 124, height: 28, rx: 5, fill: '#0a0a1a' }),
               h('text', { x: 160, y: 65, fill: '#fff', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, 'success ' + (successOdds * 100).toFixed(0) + '%'),
               h('text', { x: 30, y: 24, fill: '#94a3b8', fontSize: 9 }, 'failing'),
               h('text', { x: 290, y: 24, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, 'flourishing'),
-              h('text', { x: 160, y: 105, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'ROI proxy = ' + roi.toFixed(2) + ' (time × community / investment)')
+              h('text', { x: 160, y: 105, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'ROI proxy: ' + roi.toFixed(2))
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
-              h('label', { style: { fontSize: 11 } },
+            h('details', { id: inquiryId + '-model', className: 'stewardship-model-explanation', 'data-stewardship-inquiry-model': 'true' },
+              h('summary', null, __alloT('stem.stewardship.how_model_calculated', 'How this model is calculated')),
+              h('div', { className: 'stewardship-model-body' },
+                h('p', null, __alloT('stem.stewardship.model_weights_help', 'This classroom model uses chosen weights to explore tradeoffs. Its percentage is a teaching index, not a measured chance that a real project will succeed.')),
+                h('table', { 'data-stewardship-model-contributions': 'true' },
+                  h('caption', null, __alloT('stem.stewardship.model_contributions', 'Success model contributions')),
+                  h('thead', null, h('tr', null, h('th', { scope: 'col' }, __alloT('stem.stewardship.model_factor', 'Factor')), h('th', { scope: 'col' }, __alloT('stem.stewardship.model_points', 'Percentage points')))),
+                  h('tbody', null,
+                    [
+                      ['baseline', __alloT('stem.stewardship.model_starting_value', 'Starting value'), 20],
+                      ['investment', __alloT('stem.stewardship.model_investment_weight', 'Investment ($K) × 0.3'), iq.investment * 0.3],
+                      ['time', __alloT('stem.stewardship.model_time_weight', 'Years (up to 50) × 0.7'), Math.min(50, iq.timeHorizon) * 0.7],
+                      ['community', __alloT('stem.stewardship.model_community_weight', 'Community buy-in × 2.5'), iq.communityBuyin * 2.5],
+                      ['complexity', __alloT('stem.stewardship.model_complexity_weight', 'Intervention complexity × −1.5'), -iq.interventionComplexity * 1.5]
+                    ].map(function(row) { return h('tr', { key: row[0], 'data-stewardship-model-factor': row[0] }, h('th', { scope: 'row' }, row[1]), h('td', null, (row[2] > 0 ? '+' : '') + row[2].toFixed(1))); }),
+                    h('tr', { 'data-stewardship-model-total': 'true' }, h('th', { scope: 'row' }, __alloT('stem.stewardship.model_total_before_limits', 'Total before limits')), h('td', null, (successUnbounded * 100).toFixed(1))),
+                    h('tr', { 'data-stewardship-model-displayed': 'true' }, h('th', { scope: 'row' }, __alloT('stem.stewardship.model_displayed', 'Displayed result (limited to 0–100%)')), h('td', null, (successOdds * 100).toFixed(0) + '%'))
+                  )
+                ),
+                h('p', { 'data-stewardship-model-roi-formula': 'true' }, __alloT('stem.stewardship.roi_actual_formula', 'ROI proxy = (years × community buy-in × 0.05) − (investment in $K ÷ 1000).')),
+                h('p', { 'data-stewardship-model-roi-values': 'true' }, iq.timeHorizon + ' × ' + iq.communityBuyin + ' × 0.05 − ' + iq.investment + ' ÷ 1000 = ' + roi.toFixed(2)),
+                h('p', null, __alloT('stem.stewardship.roi_units_help', 'The ROI proxy is a unitless comparison score. Community and time raise it; investment lowers it slightly. These assumptions are part of the model and can be questioned.'))
+              )
+            ),
+            h('div', { className: 'stewardship-inquiry-parameters', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px 12px', marginBottom: 10 } },
+              h('label', { htmlFor: inquiryId + '-investment', style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.investment_k', 'Investment ($K)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.investment)),
-                h('input', { type: 'range', min: 1, max: 500, step: 5, value: iq.investment, onChange: function(e) { setKey('investment', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { id: inquiryId + '-investment', 'data-stewardship-inquiry-param': 'investment', 'aria-valuetext': iq.investment + ' thousand dollars', type: 'range', min: 1, max: 500, step: 1, value: iq.investment, onChange: function(e) { setKey('investment', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
-              h('label', { style: { fontSize: 11 } },
+              h('label', { htmlFor: inquiryId + '-timeHorizon', style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.time_horizon_yr', 'Time horizon (yr)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.timeHorizon)),
-                h('input', { type: 'range', min: 1, max: 50, step: 1, value: iq.timeHorizon, onChange: function(e) { setKey('timeHorizon', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { id: inquiryId + '-timeHorizon', 'data-stewardship-inquiry-param': 'timeHorizon', 'aria-valuetext': iq.timeHorizon + (iq.timeHorizon === 1 ? ' year' : ' years'), type: 'range', min: 1, max: 50, step: 1, value: iq.timeHorizon, onChange: function(e) { setKey('timeHorizon', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
-              h('label', { style: { fontSize: 11 } },
+              h('label', { htmlFor: inquiryId + '-communityBuyin', style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.community_buy_in', 'Community buy-in')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.communityBuyin)),
-                h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.communityBuyin, onChange: function(e) { setKey('communityBuyin', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { id: inquiryId + '-communityBuyin', 'data-stewardship-inquiry-param': 'communityBuyin', 'aria-valuetext': iq.communityBuyin + ' out of 10', type: 'range', min: 0, max: 10, step: 1, value: iq.communityBuyin, onChange: function(e) { setKey('communityBuyin', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
-              h('label', { style: { fontSize: 11 } },
+              h('label', { htmlFor: inquiryId + '-interventionComplexity', style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.intervention_complexity_uncertainty', 'Intervention complexity / uncertainty')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.interventionComplexity)),
-                h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.interventionComplexity, onChange: function(e) { setKey('interventionComplexity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { id: inquiryId + '-interventionComplexity', 'data-stewardship-inquiry-param': 'interventionComplexity', 'aria-valuetext': iq.interventionComplexity + ' out of 10', type: 'range', min: 0, max: 10, step: 1, value: iq.interventionComplexity, onChange: function(e) { setKey('interventionComplexity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-              h('button', { onClick: function() {
+              h('button', { type: 'button', 'data-stewardship-inquiry-log-action': 'true', onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, inv: iq.investment, hor: iq.timeHorizon, comm: iq.communityBuyin, ic: iq.interventionComplexity, odds: (successOdds * 100).toFixed(0), state: sm.label }]) });
+                if (announceToSR) announceToSR(__alloT('stem.stewardship.project_logged', 'Project recorded in the recent project log.'));
               }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.stewardship.log_this_project', '📋 Log this project')),
-              h('button', { onClick: function() { setIQ({ investment: 50, timeHorizon: 10, communityBuyin: 5, interventionComplexity: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.stewardship.reset', 'Reset'))
+              h('button', { type: 'button', 'data-stewardship-inquiry-reset': 'true', onClick: function() { setIQ({ investment: 50, timeHorizon: 10, communityBuyin: 5, interventionComplexity: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.stewardship.reset', 'Reset'))
             ),
-            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
-              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · $' + e.inv + 'K · ' + e.hor + 'yr · comm ' + e.comm + ' · ic ' + (e.ic != null ? e.ic : e.ec) + ' → ' + e.odds + '%'); })
+            iq.log.length > 0 && h('div', null,
+              h('h5', { id: inquiryId + '-log-title', style: { fontSize: 13, margin: '6px 0' } }, __alloT('stem.stewardship.recent_project_log', 'Recent project log')),
+              h('p', { id: inquiryId + '-log-help', style: { fontSize: 12, margin: '0 0 6px' } }, 'Showing the latest ' + Math.min(5, iq.log.length) + ' of ' + iq.log.length + ' saved projects. Scroll to review the visible records.'),
+              h('div', { 'data-stewardship-inquiry-log': 'true', role: 'region', tabIndex: 0, 'aria-labelledby': inquiryId + '-log-title', 'aria-describedby': inquiryId + '-log-help', style: { maxHeight: 160, overflow: 'auto', padding: 8, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 12, lineHeight: 1.6 } },
+                h('ol', { role: 'list', style: { margin: 0, paddingLeft: 20 } }, iq.log.slice(-5).map(function(e, i) {
+                  return h('li', { key: i, style: { padding: '6px 0' } }, e.t + ' — ' + e.state + '. Investment $' + e.inv + 'K; horizon ' + e.hor + ' years; community ' + e.comm + '/10; intervention complexity ' + (e.ic != null ? e.ic : e.ec) + '/10; modeled success ' + e.odds + '%.');
+                }))
+              )
             ),
-            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.stewardship.your_hypothesis_which_campaign_would_b', 'Your hypothesis (which campaign would benefit most from MORE community buy-in vs MORE investment?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.stewardship.hypothesis_input', 'Stewardship campaign hypothesis'), placeholder: __alloT('stem.stewardship.e_g_yellowstone_wolves_needed_50_years', 'e.g., Yellowstone wolves needed 50 years of community shift before reintroduction was politically possible — money alone wouldn\'t have worked...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.stewardship.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('label', { htmlFor: inquiryId + '-hypothesis', style: { display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.hypothesis_input', 'Stewardship campaign hypothesis')),
+            h('p', { id: inquiryId + '-hypothesis-help', style: { fontSize: 12, lineHeight: 1.6, margin: '0 0 6px' } }, __alloT('stem.stewardship.your_hypothesis_which_campaign_would_b', 'Your hypothesis (which campaign would benefit most from MORE community buy-in vs MORE investment?)')),
+            h('textarea', { id: inquiryId + '-hypothesis', 'data-stewardship-inquiry-field': 'hypothesis', 'aria-describedby': inquiryId + '-hypothesis-help', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.stewardship.e_g_yellowstone_wolves_needed_50_years', 'e.g., Yellowstone wolves needed 50 years of community shift before reintroduction was politically possible — money alone wouldn\'t have worked...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            h('button', { type: 'button', 'data-stewardship-inquiry-questions-toggle': 'true', 'aria-expanded': !!iq.stuckRevealed, 'aria-controls': inquiryId + '-questions', onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, iq.stuckRevealed ? __alloT('stem.stewardship.hide_open_questions', 'Hide open questions') : __alloT('stem.stewardship.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+            h('div', { id: inquiryId + '-questions', 'data-stewardship-inquiry-questions': 'true', hidden: !iq.stuckRevealed, style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
               h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.stewardship.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
                 h('li', null, __alloT('stem.stewardship.watch_the_vocabulary_the_intervention_', 'Watch the vocabulary: the "intervention complexity" slider tracks how many uncertain, intervention-dependent variables you must manage — NOT biodiversity. Biodiversity-ecosystem-function research (Tilman, Cardinale, Loreau, IPBES) consistently links higher diversity to higher resilience. What real-world projects have high intervention complexity but ALSO high biodiversity outcomes?')),
@@ -2106,10 +2380,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               )
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
-              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+              h('input', { id: inquiryId + '-understood', 'data-stewardship-inquiry-understood': 'true', 'aria-controls': inquiryId + '-explanation-panel', type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.stewardship.i_can_explain_why_this_project_profile', 'I can explain why this project profile yields this stewardship trajectory.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.stewardship.explanation_input', 'Stewardship campaign explanation'), placeholder: __alloT('stem.stewardship.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('div', { id: inquiryId + '-explanation-panel', 'data-stewardship-inquiry-explanation': 'true', hidden: !iq.understood },
+              h('label', { htmlFor: inquiryId + '-explanation', style: { display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.explanation_input', 'Stewardship campaign explanation')),
+              h('textarea', { id: inquiryId + '-explanation', 'data-stewardship-inquiry-field': 'explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.stewardship.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } })),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.stewardship.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Linear scoring is pedagogical only; real stewardship has tipping points, lag effects, and qualitative shifts that don\'t fit a single index.'))
           );
             })()
@@ -2117,29 +2393,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         ),
 
         // Aggregate progress strip
-        h('div', {
+        h('dl', { 'data-stewardship-progress-summary': 'true',
           style: {
-            padding: 14, borderRadius: 12, marginBottom: 16,
+            padding: 14, borderRadius: 12, margin: '0 0 16px',
             background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)',
             borderTop: '1px solid rgba(134,239,172,0.4)', borderRight: '1px solid rgba(134,239,172,0.4)', borderBottom: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #16a34a',
             display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10
           }
         },
           h('div', null,
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.campaigns_scenarios_complete', 'Campaigns + scenarios complete')),
-            h('div', { style: { fontSize: 26, fontWeight: 900, color: '#86efac' } }, totalComplete + ' / ' + totalAvailable)
+            h('dt', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.campaigns_scenarios_complete', 'Campaigns + scenarios complete')),
+            h('dd', { style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#86efac' } }, totalComplete + ' / ' + totalAvailable)
           ),
           h('div', null,
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.in_progress', 'In progress')),
-            h('div', { style: { fontSize: 26, fontWeight: 900, color: '#fbbf24' } }, inProgressCount)
+            h('dt', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.in_progress', 'In progress')),
+            h('dd', { style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#fbbf24' } }, totalInProgress)
           ),
           h('div', null,
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.top_tier_outcomes', 'Top-tier outcomes')),
-            h('div', { style: { fontSize: 26, fontWeight: 900, color: '#a855f7' } }, totalTopTier + ' / ' + totalAvailable)
+            h('dt', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.top_tier_outcomes', 'Top-tier outcomes')),
+            h('dd', { style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#a855f7' } }, totalTopTier + ' / ' + totalAvailable)
           ),
           h('div', null,
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.stewardship_tier', 'Stewardship tier')),
-            h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac' } }, earnedTiers.length > 0 ? earnedTiers[earnedTiers.length - 1].icon + ' ' + earnedTiers[earnedTiers.length - 1].label : '🌑 Not yet earned')
+            h('dt', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.stewardship_tier', 'Stewardship tier')),
+            h('dd', { style: { margin: 0, fontSize: 16, fontWeight: 900, color: '#86efac' } }, earnedTiers.length > 0 ? earnedTiers[earnedTiers.length - 1].icon + ' ' + earnedTiers[earnedTiers.length - 1].label : '🌑 Not yet earned')
           )
         ),
 
@@ -2154,7 +2430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 style: {
                   background: earned ? 'rgba(134,239,172,0.10)' : '#1e293b',
                   border: '1px solid ' + (earned ? '#86efac' : '#334155'),
-                  borderRadius: 10, padding: 10, opacity: earned ? 1 : 0.6
+                  borderRadius: 10, padding: 10, opacity: 1
                 }
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
@@ -2191,7 +2467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 16, fontWeight: 800 } }, __alloT('stem.stewardship.cross_campaign_synthesis', 'Cross-Campaign Synthesis')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Patterns that show up across the campaigns you have completed (' + completedCount + ' / 5). These are the structural insights the five campaigns are designed to teach together.')
               ),
-              h('button', { onClick: startComparison, 'aria-label': __alloT('stem.stewardship.compare_two_of_your_completed_campaign', 'Compare two of your completed campaigns side by side'),
+              h('button', { 'data-stewardship-action': 'compare', onClick: startComparison, 'aria-label': __alloT('stem.stewardship.compare_two_campaigns_2', '🔀 Compare two campaigns'),
                 style: { background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#e9d5ff', fontSize: 12, fontWeight: 700 } }, __alloT('stem.stewardship.compare_two_campaigns_2', '🔀 Compare two campaigns'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 } },
@@ -2257,20 +2533,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         ),
 
         // Campaign tiles
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 12, marginBottom: 16 } },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))', gap: 12, marginBottom: 16 } },
           snapshots.map(function(snap) {
             var c = snap.campaign;
             var s = snap.state;
             var pct = (s.year && s.maxYears) ? Math.round((s.year / s.maxYears) * 100) : 0;
             var outcome = s.outcome;
+            var campaignPeriod = campaignPeriodLabel(c);
+            var campaignAction = s.status === 'inProgress' ? __alloT('stem.stewardship.continue_campaign_action', 'Continue →') : s.status === 'complete' ? __alloT('stem.stewardship.replay_campaign_action', 'Replay →') : __alloT('stem.stewardship.launch_campaign_action', 'Launch →');
             return h('div', {
-              key: c.id,
+              key: c.id, 'data-stewardship-campaign': c.id,
               style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, borderLeft: '3px solid ' + c.color, display: 'flex', flexDirection: 'column', gap: 10 }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 28 } }, c.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontWeight: 800, color: c.color, fontSize: 15 } }, c.label),
+                  h('div', { style: { fontWeight: 800, color: stewardshipAccent(c.color), fontSize: 15 } }, c.label),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, c.scale)
                 ),
                 h('span', { style: { background: statusColor(s.status) + '22', color: statusColor(s.status), border: '1px solid ' + statusColor(s.status) + '66', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 } }, statusLabel(s.status))
@@ -2284,34 +2562,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
               // Progress / outcome section
               s.status === 'inProgress' ? h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 8 } },
-                h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4, fontWeight: 700 } }, 'Year ' + s.year + ' of ' + s.maxYears + ' (' + pct + '%)' + (s.difficulty ? ' · ' + s.difficulty : '')),
+                h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4, fontWeight: 700 } }, campaignPeriod + ' ' + s.year + ' ' + __alloT('stem.stewardship.of', 'of') + ' ' + s.maxYears + ' (' + pct + '%)' + (s.difficulty ? ' · ' + s.difficulty : '')),
                 h('div', { style: { height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' } },
                   h('div', { style: { width: pct + '%', height: '100%', background: c.color, borderRadius: 3, transition: 'width 0.4s' } })
                 )
               ) : null,
               s.status === 'complete' && outcome ? h('div', { style: { background: (outcome.color || '#86efac') + '15', borderRadius: 8, padding: 8, borderLeft: '3px solid ' + (outcome.color || '#86efac') } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: outcome.color || '#86efac' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
-                isTopTier(outcome) ? h('div', { style: { fontSize: 10, color: '#a855f7', marginTop: 2, fontWeight: 700 } }, __alloT('stem.stewardship.top_tier_outcome', '🌟 Top-tier outcome')) : null
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: stewardshipAccent(outcome.color || '#86efac') } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
+                isTopTier(outcome) ? h('div', { style: { fontSize: 10, color: '#d8b4fe', marginTop: 2, fontWeight: 700 } }, __alloT('stem.stewardship.top_tier_outcome', '🌟 Top-tier outcome')) : null
               ) : null,
 
               h('div', { style: { marginTop: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 h('button', {
-                  onClick: function() { launchCampaign(c); },
-                  'aria-label': 'Launch ' + c.label,
+                  onClick: function() { launchCampaign(c); }, 'data-stewardship-primary-action': 'true',
+                  'aria-label': campaignAction + ': ' + c.label, 'data-stewardship-action': 'campaign:' + c.id,
                   style: {
                     flex: 1, minWidth: 100,
                     padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
                     background: 'linear-gradient(135deg, ' + c.color + ' 0%, ' + c.color + 'cc 100%)',
                     color: '#fff', fontWeight: 800, fontSize: 13
                   }
-                }, s.status === 'inProgress' ? 'Continue →' : (s.status === 'complete' ? 'Replay →' : 'Launch →')),
+                }, campaignAction),
                 s.status === 'complete' ? h('button', {
-                  onClick: function() { viewReport(c.id); },
-                  'aria-label': 'View printable report for ' + c.label,
+                  'data-stewardship-action': 'report:' + c.id, onClick: function() { viewReport(c.id); },
+                  'aria-label': __alloT('stem.stewardship.report', '🖨 Report') + ': ' + c.label,
                   title: __alloT('stem.stewardship.view_printable_campaign_report', 'View printable campaign report'),
                   style: {
                     padding: '10px 12px', borderRadius: 10, border: '1px solid ' + c.color + '88', cursor: 'pointer',
-                    background: 'rgba(15,23,42,0.5)', color: c.color, fontWeight: 700, fontSize: 12
+                    background: 'rgba(15,23,42,0.5)', color: stewardshipAccent(c.color), fontWeight: 700, fontSize: 12
                   }
                 }, __alloT('stem.stewardship.report', '🖨 Report')) : null
               )
@@ -2326,10 +2604,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         ),
 
         // Scenarios catalog grid
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 12, marginBottom: 16 } },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))', gap: 12, marginBottom: 16 } },
           scenarioSnaps.map(function(snap) {
             var sc = snap.scenario;
             var state = snap.state;
+            var scenarioAction = state.status === 'inProgress' ? __alloT('stem.stewardship.continue_scenario_action', 'Continue →') : state.status === 'complete' ? __alloT('stem.stewardship.review_scenario_action', 'Review →') : __alloT('stem.stewardship.begin_scenario_action', 'Begin →');
             var familyMeta = FAMILY_COLORS[sc.family] || { primary: '#86efac', mechanic: '' };
             var pct = (state.step && sc.decisions.length) ? Math.round((state.step / sc.decisions.length) * 100) : 0;
             return h('div', {
@@ -2340,7 +2619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 h('span', { style: { fontSize: 28 } }, sc.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, sc.regionFlag + ' ' + sc.region.split(' · ')[0]),
-                  h('div', { style: { fontWeight: 800, color: sc.color, fontSize: 15 } }, sc.label),
+                  h('div', { style: { fontWeight: 800, color: stewardshipAccent(sc.color), fontSize: 15 } }, sc.label),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, sc.scale)
                 ),
                 h('span', { style: { background: statusColor(state.status) + '22', color: statusColor(state.status), border: '1px solid ' + statusColor(state.status) + '66', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 } }, statusLabel(state.status))
@@ -2356,28 +2635,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 )
               ) : null,
               state.status === 'complete' && state.outcome ? h('div', { style: { background: (state.outcome.color || '#86efac') + '15', borderRadius: 8, padding: 8, borderLeft: '3px solid ' + (state.outcome.color || '#86efac') } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: state.outcome.color || '#86efac' } }, (state.outcome.icon || '🏆') + ' ' + state.outcome.label),
-                isScenarioTopTier(state.outcome) ? h('div', { style: { fontSize: 10, color: '#a855f7', marginTop: 2, fontWeight: 700 } }, __alloT('stem.stewardship.top_tier_outcome_2', '🌟 Top-tier outcome')) : null
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: stewardshipAccent(state.outcome.color || '#86efac') } }, (state.outcome.icon || '🏆') + ' ' + state.outcome.label),
+                isScenarioTopTier(state.outcome) ? h('div', { style: { fontSize: 10, color: '#d8b4fe', marginTop: 2, fontWeight: 700 } }, __alloT('stem.stewardship.top_tier_outcome_2', '🌟 Top-tier outcome')) : null
               ) : null,
 
               h('div', { style: { marginTop: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 h('button', {
-                  onClick: function() { openScenario(sc.id); },
-                  'aria-label': 'Open ' + sc.label,
+                  'data-stewardship-action': 'scenario:' + sc.id, onClick: function() { openScenario(sc.id); }, 'data-stewardship-primary-action': 'true',
+                  'aria-label': scenarioAction + ': ' + sc.label,
                   style: {
                     flex: 1, minWidth: 100,
                     padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
                     background: 'linear-gradient(135deg, ' + sc.color + ' 0%, ' + sc.color + 'cc 100%)',
                     color: '#fff', fontWeight: 800, fontSize: 13
                   }
-                }, state.status === 'inProgress' ? 'Continue →' : (state.status === 'complete' ? 'Review →' : 'Begin →')),
+                }, scenarioAction),
                 state.status === 'complete' ? h('button', {
-                  onClick: function() { resetScenario(sc.id); openScenario(sc.id); },
-                  'aria-label': 'Replay ' + sc.label,
+                  'data-stewardship-action': 'replay:' + sc.id, onClick: function() { resetScenario(sc.id); openScenario(sc.id, true); },
+                  'aria-label': __alloT('stem.stewardship.replay_scenario', 'Replay scenario') + ': ' + sc.label,
                   title: __alloT('stem.stewardship.reset_and_replay_this_scenario', 'Reset and replay this scenario'),
                   style: {
                     padding: '10px 12px', borderRadius: 10, border: '1px solid ' + sc.color + '88', cursor: 'pointer',
-                    background: 'rgba(15,23,42,0.5)', color: sc.color, fontWeight: 700, fontSize: 12
+                    background: 'rgba(15,23,42,0.5)', color: stewardshipAccent(sc.color), fontWeight: 700, fontSize: 12
                   }
                 }, '↻') : null
               )

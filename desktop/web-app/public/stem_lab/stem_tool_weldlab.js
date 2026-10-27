@@ -191,6 +191,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     document.head.appendChild(style);
   })();
 
+  // Keep explicit selections visible when the app contrast theme flattens button fills.
+  // Underlining is a non-color cue; leave the native focus ring and hover colors intact.
+  (function () {
+    if (document.getElementById('weldlab-selection-css')) return;
+    var style = document.createElement('style');
+    style.id = 'weldlab-selection-css';
+    style.textContent = '@media screen{.theme-contrast [data-weld-view] button:is([aria-pressed="true"],[aria-selected="true"],[aria-checked="true"]){border-color:#ffffff!important;text-decoration-line:underline!important;text-decoration-style:solid!important;text-decoration-thickness:2px!important;text-underline-offset:3px!important}}';
+    document.head.appendChild(style);
+  })();
+
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-weldlab')) return;
@@ -7009,12 +7019,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('path', { d: 'M ' + x0 + ' ' + topY + ' Q ' + cx + ' ' + (topY - 2 * r) + ' ' + x1 + ' ' + topY + ' Z', fill: '#fb923c', stroke: '#fed7aa', strokeWidth: 1 }),
               // 1 width (below the plate), 2 reinforcement, 3 penetration
               h('line', { x1: x0, y1: topY + th + 10, x2: x1, y2: topY + th + 10, stroke: '#e2e8f0', strokeWidth: 1 }),
-              h('line', { x1: x0, y1: topY, x2: x0, y2: topY + th + 14, stroke: '#94a3b8', strokeWidth: 0.75, strokeDasharray: '2 2' }),
-              h('line', { x1: x1, y1: topY, x2: x1, y2: topY + th + 14, stroke: '#94a3b8', strokeWidth: 0.75, strokeDasharray: '2 2' }),
+              h('g', { 'data-hi-width-guide': 'start' },
+                h('line', { 'data-hi-guide-ground': 'plate', x1: x0, y1: topY, x2: x0, y2: topY + th, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '2 2' }),
+                h('line', { 'data-hi-guide-ground': 'canvas', x1: x0, y1: topY + th, x2: x0, y2: topY + th + 14, stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '2 2', strokeDashoffset: th % 4 })
+              ),
+              h('g', { 'data-hi-width-guide': 'end' },
+                h('line', { 'data-hi-guide-ground': 'plate', x1: x1, y1: topY, x2: x1, y2: topY + th, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '2 2' }),
+                h('line', { 'data-hi-guide-ground': 'canvas', x1: x1, y1: topY + th, x2: x1, y2: topY + th + 14, stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '2 2', strokeDashoffset: th % 4 })
+              ),
               h('text', { x: cx, y: topY + th + 24, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, '1'),
               h('line', { x1: x1 + 10, y1: topY - r, x2: x1 + 10, y2: topY, stroke: '#e2e8f0', strokeWidth: 1.5 }),
               h('text', { x: x1 + 16, y: topY - r / 2 + 4, fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, '2'),
-              h('line', { x1: x0 - 10, y1: topY, x2: x0 - 10, y2: topY + p, stroke: '#e2e8f0', strokeWidth: 1.5 }),
+              h('line', { 'data-hi-penetration-dimension': '', x1: x0 - 10, y1: topY, x2: x0 - 10, y2: topY + p, stroke: '#0f172a', strokeWidth: 1.5 }),
               h('g', { 'data-hi-preview-label': 'penetration' },
                 h('rect', { x: x0 - 25, y: topY + p / 2 - 9, width: 14, height: 18, rx: 2, fill: '#0f172a' }),
                 h('text', { x: x0 - 22, y: topY + p / 2 + 4, fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, '3')
@@ -7353,6 +7369,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var pinState = useState(function () { return arcNormPin(d.arc_pin); });
         var missionsState = useState(function () { return arcNormMissions(d.arc_missions); });
         var arcIntervalState = useState(0);
+        var arcIntervalSelectRef = useRef(null), arcIntervalFocusRef = useRef(false);
+        // Consume only explicit boundary-navigation requests after the native value updates.
+        useEffect(function () {
+          if (!arcIntervalFocusRef.current) return;
+          arcIntervalFocusRef.current = false;
+          var target = arcIntervalSelectRef.current;
+          if (target) { try { target.focus(); } catch (_) {} }
+        });
         var hintState = useState(0);
         var resultState = useState(null);
         var grabHintState = useState(false);
@@ -8320,7 +8344,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           }
           // Unfused boundary: where the crown sits on the plate without melting into it.
           if (fusedW < w - 1) {
-            els.push(h('path', { key: 'lof', d: 'M' + x0 + ' ' + (sy + 1) + ' L' + (cx - fusedW / 2) + ' ' + (sy + 1) + ' M' + (cx + fusedW / 2) + ' ' + (sy + 1) + ' L' + x1 + ' ' + (sy + 1), stroke: '#f87171', strokeWidth: 3, strokeDasharray: '4 3' }));
+            var unfusedPath = 'M' + x0 + ' ' + (sy + 1) + ' L' + (cx - fusedW / 2) + ' ' + (sy + 1) + ' M' + (cx + fusedW / 2) + ' ' + (sy + 1) + ' L' + x1 + ' ' + (sy + 1);
+            els.push(h('g', { key: 'lof' },
+              h('path', { 'data-arc-xs-unfused-outline': '', d: unfusedPath, fill: 'none', stroke: '#0f172a', strokeWidth: 6, strokeDasharray: '4 3' }),
+              h('path', { 'data-arc-xs-unfused': '', d: unfusedPath, fill: 'none', stroke: '#f87171', strokeWidth: 3, strokeDasharray: '4 3' })));
           }
           if (dfx.undercut > 0) {
             var ud = Math.max(2, (0.01 + 0.03 * dfx.undercut) * S);
@@ -8344,16 +8371,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             }
           }
           // 70% target line.
-          els.push(h('line', { key: 'tgt', x1: px0, y1: tgtY, x2: px1, y2: tgtY, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '6 4' }));
+          els.push(h('g', { key: 'tgt' },
+            h('line', { 'data-arc-xs-target-outline': '', x1: px0, y1: tgtY, x2: px1, y2: tgtY, stroke: '#0f172a', strokeWidth: 4.5, strokeDasharray: '6 4' }),
+            h('line', { 'data-arc-xs-target': '', x1: px0, y1: tgtY, x2: px1, y2: tgtY, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '6 4' })));
           // Pinned bead ghost.
           if (pinReport) {
             var gw = pinReport.width * S, gr = pinReport.reinf * S, gp = Math.min(pinReport.penetration, r.TH) * S;
-            els.push(h('path', { key: 'ghost', d: 'M' + (cx - gw / 2) + ' ' + sy + ' Q' + cx + ' ' + (sy - 2 * gr) + ' ' + (cx + gw / 2) + ' ' + sy + ' A' + (gw / 2) + ' ' + Math.max(1, gp) + ' 0 0 1 ' + (cx - gw / 2) + ' ' + sy, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.6, strokeDasharray: '5 4' }));
+            var ghostPath = 'M' + (cx - gw / 2) + ' ' + sy + ' Q' + cx + ' ' + (sy - 2 * gr) + ' ' + (cx + gw / 2) + ' ' + sy + ' A' + (gw / 2) + ' ' + Math.max(1, gp) + ' 0 0 1 ' + (cx - gw / 2) + ' ' + sy;
+            els.push(h('g', { key: 'ghost' },
+              h('path', { 'data-arc-xs-ghost-outline': '', d: ghostPath, fill: 'none', stroke: '#0f172a', strokeWidth: 4.6, strokeDasharray: '5 4' }),
+              h('path', { 'data-arc-xs-ghost': '', d: ghostPath, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.6, strokeDasharray: '5 4' })));
           }
           // Numbered callouts; their meaning lives in the HTML legend.
           function callout(n, x, y, tx, ty) {
             return h('g', { key: 'c' + n },
-              h('line', { x1: x, y1: y, x2: tx, y2: ty, stroke: '#fde68a', strokeWidth: 1 }),
+              h('line', { 'data-arc-xs-leader-outline': n, x1: x, y1: y, x2: tx, y2: ty, stroke: '#0f172a', strokeWidth: 4 }),
+              h('line', { 'data-arc-xs-leader': n, x1: x, y1: y, x2: tx, y2: ty, stroke: '#fde68a', strokeWidth: 1 }),
               h('circle', { cx: x, cy: y, r: 9, fill: '#fde68a', stroke: '#0f172a', strokeWidth: 1.5 }),
               h('text', { x: x, y: y + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#0f172a' }, String(n)));
           }
@@ -8502,7 +8535,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('ellipse', { cx: cx, cy: y, rx: fused / 2 + r.haz * scale, ry: depth + r.haz * scale, fill: '#8f99a5' }),
               h('ellipse', { cx: cx, cy: y, rx: Math.max(2, fused / 2), ry: Math.max(2, depth), fill: '#5b6573' })));
             els.push(h('path', { key: 'crown', d: 'M' + (cx - width / 2) + ' ' + y + ' Q' + cx + ' ' + (y - 2 * crown) + ' ' + (cx + width / 2) + ' ' + y + ' Z', fill: '#6b7480', stroke: '#e2e8f0', strokeWidth: 1 }));
-            if (fused < width - 1) els.push(h('path', { key: 'unfused', d: 'M' + (cx - width / 2) + ' ' + (y + 1) + ' H' + (cx - fused / 2) + ' M' + (cx + fused / 2) + ' ' + (y + 1) + ' H' + (cx + width / 2), stroke: '#f87171', strokeWidth: 3, strokeDasharray: '4 3' }));
+            if (fused < width - 1) {
+              var unfusedPath = 'M' + (cx - width / 2) + ' ' + (y + 1) + ' H' + (cx - fused / 2) + ' M' + (cx + fused / 2) + ' ' + (y + 1) + ' H' + (cx + width / 2);
+              els.push(h('g', { key: 'unfused' },
+                h('path', { 'data-arc-compare-unfused-outline': '', d: unfusedPath, fill: 'none', stroke: '#ffffff', strokeWidth: 5, strokeDasharray: '4 3' }),
+                h('path', { 'data-arc-compare-unfused': '', d: unfusedPath, fill: 'none', stroke: isContrast ? '#000000' : '#0f172a', strokeWidth: 3, strokeDasharray: '4 3' })));
+            }
             if (!burned && r.defects.porosity > 0) {
               for (var pi = 0; pi < Math.round(2 + 6 * r.defects.porosity); pi++) {
                 els.push(h('circle', { key: 'pore' + pi, cx: cx + (arcHash(pi * 5.3) - 0.5) * fused * 0.7, cy: y + 2 + arcHash(pi * 7.9) * Math.max(0, depth * 0.65 - 2), r: 1.5 + arcHash(pi * 3.7), fill: bg, stroke: '#f87171', strokeWidth: 0.7 }));
@@ -8567,6 +8605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             if (part.lof > 0) pen = Math.min(pen, Math.max(3, pen * (1 - part.lof)));
             var x0 = cx - w / 2, x1 = cx + w / 2, by = sy + thPx, burned = part.bt >= ARC_REJECT_AT;
             var hole = Math.max(6, w * (0.22 + 0.22 * part.bt));
+            var unfusedPath = 'M' + x0 + ' ' + (sy + 1) + ' L' + (cx - fused / 2) + ' ' + (sy + 1) + ' M' + (cx + fused / 2) + ' ' + (sy + 1) + ' L' + x1 + ' ' + (sy + 1);
             return h('svg', { 'data-arc-interval-section': index, 'data-scale': S, 'data-width': part.width, 'data-reinforcement': part.reinf, 'data-penetration': part.penetration,
               'data-burned': burned ? 'true' : 'false', viewBox: '0 0 480 280', role: 'img',
               'aria-label': __alloFill(__alloT('stem.weldlab.arc12_section_aria', 'Model section of recorded interval {value1}. Width approximately {value2} inches, cap height {value3} inches, model penetration {value4} inches. {value5} Full readings and defect values follow.'), {
@@ -8579,7 +8618,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               !burned && part.penetration >= TH && h('path', { 'data-arc-interval-root': '', d: 'M' + (cx - fused * 0.32) + ' ' + by + ' Q' + cx + ' ' + (by + 2 * Math.min(30, Math.max(3, (part.penetration - TH) * S + 4))) + ' ' + (cx + fused * 0.32) + ' ' + by + ' Z', fill: '#5b6573' }),
               h('path', { 'data-arc-interval-cap': '', d: 'M' + x0 + ' ' + sy + ' Q' + cx + ' ' + (sy - 2 * rf) + ' ' + x1 + ' ' + sy + ' Z', fill: '#6b7480', stroke: '#ffffff', strokeWidth: 1.5 }),
               burned && h('rect', { 'data-arc-interval-hole': '', x: cx - hole / 2, y: sy - 2 * rf - 2, width: hole, height: thPx + 2 * rf + 4, fill: '#0f172a' }),
-              fused < w - 1 && h('path', { 'data-arc-interval-unfused': '', d: 'M' + x0 + ' ' + (sy + 1) + ' L' + (cx - fused / 2) + ' ' + (sy + 1) + ' M' + (cx + fused / 2) + ' ' + (sy + 1) + ' L' + x1 + ' ' + (sy + 1), stroke: isContrast ? '#ffff00' : '#f87171', strokeWidth: 3, strokeDasharray: '4 3' }),
+              fused < w - 1 && h('g', null,
+                h('path', { 'data-arc-interval-unfused-outline': '', d: unfusedPath, fill: 'none', stroke: '#ffffff', strokeWidth: 5, strokeDasharray: '4 3' }),
+                h('path', { 'data-arc-interval-unfused': '', d: unfusedPath, fill: 'none', stroke: isContrast ? '#000000' : '#0f172a', strokeWidth: 3, strokeDasharray: '4 3' })),
               h('line', { 'data-arc-interval-width-line': '', x1: x0, x2: x1, y1: 240, y2: 240, stroke: isContrast ? '#ffff00' : '#67e8f9', strokeWidth: 3 }),
               h('path', { d: 'M' + x0 + ' 234 V246 M' + x1 + ' 234 V246', stroke: isContrast ? '#ffff00' : '#67e8f9', strokeWidth: 2 }),
               h('g', { 'data-arc-interval-ruler': '', stroke: '#ffffff', strokeWidth: 2 }, h('line', { x1: 140, x2: 340, y1: 264, y2: 264 }), h('path', { d: 'M140 258 V270 M340 258 V270' })));
@@ -8594,11 +8635,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('p', { className: 'text-base leading-relaxed' }, __alloT('stem.weldlab.arc12_intro', 'Connect a quarter-inch interval on the recorded pass with its travel speed and model shape. This inspection does not move the torch or change the pass.')),
               !count ? h('p', { 'data-arc-interval-empty': '', className: 'text-base font-bold' }, __alloT('stem.weldlab.arc12_empty', 'Record an interval with the hands-on torch or Weld steady to inspect it here.')) : h(React.Fragment, null,
                 h('div', { className: 'flex flex-wrap items-end gap-2' },
-                  h('button', { type: 'button', 'data-arc-interval-prev': '', disabled: index === 0, onClick: function () { choose(index - 1); }, style: controls, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.arc12_previous', '← Previous interval')),
+                  h('button', { type: 'button', 'data-arc-interval-prev': '', disabled: index === 0, onClick: function () { if (index === 1) arcIntervalFocusRef.current = true; choose(index - 1); }, style: controls, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.arc12_previous', '← Previous interval')),
                   h('label', { className: 'flex-1 min-w-0 block space-y-2 text-base font-bold', style: { minWidth: 160 } }, h('span', { className: 'block' }, __alloT('stem.weldlab.arc12_select', 'Recorded interval')),
-                    h('select', { 'data-arc-interval-select': '', value: index, onChange: function (event) { choose(event.target.value); }, style: Object.assign({}, controls, { width: '100%' }) }, run.map(function (speed, i) {
+                    h('select', { ref: arcIntervalSelectRef, 'data-arc-interval-select': '', value: index, onChange: function (event) { choose(event.target.value); }, style: Object.assign({}, controls, { width: '100%' }) }, run.map(function (speed, i) {
                       return h('option', { key: i, value: i }, __alloFill(__alloT('stem.weldlab.arc12_option', '{value1} · {value2}–{value3} in'), { value1: i + 1, value2: (i * segLenIn).toFixed(2), value3: ((i + 1) * segLenIn).toFixed(2) })); }))),
-                  h('button', { type: 'button', 'data-arc-interval-next': '', disabled: index === count - 1, onClick: function () { choose(index + 1); }, style: controls, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.arc12_next', 'Next interval →'))),
+                  h('button', { type: 'button', 'data-arc-interval-next': '', disabled: index === count - 1, onClick: function () { if (index === count - 2) arcIntervalFocusRef.current = true; choose(index + 1); }, style: controls, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.arc12_next', 'Next interval →'))),
                 h('p', { 'data-arc-interval-position': index, 'data-start': index * segLenIn, 'data-end': (index + 1) * segLenIn, 'data-recorded-end': count * segLenIn, className: 'text-base font-bold', 'aria-live': 'polite', 'aria-atomic': 'true' },
                   __alloFill(__alloT('stem.weldlab.arc12_position', 'Interval {value1} of {value2}: {value3}–{value4} in along the 8-in pass. Recorded through {value5} in.'), { value1: index + 1, value2: count, value3: (index * segLenIn).toFixed(2), value4: ((index + 1) * segLenIn).toFixed(2), value5: (count * segLenIn).toFixed(2) })),
                 h('figure', { className: 'space-y-2' },
@@ -11338,6 +11379,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var reviewState = useState({ selected: null, mode: 'surface', records: {} });
         var review = reviewState[0], setReview = reviewState[1];
         var reviewRef = useRef(null);
+        var reviewSelectedRef = useRef(null), reviewEndpointFocusRef = useRef(false);
+        // A boundary disables the activated navigation button; focus its committed finding.
+        useEffect(function () {
+          if (!reviewEndpointFocusRef.current) return;
+          reviewEndpointFocusRef.current = false;
+          var target = reviewSelectedRef.current;
+          if (target) { try { target.focus(); } catch (_) {} }
+        });
         var pendingEvidenceRef = useRef(null);
         var lastSizeRef = useRef({ W: 900, H: 280 });
         var sectFeatsRef = useRef([]);
@@ -11751,7 +11800,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               }, aspect: 900 / 280, minH: 145, maxH: 240, width: 900, height: 280,
                 label: __alloFill(__alloT('stem.weldlab.hunt6_map_aria', 'Map of {value1} committed findings. Selected finding {value2}, {value3}. Only committed observations have numbered labels.'), { value1: reviewIds.length, value2: calls[reviewId], value3: dh2MarkName(reviewMark) }) })),
             h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.hunt6_findings', 'Committed findings to review'), className: 'flex flex-wrap gap-2' }, reviewIds.map(function (id) { var m = dhFindMark(geom, id), on = id === reviewId;
-              return h('button', { key: id, type: 'button', 'data-hunt-review-pick': id, 'aria-pressed': on, onClick: function () { chooseReview(id); },
+              return h('button', { key: id, ref: on ? reviewSelectedRef : null, type: 'button', 'data-hunt-review-pick': id, 'aria-pressed': on, 'aria-controls': 'hunt6-review-reading', onClick: function () { chooseReview(id); },
                 style: Object.assign({}, buttonStyle, { borderColor: isContrast ? (on ? '#ffff00' : '#ffffff') : on ? '#0369a1' : '#94a3b8', background: isContrast ? (on ? '#ffff00' : '#000000') : on ? '#e0f2fe' : '#ffffff', color: isContrast && on ? '#000000' : ink }), className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50' }, calls[id] + '. ' + dh2MarkName(m)); })),
             h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': __alloT('stem.weldlab.hunt6_view_group', 'Committed finding evidence views') },
               [['surface', __alloT('stem.weldlab.hunt6_surface', 'Surface close-up')], ['lighting', __alloT('stem.weldlab.hunt6_lighting', 'Compare lighting')]].concat(hasSection ? [['section', __alloT('stem.weldlab.hunt6_section', 'Recorded section')]] : []).map(function (choice) {
@@ -11776,14 +11825,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   }
                 }, aspect: 2.8, minH: 170, maxH: 240, width: 640, height: 230,
                   label: __alloFill(__alloT('stem.weldlab.hunt6_section_aria', 'Replay of the already-cut section at {value1} percent, used to locate committed finding {value2}. {value3}'), { value1: dh2Pct(reviewRecord.cutU), value2: calls[reviewId], value3: evidence }) }))),
-            h('dl', { className: 'grid grid-cols-1 gap-2 text-sm' },
+            h('dl', { id: 'hunt6-review-reading', 'data-hunt-review-reading': '', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'grid grid-cols-1 gap-2 text-sm' },
               h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.hunt6_first_call', 'Your committed first call')), h('dd', { 'data-hunt-review-first-call': pick.cls }, dh2ClassInfo(pick.cls).name)),
-              h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.hunt6_identified', 'Feature identified')), h('dd', { 'data-hunt-review-truth': reviewMark.type }, dh2MarkName(reviewMark))),
+              h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.hunt6_identified', 'Feature identified')), h('dd', { 'data-hunt-review-truth': reviewMark.type }, calls[reviewId] + '. ' + dh2MarkName(reviewMark))),
               h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.hunt6_observation', 'Recorded evidence')), h('dd', { 'data-hunt-review-observation': via }, evidence)),
               h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.hunt6_distinguish', 'What distinguishes it')), h('dd', { 'data-hunt-review-explanation': true }, reviewMark.type === 'ok' ? DH2_LOOKS[reviewMark.look].why : DEFECT_INFO[reviewMark.type].tell))),
             h('div', { className: 'flex flex-wrap gap-2' },
-              h('button', { type: 'button', 'data-hunt-review-prev': true, disabled: selected <= 0, onClick: function () { chooseReview(reviewIds[selected - 1]); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.hunt6_prev', '← Previous finding')),
-              h('button', { type: 'button', 'data-hunt-review-next': true, disabled: selected >= reviewIds.length - 1, onClick: function () { chooseReview(reviewIds[selected + 1]); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.hunt6_next', 'Next finding →'))),
+              h('button', { type: 'button', 'data-hunt-review-prev': true, disabled: selected <= 0, 'aria-controls': 'hunt6-review-reading', onClick: function () { if (selected <= 0) return; if (selected === 1) reviewEndpointFocusRef.current = true; chooseReview(reviewIds[selected - 1]); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.hunt6_prev', '← Previous finding')),
+              h('button', { type: 'button', 'data-hunt-review-next': true, disabled: selected >= reviewIds.length - 1, 'aria-controls': 'hunt6-review-reading', onClick: function () { if (selected >= reviewIds.length - 1) return; if (selected === reviewIds.length - 2) reviewEndpointFocusRef.current = true; chooseReview(reviewIds[selected + 1]); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.hunt6_next', 'Next finding →'))),
             h('p', { className: 'text-xs' }, __alloT('stem.weldlab.hunt6_note', 'The map contains committed observations, including normal features and mistaken calls. Lighting uses the same specimen renderer. Section replay is available only when that finding was committed from an actual cut; reviewing spends no cuts and changes no first-call scores.')));
         }
 
@@ -14761,12 +14810,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             { id: 'down', label: __alloT('stem.weldlab.sym10_down', 'Pan down'), dx: 0, dy: height * 0.15, disabled: y >= 430 - height - 0.000000001 }
           ];
           return h('section', { 'data-blueprint-magnifier': true, 'data-zoom': zoom, 'data-x': x, 'data-y': y, 'data-width': width, 'data-height': height, className: 'rounded-xl border-2 p-3 space-y-3', style: { background: isContrast ? '#000000' : '#fff7ed', color: ink, borderColor: edge, '--blueprint-focus': edge } },
-            h('style', null, '[data-blueprint-magnifier] button:focus-visible{outline:3px solid var(--blueprint-focus);outline-offset:3px}[data-blueprint-magnifier] svg,[data-blueprint-magnifier] svg *{transition:none!important;animation:none!important}'),
+            h('style', null, '[data-blueprint-magnifier] button:focus-visible{outline:3px solid var(--blueprint-focus);outline-offset:3px}[data-blueprint-magnifier] [data-blueprint-pan][aria-disabled="true"]{background:' + paper + '!important;color:' + soft + '!important;border-style:dashed!important;border-color:' + edge + '!important;cursor:not-allowed!important}[data-blueprint-magnifier] svg,[data-blueprint-magnifier] svg *{transition:none!important;animation:none!important}'),
             h('div', null,
               h('h3', { className: 'text-base font-black' }, __alloT('stem.weldlab.sym10_title', 'Inspect the whole drawing or follow a leader')),
               h('p', { className: 'text-base mt-1 leading-relaxed', style: { color: soft } }, __alloT('stem.weldlab.sym10_intro', 'Enlarge the drawing, then pan to keep a symbol and the joint its arrow touches in view. Center selected leader fits that symbol, its number and its arrow target. The whole-drawing button restores all three views and the title block.'))),
             h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.sym10_zoom_group', 'Blueprint magnification'), className: 'flex flex-wrap gap-2' }, [1, 2, 3].map(function (value) { var on = zoom === value; return h('button', { key: value, type: 'button', 'data-blueprint-zoom': value, 'aria-pressed': on ? 'true' : 'false', onClick: function () { zoomTo(value); }, style: Object.assign({}, control, { background: on ? edge : paper, color: on ? (isContrast ? '#000000' : '#ffffff') : ink }) }, value + '×'); })),
-            h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.sym10_pan_group', 'Pan within the blueprint'), className: 'flex flex-wrap gap-2' }, directions.map(function (direction) { return h('button', { key: direction.id, type: 'button', 'data-blueprint-pan': direction.id, disabled: direction.disabled, onClick: function () { if (!direction.disabled) setAt(zoom, x + direction.dx, y + direction.dy); }, style: Object.assign({}, control, { background: paper, color: ink, opacity: direction.disabled ? 0.55 : 1 }) }, direction.label); })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.sym10_pan_group', 'Pan within the blueprint'), className: 'flex flex-wrap gap-2' }, directions.map(function (direction) { return h('button', { key: direction.id, type: 'button', 'data-blueprint-pan': direction.id, 'aria-disabled': direction.disabled ? 'true' : 'false', onClick: function () { if (!direction.disabled) setAt(zoom, x + direction.dx, y + direction.dy); }, style: Object.assign({}, control, { background: paper, color: direction.disabled ? soft : ink, borderStyle: direction.disabled ? 'dashed' : 'solid', cursor: direction.disabled ? 'not-allowed' : 'pointer', opacity: 1 }) }, direction.label); })),
             h('div', { className: 'flex flex-wrap gap-2' },
               h('button', { 'data-blueprint-reset': true, type: 'button', onClick: function () { setAt(1, 0, 0); }, style: Object.assign({}, control, { background: paper, color: ink }) }, __alloT('stem.weldlab.sym10_reset', 'Whole drawing')),
               h('button', { 'data-blueprint-center': bpC.id, type: 'button', onClick: centerSelected, style: Object.assign({}, control, { background: paper, color: ink }) }, __alloFill(__alloT('stem.weldlab.sym10_center', 'Center selected leader · {value1}'), { value1: bpC.n }))),
@@ -19634,6 +19683,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var fixState = useState(null);
         var fixDials = fixState[0], setFixDials = fixState[1];
         var repairProbeState = useState(null);
+        var repairCandidateRef = useRef(null), repairApplyFocusRef = useRef(false);
+        // Applying disables its own button; consume only that explicit focus request.
+        useEffect(function () {
+          if (!repairApplyFocusRef.current) return;
+          repairApplyFocusRef.current = false;
+          var target = repairCandidateRef.current;
+          if (target) { try { target.focus(); } catch (_) {} }
+        });
         var diagnoseSectionState = useState(null);
         useEffect(function () { diagnoseSectionState[1](null); }, [ddIdx2]);
         useEffect(function () { setTp(null); setTsec(null); setFixDials(null); repairProbeState[1](null); }, [ddIdx2]);
@@ -19854,7 +19911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('p', { className: 'text-sm', style: { color: soft } }, __alloT('stem.weldlab.repair6_help', 'Choose a dial and explore a candidate value while the other two stay at their current settings. The preview changes; your live repair changes only when you apply the candidate.')),
             h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.repair6_axis_group', 'Dial to explore'), className: 'flex flex-wrap gap-2' }, axes.map(function (item) {
               var on = item.id === axis.id;
-              return h('button', { key: item.id, type: 'button', 'data-repair-axis': item.id, 'aria-pressed': on, onClick: function () { setProbe(item.id, dials[item.id]); }, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50', style: Object.assign({}, buttonStyle, {
+              return h('button', { key: item.id, type: 'button', 'data-repair-axis': item.id, 'aria-pressed': on, 'aria-controls': 'repair6-preview-readings', onClick: function () { setProbe(item.id, dials[item.id]); }, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50', style: Object.assign({}, buttonStyle, {
                 background: on ? (isContrast ? '#ffff00' : '#155e75') : paper, color: on ? (isContrast ? '#000000' : '#ffffff') : (isContrast ? '#ffff00' : '#155e75') }) }, item.name);
             })),
             h('p', { className: 'text-xs font-mono', style: { color: soft } }, __alloFill(__alloT('stem.weldlab.repair6_context', 'Current repair: {value1} · {value2} in plate · {value3} V · {value4} A · {value5} in/min'), {
@@ -19879,10 +19936,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { 'aria-hidden': true, className: 'flex justify-between text-xs font-mono', style: { color: '#ffffff', paddingLeft: 40 } }, h('span', null, axis.min + ' ' + axis.unit), h('span', null, axis.max + ' ' + axis.unit)),
               h('p', { className: 'text-xs', style: { color: '#ffffff' } }, __alloFill(__alloT('stem.weldlab.repair6_markers', 'Dashed cyan: current {value1} {value3} · solid white: candidate {value2} {value3}'), { value1: dials[axis.id], value2: value, value3: axis.unit }))),
             h('label', { className: 'block text-sm font-bold', style: { color: ink }, htmlFor: 'repair6-candidate' }, __alloFill(__alloT('stem.weldlab.repair6_candidate', 'Candidate {value1}: {value2} {value3}'), { value1: axis.name, value2: value, value3: axis.unit })),
-            h('input', { id: 'repair6-candidate', 'data-repair-candidate': '', type: 'range', min: axis.min, max: axis.max, step: axis.step, value: value,
+            h('input', { id: 'repair6-candidate', ref: repairCandidateRef, 'data-repair-candidate': '', 'aria-describedby': 'repair6-preview-readings', type: 'range', min: axis.min, max: axis.max, step: axis.step, value: value,
               onChange: function (e) { var n = Number(e.target.value); if (isFinite(n)) setProbe(axis.id, clamp(n, axis.min, axis.max)); }, className: 'focus:outline-none focus:ring-4 ring-cyan-500/50', style: { display: 'block', width: '100%', minHeight: 44, accentColor: edge } }),
             h('div', { 'data-repair-preview': '', 'data-target-index': trial.target, 'data-other-count': trial.others.length, 'data-net': trial.net, 'data-cleared': trial.cleared, className: 'flex flex-wrap gap-3' },
-              h('div', { className: 'rounded-xl border p-3 space-y-2', style: { flex: '1 1 180px', minWidth: 0, borderColor: edge, background: paper } },
+              h('div', { id: 'repair6-preview-readings', 'data-repair-preview-readings': '', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-xl border p-3 space-y-2', style: { flex: '1 1 180px', minWidth: 0, borderColor: edge, background: paper } },
                 h('h5', { className: 'font-black text-sm', style: { color: ink } }, __alloT('stem.weldlab.repair6_preview_title', 'Candidate preview')),
                 h('p', { className: 'text-sm font-mono', style: { color: ink } }, __alloFill(__alloT('stem.weldlab.repair6_target_value', 'Target index: {value1}% · heat input: {value2} kJ/in'), { value1: (trial.target * 100).toFixed(1), value2: trial.net.toFixed(2) })),
                 h('p', { className: 'text-sm font-bold', style: { color: ink } }, trial.cleared ? __alloT('stem.weldlab.repair6_clean', 'No defects reported by the lesson model at this candidate.') : __alloT('stem.weldlab.repair6_active', 'Defects reported at this candidate:')),
@@ -19892,8 +19949,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   label: __alloT('stem.weldlab.repair6_section_aria', 'Etched-section preview of the candidate settings. Modeled defect names and indices are listed beside it.') }),
                 h('figcaption', { className: 'text-xs', style: { color: '#ffffff' } }, __alloT('stem.weldlab.repair6_section', 'Candidate section · schematic')))),
             h('div', { className: 'flex flex-wrap gap-2' },
-              h('button', { type: 'button', 'data-repair-apply': '', disabled: value === dials[axis.id], onClick: function () { setDial(axis.id, value); }, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50', style: buttonStyle }, __alloT('stem.weldlab.repair6_apply', 'Apply candidate to the live repair')),
-              h('button', { type: 'button', 'data-repair-use-current': '', onClick: function () { setProbe(axis.id, dials[axis.id]); }, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50', style: buttonStyle }, __alloT('stem.weldlab.repair6_use_current', 'Probe the current value'))),
+              h('button', { type: 'button', 'data-repair-apply': '', disabled: value === dials[axis.id], 'aria-controls': 'repair6-preview-readings', onClick: function () { if (value === dials[axis.id]) return; repairApplyFocusRef.current = true; setDial(axis.id, value); }, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50', style: buttonStyle }, __alloT('stem.weldlab.repair6_apply', 'Apply candidate to the live repair')),
+              h('button', { type: 'button', 'data-repair-use-current': '', 'aria-controls': 'repair6-preview-readings', onClick: function () { setProbe(axis.id, dials[axis.id]); }, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50', style: buttonStyle }, __alloT('stem.weldlab.repair6_use_current', 'Probe the current value'))),
             h('p', { className: 'text-xs', style: { color: soft } }, __alloT('stem.weldlab.repair6_note', 'The curves sample the same model at each slider step; the probe is evaluated at its exact value. Indices describe this lesson model, not a probability or an acceptance decision. Removing the target can introduce another defect.'))
           );
         }
@@ -24221,6 +24278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
         function followWorkflowConnection() {
           if (flowNext === null) return;
+          if (flowNext === 8) focusCodesStep('workflow');
           workflowTraceState[1]({ step: flowNext, route: 'forward', last: { from: flowStep, to: flowNext, route: flowRoute } });
         }
 
@@ -24390,11 +24448,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var sortCard = INSP2_SORT[sortIdx] || INSP2_SORT[0];
         var sortAnswered = Object.prototype.hasOwnProperty.call(sortPicks, sortCard.id);
         var sortStepRef = useRef(null), clauseStepRef = useRef(null);
+        var wpsFieldSelectRef = useRef(null), workflowSelectedStepRef = useRef(null);
+        var codeReaderSearchRef = useRef(null), codeReaderSectionRef = useRef(null);
         var codesStepFocusState = useState(null);
         function focusCodesStep(target) { codesStepFocusState[1]({ target: target }); }
         useEffect(function () {
           var request = codesStepFocusState[0];
-          var target = request && (request.target === 'sort' ? sortStepRef.current : clauseStepRef.current);
+          var target = request && (request.target === 'sort' ? sortStepRef.current : request.target === 'clause' ? clauseStepRef.current : request.target === 'wps-field' ? wpsFieldSelectRef.current : request.target === 'workflow' ? workflowSelectedStepRef.current : request.target === 'reader-search' ? codeReaderSearchRef.current : request.target === 'reader-section' ? codeReaderSectionRef.current : null);
           if (target) { try { target.focus(); } catch (_) {} }
         }, [codesStepFocusState[0]]);
         var sortFbRef = useRef(null);
@@ -24537,7 +24597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           var controls = { minHeight: 44, padding: '8px 12px', borderRadius: 9, border: '2px solid ' + edge, color: ink, background: paper, fontWeight: 800, fontSize: 13 };
           function routeButton(route, label) {
             var on = flowRoute === route;
-            return h('button', { key: route, type: 'button', 'data-codes-flow-route': route, 'aria-pressed': on ? 'true' : 'false', onClick: function () { chooseWorkflowRoute(route); },
+            return h('button', { key: route, type: 'button', 'data-codes-flow-route': route, 'aria-pressed': on ? 'true' : 'false', 'aria-controls': 'codes6-flow-result', onClick: function () { chooseWorkflowRoute(route); },
               className: 'focus:outline-none focus:ring-4 ring-cyan-500/50', style: Object.assign({}, controls, { borderColor: on ? accent : edge, background: on ? accent : paper, color: on ? (isContrast ? '#000000' : '#ffffff') : ink }) }, label);
           }
           return h('section', { 'data-codes-workflow': '', 'data-step': flowStep, 'data-lane': flowStep < 5 ? 'procedure' : 'welder',
@@ -24548,23 +24608,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('p', { style: { color: soft, fontSize: 12, lineHeight: 1.5, margin: '8px 0 12px' } }, isContrast ? __alloT('stem.weldlab.codes6_contrast_key', 'Top row: the procedure. Bottom row: the welder. Dashed connections show retry paths; yellow highlights the selected step and connection.') : __alloT('stem.weldlab.insp2_flow_key', 'Orange row: the procedure (the recipe and its proof). Blue row: the welder (the license). Dashed red = a failed test sends you back.')),
             h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.codes6_steps_aria', 'Inspect a workflow step'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 7 } }, FLOW_LABELS.map(function (label, i) {
               var on = flowStep === i + 1;
-              return h('button', { key: i, type: 'button', 'data-codes-flow-step': i + 1, 'aria-pressed': on ? 'true' : 'false', onClick: function () { inspectWorkflowStep(i + 1); },
+              return h('button', { key: i, id: 'codes6-flow-step-' + (i + 1), ref: on ? workflowSelectedStepRef : null, type: 'button', 'data-codes-flow-step': i + 1, 'aria-pressed': on ? 'true' : 'false', 'aria-controls': 'codes6-flow-result', onClick: function () { inspectWorkflowStep(i + 1); },
                 className: 'text-left focus:outline-none focus:ring-4 ring-cyan-500/50', style: Object.assign({}, controls, { color: on ? (isContrast ? '#000000' : '#ffffff') : ink, background: on ? accent : paper, borderColor: on ? accent : edge }) }, (i + 1) + ' · ' + label);
             })),
             h('div', { style: { background: wash, color: ink, border: '1px solid ' + edge, borderRadius: 10, padding: 12, marginTop: 12 } },
-              h('p', { 'data-codes-flow-lane': '', style: { color: accent, fontSize: 12, fontWeight: 900, margin: '0 0 5px' } }, lane + ' · ' + __alloFill(__alloT('stem.weldlab.codes6_step_count', 'Step {value1} of 8'), { value1: flowStep })),
-              h('h4', { style: { color: ink, fontSize: 16, fontWeight: 900, margin: '0 0 6px' } }, FLOW_LABELS[flowStep - 1]),
-              h('p', { 'data-codes-flow-reading': flowStep, style: { color: ink, fontSize: 14, lineHeight: 1.6, margin: 0 } }, FLOW[flowStep - 1]),
+              h('div', { id: 'codes6-flow-result', 'data-codes-flow-result': '', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                h('p', { 'data-codes-flow-lane': '', style: { color: accent, fontSize: 12, fontWeight: 900, margin: '0 0 5px' } }, lane + ' · ' + __alloFill(__alloT('stem.weldlab.codes6_step_count', 'Step {value1} of 8'), { value1: flowStep })),
+                h('h4', { style: { color: ink, fontSize: 16, fontWeight: 900, margin: '0 0 6px' } }, FLOW_LABELS[flowStep - 1]),
+                h('p', { 'data-codes-flow-reading': flowStep, style: { color: ink, fontSize: 14, lineHeight: 1.6, margin: 0 } }, FLOW[flowStep - 1]),
+                h('p', { 'data-codes-flow-connection': '', 'data-from': flowConnection ? flowConnection.from : flowStep, 'data-to': flowConnection ? flowConnection.to : '', 'data-path': flowConnection ? flowConnection.route : '', 'data-status': flowTrace.last ? 'followed' : flowConnection ? 'preview' : 'end', style: { color: ink, fontSize: 13, fontWeight: 800, lineHeight: 1.5, margin: '10px 0 0' } }, flowConnection
+                  ? __alloFill(flowTrace.last ? __alloT('stem.weldlab.codes6_followed', 'Last followed connection: step {value1} → step {value2}.') : __alloT('stem.weldlab.codes6_preview', 'Connection to explore: step {value1} → step {value2}.'), { value1: flowConnection.from, value2: flowConnection.to })
+                  : __alloT('stem.weldlab.codes6_end', 'End of the numbered sequence. Inspect another step to start there.')),
+                flowTrace.last && h('p', { 'data-codes-flow-next-target': '', style: { color: soft, fontSize: 12, lineHeight: 1.5, margin: '5px 0 0' } }, flowNext === null ? __alloT('stem.weldlab.codes6_end', 'End of the numbered sequence. Inspect another step to start there.') : __alloFill(__alloT('stem.weldlab.codes6_next_target', 'Next connection: step {value1} → step {value2}.'), { value1: flowStep, value2: flowNext }))
+              ),
               flowCanRetry && h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.codes6_route_aria', 'Choose a connection to trace'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 12 } },
                 routeButton('forward', __alloT('stem.weldlab.codes6_forward', 'Forward continuation')),
                 routeButton('retry', flowStep === 3 ? __alloT('stem.weldlab.codes6_retry_procedure', 'Procedure retry → step 1') : __alloT('stem.weldlab.codes6_retry_welder', 'Welder retest → step 6'))),
-              h('p', { 'data-codes-flow-connection': '', 'data-from': flowConnection ? flowConnection.from : flowStep, 'data-to': flowConnection ? flowConnection.to : '', 'data-path': flowConnection ? flowConnection.route : '', 'data-status': flowTrace.last ? 'followed' : flowConnection ? 'preview' : 'end', style: { color: ink, fontSize: 13, fontWeight: 800, lineHeight: 1.5, margin: '10px 0 0' } }, flowConnection
-                ? __alloFill(flowTrace.last ? __alloT('stem.weldlab.codes6_followed', 'Last followed connection: step {value1} → step {value2}.') : __alloT('stem.weldlab.codes6_preview', 'Connection to explore: step {value1} → step {value2}.'), { value1: flowConnection.from, value2: flowConnection.to })
-                : __alloT('stem.weldlab.codes6_end', 'End of the numbered sequence. Inspect another step to start there.')),
-              flowTrace.last && h('p', { 'data-codes-flow-next-target': '', style: { color: soft, fontSize: 12, lineHeight: 1.5, margin: '5px 0 0' } }, flowNext === null ? __alloT('stem.weldlab.codes6_end', 'End of the numbered sequence. Inspect another step to start there.') : __alloFill(__alloT('stem.weldlab.codes6_next_target', 'Next connection: step {value1} → step {value2}.'), { value1: flowStep, value2: flowNext })),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
-                h('button', { type: 'button', 'data-codes-flow-prev': '', disabled: flowStep === 1, onClick: function () { inspectWorkflowStep(flowStep - 1); }, style: controls, className: 'focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.codes6_prev', '← Previous numbered step')),
-                h('button', { type: 'button', 'data-codes-flow-next': '', disabled: flowNext === null, onClick: followWorkflowConnection, style: controls, className: 'focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.codes6_next', 'Follow next connection →')))
+                h('button', { type: 'button', 'data-codes-flow-prev': '', disabled: flowStep === 1, 'aria-controls': 'codes6-flow-result', onClick: function () { inspectWorkflowStep(flowStep - 1); if (flowStep === 2) focusCodesStep('workflow'); }, style: controls, className: 'focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.codes6_prev', '← Previous numbered step')),
+                h('button', { type: 'button', 'data-codes-flow-next': '', disabled: flowNext === null, 'aria-controls': 'codes6-flow-result', onClick: followWorkflowConnection, style: controls, className: 'focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.codes6_next', 'Follow next connection →')))
             ),
             h('details', { 'data-codes-flow-all': '', style: { color: ink, marginTop: 10 } },
               h('summary', { style: { minHeight: 44, paddingTop: 10, color: accent, cursor: 'pointer', fontSize: 13, fontWeight: 800 }, className: 'focus:outline-none focus:ring-4 ring-cyan-500/50' }, __alloT('stem.weldlab.codes6_all_steps', 'Read all eight steps together')),
@@ -24634,7 +24696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           var at = anchors[selectedObject];
           var pins = { record: [155, 18], power: [167, 110], joint: [383, 176], stock: [447, 175], filler: [268, 32], position: [529, 267], temperature: [524, 183], treatment: [550, 28], gas: [614, 132], travel: [411, 134] };
           var pinAt = pins[selectedObject];
-          function chooseField(id) { wpsFieldState[1](id); announce(WPS_FIELDS.filter(function (field) { return field.id === id; })[0].label); }
+          function chooseField(id) { wpsFieldState[1](id); }
           function group(id, children) {
             return h('g', { key: id, 'data-wps-physical-object': id, 'data-active': selectedObject === id ? 'true' : 'false',
               stroke: selectedObject === id ? accent : soft, strokeWidth: selectedObject === id ? 3.5 : 1.5, fill: 'none' }, children);
@@ -24693,13 +24755,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('text', { x: pinAt[0], y: pinAt[1] + 5, textAnchor: 'middle', fontSize: 15, fontWeight: 900, fill: ink }, String(fieldIndex + 1)))
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'flex-end' } },
-              h('button', { type: 'button', 'data-wps-field-prev': true, disabled: fieldIndex === 0, onClick: function () { chooseField(WPS_FIELDS[fieldIndex - 1].id); }, style: controlStyle, className: 'focus:outline-none focus:ring-4 ring-cyan-400 disabled:opacity-50' }, __alloT('stem.weldlab.wps3_previous', '← Previous field')),
+              h('button', { type: 'button', 'data-wps-field-prev': true, disabled: fieldIndex === 0, 'aria-controls': 'wps3-field-reading', onClick: function () { chooseField(WPS_FIELDS[fieldIndex - 1].id); if (fieldIndex === 1) focusCodesStep('wps-field'); }, style: controlStyle, className: 'focus:outline-none focus:ring-4 ring-cyan-400 disabled:opacity-50' }, __alloT('stem.weldlab.wps3_previous', '← Previous field')),
               h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
                 h('label', { htmlFor: 'wps3-field', style: { display: 'block', color: soft, fontSize: 12, fontWeight: 700, marginBottom: 5 } }, __alloT('stem.weldlab.wps3_select', 'Explore WPS field')),
-                h('select', { id: 'wps3-field', 'data-wps-field-select': true, value: f.id, onChange: function (e) { chooseField(e.target.value); }, style: Object.assign({}, controlStyle, { width: '100%' }), className: 'focus:outline-none focus:ring-4 ring-cyan-400' },
+                h('select', { id: 'wps3-field', ref: wpsFieldSelectRef, 'data-wps-field-select': true, 'aria-describedby': 'wps3-field-reading', value: f.id, onChange: function (e) { chooseField(e.target.value); }, style: Object.assign({}, controlStyle, { width: '100%' }), className: 'focus:outline-none focus:ring-4 ring-cyan-400' },
                   WPS_FIELDS.map(function (field, i) { return h('option', { key: field.id, value: field.id }, (i + 1) + '. ' + field.label); }))),
-              h('button', { type: 'button', 'data-wps-field-next': true, disabled: fieldIndex === WPS_FIELDS.length - 1, onClick: function () { chooseField(WPS_FIELDS[fieldIndex + 1].id); }, style: controlStyle, className: 'focus:outline-none focus:ring-4 ring-cyan-400 disabled:opacity-50' }, __alloT('stem.weldlab.wps3_next', 'Next field →'))),
-            h('div', { style: { marginTop: 14, padding: 12, border: '1px solid ' + soft, borderRadius: 10, color: ink, background: panel } },
+              h('button', { type: 'button', 'data-wps-field-next': true, disabled: fieldIndex === WPS_FIELDS.length - 1, 'aria-controls': 'wps3-field-reading', onClick: function () { chooseField(WPS_FIELDS[fieldIndex + 1].id); if (fieldIndex === WPS_FIELDS.length - 2) focusCodesStep('wps-field'); }, style: controlStyle, className: 'focus:outline-none focus:ring-4 ring-cyan-400 disabled:opacity-50' }, __alloT('stem.weldlab.wps3_next', 'Next field →'))),
+            h('div', { id: 'wps3-field-reading', 'data-wps-field-reading': '', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 14, padding: 12, border: '1px solid ' + soft, borderRadius: 10, color: ink, background: panel } },
               h('p', { 'data-wps-field-label': f.id, style: { fontWeight: 900, fontSize: 14 } }, (fieldIndex + 1) + '. ' + f.label),
               h('p', { 'data-wps-field-value': f.id, style: { marginTop: 4, color: ink, fontFamily: 'monospace', fontSize: 14, lineHeight: 1.5 } }, f.value)),
             h('p', { style: { marginTop: 10, color: soft, fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.weldlab.wps3_note', 'This locates fields in a representative setup. It is not a working procedure or a simulation of the listed ranges.'))
@@ -24720,7 +24782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     var sel = fd.id === wpsField;
                     return h('button', {
                       key: fd.id, role: 'radio', 'aria-checked': sel ? 'true' : 'false', 'data-wps-form-field': fd.id,
-                      onClick: function () { wpsFieldState[1](fd.id); announce(fd.label); },
+                      'aria-controls': 'wps3-field-reading', onClick: function () { wpsFieldState[1](fd.id); },
                       className: 'transition-colors text-left px-2 py-1.5 rounded-lg focus:outline-none focus:ring-2 ring-orange-400 ' + (sel ? 'bg-orange-50 border-4 border-orange-600' : 'bg-white border-2 border-slate-300 hover:border-orange-400')
                     },
                       h('div', { className: 'flex items-center gap-1.5' },
@@ -25072,17 +25134,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('div', { className: 'space-y-1' },
               h('label', { htmlFor: 'code3-reader-search', className: 'block text-sm font-bold', style: { color: ink } }, __alloT('stem.weldlab.code3_reader_search', 'Find a section')),
               h('div', { className: 'flex flex-wrap gap-2' },
-                h('input', { id: 'code3-reader-search', 'data-code-reader-search': '', type: 'search', value: query, maxLength: 120, 'aria-describedby': 'code3-reader-count',
+                h('input', { id: 'code3-reader-search', ref: codeReaderSearchRef, 'data-code-reader-search': '', type: 'search', value: query, maxLength: 120, 'aria-describedby': 'code3-reader-count',
                   placeholder: __alloT('stem.weldlab.code3_reader_placeholder', 'Number, title or summary'), onChange: function (e) { search(e.target.value); },
                   className: 'focus:outline-none focus:ring-4 ring-purple-500/50', style: Object.assign({}, control, { flex: '1 1 200px', width: '100%', minWidth: 0, maxWidth: '100%', fontWeight: 400, color: ink }) }),
-                h('button', { type: 'button', 'data-code-reader-clear': '', disabled: !query, onClick: function () { search(''); }, className: 'focus:outline-none focus:ring-4 ring-purple-500/50',
+                h('button', { type: 'button', 'data-code-reader-clear': '', disabled: !query, onClick: function () { search(''); focusCodesStep('reader-search'); }, className: 'focus:outline-none focus:ring-4 ring-purple-500/50',
                   style: Object.assign({}, control, { borderColor: query ? accent : edge, color: query ? accent : soft }) }, __alloT('stem.weldlab.code3_reader_clear', 'Clear search')))),
             h('p', { id: 'code3-reader-count', 'data-code-reader-count': '', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm', style: { color: soft } },
               __alloFill(__alloT('stem.weldlab.code3_reader_count', '{value1} of {value2} section summaries shown.'), { value1: matches.length, value2: current.sections.length })),
             matches.length > 0 ? h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.code3_reader_index', 'Section index'), 'data-code-reader-index': '',
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, max(120px, calc((100% - 16px) / 3))), 1fr))', gridAutoRows: '1fr', gap: 8 } }, matches.map(function (s) {
                 var on = selected.num === s.num;
-                return h('button', { key: s.num, type: 'button', 'data-code-reader-section': s.num, 'aria-pressed': on, 'aria-controls': 'code3-reader-summary', onClick: function () { choose(s.num); },
+                return h('button', { key: s.num, ref: on ? codeReaderSectionRef : null, type: 'button', 'data-code-reader-section': s.num, 'aria-pressed': on, 'aria-controls': 'code3-reader-summary', onClick: function () { choose(s.num); },
                   className: 'focus:outline-none focus:ring-4 ring-purple-500/50', style: { minWidth: 0, minHeight: 104, height: '100%', padding: 10, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 5,
                     textAlign: 'left', border: '2px solid ' + (on ? accent : edge), borderRadius: 9, background: paper, color: ink, boxShadow: on ? 'inset 0 -4px 0 ' + accent : undefined } },
                   h('span', { className: 'font-mono text-sm font-black', style: { color: accent } }, numberLabel(s)),
@@ -25100,7 +25162,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.code3_reader_navigation', 'Navigate the shown sections'), className: 'flex flex-wrap gap-2' },
                 [['previous', selectedIndex - 1, __alloT('stem.weldlab.code3_reader_previous', '← Previous section')], ['next', selectedIndex + 1, __alloT('stem.weldlab.code3_reader_next', 'Next section →')]].map(function (nav) {
                   var available = nav[1] >= 0 && nav[1] < matches.length;
-                  return h('button', { key: nav[0], type: 'button', 'data-code-reader-nav': nav[0], disabled: !available, onClick: function () { if (available) choose(matches[nav[1]].num); },
+                  return h('button', { key: nav[0], type: 'button', 'data-code-reader-nav': nav[0], disabled: !available, onClick: function () {
+                    if (!available) return;
+                    choose(matches[nav[1]].num);
+                    if ((nav[0] === 'previous' && nav[1] === 0) || (nav[0] === 'next' && nav[1] === matches.length - 1)) focusCodesStep('reader-section');
+                  },
                     className: 'focus:outline-none focus:ring-4 ring-purple-500/50', style: Object.assign({}, control, { borderColor: available ? accent : edge, color: available ? accent : soft }) }, nav[2]);
                 }))),
             h('details', { 'data-code-reader-outline': '', className: 'border-t pt-2', style: { borderColor: edge, color: ink } },
@@ -27897,6 +27963,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var robRouteState = useState('pendant');
         var robApplicationState = useState('arm');
         var robBudgetState = useState({ view: 'sequence', move: 0 });
+        var robBudgetSelectRef = useRef(null), robBudgetFocusRef = useRef(false);
+        // Time-ledger navigation has its own focus handoff, separate from the move inspector.
+        useEffect(function () {
+          if (!robBudgetFocusRef.current) return;
+          robBudgetFocusRef.current = false;
+          var target = robBudgetSelectRef.current;
+          if (target && !target.disabled) { try { target.focus(); } catch (_) {} }
+        });
         var setRobNotes = robNotesState[1];
         var robEvidenceMarkRef = useRef(null);
 
@@ -28122,14 +28196,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 })
               ),
               h('div', { className: 'flex flex-wrap items-end gap-2' },
-                h('button', { type: 'button', 'data-rob-time-prev': '', disabled: busy || selected === 0, onClick: function () { choose(view, selected - 1); }, style: style, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.rob11_prev', '← Previous move')),
+                h('button', { type: 'button', 'data-rob-time-prev': '', disabled: busy || selected === 0, onClick: function () { if (!busy && selected === 1) robBudgetFocusRef.current = true; choose(view, selected - 1); }, style: style, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.rob11_prev', '← Previous move')),
                 h('label', { className: 'flex-1 min-w-0 block space-y-2 text-base font-bold', style: { minWidth: 150 } },
                   h('span', { className: 'block' }, __alloT('stem.weldlab.rob11_selected', 'Inspect the time for one move')),
-                  h('select', { 'data-rob-time-select': '', disabled: busy, value: selected, onChange: function (event) { choose(view, Number(event.target.value)); }, style: Object.assign({}, style, { width: '100%' }), className: 'disabled:opacity-50' },
+                  h('select', { ref: robBudgetSelectRef, 'data-rob-time-select': '', disabled: busy, value: selected, onChange: function (event) { choose(view, Number(event.target.value)); }, style: Object.assign({}, style, { width: '100%' }), className: 'disabled:opacity-50' },
                     rows.map(function (item) { return h('option', { key: item.index, value: item.index }, __alloFill(__alloT('stem.weldlab.rob11_move_option', 'Move {value1} of {value2}'), { value1: item.index + 1, value2: rows.length })); })
                   )
                 ),
-                h('button', { type: 'button', 'data-rob-time-next': '', disabled: busy || selected === rows.length - 1, onClick: function () { choose(view, selected + 1); }, style: style, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.rob11_next', 'Next move →'))
+                h('button', { type: 'button', 'data-rob-time-next': '', disabled: busy || selected === rows.length - 1, onClick: function () { if (!busy && selected === rows.length - 2) robBudgetFocusRef.current = true; choose(view, selected + 1); }, style: style, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.rob11_next', 'Next move →'))
               ),
               h('article', { 'data-rob-time-reading': selected, 'data-start': row.start, 'data-end': row.end, 'data-seconds': row.measure.seconds, 'data-mm': row.measure.mm, 'data-speed': row.measure.speed,
                 className: 'rounded-xl border-2 p-3 space-y-2 text-base', style: { background: paper, borderColor: edge }, 'aria-live': 'polite', 'aria-atomic': 'true' },
@@ -28214,6 +28288,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             torch = { x: inspectFrame.at.x, y: inspectFrame.at.y, w: inspectSegment.w };
             trail = inspectSegment.w ? inspectFrame.trail : [];
           }
+          // Keep the torch at its true coordinate while leaving nearby point labels readable.
+          var torchAnnotationOverlap = !!torch && robCheck.points.some(function (point) {
+            var dx = (point.x - torch.x) * C, dy = (point.y - torch.y) * C;
+            return dx * dx + dy * dy <= 400;
+          });
           var ghost = robShift;
           var cells = [];
           for (var cy = 0; cy < TECH2_CELL.rows; cy++) {
@@ -28248,9 +28327,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('rect', { x: O + f.x0 * C, y: O + f.y0 * C, width: (f.x1 - f.x0) * C, height: (f.y1 - f.y0) * C, fill: '#7f1d1d', stroke: '#fca5a5', strokeWidth: 2 }),
                     h('text', { x: O + (f.x0 + f.x1) / 2 * C, y: O + (f.y0 + f.y1) / 2 * C + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#fecaca' }, 'C'));
                 }),
-                // home
-                h('rect', { x: px(TECH2_HOME.x) - 8, y: py(TECH2_HOME.y) - 8, width: 16, height: 16, fill: '#1e293b', stroke: '#e2e8f0', strokeWidth: 1.5 }),
-                h('text', { x: px(TECH2_HOME.x), y: py(TECH2_HOME.y) + 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#f8fafc' }, 'H'),
                 // Inspection marks the selected path without disclosing a verdict.
                 inspecting && h('path', { 'data-robot-path-highlight': inspectIndex + 1, d: pathDrawing(inspectSegment.path), fill: 'none', stroke: isContrast ? '#ffffff' : '#22d3ee', strokeWidth: 8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 // the program
@@ -28270,18 +28346,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   return h('line', { key: 't' + i, x1: px(seg[0].x), y1: py(seg[0].y), x2: px(seg[1].x), y2: py(seg[1].y), stroke: '#fef08a', strokeWidth: 5, strokeLinecap: 'round' });
                 }),
                 inspecting && h('circle', { cx: px(inspectSegment.a.x), cy: py(inspectSegment.a.y), r: 10, fill: 'none', stroke: isContrast ? '#ffffff' : '#22d3ee', strokeWidth: 2, strokeDasharray: '2 2' }),
+                // cursor
+                h('rect', { x: O + robCur.x * C + 1, y: O + robCur.y * C + 1, width: C - 2, height: C - 2, fill: 'none', stroke: '#22d3ee', strokeWidth: 2.5 }),
+                torch && h('g', { 'data-robot-torch': true, 'data-source': inspecting ? 'inspection' : 'run', 'data-arc': torch.w ? 'on' : 'off', 'data-x': torch.x, 'data-y': torch.y, 'data-label-overlap': torchAnnotationOverlap ? 'true' : 'false' },
+                  torchAnnotationOverlap ? h(React.Fragment, null,
+                    h('circle', { cx: px(torch.x), cy: py(torch.y), r: 14, fill: 'none', stroke: '#0f172a', strokeWidth: 6 }),
+                    h('circle', { cx: px(torch.x), cy: py(torch.y), r: 14, fill: 'none', stroke: torch.w ? '#fde047' : '#f8fafc', strokeWidth: 3, strokeDasharray: torch.w ? undefined : '3 2' })
+                  ) : h(React.Fragment, null,
+                    torch.w && h('circle', { cx: px(torch.x), cy: py(torch.y), r: 10, fill: 'none', stroke: '#fde047', strokeWidth: 2 }),
+                    h('circle', { cx: px(torch.x), cy: py(torch.y), r: 6, fill: torch.w ? '#fde047' : '#0f172a', stroke: '#f8fafc', strokeWidth: 2 }),
+                    !torch.w && h('line', { x1: px(torch.x) - 3, y1: py(torch.y), x2: px(torch.x) + 3, y2: py(torch.y), stroke: '#f8fafc', strokeWidth: 2 })
+                  )),
+                // Foreground annotations retain their original coordinates and model values.
+                h('g', { 'data-robot-home-label': true },
+                  h('rect', { x: px(TECH2_HOME.x) - 8, y: py(TECH2_HOME.y) - 8, width: 16, height: 16, fill: '#1e293b', stroke: '#e2e8f0', strokeWidth: 1.5 }),
+                  h('text', { x: px(TECH2_HOME.x), y: py(TECH2_HOME.y) + 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#f8fafc' }, 'H')),
                 robCheck.points.slice(1).map(function (p, i) {
                   var bad = showFaults && robCheck.segments[i] && robCheck.segments[i].bad;
-                  return h('g', { key: 'p' + i },
+                  return h('g', { key: 'p' + i, 'data-robot-point-label': i + 1 },
                     h('circle', { cx: px(p.x), cy: py(p.y), r: 7, fill: bad ? '#7f1d1d' : '#0f172a', stroke: bad ? '#fca5a5' : '#e2e8f0', strokeWidth: 1.5 }),
                     h('text', { x: px(p.x), y: py(p.y) + 3.5, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: '#f8fafc' }, String(i + 1)));
                 }),
-                // cursor
-                h('rect', { x: O + robCur.x * C + 1, y: O + robCur.y * C + 1, width: C - 2, height: C - 2, fill: 'none', stroke: '#22d3ee', strokeWidth: 2.5 }),
-                torch && h('g', { 'data-robot-torch': true, 'data-source': inspecting ? 'inspection' : 'run', 'data-arc': torch.w ? 'on' : 'off', 'data-x': torch.x, 'data-y': torch.y },
-                  torch.w && h('circle', { cx: px(torch.x), cy: py(torch.y), r: 10, fill: 'none', stroke: '#fde047', strokeWidth: 2 }),
-                  h('circle', { cx: px(torch.x), cy: py(torch.y), r: 6, fill: torch.w ? '#fde047' : '#0f172a', stroke: '#f8fafc', strokeWidth: 2 }),
-                  !torch.w && h('line', { x1: px(torch.x) - 3, y1: py(torch.y), x2: px(torch.x) + 3, y2: py(torch.y), stroke: '#f8fafc', strokeWidth: 2 })),
                 cells
               )
             ),
@@ -28614,8 +28699,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               method === 'laser' && h('g', { 'data-robot-sensing-laser': '', 'data-observation-x': focusX },
                 h('path', { d: 'M' + (torchX + 25) + ' 127 L' + focusX + ' 183 L' + focusX + ' 257 Z', fill: '#be123c', fillOpacity: 0.15, stroke: 'none' }),
-                line(focusX, 183, focusX, 257, '#fda4af', 5),
                 path('M' + (torchX + 25) + ' 127 L' + focusX + ' 183 M' + (torchX + 25) + ' 127 L' + focusX + ' 257', '#e2e8f0', 2, { strokeDasharray: '6 5' }),
+                line(focusX, 183, focusX, 257, '#0f172a', 9, { 'data-robot-sensing-projection-outline': '' }),
+                line(focusX, 183, focusX, 257, '#ffe4e6', 5, { 'data-robot-sensing-projection': '' }),
                 h('rect', { x: torchX + 7, y: 96, width: 38, height: 31, rx: 5, fill: '#0e7490', stroke: '#a5f3fc', strokeWidth: 3 }),
                 h('circle', { cx: torchX + 26, cy: 112, r: 8, fill: '#020617', stroke: '#e2e8f0', strokeWidth: 2 })
               ),
@@ -29681,7 +29767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         function printReport() {
           var esc = function (t) { return String(t).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); };
           var rows = benchRows.filter(function (r) { return r.e.pick; });
-          var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(REPORT_TITLE) + '</title><style>' +
+          var html = '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + esc(REPORT_TITLE) + '</title><style>' +
             'body{font-family:system-ui,sans-serif;margin:24px;color:#0f172a}h1{font-size:20px}table{border-collapse:collapse;width:100%}' +
             'th,td{border:1px solid #475569;padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}th{background:#e2e8f0}' +
             '.np{margin:0 0 12px}@media print{.np{display:none}}</style></head><body>' +
@@ -36044,14 +36130,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('h3', { className: 'text-lg font-black' }, __alloT('stem.weldlab.story5_title', 'Explore a career milestone')),
             h('p', { className: 'text-sm' }, __alloT('stem.weldlab.story5_help', 'Choose a numbered stage to see how long it lasted, how it was paid and what came before or after it. The outlined span in the timeline follows your selection.')),
             h('div', { role: 'group', 'aria-label': __alloT('stem.weldlab.story5_choices', 'Career timeline milestones'), className: 'flex flex-wrap gap-2' }, prof.segs.map(function (sg, i) { var active = i === milestoneIndex;
-              return h('button', { key: i, type: 'button', 'data-career-milestone-pick': i, 'aria-pressed': active,
+              return h('button', { key: i, id: 'story5-milestone-' + s.id + '-' + i, type: 'button', 'data-career-milestone-pick': i, 'aria-pressed': active, 'aria-controls': 'story5-milestone-readings',
                 onClick: function () { chooseMilestone(s.id, i); }, style: Object.assign({}, buttonStyle, { borderColor: isContrast ? (active ? '#ffff00' : '#ffffff') : active ? '#a21caf' : '#94a3b8', background: isContrast ? (active ? '#ffff00' : '#000000') : active ? '#fae8ff' : '#ffffff', color: isContrast && active ? '#000000' : ink, borderWidth: active ? 3 : 2 }), className: 'text-left text-sm focus:outline-none focus:ring-4 ring-fuchsia-500/50' },
                 __alloFill(__alloT('stem.weldlab.story5_stage_choice', '{value1}. Ages {value2}–{value3} · {value4}'), { value1: i + 1, value2: sg.from, value3: sg.to, value4: (KIND[sg.kind] || KIND.other).name })); })),
             h('div', { className: 'flex flex-wrap items-start gap-4' },
               h('div', { style: { flex: '1 1 230px', minWidth: 0, maxWidth: 420 } }, renderMilestoneScene(stage.kind)),
               h('div', { className: 'space-y-3', style: { flex: '1 1 230px', minWidth: 0 } },
-                h('h4', { className: 'text-lg font-black' }, kd.name),
-                h('dl', { className: 'text-sm space-y-2' },
+                h('h4', { id: 'story5-milestone-title', className: 'text-lg font-black' }, kd.name),
+                h('dl', { id: 'story5-milestone-readings', 'data-career-milestone-readings': '', 'aria-labelledby': 'story5-milestone-title', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm space-y-2' },
                   h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.story5_age_span', 'Age span')), h('dd', { 'data-career-milestone-ages': true }, __alloFill(__alloT('stem.weldlab.story5_ages', '{value1} to {value2}'), { value1: stage.from, value2: stage.to }))),
                   h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.story5_duration_label', 'Time in this stage')), h('dd', { 'data-career-milestone-duration': stage.to - stage.from }, __alloFill(__alloT('stem.weldlab.story5_years', '{value1} years'), { value1: stage.to - stage.from }))),
                   h('div', null, h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.story5_pay_label', 'Representative pay in this stage')), h('dd', { 'data-career-milestone-pay': true, className: 'font-mono' }, segPayText(stage)))),
@@ -36060,8 +36146,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('p', { 'data-career-milestone-after': next ? next.kind : 'current' }, h('strong', null, __alloT('stem.weldlab.story5_after', 'After: ')), next ? (KIND[next.kind] || KIND.other).name : __alloT('stem.weldlab.story5_current', 'Current stage in this profile'))))),
             h('p', { 'data-career-milestone-question': true, className: 'text-sm font-bold' }, __alloT('stem.weldlab.story5_question', 'What would you ask about entering or leaving this stage? Use the path and the welder’s own words as evidence.')),
             h('div', { className: 'flex flex-wrap gap-2' },
-              h('button', { type: 'button', 'data-career-milestone-prev': true, disabled: milestoneIndex === 0, onClick: function () { chooseMilestone(s.id, milestoneIndex - 1); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-fuchsia-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.story5_prev', '← Previous milestone')),
-              h('button', { type: 'button', 'data-career-milestone-next': true, disabled: milestoneIndex >= prof.segs.length - 1, onClick: function () { chooseMilestone(s.id, milestoneIndex + 1); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-fuchsia-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.story5_next', 'Next milestone →')),
+              h('button', { type: 'button', 'data-career-milestone-prev': true, disabled: milestoneIndex === 0, 'aria-controls': 'story5-milestone-readings', onClick: function () { chooseMilestone(s.id, milestoneIndex - 1); if (milestoneIndex === 1) requestStoryFocus('story5-milestone-' + s.id + '-0'); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-fuchsia-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.story5_prev', '← Previous milestone')),
+              h('button', { type: 'button', 'data-career-milestone-next': true, disabled: milestoneIndex >= prof.segs.length - 1, 'aria-controls': 'story5-milestone-readings', onClick: function () { chooseMilestone(s.id, milestoneIndex + 1); if (milestoneIndex === prof.segs.length - 2) requestStoryFocus('story5-milestone-' + s.id + '-' + (milestoneIndex + 1)); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-fuchsia-500/50 disabled:opacity-50' }, __alloT('stem.weldlab.story5_next', 'Next milestone →')),
               h('button', { type: 'button', 'data-career-milestone-reflect': true, onClick: function () { var field = document.getElementById('car2-reflect'); if (field && field.focus) field.focus(); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-fuchsia-500/50' }, __alloT('stem.weldlab.story5_reflect', 'Reflect on this milestone'))),
             h('p', { className: 'text-xs' }, __alloT('stem.weldlab.story5_note', 'Schematic stage illustrations. Ages and representative pay come from the same profile segments as the timeline; they are not salary forecasts or portraits of a specific workplace.')));
         }
@@ -36183,23 +36269,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('style', null, '[data-career-age-controls] :is(button,input):focus-visible{outline:3px solid ' + edge + '!important;outline-offset:3px}[data-career-age-marker],[data-career-age-marker] *{transition:none!important;animation:none!important}'),
             h('label', { className: 'block space-y-2 text-base font-bold' },
               h('span', { className: 'block' }, __alloFill(__alloT('stem.weldlab.story7_age_label', 'Inspect both timelines at age {value1}'), { value1: age })),
-              h('input', { 'data-career-age-slider': '', type: 'range', min: a0, max: a1, step: 0.25, value: age,
+              h('input', { id: 'story7-age-slider', 'data-career-age-slider': '', type: 'range', min: a0, max: a1, step: 0.25, value: age, 'aria-describedby': 'story7-age-reading-0 story7-age-reading-1',
                 'aria-valuetext': __alloFill(__alloT('stem.weldlab.story7_age_value', 'Age {value1} years'), { value1: age }), onChange: function (event) { change(event.target.value); },
                 style: { display: 'block', width: '100%', height: 44, minHeight: 44, accentColor: edge } })
             ),
             h('div', { className: 'flex flex-wrap gap-2' },
-              h('button', { type: 'button', 'data-career-age-prev': '', disabled: previous === null, onClick: function () { if (previous !== null) change(previous); }, style: control, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.story7_previous', '← Previous stage boundary')),
-              h('button', { type: 'button', 'data-career-age-next': '', disabled: next === null, onClick: function () { if (next !== null) change(next); }, style: control, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.story7_next', 'Next stage boundary →'))
+              h('button', { type: 'button', 'data-career-age-prev': '', disabled: previous === null, 'aria-controls': 'story7-age-reading-0 story7-age-reading-1', onClick: function () { if (previous !== null) { change(previous); if (previous === a0) requestStoryFocus('story7-age-slider'); } }, style: control, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.story7_previous', '← Previous stage boundary')),
+              h('button', { type: 'button', 'data-career-age-next': '', disabled: next === null, 'aria-controls': 'story7-age-reading-0 story7-age-reading-1', onClick: function () { if (next !== null) { change(next); if (next === a1) requestStoryFocus('story7-age-slider'); } }, style: control, className: 'disabled:opacity-50' }, __alloT('stem.weldlab.story7_next', 'Next stage boundary →'))
             ),
             h('p', { className: 'text-base leading-relaxed' }, __alloT('stem.weldlab.story7_scope', 'The bright vertical markers locate the same age on both charts. At a shared boundary, the next stage begins; the final recorded age shows the last stage. Pay text is the original whole-stage range or amount, not pay at the selected age.'))
           );
         }
-        function renderCompareAgeReading(story, profile, a0, a1) {
+        function renderCompareAgeReading(story, profile, a0, a1, slot) {
           var age = storyProbeAge(a0, a1), selected = storyAgeStage(profile, age), stage = selected.index < 0 ? null : profile.segs[selected.index];
           var ink = isContrast ? '#ffffff' : '#0f172a', edge = isContrast ? '#ffff00' : '#86198f';
-          return h('div', { 'data-career-age-reading': story.id, 'data-age': age, 'data-state': selected.state, 'data-stage-index': selected.index,
+          return h('div', { id: 'story7-age-reading-' + slot, 'data-career-age-reading': story.id, 'data-age': age, 'data-state': selected.state, 'data-stage-index': selected.index,
             className: 'rounded-xl border-2 p-3 space-y-2 text-base leading-relaxed', style: { color: ink, background: isContrast ? '#000000' : '#fdf4ff', borderColor: edge }, 'aria-live': 'polite', 'aria-atomic': 'true' },
-            h('h4', { className: 'text-base font-black' }, __alloFill(__alloT('stem.weldlab.story7_reading_age', 'At age {value1}'), { value1: age })),
+            h('h4', { className: 'text-base font-black' }, __alloFill(__alloT('stem.weldlab.car2_cs_name_age', '{value1}, age {value2}'), { value1: story.name, value2: age })),
             stage ? h(React.Fragment, null,
               h('p', { 'data-career-age-kind': stage.kind, className: 'font-bold' }, __alloFill(__alloT('stem.weldlab.story7_stage', 'Stage {value1}: {value2}'), { value1: selected.index + 1, value2: (KIND[stage.kind] || KIND.other).name })),
               h('p', { 'data-career-age-span': '', 'data-from': stage.from, 'data-to': stage.to }, __alloFill(__alloT('stem.weldlab.story7_span', 'Recorded span: ages {value1}–{value2} ({value3} years)'), { value1: stage.from, value2: stage.to, value3: stage.to - stage.from })),
@@ -36235,12 +36321,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('dt', { className: 'font-bold' }, __alloT('stem.weldlab.car2_cmp_cum', 'Base pay earned so far (area under the bars)')), h('dd', { className: 'font-mono text-right' }, car2MoneyK(ps.cumK * 1000))
             );
           }
-          function card(st, i) {
+          function card(st, i, slot) {
             return h('div', { className: 'bg-white rounded-2xl shadow border-2 border-fuchsia-200 p-4 space-y-2 min-w-0' },
               h('div', { className: 'text-lg font-black text-fuchsia-900' }, __alloFill(__alloT('stem.weldlab.car2_cs_name_age', '{value1}, age {value2}'), { value1: st.name, value2: st.age })),
               h('div', { className: 'text-sm font-bold text-slate-700' }, st.role),
               h('p', { className: 'text-xs text-slate-800' }, st.path),
-              renderCompareAgeReading(st, P[st.id], a0, a1),
+              renderCompareAgeReading(st, P[st.id], a0, a1, slot),
               renderTimelineBlock(i, a0, a1, yMax, true),
               statRows(st)
             );
@@ -36252,7 +36338,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             h('p', { className: 'text-xs text-slate-700' }, __alloT('stem.weldlab.car2_cmp_note', 'Both timelines share one age scale and one pay scale, so bar heights and widths compare directly. Pay is representative base pay in 2026 dollars, before overtime.')),
             renderCompareAgeControls(pa, pb, a0, a1),
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, card(a, cmp[0]), card(b, cmp[1])),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' }, card(a, cmp[0], 0), card(b, cmp[1], 1)),
             h('p', { className: 'text-xs text-slate-700' }, firstCertRef())
           );
         }

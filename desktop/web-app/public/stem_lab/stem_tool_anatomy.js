@@ -2997,6 +2997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
   // Only live clipboard requests can finish; persisted tokens never mean a copy is still running.
   var anatomyStudyCopies = new Map();
   window.StemLab.registerTool('anatomy', {
+    darkRemap: true, // paints its own dark panels; keeps the hub's dark text remap (WCAG 1.4.3)
     icon: '\uD83E\uDEC0',
     label: "Human Anatomy Explorer",
     desc: 'Explore 10 body systems with layered anatomical visualization',
@@ -16911,7 +16912,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                             t('stem.anatomy.science_membership_label', 'System membership: ') + scientificSystemNames(quizQ) + '. ' + t('stem.anatomy.science_overlap', 'An organ can contribute to more than one system.')));
                         }
                         lines.push(h('p', { key: 'fn', className: 'text-slate-700' },
-                          h('span', { className: 'font-bold ' + (wrong ? 'text-green-800' : 'text-slate-600') }, (wrong ? t('stem.anatomy.the_answer_prefix', 'The ') + quizQ.name + ': ' : t('stem.anatomy.function_label', 'Function: '))),
+                          h('span', { className: 'font-bold ' + (wrong ? 'text-green-800' : 'text-slate-600') }, (wrong ? t('stem.anatomy.the_answer_prefix', 'The ') + quizQ.name + ': ' : t('stem.anatomy.function_prefix', 'Function: '))),
                           clipAtSentence(learnerText(quizQ), 200)));
                         return lines;
                       })(),

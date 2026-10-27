@@ -2989,6 +2989,24 @@ window.StemLab = window.StemLab || {
       // mouseup ends the drag. Live region announces the start + end so
       // SR users know what changed and can read the new yard line.
       var dragRef = React.useRef({ playerId: null });
+      // WCAG 2.5.7: a tap (press + release without moving) on a player picks
+      // them up; the next tap on open field places them there. No drag needed.
+      var _plPickedState = React.useState(null);
+      var pickedPlayerId = _plPickedState[0];
+      var setPickedPlayerId = _plPickedState[1];
+      function plWithPlayer(text, pid) { return String(text).split('{player}').join(String(pid)); }
+      function placePlayerAt(pid, yardX, yardY) {
+        var snappedX = Math.max(0.5, Math.min(FIELD_LENGTH - 0.5, Math.round(yardX)));
+        var snappedY = Math.max(0.5, Math.min(FIELD_WIDTH - 0.5, Math.round(yardY)));
+        setLabToolData(function(prev) {
+          var existing = Object.assign({}, prev.playlab.customPositions || {});
+          existing[pid] = { x: snappedX, y: snappedY };
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+            customPositions: existing
+          })});
+        });
+        return { x: snappedX, y: snappedY };
+      }
       function canvasYardCoords(evt) {
         var canvas = canvasRef.current; if (!canvas) return null;
         var rect = canvas.getBoundingClientRect();
@@ -3027,29 +3045,46 @@ window.StemLab = window.StemLab || {
         if (isSoccer) return;
         var c = canvasYardCoords(evt); if (!c) return;
         var p = nearestPlayer(c.yardX, c.yardY, formation);
-        if (!p) return;
-        dragRef.current = { playerId: p.id };
+        if (!p) {
+          // Tap on open field while a player is picked up: place them here.
+          if (pickedPlayerId) {
+            placePlayerAt(pickedPlayerId, c.yardX, c.yardY);
+            plAnnounce(plWithPlayer(__alloT('stem.playlab.sr_placed_player', 'Placed {player}. Position saved.'), pickedPlayerId));
+            setPickedPlayerId(null);
+          }
+          return;
+        }
+        dragRef.current = { playerId: p.id, startX: c.yardX, startY: c.yardY, moved: false };
         plAnnounce('Dragging ' + p.id + '. Move to reposition.');
       }
       function handleMouseMove(evt) {
         if (!dragRef.current || !dragRef.current.playerId) return;
         var c = canvasYardCoords(evt); if (!c) return;
         // Snap to whole-yard grid + clamp to inside the field of play
-        var snappedX = Math.max(0.5, Math.min(FIELD_LENGTH - 0.5, Math.round(c.yardX)));
-        var snappedY = Math.max(0.5, Math.min(FIELD_WIDTH - 0.5, Math.round(c.yardY)));
-        var pid = dragRef.current.playerId;
-        setLabToolData(function(prev) {
-          var existing = Object.assign({}, prev.playlab.customPositions || {});
-          existing[pid] = { x: snappedX, y: snappedY };
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            customPositions: existing
-          })});
-        });
+        var dr = dragRef.current;
+        if (!dr.moved && Math.abs(c.yardX - dr.startX) + Math.abs(c.yardY - dr.startY) > 0.75) dr.moved = true;
+        placePlayerAt(dr.playerId, c.yardX, c.yardY);
       }
-      function handleMouseUp() {
-        var pid = dragRef.current && dragRef.current.playerId;
-        if (pid) {
+      function handleMouseUp(evt, leaving) {
+        var dr = dragRef.current || {};
+        var pid = dr.playerId;
+        if (pid && (dr.moved || leaving)) {
           plAnnounce('Released ' + pid + '. Position saved.');
+          if (pickedPlayerId) setPickedPlayerId(null);
+        } else if (pid) {
+          // Press and release in place = a tap: toggle the picked-up player.
+          if (pickedPlayerId === pid) {
+            setPickedPlayerId(null);
+            plAnnounce(plWithPlayer(__alloT('stem.playlab.sr_player_put_down', '{player} put down.'), pid));
+          } else if (pickedPlayerId) {
+            // Already carrying a player: this tap places them, even beside a teammate.
+            placePlayerAt(pickedPlayerId, dr.startX, dr.startY);
+            plAnnounce(plWithPlayer(__alloT('stem.playlab.sr_placed_player', 'Placed {player}. Position saved.'), pickedPlayerId));
+            setPickedPlayerId(null);
+          } else {
+            setPickedPlayerId(pid);
+            plAnnounce(plWithPlayer(__alloT('stem.playlab.sr_picked_up_player', 'Picked up {player}. Tap the field where {player} should line up.'), pid));
+          }
         }
         dragRef.current = { playerId: null };
       }
@@ -3423,6 +3458,11 @@ window.StemLab = window.StemLab || {
             gfx.fillStyle = 'rgba(16,185,129,0.35)';
             gfx.beginPath(); gfx.arc(px, py, 12, 0, Math.PI * 2); gfx.fill();
           }
+          if (!isSoccer && p.id === pickedPlayerId && !isAnimating) {
+            gfx.strokeStyle = '#facc15';
+            gfx.lineWidth = 2.5;
+            gfx.beginPath(); gfx.arc(px, py, 10, 0, Math.PI * 2); gfx.stroke();
+          }
           gfx.fillStyle = fill;
           gfx.beginPath(); gfx.arc(px, py, 6, 0, Math.PI * 2); gfx.fill();
           gfx.strokeStyle = '#0f172a';
@@ -3625,7 +3665,7 @@ window.StemLab = window.StemLab || {
       }, [d.playId, d.coverageId, d.losX, d.showZones, d.showRoutes, d.showOpen,
           d.customPositions, d.runActive, d.runT, d.runOutcome,
           d.sport, d.formationId, d.conceptId, d.shapeId, d.showXG,
-          d.down, d.yardsToGoal, d.drillStats]);
+          d.down, d.yardsToGoal, d.drillStats, pickedPlayerId]);
 
       // ── UI ──
       function playLabChoiceButtonStyle(sel, opts) {
@@ -4694,22 +4734,29 @@ window.StemLab = window.StemLab || {
                 ? ('Soccer pitch, ' + formationDef.label + ' against ' + soccerShape.label + ' defensive shape.')
                 : ('Football field, ' + play.label + ' against ' + coverage.label
                   + (openReceiverId ? '. Most open receiver: ' + openReceiverId : '')
-                  + '. Click and drag a player to reposition them.'),
+                  + '. ' + __alloT('stem.playlab.canvas_move_hint', 'Click and drag a player to reposition them, or tap a player and then tap the field.')
+                  + (pickedPlayerId ? ' ' + plWithPlayer(__alloT('stem.playlab.canvas_picked_up', 'Picked up: {player}.'), pickedPlayerId) : '')),
               onMouseDown: handleMouseDown,
               onMouseMove: handleMouseMove,
               onMouseUp: handleMouseUp,
-              onMouseLeave: handleMouseUp,
-              // Touch parity: drag-to-reposition is the ONLY way to populate
-              // customPositions (and complete 2 of the 4 football drills), but the
-              // pilot device is a touchscreen Chromebook. Mirror the mouse handlers,
+              onMouseLeave: function(e) { handleMouseUp(e, true); },
+              // Touch parity: repositioning populates customPositions (and completes
+              // 2 of the 4 football drills), and the pilot device is a touchscreen
+              // Chromebook. Mirror the mouse handlers (drag, or tap-then-tap),
               // forwarding the single-touch point through the same clientX/Y math.
               // touchAction:'none' (below) already declares this a non-scroll surface,
               // so preventDefault won't fight a scroll the page wasn't doing here.
               onTouchStart: function(e) { if (e.touches && e.touches[0]) { e.preventDefault(); handleMouseDown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }); } },
               onTouchMove: function(e) { if (e.touches && e.touches[0]) { e.preventDefault(); handleMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }); } },
               onTouchEnd: function(e) { e.preventDefault(); handleMouseUp(); },
-              onTouchCancel: function() { handleMouseUp(); }
-              })
+              onTouchCancel: function() { handleMouseUp(null, true); }
+              }),
+              (!isSoccer && pickedPlayerId) ? h('div', { 'data-playlab-picked': pickedPlayerId, className: 'playlab-chip-row', style: { marginTop: 6, alignItems: 'center' } },
+                h('span', { className: 'playlab-chip' }, plWithPlayer(__alloT('stem.playlab.picked_up_chip', 'Picked up {player}: tap the field to place'), pickedPlayerId)),
+                h('button', { type: 'button', 'data-pl-focusable': 'true', onClick: function() { setPickedPlayerId(null); plAnnounce(plWithPlayer(__alloT('stem.playlab.sr_player_put_down', '{player} put down.'), pickedPlayerId)); },
+                  style: { minHeight: 28, padding: '2px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.7)', background: 'rgba(15,23,42,0.88)', color: '#e2e8f0', fontWeight: 700, cursor: 'pointer' } },
+                  __alloT('stem.playlab.cancel', 'Cancel'))
+              ) : null
             ),
             // ── Run Play button — the headline action ──
             // A green pill below the canvas that animates the play.

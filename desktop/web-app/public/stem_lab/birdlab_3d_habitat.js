@@ -14,6 +14,8 @@
     scene.add(root);
     var seed = 972031, resources = [], disposed = false;
     var clock = { value: 0 }, cyclePhase = { value: 0 }, breeze = { value: new THREE.Vector3(0.12, 0, 0.05) };
+    // Cloud shadows drift on the shared clock; held still under reduced motion.
+    var cloudMotion = { value: options.reducedMotion ? 0 : 1 };
     var dummy = new THREE.Object3D(), up = new THREE.Vector3(0, 1, 0);
     var direction = new THREE.Vector3(), a = new THREE.Vector3(), b = new THREE.Vector3();
     function random() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
@@ -361,8 +363,21 @@
         'vec2 blSurfaceSlope = vec2(dFdx(blSurfaceHeight),dFdy(blSurfaceHeight))*bumpScale;',
         THREE.ShaderChunk.normal_fragment_maps.replace('dHdxy_fwd()', 'blSurfaceSlope')
       ].join('\n'));
+      // Cloud shadows: broad soft patches, tens of metres across, drifting
+      // with the breeze. They block only direct sun, so shade stays as lit.
+      shader.uniforms.blCloudClock = clock; shader.uniforms.blCloudMotion = cloudMotion;
+      shader.fragmentShader = shader.fragmentShader.replace('uniform sampler2D blMossMap;', 'uniform float blCloudClock;\nuniform float blCloudMotion;\nfloat blCloudHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat blCloudNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(blCloudHash(i), blCloudHash(i + vec2(1., 0.)), f.x), mix(blCloudHash(i + vec2(0., 1.)), blCloudHash(i + vec2(1., 1.)), f.x), f.y); }\nuniform sampler2D blMossMap;');
+      shader.fragmentShader = shader.fragmentShader.replace('#include <lights_fragment_end>', [
+        '#include <lights_fragment_end>',
+        '#ifdef USE_MAP',
+        'vec2 blCloudPos = vUv * 5. * .028 + vec2(.011, .004) * blCloudClock * blCloudMotion;',
+        'float blCloud = blCloudNoise(blCloudPos) * .65 + blCloudNoise(blCloudPos * 2.3 + 7.1) * .35;',
+        'float blCloudShade = smoothstep(.5, .68, blCloud) * .55;',
+        'reflectedLight.directDiffuse *= 1. - blCloudShade; reflectedLight.directSpecular *= 1. - blCloudShade;',
+        '#endif'
+      ].join('\n'));
     };
-    groundMat.customProgramCacheKey = function () { return 'birdlab-moss-litter-surface-v3'; };
+    groundMat.customProgramCacheKey = function () { return 'birdlab-moss-litter-surface-v4'; };
     var ground = new THREE.Mesh(groundGeo, groundMat);
     ground.name = 'continuous-woodland-ground'; ground.receiveShadow = true; root.add(ground);
 
@@ -482,6 +497,13 @@
     var barkMap = texture(barkCanvas, 1);
     var barkBump = texture(barkHeightCanvas, 1); barkBump.encoding = THREE.LinearEncoding;
     var barkMat = material({ color: linear(0x7d7160), map: barkMap, bumpMap: barkBump, bumpScale: 0.014, roughness: 0.98 });
+    // One square bark tile spans a branch's circumference, repeating along its
+    // length (both read from the instance scale), so long trunks keep crisp
+    // cracks instead of stretching one tile end to end.
+    var barkTiling = ['#include <uv_vertex>', '#ifdef USE_INSTANCING',
+      'vUv.y*=max(1.,length(instanceMatrix[1].xyz)/(6.2832*max(length(instanceMatrix[0].xyz),.001)));', '#endif'].join('\n');
+    barkMat.onBeforeCompile = function (shader) { shader.vertexShader = shader.vertexShader.replace('#include <uv_vertex>', barkTiling); };
+    barkMat.customProgramCacheKey = function () { return 'birdlab-bark-tiled-v1'; };
     // The old perch has shed strips of bark. Exposed fibres are paler and
     // shallower than the remaining bark; hash-only marks keep placement fixed.
     var dryCanvas = canvas(512), dryCtx = dryCanvas.getContext('2d');
@@ -527,6 +549,7 @@
     // Reuse the ground moss texture, so this adds neither a map nor a draw.
     dryBarkMat.onBeforeCompile = function (shader) {
       shader.uniforms.blDeadwoodMoss = { value: mossMap };
+      shader.vertexShader = shader.vertexShader.replace('#include <uv_vertex>', barkTiling);
       shader.vertexShader = 'varying vec3 blWoodWorld;\n' + shader.vertexShader;
       shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', [
         '#include <worldpos_vertex>',
@@ -547,7 +570,7 @@
         'diffuseColor.rgb=mix(diffuseColor.rgb,blMossPigment,blMossCover);'
       ].join('\n'));
     };
-    dryBarkMat.customProgramCacheKey = function () { return 'birdlab-damp-deadwood-v1'; };
+    dryBarkMat.customProgramCacheKey = function () { return 'birdlab-damp-deadwood-v2'; };
     // The shared wood surface carries a slight lengthwise swell and bend. Its
     // end rings stay fixed so connected boughs, roots and exposed end grain
     // still meet. Only the high-quality mesh gains an intermediate ring.
@@ -579,13 +602,16 @@
     var branches = [], leaves = [[], []], treeLocations = [], walkObstacles = [];
     var observationPerches = [new THREE.Vector3(0, 3.2, 0)];
     function branch(start, end, radius, dry) { branches.push({ a: start, b: end, r: radius, dry: !!dry }); }
+    // Later shape refinements are hash-shaded, not drawn from random(), so
+    // adding a segment never moves a plant or stone in the seeded clearing.
+    function extraBranch(start, end, radius) { branches.push({ a: start, b: end, r: radius, dry: true, hashed: true }); }
     function leafCard(x, y, z, sx, sy, sz, angle, lean, type) {
       leaves[type].push({ x: x, y: y, z: z, sx: sx, sy: sy, sz: sz, angle: angle, lean: lean, shade: 0.8 + random() * 0.38 });
     }
     function tree(x, z, height, pine) {
       var y = groundHeight(x, z), bend = (random() - 0.5) * height * 0.13;
       var radius = height * (pine ? 0.022 : 0.025);
-      treeLocations.push({ x: x, z: z, radius: height * 0.32 });
+      treeLocations.push({ x: x, z: z, radius: height * 0.32, pine: !!pine });
       walkObstacles.push({ ax:x, az:z, bx:x, bz:z, radius:radius + .22 });
       var sway = (random() - 0.5) * height * 0.052;
       function trunkAt(fraction) {
@@ -798,16 +824,25 @@
     // Additional lookout limbs give free-ranging birds real landing surfaces.
     [[-5.8,-4.4,2.7,1],[6.2,-5.8,3.0,-1]].forEach(function(site) {
       var x=site[0], z=site[1], y=groundHeight(x,z), top=y+site[2], s=site[3];
-      branch([x-.5,y-.1,z],[x-.35,top-.1,z],.18,true);
-      branch([x-.35,top-.1,z],[x+.48,top-.1,z],.10,true);
-      observationPerches.push(new THREE.Vector3(x+.1,top-.0184,z));
+      // The trunk bows once, and the landing limb sweeps up about 11 degrees
+      // instead of leaving at a right angle. Its axis still crosses the perch
+      // at top-.1; the lit upper surface rises by the slope of the limb.
+      var bow=[x-.45,y-.1+(top-y)*.55,z+.07*s], rise=.16, armA=[x-.35,top-.1-.542*rise,z], armB=[x+.48,top-.1+.458*rise,z];
+      branch([x-.5,y-.1,z],bow,.18,true);
+      extraBranch(bow,[x-.35,top-.1,z],.125);
+      branch(armA,armB,.10,true);
+      observationPerches.push(new THREE.Vector3(x+.1,top-.1+.0816*Math.hypot(.83,rise)/.83,z));
       // A snag, not a signpost: the trunk continues to a broken crown, the
       // limb tapers out instead of ending in a sawn face, and a stub and two
       // root flares break the straight post. The landing span is unchanged.
       branch([x-.35,top-.1,z],[x-.29,top+.62,z+.06*s],.12,true);
       branch([x-.29,top+.62,z+.06*s],[x-.255,top+.88,z+.04*s],.079,true);
-      branch([x+.48,top-.1,z],[x+.80,top-.03,z-.05*s],.066,true);
-      branch([x+.80,top-.03,z-.05*s],[x+.98,top+.07,z-.07*s],.036,true);
+      branch(armB,[x+.78,armB[1]+.11,z-.05*s],.066,true);
+      branch([x+.78,armB[1]+.11,z-.05*s],[x+.93,armB[1]+.27,z-.07*s],.036,true);
+      // Broken side stubs on the far side of the trunk, clear of the approach.
+      extraBranch([x-.47,y+.95,z],[x-.80,y+1.12,z-.20*s],.036);
+      extraBranch([x-.42,top-.38,z],[x-.58,top-.14,z-.27*s],.030);
+      extraBranch([x-.33,top+.34,z+.04*s],[x-.53,top+.52,z-.13*s],.026);
       branch([x-.40,top-.72,z],[x-.72,top-.44,z+.24*s],.05,true);
       branch([x-.49,y+.14,z],[x-.93,y-.03,z+.22*s],.088,true);
       branch([x-.47,y+.14,z],[x-.22,y-.04,z-.36*s],.078,true);
@@ -827,8 +862,9 @@
         dummy.position.copy(a).add(b).multiplyScalar(0.5);
         dummy.quaternion.setFromUnitVectors(up, direction.clone().normalize());
         dummy.scale.set(entry.r, direction.length(), entry.r); dummy.updateMatrix(); mesh.setMatrixAt(index, dummy.matrix);
-        var barkShade = dry ? 0.84 + random() * 0.20 : 0.73 + random() * 0.32;
-        tint.setRGB(barkShade, barkShade * (0.96 + random() * 0.06), barkShade * 0.91); mesh.setColorAt(index, tint);
+        var barkShade = entry.hashed ? 0.84 + hash(entry.a[0] * 13.1, entry.a[2] * 7.7 + entry.a[1]) * 0.20 : dry ? 0.84 + random() * 0.20 : 0.73 + random() * 0.32;
+        var barkWarmth = entry.hashed ? 0.96 + hash(entry.b[0] * 5.3, entry.b[2] * 3.1) * 0.06 : 0.96 + random() * 0.06;
+        tint.setRGB(barkShade, barkShade * barkWarmth, barkShade * 0.91); mesh.setColorAt(index, tint);
       });
       mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; mesh.castShadow = true; mesh.receiveShadow = true;
       mesh.frustumCulled = false; root.add(mesh);
@@ -1518,11 +1554,18 @@
         var veins = Math.exp(-veinDistance * veinDistance * 1150) * envelope * (1 - Math.abs(across) * .8);
         var grain = (hash(x + 733, y + 227) - .5) * 2;
         var mottling = noise(x * .045 + 18, y * .035 + 41) - .5;
-        var tissue = 224 + mottling * 13 + grain * 2.5 - Math.pow(Math.abs(across) * 2, 3) * 5;
-        var veinColor = center * 10 + veins * 5, offset = (y * size + x) * 4;
-        pigment.data[offset] = tissue + veinColor;
-        pigment.data[offset + 1] = tissue + veinColor * .8;
-        pigment.data[offset + 2] = tissue - 3 + veinColor * .35;
+        // Pale veins, soft mottling, a darker rim and a little tip yellowing;
+        // a few hash-placed spots read as ordinary leaf wear up close.
+        var spot = 0;
+        for (var lesion = 0; lesion < 3; lesion++) {
+          var spotDx = x / (size - 1) - (.3 + hash(lesion, 401) * .4), spotDy = along - (.25 + hash(lesion, 409) * .55);
+          spot = Math.max(spot, 1 - smooth(Math.hypot(spotDx, spotDy) / (.025 + hash(lesion, 419) * .03)));
+        }
+        var tissue = 220 + mottling * 24 + grain * 2.5 - Math.pow(Math.abs(across) * 2, 3) * 22 - spot * 46;
+        var veinColor = center * 24 + veins * 13, yellowing = Math.pow(along, 3) * 12, offset = (y * size + x) * 4;
+        pigment.data[offset] = tissue + veinColor + yellowing + spot * 14;
+        pigment.data[offset + 1] = tissue + veinColor * .8 + yellowing * .7;
+        pigment.data[offset + 2] = tissue - 3 + veinColor * .35 - yellowing;
         pigment.data[offset + 3] = 255;
         var height = 118 + center * 68 + veins * 31 + grain * 1.4;
         relief.data[offset] = relief.data[offset + 1] = relief.data[offset + 2] = height;
@@ -1675,6 +1718,83 @@
     }
     groundDetail(false); groundDetail(true);
 
+    // A few leaves tumble down from the canopy on the shared clock: the vertex
+    // shader places each one from its seed, so seeking replays the same fall
+    // and no frame-time work is added. Omitted under reduced motion.
+    if (!options.reducedMotion) {
+      var fallCanvas = canvas(64), fallCtx = fallCanvas.getContext('2d');
+      var fallFill = fallCtx.createLinearGradient(0, 0, 64, 64);
+      fallFill.addColorStop(0, '#c98a3c'); fallFill.addColorStop(0.55, '#a8642c'); fallFill.addColorStop(1, '#7e4a22');
+      fallCtx.fillStyle = fallFill; fallCtx.beginPath(); fallCtx.moveTo(32, 2);
+      fallCtx.bezierCurveTo(56, 14, 58, 40, 32, 62); fallCtx.bezierCurveTo(6, 40, 8, 14, 32, 2); fallCtx.fill();
+      fallCtx.strokeStyle = 'rgba(92,52,22,.75)'; fallCtx.lineWidth = 1.4;
+      fallCtx.beginPath(); fallCtx.moveTo(32, 4); fallCtx.lineTo(32, 62); fallCtx.stroke();
+      fallCtx.lineWidth = 0.8;
+      for (var fallVein = 0; fallVein < 4; fallVein++) {
+        var veinY = 16 + fallVein * 11;
+        fallCtx.beginPath(); fallCtx.moveTo(32, veinY + 6); fallCtx.lineTo(18, veinY - 2); fallCtx.moveTo(32, veinY + 6); fallCtx.lineTo(46, veinY - 2); fallCtx.stroke();
+      }
+      var fallCount = detailed ? 16 : 7, fallGeo = geometry(new THREE.PlaneGeometry(0.075, 0.075));
+      var fallSeeds = new Float32Array(fallCount);
+      var fallMat = material({ map: texture(fallCanvas), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.92 });
+      fallMat.onBeforeCompile = function (shader) {
+        shader.uniforms.blFallClock = clock;
+        shader.vertexShader = 'uniform float blFallClock;\nattribute float blFallSeed;\n' + shader.vertexShader;
+        shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', [
+          '#include <begin_vertex>',
+          // One fall per ~11 s, staggered by seed; tumbling about two axes.
+          'float blFall = fract(blFallClock / (9.0 + blFallSeed * 4.0) + blFallSeed * 7.31);',
+          'float blSpin = blFall * (14.0 + blFallSeed * 9.0), blRock = sin(blFall * 23.0 + blFallSeed * 40.0) * 1.1;',
+          'transformed.yz = mat2(cos(blSpin), sin(blSpin), -sin(blSpin), cos(blSpin)) * transformed.yz;',
+          'transformed.xy = mat2(cos(blRock), sin(blRock), -sin(blRock), cos(blRock)) * transformed.xy;',
+          'transformed *= smoothstep(0.0, 0.05, blFall) * (1.0 - smoothstep(0.9, 1.0, blFall));',
+          'transformed += vec3(sin(blFall * 9.0 + blFallSeed * 21.0) * 0.45, (1.0 - blFall) * (3.6 + blFallSeed * 2.4) + 0.03, cos(blFall * 7.0 + blFallSeed * 13.0) * 0.35);'
+        ].join('\n'));
+      };
+      fallMat.customProgramCacheKey = function () { return 'birdlab-falling-leaves-v1'; };
+      var falling = new THREE.InstancedMesh(fallGeo, fallMat, fallCount);
+      falling.name = 'falling-woodland-leaves';
+      for (var fallIndex = 0; fallIndex < fallCount; fallIndex++) {
+        var fallAngle = hash(fallIndex, 881) * Math.PI * 2, fallRange = 2.2 + hash(fallIndex + 5, 883) * 9;
+        var fallX = Math.cos(fallAngle) * fallRange, fallZ = Math.sin(fallAngle) * fallRange;
+        dummy.position.set(fallX, groundHeight(fallX, fallZ), fallZ); dummy.rotation.set(0, hash(fallIndex, 887) * Math.PI, 0); dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix(); falling.setMatrixAt(fallIndex, dummy.matrix); fallSeeds[fallIndex] = hash(fallIndex + 11, 889);
+      }
+      fallGeo.setAttribute('blFallSeed', new THREE.InstancedBufferAttribute(fallSeeds, 1));
+      falling.instanceMatrix.needsUpdate = true; falling.frustumCulled = false; root.add(falling);
+    }
+
+    // Pollen and dust drift slowly through the clearing and glint as they
+    // turn. Placed by the vertex shader from the shared clock; omitted under
+    // reduced motion, like the falling leaves.
+    if (!options.reducedMotion) {
+      var moteCount = detailed ? 140 : 60, motePositions = new Float32Array(moteCount * 3), moteSeeds = new Float32Array(moteCount);
+      for (var mote = 0; mote < moteCount; mote++) {
+        var moteAngle = hash(mote, 911) * Math.PI * 2, moteRange = Math.sqrt(hash(mote + 3, 913)) * 7.5;
+        var moteX = Math.cos(moteAngle) * moteRange, moteZ = Math.sin(moteAngle) * moteRange;
+        motePositions[mote * 3] = moteX; motePositions[mote * 3 + 1] = groundHeight(moteX, moteZ) + .25 + hash(mote + 7, 917) * 2.6; motePositions[mote * 3 + 2] = moteZ;
+        moteSeeds[mote] = hash(mote + 13, 919);
+      }
+      var moteGeo = geometry(new THREE.BufferGeometry());
+      moteGeo.setAttribute('position', new THREE.BufferAttribute(motePositions, 3));
+      moteGeo.setAttribute('blMoteSeed', new THREE.BufferAttribute(moteSeeds, 1));
+      var moteMat = keep(new THREE.PointsMaterial({ color: 0xffe9b0, size: .03, sizeAttenuation: true, transparent: true, opacity: .8, depthWrite: false, blending: THREE.AdditiveBlending }));
+      moteMat.onBeforeCompile = function (shader) {
+        shader.uniforms.blMoteClock = clock;
+        shader.vertexShader = 'uniform float blMoteClock;\nattribute float blMoteSeed;\nvarying float blMoteGlint;\n' + shader.vertexShader;
+        shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', [
+          '#include <begin_vertex>',
+          'float blMoteT = blMoteClock + blMoteSeed * 97.;',
+          'transformed += vec3(sin(blMoteT * .21 + blMoteSeed * 6.3) * .35 + breezeSway(blMoteT), sin(blMoteT * .13 + blMoteSeed * 11.) * .22, cos(blMoteT * .17 + blMoteSeed * 4.1) * .35);',
+          'blMoteGlint = .4 + .6 * pow(max(0., sin(blMoteT * 1.7 + blMoteSeed * 30.)), 6.);'
+        ].join('\n')).replace('void main() {', 'float breezeSway(float t) { return sin(t * .05) * .4; }\nvoid main() {');
+        shader.fragmentShader = 'varying float blMoteGlint;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= blMoteGlint;');
+      };
+      moteMat.customProgramCacheKey = function () { return 'birdlab-clearing-motes-v1'; };
+      var motes = new THREE.Points(moteGeo, moteMat);
+      motes.name = 'drifting-clearing-motes'; motes.frustumCulled = false; root.add(motes);
+    }
+
     root.userData = { habitat: 'woodland-edge', deterministicSeed: 972031, sharedTerrainSampler: true, perch: [0, 3.2, 0] };
     function update(time, wind) {
       if (disposed) return;
@@ -1704,10 +1824,203 @@
         var u=Math.max(0,Math.min(1,((x-obstacle.ax)*dx+(z-obstacle.az)*dz)/Math.max(1e-10,dx*dx+dz*dz)));
         if(Math.hypot(x-obstacle.ax-u*dx,z-obstacle.az-u*dz)<obstacle.radius+radius)return true;
       }
+      if(feederPost&&feederPost.on&&Math.hypot(x-feederPost.x,z-feederPost.z)<.05+radius)return true;
       return false;
     }
+
+    // ── Feeding study (opt-in). Sites and props are built on first use, so the
+    // default woodland keeps its exact scene. Foods sit clear of trunks, wood
+    // and the perch snags; acorns lie under the nearest broadleaf tree.
+    var food = null, feederPost = null;
+    function foodSite(candidates, clearance) {
+      for (var i = 0; i < candidates.length; i++) if (!isBlocked(candidates[i][0], candidates[i][1], clearance)) return candidates[i];
+      return candidates[0];
+    }
+    function acornSite() {
+      var best = null;
+      treeLocations.forEach(function (tree) {
+        var range = Math.hypot(tree.x, tree.z);
+        if (tree.pine || range < 3.6 || range > 6.2) return;
+        var x = tree.x * (1 - .95 / range), z = tree.z * (1 - .95 / range);
+        if (isBlocked(x, z, .34) || (best && range >= best.range)) return;
+        best = { x: x, z: z, range: range };
+      });
+      return best ? [best.x, best.z] : foodSite([[.6, -4.1], [-.8, 4], [4, .6]], .62);
+    }
+    function getFoodSources() {
+      if (food) return food.sources;
+      var seed = foodSite([[2.9, -1.9], [3.2, -1.1], [2.5, -2.7], [3.5, -.3]], .62);
+      var berry = foodSite([[-3.2, -1.8], [-3.5, -.9], [-2.7, -2.6], [-3.7, .3]], .7);
+      var litter = foodSite([[-2.6, 2.6], [-3, 1.7], [-1.9, 3.3]], .64);
+      var lawn = foodSite([[2.4, 2.9], [3.1, 2], [1.5, 3.4]], .74);
+      var acorn = acornSite();
+      food = { props: null, guided: null, levels: {}, sources: [
+        { id: 'feeder', kind: 'seed', label: 'Sunflower and millet seed', place: 'the feeder', eat: 'Eating seed spilled under the feeder', x: seed[0], z: seed[1], radius: .55, regrow: .03 },
+        { id: 'winterberry', kind: 'berry', label: 'Winterberries', place: 'the winterberry shrub', eat: 'Eating winterberries', x: berry[0], z: berry[1], radius: .5, regrow: .012 },
+        { id: 'leaf-litter', kind: 'insect', label: 'Insects in leaf litter', place: 'the leaf litter', eat: 'Scratching leaf litter for insects', x: litter[0], z: litter[1], radius: .6, regrow: .02 },
+        { id: 'lawn', kind: 'worm', label: 'Earthworms', place: 'the lawn', eat: 'Pulling earthworms from the lawn', x: lawn[0], z: lawn[1], radius: .7, regrow: .015 },
+        { id: 'oak', kind: 'acorn', label: 'Acorns', place: 'the oak', eat: 'Taking acorns under the oak', x: acorn[0], z: acorn[1], radius: .6, regrow: .008 }
+      ] };
+      return food.sources;
+    }
+    function foodParts() {
+      if (food.parts) return food.parts;
+      var seedGeo = geometry(new THREE.SphereGeometry(.0055, 6, 4)); seedGeo.scale(1.3, .62, .78);
+      var berryGeo = geometry(new THREE.SphereGeometry(.0068, 8, 6));
+      var nutGeo = geometry(new THREE.SphereGeometry(.0085, 9, 7)); nutGeo.scale(1, 1.35, 1);
+      var capGeo = geometry(new THREE.SphereGeometry(.0092, 9, 4, 0, Math.PI * 2, 0, Math.PI * .5)); capGeo.translate(0, .0055, 0);
+      var bugGeo = geometry(new THREE.SphereGeometry(.0045, 6, 4)); bugGeo.scale(.8, .55, 1.5);
+      var worm = new THREE.CatmullRomCurve3([new THREE.Vector3(0, -.006, 0), new THREE.Vector3(.006, .007, .004), new THREE.Vector3(.018, .009, .01), new THREE.Vector3(.028, .002, .014)]);
+      var wormGeo = geometry(new THREE.TubeGeometry(worm, 12, .0028, 6, false));
+      // Reuse the woodland's own leaves and grass so the props match the floor.
+      var herbGeo = geometry(smallLeafGeometry(true)); herbGeo.scale(.1, .1, .1);
+      var leafGeo = geometry(smallLeafGeometry(false)); leafGeo.scale(.07, .07, .07);
+      var grassGeo = geometry(grassGeometry(false)); grassGeo.scale(.08, .08, .08);
+      function fadeCanvas(radial) {
+        var c = canvas(64), g = c.getContext('2d'), grad = radial ? g.createRadialGradient(32, 32, 0, 32, 32, 32) : g.createLinearGradient(0, 0, 0, 64);
+        grad.addColorStop(0, '#fff'); grad.addColorStop(radial ? .55 : .72, '#fff'); grad.addColorStop(1, '#000');
+        g.fillStyle = grad; g.fillRect(0, 0, 64, 64); return texture(c);
+      }
+      var tinted = material({ color: 0xffffff, roughness: .82 });
+      food.parts = { seedGeo: seedGeo, berryGeo: berryGeo, nutGeo: nutGeo, capGeo: capGeo, bugGeo: bugGeo, wormGeo: wormGeo, leafGeo: leafGeo, tinted: tinted,
+        berryMat: material({ color: linear(0xc4202d), roughness: .35 }), nutMat: material({ color: linear(0x8a5a2b), roughness: .55 }),
+        capMat: material({ color: linear(0x5b4a32), roughness: .95 }), bugMat: material({ color: linear(0x26201a), roughness: .4 }),
+        wormMat: material({ color: linear(0xc08479), roughness: .5 }), leafMat: material({ color: 0xffffff, map: detailMap, roughness: 1, side: THREE.DoubleSide }),
+        herbGeo: herbGeo, grassGeo: grassGeo, softDisc: fadeCanvas(true), softDome: fadeCanvas(false),
+        shrubLeafMat: material({ color: linear(0x6f8f4e), map: livingLeafMaps.color, vertexColors: true, roughness: .85, side: THREE.DoubleSide }),
+        grassMat: material({ color: linear(0x7f9a58), vertexColors: true, roughness: .95, side: THREE.DoubleSide }) };
+      return food.parts;
+    }
+    // Deterministic placements, each on the rendered ground under its source.
+    function foodScatter(group, name, geo, mat, count, cx, cz, spread, lift, colorOf, salt, place) {
+      var mesh = new THREE.InstancedMesh(geo, mat, count), color = new THREE.Color();
+      mesh.name = name; mesh.castShadow = true; mesh.receiveShadow = true; mesh.frustumCulled = false;
+      for (var i = 0; i < count; i++) {
+        var a = hash(i, salt) * Math.PI * 2, r = Math.sqrt(hash(i + 3, salt + 7)) * spread;
+        var x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r;
+        dummy.position.set(x, groundSurfaceAt(x, z).height + lift, z);
+        dummy.rotation.set((hash(i, salt + 11) - .5) * .5, hash(i, salt + 13) * Math.PI * 2, (hash(i, salt + 17) - .5) * .5);
+        dummy.scale.setScalar(.82 + hash(i, salt + 19) * .4);
+        if (place) place(i, dummy, r / Math.max(spread, 1e-6));
+        dummy.updateMatrix(); mesh.setMatrixAt(i, dummy.matrix);
+        if (colorOf) { color.copy(colorOf(i)); mesh.setColorAt(i, color); }
+      }
+      mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.userData.full = count; group.add(mesh); return mesh;
+    }
+    function buildFoodProps() {
+      var parts = foodParts(), sources = food.sources, group = new THREE.Group();
+      group.name = 'feeding-study-props'; group.visible = false; root.add(group);
+      var levels = food.levels, sunflower = linear(0x2e2b28), millet = linear(0xd8cba6), striped = linear(0x6c665c);
+      function solid(geo, mat, x, y, z, name) { var m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.name = name; m.castShadow = true; m.receiveShadow = true; group.add(m); return m; }
+      // Seed feeder: pole, clear tube with seed inside, roof, tray and perch.
+      var feeder = sources[0], fy = groundSurfaceAt(feeder.x, feeder.z).height;
+      var metal = material({ color: linear(0x3e4f47), roughness: .42, metalness: .35 });
+      solid(geometry(new THREE.CylinderGeometry(.018, .024, 1.48, 10)), metal, feeder.x, fy + .74, feeder.z, 'feeder-pole');
+      solid(geometry(new THREE.CylinderGeometry(.05, .05, .3, 16)), material({ color: linear(0x6d6252), roughness: 1 }), feeder.x, fy + 1.27, feeder.z, 'feeder-seed-column');
+      var tube = solid(geometry(new THREE.CylinderGeometry(.056, .056, .34, 18, 1, true)), material({ color: linear(0xd8e8e4), roughness: .12, transparent: true, opacity: .32, side: THREE.DoubleSide, depthWrite: false }), feeder.x, fy + 1.28, feeder.z, 'feeder-tube');
+      tube.castShadow = false;
+      solid(geometry(new THREE.ConeGeometry(.095, .07, 18)), metal, feeder.x, fy + 1.485, feeder.z, 'feeder-roof');
+      solid(geometry(new THREE.CylinderGeometry(.12, .12, .012, 22)), metal, feeder.x, fy + 1.1, feeder.z, 'feeder-tray');
+      var perch = solid(geometry(new THREE.CylinderGeometry(.0035, .0035, .26, 6)), metal, feeder.x, fy + 1.16, feeder.z, 'feeder-perch'); perch.rotation.z = Math.PI / 2;
+      feederPost = { x: feeder.x, z: feeder.z, on: false };
+      levels.feeder = [foodScatter(group, 'feeder-spilled-seed', parts.seedGeo, parts.tinted, 110, feeder.x, feeder.z, feeder.radius * .92, .002,
+        function (i) { return i % 3 === 0 ? millet : i % 3 === 1 ? sunflower : striped; }, 601)];
+      // Winterberry: veined leaves massed over a dark inner shrub, with fruit
+      // held just outside the leaves and a few fallen berries below.
+      var shrub = sources[1], sy = groundSurfaceAt(shrub.x, shrub.z).height, blobGeo = geometry(new THREE.IcosahedronGeometry(1, 2));
+      var foliage = material({ color: linear(0x1d2c16), roughness: .95 }), blobs = [], dir = new THREE.Vector3(), leafTint = new THREE.Color();
+      for (var b = 0; b < 6; b++) {
+        var ba = b * 1.047 + .4, br = b ? .17 : 0, bs = .2 + hash(b, 641) * .09;
+        var blob = solid(blobGeo, foliage, shrub.x + Math.cos(ba) * br, sy + .24 + (b ? hash(b, 643) * .14 : .2), shrub.z + Math.sin(ba) * br, 'winterberry-shrub');
+        blob.scale.set(bs * 1.05, bs * .82, bs * 1.05); blobs.push(blob);
+      }
+      function onShrub(k, saltA, saltB, out) {
+        var host = blobs[k % blobs.length], theta = hash(k, saltA) * Math.PI * 2, rise = Math.max(-.35, Math.min(1, -.3 + hash(k, saltB) * 1.3));
+        dir.set(Math.cos(theta) * Math.sqrt(1 - rise * rise), rise, Math.sin(theta) * Math.sqrt(1 - rise * rise));
+        dummy.position.set(host.position.x + dir.x * host.scale.x * out, host.position.y + dir.y * host.scale.y * out, host.position.z + dir.z * host.scale.z * out);
+      }
+      var shrubLeaves = new THREE.InstancedMesh(parts.herbGeo, parts.shrubLeafMat, 260);
+      shrubLeaves.name = 'winterberry-leaves'; shrubLeaves.castShadow = true; shrubLeaves.receiveShadow = true;
+      for (var leaf = 0; leaf < 260; leaf++) {
+        onShrub(leaf, 733, 739, .9);
+        dummy.quaternion.setFromUnitVectors(up, dir); dummy.rotateY(hash(leaf, 743) * Math.PI * 2);
+        dummy.scale.setScalar(1 + hash(leaf, 751) * .5); dummy.updateMatrix(); shrubLeaves.setMatrixAt(leaf, dummy.matrix);
+        shrubLeaves.setColorAt(leaf, leafTint.setRGB(1, 1, 1).multiplyScalar(.7 + hash(leaf, 757) * .45));
+      }
+      shrubLeaves.instanceMatrix.needsUpdate = true; shrubLeaves.instanceColor.needsUpdate = true; group.add(shrubLeaves);
+      var berries = new THREE.InstancedMesh(parts.berryGeo, parts.berryMat, 96);
+      berries.name = 'winterberry-fruit'; berries.castShadow = true;
+      for (var k = 0; k < 96; k++) {
+        onShrub(k, 647, 653, 1.12);
+        dummy.rotation.set(0, 0, 0); dummy.scale.setScalar(.85 + hash(k, 659) * .35); dummy.updateMatrix(); berries.setMatrixAt(k, dummy.matrix);
+      }
+      berries.instanceMatrix.needsUpdate = true; berries.userData.full = 96; group.add(berries);
+      levels.winterberry = [berries, foodScatter(group, 'fallen-winterberries', parts.berryGeo, parts.berryMat, 18, shrub.x, shrub.z, shrub.radius, .005, null, 661)];
+      // Leaf litter: a damp, raked mound of curled leaves whose edge fades into
+      // the soil, with beetles and larvae among them.
+      var litter = sources[2], ly = groundSurfaceAt(litter.x, litter.z).height;
+      var mound = solid(geometry(new THREE.SphereGeometry(1, 24, 10, 0, Math.PI * 2, 0, Math.PI * .5)),
+        material({ color: linear(0x2c2117), roughness: 1, alphaMap: parts.softDome, transparent: true, depthWrite: false }), litter.x, ly - .004, litter.z, 'leaf-litter-mound');
+      mound.scale.set(litter.radius * 1.1, .05, litter.radius * .95); mound.castShadow = false;
+      function onMound(i, item, r) { item.position.y += .05 * Math.sqrt(Math.max(0, 1 - r * r)); }
+      foodScatter(group, 'leaf-litter-leaves', parts.leafGeo, parts.leafMat, 95, litter.x, litter.z, litter.radius, .002,
+        function (i) { return linear([0x6b4a2e, 0x8a6236, 0x4e3a28, 0x977238, 0x5d4a33][i % 5]); }, 671, onMound);
+      levels['leaf-litter'] = [foodScatter(group, 'leaf-litter-insects', parts.bugGeo, parts.bugMat, 22, litter.x, litter.z, litter.radius * .8, .006, null, 677, onMound)];
+      // Lawn: short turf whose edge fades into the bare soil, grass tufts,
+      // worm castings and emerging earthworms.
+      var lawn = sources[3], wy = groundSurfaceAt(lawn.x, lawn.z).height;
+      var turfGeo = geometry(new THREE.CircleGeometry(lawn.radius * 1.15, 48)), turfPos = turfGeo.attributes.position, turfColors = [], turfTint = new THREE.Color();
+      for (var tv = 0; tv < turfPos.count; tv++) {
+        var tx = turfPos.getX(tv), ty = turfPos.getY(tv), wobble = 1 + .14 * Math.sin(Math.atan2(ty, tx) * 5 + 1.3) + .07 * Math.sin(Math.atan2(ty, tx) * 11);
+        turfPos.setXY(tv, tx * wobble, ty * wobble);
+        turfTint.setRGB(1, 1, 1).multiplyScalar(.85 + hash(tv, 727) * .25); turfColors.push(turfTint.r, turfTint.g, turfTint.b);
+      }
+      turfGeo.setAttribute('color', new THREE.Float32BufferAttribute(turfColors, 3));
+      var turf = solid(turfGeo, material({ color: linear(0x34492a), vertexColors: true, roughness: .97, alphaMap: parts.softDisc, transparent: true, depthWrite: false,
+        polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), lawn.x, wy + .004, lawn.z, 'lawn-turf');
+      turf.rotation.x = -Math.PI / 2; turf.castShadow = false;
+      foodScatter(group, 'lawn-grass', parts.grassGeo, parts.grassMat, 80, lawn.x, lawn.z, lawn.radius * .85, -.002, null, 697);
+      foodScatter(group, 'lawn-worm-castings', parts.seedGeo, parts.tinted, 40, lawn.x, lawn.z, lawn.radius * .85, .004, function () { return linear(0x4a3a28); }, 683,
+        function (i, item) { item.scale.multiplyScalar(1.8); });
+      levels.lawn = [foodScatter(group, 'lawn-earthworms', parts.wormGeo, parts.wormMat, 9, lawn.x, lawn.z, lawn.radius * .75, .004, null, 691)];
+      // Acorns with their caps, under the oak.
+      var oak = sources[4];
+      levels.oak = [foodScatter(group, 'oak-acorns', parts.nutGeo, parts.nutMat, 54, oak.x, oak.z, oak.radius, .008, null, 701),
+        foodScatter(group, 'oak-acorn-caps', parts.capGeo, parts.capMat, 54, oak.x, oak.z, oak.radius, .008, null, 701)];
+      food.props = group;
+    }
+    function setFoodVisible(value) {
+      getFoodSources();
+      if (value && !food.props) buildFoodProps();
+      if (food.props) food.props.visible = !!value;
+      if (feederPost) feederPost.on = !!value;
+    }
+    // amount 0..1 per source: fewer seeds, fruit, insects or acorns remain.
+    function setFoodLevels(levels) {
+      if (!food || !food.props || !levels) return;
+      levels.forEach(function (level) {
+        (food.levels[level.id] || []).forEach(function (mesh) { mesh.count = Math.round(mesh.userData.full * Math.max(0, Math.min(1, level.amount))); });
+      });
+    }
+    // Guided mode: a little of each bird's main food where it already feeds.
+    function setGuidedFood(spots, visible) {
+      if (!food) getFoodSources();
+      if (spots && !food.guided) {
+        var parts = foodParts(), group = new THREE.Group(); group.name = 'guided-food-props'; root.add(group);
+        var looks = { seed: [parts.seedGeo, parts.tinted, 12, function (i) { return linear(i % 2 ? 0xd8cba6 : 0x2e2b28); }],
+          berry: [parts.berryGeo, parts.berryMat, 6], acorn: [parts.nutGeo, parts.nutMat, 4], insect: [parts.bugGeo, parts.bugMat, 4], worm: [parts.wormGeo, parts.wormMat, 2] };
+        spots.forEach(function (spot, index) {
+          var look = looks[spot.kind]; if (!look) return;
+          foodScatter(group, 'guided-' + spot.kind + '-' + spot.id, look[0], look[1], look[2], spot.x, spot.z, .07, look[0] === parts.nutGeo ? .008 : .004, look[3] || null, 811 + index * 17);
+        });
+        food.guided = group;
+      }
+      if (food.guided) food.guided.visible = !!visible;
+    }
     return { root: root, perch: new THREE.Vector3(0, 3.2, 0), perches:observationPerches, isBlocked:isBlocked, groundHeight: groundHeight,
-      groundSurfaceHeight: function(x,z) { return groundSurfaceAt(x,z).height; }, update: update, dispose: dispose };
+      groundSurfaceHeight: function(x,z) { return groundSurfaceAt(x,z).height; }, update: update, dispose: dispose,
+      getFoodSources: getFoodSources, setFoodVisible: setFoodVisible, setFoodLevels: setFoodLevels, setGuidedFood: setGuidedFood };
   }
   global.BirdLab3DHabitat = { create: create };
 })(typeof window !== 'undefined' ? window : globalThis);

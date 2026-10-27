@@ -12524,6 +12524,13 @@
             ev.target.tagName === 'SELECT' ||
             ev.target.isContentEditable
           )) return;
+          // WCAG 2.1.4: single-key shortcuts (letters, digits, Space) act only while the
+          // world has focus or pointer lock; Ctrl/Cmd chords keep working as before.
+          if (ev.key && ev.key.length === 1 && !ev.ctrlKey && !ev.metaKey) {
+            var gwWrap = document.getElementById('geoworld-fs-wrap');
+            var gwFocused = !!(gwWrap && ev.target && ev.target.nodeType && gwWrap.contains(ev.target));
+            if (ev.altKey || !(gwFocused || engine.isLocked || engine._touchActive)) return;
+          }
           switch (ev.code) {
             case 'Escape':
               if(engine._hudHidden && engine._toggleHud){ev.preventDefault();engine._toggleHud();break;}

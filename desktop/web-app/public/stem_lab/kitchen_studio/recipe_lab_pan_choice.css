@@ -30,3 +30,10 @@
 @media(forced-colors:active){.pan-choice-lesson,.pan-choice-card,.pan-choice-science,#panChoiceKeyboardPanel,#panChoiceControl,#panChoiceSelect,.pan-choice-status,#panChoiceSummary{border:1px solid CanvasText;color:CanvasText;background:Canvas}.pan-choice-card[data-selected=true]{border:2px solid Highlight}.pan-choice-lesson>summary,.pan-choice-model,.pan-choice-card .pan-choice-tradeoff,.pan-choice-receipt{color:CanvasText;background:Canvas}.pan-choice-card svg,#panChoiceControl{forced-color-adjust:none}.pan-choice-lesson button:focus-visible,.pan-choice-lesson select:focus-visible,.pan-choice-lesson summary:focus-visible,#panChoiceControl:focus-visible{outline-color:Highlight}}
 @media(prefers-reduced-motion:reduce){.pan-choice-lesson *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 @media(max-width:650px){.kitchen-gesture-coach[data-tool="pan-choice"]{top:auto;bottom:9px}.kitchen-gesture-coach[data-tool="pan-choice"] #gestureDetail{display:none}}
+
+.pan-choice-lesson{min-width:0;overflow:visible;overflow-wrap:anywhere}
+.pan-choice-lesson>summary{flex-wrap:wrap;border-radius:1rem;min-width:0}
+#panChoiceSummary{white-space:normal;max-width:100%;overflow-wrap:anywhere}
+.pan-choice-actions button,.pan-choice-card button{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.pan-choice-comparison{grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr))}
+@media(forced-colors:active){.pan-choice-lesson button:disabled{opacity:1;color:GrayText;border-color:GrayText}}

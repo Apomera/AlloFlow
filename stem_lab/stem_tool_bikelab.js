@@ -2682,6 +2682,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         useEffect(function() {
           if (!running) return;
           var onKey = function(e) {
+            // WCAG 2.1.4: Space-to-brake acts only while focus is inside the ride view.
+            var rideRoot = document.querySelector('[data-bikelab-ride-root]');
+            if (!rideRoot || !e.target || !rideRoot.contains(e.target)) return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName || '') || e.target.isContentEditable) return;
             if (e.key === 'ArrowUp') { setGear(function(g) { return Math.min(1, g + 0.1); }); e.preventDefault(); }
             if (e.key === 'ArrowDown') { setGear(function(g) { return Math.max(0.2, g - 0.1); }); e.preventDefault(); }
             if (e.key === ' ') { setBraking(true); e.preventDefault(); }
@@ -2905,7 +2910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var bestTime = (typeof d.rideBestTime === 'number' && isFinite(d.rideBestTime))
           ? d.rideBestTime : null;
 
-        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+        return h('div', { className: 'flex flex-col h-full bg-slate-50', 'data-bikelab-ride-root': 'true', tabIndex: -1 }, // tabIndex -1: a click on the canvas keeps focus (and Space-to-brake) in the ride
           BackBar({ icon: '🏘️', title: t('stem.bikelab.neighborhood_ride_2', 'Neighborhood Ride') }),
           h('div', { className: 'p-3 max-w-7xl mx-auto w-full space-y-3' },
             h('div', { id: 'bikelab-neighborhood-fs', className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', style: { position: 'relative' } },

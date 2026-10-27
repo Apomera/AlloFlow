@@ -186,6 +186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       ".migration-experiment-steps{margin:16px 22px 0;padding:0;list-style:none;}.migration-experiment-steps li{display:flex;align-items:center;gap:7px;}.migration-experiment-steps li[data-complete=\"true\"] b{background:#075c70;border-color:#247f8e;color:#fff;}.migration-experiment-variable{padding:0;margin:0;border:0;}.migration-experiment-variable legend{font-size:12px;font-weight:750;padding:0;margin-bottom:8px;}.migration-experiment-variable button[aria-pressed=\"true\"]{background:#075c70;border-color:#247f8e;color:#fff;}.migration-experiment-variable p{font-size:12px;font-weight:400;line-height:1.6;color:var(--mg-muted);margin:4px 0 0;}.migration-experiment>.migration-experiment-help{margin:0 22px 18px;}",
       ".migration-experiment-snapshot-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;}.migration-experiment-snapshot-heading>span{font-size:10px;font-weight:750;border:1px solid var(--mg-border);border-radius:999px;padding:3px 7px;color:var(--mg-accent);}.migration-experiment-snapshot .migration-experiment-species{font-size:15px;font-weight:800;color:var(--mg-text);}.migration-experiment-metrics{margin-bottom:0;}.migration-experiment-metric dt{font-size:11px;color:var(--mg-muted);line-height:1.4;}.migration-experiment-metric dd{margin:3px 0 0;font-size:22px;font-weight:800;color:var(--mg-accent);}.migration-experiment-comparison{display:flex;flex-wrap:wrap;gap:6px 20px;margin:10px 0;}.migration-experiment-comparison span{font-size:12px;}.migration-experiment-feedback>strong{font-size:14px;}.migration-experiment-feedback .migration-experiment-help{margin-bottom:0;}",
       ".migration-experiment-observations{margin:0 22px 18px;}.migration-experiment-observations>h4{font-size:15px;font-weight:800;margin:0 0 12px;}.migration-experiment-history{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0;}.migration-experiment-trial{min-width:0;border:1px solid var(--mg-border);border-radius:10px;background:var(--mg-panel);padding:14px;}.migration-experiment-trial-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}.migration-experiment-trial-heading h5{font-size:13px;font-weight:800;margin:0;}.migration-experiment-trial-heading>span{max-width:48%;font-size:10px;color:var(--mg-accent);text-align:end;}.migration-experiment-trial p{font-size:12px;line-height:1.6;color:var(--mg-muted);margin:8px 0;overflow-wrap:anywhere;}.migration-experiment-trial .migration-experiment-remove{font-size:11px;min-height:32px;padding:5px 9px;}.migration-experiment-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.migration-experiment-notes label{display:flex;flex-direction:column;gap:7px;}.migration-trial-evidence-context{grid-column:1/-1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px;border:1px solid var(--mg-border);border-radius:10px;background:var(--mg-panel);font-weight:400;}.migration-trial-evidence-context strong,.migration-trial-evidence-context details{max-width:100%;min-width:0;overflow-wrap:anywhere;}.migration-trial-evidence-context summary{min-height:44px;padding-block:8px;cursor:pointer;line-height:1.5;}.migration-trial-evidence-context p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;}.migration-experiment .migration-trial-evidence-context button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.5;}.migration-experiment-model-note{margin:0 22px 18px;font-size:12px;line-height:1.65;color:var(--mg-muted);}.migration-experiment-reset{display:flex;align-items:center;gap:12px;padding:16px 22px;border-top:1px solid var(--mg-border);}.migration-experiment-reset small{font-size:11px;color:var(--mg-muted);line-height:1.5;}",
+      ".migration-experiment-reset{flex-wrap:wrap;}.migration-investigation-reset-review{flex-basis:100%;box-sizing:border-box;max-width:100%;min-width:0;padding:14px;border:1px solid var(--mg-border);border-radius:10px;background:var(--mg-panel);overflow-wrap:anywhere;}.migration-investigation-reset-review h4{margin:0 0 8px;font-size:1rem;line-height:1.5;}.migration-investigation-reset-review p{margin:0 0 12px;line-height:1.6;}.migration-investigation-reset-actions{display:flex;flex-wrap:wrap;gap:10px;}.migration-experiment .migration-investigation-reset-actions button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere;}.migration-investigation-reset-actions [aria-disabled=\"true\"]{opacity:.65;}",
       "@media(max-width:600px){.migration-experiment-header{flex-direction:column;gap:12px;}.migration-experiment-steps{margin-inline:16px;font-size:10px;gap:8px 14px;}.migration-experiment-history,.migration-experiment-notes{grid-template-columns:1fr;}.migration-experiment-observations,.migration-experiment-model-note,.migration-experiment>.migration-experiment-help{margin-inline:16px;}.migration-experiment-reset{padding:16px;align-items:flex-start;flex-direction:column;}.migration-experiment-trial-heading>span{max-width:52%;}}",
       '.migration-study-controls{padding:13px;border:1px solid #4c7a89;border-radius:11px;background:#09283a;display:flex;flex-direction:column;gap:13px;scroll-margin-top:12px;}.migration-study-slider{display:flex;flex-direction:column;gap:5px;color:#e3f4fa;font-size:12px;}.migration-study-slider>span{display:flex;justify-content:space-between;gap:8px;}.migration-study-slider strong{font-size:11px;color:#9deddb;}.migration-study-slider input{width:100%;accent-color:#67d9c6;}.migration-study-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;}.migration-study-actions button{padding:8px 6px;min-height:38px;font-size:10px;font-weight:750;border:1px solid #5a7e8f;border-radius:8px;background:#123a4d;color:#effaff;cursor:pointer;}.migration-study-controls .migration-study-help{font-size:11px;line-height:1.6;color:#bfd9e6;margin:0;}',
       '.migration-anatomy-key{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0 0;margin:8px 0 0;border-top:1px solid #426174;list-style:none;}.migration-anatomy-key li{display:flex;align-items:center;gap:7px;font-size:11px;line-height:1.4;color:#e9f7fb;}.migration-anatomy-key li>span{display:grid;place-items:center;flex:0 0 21px;width:21px;height:21px;border-radius:50%;color:#082437;font-size:10px;font-weight:850;}[data-flight-notebook-exports]{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 22px 18px;}[data-flight-notebook-exports] button{font-size:12px;}[data-flight-notebook-exports] small{font-size:11px;color:var(--mg-muted);}',
@@ -209,6 +210,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       ".migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-stage:focus-visible::after{content:\"\";position:absolute;inset:3px;z-index:11;border:3px solid var(--mg-focus);border-radius:10px;box-shadow:0 0 0 2px #071827;pointer-events:none;}",
       ".migration-disclosure-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;min-height:44px;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;}.migration-disclosure-content{margin:0;padding:0 12px 12px;overflow-wrap:anywhere;}",
       "@media(forced-colors:active){.migration-tool-shell[data-migration-tool=\"true\"] :is(a,button,input,select,textarea,summary,canvas,[tabindex]):focus-visible{outline-color:Highlight;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-stage:focus-visible::after{border-color:Highlight;box-shadow:none;}.migration-tool-shell[data-migration-tool=\"true\"] :is(button,[role=\"tab\"]):is([aria-pressed=\"true\"],[aria-selected=\"true\"],[aria-current=\"step\"]){border:3px double ButtonText!important;}.migration-tool-shell .migration-route-tab[aria-selected=\"true\"]:not(:focus-visible){outline:none;}}",
+      // Functional field boundaries and dropdown cues stay visible in every theme.
+      ".migration-tool-shell[data-migration-tool=\"true\"]{--mg-input-border:#64748b;--mg-input-placeholder:#475569;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"dark\"]{--mg-input-border:#94a3b8;--mg-input-placeholder:#cbd5e1;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-deck{--mg-input-border:#8ca7b8;--mg-input-placeholder:#bfd9e6;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"contrast\"],.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"contrast\"] .migration-flight-deck{--mg-input-border:#fff;--mg-input-placeholder:#fff;}",
+      ".migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-workspace :is(textarea,select){box-sizing:border-box;border-width:2px;border-style:solid;border-color:var(--mg-input-border);}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-workspace textarea::placeholder{color:var(--mg-input-placeholder);opacity:1;}",
+      ".migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-deck select:not([multiple]):not([size]){appearance:none;color-scheme:dark;background-image:url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22m6%208%204%204%204-4%22%20stroke%3D%22%23e0f2fe%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E\");background-repeat:no-repeat;background-position:right .75rem center;background-size:20px 20px;padding-inline-end:2.5rem;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-deck select:not([multiple]):not([size]):dir(rtl){background-position:left .75rem center;}",
+      "@media(forced-colors:active){.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-workspace :is(textarea,select){border-color:ButtonText;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-workspace textarea::placeholder{color:GrayText;opacity:1;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-deck select:not([multiple]):not([size]){appearance:auto;color-scheme:light dark;background-image:none;}}",
+      ".migration-tool-shell[data-migration-tool=\"true\"] .migration-trial-evidence-summary{width:100%;min-width:0;color:var(--mg-text);}.migration-trial-evidence-summary h4{font-size:13px;line-height:1.5;margin:2px 0 6px;font-weight:800;overflow-wrap:anywhere;}.migration-trial-evidence-summary-status{font-size:12px;font-weight:700;}.migration-trial-evidence-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0;}.migration-trial-evidence-metric{min-width:0;padding:12px;border:1px solid var(--mg-border);border-radius:9px;background:var(--mg-canvas);}.migration-trial-evidence-metric dt{font-size:12px;font-weight:750;line-height:1.5;overflow-wrap:anywhere;}.migration-trial-evidence-metric dd{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 0;}.migration-trial-evidence-metric dd>span{min-width:0;overflow-wrap:anywhere;}.migration-trial-evidence-metric dd>span+span{border-inline-start:1px solid var(--mg-border);padding-inline-start:8px;}.migration-trial-evidence-metric small{display:block;color:var(--mg-muted);font-size:11px;line-height:1.5;margin-bottom:4px;}.migration-trial-evidence-metric strong{display:block;color:var(--mg-text);font-size:18px;line-height:1.4;font-variant-numeric:tabular-nums;}.migration-trial-evidence-metric [data-evidence-snapshot=\"change\"] strong{font-size:14px;}.migration-trial-evidence-summary-scope{color:var(--mg-muted);font-size:11px;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-trial-evidence-summary :is(h4,p,dt,dd){max-width:100%;}@media(max-width:700px){.migration-trial-evidence-metrics{grid-template-columns:minmax(0,1fr);}}@media(max-width:380px){.migration-trial-evidence-metric{padding:10px;}.migration-trial-evidence-metric dd{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}.migration-trial-evidence-metric dd>span+span{padding-inline-start:8px;}.migration-trial-evidence-metric [data-evidence-snapshot=\"change\"]{grid-column:1/-1;border-inline-start:0;border-top:1px solid var(--mg-border);padding-inline-start:0;padding-top:8px;}}@media(forced-colors:active){.migration-tool-shell[data-migration-tool=\"true\"] .migration-trial-evidence-summary,.migration-tool-shell[data-migration-tool=\"true\"] .migration-trial-evidence-summary :is(h4,p,dt,dd,small,strong){color:CanvasText;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-trial-evidence-metric{background:Canvas;border-color:CanvasText;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-trial-evidence-metric dd>span+span{border-color:CanvasText;}}",
+      // Camera purposes and a text selection cue make each view easier to choose.
+      ".migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-guide .migration-flight-camera{gap:8px;align-items:stretch;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-choice{display:flex;flex-direction:column;min-width:0;border:2px solid #8ca7b8;border-radius:12px;background:#102b3e;color:#effaff;padding:5px;}",
+      ".migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-choice>button{display:block;width:100%;min-width:0;min-height:44px;margin:0;border:0;border-radius:7px;padding:8px 5px;background:transparent;color:inherit;box-shadow:none;font:inherit;font-size:13px;font-weight:800;line-height:1.4;white-space:normal;overflow-wrap:anywhere;text-align:start;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-choice[data-camera-selected=\"true\"]{border-color:#99f6e4;background:#123f47;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-choice>button[aria-pressed=\"true\"]{background:transparent;color:inherit;box-shadow:none;}",
+      ".migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-choice .migration-camera-selection{align-self:flex-start;max-width:100%;margin:0 5px 5px;padding:2px 5px;border-radius:4px;background:#99f6e4;color:#102b3e;font-size:10px;font-weight:800;line-height:1.4;white-space:normal;overflow-wrap:anywhere;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-choice[data-camera-selected=\"false\"] .migration-camera-selection{visibility:hidden;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-choice .migration-camera-purpose{margin:0 5px 5px;color:#d4e7f0;font-size:11px;font-weight:400;line-height:1.5;overflow-wrap:anywhere;}",
+      ".migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"contrast\"] .migration-camera-choice{background:#000;color:#fff;border-color:#fff;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"contrast\"] .migration-camera-choice[data-camera-selected=\"true\"]{border-color:#ffff00;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"contrast\"] .migration-camera-choice .migration-camera-purpose{color:#fff;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"contrast\"] .migration-camera-choice .migration-camera-selection{background:#ffff00;color:#000;}",
+      "@media(forced-colors:active){.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme] .migration-camera-choice,.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme] .migration-camera-choice[data-camera-selected=\"true\"]{background:Canvas;color:CanvasText;border-color:ButtonText;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme] .migration-camera-choice[data-camera-selected=\"true\"]{border-color:Highlight;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme] .migration-camera-choice>button,.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme] .migration-camera-choice>button[aria-pressed=\"true\"]{background:ButtonFace;color:ButtonText;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme] .migration-camera-choice .migration-camera-purpose{color:CanvasText;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme] .migration-camera-choice .migration-camera-selection{background:Highlight;color:HighlightText;}}",
+      // Let long labels use the available reading width; preserve the selection cue in forced colors.
+      ".migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-choice[data-camera-selected=\"false\"] .migration-camera-selection{display:none;}@media(max-width:380px){.migration-tool-shell[data-migration-tool=\"true\"] .migration-camera-guide .migration-flight-camera{grid-template-columns:minmax(0,1fr);}.migration-tool-shell[data-migration-tool=\"true\"] .migration-trial-evidence-metric dd{grid-template-columns:minmax(0,1fr);}.migration-tool-shell[data-migration-tool=\"true\"] .migration-trial-evidence-metric dd>span+span{border-inline-start:0;border-block-start:1px solid var(--mg-border);padding-inline-start:0;padding-block-start:8px;}}@media(forced-colors:active){.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme] .migration-camera-choice .migration-camera-selection{background:Canvas;color:CanvasText;border:1px solid CanvasText;}}",
       // Touch sizing. Measured on an iPhone 12 viewport, this tool's buttons
       // came out at 25-28px and its range sliders at 16px tall. 16px is below
       // even the WCAG 2.5.8 (AA) floor of 24x24, and a 16px slider is close to
@@ -811,7 +826,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     var feedback = React.useState({ serial: 0, text: '' });
     var owner = props.owner;
     var writer = {
-      node: null,
+      node: null, scope: props.scope,
+      clear: function() {
+        if (!writer.node || !writer.node.isConnected || owner.current !== writer) return;
+        feedback[1](function(previous) { return previous.text ? { serial: previous.serial, text: '' } : previous; });
+      },
       report: function(message) {
         if (!writer.node || !writer.node.isConnected || owner.current !== writer) return;
         feedback[1](function(previous) { return { serial: previous.serial + 1, text: message }; });
@@ -2776,6 +2795,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _vfSizeRef = useRef(null);
       var _vfModelBoundsRef = useRef(null);
       var formationControlId = React.useId();
+      // Labels, help and controlled regions belong to this mounted tool.
+      function migrationDomId(key) { return key + '-' + formationControlId; }
+      function migrationDomIds(keys) { return keys.split(/\s+/).map(migrationDomId).join(' '); }
       var _vfControlRef = useRef(formationControlState[0]);
       _vfControlRef.current = formationControlState[0];
       // Synchronous gate for "perfect V" XP award — prevents animation frames from
@@ -2785,6 +2807,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _sceneFeedbackRef = useRef(null);
       var _challengeFeedbackRef = useRef(null);
       var _investigationFeedbackRef = useRef(null);
+      var _studyObservationFeedbackRef = useRef(null);
+      var _studyComparisonFeedbackRef = useRef(null);
+      var _studyExportFeedbackRef = useRef(null);
       var _f3dHostRef = useRef(null);
       var _f3dEngineRef = useRef(null);
       var _f3dBootRef = useRef(0);
@@ -2889,6 +2914,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _liveVals = useRef({});
       var flightValues = migrFlightInvestigationSnapshot(d);
       var flightInvestigation = migrReadFlightInvestigation(d.flightInvestigation);
+      // Reset review belongs to this mounted investigation, never saved learner work.
+      var flightInvestigationResetState = useState(null);
+      var _flightInvestigationResetOwnerRef = useRef(null);
+      var _flightInvestigationResetFocusRef = useRef(null);
+      useEffect(function() {
+        var request = flightInvestigationResetState[0];
+        if (tab === 'flight3d' || !request) return;
+        request.used = true;
+        var pending = _flightInvestigationResetFocusRef.current;
+        if (pending) { pending.intent.cancel(); _flightInvestigationResetFocusRef.current = null; }
+        flightInvestigationResetState[1](null);
+      }, [tab, flightInvestigationResetState[0]]);
+      useEffect(function() {
+        var pending = _flightInvestigationResetFocusRef.current;
+        if (!pending) return;
+        _flightInvestigationResetFocusRef.current = null;
+        var owner = _flightInvestigationResetOwnerRef.current;
+        if (!owner || owner.panel !== pending.panel || !pending.intent.current()) { pending.intent.cancel(); return; }
+        var target = pending.open ? owner.cancel.node : pending.origin;
+        pending.intent.focus(target);
+      });
       var studyBirdCount = migrationFormationPositions(findMigrationSpecies(flightValues.speciesId), flightValues.formationMode).length;
       var studyView = {
         bird: Math.round(migrNum(d.flightStudyBird, 0, 0, studyBirdCount - 1)),
@@ -6726,8 +6772,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
         if (d.flightStudyObservationOpen !== true || region !== request.region) return;
         var host = _f3dHostRef.current;
-        var deck = host && host.isConnected && host.closest('#migration-flight-deck');
-        var field = deck && deck.querySelector('#migration-study-observation-note');
+        var deck = host && host.isConnected && host.closest('.migration-flight-deck');
+        var field = deck && deck.querySelector('[data-migration-id="migration-study-observation-note"]');
         if (!field || !field.isConnected || field.getAttribute('data-study-observation-key') !== request.key) return;
         // Consume before focusing: a focus listener may synchronously update
         // the host, and must never deliver the same request to another region.
@@ -7383,12 +7429,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           studyRevisitStatus[1]({ source: source, key: record.speciesId + ':' + record.region, record: JSON.stringify(record), region: record.region, values: values, matchedView: matched ? matchedView : '', message: message });
           updMulti(values);
           if (announceToSR) announceToSR(message);
-          var stage = document.getElementById('migration-flight-stage');
-          if (stage) stage.focus();
+          var stage = _f3dHostRef.current;
+          if (stage && stage.isConnected && exposedRemovalTarget(stage) && fullscreenAllowsFocus(stage)) stage.focus();
         }
         function renderStudyRevisitButton(record, source, label) {
           return h('div', { className: 'migration-study-record-actions' }, h('button', {
-            type: 'button', 'data-study-revisit': source, 'aria-describedby': 'migration-study-revisit-help',
+            type: 'button', 'data-study-revisit': source, 'aria-describedby': migrationDomIds('migration-study-revisit-help'),
             onClick: function() { revisitStudyRecord(record, source); }
           }, label));
         }
@@ -7406,6 +7452,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           return record && JSON.stringify(record) === revisit.record ? revisit.message : '';
         }
 
+        function studyFeedbackScope(kind) {
+          return kind === 'comparison' ? JSON.stringify([studyObservations.comparison.firstKey, studyObservations.comparison.secondKey,
+            studyObservations.records[studyObservations.comparison.firstKey], studyObservations.records[studyObservations.comparison.secondKey]]) : studyObservationKey;
+        }
+        function reportStudyFeedback(owner, scope, message) {
+          var writer = owner.current;
+          if (writer && writer.node && writer.node.isConnected) {
+            if (writer.scope === scope) writer.report(message);
+          } else if (announceToSR) announceToSR(message);
+        }
+        function clearStudyFeedback(owner, scope) {
+          var writer = owner.current;
+          if (writer && writer.scope === scope) writer.clear();
+        }
         function studyRecordTitle(key) {
           var record = studyObservations.records[key];
           if (!record && studyObservations.comparison.saved) record = studyObservations.comparison.saved.firstKey === key ? studyObservations.comparison.saved.first : studyObservations.comparison.saved.second;
@@ -7455,11 +7515,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             if (link && link.parentNode) link.parentNode.removeChild(link);
             if (url) window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
           }
-          if (announceToSR) announceToSR(message);
+          reportStudyFeedback(_studyExportFeedbackRef, studyFeedbackScope('export'), message);
         }
         function renderMatchedStudyComparison(pair, saved) {
           var matchedView = studyMatchedViewState[0] === 'above' ? 'above' : 'profile';
-          var helpId = 'migration-study-matched-help-' + (saved ? 'saved' : 'selected');
+          var helpKey = 'migration-study-matched-help-' + (saved ? 'saved' : 'selected');
+          var helpId = migrationDomId(helpKey);
           return h('div', { className: 'migration-study-saved', 'data-study-matched-comparison': saved ? 'saved' : 'selected',
             role: 'group', 'aria-label': saved
               ? t('stem.migration.study_matched_saved_group', 'Matched view for saved comparison')
@@ -7469,7 +7530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               ? t('stem.migration.study_matched_saved_sources', 'Using the two notes captured in Saved comparison. Changing the observation selectors above does not change this saved pair.')
               : t('stem.migration.study_matched_selected_sources', 'Using the two selected recorded observations. Try both views before recording your comparison.')),
             h('small', null, studyRecordTitle(pair.firstKey) + ' / ' + studyRecordTitle(pair.secondKey)),
-            h('p', { id: helpId }, t('stem.migration.study_matched_help', 'Switch between the two captured sources using one angle and the same still wing-cycle baseline, then revise My observation comparison. Each model is fitted to the scene separately; this does not compare physical size. The still pose is illustrative. Matching these view settings does not establish a biological cause.')),
+            h('p', { id: helpId, 'data-migration-id': helpKey }, t('stem.migration.study_matched_help', 'Switch between the two captured sources using one angle and the same still wing-cycle baseline, then revise My observation comparison. Each model is fitted to the scene separately; this does not compare physical size. The still pose is illustrative. Matching these view settings does not establish a biological cause.')),
             h('label', null, t('stem.migration.study_matched_view', 'Matched comparison view'), h('select', {
               'aria-label': t('stem.migration.study_matched_view', 'Matched comparison view'), 'aria-describedby': helpId, value: matchedView,
               onChange: function(event) {
@@ -7493,6 +7554,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           if (keys.length < 2 && !comparison.saved) return null;
           var enough = keys.length >= 2;
           var first = studyObservations.records[comparison.firstKey], second = studyObservations.records[comparison.secondKey];
+          var comparisonRecorded = comparison.feedback === 'recorded' && comparison.saved && comparison.draft.trim() === comparison.saved.claim &&
+            comparison.firstKey === comparison.saved.firstKey && comparison.secondKey === comparison.saved.secondKey &&
+            JSON.stringify(first) === JSON.stringify(comparison.saved.first) && JSON.stringify(second) === JSON.stringify(comparison.saved.second);
           var differentViews = first && second && ['bird', 'yaw', 'pitch', 'zoom', 'wingStep', 'paused', 'motionReduced'].some(function(key) { return first[key] !== second[key]; });
           function select(label, field, otherField) {
             return h('label', null, label, h('select', { 'aria-label': label, value: comparison[field], disabled: !enough, onChange: function(event) {
@@ -7507,6 +7571,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           return h('details', { className: 'migration-study-comparison', 'data-study-comparison': '' },
             h('summary', null, t('stem.migration.compare_study_observations', 'Compare recorded observations')),
             h('div', { className: 'migration-study-comparison-body' },
+              h(MigrationSceneFeedback, { key: 'study-comparison-' + studyFeedbackScope('comparison'), React: React, owner: _studyComparisonFeedbackRef,
+                context: 'study-comparison', scope: studyFeedbackScope('comparison') }),
               !enough && h('p', { role: 'status' }, t('stem.migration.study_comparison_need_two', 'Record two observations to make a new comparison. Your saved comparison and its original notes remain below.')),
               h('div', { className: 'migration-study-comparison-selects' }, select(t('stem.migration.study_compare_first', 'First recorded observation'), 'firstKey', 'secondKey'), select(t('stem.migration.study_compare_second', 'Second recorded observation'), 'secondKey', 'firstKey')),
               enough && h('div', { className: 'migration-study-comparison-table' }, h('table', { role: 'table', 'aria-label': t('stem.migration.study_compare_table', 'Recorded observation comparison') },
@@ -7521,9 +7587,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('p', { 'data-study-selected-source-state': 'different' }, t('stem.migration.study_selected_sources_differ', 'These selected records differ from Saved comparison. Try both selected records, then use a detail from each in My observation comparison. Saved comparison keeps its original notes and claim until you choose Record comparison.')),
                 renderMatchedStudyComparison({ firstKey: comparison.firstKey, secondKey: comparison.secondKey, first: first, second: second }, false)
               ),
-              h('p', { id: 'migration-study-comparison-prompt' }, t('stem.migration.study_compare_prompt', 'Name one visible similarity or difference. Use a detail from each recorded note, then explain how the views limit your comparison.')),
+              h('p', { id: migrationDomId('migration-study-comparison-prompt'), 'data-migration-id': 'migration-study-comparison-prompt' }, t('stem.migration.study_compare_prompt', 'Name one visible similarity or difference. Use a detail from each recorded note, then explain how the views limit your comparison.')),
               enough && h('small', null, differentViews ? t('stem.migration.study_compare_views_differ', 'The captured views differ. Check angle, zoom, individual, and wing step before attributing a difference to species or anatomy.') : t('stem.migration.study_compare_views_same', 'The captured view settings match. These stylized models still do not establish a biological cause.')),
-              h('label', null, t('stem.migration.study_compare_claim', 'My observation comparison'), h('textarea', { 'aria-label': t('stem.migration.study_compare_claim', 'My observation comparison'), 'aria-describedby': 'migration-study-comparison-prompt', rows: 3, maxLength: 1500, value: comparison.draft, onChange: function(event) {
+              h('label', null, t('stem.migration.study_compare_claim', 'My observation comparison'), h('textarea', { 'aria-label': t('stem.migration.study_compare_claim', 'My observation comparison'), 'aria-describedby': migrationDomIds('migration-study-comparison-prompt'), rows: 3, maxLength: 1500, value: comparison.draft, onChange: function(event) {
+                clearStudyFeedback(_studyComparisonFeedbackRef, studyFeedbackScope('comparison'));
                 var next = migrReadStudyObservations(d.flightStudyObservations); next.comparison.draft = String(event.target.value).slice(0, 1500); next.comparison.feedback = ''; upd('flightStudyObservations', next);
               } })),
               h('div', { className: 'migration-study-record-actions' }, h('button', { type: 'button', disabled: !enough || !comparison.draft.trim(), onClick: function() {
@@ -7531,8 +7598,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 var next = migrReadStudyObservations(d.flightStudyObservations);
                 next.comparison.saved = { firstKey: comparison.firstKey, secondKey: comparison.secondKey, first: Object.assign({}, first), second: Object.assign({}, second), claim: comparison.draft.slice(0, 1500).trim() };
                 next.comparison.feedback = 'recorded'; upd('flightStudyObservations', next);
+                reportStudyFeedback(_studyComparisonFeedbackRef, studyFeedbackScope('comparison'), t('stem.migration.study_comparison_recorded', 'Comparison recorded with both source notes and view settings. Your claim is not graded.'));
               } }, t('stem.migration.study_record_comparison', 'Record comparison'))),
-              h('p', { role: 'status', 'data-study-comparison-status': '' }, comparison.feedback === 'recorded' ? t('stem.migration.study_comparison_recorded', 'Comparison recorded with both source notes and view settings. Your claim is not graded.') : ''),
+              h('p', { 'aria-live': 'off', 'data-study-comparison-status': '' }, comparisonRecorded ? t('stem.migration.study_comparison_recorded', 'Comparison recorded with both source notes and view settings. Your claim is not graded.') : ''),
               comparison.saved && h('div', { className: 'migration-study-saved', 'data-study-saved-comparison': '' },
                 h('strong', null, t('stem.migration.study_saved_comparison', 'Saved comparison')),
                 h('p', null, comparison.saved.claim),
@@ -7555,13 +7623,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           if (d.flightStudyObservationOpen !== true || !context) return null;
           return h('button', { type: 'button', 'data-study-scene-action': actionId || 'continue-note',
             'data-study-note-key': context.speciesId + ':' + context.region,
-            'aria-controls': 'migration-study-observation-note', 'aria-describedby': 'migration-study-observation-part',
+            'aria-controls': migrationDomIds('migration-study-observation-note'), 'aria-describedby': migrationDomIds('migration-study-observation-part'),
             onClick: function() {
               var host = _f3dHostRef.current, engine = _f3dEngineRef.current;
               var current = host && engine && engine.host === host
                 ? migrationStudyCurrentContext(engine, _liveVals.current, studyCyclePositionState[0], studyWingtipFollowState[0]) : null;
               var deck = host && host.isConnected && host.closest('.migration-flight-deck');
-              var field = deck && deck.querySelector('[id="migration-study-observation-note"]');
+              var field = deck && deck.querySelector('[data-migration-id="migration-study-observation-note"]');
               var panel = field && field.closest('[data-study-observation]');
               var key = current && current.speciesId + ':' + current.region;
               // Continue the current note in this deck. Looking at another
@@ -7588,6 +7656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var partLabel = wholeInsect ? t('stem.migration.observe_monarch_label', 'Whole-insect wing motion') : studyRegion.label;
           var draftChanged = !!studySavedObservation && studyObservationDraft.trim() !== studySavedObservation.note;
           var feedback = studyObservations.feedback && studyObservations.feedback.key === studyObservationKey ? studyObservations.feedback.action : '';
+          if (feedback === 'recorded' && (!studySavedObservation || draftChanged)) feedback = '';
           var marked = studyMarkedPoseState[0];
           var markedVisible = marked && marked.status === 'marked' && marked.speciesId === species.id &&
             marked.individual === studyView.bird && marked.formationMode === formationMode && marked.season === season;
@@ -7603,11 +7672,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           },
             h('summary', null, t('stem.migration.observe_shape_motion', 'Observe shape and motion'), h('span', { 'data-study-evidence-count': studyObservationCount }, studyObservationCount + ' / ' + (wholeInsect ? 1 : 4) + ' ' + t('stem.migration.observations_recorded', 'recorded'))),
             h('div', { className: 'migration-study-observation-body' },
-              h('strong', { id: 'migration-study-observation-part' }, partLabel),
-              h('p', { id: 'migration-study-observation-prompt' }, wholeInsect
+              h('strong', { id: migrationDomId('migration-study-observation-part'), 'data-migration-id': 'migration-study-observation-part' }, partLabel),
+              h('p', { id: migrationDomId('migration-study-observation-prompt'), 'data-migration-id': 'migration-study-observation-prompt' }, wholeInsect
                 ? t('stem.migration.observe_monarch_prompt', 'Use Profile and From above. Step through the illustrative wing cycle and describe how the patterned wings change position relative to the insect body. These are butterfly wings; bird feather anatomy and drafting do not apply.')
                 : studyRegion.prompt),
-              motionEvidence && h('p', { id: 'migration-study-motion-evidence-prompt', 'data-study-motion-evidence': motionEvidence },
+              motionEvidence && h('p', { id: migrationDomId('migration-study-motion-evidence-prompt'), 'data-migration-id': 'migration-study-motion-evidence-prompt', 'data-study-motion-evidence': motionEvidence },
                 motionEvidence === 'clean-view'
                   ? t('stem.migration.motion_evidence_clean_view', 'Predict the outline, then inspect without guides. Keep the view fixed and describe the shape you see. Restore the guides to check your prediction; note what helped you confirm or revise it. These are illustrative models, not measurements.')
                   : species.id !== 'monarch' && d.flightShowAnatomy === true && wingRegion && (followedAnatomySide === 0 || followedAnatomySide === 1)
@@ -7638,7 +7707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   var contextPart = context && studyRegions.filter(function(part) { return part.id === context.region; })[0];
                   var contextPartLabel = context && context.region === 'whole-wing'
                     ? t('stem.migration.observe_monarch_label', 'Whole-insect wing motion') : contextPart ? contextPart.label : partLabel;
-                  return h('div', { id: 'migration-study-current-context', className: 'migration-study-context',
+                  return h('div', { id: migrationDomId('migration-study-current-context'), 'data-migration-id': 'migration-study-current-context', className: 'migration-study-context',
                     'data-study-current-context': context ? 'ready' : 'unavailable' },
                     h('strong', null, t('stem.migration.current_study_context', 'Current study context')),
                     context
@@ -7674,15 +7743,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('small', null, t('stem.migration.current_context_scope', 'These are current viewing choices. Record observation does not save the numbered cycle position or followed side; name them in your note.')),
                     context && context.canReviewMarkedComparison && h('button', {
                       type: 'button', className: 'migration-study-focus migration-study-review',
-                      'data-study-action': 'review-marked-comparison', 'aria-controls': 'migration-marked-comparison-controls',
-                      'aria-describedby': 'migration-marked-pose-help',
+                      'data-study-action': 'review-marked-comparison', 'aria-controls': migrationDomIds('migration-marked-comparison-controls'),
+                      'aria-describedby': migrationDomIds('migration-marked-pose-help'),
                       onClick: function() {
                         var host = _f3dHostRef.current, engine = _f3dEngineRef.current, live = _liveVals.current;
                         var marked = live.flightMarkedPose;
                         var current = host && host.isConnected && engine && engine.host === host
                           ? migrationStudyCurrentContext(engine, live, studyCyclePositionState[0], studyWingtipFollowState[0]) : null;
                         var deck = host && host.isConnected && host.closest('.migration-flight-deck');
-                        var controls = deck && deck.querySelector('[id="migration-marked-comparison-controls"][data-study-marked-pose="true"]');
+                        var controls = deck && deck.querySelector('[data-migration-id="migration-marked-comparison-controls"][data-study-marked-pose="true"]');
                         var checkButton = controls && controls.querySelector('button[data-marked-pose-action="check"]');
                         // Navigate to this deck's existing comparison action. An
                         // unchecked or changed view still needs an explicit Check.
@@ -7702,7 +7771,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     }, t('stem.migration.review_marked_comparison', 'Review marked comparison')),
                     h('button', { type: 'button', className: 'migration-study-focus migration-study-inspect',
                       'data-study-action': 'inspect-current-view', disabled: !context,
-                      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-inspect-help',
+                      'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-study-inspect-help'),
                       onClick: function() {
                         var host = _f3dHostRef.current, engine = _f3dEngineRef.current;
                         // Navigate to this tool's current live scene. Recheck at
@@ -7716,18 +7785,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                         if (host.isConnected && host.scrollIntoView) host.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
                       }
                     }, t('stem.migration.inspect_current_view', 'Inspect current 3D view')),
-                    h('small', { id: 'migration-study-inspect-help' }, t('stem.migration.inspect_current_view_help', 'Check the current region and wing pose in the Study scene, then return to this note. Your view, playback and draft stay as they are.'))
+                    h('small', { id: migrationDomId('migration-study-inspect-help'), 'data-migration-id': 'migration-study-inspect-help' }, t('stem.migration.inspect_current_view_help', 'Check the current region and wing pose in the Study scene, then return to this note. Your view, playback and draft stay as they are.'))
                   );
                 }
               }),
               h('label', null, t('stem.migration.study_observation_note', 'My observation'),
                 h('textarea', {
-                  id: 'migration-study-observation-note', 'data-study-observation-key': studyObservationKey,
-                  'aria-describedby': 'migration-study-observation-prompt migration-study-observation-caveat migration-study-current-context' + (motionEvidence ? ' migration-study-motion-evidence-prompt' : ''),
+                  id: migrationDomId('migration-study-observation-note'), 'data-migration-id': 'migration-study-observation-note', 'data-study-observation-key': studyObservationKey,
+                  'aria-describedby': migrationDomIds('migration-study-observation-prompt migration-study-observation-caveat migration-study-current-context') + (motionEvidence ? ' ' + migrationDomId('migration-study-motion-evidence-prompt') : ''),
                   rows: 3, maxLength: 1000, value: studyObservationDraft,
                   onChange: function(event) {
                     var next = migrReadStudyObservations(d.flightStudyObservations);
                     next.drafts[studyObservationKey] = String(event.target.value).slice(0, 1000);
+                    if (next.feedback && next.feedback.key === studyObservationKey && next.feedback.action === 'recorded') next.feedback = null;
+                    clearStudyFeedback(_studyObservationFeedbackRef, studyFeedbackScope('observation'));
                     upd('flightStudyObservations', next);
                   }
                 })
@@ -7744,6 +7815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   };
                   next.feedback = { key: studyObservationKey, action: 'recorded' };
                   upd('flightStudyObservations', next);
+                  reportStudyFeedback(_studyObservationFeedbackRef, studyFeedbackScope('observation'), t('stem.migration.study_observation_recorded', 'Observation recorded. Your words count as evidence; they are not graded.'));
                 } }, t('stem.migration.record_study_observation', 'Record observation')),
                 studySavedObservation && h('button', {
                   type: 'button', 'data-study-remove': '',
@@ -7759,10 +7831,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     delete next.records[studyObservationKey];
                     next.feedback = { key: studyObservationKey, action: 'removed' };
                     upd('flightStudyObservations', next);
+                    reportStudyFeedback(_studyObservationFeedbackRef, studyFeedbackScope('observation'), t('stem.migration.study_observation_removed', 'Recorded evidence removed. Your draft is still here.'));
                   }
                 }, t('stem.migration.remove_study_observation', 'Remove recorded observation'))
               ),
-              h('p', { role: 'status', 'data-study-observation-status': '' }, feedback === 'recorded'
+              h(MigrationSceneFeedback, { key: 'study-observation-' + studyFeedbackScope('observation'), React: React, owner: _studyObservationFeedbackRef,
+                context: 'study-observation', scope: studyFeedbackScope('observation') }),
+              h('p', { 'aria-live': 'off', 'data-study-observation-status': '' }, feedback === 'recorded'
                 ? t('stem.migration.study_observation_recorded', 'Observation recorded. Your words count as evidence; they are not graded.')
                 : feedback === 'removed' ? t('stem.migration.study_observation_removed', 'Recorded evidence removed. Your draft is still here.') : ''),
               draftChanged && h('p', { className: 'migration-study-unsaved' }, t('stem.migration.study_observation_unsaved', 'Current draft has unrecorded changes. Record again to replace the saved evidence for this region.')),
@@ -7777,13 +7852,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ),
                 renderStudyRevisitButton(studySavedObservation, 'observation', t('stem.migration.study_revisit_recorded', 'Revisit recorded view'))
               ),
-              h('small', { id: 'migration-study-observation-caveat' }, t('stem.migration.study_capture_caveat', 'Camera settings and manual Wing steps describe this illustrative view. They are not measured wingbeat frequency. Recording saves one note per region for each species.')),
-              (Object.keys(studyObservations.records).length > 0 || studyObservations.comparison.saved) && h('small', { id: 'migration-study-revisit-help' }, t('stem.migration.study_revisit_help', 'Revisit restores recorded species, part, individual, angle, zoom, and manual wing-step settings in a paused Study view. The original animation frame was not recorded. Your Reduce motion preference and note drafts stay unchanged.')),
+              h('small', { id: migrationDomId('migration-study-observation-caveat'), 'data-migration-id': 'migration-study-observation-caveat' }, t('stem.migration.study_capture_caveat', 'Camera settings and manual Wing steps describe this illustrative view. They are not measured wingbeat frequency. Recording saves one note per region for each species.')),
+              (Object.keys(studyObservations.records).length > 0 || studyObservations.comparison.saved) && h('small', { id: migrationDomId('migration-study-revisit-help'), 'data-migration-id': 'migration-study-revisit-help' }, t('stem.migration.study_revisit_help', 'Revisit restores recorded species, part, individual, angle, zoom, and manual wing-step settings in a paused Study view. The original animation frame was not recorded. Your Reduce motion preference and note drafts stay unchanged.')),
               h('p', { role: 'status', 'data-study-revisit-status': '' }, currentStudyRevisitMessage()),
               renderStudyComparison(),
               h('div', { className: 'migration-study-record-actions' }, h('button', { type: 'button', 'data-study-action': 'export-html', disabled: !Object.keys(studyObservations.records).length && !studyObservations.comparison.saved, onClick: exportStudyNotebook }, t('stem.migration.study_notebook_html', 'Download observation notebook (HTML)'))),
               h('small', null, t('stem.migration.study_notebook_recorded_only', 'This notebook contains explicitly recorded observations and the saved comparison. Unrecorded drafts are excluded.')),
-              h('p', { role: 'status', 'data-study-export-status': '' }, studyObservations.comparison.feedback === 'downloaded' ? t('stem.migration.study_notebook_downloaded', 'Observation notebook downloaded.') : studyObservations.comparison.feedback === 'download-failed' ? t('stem.migration.download_failed', 'Download was blocked by this browser.') : '')
+              h(MigrationSceneFeedback, { key: 'study-export-' + studyFeedbackScope('export'), React: React, owner: _studyExportFeedbackRef,
+                context: 'study-export', scope: studyFeedbackScope('export') }),
+              h('p', { 'aria-live': 'off', 'data-study-export-status': '' }, studyObservations.comparison.feedback === 'downloaded' ? t('stem.migration.study_notebook_downloaded', 'Observation notebook downloaded.') : studyObservations.comparison.feedback === 'download-failed' ? t('stem.migration.download_failed', 'Download was blocked by this browser.') : '')
             )
           );
         }
@@ -7807,13 +7884,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             if (check.kind === 'both') return t('stem.migration.comparison_check_both', 'Both selected view settings and illustrative wing-cycle position changed. Return the wings to hold the pose fixed, or choose Restore marked view settings to hold the view settings fixed, then check again.');
             return t('stem.migration.comparison_check_same', 'Selected view settings and illustrative wing-cycle position match the mark. Change one, then check again.');
           }
-          return h('div', { id: 'migration-marked-comparison-controls', className: 'migration-marked-pose', 'data-study-marked-pose': 'true' },
-            h('p', { className: 'migration-study-help', id: 'migration-marked-pose-help' },
+          return h('div', { id: migrationDomId('migration-marked-comparison-controls'), 'data-migration-id': 'migration-marked-comparison-controls', className: 'migration-marked-pose', 'data-study-marked-pose': 'true' },
+            h('p', { className: 'migration-study-help', id: migrationDomId('migration-marked-pose-help'), 'data-migration-id': 'migration-marked-pose-help' },
               studyGuidesHidden ? t('stem.migration.marked_pose_intro_hidden', 'Mark a wing pose, step or change the view, and predict what differs. Check what changed compares view settings and wing-cycle position while guides are hidden. Restore the guides to compare the marked outline with the live wings. With Show wingtip path selected, you can also compare tip positions.')
                 : t('stem.migration.marked_pose_intro', 'Predict what will change, mark a wing pose, then step away or change the view. Check what changed compares selected view settings with the illustrative wing-cycle position. Return the wings or choose Restore marked view settings to hold one fixed. Describe your evidence in the existing notes. With Show wingtip path on, diamonds keep the marked tip positions visible, including when the live tips overlap them. Straight links appear only where tip positions differ; they do not show motion.')),
             h('div', { className: 'migration-study-actions' },
               h('button', {
-                type: 'button', 'data-marked-pose-action': 'mark', 'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                type: 'button', 'data-marked-pose-action': 'mark', 'aria-describedby': migrationDomIds('migration-marked-pose-help migration-marked-pose-status'),
                 onClick: function() {
                   var engine = _f3dEngineRef.current;
                   var flyer = engine && engine.flyers[studyView.bird];
@@ -7848,7 +7925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               }, t('stem.migration.mark_wing_pose', 'Mark wing pose')),
               h('button', {
                 type: 'button', 'data-marked-pose-action': 'return', disabled: !returnTarget,
-                'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-marked-pose-help migration-marked-pose-status'),
                 onClick: function() {
                   var intent = selectMigrationMarkedWingPose(_f3dEngineRef.current, _liveVals.current, marked);
                   if (!intent) {
@@ -7868,7 +7945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               }, t('stem.migration.return_marked_wing_pose', 'Return wings to marked pose')),
               h('button', {
                 type: 'button', 'data-marked-pose-action': 'check', disabled: !canCheck,
-                'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                'aria-describedby': migrationDomIds('migration-marked-pose-help migration-marked-pose-status'),
                 onClick: function() {
                   var check = migrationCheckMarkedComparison(_f3dEngineRef.current, _liveVals.current, marked);
                   if (!check) {
@@ -7893,7 +7970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 }
               }, t('stem.migration.clear_marked_pose', 'Clear marked pose'))
             ),
-            h('p', { className: 'migration-study-help', id: 'migration-marked-pose-status', role: 'status', 'data-marked-pose-status': status },
+            h('p', { className: 'migration-study-help', id: migrationDomId('migration-marked-pose-status'), 'data-migration-id': 'migration-marked-pose-status', role: 'status', 'data-marked-pose-status': status },
               status === 'marked'
                 ? h(React.Fragment, null,
                   h('span', { className: 'migration-marked-pose-key', 'aria-hidden': 'true' }),
@@ -7963,7 +8040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   if (matches) return null;
                   return h('button', { key: key, type: 'button', className: 'migration-study-focus',
                     'data-marked-pose-action': 'restore-view-component', 'data-restore-view-component': key,
-                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                    'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-marked-pose-help migration-marked-pose-status'),
                     onClick: function(event) {
                       var live = _liveVals.current, engine = _f3dEngineRef.current;
                       var restore = migrationMarkedViewComponentRestoreTarget(engine, live, marked, checked, key);
@@ -7995,8 +8072,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 })
               ),
               checked.status === 'checked' && (checked.kind === 'view-only' || checked.kind === 'both') && h('button', {
-                type: 'button', className: 'migration-study-focus', 'data-marked-pose-action': 'restore-view', 'aria-controls': 'migration-flight-stage',
-                'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                type: 'button', className: 'migration-study-focus', 'data-marked-pose-action': 'restore-view', 'aria-controls': migrationDomIds('migration-flight-stage'),
+                'aria-describedby': migrationDomIds('migration-marked-pose-help migration-marked-pose-status'),
                 onClick: function(event) {
                   var live = _liveVals.current, engine = _f3dEngineRef.current;
                   var restore = migrationMarkedViewRestoreTarget(engine, live, marked, checked);
@@ -8093,7 +8170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('label', { className: 'migration-study-clean-toggle' },
                     h('input', { type: 'checkbox', 'data-study-guides-hidden': '', checked: !!(context && context.guidesHidden), disabled: !context,
                       'aria-label': t('stem.migration.study_clean_view', 'Inspect without guides'),
-                      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-clean-help',
+                      'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-study-clean-help'),
                       onChange: function(event) {
                         var host = _f3dHostRef.current, input = event && event.currentTarget;
                         var engine = _f3dEngineRef.current, live = _liveVals.current;
@@ -8113,7 +8190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ),
                 h('div', { className: 'migration-study-scene-buttons' },
                   h('button', { type: 'button', 'data-scene-study-action': 'fit', disabled: !context,
-                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-fit-help',
+                    'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-study-fit-help'),
                     onClick: function(event) {
                       var host = _f3dHostRef.current, button = event && event.currentTarget;
                       var live = _liveVals.current, engine = _f3dEngineRef.current;
@@ -8131,7 +8208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     }
                   }, t('stem.migration.study_fit_model', 'Fit whole model')),
                   h('button', { type: 'button', 'data-scene-study-action': 'half-turn', disabled: !context,
-                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-turn-help',
+                    'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-study-turn-help'),
                     onClick: function(event) {
                       var host = _f3dHostRef.current, button = event && event.currentTarget;
                       var live = _liveVals.current;
@@ -8162,7 +8239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   ].map(function(move) {
                     return h('button', { key: move.action, type: 'button', 'data-scene-study-action': move.action,
                       disabled: !context || context.cyclePosition === null,
-                      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-adjacent-help',
+                      'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-study-adjacent-help'),
                       onClick: function(event) {
                         var host = _f3dHostRef.current, button = event && event.currentTarget;
                         var engine = _f3dEngineRef.current, live = _liveVals.current;
@@ -8183,7 +8260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   }),
                   d.flightShowWingtipPath === true && h('button', { type: 'button',
                     'data-scene-study-action': 'opposite', disabled: !context || context.cyclePosition === null,
-                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-cycle-help',
+                    'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-study-cycle-help'),
                     onClick: function() {
                       var engine = _f3dEngineRef.current, live = _liveVals.current;
                       var current = migrationStudyCurrentContext(engine, live, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection);
@@ -8197,13 +8274,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   }, t('stem.migration.scene_compare_opposite', 'Compare opposite wings')),
                   renderStudySceneNoteAction(context)
                 ),
-                h('p', { id: 'migration-study-clean-help', className: 'migration-study-fit-help' },
+                h('p', { id: migrationDomId('migration-study-clean-help'), 'data-migration-id': 'migration-study-clean-help', className: 'migration-study-fit-help' },
                   t('stem.migration.study_clean_help', 'Predict the outline, hide the guides, then restore them to check. Your view, wing pose, layer choices and notes stay in place.')),
-                h('p', { id: 'migration-study-fit-help', className: 'migration-study-fit-help' },
+                h('p', { id: migrationDomId('migration-study-fit-help'), 'data-migration-id': 'migration-study-fit-help', className: 'migration-study-fit-help' },
                   t('stem.migration.study_fit_help', '100% fits the whole model at this angle. Fitted models do not share a physical size scale.')),
-                h('p', { id: 'migration-study-turn-help', className: 'migration-study-fit-help' },
+                h('p', { id: migrationDomId('migration-study-turn-help'), 'data-migration-id': 'migration-study-turn-help', className: 'migration-study-fit-help' },
                   t('stem.migration.study_turn_help', 'Pause and choose Profile to compare both sides. Turn again to return; elevation, zoom and your notes stay unchanged.')),
-                d.flightShowWingtipPath === true && h('p', { id: 'migration-study-adjacent-help', className: 'migration-study-fit-help' },
+                d.flightShowWingtipPath === true && h('p', { id: migrationDomId('migration-study-adjacent-help'), 'data-migration-id': 'migration-study-adjacent-help', className: 'migration-study-fit-help' },
                   t('stem.migration.study_adjacent_help', 'Choose a numbered position below. Predict how the wingtip will move, then step forward and back with the view fixed. Equal cycle intervals can look uneven in this view; these are illustrative positions, not measured flight times.'))
               );
             }
@@ -8223,7 +8300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               : side === 1 ? t('stem.migration.wingtip_follow_right', 'Following the individual’s right wingtip guides.')
               : t('stem.migration.wingtip_follow_both', 'Showing both wingtip guides.');
           }
-          return h('section', { id: 'migration-study-controls', className: 'migration-study-controls', 'aria-label': t('stem.migration.study_controls', 'Study camera controls') },
+          return h('section', { id: migrationDomId('migration-study-controls'), 'data-migration-id': 'migration-study-controls', className: 'migration-study-controls', 'aria-label': t('stem.migration.study_controls', 'Study camera controls') },
             h('label', { className: 'migration-flight-control' },
               h('span', null, t('stem.migration.study_individual', 'Study individual')),
               h('select', { value: studyView.bird, disabled: studyBirdCount === 1, 'aria-label': t('stem.migration.study_individual', 'Study individual'), onChange: function(event) { upd('flightStudyBird', parseInt(event.target.value, 10)); } },
@@ -8238,14 +8315,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               { id: 'above', yaw: 0, pitch: 60, label: t('stem.migration.study_above', 'From above') },
               { id: 'below', yaw: 0, pitch: -60, label: t('stem.migration.study_below', 'From below') }
             ].map(function(viewpoint) {
-              return h('button', { key: viewpoint.id, type: 'button', 'data-study-viewpoint': viewpoint.id, 'aria-describedby': 'migration-study-surface-help', 'aria-pressed': studyView.yaw === viewpoint.yaw && studyView.pitch === viewpoint.pitch ? 'true' : 'false', onClick: function() {
+              return h('button', { key: viewpoint.id, type: 'button', 'data-study-viewpoint': viewpoint.id, 'aria-describedby': migrationDomIds('migration-study-surface-help'), 'aria-pressed': studyView.yaw === viewpoint.yaw && studyView.pitch === viewpoint.pitch ? 'true' : 'false', onClick: function() {
                 endStudyDrag(null, false);
                 clearMigrationMarkedViewRestoreIntent();
                 updMulti({ flightStudyYaw: viewpoint.yaw, flightStudyPitch: viewpoint.pitch });
                 reportSceneAction(t('stem.migration.study_viewpoint_selected', 'Study viewpoint') + ': ' + viewpoint.label + '. ' + sceneAngleText(viewpoint.yaw) + ' ' + sceneElevationText(viewpoint.pitch));
               } }, viewpoint.label);
             })),
-            h('p', { id: 'migration-study-surface-help', className: 'migration-study-help' },
+            h('p', { id: migrationDomId('migration-study-surface-help'), 'data-migration-id': 'migration-study-surface-help', className: 'migration-study-help' },
               t('stem.migration.study_surface_activity', 'Predict which surfaces will become visible. Pause flight or choose a cycle position, compare From above with From below, and keep zoom fixed. Describe what the view reveals or hides; apparent shape changes do not mean the model changed.')),
             [
               { key: 'flightStudyYaw', label: t('stem.migration.study_angle', 'Study angle'), aria: t('stem.migration.study_angle_aria', 'Study angle in degrees'), min: -180, max: 180, step: 5, value: studyView.yaw, suffix: '\u00b0' },
@@ -8291,7 +8368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             renderMarkedWingPoseControls(),
             h('div', { className: 'migration-wingtip-path-controls', 'data-study-wingtip-path': 'true' },
               h('label', { className: 'migration-layer-toggle' },
-                h('input', { type: 'checkbox', checked: d.flightShowWingtipPath === true, 'aria-describedby': 'migration-wingtip-path-help', 'aria-controls': 'migration-flight-stage', onChange: function(event) {
+                h('input', { type: 'checkbox', checked: d.flightShowWingtipPath === true, 'aria-describedby': migrationDomIds('migration-wingtip-path-help'), 'aria-controls': migrationDomIds('migration-flight-stage'), onChange: function(event) {
                   if (!event.target.checked) {
                     _liveVals.current.flightWingtipFollowSide = undefined;
                     _liveVals.current.flightWingtipFollowSourceUuid = undefined;
@@ -8301,14 +8378,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 } }),
                 h('span', null, t('stem.migration.show_wingtip_path', 'Show wingtip path'))
               ),
-              h('p', { className: 'migration-study-help', id: 'migration-wingtip-path-help' },
+              h('p', { className: 'migration-study-help', id: migrationDomId('migration-wingtip-path-help'), 'data-migration-id': 'migration-wingtip-path-help' },
                 t('stem.migration.wingtip_path_activity', 'Before showing the path, predict how the outer tip moves. Show it, step the wings, and compare Front with From above. Describe what changed in your observation notes.')),
               d.flightShowWingtipPath === true && h('div', { className: 'migration-wingtip-path-key', 'data-wingtip-path-legend': 'true',
                 'data-wingtip-follow-controls': 'true', role: 'group', 'aria-label': t('stem.migration.wingtip_follow_group', 'Follow one wingtip') },
                 [0, 1].map(function(side) {
                   return h('button', { key: side, type: 'button', className: 'migration-wingtip-follow-button', 'data-wingtip-follow-side': side,
                     disabled: !!(_f3dEngineRef.current && _f3dEngineRef.current.host && _f3dEngineRef.current.host.getAttribute('data-flight-error') === 'true'), 'aria-pressed': _liveVals.current.flightWingtipFollowSide === side ? 'true' : 'false',
-                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-wingtip-follow-help',
+                    'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-wingtip-follow-help'),
                     onClick: function() {
                       var target = migrationStudyWingtipFollowTarget(_f3dEngineRef.current, _liveVals.current, side, followContext);
                       if (!target) {
@@ -8332,18 +8409,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 studyCycleSelection && h('span', { 'data-study-cycle-selection-key': 'true' }, t('stem.migration.cycle_selected_landmark_key', 'Larger rings: selected position'))
               ),
               d.flightShowWingtipPath === true && h('div', { 'data-wingtip-follow-activity': 'true' },
-                h('p', { className: 'migration-study-help', id: 'migration-wingtip-follow-help' },
+                h('p', { className: 'migration-study-help', id: migrationDomId('migration-wingtip-follow-help'), 'data-migration-id': 'migration-wingtip-follow-help' },
                   studyGuidesHidden ? t('stem.migration.wingtip_follow_activity_hidden', 'Choose which wingtip to follow when guides return. Both wings remain visible; paths and the marked outline are temporarily hidden. Restore the guides to compare your prediction with the selected side.')
                     : t('stem.migration.wingtip_follow_activity', 'Predict where one tip will appear on screen. Choose its left or right guide; choose it again to show both. Hold the pose with Pause or a cycle position, compare Front with From above, then use Describe wing motion to explain the individual’s side versus its screen position. Both wings and the marked outline stay visible.')),
                 h('p', { className: 'migration-study-help', role: 'status', 'data-wingtip-follow-status': _liveVals.current.flightWingtipFollowSide === 0 ? 'left' : _liveVals.current.flightWingtipFollowSide === 1 ? 'right' : 'both' },
                   followMessage(_liveVals.current.flightWingtipFollowSide)),
                 (followedAnatomySide === 0 || followedAnatomySide === 1) && h('div', { 'data-followed-anatomy-activity': 'true' },
-                  h('p', { className: 'migration-study-help', id: 'migration-followed-anatomy-help' },
+                  h('p', { className: 'migration-study-help', id: migrationDomId('migration-followed-anatomy-help'), 'data-migration-id': 'migration-followed-anatomy-help' },
                     studyGuidesHidden ? t('stem.migration.followed_anatomy_activity_hidden', 'Anatomy guides are temporarily hidden. Keep the camera fixed, compare cycle positions 3 and 7, and describe the visible wing shape. Restore the guides to inspect the selected segment.')
                       : t('stem.migration.followed_anatomy_activity', 'Predict which wing segment will appear to move more. Hold the camera fixed and compare cycle positions 3 and 7. Inspect Inner wing (2) and Primary feathers (3) with the existing region buttons, then name the followed left or right side and cycle positions in your observation note.')),
                   h('button', { type: 'button', className: 'migration-wingtip-follow-button', 'data-followed-anatomy-toggle': 'true',
-                    'aria-pressed': _liveVals.current.flightShowAnatomy ? 'true' : 'false', 'aria-controls': 'migration-flight-stage',
-                    'aria-describedby': 'migration-followed-anatomy-help',
+                    'aria-pressed': _liveVals.current.flightShowAnatomy ? 'true' : 'false', 'aria-controls': migrationDomIds('migration-flight-stage'),
+                    'aria-describedby': migrationDomIds('migration-followed-anatomy-help'),
                     onClick: function() {
                       var live = _liveVals.current;
                       var side = migrationStudyFollowedAnatomySide(_f3dEngineRef.current, live, studyWingtipFollowSelection);
@@ -8364,7 +8441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   migrationStudySegmentNoteMatches(_f3dEngineRef.current, _liveVals.current, studyWingtipFollowSelection, studyRegion.id) &&
                     h('div', { 'data-study-segment-note': 'true' },
                       h('button', { type: 'button', className: 'migration-wingtip-follow-button', 'data-study-action': 'describe-wing-segment',
-                        'aria-controls': 'migration-study-observation-note', 'aria-describedby': 'migration-segment-note-help migration-followed-anatomy-help',
+                        'aria-controls': migrationDomIds('migration-study-observation-note'), 'aria-describedby': migrationDomIds('migration-segment-note-help migration-followed-anatomy-help'),
                         onClick: function() {
                           var live = _liveVals.current;
                           var region = studyRegion.id;
@@ -8380,13 +8457,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                           updMulti({ flightStudyObservationOpen: true });
                         }
                       }, t('stem.migration.describe_wing_segment', 'Describe this wing segment')),
-                      h('p', { className: 'migration-study-help', id: 'migration-segment-note-help' },
+                      h('p', { className: 'migration-study-help', id: migrationDomId('migration-segment-note-help'), 'data-migration-id': 'migration-segment-note-help' },
                         t('stem.migration.segment_note_help', 'Opens the selected wing segment’s existing note and keeps your draft. This does not record an observation or change playback.'))
                     )
                 )
               ),
               d.flightShowWingtipPath === true && h('div', { 'data-study-cycle-controls': 'true' },
-                h('p', { className: 'migration-study-help', id: 'migration-study-cycle-help' },
+                h('p', { className: 'migration-study-help', id: migrationDomId('migration-study-cycle-help'), 'data-migration-id': 'migration-study-cycle-help' },
                   studyGuidesHidden ? t('stem.migration.cycle_position_activity_hidden', 'Predict how positions 3 and 7 will differ. Choose 3 and optionally mark a wing pose. Keep the view fixed and compare positions while guides are hidden. Restore the guides to check your prediction against the selected paths and marked tips. Describe your evidence in the existing notes.')
                     : t('stem.migration.cycle_position_activity', 'Predict how positions 3 and 7 will differ. Choose 3 and optionally use Mark wing pose. Keep the view fixed and use Compare opposite position to switch between 3 and 7. With Show wingtip path on, predict whether live dots will meet marked diamonds when you return to 3. Inspect the followed wing or selected segment, then describe your evidence in the existing notes. Choosing a position pauses the illustrative cycle.')),
                 h('div', { className: 'migration-cycle-positions', role: 'group', 'aria-label': t('stem.migration.cycle_positions', 'Wing cycle positions') },
@@ -8394,7 +8471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     return h('button', { key: index, type: 'button', 'data-study-cycle-position': index,
                       'aria-label': t('stem.migration.cycle_position', 'Cycle position') + ' ' + (index + 1) + ' ' + t('stem.migration.cycle_position_of_eight', 'of 8'),
                       'aria-pressed': studyCycleSelection && studyCycleSelection.index === index ? 'true' : 'false',
-                      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-cycle-help',
+                      'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-study-cycle-help'),
                       onClick: function() {
                         if (!commitStudyCyclePosition(index)) {
                           if (announceToSR) announceToSR(t('stem.migration.cycle_position_wait', 'Wait until the Study scene is ready, then choose a cycle position again.'));
@@ -8414,7 +8491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     renderContext: function(targetIndex) {
                       return h('button', { type: 'button', className: 'migration-wingtip-follow-button',
                         'data-study-cycle-action': 'opposite', disabled: targetIndex === null,
-                        'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-cycle-help',
+                        'aria-controls': migrationDomIds('migration-flight-stage'), 'aria-describedby': migrationDomIds('migration-study-cycle-help'),
                         onClick: function() {
                           // A retained handler must follow the latest explicit click,
                           // even before React or the host acknowledges the last one.
@@ -8433,7 +8510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               ),
               h('div', { className: 'migration-study-actions' },
                 h('button', { type: 'button', 'data-study-action': 'describe-wing-motion',
-                  'aria-controls': 'migration-study-observation-note', 'aria-describedby': 'migration-wing-motion-note-help',
+                  'aria-controls': migrationDomIds('migration-study-observation-note'), 'aria-describedby': migrationDomIds('migration-wing-motion-note-help'),
                   onClick: function() {
                     var region = species.id === 'monarch' ? 'whole-wing' : 'primaries';
                     _f3dMotionNoteFocusRef.current = { speciesId: species.id, region: region,
@@ -8446,7 +8523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   }
                 }, t('stem.migration.describe_wing_motion', 'Describe wing motion'))
               ),
-              h('p', { className: 'migration-study-help', id: 'migration-wing-motion-note-help' }, species.id === 'monarch'
+              h('p', { className: 'migration-study-help', id: migrationDomId('migration-wing-motion-note-help'), 'data-migration-id': 'migration-wing-motion-note-help' }, species.id === 'monarch'
                 ? t('stem.migration.describe_monarch_motion_help', 'Opens whole-wing notes and keeps your existing draft. This does not record an observation or change playback.')
                 : t('stem.migration.describe_bird_motion_help', 'Opens Primary feathers notes and keeps your existing draft. This does not record an observation or change playback.')),
               h('p', { className: 'migration-study-help' }, t('stem.migration.wingtip_path_scope', 'The paths show one stylized wing cycle relative to the body. They are not a flight track, distance scale, or measured wingbeat rate.'))
@@ -8460,7 +8537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
 
         return h('div', {
-          id: 'migration-flight-deck',
+          id: migrationDomId('migration-flight-deck'), 'data-migration-id': 'migration-flight-deck',
           className: 'migration-flight-deck',
           'data-migration-3d-flight': 'true',
           'data-monarch-simulation': species.id === 'monarch' ? 'active' : 'available',
@@ -8470,7 +8547,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         },
           h('div', { className: 'migration-flight-view' },
           h('div', {
-            id: 'migration-flight-stage',
+            id: migrationDomId('migration-flight-stage'), 'data-migration-id': 'migration-flight-stage',
             className: 'migration-flight-stage',
             'data-motion-reduced': motionReduced ? 'true' : 'false',
             'data-study-view': cameraMode === 'study' ? 'true' : 'false',
@@ -8592,7 +8669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', null,
               h('h3', null, t('stem.migration.flight_deck_title', 'Migration Flight Deck')),
               h('p', null, t('stem.migration.flight_deck_observe', 'Follow the flock. Change one condition and watch how the journey responds.')),
-              h('a', { className: 'migration-experiment-jump', href: '#migration-flight-experiment' }, t('stem.migration.open_flight_experiment', 'Start a flight investigation') + ' \u2193')
+              h('a', { className: 'migration-experiment-jump', href: '#' + migrationDomId('migration-flight-experiment') }, t('stem.migration.open_flight_experiment', 'Start a flight investigation') + ' \u2193')
             ),
             h('div', { className: 'migration-flight-actions' },
               h('button', { type: 'button', onClick: toggleFlightPause, 'aria-pressed': flightPaused ? 'true' : 'false' }, flightPaused ? t('stem.migration.resume_flight', 'Resume flight') : t('stem.migration.pause_flight', 'Pause flight')),
@@ -8672,21 +8749,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('option', { value: 'spring' }, t('stem.migration.spring_toward_breeding', 'Spring - toward breeding range'))
               )
             ),
-            h('div', { className: 'migration-flight-control' },
-              h('span', null, t('stem.migration.camera_label', 'Camera')),
+            h('div', { className: 'migration-flight-control migration-camera-guide', role: 'group', 'data-migration-camera-guide': '',
+              'aria-labelledby': migrationDomId('migration-camera-label') },
+              h('span', { id: migrationDomId('migration-camera-label'), 'data-migration-id': 'migration-camera-label' }, t('stem.migration.camera_label', 'Camera')),
               h('div', { className: 'migration-flight-camera' },
                 [
-                  { id: 'chase', label: t('stem.migration.cam_chase', 'Chase') },
-                  { id: 'aerial', label: t('stem.migration.cam_aerial', 'Aerial') },
-                  { id: 'side', label: t('stem.migration.cam_side', 'Side') },
-                  { id: 'study', label: t('stem.migration.cam_study', 'Study') }
+                  { id: 'chase', label: t('stem.migration.cam_chase', 'Chase'), purpose: t('stem.migration.cam_chase_purpose', 'Follow the whole flock.') },
+                  { id: 'aerial', label: t('stem.migration.cam_aerial', 'Aerial'), purpose: t('stem.migration.cam_aerial_purpose', 'See the formation from above.') },
+                  { id: 'side', label: t('stem.migration.cam_side', 'Side'), purpose: t('stem.migration.cam_side_purpose', 'See flight from the side.') },
+                  { id: 'study', label: t('stem.migration.cam_study', 'Study'), purpose: t('stem.migration.cam_study_purpose', 'Orbit and inspect one individual.') }
                 ].map(function(view) {
-                  return h('button', {
-                    key: view.id,
-                    type: 'button',
-                    'aria-pressed': cameraMode === view.id ? 'true' : 'false',
-                    onClick: function() { chooseCamera(view.id); }
-                  }, view.label);
+                  var selected = cameraMode === view.id;
+                  return h('div', { key: view.id, className: 'migration-camera-choice', 'data-camera-choice': view.id,
+                    'data-camera-selected': selected ? 'true' : 'false' },
+                    h('button', {
+                      type: 'button', 'data-flight-camera': view.id,
+                      'aria-pressed': selected ? 'true' : 'false',
+                      'aria-describedby': migrationDomId('migration-camera-' + view.id + '-purpose'),
+                      onClick: function() { chooseCamera(view.id); }
+                    }, view.label),
+                    h('span', { className: 'migration-camera-selection', 'data-camera-selection': view.id, 'aria-hidden': 'true' },
+                      t('stem.migration.camera_selected_view', 'Selected view')),
+                    h('p', { className: 'migration-camera-purpose', id: migrationDomId('migration-camera-' + view.id + '-purpose'),
+                      'data-migration-id': 'migration-camera-' + view.id + '-purpose', 'data-camera-purpose': view.id }, view.purpose)
+                  );
                 })
               )
             ),
@@ -8698,10 +8784,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('span', null, t('stem.migration.show_wingtip_airflow', 'Show wingtip airflow'))
               ),
               h('label', { className: 'migration-layer-toggle' },
-                h('input', { type: 'checkbox', checked: showSpeedVectors, 'aria-describedby': showSpeedVectors ? 'migration-speed-vector-note' : undefined, onChange: function(event) { upd('flightShowSpeedVectors', event.target.checked); } }),
+                h('input', { type: 'checkbox', checked: showSpeedVectors, 'aria-describedby': showSpeedVectors ? migrationDomId('migration-speed-vector-note') : undefined, onChange: function(event) { upd('flightShowSpeedVectors', event.target.checked); } }),
                 h('span', null, t('stem.migration.show_speed_vectors', 'Show speed vectors'))
               ),
-              showSpeedVectors && h('p', { id: 'migration-speed-vector-note', 'data-speed-vector-note': 'true' },
+              showSpeedVectors && h('p', { id: migrationDomId('migration-speed-vector-note'), 'data-migration-id': 'migration-speed-vector-note', 'data-speed-vector-note': 'true' },
                 cameraMode === 'study'
                   ? t('stem.migration.speed_vectors_study_hidden', 'Speed vectors are hidden in Study. Use Chase, Aerial, or Side to compare speeds.')
                   : t('stem.migration.speed_vectors_scope', '3D arrow lengths share one scale in mph. Side view makes lengths easier to compare. They show along-route speeds, not crosswind or compass directions. Wind is rounded to one decimal; ground speed is rounded to whole mph.') + (speedValues.headwindStops
@@ -8729,7 +8815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('button', {
                     type: 'button', 'data-study-region': part.id, 'aria-pressed': studyRegion.id === part.id ? 'true' : 'false',
                     'aria-label': t('stem.migration.observe_part', 'Observe') + ' ' + part.label,
-                    'aria-controls': 'migration-study-observation-part',
+                    'aria-controls': migrationDomIds('migration-study-observation-part'),
                     onClick: function() { updMulti({ flightStudyRegion: part.id, flightShowAnatomy: true, flightStudyObservationOpen: true }); }
                   }, h('span', { style: { background: part.color }, 'aria-hidden': 'true' }, index + 1), part.label)
                 ); })
@@ -8978,20 +9064,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
         function renderReflection(attempt, index) {
           var editing = reflectionEditing && reflectionEditing.index === index ? reflectionEditing : null;
-          var inputId = 'migration-mission-reflection-' + goal.id + '-' + (index + 1);
-          var helpId = inputId + '-help';
+          var inputKey = 'migration-mission-reflection-' + goal.id + '-' + (index + 1);
+          var inputId = migrationDomId(inputKey);
+          var helpId = migrationDomId(inputKey + '-help');
           var canSave = editing && (editing.text.trim() ? editing.text !== (attempt.reflection || '') : !!attempt.reflection);
           return h('details', { className: 'migration-mission-reflection', 'data-flight-challenge-reflection': index + 1 },
             h('summary', null, t('stem.migration.mission_reflection_title', 'Later reflection')),
             h('div', { className: 'migration-mission-reflection-body' },
-              h('p', { id: helpId }, t('stem.migration.mission_reflection_help', 'Use this attempt’s saved measurements or route changes to explain what you notice and a limitation of the model. A later reflection keeps your original prediction and explanation as recorded; it is ungraded.')),
+              h('p', { id: helpId, 'data-migration-id': inputKey + '-help' }, t('stem.migration.mission_reflection_help', 'Use this attempt’s saved measurements or route changes to explain what you notice and a limitation of the model. A later reflection keeps your original prediction and explanation as recorded; it is ungraded.')),
               h('p', { 'data-flight-reflection-saved': index + 1 }, attempt.reflection || t('stem.migration.mission_reflection_empty', 'No later reflection is saved yet.')),
               h('button', { type: 'button', 'data-flight-reflection-action': 'edit', hidden: !!editing, disabled: !!reflectionDraft,
                 'aria-describedby': helpId, onClick: function(event) { beginReflection(event, index); } },
                 attempt.reflection ? t('stem.migration.mission_reflection_edit', 'Edit reflection') : t('stem.migration.mission_reflection_add', 'Add reflection')),
               editing && h('div', { className: 'migration-mission-reflection-editor' },
                 h('label', { htmlFor: inputId }, t('stem.migration.mission_reflection_label', 'My later reflection')),
-                h('textarea', { id: inputId, rows: 4, maxLength: 2000, autoFocus: true, value: editing.text,
+                h('textarea', { id: inputId, 'data-migration-id': inputKey, rows: 4, maxLength: 2000, autoFocus: true, value: editing.text,
                   'data-flight-reflection-input': index + 1, 'aria-label': t('stem.migration.mission_reflection_label', 'My later reflection') + ' · ' + t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1), 'aria-describedby': helpId,
                   placeholder: t('stem.migration.mission_reflection_placeholder', 'What does this saved flight support, and what can this model not tell me?'),
                   onChange: function(event) {
@@ -9094,7 +9181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', null, h('span', null, t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit')), h('strong', null, baseline.benefit + '% \u2192 ' + snapshot.benefit + '%'))
           );
         }
-        return h('details', { id: 'migration-flight-challenges', className: 'migration-missions', 'data-migration-flight-challenges': 'true',
+        return h('details', { id: migrationDomId('migration-flight-challenges'), 'data-migration-id': 'migration-flight-challenges', className: 'migration-missions', 'data-migration-flight-challenges': 'true',
           ref: function(node) {
             if (node) { reflectionCommit.panel = node; _flightChallengeReflectionOwnerRef.current = reflectionCommit; }
             else if (_flightChallengeReflectionOwnerRef.current === reflectionCommit) _flightChallengeReflectionOwnerRef.current = null;
@@ -9115,10 +9202,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('small', null, itemProgress.count + '/4 ' + t('stem.migration.mission_progress_steps', 'evidence steps') + ' · ' + challenges.work[item.id].attempts.length + '/4 ' + t('stem.migration.mission_attempts_short', 'attempts'))
               );
             })),
-            h('section', { className: 'migration-mission-active', 'aria-labelledby': 'migration-mission-active-title' },
+            h('section', { className: 'migration-mission-active', 'aria-labelledby': migrationDomId('migration-mission-active-title') },
               h('div', { className: 'migration-mission-brief' },
                 h('p', { className: 'migration-experiment-eyebrow' }, t('stem.migration.mission_goal_label', 'Challenge') + ' ' + goalIndex + ' / 3'),
-                h('h3', { id: 'migration-mission-active-title' }, title(goal.id)),
+                h('h3', { id: migrationDomId('migration-mission-active-title'), 'data-migration-id': 'migration-mission-active-title' }, title(goal.id)),
                 h('p', null, target(goal.id)),
                 h('p', { className: 'migration-mission-hint' }, hint(goal.id))
               ),
@@ -9132,13 +9219,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('p', { className: 'migration-mission-progress-help' }, t('stem.migration.mission_progress_reflection_help', 'Prediction includes saved attempts. Evidence is an explanation or later reflection saved with a model-matching attempt; its quality is not graded.'))
               ),
               h('div', { className: 'migration-mission-writing' },
-                h('label', { htmlFor: 'migration-mission-prediction' },
+                h('label', { htmlFor: migrationDomId('migration-mission-prediction') },
                   h('span', null, t('stem.migration.mission_prediction_label', 'My prediction: which control will I change, and why?')),
-                  h('textarea', { id: 'migration-mission-prediction', rows: 2, maxLength: 1000, value: work.prediction, onChange: function(event) { saveWork({ prediction: event.target.value.slice(0, 1000) }); } })
+                  h('textarea', { id: migrationDomId('migration-mission-prediction'), 'data-migration-id': 'migration-mission-prediction', rows: 2, maxLength: 1000, value: work.prediction, onChange: function(event) { saveWork({ prediction: event.target.value.slice(0, 1000) }); } })
                 ),
-                h('label', { htmlFor: 'migration-mission-notes' },
+                h('label', { htmlFor: migrationDomId('migration-mission-notes') },
                   h('span', null, t('stem.migration.mission_notes_label', 'My explanation: what numbers or route changes support my claim?')),
-                  h('textarea', { id: 'migration-mission-notes', rows: 2, maxLength: 2000, value: work.notes, onChange: function(event) { saveWork({ notes: event.target.value.slice(0, 2000) }); } })
+                  h('textarea', { id: migrationDomId('migration-mission-notes'), 'data-migration-id': 'migration-mission-notes', rows: 2, maxLength: 2000, value: work.notes, onChange: function(event) { saveWork({ notes: event.target.value.slice(0, 2000) }); } })
                 )
               ),
               h('div', { className: 'migration-mission-actions' },
@@ -9148,7 +9235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   updMulti({ flightSpecies: setup.speciesId, flightSeason: setup.season, flightWind: setup.wind, flightFormation: setup.formationMode, flightChallenges: saveChallenge({ work: nextWork({ setup: setup }) }) });
                   announce(t('stem.migration.mission_loaded', 'Starting flight loaded. Change only the named control. Earlier attempts and other investigations are still saved.'));
                 } }, t('stem.migration.mission_load', 'Load starting flight')),
-                h('a', { href: '#migration-flight-deck' }, t('stem.migration.mission_controls_link', 'Adjust flight controls') + ' \u2191'),
+                h('a', { href: '#' + migrationDomId('migration-flight-deck') }, t('stem.migration.mission_controls_link', 'Adjust flight controls') + ' \u2191'),
                 h('button', { type: 'button', 'data-flight-challenge-action': 'check', disabled: !work.setup || !work.prediction.trim() || work.attempts.length >= 4, onClick: function() {
                   if (!work.setup || !work.prediction.trim() || work.attempts.length >= 4) return;
                   saveWork({ attempts: work.attempts.concat([{ baseline: work.setup, snapshot: live, prediction: work.prediction, notes: work.notes }]) });
@@ -9169,8 +9256,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               work.attempts.length >= 4 && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.mission_history_reflection_full', 'Four attempts are saved for this goal. You can still add a later reflection to any saved attempt. Remove an attempt only to make room for another flight; nothing is replaced automatically.')),
               reflectionDraft && !reflectionEditing && h('div', { className: 'migration-mission-reflection-stale', 'data-flight-reflection-stale': '', role: 'group', 'aria-label': t('stem.migration.mission_reflection_stale_label', 'Unsaved reflection from another saved context') },
                 h('p', { role: 'status' }, t('stem.migration.mission_reflection_stale_help', 'The saved attempts or selected challenge changed. Your unsaved reflection is kept below. Return to the same saved context to continue, or copy your words and close this draft before editing another attempt.')),
-                h('label', { htmlFor: 'migration-mission-reflection-stale' }, t('stem.migration.mission_reflection_stale_input', 'My unsaved reflection')),
-                h('textarea', { id: 'migration-mission-reflection-stale', rows: 4, readOnly: true, value: reflectionDraft.text, 'aria-label': t('stem.migration.mission_reflection_stale_input', 'My unsaved reflection') }),
+                h('label', { htmlFor: migrationDomId('migration-mission-reflection-stale') }, t('stem.migration.mission_reflection_stale_input', 'My unsaved reflection')),
+                h('textarea', { id: migrationDomId('migration-mission-reflection-stale'), 'data-migration-id': 'migration-mission-reflection-stale', rows: 4, readOnly: true, value: reflectionDraft.text, 'aria-label': t('stem.migration.mission_reflection_stale_input', 'My unsaved reflection') }),
                 h('button', { type: 'button', 'data-flight-reflection-action': 'cancel-stale', onClick: function(event) { cancelReflection(event, reflectionDraft.index, true); } }, t('stem.migration.mission_reflection_stale_close', 'Close unsaved draft'))
               ),
               work.attempts.length > 0 && h('details', { className: 'migration-mission-history', 'data-flight-challenge-history': 'true' },
@@ -9234,7 +9321,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                           // Index-keyed rows retain this button for the next item.
                           // The previous button survives removal of the last row.
                           var target = buttons[index < buttons.length - 1 ? index : index - 1] || panel.querySelector('[data-flight-challenge-action="check"]');
-                          if (target && target.disabled) target = panel.querySelector('#migration-mission-prediction');
+                          if (target && target.disabled) target = panel.querySelector('[data-migration-id="migration-mission-prediction"]');
                           focusBeforeRemoval(attemptRemoval, panel, target);
                         }
                         if (!currentRemovalControl(attemptRemoval, event)) return;
@@ -9274,8 +9361,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         flightTrialRevisitStatus[1]({ index: index, trial: JSON.stringify(trial), values: values, message: message, baseline: !!baseline });
         updMulti(values);
         if (announceToSR) announceToSR(message);
-        var stage = document.getElementById('migration-flight-stage');
-        if (stage && stage.focus) stage.focus();
+        var stage = _f3dHostRef.current;
+        if (stage && stage.isConnected && exposedRemovalTarget(stage) && fullscreenAllowsFocus(stage)) stage.focus();
       }
 
       function currentFlightTrialReview() {
@@ -9294,14 +9381,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var action = event && event.currentTarget;
         var panel = _flightTrialEvidenceReviewRef.current.panel;
         var workspace = action && action.closest('.migration-flight-workspace');
-        var notebook = workspace && workspace.querySelector('[id="migration-flight-experiment"]');
-        var field = notebook && notebook.querySelector('[id="migration-experiment-evidence"]');
+        var notebook = workspace && workspace.querySelector('[data-migration-id="migration-flight-experiment"]');
+        var field = notebook && notebook.querySelector('[data-migration-id="migration-experiment-evidence"]');
         function current() {
           return _liveVals.current.tab === 'flight3d' && _flightTrialFocusReturnRef.current === navigation && navigation.node === action &&
             action && action.isConnected && panel && panel.isConnected && panel === _flightTrialEvidenceReviewRef.current.panel &&
             panel.contains(action) && panel.querySelector('[data-trial-evidence-return]') === action &&
             workspace && workspace.isConnected && notebook && notebook.isConnected && workspace.contains(notebook) &&
-            field && field.isConnected && notebook.querySelector('[id="migration-experiment-evidence"]') === field;
+            field && field.isConnected && notebook.querySelector('[data-migration-id="migration-experiment-evidence"]') === field;
         }
         if (!current()) return;
         var intent = beginFocusIntent(action, workspace, false, current);
@@ -9345,14 +9432,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('dl', null, metrics.map(function(metric, index) { return h('div', { key: index }, h('dt', null, metric[0]), h('dd', null, metric[1])); }))
           );
         }
-        return h('section', { id: 'migration-flight-trial-review', className: 'migration-pair-review',
+        return h('section', { id: migrationDomId('migration-flight-trial-review'), 'data-migration-id': 'migration-flight-trial-review', className: 'migration-pair-review',
           ref: function(node) { _flightTrialEvidenceReviewRef.current.panel = node; }, 'data-experiment-pair-review': '', 'data-review-trial': review.index + 1, 'data-review-active': review.active, 'aria-label': t('stem.migration.pair_review_label', 'Saved trial review') },
           h('div', { className: 'migration-pair-review-heading' },
             h('h3', null, t('stem.migration.pair_review_heading', 'Review') + ' ' + title),
             h('button', { type: 'button', 'data-pair-review': 'close', onClick: function() {
               flightTrialRevisitStatus[1](null);
-              var stage = document.getElementById('migration-flight-stage');
-              if (stage && stage.focus) stage.focus();
+              var stage = _f3dHostRef.current;
+              if (stage && stage.isConnected && exposedRemovalTarget(stage) && fullscreenAllowsFocus(stage)) stage.focus();
             } }, t('stem.migration.pair_review_close', 'Close saved trial review'))
           ),
           h('p', { className: 'migration-pair-review-state', role: 'status', 'aria-live': 'polite', 'data-pair-review-state': '' },
@@ -9403,7 +9490,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var comparison = migrCompareFlightInvestigation(study.baseline, live, study.variable);
         var variableLabel = study.variable === 'wind' ? t('stem.migration.experiment_wind', 'Wind') : t('stem.migration.experiment_formation', 'Formation');
 
+        var resetRequest = flightInvestigationResetState[0];
+        var resetSignature = JSON.stringify(d.flightInvestigation || null);
+        var resetStale = !!(resetRequest && (resetRequest.invalidated || resetRequest.signature !== resetSignature ||
+          !resetRequest.panel.isConnected || !resetRequest.origin.isConnected));
+        var resetOrigin = { node: null, action: 'reset' }, resetCancel = { node: null, action: 'reset-cancel' }, resetConfirm = { node: null, action: 'reset-confirm' };
+        var resetOwner = { panel: null, signature: resetSignature, request: resetRequest, origin: resetOrigin, cancel: resetCancel, confirm: resetConfirm };
+        function currentResetControl(control, event) {
+          var node = event && event.currentTarget, panel = resetOwner.panel;
+          var host = _f3dHostRef.current, workspace = host && host.isConnected && host.closest('.migration-flight-workspace');
+          return _flightInvestigationResetOwnerRef.current === resetOwner && _liveVals.current.tab === 'flight3d' &&
+            node && node === control.node && currentRemovalControl(control, event) && panel && panel.isConnected &&
+            workspace && panel.closest('.migration-flight-workspace') === workspace && panel.contains(node) &&
+            panel.querySelector('[data-experiment-action="' + control.action + '"]') === node &&
+            exposedRemovalTarget(node) && fullscreenAllowsFocus(node);
+        }
+        function queueResetFocus(request, action, open) {
+          // A scripted action must not pull focus away from another active control.
+          var active = document.activeElement;
+          if (!action || (active !== document.body && active !== action && !action.contains(active))) return;
+          var intent = beginFocusIntent(action, request.panel, !open, function() {
+            var owner = _flightInvestigationResetOwnerRef.current;
+            return owner && owner.panel === request.panel && owner.origin.node === request.origin &&
+              (open ? owner.request === request && !request.used : !owner.request);
+          });
+          if (intent) _flightInvestigationResetFocusRef.current = { intent: intent, panel: request.panel, origin: request.origin, open: open };
+        }
+        function requestInvestigationReset(event) {
+          if (!currentResetControl(resetOrigin, event) || resetOwner.request) return;
+          var request = { signature: resetSignature, panel: resetOwner.panel, origin: resetOrigin.node, invalidated: false, used: false };
+          resetOwner.request = request;
+          queueResetFocus(request, event.currentTarget, true);
+          flightInvestigationResetState[1](request);
+        }
+        function cancelInvestigationReset(event, escape) {
+          var request = resetOwner.request, action = escape ? event.target : event.currentTarget;
+          if (!request || request.used || _flightInvestigationResetOwnerRef.current !== resetOwner) return;
+          if (escape) {
+            var group = resetOwner.panel && resetOwner.panel.querySelector('[data-investigation-reset-review]');
+            if (!group || event.currentTarget !== group || !action || !group.contains(action) ||
+                !currentResetControl(resetCancel, { currentTarget: resetCancel.node })) return;
+          } else if (!currentResetControl(resetCancel, event)) return;
+          request.used = true;
+          queueResetFocus({ panel: resetOwner.panel, origin: resetOrigin.node }, action, false);
+          flightInvestigationResetState[1](null);
+          announce(t('stem.migration.experiment_reset_cancelled', 'Reset cancelled. Your investigation is unchanged.'));
+        }
+        function confirmInvestigationReset(event) {
+          var request = resetOwner.request;
+          if (!currentResetControl(resetConfirm, event) || !request || request !== resetRequest || request.used ||
+              request.panel !== resetOwner.panel || request.origin !== resetOrigin.node) return;
+          if (request.invalidated || request.signature !== resetSignature || resetStale) {
+            announce(t('stem.migration.experiment_reset_changed', 'This investigation changed after reset was requested. Nothing has been cleared. Cancel, review your current work, then request reset again.'));
+            return;
+          }
+          request.used = true;
+          queueResetFocus(request, event.currentTarget, false);
+          flightInvestigationResetState[1](null);
+          upd('flightInvestigation', { variable: 'wind', prediction: '', baseline: null, trials: [], evidence: '', explanation: '' });
+          announce(t('stem.migration.experiment_reset_announcement', 'Flight investigation cleared. Flight settings and other activities are unchanged.'));
+        }
         function saveStudy(patch) {
+          var request = _flightInvestigationResetOwnerRef.current && _flightInvestigationResetOwnerRef.current.request;
+          if (request && !request.used && !request.invalidated) {
+            request.invalidated = true;
+            flightInvestigationResetState[1](Object.assign({}, request));
+          }
           var next = Object.assign({}, study, patch);
           delete next.repaired;
           upd('flightInvestigation', next);
@@ -9424,9 +9576,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         function speciesName(snapshot) { return findMigrationSpecies(snapshot.speciesId).name; }
         function seasonName(snapshot) { return snapshot.season === 'spring' ? t('stem.migration.experiment_spring', 'Spring') : t('stem.migration.experiment_fall', 'Fall'); }
         function conditionName(key) {
-          if (key === 'speciesId') return t('stem.migration.experiment_condition_species', 'species');
-          if (key === 'season') return t('stem.migration.experiment_condition_season', 'season');
-          if (key === 'wind') return t('stem.migration.experiment_condition_wind', 'wind');
+          if (key === 'speciesId') return t('stem.migration.experiment_condition_species_lower', 'species');
+          if (key === 'season') return t('stem.migration.experiment_condition_season_lower', 'season');
+          if (key === 'wind') return t('stem.migration.experiment_condition_wind_lower', 'wind');
           return t('stem.migration.experiment_condition_formation', 'formation');
         }
         function statusLabel(status) {
@@ -9440,6 +9592,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           if (result.status === 'confounded') return t('stem.migration.experiment_confounded_feedback', 'Another flight condition changed, so this trial cannot isolate your chosen variable. Restore the baseline, then change only the variable you chose.');
           if (result.status === 'unchanged') return t('stem.migration.experiment_unchanged_feedback', 'The effective flight conditions are unchanged. Change your chosen variable in the flight controls above, then record a trial.');
           return t('stem.migration.experiment_pending_feedback', 'Write a prediction and capture the current flight as your baseline. Then change one flight control above.');
+        }
+        function renderSelectedTrialEvidence() {
+          if (!selectedReview) return null;
+          var trial = selectedReview.trial;
+          var savedComparison = migrCompareFlightInvestigation(trial.baseline, trial.snapshot, trial.variable);
+          var metrics = [
+            { key: 'ground-speed', label: t('stem.migration.stat_ground_speed', 'Ground speed'), baseline: trial.baseline.groundSpeed, trial: trial.snapshot.groundSpeed, change: savedComparison.groundSpeedDelta, unit: t('stem.migration.mph_unit', 'mph'), changeUnit: t('stem.migration.mph_unit', 'mph') },
+            { key: 'drafting-credit', label: t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit'), baseline: trial.baseline.benefit, trial: trial.snapshot.benefit, change: savedComparison.benefitDelta, unit: '%', changeUnit: t('stem.migration.experiment_percentage_points', 'percentage points') }
+          ];
+          return h('section', { className: 'migration-trial-evidence-summary', 'data-trial-evidence-summary': selectedReview.index + 1,
+            'data-comparison': savedComparison.status, 'aria-label': t('stem.migration.saved_evidence_measurements', 'Saved measurements for this trial') },
+            h('h4', null, t('stem.migration.saved_evidence_measurements', 'Saved measurements for this trial')),
+            h('p', { className: 'migration-trial-evidence-summary-status', 'data-evidence-summary-status': '' }, statusLabel(savedComparison.status),
+              savedComparison.status === 'confounded' ? ' · ' + t('stem.migration.pair_review_confounded_scope', 'This pair cannot isolate the tested condition.') : null),
+            h('dl', { className: 'migration-trial-evidence-metrics' }, metrics.map(function(metric) {
+              return h('div', { key: metric.key, className: 'migration-trial-evidence-metric', 'data-evidence-metric': metric.key },
+                h('dt', null, metric.label),
+                h('dd', null, [
+                  { key: 'baseline', label: t('stem.migration.pair_review_baseline', 'Saved baseline'), value: metric.baseline, unit: metric.unit },
+                  { key: 'trial', label: t('stem.migration.pair_review_trial', 'Saved trial'), value: metric.trial, unit: metric.unit },
+                  { key: 'change', label: t('stem.migration.saved_evidence_change', 'Change'), value: signed(metric.change), unit: metric.changeUnit }
+                ].map(function(value) {
+                  return h('span', { key: value.key, 'data-evidence-snapshot': value.key },
+                    h('small', null, value.label), h('strong', null, value.value + (value.unit === '%' ? '' : ' ') + value.unit));
+                }))
+              );
+            })),
+            h('p', { className: 'migration-trial-evidence-summary-scope', 'data-evidence-summary-scope': '' }, t('stem.migration.saved_evidence_scope', 'Change is saved trial minus saved baseline. Model values come from this recorded pair. The current scene may differ.'))
+          );
         }
         function notebookEscape(value) {
           return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -9554,12 +9735,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           );
         }
 
-        return h('section', { id: 'migration-flight-experiment', className: 'migration-experiment', 'data-migration-flight-investigation': 'true', 'aria-labelledby': 'migration-experiment-heading' },
+        return h('section', { id: migrationDomId('migration-flight-experiment'), 'data-migration-id': 'migration-flight-experiment', className: 'migration-experiment', 'data-migration-flight-investigation': 'true', 'aria-labelledby': migrationDomId('migration-experiment-heading'),
+          ref: function(node) {
+            if (node) {
+              resetOwner.panel = node; _flightInvestigationResetOwnerRef.current = resetOwner;
+              if (resetOwner.request && (resetOwner.request.panel !== node || resetOwner.request.signature !== resetSignature)) resetOwner.request.invalidated = true;
+            } else if (_flightInvestigationResetOwnerRef.current === resetOwner) _flightInvestigationResetOwnerRef.current = null;
+          } },
           h(MigrationSceneFeedback, { React: React, owner: _investigationFeedbackRef, context: 'investigation' }),
           h('header', { className: 'migration-experiment-header' },
             h('div', null,
               h('p', { className: 'migration-experiment-eyebrow' }, t('stem.migration.experiment_eyebrow', 'Flight investigation')),
-              h('h3', { id: 'migration-experiment-heading' }, t('stem.migration.experiment_title', 'One change. What happens?')),
+              h('h3', { id: migrationDomId('migration-experiment-heading'), 'data-migration-id': 'migration-experiment-heading' }, t('stem.migration.experiment_title', 'One change. What happens?')),
               h('p', null, t('stem.migration.experiment_intro', 'Make a prediction, capture a baseline, and compare a trial with your own evidence. Your observations stay saved as you explore.'))
             ),
             h('span', { className: 'migration-experiment-count' }, study.trials.length + '/6 ' + t('stem.migration.experiment_trials_saved', 'trials saved'))
@@ -9578,9 +9765,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               }),
               h('p', null, study.variable === 'wind' ? t('stem.migration.experiment_wind_instruction', 'Change Along-route wind. Keep species, season, and the effective flight pattern the same.') : t('stem.migration.experiment_formation_instruction', 'Change Flight pattern. Keep species, season, and wind the same. Natural and V can resolve to the same pattern.'))
             ),
-            h('label', { className: 'migration-experiment-prediction', htmlFor: 'migration-experiment-prediction' },
+            h('label', { className: 'migration-experiment-prediction', htmlFor: migrationDomId('migration-experiment-prediction') },
               h('span', null, t('stem.migration.experiment_prediction_label', 'What do you predict, and why?')),
-              h('textarea', { id: 'migration-experiment-prediction', rows: 3, maxLength: 1000, value: study.prediction, placeholder: t('stem.migration.experiment_prediction_placeholder', 'If I change this condition, I think… because…'), onChange: function(event) { saveStudy({ prediction: event.target.value.slice(0, 1000) }); } })
+              h('textarea', { id: migrationDomId('migration-experiment-prediction'), 'data-migration-id': 'migration-experiment-prediction', rows: 3, maxLength: 1000, value: study.prediction, placeholder: t('stem.migration.experiment_prediction_placeholder', 'If I change this condition, I think… because…'), onChange: function(event) { saveStudy({ prediction: event.target.value.slice(0, 1000) }); } })
             )
           ),
           h('div', { className: 'migration-experiment-actions' },
@@ -9617,7 +9804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           ),
           study.trials.length > 0 && h('section', { className: 'migration-experiment-observations', 'aria-label': t('stem.migration.experiment_observations', 'Saved flight observations') },
             h('h4', null, t('stem.migration.experiment_observations', 'Saved flight observations')),
-            h('p', { id: 'migration-experiment-revisit-help', className: 'migration-experiment-help' }, t('stem.migration.experiment_revisit_help', 'Revisit a trial and its paired baseline with speed vectors. Use each trial’s two saved flights to revisit its comparison; the comparison above uses your current baseline. Describe what changes in Evidence I noticed. Revisiting shows recorded conditions in a paused illustrative view; it does not replay the original animation frame.')),
+            h('p', { id: migrationDomId('migration-experiment-revisit-help'), 'data-migration-id': 'migration-experiment-revisit-help', className: 'migration-experiment-help' }, t('stem.migration.experiment_revisit_help', 'Revisit a trial and its paired baseline with speed vectors. Use each trial’s two saved flights to revisit its comparison; the comparison above uses your current baseline. Describe what changes in Evidence I noticed. Revisiting shows recorded conditions in a paused illustrative view; it does not replay the original animation frame.')),
             h('p', { className: 'migration-experiment-help', 'data-experiment-revisit-status': '', role: 'status', 'aria-live': 'polite' }, currentFlightTrialRevisitMessage()),
             h('div', { className: 'migration-experiment-history' }, study.trials.map(function(trial, index) {
               var result = migrCompareFlightInvestigation(trial.baseline, trial.snapshot, trial.variable);
@@ -9633,8 +9820,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ),
                 trial.prediction && h('p', { className: 'migration-experiment-trial-prediction' }, t('stem.migration.experiment_prediction_saved', 'Prediction when recorded') + ': ' + trial.prediction),
                 h('div', { className: 'migration-experiment-trial-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBlock: 10 } },
-                  h('button', { type: 'button', 'data-experiment-revisit-baseline': index + 1, 'aria-label': t('stem.migration.experiment_revisit_trial_baseline', 'Revisit baseline for trial') + ' ' + (index + 1), 'aria-describedby': 'migration-experiment-revisit-help', onClick: function() { revisitFlightTrial(trial, index, true); } }, t('stem.migration.experiment_revisit_trial_baseline', 'Revisit baseline for trial') + ' ' + (index + 1)),
-                  h('button', { type: 'button', 'data-experiment-revisit': index + 1, 'aria-label': t('stem.migration.experiment_revisit_trial', 'Revisit trial') + ' ' + (index + 1), 'aria-describedby': 'migration-experiment-revisit-help', onClick: function() { revisitFlightTrial(trial, index, false); } }, t('stem.migration.experiment_revisit_trial', 'Revisit trial') + ' ' + (index + 1))
+                  h('button', { type: 'button', 'data-experiment-revisit-baseline': index + 1, 'aria-label': t('stem.migration.experiment_revisit_trial_baseline', 'Revisit baseline for trial') + ' ' + (index + 1), 'aria-describedby': migrationDomId('migration-experiment-revisit-help'), onClick: function() { revisitFlightTrial(trial, index, true); } }, t('stem.migration.experiment_revisit_trial_baseline', 'Revisit baseline for trial') + ' ' + (index + 1)),
+                  h('button', { type: 'button', 'data-experiment-revisit': index + 1, 'aria-label': t('stem.migration.experiment_revisit_trial', 'Revisit trial') + ' ' + (index + 1), 'aria-describedby': migrationDomId('migration-experiment-revisit-help'), onClick: function() { revisitFlightTrial(trial, index, false); } }, t('stem.migration.experiment_revisit_trial', 'Revisit trial') + ' ' + (index + 1))
                 ),
                 h('button', {
                   className: 'migration-experiment-remove', type: 'button', 'data-trial-remove': index + 1,
@@ -9646,7 +9833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     if (notebook) {
                       var buttons = notebook.querySelectorAll('.migration-experiment-remove');
                       var target = buttons[index < buttons.length - 1 ? index : index - 1] || notebook.querySelector('[data-experiment-action="record"]');
-                      if (target && target.disabled) target = notebook.querySelector('#migration-experiment-prediction');
+                      if (target && target.disabled) target = notebook.querySelector('[data-migration-id="migration-experiment-prediction"]');
                       focusBeforeRemoval(trialRemoval, notebook, target);
                     }
                     if (!currentRemovalControl(trialRemoval, event)) return;
@@ -9663,6 +9850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('strong', null, t('stem.migration.selected_saved_comparison', 'Selected saved comparison') + ': ' +
                 t('stem.migration.experiment_trial_word', 'Trial') + ' ' + (selectedReview.index + 1) + ' · ' +
                 (selectedReview.trial.variable === 'formation' ? t('stem.migration.experiment_formation', 'Formation') : t('stem.migration.experiment_wind', 'Wind'))),
+              renderSelectedTrialEvidence(),
               h('details', { 'data-trial-evidence-prediction': 'true' },
                 h('summary', null, t('stem.migration.experiment_prediction_saved', 'Prediction when recorded')),
                 h('p', null, selectedReview.trial.prediction.trim() ? selectedReview.trial.prediction :
@@ -9671,13 +9859,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('button', { type: 'button', className: 'migration-experiment-button',
                 ref: function(node) { _flightTrialEvidenceReviewRef.current.selected = node ? selectedReview : null; },
                 'data-experiment-action': 'inspect-saved-comparison',
-                'aria-controls': 'migration-flight-trial-review', 'aria-describedby': 'migration-trial-evidence-help',
+                'aria-controls': migrationDomId('migration-flight-trial-review'), 'aria-describedby': migrationDomId('migration-trial-evidence-help'),
                 onClick: function(event) {
                   var owner = _flightTrialEvidenceReviewRef.current, action = event && event.currentTarget;
                   var host = _f3dHostRef.current, deck = host && host.isConnected && host.closest('.migration-flight-deck');
                   var workspace = deck && deck.closest('.migration-flight-workspace');
                   var notebook = action && action.closest('[data-migration-flight-investigation]');
-                  var panel = deck && deck.querySelector('[id="migration-flight-trial-review"][data-experiment-pair-review]');
+                  var panel = deck && deck.querySelector('[data-migration-id="migration-flight-trial-review"][data-experiment-pair-review]');
                   var target = panel && panel.querySelector('button[data-pair-review="baseline"]');
                   // Retained handlers cannot borrow a newer review, another
                   // tool's deck, or a replacement panel. This only navigates.
@@ -9696,10 +9884,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   }
                 }
               }, t('stem.migration.inspect_saved_comparison', 'Inspect saved trial comparison')),
-              h('small', { id: 'migration-trial-evidence-help' }, t('stem.migration.trial_evidence_scope', 'Compare your recorded prediction with your own evidence. Your prediction and explanation are ungraded.'))
+              h('small', { id: migrationDomId('migration-trial-evidence-help'), 'data-migration-id': 'migration-trial-evidence-help' }, t('stem.migration.trial_evidence_scope', 'Compare your recorded prediction with your own evidence. Your prediction and explanation are ungraded.'))
             ),
-            h('label', { htmlFor: 'migration-experiment-evidence' }, h('span', null, t('stem.migration.experiment_evidence_label', 'Evidence I noticed')), h('textarea', { id: 'migration-experiment-evidence', rows: 3, maxLength: 2000, value: study.evidence, placeholder: t('stem.migration.experiment_evidence_placeholder', 'Use the saved numbers and describe a change you saw in the 3D scene.'), onChange: function(event) { saveStudy({ evidence: event.target.value.slice(0, 2000) }); } })),
-            h('label', { htmlFor: 'migration-experiment-explanation' }, h('span', null, t('stem.migration.experiment_explanation_label', 'How does the evidence support or challenge my prediction?')), h('textarea', { id: 'migration-experiment-explanation', rows: 3, maxLength: 2000, value: study.explanation, placeholder: t('stem.migration.experiment_explanation_placeholder', 'My evidence suggests… A limitation of this model is…'), onChange: function(event) { saveStudy({ explanation: event.target.value.slice(0, 2000) }); } }))
+            h('label', { htmlFor: migrationDomId('migration-experiment-evidence') }, h('span', null, t('stem.migration.experiment_evidence_label', 'Evidence I noticed')), h('textarea', { id: migrationDomId('migration-experiment-evidence'), 'data-migration-id': 'migration-experiment-evidence', rows: 3, maxLength: 2000, value: study.evidence, placeholder: t('stem.migration.experiment_evidence_placeholder', 'Use the saved numbers and describe a change you saw in the 3D scene.'), onChange: function(event) { saveStudy({ evidence: event.target.value.slice(0, 2000) }); } })),
+            h('label', { htmlFor: migrationDomId('migration-experiment-explanation') }, h('span', null, t('stem.migration.experiment_explanation_label', 'How does the evidence support or challenge my prediction?')), h('textarea', { id: migrationDomId('migration-experiment-explanation'), 'data-migration-id': 'migration-experiment-explanation', rows: 3, maxLength: 2000, value: study.explanation, placeholder: t('stem.migration.experiment_explanation_placeholder', 'My evidence suggests… A limitation of this model is…'), onChange: function(event) { saveStudy({ explanation: event.target.value.slice(0, 2000) }); } }))
           ),
           h('p', { className: 'migration-experiment-model-note', role: 'note' }, flightModelNote),
           h('div', { className: 'migration-experiment-actions', 'data-flight-notebook-exports': 'true' },
@@ -9707,8 +9895,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('button', { type: 'button', className: 'migration-experiment-button migration-experiment-button-secondary', 'data-experiment-action': 'export-csv', onClick: exportFlightCsv }, t('stem.migration.flight_notebook_csv', 'Download flight trials (CSV)'))
           ),
           h('div', { className: 'migration-experiment-reset' },
-            h('button', { type: 'button', 'data-experiment-action': 'reset', onClick: function() { upd('flightInvestigation', { variable: 'wind', prediction: '', baseline: null, trials: [], evidence: '', explanation: '' }); announce(t('stem.migration.experiment_reset_announcement', 'Flight investigation cleared. Flight settings and other activities are unchanged.')); } }, t('stem.migration.experiment_reset', 'Reset investigation')),
-            h('small', null, t('stem.migration.experiment_reset_hint', 'Clears this investigation’s prediction, baseline, six-trial log, and notes.'))
+            h('button', { type: 'button', 'data-experiment-action': 'reset', disabled: !!resetRequest,
+              ref: function(node) { attachRemovalControl(resetOrigin, node); },
+              'aria-expanded': resetRequest ? 'true' : 'false', 'aria-controls': migrationDomId('migration-investigation-reset-review'),
+              onClick: requestInvestigationReset }, t('stem.migration.experiment_reset', 'Reset investigation')),
+            h('small', null, t('stem.migration.experiment_reset_review_hint', 'Review before clearing this investigation’s prediction, baseline, saved trials, and notes.')),
+            h('div', { id: migrationDomId('migration-investigation-reset-review'), 'data-migration-id': 'migration-investigation-reset-review',
+              className: 'migration-investigation-reset-review', 'data-investigation-reset-review': '', hidden: !resetRequest,
+              role: 'group', 'aria-labelledby': migrationDomId('migration-investigation-reset-title'), 'aria-describedby': migrationDomId('migration-investigation-reset-help'),
+              onKeyDown: function(event) {
+                if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
+                event.preventDefault(); event.stopPropagation(); cancelInvestigationReset(event, true);
+              } },
+              h('h4', { id: migrationDomId('migration-investigation-reset-title'), 'data-migration-id': 'migration-investigation-reset-title' }, t('stem.migration.experiment_reset_review_title', 'Clear this investigation?')),
+              h('p', { id: migrationDomId('migration-investigation-reset-help'), 'data-migration-id': 'migration-investigation-reset-help',
+                'data-investigation-reset-stale': resetStale ? 'true' : 'false', role: 'status' }, resetStale
+                ? t('stem.migration.experiment_reset_changed', 'This investigation changed after reset was requested. Nothing has been cleared. Cancel, review your current work, then request reset again.')
+                : t('stem.migration.experiment_reset_review_help', 'This clears your prediction, baseline, saved trials, evidence, and explanation. Your flight settings and other activities stay unchanged.')),
+              h('div', { className: 'migration-investigation-reset-actions' },
+                h('button', { type: 'button', className: 'migration-experiment-button migration-experiment-button-secondary', 'data-experiment-action': 'reset-cancel',
+                  ref: function(node) { attachRemovalControl(resetCancel, node); }, onClick: function(event) { cancelInvestigationReset(event, false); } }, t('stem.migration.experiment_reset_cancel', 'Cancel reset')),
+                h('button', { type: 'button', className: 'migration-experiment-button', 'data-experiment-action': 'reset-confirm',
+                  ref: function(node) { attachRemovalControl(resetConfirm, node); }, 'aria-disabled': !resetRequest || resetStale ? 'true' : 'false',
+                  'aria-describedby': migrationDomId('migration-investigation-reset-help'), onClick: confirmInvestigationReset }, t('stem.migration.experiment_reset_confirm', 'Clear investigation'))
+              )
+            )
           )
         );
       }
@@ -14142,7 +14353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
       // Back button
       var backButton = h('button', {
-        className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + btnSecondary,
+        className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-700 hover:bg-slate-600 text-slate-200',
         'aria-label': t('stem.migration.back_to_stem_lab_tool_list', 'Back to STEAM Lab tool list'),
         onClick: function() { if (setStemLabTool) setStemLabTool(null); }
       },

@@ -1801,23 +1801,57 @@
   var _pdfJsLoadPromise = null;
   function lazyLoadPdfJs(cdnUrl, workerUrl) {
     if (typeof window === 'undefined') return Promise.resolve(null);
-    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
     if (_pdfJsLoadPromise) return _pdfJsLoadPromise;
-    var url = cdnUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
-    var wurl = workerUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
-    _pdfJsLoadPromise = new Promise(function (resolve, reject) {
+    // Share the document pipeline's reviewed library/worker pair. Ambient
+    // pdfjsLib may belong to another tool and has no delivery proof here.
+    var loadingPromise = Promise.resolve().then(async function () {
+      var configure = window.__alloConfigureTrustedScript;
+      var getAsset = window.__alloGetVerifiedRuntimeAsset;
+      if (typeof configure !== 'function' || typeof getAsset !== 'function') throw new Error('Verified PDF runtime is unavailable');
+      var knownSources = [
+        'https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+        'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js'
+      ];
+      if (cdnUrl && knownSources.indexOf(cdnUrl) < 0) throw new Error('PDF library overrides are not supported by the verified runtime');
+      if (workerUrl) throw new Error('PDF worker overrides are not supported by the verified runtime');
+      var asset = null, script = null, disposed = false, cancelLoad = null, loadTimer = null;
+      var cleanup = function () {
+        disposed = true;
+        if (loadTimer !== null) { clearTimeout(loadTimer); loadTimer = null; }
+        if (cancelLoad) { var rejectLoad = cancelLoad; cancelLoad = null; rejectLoad(new Error('PDF import closed')); }
+        if (script) { script.onload = script.onerror = null; try { script.remove(); } catch (_) {} script = null; }
+        if (asset) { var owned = asset; asset = null; try { Promise.resolve(owned.revoke()).catch(function () {}); } catch (_) {} }
+        window.removeEventListener('pagehide', cleanup);
+        if (_pdfJsLoadPromise === loadingPromise) _pdfJsLoadPromise = null;
+      };
+      window.addEventListener('pagehide', cleanup, { once: true });
       try {
-        var s = document.createElement('script');
-        s.type = 'module';
-        s.crossOrigin = 'anonymous';
-        s.textContent = 'import * as pdfjs from "' + url + '"; window.pdfjsLib = pdfjs; window.pdfjsLib.GlobalWorkerOptions.workerSrc = "' + wurl + '"; window.dispatchEvent(new Event("pdfjs-loaded"));';
-        window.addEventListener('pdfjs-loaded', function once() { window.removeEventListener('pdfjs-loaded', once); resolve(window.pdfjsLib || null); });
-        document.head.appendChild(s);
-        // Hard timeout: the script-tag module load can hang silently behind a CSP block
-        setTimeout(function () { if (!window.pdfjsLib) { _pdfJsLoadPromise = null; reject(new Error('pdf.js did not load within 15 s — check network or CSP for ' + url)); } }, 15000);
-      } catch (e) { _pdfJsLoadPromise = null; reject(e); }
-    });
-    return _pdfJsLoadPromise;
+        asset = await getAsset('pdfjs', 'worker');
+        if (disposed) throw new Error('PDF import closed');
+        if (!asset || typeof asset.url !== 'string' || asset.url.indexOf('blob:') !== 0 || typeof asset.revoke !== 'function') throw new Error('Verified PDF worker is unavailable');
+        await new Promise(function (resolve, reject) {
+          cancelLoad = reject;
+          script = document.createElement('script');
+          loadTimer = setTimeout(function () { loadTimer = null; cancelLoad = null; reject(new Error('Verified PDF renderer did not load within 15 s')); }, 15000);
+          script.onload = function () { clearTimeout(loadTimer); loadTimer = null; cancelLoad = null; resolve(); };
+          script.onerror = function () { clearTimeout(loadTimer); loadTimer = null; cancelLoad = null; reject(new Error('Verified PDF renderer could not load')); };
+          try {
+            configure(script, cdnUrl || knownSources[0]);
+            document.head.appendChild(script);
+          } catch (error) { clearTimeout(loadTimer); loadTimer = null; cancelLoad = null; reject(error); }
+        });
+        if (disposed) throw new Error('PDF import closed');
+        var pdfjs = window.pdfjsLib;
+        if (!pdfjs || pdfjs.version !== '3.11.174' || !pdfjs.GlobalWorkerOptions) throw new Error('Verified PDF renderer version mismatch');
+        pdfjs.GlobalWorkerOptions.workerSrc = asset.url;
+        script.remove(); script = null;
+        return pdfjs;
+      } catch (error) { cleanup(); throw error; }
+    }).catch(function (error) { if (_pdfJsLoadPromise === loadingPromise) _pdfJsLoadPromise = null; throw error; });
+    _pdfJsLoadPromise = loadingPromise;
+    return loadingPromise;
   }
 
   var _mammothLoadPromise = null;
@@ -1847,7 +1881,7 @@
       return Promise.resolve({ pages: [], notes: ['pdfjs-missing'], error: 'pdf.js not loaded' });
     }
     try {
-      return pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise.then(function (pdf) {
+      return pdfjsLib.getDocument({ data: new Uint8Array(buffer), isEvalSupported: false }).promise.then(function (pdf) {
         var pageNums = [];
         for (var i = 1; i <= pdf.numPages; i++) pageNums.push(i);
         return Promise.all(pageNums.map(function (n) {
@@ -1857,7 +1891,9 @@
               return { pageNum: n, text: text };
             });
           });
-        })).then(function (pages) { return { pages: pages, notes: [] }; });
+        })).then(function (pages) { return { pages: pages, notes: [] }; }).finally(function () {
+          if (pdf && typeof pdf.destroy === 'function') return pdf.destroy();
+        });
       }).catch(function (e) {
         return { pages: [], notes: ['pdf-parse-error'], error: 'PDF parse failed: ' + (e && e.message ? e.message : 'unknown') };
       });

@@ -7716,7 +7716,7 @@ function CircuitActiveLessonLab(props) {
 
               h('button', { 'aria-label': __alloT('stem.circuit.comp_bulb', 'Bulb'),
                 disabled: components.length >= 8, onClick: function() { addComponent('bulb', 50); },
-                className: 'px-3 py-1.5 bg-amber-950/20 hover:bg-amber-500/20 text-amber-400 font-bold rounded-lg text-xs border border-amber-500/30 hover:border-amber-400 transition-all glow-button active:scale-[0.97]'
+                className: 'px-3 py-1.5 bg-amber-950/20 hover:bg-amber-500/20 text-amber-300 font-bold rounded-lg text-xs border border-amber-500/30 hover:border-amber-400 transition-all glow-button active:scale-[0.97]'
               }, '\uD83D\uDCA1 ' + __alloT('stem.circuit.comp_bulb', 'Bulb'), h('small', null, "See energy transfer · 50 Ω")),
 
               h('button', { 'aria-label': __alloT('stem.circuit.comp_switch', 'Switch'),
@@ -7726,12 +7726,12 @@ function CircuitActiveLessonLab(props) {
 
               h('button', { 'aria-label': __alloT('stem.circuit.comp_led', 'LED'),
                 disabled: components.length >= 8, onClick: function() { addComponent('led', 40, { ledColor: '#ef4444' }); },
-                className: 'px-3 py-1.5 bg-rose-950/20 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg text-xs border border-rose-500/30 hover:border-rose-400 transition-all glow-button active:scale-[0.97]'
+                className: 'px-3 py-1.5 bg-rose-950/20 hover:bg-rose-500/20 text-rose-300 font-bold rounded-lg text-xs border border-rose-500/30 hover:border-rose-400 transition-all glow-button active:scale-[0.97]'
               }, '\uD83D\uDD34 ' + __alloT('stem.circuit.comp_led', 'LED'), h('small', null, "One direction · add series R")),
 
               h('button', { 'aria-label': __alloT('stem.circuit.comp_ammeter', 'Ammeter'),
                 disabled: components.length >= 8, onClick: function() { addComponent('ammeter', 0); },
-                className: 'px-3 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/20 text-cyan-400 font-bold rounded-lg text-xs border border-cyan-500/30 hover:border-cyan-400 transition-all glow-button active:scale-[0.97]'
+                className: 'px-3 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/20 text-cyan-300 font-bold rounded-lg text-xs border border-cyan-500/30 hover:border-cyan-400 transition-all glow-button active:scale-[0.97]'
               }, '\u26A1 ' + __alloT('stem.circuit.comp_ammeter', 'Ammeter'), h('small', null, "Measure current · in series")),
 
               h('button', { 'aria-label': __alloT('stem.circuit.comp_voltmeter', 'Voltmeter'),
@@ -8624,7 +8624,7 @@ function CircuitActiveLessonLab(props) {
 
             h('div', { className: 'circuit-readouts mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'status', 'aria-live': 'polite' },
               [
-                { label: __alloT('stem.circuit.readout_mode', 'Mode'), val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-400', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
+                { label: __alloT('stem.circuit.readout_mode', 'Mode'), val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-300', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
                 { label: __alloT('stem.circuit.readout_resistance', 'Resistance'), val: totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
                 { label: __alloT('stem.circuit.stat_current', 'Current'), val: circuitCurrentText(current), color: 'blue', icon: '\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
                 { label: __alloT('stem.circuit.readout_power', 'Power'), val: circuitPowerText(power), color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-300', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }

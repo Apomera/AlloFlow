@@ -440,7 +440,8 @@
       var box = new THREE.Box3().setFromObject(bird.root), size = box.getSize(new THREE.Vector3());
       shadowSizes.push({ halfWidth: Math.max(.012, size.x * .58), halfLength: Math.max(.02, size.z * .40) });
     });
-    var shadowCount = shadowBirds.length, shadowPositions = new Float32Array(shadowCount * 12);
+    // One spare footprint lets the host ground another animal (the squirrel).
+    var shadowCount = shadowBirds.length + 1, extraShadow = shadowBirds.length, shadowPositions = new Float32Array(shadowCount * 12);
     var shadowAlpha = new Float32Array(shadowCount * 4), shadowUv = new Float32Array(shadowCount * 8), shadowIndex = [];
     for (var shadowQuad = 0; shadowQuad < shadowCount; shadowQuad++) {
       shadowUv.set([-1, -1, 1, -1, 1, 1, -1, 1], shadowQuad * 8);
@@ -463,18 +464,27 @@
     var contactShadows = new THREE.Mesh(shadowGeometry, shadowMaterial);
     contactShadows.name = 'resident-contact-shadows'; contactShadows.frustumCulled = false; contactShadows.renderOrder = 1;
     root.add(contactShadows);
+    function writeShadow(index, x, z, yaw, halfWidth, halfLength, altitude, strength) {
+      var y = height(x, z) + .003, spread = 1 + altitude * 2.2, w = halfWidth * spread, l = halfLength * spread;
+      var c = Math.cos(yaw), sn = Math.sin(yaw), corners = [[-w, -l], [w, -l], [w, l], [-w, l]];
+      for (var k = 0; k < 4; k++) {
+        var cx = corners[k][0], cz = corners[k][1], at = index * 12 + k * 3;
+        shadowPositions[at] = x + cx * c + cz * sn; shadowPositions[at + 1] = y; shadowPositions[at + 2] = z - cx * sn + cz * c;
+        shadowAlpha[index * 4 + k] = strength * Math.exp(-altitude / .16);
+      }
+    }
     function updateContactShadows() {
       shadowBirds.forEach(function (bird, index) {
-        var size = shadowSizes[index], x = bird.root.position.x, z = bird.root.position.z, y = height(x, z) + .003;
-        var altitude = Math.max(0, bird.altitude || 0), spread = 1 + altitude * 2.2;
-        var w = size.halfWidth * spread, l = size.halfLength * spread, yaw = bird.root.rotation.y, c = Math.cos(yaw), sn = Math.sin(yaw);
-        var corners = [[-w, -l], [w, -l], [w, l], [-w, l]];
-        for (var k = 0; k < 4; k++) {
-          var cx = corners[k][0], cz = corners[k][1], at = index * 12 + k * 3;
-          shadowPositions[at] = x + cx * c + cz * sn; shadowPositions[at + 1] = y; shadowPositions[at + 2] = z - cx * sn + cz * c;
-          shadowAlpha[index * 4 + k] = .78 * Math.exp(-altitude / .16);
-        }
+        var size = shadowSizes[index];
+        writeShadow(index, bird.root.position.x, bird.root.position.z, bird.root.rotation.y, size.halfWidth, size.halfLength, Math.max(0, bird.altitude || 0), .78);
       });
+      shadowGeometry.attributes.position.needsUpdate = true; shadowGeometry.attributes.blShadowAlpha.needsUpdate = true;
+    }
+    // Pass null to hide the spare footprint.
+    function setExtraContactShadow(spec) {
+      if (disposed) return;
+      if (spec && [spec.x, spec.z, spec.heading, spec.halfWidth, spec.halfLength].every(Number.isFinite)) writeShadow(extraShadow, spec.x, spec.z, spec.heading, spec.halfWidth, spec.halfLength, 0, .7);
+      else shadowAlpha.fill(0, extraShadow * 4, extraShadow * 4 + 4);
       shadowGeometry.attributes.position.needsUpdate = true; shadowGeometry.attributes.blShadowAlpha.needsUpdate = true;
     }
     function sampleCardinalHop(bird,move,u,startX,startZ) {
@@ -491,6 +501,35 @@
       out.lift=.047*arc-crouch;out.tuck=.0055*recovery;out.crouch=crouch;out.gait=arc;
       out.swing=local>.18&&local<.65?air:-1;out.phase=local;
       return out;
+    }
+    // Calls cued by the sound layer, on a clock that stops with the scene.
+    // The posture rises just before the first syllable; the bill opens with
+    // each one, wider for higher notes. Uncued birds keep their poses.
+    var songClock=0;
+    function cueSong(id,notes,delay){
+      var bird=sharedBirds.filter(function(entry){return entry.id===id;})[0];
+      if(disposed||!bird||id==='mourningDove'||!Array.isArray(notes))return false;
+      var start=songClock+(Number.isFinite(delay)?Math.max(0,delay):0),list=[],end=start;
+      notes.forEach(function(note){
+        var on=Number(note&&note.on),dur=Number(note&&note.dur);
+        if(!Number.isFinite(on)||!Number.isFinite(dur)||dur<=0)return;
+        list.push({on:start+on,dur:dur,freq:Number(note.freq)||2500,trill:Number(note.trill)||0});end=Math.max(end,start+on+dur);
+      });
+      if(!list.length)return false;
+      bird.song={start:start,end:end,notes:list};
+      return true;
+    }
+    function songPose(bird){
+      var song=bird.song,now=songClock;
+      if(now>song.end+.45){bird.song=null;return {song:0,gape:0};}
+      var open=0;
+      song.notes.forEach(function(note){
+        if(now<note.on||now>note.on+note.dur+.06)return;
+        var amount=smooth((now-note.on)/.035)*smooth((note.on+note.dur+.06-now)/.06)*(.45+.45*clamp((note.freq-1200)/3800));
+        if(note.trill)amount*=.78+.22*Math.sin(TAU*note.trill*(now-note.on));
+        open=Math.max(open,amount);
+      });
+      return {song:smooth((now-song.start+.22)/.22)*(1-smooth((now-song.end-.05)/.4)),gape:open};
     }
     function updateSharedBird(bird, time) {
       var autonomous = mode === 'free', t = autonomous ? bird.free.elapsed : ((time % PERIOD) + PERIOD) % PERIOD;
@@ -567,7 +606,7 @@
         stride=Math.PI*pivot.turnSteps*t/pivot.turnDuration;
         behavior='Turning to move';
       } else if(autonomous&&course.length&&t<course[0].start&&course[0].turnSteps)yaw=bird.free.heading;
-      var forage=autonomous ? (bird.free.kind==='forage'?Math.max(pulse(t,.65,.8),pulse(t,1.85,.75)):0) :
+      var forage=autonomous ? (bird.free.kind==='forage'?(bird.free.food?Math.max(pulse(t,.55,.7),pulse(t,1.5,.65),pulse(t,2.5,.7),pulse(t,3.45,.65),pulse(t,4.5,.7)):Math.max(pulse(t,.65,.8),pulse(t,1.85,.75))):0) :
         Math.max(pulse(t,extra?extra.forage[0]:grouse?10.1:jay?10.4:8.1,.86),pulse(t,extra?extra.forage[1]:grouse?12.2:jay?11.8:9.5,.72),pulse(t,38.2,.9),pulse(t,40.2,.8));
       var peck=(hop?0:1)*(1-walking)*(1-opening)*forage;
       var pose=bird.pose;
@@ -600,6 +639,12 @@
       }
       var grooming=autonomous?preenAmount(bird.free):0;
       pose.preen=grooming;pose.preenSide=autonomous?bird.free.preenSide:1;
+      var singing=0;
+      if(bird.song) {
+        var sung=songPose(bird);pose.song=sung.song;pose.gape=grouse?0:sung.gape;pose.drum=grouse?sung.gape:0;
+        if(grouse)pose.tailSpread=Math.max(pose.tailSpread,sung.song*.8);
+        singing=opening>0||walking>0||peck>0||landing>0||grooming>0?0:sung.song;
+      }
       if(cardinal&&autonomous) {
         var attention=cardinalAttention(bird,freeTime);
         // Let the gaze settle before a hop, takeoff or bill stroke. Observer
@@ -699,7 +744,7 @@
           restingFoot.position.y+=(height(restingX,restingZ)-height(bird.originX+x,bird.originZ+z))*(cardinal?1-pose.flightTuck:1-opening+opening*landing);
         }
       }
-      bird.behavior=grooming>.02?'Preening shoulder feathers':peck>.08?'Foraging':opening>.05 && lift===0?'Settling wings':behavior;
+      bird.behavior=grooming>.02?'Preening shoulder feathers':peck>.08?'Foraging':opening>.05 && lift===0?'Settling wings':singing>.3?(grouse?'Drumming':'Calling'):behavior;
     }
     var moves = [
       { start: 2.7, end: 3.35, x: .10, z: -.09, kind: 'ground' },
@@ -767,6 +812,60 @@
         preenAfter:0,preenSide:1,preenExit:-1,preenExitWeight:0};
       if(bird.id==='northernCardinal')bird.free.attention={seed:0,slot:-1,yaw:.08,pitch:0};
     });
+    // Feeding study (opt-in). Relative preferences over this clearing's foods,
+    // simplified from Cornell Lab diet accounts. With no study, nothing below
+    // runs and no seeded draw changes.
+    var DIETS={
+      robin:{worm:.55,berry:.35,insect:.10},chickadee:{seed:.55,insect:.45},mourningDove:{seed:1},
+      grouse:{berry:.45,acorn:.35,insect:.20},blueJay:{acorn:.60,seed:.30,insect:.10},
+      northernCardinal:{seed:.75,berry:.20,insect:.05},darkEyedJunco:{seed:.85,insect:.15},
+      tuftedTitmouse:{seed:.50,insect:.40,acorn:.10},easternTowhee:{insect:.55,seed:.35,berry:.10},
+      americanGoldfinch:{seed:1},easternBluebird:{insect:.60,berry:.40},whiteThroatedSparrow:{seed:.60,insect:.25,berry:.15}
+    };
+    // Blue jays displace smaller birds; the grouse is too large to be moved off.
+    function displacedByJay(bird){return bird.id!=='blueJay'&&bird.id!=='grouse';}
+    var feeding=null;
+    function jayFeedingAt(source){
+      return residents.some(function(other){return other.id==='blueJay'&&other.free.kind==='forage'&&other.free.food===source;});
+    }
+    function planFeeding(bird,state,observer){
+      var diet=DIETS[bird.id];if(!diet)return false;
+      var here=null,best=null,bestScore=0;
+      feeding.sources.forEach(function(source){
+        var weight=diet[source.kind]||0;if(!weight||source.amount<.12)return;
+        if(state.avoid&&state.avoid.id===source.id&&freeTime<state.avoid.until)return;
+        if(displacedByJay(bird)&&jayFeedingAt(source))return;
+        var distance=Math.hypot(bird.originX-source.x,bird.originZ-source.z);
+        if(distance<source.radius&&(!here||weight>(diet[here.kind]||0)))here=source;
+        var score=weight*source.amount/(1+distance*.35)*(.75+.5*randomChoice(state));
+        if(score>bestScore){bestScore=score;best=source;}
+      });
+      // A bird already at a suitable food usually keeps feeding there.
+      if(here&&(here===best||randomChoice(state)<.7)){
+        state.kind='forage';state.food=here;state.duration=3.6+randomChoice(state)*2.4;
+        here.amount=Math.max(0,here.amount-.08);return true;
+      }
+      if(!best)return false;
+      for(var attempt=0;attempt<10;attempt++){
+        var angle=randomChoice(state)*TAU,reach=Math.sqrt(randomChoice(state))*best.radius*.85;
+        var dx=best.x+Math.cos(angle)*reach-bird.originX,dz=best.z+Math.sin(angle)*reach-bird.originZ,travel=Math.hypot(dx,dz);
+        if(travel<.05)continue;
+        var kind=travel>.45?'flight':'ground';
+        if(isSafeRoute(bird,bird.originX+dx,bird.originZ+dz,kind==='flight',0,observer?observer.position:null,false)){
+          state.kind=kind;state.target=best;commitMove(bird,state,dx,dz,kind,false,observer);return true;
+        }
+      }
+      return false;
+    }
+    function setFeedingStudy(sources){
+      if(disposed)return;
+      feeding=sources&&sources.length?{sources:sources.map(function(source){return {id:source.id,kind:source.kind,label:source.label,place:source.place,eat:source.eat,
+        x:source.x,z:source.z,radius:source.radius,regrow:source.regrow,amount:1};})}:null;
+      residents.forEach(function(bird){bird.free.food=null;bird.free.target=null;bird.free.avoid=null;bird.free.displaced=-1;});
+    }
+    function foodLevels(){
+      return feeding?feeding.sources.map(function(source){return {id:source.id,kind:source.kind,label:source.label,amount:source.amount};}):[];
+    }
     function randomChoice(state) {
       state.seed=(Math.imul(state.seed,1664525)+1013904223)>>>0;
       return state.seed/4294967296;
@@ -886,6 +985,47 @@
       out.beat=extraWingbeats(move,t);
       return out;
     }
+    // Shared by ordinary moves and feeding-study trips; draws from the same
+    // seeded stream in the same order as the original inline planner.
+    function commitMove(bird,state,dx,dz,kind,escape,observer) {
+      var flying=kind==='flight',chickadee=bird.id==='chickadee',cardinal=bird.id==='northernCardinal',hopper=cardinal||!!(RESIDENT_TUNING[bird.id]&&RESIDENT_TUNING[bird.id].hop);
+      var localChickadee=chickadee&&!bird.model;
+      var travel=Math.hypot(dx,dz),pace=bird.id==='grouse'?4:bird.id==='mourningDove'?3.5:3;
+      var duration=flying?Math.max(.9,travel/pace):localChickadee?.36:hopper?1.3+randomChoice(state)*.35:bird.model?1.8+randomChoice(state)*.6:1.1+randomChoice(state)*.4;
+      state.heading=Math.atan2(dx,dz)+(bird.model?0:Math.PI);
+      var turning=Math.abs(Math.atan2(Math.sin(state.heading-bird.baseYaw),Math.cos(state.heading-bird.baseYaw)));
+      var preparation=Math.max(.45,turning/2.8);
+      var move={start:preparation,end:preparation+duration,x:dx,z:dz,kind:kind};
+      if(hopper&&!flying)move.hops=2;
+      if(bird.model) {
+        // Use the shared anatomy's reach: a longer foraging route earns
+        // another pair of steps rather than stretching a fixed stride.
+        move.steps=Math.max(4,Math.min(8,2*Math.ceil(travel/(bird.model.profile.walkReach*3))));
+        if(turning>.015) {
+          move.turnAngle=Math.atan2(Math.sin(state.heading-bird.baseYaw),Math.cos(state.heading-bird.baseYaw));
+          move.turnSteps=2*Math.ceil(turning/.90);
+          move.turnDuration=Math.max(.42,move.turnSteps*.22);
+          preparation=Math.max(preparation,move.turnDuration+(flying?.18:.06));
+          move.start=preparation;move.end=preparation+duration;
+        }
+      }
+      if(flying) {
+        // Flight variation uses the decision's retained seed, not random
+        // numbers drawn during rendering. Doves keep particularly direct
+        // routes, and a threatened bird minimizes sideways correction.
+        var variation=(state.seed>>>8)%1024/1023;
+        var bend=(variation-.5)*Math.min(.28,travel*.10)*(bird.id==='mourningDove'?.45:1)*(escape?.45:1);
+        if(!isSafeRoute(bird,bird.originX+dx,bird.originZ+dz,true,bend,observer?observer.position:null,escape))bend=0;
+        move.bend=bend;
+        move.height=(bird.id==='grouse'?.48:bird.id==='mourningDove'?.68:bird.id==='blueJay'?.59:chickadee?.36:.47)*
+          Math.max(.84,Math.min(1.12,travel/2.2))*(escape?1.08:1);
+        move.effortBoost=(bird.id==='grouse'?.16:.20)*(escape?1.12:1);
+        move.beatBoost=(bird.id==='grouse'?.8:chickadee?1.1:hopper?1.4:bird.id==='blueJay'?.55:.65)*(escape?1.15:1);
+      }
+      state.course.push(move);
+      state.duration=duration+preparation+.63;
+      if(escape){state.cooldown=8+randomChoice(state)*4;state.escapeArmed=false;state.quietTime=0;}
+    }
     function beginFreeAction(bird,observer,escape) {
       var state=bird.free,prior=state.kind;
       if(state.course.length) {
@@ -907,6 +1047,8 @@
           (choice>.94||((prior==='ground'||prior==='flight')&&choice>.78)))kind='preen';
       state.kind=kind;state.alarmed=!!escape;
       state.preenExit=-1;state.preenExitWeight=0;
+      if(feeding){state.food=null;state.target=null;}
+      if(feeding&&!escape&&kind!=='preen'&&kind!=='rest'&&planFeeding(bird,state,observer))return;
       if(kind==='preen') {
         state.preenSide=randomChoice(state)<.5?-1:1;
         state.duration=3.4+randomChoice(state)*1.3;
@@ -932,44 +1074,7 @@
           }
           if(isSafeRoute(bird,bird.originX+dx,bird.originZ+dz,flying,0,observer?observer.position:null,escape)){found=true;break;}
         }
-        if(found) {
-          var travel=Math.hypot(dx,dz),pace=bird.id==='grouse'?4:bird.id==='mourningDove'?3.5:3;
-          var duration=flying?Math.max(.9,travel/pace):localChickadee?.36:hopper?1.3+randomChoice(state)*.35:bird.model?1.8+randomChoice(state)*.6:1.1+randomChoice(state)*.4;
-          state.heading=Math.atan2(dx,dz)+(bird.model?0:Math.PI);
-          var turning=Math.abs(Math.atan2(Math.sin(state.heading-bird.baseYaw),Math.cos(state.heading-bird.baseYaw)));
-          var preparation=Math.max(.45,turning/2.8);
-          var move={start:preparation,end:preparation+duration,x:dx,z:dz,kind:kind};
-          if(hopper&&!flying)move.hops=2;
-          if(bird.model) {
-            // Use the shared anatomy's reach: a longer foraging route earns
-            // another pair of steps rather than stretching a fixed stride.
-            move.steps=Math.max(4,Math.min(8,2*Math.ceil(travel/(bird.model.profile.walkReach*3))));
-            if(turning>.015) {
-              move.turnAngle=Math.atan2(Math.sin(state.heading-bird.baseYaw),Math.cos(state.heading-bird.baseYaw));
-              move.turnSteps=2*Math.ceil(turning/.90);
-              move.turnDuration=Math.max(.42,move.turnSteps*.22);
-              preparation=Math.max(preparation,move.turnDuration+(flying?.18:.06));
-              move.start=preparation;move.end=preparation+duration;
-            }
-          }
-          if(flying) {
-            // Flight variation uses the decision's retained seed, not random
-            // numbers drawn during rendering. Doves keep particularly direct
-            // routes, and a threatened bird minimizes sideways correction.
-            var variation=(state.seed>>>8)%1024/1023;
-            var bend=(variation-.5)*Math.min(.28,travel*.10)*(bird.id==='mourningDove'?.45:1)*(escape?.45:1);
-            if(!isSafeRoute(bird,bird.originX+dx,bird.originZ+dz,true,bend,observer?observer.position:null,escape))bend=0;
-            move.bend=bend;
-            move.height=(bird.id==='grouse'?.48:bird.id==='mourningDove'?.68:bird.id==='blueJay'?.59:chickadee?.36:.47)*
-              Math.max(.84,Math.min(1.12,travel/2.2))*(escape?1.08:1);
-            move.effortBoost=(bird.id==='grouse'?.16:.20)*(escape?1.12:1);
-            move.beatBoost=(bird.id==='grouse'?.8:chickadee?1.1:hopper?1.4:bird.id==='blueJay'?.55:.65)*(escape?1.15:1);
-          }
-          state.course.push(move);
-          state.duration=duration+preparation+.63;
-          if(escape){state.cooldown=8+randomChoice(state)*4;state.escapeArmed=false;state.quietTime=0;}
-          return;
-        }
+        if(found){commitMove(bird,state,dx,dz,kind,escape,observer);return;}
         state.kind='rest';state.alarmed=false;
       }
       state.duration=state.kind==='forage'?3.1+randomChoice(state)*1.8:1.8+randomChoice(state)*3.4;
@@ -985,11 +1090,24 @@
         state.course.length=0;state.cooldown=0;state.actionCount=0;state.alarmed=false;
         state.alertness=0;state.watchYaw=0;state.hasObserver=false;state.escapeArmed=true;state.quietTime=0;state.beatOffset=0;
         state.preenAfter=5+index*1.1;state.preenSide=1;state.preenExit=-1;state.preenExitWeight=0;
+        state.food=null;state.target=null;state.avoid=null;state.displaced=-1;
       });
+      if(feeding)feeding.sources.forEach(function(source){source.amount=1;});
       update(0,0);
     }
     function advanceFree(dt,observer) {
       freeTime+=dt;
+      if(feeding) {
+        feeding.sources.forEach(function(source){source.amount=Math.min(1,source.amount+source.regrow*dt);});
+        residents.forEach(function(jay){
+          if(jay.id!=='blueJay'||jay.free.kind!=='forage'||!jay.free.food)return;
+          residents.forEach(function(other){
+            var state=other.free;
+            if(other===jay||!displacedByJay(other)||state.kind!=='forage'||state.food!==jay.free.food||state.course.length)return;
+            state.avoid={id:state.food.id,until:freeTime+8};state.displaced=freeTime;state.elapsed=Math.max(state.elapsed,state.duration);
+          });
+        });
+      }
       residents.forEach(function(bird) {
         var state=bird.free;state.cooldown=Math.max(0,state.cooldown-dt);
         var near=observerResponse(bird,observer,dt);
@@ -1016,6 +1134,7 @@
       if (disposed) return;
       if (!Number.isFinite(time)) time = 0;
       if(mode==='free'&&Number.isFinite(dt)&&dt>0)advanceFree(Math.min(dt,.1),observer);
+      if(Number.isFinite(dt)&&dt>0)songClock+=Math.min(dt,.1);
       birds.forEach(function (bird) {
         var autonomous=mode==='free',t=autonomous?bird.free.elapsed:((time + bird.phase) % PERIOD + PERIOD) % PERIOD, chickadee = bird.id === 'chickadee';
         var course=autonomous?bird.free.course:moves;
@@ -1118,13 +1237,19 @@
           else if(state.cooldown>0)bird.behavior='Settling after disturbance';
           else if(state.kind==='forage')bird.behavior='Searching for food';
         }
+        if(feeding&&!state.alarmed) {
+          if(state.displaced>=0&&freeTime-state.displaced<2.5)bird.behavior='Displaced by a blue jay';
+          else if(course&&state.target)bird.behavior=(course.kind==='flight'?'Flying to ':'Moving to ')+state.target.place;
+          else if(!course&&state.food&&state.kind==='forage'&&state.alertness<=.30)bird.behavior=state.food.eat;
+        }
       });
       updateContactShadows();
     }
     function snapshot() {
       return birds.concat(sharedBirds).map(function (bird) { return { id: bird.id, name: bird.name, scientificName: bird.scientificName,
         behavior: bird.behavior, position: bird.root.position.toArray(), altitude: bird.altitude, heading:bird.root.rotation.y,
-        alertness:mode==='free'?bird.free.alertness:0,recovering:mode==='free'&&bird.free.cooldown>0 }; });
+        alertness:mode==='free'?bird.free.alertness:0,recovering:mode==='free'&&bird.free.cooldown>0,
+        food:mode==='free'&&feeding&&bird.free.food&&bird.free.kind==='forage'&&!bird.free.course.length?{kind:bird.free.food.kind,source:bird.free.food.id,label:bird.free.food.eat}:undefined }; });
     }
     function getFocus(id, out) {
       for (var i = 0; i < birds.length; i++) if (birds[i].id === id) {
@@ -1143,7 +1268,29 @@
     update(0);
     // True when the resident uses the shared model (it faces +Z, unlike the local fallback).
     function isShared(id) { return sharedBirds.some(function(bird) { return bird.id === id; }); }
-    return { root: root, update: update, setMode: setMode, snapshot: snapshot, getFocus: getFocus, isShared: isShared, dispose: dispose };
+    // Samples the deterministic guided course at each bird's feeding times,
+    // then restores the caller's time. Guided updates hold no history.
+    function guidedForageSpots(restoreTime) {
+      if(disposed||mode!=='guided')return [];
+      var spots=[],times={};
+      sharedBirds.forEach(function(bird){
+        var extra=RESIDENT_TUNING[bird.id];
+        times[bird.id]=[extra?extra.forage[0]:bird.id==='grouse'?10.1:bird.id==='blueJay'?10.4:8.1,38.2];
+      });
+      [0,1].forEach(function(slot){
+        sharedBirds.forEach(function(bird){
+          update(times[bird.id][slot]);
+          var diet=DIETS[bird.id];if(!diet)return;
+          var kind=Object.keys(diet).sort(function(a,b){return diet[b]-diet[a];})[0];
+          var x=bird.root.position.x+Math.sin(bird.root.rotation.y)*.05,z=bird.root.position.z+Math.cos(bird.root.rotation.y)*.05;
+          if(!spots.some(function(spot){return Math.hypot(spot.x-x,spot.z-z)<.12;}))spots.push({id:bird.id,kind:kind,x:x,z:z});
+        });
+      });
+      update(Number.isFinite(restoreTime)?restoreTime:0);
+      return spots;
+    }
+    return { root: root, update: update, setMode: setMode, snapshot: snapshot, getFocus: getFocus, isShared: isShared, setExtraContactShadow: setExtraContactShadow,
+      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, guidedForageSpots: guidedForageSpots, dispose: dispose };
   }
   global.BirdLab3DWildlife = { create: create };
 }(window));

@@ -417,7 +417,7 @@ window.StemLab = window.StemLab || {
       }).join('') + '</ul>';
     }
     return [
-      '<!doctype html><html><head><meta charset="utf-8"><title>' + _esc(title) + '</title><style>',
+      '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + _esc(title) + '</title><style>',
       'body{font-family:system-ui,sans-serif;color:#1e293b;max-width:820px;margin:24px auto;padding:0 16px;line-height:1.45}',
       'h1{margin:0 0 2px;font-size:26px} .sub{color:#64748b;font-size:13px;margin-bottom:14px}',
       'img.snap{max-width:100%;border-radius:12px;border:1px solid #cbd5e1;margin:8px 0 16px}',
@@ -978,7 +978,7 @@ window.StemLab = window.StemLab || {
             renderImportStrip(),
             h('h2', { className: 'text-2xl font-black text-violet-200 mb-1' }, '\u{1F3DB}️ ' + t('stem.freeforms.title', 'Free Forms')),
             h('p', { className: 'text-sm text-slate-300 mb-1' }, t('stem.freeforms.tagline', 'Build your own World of Forms: pick an archetypal structure, fill it with YOUR ideas, arrange it in 3D, and sculpt what matters.')),
-            h('p', { className: 'text-xs text-slate-400 mb-4' }, t('stem.freeforms.tagline2', 'You are the author here — the AI only coaches, and only when you ask.')),
+            h('p', { className: 'text-xs text-slate-300 mb-4' }, t('stem.freeforms.tagline2', 'You are the author here — the AI only coaches, and only when you ask.')),
             doc && doc.groups && (Array.isArray(doc.groups) ? doc.groups : []).some(function(g) { return (g.items || []).length; })
               ? h('p', { className: 'text-xs text-amber-300 mb-3' }, t('stem.freeforms.keep_content_hint', 'Your groups and ideas stay — choosing a form just changes the shape of the space.'))
               : null,
@@ -991,7 +991,7 @@ window.StemLab = window.StemLab || {
                 },
                   h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, sc.icon),
                   h('div', { className: 'font-black text-slate-100 text-sm mb-1' }, sc.name),
-                  h('div', { className: 'text-[0.6875rem] leading-snug text-slate-400' }, sc.grammar)
+                  h('div', { className: 'text-[0.6875rem] leading-snug text-slate-300' }, sc.grammar)
                 ));
               })
             )
@@ -1011,7 +1011,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
           !inChallenge ? h('button', { className: BTN_GHOST, onClick: backToPicker, 'aria-label': t('stem.freeforms.change_form', 'Change form') }, '← ' + t('stem.freeforms.forms', 'Forms')) : null,
           h('div', { className: 'text-lg font-black text-violet-200' }, (inChallenge ? '🎯 ' : sc.icon + ' ') + (inChallenge ? t('stem.freeforms.recall_title', 'Recall: rebuild your world') : sc.name)),
-          !inChallenge ? h('div', { className: 'text-[0.6875rem] text-slate-400 hidden md:block flex-1 min-w-0 truncate' }, sc.grammar) : h('div', { className: 'flex-1' }),
+          !inChallenge ? h('div', { className: 'text-[0.6875rem] text-slate-300 hidden md:block flex-1 min-w-0 truncate' }, sc.grammar) : h('div', { className: 'flex-1' }),
           !inChallenge ? h('div', { className: 'text-[0.6875rem] font-bold text-slate-300 bg-slate-800/70 border border-slate-700 rounded-full px-3 py-1' },
             stats.groups + ' ' + t('stem.freeforms.groups', 'groups') + ' · ' + stats.items + ' ' + t('stem.freeforms.ideas', 'ideas') + (stats.sculpted ? ' · ' + stats.sculpted + ' ' + t('stem.freeforms.sculpted', 'sculpted') : '')) : null,
           !inChallenge ? h('button', { className: BTN_GHOST, onClick: doUndo, disabled: !undoRef.current.length, 'aria-label': t('stem.freeforms.undo_tip', 'Undo the last change (Ctrl+Z)'), title: t('stem.freeforms.undo_tip', 'Undo the last change (Ctrl+Z)') }, '↩ ' + t('stem.freeforms.undo', 'Undo')) : null,
@@ -1049,14 +1049,14 @@ window.StemLab = window.StemLab || {
               hintText ? h('p', { className: 'text-xs text-amber-200 bg-amber-950/50 border border-amber-800 rounded-lg p-2 leading-snug' }, '💡 ' + hintText) : null),
             // recall history — persisted attempts + which ideas are still settling
             (doc.recallLog && doc.recallLog.length) ? h('div', { className: 'mt-2' },
-              h('div', { className: 'text-[0.6875rem] font-bold text-slate-400 mb-1' }, '📈 ' + t('stem.freeforms.recall_history', 'Recall history')),
+              h('div', { className: 'text-[0.6875rem] font-bold text-slate-300 mb-1' }, '📈 ' + t('stem.freeforms.recall_history', 'Recall history')),
               h('ul', { className: 'space-y-1' }, doc.recallLog.slice().reverse().slice(0, 5).map(function(r, i) {
                 return h('li', { key: i, className: 'text-[0.6875rem] text-slate-300 leading-snug' },
                   r.correct + '/' + r.total + (r.missed && r.missed.length ? ' — ' + t('stem.freeforms.recall_still_learning', 'still learning:') + ' ' + r.missed.slice(0, 4).join(', ') : ' 🎉'));
               }))) : null
           )
           : h('div', { className: 'ff-sidebar w-80 shrink-0 bg-slate-900/70 border border-slate-700 rounded-2xl p-3 overflow-y-auto', style: { maxHeight: '72vh' } },
-            h('label', { className: 'block text-[0.6875rem] font-bold text-slate-400 mb-1', htmlFor: 'ff-title' }, t('stem.freeforms.composition_title', 'Composition title')),
+            h('label', { className: 'block text-[0.6875rem] font-bold text-slate-300 mb-1', htmlFor: 'ff-title' }, t('stem.freeforms.composition_title', 'Composition title')),
             h('input', {
               id: 'ff-title', key: 'title-' + rev, defaultValue: doc.title || '',
               placeholder: t('stem.freeforms.title_placeholder', 'What is this world about?'),
@@ -1071,7 +1071,7 @@ window.StemLab = window.StemLab || {
                     className: 'flex-1 min-w-0 bg-transparent border border-transparent focus:border-slate-500 rounded px-1 py-1 text-sm font-black text-violet-200',
                     onBlur: function(e) { var v = e.target.value.trim(); if (v && v !== g.title) renameGroup(g.id, v); }
                   }),
-                  h('button', { className: 'min-h-[44px] min-w-[44px] rounded-lg text-slate-400 hover:text-rose-300 hover:bg-slate-700', 'aria-label': t('stem.freeforms.delete_group', 'Delete group') + ' ' + g.title, onClick: function() { deleteGroup(g.id); } }, '\u{1F5D1}️')
+                  h('button', { className: 'min-h-[44px] min-w-[44px] rounded-lg text-slate-300 hover:text-rose-300 hover:bg-slate-700', 'aria-label': t('stem.freeforms.delete_group', 'Delete group') + ' ' + g.title, onClick: function() { deleteGroup(g.id); } }, '\u{1F5D1}️')
                 ),
                 (g.items || []).map(function(it) {
                   var isSel = selectedId === it.id;
@@ -1102,7 +1102,7 @@ window.StemLab = window.StemLab || {
             // selected-idea detail: note + sculpt
             selected ? h('div', { className: 'mt-3 bg-violet-950/50 border border-violet-700 rounded-xl p-2' },
               h('div', { className: 'text-xs font-black text-violet-200 mb-1' }, '✦ ' + selected.item.text),
-              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-400 mb-1', htmlFor: 'ff-note' }, t('stem.freeforms.note_label', 'Note to self (shows in 3D)')),
+              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-300 mb-1', htmlFor: 'ff-note' }, t('stem.freeforms.note_label', 'Note to self (shows in 3D)')),
               h('textarea', {
                 id: 'ff-note', key: 'note-' + selected.item.id + '-' + rev, defaultValue: selected.item.note || '', rows: 2,
                 placeholder: t('stem.freeforms.note_placeholder', 'Why does this idea live here?'),
@@ -1127,7 +1127,7 @@ window.StemLab = window.StemLab || {
                     onClick: function() { doPartOp(function(P, r) { return P.nudgePart(r, pi, field, axis, delta); }); } }, label.split(' ')[0]);
                 };
                 return h('div', null,
-                  h('div', { className: 'text-[0.6875rem] font-bold text-slate-400 mb-1' }, '🗿 ' + t('stem.freeforms.studio_label', 'Shape studio')),
+                  h('div', { className: 'text-[0.6875rem] font-bold text-slate-300 mb-1' }, '🗿 ' + t('stem.freeforms.studio_label', 'Shape studio')),
                   // preset shelf — zero-AI quick starts (same recipes the AI emits)
                   !parts.length ? h('div', { className: 'flex flex-wrap gap-1 mb-1', role: 'group', 'aria-label': t('stem.freeforms.studio_presets', 'Preset shapes') },
                     (P3D.PRESETS || []).slice(0, 8).map(function(ps) {

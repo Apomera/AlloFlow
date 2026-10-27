@@ -2905,6 +2905,8 @@
             isDarkBackdrop
               ? ctx.React.createElement('div', {
                   'data-stem-tool-surface': id,
+                  // Tools that paint their own dark panels opt back into the hub's dark remap.
+                  'data-stem-dark-remap': tool.darkRemap === true ? 'true' : undefined,
                   style: {
                     background: '#ffffff',
                     color: '#0f172a',
@@ -3724,6 +3726,20 @@
 
     // STEM_AUTOSAVE_END
 
+    // Many tools were written for an older bridge and call awardXP(points[, reason[, activityId]]).
+    // This bridge takes (activityId, points, reason), so those calls read the score as the activity id,
+    // points arrived as undefined or as the reason text, and the award vanished without an error.
+    // A number first with no numeric points can only mean the legacy order, so read it that way.
+    function normalizeStemXpCall(activityId, points, reason, fallbackId) {
+      if (typeof activityId !== 'number' || (typeof points === 'number' && isFinite(points))) {
+        return { activityId: activityId, points: points, reason: reason };
+      }
+      return {
+        activityId: typeof reason === 'string' && reason ? reason : (typeof fallbackId === 'string' && fallbackId ? fallbackId : 'stemActivity'),
+        points: activityId,
+        reason: typeof points === 'string' && points ? points : undefined
+      };
+    }
     window.AlloModules.StemLab = function StemLabModal(props) {
       const {
         ArrowLeft,
@@ -4116,7 +4132,12 @@
             '[data-stem-lab] .stem-tool-card h4 { color: #f1f5f9 !important; }',
             '[data-stem-lab] .stem-tool-card p { color: #cbd5e1 !important; }',
             '[data-stem-lab] .stem-tool-card:focus-visible { outline: 3px solid #fbbf24 !important; outline-offset: 3px !important; }',
-          ].join('\n');
+          ].map(function (rule) {
+            // Dark theme paints each tool on renderTool's light card; these remaps are for the
+            // hub's own chrome and stop at that card, as app_styles' dark rules already do.
+            var brace = rule.indexOf('{');
+            return rule.slice(0, brace).split(',').map(function (sel) { return sel.trim() + ':not([data-stem-tool-surface]:not([data-stem-dark-remap]) *)'; }).join(', ') + ' ' + rule.slice(brace);
+          }).join('\n');
         } else if (isContrast) {
           s.textContent = [
             '[data-stem-lab] .bg-white, [data-stem-lab] .bg-slate-50, [data-stem-lab] .bg-slate-100 { background-color: #000000 !important; color: #ffffff !important; }',
@@ -4202,11 +4223,13 @@
           'from-white','from-slate-50','from-blue-50','from-indigo-50',
           'from-purple-50','from-green-50','from-amber-50'
         ];
+        // Not inside dark theme's light tool card (unless the tool opts into darkRemap):
+        // there, inherited light ink put white text on light buttons.
         var inheritRule = DARK_TEXT_CLASSES.map(function(c) {
-          return '[data-stem-tool-shell] .' + c;
+          return '[data-stem-tool-shell] .' + c + ':not([data-stem-tool-surface]:not([data-stem-dark-remap]) *)';
         }).join(', ') + ' { color: inherit; }';
         var lightBgRule = LIGHT_BG_CLASSES.map(function(c) {
-          return '[data-stem-tool-shell] .' + c;
+          return '[data-stem-tool-shell] .' + c + ':not([data-stem-tool-surface]:not([data-stem-dark-remap]) *)';
         }).join(', ') + ' { color: #1e293b; }';
         s.textContent = inheritRule + '\n' + lightBgRule;
         document.head.appendChild(s);
@@ -4238,6 +4261,8 @@
         // award could repair it because every sum with NaN is NaN. Infinity
         // and a numeric string are the same class of input. Normalise once,
         // here, rather than defending every read downstream.
+        var _call = normalizeStemXpCall(activityId, points, reason, stemLabTool);
+        activityId = _call.activityId; points = _call.points; reason = _call.reason;
         var _points = Math.floor(Number(points));
         if (!isFinite(_points) || _points <= 0) {
           if (typeof onCredited === 'function') { try { onCredited(0); } catch (_) {} }

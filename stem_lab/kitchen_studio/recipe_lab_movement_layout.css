@@ -1,0 +1,13 @@
+/* On compact views the same guidance moves into document flow below the canvas. */
+#sceneGestureCoach{box-sizing:border-box;width:min(24rem,calc(100% - 1.5rem));max-width:calc(100% - 1.5rem);padding:.75rem .875rem;font-size:.8125rem;line-height:1.5;overflow-wrap:anywhere}
+#sceneGestureCoach .gesture-heading{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.375rem .75rem;font-size:.8125rem;line-height:1.5;margin-bottom:.375rem}
+#sceneGestureCoach #gestureTitle{min-width:0;flex:1 1 9rem}
+#sceneGestureCoach .gesture-clock{max-width:100%;white-space:normal;text-align:start;font-size:.75rem}
+#sceneGestureCoach #gestureInstruction{font-size:.9375rem;line-height:1.5}
+#sceneGestureCoach #gestureDetail{display:block;font-size:.8125rem;line-height:1.6;margin:.375rem 0 .5rem}
+#sceneGestureCoach #gestureDetail:empty{display:none}
+#sceneGestureCoach .gesture-exit{font-size:.75rem;line-height:1.5;margin-top:.5rem}
+#sceneGestureCoach[data-layout="below"]{position:static;inset:auto;width:100%;max-width:100%;max-height:none;margin:.75rem 0;box-shadow:none;pointer-events:auto}
+#sceneGestureCoach[data-mode="receipt"] #gestureInstruction{font-size:.9375rem}
+#sceneGestureCoach[data-mode="receipt"] #gestureDetail{font-size:.8125rem}
+@media(forced-colors:active){#sceneGestureCoach,#sceneGestureCoach[data-mode="receipt"]{background:Canvas;color:CanvasText;border-color:CanvasText}#sceneGestureCoach #gestureDetail,#sceneGestureCoach .gesture-clock,#sceneGestureCoach .gesture-exit{color:CanvasText}}

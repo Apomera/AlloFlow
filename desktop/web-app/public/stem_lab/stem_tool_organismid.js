@@ -418,15 +418,15 @@
     var contrast = !!ctx.isContrast;
     var C = contrast ? {
       bg: '#000000', panel: '#000000', raised: '#111111', text: '#ffffff', muted: '#f8fafc',
-      border: '#facc15', accent: '#facc15', accentText: '#000000', focus: '#ffffff',
+      border: '#facc15', controlBorder: '#facc15', accent: '#facc15', accentText: '#000000', focus: '#ffffff',
       DEADLY: '#fca5a5', CONTACT: '#fdba74', MILD: '#fde047', INFO: '#93c5fd', SAFE: '#86efac'
     } : dark ? {
       bg: '#0f130e', panel: '#161b14', raised: '#1c2218', text: '#e6eadf', muted: '#aeb6a6',
-      border: '#3b4530', accent: '#66bb9d', accentText: '#0f130e', focus: '#fbbf24',
+      border: '#3b4530', controlBorder: '#829077', accent: '#66bb9d', accentText: '#0f130e', focus: '#fbbf24',
       DEADLY: '#ec6155', CONTACT: '#e68a41', MILD: '#deb04a', INFO: '#78abcd', SAFE: '#66bb9d'
     } : {
       bg: '#f4f7f1', panel: '#ffffff', raised: '#eef2e9', text: '#16201a', muted: '#48544a',
-      border: '#bfc8b5', accent: '#2f6b57', accentText: '#ffffff', focus: '#2f6b57',
+      border: '#bfc8b5', controlBorder: '#65745f', accent: '#2f6b57', accentText: '#ffffff', focus: '#2f6b57',
       DEADLY: '#9f1f1a', CONTACT: '#9c4d10', MILD: '#755607', INFO: '#2f5872', SAFE: '#2f6b57'
     };
 
@@ -464,9 +464,10 @@
     }
 
     function handleTabKeyDown(event, index) {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing)) return;
       var nextIndex = index;
-      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % VIEWS.length;
-      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + VIEWS.length) % VIEWS.length;
+      if (event.key === 'ArrowRight') nextIndex = (index + 1) % VIEWS.length;
+      else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + VIEWS.length) % VIEWS.length;
       else if (event.key === 'Home') nextIndex = 0;
       else if (event.key === 'End') nextIndex = VIEWS.length - 1;
       else return;
@@ -499,6 +500,19 @@
       });
     }
 
+    function showSelectedBranch() {
+      patchState(function (current) {
+        var next = Object.assign({}, current.collapsed || {});
+        var ancestor = PARENT_OF[selectedName];
+        while (ancestor) {
+          delete next[ancestor];
+          ancestor = PARENT_OF[ancestor];
+        }
+        return { collapsed: next, treeFocus: selectedName };
+      });
+      focusObservation(treeDomId(selectedName));
+    }
+
     // ── Tree view ───────────────────────────────────────────────────────────
     // ── WAI-ARIA tree (roving tabindex) ─────────────────────────────────────
     // This used to be a flat list of buttons: 2 tab stops per visible row, ~90
@@ -526,6 +540,7 @@
     }
 
     function handleTreeKeyDown(event, node) {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing)) return;
       var visible = visibleTreeNames(collapsed);
       var index = visible.indexOf(node.name);
       var hasKids = !!(node.kids && node.kids.length);
@@ -553,33 +568,39 @@
       event.preventDefault();
     }
 
-    function renderTreeNode(node, depth) {
+    function renderTreeNode(node, depth, position, count) {
       var kids = node.kids || [];
       var hasKids = kids.length > 0;
       var isCollapsed = !!collapsed[node.name];
       var isSelected = node.name === selectedName;
       var isFocusable = node.name === treeFocusName;
       var color = node.tier ? tierColor(node.tier) : null;
+      var nodeId = treeDomId(node.name);
 
       return h('li', { key: node.name, className: 'oid-tree-item', role: 'none' },
         h('div', { className: 'oid-node-row' },
-          // The caret stays as a MOUSE affordance only. Keyboard users expand and
-          // collapse with ArrowLeft/ArrowRight on the treeitem itself, so the caret
-          // leaves the tab order entirely; aria-hidden keeps it from reading as a
-          // second, redundant control.
-          hasKids ? h('button', {
-            type: 'button',
+          // This decorative pointer target shares the treeitem's keyboard action.
+          // It must never receive focus while hidden from the accessibility tree.
+          hasKids ? h('span', {
             className: 'oid-caret',
-            tabIndex: -1,
             'aria-hidden': 'true',
-            onClick: function () { toggleCollapsed(node.name); },
+            onClick: function () {
+              toggleCollapsed(node.name);
+              patchState({ treeFocus: node.name });
+              focusObservation(nodeId);
+            },
             style: { color: C.muted, borderColor: 'transparent' }
           }, isCollapsed ? '▸' : '▾') : h('span', { className: 'oid-caret oid-caret-empty', 'aria-hidden': 'true' }),
           h('button', {
             type: 'button',
-            id: treeDomId(node.name),
+            id: nodeId,
             role: 'treeitem',
             'aria-level': depth + 1,
+            'aria-posinset': position,
+            'aria-setsize': count,
+            'aria-labelledby': nodeId + '-name ' + nodeId + '-rank' + (node.tier ? ' ' + nodeId + '-hazard' : ''),
+            // The native button owns its sibling group without including child names in its label.
+            'aria-owns': hasKids && !isCollapsed ? nodeId + '-children' : undefined,
             'aria-expanded': hasKids ? !isCollapsed : undefined,
             'aria-selected': isSelected ? 'true' : 'false',
             tabIndex: isFocusable ? 0 : -1,
@@ -596,13 +617,13 @@
             node.tier
               ? h('span', { className: 'oid-tier-dot', style: { background: color }, 'aria-hidden': 'true' })
               : h('span', { className: 'oid-tier-dot oid-tier-dot-empty', 'aria-hidden': 'true' }),
-            h('span', { className: 'oid-node-name' + (node.rank === 'genus' ? ' is-latin' : '') }, node.name),
-            h('span', { className: 'oid-node-rank', style: { color: C.muted } }, RANK_LABEL[node.rank] || node.rank),
-            node.tier ? h('span', { className: 'sr-only' }, ', hazard tier: ' + TIER_LABEL[node.tier]) : null
+            h('span', { id: nodeId + '-name', className: 'oid-node-name' + (node.rank === 'genus' ? ' is-latin' : '') }, node.name),
+            h('span', { id: nodeId + '-rank', className: 'oid-node-rank', style: { color: C.muted } }, RANK_LABEL[node.rank] || node.rank),
+            node.tier ? h('span', { id: nodeId + '-hazard', className: 'sr-only' }, ', hazard tier: ' + TIER_LABEL[node.tier]) : null
           )
         ),
-        hasKids && !isCollapsed ? h('ul', { className: 'oid-tree-children', role: 'group', style: { borderColor: C.border } },
-          kids.map(function (kid) { return renderTreeNode(kid, depth + 1); })
+        hasKids && !isCollapsed ? h('ul', { id: nodeId + '-children', className: 'oid-tree-children', role: 'group', style: { borderColor: C.border } },
+          kids.map(function (kid, index) { return renderTreeNode(kid, depth + 1, index + 1, kids.length); })
         ) : null
       );
     }
@@ -619,9 +640,13 @@
         'aria-label': __alloT('stem.organismid.aria_details_for', 'Details for') + ' ' + node.name,
         style: { background: C.panel, borderColor: C.border, color: C.text }
       },
-        h('h2', { className: 'oid-detail-name' + (node.rank === 'genus' ? ' is-latin' : '') }, node.name),
+        h('h2', { id: 'oid-detail-heading', tabIndex: -1, 'data-oid-focus': true, className: 'oid-detail-name' + (node.rank === 'genus' ? ' is-latin' : '') }, node.name),
         h('p', { className: 'oid-detail-rank', style: { color: C.muted } },
           (RANK_LABEL[node.rank] || node.rank) + (node.common ? ' · ' + node.common : '')),
+        h('button', { id: 'oid-show-in-tree', type: 'button', className: 'oid-show-in-tree',
+          onClick: showSelectedBranch,
+          style: { background: C.raised, borderColor: C.controlBorder, color: C.text }
+        }, __alloT('stem.organismid.show_in_tree', 'Go to this branch')),
 
         node.tier ? h('p', { className: 'oid-detail-tier' },
           h('span', { className: 'oid-badge', style: { color: color, borderColor: color } }, node.tier),
@@ -649,7 +674,7 @@
               h('button', {
                 type: 'button', className: 'oid-link',
                 style: { color: C.accent },
-                onClick: function () { selectNode(sib.name); }
+                onClick: function () { selectNode(sib.name); focusObservation('oid-detail-heading'); }
               }, sib.name),
               sib.common ? h('span', { style: { color: C.muted } }, ' — ' + sib.common) : null);
           }))
@@ -666,7 +691,7 @@
                 : h('button', {
                     type: 'button', className: 'oid-link oid-lineage-name',
                     style: { color: C.accent },
-                    onClick: function () { selectNode(step.name); }
+                    onClick: function () { selectNode(step.name); focusObservation('oid-detail-heading'); }
                   }, step.name)
             );
           }))
@@ -679,9 +704,11 @@
         h('p', { className: 'oid-intro', style: { color: C.muted } },
           __alloT('stem.organismid.tree_intro', 'Walk the ranked tree. Coloured dots mark where a hazard rule attaches — notice how often a deadly branch sits one rank away from an edible one.')),
         renderLegend(),
+        h('p', { id: 'oid-tree-help', className: 'oid-tree-help', style: { color: C.muted } },
+          __alloT('stem.organismid.tree_keyboard_help', 'Use Up and Down to move, Right to expand, and Left to collapse or go back. Enter or Space shows details. Home and End move to the first and last visible branch.')),
         h('div', { className: 'oid-explorer' },
           h('div', { className: 'oid-treewrap' },
-            h('ul', { className: 'oid-tree', role: 'tree', 'aria-label': __alloT('stem.organismid.aria_tree', 'Tree of life') }, renderTreeNode(TREE, 0))
+            h('ul', { className: 'oid-tree', role: 'tree', 'aria-label': __alloT('stem.organismid.aria_tree', 'Tree of life'), 'aria-describedby': 'oid-tree-help' }, renderTreeNode(TREE, 0, 1, 1))
           ),
           renderDetail()
         )
@@ -718,7 +745,7 @@
                 h('button', {
                   type: 'button', className: 'oid-chip',
                   style: { background: C.raised, borderColor: C.border, color: C.text },
-                  onClick: function () { selectNode(node.name); selectView('tree'); }
+                  onClick: function () { selectNode(node.name); selectView('tree'); focusObservation('oid-detail-heading'); }
                 },
                   h('span', { className: node.rank === 'genus' ? 'is-latin' : '' }, node.name),
                   node.common ? h('span', { style: { color: C.muted } }, ' · ' + node.common) : null));
@@ -770,8 +797,9 @@
           },
             h('h2', { className: 'oid-exp-heading' },
               h('button', {
-                type: 'button', className: 'oid-exp-head',
+                id: 'oid-lesson-toggle-' + i, type: 'button', className: 'oid-exp-head',
                 'aria-expanded': isOpen,
+                'aria-controls': 'oid-lesson-panel-' + i,
                 onClick: function () {
                   patchState({ openSection: isOpen ? -1 : i }, isOpen ? 'Section collapsed' : section.title + ' expanded');
                 }
@@ -779,7 +807,8 @@
                 h('span', { className: 'oid-exp-index', style: { color: C.accent } }, '0' + (i + 1)),
                 h('span', { className: 'oid-exp-title' }, section.title),
                 h('span', { className: 'oid-exp-toggle', style: { color: C.muted }, 'aria-hidden': 'true' }, isOpen ? '−' : '+'))),
-            isOpen ? h('div', { className: 'oid-exp-body' }, section.blocks.map(function (block, bi) {
+            h('div', { id: 'oid-lesson-panel-' + i, className: 'oid-exp-body', role: 'region',
+              'aria-labelledby': 'oid-lesson-toggle-' + i, hidden: !isOpen }, isOpen ? section.blocks.map(function (block, bi) {
               if (block.kind === 'callout') {
                 return h('p', {
                   key: bi, className: 'oid-callout',
@@ -787,7 +816,7 @@
                 }, richText(h, block.text, 'c' + i + '-' + bi));
               }
               return h('p', { key: bi, style: { color: C.muted } }, richText(h, block.text, 'p' + i + '-' + bi));
-            })) : null
+            }) : null)
           );
         })),
         h('div', { className: 'oid-ladder-card', style: { background: C.panel, borderColor: C.border, color: C.text } },
@@ -842,19 +871,27 @@
       var reviewVisible=d.observationReviewKey===reviewKey;
       var evidenceReview=observationEvidenceReview(example.id,route.path.map(function(step){return step.answer;}));
       var box={background:C.panel,color:C.text,border:'1px solid '+C.border,borderRadius:10,padding:14,marginBottom:12};
-      var inputStyle={width:'100%',boxSizing:'border-box',display:'block',background:C.raised,color:C.text,border:'1px solid '+C.border,borderRadius:6,padding:10};
+      var inputStyle={width:'100%',boxSizing:'border-box',display:'block',background:C.raised,color:C.text,border:'1px solid '+C.controlBorder,borderRadius:6,padding:10};
+      var errors=d.observationErrors||{};
+      var requiredLabel=__alloT('stem.organismid.observation_required','(required)');
+      var noteError=__alloT('stem.organismid.observation_note_error','Write an observation before saving.');
+      var reasonError=__alloT('stem.organismid.observation_reason_error','Describe what changed before saving a revision.');
       function action(label,fn,disabled){return h('button',{type:'button',onClick:fn,disabled:!!disabled,style:{padding:'10px 14px',minHeight:44,margin:'4px 6px 4px 0',background:C.raised,color:C.text,border:'1px solid '+C.border,borderRadius:7}},label);}
       function exportObservations(rows,filename){
         var url=URL.createObjectURL(new Blob([observationMarkdown(rows)],{type:'text/markdown;charset=utf-8'})),a=document.createElement('a');
         a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);
       }
       function saveObservation(){
-        if(journal.length>=60){patchState({observationNotice:'The journal has 60 entries. Export a copy, then remove an entry before saving. Your draft is still here.'},'Journal full. Your draft has been kept.');return;}
-        if(!String(d.observationNote||'').trim()){patchState({observationNotice:'Write an observation before saving.'});return;}
-        if(d.observationPreviousId&&!String(d.observationReason||'').trim()){patchState({observationNotice:'Describe what changed before saving a revision.'});return;}
+        if(journal.length>=60){patchState({observationNotice:'The journal has 60 entries. Export a copy, then remove an entry before saving. Your draft is still here.'});focusObservation('oid-observation-notice');return;}
+        var invalid={note:!String(d.observationNote||'').trim(),reason:!!d.observationPreviousId&&!String(d.observationReason||'').trim()};
+        if(invalid.note||invalid.reason){
+          patchState({observationErrors:invalid,observationNotice:''});
+          focusObservation(invalid.note?'oid-observation-note':'oid-observation-reason');
+          return;
+        }
         var now=new Date().toISOString();
         var row={exampleId:example.id,context:d.observationContext||'',nextEvidence:d.observationNextEvidence||'',reviewed:reviewVisible,id:now+'-'+Math.random().toString(36).slice(2,9),date:now,subject:example.id==='field'?String(d.observationSubject||'Field observation').slice(0,100):example.name,note:String(d.observationNote).trim(),claim:route.result||'Key unfinished',path:route.path,previousId:d.observationPreviousId||'',reason:d.observationReason||''};
-        patchState({observationJournal:observationJournal(journal.concat([row])),observationPreviousId:'',observationReason:'',observationNote:'',observationNextEvidence:'',observationNotice:'Observation saved in this project. Export a copy for your field notebook.'},'Observation saved.');
+        patchState({observationJournal:observationJournal(journal.concat([row])),observationPreviousId:'',observationReason:'',observationNote:'',observationNextEvidence:'',observationErrors:{},observationNotice:'Observation saved in this project. Export a copy for your field notebook.'});
       }
       return h('div',{'data-taxonomy-observation':true,style:{maxWidth:1000,minWidth:0,margin:'auto',padding:16,overflowWrap:'anywhere'}},
         h('section',{style:box},
@@ -864,7 +901,7 @@
           h('select',{id:'oid-observation-example',value:example.id,style:inputStyle,onChange:function(e){
             var nextExample=OBSERVATION_EXAMPLES.find(function(item){return item.id===e.target.value;})||OBSERVATION_EXAMPLES[1];
             var prompt=nextExample.id==='field'?'Tentative teaching group: Unclassified field observation.':observationRoute([]).question;
-            patchState({observationExample:nextExample.id,observationAnswers:[],observationNote:'',observationPreviousId:'',observationReason:'',observationNotice:'',observationContext:'',observationNextEvidence:'',observationReviewKey:null},
+            patchState({observationExample:nextExample.id,observationAnswers:[],observationNote:'',observationPreviousId:'',observationReason:'',observationNotice:'',observationErrors:{},observationContext:'',observationNextEvidence:'',observationReviewKey:null},
               __alloT('stem.organismid.observation_example_changed','{example} selected. {prompt}').replace('{example}',nextExample.name).replace('{prompt}',prompt));
           }},
             OBSERVATION_EXAMPLES.map(function(e){return h('option',{key:e.id,value:e.id},e.name);})),
@@ -899,25 +936,33 @@
           h('label',{htmlFor:'oid-observation-context'},'Observation context (optional: habitat, conditions, or lesson setting)'),
           h('input',{id:'oid-observation-context',type:'text',maxLength:300,value:d.observationContext||'',style:inputStyle,onChange:function(e){patchState({observationContext:e.target.value});}}),
 
-          h('label',{htmlFor:'oid-observation-note'},'What did you observe, and what is still uncertain?'),
-          h('textarea',{id:'oid-observation-note',rows:4,maxLength:2000,value:d.observationNote||'',style:inputStyle,onChange:function(e){patchState({observationNote:e.target.value,observationNotice:''});}}),
+          h('label',{htmlFor:'oid-observation-note'},'What did you observe, and what is still uncertain? '+requiredLabel),
+          h('textarea',{id:'oid-observation-note',rows:4,maxLength:2000,value:d.observationNote||'',style:inputStyle,'aria-required':'true',
+            'aria-invalid':errors.note?'true':undefined,'aria-describedby':errors.note?'oid-observation-note-error':undefined,
+            onChange:function(e){patchState({observationNote:e.target.value,observationNotice:'',observationErrors:Object.assign({},errors,{note:!!errors.note&&!e.target.value.trim()})});}}),
+          errors.note?h('p',{id:'oid-observation-note-error'},noteError):null,
 
           h('label',{htmlFor:'oid-next-evidence'},'What evidence would you look for next?'),
           h('textarea',{id:'oid-next-evidence',rows:2,maxLength:700,value:d.observationNextEvidence||'',style:inputStyle,onChange:function(e){patchState({observationNextEvidence:e.target.value});}}),
-          d.observationPreviousId?h('label',null,'What changed in this revision?' ,h('textarea',{rows:2,maxLength:500,value:d.observationReason||'',style:inputStyle,onChange:function(e){patchState({observationReason:e.target.value});}})):null,
+          d.observationPreviousId?h('div',null,
+            h('label',{htmlFor:'oid-observation-reason'},'What changed in this revision? '+requiredLabel),
+            h('textarea',{id:'oid-observation-reason',rows:2,maxLength:500,value:d.observationReason||'',style:inputStyle,'aria-required':'true',
+              'aria-invalid':errors.reason?'true':undefined,'aria-describedby':errors.reason?'oid-observation-reason-error':undefined,
+              onChange:function(e){patchState({observationReason:e.target.value,observationNotice:'',observationErrors:Object.assign({},errors,{reason:!!errors.reason&&!e.target.value.trim()})});}}),
+            errors.reason?h('p',{id:'oid-observation-reason-error'},reasonError):null):null,
           action(d.observationPreviousId?'Save observation revision':'Save observation',saveObservation),
-          d.observationNotice?h('p',{role:'status'},d.observationNotice):null),
-        h('section',{'data-observation-journal':true,style:box},h('h2',{id:'oid-journal-heading',tabIndex:-1},'Observation journal'),
-          h('p',{role:'status'},journal.length+'/60 entries. '+(journal.length>=60?'Journal full. Export a copy and remove an entry to make room.':'Saving a revision adds an entry and keeps the earlier observation.')),
+          h('p',{id:'oid-observation-notice',role:'status','aria-atomic':'true',tabIndex:-1,'data-oid-focus':true,style:{margin:d.observationNotice?undefined:0}},d.observationNotice||'')),
+        h('section',{'data-observation-journal':true,style:box},h('h2',{id:'oid-journal-heading',tabIndex:-1,'data-oid-focus':true,'aria-describedby':'oid-journal-summary'},'Observation journal'),
+          h('p',{id:'oid-journal-summary'},journal.length+'/60 entries. '+(journal.length>=60?'Journal full. Export a copy and remove an entry to make room.':'Saving a revision adds an entry and keeps the earlier observation.')),
           h('p',null,'Revisit an entry to refine your evidence. Earlier observations remain beside their revisions. Save the AlloFlow project to retain this journal between sessions.'),
           action('Export observation journal',function(){exportObservations(journal,'taxonomy-observations.md');},!journal.length),
           d.observationRemoved && action('Export removed observation',function(){exportObservations([d.observationRemoved.row],'taxonomy-removed-observation.md');}),
           d.observationRemoved && action('Undo observation removal',function(){
-            if(journal.length>=60){patchState({observationNotice:'The journal has 60 entries. Export the removed observation to keep a separate copy; another removal will replace this undo.'},'Journal full. The removed observation is still available to undo.');return;}
+            if(journal.length>=60){patchState({observationNotice:'The journal has 60 entries. Export the removed observation to keep a separate copy; another removal will replace this undo.'});focusObservation('oid-observation-notice');return;}
             var restored=journal.slice(),removed=d.observationRemoved;
             restored.splice(Math.max(0,Math.min(restored.length,removed.index)),0,removed.row);
-            patchState({observationJournal:observationJournal(restored),observationRemoved:null,observationNotice:'Observation restored in its original journal position.'},'Observation restored.');
-            document.getElementById('oid-journal-heading').focus();
+            patchState({observationJournal:observationJournal(restored),observationRemoved:null,observationNotice:'Observation restored in its original journal position.'});
+            focusObservation('oid-journal-heading');
           }),
           journal.length?journal.slice().reverse().map(function(row){
             var previous=journal.find(function(r){return r.id===row.previousId;});
@@ -931,10 +976,10 @@
               row.reason?h('p',null,'What changed: '+row.reason):null,
               action('Remove '+row.subject,function(){
                 var index=journal.indexOf(row);
-                patchState({observationJournal:journal.filter(function(item,i){return i!==index;}),observationRemoved:{row:row,index:index},observationNotice:'Observation removed. Undo is available for the most recent removal.'},'Observation removed. Undo is available.');
-                document.getElementById('oid-journal-heading').focus();
+                patchState({observationJournal:journal.filter(function(item,i){return i!==index;}),observationRemoved:{row:row,index:index},observationNotice:'Observation removed. Undo is available for the most recent removal.'});
+                focusObservation('oid-journal-heading');
               }),
-              action('Revisit '+row.subject,function(){var ex=OBSERVATION_EXAMPLES.find(function(e){return e.id===row.exampleId;})||OBSERVATION_EXAMPLES[0];patchState({observationContext:row.context,observationNextEvidence:row.nextEvidence,observationReviewKey:null,observationExample:ex.id,observationSubject:ex.id==='field'?row.subject:'',observationAnswers:row.path.map(function(st){return st.answer;}),observationNote:row.note,observationPreviousId:row.id,observationReason:'',observationNotice:'Revise the evidence above, then explain what changed.'});document.getElementById('oid-observation-note').focus();}));
+              action('Revisit '+row.subject,function(){var ex=OBSERVATION_EXAMPLES.find(function(e){return e.id===row.exampleId;})||OBSERVATION_EXAMPLES[0];patchState({observationContext:row.context,observationNextEvidence:row.nextEvidence,observationReviewKey:null,observationExample:ex.id,observationSubject:ex.id==='field'?row.subject:'',observationAnswers:row.path.map(function(st){return st.answer;}),observationNote:row.note,observationPreviousId:row.id,observationReason:'',observationErrors:{},observationNotice:'Revise the evidence above, then explain what changed.'});focusObservation('oid-observation-note');}));
           }):h('p',null,'No observations yet. Save your first evidence note above.'))
       );
     }
@@ -970,7 +1015,7 @@
           var isActive = view[0] === activeView;
           return h('button', {
             key: view[0], id: 'oid-tab-' + view[0], type: 'button', role: 'tab',
-            'aria-selected': isActive, tabIndex: isActive ? 0 : -1,
+            'aria-selected': isActive, 'aria-controls': 'oid-view-panel', tabIndex: isActive ? 0 : -1,
             className: 'oid-tab' + (isActive ? ' is-active' : ''),
             onClick: function () { selectView(view[0]); },
             onKeyDown: function (event) { handleTabKeyDown(event, index); },
@@ -987,7 +1032,7 @@
               : null);
         })),
 
-      h('div', { role: 'tabpanel', 'aria-labelledby': 'oid-tab-' + activeView }, body),
+      h('div', { id: 'oid-view-panel', role: 'tabpanel', tabIndex: 0, 'data-oid-focus': true, 'aria-labelledby': 'oid-tab-' + activeView }, body),
 
       h('p', { className: 'oid-footer', style: { color: C.muted } },
         __alloT('stem.organismid.footer', 'Taxonomy Explorer · Ranks are conventions · No photograph makes a wild organism safe'))
@@ -1025,20 +1070,22 @@
       '.oid-legend li{display:inline-flex;align-items:center;gap:6px}',
       '.oid-swatch{width:10px;height:10px;flex:0 0 10px;border-radius:3px}',
       '.oid-explorer{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}',
-      '.oid-treewrap{min-width:0;overflow-x:auto}',
+      '.oid-tree-help{margin:0 0 14px;font-size:13px;max-width:75ch}',
+      '.oid-treewrap{min-width:0;padding:6px}',
       '.oid-tree,.oid-tree ul{margin:0;padding:0;list-style:none}',
-      '.oid-tree-children{margin-left:14px;padding-left:8px;border-left:1px solid}',
+      '.oid-tree .oid-tree-children{margin-left:clamp(3px,1vw,10px);padding-left:clamp(3px,1vw,6px);border-left:1px solid}',
       '.oid-node-row{display:flex;align-items:center;gap:2px}',
-      '.oid-caret{display:grid;place-items:center;width:26px;height:34px;flex:0 0 26px;border:1px solid transparent;border-radius:6px;background:none;font-size:11px}',
+      '.oid-caret{display:grid;place-items:center;width:26px;height:34px;flex:0 0 26px;border:1px solid transparent;border-radius:6px;background:none;font-size:11px;cursor:pointer}',
       '.oid-caret-empty{cursor:default}',
-      '.oid-node{display:flex;align-items:center;gap:9px;flex:1;min-width:0;min-height:34px;padding:4px 9px;border:1px solid;border-radius:8px;text-align:left}',
+      '.oid-node{display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;column-gap:9px;row-gap:2px;flex:1;min-width:0;min-height:34px;padding:4px 9px;border:1px solid;border-radius:8px;text-align:left}',
       '.oid-tier-dot{width:9px;height:9px;flex:0 0 9px;border-radius:50%}',
       '.oid-tier-dot-empty{background:transparent}',
-      '.oid-node-name{font-size:14px;font-weight:600}',
-      '.oid-node-rank{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}',
+      '.oid-node-name{min-width:0;overflow-wrap:anywhere;font-size:14px;font-weight:600}',
+      '.oid-node-rank{min-width:0;overflow-wrap:anywhere;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}',
       '.oid-detail{position:sticky;top:12px;padding:16px;border:1px solid;border-radius:13px}',
       '.oid-detail-name{margin:0;font-size:19px;font-weight:700}',
       '.oid-detail-rank{margin:3px 0 12px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}',
+      '.oid-show-in-tree{display:block;max-width:100%;min-height:44px;padding:8px 12px;margin:0 0 12px;border:1px solid;border-radius:8px;white-space:normal;overflow-wrap:anywhere}',
       '.oid-detail-tier{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12px}',
       '.oid-detail-rule{margin:0 0 8px;font-size:12px}',
       '.oid-badge{padding:2px 7px;border:1px solid;border-radius:5px;font-size:9px;font-weight:900;letter-spacing:.08em}',
@@ -1071,6 +1118,8 @@
       '.oid-expcard{border:1px solid;border-radius:12px;overflow:hidden}',
       '.oid-exp-heading{margin:0;font-size:inherit;font-weight:inherit}',
       '.oid-exp-head{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:14px 16px;border:0;background:none;color:inherit;text-align:left}',
+      // Keep the ring inside the clipped card, including the host's important focus offset.
+      '.organism-id-lab .oid-exp-head:focus-visible{outline-offset:-4px!important}',
       '.oid-exp-index{font-size:11px;font-weight:900;letter-spacing:.06em}',
       '.oid-exp-title{flex:1;font-size:15px;font-weight:700}',
       '.oid-exp-toggle{font-size:17px;font-weight:700}',
@@ -1089,7 +1138,7 @@
       '.oid-pending-list{margin:0;padding-left:20px;font-size:13px;line-height:1.6}',
       '.oid-footer{margin:16px 0 0;text-align:center;font-size:10px}',
       '@media(max-width:900px){.oid-explorer{grid-template-columns:1fr}.oid-detail{position:static}}',
-      '@media(max-width:620px){.organism-id-lab{padding:11px}.oid-hero{align-items:flex-start;padding:15px}.oid-edge{grid-template-columns:1fr}.oid-edge-vs{justify-items:start}.oid-lineage li{flex-wrap:wrap}}',
+      '@media(max-width:620px){.organism-id-lab{padding:11px}.oid-hero{align-items:flex-start;padding:15px}.oid-edge{grid-template-columns:1fr}.oid-edge-vs{justify-items:start}.oid-lineage li{flex-wrap:wrap}.oid-node{grid-template-columns:9px minmax(0,1fr)}.oid-node-rank{grid-column:2}}',
       '@media(forced-colors:active){.organism-id-lab *{forced-color-adjust:auto}.oid-hero{background:Canvas;color:CanvasText}.oid-tier-dot,.oid-swatch{border:1px solid CanvasText}}'
     ].join('\n');
     document.head.appendChild(style);
