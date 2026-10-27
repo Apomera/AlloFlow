@@ -158,7 +158,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               h('p', { style: { margin: '0 0 14px', color: _wlFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Rate each of the 8 life domains from 1 (very thin) to 10 (very full). The shape of your wheel will show you where life is rich and where it is hungry right now. There are no right answers.'),
               h('button', { onClick: function() { goto('rate'); }, 'aria-label': 'Start rating',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start rating')
             ),
             softPointer()
@@ -309,7 +309,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('rate'); }, 'aria-label': 'Adjust ratings',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Adjust ratings'),
             h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
               style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
@@ -474,7 +474,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _wlFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('wheel'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

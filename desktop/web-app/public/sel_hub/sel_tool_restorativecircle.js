@@ -2418,7 +2418,7 @@ window.SelHub = window.SelHub || {
               });
             },
             disabled: aiLoading,
-            className: 'w-full px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl text-sm font-bold hover:from-indigo-600 hover:to-purple-600 transition-all disabled:opacity-40 flex items-center justify-center gap-2'
+            className: 'w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl text-sm font-bold hover:from-indigo-700 hover:to-purple-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2'
           }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing perspectives...' : '\u2728 Analyze Perspectives with AI'),
 
           // Display AI analysis
@@ -2716,7 +2716,7 @@ window.SelHub = window.SelHub || {
             'A one-page circle protocol: structure of the 4 movements, talking-piece norms, opening + closing scripts, role cards, and the questions bank for the three most common circle types. Designed for teachers and Crew leaders to carry.'
           ),
           h('div', { className: 'no-print', style: { textAlign: 'center', marginBottom: 14 } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: _rcFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _rcFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

@@ -422,7 +422,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('tasks'); }, 'aria-label': 'Continue to the four tasks',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _griFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '→ Continue to the four tasks')
           ),
 
@@ -602,7 +602,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               h('strong', null, '🖨 Print preview. '),
               'This is your private work. Print only if you want a paper copy; nothing is shared anywhere.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _griFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _griBg('#1e293b'), color: _griFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

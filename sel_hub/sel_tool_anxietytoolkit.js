@@ -474,7 +474,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               'Opening the Crisis Companion tool in this app is also a good step — it has a safety plan template and grounding skills designed for right now.'),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { onClick: openCrisisCompanion, 'aria-label': 'Open Crisis Companion tool',
-                style: { padding: '10px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: _anxFg('#fff'), cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
+                style: { padding: '10px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #b91c1c 0%, #dc2626 100%)', color: _anxFg('#fff'), cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
                 'Open Crisis Companion'),
               h('button', { onClick: openTipp, 'aria-label': 'Open TIPP tool',
                 style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #fca5a5', background: 'rgba(239,68,68,0.18)', color: _anxFg('#fee2e2'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } },
@@ -497,7 +497,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
                 style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #fcd34d', background: 'rgba(245,158,11,0.22)', color: _anxFg('#fef3c7'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } },
                 'Open Crisis Companion'),
               h('button', { onClick: continueToToolkit, 'aria-label': 'Continue to toolkit',
-                style: { padding: '10px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', color: _anxFg('#fff'), cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
+                style: { padding: '10px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #155e75 0%, #0e7490 100%)', color: _anxFg('#fff'), cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
                 'Continue to toolkit')
             )
           ) : null,
@@ -509,7 +509,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 13, color: _anxFg('#bbf7d0'), lineHeight: 1.6 } },
               'Thanks for the check-in. The toolkit is a good fit for what you described.'),
             h('button', { onClick: continueToToolkit, 'aria-label': 'Continue to toolkit',
-              style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)', color: _anxFg('#fff'), cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
+              style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #166534 0%, #15803d 100%)', color: _anxFg('#fff'), cursor: 'pointer', fontSize: 14, fontWeight: 800 } },
               'Continue to toolkit →')
           ) : null,
 
@@ -1021,7 +1021,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _anxFg('#a5f3fc'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Patterns + decatastrophizing + parked worries — useful for a therapist or counselor conversation.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', color: _anxFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #155e75 0%, #0e7490 100%)', color: _anxFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _anxBg('#1e293b'), color: _anxFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

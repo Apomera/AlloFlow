@@ -491,7 +491,7 @@ window.SelHub = window.SelHub || {
       var exploredCount = Object.keys(exploredTabs).length;
 
       var tabBar = h('div', {
-        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #cffafe', background: 'linear-gradient(180deg, #f0fdfa, #ecfeff)', flexShrink: 0 }
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #cffafe', background: _efCHC ? '#000000' : (_efCDark ? '#0c2e2a' : 'linear-gradient(180deg, #f0fdfa, #ecfeff)'), flexShrink: 0 }
       },
         h('div', { style: { height: '3px', background: _efC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + CYAN + ', #06b6d4)', transition: 'width 0.5s ease' } })
@@ -509,7 +509,7 @@ window.SelHub = window.SelHub || {
               'aria-label': t.label,
               onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
               onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? _efC('#cffafe') : 'transparent'), background: a ? 'linear-gradient(135deg, ' + CYAN + ', #0e7490)' : explored ? 'rgba(8,145,178,0.06)' : 'transparent', color: a ? '#fff' : explored ? CYAN_DARK : _efC('#1e293b'), fontWeight: a ? 700 : 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? _efC('#cffafe') : 'transparent'), background: a ? 'linear-gradient(135deg, #0e7490, #155e75)' : explored ? 'rgba(8,145,178,0.06)' : 'transparent', color: a ? '#fff' : explored ? CYAN_DARK : _efC('#1e293b'), fontWeight: a ? 700 : 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#67e8f9', marginLeft: '2px' } }) : null
             );
@@ -1487,7 +1487,7 @@ window.SelHub = window.SelHub || {
             'A one-page artifact for student-led conferences, 504/IEP meetings, or teacher conversations. Includes your self-assessment of where executive function is hardest, your active plan, and a list of accommodations to consider asking for, grouped by which executive function domain they support.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + CYAN + ', #0e7490)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0e7490, #155e75)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

@@ -346,7 +346,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
 
           // Save / clear
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
-            h('button', { onClick: saveEntry, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { onClick: saveEntry, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✓ Save this record'),
             h('button', { onClick: clearDraft, 'aria-label': 'Clear and start over',
               style: { padding: '10px 22px', borderRadius: 10, border: '1px solid #475569', background: _thBg('#1e293b'), color: _thFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, 'Clear')
@@ -427,7 +427,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _thFg('#e9d5ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('past'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _thBg('#1e293b'), color: _thFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

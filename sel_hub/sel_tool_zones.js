@@ -35093,7 +35093,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       // ══════════════════════════════════════════════════════════
       var reCheckBanner = (reCheckAt && Date.now() >= reCheckAt) ? h('div', {
         role: 'region', 'aria-label': 'Re-check reminder',
-        style: { padding: '10px 14px', background: 'linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)', color: _zoFg('#fff'), display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }
+        style: { padding: '10px 14px', background: 'linear-gradient(90deg, #7c3aed 0%, #9333ea 100%)', color: _zoFg('#fff'), display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }
       },
         h('span', { style: { fontSize: 20 }, 'aria-hidden': 'true' }, '🔔'),
         h('div', { style: { flex: 1, minWidth: 200 } },

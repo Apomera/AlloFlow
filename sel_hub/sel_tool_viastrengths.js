@@ -267,7 +267,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             h('p', { style: { margin: '0 0 10px', color: _viaFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'Rate the 24 strengths to identify your top 5 signature strengths.'),
             h('button', { onClick: function() { goto('sort'); }, 'aria-label': 'Start the self-sort',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Start the self-sort')
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Start the self-sort')
           ),
 
           // Brief overview of all 24 by virtue
@@ -443,7 +443,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _viaBg('#1e293b'), color: _viaFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

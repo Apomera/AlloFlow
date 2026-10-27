@@ -1343,11 +1343,11 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
               h('button', { 'aria-label': 'Back', onClick: function() { ctx.setStemLabTool ? ctx.setStemLabTool(null) : (ctx.setSelHubTool && ctx.setSelHubTool(null)); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '6px 12px', color: _strFg('#fde68a'), cursor: 'pointer', fontSize: 12, fontWeight: 'bold' } }, '\u2190 Back'),
               h('div', { style: { fontWeight: 'bold', fontSize: 16, color: _strFg('#fde68a') } }, '\u2B50 Strengths Finder'),
-              h('span', { style: { fontSize: 10, color: 'rgba(253,230,138,0.6)' } }, band === 'elementary' ? 'Elementary' : band === 'middle' ? 'Middle School' : 'High School')
+              h('span', { style: { fontSize: 10, color: 'rgba(253,230,138,0.92)' } }, band === 'elementary' ? 'Elementary' : band === 'middle' ? 'Middle School' : 'High School')
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('span', { style: { background: 'rgba(245,158,11,0.2)', color: _strFg('#fbbf24'), padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\u2B50 ' + selectedStrengths.length + ' strengths'),
-              h('button', { 'aria-label': 'Show strengths badges', 'aria-expanded': showBadges, onClick: function() { upd({ showBadges: !showBadges }); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#c4b5fd'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + badgeCount),
+              h('span', { style: { background: 'rgba(245,158,11,0.2)', color: _strFg('#fde68a'), padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\u2B50 ' + selectedStrengths.length + ' strengths'),
+              h('button', { 'aria-label': 'Show strengths badges', 'aria-expanded': showBadges, onClick: function() { upd({ showBadges: !showBadges }); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#ede9fe'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + badgeCount),
               h('button', { 'aria-label': 'Export strengths profile', onClick: exportProfile, style: { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#6ee7b7'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCE4 Export')
             )
           ),
@@ -1403,6 +1403,7 @@ window.SelHub = window.SelHub || {
               coach:     { accent: _strFg('#6366f1'), soft: 'rgba(99,102,241,0.14)', icon: '\uD83E\uDD16', title: 'Coach \u2014 AI sounding board',                       hint: 'Type a stuck moment; the AI surfaces the strengths underneath what feels like failure. Reframe practice. Not a substitute for therapy or a trusted human \u2014 a rehearsal space for the easier reframes.' },
               profile:   { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDCCA', title: 'Profile \u2014 your strengths over time',           hint: 'Strengths shift across life stages (Park + Peterson 2010). Track yours; the changes ARE the data. \u201CWhich strength has grown? Which has gone dormant? Which do I want to develop?\u201D' }
             };
+            var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
             var meta = TAB_META[tab] || TAB_META.discover;
             return h('div', {
               style: {
@@ -1417,7 +1418,7 @@ window.SelHub = window.SelHub || {
             },
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('h3', { style: { color: _selHdrInk(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                 h('p', { style: { margin: '3px 0 0', color: _strFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
@@ -2525,7 +2526,7 @@ window.SelHub = window.SelHub || {
                 'A one-page artifact: your selected strengths grouped by virtue category, your reflections, and the strengths-stories you logged. Useful for IEPs, student-led conferences, college applications, or carrying with you on a low day. Companion to your One-Page Profile.'
               );
               var printBtn = h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-                h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _strFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+                h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _strFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
               );
               var printStyle = h('style', null,
                 '@media print { body * { visibility: hidden !important; } ' +

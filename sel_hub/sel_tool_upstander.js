@@ -7574,6 +7574,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
       var _UPC_DARK = {'#fffaf0':'#2e2410','#2563eb':'#60a5fa','#fff':'#1e293b','#f8fafc':'#0f172a','#fafafa':'#1e293b','#f1f5f9':'#1e293b','#fef3c7':'#3a2e12','#fffbeb':'#2e2410','#fef9c3':'#3a3410','#fefce8':'#2e2a10','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#fff1f2':'#2e1418','#f0fdf4':'#0b2e22','#ecfdf5':'#0e3326','#eff6ff':'#0e1f3a','#dbeafe':'#16315e','#f0f9ff':'#0c2840','#faf5ff':'#2e1b4d','#ede9fe':'#2a1a45','#f3e8ff':'#2e1b4d','#fdf4ff':'#2e1b4d','#0f172a':'#f1f5f9','#1f2937':'#e2e8f0','#334155':'#cbd5e1','#374151':'#cbd5e1','#475569':'#cbd5e1','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#cbd5e1':'#475569','#92400e':'#fde68a','#78350f':'#fcd34d','#854d0e':'#fde68a','#a16207':'#fde047','#991b1b':'#fca5a5','#dc2626':'#f87171','#166534':'#86efac','#1e3a8a':'#93c5fd','#1e40af':'#93c5fd','#1d4ed8':'#93c5fd','#6b21a8':'#d8b4fe','#ecfeff':'#0c2e30','#0e7490':'#67e8f9','#9d174d':'#fbcfe8','#9a3412':'#fdba74'};
       var _UPC_HC = {'#fffaf0':'#000000','#2563eb':'#ffff00','#fff':'#000000','#f8fafc':'#000000','#fafafa':'#000000','#f1f5f9':'#000000','#fef3c7':'#000000','#fffbeb':'#000000','#fef9c3':'#000000','#fefce8':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#fff1f2':'#000000','#f0fdf4':'#000000','#ecfdf5':'#000000','#eff6ff':'#000000','#dbeafe':'#000000','#f0f9ff':'#000000','#faf5ff':'#000000','#ede9fe':'#000000','#f3e8ff':'#000000','#fdf4ff':'#000000','#0f172a':'#ffff00','#1f2937':'#ffff00','#334155':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#854d0e':'#ffff00','#a16207':'#ffff00','#991b1b':'#ffff00','#dc2626':'#ffff00','#166534':'#ffff00','#1e3a8a':'#ffff00','#1e40af':'#ffff00','#1d4ed8':'#ffff00','#6b21a8':'#ffff00','#ecfeff':'#000000','#0e7490':'#ffff00','#9d174d':'#ffff00','#9a3412':'#ffff00'};
       var _upC = function(hex){ return _upCHC ? (_UPC_HC[hex]||hex) : (_upCDark ? (_UPC_DARK[hex]||hex) : hex); };
+      var _upG = function(g, dk){ return _upCHC ? '#000000' : (_upCDark ? (dk || '#2e2410') : g); }; // pastel gradient cards follow the remap (1.4.3)
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast;
@@ -7724,7 +7725,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
       var exploredCount = Object.keys(exploredTabs).length;
 
       var tabBar = h('div', {
-        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #bfdbfe', background: 'linear-gradient(180deg, #eff6ff, #dbeafe)', flexShrink: 0 }
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #bfdbfe', background: _upCHC ? '#000000' : (_upCDark ? '#0e1f3a' : 'linear-gradient(180deg, #eff6ff, #dbeafe)'), flexShrink: 0 }
       },
         h('div', { style: { height: '3px', background: _upC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + BLUE + ', #3b82f6)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
@@ -8731,7 +8732,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           refBody = h('div', null,
             h('div', { className: 'us-card', style: {
               padding: 14, marginBottom: 14,
-              background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+              background: _upG('linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)'),
               border: '1px solid #fcd34d', borderRadius: 10
             } },
               h('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.55, color: _upC('#0f172a') } },
@@ -8859,7 +8860,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           refBody = h('div', null,
             h('div', { className: 'us-card', style: {
               padding: 14, marginBottom: 14,
-              background: 'linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)',
+              background: _upG('linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)'),
               border: '1px solid #fcd34d', borderRadius: 10
             } },
               h('p', { style: { margin: '0 0 6px', fontSize: 13, lineHeight: 1.55, color: _upC('#0f172a') } },
@@ -8989,7 +8990,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           // Hero card
           h('div', { className: 'us-card', style: {
             padding: '16px 18px', marginBottom: 18, borderRadius: 14,
-            background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+            background: _upG('linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)'),
             border: '1px solid #fcd34d',
             display: 'flex', alignItems: 'center', gap: 14
           } },
@@ -9022,7 +9023,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
               )
             : h('div', { className: 'us-pop', style: {
                 position: 'relative',
-                background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+                background: _upG('linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)'),
                 borderRadius: 18, padding: '32px 28px 22px',
                 border: '3px double #ca8a04',
                 textAlign: 'center',
@@ -9233,7 +9234,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           // ── Counselor Handoff packet ──
           (pledgeSaved || witnessLog.length > 0 || trustedAdults.length > 0) && h('div', { style: { marginTop: 24 } },
             h('div', { className: 'us-card', style: {
-              padding: 14, background: 'linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%)',
+              padding: 14, background: _upG('linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%)', '#0c2840'),
               border: '1px solid #67e8f9', borderRadius: 12,
               display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap'
             } },

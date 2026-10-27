@@ -392,7 +392,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
               h('p', { style: { margin: '0 0 14px', color: _sbkFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Add what is currently pouring INTO your bucket (stressors) and what is draining it OUT (the practices, people, and time that help). The visual will show whether you are net-filling or net-draining.'),
               h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Start filling my bucket',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 14 } },
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start filling my bucket')
             ),
             h('div', {
@@ -620,7 +620,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Edit bucket',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Edit'),
             h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
               style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _sbkBg('#1e293b'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
@@ -889,7 +889,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _sbkFg('#99f6e4'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('bucket'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _sbkBg('#1e293b'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

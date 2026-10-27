@@ -1173,7 +1173,7 @@ window.SelHub = window.SelHub || {
                   h('div', {  className: 'flex items-start gap-2 bg-amber-50 rounded-lg p-2' },
                     h('span', {  className: 'text-sm shrink-0' }, '\u2728'),
                     h('div', null,
-                      h('span', {  className: 'text-xs font-bold text-amber-600 uppercase' }, depthLabel),
+                      h('span', {  className: 'text-xs font-bold text-amber-700 uppercase' }, depthLabel),
                       h('p', { className: 'text-sm text-amber-800' }, hl.funFact)
                     )
                   ),
@@ -1231,7 +1231,7 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-sm text-cyan-800 leading-relaxed' }, recipe.significance)
                 ),
                 h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-lg p-3' },
-                  h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-1' }, '\u2728 Fun Fact'),
+                  h('p', { className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, '\u2728 Fun Fact'),
                   h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, recipe.funFact)
                 ),
                 h('button', { 'aria-label': 'Toggle option', onClick: function() { toggleRecipeTry(recipe.id); },
@@ -1304,7 +1304,7 @@ window.SelHub = window.SelHub || {
                 ),
 
                 h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-lg p-3' },
-                  h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-1' }, '\u2728 Fun Fact'),
+                  h('p', { className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, '\u2728 Fun Fact'),
                   h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, trad.funFact)
                 ),
 
@@ -1377,7 +1377,7 @@ window.SelHub = window.SelHub || {
                 isExpanded && h('div', {  className: 'px-4 pb-4 space-y-3 border-t border-slate-100 pt-3' },
                   // The story
                   h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-lg p-4' },
-                    h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-2' }, '\uD83D\uDCDC The Story'),
+                    h('p', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, '\uD83D\uDCDC The Story'),
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, story.summary),
                     // TTS narration
                     callTTS && h('button', { onClick: function() { callTTS(story.summary); },
@@ -1679,7 +1679,7 @@ window.SelHub = window.SelHub || {
 
             // Insight
             compResult.insight && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4' },
-              h('p', { className: 'text-xs font-bold text-amber-600 mb-1' }, '\uD83D\uDCA1 Insight'),
+              h('p', { className: 'text-xs font-bold text-amber-700 mb-1' }, '\uD83D\uDCA1 Insight'),
               h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, compResult.insight)
             ),
 
@@ -1936,7 +1936,7 @@ window.SelHub = window.SelHub || {
           // Guided Journal Prompts (Cultural Appreciation Journal)
           h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border border-amber-200 p-4' },
             h('h4', { className: 'text-sm font-bold text-amber-700 mb-3' }, '\uD83C\uDF1F Cultural Appreciation Journal'),
-            h('p', { className: 'text-xs text-amber-600 mb-3' }, 'Reflect on your cultural learning with these guided prompts:'),
+            h('p', { className: 'text-xs text-amber-700 mb-3' }, 'Reflect on your cultural learning with these guided prompts:'),
             h('div', { className: 'space-y-3' },
               JOURNAL_PROMPTS.map(function(jp) {
                 var completed = journalPromptsCompleted.indexOf(jp.id) >= 0;
@@ -1945,7 +1945,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', null, jp.emoji),
                     h('span', {  className: 'text-xs font-bold text-slate-700 flex-1' }, jp.prompt),
-                    completed && h('span', {  className: 'text-xs text-amber-600 font-bold' }, '\u2713')
+                    completed && h('span', {  className: 'text-xs text-amber-700 font-bold' }, '\u2713')
                   ),
                   h('textarea', { 'aria-label': jp.prompt, value: entryVal, onChange: function(e) {
                       var newEntries = {};
@@ -1972,7 +1972,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Progress
-            h('div', { role: 'progressbar', 'aria-label': 'Guided journal progress', 'aria-valuemin': 0, 'aria-valuemax': JOURNAL_PROMPTS.length, 'aria-valuenow': journalPromptsCompleted.length, 'aria-valuetext': journalPromptsCompleted.length + ' of ' + JOURNAL_PROMPTS.length + ' prompts completed', className: 'mt-3 text-center text-xs text-amber-600 font-bold' },
+            h('div', { role: 'progressbar', 'aria-label': 'Guided journal progress', 'aria-valuemin': 0, 'aria-valuemax': JOURNAL_PROMPTS.length, 'aria-valuenow': journalPromptsCompleted.length, 'aria-valuetext': journalPromptsCompleted.length + ' of ' + JOURNAL_PROMPTS.length + ' prompts completed', className: 'mt-3 text-center text-xs text-amber-700 font-bold' },
               journalPromptsCompleted.length + '/' + JOURNAL_PROMPTS.length + ' prompts completed')
           ),
 
@@ -2059,7 +2059,7 @@ window.SelHub = window.SelHub || {
           badgesEarned.length >= BADGES.length && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-6 text-center' },
             h('div', { className: 'text-4xl mb-2' }, '\uD83C\uDF1F'),
             h('h4', { className: 'text-lg font-black text-amber-700' }, 'All Badges Earned!'),
-            h('p', { className: 'text-sm text-amber-600' }, 'You are a true global explorer and cultural ambassador!')
+            h('p', { className: 'text-sm text-amber-700' }, 'You are a true global explorer and cultural ambassador!')
           )
         )
       );

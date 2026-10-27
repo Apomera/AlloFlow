@@ -155,7 +155,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
               h('p', { style: { margin: '0 0 14px', color: _cobFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Name the decision you are wrestling with. Then list the pros and cons in two time horizons: short-term (the next day or week) and long-term (months and years). The 2x2 frame is built to surface what the short-term impulse leaves out.'),
               h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Start the grid',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _cobFg('#fff'), fontWeight: 800, fontSize: 14 } },
+                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _cobFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start the grid')
             ),
             softPointer()
@@ -190,7 +190,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Edit grid',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _cobFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _cobFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Edit'),
             h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Make the decision',
               style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Decide'),
@@ -342,7 +342,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _cobFg('#e9d5ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _cobFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _cobFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('grid'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

@@ -723,7 +723,7 @@ window.SelHub = window.SelHub || {
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
               style: {
                 padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? _gmC('#a7f3d0') : 'transparent'),
-                background: active ? 'linear-gradient(135deg, ' + EMERALD + ', #047857)' : explored ? 'rgba(5,150,105,0.08)' : 'transparent',
+                background: active ? 'linear-gradient(135deg, #047857, #065f46)' : explored ? 'rgba(5,150,105,0.08)' : 'transparent',
                 color: active ? '#fff' : explored ? _gmC('#065f46') : _gmC('#94a3b8'),
                 fontWeight: active ? 700 : 500, fontSize: '12px',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px',
@@ -763,6 +763,7 @@ window.SelHub = window.SelHub || {
           letter:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)',  icon: '\u2709',         title: 'Future Me \u2014 letter to who you\u2019re becoming',     hint: 'Write to yourself 1 / 5 / 10 years from now. Specifying who you want to become makes the path more visible. Implementation intentions (Gollwitzer 1999): naming the future doubles follow-through.' },
           educator: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\uD83C\uDFEB', title: 'Educator Lens \u2014 growth-mindset for teachers',         hint: 'Praise PROCESS not ability (Mueller + Dweck 1998). \u201CYou worked hard\u201D > \u201CYou\u2019re smart.\u201D Avoids the fixed-mindset trap that praise-for-ability creates. Critical for IEP language too \u2014 \u201Capproaching\u201D not \u201Cnot yet meeting.\u201D' }
         };
+        var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
         var meta = TAB_META[activeTab] || TAB_META.brain;
         return h('div', {
           style: {
@@ -777,7 +778,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _selHdrInk(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _gmC('#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -863,7 +864,7 @@ window.SelHub = window.SelHub || {
                   if (awardXP) awardXP(15, 'Explored all learning ideas!');
                 }
               },
-              style: { padding: '10px 20px', background: 'linear-gradient(135deg, ' + EMERALD + ', #047857)', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: '#fff', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }
+              style: { padding: '10px 20px', background: 'linear-gradient(135deg, #047857, #065f46)', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: '#fff', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }
             }, 'Next \u2192')
           ),
           // Progress dots

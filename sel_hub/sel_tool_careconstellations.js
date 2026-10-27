@@ -298,7 +298,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
           // Add CTA
           h('button', { onClick: function() { goto('add'); },
-            style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)', color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add a connection'),
+            style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #e11d48 0%, #be123c 100%)', color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add a connection'),
 
           softPointer()
         );
@@ -662,7 +662,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             'A relational artifact: who cares for me, who I care for, and the mutual care that runs both ways. Useful for IEPs, family meetings, intake with a new counselor, or just to remember on a thin day. Private; you decide who to share it with.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fda4af 100%)', color: _cnsFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cnsFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

@@ -504,7 +504,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             __alloT('sel.tipp.ui.print_and_fold_carry_in_a', 'Print and fold; carry in a pocket, wallet, or planner. The point is to have the four skills with you BEFORE you need them. The pocket card prints onto one page; the cautions are kept because they matter.')
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)', color: _tpFg('#fff'), fontWeight: 800, fontSize: 13 } }, __alloT('sel.tipp.ui.print_save_as_pdf', '🖨 Print / Save as PDF'))
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _tpFg('#fff'), fontWeight: 800, fontSize: 13 } }, __alloT('sel.tipp.ui.print_save_as_pdf', '🖨 Print / Save as PDF'))
           ),
 
           h('style', null,

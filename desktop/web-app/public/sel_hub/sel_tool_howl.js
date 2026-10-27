@@ -12891,14 +12891,14 @@ var EXPEDITION_CONNECTIONS = [
           // Calls to action
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
             !hasGoals ? h('button', { onClick: function() { goto('goals'); },
-              style: { padding: 14, borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 14, textAlign: 'left' } },
+              style: { padding: 14, borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 14, textAlign: 'left' } },
               h('div', { style: { fontSize: 24, marginBottom: 4 } }, '🎯'),
               h('div', null, 'Set your quarter goals'),
               h('div', { style: { fontSize: 11, fontWeight: 400, marginTop: 4, opacity: 0.9 } }, 'Start here. One goal per HOWL.')
             ) : null,
 
             !thisWeekCheckin ? h('button', { onClick: function() { goto('checkin'); },
-              style: { padding: 14, borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 14, textAlign: 'left' } },
+              style: { padding: 14, borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 14, textAlign: 'left' } },
               h('div', { style: { fontSize: 24, marginBottom: 4 } }, '✏️'),
               h('div', null, 'Do this week\'s check-in'),
               h('div', { style: { fontSize: 11, fontWeight: 400, marginTop: 4, opacity: 0.9 } }, 'Rate yourself 1 to 4 on each HOWL.')
@@ -13425,7 +13425,7 @@ var EXPEDITION_CONNECTIONS = [
             'Print or save as PDF for your Crew binder, student-led conference, or IEP meeting. Includes your goals, your most recent rating per HOWL, and your quarter average per HOWL.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
 
           h('style', null,

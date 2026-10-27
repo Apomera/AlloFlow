@@ -207,7 +207,7 @@ window.SelHub = window.SelHub || {
       var exploredCount = Object.keys(exploredTabs).length;
 
       var tabBar = h('div', {
-        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #bae6fd', background: 'linear-gradient(180deg, #f0f9ff, #e0f2fe)', flexShrink: 0 }
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #bae6fd', background: _trCHC ? '#000000' : (_trCDark ? '#0c2840' : 'linear-gradient(180deg, #f0f9ff, #e0f2fe)'), flexShrink: 0 }
       },
         h('div', { style: { height: '3px', background: _trC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + SKY + ', #38bdf8)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
@@ -225,7 +225,7 @@ window.SelHub = window.SelHub || {
               onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
               style: {
                 padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#bae6fd' : 'transparent'),
-                background: active ? 'linear-gradient(135deg, ' + SKY + ', #0369a1)' : explored ? 'rgba(2,132,199,0.06)' : 'transparent',
+                background: active ? 'linear-gradient(135deg, #0369a1, #075985)' : explored ? 'rgba(2,132,199,0.06)' : 'transparent',
                 color: active ? '#fff' : explored ? _trC('#0c4a6e') : _trC('#94a3b8'),
                 fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap',
@@ -730,7 +730,7 @@ window.SelHub = window.SelHub || {
             'A one-page artifact you can bring to a counselor, school psychologist, case manager, family member, or new teacher. Names what is changing, where you are in the change curve, what is holding you steady, and your next steps.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + SKY + ', #0369a1)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0369a1, #075985)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

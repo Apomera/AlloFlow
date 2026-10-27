@@ -7185,7 +7185,7 @@ window.SelHub = window.SelHub || {
     var navigate = props.navigate;
 
     var tools = [
-      { id: 'requests', icon: '📓', label: 'My Request Log',     color: '#6366f1', desc: 'Track every ask + outcome',
+      { id: 'requests', icon: '📓', label: 'My Request Log',     color: '#818cf8', desc: 'Track every ask + outcome',
         stat: (((d.kit_requests || {}).requests) || []).length + ' logged' },
       { id: 'scripts',  icon: '💬', label: 'My Script Vault',    color: '#10b981', desc: 'Save customized phrases',
         stat: (((d.kit_scripts || {}).scripts) || []).length + ' saved' },
@@ -7197,7 +7197,7 @@ window.SelHub = window.SelHub || {
         stat: Object.keys(((d.kit_iep || {}).prep) || {}).length + ' fields' },
       { id: 'needs',    icon: '🧭', label: 'My Needs Inventory', color: '#06b6d4', desc: '6-dim need-naming',
         stat: Object.keys(((d.kit_needs || {}).needs) || {}).length + ' named' },
-      { id: 'bounds',   icon: '🛡', label: 'My Boundaries',      color: '#ef4444', desc: 'What\'s non-negotiable',
+      { id: 'bounds',   icon: '🛡', label: 'My Boundaries',      color: '#f87171', desc: 'What\'s non-negotiable',
         stat: (((d.kit_bounds || {}).boundaries) || []).length + ' set' },
       { id: 'journal',  icon: '📔', label: 'My Journal',         color: '#ec4899', desc: 'Moments + what I learned',
         stat: (((d.kit_journal || {}).entries) || []).length + ' entries' }
@@ -11431,6 +11431,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
           letters:          { accent: _advFg('#a855f7'), soft: 'rgba(168,85,247,0.14)', icon: '\u2709',         title: 'Letters \u2014 paper has weight phone calls don\u2019t',  hint: 'Formal letter = creates a record; harder to brush off. Useful for IEP requests, accommodation appeals, school grievances. Even an email saved as PDF is heavier than a verbal ask. The system listens to documentation.' },
           progress:         { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCCA', title: 'Progress \u2014 advocacy gets easier',                   hint: 'Track wins + struggles over weeks. Patterns emerge: which settings, which people, which asks. Confidence builds from accumulated small wins, not from a single big breakthrough. Show this log to your support people.' }
         };
+        var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
         var meta = TAB_META[activeTab] || TAB_META.scenarios;
         return h('div', {
           style: {
@@ -11445,7 +11446,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: _advFg(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _selHdrInk(_advFg(meta.accent)), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _advFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -11924,7 +11925,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
               ? h('span', { id: 'advocacy-vocab-card-content', style: { display: 'block', textAlign: 'center' } },
                   h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 } }, 'TERM'),
                   h('span', { style: { display: 'block', fontSize: 24, color: _advFg('#fff'), fontWeight: 900, marginBottom: 16 } }, current.word),
-                  h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#94a3b8'), fontStyle: 'italic' } }, 'Activate to show definition ↻')
+                  h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#cbd5e1'), fontStyle: 'italic' } }, 'Activate to show definition ↻')
                 )
               : h('span', { id: 'advocacy-vocab-card-content', style: { display: 'block' } },
                   h('span', { style: { display: 'block', fontSize: 11, color: _advFg('#a5b4fc'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'DEFINITION'),
@@ -12225,7 +12226,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 14 } }, IDENTITY_CARDS.length + ' affirmations. Save the ones that land. Come back when you need them.'),
           h('div', { style: { padding: 36, background: 'linear-gradient(135deg, #312e81 0%, #4f46e5 100%)', borderRadius: 16, marginBottom: 14, textAlign: 'center', minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 0 40px rgba(99,102,241,0.4)' } },
             h('p', { style: { margin: 0, fontSize: 20, color: _advFg('#fff'), lineHeight: 1.55, fontWeight: 600 } }, '"' + card.text + '"'),
-            h('div', { style: { marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.7)', fontFamily: 'ui-monospace, Menlo, monospace' } }, (idxIdent + 1) + ' / ' + IDENTITY_CARDS.length)
+            h('div', { style: { marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.92)', fontFamily: 'ui-monospace, Menlo, monospace' } }, (idxIdent + 1) + ' / ' + IDENTITY_CARDS.length)
           ),
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
             h('button', { onClick: prevCard, style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '← Previous'),
@@ -14300,7 +14301,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
             'A one-page reference: an assertive-script template you can use anywhere, your most recent drafted letter (if you wrote one), and a short summary of the rights you have at school. Useful for IEP meetings, doctor visits, and any moment you need to ask for something hard.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _advFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _advFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

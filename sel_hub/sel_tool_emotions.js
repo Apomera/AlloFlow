@@ -20427,7 +20427,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 upd('mixResult', 'custom');
               }
             },
-            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #8b5cf6, #ec4899)', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 16 }
+            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #be185d)', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 16 }
           }, '\uD83E\uDDEA Mix These Emotions!'),
 
           // Mix result (predefined)
@@ -20488,7 +20488,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
                       upd({ mixAiCustom: 'This is a unique emotional blend! When these feelings combine, they create something complex and personal to you.', mixAiLoading: false });
                     });
                   },
-                  style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #8b5cf6, #ec4899)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, margin: '0 auto' }
+                  style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #be185d)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, margin: '0 auto' }
                 },
                   Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
                   'AI: What Does This Mix Create?'

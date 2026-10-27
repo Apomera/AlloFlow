@@ -1097,7 +1097,7 @@ window.SelHub = window.SelHub || {
             return h('button', {
               key: t.id, id: 'friendship-tab-' + t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'friendship-panel-' + t.id,
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, ' + AMBER + ', #b45309)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? _frC('#78350f') : _frC('#94a3b8'), fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, #b45309, #92400e)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? _frC('#78350f') : _frC('#94a3b8'), fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#fbbf24', marginLeft: '2px' } }) : null
             );
@@ -1120,6 +1120,7 @@ window.SelHub = window.SelHub || {
           rehearse: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Rehearse — choices and possible responses', hint: 'Explore a fictional response condition. Clear words do not guarantee agreement. Respect a no, adapt to access and boundaries, and pause or reflect whenever useful.' },
           coach:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDD16', title: 'Practice — explore possible next steps', hint: 'Use a fictional or everyday situation. The AI offers ideas to question and adapt; it cannot know another person’s thoughts or predict the outcome. You can pause, set a boundary or ask a trusted person for support.' }
         };
+        var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
         var meta = TAB_META[activeTab] || TAB_META.compass;
         return h('div', {
           style: {
@@ -1134,7 +1135,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: _frInk(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _selHdrInk(_frInk(meta.accent)), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _frC('#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -1197,7 +1198,7 @@ window.SelHub = window.SelHub || {
       },
         h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
           h('div', { style: { flex: '1 1 260px' } },
-            h('div', { style: { fontSize: 11, color: AMBER, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Friendship field guide'),
+            h('div', { style: { fontSize: 11, color: _frHC ? _frInk(AMBER) : '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Friendship field guide'),
             h('h3', { style: { margin: 0, color: AMBER_DARK, fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Choose the friendship skill you need today.'),
             h('p', { style: { margin: '6px 0 0', color: _frC('#475569'), fontSize: 12, lineHeight: 1.55 } },
               'Explore ways to care, conversation openings, sustainable contact, boundaries and changing friendships.'

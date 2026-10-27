@@ -2119,7 +2119,7 @@ window.SelHub = window.SelHub || {
                 tryAwardBadge('health_check');
                 logPractice('healthChk', 'completed');
               },
-              style: { width: '100%', marginTop: 16, padding: '14px 0', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #0ea5e9, #8b5cf6)', color: _socFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+              style: { width: '100%', marginTop: 16, padding: '14px 0', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #0369a1, #7c3aed)', color: _socFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
             }, '\uD83E\uDE7A See My Results'),
 
             !allAnswered && h('p', { style: { textAlign: 'center', color: _socFg('#94a3b8'), fontSize: 11, marginTop: 12 } },

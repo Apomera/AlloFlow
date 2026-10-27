@@ -4081,6 +4081,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
       var _DWC_DARK = {'#fff':'#1e293b','#f8fafc':'#0f172a','#fef3c7':'#3a2e12','#fffbeb':'#2e2410','#fefce8':'#2e2a10','#fff7ed':'#2e2410','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#f0fdf4':'#0b2e22','#dcfce7':'#14532d','#f0fdfa':'#0c2e2a','#f0f9ff':'#0c2840','#faf5ff':'#2e1b4d','#ede9fe':'#2a1a45','#f3e8ff':'#2e1b4d','#0f172a':'#f1f5f9','#1e293b':'#e2e8f0','#334155':'#cbd5e1','#475569':'#cbd5e1','#64748b':'#94a3b8','#94a3b8':'#94a3b8','#e2e8f0':'#334155','#cbd5e1':'#475569','#92400e':'#fde68a','#854d0e':'#fde68a','#a16207':'#fde047','#991b1b':'#fca5a5','#dc2626':'#f87171','#166534':'#86efac','#1e40af':'#93c5fd','#6b21a8':'#d8b4fe','#0e7490':'#67e8f9','#9d174d':'#fbcfe8','#9a3412':'#fdba74'};
       var _DWC_HC = {'#fff':'#000000','#f8fafc':'#000000','#fef3c7':'#000000','#fffbeb':'#000000','#fefce8':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#f0fdf4':'#000000','#dcfce7':'#000000','#f0fdfa':'#000000','#f0f9ff':'#000000','#faf5ff':'#000000','#ede9fe':'#000000','#f3e8ff':'#000000','#0f172a':'#ffff00','#1e293b':'#ffff00','#334155':'#ffff00','#475569':'#ffff00','#64748b':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#854d0e':'#ffff00','#a16207':'#ffff00','#991b1b':'#ffff00','#dc2626':'#ffff00','#166534':'#ffff00','#1e40af':'#ffff00','#6b21a8':'#ffff00','#0e7490':'#ffff00','#9d174d':'#ffff00','#9a3412':'#ffff00'};
       var _dwC = function(hex){ return _dwCHC ? (_DWC_HC[hex]||hex) : (_dwCDark ? (_DWC_DARK[hex]||hex) : hex); };
+      var _dwG = function(g){ return _dwCHC ? '#000000' : (_dwCDark ? '#1e293b' : g); }; // pastel gradient cards follow the remap (1.4.3)
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast;
@@ -4203,7 +4204,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
             padding: '18px 20px',
             marginBottom: 14,
             borderRadius: 14,
-            background: 'linear-gradient(135deg, #ecfeff 0%, #f0f9ff 60%, #faf5ff 100%)',
+            background: _dwG('linear-gradient(135deg, #ecfeff 0%, #f0f9ff 60%, #faf5ff 100%)'),
             border: '1px solid #a5f3fc',
             display: 'flex', alignItems: 'center', gap: 16
           } },
@@ -4633,7 +4634,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
         }
         return h('div', { style: {
           marginTop: 20, padding: 16,
-          background: 'linear-gradient(135deg, #fdf2f8 0%, #fef3f2 100%)',
+          background: _dwG('linear-gradient(135deg, #fdf2f8 0%, #fef3f2 100%)'),
           border: '1px solid #f9a8d4', borderRadius: 12
         } },
           h('button', {
@@ -4719,7 +4720,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
         }
         return h('div', { style: {
           padding: 16, marginBottom: 16,
-          background: 'linear-gradient(135deg, #faf5ff 0%, #fdf4ff 100%)',
+          background: _dwG('linear-gradient(135deg, #faf5ff 0%, #fdf4ff 100%)'),
           border: '1px solid #d8b4fe', borderRadius: 12
         } },
           h('h3', { style: { margin: '0 0 8px', color: _dwC('#6b21a8'), fontSize: 16 } },
@@ -4791,7 +4792,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
         var idealStop = wake - 9.5; if (idealStop < 0) idealStop += 24;
         return h('div', { style: {
           padding: 16, marginBottom: 16,
-          background: 'linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%)',
+          background: _dwG('linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%)'),
           border: '1px solid #93c5fd', borderRadius: 12
         } },
           h('h3', { style: { margin: '0 0 8px', color: _dwC('#1e40af'), fontSize: 16 } },
@@ -4855,7 +4856,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
               return h('div', { style: {
                 position: 'absolute', left: leftPct + '%', width: widthPct + '%',
                 top: 2, bottom: 2,
-                background: color,
+                background: _dwCHC ? '#000000' : color,
                 border: '2px solid #fff',
                 borderRadius: 5,
                 boxShadow: '0 0 0 1px ' + color + ', 0 2px 6px rgba(15, 23, 42, 0.30)',
@@ -5000,7 +5001,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
           // ── Time Reclaim ──
           h('div', { style: {
             padding: 16, marginBottom: 16,
-            background: 'linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%)',
+            background: _dwG('linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%)'),
             border: '1px solid #67e8f9', borderRadius: 12
           } },
             h('h3', { style: { margin: '0 0 8px', color: _dwC('#0e7490'), fontSize: 16 } },
@@ -5849,7 +5850,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
 
       function renderAIIntro() {
         return h('div', null,
-          h('div', { style: { padding: 16, background: 'linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%)', border: '1px solid #d8b4fe', borderRadius: 12, marginBottom: 14 } },
+          h('div', { style: { padding: 16, background: _dwG('linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%)'), border: '1px solid #d8b4fe', borderRadius: 12, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: _dwC('#6b21a8'), fontSize: 17 } },
               h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🤖'),
               'Talking to AI chatbots — when it helps, when it harms'),
@@ -6159,7 +6160,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                   // Real side
                   h('div', { style: {
                     padding: 14,
-                    background: 'linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%)',
+                    background: _dwG('linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%)'),
                     borderRight: '1px solid #d8b4fe'
                   } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
@@ -6176,7 +6177,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                   // AI side
                   h('div', { style: {
                     padding: 14,
-                    background: 'linear-gradient(135deg, #faf5ff 0%, #fdf4ff 100%)',
+                    background: _dwG('linear-gradient(135deg, #faf5ff 0%, #fdf4ff 100%)'),
                     position: 'relative'
                   } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
@@ -6278,7 +6279,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
 
           // ── Ask Yourself rubric ──
           h('div', { style: {
-            padding: 14, background: 'linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%)',
+            padding: 14, background: _dwG('linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%)'),
             border: '1px solid #93c5fd', borderRadius: 12
           } },
             h('h3', { style: { margin: '0 0 6px', color: _dwC('#1e40af'), fontSize: 15 } },

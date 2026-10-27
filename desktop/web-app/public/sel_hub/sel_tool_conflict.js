@@ -1281,6 +1281,7 @@ window.SelHub = window.SelHub || {
           roleplay:   { accent: _cflFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Role-Play \u2014 rehearse before you live it',          hint: 'Worst case scripted in advance lowers in-the-moment activation. Bandura: behavioral rehearsal is one of the strongest predictors of self-efficacy. Try the hard talk here first; do it for real second.' },
           progress:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCCA', title: 'Progress \u2014 track patterns over time',                hint: 'Which conflicts repeat? With whom? Around what? Patterns you can NAME you can also work on \u2014 with a counselor, with the other person, or alone. Data > vibes when you\u2019re trying to change something hard.' }
         };
+        var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
         var meta = TAB_META[activeTab] || TAB_META.theater;
         return h('div', {
           style: {
@@ -1295,7 +1296,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: _cflFg(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _selHdrInk(_cflFg(meta.accent)), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _cflFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -1372,7 +1373,7 @@ window.SelHub = window.SelHub || {
           )
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
-          conflictRouteCard('Start with a scenario', 'Watch choices play out before trying real words.', 'theater', '#dc2626'),
+          conflictRouteCard('Start with a scenario', 'Watch choices play out before trying real words.', 'theater', '#f87171'),
           conflictRouteCard('Build the words', 'Turn blame into an I-statement.', 'istate', '#3b82f6'),
           conflictRouteCard('Lower the heat', 'Use a reset before solving anything.', 'cooldown', '#0ea5e9'),
           conflictRouteCard('Repair after harm', 'Name impact and make a concrete next step.', 'repair', '#a855f7'),
