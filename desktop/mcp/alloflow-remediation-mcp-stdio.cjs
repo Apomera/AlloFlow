@@ -572,6 +572,9 @@ function atomicWriteJson(finalPath, value, mode = 0o600) {
 function checkpointEngineFiles() {
   const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs'), path.join(__dirname,'remediation_narration_plan.cjs'), path.join(__dirname,'remediation_verification.cjs'), path.join(__dirname,'remediation_epub_validation.cjs'), path.join(__dirname,'remediation_ace_worker.cjs'), path.join(__dirname,'remediation_epub_archive.cjs'), path.join(__dirname,'remediation_ace_browser.cjs')];
   for (const name of Driver.MODULE_FILES) files.push(path.join(Driver.ASSETS_ROOT, name));
+  for (const name of ['document_runtime_integrity.json', 'runtime_graph_delivery_policy.js', 'runtime_graph_host.js']) {
+    files.push(path.join(Driver.ASSETS_ROOT, name));
+  }
   const vendorManifest = [
     path.join(__dirname, 'vendor', 'manifest.json'),
     path.join(Driver.ASSETS_ROOT, 'vendor', 'manifest.json'),
@@ -2648,6 +2651,17 @@ function safeEvidenceBoolean(value) {
   return typeof value === 'boolean' ? value : null;
 }
 
+// The verdict's own teacher-readable sentences (what needs a person, what is a caution), so a report
+// can say WHICH items to check instead of only how many (2026-10-25). Strings only, bounded.
+function safeVerdictReasons(value) {
+  const clean = (list) => (Array.isArray(list) ? list : [])
+    .filter((item) => typeof item === 'string' && item.trim())
+    .slice(0, 10)
+    .map((item) => item.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 300));
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return { review: [], cautions: [] };
+  return { review: clean(value.review), cautions: clean(value.cautions) };
+}
+
 function safeDistributionVerdict(value) {
   if (
     !value
@@ -2773,6 +2787,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     files,
     pdfUa,
     verdict: safeDistributionVerdict(out.verdict),
+    verdictReasons: safeVerdictReasons(out.verdict),
     beforeScore: out.beforeScore,
     afterScore: out.afterScore,
     aiVerificationIncomplete: out.aiVerificationIncomplete,
@@ -3586,7 +3601,10 @@ const S_REMEDIATE = obj({
   }, ['configuredAuditorCap', 'requestedAuditors', 'completedAuditors', 'sliced'], true),
   autoContinue: {}, taggedPdfError: {}, runId: {}, stats: {},
   pdfUa: {}, verificationChecks: {}, verification: {}, reviewTriage: {}, deliveryReviewReasons: {type:'array',items:S_STR}, reviewRequired: S_BOOL, deliveryStatus: S_STR, htmlVerificationState: {},
-  deliveryExplanation: obj({ headline: S_STR, items: { type: 'array', items: obj({ code: S_STR, meaning: S_STR, nextStep: S_STR, detail: S_STR }) } }),
+  deliveryExplanation: obj({ headline: S_STR, items: { type: 'array', items: obj({ code: S_STR, meaning: S_STR, nextStep: S_STR, detail: S_STR }) },
+    needsAPerson: { type: 'array', items: S_STR }, worthAGlance: { type: 'array', items: S_STR },
+    quickChecks: { type: 'array', items: S_STR, description: 'Checker items the AI review judged fine; a person confirms. Usually fine.' } }),
+  verdictReasons: obj({ review: { type: 'array', items: S_STR }, cautions: { type: 'array', items: S_STR } }),
   note: S_STR,
 }, ['input', 'files']);
 const S_JOB_VIEW = obj({
@@ -3929,6 +3947,7 @@ const TOOL_HANDLERS = {
     const playwrightAvailable = !!chrome.chromium;
     const modules = {};
     for (const f of Driver.MODULE_FILES) modules[f] = fs.existsSync(path.join(Driver.ASSETS_ROOT, f));
+    modules['document_runtime_integrity.json'] = Driver.verifyDocumentRuntime().hashVerified;
     const keyInfo = Driver.resolveGeminiApiKey();
     const keyVerification = currentGeminiKeyVerification(keyInfo);
     const keyVerified = !!(keyVerification && keyVerification.keyWorks === true);

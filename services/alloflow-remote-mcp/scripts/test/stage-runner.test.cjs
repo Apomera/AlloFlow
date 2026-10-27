@@ -45,7 +45,7 @@ test('runner context check traverses nested files and performs no writes', () =>
   assert.match(checked.stdout, new RegExp('Verified ' + stagedManifest.files.length + ' staged runner dependencies', 'u'));
   // Requiring the staged driver exercises all of its eager local imports.
   const stagedDriver = require(nestedDependency);
-  for (const relative of [...stagedDriver.MODULE_FILES, 'desktop/mcp/remediation_narration_plan.cjs', 'desktop/mcp/zip_writer.cjs']) {
+  for (const relative of [...stagedDriver.MODULE_FILES, ...stagedDriver.readDocumentRuntime(contextRoot).sourceFiles, 'desktop/mcp/remediation_narration_plan.cjs', 'desktop/mcp/zip_writer.cjs']) {
     assert.deepEqual(fs.readFileSync(path.join(contextRoot, relative)), fs.readFileSync(path.join(repoRoot, relative)),
       'missing or stale required driver dependency: ' + relative);
     assert.ok(stagedManifest.files.some(entry => entry.path === relative), 'missing dependency manifest entry: ' + relative);

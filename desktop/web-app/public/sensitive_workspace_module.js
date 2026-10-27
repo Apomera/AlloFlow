@@ -4,6 +4,15 @@
  */
 (function () {
   'use strict';
+
+  function __alloT(key, fallback) {
+    try {
+      var host = typeof window !== 'undefined' ? window : globalThis;
+      var value = typeof host.__alloT === 'function' ? host.__alloT(key) : null;
+      if (typeof value === 'string' && value !== '' && value !== key) return value;
+    } catch (_) {}
+    return fallback == null ? key : fallback;
+  }
   var root = typeof window !== 'undefined' ? window : globalThis;
   var FEATURES = ['behavior-lens', 'dynamic-assessment', 'report-writer'];
   var META = 'clinical-setup';
@@ -26,12 +35,46 @@
     return data && typeof data === 'object' && !Array.isArray(data)
       && Object.keys(data).every(function (k) { return k.length > 0 && k.length <= 512 && typeof data[k] === 'string'; });
   }
+  function policyData(value, allowed) {
+    try {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+      var prototype = Object.getPrototypeOf(value);
+      if (prototype !== null && prototype !== Object.prototype) return null;
+      var data = Object.create(null), keys = Reflect.ownKeys(value);
+      if (keys.length > allowed.length) return null;
+      for (var key of keys) {
+        if (typeof key !== 'string' || allowed.indexOf(key) < 0) return null;
+        var descriptor = Object.getOwnPropertyDescriptor(value, key);
+        if (!descriptor || !own(descriptor, 'value')) return null;
+        data[key] = descriptor.value;
+      }
+      // Optional fields must not inherit approval (or a legal-hold override).
+      if (allowed.some(function (key) { return !own(value, key) && key in value; })) return null;
+      return own(data, 'version') && data.version === 1 ? data : null;
+    } catch (_) { return null; }
+  }
+  function policyFeatures(value) {
+    try {
+      if (!Array.isArray(value)) return null;
+      var length = Object.getOwnPropertyDescriptor(value, 'length'), result = [];
+      if (!length || !own(length, 'value') || !Number.isInteger(length.value) || length.value < 0 || length.value > FEATURES.length) return null;
+      var keys = Reflect.ownKeys(value);
+      if (keys.length !== length.value + 1) return null;
+      for (var i = 0; i < length.value; i++) {
+        var descriptor = Object.getOwnPropertyDescriptor(value, String(i));
+        if (!descriptor || !own(descriptor, 'value') || FEATURES.indexOf(descriptor.value) < 0 || result.indexOf(descriptor.value) >= 0) return null;
+        result.push(descriptor.value);
+      }
+      return result;
+    } catch (_) { return null; }
+  }
   function validatePolicy(value) {
     if (value === undefined) return { allowCanvasRecords: false, allowExternalAi: [] };
-    if (!value || value.version !== 1 || Object.keys(value).some(function (k) { return ['version', 'allowCanvasRecords', 'allowExternalAi'].indexOf(k) < 0; })
-      || (own(value, 'allowCanvasRecords') && typeof value.allowCanvasRecords !== 'boolean')
-      || (own(value, 'allowExternalAi') && (!Array.isArray(value.allowExternalAi) || value.allowExternalAi.some(function (f) { return FEATURES.indexOf(f) < 0; })))) return null;
-    return { allowCanvasRecords: value.allowCanvasRecords === true, allowExternalAi: (value.allowExternalAi || []).slice() };
+    var data = policyData(value, ['version', 'allowCanvasRecords', 'allowExternalAi']);
+    if (!data || (own(data, 'allowCanvasRecords') && typeof data.allowCanvasRecords !== 'boolean')) return null;
+    var features = own(data, 'allowExternalAi') ? policyFeatures(data.allowExternalAi) : [];
+    if (!features) return null;
+    return { allowCanvasRecords: data.allowCanvasRecords === true, allowExternalAi: features };
   }
   function isDeletionTombstone(value) {
     return !!value && value.kind === DELETION_KIND && value.version === 1
@@ -40,10 +83,10 @@
   }
   function validateRetentionPolicy(value) {
     if (value === undefined) return { allowManualDeletion: true, legalHold: false };
-    if (!value || typeof value !== 'object' || Array.isArray(value) || !own(value, 'version') || value.version !== 1 || Object.keys(value).some(function (k) { return !['version', 'allowManualDeletion', 'legalHold'].includes(k); })
-      || (own(value, 'allowManualDeletion') && typeof value.allowManualDeletion !== 'boolean')
-      || (own(value, 'legalHold') && typeof value.legalHold !== 'boolean')) return null;
-    return { allowManualDeletion: value.allowManualDeletion !== false, legalHold: value.legalHold === true };
+    var data = policyData(value, ['version', 'allowManualDeletion', 'legalHold']);
+    if (!data || (own(data, 'allowManualDeletion') && typeof data.allowManualDeletion !== 'boolean')
+      || (own(data, 'legalHold') && typeof data.legalHold !== 'boolean')) return null;
+    return { allowManualDeletion: data.allowManualDeletion !== false, legalHold: data.legalHold === true };
   }
   function requireDurableStorage(storage) {
     var s = storage && typeof storage.status === 'function' && storage.status();
@@ -72,10 +115,10 @@
     var repository = options.repository;
     var vaultModule = options.vaultModule;
     if (!repository || !vaultModule) throw failure('PROTECTED_DEPENDENCIES_MISSING', 'Protected storage has not loaded.');
-    var listeners = new Set(), flushers = new Set(), capabilities = new WeakMap(), sessions = new Map();
+    var listeners = new Set(), flushers = new Set(), capabilities = new WeakMap(), sessions = new Map(), activeStage = null, stageNotifyPending = false;
     var maps = new Map(), stamps = new Map(), dirty = new Map(), transfers = new Map();
     var generation = 0, epoch = 0, keyActive = false, initialized = false, pendingSeed = null, activeWrite = null, ticket = 0, disposed = false;
-    var staging = false, stagedStore = null, stagedRevision = 0, setupBaseRevision = null, setupBaseDeletedMarker = null, lockInFlight = null;
+    var staging = false, stagedStore = null, stagedRevision = 0, setupBaseRevision = null, setupBaseDeletedMarker = null, lockInFlight = null, restoreTarget = null;
     var queue = Promise.resolve(), timer = null, credentialBusy = false, credentialCompletion = null, activeCredentialTicket = null, tick = 0, lastActivity = Date.now();
     var setupMeta = null, recoveryCode = '', verifiedBackup = null, idleTimer = null, idleSuspended = false, channel = null;
     var lifecycleListeners = [], viewCount = 0;
@@ -85,7 +128,11 @@
     var now = typeof options.now === 'function' ? options.now : Date.now;
     function date() { tick = Math.max(tick + 1, Number(now())); return new Date(tick).toISOString(); }
     function notify() {
-      state.pending = dirty.size; listeners.forEach(function (fn) { try { fn(status()); } catch (_) {} });
+      state.pending = dirty.size;
+      // A subscriber must never inherit a registered editor's synchronous
+      // final-save access through a notification triggered by its write.
+      if (activeStage) { stageNotifyPending = true; return; }
+      listeners.forEach(function (fn) { try { fn(status()); } catch (_) {} });
       if (options.lifecycle !== false && root.dispatchEvent && root.Event) root.dispatchEvent(new root.Event('alloflow:sensitive-workspace-status'));
     }
     function status() { return Object.assign({}, state, { epoch: epoch, setupRecoveryCode: state.phase === 'setup' ? recoveryCode : '' }); }
@@ -103,10 +150,16 @@
       if (c.isCanvas === true && !p.allowCanvasRecords) throw failure('PROTECTED_CANVAS_NOT_APPROVED', 'This Canvas deployment is not configured for real student records. Use the examples or a school-approved deployment.');
     }
     function stamp(store, id) { var r = store && Array.isArray(store.records) && store.records.find(function (x) { return x.id === id; }); return r ? r.savedAt : null; }
+    function restoreConflict() { return failure('PROTECTED_CONFLICT', 'Protected storage changed while the backup was being checked. Existing records or deletion were preserved. Review the current store before trying again.'); }
     function checkTicket(expected) { if (disposed || expected !== ticket) throw aborted(); }
     function checkCredential() { if (activeCredentialTicket != null) checkTicket(activeCredentialTicket); else if (disposed) throw aborted(); }
     var guardedRepository = {
-      async read() { checkCredential(); if (staging) return { revision: stagedRevision, store: clone(stagedStore || pendingSeed) }; var value = await repository.read(); checkCredential(); return value; },
+      async read() {
+        checkCredential(); if (staging) return { revision: stagedRevision, store: clone(stagedStore || pendingSeed) };
+        var value = await repository.read(); checkCredential();
+        if (restoreTarget && (JSON.stringify(value.revision) !== JSON.stringify(restoreTarget.revision) || JSON.stringify(value.store) !== JSON.stringify(restoreTarget.store))) throw restoreConflict();
+        return value;
+      },
       async compareAndSwap(revision, next) {
         checkCredential();
         if (activeWrite) {
@@ -115,7 +168,11 @@
           if (stamp(current.store, activeWrite) !== (stamps.get(activeWrite) || null)) throw failure('PROTECTED_CONFLICT', 'Another window changed these records. Keep this window open and preserve its work before reopening.');
         }
         if (staging) { if (revision !== stagedRevision) return false; stagedStore = clone(next); stagedRevision++; return true; }
-        var applied = await repository.compareAndSwap(revision, next); checkCredential(); return applied;
+        if (restoreTarget && JSON.stringify(revision) !== JSON.stringify(restoreTarget.revision)) throw restoreConflict();
+        var restoring = restoreTarget;
+        var applied = await repository.compareAndSwap(restoring ? restoring.revision : revision, next); checkCredential();
+        if (restoring && !applied) throw restoreConflict();
+        return applied;
       }
     };
     var controller = vaultModule.createRecoveryVaultController({ repository: guardedRepository, crypto: options.crypto, cryptoOptions: options.cryptoOptions, now: function () { return new Date(Number(now())); } });
@@ -134,11 +191,31 @@
       return { maps: result, meta: meta };
     }
     async function hydrate(expectedTicket) {
-      var decoded = decodePlain(await controller.readPlainStore());
-      var head = await guardedRepository.read();
-      var v = await controller.getStatus();
+      // Keep the decrypted buckets and their optimistic-write stamps tied to
+      // one repository snapshot. A later head must never authorize stale data.
+      var before = await guardedRepository.read();
+      var decoded, v, head, hydrationError;
+      try {
+        decoded = decodePlain(await controller.readPlainStore());
+        v = await controller.getStatus();
+        head = await guardedRepository.read();
+      } catch (error) {
+        controller.lock(); hydrationError = error;
+        // A concurrent deletion can make decoding fail before the normal
+        // closing read. Reconcile changed storage, but preserve real corrupt-
+        // backup errors when the encrypted snapshot itself has not changed.
+        try { head = await guardedRepository.read(); } catch (_) { throw error; }
+      }
       if (disposed || expectedTicket !== ticket) { controller.lock(); throw aborted(); }
       try { checkLocal(); } catch (error) { controller.lock(); throw error; }
+      if (JSON.stringify(before.revision) !== JSON.stringify(head.revision) || JSON.stringify(before.store) !== JSON.stringify(head.store)) {
+        controller.lock();
+        // Restore/recovery may already have committed before hydration began.
+        // Re-read their durable state so a rejected open can be retried safely.
+        initialized = false; await init(); checkTicket(expectedTicket);
+        throw failure('PROTECTED_CONFLICT', 'Protected records changed in another window while opening. Use the current saved-records password to reopen the latest records.');
+      }
+      if (hydrationError) throw hydrationError;
       maps = decoded.maps; setupMeta = decoded.meta; stamps.clear();
       (head.store.records || []).forEach(function (r) { stamps.set(r.id, r.savedAt); tick = Math.max(tick, Date.parse(r.savedAt) || 0); });
       keyActive = true; generation++; epoch++; sessions.clear(); dirty.clear();
@@ -153,7 +230,7 @@
       var head = await repository.read();
       if (disposed) throw aborted();
       if (head.store != null && !vaultModule.isVaultStore(head.store) && !isDeletionTombstone(head.store)) throw failure('PROTECTED_STORE_INVALID', 'Protected storage is damaged or unsupported. Existing data has been preserved.');
-      state.enabled = vaultModule.isVaultStore(head.store); state.phase = state.enabled ? 'locked' : 'new'; initialized = true;
+      state.enabled = vaultModule.isVaultStore(head.store); state.phase = state.enabled ? 'locked' : 'new'; state.error = ''; initialized = true;
       if (isDeletionTombstone(head.store)) { deletedMarker = head.store.deletedAt; state.deletedAt = deletedMarker; }
       notify(); return status();
     }
@@ -250,15 +327,42 @@
       if (!keyActive || state.phase !== 'ready') throw failure('PROTECTED_LOCKED', 'Unlock the protected workspace first.');
       if (sessions.has(feature)) return sessions.get(feature);
       var born = generation;
-      function access() { if (!keyActive || born !== generation || !['ready', 'locking'].includes(state.phase)) throw failure('PROTECTED_LOCKED', 'This protected workspace is locked.'); if (state.phase === 'ready') checkLocal(); }
+      function access() {
+        if (!keyActive || born !== generation || !['ready', 'locking'].includes(state.phase)
+          || (state.phase === 'locking' && (!activeStage || activeStage.feature !== feature || activeStage.generation !== born))) throw failure('PROTECTED_LOCKED', 'This protected workspace is locked.');
+        if (state.phase === 'ready') checkLocal();
+      }
+      function sessionFlush() { access(); return flush(); }
       function current() { if (!isSession(s)) throw aborted(); checkLocal(); }
+      function canTransmit(purpose) { current(); var p = policy(); if (purpose !== 'ai' || !p || p.allowExternalAi.indexOf(feature) < 0) throw failure('PROTECTED_REMOTE_NOT_APPROVED', 'Sending protected records to AI is disabled. Your school must approve and configure this connection.'); }
+      function createRequestControls(captured, assertOperation, inheritedControls) {
+        function invalid() { return failure('managed-ai-blocked', 'The protected AI request approval check is invalid.'); }
+        var inherited = null;
+        if (assertOperation != null && typeof assertOperation !== 'function') throw invalid();
+        if (inheritedControls != null) {
+          if (typeof inheritedControls !== 'object' || Array.isArray(inheritedControls)) throw invalid();
+          var keys = Reflect.ownKeys(inheritedControls), descriptor = Object.getOwnPropertyDescriptor(inheritedControls, 'beforeRequest');
+          if (keys.length !== 1 || keys[0] !== 'beforeRequest' || !descriptor || !own(descriptor, 'value') || typeof descriptor.value !== 'function') throw invalid();
+          inherited = descriptor.value;
+        }
+        function run(guard) {
+          if (!guard) return;
+          var result = guard();
+          if (result && typeof result.then === 'function') { Promise.resolve(result).catch(function () {}); throw invalid(); }
+          if (result !== undefined && result !== true) throw invalid();
+        }
+        function check() { if (captured !== epoch || born !== generation) throw aborted(); canTransmit('ai'); }
+        var beforeRequest = function () { check(); run(assertOperation); run(inherited); check(); return true; };
+        beforeRequest();
+        return Object.freeze({ beforeRequest: beforeRequest });
+      }
       var storage = {
         getItem: function (key) { access(); var data = maps.get(feature); return own(data, String(key)) ? data[String(key)] : null; },
         setItem: function (key, value) { access(); key = String(key); value = String(value); if (!key || key.length > 512) throw failure('PROTECTED_KEY_INVALID', 'The record key is invalid.'); var data = maps.get(feature); if (own(data, key) && data[key] === value) return; data[key] = value; changed(feature); },
         removeItem: function (key) { access(); var data = maps.get(feature); key = String(key); if (own(data, key)) { delete data[key]; changed(feature); } },
         clear: function () { access(); if (Object.keys(maps.get(feature)).length) { maps.set(feature, Object.create(null)); changed(feature); } },
         key: function (i) { access(); return Object.keys(maps.get(feature))[Number(i)] || null; },
-        flush: flush
+        flush: sessionFlush
       };
       Object.defineProperty(storage, 'length', { get: function () { access(); return Object.keys(maps.get(feature)).length; } });
       var s = {
@@ -266,10 +370,11 @@
         captureEpoch: function () { current(); return epoch; },
         isCurrent: function (captured) { try { return captured === epoch && isSession(s) && (checkLocal(), true); } catch (_) { return false; } },
         assertCurrent: function (captured) { if (!s.isCurrent(captured)) throw aborted(); },
-        assertCanTransmit: function (purpose) { current(); var p = policy(); if (purpose !== 'ai' || !p || p.allowExternalAi.indexOf(feature) < 0) throw failure('PROTECTED_REMOTE_NOT_APPROVED', 'Sending protected records to AI is disabled. Your school must approve and configure this connection.'); },
+        assertCanTransmit: canTransmit,
+        createRequestControls: createRequestControls,
         assertCanExport: function (kind) { current(); if (kind === 'encrypted-backup') return; var confirm = options.confirmExport || (root.confirm && root.confirm.bind(root)); if (!confirm || !confirm('This creates a readable copy of protected clinical information. Save or share it only in a school-approved location. Continue?')) throw aborted(); current(); },
-        registerFlush: function (fn) { current(); if (typeof fn !== 'function') throw new TypeError('A flush callback is required.'); flushers.add(fn); return function () { flushers.delete(fn); }; },
-        flush: flush,
+        registerFlush: function (fn) { current(); if (typeof fn !== 'function') throw new TypeError('A flush callback is required.'); var entry = { callback: fn, feature: feature, generation: born }; flushers.add(entry); return function () { flushers.delete(entry); }; },
+        flush: sessionFlush,
         transfer: function (to, payload) { current(); checkFeature(to); transfers.set(to, { source: feature, payload: clone(payload) }); notify(); },
         consumeTransfer: function (source) { current(); var item = transfers.get(feature); if (!item || (source && source !== item.source)) return null; transfers.delete(feature); return clone(item.payload); }
       };
@@ -279,7 +384,19 @@
     }
     async function stage(reason, forLock) {
       var callbacks = Array.from(flushers);
-      for (var i = 0; i < callbacks.length; i++) await callbacks[i]({ reason: reason, forLock: forLock === true });
+      for (var i = 0; i < callbacks.length; i++) {
+        var entry = callbacks[i], pending;
+        if (!keyActive || entry.generation !== generation) throw failure('PROTECTED_LOCKED', 'This protected workspace is locked.');
+        // Only this registered editor may stage its captured work. Drop that
+        // permission before any asynchronous continuation or subscriber runs.
+        activeStage = entry;
+        try { pending = entry.callback({ reason: reason, forLock: forLock === true }); }
+        finally {
+          activeStage = null;
+          if (stageNotifyPending) { stageNotifyPending = false; notify(); }
+        }
+        await pending;
+      }
     }
     function forgetDeleted(marker, external) {
       if (external) ticket++;
@@ -413,8 +530,26 @@
         idleSuspended = true; notify(); throw failure(error.code || 'PROTECTED_LOCK_SAVE_FAILED', state.error);
       }
     }
+    function checkBackupEnvelope(backup) {
+      var generic = backup && backup.vaultBackup, vault = generic && generic.vault;
+      if (!backup || typeof backup !== 'object' || Array.isArray(backup) || backup.kind !== BACKUP_KIND || backup.version !== 1
+        || !generic || typeof generic !== 'object' || Array.isArray(generic) || generic.kind !== vaultModule.BACKUP_KIND || generic.version !== vaultModule.BACKUP_VERSION
+        || !vaultModule.isVaultStore(vault) || !Array.isArray(vault.records) || !vault.records.length || vault.records.length > FEATURES.length + 1) throw failure('PROTECTED_BACKUP_INVALID', 'Choose an encrypted protected-records backup.');
+      var ids = new Set();
+      vault.records.forEach(function (record) {
+        if (!record || typeof record !== 'object' || Array.isArray(record) || !FEATURES.concat(META).includes(record.id) || ids.has(record.id)) throw failure('PROTECTED_BACKUP_INVALID', 'The backup contains unsupported or repeated protected record types.');
+        ids.add(record.id);
+      });
+      if (!ids.has(META)) throw failure('PROTECTED_BACKUP_INVALID', 'The protected-records setup information is missing from this backup.');
+    }
+    function captureBackup(backup) {
+      checkBackupEnvelope(backup);
+      var captured;
+      try { captured = clone(backup); } catch (_) { throw failure('PROTECTED_BACKUP_INVALID', 'Choose an encrypted protected-records backup.'); }
+      checkBackupEnvelope(captured); return captured;
+    }
     async function verifyBackup(backup, secret, useRecovery) {
-      if (!backup || backup.kind !== BACKUP_KIND || backup.version !== 1 || !backup.vaultBackup) throw failure('PROTECTED_BACKUP_INVALID', 'Choose an encrypted protected-records backup.');
+      checkBackupEnvelope(backup);
       var memory = null, rev = 0;
       var verifier = vaultModule.createRecoveryVaultController({ crypto: options.crypto, cryptoOptions: options.cryptoOptions, repository: {
         async read() { return { revision: rev, store: clone(memory) }; },
@@ -502,12 +637,37 @@
     }
     async function restore(backupValue, secret, recovery, newPassword) {
       return credentialAction(async function (started) {
-        checkLocal(); await init(); var h = await repository.read();
+        checkLocal();
+        if (keyActive || staging) throw failure('PROTECTED_RESTORE_WOULD_REPLACE', 'Save and lock the current protected work before restoring a backup into an empty store.');
+        // Keep verification and import tied to the same detached input and the
+        // same destination generation, including a reviewed deletion marker.
+        var captured = captureBackup(backupValue);
+        await init(); var h = await repository.read();
         if ((h.store != null && !isDeletionTombstone(h.store)) || (await scanLegacy()).plan.length) throw failure('PROTECTED_RESTORE_WOULD_REPLACE', 'Restore into a clean browser profile to preserve this device\'s existing records.');
-        await verifyBackup(backupValue, secret, recovery);
-        if (recovery) checkPassword(newPassword);
-        await controller.importEncryptedBackup(backupValue.vaultBackup, secret, { useRecoveryKey: recovery === true, newPassword: newPassword, replace: false });
-        await hydrate(started); recoveryCode = ''; verifiedBackup = null; return status();
+        restoreTarget = clone(h); var importAttempted = false;
+        try {
+          await verifyBackup(captured, secret, recovery);
+          if (recovery) checkPassword(newPassword);
+          importAttempted = true;
+          await controller.importEncryptedBackup(captured.vaultBackup, secret, { useRecoveryKey: recovery === true, newPassword: newPassword, replace: false });
+          restoreTarget = null;
+          await hydrate(started);
+        } catch (error) {
+          if (importAttempted || (error && error.code === 'PROTECTED_CONFLICT')) {
+            controller.lock(); keyActive = false; restoreTarget = null; initialized = false;
+            // A successful import may lose its acknowledgement or its next read.
+            // Inspect the durable result without repeating the write; keep the
+            // original failure if that inspection is unavailable as well.
+            try { await init(); }
+            catch (_) {
+              initialized = false; state.phase = 'loading';
+              state.error = 'The restore outcome could not be checked. Reconnect storage and recheck before opening records or retrying restore.'; notify();
+            }
+            checkTicket(started);
+          }
+          throw error;
+        } finally { restoreTarget = null; }
+        recoveryCode = ''; verifiedBackup = null; return status();
       });
     }
     function touch() { lastActivity = Number(now()); }
@@ -567,14 +727,36 @@
     var errorState = React.useState(''), error = errorState[0], setError = errorState[1];
     var busyState = React.useState(false), busy = busyState[0], setBusy = busyState[1];
     var formState = React.useState({ password: '', confirm: '', recovery: '', saved: false, idle: 0, recover: false, backupSecret: '', restoreRecovery: false, restoreNewPassword: '', deletePassword: '', deletePhrase: '', retentionApproved: false, holdsReviewed: false, otherClinicalWindowsClosed: false }), form = formState[0], setForm = formState[1];
-    var live = React.useRef(true), childRef = React.useRef(null), sessionRef = React.useRef(null), renderedChildRef = React.useRef(null);
+    var live = React.useRef(true), childRef = React.useRef(null), lockStatusRef = React.useRef(null), sessionRef = React.useRef(null), renderedChildRef = React.useRef(null);
+    var actionOwnerRef = React.useRef({ source: props.service }), actionRef = React.useRef(null), resolvedServiceRef = React.useRef(null);
+    // Invalidate pending UI work as soon as a different owner is rendered,
+    // including the interval before its asynchronous initialization finishes.
+    if (actionOwnerRef.current.source !== props.service) actionOwnerRef.current = { source: props.service };
+    if (!resolvedServiceRef.current || resolvedServiceRef.current.owner !== actionOwnerRef.current) { service = null; status = { phase: 'loading' }; }
+    var credentialContextRef = React.useRef(null);
     var deletionPanelRef = React.useRef(null), deletionTriggerRef = React.useRef(null), deletionPreviousPhase = React.useRef('loading'), deletionReturnFocusPending = React.useRef(false);
+    function clearCredentials(f) { return Object.assign({}, f, { password: '', confirm: '', recovery: '', backupSecret: '', restoreNewPassword: '', deletePassword: '', deletePhrase: '', retentionApproved: false, holdsReviewed: false, otherClinicalWindowsClosed: false }); }
+    function publishStatus(owner, value) {
+      var previous = credentialContextRef.current;
+      // Other clinical views and lifecycle events share this service. Never
+      // repopulate credentials from an earlier unlock/recovery context.
+      if (!previous || previous.owner !== owner || previous.phase !== value.phase || previous.epoch !== value.epoch || previous.recovery !== value.setupRecoveryCode) setForm(clearCredentials);
+      credentialContextRef.current = { owner: owner, phase: value.phase, epoch: value.epoch, recovery: value.setupRecoveryCode };
+      setStatus(value);
+    }
     React.useEffect(function () {
-      live.current = true; var stop;
-      (props.service ? Promise.resolve(props.service) : ensure()).then(async function (s) { await s.init(); if (!live.current) return; setService(s); setStatus(s.getStatus()); stop = s.subscribe(function (value) { if (live.current) setStatus(value); }); }).catch(function () { if (live.current) setError('Protected storage could not load. Existing records have not been opened. Reload to retry.'); });
-      return function () { live.current = false; if (stop) stop(); };
+      live.current = true; var stop, observing = true, owner = actionOwnerRef.current;
+      actionRef.current = null; setBusy(false); setError('');
+      (props.service ? Promise.resolve(props.service) : ensure()).then(async function (s) { await s.init(); if (!observing || actionOwnerRef.current !== owner) return; resolvedServiceRef.current = { owner: owner, service: s }; setService(s); publishStatus(s, s.getStatus()); stop = s.subscribe(function (value) { if (observing && actionOwnerRef.current === owner) publishStatus(s, value); }); }).catch(function () { if (observing && actionOwnerRef.current === owner) setError('Protected storage could not load. Existing records have not been opened. Reload to retry.'); });
+      return function () { observing = false; live.current = false; if (actionOwnerRef.current === owner) actionOwnerRef.current = { source: props.service }; if (stop) stop(); };
     }, [props.service]);
-    React.useEffect(function () { if (childRef.current) childRef.current.inert = status.phase === 'locking'; }, [status.phase]);
+    React.useEffect(function () {
+      var child = childRef.current, locking = status.phase === 'locking';
+      if (child) {
+        if (locking && child.contains(root.document.activeElement) && lockStatusRef.current) lockStatusRef.current.focus();
+        child.inert = locking;
+      }
+    }, [status.phase]);
     React.useEffect(function () {
       if (['deletion-review', 'deletion-unverified'].includes(status.phase) && status.phase !== deletionPreviousPhase.current && deletionPanelRef.current) { var heading = deletionPanelRef.current.querySelector('h2'); if (heading) heading.focus(); }
       if (status.phase === 'ready' && deletionPreviousPhase.current === 'deletion-review') deletionReturnFocusPending.current = true;
@@ -586,17 +768,24 @@
     }, [status.phase, busy]);
     React.useEffect(function () { return service && service.attachView ? service.attachView() : undefined; }, [service]);
     async function act(fn) {
-      if (busy || !service) return; setBusy(true); setError('');
-      try { await fn(); if (live.current) setForm(function (f) { return Object.assign({}, f, { password: '', confirm: '', recovery: '', backupSecret: '', restoreNewPassword: '', deletePassword: '', deletePhrase: '', retentionApproved: false, holdsReviewed: false, otherClinicalWindowsClosed: false }); }); }
-      catch (e) { if (live.current && e.name !== 'AbortError') setError(e && /^PROTECTED_|^VAULT_/.test(e.code || '') ? e.message : 'The protected operation could not finish. Existing work was preserved.'); }
-      finally { if (live.current) setBusy(false); }
+      if (busy || !service || !resolvedServiceRef.current || resolvedServiceRef.current.owner !== actionOwnerRef.current || resolvedServiceRef.current.service !== service || (actionRef.current && actionRef.current.owner === actionOwnerRef.current)) return;
+      var action = { owner: actionOwnerRef.current }, context = service.getStatus(); actionRef.current = action; setBusy(true); setError('');
+      function currentView() { return live.current && actionOwnerRef.current === action.owner && actionRef.current === action; }
+      function assertView() { if (!currentView()) throw aborted(); }
+      function assertContext() {
+        assertView(); var latest = service.getStatus();
+        if (latest.epoch !== context.epoch || latest.phase !== context.phase || latest.setupRecoveryCode !== context.setupRecoveryCode) throw aborted();
+      }
+      try { await fn(assertContext, assertView); if (currentView()) setForm(clearCredentials); }
+      catch (e) { if (currentView() && e.name !== 'AbortError') setError(e && /^PROTECTED_|^VAULT_/.test(e.code || '') ? e.message : 'The protected operation could not finish. Existing work was preserved.'); }
+      finally { if (currentView()) { actionRef.current = null; setBusy(false); } }
     }
     function field(name, label, type) { return h('label', { style: { display: 'block', margin: '12px 0' } }, label,
       h('input', { type: type || 'password', value: form[name], autoComplete: 'off', disabled: busy, onChange: function (e) { var value = e.target.value; setForm(function (f) { var n = Object.assign({}, f); n[name] = value; return n; }); }, style: { display: 'block', width: '100%', fontSize: 16, padding: 10, border: '1px solid #64748b', borderRadius: 6 } })); }
     function button(label, fn, disabled, ref) { return h('button', { type: 'button', ref: ref, disabled: busy || disabled, onClick: fn, style: { padding: '10px 14px', margin: '8px 8px 8px 0', background: '#1e40af', color: '#fff', border: '1px solid #1e3a8a', borderRadius: 6, fontSize: 16, cursor: 'pointer' } }, label); }
     var title = { 'behavior-lens': 'BehaviorLens', 'dynamic-assessment': 'Dynamic Assessment', 'report-writer': 'Report Writer' }[feature];
     var warning = error || status.error;
-    if (service && status.phase === 'deletion-unverified') return h('section', { ref: deletionPanelRef, 'aria-label': 'Unverified clinical deletion', style: { maxWidth: 760, margin: '24px auto', padding: 24, color: '#0f172a', background: '#fff', border: '2px solid #991b1b', borderRadius: 12 } },
+    if (service && status.phase === 'deletion-unverified') return h('section', { ref: deletionPanelRef, 'aria-label': __alloT("sensitive_workspace.a11y_unverified_clinical_deletion", 'Unverified clinical deletion'), style: { maxWidth: 760, margin: '24px auto', padding: 24, color: '#0f172a', background: '#fff', border: '2px solid #991b1b', borderRadius: 12 } },
       h('h2', { tabIndex: -1 }, 'Deletion status is not verified'),
       h('p', null, 'This paused copy cannot resume saving until connected storage is checked. A deletion may already have committed. Keep this window secure; it will not automatically put the paused records back.'),
       warning ? h('p', { role: 'alert', style: { color: '#991b1b' } }, warning) : null,
@@ -605,7 +794,7 @@
     if (service && ['deletion-review', 'deleting'].includes(status.phase) && status.deletionReview) {
       var deletion = status.deletionReview;
       function deletionAck(name, text) { return h('label', { style: { display: 'block', margin: '12px 0' } }, h('input', { type: 'checkbox', checked: form[name], disabled: busy || status.phase === 'deleting', onChange: function (e) { var checked = e.target.checked; setForm(function (f) { var next = Object.assign({}, f); next[name] = checked; return next; }); } }), ' ', text); }
-      return h('section', { ref: deletionPanelRef, 'aria-label': 'Review protected clinical record deletion', style: { maxWidth: 760, margin: '24px auto', padding: 24, color: '#0f172a', background: '#fff', border: '2px solid #991b1b', borderRadius: 12 } },
+      return h('section', { ref: deletionPanelRef, 'aria-label': __alloT("sensitive_workspace.a11y_review_protected_clinical_record_deletion", 'Review protected clinical record deletion'), style: { maxWidth: 760, margin: '24px auto', padding: 24, color: '#0f172a', background: '#fff', border: '2px solid #991b1b', borderRadius: 12 } },
         h('h2', { tabIndex: -1 }, 'Review deletion of all protected clinical records'),
         h('p', null, 'This removes every saved BehaviorLens, Dynamic Assessment and Report Writer record in this device’s currently connected encrypted clinical store, including preserved older copies and pending transfers. This does not select an individual student.'),
         h('ul', null, deletion.features.map(function (item) { return h('li', { key: item.feature }, item.feature + ': ' + item.storedKeys + ' stored entries; ' + item.preservedCopies + ' preserved older copies.'); })),
@@ -632,14 +821,15 @@
         h('div', { style: { padding: 12, borderBottom: '1px solid #64748b', background: '#eff6ff', color: '#0f172a' } },
           h('strong', null, 'Protected records'), ' — saved with encryption on this device. ',
           status.pending ? h('span', { role: 'status' }, 'Saving… ') : h('span', { role: 'status' }, 'Encrypted storage active. '),
-          button('Encrypted saved-records backup', function () { act(async function () { var value = await service.exportBackup(); if (live.current) downloadJSON(value); }); }, status.phase === 'locking'),
+          button('Encrypted saved-records backup', function () { act(async function (assertContext) { var value = await service.exportBackup(); assertContext(); downloadJSON(value); }); }, status.phase === 'locking'),
           button(status.phase === 'locking' ? 'Saving before locking…' : 'Lock records', function () { act(function () { return service.lock('manual'); }); }, status.phase === 'locking'),
           typeof service.prepareDeletion === 'function' ? button('Review clinical-record deletion', function () { act(function () { return service.prepareDeletion(); }); }, status.phase === 'locking', deletionTriggerRef) : null,
           warning ? h('p', { role: 'alert', style: { color: '#991b1b' } }, warning) : null,
           status.phase === 'ready' && protectedSession.getPreservedCopies().length ? h('details', null, h('summary', null, 'Preserved older browser copies'),
             h('p', null, 'When browser stores differed, the current local copy was kept for this tool. Each other version remains encrypted and can be retrieved here. Downloaded copies are readable; use an approved location.'),
             protectedSession.getPreservedCopies().map(function (p, i) { return button('Retrieve preserved copy ' + (i + 1) + ' (' + p.source + ')', function () { act(function () { downloadJSON(protectedSession.exportPreservedCopy(p.storedKey)); }); }); })) : null),
-        h('div', { ref: childRef, 'aria-busy': status.phase === 'locking' }, renderedChildRef.current));
+        status.phase === 'locking' ? h('p', { ref: lockStatusRef, role: 'status', tabIndex: -1 }, 'Saving protected records before locking…') : null,
+        h('div', { ref: childRef, 'aria-busy': status.phase === 'locking', hidden: status.phase === 'locking', 'aria-hidden': status.phase === 'locking' ? true : undefined }, renderedChildRef.current));
       }
     }
     return h('section', { 'aria-label': title + ' record protection', style: { maxWidth: 760, margin: '24px auto', padding: 24, color: '#0f172a', background: '#fff', border: '1px solid #64748b', borderRadius: 12 } },
@@ -650,6 +840,9 @@
       warning ? h('p', { role: 'alert', style: { color: '#991b1b' } }, warning) : null,
       status.deletedAt ? h('p', { role: 'status' }, 'Protected clinical records were deleted from the connected device store at ' + status.deletedAt + '. Backups, exports, other tools and remote copies were not deleted.') : null,
       !service ? h('p', { role: 'status' }, error ? 'Reload the page to retry protected storage.' : 'Loading protected storage…') : null,
+      service && status.phase === 'loading' && status.error ? h('div', null,
+        h('p', { role: 'status' }, 'Reconnect storage, then check the saved result before continuing.'),
+        button('Recheck protected storage', function () { act(function () { return service.init(); }); })) : null,
       service && status.phase === 'new' ? h('div', null,
         h('h3', null, 'Set up protected records'), h('p', null, 'Choose a passphrase. Next, save an encrypted backup and confirm an offline recovery key. Existing readable clinical copies are kept until verification finishes.'),
         field('password', 'New saved-records password (at least 10 characters)'), field('confirm', 'Confirm password'),
@@ -659,7 +852,7 @@
         h('h3', null, 'Save recovery before opening records'), h('p', null, 'Keep the recovery key separately from this device. Losing both password and key can make locked records inaccessible. This password is separate from the educator access code.'),
         h('p', null, 'If browser stores contain different versions, this device’s current local copy opens first. Other versions are preserved inside the encrypted backup and can be retrieved after unlocking.'),
         status.setupRecoveryCode ? h('p', null, h('code', { style: { overflowWrap: 'anywhere', userSelect: 'all' } }, status.setupRecoveryCode)) : button('Create recovery key', function () { act(function () { return service.renewRecovery(); }); }),
-        button('Download verified encrypted backup', function () { act(async function () { var value = await service.exportBackup(); if (live.current) downloadJSON(value); }); }, !status.setupRecoveryCode),
+        button('Download verified encrypted backup', function () { act(async function (assertContext) { var value = await service.exportBackup(); assertContext(); downloadJSON(value); }); }, !status.setupRecoveryCode),
         field('recovery', 'Re-enter the recovery key to confirm it is saved', 'text'),
         h('label', { style: { display: 'block' } }, h('input', { type: 'checkbox', checked: form.saved, onChange: function (e) { var checked = e.target.checked; setForm(function (f) { return Object.assign({}, f, { saved: checked }); }); } }), ' I saved the encrypted backup in an approved location and closed older clinical-tool windows.'),
         button('Verify and open protected records', function () { act(function () { return service.finishSetup({ recoveryInput: form.recovery, backupSaved: form.saved }); }); }),
@@ -670,16 +863,16 @@
         field('password', form.recover ? 'New saved-records password (at least 10 characters)' : 'Saved-records password'),
         button(form.recover ? 'Recover records' : 'Unlock records', function () { act(function () { return form.recover ? service.recover(form.recovery, form.password) : service.unlock(form.password); }); }),
         button(form.recover ? 'Use password instead' : 'Forgot password? Use recovery key', function () { setForm(function (f) { return Object.assign({}, f, { recover: !f.recover, password: '', recovery: '' }); }); }),
-        button('Export encrypted backup while locked', function () { act(async function () { downloadJSON(await service.exportBackup()); }); })) : null,
+        button('Export encrypted backup while locked', function () { act(async function (assertContext) { var value = await service.exportBackup(); assertContext(); downloadJSON(value); }); })) : null,
       service && status.phase === 'new' ? h('div', { style: { marginTop: 16 } }, h('h3', null, 'Restore an encrypted backup into an empty workspace'),
         h('label', null, h('input', { type: 'checkbox', checked: form.restoreRecovery, onChange: function (e) { var value = e.target.checked; setForm(function (f) { return Object.assign({}, f, { restoreRecovery: value, backupSecret: '' }); }); } }), ' Restore with the offline recovery key'),
         field('backupSecret', form.restoreRecovery ? 'Backup recovery key' : 'Backup password'),
         form.restoreRecovery ? field('restoreNewPassword', 'New saved-records password (at least 10 characters)') : null,
         h('label', null, 'Encrypted backup file ', h('input', { type: 'file', accept: '.json,application/json', disabled: busy, onChange: function (e) {
           var file = e.target.files && e.target.files[0]; e.target.value = ''; if (!file) return;
-          act(async function () { if (file.size > 200 * 1024 * 1024) throw failure('PROTECTED_BACKUP_INVALID', 'This backup exceeds the supported size.'); var data = JSON.parse(await file.text()); if (!live.current) throw aborted(); await service.restore(data, form.backupSecret, form.restoreRecovery, form.restoreNewPassword); });
+          act(async function (assertContext) { if (file.size > 200 * 1024 * 1024) throw failure('PROTECTED_BACKUP_INVALID', 'This backup exceeds the supported size.'); var text = await file.text(); assertContext(); var data = JSON.parse(text); await service.restore(data, form.backupSecret, form.restoreRecovery, form.restoreNewPassword); });
         } })), h('p', null, 'Enter the backup password or recovery key before choosing a file. Existing protected or readable clinical records are never replaced by this restore.')) : null,
-      props.onClose ? button('Back to ordinary tools', function () { act(async function () { if (service) await service.lock('setup-close'); props.onClose(); }); }) : null,
+      props.onClose ? button('Back to ordinary tools', function () { act(async function (_assertContext, assertView) { if (service) await service.lock('setup-close'); assertView(); props.onClose(); }); }) : null,
       h('p', { style: { fontSize: 14 } }, 'Protection here covers the clinical records in these tools on this device. School approval, managed devices, approved AI services, other application stores, and shared-service authorization remain separate requirements.'));
   }
   function Indicator(props) {
@@ -687,7 +880,7 @@
     React.useEffect(function () { var refresh = function () { state[1](function (n) { return n + 1; }); }; root.addEventListener('alloflow:sensitive-workspace-status', refresh); return function () { root.removeEventListener('alloflow:sensitive-workspace-status', refresh); }; }, []);
     var service = props.service || defaultService, status = service && service.getStatus();
     if (!status || !['ready', 'locking', 'deletion-review', 'deleting', 'deletion-unverified'].includes(status.phase) || status.activeViews > 0) return null;
-    return h('aside', { 'aria-label': 'Protected record security', style: { position: 'fixed', bottom: 16, left: 16, zIndex: 1400, maxWidth: 'calc(100vw - 32px)', padding: 12, color: '#0f172a', background: '#eff6ff', border: '2px solid #1e40af', borderRadius: 8 } },
+    return h('aside', { 'aria-label': __alloT("sensitive_workspace.a11y_protected_record_security", 'Protected record security'), style: { position: 'fixed', bottom: 16, left: 16, zIndex: 1400, maxWidth: 'calc(100vw - 32px)', padding: 12, color: '#0f172a', background: '#eff6ff', border: '2px solid #1e40af', borderRadius: 8 } },
       h('span', { role: 'status' }, status.phase === 'locking' ? 'Saving before locking… ' : status.phase === 'deletion-review' ? 'Protected records are unlocked for deletion review. ' : status.phase === 'deletion-unverified' ? 'Clinical deletion is unverified; this copy is paused. ' : status.phase === 'deleting' ? 'Verifying clinical-record deletion… ' : 'Protected records are unlocked. '),
       h('button', { type: 'button', disabled: status.phase === 'locking' || status.phase === 'deleting', onClick: function () { service.lock('manual').catch(function (e) { errorState[1](e.message); }); }, style: { padding: 8, fontSize: 16, fontWeight: 'bold', textDecoration: 'underline' } }, 'Lock records'),
       status.error || errorState[0] ? h('p', { role: 'alert' }, status.error || errorState[0]) : null);

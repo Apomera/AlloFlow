@@ -20,7 +20,21 @@ Further local [retention and deletion work](retention-deletion-followup.md) prov
 
 The [managed request follow-up](managed-request-security-followup.md) closes reproduced policy/credential timing gaps, binds retries and fallbacks to captured approval, validates Gemini model URL values, and blocks unapproved legacy source imports in managed deployments. Its synthetic validation does not establish actual Canvas/PPS authorization or approve a production release.
 
+The [clinical transient-data follow-up](../2026-10-26-school-district/clinical-transient-data-followup.md) clears credentials retained across shared clinical views, blocks stale queued clinical spreadsheet exports, and removes temporary clipboard/print content. These local fixes preserve saved work and require a verified release; delivered exports and actual district authorization remain separate responsibilities.
+
+The [clinical file-action follow-up](../2026-10-26-school-district/clinical-file-actions-followup.md) binds pending restore and file-import actions to their initiating context, prevents a reproduced cross-student import, and cleans up failed report/assessment output. It retains the separate release and district-approval requirements.
+
+The [clinical speech and policy follow-up](../2026-10-26-school-district/clinical-speech-policy-followup.md) closes reproduced clinical read-aloud/dictation boundaries, binds media to its student, clears failed download output and rejects malformed policy approval. Browser support and actual district deployment still need verification.
+
 ## Scope and coordination
+
+The [October 26 stored-data boundary follow-up](../2026-10-26-school-district/storage-boundaries-followup.md) fixes a reproduced cross-origin storage-approval replay and a clinical hydration race that could overwrite newer records. It preserves existing Canvas storage partitions and records the separate release and deployment limitations.
+
+The subsequent [storage document-channel follow-up](../2026-10-26-school-district/storage-document-channel-followup.md) replaces window-based record delivery with a document-bound MessagePort after reproducing disclosure to a replacement opaque document. It requires a coordinated bridge/adapter release; district approval and actual Canvas verification remain open.
+
+The [clinical restore follow-up](../2026-10-26-school-district/clinical-restore-followup.md) prevents an older pending restore from undoing a newer deletion, captures one backup for both verification and import, and rejects unrelated clinical backup records before cryptography. Actual release and PPS approval remain separate requirements.
+
+The [clinical lock follow-up](../2026-10-26-school-district/clinical-lock-followup.md) denies ordinary cached-handle access while saving and locking, conceals the mounted editor and preserves registered final drafts. The subsequent [clinical AI dispatch correction](../2026-10-26-school-district/clinical-ai-dispatch-followup.md) carries current clinical permission and operation checks through provider preparation, search, retries and fallbacks. Clinical external AI remains disabled by default; local fixes still require release verification and district approval.
 
 The two existing security workstreams were identified by reading their current status: **Assess Antivirus and Security Risks** owns [PR 21](https://github.com/Apomera/AlloFlow/pull/21), covering application dependencies, optional local services, build tooling, and related fixes; **Assess Cloudflare backup options** is currently validating desktop MCP dependency and packaged-runtime hardening. Their remediations were not repeated or changed. Earlier targeted work is documented in [the hardening review](/C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/docs/security-hardening-2026-10-24.md).
 

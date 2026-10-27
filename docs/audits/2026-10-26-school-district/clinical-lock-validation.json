@@ -1,0 +1,502 @@
+{
+  "checkedAt": "2026-10-26T11:53:29.205Z",
+  "scope": "Protected clinical access during final save and lock; separate open clinical AI dispatch finding",
+  "tests": {
+    "passed": 144,
+    "failed": 6,
+    "pending": 0,
+    "files": 13,
+    "clinicalPassed": 129,
+    "clinicalFiles": 12,
+    "hostPassed": 15,
+    "knownHostFailures": [
+      {
+        "file": "tests/sensitive_workspace_app_integration.test.js",
+        "title": "AlloFlowANTI.txt protected record host integration approves the exact mirrored protected-workspace assets in its embedded delivery manifest",
+        "messages": [
+          "Error: Trusted host delivery block is stale or modified; regenerate it from reviewed source bytes\n    at Object.readEmbeddedManifest (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\build_browser_delivery_manifest.cjs:193:49)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sensitive_workspace_app_integration.test.js:59:38\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+        ]
+      },
+      {
+        "file": "tests/sensitive_workspace_app_integration.test.js",
+        "title": "AlloFlowANTI.txt protected record host integration accepts each content-pinned clinical loader through the actual delivery policy",
+        "messages": [
+          "Error: Trusted host delivery block is stale or modified; regenerate it from reviewed source bytes\n    at Object.readEmbeddedManifest (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\build_browser_delivery_manifest.cjs:193:49)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sensitive_workspace_app_integration.test.js:69:38\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+        ]
+      },
+      {
+        "file": "tests/sensitive_workspace_app_integration.test.js",
+        "title": "desktop/web-app/src/AlloFlowANTI.txt protected record host integration approves the exact mirrored protected-workspace assets in its embedded delivery manifest",
+        "messages": [
+          "Error: Trusted host delivery block is stale or modified; regenerate it from reviewed source bytes\n    at Object.readEmbeddedManifest (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\build_browser_delivery_manifest.cjs:193:49)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sensitive_workspace_app_integration.test.js:59:38\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+        ]
+      },
+      {
+        "file": "tests/sensitive_workspace_app_integration.test.js",
+        "title": "desktop/web-app/src/AlloFlowANTI.txt protected record host integration accepts each content-pinned clinical loader through the actual delivery policy",
+        "messages": [
+          "Error: Trusted host delivery block is stale or modified; regenerate it from reviewed source bytes\n    at Object.readEmbeddedManifest (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\build_browser_delivery_manifest.cjs:193:49)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sensitive_workspace_app_integration.test.js:69:38\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+        ]
+      },
+      {
+        "file": "tests/sensitive_workspace_app_integration.test.js",
+        "title": "desktop/web-app/src/App.jsx protected record host integration approves the exact mirrored protected-workspace assets in its embedded delivery manifest",
+        "messages": [
+          "Error: Trusted host delivery block is stale or modified; regenerate it from reviewed source bytes\n    at Object.readEmbeddedManifest (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\build_browser_delivery_manifest.cjs:193:49)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sensitive_workspace_app_integration.test.js:59:38\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+        ]
+      },
+      {
+        "file": "tests/sensitive_workspace_app_integration.test.js",
+        "title": "desktop/web-app/src/App.jsx protected record host integration accepts each content-pinned clinical loader through the actual delivery policy",
+        "messages": [
+          "Error: Trusted host delivery block is stale or modified; regenerate it from reviewed source bytes\n    at Object.readEmbeddedManifest (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\build_browser_delivery_manifest.cjs:193:49)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sensitive_workspace_app_integration.test.js:69:38\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)"
+        ]
+      }
+    ],
+    "testFiles": [
+      "tests/behavior_lens_protected_workspace.test.js",
+      "tests/dynamic_assessment_protected_workspace.test.js",
+      "tests/report_writer_protected_workspace.test.js",
+      "tests/sensitive_workspace.test.js",
+      "tests/sensitive_workspace_app_integration.test.js",
+      "tests/sensitive_workspace_backup_boundaries.test.js",
+      "tests/sensitive_workspace_deletion.test.js",
+      "tests/sensitive_workspace_deletion_races.test.js",
+      "tests/sensitive_workspace_hydration_races.test.js",
+      "tests/sensitive_workspace_lock_boundary.test.js",
+      "tests/sensitive_workspace_migration.test.js",
+      "tests/sensitive_workspace_races.test.js",
+      "tests/sensitive_workspace_restore_target_races.test.js"
+    ],
+    "processExitCode": 1,
+    "command": "node node_modules/vitest/vitest.mjs run tests/behavior_lens_protected_workspace.test.js tests/dynamic_assessment_protected_workspace.test.js tests/report_writer_protected_workspace.test.js tests/sensitive_workspace.test.js tests/sensitive_workspace_app_integration.test.js tests/sensitive_workspace_backup_boundaries.test.js tests/sensitive_workspace_deletion.test.js tests/sensitive_workspace_deletion_races.test.js tests/sensitive_workspace_hydration_races.test.js tests/sensitive_workspace_lock_boundary.test.js tests/sensitive_workspace_migration.test.js tests/sensitive_workspace_races.test.js tests/sensitive_workspace_restore_target_races.test.js --maxWorkers=1 --testTimeout=30000 --hookTimeout=120000 --reporter=default --reporter=json --outputFile.json=tmp/clinical-lock-boundary-20261026/final-test-results.json"
+  },
+  "baseline": {
+    "unitPassed": 1,
+    "unitFailed": 6,
+    "browser": {
+      "checkedAt": "2026-10-26T11:37:20.157Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "nativeIndexedDB": true,
+      "nativeWebCrypto": true,
+      "realReact": true,
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "allo_device_storage_module.js": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae",
+        "allo_recovery_vault_integration_module.js": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+        "sensitive_workspace_module.js": "0b6b57320a93b34e6cf4601edfe2d610e3cfb034488acc238d8bb220f793f0b0"
+      },
+      "checks": {
+        "learnerBaselineCachedHandleRemainsUsable": true,
+        "learnerLockCompletes": true,
+        "canvasBaselineCachedHandleRemainsUsable": true,
+        "canvasLockCompletes": true,
+        "baselineEditorStillVisibleWhileLocking": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": [],
+      "network": "Locally fulfilled navigation; other page requests blocked",
+      "processExitCode": 0
+    }
+  },
+  "browser": {
+    "checkedAt": "2026-10-26T11:46:38.232Z",
+    "baseline": false,
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "nativeIndexedDB": true,
+    "nativeWebCrypto": true,
+    "realReact": true,
+    "sourceHashes": {
+      "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+      "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+      "allo_device_storage_module.js": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae",
+      "allo_recovery_vault_integration_module.js": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+      "sensitive_workspace_module.js": "62b7adf8881cf8f18b7c0d2f3cdd1c385b0c9d9d5c6201e74f64c2f52ab4f489"
+    },
+    "checks": {
+      "learnerCachedHandleCannotReadOrMutate": true,
+      "learnerReentrantSubscriberCannotRead": true,
+      "learnerLockCompletes": true,
+      "learnerRegisteredFinalDraftSurvives": true,
+      "canvasCachedHandleCannotReadOrMutate": true,
+      "canvasReentrantSubscriberCannotRead": true,
+      "canvasLockCompletes": true,
+      "canvasRegisteredFinalDraftSurvives": true,
+      "editorRemainsMountedForFinalSave": true,
+      "editorHiddenWhileLocking": true,
+      "hiddenEditorRemovedFromAccessibilityTree": true,
+      "focusIsOutsideHiddenEditor": true,
+      "visibleEditorDraftWasEncryptedBeforeLock": true,
+      "noBrowserRuntimeErrors": true
+    },
+    "errors": [],
+    "network": "Locally fulfilled navigation; other page requests blocked",
+    "passed": 14,
+    "processExitCode": 0,
+    "screenshotReviewed": true
+  },
+  "delivery": {
+    "checkedAt": "2026-10-26T11:48:00.076Z",
+    "reviewed": {
+      "sensitive_workspace_module.js": {
+        "bytes": 76662,
+        "sha256": "62b7adf8881cf8f18b7c0d2f3cdd1c385b0c9d9d5c6201e74f64c2f52ab4f489",
+        "integrity": "sha384-ycrZ7gSbRLD/BnL1CnN7+cHNs85tzgi++8ztpLHxclpbLqIqOoGzbtcyU2Ocm5Ej"
+      }
+    },
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "beforeSha256": "767929b5230d40bf1ad472063df3b04f683c9b2d4003714ca1f74f20d94e301c",
+        "afterSha256": "5dea41472f72b9a8536d69f84f59317e665f3cd9f052393081bea1aa117db5b6",
+        "manifestId": "5d62471d5f94b0c1c5c6a1b8733e4fd707139695114892d5bd16b19c8d43be4e",
+        "previousManifestId": "92d66bf5c7f78e39e2116809e8fbc1b53af344254c98ed90c8069f7b4703c8b0",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=0b6b57320a93",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=62b7adf8881c"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "beforeSha256": "bb9c5ec94d02c0189447eb90f3395492110017beaf1f613cd4dc9b2052692c10",
+        "afterSha256": "c2fbfc2bcaa7e0f03bc1a71ee07a5a183ecc5e0c96353a1cc465bfea10240eaf",
+        "manifestId": "5d62471d5f94b0c1c5c6a1b8733e4fd707139695114892d5bd16b19c8d43be4e",
+        "previousManifestId": "92d66bf5c7f78e39e2116809e8fbc1b53af344254c98ed90c8069f7b4703c8b0",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=0b6b57320a93",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=62b7adf8881c"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "beforeSha256": "9632852fc8d3162edc5b25677a66295f5d8110f76eef1cda8da8b5529fa3f3d3",
+        "afterSha256": "89f9f624e1dcb838f5f8fe7bc1172ba30a37667a75f93606818ec6be83e04845",
+        "manifestId": "5d62471d5f94b0c1c5c6a1b8733e4fd707139695114892d5bd16b19c8d43be4e",
+        "previousManifestId": "92d66bf5c7f78e39e2116809e8fbc1b53af344254c98ed90c8069f7b4703c8b0",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=0b6b57320a93",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=62b7adf8881c"
+          }
+        ]
+      }
+    ],
+    "scope": "Only the selected protected-workspace approval and its loader cache string; no broad policy regeneration, build or release."
+  },
+  "review": {
+    "result": "No blocking defect in bounded change",
+    "sourceSha256": "62b7adf8881cf8f18b7c0d2f3cdd1c385b0c9d9d5c6201e74f64c2f52ab4f489",
+    "productionFlushersStageSynchronously": true,
+    "arbitrarySameOriginScriptIsolation": false
+  },
+  "validation": {
+    "sourcePublicMirror": true,
+    "sourceParses": true,
+    "sharedCryptoAndVaultUnchanged": true
+  },
+  "openClinicalAiFinding": {
+    "capturedAt": "2026-10-26T11:48:56.2962754Z",
+    "sources": [
+      {
+        "path": "sensitive_workspace_module.js",
+        "sha256": "62b7adf8881cf8f18b7c0d2f3cdd1c385b0c9d9d5c6201e74f64c2f52ab4f489"
+      },
+      {
+        "path": "report_writer_module.js",
+        "sha256": "0366d4eb00f1b08f3d7ee6a55ed90232a1e57b63b76b8f914e43ecafe4f3cac1"
+      },
+      {
+        "path": "behavior_lens_module.js",
+        "sha256": "4254efcf92d485f71b5d5732185b8a4cade5a287ac66810b5a9f6b71fb749d4c"
+      },
+      {
+        "path": "dynamic_assessment_module.js",
+        "sha256": "7a7a005128cb6579bfe1573d442dbb1cb9016373bd3e4da49b3f802ff1c35c0f"
+      },
+      {
+        "path": "gemini_api_module.js",
+        "sha256": "67fb2675fa700956475f171cedc4b7b83fa94dbd249f5a2179c6e19396f0915d"
+      },
+      {
+        "path": "utils_pure_module.js",
+        "sha256": "4611acd213fc7ab391f988c096909a055999cdbe6c714fa7a6c5d81c9d6a2fb8"
+      },
+      {
+        "path": "identifier_redaction_module.js",
+        "sha256": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179"
+      }
+    ],
+    "proof": "tmp/clinical-ai-20261026/dispatch-proof.test.js",
+    "results": "tmp/clinical-ai-20261026/current-results.json",
+    "baseline": {
+      "passed": 1,
+      "failed": 1
+    },
+    "finding": "Clinical allowExternalAi revocation during actual Gemini credential digest did not stop reviewed synthetic clinical prompt reaching fake native dispatch, even after actual beforeRequest guard ran.",
+    "externalRequests": 0,
+    "status": "OPEN: reproduced against current clinical lock candidate",
+    "scope": "Actual RW editable review, clinical service and Gemini provider. Synthetic injected transport calls actual beforeRequest. No native fetch or external request. BL/DA timing risk is source-only."
+  },
+  "files": [
+    {
+      "path": "sensitive_workspace_module.js",
+      "bytes": 76662,
+      "sha256": "62b7adf8881cf8f18b7c0d2f3cdd1c385b0c9d9d5c6201e74f64c2f52ab4f489"
+    },
+    {
+      "path": "desktop/web-app/public/sensitive_workspace_module.js",
+      "bytes": 76662,
+      "sha256": "62b7adf8881cf8f18b7c0d2f3cdd1c385b0c9d9d5c6201e74f64c2f52ab4f489"
+    },
+    {
+      "path": "allo_crypto_module.js",
+      "bytes": 22716,
+      "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359"
+    },
+    {
+      "path": "allo_device_vault_module.js",
+      "bytes": 43286,
+      "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+    },
+    {
+      "path": "allo_device_storage_module.js",
+      "bytes": 71987,
+      "sha256": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae"
+    },
+    {
+      "path": "allo_recovery_vault_integration_module.js",
+      "bytes": 3818,
+      "sha256": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c"
+    },
+    {
+      "path": "tests/behavior_lens_protected_workspace.test.js",
+      "bytes": 16409,
+      "sha256": "00797fd863180495356c0882324e57217834193b1b1a13d958d41abf8d045732"
+    },
+    {
+      "path": "tests/dynamic_assessment_protected_workspace.test.js",
+      "bytes": 14537,
+      "sha256": "956bf183f1fa22403bdf04541b9559257af613aa9828315e2a5e20fd34abc6df"
+    },
+    {
+      "path": "tests/report_writer_protected_workspace.test.js",
+      "bytes": 10829,
+      "sha256": "3d29f691b89c0a8d0dfaaf02f16ea56178fa78cdbbca6e5ea839619764c4ad5e"
+    },
+    {
+      "path": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "path": "tests/sensitive_workspace_app_integration.test.js",
+      "bytes": 6180,
+      "sha256": "a29e8798104263b89ca31a0a0a63f72814abccc700bcd3341d1d43a7b85274c7"
+    },
+    {
+      "path": "tests/sensitive_workspace_backup_boundaries.test.js",
+      "bytes": 7789,
+      "sha256": "f38d3df484f6df03d77bc8cc91d1a5a71154a9cae76658515206c8a7fa9ffeea"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion.test.js",
+      "bytes": 27395,
+      "sha256": "295f07a1c99c8eaefbb5d9c638c2b420618b1e3a64596a227f2966daad59090e"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion_races.test.js",
+      "bytes": 4986,
+      "sha256": "a312f906bf98bcf60a4463c7686cfad8ad308b2de78603536ca9c9eba2fe9200"
+    },
+    {
+      "path": "tests/sensitive_workspace_hydration_races.test.js",
+      "bytes": 9013,
+      "sha256": "f991a99763c4c2a6452969aa5934de1cb9a91953aab8561bb23b856355e445ab"
+    },
+    {
+      "path": "tests/sensitive_workspace_lock_boundary.test.js",
+      "bytes": 10918,
+      "sha256": "3f19d5cb6511cd0c0fd385657ee57fe6e977ea48c09ed5ebd0bf836add8453c3"
+    },
+    {
+      "path": "tests/sensitive_workspace_migration.test.js",
+      "bytes": 10022,
+      "sha256": "80b1103d1cdff65d4971dc8d05021f64314e7b96d88596ecf8be8361056a3153"
+    },
+    {
+      "path": "tests/sensitive_workspace_races.test.js",
+      "bytes": 8734,
+      "sha256": "b2ed1b4b5286be11f9b87a6f33b6dcc19d955d336f0f9599adca6ed6b3890cb8"
+    },
+    {
+      "path": "tests/sensitive_workspace_restore_target_races.test.js",
+      "bytes": 12017,
+      "sha256": "70336b93c28d4189ce75f4c389e03da223396dccf6246d6169b9b3f6276d37a9"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3141891,
+      "sha256": "5dea41472f72b9a8536d69f84f59317e665f3cd9f052393081bea1aa117db5b6"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3141547,
+      "sha256": "c2fbfc2bcaa7e0f03bc1a71ee07a5a183ecc5e0c96353a1cc465bfea10240eaf"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3141218,
+      "sha256": "89f9f624e1dcb838f5f8fe7bc1172ba30a37667a75f93606818ec6be83e04845"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-lock-followup.md",
+      "bytes": 5452,
+      "sha256": "b70b83caf60a9fb577fdf3cd9ebc62edf02f10a3f8d47fcb15cbe89417c4a5d1"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-ai-dispatch-finding.md",
+      "bytes": 5133,
+      "sha256": "ae07da01d9130e40905f4bbd67d6d3297cb2678349506a825187c328f70bcb50"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 19868,
+      "sha256": "4ae2e0fba35b6e4d9d9bfc3d9c0a46a7c9b30e0375cfbab7a0cb4569a0eaf03f"
+    },
+    {
+      "path": "docs/audits/2026-10-24-school-district/report.md",
+      "bytes": 39876,
+      "sha256": "4af1c258246a094fa6331ab3c6dfb6d8c22316a48acbfa16eab79b74b2267a8f"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/browser-qa.cjs",
+      "bytes": 7966,
+      "sha256": "f3dbb134e4aba5baddaa924e1db2dd9a1137f4bd335c1eb614457d4903fa40e6"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/browser-baseline.json",
+      "bytes": 1118,
+      "sha256": "5734cef035a2dcd4ca5224f21973602a84820d2f4b1e48acb7b327b027673d63"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/browser-checks.json",
+      "bytes": 1489,
+      "sha256": "c743c2eb4ad8677821d56239730a13889c4d2e83734c6c49bd9e383f83c59d87"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/locking-state.png",
+      "bytes": 15227,
+      "sha256": "9cd62cfd06a500196412967d75583e1a448115b9103196705f78551de4b73741"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/expanded-before-results.json",
+      "bytes": 5730,
+      "sha256": "00a40ceec0bc4c6fd97dc4f91bbc622275e02cb58c5f1060f57b0d28ea852d60"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/expanded-before.log",
+      "bytes": 5956,
+      "sha256": "335b6d3e16ae38a28a92e747481aaeeddae871b5052989d709ffcf8ff00ce0e1"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/initial-after-results.json",
+      "bytes": 25925,
+      "sha256": "0bd9f1b556f99a8e377803bb2bf51755783478fd95d279c9a6bbaf1e04712dc4"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/initial-after.log",
+      "bytes": 2710,
+      "sha256": "d254df138c9a0d61b2f77a042aed3951c34402f6336ef9ab2f46dee9328578ca"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/final-test-results.json",
+      "bytes": 68726,
+      "sha256": "7944f2c4cb35220119ba5dce47d847f1e47623d2ac66fa59a650c246f1263bca"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/final-tests.log",
+      "bytes": 17031,
+      "sha256": "968dbe546b91d52ad461aa80c2676c5878fedf60d67886eef10c11419a1f7448"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/pin-delivery.cjs",
+      "bytes": 4517,
+      "sha256": "1f0da2f65a3dd8111ba1f75d531283d85bd9f1b33a15823f8cae5d6a3a7a0e31"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/delivery-validation.json",
+      "bytes": 3140,
+      "sha256": "ab4d23e7b9b6eb74aa4fab24511947feba09daa24bce27137bc377ffd1040863"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/sensitive_workspace_module.before.js",
+      "bytes": 75078,
+      "sha256": "0b6b57320a93b34e6cf4601edfe2d610e3cfb034488acc238d8bb220f793f0b0"
+    },
+    {
+      "path": "tmp/clinical-lock-boundary-20261026/finalize-evidence.cjs",
+      "bytes": 7832,
+      "sha256": "b0a9c785c73837b61a80f91a959784fcf5ca696f9008f55292f34183be726756"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/dispatch-proof.test.js",
+      "bytes": 5454,
+      "sha256": "b4a46f90519ba58a707839c021586b996f52c79ec6df9a132c2f3dd5935ec1a8"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/proof-receipt.json",
+      "bytes": 1454,
+      "sha256": "e3b509322bf65688ab4e5e5b52f213c60d7254f9d9c6d349ceb401566926d777"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/baseline-results.json",
+      "bytes": 3657,
+      "sha256": "fe5acbb0832fa22913f0374a0eb62a1223d91e95516afa6e21e6dd8c19200607"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/current-receipt.json",
+      "bytes": 1779,
+      "sha256": "6f9bac923675ffd5d76063f234d128fa4dbc6a0171a7cb08acae73e98dfbacf9"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/current-results.json",
+      "bytes": 3658,
+      "sha256": "8424280680c71c968564e8f745f27d795d75d0ee3bebf95bd3831ae9d5d2a41b"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/current.log",
+      "bytes": 3393,
+      "sha256": "24afb4947e368f5dcaaec942647d3ed9813f37b60c7842eb08b1ba6869751e37"
+    }
+  ],
+  "limitations": [
+    "Local source and synthetic validation only; no real student records, Canvas/PPS account, commit, push, deployment or production deletion.",
+    "Six canonical host delivery-policy checks remain failing in the separate release workstream.",
+    "Clinical AI permission revocation during request preparation remains open; reproduced separately with an injected transport, no external request.",
+    "Hidden mounted editor content remains in DOM/memory during saving; not protection from arbitrary same-origin scripts.",
+    "Native fixtures use the minimum supported PBKDF2 work factor; production cryptographic defaults unchanged."
+  ]
+}

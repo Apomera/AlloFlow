@@ -16,6 +16,15 @@
 (function () {
   'use strict';
 
+  function __alloT(key, fallback) {
+    try {
+      var host = typeof window !== 'undefined' ? window : globalThis;
+      var value = typeof host.__alloT === 'function' ? host.__alloT(key) : null;
+      if (typeof value === 'string' && value !== '' && value !== key) return value;
+    } catch (_) {}
+    return fallback == null ? key : fallback;
+  }
+
   var VERSION = 'identifier-redaction/v2';
 
   // Redact student-identifying text before it leaves the browser for an AI
@@ -359,14 +368,14 @@
       const field = { width: '100%', boxSizing: 'border-box', color: '#0f172a', background: '#fff', border: '1px solid #64748b', borderRadius: 6, padding: 10, font: 'inherit' };
       const analysis = review.analysis || {};
       return h('div', { role: 'presentation', style: { position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12 }, onClick: event => { event.stopPropagation(); if (event.target === event.currentTarget) cancel(); } },
-          h('section', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Review what AI receives', onKeyDown: keyDown, style: { width: '100%', maxWidth: 820, maxHeight: '92vh', overflowY: 'auto', background: '#fff', color: '#0f172a', borderRadius: 12, padding: 20, boxSizing: 'border-box', textAlign: 'left' } },
-              h('h2', { style: { fontSize: 22, margin: '0 0 12px' } }, 'Review what AI receives'),
+          h('section', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT("identifier_redaction.a11y_review_what_ai_receives", 'Review what AI receives'), onKeyDown: keyDown, style: { width: '100%', maxWidth: 820, maxHeight: '92vh', overflowY: 'auto', background: '#fff', color: '#0f172a', borderRadius: 12, padding: 20, boxSizing: 'border-box', textAlign: 'left' } },
+              h('h2', { style: { fontSize: 22, margin: '0 0 12px' } }, __alloT("identifier_redaction.a11y_review_what_ai_receives", 'Review what AI receives')),
               review.label && h('p', null, review.label),
               h('p', null, 'This is the outgoing copy. Your original notes stay unchanged. Common identifiers were removed automatically, but other names, school details, and identifying context may remain. Only send information your organization permits to the configured AI provider.'),
               analysis.riskyNameParts?.length > 0 && h('p', { role: 'status' }, 'Some entered names are also ordinary words. Check them in the text below and remove identifying uses.'),
-              h('label', { style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, 'Text to send', h('textarea', { 'aria-label': 'Text to send', 'data-sensitive-review-initial': true, rows: 12, value: prompt, onChange: event => { setPrompt(event.target.value); setConfirmed(false); }, style: field })),
-              review.searchQuery !== undefined && h('label', { style: { display: 'block', fontWeight: 700, marginTop: 12 } }, 'Search query to send', h('input', { 'aria-label': 'Search query to send', value: query, onChange: event => { setQuery(event.target.value); setConfirmed(false); }, style: field })),
-              h('label', { style: { display: 'block', fontWeight: 700, marginTop: 12 } }, 'Additional names or details to remove', h('input', { 'aria-label': 'Additional names or details to remove', value: identifiers, onChange: event => { setIdentifiers(event.target.value); setConfirmed(false); }, placeholder: 'Separate each name or detail with a comma', style: field })),
+              h('label', { style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, __alloT("identifier_redaction.a11y_text_to_send", 'Text to send'), h('textarea', { 'aria-label': __alloT("identifier_redaction.a11y_text_to_send", 'Text to send'), 'data-sensitive-review-initial': true, rows: 12, value: prompt, onChange: event => { setPrompt(event.target.value); setConfirmed(false); }, style: field })),
+              review.searchQuery !== undefined && h('label', { style: { display: 'block', fontWeight: 700, marginTop: 12 } }, __alloT("identifier_redaction.a11y_search_query_to_send", 'Search query to send'), h('input', { 'aria-label': __alloT("identifier_redaction.a11y_search_query_to_send", 'Search query to send'), value: query, onChange: event => { setQuery(event.target.value); setConfirmed(false); }, style: field })),
+              h('label', { style: { display: 'block', fontWeight: 700, marginTop: 12 } }, __alloT("identifier_redaction.a11y_additional_names_or_details_to_remove", 'Additional names or details to remove'), h('input', { 'aria-label': __alloT("identifier_redaction.a11y_additional_names_or_details_to_remove", 'Additional names or details to remove'), value: identifiers, onChange: event => { setIdentifiers(event.target.value); setConfirmed(false); }, placeholder: __alloT("identifier_redaction.a11y_separate_each_name_or_detail_with_a_comma", 'Separate each name or detail with a comma'), style: field })),
               h('button', { type: 'button', disabled: !identifiers.trim(), onClick: () => {
                   const opts = { identifiers: targets() };
                   setPrompt(prepareSensitivePrompt(prompt, opts).text);

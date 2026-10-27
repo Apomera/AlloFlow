@@ -9,24 +9,24 @@
  *                   desktop app): use our own IndexedDB, no bridge needed.
  *   bridge-iframe — Canvas, and the DEFAULT: an offscreen iframe of
  *                   storage_bridge.html on the stable alloflow-cdn.pages.dev
- *                   origin, speaking protocol "ds1" over postMessage. Chrome
+ *                   origin, speaking protocol "ds2" over a document-bound
+ *                   MessagePort after a minimal window handshake. Chrome
  *                   partitions its IndexedDB by (top-level site, frame origin),
- *                   so no page on any other site can reach it. The bridge asks
- *                   for consent ONCE per browser profile, painting the prompt
- *                   in its own cross-origin document (the module reveals the
- *                   frame on 'allo-bridge-consent-required'), then remembers
- *                   the grant in that same partition. No user gesture needed.
+ *                   independently of the requesting app's origin. Storage
+ *                   partitioning alone does not authorize a client. The frame
+ *                   opens a separate approval-only window when needed; that
+ *                   window confirms access without opening/moving the data.
+ *                   Saved grants match an exact concrete origin and channel.
+ *                   Opaque origins require approval each connection.
  *   bridge-popup  — legacy / stable-origin debugging only. window.open of the
  *                   same page. DO NOT use it on Canvas alongside the iframe: a
  *                   popup is top-level, so it reads the UNPARTITIONED bucket
  *                   and shows a different (empty) store under the same DB name.
- *   memory        — graceful fallback (popup blocked, no bridge reachable).
+ *   memory        — explicit session-only choice; never a bridge fallback.
  *
- * FERPA posture: every backend keeps data on the student's device only.
- * The bridge page itself is the review/export/erase UI when opened directly.
- *
- * NOT yet wired into the app (no loadModule call) — consumers land later;
- * see docs/DEVICE_STORAGE_BRIDGE.md for the probe + integration plan.
+ * These backends store their own records on the device; other application
+ * services and exports have separate data boundaries. Direct bridge review
+ * covers the partition it opens, not every Canvas iframe's partition.
  * Protocol must stay in sync with storage_bridge.html (same repo root).
  */
 (function () {
@@ -37,8 +37,8 @@
     return;
   }
 
-  var PROTO = 'ds1';
-  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds6-media-removal-intent';
+  var PROTO = 'ds2';
+  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds8-document-port';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
   var REQUEST_TIMEOUT_MS = 8000;
   var CONNECT_TIMEOUT_MS = 12000;
@@ -562,17 +562,16 @@
   }
 
   // The bridge iframe lives offscreen while it works. It is only brought on
-  // screen when the bridge itself asks for consent, and it goes straight back
-  // once the grant lands. The consent UI is painted by the bridge's own
-  // cross-origin document, so the embedding app can size this frame but can
-  // neither read what it says nor click its buttons.
+  // screen when the bridge asks for consent, and hidden after approval. The
+  // embedded button opens a separate review window; it cannot itself approve
+  // storage access. This keeps an embedder from clickjacking the approval.
   var HIDDEN_FRAME_CSS = 'position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;border:0;';
   var CONSENT_FRAME_CSS = [
     'position:fixed', 'inset:0', 'width:100%', 'height:100%',
     'border:0', 'z-index:2147483647', 'background:rgba(15,23,42,0.72)'
   ].join(';') + ';';
 
-  // ── Transport over postMessage to a bridge window/iframe ────────
+  // ── Document-bound MessagePort transport to the bridge ─────────
   function BridgeTransport(kind) {
     this.kind = kind;            // 'popup' | 'iframe'
     this.win = null;             // target Window
@@ -581,13 +580,17 @@
     this.bridgeOrigin = null;
     this.clientOrigin = null;
     this.ready = false;
-    this.pending = {};           // id -> {resolve, reject, timer}
+    this.pending = Object.create(null); // id -> {resolve, reject, timer}
     this.seq = 0;
     this.onMessage = null;
     this.helloTimer = null;
     this.connectPromise = null;
     this.connectTimer = null;
     this.connectReject = null;
+    this.port = null;
+    this.remotePort = null;      // retained only to close on failed transfer
+    this.portTransferred = false;
+    this.onPageHide = null;
   }
   BridgeTransport.prototype.alive = function () {
     if (!this.win) return false;
@@ -603,6 +606,9 @@
       try {
         bridge = parseBridgeUrl(bridgeUrl);
         self.nonce = makeNonce();
+        if (typeof window.MessageChannel !== 'function') {
+          throw storageError('allo/message-port-unavailable', 'Secure device storage needs MessageChannel support. Update this browser and reopen the app.');
+        }
       } catch (error) {
         reject(error);
         return;
@@ -633,27 +639,26 @@
 
       var settled = false;
       var fail = function (error) {
-        if (settled) return;
+        if (settled) { self.teardown(error); return; }
         settled = true;
         if (self.connectTimer) clearTimeout(self.connectTimer);
         if (self.helloTimer) clearInterval(self.helloTimer);
         self.connectTimer = null;
         self.helloTimer = null;
         self.connectReject = null;
-        self.teardown();
+        self.teardown(error);
         reject(error);
       };
       self.connectReject = reject;
-      self.onMessage = function (event) {
-        if (event.source !== self.win || event.origin !== self.bridgeOrigin) return;
+      var receivePort = function (event) {
         var msg = event.data;
         if (!msg || msg.allo !== PROTO || msg.nonce !== self.nonce) return;
-        if (msg.type === 'allo-bridge-error') {
-          fail(storageError((msg.error && msg.error.code) || 'allo/bridge-rejected',
+        if (msg.type === 'allo-bridge-error' || msg.type === 'allo-bridge-disconnected') {
+          fail(storageError((msg.error && msg.error.code) || (msg.type === 'allo-bridge-disconnected' ? 'allo/storage-disconnected' : 'allo/bridge-rejected'),
             (msg.error && msg.error.message) || 'The storage bridge rejected this connection.'));
           return;
         }
-        if (msg.type === 'allo-bridge-consent-required') {
+        if (!settled && msg.type === 'allo-bridge-consent-required') {
           // A human is now being asked a question, so the connect deadline that
           // assumed a machine-speed handshake no longer applies. Swap it for the
           // approval deadline, or the frame gets torn down mid-question.
@@ -686,7 +691,7 @@
           }
           return;
         }
-        if (isValidResponse(msg, self.nonce) && self.pending[msg.id]) {
+        if (self.ready && isValidResponse(msg, self.nonce) && Object.prototype.hasOwnProperty.call(self.pending, msg.id)) {
           var entry = self.pending[msg.id];
           delete self.pending[msg.id];
           clearTimeout(entry.timer);
@@ -695,18 +700,47 @@
                                          (msg.error && msg.error.message) || 'Storage bridge error'));
         }
       };
+      self.onMessage = function (event) {
+        if (event.source !== self.win || event.origin !== self.bridgeOrigin) return;
+        var msg = event.data;
+        if (!msg || msg.nonce !== self.nonce || self.portTransferred) return;
+        // Legacy replies may reject an incompatible connection, never approve
+        // it. Window readiness, consent, errors and result data carry no grant.
+        if (msg.allo === 'ds1' && msg.type === 'allo-bridge-error' && msg.error && msg.error.code === 'allo/bridge-upgrade-required') {
+          fail(storageError('allo/bridge-upgrade-required', 'Update and reopen the app and storage bridge to connect securely.'));
+          return;
+        }
+        if (msg.allo !== PROTO || msg.type !== 'allo-bridge-port-required') return;
+        try {
+          var channel = new window.MessageChannel();
+          self.port = channel.port1; self.remotePort = channel.port2;
+          var boundPort = self.port;
+          boundPort.onmessage = function (portEvent) { if (self.port === boundPort) receivePort(portEvent); };
+          boundPort.onmessageerror = function () { if (self.port === boundPort) fail(storageError('allo/storage-port-error', 'The secure storage connection could not read a message. Reopen it and try again.')); };
+          boundPort.start();
+          self.portTransferred = true;
+          if (self.helloTimer) clearInterval(self.helloTimer);
+          self.helloTimer = null;
+          self.win.postMessage({ allo: PROTO, type: 'allo-bridge-connect', nonce: self.nonce,
+            clientOrigin: self.clientOrigin, channel: self.kind }, self.bridgeOrigin, [self.remotePort]);
+        } catch (_) {
+          fail(storageError('allo/storage-port-transfer-failed', 'The secure storage connection could not be created. Update and reopen the app and storage bridge.'));
+        }
+      };
       window.addEventListener('message', self.onMessage);
+      self.onPageHide = function () { self.teardown(); };
+      window.addEventListener('pagehide', self.onPageHide);
 
       var timeoutMs = self.kind === 'popup' ? APPROVAL_TIMEOUT_MS : CONNECT_TIMEOUT_MS;
       self.connectTimer = setTimeout(function () {
         fail(storageError('allo/bridge-timeout',
           self.kind === 'popup'
-            ? 'The storage bridge was not approved in time.'
-            : 'The storage bridge did not answer (offline, blocked, or approval is required).'));
+            ? 'The storage bridge did not connect in time. Update and reopen the app and storage bridge, then approve the connection.'
+            : 'The storage bridge did not answer securely. Update and reopen the app and storage bridge, then check connectivity and approval.'));
       }, timeoutMs);
 
       var sendHello = function () {
-        if (settled || !self.alive()) return;
+        if (settled || self.portTransferred || !self.alive()) return;
         try {
           self.win.postMessage({
             allo: PROTO,
@@ -717,8 +751,8 @@
           }, self.bridgeOrigin);
         } catch (_) {}
       };
-      sendHello();
       self.helloTimer = setInterval(sendHello, 250);
+      sendHello();
     });
     return self.connectPromise.then(function (value) {
       self.connectPromise = null; return value;
@@ -728,7 +762,7 @@
   };
   BridgeTransport.prototype.request = function (op, params) {
     var self = this;
-    if (!self.ready || !self.alive() || !self.bridgeOrigin) {
+    if (!self.ready || !self.alive() || !self.port) {
       return Promise.reject(storageError('allo/storage-disconnected', 'Device storage is not connected.'));
     }
     var id = 'r' + (++self.seq) + '-' + Date.now().toString(36);
@@ -736,19 +770,21 @@
     return new Promise(function (resolve, reject) {
       var timer = setTimeout(function () {
         delete self.pending[id];
-        reject(storageError('allo/storage-timeout', 'Device storage request timed out.'));
+        var error = storageError('allo/storage-timeout', 'Device storage request timed out. Reopen the connection and try again.');
+        reject(error); self.teardown(error);
       }, REQUEST_TIMEOUT_MS);
       self.pending[id] = { resolve: resolve, reject: reject, timer: timer };
       try {
-        self.win.postMessage(msg, self.bridgeOrigin);
+        self.port.postMessage(msg);
       } catch (e) {
         delete self.pending[id];
         clearTimeout(timer);
-        reject(storageError('allo/storage-post-failed', String(e && e.message || e)));
+        var error = storageError('allo/storage-post-failed', 'The secure storage request could not be sent. Reopen the connection and try again.');
+        reject(error); self.teardown(error);
       }
     });
   };
-  BridgeTransport.prototype.teardown = function () {
+  BridgeTransport.prototype.teardown = function (reason) {
     var connectReject = this.connectReject;
     if (this.connectTimer) clearTimeout(this.connectTimer);
     if (this.helloTimer) clearInterval(this.helloTimer);
@@ -756,11 +792,19 @@
     this.helloTimer = null;
     this.connectReject = null;
     if (this.onMessage) { window.removeEventListener('message', this.onMessage); this.onMessage = null; }
+    if (this.onPageHide) { window.removeEventListener('pagehide', this.onPageHide); this.onPageHide = null; }
+    if (this.port) {
+      try { this.port.postMessage({ allo: PROTO, nonce: this.nonce, type: 'allo-bridge-disconnect' }); } catch (_) {}
+      this.port.onmessage = null; this.port.onmessageerror = null;
+      try { this.port.close(); } catch (_) {}
+    }
+    if (this.remotePort) { try { this.remotePort.close(); } catch (_) {} }
+    this.port = null; this.remotePort = null; this.portTransferred = false;
     Object.keys(this.pending).forEach(function (id) {
       clearTimeout(this.pending[id].timer);
-      this.pending[id].reject(storageError('allo/storage-disconnected', 'Bridge closed.'));
+      this.pending[id].reject(reason || storageError('allo/storage-disconnected', 'Bridge closed.'));
     }, this);
-    this.pending = {};
+    this.pending = Object.create(null);
     if (this.kind === 'popup' && this.win) { try { this.win.close(); } catch (_) {} }
     if (this.frameEl) { try { this.frameEl.remove(); } catch (_) {} }
     this.win = null;
@@ -1029,8 +1073,8 @@
      *            iframe's IndexedDB is partitioned to (top-level site, bridge
      *            origin) and the popup's is not, so the two see different
      *            buckets under the same DB name. Mixing them loses work.
-     *            The iframe asks for consent once per browser profile and is
-     *            silent afterwards; it needs no user gesture.)
+     *            The iframe keeps this bucket when a separate approval-only
+     *            popup is needed. Opaque clients approve each connection.)
      * Does NOT open anything — bridge backends connect lazily via connect().
      */
     init: function (opts) {
@@ -1044,7 +1088,7 @@
       }
       return api.status();
     },
-    /** init (if needed) + connect. Gesture-free on the iframe/direct paths. */
+    /** init (if needed) + connect. Iframe approval can require a user gesture. */
     ready: function () {
       if (state.backendName === 'unset') api.init({});
       return api.connect();
@@ -1063,8 +1107,8 @@
       }).then(function () { return api.status(); });
     },
     /**
-     * Switch a Canvas session to the visible popup channel. Call this directly
-     * from a user gesture after an iframe reports allo/approval-required.
+     * Retry the existing storage channel and its approval flow. Canvas keeps
+     * the iframe's partition even when approval uses a separate popup.
      */
     connectWithApproval: function () {
       if (state.backendName === 'direct') return Promise.resolve(api.status());

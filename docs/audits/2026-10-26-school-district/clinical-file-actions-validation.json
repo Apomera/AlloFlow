@@ -1,0 +1,846 @@
+{
+  "checkedAt": "2026-10-26T13:52:37.348Z",
+  "scope": "Pending clinical restore/import context and failed report/assessment output cleanup",
+  "status": "Corrected in local source; verified release and district approval still required",
+  "tests": {
+    "focused": {
+      "file": "tmp/clinical-output-20261026/final-focused-results.json",
+      "passed": 122,
+      "failed": 0,
+      "pending": 0,
+      "files": 13,
+      "selected": [
+        {
+          "file": "tests/behavior_lens_import_context.test.js",
+          "passed": 5
+        },
+        {
+          "file": "tests/behavior_lens_protected_workspace.test.js",
+          "passed": 12
+        },
+        {
+          "file": "tests/dynamic_assessment_download_cleanup.test.js",
+          "passed": 9
+        },
+        {
+          "file": "tests/dynamic_assessment_protected_workspace.test.js",
+          "passed": 12
+        },
+        {
+          "file": "tests/report_writer_close_guard.test.js",
+          "passed": 4
+        },
+        {
+          "file": "tests/report_writer_export_quality.test.js",
+          "passed": 7
+        },
+        {
+          "file": "tests/report_writer_output_cleanup.test.js",
+          "passed": 12
+        },
+        {
+          "file": "tests/report_writer_protected_workspace.test.js",
+          "passed": 8
+        },
+        {
+          "file": "tests/sensitive_workspace.test.js",
+          "passed": 16
+        },
+        {
+          "file": "tests/sensitive_workspace_credential_residue.test.js",
+          "passed": 7
+        },
+        {
+          "file": "tests/sensitive_workspace_lock_boundary.test.js",
+          "passed": 7
+        },
+        {
+          "file": "tests/sensitive_workspace_races.test.js",
+          "passed": 8
+        },
+        {
+          "file": "tests/sensitive_workspace_ui_actions.test.js",
+          "passed": 15
+        }
+      ]
+    },
+    "compatibility": {
+      "file": "tmp/clinical-import-context-20261026/final-results.json",
+      "passed": 6,
+      "failed": 1,
+      "baselineFile": "tmp/clinical-import-context-20261026/preexisting-cloud-results.json",
+      "existingFailure": "Behavior Lens safe workspace selection ignores a cloud-copy response after switching students",
+      "note": "Absent legacy cloud control fails identically before this change; broader release reconciliation remains separate"
+    }
+  },
+  "browsers": [
+    {
+      "file": "tmp/clinical-output-20261026/report-browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T13:45:41.042Z",
+      "baseline": false,
+      "browser": "Microsoft Edge",
+      "syntheticOnly": true,
+      "sourceSha256": "d002f945abeb59eac7a0c14e1f86c3d9f917d68d9c1b10834ba6ff4f7cd4ca97",
+      "scope": "Actual extracted Report Writer JSON and print callbacks; native DOM, Blob URLs and same-origin popups. Download clicks and printing are synthetic success/failure stubs; no real file download or printer.",
+      "network": "Navigation fulfilled locally; external requests blocked; Blob URLs checked through native fetch",
+      "checks": {
+        "failedDownloadRemovesReadableBlobAndAnchor": true,
+        "failedDownloadKeepsDraftUnsaved": true,
+        "failedDownloadReported": true,
+        "blobCreationFailureKeepsDraftUnsaved": true,
+        "normalDownloadInitiationPreserved": true,
+        "writeFailureBlanksAndClosesPrintPopup": true,
+        "printFailureBlanksAndClosesPrintPopup": true,
+        "successfulPrintPreviewRemainsAvailable": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-output-20261026/da-browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T13:52:08.156Z",
+      "baseline": false,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "nativeWebCrypto": true,
+      "nativeBlobUrls": true,
+      "scope": "Actual extracted DA JSON download and authorization helpers with real protected service; native Blob URL reads after lock. Native anchor click is deliberately denied or stubbed; no file is downloaded.",
+      "network": "Navigation fulfilled locally; external requests blocked; only synthetic native Blob URLs fetched",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac",
+        "dynamic_assessment_module.js": "5c742e21f285f3d709b6abf05a470313e11879f8f0110e420b989e627158e315"
+      },
+      "checks": {
+        "workspaceActuallyLocked": true,
+        "failedClickLeavesNoReadableAnchorAfterLock": true,
+        "invalidFilenameLeavesNoReadableBlob": true,
+        "removedAnchorDoesNotPreventRevocation": true,
+        "successfulDownloadKeepsConsumptionWindow": true,
+        "successfulDelayedCleanupRevokes": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-ui-actions-20261026/browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T13:49:40.651Z",
+      "baseline": false,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "nativeWebCrypto": true,
+      "nativeFileRead": true,
+      "repository": "Synthetic in-memory compare-and-swap repository",
+      "network": "Navigation fulfilled locally; all other requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac"
+      },
+      "checks": {
+        "current-candidate": true,
+        "allowedRestorePreservesRecord": true,
+        "external-lock-candidate": true,
+        "replace-service-candidate": true,
+        "previousCompletionPreservesCurrentBusyAndSecret": true,
+        "replacementRestorePreservesRecord": true,
+        "unmount-candidate": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-import-context-20261026/browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T13:50:00.516Z",
+      "baseline": false,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "actualBehaviorLens": true,
+      "nativeFileReader": true,
+      "nativeWebCrypto": true,
+      "scope": "Actual mounted BehaviorLens and protected workspace service; native FileReader start is delayed, student chooser receives native DOM change events, and the actual import confirmation is accepted. Synthetic encrypted memory repository; no district service.",
+      "network": "Navigation fulfilled locally; external requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac",
+        "identifier_redaction_module.js": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179",
+        "behavior_lens_workspace_module.js": "e8f4ff4532a68c7af9504ab208c95153ecf8fc2b102217f063f7b1d6a922c780",
+        "behavior_lens_module.js": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7"
+      },
+      "fixtureHarnessSha256": "fa806d38648375018f72c41f04ffb12febf6300cbb9341abecf0a00fb366156f",
+      "checks": {
+        "current": true,
+        "current-existing-records-preserved": true,
+        "switch": true,
+        "switch-existing-records-preserved": true,
+        "switch-back": true,
+        "switch-back-existing-records-preserved": true,
+        "confirmation": true,
+        "confirmation-existing-records-preserved": true,
+        "unmount": true,
+        "unmount-existing-records-preserved": true,
+        "lock": true,
+        "lock-existing-records-preserved": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    }
+  ],
+  "baselineRuns": [
+    {
+      "file": "tmp/clinical-output-20261026/report-output-baseline-results.json",
+      "passed": 1,
+      "failed": 3,
+      "meaning": "Expected failure reproduces the prior defect; not a final-candidate result"
+    },
+    {
+      "file": "tmp/clinical-output-20261026/da-baseline-results.json",
+      "passed": 1,
+      "failed": 4,
+      "meaning": "Expected failure reproduces the prior defect; not a final-candidate result"
+    },
+    {
+      "file": "tmp/clinical-ui-actions-20261026/baseline-results.json",
+      "passed": 2,
+      "failed": 2,
+      "meaning": "Expected failure reproduces the prior defect; not a final-candidate result"
+    },
+    {
+      "file": "tmp/clinical-import-context-20261026/baseline-results.json",
+      "passed": 1,
+      "failed": 1,
+      "meaning": "Expected failure reproduces the prior defect; not a final-candidate result"
+    }
+  ],
+  "baselineBrowsers": [
+    {
+      "file": "tmp/clinical-output-20261026/report-browser-baseline.json",
+      "checkedAt": "2026-10-26T13:45:34.306Z",
+      "baseline": true,
+      "browser": "Microsoft Edge",
+      "syntheticOnly": true,
+      "sourceSha256": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206",
+      "scope": "Actual extracted Report Writer JSON and print callbacks; native DOM, Blob URLs and same-origin popups. Download clicks and printing are synthetic success/failure stubs; no real file download or printer.",
+      "network": "Navigation fulfilled locally; external requests blocked; Blob URLs checked through native fetch",
+      "checks": {
+        "baselineFailedDownloadRetainsReadableBlobAndAnchor": true,
+        "baselineFailedDownloadMarksDraftSaved": true,
+        "baselineBlobCreationFailureMarksDraftSaved": true,
+        "normalDownloadInitiationPreserved": true,
+        "writeBaselineRetainsReadablePrintPopup": true,
+        "printBaselineRetainsReadablePrintPopup": true,
+        "successfulPrintPreviewRemainsAvailable": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-output-20261026/da-browser-baseline.json",
+      "checkedAt": "2026-10-26T13:46:27.412Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "nativeWebCrypto": true,
+      "nativeBlobUrls": true,
+      "scope": "Actual extracted DA JSON download and authorization helpers with real protected service; native Blob URL reads after lock. Native anchor click is deliberately denied or stubbed; no file is downloaded.",
+      "network": "Navigation fulfilled locally; external requests blocked; only synthetic native Blob URLs fetched",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "e0a0b6b59fbbc0980b9c680a03addf0cada3f36b7eabc3bcbda1bc1f95d77f2a",
+        "dynamic_assessment_module.js": "53bd23d46460c1d5d25c812d812b7bef71ff7cdac1a3f3963f271491b9136698"
+      },
+      "checks": {
+        "workspaceActuallyLocked": true,
+        "baselineFailedClickRetainsReadableAnchorAfterLock": true,
+        "baselineInvalidFilenameRetainsReadableBlob": true,
+        "baselineRemovedAnchorPreventsRevocation": true,
+        "successfulDownloadKeepsConsumptionWindow": true,
+        "successfulDelayedCleanupRevokes": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-ui-actions-20261026/browser-baseline.json",
+      "checkedAt": "2026-10-26T13:49:38.160Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "nativeWebCrypto": true,
+      "nativeFileRead": true,
+      "repository": "Synthetic in-memory compare-and-swap repository",
+      "network": "Navigation fulfilled locally; all other requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "27d91b909a38b84c9a33273e1db459ff2b3ac44fba8e7d22f76a0f48033c088b"
+      },
+      "checks": {
+        "current-baseline": true,
+        "allowedRestorePreservesRecord": true,
+        "external-lock-baseline": true,
+        "replace-service-baseline": true,
+        "unmount-baseline": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-import-context-20261026/browser-baseline.json",
+      "checkedAt": "2026-10-26T13:49:48.239Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "actualBehaviorLens": true,
+      "nativeFileReader": true,
+      "nativeWebCrypto": true,
+      "scope": "Actual mounted BehaviorLens and protected workspace service; native FileReader start is delayed, student chooser receives native DOM change events, and the actual import confirmation is accepted. Synthetic encrypted memory repository; no district service.",
+      "network": "Navigation fulfilled locally; external requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac",
+        "identifier_redaction_module.js": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179",
+        "behavior_lens_workspace_module.js": "e8f4ff4532a68c7af9504ab208c95153ecf8fc2b102217f063f7b1d6a922c780",
+        "behavior_lens_module.js": "76098d862f4a6d1cbd1070eafd1ec7e64a7b299f0ae73efa774c64eeb711eb5c"
+      },
+      "fixtureHarnessSha256": "fa806d38648375018f72c41f04ffb12febf6300cbb9341abecf0a00fb366156f",
+      "checks": {
+        "baseline-current": true,
+        "current-existing-records-preserved": true,
+        "baseline-switch": true,
+        "switch-existing-records-preserved": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    }
+  ],
+  "delivery": {
+    "checkedAt": "2026-10-26T13:50:38.959Z",
+    "reviewed": {
+      "sensitive_workspace_module.js": {
+        "bytes": 80802,
+        "sha256": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac",
+        "integrity": "sha384-PY/sE8kDdaXEEjaWDlFS3oHyB+UpklLbJz6ZTX72zV4vp8/gujtZJQwjJNof7YOw"
+      },
+      "behavior_lens_module.js": {
+        "bytes": 2645916,
+        "sha256": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7",
+        "integrity": "sha384-uDexiz9F5KkKiM6gbUJXE28TB7WLKugltcU84g7D5lSsQ1NHN/85g1OxO/0EF7Id"
+      },
+      "dynamic_assessment_module.js": {
+        "bytes": 1119273,
+        "sha256": "5c742e21f285f3d709b6abf05a470313e11879f8f0110e420b989e627158e315",
+        "integrity": "sha384-3v+agMmyLrcQw2vnwVF8YhzkeGuekY/8+EhDhqjX0NDvnpkUKvD0q8rdWjm29YuZ"
+      },
+      "report_writer_module.js": {
+        "bytes": 620086,
+        "sha256": "d002f945abeb59eac7a0c14e1f86c3d9f917d68d9c1b10834ba6ff4f7cd4ca97",
+        "integrity": "sha384-XEK5qQZj+V6Uivnhdfe7s7EvaGRRlom13uom7FMnBiHsOmvSJEmKeSAjWUNHEzuO"
+      }
+    },
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "beforeSha256": "7cd22a53eba3cb842786c307c7cf8992ed910b8e1a10d764af3898f505c1a118",
+        "afterSha256": "c65fed15b58af3012f2ba2fbb330a6913a6bef6eb1041059b071d9cb34a35747",
+        "manifestId": "ce6058505ca7babd5368b43eea2eb6c74b12cfa5ea10c023781bbc1db04455a6",
+        "previousManifestId": "e57fb6c765d8e20151a3a13636dc79a03273f0fc61f218b8d6c5956871a9e9b1",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=27d91b909a",
+            "after": "sensitive_workspace_module.js?v=3b4d69a304"
+          },
+          {
+            "before": "behavior_lens_module.js?v=76098d862f",
+            "after": "behavior_lens_module.js?v=f3530bbf77"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=53bd23d464",
+            "after": "dynamic_assessment_module.js?v=5c742e21f2"
+          },
+          {
+            "before": "report_writer_module.js?v=b60f071fdc",
+            "after": "report_writer_module.js?v=d002f945ab"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "beforeSha256": "4733cad8df1914e1acfab750a3386aa3f4d60ed1c7c06fc36d5d2a5686d6d17b",
+        "afterSha256": "cd5a6a7bea0e6e5853672acb4dad8c5aeed933f3c258407e56daf31f3badd9b9",
+        "manifestId": "ce6058505ca7babd5368b43eea2eb6c74b12cfa5ea10c023781bbc1db04455a6",
+        "previousManifestId": "e57fb6c765d8e20151a3a13636dc79a03273f0fc61f218b8d6c5956871a9e9b1",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=27d91b909a",
+            "after": "sensitive_workspace_module.js?v=3b4d69a304"
+          },
+          {
+            "before": "behavior_lens_module.js?v=76098d862f",
+            "after": "behavior_lens_module.js?v=f3530bbf77"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=53bd23d464",
+            "after": "dynamic_assessment_module.js?v=5c742e21f2"
+          },
+          {
+            "before": "report_writer_module.js?v=b60f071fdc",
+            "after": "report_writer_module.js?v=d002f945ab"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "beforeSha256": "c9e72b28c9cc7e3528873199346f7ca5a0ccafbf5e3dbb76c5fafa326cea700c",
+        "afterSha256": "b91332532296ecb88c44f90afc510fbd4f8a74655adaf757a6a98ac2d752b614",
+        "manifestId": "ce6058505ca7babd5368b43eea2eb6c74b12cfa5ea10c023781bbc1db04455a6",
+        "previousManifestId": "e57fb6c765d8e20151a3a13636dc79a03273f0fc61f218b8d6c5956871a9e9b1",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=27d91b909a",
+            "after": "sensitive_workspace_module.js?v=3b4d69a304"
+          },
+          {
+            "before": "behavior_lens_module.js?v=76098d862f",
+            "after": "behavior_lens_module.js?v=f3530bbf77"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=53bd23d464",
+            "after": "dynamic_assessment_module.js?v=5c742e21f2"
+          },
+          {
+            "before": "report_writer_module.js?v=b60f071fdc",
+            "after": "report_writer_module.js?v=d002f945ab"
+          }
+        ]
+      }
+    ],
+    "scope": "Only the four selected clinical file-action module approvals and loader cache strings; no broad policy regeneration, build or release."
+  },
+  "peerReview": {
+    "scope": "Baseline comparison of pending restore/import ownership and failed clinical output cleanup",
+    "reviewers": [
+      "/root/report_export_audit (workspace and BehaviorLens)",
+      "/root (Report Writer and Dynamic Assessment)"
+    ],
+    "finding": "No remaining blocking defect found. Review caught an explicit-service to default-service initialization gap; resolved-service ownership now blocks and conceals that stale context.",
+    "files": [
+      {
+        "path": "sensitive_workspace_module.js",
+        "sha256": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac"
+      },
+      {
+        "path": "behavior_lens_module.js",
+        "sha256": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7"
+      },
+      {
+        "path": "report_writer_module.js",
+        "sha256": "d002f945abeb59eac7a0c14e1f86c3d9f917d68d9c1b10834ba6ff4f7cd4ca97"
+      },
+      {
+        "path": "dynamic_assessment_module.js",
+        "sha256": "5c742e21f285f3d709b6abf05a470313e11879f8f0110e420b989e627158e315"
+      }
+    ]
+  },
+  "validation": {
+    "fourRuntimeModulesParse": true,
+    "fourPublicMirrorsMatch": true,
+    "threeHostsParse": true,
+    "actualEmbeddedPoliciesAcceptAssets": true,
+    "frozenSourcesUnchanged": true,
+    "scopedGitDiffCheck": true
+  },
+  "files": [
+    {
+      "path": "sensitive_workspace_module.js",
+      "bytes": 80802,
+      "sha256": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac"
+    },
+    {
+      "path": "behavior_lens_module.js",
+      "bytes": 2645916,
+      "sha256": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7"
+    },
+    {
+      "path": "dynamic_assessment_module.js",
+      "bytes": 1119273,
+      "sha256": "5c742e21f285f3d709b6abf05a470313e11879f8f0110e420b989e627158e315"
+    },
+    {
+      "path": "report_writer_module.js",
+      "bytes": 620086,
+      "sha256": "d002f945abeb59eac7a0c14e1f86c3d9f917d68d9c1b10834ba6ff4f7cd4ca97"
+    },
+    {
+      "path": "desktop/web-app/public/sensitive_workspace_module.js",
+      "bytes": 80802,
+      "sha256": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac"
+    },
+    {
+      "path": "desktop/web-app/public/behavior_lens_module.js",
+      "bytes": 2645916,
+      "sha256": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7"
+    },
+    {
+      "path": "desktop/web-app/public/dynamic_assessment_module.js",
+      "bytes": 1119273,
+      "sha256": "5c742e21f285f3d709b6abf05a470313e11879f8f0110e420b989e627158e315"
+    },
+    {
+      "path": "desktop/web-app/public/report_writer_module.js",
+      "bytes": 620086,
+      "sha256": "d002f945abeb59eac7a0c14e1f86c3d9f917d68d9c1b10834ba6ff4f7cd4ca97"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3144857,
+      "sha256": "c65fed15b58af3012f2ba2fbb330a6913a6bef6eb1041059b071d9cb34a35747"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3141490,
+      "sha256": "cd5a6a7bea0e6e5853672acb4dad8c5aeed933f3c258407e56daf31f3badd9b9"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3141161,
+      "sha256": "b91332532296ecb88c44f90afc510fbd4f8a74655adaf757a6a98ac2d752b614"
+    },
+    {
+      "path": "tests/behavior_lens_import_context.test.js",
+      "bytes": 5366,
+      "sha256": "2446d9c1ba3863342772c32d27cab7b3f2df675dfc988a43de1fdbdf43bf7305"
+    },
+    {
+      "path": "tests/behavior_lens_protected_workspace.test.js",
+      "bytes": 17690,
+      "sha256": "0c1ef31179f1533b354714a3f03ed94fc0dcc5097568a1d4750d8031609b7f86"
+    },
+    {
+      "path": "tests/dynamic_assessment_download_cleanup.test.js",
+      "bytes": 7234,
+      "sha256": "58d874e3e48eb0b1e3b7799a9e349e25677936d0e6ddef7009f80d2f36dd006a"
+    },
+    {
+      "path": "tests/dynamic_assessment_protected_workspace.test.js",
+      "bytes": 14725,
+      "sha256": "9c914abe2b2954eaa5abd326dc35c701bbd744ef49cfee7485e60fbde22645eb"
+    },
+    {
+      "path": "tests/report_writer_close_guard.test.js",
+      "bytes": 6668,
+      "sha256": "d48eba488f8522195a14b8c330f87f47b337f51956874784ea10ea8e587b1ff3"
+    },
+    {
+      "path": "tests/report_writer_export_quality.test.js",
+      "bytes": 11686,
+      "sha256": "365f46628e22c7559ba32f4a9dd833ab8f874e48fc79e14a0760d6d4858b377b"
+    },
+    {
+      "path": "tests/report_writer_output_cleanup.test.js",
+      "bytes": 6137,
+      "sha256": "cb26db970416061e9740d1e1d9fe623d149858b471925404058a2c14c0d7c315"
+    },
+    {
+      "path": "tests/report_writer_protected_workspace.test.js",
+      "bytes": 12400,
+      "sha256": "e2d7be2ded9f22523cb834d28213066ecba1aff7f175e1aafcbe5ae6a911a64a"
+    },
+    {
+      "path": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "path": "tests/sensitive_workspace_credential_residue.test.js",
+      "bytes": 9076,
+      "sha256": "34fb93ee01db464d11cb9ed4c565a456d26573bdb6a6a434472966f006374060"
+    },
+    {
+      "path": "tests/sensitive_workspace_lock_boundary.test.js",
+      "bytes": 10918,
+      "sha256": "3f19d5cb6511cd0c0fd385657ee57fe6e977ea48c09ed5ebd0bf836add8453c3"
+    },
+    {
+      "path": "tests/sensitive_workspace_races.test.js",
+      "bytes": 8734,
+      "sha256": "b2ed1b4b5286be11f9b87a6f33b6dcc19d955d336f0f9599adca6ed6b3890cb8"
+    },
+    {
+      "path": "tests/sensitive_workspace_ui_actions.test.js",
+      "bytes": 12599,
+      "sha256": "ada2e2e8e0083a7b857534529e1790c27b0d9d8906897b0028e94bb69bb184e3"
+    },
+    {
+      "path": "allo_crypto_module.js",
+      "bytes": 22716,
+      "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359"
+    },
+    {
+      "path": "allo_device_vault_module.js",
+      "bytes": 43286,
+      "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+    },
+    {
+      "path": "identifier_redaction_module.js",
+      "bytes": 25503,
+      "sha256": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179"
+    },
+    {
+      "path": "behavior_lens_workspace_module.js",
+      "bytes": 84289,
+      "sha256": "e8f4ff4532a68c7af9504ab208c95153ecf8fc2b102217f063f7b1d6a922c780"
+    },
+    {
+      "path": "tests/helpers/behavior_lens_harness.js",
+      "bytes": 15685,
+      "sha256": "fa806d38648375018f72c41f04ffb12febf6300cbb9341abecf0a00fb366156f"
+    },
+    {
+      "path": "tests/behavior_lens_safe_selection.test.js",
+      "bytes": 10557,
+      "sha256": "84d60149436597105927e85cbe40f6e4d3e75e764f3d3d141390cd8447e3ba5c"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-file-actions-followup.md",
+      "bytes": 6753,
+      "sha256": "23efa882a2b4714235c4ff466850d3389759328b3c37e838116e5973bf7235c9"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 21461,
+      "sha256": "277cfb7c4d7cdfc13f82c1e673b2cd19adb4d9e9472bee6c02a143b7a752747c"
+    },
+    {
+      "path": "docs/audits/2026-10-24-school-district/report.md",
+      "bytes": 40707,
+      "sha256": "4fe17744dde785fd08d4660d5f1aa1b66f52c73923bedeb7add987b4c473ca93"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/final-focused-results.json",
+      "bytes": 47872,
+      "sha256": "8697afa34a9215df03f958351d339b0bd83d129437338ecaff06b90aa0778fe0"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/final-focused.log",
+      "bytes": 10522,
+      "sha256": "34d2c11c5f53fbd80b48049807f9f15e2616ac14090bf3647a8693ca4c5284cc"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/final-test-source-hashes.json",
+      "bytes": 402,
+      "sha256": "9c15b717bddf1ba749f238f8ab8378d95bbf10416c2228376c20813c6197a19d"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/final-results.json",
+      "bytes": 10291,
+      "sha256": "9975eb75f2c46947baf6f585c0f1498c269fa91f3f0c9345381c9c3409ff3862"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/preexisting-cloud-results.json",
+      "bytes": 3472,
+      "sha256": "e8250d3ed6fecb5f9eafaef0b81de070a9297805b4fffa056f1c02fc6ee92b6d"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/baseline-cloud.test.js",
+      "bytes": 518,
+      "sha256": "162f996ebadd5cdc0c6a42067c55e757511796f2fab55c93f0a02cfb76c21c7d"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/vitest.baseline.config.mjs",
+      "bytes": 219,
+      "sha256": "4433a0fb0d9c7917b2085ca26d8173a4c5222f91eaa076fb93e27e1b50ef299a"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/report-browser-checks.json",
+      "bytes": 996,
+      "sha256": "99f27a63c0a9d46de750d28541d9909810525696a80393c0c5d0b4d8d7f5896c"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/da-browser-checks.json",
+      "bytes": 1299,
+      "sha256": "eaabb440d1f32da39a4194ba547d4361a2e2136ecd2d0a08d18995385ca6d378"
+    },
+    {
+      "path": "tmp/clinical-ui-actions-20261026/browser-checks.json",
+      "bytes": 1027,
+      "sha256": "639f3f0dd5dc76a30836cc139176c32fb7d54ecb63854daa70b88de5032d9a04"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/browser-checks.json",
+      "bytes": 1804,
+      "sha256": "0aa4cef452bf89bf9a5c89f6defa776acbe2ef34b8188c562e8abaa7af62f488"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/report-output-baseline-results.json",
+      "bytes": 5965,
+      "sha256": "644e7ea720cc683572dbdfa6ee6a67fefa765691a4a9c366bb1e3bacfdb48de7"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/da-baseline-results.json",
+      "bytes": 4465,
+      "sha256": "4a698b0065c36668c6d93421082d0b0553c835bafcf860b7ec5e82ab0e095371"
+    },
+    {
+      "path": "tmp/clinical-ui-actions-20261026/baseline-results.json",
+      "bytes": 15108,
+      "sha256": "31fc69546d8c23da1eb364f4ed6a02343f84e2e61e44056467302b576c5ef871"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/baseline-results.json",
+      "bytes": 1769,
+      "sha256": "0e259c1025970e8674664cc42244518cb5270d7cd68968e7692d469c73f04153"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/report-browser-baseline.json",
+      "bytes": 981,
+      "sha256": "b7b8033975a8b0e43bd4a71814a62e6aa1a8dd7f96675b4e703c5e1b4eb97319"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/da-browser-baseline.json",
+      "bytes": 1314,
+      "sha256": "c35bf8e292467e5105ffcb47c681c6b2649ba1e061845ffcd4b9913cc6addd98"
+    },
+    {
+      "path": "tmp/clinical-ui-actions-20261026/browser-baseline.json",
+      "bytes": 914,
+      "sha256": "019e4654d9f06d6ed44a36190e235307ea91d39dd1e917ccc20c299aafbf17cd"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/browser-baseline.json",
+      "bytes": 1533,
+      "sha256": "c15f11c39e57dfaf158b040c6342e7a41465e5e6b7cc45a004c83505f89c8304"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/report-output-final-results.json",
+      "bytes": 12234,
+      "sha256": "e42b87180c95b6c85d07a625ee179da68bb27f535281da25cbb38f5e8eee1930"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/da-final-results.json",
+      "bytes": 8284,
+      "sha256": "45be424975935ab716c6bbdb9cb05602430b52b13230ab7e0fbe07e09109af71"
+    },
+    {
+      "path": "tmp/clinical-ui-actions-20261026/final-results.json",
+      "bytes": 21634,
+      "sha256": "79bde0181e1e0de8ef9c81943778570f1418dbf00497d01bc59dd31949070d93"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/report-output-source-receipt.json",
+      "bytes": 495,
+      "sha256": "c1e81c43756764b61e933061c2856f44f0290d4fcb74961d32ecf3c09dc132ff"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/da-source-receipt.json",
+      "bytes": 397,
+      "sha256": "45e72151f309c217076fe4469590c71963e5f9c9ad3662469475af2c7d28091e"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/report_writer_module.before.js",
+      "bytes": 618325,
+      "sha256": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/dynamic_assessment_module.before.js",
+      "bytes": 1119487,
+      "sha256": "53bd23d46460c1d5d25c812d812b7bef71ff7cdac1a3f3963f271491b9136698"
+    },
+    {
+      "path": "tmp/clinical-ui-actions-20261026/sensitive_workspace_module.before.js",
+      "bytes": 78933,
+      "sha256": "27d91b909a38b84c9a33273e1db459ff2b3ac44fba8e7d22f76a0f48033c088b"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/behavior_lens_module.before.js",
+      "bytes": 2645062,
+      "sha256": "76098d862f4a6d1cbd1070eafd1ec7e64a7b299f0ae73efa774c64eeb711eb5c"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/baseline-proof.test.js",
+      "bytes": 4221,
+      "sha256": "6d75043f2c4368a8cf14652c6914dfcca7c5bd646cc3135ec4a621facb090de6"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/report-browser-qa.cjs",
+      "bytes": 6956,
+      "sha256": "094a1f0a3bbef2f124a8328df7dbc788200f4b130d92cdfebab46445d8cd1c90"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/da-browser-qa.cjs",
+      "bytes": 7058,
+      "sha256": "4993ecaf6b6c28be7a474f6a56963230a3914f6f4585ae2a1dea4cb72af3df34"
+    },
+    {
+      "path": "tmp/clinical-ui-actions-20261026/browser-qa.cjs",
+      "bytes": 8171,
+      "sha256": "f2f4b1d049649d88c7d0856e08e13e409ebfad33f709a8a8347d5f3cd33eccdb"
+    },
+    {
+      "path": "tmp/clinical-import-context-20261026/browser-qa.cjs",
+      "bytes": 9936,
+      "sha256": "1e38085ba31190a8c4df6e9c3c4134c9776dee7e47864f95c9316c618317c210"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/pin-delivery.cjs",
+      "bytes": 4522,
+      "sha256": "281b1a6342149e8d8f6ffb5589f1755db93566d5a93cfb41edddbad12091ba8b"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/delivery-validation.json",
+      "bytes": 4961,
+      "sha256": "b4fbd20ac96387f127c005b4aa81e0020fc6c7879c1da41c7385b5ac193a59fe"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/peer-review.json",
+      "bytes": 939,
+      "sha256": "325ac2b404770f230e2a2c9581fb83e958b4373b82e342ac24f84017dd25942c"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/scoped-diff-check.json",
+      "bytes": 178,
+      "sha256": "2c20ec15254fa1f3ddcc8f1ad9ed7fc4f8da336f4540331e3c8fce29af0437e9"
+    },
+    {
+      "path": "tmp/clinical-output-20261026/finalize-evidence.cjs",
+      "bytes": 10877,
+      "sha256": "ee92753501a88dfb280cc76f8af6012a5d2970bd78445f232e311c67f074cafd"
+    }
+  ],
+  "limitations": [
+    "Synthetic local checks only; no real student records, provider requests, district account change, commit, push, release build or deployment.",
+    "Client lifecycle protections do not establish staff identity or secure memory erasure.",
+    "Successful download initiation is not proof that the operating system saved a file.",
+    "Already delivered copies and completed print jobs cannot be retracted; destination retention and deletion remain separate.",
+    "One pre-existing cloud-control UI test and existing embedded/canonical policy differences remain with broader release reconciliation.",
+    "Canvas real-record and clinical external-AI defaults remain disabled pending actual deployment validation and district approval."
+  ]
+}

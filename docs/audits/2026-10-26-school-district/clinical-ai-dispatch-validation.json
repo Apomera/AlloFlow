@@ -1,0 +1,922 @@
+{
+  "checkedAt": "2026-10-26T12:28:50.984Z",
+  "scope": "Clinical permission and current operation at cloud/local/search/media dispatch, retry and response boundaries",
+  "status": "Corrected in local source; verified release and district deployment approval remain required",
+  "tests": {
+    "passed": 249,
+    "failed": 0,
+    "pending": 0,
+    "files": 17,
+    "selected": {
+      "tests/behavior_lens_protected_workspace.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+        "passed": 10
+      },
+      "tests/clinical_ai_dispatch.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/core-threads-results.json",
+        "passed": 4
+      },
+      "tests/clinical_request_controls.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+        "passed": 9
+      },
+      "tests/dynamic_assessment_protected_workspace.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+        "passed": 12
+      },
+      "tests/dynamic_assessment_sensitive_ai_review.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+        "passed": 12
+      },
+      "tests/report_writer_protected_workspace.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+        "passed": 7
+      },
+      "tests/report_writer_sensitive_prompt_review.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+        "passed": 18
+      },
+      "tests/sensitive_workspace.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+        "passed": 16
+      },
+      "tests/behavior_lens_sensitive_prompt_review.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/behavior-review-tests.json",
+        "passed": 8
+      },
+      "tests/gemini_api_build_determinism.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/core-final-results.json",
+        "passed": 2
+      },
+      "tests/gemini_managed_dispatch.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/core-threads-results.json",
+        "passed": 39
+      },
+      "tests/gemini_media_request_shapes.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/core-threads-results.json",
+        "passed": 4
+      },
+      "tests/gemini_request_controls.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/core-threads-results.json",
+        "passed": 22
+      },
+      "tests/sensitive_workspace_lock_boundary.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/core-threads-results.json",
+        "passed": 7
+      },
+      "tests/ai_backend_clinical_request_controls.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/provider-final-threads-results.json",
+        "passed": 39
+      },
+      "tests/ai_backend_managed_request_races.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/provider-regression-threads-results.json",
+        "passed": 32
+      },
+      "tests/websearch_managed_request_races.test.js": {
+        "report": "tmp/clinical-ai-dispatch-fix-20261026/provider-regression-threads-results.json",
+        "passed": 8
+      }
+    },
+    "runs": [
+      {
+        "file": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+        "success": true,
+        "passed": 88,
+        "failed": 0,
+        "pending": 0,
+        "selectedFiles": 8,
+        "note": "Complete passing report"
+      },
+      {
+        "file": "tmp/clinical-ai-dispatch-fix-20261026/behavior-review-tests.json",
+        "success": true,
+        "passed": 8,
+        "failed": 0,
+        "pending": 0,
+        "selectedFiles": 1,
+        "note": "Complete passing report"
+      },
+      {
+        "file": "tmp/clinical-ai-dispatch-fix-20261026/core-final-results.json",
+        "success": true,
+        "passed": 2,
+        "failed": 0,
+        "pending": 0,
+        "selectedFiles": 1,
+        "note": "Only the completed two-test build file is selected. Five fork workers failed to start; all five affected files passed in the subsequent threads run."
+      },
+      {
+        "file": "tmp/clinical-ai-dispatch-fix-20261026/core-threads-results.json",
+        "success": true,
+        "passed": 76,
+        "failed": 0,
+        "pending": 0,
+        "selectedFiles": 5,
+        "note": "Complete passing report"
+      },
+      {
+        "file": "tmp/clinical-ai-dispatch-fix-20261026/provider-final-threads-results.json",
+        "success": true,
+        "passed": 39,
+        "failed": 0,
+        "pending": 0,
+        "selectedFiles": 1,
+        "note": "Complete passing report"
+      },
+      {
+        "file": "tmp/clinical-ai-dispatch-fix-20261026/provider-regression-threads-results.json",
+        "success": true,
+        "passed": 40,
+        "failed": 0,
+        "pending": 0,
+        "selectedFiles": 2,
+        "note": "Complete passing report"
+      }
+    ]
+  },
+  "browser": {
+    "checkedAt": "2026-10-26T12:13:12.551Z",
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "actualReportWriterReview": true,
+    "actualClinicalService": true,
+    "actualGeminiProvider": true,
+    "actualUtilsRetryTransport": true,
+    "nativeWebCrypto": true,
+    "nativeFetchInterceptedLocally": true,
+    "network": "All navigation and expected synthetic Gemini responses fulfilled locally; all other requests blocked. No provider traffic.",
+    "sourceHashes": {
+      "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+      "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+      "sensitive_workspace_module.js": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a",
+      "utils_pure_module.js": "4611acd213fc7ab391f988c096909a055999cdbe6c714fa7a6c5d81c9d6a2fb8",
+      "identifier_redaction_module.js": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179",
+      "report_writer_module.js": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206",
+      "gemini_api_module.js": "4008f9e277b74b05bfa040864e9a80ec0369b5753ec3b5c61c9fc445710a2c3c"
+    },
+    "checks": {
+      "reviewRevocationStopsNativeDispatch": true,
+      "reviewRevocationRejectsRequest": true,
+      "digestRevocationStopsNativeDispatch": true,
+      "digestRevocationRejectsRequest": true,
+      "approvedRequestUsesNativeFetch": true,
+      "approvedResultRemainsFunctional": true,
+      "inFlightRequestWasAlreadySent": true,
+      "revokedResponseNotAccepted": true,
+      "noBrowserRuntimeErrors": true
+    },
+    "errors": [],
+    "nativeRequests": [
+      {
+        "mode": "allowed",
+        "method": "POST",
+        "syntheticSentinelPresent": true
+      },
+      {
+        "mode": "response",
+        "method": "POST",
+        "syntheticSentinelPresent": true
+      }
+    ],
+    "processExitCode": 0
+  },
+  "delivery": {
+    "checkedAt": "2026-10-26T12:25:59.919Z",
+    "reviewed": {
+      "sensitive_workspace_module.js": {
+        "bytes": 78206,
+        "sha256": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a",
+        "integrity": "sha384-zF4wEFIPFcIHsWMKMGjPVY9gyt31k5FxmfHdLbG1uUKs7iP9XPSm2ujNgmc/4fBf"
+      },
+      "report_writer_module.js": {
+        "bytes": 618325,
+        "sha256": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206",
+        "integrity": "sha384-Jtkv+RjNgsciEKzgsJ9MH9aAo37VhaogLkw9U/01I/wWc0QN3mIAzrjsiNTJL6Am"
+      },
+      "behavior_lens_module.js": {
+        "bytes": 2642128,
+        "sha256": "1d112d826e9ad4197cd73f0ca16a102057e16136ec9c3955cc821787bebb8c71",
+        "integrity": "sha384-HoJ0904wocANFFTmATRO18cHH7RLcNPEl6vqbk+mU6NhCv+w4Ky02RJvOq5RJlhS"
+      },
+      "dynamic_assessment_module.js": {
+        "bytes": 1118969,
+        "sha256": "c520497c2106d64410ca5b887af4470812f0da22998cfa03bb3ef659b529b938",
+        "integrity": "sha384-2xdIAjb5IdxY5mGltlZ1XAkUd4YL1dqAlahw2wJMyZrq3ZahAjRU/6lr/34GUbvD"
+      },
+      "gemini_api_module.js": {
+        "bytes": 86785,
+        "sha256": "4008f9e277b74b05bfa040864e9a80ec0369b5753ec3b5c61c9fc445710a2c3c",
+        "integrity": "sha384-Xy2qh430Kc8d/qyjaFJ08y0TnZO8yWelZbEpYsJz7TouR58IG54618+AImXUcU1Y"
+      },
+      "ai_backend_module.js": {
+        "bytes": 188444,
+        "sha256": "119c40268429cc96230e56eb22c47ececddbc8e6adc88048aabbad083cae7c91",
+        "integrity": "sha384-nmpubfzvA6FkxOVudOEly4sqKWaqPiUWyTpAEyVm6g5KSnkJND3bYXRLsNyxVdh2"
+      }
+    },
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "beforeSha256": "176f35f121103abc44cf4e6ee0c7d7602aa1d35c07f821b062642f983e722df1",
+        "afterSha256": "c9406726aa6067fd3f8986b47b905d775694844fceba131bbf7bd9dd35d1d6ef",
+        "manifestId": "95dc0b2d31d441f1b587a2054f28afe55c96d7c0a279e23da892112612f566e4",
+        "previousManifestId": "5d62471d5f94b0c1c5c6a1b8733e4fd707139695114892d5bd16b19c8d43be4e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=62b7adf8881c",
+            "after": "sensitive_workspace_module.js?v=2ead5cb81e"
+          },
+          {
+            "before": "report_writer_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "report_writer_module.js?v=b60f071fdc"
+          },
+          {
+            "before": "behavior_lens_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "behavior_lens_module.js?v=1d112d826e"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=5b2db25cbf",
+            "after": "dynamic_assessment_module.js?v=c520497c21"
+          },
+          {
+            "before": "gemini_api_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "gemini_api_module.js?v=4008f9e277"
+          },
+          {
+            "before": "ai_backend_module.js?v=bb3e486f3b",
+            "after": "ai_backend_module.js?v=119c402684"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "beforeSha256": "9695e82be04b035a3204ed58c6835321745d2fe662a98243385f39d1a43a1a9f",
+        "afterSha256": "fbd093f4709b0f0966735a6999fe7cfc62a39b2b4c51a2b40e88a023d4f9f2eb",
+        "manifestId": "95dc0b2d31d441f1b587a2054f28afe55c96d7c0a279e23da892112612f566e4",
+        "previousManifestId": "5d62471d5f94b0c1c5c6a1b8733e4fd707139695114892d5bd16b19c8d43be4e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=62b7adf8881c",
+            "after": "sensitive_workspace_module.js?v=2ead5cb81e"
+          },
+          {
+            "before": "report_writer_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "report_writer_module.js?v=b60f071fdc"
+          },
+          {
+            "before": "behavior_lens_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "behavior_lens_module.js?v=1d112d826e"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=5b2db25cbf",
+            "after": "dynamic_assessment_module.js?v=c520497c21"
+          },
+          {
+            "before": "gemini_api_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "gemini_api_module.js?v=4008f9e277"
+          },
+          {
+            "before": "ai_backend_module.js?v=bb3e486f3b",
+            "after": "ai_backend_module.js?v=119c402684"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "beforeSha256": "1260fa07da1f43be1cdc89a8463dc5089ec27a2026106a89beeb28dd85902815",
+        "afterSha256": "f92fe7c36b8c5401e6d34340ce18d2c80d42bbd594cd96e1b5d7175647c8cef2",
+        "manifestId": "95dc0b2d31d441f1b587a2054f28afe55c96d7c0a279e23da892112612f566e4",
+        "previousManifestId": "5d62471d5f94b0c1c5c6a1b8733e4fd707139695114892d5bd16b19c8d43be4e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=62b7adf8881c",
+            "after": "sensitive_workspace_module.js?v=2ead5cb81e"
+          },
+          {
+            "before": "report_writer_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "report_writer_module.js?v=b60f071fdc"
+          },
+          {
+            "before": "behavior_lens_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "behavior_lens_module.js?v=1d112d826e"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=5b2db25cbf",
+            "after": "dynamic_assessment_module.js?v=c520497c21"
+          },
+          {
+            "before": "gemini_api_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "gemini_api_module.js?v=4008f9e277"
+          },
+          {
+            "before": "ai_backend_module.js?v=bb3e486f3b",
+            "after": "ai_backend_module.js?v=119c402684"
+          }
+        ]
+      }
+    ],
+    "scope": "Only the six selected clinical-request module approvals and loader cache strings; no broad policy regeneration, build or release."
+  },
+  "peerReview": {
+    "checkedAt": "2026-10-26T12:15:44.745Z",
+    "review": "Independent source review of clinical request controls and actual dispatch propagation",
+    "scope": "Read-only production review; synthetic native browser harness prepared separately",
+    "result": "No blocking scope-loss found; final provider catch changes and current scoped host pins reviewed",
+    "reviewedBehaviors": [
+      "Gemini outer and single-attempt controls captured before await and retained by branded JSON repair request",
+      "Managed and clinical guards compose immediately before Gemini native attempts, local fallback and Canvas search",
+      "Direct image fetch and Vision partial returns recheck scope; provider results rechecked",
+      "Three local host bridges forward searchOptions.requestControls; provenance wrapper preserves all arguments",
+      "AIProvider nested scoped contexts preserve original guard and compose explicitly supplied child restriction",
+      "WebSearch native dispatch scope isolated per search; state forwarding preserves existing cooldown/availability/init fields",
+      "Clinical feature guards bind workspace epoch/generation, permission, current case/provider and cancellation without mutable global hook",
+      "Terminal abort/managed denial takes precedence over disabled-image and safety-result fallback"
+    ],
+    "findingsResolved": [
+      {
+        "finding": "Search receiver originally shadowed shared cooldown/cache writes",
+        "resolution": "Eight whitelisted state descriptors forward to owner while authorization stays scoped",
+        "validation": "Provider agent adds sequential-failure cooldown regression"
+      },
+      {
+        "finding": "Inherited requestControls silently ignored by AIProvider option reader",
+        "resolution": "Inherited-present requestControls rejected without accessor evaluation"
+      }
+    ],
+    "limitations": [
+      "Source review is not proof of all deployment routes or district authorization",
+      "Post-response rejection cannot undo data already transmitted",
+      "Provider unit and native browser results are reported separately by their runners"
+    ],
+    "files": [
+      {
+        "path": "gemini_api_source.jsx",
+        "bytes": 86634,
+        "sha256": "7797c851a9872978a85bb120c3acb48c4c3f2679c1574f4d86150e3fee0d21f1"
+      },
+      {
+        "path": "gemini_api_module.js",
+        "bytes": 86785,
+        "sha256": "4008f9e277b74b05bfa040864e9a80ec0369b5753ec3b5c61c9fc445710a2c3c"
+      },
+      {
+        "path": "ai_backend_module.js",
+        "bytes": 188444,
+        "sha256": "119c40268429cc96230e56eb22c47ececddbc8e6adc88048aabbad083cae7c91"
+      },
+      {
+        "path": "sensitive_workspace_module.js",
+        "bytes": 78206,
+        "sha256": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a"
+      },
+      {
+        "path": "report_writer_module.js",
+        "bytes": 618325,
+        "sha256": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206"
+      },
+      {
+        "path": "behavior_lens_module.js",
+        "bytes": 2642128,
+        "sha256": "1d112d826e9ad4197cd73f0ca16a102057e16136ec9c3955cc821787bebb8c71"
+      },
+      {
+        "path": "dynamic_assessment_module.js",
+        "bytes": 1118969,
+        "sha256": "c520497c2106d64410ca5b887af4470812f0da22998cfa03bb3ef659b529b938"
+      },
+      {
+        "path": "AlloFlowANTI.txt",
+        "bytes": 3144887,
+        "sha256": "c9406726aa6067fd3f8986b47b905d775694844fceba131bbf7bd9dd35d1d6ef"
+      },
+      {
+        "path": "desktop/web-app/src/AlloFlowANTI.txt",
+        "bytes": 3141520,
+        "sha256": "fbd093f4709b0f0966735a6999fe7cfc62a39b2b4c51a2b40e88a023d4f9f2eb"
+      },
+      {
+        "path": "desktop/web-app/src/App.jsx",
+        "bytes": 3141191,
+        "sha256": "f92fe7c36b8c5401e6d34340ce18d2c80d42bbd594cd96e1b5d7175647c8cef2"
+      }
+    ],
+    "finalReview": {
+      "checkedAt": "2026-10-26T12:28:00.940Z",
+      "previousReceiptSha256": "aabcca995160d86cf91c4b854cb2f1be64ff3e006a1e029819c836c36ee2ed2a",
+      "previousProviderSha256": "f20334703e7501abf06ba9b0ebbaf5a13c415e992dcd79e2439db2bad686d5e0",
+      "finalProviderSha256": "119c40268429cc96230e56eb22c47ececddbc8e6adc88048aabbad083cae7c91",
+      "exactlyThreeCatchChangesVerified": true,
+      "review": "Abort and managed-request denial now take priority over disabled-image null results and permissive safety fallback. No additional production changes in this provider delta.",
+      "hostAssetChecks": 18,
+      "providerThreadTests": {
+        "passed": 39,
+        "failed": 0
+      },
+      "nativeBrowserChecks": 9,
+      "validationNote": "Existing runner receipts checked; no duplicate browser or test run."
+    }
+  },
+  "peerComparison": [
+    {
+      "path": "gemini_api_source.jsx",
+      "reviewedSha256": "7797c851a9872978a85bb120c3acb48c4c3f2679c1574f4d86150e3fee0d21f1",
+      "currentSha256": "7797c851a9872978a85bb120c3acb48c4c3f2679c1574f4d86150e3fee0d21f1",
+      "unchanged": true
+    },
+    {
+      "path": "gemini_api_module.js",
+      "reviewedSha256": "4008f9e277b74b05bfa040864e9a80ec0369b5753ec3b5c61c9fc445710a2c3c",
+      "currentSha256": "4008f9e277b74b05bfa040864e9a80ec0369b5753ec3b5c61c9fc445710a2c3c",
+      "unchanged": true
+    },
+    {
+      "path": "ai_backend_module.js",
+      "reviewedSha256": "119c40268429cc96230e56eb22c47ececddbc8e6adc88048aabbad083cae7c91",
+      "currentSha256": "119c40268429cc96230e56eb22c47ececddbc8e6adc88048aabbad083cae7c91",
+      "unchanged": true
+    },
+    {
+      "path": "sensitive_workspace_module.js",
+      "reviewedSha256": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a",
+      "currentSha256": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a",
+      "unchanged": true
+    },
+    {
+      "path": "report_writer_module.js",
+      "reviewedSha256": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206",
+      "currentSha256": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206",
+      "unchanged": true
+    },
+    {
+      "path": "behavior_lens_module.js",
+      "reviewedSha256": "1d112d826e9ad4197cd73f0ca16a102057e16136ec9c3955cc821787bebb8c71",
+      "currentSha256": "1d112d826e9ad4197cd73f0ca16a102057e16136ec9c3955cc821787bebb8c71",
+      "unchanged": true
+    },
+    {
+      "path": "dynamic_assessment_module.js",
+      "reviewedSha256": "c520497c2106d64410ca5b887af4470812f0da22998cfa03bb3ef659b529b938",
+      "currentSha256": "c520497c2106d64410ca5b887af4470812f0da22998cfa03bb3ef659b529b938",
+      "unchanged": true
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "reviewedSha256": "c9406726aa6067fd3f8986b47b905d775694844fceba131bbf7bd9dd35d1d6ef",
+      "currentSha256": "c9406726aa6067fd3f8986b47b905d775694844fceba131bbf7bd9dd35d1d6ef",
+      "unchanged": true
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "reviewedSha256": "fbd093f4709b0f0966735a6999fe7cfc62a39b2b4c51a2b40e88a023d4f9f2eb",
+      "currentSha256": "fbd093f4709b0f0966735a6999fe7cfc62a39b2b4c51a2b40e88a023d4f9f2eb",
+      "unchanged": true
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "reviewedSha256": "f92fe7c36b8c5401e6d34340ce18d2c80d42bbd594cd96e1b5d7175647c8cef2",
+      "currentSha256": "f92fe7c36b8c5401e6d34340ce18d2c80d42bbd594cd96e1b5d7175647c8cef2",
+      "unchanged": true
+    }
+  ],
+  "validation": {
+    "sourcePublicMirrors": true,
+    "sixRuntimeModulesParse": true,
+    "threeFullHostsParse": true,
+    "localHostControlForwarding": true,
+    "canonicalGeminiBuild": true,
+    "scopedGitDiffCheck": true
+  },
+  "historicalFinding": {
+    "capturedAt": "2026-10-26T11:48:56.2962754Z",
+    "sources": [
+      {
+        "path": "sensitive_workspace_module.js",
+        "sha256": "62b7adf8881cf8f18b7c0d2f3cdd1c385b0c9d9d5c6201e74f64c2f52ab4f489"
+      },
+      {
+        "path": "report_writer_module.js",
+        "sha256": "0366d4eb00f1b08f3d7ee6a55ed90232a1e57b63b76b8f914e43ecafe4f3cac1"
+      },
+      {
+        "path": "behavior_lens_module.js",
+        "sha256": "4254efcf92d485f71b5d5732185b8a4cade5a287ac66810b5a9f6b71fb749d4c"
+      },
+      {
+        "path": "dynamic_assessment_module.js",
+        "sha256": "7a7a005128cb6579bfe1573d442dbb1cb9016373bd3e4da49b3f802ff1c35c0f"
+      },
+      {
+        "path": "gemini_api_module.js",
+        "sha256": "67fb2675fa700956475f171cedc4b7b83fa94dbd249f5a2179c6e19396f0915d"
+      },
+      {
+        "path": "utils_pure_module.js",
+        "sha256": "4611acd213fc7ab391f988c096909a055999cdbe6c714fa7a6c5d81c9d6a2fb8"
+      },
+      {
+        "path": "identifier_redaction_module.js",
+        "sha256": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179"
+      }
+    ],
+    "proof": "tmp/clinical-ai-20261026/dispatch-proof.test.js",
+    "results": "tmp/clinical-ai-20261026/current-results.json",
+    "baseline": {
+      "passed": 1,
+      "failed": 1
+    },
+    "finding": "Clinical allowExternalAi revocation during actual Gemini credential digest did not stop reviewed synthetic clinical prompt reaching fake native dispatch, even after actual beforeRequest guard ran.",
+    "externalRequests": 0,
+    "status": "OPEN: reproduced against current clinical lock candidate",
+    "scope": "Actual RW editable review, clinical service and Gemini provider. Synthetic injected transport calls actual beforeRequest. No native fetch or external request. BL/DA timing risk is source-only."
+  },
+  "files": [
+    {
+      "path": "gemini_api_source.jsx",
+      "bytes": 86634,
+      "sha256": "7797c851a9872978a85bb120c3acb48c4c3f2679c1574f4d86150e3fee0d21f1"
+    },
+    {
+      "path": "sensitive_workspace_module.js",
+      "bytes": 78206,
+      "sha256": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a"
+    },
+    {
+      "path": "report_writer_module.js",
+      "bytes": 618325,
+      "sha256": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206"
+    },
+    {
+      "path": "behavior_lens_module.js",
+      "bytes": 2642128,
+      "sha256": "1d112d826e9ad4197cd73f0ca16a102057e16136ec9c3955cc821787bebb8c71"
+    },
+    {
+      "path": "dynamic_assessment_module.js",
+      "bytes": 1118969,
+      "sha256": "c520497c2106d64410ca5b887af4470812f0da22998cfa03bb3ef659b529b938"
+    },
+    {
+      "path": "gemini_api_module.js",
+      "bytes": 86785,
+      "sha256": "4008f9e277b74b05bfa040864e9a80ec0369b5753ec3b5c61c9fc445710a2c3c"
+    },
+    {
+      "path": "ai_backend_module.js",
+      "bytes": 188444,
+      "sha256": "119c40268429cc96230e56eb22c47ececddbc8e6adc88048aabbad083cae7c91"
+    },
+    {
+      "path": "desktop/web-app/public/sensitive_workspace_module.js",
+      "bytes": 78206,
+      "sha256": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a"
+    },
+    {
+      "path": "desktop/web-app/public/report_writer_module.js",
+      "bytes": 618325,
+      "sha256": "b60f071fdc109ca72d2e369d0d855366fa8a0c6c7bbc381a3b0b7fdad1e62206"
+    },
+    {
+      "path": "desktop/web-app/public/behavior_lens_module.js",
+      "bytes": 2642128,
+      "sha256": "1d112d826e9ad4197cd73f0ca16a102057e16136ec9c3955cc821787bebb8c71"
+    },
+    {
+      "path": "desktop/web-app/public/dynamic_assessment_module.js",
+      "bytes": 1118969,
+      "sha256": "c520497c2106d64410ca5b887af4470812f0da22998cfa03bb3ef659b529b938"
+    },
+    {
+      "path": "desktop/web-app/public/gemini_api_module.js",
+      "bytes": 86785,
+      "sha256": "4008f9e277b74b05bfa040864e9a80ec0369b5753ec3b5c61c9fc445710a2c3c"
+    },
+    {
+      "path": "desktop/web-app/public/ai_backend_module.js",
+      "bytes": 188444,
+      "sha256": "119c40268429cc96230e56eb22c47ececddbc8e6adc88048aabbad083cae7c91"
+    },
+    {
+      "path": "allo_crypto_module.js",
+      "bytes": 22716,
+      "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359"
+    },
+    {
+      "path": "allo_device_vault_module.js",
+      "bytes": 43286,
+      "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+    },
+    {
+      "path": "utils_pure_module.js",
+      "bytes": 115749,
+      "sha256": "4611acd213fc7ab391f988c096909a055999cdbe6c714fa7a6c5d81c9d6a2fb8"
+    },
+    {
+      "path": "identifier_redaction_module.js",
+      "bytes": 25503,
+      "sha256": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3144887,
+      "sha256": "c9406726aa6067fd3f8986b47b905d775694844fceba131bbf7bd9dd35d1d6ef"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3141520,
+      "sha256": "fbd093f4709b0f0966735a6999fe7cfc62a39b2b4c51a2b40e88a023d4f9f2eb"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3141191,
+      "sha256": "f92fe7c36b8c5401e6d34340ce18d2c80d42bbd594cd96e1b5d7175647c8cef2"
+    },
+    {
+      "path": "tests/behavior_lens_protected_workspace.test.js",
+      "bytes": 16652,
+      "sha256": "f37fa4b9f6cd13c9243d52f60d0d3d2b7bff37c19a41ba4efda34afc5e53fb98"
+    },
+    {
+      "path": "tests/clinical_ai_dispatch.test.js",
+      "bytes": 6503,
+      "sha256": "507115e6e59cbb7b5777787c04754dbb46eb79fe6d0f6ffda291c627e81d3b21"
+    },
+    {
+      "path": "tests/clinical_request_controls.test.js",
+      "bytes": 9008,
+      "sha256": "8169b3227efef598dee7667f5e2cd396390d6b19f229322ecd7cf54468c81f40"
+    },
+    {
+      "path": "tests/dynamic_assessment_protected_workspace.test.js",
+      "bytes": 14621,
+      "sha256": "4d58c75f7ece91c208e8f8c5fd5937711205e510e12f410c17bb59f2e50dc506"
+    },
+    {
+      "path": "tests/dynamic_assessment_sensitive_ai_review.test.js",
+      "bytes": 15301,
+      "sha256": "ba8fa82b67b5d52402fa36c5b1103d1aee84e9668da6319ef9ffa4ea616c3bc2"
+    },
+    {
+      "path": "tests/report_writer_protected_workspace.test.js",
+      "bytes": 10829,
+      "sha256": "3d29f691b89c0a8d0dfaaf02f16ea56178fa78cdbbca6e5ea839619764c4ad5e"
+    },
+    {
+      "path": "tests/report_writer_sensitive_prompt_review.test.js",
+      "bytes": 17883,
+      "sha256": "55dc69bd0809aabbf2074235c7ba9778a03b5ebc3366feaba48b6cb2c9b9470f"
+    },
+    {
+      "path": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "path": "tests/behavior_lens_sensitive_prompt_review.test.js",
+      "bytes": 8129,
+      "sha256": "22d4d5b10297214d0f906dd90e10a86c8463e7cc3f97d2164c113b787c4e67aa"
+    },
+    {
+      "path": "tests/gemini_api_build_determinism.test.js",
+      "bytes": 2360,
+      "sha256": "ac99292d63e34af5361ef06de4824de2e779c157d3ae8c489bb32f8fd67fe9ae"
+    },
+    {
+      "path": "tests/gemini_managed_dispatch.test.js",
+      "bytes": 17031,
+      "sha256": "c9a62df62d22e293a8966d8524d01944f796be18e0f91778e44f006feba69b51"
+    },
+    {
+      "path": "tests/gemini_media_request_shapes.test.js",
+      "bytes": 5107,
+      "sha256": "466525992f59c4d0b5d905c4344ac5098c70949c061b4adb945efe779a739e79"
+    },
+    {
+      "path": "tests/gemini_request_controls.test.js",
+      "bytes": 10573,
+      "sha256": "c4ada4f5feab225be3141a6641870b0082be6ce5ff67b43c10941b7e2e5d91cb"
+    },
+    {
+      "path": "tests/sensitive_workspace_lock_boundary.test.js",
+      "bytes": 10918,
+      "sha256": "3f19d5cb6511cd0c0fd385657ee57fe6e977ea48c09ed5ebd0bf836add8453c3"
+    },
+    {
+      "path": "tests/ai_backend_clinical_request_controls.test.js",
+      "bytes": 18082,
+      "sha256": "dbb6439e45587c1f412da5744c841ea1595becb72d629a72c5c783a2a244c8b2"
+    },
+    {
+      "path": "tests/ai_backend_managed_request_races.test.js",
+      "bytes": 14056,
+      "sha256": "bd5303bb17dca32e8dc3548695e4d3d269ed9d95d054a101f9e325bde268ea5d"
+    },
+    {
+      "path": "tests/websearch_managed_request_races.test.js",
+      "bytes": 5782,
+      "sha256": "5e871463eb5d37d2e21597259f1c056529f84ee7b5cce27f9fea8e92ab310fbe"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-ai-dispatch-followup.md",
+      "bytes": 5889,
+      "sha256": "4ba6152259749145bd31739963017e1a936d44fa62262680299c0b609ccc0d8a"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-ai-dispatch-finding.md",
+      "bytes": 5348,
+      "sha256": "1d67994dea9a1b34a7f63c56ff1f1cef48b794a6afda1b9d203f634dc717eb02"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-lock-followup.md",
+      "bytes": 5443,
+      "sha256": "fc5d2131f8149e4f35ff22b907dbb5a43b77e08295581d5d672f09001208b6d0"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 19942,
+      "sha256": "2eebec4f178596a855d2ae3ba958c7b29785c368db90e87b7583ba239a25905a"
+    },
+    {
+      "path": "docs/audits/2026-10-24-school-district/report.md",
+      "bytes": 39951,
+      "sha256": "0de3fd73bcc68146567405bf33733ce3c075be703e10512218731edbd55cd9b2"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/browser-qa.cjs",
+      "bytes": 7467,
+      "sha256": "37e978e02dab1833093053ac0410af6724ccd24fba481e8b5d261c2270ce180a"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/browser-checks.json",
+      "bytes": 1830,
+      "sha256": "58d66558b60dce5fadb44659a27b72a861f0eaff7517b5a5ed0f9a19a160dbfd"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/peer-review.json",
+      "bytes": 4544,
+      "sha256": "c7e31f46a790c44e78a92f134c51111dbbe356c8ebcf004937b1cbdc95f0d41e"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/feature-source-receipt.json",
+      "bytes": 756,
+      "sha256": "8a9c52ce506ddf8b3d787dfe63a71e146f54b49e8147c04279737dc497fd8b98"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/delivery-validation.json",
+      "bytes": 6503,
+      "sha256": "08dd201b452b35216d28776e4a0a07afd21f076fbcea92d28da15673de532692"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/pin-delivery.cjs",
+      "bytes": 4563,
+      "sha256": "03db5268d7d93054d1ec1b016bff0f674c0d4a4825f643f6f3e43bca473244bd"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/finalize-evidence.cjs",
+      "bytes": 7694,
+      "sha256": "d159ec974ef343b7255695e9b178132846696c0c02f21320426304bb80c58d09"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/feature-tests.json",
+      "bytes": 34884,
+      "sha256": "8a7497c54a6a163111c0a444c5f15cb9cebb450d3a62dc9ccfed34b3e879c314"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/behavior-review-tests.json",
+      "bytes": 3692,
+      "sha256": "7d38677d02b3f381a52055211d57705f4638e619a084ef4d95d2963baf913152"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/core-final-results.json",
+      "bytes": 1402,
+      "sha256": "9bca2d1f51bbdd9290cfb5529f988bf5f1687466f900d194a6e038c68a3a25ef"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/core-threads-results.json",
+      "bytes": 31442,
+      "sha256": "37a332c94dfb342ffefc90e5ad2f337f5e042848334421a592474a80a7d5c88d"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/provider-final-threads-results.json",
+      "bytes": 14473,
+      "sha256": "72a85daf1e775f0676edee4e4abe7e88cad47d38d25159a52ab7bfb40662b09d"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/provider-regression-threads-results.json",
+      "bytes": 15116,
+      "sha256": "47cd73c413cc9319c19d862ee02405ca01615d2f68bea2fa910b8b1bb57d5706"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/core-final.log",
+      "bytes": 4004,
+      "sha256": "ada2e7382f7e8eff0e9cf31f0c692b4fc1d10ee748a07e99cf9ac259aae70095"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/core-threads.log",
+      "bytes": 19572,
+      "sha256": "2dbafa541d32ad0b81dc0fabe6e78252637305a5d1738d0c17e9986a8d7644b8"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/provider-complete-results.json",
+      "bytes": 483,
+      "sha256": "f663e22216f976bb844df1a41b561df9e3152a9dafd65af210efd2fe30c790a0"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/provider-complete.log",
+      "bytes": 2611,
+      "sha256": "9bcdbd23fcea872f24a26f9905ae53796e72a3d6a19c2aa07490b3d1958bebc1"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/provider-final-threads.log",
+      "bytes": 9227,
+      "sha256": "4b74d9eb5c3092639351bf89c3e694f8bf6c3c7cd8bb7f56cb84bcf1002d4131"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/provider-regression-threads.log",
+      "bytes": 2972,
+      "sha256": "1274c7b0f930b1fcce4241497c582a0e6fb6fc786d1a484f4dd194aa28392945"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/gemini_api_source.before.jsx",
+      "bytes": 84152,
+      "sha256": "0ea6849f5740efeae53598dbeca8b883071c581550f0208eadfbec9e64fb353c"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/gemini_api_module.before.js",
+      "bytes": 84303,
+      "sha256": "67fb2675fa700956475f171cedc4b7b83fa94dbd249f5a2179c6e19396f0915d"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/ai_backend_module.before.js",
+      "bytes": 184825,
+      "sha256": "bb3e486f3badc3f98d3a164070497ec386f09ff0b7bf4647a26d0c1cef3371ba"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/sensitive_workspace_module.js.before",
+      "bytes": 76662,
+      "sha256": "62b7adf8881cf8f18b7c0d2f3cdd1c385b0c9d9d5c6201e74f64c2f52ab4f489"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/report_writer_module.js.before",
+      "bytes": 617945,
+      "sha256": "0366d4eb00f1b08f3d7ee6a55ed90232a1e57b63b76b8f914e43ecafe4f3cac1"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/behavior_lens_module.js.before",
+      "bytes": 2640555,
+      "sha256": "4254efcf92d485f71b5d5732185b8a4cade5a287ac66810b5a9f6b71fb749d4c"
+    },
+    {
+      "path": "tmp/clinical-ai-dispatch-fix-20261026/dynamic_assessment_module.js.before",
+      "bytes": 1117883,
+      "sha256": "7a7a005128cb6579bfe1573d442dbb1cb9016373bd3e4da49b3f802ff1c35c0f"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/dispatch-proof.test.js",
+      "bytes": 5454,
+      "sha256": "b4a46f90519ba58a707839c021586b996f52c79ec6df9a132c2f3dd5935ec1a8"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/proof-receipt.json",
+      "bytes": 1454,
+      "sha256": "e3b509322bf65688ab4e5e5b52f213c60d7254f9d9c6d349ceb401566926d777"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/baseline-results.json",
+      "bytes": 3657,
+      "sha256": "fe5acbb0832fa22913f0374a0eb62a1223d91e95516afa6e21e6dd8c19200607"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/current-receipt.json",
+      "bytes": 1779,
+      "sha256": "6f9bac923675ffd5d76063f234d128fa4dbc6a0171a7cb08acae73e98dfbacf9"
+    },
+    {
+      "path": "tmp/clinical-ai-20261026/current-results.json",
+      "bytes": 3658,
+      "sha256": "8424280680c71c968564e8f745f27d795d75d0ee3bebf95bd3831ae9d5d2a41b"
+    }
+  ],
+  "limitations": [
+    "Local source and synthetic tests only; no real records, provider traffic, district account, commit, push or deployment.",
+    "Post-response rejection cannot retract information already sent before revocation.",
+    "Clinical external AI and Canvas real-record defaults remain disabled; enabling needs explicit district configuration and approval.",
+    "Existing canonical host policy discrepancy remains with the release workstream; broad release validation not claimed.",
+    "Old application copies, arbitrary same-origin scripts and custom providers that ignore controls are outside this verified runtime scope.",
+    "Encryption fixture iterations are reduced only within supported test limits; production cryptographic defaults unchanged."
+  ]
+}

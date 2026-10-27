@@ -13,6 +13,7 @@ const {
 const serviceRoot = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(serviceRoot, '..', '..');
 const {
+  readDocumentRuntime,
   normalizeVendorAssetBytes,
   NORMALIZED_VENDOR_TEXT_PATHS,
 } = require(path.join(repoRoot, 'desktop', 'mcp', 'remediation_headless_driver.cjs'));
@@ -71,7 +72,8 @@ const vendorFiles = vendorManifest.files.map((entry) => {
   vendorEntriesBySource.set(relative, entry);
   return relative;
 });
-const sourceFiles = [...baseSourceFiles, ...validatorSourceFiles, vendorManifestSource, ...vendorFiles];
+const documentRuntime = readDocumentRuntime(repoRoot);
+const sourceFiles = [...baseSourceFiles, ...validatorSourceFiles, vendorManifestSource, ...vendorFiles, ...documentRuntime.sourceFiles];
 
 const args = process.argv.slice(2);
 if (args.some((arg) => arg !== '--check') || args.filter((arg) => arg === '--check').length > 1) {
@@ -105,7 +107,11 @@ function fileRecord(relative, bytes) {
 function canonicalSourceBytes(relative) {
   const rawBytes = fs.readFileSync(sourcePaths.get(relative));
   const entry = vendorEntriesBySource.get(relative);
-  if (!entry) return rawBytes;
+  if (!entry) {
+    const documentAsset = documentRuntime.files.get('/app/' + relative.replaceAll(path.sep, '/'));
+    if (documentAsset && !documentAsset.body.equals(rawBytes)) throw new Error('Document runtime changed during staging: ' + relative);
+    return rawBytes;
+  }
   const bytes = normalizeVendorAssetBytes(entry, rawBytes);
   if (bytes.length !== entry.bytes || digest(bytes) !== entry.sha256) {
     throw new Error(`${vendorManifestSource} does not match canonical source bytes: ${entry.path}`);

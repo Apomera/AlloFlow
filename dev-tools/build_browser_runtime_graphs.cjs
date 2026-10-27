@@ -56,28 +56,59 @@ function download(url, maximum = 64 * 1024 * 1024) {
   });
 }
 
-function walk(node, visit) {
+function walk(node, visit, parent = null, key = null) {
   if (!node || typeof node !== 'object') return;
-  if (typeof node.type === 'string') visit(node);
-  for (const value of Object.values(node)) {
-    if (Array.isArray(value)) value.forEach(child => walk(child, visit));
-    else if (value && typeof value === 'object') walk(value, visit);
+  if (typeof node.type === 'string') visit(node, parent, key);
+  for (const [childKey, value] of Object.entries(node)) {
+    if (Array.isArray(value)) value.forEach(child => walk(child, visit, node, childKey));
+    else if (value && typeof value === 'object') walk(value, visit, node, childKey);
   }
+}
+
+const EXECUTABLE_CAPABILITIES = new Set(['Worker', 'SharedWorker', 'importScripts']);
+const browserGlobal = node => node?.type === 'Identifier' && ['globalThis', 'self', 'window'].includes(node.name);
+function staticProperty(node) {
+  if (!node) return null;
+  if (!node.computed && node.property?.type === 'Identifier') return node.property.name;
+  if (node.computed && node.property?.type === 'Literal' && typeof node.property.value === 'string') return node.property.value;
+  if (node.computed && node.property?.type === 'TemplateLiteral' && !node.property.expressions.length) return node.property.quasis[0].value.cooked;
+  return null;
+}
+function capabilityReference(node, parent, key) {
+  if (node.type === 'MemberExpression') return browserGlobal(node.object) && EXECUTABLE_CAPABILITIES.has(staticProperty(node));
+  if (node.type !== 'Identifier' || !EXECUTABLE_CAPABILITIES.has(node.name)) return false;
+  // Property labels, declarations and environment probes do not acquire a
+  // callable capability. Other value reads can hide construction behind an alias.
+  if (parent?.type === 'MemberExpression' && key === 'property' && !parent.computed
+    || parent?.type === 'Property' && key === 'key' && !parent.computed && !parent.shorthand
+    || ['FunctionDeclaration', 'FunctionExpression', 'ClassDeclaration', 'ClassExpression'].includes(parent?.type) && key === 'id'
+    || parent?.type === 'VariableDeclarator' && key === 'id'
+    || ['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression'].includes(parent?.type) && key === 'params') return false;
+  return true;
 }
 
 function inspectCode(source) {
   const tree = acorn.parse(source, { ecmaVersion: 'latest', sourceType: 'module' });
-  const result = { imports: [], dynamic: [], workers: [], importScripts: [], importMetaUrls: [] };
-  walk(tree, node => {
+  const result = { imports: [], dynamic: [], workers: [], importScripts: [], importMetaUrls: [], capabilityReads: [] };
+  walk(tree, (node, parent, key) => {
     if (node.type === 'ImportDeclaration' || (node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') && node.source) result.imports.push(node.source.value);
     if (node.type === 'ImportExpression') result.dynamic.push({ start: node.start, end: node.end,
       literal: node.source.type === 'Literal' ? node.source.value : null, source: source.slice(node.source.start, node.source.end) });
     const named = (value, name) => value.type === 'Identifier' ? value.name === name
-      : value.type === 'MemberExpression' && !value.computed && value.property.type === 'Identifier' && value.property.name === name;
+      : value.type === 'MemberExpression' && staticProperty(value) === name;
     if (node.type === 'NewExpression' && (named(node.callee, 'Worker') || named(node.callee, 'SharedWorker'))) result.workers.push({ start: node.start, end: node.end });
     if (node.type === 'CallExpression' && named(node.callee, 'importScripts')) result.importScripts.push({ start: node.start, end: node.end });
     if (node.type === 'MemberExpression' && node.object.type === 'MetaProperty' && node.object.meta.name === 'import'
         && node.property.type === 'Identifier' && node.property.name === 'url') result.importMetaUrls.push({ start: node.start, end: node.end });
+    if (capabilityReference(node, parent, key) && !(parent?.type === 'UnaryExpression' && parent.operator === 'typeof')) {
+      result.capabilityReads.push({ start: node.start, end: node.end });
+    }
+    const pattern = node.type === 'VariableDeclarator' ? node.id : node.type === 'AssignmentExpression' ? node.left : null;
+    const value = node.type === 'VariableDeclarator' ? node.init : node.type === 'AssignmentExpression' ? node.right : null;
+    if (pattern?.type === 'ObjectPattern' && browserGlobal(value) && pattern.properties.some(property =>
+      property.type === 'Property' && EXECUTABLE_CAPABILITIES.has(property.computed ? property.key.value : property.key.name || property.key.value))) {
+      result.capabilityReads.push({ start: node.start, end: node.end });
+    }
   });
   return result;
 }
@@ -89,7 +120,7 @@ function assertSourcePin(bytes, expected) {
 
 function assertClosedCode(source) {
   const graph = inspectCode(source);
-  if (graph.imports.length || graph.dynamic.length || graph.workers.length || graph.importScripts.length) throw new Error('Executable runtime graph still contains imports or worker construction');
+  if (graph.imports.length || graph.dynamic.length || graph.workers.length || graph.importScripts.length || graph.capabilityReads.length) throw new Error('Executable runtime graph still contains imports, worker construction or executable capability aliases');
   return { closed: true };
 }
 

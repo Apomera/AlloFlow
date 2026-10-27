@@ -21,16 +21,17 @@
   inspect, export, or erase everything stored here.
 
   SECURITY MODEL: same-origin AlloFlow pages may connect automatically.
-  Every cross-origin client, including a Gemini Canvas opaque ("null")
-  origin, must use a visible popup and receive explicit approval for that
-  connection. Hidden cross-origin iframes fail closed. Once approved, the
-  channel is pinned to the observed source window, observed origin, and a
-  cryptographically random nonce. Replies use the exact observed origin;
-  wildcard replies are used only for the literal opaque origin "null".
+  Cross-origin approval is confirmed in a top-level window, never by a click
+  inside an embeddable frame. Saved v2 approval matches the exact concrete
+  origin AND transport channel. Opaque origins need new approval each time.
+  An iframe keeps its existing storage partition; its approval-only popup
+  never opens the database. A source/origin/nonce-checked handshake transfers
+  one MessagePort, bound for this document's lifetime. All approval and data
+  traffic stays on that port, so window navigation cannot redirect replies.
 
-  PROTOCOL "ds1" (structured-clone messages):
-    request : { allo:'ds1', nonce, id, op, ns?, key?, value?, expected?, nextValue?, mutation?, channel? }
-    response: { allo:'ds1', nonce, id, ok:true, value? } | { allo:'ds1', nonce, id, ok:false, error:{code,message} }
+  PROTOCOL "ds2" (structured-clone messages on a document-bound port):
+    request : { allo:'ds2', nonce, id, op, ns?, key?, value?, expected?, nextValue?, mutation?, channel? }
+    response: { allo:'ds2', nonce, id, ok:true, value? } | { allo:'ds2', nonce, id, ok:false, error:{code,message} }
     ops     : ping, probe, get, set, compareAndSwap, mutateRecovery, delete, list, getAll, clearNamespace, wipeAll, estimate
   Keep in sync with allo_device_storage_module.js (same repo root).
 -->
@@ -80,16 +81,17 @@
   <h1>Approve AlloFlow device storage?</h1>
   <p class="muted">A page is asking to read and update AlloFlow work saved in
   this browser profile. Approve only if you were using AlloFlow just now.
-  Approval is remembered for this browser profile so you are not asked every
-  session. You can withdraw it at any time by opening this page directly and
-  choosing &ldquo;Forget approval&rdquo;. Anyone who can use this browser
+  Approval for an identified page is remembered only for that exact origin
+  and connection type. Unidentified pages require approval each connection.
+  &ldquo;Forget approval&rdquo; affects future connections in the storage
+  partition opened by this page. Anyone who can use this browser
   profile can reach this data, so on a shared computer use a separate
   Windows or Chrome profile.</p>
   <div class="card">
     <p><strong>Requesting page:</strong> <span id="approval-origin">Waiting for request?</span></p>
-    <p class="muted">For a Gemini Canvas session, the browser may identify the
-    requesting page as an opaque origin. This is expected, but still requires
-    your approval.</p>
+    <p class="muted">An opaque origin does not identify a website or verify
+    that the requesting page is Gemini Canvas. Approve only a connection you
+    intended to start.</p>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
       <button id="btn-approve" type="button" disabled>Approve this connection</button>
       <button id="btn-deny" type="button" class="danger" disabled>Deny</button>
@@ -126,7 +128,8 @@
   'use strict';
   var DB_NAME = 'allo_device_storage';
   var STORE = 'kv';
-  var PROTO = 'ds1';
+  var PROTO = 'ds2';
+  var APPROVAL_PROTO = 'ds-approval1';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
   var OPS = { ping:1, probe:1, get:1, set:1, compareAndSwap:1, mutateRecovery:1, delete:1, list:1, getAll:1, clearNamespace:1, namespaces:1, wipeAll:1, estimate:1 };
 
@@ -763,8 +766,82 @@
   var authorizedOrigin = null;
   var pendingApproval = null;
   var denied = false;
+  var connectionPort = null;
+  var portWasBound = false;
 
-  function replyTo(source, origin, payload) {
+  function isConcreteOrigin(origin) {
+    if (typeof origin !== 'string' || origin.length > 2048 || origin === 'null') return false;
+    try {
+      var parsed = new URL(origin);
+      return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && parsed.origin === origin;
+    } catch (_) { return false; }
+  }
+
+  function makeApprovalNonce() {
+    if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') return null;
+    try {
+      var bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      return Array.prototype.map.call(bytes, function (value) { return ('0' + value.toString(16)).slice(-2); }).join('');
+    } catch (_) { return null; }
+  }
+
+  // Approval-only windows never enter the bridge/review paths or open storage.
+  // They are opened by the embedded bridge itself and send only a decision.
+  var approvalNonce = bridgeParams.get('allo-approve');
+  if (approvalNonce !== null) {
+    var approvalPanel = document.getElementById('approval-ui');
+    var approvalLabel = document.getElementById('approval-origin');
+    var approvalMessage = document.getElementById('approval-status');
+    var approvalYes = document.getElementById('btn-approve');
+    var approvalNo = document.getElementById('btn-deny');
+    var approvalOpener = window.opener;
+    var approvalContext = null;
+    var approvalFinished = false;
+    approvalPanel.hidden = false;
+    approvalMessage.textContent = 'Waiting for the storage connection to identify its request…';
+    if (window.top !== window || !approvalOpener || !/^[a-f0-9]{32}$/.test(approvalNonce)) {
+      approvalMessage.textContent = 'This approval must be opened in a separate window by the storage connection.';
+      return;
+    }
+    var approvalDeadline = setTimeout(function () {
+      approvalFinished = true;
+      approvalYes.disabled = true;
+      approvalNo.disabled = true;
+      approvalMessage.textContent = 'This approval request expired. Return to AlloFlow and try again.';
+    }, 120000);
+    window.addEventListener('message', function (event) {
+      var request = event.data;
+      if (approvalFinished || event.source !== approvalOpener || event.origin !== location.origin ||
+          !request || request.allo !== APPROVAL_PROTO || request.nonce !== approvalNonce || request.type !== 'request' ||
+          request.channel !== 'iframe' || (request.requestOrigin !== 'null' && !isConcreteOrigin(request.requestOrigin))) return;
+      if (approvalContext && approvalContext.origin !== request.requestOrigin) return;
+      approvalContext = { origin: request.requestOrigin };
+      approvalLabel.textContent = request.requestOrigin === 'null' ? 'Unidentified page (opaque origin)' : request.requestOrigin;
+      approvalMessage.textContent = 'This window confirms access to the existing embedded storage. It does not open or move your saved work.';
+      approvalYes.disabled = false;
+      approvalNo.disabled = false;
+    });
+    function sendApprovalDecision(approved) {
+      if (approvalFinished || !approvalContext) return;
+      approvalFinished = true;
+      clearTimeout(approvalDeadline);
+      approvalYes.disabled = true;
+      approvalNo.disabled = true;
+      approvalMessage.textContent = approved ? 'Approval sent. You may close this window.' : 'Connection denied. You may close this window.';
+      try {
+        approvalOpener.postMessage({ allo: APPROVAL_PROTO, nonce: approvalNonce, type: 'decision', approved: approved }, location.origin);
+      } catch (_) { approvalMessage.textContent = 'The connection is no longer available. Return to AlloFlow and try again.'; }
+      setTimeout(function () { try { window.close(); } catch (_) {} }, 100);
+    }
+    approvalYes.addEventListener('click', function () { sendApprovalDecision(true); });
+    approvalNo.addEventListener('click', function () { sendApprovalDecision(false); });
+    window.addEventListener('pagehide', function () { approvalFinished = true; clearTimeout(approvalDeadline); });
+    return;
+  }
+
+  // Window responses are handshake-only, never records or authorization.
+  function handshakeReply(source, origin, payload) {
     if (!source || typeof source.postMessage !== 'function') return false;
     var targetOrigin = origin === 'null' ? '*' : origin;
     if (!targetOrigin) return false;
@@ -776,8 +853,14 @@
     }
   }
 
+  function portReply(payload) {
+    if (!connectionPort) return false;
+    try { connectionPort.postMessage(payload); return true; }
+    catch (_) { return false; }
+  }
+
   function bridgeError(source, origin, code, message) {
-    replyTo(source, origin, {
+    portReply({
       allo: PROTO,
       type: 'allo-bridge-error',
       nonce: nonce,
@@ -786,7 +869,7 @@
   }
 
   function readyClient(source, origin) {
-    replyTo(source, origin, {
+    portReply({
       allo: PROTO,
       type: 'allo-bridge-ready',
       nonce: nonce
@@ -798,31 +881,37 @@
   }
 
   // ── Remembered consent ───────────────────────────────────────────
-  // Chrome partitions this document's IndexedDB by (top-level site, this
-  // origin). A hidden iframe of this page inside Gemini Canvas therefore gets
-  // a bucket that NO page on any other top-level site can reach, and that
-  // bucket is where both the consent record and the teacher's data live. So a
-  // remembered grant cannot be replayed from another site: the attacker never
-  // reaches the record OR the data. What consent buys is a human saying yes
-  // once per browser profile instead of once per session; the partition, not
-  // the record, is the access control. Data confidentiality against anyone
-  // who can already use this browser profile is the vault's job, not this.
+  // Partitioning is not client authorization. In particular, popup clients
+  // share the same top-level database. Only exact identified origins and
+  // channels can reuse a v2 grant; legacy v1 and opaque grants are ignored.
   var CONSENT_NS = '__bridge';
-  var CONSENT_KEY = 'consent_v1';
+  var CONSENT_KEY = 'consent_v2';
   var RESERVED_NS_RE = /^__/;
   function readConsent() {
     return kvGet(CONSENT_NS, CONSENT_KEY).catch(function () { return null; });
   }
-  function writeConsent(origin) {
-    return kvSet(CONSENT_NS, CONSENT_KEY, {
-      v: 1,
-      grantedAt: new Date().toISOString(),
-      channel: connectionKind,
-      origin: origin === 'null' ? 'opaque' : String(origin || '')
-    }).catch(function () { return null; });
+  function matchesConsent(record, origin) {
+    return isConcreteOrigin(origin) && record && record.v === 2 && record.origin === origin &&
+      record.channel === connectionKind;
+  }
+  function writeConsent(origin, stillCurrent, registerAbort) {
+    if (!isConcreteOrigin(origin)) return Promise.resolve(false);
+    return openDb().then(function (db) {
+      if (!stillCurrent()) return false;
+      return new Promise(function (resolve) {
+        var transaction = db.transaction(STORE, 'readwrite');
+        var stop = function () { try { transaction.abort(); } catch (_) {} };
+        registerAbort(stop);
+        transaction.oncomplete = function () { registerAbort(null, stop); resolve(true); };
+        transaction.onerror = transaction.onabort = function () { registerAbort(null, stop); resolve(false); };
+        if (!stillCurrent()) { stop(); return; }
+        transaction.objectStore(STORE).put({ k: recKey(CONSENT_NS, CONSENT_KEY), ns: CONSENT_NS, key: CONSENT_KEY,
+          updatedAt: new Date().toISOString(), value: { v: 2, grantedAt: new Date().toISOString(), channel: connectionKind, origin: origin } });
+      });
+    }).catch(function () { return false; });
   }
   function forgetConsent() {
-    return kvDelete(CONSENT_NS, CONSENT_KEY).catch(function () { return null; });
+    return Promise.all([kvDelete(CONSENT_NS, CONSENT_KEY), kvDelete(CONSENT_NS, 'consent_v1')]);
   }
 
   function handleOp(msg) {
@@ -895,12 +984,51 @@
     var approveButton = document.getElementById('btn-approve');
     var denyButton = document.getElementById('btn-deny');
     var consentCheckInFlight = false;
-    // A popup only ever exists because someone clicked to open it, so it shows
-    // the dialog immediately. The iframe stays silent until the consent lookup
-    // below says a human has not answered yet.
+    var connectionGeneration = 0;
+    var connectionOrigin = null;
+    var approvalAttempt = null;
+    var consentWriteAbort = null;
     if (connectionKind === 'popup') approvalUi.hidden = false;
 
+    function closeApprovalAttempt() {
+      var attempt = approvalAttempt;
+      approvalAttempt = null;
+      if (!attempt) return;
+      clearInterval(attempt.helloTimer);
+      clearInterval(attempt.closedTimer);
+      clearTimeout(attempt.deadline);
+      try { attempt.window.close(); } catch (_) {}
+    }
+
+    function cancelConnection(code, message) {
+      if (connectionPort) {
+        if (typeof code === 'string') bridgeError(client, connectionOrigin, code, message || 'The storage connection closed.');
+        else portReply({ allo: PROTO, nonce: nonce, type: 'allo-bridge-disconnected' });
+        var closingPort = connectionPort;
+        connectionPort = null;
+        closingPort.onmessage = null;
+        closingPort.onmessageerror = null;
+        try { closingPort.close(); } catch (_) {}
+      }
+      connectionGeneration++;
+      pendingApproval = null;
+      authorizedSource = null;
+      authorizedOrigin = null;
+      denied = true;
+      consentCheckInFlight = false;
+      if (consentWriteAbort) { var abort = consentWriteAbort; consentWriteAbort = null; abort(); }
+      closeApprovalAttempt();
+      approveButton.disabled = true;
+      denyButton.disabled = true;
+    }
+
+    function pendingIsCurrent(approved) {
+      return !!connectionPort && !denied && !authorizedSource && pendingApproval === approved &&
+        approved.generation === connectionGeneration && approved.origin === connectionOrigin;
+    }
+
     function authorize(source, origin) {
+      closeApprovalAttempt();
       authorizedSource = source;
       authorizedOrigin = origin;
       pendingApproval = null;
@@ -922,115 +1050,197 @@
         }
         return;
       }
-      pendingApproval = { source: source, origin: origin };
+      pendingApproval = { source: source, origin: origin, generation: connectionGeneration, saving: false };
       approvalOrigin.textContent = origin === 'null'
-        ? 'Gemini Canvas or another opaque-origin page'
+        ? 'Unidentified page (opaque origin)'
         : origin;
-      approvalStatus.textContent = 'Review the requesting page, then approve or deny.';
+      approveButton.textContent = connectionKind === 'iframe' ? 'Review connection in a separate window' : 'Approve this connection';
+      approvalStatus.textContent = connectionKind === 'iframe'
+        ? 'Open a separate window to review and approve this connection. Your saved work stays in this embedded storage.'
+        : 'Review the requesting page, then approve or deny.';
       approveButton.disabled = false;
       denyButton.disabled = false;
       approvalUi.hidden = false;
       // In iframe mode this page is 1px and offscreen until the app is told to
       // reveal it. Without this the dialog would be invisible and the connection
       // would look like a hang.
-      replyTo(source, origin, { allo: PROTO, type: 'allo-bridge-consent-required', nonce: nonce });
+      portReply({ allo: PROTO, type: 'allo-bridge-consent-required', nonce: nonce });
       try { approveButton.focus(); } catch (_) {}
     }
 
-    approveButton.addEventListener('click', function () {
-      if (!pendingApproval) return;
-      var approved = pendingApproval;
+    function finishApproval(approved) {
+      if (!pendingIsCurrent(approved) || approved.saving) return;
+      approved.saving = true;
       approveButton.disabled = true;
-      denyButton.disabled = true;
-      approvalStatus.textContent = 'Saving your approval for this browser profile…';
-      // Record BEFORE authorizing: if the write fails the grant simply is not
-      // remembered and the teacher is asked again next session, which is the
-      // safe direction to fail in.
-      writeConsent(approved.origin).then(function () {
-        if (!pendingApproval) return;
+      // Denial remains available while persistent approval is being written.
+      approvalStatus.textContent = 'Connecting approved device storage…';
+      writeConsent(approved.origin, function () { return pendingIsCurrent(approved); }, function (abort, previous) {
+        if (!previous || consentWriteAbort === previous) consentWriteAbort = abort;
+      }).then(function () {
+        if (!pendingIsCurrent(approved)) return;
         authorize(approved.source, approved.origin);
       });
+    }
+
+    function openApprovalWindow() {
+      var approved = pendingApproval;
+      if (!approved || !pendingIsCurrent(approved) || approved.saving) return;
+      closeApprovalAttempt();
+      var secret = makeApprovalNonce();
+      if (!secret) {
+        approvalStatus.textContent = 'Secure randomness is unavailable. Storage access remains blocked.';
+        return;
+      }
+      var url = new URL(location.href);
+      url.hash = 'allo-approve=' + secret;
+      var popup;
+      try { popup = window.open(url.href, '_blank', 'popup=yes,width=520,height=620'); } catch (_) {}
+      if (!popup) {
+        approvalStatus.textContent = 'The approval window was blocked. Allow this storage page to open a popup, then try again.';
+        return;
+      }
+      var attempt = { window: popup, nonce: secret, pending: approved, generation: connectionGeneration };
+      approvalAttempt = attempt;
+      approveButton.disabled = true;
+      approvalStatus.textContent = 'Review the requesting page in the separate approval window.';
+      function requestApproval() {
+        if (approvalAttempt !== attempt || !pendingIsCurrent(approved)) return;
+        try {
+          popup.postMessage({ allo: APPROVAL_PROTO, nonce: secret, type: 'request', channel: 'iframe', requestOrigin: approved.origin }, location.origin);
+        } catch (_) {}
+      }
+      function cancelAttempt(message) {
+        if (approvalAttempt !== attempt) return;
+        closeApprovalAttempt();
+        if (!pendingIsCurrent(approved)) return;
+        approveButton.disabled = false;
+        approvalStatus.textContent = message;
+      }
+      requestApproval();
+      attempt.helloTimer = setInterval(requestApproval, 250);
+      attempt.closedTimer = setInterval(function () {
+        try { if (popup.closed) cancelAttempt('The approval window closed. Storage is still blocked; you can try again.'); }
+        catch (_) { cancelAttempt('The approval window is no longer available. You can try again.'); }
+      }, 250);
+      attempt.deadline = setTimeout(function () {
+        cancelAttempt('The approval request expired. Storage is still blocked; you can try again.');
+      }, 120000);
+    }
+
+    approveButton.addEventListener('click', function () {
+      if (!pendingApproval || !pendingIsCurrent(pendingApproval)) return;
+      if (connectionKind === 'iframe') { openApprovalWindow(); return; }
+      if (window.top !== window) return;
+      finishApproval(pendingApproval);
     });
     denyButton.addEventListener('click', function () {
       if (!pendingApproval) return;
       var rejected = pendingApproval;
-      pendingApproval = null;
-      denied = true;
-      approveButton.disabled = true;
-      denyButton.disabled = true;
+      cancelConnection('allo/approval-denied', 'Device storage access was denied.');
       approvalStatus.textContent = 'Connection denied. You may close this window.';
-      bridgeError(rejected.source, rejected.origin, 'allo/approval-denied',
-        'Device storage access was denied.');
     });
+
+    function closeTransferredPorts(event) {
+      var ports = event.ports || [];
+      for (var index = 0; index < ports.length; index++) {
+        if (ports[index] === connectionPort) continue;
+        try { ports[index].close(); } catch (_) {}
+      }
+    }
+
+    function beginPortApproval(source, origin) {
+      if (isAutoApprovedOrigin(origin)) { authorize(source, origin); return; }
+      consentCheckInFlight = true;
+      var helloGeneration = connectionGeneration;
+      var approvalPort = connectionPort;
+      readConsent().then(function (record) {
+        if (helloGeneration !== connectionGeneration || !approvalPort || approvalPort !== connectionPort || denied || authorizedSource) return;
+        consentCheckInFlight = false;
+        if (matchesConsent(record, origin)) { authorize(source, origin); return; }
+        showApproval(source, origin);
+      });
+    }
+
+    function bindPort(port, source, origin) {
+      connectionPort = port;
+      portWasBound = true;
+      port.onmessageerror = function () {
+        if (connectionPort === port) cancelConnection('allo/bridge-message-invalid', 'The storage channel could not read a message. Reconnect from AlloFlow.');
+      };
+      port.onmessage = function (event) {
+        var msg = event.data;
+        closeTransferredPorts(event);
+        if (connectionPort !== port || !msg || msg.allo !== PROTO || msg.nonce !== nonce) return;
+        if (msg.type === 'allo-bridge-disconnect') { cancelConnection(); return; }
+        if (!authorizedSource || authorizedSource !== source || authorizedOrigin !== origin || denied) return;
+        if (!msg.id || !OPS[msg.op]) return;
+        var operationGeneration = connectionGeneration;
+        Promise.resolve().then(function () {
+          if (connectionPort !== port || operationGeneration !== connectionGeneration) return;
+          return handleOp(msg);
+        }).then(function (value) {
+          if (connectionPort !== port || operationGeneration !== connectionGeneration || source !== authorizedSource || origin !== authorizedOrigin) return;
+          portReply({ allo: PROTO, nonce: nonce, id: msg.id, ok: true, value: value === undefined ? null : value });
+        }, function (err) {
+          if (connectionPort !== port || operationGeneration !== connectionGeneration || source !== authorizedSource || origin !== authorizedOrigin) return;
+          portReply({ allo: PROTO, nonce: nonce, id: msg.id, ok: false,
+            error: { code: (err && err.code) || 'allo/storage-error', message: String((err && err.message) || err) } });
+        });
+      };
+      try { port.start(); }
+      catch (_) { cancelConnection('allo/bridge-port-invalid', 'The document storage channel could not start.'); return; }
+      beginPortApproval(source, origin);
+    }
 
     window.addEventListener('message', function (event) {
       var msg = event.data;
-      if (!msg || msg.allo !== PROTO || msg.nonce !== nonce) return;
-      if (event.source !== client) return;
-      var observedOrigin = event.origin || 'null';
-
-      if (msg.type === 'allo-bridge-hello') {
-        if (msg.channel !== connectionKind) {
-          bridgeError(event.source, observedOrigin, 'allo/channel-mismatch',
-            'The bridge channel did not match the opened window.');
-          return;
+      if (msg && msg.allo === APPROVAL_PROTO) {
+        closeTransferredPorts(event);
+        var attempt = approvalAttempt;
+        if (!attempt || event.source !== attempt.window || event.origin !== location.origin ||
+            msg.nonce !== attempt.nonce || msg.type !== 'decision' || typeof msg.approved !== 'boolean' ||
+            attempt.generation !== connectionGeneration || !pendingIsCurrent(attempt.pending)) return;
+        var approved = attempt.pending;
+        closeApprovalAttempt();
+        if (msg.approved) finishApproval(approved);
+        else {
+          cancelConnection('allo/approval-denied', 'Device storage access was denied.');
+          approvalStatus.textContent = 'Connection denied. Return to AlloFlow to start again.';
         }
-        if (authorizedSource) {
-          if (event.source === authorizedSource && observedOrigin === authorizedOrigin) {
-            readyClient(event.source, observedOrigin);
-          }
-          return;
-        }
-        if (isAutoApprovedOrigin(observedOrigin)) {
-          authorize(event.source, observedOrigin);
-          return;
-        }
-        // Cross-origin, which in Canvas is the literal opaque origin "null".
-        // Previously the iframe failed closed here and every Canvas session had
-        // to open a popup. It now asks its OWN partition whether a human has
-        // already approved this browser profile, and only prompts if not. The
-        // prompt is rendered by this page, cross-origin, so the embedding app
-        // can size the frame but can neither read it nor click it.
-        if (consentCheckInFlight) return;
-        consentCheckInFlight = true;
-        var helloSource = event.source;
-        readConsent().then(function (record) {
-          consentCheckInFlight = false;
-          if (authorizedSource) return;
-          // A grant on file is honoured unless this session was already denied.
-          // Everything else falls through to showApproval, which keeps its own
-          // handling of a repeat hello, a changed origin, and a prior denial.
-          if (record && record.v === 1 && !denied) {
-            authorize(helloSource, observedOrigin);
-            return;
-          }
-          showApproval(helloSource, observedOrigin);
-        });
         return;
       }
-
-      if (!authorizedSource ||
-          event.source !== authorizedSource ||
-          observedOrigin !== authorizedOrigin) return;
-      if (!msg.id || !OPS[msg.op]) return;
-      handleOp(msg).then(function (value) {
-        replyTo(event.source, observedOrigin, {
-          allo: PROTO,
-          nonce: nonce,
-          id: msg.id,
-          ok: true,
-          value: value === undefined ? null : value
-        });
-      }, function (err) {
-        replyTo(event.source, observedOrigin, {
-          allo: PROTO,
-          nonce: nonce,
-          id: msg.id,
-          ok: false,
-          error: { code: (err && err.code) || 'allo/storage-error', message: String((err && err.message) || err) }
-        });
-      });
+      if (!msg || msg.nonce !== nonce || event.source !== client) { closeTransferredPorts(event); return; }
+      var observedOrigin = event.origin || 'null';
+      if (msg.allo === 'ds1' && msg.type === 'allo-bridge-hello') {
+        closeTransferredPorts(event);
+        if (!portWasBound) handshakeReply(event.source, observedOrigin, { allo: 'ds1', nonce: nonce, type: 'allo-bridge-error',
+          error: { code: 'allo/bridge-upgrade-required', message: 'Update the app to use document-bound device storage.' } });
+        return;
+      }
+      if (msg.allo !== PROTO) { closeTransferredPorts(event); return; }
+      if (connectionOrigin !== null && observedOrigin !== connectionOrigin &&
+          (msg.type === 'allo-bridge-hello' || msg.type === 'allo-bridge-connect')) {
+        closeTransferredPorts(event);
+        cancelConnection('allo/origin-changed', 'The requesting page changed during the connection.');
+        approvalStatus.textContent = 'The requesting page changed. Reconnect from AlloFlow.';
+        return;
+      }
+      if (portWasBound || denied) { closeTransferredPorts(event); return; }
+      if (msg.type === 'allo-bridge-hello') {
+        if (msg.channel !== connectionKind || (event.ports && event.ports.length)) { closeTransferredPorts(event); return; }
+        connectionOrigin = observedOrigin;
+        handshakeReply(event.source, observedOrigin, { allo: PROTO, nonce: nonce, type: 'allo-bridge-port-required' });
+        return;
+      }
+      if (msg.type !== 'allo-bridge-connect' || msg.channel !== connectionKind || connectionOrigin === null ||
+          !event.ports || event.ports.length !== 1) { closeTransferredPorts(event); return; }
+      var port = event.ports[0];
+      if (!port || typeof port.postMessage !== 'function' || typeof port.start !== 'function' || typeof port.close !== 'function') {
+        closeTransferredPorts(event); return;
+      }
+      bindPort(port, event.source, observedOrigin);
     });
+    window.addEventListener('pagehide', cancelConnection);
     return;
   }
 
@@ -1130,10 +1340,12 @@
   // permission to connect, not asking to lose their work. "Erase everything"
   // is the button next to it for that.
   document.getElementById('btn-forget').onclick = function () {
-    if (!confirm('Forget the saved approval? AlloFlow will ask for your approval again the next time it opens on this browser profile. Your saved work is not touched.')) return;
+    if (!confirm('Forget saved approvals in this storage partition? New connections will ask again. Active connections stay connected, and your saved work is not erased.')) return;
     forgetConsent().then(function () {
-      alert('Approval forgotten. AlloFlow will ask again next time.');
+      alert('Saved approvals removed from this storage partition. New connections will ask again.');
       refresh();
+    }).catch(function () {
+      alert('The saved approval could not be fully removed. Please retry; a saved approval may remain.');
     });
   };
   document.getElementById('btn-wipe').onclick = function () {

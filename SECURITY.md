@@ -105,6 +105,32 @@ Provider and Gemini requests now capture their connection, credential, model and
 
 Configured managed deployments block legacy URL/video imports that used public relays or direct Gemini; manual paste and local-file workflows remain available. Source-import diagnostics omit source URLs, capability queries and provider response bodies. Absent/null policy retains unmanaged behavior, so district configuration is still required. This is client routing protection, not verified staff identity or service-side authorization. See the [managed request implementation and validation](docs/audits/2026-10-24-school-district/managed-request-security-followup.md) for policy schema, coverage and release limits.
 
+### 9. Device-storage approval and clinical read consistency
+Remembered bridge approval is bound to the exact concrete requesting origin and connection type. Legacy blanket approvals and opaque origins cannot be reused. Embedded connections use a separate approval-only window while keeping records in their existing storage partition. Pending approvals and late callbacks are invalidated on denial or observed connection changes. Protected clinical hydration also rejects concurrent saved-record changes before publishing decrypted data and write stamps, preventing stale data from overwriting a newer save.
+
+These changes require a verified release and actual Canvas workflow validation. Browser approval does not establish staff identity, isolate applications on the same origin or replace clinical encryption. The [stored-data boundary follow-up](docs/audits/2026-10-26-school-district/storage-boundaries-followup.md) records the reproduced defects and their validation.
+
+The subsequent [document-channel follow-up](docs/audits/2026-10-26-school-district/storage-document-channel-followup.md) closes the opaque-navigation reply gap in the reviewed source. The `ds2` bridge transfers one MessagePort per connection; approval and records use that port exclusively, so a replacement document cannot inherit a window reply or an approval. Old `ds1` clients must update, and bridge/adapter delivery must be coordinated. Disconnects and failed requests reject pending work; already accepted transactions can still finish and require the existing uncertain-write reconciliation.
+
+The [clinical restore follow-up](docs/audits/2026-10-26-school-district/clinical-restore-followup.md) binds backup verification and import to one detached input and the original destination revision. An older pending restore cannot undo a later deletion or replace a changed destination. Invalid clinical record types are rejected before cryptography, and staged work cannot be replaced by restore. These local fixes require a verified release; retained backup files and district retention decisions remain separate responsibilities.
+
+### 10. Protected records during locking
+The [clinical lock follow-up](docs/audits/2026-10-26-school-district/clinical-lock-followup.md) restricts cached storage handles during the final save to the matching registered synchronous callback. Temporary access ends before asynchronous continuation or status notification. The editor is concealed while it stays mounted to preserve the latest draft; successful locking clears decrypted service maps. These are local application controls, not same-origin script isolation or district staff authentication.
+
+The [clinical AI dispatch follow-up](docs/audits/2026-10-26-school-district/clinical-ai-dispatch-followup.md) corrects the separately reproduced permission timing gap in local source. Request-scoped clinical checks now reach cloud/local transports, search, retries and fallbacks, and results are rechecked before acceptance. Clinical external AI remains disabled by default. A verified release and actual deployment validation are required; these checks cannot retract information already transmitted.
+
+### 11. Clinical credentials and temporary exports
+
+Shared clinical views clear credential and confirmation fields when their protected context changes. Clinical AlloSheet transfers require a versioned bridge that checks the captured workspace and case immediately before sending queued data. BehaviorLens removes temporary clipboard/print content after failures and removes prepared print content on lock, close and unmount; print styling respects hidden protected views. See the [clinical transient-data follow-up](docs/audits/2026-10-26-school-district/clinical-transient-data-followup.md) for reproductions and validation. These local controls require a verified release; they do not provide district identity, secure memory erasure or retraction of delivered exports.
+
+### 12. Pending clinical file actions and failed output
+
+Delayed clinical restore/import actions check their initiating view, service and workspace context before using the file. BehaviorLens imports also recheck the selected case after confirmation. Report Writer and Dynamic Assessment clean up temporary download anchors and Blob URLs after failure, and failed report printing clears its temporary popup. Failed Report Writer downloads preserve unsaved-work warnings. See the [clinical file-action follow-up](docs/audits/2026-10-26-school-district/clinical-file-actions-followup.md) for reproductions, validation and the separate pre-existing test limitation. These controls require a verified release and cannot retract completed exports.
+
+### 13. Clinical speech, media and policy configuration
+
+Clinical assessment read-aloud selects an explicitly local browser voice and does not use shared cloud/fallback speech. BehaviorLens dictation requires supported on-device processing and keeps typed input available. Speech/media operations are tied to their protected view and student; stale callbacks are cancelled and temporary resources are released. Malformed inherited/accessor policy settings fail closed. See the [clinical speech and policy follow-up](docs/audits/2026-10-26-school-district/clinical-speech-policy-followup.md) for reproduced findings, browser-contract limits and release validation. These are local controls, not staff authentication or district approval.
+
 ## Reporting a Vulnerability
 
 If you discover a vulnerability—especially one that could bypass `TeacherGate`, expose local-storage JSON payloads across origins, or leak PII via an improperly handled AI inference prompt—please report it immediately.

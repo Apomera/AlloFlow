@@ -1,0 +1,1467 @@
+{
+  "checkedAt": "2026-10-26T14:57:43.299Z",
+  "scope": "Clinical local-only speech, selected-media ownership and dispatch, failed download cleanup, and strict deployment/retention policy representation",
+  "status": "Corrected in local source; verified release and district approval still required",
+  "tests": {
+    "passed": 479,
+    "failed": 0,
+    "pending": 0,
+    "files": 28,
+    "reports": [
+      {
+        "file": "tmp/clinical-integrity-20261026/policy-final-results.json",
+        "selectedFiles": 6,
+        "passed": 108,
+        "omitted": []
+      },
+      {
+        "file": "tmp/clinical-media-20261026/da-final-results.json",
+        "selectedFiles": 3,
+        "passed": 115,
+        "omitted": []
+      },
+      {
+        "file": "tmp/clinical-media-20261026/final-focused-results.json",
+        "selectedFiles": 11,
+        "passed": 155,
+        "omitted": []
+      },
+      {
+        "file": "tmp/clinical-media-20261026/ioa-review-candidate-results.json",
+        "selectedFiles": 1,
+        "passed": 25,
+        "omitted": []
+      },
+      {
+        "file": "tmp/clinical-media-20261026/wrapper-compatibility-results.json",
+        "selectedFiles": 6,
+        "passed": 71,
+        "omitted": [
+          "tests/behavior_lens_ai_consent_a11y.test.js"
+        ]
+      },
+      {
+        "file": "tmp/clinical-media-20261026/wrapper-mirror-final-results.json",
+        "selectedFiles": 1,
+        "passed": 5,
+        "omitted": []
+      }
+    ],
+    "selected": [
+      {
+        "file": "tests/sensitive_workspace.test.js",
+        "passed": 16,
+        "report": "tmp/clinical-integrity-20261026/policy-final-results.json"
+      },
+      {
+        "file": "tests/sensitive_workspace_credential_residue.test.js",
+        "passed": 7,
+        "report": "tmp/clinical-integrity-20261026/policy-final-results.json"
+      },
+      {
+        "file": "tests/sensitive_workspace_deletion.test.js",
+        "passed": 29,
+        "report": "tmp/clinical-integrity-20261026/policy-final-results.json"
+      },
+      {
+        "file": "tests/sensitive_workspace_deletion_races.test.js",
+        "passed": 2,
+        "report": "tmp/clinical-integrity-20261026/policy-final-results.json"
+      },
+      {
+        "file": "tests/sensitive_workspace_policy_data.test.js",
+        "passed": 39,
+        "report": "tmp/clinical-integrity-20261026/policy-final-results.json"
+      },
+      {
+        "file": "tests/sensitive_workspace_ui_actions.test.js",
+        "passed": 15,
+        "report": "tmp/clinical-integrity-20261026/policy-final-results.json"
+      },
+      {
+        "file": "tests/dynamic_assessment.test.js",
+        "passed": 85,
+        "report": "tmp/clinical-media-20261026/da-final-results.json"
+      },
+      {
+        "file": "tests/dynamic_assessment_local_speech.test.js",
+        "passed": 18,
+        "report": "tmp/clinical-media-20261026/da-final-results.json"
+      },
+      {
+        "file": "tests/dynamic_assessment_protected_workspace.test.js",
+        "passed": 12,
+        "report": "tmp/clinical-media-20261026/da-final-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_ai_ioa_alignment.test.js",
+        "passed": 7,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_download_cleanup.test.js",
+        "passed": 5,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_imports.test.js",
+        "passed": 20,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_ioa.test.js",
+        "passed": 17,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_ioa_grid_blanks.test.js",
+        "passed": 5,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_ioa_media_lifecycle.test.js",
+        "passed": 19,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_local_dictation.test.js",
+        "passed": 20,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_missing_ratings.test.js",
+        "passed": 4,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_names_sharing_and_clocks.test.js",
+        "passed": 14,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_notes_time_and_labels.test.js",
+        "passed": 32,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_protected_workspace.test.js",
+        "passed": 12,
+        "report": "tmp/clinical-media-20261026/final-focused-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_media_dispatch.test.js",
+        "passed": 25,
+        "report": "tmp/clinical-media-20261026/ioa-review-candidate-results.json"
+      },
+      {
+        "file": "tests/ai_backend_clinical_request_controls.test.js",
+        "passed": 39,
+        "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_consent_manager.test.js",
+        "passed": 5,
+        "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_review_runtime.test.js",
+        "passed": 6,
+        "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_sensitive_prompt_review.test.js",
+        "passed": 8,
+        "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json"
+      },
+      {
+        "file": "tests/clinical_ai_dispatch.test.js",
+        "passed": 4,
+        "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json"
+      },
+      {
+        "file": "tests/clinical_request_controls.test.js",
+        "passed": 9,
+        "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json"
+      },
+      {
+        "file": "tests/behavior_lens_ai_consent_a11y.test.js",
+        "passed": 5,
+        "report": "tmp/clinical-media-20261026/wrapper-mirror-final-results.json"
+      }
+    ]
+  },
+  "browsers": [
+    {
+      "file": "tmp/clinical-media-20261026/da-browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T14:50:16.745Z",
+      "baseline": false,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "actualDynamicAssessment": true,
+      "nativeWebCrypto": true,
+      "audibleOutput": false,
+      "scope": "Actual mounted assessment, real protected service and actual shared host player. Synthetic SpeechSynthesis/utterances, TTS transport and Audio prevent real transmission and audible speech; this tests adapter routing and lifecycle, not installed OS voice implementation.",
+      "network": "Navigation fulfilled locally; external requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+        "identifier_redaction_module.js": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179",
+        "dynamic_assessment_module.js": "e9f6da83c1482d4730fce384874fac14b68c011a4b298b84fd631b0cef7cd0f1"
+      },
+      "sharedPlayerSha256": "d505cd25419c47b9c8374c9cca2a8945fc162ab6789a7f1ca39c105f374f1505",
+      "checks": {
+        "local-no-cloud-or-shared-text": true,
+        "local": true,
+        "remote-only-no-cloud-or-shared-text": true,
+        "remote-only": true,
+        "wrong-language-no-cloud-or-shared-text": true,
+        "wrong-language": true,
+        "lock-no-cloud-or-shared-text": true,
+        "lock": true,
+        "unmount-no-cloud-or-shared-text": true,
+        "unmount": true,
+        "case-no-cloud-or-shared-text": true,
+        "case": true,
+        "pause-no-cloud-or-shared-text": true,
+        "pause": true,
+        "mute-no-cloud-or-shared-text": true,
+        "mute": true,
+        "voice-error-no-cloud-or-shared-text": true,
+        "voice-error": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-media-20261026/speech-browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T14:53:42.622Z",
+      "baseline": false,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "actualProtectedService": true,
+      "nativeWebCrypto": true,
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+        "behavior_lens_module.js": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593"
+      },
+      "scope": "Actual BehaviorLens speech components and local capture hook with a synthetic engine; actual encrypted service and its registered final-flush contract. No microphone or native recognition provider used.",
+      "network": "All navigation fulfilled locally; external page requests blocked",
+      "checks": {
+        "SessionNotesRefusesUnknownLocalCapability": true,
+        "VoiceToABCRefusesUnknownLocalCapability": true,
+        "SessionNotesUsesExplicitLocalProcessing": true,
+        "SessionNotesStopsAndDropsOtherStudentCallbacks": true,
+        "VoiceToABCUsesExplicitLocalProcessing": true,
+        "VoiceToABCStopsAndDropsOtherStudentCallbacks": true,
+        "pendingAvailabilityCancelledBystop": true,
+        "pendingAvailabilityCancelledBylock": true,
+        "pendingAvailabilityCancelledByunmount": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-download-20261026/browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T14:53:37.773Z",
+      "baseline": false,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "nativeWebCrypto": true,
+      "nativeBlobUrls": true,
+      "scope": "Actual extracted BehaviorLens download helper and encrypted service; native DOM and Blob URL reads; download clicks stubbed or made to throw; no real file downloaded",
+      "network": "Navigation fulfilled locally; external requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+        "behavior_lens_module.js": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593"
+      },
+      "checks": {
+        "nativeFailureReported": true,
+        "nativeFailureRemovesReadableBlobAfterLock": true,
+        "declinedRemovesAnchor": true,
+        "staleRemovesAnchor": true,
+        "allowedHandoffPreservesCallerCleanup": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-media-20261026/ioa-browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T14:57:06.072Z",
+      "browser": "Microsoft Edge",
+      "syntheticOnly": true,
+      "actualReact": true,
+      "actualProtectedService": true,
+      "nativeWebCrypto": true,
+      "nativeFileReader": true,
+      "nativeBlobMediaPlayback": true,
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+        "behavior_lens_module.js": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593"
+      },
+      "checks": {
+        "nativeSyntheticPreviewPlays": true,
+        "studentSwitchStopsAndDetachesPlayer": true,
+        "studentSwitchRevokesOwnedUrl": true,
+        "newStudentHasNoPriorMediaOrAnnotation": true,
+        "returningStudentKeepsOwnAnnotations": true,
+        "returningStudentMustReselectMedia": true,
+        "syntheticAnnotationsPersistEncrypted": true,
+        "currentReviewedSyntheticRequestSucceeds": true,
+        "review-remove-blocksOldMediaDispatch": true,
+        "review-replace-blocksOldMediaDispatch": true,
+        "dispatch-remove-blocksOldMediaDispatch": true,
+        "dispatch-replace-blocksOldMediaDispatch": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": [],
+      "network": "All navigation fulfilled locally; all other network requests blocked",
+      "scope": "Actual IOA component and shared review/protected-transport wrappers; synthetic async review/provider gates; per-student context adapter persists annotations through real encrypted service. No provider or microphone traffic. Production 20 MB routing threshold unchanged; tiny native WAV uses inline vision path."
+    }
+  ],
+  "baselines": [
+    {
+      "file": "tmp/clinical-integrity-20261026/policy-baseline-results.json",
+      "passed": 2,
+      "failed": 5,
+      "meaning": "Expected negative control reproducing the old behavior; excluded from final-candidate totals."
+    },
+    {
+      "file": "tmp/clinical-download-20261026/baseline-results.json",
+      "passed": 1,
+      "failed": 4,
+      "meaning": "Expected negative control reproducing the old behavior; excluded from final-candidate totals."
+    },
+    {
+      "file": "tmp/clinical-media-20261026/speech-baseline-results.json",
+      "passed": 1,
+      "failed": 5,
+      "meaning": "Expected negative control reproducing the old behavior; excluded from final-candidate totals."
+    },
+    {
+      "file": "tmp/clinical-media-20261026/da-baseline-results.json",
+      "passed": 0,
+      "failed": 3,
+      "meaning": "Expected negative control reproducing the old behavior; excluded from final-candidate totals."
+    },
+    {
+      "file": "tmp/clinical-media-20261026/media-baseline-results.json",
+      "passed": 1,
+      "failed": 1,
+      "meaning": "Expected negative control reproducing the old behavior; excluded from final-candidate totals."
+    },
+    {
+      "file": "tmp/clinical-media-20261026/ioa-review-baseline-results.json",
+      "passed": 9,
+      "failed": 16,
+      "meaning": "Expected negative control reproducing the old behavior; excluded from final-candidate totals."
+    }
+  ],
+  "baselineBrowsers": [
+    {
+      "file": "tmp/clinical-media-20261026/da-browser-baseline.json",
+      "checkedAt": "2026-10-26T14:43:03.162Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "actualDynamicAssessment": true,
+      "nativeWebCrypto": true,
+      "audibleOutput": false,
+      "scope": "Actual mounted assessment, real protected service and actual shared host player. Synthetic SpeechSynthesis/utterances, TTS transport and Audio prevent real transmission and audible speech; this tests adapter routing and lifecycle, not installed OS voice implementation.",
+      "network": "Navigation fulfilled locally; external requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+        "identifier_redaction_module.js": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179",
+        "dynamic_assessment_module.js": "5c742e21f285f3d709b6abf05a470313e11879f8f0110e420b989e627158e315"
+      },
+      "sharedPlayerSha256": "d505cd25419c47b9c8374c9cca2a8945fc162ab6789a7f1ca39c105f374f1505",
+      "checks": {
+        "baseline-disabled-clinical-ai": true,
+        "baseline-lock": true,
+        "baseline-unmount": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-media-20261026/speech-browser-baseline.json",
+      "checkedAt": "2026-10-26T14:42:35.396Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "actualProtectedService": true,
+      "nativeWebCrypto": true,
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+        "behavior_lens_module.js": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7"
+      },
+      "scope": "Actual BehaviorLens speech components and local capture hook with a synthetic engine; actual encrypted service and its registered final-flush contract. No microphone or native recognition provider used.",
+      "network": "All navigation fulfilled locally; external page requests blocked",
+      "checks": {
+        "SessionNotesBaselineStartsWithoutLocalCapability": true,
+        "VoiceToABCBaselineStartsWithoutLocalCapability": true,
+        "SessionNotesBaselineUsesDefaultProcessing": true,
+        "SessionNotesBaselineContinuesIntoOtherStudent": true,
+        "VoiceToABCBaselineUsesDefaultProcessing": true,
+        "VoiceToABCBaselineContinuesIntoOtherStudent": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-download-20261026/browser-baseline.json",
+      "checkedAt": "2026-10-26T14:27:43.625Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "nativeWebCrypto": true,
+      "nativeBlobUrls": true,
+      "scope": "Actual extracted BehaviorLens download helper and encrypted service; native DOM and Blob URL reads; download clicks stubbed or made to throw; no real file downloaded",
+      "network": "Navigation fulfilled locally; external requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+        "behavior_lens_module.js": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7"
+      },
+      "checks": {
+        "nativeFailureReported": true,
+        "baselineNativeFailureRetainsReadableBlobAfterLock": true,
+        "declinedBaselineLeavesAnchor": true,
+        "staleBaselineLeavesAnchor": true,
+        "allowedHandoffPreservesCallerCleanup": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    }
+  ],
+  "delivery": {
+    "checkedAt": "2026-10-26T14:54:50.313Z",
+    "reviewed": {
+      "sensitive_workspace_module.js": {
+        "bytes": 82278,
+        "sha256": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+        "integrity": "sha384-KekaMND4Bm+0asIstE5zLMk1aBjNTd+iHGj1wOQ92OyHDNDj4LofpCXGx+SqZ8UO"
+      },
+      "behavior_lens_module.js": {
+        "bytes": 2650825,
+        "sha256": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593",
+        "integrity": "sha384-wDSd+fjQLpoYeGUm7VSwmoa5d/213bWpBdkBjd0sGEcRq4laI9L32WQt0+sFpL49"
+      },
+      "dynamic_assessment_module.js": {
+        "bytes": 1126151,
+        "sha256": "e9f6da83c1482d4730fce384874fac14b68c011a4b298b84fd631b0cef7cd0f1",
+        "integrity": "sha384-jr2fZ5MRzUUhza6ubJ21fMays9iw/+Kt0UM0/4f5FbsFiOmGqYFZczs5WX5i1rLc"
+      }
+    },
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "beforeSha256": "9ee613c08ebf67c20f0d79665ed353f27ff724a6e258c0e554ee11aee2d4d528",
+        "afterSha256": "d7fed4042727efac80c0bb4ee14c7e995f5625582d530ae46ffc4b86e6b061a8",
+        "manifestId": "abe74a336c1948561b7a58054e8127fa289a84bfc2150991ca74fb608bf31164",
+        "previousManifestId": "ce6058505ca7babd5368b43eea2eb6c74b12cfa5ea10c023781bbc1db04455a6",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=3b4d69a304",
+            "after": "sensitive_workspace_module.js?v=527c34455d"
+          },
+          {
+            "before": "behavior_lens_module.js?v=f3530bbf77",
+            "after": "behavior_lens_module.js?v=c4459ba0c2"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=5c742e21f2",
+            "after": "dynamic_assessment_module.js?v=e9f6da83c1"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "beforeSha256": "a28a2069202694a2c8207b7312e62c8954b4d9bd1bda98a2ef4e00645237ad2f",
+        "afterSha256": "8719fbb9120d948acd94ed0bb9b1a9bba7580cebb130578e7ec1602c604ab7a0",
+        "manifestId": "abe74a336c1948561b7a58054e8127fa289a84bfc2150991ca74fb608bf31164",
+        "previousManifestId": "ce6058505ca7babd5368b43eea2eb6c74b12cfa5ea10c023781bbc1db04455a6",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=3b4d69a304",
+            "after": "sensitive_workspace_module.js?v=527c34455d"
+          },
+          {
+            "before": "behavior_lens_module.js?v=f3530bbf77",
+            "after": "behavior_lens_module.js?v=c4459ba0c2"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=5c742e21f2",
+            "after": "dynamic_assessment_module.js?v=e9f6da83c1"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "beforeSha256": "0dafcdc7eb3ec8b6fc032361f3efeacdbbdb4247b581c82381c624699c12adbe",
+        "afterSha256": "798dc2aa656a5dfe9fa72ce3d63ebc181ca1392cbefb122a08d8cacb171d4c71",
+        "manifestId": "abe74a336c1948561b7a58054e8127fa289a84bfc2150991ca74fb608bf31164",
+        "previousManifestId": "ce6058505ca7babd5368b43eea2eb6c74b12cfa5ea10c023781bbc1db04455a6",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=3b4d69a304",
+            "after": "sensitive_workspace_module.js?v=527c34455d"
+          },
+          {
+            "before": "behavior_lens_module.js?v=f3530bbf77",
+            "after": "behavior_lens_module.js?v=c4459ba0c2"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=5c742e21f2",
+            "after": "dynamic_assessment_module.js?v=e9f6da83c1"
+          }
+        ]
+      }
+    ],
+    "scope": "Only the three selected clinical speech, media, and policy module approvals and loader cache strings; no broad policy regeneration, build or release."
+  },
+  "peerReview": {
+    "assessment": {
+      "capturedAt": "2026-10-26T14:54:15.957Z",
+      "reviewer": "/root/assessment_export_audit",
+      "source": {
+        "path": "behavior_lens_module.js",
+        "bytes": 2650825,
+        "sha256": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593",
+        "parses": true
+      },
+      "bodies": {
+        "download": {
+          "start": "    function blCreateDownloadLink()",
+          "end": "    function blOpenReadableWindow(",
+          "bytes": 1132,
+          "sha256": "01bda483c449fb15e2f13c88d61be8eae19a0bf0a41d069bd0534a4771b31616"
+        },
+        "dictation": {
+          "start": "    function useLocalClinicalDictation(",
+          "end": "    // ── UI localization:",
+          "bytes": 4834,
+          "sha256": "4fdf9f3da940e18791601ad9f01bda4eebaf79b3306d55b77cd4a2e1c20e55a6"
+        },
+        "transport": {
+          "start": "    function useProtectedBehaviorLensTransport(",
+          "end": "    function getBehaviorLensWorkspaceRuntime()",
+          "bytes": 1127,
+          "sha256": "4c1ce7145a6304507dccfd3638ea6f95acebb30d304fd77043da9b8b22e9ea33"
+        },
+        "reviewWrappers": {
+          "start": "        const callGeminiGuarded = useCallback(",
+          "end": "        // Replies a family",
+          "bytes": 4669,
+          "sha256": "b9bfd59d86dd006943b6e5d003896e2c0269f7a75707a1c05632a3bdd9d7c062"
+        },
+        "ioa": {
+          "start": "    function IOACalculator(props)",
+          "end": "    // ─── TaskAnalysisTool",
+          "bytes": 102757,
+          "sha256": "03743d39d409d6613f42f412e9ed0ed852c435fbf69d8bdb789c0983e2967a16"
+        },
+        "ioaCapture": {
+          "start": "        function captureMediaOperation()",
+          "end": "        function isMediaOperationCurrent(",
+          "bytes": 544,
+          "sha256": "090e9d57bc872aaa9d69920ef2da2e86d9769c1b33ed2caebb0487179ec4cc42"
+        },
+        "ioaRouting": {
+          "start": "        async function callGeminiWithMedia(",
+          "end": "        var IOA_METHODS_LIST",
+          "bytes": 4019,
+          "sha256": "29a28823300199aa96be854696bf12fb4cfc7edee20d50a6aad9a7fd3f50738f"
+        }
+      },
+      "test": {
+        "path": "tests/behavior_lens_media_dispatch.test.js",
+        "sha256": "0da9e8ba9d1af41076ebefd5e404a15b86a0adac987c0ded66e1afe1f9661010"
+      },
+      "dependencies": [
+        {
+          "path": "sensitive_workspace_module.js",
+          "sha256": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5"
+        },
+        {
+          "path": "allo_crypto_module.js",
+          "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359"
+        },
+        {
+          "path": "allo_device_vault_module.js",
+          "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+        }
+      ],
+      "baseline": {
+        "snapshot": "tmp/clinical-media-20261026/ioa-review-before.json",
+        "snapshotSha256": "f22f53ce58816ccd85497f6ecbd7e96b896441954d2c2a31297b40c450839ebd",
+        "results": "tmp/clinical-media-20261026/ioa-review-baseline-results.json",
+        "passed": 9,
+        "failed": 16
+      },
+      "candidate": {
+        "results": "tmp/clinical-media-20261026/ioa-review-candidate-results.json",
+        "passed": 25,
+        "failed": 0
+      },
+      "independentReview": {
+        "conclusion": "No remaining blocking bypass or regression found in the reviewed final bodies.",
+        "dictation": "Explicit local-only capability and readback; deferred availability, session epoch, per-run generation, selected student, lock/pagehide/unmount cleanup checked. No remote or language-pack download fallback.",
+        "download": "Native click and export-check failures now revoke the captured Blob URL, remove readable href and anchor. AbortError returns false, other failures rethrow; success retains existing caller timing.",
+        "ioa": "Found missing selected-file guard at provider dispatch. Fix carries the captured guard through every route and both actual review wrappers into the real protected transport. Test proves zero simulated native dispatch after file change during review or provider preparation for all five routes; already requested stale results are rejected.",
+        "limits": "Extracted exact source bodies execute around the real encrypted service; review UI, decoded audio and native dispatch are synthetic. This is not a native provider or installed speech-engine certification. No claim to recall data already handed to a provider/browser download."
+      }
+    },
+    "report": {
+      "capturedAt": "2026-10-26T14:55:31.745Z",
+      "reviewer": "/root/report_export_audit",
+      "independentReviews": {
+        "dynamicAssessment": {
+          "source": {
+            "path": "dynamic_assessment_module.js",
+            "bytes": 1126151,
+            "sha256": "e9f6da83c1482d4730fce384874fac14b68c011a4b298b84fd631b0cef7cd0f1"
+          },
+          "conclusion": "No blocking privacy regression found in local read-aloud adapter and component lifecycle.",
+          "checked": [
+            "Strict localService voice selection and explicit utterance voice readback before synthesis dispatch",
+            "Protected session, case, phase, item and mounted ownership across lock, close, mute, item changes and unmount",
+            "Clears owned utterance text and callbacks; no shared host cloud or text-cache path; cancellation only while adapter owns active or queued utterance"
+          ],
+          "limitation": "Browser speechSynthesis.cancel is global. No installed OS voice engine certification; local voice properties are browser assertions."
+        },
+        "ioa": {
+          "source": {
+            "path": "behavior_lens_module.js",
+            "bytes": 2650825,
+            "sha256": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593"
+          },
+          "scope": {
+            "start": "    function IOACalculator(props) {",
+            "end": "    const taskKey =",
+            "sha256": "647f983d749fe996e6755b2ba22a14d5f6a409e1110e05df3d9d685f46005121",
+            "bytes": 103391
+          },
+          "conclusion": "No remaining blocking issue in the final reviewed IOA lifecycle and media dispatch ownership.",
+          "checked": [
+            "Student-keyed component and per-student durable typed input prevent prior media or annotations displaying for a new case",
+            "Owned file readers, decoder contexts, media player source and Blob URLs cleaned on replacement, removal, lock and unmount",
+            "Captured media generation and session checks prevent stale decode analysis; guard now forwarded through text and vision review wrappers to protected provider dispatch"
+          ],
+          "foundAndResolved": "Initial IOA guard did not survive asynchronous review/provider preparation. Shared wrappers now compose its captured guard before review, after review, at transport dispatch and before accepting results.",
+          "proof": "tmp/clinical-media-20261026/ioa-review-candidate-results.json"
+        }
+      },
+      "blFreeze": {
+        "source": {
+          "path": "behavior_lens_module.js",
+          "bytes": 2650825,
+          "sha256": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593"
+        },
+        "public": {
+          "path": "desktop/web-app/public/behavior_lens_module.js",
+          "bytes": 2650825,
+          "sha256": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593"
+        },
+        "mirrorsEqual": true,
+        "bothParse": true
+      },
+      "compatibility": {
+        "selected": [
+          {
+            "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ai_backend_clinical_request_controls.test.js",
+            "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json",
+            "passed": 39,
+            "failed": 0
+          },
+          {
+            "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/behavior_lens_consent_manager.test.js",
+            "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json",
+            "passed": 5,
+            "failed": 0
+          },
+          {
+            "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/behavior_lens_review_runtime.test.js",
+            "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json",
+            "passed": 6,
+            "failed": 0
+          },
+          {
+            "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/behavior_lens_sensitive_prompt_review.test.js",
+            "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json",
+            "passed": 8,
+            "failed": 0
+          },
+          {
+            "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/clinical_ai_dispatch.test.js",
+            "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json",
+            "passed": 4,
+            "failed": 0
+          },
+          {
+            "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/clinical_request_controls.test.js",
+            "report": "tmp/clinical-media-20261026/wrapper-compatibility-results.json",
+            "passed": 9,
+            "failed": 0
+          },
+          {
+            "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/behavior_lens_ai_consent_a11y.test.js",
+            "report": "tmp/clinical-media-20261026/wrapper-mirror-final-results.json",
+            "passed": 5,
+            "failed": 0
+          }
+        ],
+        "passed": 76,
+        "failed": 0,
+        "sourceReceipt": "tmp/clinical-media-20261026/wrapper-compatibility-source-receipt.json",
+        "note": "Initial batch only failed the intentionally deferred BL public mirror comparison. Select six unaffected files plus the final five-test a11y rerun; no duplicate counts."
+      },
+      "limitations": "Focused source review and synthetic tests only. No actual microphone, external provider request, district configuration certification, commit or deployment."
+    },
+    "root": {
+      "scope": "Policy descriptor/array validation; download cleanup; local dictation and IOA lifecycle; optional operation-guard composition",
+      "conclusion": "No remaining blocking issue found in the reviewed changes.",
+      "sources": {
+        "sensitive_workspace_module.js": {
+          "bytes": 82278,
+          "sha256": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5",
+          "integrity": "sha384-KekaMND4Bm+0asIstE5zLMk1aBjNTd+iHGj1wOQ92OyHDNDj4LofpCXGx+SqZ8UO"
+        },
+        "behavior_lens_module.js": {
+          "bytes": 2650825,
+          "sha256": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593",
+          "integrity": "sha384-wDSd+fjQLpoYeGUm7VSwmoa5d/213bWpBdkBjd0sGEcRq4laI9L32WQt0+sFpL49"
+        },
+        "dynamic_assessment_module.js": {
+          "bytes": 1126151,
+          "sha256": "e9f6da83c1482d4730fce384874fac14b68c011a4b298b84fd631b0cef7cd0f1",
+          "integrity": "sha384-jr2fZ5MRzUUhza6ubJ21fMays9iw/+Kt0UM0/4f5FbsFiOmGqYFZczs5WX5i1rLc"
+        }
+      }
+    }
+  },
+  "validation": {
+    "threeRuntimeModulesParse": true,
+    "threePublicMirrorsMatch": true,
+    "threeHostsParse": true,
+    "actualEmbeddedPoliciesAcceptAssets": true,
+    "selectedSourceSnapshotsUnchanged": true,
+    "scopedGitDiffCheck": true
+  },
+  "files": [
+    {
+      "path": "sensitive_workspace_module.js",
+      "bytes": 82278,
+      "sha256": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5"
+    },
+    {
+      "path": "behavior_lens_module.js",
+      "bytes": 2650825,
+      "sha256": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593"
+    },
+    {
+      "path": "dynamic_assessment_module.js",
+      "bytes": 1126151,
+      "sha256": "e9f6da83c1482d4730fce384874fac14b68c011a4b298b84fd631b0cef7cd0f1"
+    },
+    {
+      "path": "desktop/web-app/public/sensitive_workspace_module.js",
+      "bytes": 82278,
+      "sha256": "527c34455dd4b46fa9edba3b925463b9aa022b1e5f9337f7c1338e4c8052bde5"
+    },
+    {
+      "path": "desktop/web-app/public/behavior_lens_module.js",
+      "bytes": 2650825,
+      "sha256": "c4459ba0c2314352715ea429a3f886d9444b942bd226a7fe4337acaa35589593"
+    },
+    {
+      "path": "desktop/web-app/public/dynamic_assessment_module.js",
+      "bytes": 1126151,
+      "sha256": "e9f6da83c1482d4730fce384874fac14b68c011a4b298b84fd631b0cef7cd0f1"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3145807,
+      "sha256": "d7fed4042727efac80c0bb4ee14c7e995f5625582d530ae46ffc4b86e6b061a8"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3145463,
+      "sha256": "8719fbb9120d948acd94ed0bb9b1a9bba7580cebb130578e7ec1602c604ab7a0"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3145429,
+      "sha256": "798dc2aa656a5dfe9fa72ce3d63ebc181ca1392cbefb122a08d8cacb171d4c71"
+    },
+    {
+      "path": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "path": "tests/sensitive_workspace_credential_residue.test.js",
+      "bytes": 9076,
+      "sha256": "34fb93ee01db464d11cb9ed4c565a456d26573bdb6a6a434472966f006374060"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion.test.js",
+      "bytes": 27395,
+      "sha256": "295f07a1c99c8eaefbb5d9c638c2b420618b1e3a64596a227f2966daad59090e"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion_races.test.js",
+      "bytes": 4986,
+      "sha256": "a312f906bf98bcf60a4463c7686cfad8ad308b2de78603536ca9c9eba2fe9200"
+    },
+    {
+      "path": "tests/sensitive_workspace_policy_data.test.js",
+      "bytes": 10443,
+      "sha256": "2d6859c91e03753e90014f9ff37b252de6eb8bc000ee445111026551d3fbd70a"
+    },
+    {
+      "path": "tests/sensitive_workspace_ui_actions.test.js",
+      "bytes": 12599,
+      "sha256": "ada2e2e8e0083a7b857534529e1790c27b0d9d8906897b0028e94bb69bb184e3"
+    },
+    {
+      "path": "tests/dynamic_assessment.test.js",
+      "bytes": 42433,
+      "sha256": "cc4f6b5760dfbd8b8cc0490b47b7a16a45e8c6c5b05f334d5f9787dc2c4b770e"
+    },
+    {
+      "path": "tests/dynamic_assessment_local_speech.test.js",
+      "bytes": 10766,
+      "sha256": "59ae51a4b9531f5018d89db1684e51deebb5acd6b2ce731efe73583a4ef6e8c5"
+    },
+    {
+      "path": "tests/dynamic_assessment_protected_workspace.test.js",
+      "bytes": 14725,
+      "sha256": "9c914abe2b2954eaa5abd326dc35c701bbd744ef49cfee7485e60fbde22645eb"
+    },
+    {
+      "path": "tests/behavior_lens_ai_ioa_alignment.test.js",
+      "bytes": 2954,
+      "sha256": "a56e4ad826a0bbe8ff50cb15eb754f57f1ae07914a17429bbc7367fd6943fad9"
+    },
+    {
+      "path": "tests/behavior_lens_download_cleanup.test.js",
+      "bytes": 2726,
+      "sha256": "eea91478da0fcd1ace8efb9a7781a1ac3397a8e138783278c4abc968da70aeed"
+    },
+    {
+      "path": "tests/behavior_lens_imports.test.js",
+      "bytes": 18245,
+      "sha256": "12e516aa4f7f0b9c200aea895d99978efb563ca55d4addb2ec45da19b08c2c98"
+    },
+    {
+      "path": "tests/behavior_lens_ioa.test.js",
+      "bytes": 6391,
+      "sha256": "2c0dcd16b41f80475f769aa9a077f24566831644b14a0693e88c8372dc70c377"
+    },
+    {
+      "path": "tests/behavior_lens_ioa_grid_blanks.test.js",
+      "bytes": 4251,
+      "sha256": "2e7b22cc7f458c2a6ad786143a40bbfb82579ddc5a5b9d15166215660831d413"
+    },
+    {
+      "path": "tests/behavior_lens_ioa_media_lifecycle.test.js",
+      "bytes": 11274,
+      "sha256": "12ad2c733941f0611529c2d736e1abb22e1d74ef2c83ca301796d50bda25d665"
+    },
+    {
+      "path": "tests/behavior_lens_local_dictation.test.js",
+      "bytes": 9688,
+      "sha256": "011e7f8505b31cc7ab0f86443842aefd9a4bfcb80639926f435befdcd0bc39e9"
+    },
+    {
+      "path": "tests/behavior_lens_missing_ratings.test.js",
+      "bytes": 4004,
+      "sha256": "6e0a2d7e157e7e839e2c6f80593a5e780c19aa3c85a29a70c778898e007c8f17"
+    },
+    {
+      "path": "tests/behavior_lens_names_sharing_and_clocks.test.js",
+      "bytes": 11322,
+      "sha256": "149edcdecd624ff7d82029b45b05923f7989a4df36c90c683f8877a4ef464dde"
+    },
+    {
+      "path": "tests/behavior_lens_notes_time_and_labels.test.js",
+      "bytes": 17283,
+      "sha256": "b9fe3effca31e5d19ff8fd0a5d912f69eae6d300ceeb98b8e2749402921038d4"
+    },
+    {
+      "path": "tests/behavior_lens_protected_workspace.test.js",
+      "bytes": 17690,
+      "sha256": "0c1ef31179f1533b354714a3f03ed94fc0dcc5097568a1d4750d8031609b7f86"
+    },
+    {
+      "path": "tests/behavior_lens_media_dispatch.test.js",
+      "bytes": 9173,
+      "sha256": "0da9e8ba9d1af41076ebefd5e404a15b86a0adac987c0ded66e1afe1f9661010"
+    },
+    {
+      "path": "tests/ai_backend_clinical_request_controls.test.js",
+      "bytes": 18082,
+      "sha256": "dbb6439e45587c1f412da5744c841ea1595becb72d629a72c5c783a2a244c8b2"
+    },
+    {
+      "path": "tests/behavior_lens_consent_manager.test.js",
+      "bytes": 4184,
+      "sha256": "15aa52a3908de7c7daa95889232ca9d0990cd9903a3ff943665e8b9d65281df8"
+    },
+    {
+      "path": "tests/behavior_lens_review_runtime.test.js",
+      "bytes": 5311,
+      "sha256": "0f49fc162ee81be267d330f17199877cf2d514d47ef5f2c0b720e403baae85e3"
+    },
+    {
+      "path": "tests/behavior_lens_sensitive_prompt_review.test.js",
+      "bytes": 8129,
+      "sha256": "22d4d5b10297214d0f906dd90e10a86c8463e7cc3f97d2164c113b787c4e67aa"
+    },
+    {
+      "path": "tests/clinical_ai_dispatch.test.js",
+      "bytes": 6503,
+      "sha256": "507115e6e59cbb7b5777787c04754dbb46eb79fe6d0f6ffda291c627e81d3b21"
+    },
+    {
+      "path": "tests/clinical_request_controls.test.js",
+      "bytes": 9008,
+      "sha256": "8169b3227efef598dee7667f5e2cd396390d6b19f229322ecd7cf54468c81f40"
+    },
+    {
+      "path": "tests/behavior_lens_ai_consent_a11y.test.js",
+      "bytes": 2160,
+      "sha256": "2aaff226d58261dfb41f9644fb38776abbc8aa54b432944115ff216fe0bd1794"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-speech-policy-followup.md",
+      "bytes": 8833,
+      "sha256": "2756df28e47d1df01696ca93dbd472be6ac3b483cbc845c7808e4f26c7af0037"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 22199,
+      "sha256": "1e26d81e90582a214d93403737244589429ef1740b055dbcbbc6f788424bb2f9"
+    },
+    {
+      "path": "docs/audits/2026-10-24-school-district/report.md",
+      "bytes": 41046,
+      "sha256": "ecff2bc584e4eed2f0173fb14d658c320142702e00f343a64d05c907a7af26ca"
+    },
+    {
+      "path": "docs/audits/2026-10-24-school-district/data-flow-inventory.md",
+      "bytes": 16828,
+      "sha256": "303488cc2aa544279023e0d97f70bd59246661c5159ec1ff3a9e52679c22c5c3"
+    },
+    {
+      "path": "allo_crypto_module.js",
+      "bytes": 22716,
+      "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359"
+    },
+    {
+      "path": "allo_device_vault_module.js",
+      "bytes": 43286,
+      "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+    },
+    {
+      "path": "identifier_redaction_module.js",
+      "bytes": 25503,
+      "sha256": "74559b24b510d613f770eefe1981e0b540c2b04de327da30e5c83b8df13b7179"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/AlloFlowANTI.before.txt",
+      "bytes": 3145562,
+      "sha256": "b07f51b5605c9330b6bc03c3f0a31242e1e0d04ba04e0862524723dcab62a008"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/assessment-peer-review.json",
+      "bytes": 4224,
+      "sha256": "cdb7cf1c973e026225563c9ad97e3350cf545cb625fa0eb213b6bee680fbe6a1"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/behavior_lens_module.before.js",
+      "bytes": 2645916,
+      "sha256": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-baseline-initial-results.json",
+      "bytes": 4221,
+      "sha256": "238b272f1570ac30d67b6ed56f5518b2ccce1e190509aa031a3cdb35699acf9c"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-baseline-initial.log",
+      "bytes": 3950,
+      "sha256": "2fd060883e6c14fda6123339e933f831098c2e82f7ca262c258df620493a9990"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-baseline-results.json",
+      "bytes": 4096,
+      "sha256": "0381f8c74d8905a3eefb24729bea00bb735998e1671c8a88cef9df3a2d7e519d"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-baseline.log",
+      "bytes": 4069,
+      "sha256": "2796b611a808ddcc967f42a400648a86246ef25864cae8bad911222387bc34ee"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-browser-baseline.json",
+      "bytes": 1390,
+      "sha256": "2d2b0725af99fb299fc1c73710ede47d721c1f4c34cdb33510c0be05bcbd75d3"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-browser-checks.json",
+      "bytes": 1889,
+      "sha256": "bc219e03b90dee8fe0d447610d4b6593078947314e88c0b735a1faca0baa4fcc"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-browser-failure.json",
+      "bytes": 1486,
+      "sha256": "8a04dfeb30b4d2d150421b92238b2fc36a62a1dbb456eb0f84c3debbdcbb262e"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-browser-initial-checks.json",
+      "bytes": 1890,
+      "sha256": "f24327c4ce5a81cc137b8063b8af4ea2e33a696ca8b094015584b373234fac94"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-browser-qa.cjs",
+      "bytes": 10596,
+      "sha256": "519a1ead18aea0d4d9f9bf89b36371a38702a740a2deac8f0198d99cd5915b18"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-final-results.json",
+      "bytes": 41005,
+      "sha256": "052a4884c642ab5ec5a7dd05fed85183fa9a1c88cb1b6defacf8ddb63384e8e9"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-final.log",
+      "bytes": 4889,
+      "sha256": "11ccccd0bc6f6f23ab139caf0a37db913ea2e4d81e855a428ddb84c5b377efaa"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-initial-results.json",
+      "bytes": 11698,
+      "sha256": "3511533114ff13c59227334a12d2d6b37fca3d6ca92da921d73186bb7baba23a"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-initial.log",
+      "bytes": 6337,
+      "sha256": "3273b043535a16f78c2f7dc61fdf29d09c37f70454f0b3d428c87e3a6fa95897"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-proof-receipt.json",
+      "bytes": 1351,
+      "sha256": "b22c2487ce2e23011038ba4ed012a5595b4659a7107a6f9df7c5041abc2733a0"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-source-receipt.json",
+      "bytes": 377,
+      "sha256": "760f03d689f6c5ec45a7ea220f1691ce72f1254ac9872432eeb19d7bb3c6c9e7"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/da-speech-proof.test.js",
+      "bytes": 4771,
+      "sha256": "dc7876e378184b262f483191a0f1b3a49aa689211c7deec30e7dad2f2519c54b"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/delivery-validation.json",
+      "bytes": 4319,
+      "sha256": "e867dac5a644aa472f5ae6b5ef58225fd3cabd424f56a7476d44dfbf666eefad"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/dynamic_assessment_module.before.js",
+      "bytes": 1119273,
+      "sha256": "5c742e21f285f3d709b6abf05a470313e11879f8f0110e420b989e627158e315"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/final-focused-results.json",
+      "bytes": 50960,
+      "sha256": "a50389a529d305291dc412bedbc3976fc6f934d5b00e0d032881346b5e9e1860"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/final-focused.log",
+      "bytes": 8890,
+      "sha256": "cfcac082fb4943ba9bfe99f8033555f1682c348c9575e8f04fd677add79234e5"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/final-test-inputs.json",
+      "bytes": 961,
+      "sha256": "770d871a80c8f84aca4ba288919a2d9e717b1f045070006680804f0915ee4726"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/finalize-evidence.cjs",
+      "bytes": 12423,
+      "sha256": "9bc2b67eafe6a63377d5fc1925d766f21071832430422f73819a383c36f32c06"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-browser-checks.json",
+      "bytes": 1745,
+      "sha256": "74aa561a720ae214920a22c168a87b321b07aa59cf1c0baf5bdd5ec674b3b2f2"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-browser-qa.cjs",
+      "bytes": 12021,
+      "sha256": "b9330f3509e43f5aa1d643afb3290ea49ccef1005df4bb8daf0d9c2d0719bbcc"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-dispatch-baseline-results.json",
+      "bytes": 2326,
+      "sha256": "4a72012df5653e653a6d5658a36d694b9db294438a6f90199ecd094219085263"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-dispatch-baseline.log",
+      "bytes": 1762,
+      "sha256": "1db0d773a0ab8dedede85c050f02955e07ba7b3fa1cdc74b11f05d682b9d8a9d"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-dispatch-before.json",
+      "bytes": 5890,
+      "sha256": "a9e66b4bc5d5e3a903b443944bd3e3cf3fa68ff38e6aab63cb6863d9d694c4e8"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-dispatch-proof.test.js",
+      "bytes": 3593,
+      "sha256": "7b8534a6105f0c7f83a0c82fdbcd8f0c6dbf67e53a26072452d4531f542f08c4"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-final-results.json",
+      "bytes": 17486,
+      "sha256": "5b8ee976d67387a269bc89fdfc849822c74e063a7ac5c5ddaec3f1d2897509d2"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-final.log",
+      "bytes": 2956,
+      "sha256": "5dfa6dcf403cbc00040b203e93ee66b7bb0d3c5a3503a34ff9a46158c808830a"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-lifecycle-results.json",
+      "bytes": 7056,
+      "sha256": "983f21fcb4db2aa76343a4cfb2a441c4a5e18f3e7bf84b01d9fabf10ce27968b"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-lifecycle.log",
+      "bytes": 1635,
+      "sha256": "a7ef2f735ec2c60b9bce1c7749c061be3df9aef23a536d23c222d096c37ca7a1"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-review-baseline-results.json",
+      "bytes": 25319,
+      "sha256": "4e5f14f0ef94e3c5000f1a28b96aebab40ed21a51d8b6e1bffbcad8a688f05c2"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-review-baseline.log",
+      "bytes": 14733,
+      "sha256": "9e6ff3f54af3541f679de7d561addb6cc12f40136a4c30aaac2dc2b87e5e92bc"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-review-before.json",
+      "bytes": 10380,
+      "sha256": "f22f53ce58816ccd85497f6ecbd7e96b896441954d2c2a31297b40c450839ebd"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-review-candidate-results.json",
+      "bytes": 11154,
+      "sha256": "0f49a4017bf3e21a0e5a4d17e6e02a9ee93088801c88e8ca0c837ad71a5d0306"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-review-candidate.log",
+      "bytes": 618,
+      "sha256": "6c40253a7ebaf47986d4adc053e7d0b31f11db85679f23cd07ec67a9bdf5de50"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-source-before.js",
+      "bytes": 99620,
+      "sha256": "b719752e298c166cc4304223c6c09e5a86a9646f4c41759692a5fcec1079579b"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/ioa-source-receipt.json",
+      "bytes": 1145,
+      "sha256": "0d890f7a6816524f0070fad6f9603ff32921046799f5eb77ea26b6a2d530fb93"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/media-baseline-results.json",
+      "bytes": 1706,
+      "sha256": "ec3f00e17c2aa218511fd4ebae79cfa8d0e92dcf225d790a988523c74d69ec39"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/media-baseline.log",
+      "bytes": 1589,
+      "sha256": "ff0c07197f79364d7efa253cafbbd620868da91200f14aaa6c1f0fd91e76a6f5"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/media-initial-results.json",
+      "bytes": 1342,
+      "sha256": "ad1e326952e55c38e9985e5bf41795fa3bc749a2d351e67cb9ee411442ec2d49"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/media-initial.log",
+      "bytes": 718,
+      "sha256": "2047e57c493b43ecc437ec440e9dd3d10f141f5bb2a6dd75f3f702d351ec605b"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/media-selection-proof.test.js",
+      "bytes": 2667,
+      "sha256": "cf53ad752c6319ff8c1f68b6873f66ecaef6ec77878993f886aa9cb87915fb75"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/media-vitest.config.mjs",
+      "bytes": 290,
+      "sha256": "b6b2b11325b6967e5f24770116ae73d3a874cc600d932650f645350c1fab6c1d"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/missing-ratings-final-results.json",
+      "bytes": 2042,
+      "sha256": "63bf9d37ef7384ffaf9091dfc8fb5b1f3566c8ed8d7fecba0cb3355ced4ba9fa"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/missing-ratings-final.log",
+      "bytes": 684,
+      "sha256": "00248d5792421e981b0cf443c743e0e3f2afca34c66f26f7a55e5573c32ad2ea"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/pin-delivery.cjs",
+      "bytes": 4511,
+      "sha256": "6b964e81e2b6c2f99aaa61924a1912abb27ab7213dbcb048a68af2342fb0921b"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/report-peer-review.json",
+      "bytes": 5106,
+      "sha256": "6782ffe002dbb9eefb3ca98477d3ee37c305f0329c7544f65245a073e94242b7"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/run-final-tests.cjs",
+      "bytes": 1988,
+      "sha256": "0419383dddbd6d8cad9826741e2b82fab638fcaed50535fbc7dbb46bbed2552c"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/scoped-diff-check.json",
+      "bytes": 2156,
+      "sha256": "37ae18fddcb3a5cf63fb6e1cb8d25b569e90e67975ca0897948065c2aee6b19a"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-baseline-receipt.json",
+      "bytes": 1113,
+      "sha256": "182498db12b7a482a74e81facc711892950941c81c0e46e96b4216b15eb6453a"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-baseline-results.json",
+      "bytes": 4544,
+      "sha256": "4dd412db59d8488f9782d501dd3ed8c1a25dc9743d6f94cddb5632850e5abbfe"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-baseline.log",
+      "bytes": 3257,
+      "sha256": "95336dba005103b66c1ef3a355346d1c52aab1070fc2a013f92e4298757c2f5e"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-browser-baseline.json",
+      "bytes": 1348,
+      "sha256": "771495b0a6e8bdcddceed9a8705a34fa21223967afa573c22d320c9381f22cce"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-browser-checks.json",
+      "bytes": 1480,
+      "sha256": "b256c6389f8c0ccb5f51beffa7c38c648d87abd303fc0e1ffafb0974f7a76d84"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-browser-qa.cjs",
+      "bytes": 8042,
+      "sha256": "7ba724b469b7b816718dd35d330b15eb09b327c6eae6a485911ef1730d52d6c8"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-final-results.json",
+      "bytes": 28190,
+      "sha256": "29584a2aacef03436f7fcc5fe6d5ced8659bcafd17acdf4d2d044f507841bb01"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-final.log",
+      "bytes": 7482,
+      "sha256": "c77493beba94b40f5656eb12aa9e119ca05328650285b39dba4413618ef76756"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-lifecycle-proof.test.js",
+      "bytes": 3735,
+      "sha256": "4893a3009c1ef966fc0ea5d94f1198a09241fc25e442abe689f797d86c768a84"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/speech-source-receipt.json",
+      "bytes": 1860,
+      "sha256": "30c4f7f4c6762c69b9a0ed03813722c28da3503e19d2a458486d8375c0ec2e96"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/vitest.config.mjs",
+      "bytes": 291,
+      "sha256": "412ca547cfd69de8d6458e174157b0967d3d3dcda33131b82499fc89cd3e5361"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/vitest.da.config.mjs",
+      "bytes": 211,
+      "sha256": "1b086f3988c1f141b6e7a3c58607b83b8e2534ec7d0509ff35863d22a3dcbf38"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/vitest.ioa-dispatch.config.mjs",
+      "bytes": 214,
+      "sha256": "de9632134b621cfc5ff11a4a057c9279b8a9ae54f4c984b63bc895f8aad4d678"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/wrapper-compatibility-results.json",
+      "bytes": 30250,
+      "sha256": "650d7dd4b05c39dc8c5f86b956c44c54d5e7cb4e1efcf1dd5b9f41db1d6337c9"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/wrapper-compatibility-results.log",
+      "bytes": 76987,
+      "sha256": "cdf7eac2b771f54e8ff0e8c5eccf4177c4d3daa33f3229d364db51efc5e9e06d"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/wrapper-compatibility-source-receipt.json",
+      "bytes": 1867,
+      "sha256": "f34e691b18c3c140c51d102397c22fbade3ea33ffe447ff31353f320de24529f"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/wrapper-mirror-final-results.json",
+      "bytes": 2424,
+      "sha256": "df06a2d10d6fb1eebd7aa39baa991279c114058a4e8e5b51ed6ffde24ccdf31c"
+    },
+    {
+      "path": "tmp/clinical-media-20261026/wrapper-mirror-final-results.log",
+      "bytes": 534,
+      "sha256": "e49c83e26fb1c3272f1d4ebf83196add7dac8cfdef9700b28b3397f9f4be44d3"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/policy-baseline-results.json",
+      "bytes": 5624,
+      "sha256": "36cf3574cb3858f69dc308057959b88cf294a2219e141346482a58aaa4f99292"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/policy-baseline.log",
+      "bytes": 3302,
+      "sha256": "75fa29e339f42a467ac68720c8e3334ed3873c7f4b0ed118b30a53ca04b1acf0"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/policy-final-results.json",
+      "bytes": 43664,
+      "sha256": "8a18aefb5a85f63c146b90136785fd139e232d7a715246217ad411104a588d4f"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/policy-final.log",
+      "bytes": 1949,
+      "sha256": "41c0231ad025426f432804f7a580cc5b9ad5aab8d925d244b73fdb19550cbb2d"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/policy-proof-receipt.json",
+      "bytes": 466,
+      "sha256": "c1cb6c2be45bfb556b7b4b1ea814b9d5a85ca18527b0ec795feda81353cfdb99"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/policy-proof.test.js",
+      "bytes": 3423,
+      "sha256": "fd059237fa15cb54dae947ff3ccb8b3d1f689276ff130ca4051a5504cf8185ff"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/policy-source-receipt.json",
+      "bytes": 483,
+      "sha256": "901e5f1dcb6329b0aed5121bde425d614a0f6bed074a6ad3a0da9b809b58ef11"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/sensitive_workspace_module.before.js",
+      "bytes": 80802,
+      "sha256": "3b4d69a3044aea5af47b3d353a32d268c5892e77d67886f7d72f0298c4d873ac"
+    },
+    {
+      "path": "tmp/clinical-integrity-20261026/vitest.config.mjs",
+      "bytes": 285,
+      "sha256": "7ddfaf4ef677e216f4da7561c2393f264b775bfbf4f0074788ecf787b8261a7c"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/baseline-proof.test.js",
+      "bytes": 2726,
+      "sha256": "eea91478da0fcd1ace8efb9a7781a1ac3397a8e138783278c4abc968da70aeed"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/baseline-results.json",
+      "bytes": 6901,
+      "sha256": "358683ffabdea7f7705801dbefebb9a5a3ca59e3dd456480c818752e76533ac6"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/baseline.log",
+      "bytes": 2847,
+      "sha256": "d591126c638b48683da885b7e6ea67581a0b83ffb893b7b4e73bf050d0a61845"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/behavior_lens_module.before.js",
+      "bytes": 2645916,
+      "sha256": "f3530bbf7720998125c739fbff8443b422d5a8fab5c09dd800c3e11973421dc7"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/browser-baseline.json",
+      "bytes": 1154,
+      "sha256": "40e75486cd74d3e9ff91f5bf2eaac027341f071ae837c40864bdb9ab26d551e4"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/browser-checks.json",
+      "bytes": 1133,
+      "sha256": "86580d5bae2c36fdc58117fb7992926cb704face4f0b6ee8f88ec2c214638838"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/browser-qa.cjs",
+      "bytes": 5359,
+      "sha256": "b4149a79a756829cbac7a5bb359210cf18568a2c39c89412dfcd44765fd067f2"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/initial-results.json",
+      "bytes": 7023,
+      "sha256": "d90cce70f35ee21723266e4a412ecdc4089e62d024b07a74fc26e2e92839e3e8"
+    },
+    {
+      "path": "tmp/clinical-download-20261026/initial.log",
+      "bytes": 3754,
+      "sha256": "005d5c0a83d647dd1694f58e8f6fce8fe20a7b76531860bab0cef406ddd10606"
+    }
+  ],
+  "limitations": [
+    "Synthetic local checks only; no real student records/recordings, microphone capture, audible playback, provider request, browser model install, account change, commit, push, release build or deployment. The media preview check plays a muted generated silent WAV.",
+    "Speech engines and provider dispatch are simulated. Native Edge checks exercise actual components, encrypted service, WebCrypto, DOM and Blob URLs where stated; they do not certify installed recognition accuracy or offline processing on a managed device.",
+    "Local processing relies on browser speech API contracts; BehaviorLens dictation currently requests en-US only. Missing support leaves typed input available.",
+    "Browser synthesis cancellation is global while this adapter owns an utterance and may also stop another concurrently queued browser utterance.",
+    "Client lifecycle/configuration controls do not establish staff identity, secure memory erasure, or protection against arbitrary same-origin JavaScript.",
+    "Already dispatched provider requests, completed downloads and other delivered copies cannot be recalled; external retention/deletion remain separate.",
+    "Existing embedded/canonical host-policy differences remain assigned to separate release reconciliation. No whole-repository or deployed-Canvas certification is claimed.",
+    "Canvas real-record and clinical external-AI defaults remain disabled pending verified release, actual deployment validation and district approval."
+  ]
+}

@@ -1,0 +1,45 @@
+# Stored-data boundary security follow-up
+
+October 26, 2026. Target: Gemini Canvas and the proposed Portland Public Schools, Maine deployment. This pass follows the [district audit](../2026-10-24-school-district/report.md) and earlier protected-records work. Dependency/CI and loader/runtime-release work remain with the existing security workstreams. These are local source fixes; no production access, student records, service configuration or deployment was involved.
+
+## Confirmed storage-approval disclosure and modification
+
+The bridge accepted any stored version-1 approval without matching its recorded requesting origin or connection type. A native Edge reproduction first approved a synthetic legitimate popup and saved a test record. A second unrelated origin opened the same bridge, received automatic authorization, read the record and changed it without another approval click. This establishes an authorization defect in the tested source, not evidence of an actual classroom incident. Baseline source and boolean-only evidence are retained under `tmp/storage-boundaries-20261026/`.
+
+The earlier source comment treated browser storage partitioning as client authorization. A partition can contain more than one client, and a top-level popup uses a different storage context from an embedded iframe. Browser partitioning must not replace an origin-specific grant. [Chrome storage partitioning documentation](https://github.com/GoogleChrome/developer.chrome.com/blob/main/site/en/docs/privacy-sandbox/storage-partitioning/index.md).
+
+The fixed bridge accepts a remembered version-2 grant only for the exact observed concrete origin and actual connection type. It ignores legacy version-1 grants without deleting saved work. Opaque origins cannot create or reuse a remembered grant: the literal `null` does not identify Gemini or a particular app. A new opaque connection requires fresh approval. Same-origin pages retain their existing access; approving one origin does not distinguish between applications served by that same origin.
+
+An embedded page can position its iframe, so clicking inside that frame now only opens a separate approval window. That window verifies its opener, exact bridge origin and a fresh random challenge. It shows the requesting origin and returns only an approval decision. It exits before any storage/review path and never opens the record database. The original iframe accepts a decision only from that exact window with the matching challenge and pending request. The data remains in the original iframe's storage partition, preserving existing Canvas work.
+
+Denial, an observed origin change, window closure and expiry invalidate pending approval attempts. Asynchronous grant reads/writes and late operation replies check the current connection state. The adapter's bridge cache version is updated. Root/public bridge and adapter copies match. A blocked approval popup leaves access blocked and offers a retry; it does not move the app to a different empty storage bucket.
+
+There is one remembered grant per storage bucket. “Forget approval” removes the grant in the partition opened by that review page and affects future connections. It does not revoke already-authorized sessions or erase records. Opening the bridge directly does not inspect or erase every Canvas partition. The UI and adapter comments now state these limits.
+
+## Confirmed clinical-record overwrite race
+
+Protected-workspace hydration decrypted one saved version, then separately read newer record timestamps. A second window saving between those reads could pair stale plaintext with the newer write stamps. A subsequent edit then overwrote the other window's newer data without a conflict. The reproduction used two services and real encryption with synthetic records.
+
+Hydration now checks the repository revision and complete encrypted store before and after plaintext/status reads. It publishes decrypted maps and their write stamps only when both reads match. A change clears the usable key, reconciles the durable state and reports a conflict so the user can reopen the latest records. Error paths also reconcile a concurrent deletion marker; an unchanged corrupted encrypted payload retains its original error and bytes. Setup migration, backup verification and recovery requirements remain in place.
+
+## Verification and delivery
+
+Final combined validation passed **148 tests across 11 files**, with no failures or skips. **21 native Edge checks** passed, followed by four focused approval-window checks covering blocked access before review, a 375-pixel layout without horizontal overflow, keyboard access to Deny and denial leaving access blocked. The initialized desktop and narrow approval screenshots were inspected. Six module/host integrity checks and all three complete-host parses also passed.
+
+The 21-check browser runner exited successfully. The optional visual helper wrote its four passing assertions and screenshots but stalled during browser shutdown; it was stopped after those results were captured. Its assertions are recorded separately, without claiming a clean helper exit.
+
+The [validation record](storage-boundaries-validation.json) records final source hashes, regression results, native-browser outcomes and delivery checks. The browser harness uses isolated synthetic HTTPS origins, a native opaque data-document origin, native IndexedDB and production WebCrypto/vault code. HTTP navigations are fulfilled locally and all other requests are blocked. It is not an authenticated Gemini Canvas or PPS session.
+
+Native tests exercise legacy-grant replay refusal, exact-origin grant reuse, unrelated-origin and channel refusal, approval-only windows, opaque connections, preserved iframe storage and two actual pages sharing an encrypted clinical store. Earlier browser harness attempts exposed fixture limitations: inherited sandbox flags made the nested storage document opaque, and the replacement data-document fixture lacked `crypto.randomUUID`. The final fixture uses `getRandomValues`, as the adapter does, and asserts that the browser actually reports an opaque origin. A cold-start visual fixture also waited in the wrong parent frame; it was corrected to locate the nested storage frame before the successful four-check run. These unsuccessful attempts are not counted as passing application tests.
+
+Only the two changed JavaScript asset approvals and their loader cache strings were updated in the three host copies. Every other asset record and embedded policy source was preserved, with reversible edit checks and complete-host parsing. At the start of this pass, the canonical delivery-policy checker already reported source mismatches in `AlloFlowANTI.txt` and its Desktop source mirror; the generated `App.jsx` matched. This pass preserves and records that separate release discrepancy rather than regenerating unrelated policy code. The actual embedded policies accept the two newly reviewed module hashes. The bridge HTML is served through the existing HTTPS page path and is not protected by script-element SRI.
+
+Before release, coordinate the current source work, reconcile the existing host-policy discrepancy, rebuild affected generated/packaged artifacts, and verify matching deployed bridge, adapter and protected-workspace bytes. Old open bridge pages and old deployed artifacts retain their earlier behavior until replaced; local validation is not a deployment receipt.
+
+## Remaining boundaries for the district review
+
+At the time of this pass, source-window, origin and nonce checks remained the `ds1` transport boundary. Opaque clients required a wildcard reply target, and an opaque document's navigation could retain its WindowProxy. The subsequent [document-channel follow-up](storage-document-channel-followup.md) reproduces and closes that separate lifetime issue with `ds2` MessagePorts. This report and its validation record preserve the earlier tested state. [MDN postMessage security and navigation guidance](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage).
+
+An approved bridge client can read and update the namespaces available through its protocol. This grant is not a per-student role, verified staff sign-in or encryption boundary. The protected clinical store remains separately encrypted, and its Canvas real-record mode and external AI remain disabled unless explicitly configured. Ordinary recovery/preferences and other feature stores have their separately documented contents and protections. No real student records should be used to validate these fixes.
+
+Actual Canvas sandbox/popup policy, storage persistence across sessions, deployed release, effective district identity controls, provider agreements and PPS feature approval still require deployment-specific evidence. The [data-flow inventory](../2026-10-24-school-district/data-flow-inventory.md) and earlier retention/deletion follow-up remain the record of separate copies, schedules, holds and deletion responsibilities.

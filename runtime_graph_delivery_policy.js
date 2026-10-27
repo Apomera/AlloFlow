@@ -144,25 +144,56 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
   var fetchSelected = async function (expected) {
     if (typeof nativeFetch !== 'function') throw failure('verified fetch unavailable');
     var controller = typeof env.AbortController === 'function' ? new env.AbortController() : null;
-    var timer = schedule ? schedule(function () { if (controller) controller.abort(); }, 60000) : null;
-    var reader;
-    try {
-      var response = await nativeFetch(expected.url, { credentials: 'omit', mode: 'cors', cache: 'no-store', signal: controller && controller.signal });
+    var timer = null, response, reader, closed = false, aborted = false, cancelled, released;
+    var releaseReader = function () {
+      if (reader && released !== reader && typeof reader.releaseLock === 'function') {
+        try { reader.releaseLock(); released = reader; } catch (_) {}
+      }
+    };
+    var stopTransport = function () {
+      if (controller && !aborted) { aborted = true; try { controller.abort(); } catch (_) {} }
+      var body = reader || response && response.body;
+      if (body && cancelled !== body && typeof body.cancel === 'function') {
+        cancelled = body;
+        // Cleanup must not let a rejected response hold the runtime open. In
+        // particular, a stream's underlying cancellation may never settle.
+        try { Promise.resolve(body.cancel()).catch(function () {}); } catch (_) {}
+      }
+      releaseReader();
+    };
+    var timeoutFailure = function () { var error = failure('executable fetch timed out'); error.runtimeTimeout = true; return error; };
+    var assertActive = function () { if (closed) throw timeoutFailure(); };
+    var deadline = typeof schedule === 'function' ? new Promise(function (_, reject) {
+      timer = schedule(function () {
+        closed = true; stopTransport(); reject(timeoutFailure());
+      }, 60000);
+    }) : null;
+    var operation = (async function () {
+      assertActive();
+      response = await nativeFetch(expected.url, { credentials: 'omit', mode: 'cors', cache: 'no-store', signal: controller && controller.signal });
+      if (closed) { stopTransport(); assertActive(); }
       if (!response || response.status !== 200 || !response.body || !response.body.getReader) throw failure('executable response unavailable');
       reader = response.body.getReader();
       var bytes = new Uint8Array(expected.bytes), offset = 0;
       for (;;) {
-        var chunk = await reader.read(); if (chunk.done) break;
+        var chunk = await reader.read(); assertActive(); if (chunk.done) break;
         if (offset + chunk.value.byteLength > expected.bytes) throw failure('executable exceeds approved bound');
         bytes.set(chunk.value, offset); offset += chunk.value.byteLength;
       }
       if (offset !== expected.bytes) throw failure('executable length differs');
-      return await verify(bytes, expected);
+      var verified = await verify(bytes, expected);
+      assertActive(); return verified;
+    })();
+    try {
+      return await (deadline ? Promise.race([operation, deadline]) : operation);
     } catch (error) {
-      if (reader) try { await reader.cancel(); } catch (_) {}
+      closed = true; stopTransport();
       if (error && error.code === 'ALLO_RUNTIME_INTEGRITY') throw error;
       throw failure('executable fetch failed: ' + (error && error.message || 'network error'));
-    } finally { if (timer && cancel) cancel(timer); }
+    } finally {
+      if (timer !== null && typeof cancel === 'function') cancel(timer);
+      releaseReader();
+    }
   };
   // This function's source is embedded into an already-verified module/worker.
   // It maps executable operations to this session's immutable Blob URLs. Model
@@ -233,7 +264,7 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
     if (sessions.has(name)) return sessions.get(name);
     var promise = (async function () {
       var graph = graphs[name], bytePromises = new Map(), urls = Object.create(null), made = [], modules = new Map(), disposed = false;
-      var disposalRequested = false, leases = 0;
+      var disposalRequested = false, leases = 0, loadPromise = null;
       var bytesFor = function (id, chain) {
         if ((chain || []).includes(id)) return Promise.reject(failure('cyclic asset composition'));
         if (bytePromises.has(id)) return bytePromises.get(id);
@@ -258,7 +289,7 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
               last = error;
               // A response that differs from its approved bytes is not a reason
               // to silently choose an unsigned or legacy executable.
-              if (/digest differs|length differs|approved bound/.test(error.message || '')) throw error;
+              if (error.runtimeTimeout === true || /digest differs|length differs|approved bound/.test(error.message || '')) throw error;
             }
           }
           throw last || failure('no approved runtime source available');
@@ -269,7 +300,7 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
         if (!disposalRequested || leases > 0) return;
         if (disposed) return; disposed = true;
         made.forEach(function (url) { try { URLApi.revokeObjectURL(url); } catch (_) {} });
-        bytePromises.clear(); modules.clear(); if (sessions.get(name) === promise) sessions.delete(name);
+        bytePromises.clear(); modules.clear(); loadPromise = null; if (sessions.get(name) === promise) sessions.delete(name);
       };
       var dispose = function () {
         disposalRequested = true;
@@ -318,20 +349,39 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
         bytePromises.clear(); verifiedBytes = null;
         var importAsset = async function (id) {
           if (disposed || disposalRequested || !graph.assets.includes(id) || assets[id].kind !== 'module') throw failure('module not in selected verified graph');
-          if (!modules.has(id)) modules.set(id, Promise.resolve().then(function () { return env.importModule(urls[id]); }));
+          if (!modules.has(id)) {
+            var release = retain();
+            var pending = Promise.resolve().then(function () {
+              if (disposed || disposalRequested) throw failure('runtime session is closing');
+              return env.importModule(urls[id]);
+            }).then(function (namespace) {
+              if (disposed || disposalRequested) throw failure('runtime session is closing');
+              return namespace;
+            }).finally(release);
+            modules.set(id, pending);
+          }
           return modules.get(id);
         };
         var session = Object.freeze({
           assets: bindings(),
           import: importAsset,
-          load: async function () {
-            if (!graph.entry) throw failure('graph has no module entry');
-            var namespace = await importAsset(graph.entry);
-            if (graph.configureExport) {
-              if (typeof namespace[graph.configureExport] !== 'function') throw failure('runtime configuration export missing');
-              await namespace[graph.configureExport](bindings());
+          load: function () {
+            if (disposed || disposalRequested) return Promise.reject(failure('runtime session is closing'));
+            if (!graph.entry) return Promise.reject(failure('graph has no module entry'));
+            if (!loadPromise) {
+              var release = retain();
+              loadPromise = (async function () {
+                var namespace = await importAsset(graph.entry);
+                if (disposed || disposalRequested) throw failure('runtime session is closing');
+                if (graph.configureExport) {
+                  if (typeof namespace[graph.configureExport] !== 'function') throw failure('runtime configuration export missing');
+                  await namespace[graph.configureExport](bindings());
+                }
+                if (disposed || disposalRequested) throw failure('runtime session is closing');
+                return namespace;
+              })().finally(release);
             }
-            return namespace;
+            return loadPromise;
           },
           asset: function (key) {
             var id = graph.bindings[key] || key;

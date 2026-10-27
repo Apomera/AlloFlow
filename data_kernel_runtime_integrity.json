@@ -3,9 +3,9 @@
   "assets": {
     "duckdb.module": {
       "kind": "module",
-      "path": "duckdb-assets/duckdb-browser.mjs",
-      "bytes": 227413,
-      "sha384": "509d389b8b9b15ec67f42071c157902115846890f5b049de48207974f63a99f94b9fa94448ff93c32b40fcb9c90898ef",
+      "path": "runtime_assets/data-kernel/duckdb.closed.ca0eb68da49aad8f4bec27d7.mjs",
+      "bytes": 227439,
+      "sha384": "ca0eb68da49aad8f4bec27d7d9c4b024e7acbfa7937cbabc3a5f33dbed494a1822a93d34f4f509fcc6e99785d167f0df",
       "mirrors": [],
       "closed": true
     },

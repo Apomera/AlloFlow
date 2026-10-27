@@ -200,6 +200,7 @@ function writeSha256Sums(bundlePath) {
 
 function stageBundle(stagingDir) {
   const dest = path.resolve(stagingDir || STAGING);
+  const documentRuntime = require('./remediation_headless_driver.cjs').readDocumentRuntime(REPO_ROOT);
   // Preflight: every input must exist before we stage anything.
   const missing = []
     .concat(SERVER_FILES.filter((f) => !fs.existsSync(path.join(MCP_DIR, f))))
@@ -224,6 +225,12 @@ function stageBundle(stagingDir) {
   materializeAndVerifyVendorBundle(path.join(dest, 'server', 'vendor'));
   for (const f of ASSET_FILES) copyRecursive(path.join(REPO_ROOT, f), path.join(dest, 'assets', f));
   for (const d of ASSET_DIRS) copyRecursive(path.join(REPO_ROOT, d), path.join(dest, 'assets', d));
+  for (const f of documentRuntime.sourceFiles) {
+    const target = path.join(dest, 'assets', f);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(REPO_ROOT, f), target);
+  }
+  require('./remediation_headless_driver.cjs').readDocumentRuntime(path.join(dest, 'assets'));
   for (const d of SKILL_DIRS) copyRecursive(path.join(REPO_ROOT, 'agent_skills', d), path.join(dest, 'skills', d));
   copyRecursive(path.join(MCP_DIR, 'PRIVACY.md'), path.join(dest, 'PRIVACY.md'));
   copyRecursive(path.join(REPO_ROOT, 'LICENSE'), path.join(dest, 'LICENSE'));
@@ -299,6 +306,9 @@ function getBundleSourceFiles({ includeRuntime = true } = {}) {
   const files = {};
   for (const file of SERVER_FILES) files['server/' + file] = path.join(MCP_DIR, file);
   for (const file of ASSET_FILES) files['assets/' + file.replace(/\\/g, '/')] = path.join(REPO_ROOT, file);
+  for (const file of require('./remediation_headless_driver.cjs').readDocumentRuntime(REPO_ROOT).sourceFiles) {
+    files['assets/' + file] = path.join(REPO_ROOT, file);
+  }
   if (includeRuntime) {
     for (const file of ['index.cjs', 'package.json', 'README.md']) {
       const source = path.join(MCP_DIR, 'runtime', 'disabled-extract-zip', file);

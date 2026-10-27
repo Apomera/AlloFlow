@@ -10,7 +10,8 @@ const { chromium } = require('playwright');
 const { assertClosedCode } = require('../build_browser_runtime_graphs.cjs');
 const root = path.resolve(__dirname, '../..');
 const runtimePolicySource = fs.readFileSync(path.resolve(__dirname, '../../runtime_graph_delivery_policy.js'), 'utf8');
-const reportDirectory = path.join(root, 'tmp/private-loader-security-20261024/runtime-staging');
+const reportDirectory = path.resolve(root, process.env.ALLO_ENGINE_RUNTIME_REPORT_DIR || 'tmp/private-loader-security-20261024/runtime-staging');
+assert(reportDirectory.startsWith(root + path.sep), 'report stays inside the selected checkout');
 const metadata = JSON.parse(fs.readFileSync(path.join(root, 'engine_runtime_integrity.json'), 'utf8'));
 const records = [];
 let browser, server, origin;
@@ -71,7 +72,7 @@ before(async () => {
   const executablePath = [process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, chromium.executablePath(),
     'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
     'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(file => file && fs.existsSync(file));
-  browser = await chromium.launch(executablePath ? { executablePath } : {});
+  browser = await chromium.launch({ chromiumSandbox: true, ...(executablePath ? { executablePath } : {}) });
 }, { timeout: 60000 });
 
 after(async () => {

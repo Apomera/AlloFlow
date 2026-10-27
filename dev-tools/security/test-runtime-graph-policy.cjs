@@ -52,11 +52,12 @@ before(async () => {
   const executablePath = [process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, chromium.executablePath(),
     'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
     'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(file => file && fs.existsSync(file));
-  browser = await chromium.launch(executablePath ? { executablePath } : {});
+  browser = await chromium.launch({ chromiumSandbox: true, ...(executablePath ? { executablePath } : {}) });
 }, { timeout: 60000 });
 
 after(async () => {
-  const report = path.join(root, 'tmp/private-loader-security-20261024/runtime-graph-policy-native.json');
+  const report = path.resolve(root, process.env.ALLO_RUNTIME_GRAPH_REPORT || 'tmp/private-loader-security-20261024/runtime-graph-policy-native.json');
+  assert(report.startsWith(root + path.sep), 'report stays inside the selected checkout');
   fs.mkdirSync(path.dirname(report), { recursive: true });
   fs.writeFileSync(report, JSON.stringify({ checkedAt: new Date().toISOString(),
     method: 'Actual runtime_graph_delivery_policy.js, real Chromium with sandbox enabled, original synthetic JS/WASM/parts only; loopback fixture and denied external sentinels.',

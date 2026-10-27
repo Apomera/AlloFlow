@@ -1,0 +1,410 @@
+{
+  "checkedAt": "2026-10-26T11:11:33.922Z",
+  "scope": "Protected clinical restore destination, detached backup input, early shape validation and failed-import reconciliation",
+  "tests": {
+    "passed": 110,
+    "failed": 0,
+    "pending": 0,
+    "files": 11,
+    "testFiles": [
+      "tests/allo_device_vault.test.js",
+      "tests/allo_device_vault_recovery.test.js",
+      "tests/allo_recovery_vault_integration.test.js",
+      "tests/sensitive_workspace.test.js",
+      "tests/sensitive_workspace_backup_boundaries.test.js",
+      "tests/sensitive_workspace_deletion.test.js",
+      "tests/sensitive_workspace_deletion_races.test.js",
+      "tests/sensitive_workspace_hydration_races.test.js",
+      "tests/sensitive_workspace_migration.test.js",
+      "tests/sensitive_workspace_races.test.js",
+      "tests/sensitive_workspace_restore_target_races.test.js"
+    ],
+    "command": "node node_modules/vitest/vitest.mjs run tests/allo_device_vault.test.js tests/allo_device_vault_recovery.test.js tests/allo_recovery_vault_integration.test.js tests/sensitive_workspace.test.js tests/sensitive_workspace_backup_boundaries.test.js tests/sensitive_workspace_deletion.test.js tests/sensitive_workspace_deletion_races.test.js tests/sensitive_workspace_hydration_races.test.js tests/sensitive_workspace_migration.test.js tests/sensitive_workspace_races.test.js tests/sensitive_workspace_restore_target_races.test.js --maxWorkers=1 --testTimeout=30000 --hookTimeout=120000 --reporter=default --reporter=json --outputFile.json=tmp/clinical-restore-20261026/final-test-results.json"
+  },
+  "baseline": {
+    "browser": {
+      "checkedAt": "2026-10-26T10:54:24.757Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "nativeIndexedDB": true,
+      "nativeWebCrypto": true,
+      "cryptoFixture": "Minimum accepted PBKDF2 work factor for bounded testing; production default unchanged",
+      "network": "Navigation fulfilled locally; all other page requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "allo_device_storage_module.js": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae",
+        "allo_recovery_vault_integration_module.js": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+        "sensitive_workspace_module.js": "219e89d87af17611d495a70d149aed2e3cc03c0fad4011153967e96cca1e16a3"
+      },
+      "checks": {
+        "baselineRestoreReplacedLaterDeletion": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": [],
+      "processExitCode": 0
+    },
+    "target": 1,
+    "backupBoundaries": {
+      "capturedAt": "2026-10-26T10:54:41.897Z",
+      "testPath": "tests/sensitive_workspace_backup_boundaries.test.js",
+      "testSha256": "f38d3df484f6df03d77bc8cc91d1a5a71154a9cae76658515206c8a7fa9ffeea",
+      "sources": [
+        {
+          "path": "sensitive_workspace_module.js",
+          "sha256": "219e89d87af17611d495a70d149aed2e3cc03c0fad4011153967e96cca1e16a3"
+        },
+        {
+          "path": "allo_device_vault_module.js",
+          "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+        },
+        {
+          "path": "allo_crypto_module.js",
+          "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359"
+        }
+      ],
+      "passed": 5,
+      "failed": 7,
+      "failingTitles": [
+        "rejects unknown record identifier before deriving keys, decrypting, or writing",
+        "rejects prototype record identifier before deriving keys, decrypting, or writing",
+        "rejects constructor record identifier before deriving keys, decrypting, or writing",
+        "rejects missing setup record before deriving keys, decrypting, or writing",
+        "rejects empty record list before deriving keys, decrypting, or writing",
+        "detaches the selected backup before the first repository await",
+        "imports the same detached backup that verification authenticated despite caller mutation"
+      ],
+      "notes": [
+        "All fixtures use actual AlloCrypto with minimum supported PBKDF2 iterations and synthetic data.",
+        "Baseline mutating the original input during verification publishes an unexpected-record vault before the later clinical decode rejects.",
+        "Duplicate and non-array record rejection already worked in the shared vault; tests accept either clinical or vault invalid-format error codes."
+      ]
+    },
+    "lostAcknowledgement": "ack-before.log records two state-reconciliation failures before the catch was expanded."
+  },
+  "browser": {
+    "checkedAt": "2026-10-26T11:10:19.943Z",
+    "baseline": false,
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "nativeIndexedDB": true,
+    "nativeWebCrypto": true,
+    "cryptoFixture": "Minimum accepted PBKDF2 work factor for bounded testing; production default unchanged",
+    "network": "Navigation fulfilled locally; all other page requests blocked",
+    "sourceHashes": {
+      "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+      "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+      "allo_device_storage_module.js": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae",
+      "allo_recovery_vault_integration_module.js": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+      "sensitive_workspace_module.js": "0b6b57320a93b34e6cf4601edfe2d610e3cfb034488acc238d8bb220f793f0b0"
+    },
+    "checks": {
+      "laterDeletionBlocksEarlierRestore": true,
+      "deletionMarkerAndRevisionRemainExact": true,
+      "rejectedRestoreHasNoUsableSession": true,
+      "freshRestoreAfterDeletionStillWorks": true,
+      "inputMutationCannotReplaceVerifiedRecords": true,
+      "unrelatedBackupRejectedBeforeCryptography": true,
+      "invalidBackupLeavesDestinationAbsent": true,
+      "lostAcknowledgementReconcilesToLocked": true,
+      "acknowledgementFailurePreservesRestoredData": true,
+      "unresolvedImportStaysUnavailableWithoutRetry": true,
+      "storageRecheckFindsSavedVaultWithoutAnotherWrite": true,
+      "postCommitReadFailureStaysUnavailable": true,
+      "postCommitReadFailureCanRecheck": true,
+      "noBrowserRuntimeErrors": true
+    },
+    "errors": [],
+    "passed": 14,
+    "processExitCode": 0
+  },
+  "delivery": {
+    "checkedAt": "2026-10-26T11:10:26.279Z",
+    "reviewed": {
+      "sensitive_workspace_module.js": {
+        "bytes": 75078,
+        "sha256": "0b6b57320a93b34e6cf4601edfe2d610e3cfb034488acc238d8bb220f793f0b0",
+        "integrity": "sha384-VMY9/hqGy1oYo39mvLercHEyjru5wyvOCO2a03/QfqInBJNWGdsUm08IDGCvq2is"
+      }
+    },
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "beforeSha256": "bb4d5803b3e25a67321435a33b2f4a6e5e0a2d35dc0335e2e1adb0ae75056b8d",
+        "afterSha256": "767929b5230d40bf1ad472063df3b04f683c9b2d4003714ca1f74f20d94e301c",
+        "manifestId": "92d66bf5c7f78e39e2116809e8fbc1b53af344254c98ed90c8069f7b4703c8b0",
+        "previousManifestId": "e3c862f9fa619e9388f4aa075fde56125755fa853e15fbfe4945084f6010ac42",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=24e0f1cb9975",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=0b6b57320a93"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "beforeSha256": "db516349098b040c46aea3d6e6cfed963ced4074b245a2dda05bdd8f3ccf56af",
+        "afterSha256": "bb9c5ec94d02c0189447eb90f3395492110017beaf1f613cd4dc9b2052692c10",
+        "manifestId": "92d66bf5c7f78e39e2116809e8fbc1b53af344254c98ed90c8069f7b4703c8b0",
+        "previousManifestId": "e3c862f9fa619e9388f4aa075fde56125755fa853e15fbfe4945084f6010ac42",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=24e0f1cb9975",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=0b6b57320a93"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "beforeSha256": "16dda917948b3e1c16c7fcc96c95f4a61b7c210a578cbf2db32013421d6dec21",
+        "afterSha256": "9632852fc8d3162edc5b25677a66295f5d8110f76eef1cda8da8b5529fa3f3d3",
+        "manifestId": "92d66bf5c7f78e39e2116809e8fbc1b53af344254c98ed90c8069f7b4703c8b0",
+        "previousManifestId": "e3c862f9fa619e9388f4aa075fde56125755fa853e15fbfe4945084f6010ac42",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=24e0f1cb9975",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=0b6b57320a93"
+          }
+        ]
+      }
+    ],
+    "scope": "Only the selected protected-workspace approval and its loader cache string; no broad policy regeneration, build or release."
+  },
+  "validation": {
+    "sourcePublicMirror": true,
+    "sourceParses": true,
+    "sharedCryptoAndVaultUnchanged": true,
+    "scopedDiffCheck": true
+  },
+  "files": [
+    {
+      "path": "sensitive_workspace_module.js",
+      "bytes": 75078,
+      "sha256": "0b6b57320a93b34e6cf4601edfe2d610e3cfb034488acc238d8bb220f793f0b0"
+    },
+    {
+      "path": "desktop/web-app/public/sensitive_workspace_module.js",
+      "bytes": 75078,
+      "sha256": "0b6b57320a93b34e6cf4601edfe2d610e3cfb034488acc238d8bb220f793f0b0"
+    },
+    {
+      "path": "allo_crypto_module.js",
+      "bytes": 22716,
+      "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359"
+    },
+    {
+      "path": "allo_device_vault_module.js",
+      "bytes": 43286,
+      "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+    },
+    {
+      "path": "allo_device_storage_module.js",
+      "bytes": 71987,
+      "sha256": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae"
+    },
+    {
+      "path": "allo_recovery_vault_integration_module.js",
+      "bytes": 3818,
+      "sha256": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c"
+    },
+    {
+      "path": "tests/allo_device_vault.test.js",
+      "bytes": 10166,
+      "sha256": "371333e1bca94b5fa243593a0440a5f3a7e2c3b3170dc75e6496a99714ca2769"
+    },
+    {
+      "path": "tests/allo_device_vault_recovery.test.js",
+      "bytes": 6300,
+      "sha256": "77cb482bbab593338e09f19013aa997262420776e533dc95dcd09ed5f3ec4a32"
+    },
+    {
+      "path": "tests/allo_recovery_vault_integration.test.js",
+      "bytes": 2473,
+      "sha256": "17f4eed59d0c309a43924e8898f8a9c3f1a3048eb2e2ac96c00b4ca3ffb2cbe9"
+    },
+    {
+      "path": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "path": "tests/sensitive_workspace_backup_boundaries.test.js",
+      "bytes": 7789,
+      "sha256": "f38d3df484f6df03d77bc8cc91d1a5a71154a9cae76658515206c8a7fa9ffeea"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion.test.js",
+      "bytes": 27395,
+      "sha256": "295f07a1c99c8eaefbb5d9c638c2b420618b1e3a64596a227f2966daad59090e"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion_races.test.js",
+      "bytes": 4986,
+      "sha256": "a312f906bf98bcf60a4463c7686cfad8ad308b2de78603536ca9c9eba2fe9200"
+    },
+    {
+      "path": "tests/sensitive_workspace_hydration_races.test.js",
+      "bytes": 9013,
+      "sha256": "f991a99763c4c2a6452969aa5934de1cb9a91953aab8561bb23b856355e445ab"
+    },
+    {
+      "path": "tests/sensitive_workspace_migration.test.js",
+      "bytes": 10022,
+      "sha256": "80b1103d1cdff65d4971dc8d05021f64314e7b96d88596ecf8be8361056a3153"
+    },
+    {
+      "path": "tests/sensitive_workspace_races.test.js",
+      "bytes": 8734,
+      "sha256": "b2ed1b4b5286be11f9b87a6f33b6dcc19d955d336f0f9599adca6ed6b3890cb8"
+    },
+    {
+      "path": "tests/sensitive_workspace_restore_target_races.test.js",
+      "bytes": 12017,
+      "sha256": "70336b93c28d4189ce75f4c389e03da223396dccf6246d6169b9b3f6276d37a9"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3141891,
+      "sha256": "767929b5230d40bf1ad472063df3b04f683c9b2d4003714ca1f74f20d94e301c"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3141547,
+      "sha256": "bb9c5ec94d02c0189447eb90f3395492110017beaf1f613cd4dc9b2052692c10"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3141218,
+      "sha256": "9632852fc8d3162edc5b25677a66295f5d8110f76eef1cda8da8b5529fa3f3d3"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-restore-followup.md",
+      "bytes": 6060,
+      "sha256": "3dc39dfc061eb84bfff6c341585ae1209e6be9a364796b7c3fac4b8dbc44e410"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 18887,
+      "sha256": "8f36c2f7b7dcade372690bce8e195dcd34f8fe8f15f27a845bce5adc8ce5f62a"
+    },
+    {
+      "path": "docs/audits/2026-10-24-school-district/report.md",
+      "bytes": 39382,
+      "sha256": "b49de40a822b0a77852b949082c824a2f46fad8970d4e15526870f32161a441b"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/sensitive_workspace_module.before.js",
+      "bytes": 71302,
+      "sha256": "219e89d87af17611d495a70d149aed2e3cc03c0fad4011153967e96cca1e16a3"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/browser-qa.cjs",
+      "bytes": 10846,
+      "sha256": "45376bd3d646328467bb2867d46e1355f787e78e286858ca9a588750c1e5ace9"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/browser-baseline.json",
+      "bytes": 1033,
+      "sha256": "3fd74151f3d48ac57a7506f19844790b7f3500d61bbe4507cc9681f24be44e88"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/browser-checks.json",
+      "bytes": 1661,
+      "sha256": "77d754013e759f029c48b70664d971384ee4e84479d555c39e66d3626502bc80"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/final-test-results.json",
+      "bytes": 44729,
+      "sha256": "3bc1f84332f323e3b3690720a3e2b3e087f1b472d4f69d8f1399c8d2cb5484a9"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/final-tests.log",
+      "bytes": 3215,
+      "sha256": "60e87ac5da54712b376d466263826179f0f61ab751becbcb9f841a65b68bc20a"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/pin-delivery.cjs",
+      "bytes": 4517,
+      "sha256": "1f0da2f65a3dd8111ba1f75d531283d85bd9f1b33a15823f8cae5d6a3a7a0e31"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/delivery-validation.json",
+      "bytes": 3140,
+      "sha256": "00ef4182a2457baac9a5a2c7eb13147e882a5fe45bc8cc48947cedddde018e1e"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/target-baseline-results.json",
+      "bytes": 1774,
+      "sha256": "a6ae6069114697a11dd7d25796e606fbff8e639c83429083d73ca17ac095d15b"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/target-baseline.log",
+      "bytes": 1935,
+      "sha256": "9e2045789a7de9cad6dd48eb6b53d967aef2eeee9be924f79761d7ef05fb2816"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/target-expanded-before.json",
+      "bytes": 3728,
+      "sha256": "6f0bef98da2666befc8d74fd2e007c7bb71f9bafb7564de040add8faaa20b735"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/ack-before.log",
+      "bytes": 2382,
+      "sha256": "8ebfc91fd1c9d1bb78c1f55e747f97cdbddfee5e8b37ec945970432354b70beb"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/postcommit-hydration-before.json",
+      "bytes": 5258,
+      "sha256": "dc5eb44aca1d5c3678bc57565a65b175469138f8e7a32fd70b7b6d8011a954ca"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/postcommit-hydration-before.log",
+      "bytes": 3735,
+      "sha256": "6474df5cd95cee28768bab4a3d72ec00644802269989bbc3c8293f50ac4d1eed"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/backup-boundaries-proof.json",
+      "bytes": 1695,
+      "sha256": "378e80bdf1d1f2cd4d0d005b9b8ea0b6c19951000b3c5e4b756f59cc676509d2"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/backup-boundaries-initial-results.json",
+      "bytes": 10133,
+      "sha256": "8e98e7b4f9fe31739acdeb42c50b48d8842067d17083310260ab37bec0b5b4bc"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/backup-boundaries-initial.log",
+      "bytes": 8217,
+      "sha256": "10e005b7fd21f0b86f8f09a99bba01facb5d11534fd9792e76d854d617671b2a"
+    },
+    {
+      "path": "tmp/clinical-restore-20261026/record-agent-postcommit-evidence.json",
+      "bytes": 880,
+      "sha256": "3634828c37048b63c0d5f591a056c53b22c2b43e90cfa782088b98a3562967da"
+    }
+  ],
+  "limitations": [
+    "Local source and synthetic validation only; no real student records, Canvas/PPS session, commit, push, deploy or production purge.",
+    "Independent retained backups can still be restored by a holder of the secret; connected-store deletion does not erase other copies.",
+    "A failed acknowledgement does not prove rollback; unresolved state requires a successful explicit storage recheck.",
+    "Canonical embedded-policy discrepancy remains with the release workstream; only the selected module approval/cache string changed.",
+    "Native tests use minimum supported PBKDF2 iterations for bounded runtime; production cryptographic defaults are unchanged.",
+    "Ordinary clock-collision hypothesis was not established and was not reported as a vulnerability."
+  ]
+}

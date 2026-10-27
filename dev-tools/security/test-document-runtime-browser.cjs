@@ -74,7 +74,7 @@ before(async () => {
     'C:/Program Files/Google/Chrome/Application/chrome.exe',
     'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
     'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(candidate => candidate && fs.existsSync(candidate));
-  browser = await chromium.launch(executablePath ? { executablePath } : {});
+  browser = await chromium.launch({ chromiumSandbox: true, ...(executablePath ? { executablePath } : {}) });
 }, { timeout: 60000 });
 
 after(async () => {

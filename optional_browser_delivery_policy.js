@@ -112,11 +112,16 @@ function _alloCreateOptionalBrowserDeliveryPolicy(input, options) {
   });
 }
 
+// Gemini Canvas serves the page from a blob: URL; its assets come from the CDN.
+function _alloTrustedPageBase(location) {
+  var href = String((location && location.href) || '');
+  return /^https?:\/\//i.test(href) ? href : 'https://alloflow-cdn.pages.dev/';
+}
 function _alloOptionalBrowserPolicyForPage() {
   var location = window.location;
   var desktop = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname || '')
     && (location.pathname || '').indexOf('/app/') === 0;
-  return _alloCreateOptionalBrowserDeliveryPolicy(_alloOptionalBrowserDeliveryManifest, { baseUrl: location.href, isDesktopBundledApp: desktop });
+  return _alloCreateOptionalBrowserDeliveryPolicy(_alloOptionalBrowserDeliveryManifest, { baseUrl: _alloTrustedPageBase(location), isDesktopBundledApp: desktop });
 }
 
 function _alloConfigureTrustedBrowserScript(script, url, key) {

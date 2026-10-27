@@ -162,13 +162,16 @@ test('blocking browser delivery CI runs both host regressions and real SRI after
   const install = job.steps.findIndex(step => step.run === 'npx playwright install chromium');
   assert.ok(install >= 0);
   for (const command of [
-    'npx vitest run tests/browser_delivery_integrity.test.js tests/browser_delivery_loaders.test.js tests/browser_delivery_global_helpers.test.js tests/optional_browser_delivery_policy.test.js tests/optional_browser_delivery_loaders.test.js tests/browser_delivery_stem_helpers.test.js tests/runtime_graph_delivery_policy.test.js tests/runtime_graph_host.test.js tests/tool_private_script_delivery.test.js tests/document_runtime_integrity.test.js tests/service_worker_release_identity.test.js tests/browser_release_cache_security.test.js tests/browser_release_publication.test.js tests/desktop_app_build_parity.test.js --maxWorkers=1',
+    'npx vitest run tests/browser_delivery_integrity.test.js tests/browser_delivery_loaders.test.js tests/browser_delivery_global_helpers.test.js tests/optional_browser_delivery_policy.test.js tests/optional_browser_delivery_loaders.test.js tests/browser_delivery_stem_helpers.test.js tests/runtime_graph_delivery_policy.test.js tests/runtime_graph_host.test.js tests/runtime_acquisition_lifecycle_security.test.js tests/tool_private_script_delivery.test.js tests/document_runtime_integrity.test.js tests/pdf_private_runtime_security.test.js tests/service_worker_release_identity.test.js tests/browser_release_cache_security.test.js tests/browser_release_publication.test.js tests/desktop_app_build_parity.test.js --maxWorkers=1',
     'node --test --test-concurrency=1 dev-tools/security/test-runtime-delivery-builder.cjs dev-tools/security/test-browser-runtime-builder.cjs tests/runtime_graph_engine_adapters.test.cjs',
     'node --test --test-concurrency=1 dev-tools/security/test-runtime-graph-policy.cjs',
+    'node --test --test-concurrency=1 dev-tools/security/test-runtime-acquisition-browser.cjs',
+    'node --test --test-concurrency=1 dev-tools/security/test-secondary-pdf-browser.cjs',
     'node --test --test-concurrency=1 dev-tools/security/test-document-runtime-browser.cjs',
     'node --test --test-concurrency=1 dev-tools/security/test-data-kernel-runtime-browser.cjs',
     'node --test --test-concurrency=1 dev-tools/security/test-browser-runtime-graphs.cjs',
     'node dev-tools/build_runtime_graph_delivery_policy.cjs --check',
+    'node dev-tools/build_data_kernel_runtime_graph.cjs --check',
     'node dev-tools/check_private_loader_coverage.cjs --check',
     'node --test dev-tools/security/test-browser-delivery.cjs',
     'node --test dev-tools/security/test-optional-browser-delivery.cjs',
@@ -186,7 +189,9 @@ test('blocking browser delivery CI runs both host regressions and real SRI after
     'tmp/private-loader-security-20261024/runtime-graph-policy-native.json',
     'tmp/private-loader-security-20261024/data-kernel-native.json',
     'tmp/private-loader-security-20261024/runtime-staging/browser-runtime-smoke.json',
-    'tmp/document-runtime-security-20261024/browser-results.json']);
+    'tmp/document-runtime-security-20261024/browser-results.json',
+    'tmp/runtime-security-20261026/*.json',
+    'tmp/pdf-private-runtime-security-20261026/browser-results.json']);
 });
 
 test('scheduled and manual runs audit unchanged scopes; ordinary pushes stay scoped', () => {

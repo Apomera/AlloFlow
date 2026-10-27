@@ -28,11 +28,12 @@ before(async () => {
   const executablePath = [process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, chromium.executablePath(),
     'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
     'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(file => file && fs.existsSync(file));
-  browser = await chromium.launch(executablePath ? { executablePath } : {});
+  browser = await chromium.launch({ chromiumSandbox: true, ...(executablePath ? { executablePath } : {}) });
 });
 after(async () => {
   if (browser) await browser.close(); if (server) await new Promise(resolve => server.close(resolve));
-  const file = path.join(root, 'tmp/private-loader-security-20261024/data-kernel-native.json');
+  const file = path.resolve(root, process.env.ALLO_DATA_KERNEL_REPORT || 'tmp/private-loader-security-20261024/data-kernel-native.json');
+  assert(file.startsWith(root + path.sep), 'report stays inside the selected checkout');
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify({ policySha384: createHash('sha384').update(policy).digest('hex'), evidence }, null, 2));
 });
@@ -81,5 +82,20 @@ test('tampered actual WASM part leaves summaries available and starts no worker 
     assert.equal(result.absent, true); assert.match(result.status.error, /digest differs/);
     assert.equal(result.summary.numeric.score.mean, 4); assert.equal(result.workers, 0); assert.deepEqual(external, []);
     evidence.push({ name: 'tampered-part-denied-before-worker', passed: true });
+  } finally { await context.close(); }
+});
+test('closed DuckDB exported worker factory cannot fetch or execute an unreviewed child', { timeout: 180000 }, async () => {
+  const { page, context, external } = await open(false);
+  try {
+    const result = await page.evaluate(async () => {
+      const namespace = await window.__alloLoadVerifiedRuntime('duckdb');
+      let failure = null;
+      try { await namespace.createWorker('https://unreviewed.invalid/child.js'); }
+      catch (error) { failure = String(error && error.message || error); }
+      return { failure, workers: window.__createdWorkers };
+    });
+    assert.match(result.failure, /Unreviewed executable runtime dependency/);
+    assert.equal(result.workers, 0); assert.deepEqual(external, []);
+    evidence.push({ name: 'closed-exported-worker-factory-denies-unknown-code', passed: true });
   } finally { await context.close(); }
 });

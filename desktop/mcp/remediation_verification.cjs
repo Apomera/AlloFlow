@@ -133,8 +133,8 @@ function applyPdfDeliveryEvidence(summary,evidence) {
 // decode `taggedPdfError` or `taggedPdfDelivery.code` themselves. Wording only: never changes a verdict.
 const WITHHOLD_EXPLANATIONS={
   active_content_scan_unavailable:['The original PDF has parts AlloFlow cannot safely inspect (for example an XFA fillable form, embedded files or an unusually deep structure), so no tagged PDF was made.','Share the accessible HTML, or have a person rebuild the PDF from it in Word or Acrobat.'],
-  active_content_requires_review:['The original PDF contains scripts, launch actions or embedded files, so no tagged PDF was made.','Remove those from the source (or share the accessible HTML), then run again.'],
-  content_coverage_requires_review:['The accessible version may be missing words from the original, so the tagged PDF was held back.','Read the accessible version next to the original and check that no words are missing (the report lists the words it could not find). Run again, or share once a person confirms nothing is lost.'],
+  active_content_requires_review:['The original PDF contains scripts, launch actions or embedded files, so no tagged PDF was made. In a fillable form these are often just date or phone-number formatting.','Share the accessible HTML. If a fillable PDF is needed, ask whoever made the form for a version without scripts, or have someone review them first.'],
+  content_coverage_requires_review:['The accessible version may be missing words from the original, so the tagged PDF was held back.','Search the original for the words listed below and check that each one is in the accessible version. Often they are page numbers, a raised "nd" or "th", or a word the PDF split in two. Running again gives the same result; share once a person confirms nothing is lost.'],
   distribution_review_required:['The accessible HTML still has findings a person must check, so the tagged PDF was held back.','Work through the review findings in this report, then run again.'],
   distribution_verdict_unavailable:['AlloFlow could not reach a final verdict for this document, so the tagged PDF was held back.','Run the document again. If it repeats, keep this report for support.'],
   tagged_pdf_delivery_unverified:['A tagged PDF was built but failed AlloFlow\'s own structure check after saving.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
@@ -146,18 +146,71 @@ const WITHHOLD_EXPLANATIONS={
   'roundtrip-failed':['Reading the saved tagged PDF back did not match the accessible version.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
   'roundtrip-unavailable':['The saved tagged PDF could not be read back to confirm it.','Use the accessible HTML, or run the document again.'],
   'typeset-content-dropped':['Some content did not make it into the tagged PDF.','Use the accessible HTML, which keeps all of the content.'],
-  'ocr-text-layer-incomplete':['Some recognized text could not be written into the scanned PDF\'s hidden text layer.','Use the accessible HTML, or check the PDF\'s text with a screen reader before sharing.'],
+  'ocr-text-layer-incomplete':['Part of this scan\'s hidden text layer could not be written, so a screen reader would read the PDF wrongly. This happens with scripts the offline text recognition or font does not cover, such as Arabic, Urdu, Persian or Hebrew.','Share the accessible HTML, which has the full text. Running again will not change this.'],
   'delivery-verdict-unavailable':['AlloFlow could not reach a final verdict for the tagged PDF.','Run the document again. If it repeats, keep this report for support.'],
 };
 function explainDelivery(summary){
   const s=summary||{},items=[];
-  const add=(code,detail)=>{const k=Object.keys(WITHHOLD_EXPLANATIONS).find(c=>code===c||String(code).startsWith(c+' '));
-    const e=WITHHOLD_EXPLANATIONS[k];items.push({code:String(code).slice(0,200),meaning:e?e[0]:'The tagged PDF was not delivered.',nextStep:e?e[1]:'Use the accessible HTML, and keep this report for support.',...(detail?{detail:String(detail).slice(0,400)}:{})});};
-  if(s.taggedPdfError)add(s.taggedPdfError);
+  // "tagged_pdf_delivery_unverified (ocr-text-layer-incomplete: …)" names its real cause in parentheses;
+  // explain that cause, not the generic wrapper (Hebrew UDHR: "run again" for a deterministic gap).
+  const add=(code,detail)=>{const inner=/^tagged_pdf_delivery_unverified \(([a-z-]+)(?::\s*([^)]*))?/.exec(String(code));
+    const k=(inner&&WITHHOLD_EXPLANATIONS[inner[1]]?inner[1]:null)||Object.keys(WITHHOLD_EXPLANATIONS).find(c=>code===c||String(code).startsWith(c+' '));
+    let e=WITHHOLD_EXPLANATIONS[k];
+    // Inside the wrapper, validator-failed is AlloFlow's own byte check, not veraPDF; it names the
+    // failed rule (English UDHR: "All page fonts embedded" was explained as veraPDF + pdfUa.failedRules).
+    if(inner&&inner[1]==='validator-failed'){if(!detail&&inner[2])detail=inner[2].trim();
+      e=/fonts? embedded/i.test(String(inner[2]))
+        ?['The original PDF uses fonts that are not stored inside the file, so AlloFlow could not make a tagged PDF that displays correctly everywhere.','Share the accessible HTML. If you need a PDF, save the original again with its fonts embedded (for example from Word with the PDF/A option on) and run it again.']
+        :/orphaned semantic leaves/i.test(String(inner[2]))
+        // Spanish UDHR: "No orphaned semantic leaves" reached teachers verbatim, with "run again" for a deterministic result.
+        ?['Some parts of the accessible version could not be matched to the text on the PDF\'s pages, so a screen reader would skip them in the tagged PDF. It was held back.','Share the accessible HTML, which has everything. Running again gives the same result; keep this report for support.']
+        :['The tagged PDF was built but failed AlloFlow\'s own PDF check (named below), so it was held back.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'];}
+    // validator-error has several causes; only a Java failure should send a teacher to install Java.
+    if(k==='validator-error'&&detail&&!/java/i.test(String(detail)))e=/runtime_build_changed|restart/i.test(String(detail))
+      ?['The independent veraPDF check was skipped because AlloFlow was updated while this document was running.','Restart the AlloFlow connector (or the app that hosts it) and run the document again.']
+      :['The independent veraPDF check could not run.','Run the document again. If it repeats, check the file yourself with veraPDF or PAC.'];items.push({code:String(code).slice(0,200),meaning:e?e[0]:'The tagged PDF was not delivered.',nextStep:e?e[1]:'Use the accessible HTML, and keep this report for support.',...(detail?{detail:String(detail).length>600?String(detail).slice(0,600).replace(/\s+\S*$/,'')+'…':String(detail)}:{})});};
+  // The unmatched words themselves (assessSourceCoverage missingWords), not token offsets nobody can map to a page.
+  const missingWords=(s.contentCoverage&&Array.isArray(s.contentCoverage.missingWords))?s.contentCoverage.missingWords.filter(w=>w&&typeof w.word==='string').slice(0,25):[];
+  const wordList=missingWords.length?'Words not found in the accessible version: '+missingWords.map(w=>'"'+w.word.slice(0,60)+'"'+(w.count>1?' (x'+w.count+')':'')).join(', '):'';
+  if(s.taggedPdfError)add(s.taggedPdfError,s.taggedPdfError==='content_coverage_requires_review'&&wordList?wordList:undefined);
   else if(s.taggedPdfDelivery&&s.taggedPdfDelivery.ok===false)add(s.taggedPdfDelivery.code,s.pdfUa&&s.pdfUa.error);
   const ready=s.deliveryStatus==='complete-for-tested-scope';
-  return {headline:ready?'Automated checks passed for everything they can test. A person should still read it once before sharing.'
-      :items.length?'Not ready to share as a PDF yet. The accessible HTML can still be reviewed and used.'
+  // The verdict's own sentences say WHICH things to check; a count alone sent teachers hunting.
+  const reasons=s.verdictReasons&&typeof s.verdictReasons==='object'?s.verdictReasons:{};
+  // The verdict's engine-status sentence is pinned by the tagged-PDF release gate, so it is translated
+  // here, where teachers read it, rather than reworded at the source.
+  const plain=x=>/^WCAG verification is [a-z-]+; review the engine coverage/.test(x)
+    ?'The automated accessibility checkers left items that a person needs to look at (see the review findings in this report).':x;
+  const list=v=>Array.isArray(v)?v.filter(x=>typeof x==='string'&&x.trim()).slice(0,10).map(plain):[];
+  // Name the checker items themselves (the report already carries them) instead of pointing at "the
+  // review findings": a teacher was sent looking with nothing named (board policy run, 2026-10-25).
+  const eaReview=(s.verification&&s.verification.equalAccess&&Array.isArray(s.verification.equalAccess.reviewFindings))?s.verification.equalAccess.reviewFindings:[];
+  // (2026-10-25, Aaron) A checker "potential" item the AI review judged not-an-issue is a QUICK CHECK:
+  // still a person's call, shown with the AI's reasoning, not listed as a problem.
+  const dispositions=(s.reviewTriage&&Array.isArray(s.reviewTriage.dispositions))?s.reviewTriage.dispositions:[];
+  const aiSaysFine=id=>dispositions.find(d=>d&&d.action==='not-an-issue'&&typeof d.key==='string'&&d.key.split('|').pop()===id);
+  // (2026-10-26) The common reminders in plain words, keeping the text the checker quoted; others keep the
+  // checker's own sentence. A finding on several elements says so.
+  const PLAIN={
+    style_color_misuse:()=>'Check that colour is not the only way information is shown.',
+    text_block_heading:q=>'Check whether '+(q?'"'+q+'"':'this text')+' is a heading; if it is, it should be marked as one.',
+    text_sensory_misuse:q=>'Check that '+(q?'"'+q+'"':'the wording')+' still makes sense without seeing the page (it should point to a place in reading order).'};
+  const describe=f=>{const q=(f.description.match(/'([^']{1,80})'/)||[])[1];const base=PLAIN[f.id]?PLAIN[f.id](q):f.description.trim().slice(0,240);return base+(Number(f.nodes)>1?' ('+Number(f.nodes)+' places)':'');};
+  const withDesc=eaReview.filter(f=>f&&typeof f.description==='string'&&f.description.trim()).slice(0,8);
+  const clip=(t,n)=>{t=String(t).trim();return t.length>n?t.slice(0,n).replace(/\s+\S*$/,'')+'…':t;};
+  const quickChecks=withDesc.filter(f=>aiSaysFine(f.id)).map(f=>{const d=aiSaysFine(f.id);return describe(f)+(d.reason?' (AI review: '+clip(d.reason,400)+')':'');});
+  // A reminder the AI review settled has left the checker's counts but is still a person's quick check.
+  const acked=(s.verification&&s.verification.equalAccess&&Array.isArray(s.verification.equalAccess.acknowledgedByAiReview))?s.verification.equalAccess.acknowledgedByAiReview:[];
+  for(const f of acked.slice(0,5))if(f&&typeof f.description==='string'&&f.description.trim())quickChecks.push(describe(f)+(f.reason?' (AI review: '+clip(f.reason,400)+')':''));
+  const named=withDesc.filter(f=>!aiSaysFine(f.id)).slice(0,5).map(f=>(PLAIN[f.id]?'':'A checker asks a person to confirm: ')+describe(f));
+  let needs=list(reasons.review);
+  const generic=needs.findIndex(x=>/^The automated accessibility checkers left items/.test(x));
+  if(generic>=0&&(named.length||quickChecks.length))needs=needs.slice(0,generic).concat(named,needs.slice(generic+1));
+  else if(named.length)needs=needs.concat(named);
+  return {needsAPerson:needs.slice(0,12),quickChecks,worthAGlance:list(reasons.cautions),headline:ready?'Automated checks passed for everything they can test. A person should still read it once before sharing.'
+      // One instruction, not two: each item's own next step says what to do (Urdu UDHR: "check it" vs "share it").
+      :items.length?'No tagged PDF was made for this file. The reason and what to do instead are below.'
+      :(!needs.length&&quickChecks.length)?'Automated checks finished. Only quick checks are left: a person should glance at them before sharing.'
       :'Automated checks finished, but some findings need a person to look before sharing.',items};
 }
 // Self-contained so the browser uses exactly the same per-engine report contract.
@@ -277,6 +330,10 @@ function compactVerificationEvidence(source) {
       fails: list(ea.fails, 50).map(rule),
       reviewFindings: list(review, 50).map(rule),
     };
+    // Reminders this run's AI review settled (pipeline _alloApplyReminderTriage): out of the counts, still
+    // reported; present only when there are some, so the evidence shape is unchanged otherwise.
+    const acked = list(ea.acknowledgedByAiReview, 20).map((f) => Object.assign(rule(f), { reason: str(f.reason, 300) }));
+    if (acked.length) out.equalAccess.acknowledgedByAiReview = acked;
   }
   if (!out.ai && !out.axe && !out.equalAccess) return null;
   return out;

@@ -1,0 +1,390 @@
+{
+  "checkedAt": "2026-10-26T10:43:19.307Z",
+  "scope": "Document-bound ds2 storage transport; local synthetic evidence only",
+  "baseline": {
+    "checkedAt": "2026-10-26T10:30:27.789Z",
+    "baseline": true,
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "realIndexedDB": true,
+    "realMessageChannel": false,
+    "network": "Navigation fulfilled locally; all other requests blocked",
+    "sourceHashes": {
+      "bridge": "540eb3d14a8179e4099ab9856a2370a0a9f133992975c591c1fb89fae0216b48",
+      "adapter": "df8328e91d4236c8ba00595958978b334ee22c3cc167b8084f23f11b12d768e9"
+    },
+    "checks": {
+      "nativeOpaqueOriginUsed": true,
+      "baselineReplacementDocumentReceivedStoredRecord": true,
+      "noBrowserRuntimeErrors": true
+    },
+    "errors": [],
+    "processExitCode": 0
+  },
+  "tests": {
+    "uniquePassed": 216,
+    "files": 15,
+    "failed": 5,
+    "pending": 0,
+    "failedTests": [
+      {
+        "file": "tests/report_storage_mixed_recovery.test.js",
+        "name": "preference hydration versus delayed storage acknowledgement never overwrites available saved notes with boot defaults captured before hydration",
+        "status": "failed"
+      },
+      {
+        "file": "tests/report_storage_mixed_recovery.test.js",
+        "name": "preference hydration versus delayed storage acknowledgement does not snapshot after rejected hydration until an explicit successful retry",
+        "status": "failed"
+      },
+      {
+        "file": "tests/report_storage_mixed_recovery.test.js",
+        "name": "preference hydration versus delayed storage acknowledgement captures values after storage readiness and persists legitimate edits made during a delayed reconnect",
+        "status": "failed"
+      },
+      {
+        "file": "tests/report_storage_mixed_recovery.test.js",
+        "name": "preference hydration versus delayed storage acknowledgement serializes repeated pagehide writes and drains a newer edit after the first acknowledgement",
+        "status": "failed"
+      },
+      {
+        "file": "tests/report_storage_mixed_recovery.test.js",
+        "name": "preference hydration versus delayed storage acknowledgement leaves failed snapshot signatures retryable and preserves last-good disk values",
+        "status": "failed"
+      }
+    ],
+    "testFiles": [
+      "tests/allo_device_storage_a11y.test.js",
+      "tests/device_storage_bridge.test.js",
+      "tests/device_storage_bridge_security.test.js",
+      "tests/device_storage_consent_boundaries.test.js",
+      "tests/device_storage_port_transport.test.js",
+      "tests/sensitive_workspace.test.js",
+      "tests/sensitive_workspace_deletion.test.js",
+      "tests/sensitive_workspace_deletion_races.test.js",
+      "tests/sensitive_workspace_hydration_races.test.js",
+      "tests/sensitive_workspace_migration.test.js",
+      "tests/sensitive_workspace_races.test.js",
+      "tests/storage_adapter_bootstrap_readiness.test.js",
+      "tests/storage_security_integration_contract.test.js",
+      "tests/report_storage_ack_recovery.test.js",
+      "tests/report_storage_mixed_recovery.test.js"
+    ],
+    "runs": [
+      {
+        "results": "tmp/storage-ports-20261026/final-test-results.json",
+        "passed": 187,
+        "failed": 0,
+        "files": 13
+      },
+      {
+        "results": "tmp/storage-ports-20261026/report-fixture-results.json",
+        "passed": 29,
+        "failed": 5,
+        "files": 2
+      }
+    ],
+    "openFixtureIssue": "Five report preference mock failures remain with the other security CI agent; only ds2 transport fixtures changed here."
+  },
+  "browser": {
+    "checkedAt": "2026-10-26T10:35:12.016Z",
+    "baseline": false,
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "realIndexedDB": true,
+    "realMessageChannel": true,
+    "network": "Navigation fulfilled locally; all other requests blocked",
+    "sourceHashes": {
+      "bridge": "6442a798346d2057689193bc77832f0e50c0a09fedf0dfb977b378f22a36c061",
+      "adapter": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae"
+    },
+    "checks": {
+      "nativeOpaqueOriginUsed": true,
+      "replacementDocumentCannotReceiveStoredRecord": true,
+      "replacementDocumentCannotInheritPendingApproval": true,
+      "windowAndReplacementPortCannotMutate": true,
+      "windowMessagesContainNoRecords": true,
+      "secondPortNeverBecomesReady": true,
+      "actualAdapterOpaqueIframeReadsAndWrites": true,
+      "opaqueReopenRequiresFreshApproval": true,
+      "actualAdapterRetainsIframePartition": true,
+      "actualAdapterConcretePopupReadsAndWrites": true,
+      "actualAdapterReusesExactOriginGrant": true,
+      "embeddedReviewClickAloneDoesNotAuthorize": true,
+      "actualAdapterDenialRejectsAndDisconnects": true,
+      "bridgeNavigationRejectsPendingRead": true,
+      "noBrowserRuntimeErrors": true
+    },
+    "errors": [],
+    "passed": 15,
+    "processExitCode": 0
+  },
+  "delivery": {
+    "checkedAt": "2026-10-26T10:35:57.475Z",
+    "reviewed": {
+      "allo_device_storage_module.js": {
+        "bytes": 71987,
+        "sha256": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae",
+        "integrity": "sha384-ROnYxOdgbCc7h2W4xzyDGuvOmXohlHIPgRJcTRFLLcRkOluXl0nW9TPkhdC0gv6E"
+      }
+    },
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "beforeSha256": "fd055e24c21ad8ecb7d4b3d66e6a3ac0532232e888cd88c349a1a50f8eb1ab73",
+        "afterSha256": "cde92394654f789ae6fc95d6d11f75ca230a65ef980ed19ec8b54dc116bb9320",
+        "manifestId": "0b04e15a2eb90cd301cf99e52b5bdd5790eed6af3a1550f61610d00389e03974",
+        "previousManifestId": "9cea8066662c341214f60636f912a8f374689a09348157c81d9c2b537a50569e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=df8328e91d42",
+            "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=1037903efd4d"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "beforeSha256": "b56c9bd59d537c1518c8953d72c4083873963b761a0c8d93d0e9a5ca04f71eab",
+        "afterSha256": "9c7ea7681578b130606a68f3b0b8568abb9f02562eaca57c4046f7212cf2c4f8",
+        "manifestId": "0b04e15a2eb90cd301cf99e52b5bdd5790eed6af3a1550f61610d00389e03974",
+        "previousManifestId": "9cea8066662c341214f60636f912a8f374689a09348157c81d9c2b537a50569e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=df8328e91d42",
+            "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=1037903efd4d"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "beforeSha256": "855aa86d7b3c5dc6c38f42506db14ef24b995b3cb122ce9d12577a5b9348f515",
+        "afterSha256": "6208ce6ce13132c44ac433625bbb875a70b1ce63050413dadd459ec6525ab5d3",
+        "manifestId": "0b04e15a2eb90cd301cf99e52b5bdd5790eed6af3a1550f61610d00389e03974",
+        "previousManifestId": "9cea8066662c341214f60636f912a8f374689a09348157c81d9c2b537a50569e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=df8328e91d42",
+            "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=1037903efd4d"
+          }
+        ]
+      }
+    ],
+    "scope": "Only the selected adapter approval and its loader cache string; no broad policy regeneration, build or release."
+  },
+  "peerReview": {
+    "scope": "Bridge handshake, port binding, pending consent cancellation, reply fencing, denial/disconnect order",
+    "additionalActionableFindings": 0,
+    "residual": "Disconnect cannot recall committed grants or data writes."
+  },
+  "validation": {
+    "rootPublicMirrors": true,
+    "inlineBridgeAndAdapterParse": true,
+    "scopedDiffCheck": true
+  },
+  "files": [
+    {
+      "path": "storage_bridge.html",
+      "bytes": 65392,
+      "sha256": "6442a798346d2057689193bc77832f0e50c0a09fedf0dfb977b378f22a36c061"
+    },
+    {
+      "path": "allo_device_storage_module.js",
+      "bytes": 71987,
+      "sha256": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae"
+    },
+    {
+      "path": "desktop/web-app/public/storage_bridge.html",
+      "bytes": 65392,
+      "sha256": "6442a798346d2057689193bc77832f0e50c0a09fedf0dfb977b378f22a36c061"
+    },
+    {
+      "path": "desktop/web-app/public/allo_device_storage_module.js",
+      "bytes": 71987,
+      "sha256": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3141891,
+      "sha256": "cde92394654f789ae6fc95d6d11f75ca230a65ef980ed19ec8b54dc116bb9320"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3141547,
+      "sha256": "9c7ea7681578b130606a68f3b0b8568abb9f02562eaca57c4046f7212cf2c4f8"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3141218,
+      "sha256": "6208ce6ce13132c44ac433625bbb875a70b1ce63050413dadd459ec6525ab5d3"
+    },
+    {
+      "path": "tests/allo_device_storage_a11y.test.js",
+      "bytes": 6656,
+      "sha256": "4b7003342600d96790e55ff8c791b5a0c72ec4720373800a5e9174ad96b66053"
+    },
+    {
+      "path": "tests/device_storage_bridge.test.js",
+      "bytes": 33892,
+      "sha256": "caf7dd9ce6b10399d9795dcfacdbd22220c5f97d35c938b9a6b4aa2ca6485cc3"
+    },
+    {
+      "path": "tests/device_storage_bridge_security.test.js",
+      "bytes": 10442,
+      "sha256": "33779628a355f80d504e346a79e62027aad1a08dd4de9a3c319e998440d18616"
+    },
+    {
+      "path": "tests/device_storage_consent_boundaries.test.js",
+      "bytes": 24312,
+      "sha256": "0280bd3ab995dfa586b19e60d9f6d5bb8aacfdfd8b9a38d98bae1dbb9759bc20"
+    },
+    {
+      "path": "tests/device_storage_port_transport.test.js",
+      "bytes": 12332,
+      "sha256": "c6eed6b0ec74f4ba252f2f90bd90ef19b0552893891f86e44d623e72871430a4"
+    },
+    {
+      "path": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion.test.js",
+      "bytes": 27395,
+      "sha256": "295f07a1c99c8eaefbb5d9c638c2b420618b1e3a64596a227f2966daad59090e"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion_races.test.js",
+      "bytes": 4986,
+      "sha256": "a312f906bf98bcf60a4463c7686cfad8ad308b2de78603536ca9c9eba2fe9200"
+    },
+    {
+      "path": "tests/sensitive_workspace_hydration_races.test.js",
+      "bytes": 9013,
+      "sha256": "f991a99763c4c2a6452969aa5934de1cb9a91953aab8561bb23b856355e445ab"
+    },
+    {
+      "path": "tests/sensitive_workspace_migration.test.js",
+      "bytes": 10022,
+      "sha256": "80b1103d1cdff65d4971dc8d05021f64314e7b96d88596ecf8be8361056a3153"
+    },
+    {
+      "path": "tests/sensitive_workspace_races.test.js",
+      "bytes": 8734,
+      "sha256": "b2ed1b4b5286be11f9b87a6f33b6dcc19d955d336f0f9599adca6ed6b3890cb8"
+    },
+    {
+      "path": "tests/storage_adapter_bootstrap_readiness.test.js",
+      "bytes": 5672,
+      "sha256": "92ee59e7737b9a9d2435df5b93857f15c2e2fdc040b1ac19cab051683ffb9820"
+    },
+    {
+      "path": "tests/storage_security_integration_contract.test.js",
+      "bytes": 7225,
+      "sha256": "f2c6977da3c5e7d58506fcecf4a1c306dcfc19915b6172473d5b5cbfd1b35f3f"
+    },
+    {
+      "path": "tests/report_storage_ack_recovery.test.js",
+      "bytes": 21340,
+      "sha256": "03b0229c6bcd3c0199ab1e910deee7378be8a1a8e74900fc7c205835d27a999a"
+    },
+    {
+      "path": "tests/report_storage_mixed_recovery.test.js",
+      "bytes": 26340,
+      "sha256": "b1e83629714f22775a43043981f96f353e12d0f8700fe23313093ec9750aaa18"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 18352,
+      "sha256": "e26a6bdb7b9a5477367fe66e1d6bed8460a2533419361bed646c1c97b0d0ef84"
+    },
+    {
+      "path": "docs/DEVICE_STORAGE_BRIDGE.md",
+      "bytes": 6652,
+      "sha256": "f848fd195993ec6ca8684585b2c49f5562ca0bc0554697f9b29f9b945da8e709"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/storage-document-channel-followup.md",
+      "bytes": 6899,
+      "sha256": "a0f623721ec15a4dfa230addc8769f157db7049512ac6949a500dc2135b19714"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/browser-qa.cjs",
+      "bytes": 13372,
+      "sha256": "d8f16a1de1c4e1ce7773b2c6852e5bec02ccc1ccf02e18f08020a3972195d642"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/browser-checks.json",
+      "bytes": 1208,
+      "sha256": "ebb168a364ae054822ddb5e0bd55006212e191f2a6048c52ac063f4e6804fbd4"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/navigation-baseline.json",
+      "bytes": 607,
+      "sha256": "f46fffb5108c89157d58e784b5afe566c0db7b25c16ed59c2c5e15e46dda36d2"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/storage_bridge.before.html",
+      "bytes": 62952,
+      "sha256": "540eb3d14a8179e4099ab9856a2370a0a9f133992975c591c1fb89fae0216b48"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/allo_device_storage_module.before.js",
+      "bytes": 68569,
+      "sha256": "df8328e91d4236c8ba00595958978b334ee22c3cc167b8084f23f11b12d768e9"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/adapter-evidence.json",
+      "bytes": 2043,
+      "sha256": "d9bf300f6fc1a371eaadad1018deef2919f22628feb2a5b189913cb2f6d6ae99"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/final-tests.log",
+      "bytes": 8332,
+      "sha256": "42239b2077b8d07582f5ce312516af12cc1ac0e2caf8fc722e4b0e79375ebdee"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/final-test-results.json",
+      "bytes": 71929,
+      "sha256": "9ef28573fa4319dc0bf334ed74d81ddec4b1d360b04bbec104733f061ebdad00"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/report-fixture-results.json",
+      "bytes": 17151,
+      "sha256": "088fdce0e1b302b8cfa398dfbdc7f633a6bbd0321ae404fc7c1b85e165d7d15a"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/pin-delivery.cjs",
+      "bytes": 4505,
+      "sha256": "7311cceebd948e839badb008bc419a510324e7da390057713e932f53d1eff086"
+    },
+    {
+      "path": "tmp/storage-ports-20261026/delivery-validation.json",
+      "bytes": 3128,
+      "sha256": "919a37f9b56dedd391217564fc078a3ea3627a2691ee2ea78059543c36095ecf"
+    }
+  ],
+  "limitations": [
+    "No actual Canvas or PPS session, real student records, provider requests, commit, push or deployment.",
+    "Actual district sandbox/popup settings and persistence across Canvas sessions need deployment-specific evidence.",
+    "Canonical delivery-policy source mismatch existed in all three hosts at pin time; embedded source was preserved.",
+    "ds1 and ds2 require coordinated release; old deployed/open pages retain former behavior.",
+    "Origin and document capability are not district identity or same-origin app isolation.",
+    "An accepted storage operation may finish after disconnect; existing uncertain-write reconciliation remains required.",
+    "Five preference test fixture failures remain open in the separate CI workstream."
+  ]
+}

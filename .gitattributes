@@ -45,3 +45,7 @@ migration_sources/** -text
 stem_lab/assets/anatomy/clinical-atlas/** -text
 desktop/web-app/public/stem_lab/assets/anatomy/clinical-atlas/** -text
 desktop/web-app/build/stem_lab/assets/anatomy/clinical-atlas/** -text
+
+# Reviewed runtime manifests hash exact executable bytes on every platform.
+runtime_assets/** -text
+desktop/web-app/public/runtime_assets/** -text

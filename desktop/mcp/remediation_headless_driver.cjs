@@ -303,8 +303,67 @@ function compactTerminalCheckpointSnapshot(snapshot) {
 // public asset CDN. The manifest is checked before any input is opened and every response
 // is served from memory over the loopback origin used by the pipeline page.
 const VENDOR_BOOT_PATH = '/__alloflow_mcp_vendor/';
-const VENDOR_BOOT_URL = 'http://127.0.0.1/__alloflow_mcp_boot__';
+// Under /app/ on loopback, so the app's runtime-graph policy runs in its desktop mode: every
+// approved CDN URL resolves to the local hash-checked copy and remote runtime code is refused.
+const VENDOR_BOOT_URL = 'http://127.0.0.1/app/__alloflow_mcp_boot__';
+const DOCUMENT_RUNTIME_PREFIX = '/app/';
 let vendorBundleCache = null;
+let documentRuntimeCache = null;
+// (2026-10-25) The pipeline loads axe, IBM Equal Access, DOMPurify, temml and the pdf.js /
+// Tesseract workers only through host hooks (__alloConfigureTrustedScript,
+// __alloFetchTrustedScriptText, __alloGetVerifiedRuntimeAsset). The app installs them from
+// document_runtime_integrity.json; without them here every engine failed to load and
+// born-digital PDFs fell to OCR. Same policy, same records, served from disk.
+function readDocumentRuntime(root = ASSETS_ROOT) {
+  const realRoot = fs.realpathSync(root);
+  const read = (relative, maximum) => {
+    if (typeof relative !== 'string' || !/^[A-Za-z0-9._/-]+$/.test(relative)
+      || relative.split('/').some((part) => !part || part === '.' || part === '..')) {
+      throw new Error('Unsafe document runtime path: ' + relative);
+    }
+    let absolute = realRoot;
+    for (const part of relative.split('/')) {
+      absolute = path.join(absolute, part);
+      if (fs.lstatSync(absolute).isSymbolicLink()) throw new Error('Document runtime symlink: ' + relative);
+    }
+    const real = fs.realpathSync(absolute), contained = path.relative(realRoot, real);
+    const stat = fs.statSync(real);
+    if (!contained || contained === '..' || contained.startsWith('..' + path.sep) || path.isAbsolute(contained)
+      || !stat.isFile() || stat.size > maximum) throw new Error('Invalid document runtime file: ' + relative);
+    return fs.readFileSync(real);
+  };
+  const sourceFiles = ['document_runtime_integrity.json', 'runtime_graph_delivery_policy.js', 'runtime_graph_host.js'];
+  const manifest = JSON.parse(read(sourceFiles[0], 2 * 1024 * 1024).toString('utf8'));
+  if (manifest.schemaVersion !== 1 || !manifest.assets || Array.isArray(manifest.assets)
+    || !Object.keys(manifest.assets).length || !manifest.graphs) throw new Error('Invalid document runtime manifest');
+  const files = new Map();
+  for (const record of Object.values(manifest.assets)) {
+    if (!record || typeof record.path !== 'string' || !record.path.startsWith('runtime_assets/document/')
+      || !Number.isSafeInteger(record.bytes) || record.bytes < 1 || record.bytes > 128 * 1024 * 1024
+      || !/^[a-f0-9]{96}$/.test(record.sha384) || !['script', 'worker', 'wasm', 'module'].includes(record.kind)
+      || files.has(DOCUMENT_RUNTIME_PREFIX + record.path)) throw new Error('Invalid document runtime asset record');
+    const bytes = read(record.path, record.bytes);
+    const sha384 = crypto.createHash('sha384').update(bytes).digest('hex');
+    if (bytes.length !== record.bytes || sha384 !== record.sha384) throw new Error('Document runtime hash mismatch: ' + record.path);
+    files.set(DOCUMENT_RUNTIME_PREFIX + record.path, { body: bytes, kind: record.kind });
+    sourceFiles.push(record.path);
+  }
+  const source = sourceFiles.slice(1, 3).map((name) => read(name, 2 * 1024 * 1024).toString('utf8')).join('\n');
+  return { manifest, files, source, sourceFiles };
+}
+function loadDocumentRuntime() {
+  if (documentRuntimeCache) return documentRuntimeCache;
+  try {
+    documentRuntimeCache = { ok: true, ...readDocumentRuntime() };
+  } catch (error) {
+    documentRuntimeCache = { ok: false, error: String((error && error.message) || error) };
+  }
+  return documentRuntimeCache;
+}
+function verifyDocumentRuntime() {
+  const runtime = loadDocumentRuntime();
+  return { hashVerified: runtime.ok, files: runtime.ok ? runtime.files.size : 0, error: runtime.error };
+}
 // (2026-09-05) The vendor manifest now covers the 35 MB EPUBCheck distribution. Hashing it inline
 // made the FIRST tool call of every fresh server take 1-35 s (emulated or loaded hosts), which
 // tripped host startup budgets. prehashVendorBundle() streams the large binary entries through a
@@ -476,6 +535,8 @@ async function installVendorRuntime(page, options) {
   const o = options || {};
   const bundle = loadVendorBundle();
   const strict = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS === '1';
+  const documentRuntime = loadDocumentRuntime();
+  if (!documentRuntime.ok) throw new Error('Verified document runtime unavailable: ' + documentRuntime.error);
   await page.route('**/*', async (route) => {
     let parsed;
     try { parsed = new URL(route.request().url()); } catch (_) { return route.abort(); }
@@ -489,6 +550,11 @@ async function installVendorRuntime(page, options) {
       if (!asset || !asset.body) return route.fulfill({ status: 404, body: 'vendor asset not found' });
       return route.fulfill({ status: 200, contentType: vendorContentType(name), body: asset.body });
     }
+    const runtimeFile = documentRuntime.ok && parsed.origin === 'http://127.0.0.1' && !parsed.search && documentRuntime.files.get(parsed.pathname);
+    if (runtimeFile) {
+      return route.fulfill({ status: 200, contentType: runtimeFile.kind === 'wasm' ? 'application/wasm' : 'text/javascript; charset=utf-8',
+        headers: { 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' }, body: runtimeFile.body });
+    }
     if (parsed.protocol === 'about:' || parsed.protocol === 'blob:' || parsed.protocol === 'data:' || parsed.hostname === '127.0.0.1') {
       return route.continue();
     }
@@ -499,7 +565,22 @@ async function installVendorRuntime(page, options) {
   if (o.loadPdfjs || o.loadCore) assetNames.push('pdfjs.min.js');
   if (o.loadCore) assetNames.push('pdf-lib.min.js', 'pako.min.js', 'fontkit.umd.min.js', 'tesseract.min.js');
   if (o.loadAxe || o.loadCore) assetNames.push('axe.min.js');
-  for (const name of [...new Set(assetNames)]) await page.addScriptTag({ path: vendorAssetPath(name) });
+  const documentIds = { 'pdfjs.min.js': 'pdfjs.main', 'pdf-lib.min.js': 'pdf-lib', 'pako.min.js': 'pako',
+    'fontkit.umd.min.js': 'fontkit', 'tesseract.min.js': 'tesseract.main', 'axe.min.js': 'axe-core' };
+  for (const name of [...new Set(assetNames)]) {
+    const record = documentRuntime.ok && documentRuntime.manifest.assets[documentIds[name]];
+    if (record) await page.addScriptTag({ url: 'http://127.0.0.1' + DOCUMENT_RUNTIME_PREFIX + record.path });
+    else await page.addScriptTag({ path: vendorAssetPath(name) });
+  }
+  if (documentRuntime.ok) {
+    await page.addScriptTag({ content: documentRuntime.source });
+    await page.evaluate((manifest) => {
+      // eslint-disable-next-line no-undef
+      const policy = _alloInstallRuntimeGraphHost(manifest, window);
+      Object.defineProperty(window, '__alloConfigureTrustedScript', { writable: false, configurable: true,
+        value: function (script, url, key) { return policy.configureScript(script, url, key); } });
+    }, documentRuntime.manifest);
+  }
   const runtimeAssets = {
     pdfjsWorker: vendorAssetUrl('pdf.worker.min.js'),
     tesseractWorker: vendorAssetUrl('tesseract.worker.min.js'),
@@ -521,8 +602,8 @@ async function installVendorRuntime(page, options) {
         }
         return original(
         langs, oem, Object.assign({}, options || {}, {
-          workerPath: assets.tesseractWorker,
-          corePath: assets.tesseractCore,
+          // Preserve the pipeline's verified bootstrap lease. It pins the worker,
+          // core and WASM together; overriding it would bypass that closed graph.
           langPath: assets.tesseractLang,
         }), config,
         );
@@ -2649,9 +2730,11 @@ function createDriver(options) {
     moderate: [], minor: [], passes: ['document has a language'],
   });
   const SELFTEST_AUDIT_HTML = JSON.stringify({
-    score: 80, summary: 'self-test scripted HTML audit',
-    issues: [{ ruleId: 'document-title', claimKind: 'absence', issue: 'The document has no title entry.', wcag: '2.4.2', count: 1 }],
-    passes: ['document has a language'],
+    // Truthful about the remediated self-test HTML (2026-10-25): it HAS a title, so a "no title"
+    // claim is dropped by the ground-truth gate and the audit is left with no usable score.
+    score: 95, summary: 'self-test scripted HTML audit',
+    issues: [],
+    passes: ['document has a language', 'document has a descriptive title', 'one h1 heading', 'main landmark present'],
   });
 
   function selfTestReply(prompt) {
@@ -3386,6 +3469,8 @@ module.exports = {
   verifyVendorBundle,
   prehashVendorBundle,
   normalizeVendorAssetBytes,
+  readDocumentRuntime,
+  verifyDocumentRuntime,
   NORMALIZED_VENDOR_TEXT_PATHS,
   REPO_ROOT,
   ASSETS_ROOT,

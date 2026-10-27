@@ -49,6 +49,58 @@ test('closed-module gates reject remaining static/dynamic imports and worker cre
     'importScripts(url);', 'self.importScripts(url);']) assert.throws(() => assertClosedCode(source));
 });
 
+test('closed-module gates reject computed browser capabilities and simple executable aliases', () => {
+  for (const source of [
+    'new globalThis["Worker"]("https://unreviewed.invalid/child.js");',
+    'new window[`SharedWorker`](url);',
+    'self["importScripts"]("https://unreviewed.invalid/child.js");',
+    'const Child=Worker;new Child(url);',
+    'let Child;Child=globalThis.Worker;new Child(url);',
+    'const load=self["importScripts"];load(url);',
+    'const {Worker:Child}=globalThis;new Child(url);',
+    'let Child;({SharedWorker:Child}=window);new Child(url);',
+    'export function capability(){return Worker;}',
+  ]) assert.throws(() => assertClosedCode(source), /imports|worker|capabilit/i, source);
+});
+
+test('closed-module gates preserve inert capability names and environment probes', () => {
+  for (const source of [
+    'export const supported=typeof Worker!=="undefined";',
+    'export const supported=typeof self["importScripts"]==="function";',
+    'export const supported=typeof globalThis.Worker==="function";',
+    'export const record={Worker:"Worker",SharedWorker:"SharedWorker",importScripts:"importScripts"};',
+  ]) assert.doesNotThrow(() => assertClosedCode(source), source);
+});
+
+test('closed DuckDB module is reproducible from its unchanged pinned source and all five module graphs close', () => {
+  const builder = require('../build_data_kernel_runtime_graph.cjs'), result = builder.build();
+  const original = fs.readFileSync(path.join(builder.ROOT, builder.SOURCE.path));
+  assertSourcePin(original, builder.SOURCE);
+  assert.throws(() => assertClosedCode(original.toString('utf8')), /capability aliases/);
+  assert.equal(result.provenance.transformations.length, 2);
+  const changed = Buffer.from(original); changed[0] ^= 1;
+  assert.throws(() => builder.closeModule(changed), /Pinned DuckDB source bytes changed/);
+  const graphs = require('../build_runtime_graph_delivery_policy.cjs').readManifest();
+  const modules = Object.values(graphs.assets).filter(asset => asset.kind === 'module');
+  assert.equal(modules.length, 5);
+  for (const asset of modules) assertClosedCode(fs.readFileSync(path.join(builder.ROOT, asset.path), 'utf8'));
+});
+
+test('closed DuckDB publication rejects a conflicting later mirror before creating any earlier output', () => {
+  const builder = require('../build_data_kernel_runtime_graph.cjs'), fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-duckdb-close-'));
+  try {
+    const original = fs.readFileSync(path.join(builder.ROOT, builder.SOURCE.path)), result = builder.closeModule(original);
+    const write = (file, bytes) => { const target = path.join(fixture, file); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, bytes); };
+    write(builder.SOURCE.path, original);
+    const catalog = JSON.stringify({ schemaVersion: 1, assets: { 'duckdb.module': { kind: 'module', ...builder.SOURCE, mirrors: [], closed: true } }, graphs: {} });
+    write(builder.CATALOG, catalog);
+    write('desktop/web-app/public/' + result.record.path, 'concurrent unrelated bytes');
+    assert.throws(() => builder.build({ root: fixture, write: true }), /Existing DuckDB output differs/);
+    assert.equal(fs.existsSync(path.join(fixture, result.record.path)), false);
+    assert.equal(fs.readFileSync(path.join(fixture, builder.CATALOG), 'utf8'), catalog);
+  } finally { fs.rmSync(fixture, { recursive: true, force: true }); }
+});
+
 test('reviewed source pins reject changed contents and malformed expected evidence', () => {
   const bytes = Buffer.from('original runtime code'), expected = { bytes: bytes.length, sha384: crypto.createHash('sha384').update(bytes).digest('hex') };
   assert.doesNotThrow(() => assertSourcePin(bytes, expected));

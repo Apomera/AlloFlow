@@ -1,0 +1,683 @@
+{
+  "checkedAt": "2026-10-26T13:28:43.218Z",
+  "status": "Corrected in local source; verified release and district approval remain required",
+  "scope": "Shared clinical credential state, queued clinical AlloSheet delivery, and temporary BehaviorLens clipboard/print DOM",
+  "tests": {
+    "passed": 114,
+    "failed": 0,
+    "pending": 0,
+    "files": 10,
+    "selected": {
+      "tests/sensitive_workspace.test.js": {
+        "report": "tmp/clinical-credential-20261026/final-test-results.json",
+        "passed": 16,
+        "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+      },
+      "tests/sensitive_workspace_credential_residue.test.js": {
+        "report": "tmp/clinical-credential-20261026/final-test-results.json",
+        "passed": 7,
+        "sha256": "34fb93ee01db464d11cb9ed4c565a456d26573bdb6a6a434472966f006374060"
+      },
+      "tests/sensitive_workspace_lock_boundary.test.js": {
+        "report": "tmp/clinical-credential-20261026/final-test-results.json",
+        "passed": 7,
+        "sha256": "3f19d5cb6511cd0c0fd385657ee57fe6e977ea48c09ed5ebd0bf836add8453c3"
+      },
+      "tests/behavior_lens_export_cleanup.test.js": {
+        "report": "tmp/clinical-export-20261026/bl-final-results.json",
+        "passed": 6,
+        "sha256": "5a60ee816712d90510587819b25db4b52fcdb946947447a03e4d4524a03097ad"
+      },
+      "tests/behavior_lens_protected_workspace.test.js": {
+        "report": "tmp/clinical-export-20261026/bl-final-results.json",
+        "passed": 12,
+        "sha256": "0c1ef31179f1533b354714a3f03ed94fc0dcc5097568a1d4750d8031609b7f86"
+      },
+      "tests/allosheet_request_auth.test.js": {
+        "report": "tmp/clinical-export-20261026/sheet-transfer-final-results.json",
+        "passed": 6,
+        "sha256": "45c7dcd0c2917644118c52204d4a15e05c4d07485809ba9df92bf102c18c123f"
+      },
+      "tests/allosheet_security_contract.test.js": {
+        "report": "tmp/clinical-export-20261026/sheet-transfer-final-results.json",
+        "passed": 19,
+        "sha256": "038eb9485a1f6cd38bd20acf185bf0947c6a1478fdd5055e8c63f32b3b241dbf"
+      },
+      "tests/behavior_lens_allosheet_handoff.test.js": {
+        "report": "tmp/clinical-export-20261026/sheet-transfer-final-results.json",
+        "passed": 13,
+        "sha256": "efdd192d03e7264c6901f4669b2486e7dfa680f397e722d0626c06c962baa07d"
+      },
+      "tests/clinical_sheet_transfer.test.js": {
+        "report": "tmp/clinical-export-20261026/sheet-transfer-final-results.json",
+        "passed": 24,
+        "sha256": "ee5e9684518fd07d6060198715c6f6b0441ec99db6e6579dc24a8683aefaf123"
+      },
+      "tests/dynamic_assessment_allosheet_handoff.test.js": {
+        "report": "tmp/clinical-export-20261026/sheet-transfer-final-results.json",
+        "passed": 4,
+        "sha256": "300d904c620325542c528a56ac3c35d6c171eb80a7585a95c0429d6f0bdbdcd4"
+      }
+    },
+    "runs": [
+      {
+        "file": "tmp/clinical-credential-20261026/final-test-results.json",
+        "passed": 30,
+        "failed": 0,
+        "pending": 0
+      },
+      {
+        "file": "tmp/clinical-export-20261026/bl-final-results.json",
+        "passed": 18,
+        "failed": 0,
+        "pending": 0
+      },
+      {
+        "file": "tmp/clinical-export-20261026/sheet-transfer-final-results.json",
+        "passed": 66,
+        "failed": 0,
+        "pending": 0
+      }
+    ]
+  },
+  "browsers": [
+    {
+      "file": "tmp/clinical-credential-20261026/browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T13:22:03.511Z",
+      "baseline": false,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "nativeIndexedDB": true,
+      "nativeWebCrypto": true,
+      "network": "Navigation fulfilled locally; external page requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "allo_device_storage_module.js": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae",
+        "allo_recovery_vault_integration_module.js": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+        "sensitive_workspace_module.js": "27d91b909a38b84c9a33273e1db459ff2b3ac44fba8e7d22f76a0f48033c088b"
+      },
+      "checks": {
+        "passwordPasswordInputCleared": true,
+        "passwordCannotReopenWithoutRetyping": true,
+        "passwordSavedRecordPreserved": true,
+        "samePhaseEpochChangeClearsPassword": true,
+        "failedOwnAttemptPreservesEditableInput": true,
+        "correctedPasswordStillUnlocks": true,
+        "recoveryPasswordInputCleared": true,
+        "recoveryKeyInputCleared": true,
+        "recoveryCannotReopenWithoutRetyping": true,
+        "recoverySavedRecordPreserved": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-export-20261026/bl-browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T13:24:08.192Z",
+      "baseline": false,
+      "browser": "Microsoft Edge",
+      "syntheticOnly": true,
+      "sourceSha256": "76098d862f4a6d1cbd1070eafd1ec7e64a7b299f0ae73efa774c64eeb711eb5c",
+      "scope": "Actual extracted BehaviorLens clipboard/print helpers with native DOM and print media; synthetic export permission; clipboard/print calls deliberately throw or are stubbed",
+      "network": "Navigation fulfilled locally; other requests blocked",
+      "checks": {
+        "clipboardFailureReported": true,
+        "failedCopyRemovesPlaintextControl": true,
+        "printFailureReported": true,
+        "failedPrintRemovesCopiesAndStyle": true,
+        "printCssPreservesHiddenWorkspace": true,
+        "afterprintRemovesCopies": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-export-20261026/sheet-browser-checks.json",
+      "processExitCode": 0,
+      "checkedAt": "2026-10-26T13:28:32.270Z",
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "nativeWebCrypto": true,
+      "actualCrossOriginPopupPostMessage": true,
+      "scope": "Actual bridge, DA callback and context helper, BL protected-transfer helper, and encrypted workspace service. Ref changes are synthetic; full BL mounting is covered separately by Vitest.",
+      "network": "All navigation responses fulfilled locally; all other requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "sensitive_workspace_module.js": "27d91b909a38b84c9a33273e1db459ff2b3ac44fba8e7d22f76a0f48033c088b",
+        "allo_sheet/host_bridge.js": "77024f78b56779873c6db621376980d767938e4002057cc28cdac9fc4e61138c",
+        "dynamic_assessment_module.js": "53bd23d46460c1d5d25c812d812b7bef71ff7cdac1a3f3963f271491b9136698",
+        "behavior_lens_module.js": "76098d862f4a6d1cbd1070eafd1ec7e64a7b299f0ae73efa774c64eeb711eb5c"
+      },
+      "checks": {
+        "dynamic-assessment-current": true,
+        "dynamic-assessment-lock": true,
+        "dynamic-assessment-canvas-policy": true,
+        "dynamic-assessment-case": true,
+        "dynamic-assessment-unmount": true,
+        "behavior-lens-current": true,
+        "behavior-lens-lock": true,
+        "behavior-lens-canvas-policy": true,
+        "behavior-lens-case": true,
+        "behavior-lens-unmount": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    }
+  ],
+  "baselineRuns": [
+    {
+      "file": "tmp/clinical-credential-20261026/baseline-results.json",
+      "passed": 0,
+      "failed": 2,
+      "purpose": "Expected failures reproduce the prior vulnerability; not final candidate results"
+    },
+    {
+      "file": "tmp/clinical-export-20261026/da-transfer-baseline-results.json",
+      "passed": 1,
+      "failed": 2,
+      "purpose": "Expected failures reproduce the prior vulnerability; not final candidate results"
+    },
+    {
+      "file": "tmp/clinical-export-20261026/bl-baseline-results.json",
+      "passed": 2,
+      "failed": 4,
+      "purpose": "Expected failures reproduce the prior vulnerability; not final candidate results"
+    }
+  ],
+  "baselineBrowsers": [
+    {
+      "file": "tmp/clinical-credential-20261026/browser-baseline.json",
+      "checkedAt": "2026-10-26T13:21:53.560Z",
+      "baseline": true,
+      "syntheticOnly": true,
+      "browser": "Microsoft Edge",
+      "actualReact": true,
+      "nativeIndexedDB": true,
+      "nativeWebCrypto": true,
+      "network": "Navigation fulfilled locally; external page requests blocked",
+      "sourceHashes": {
+        "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+        "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+        "allo_device_storage_module.js": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae",
+        "allo_recovery_vault_integration_module.js": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+        "sensitive_workspace_module.js": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a"
+      },
+      "checks": {
+        "passwordBaselinePasswordReappeared": true,
+        "passwordBaselineReopenedWithoutRetyping": true,
+        "passwordSavedRecordPreserved": true,
+        "recoveryBaselinePasswordReappeared": true,
+        "baselineRecoveryKeyReappeared": true,
+        "recoveryBaselineReopenedWithoutRetyping": true,
+        "recoverySavedRecordPreserved": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    },
+    {
+      "file": "tmp/clinical-export-20261026/bl-browser-baseline.json",
+      "checkedAt": "2026-10-26T13:08:22.490Z",
+      "baseline": true,
+      "browser": "Microsoft Edge",
+      "syntheticOnly": true,
+      "sourceSha256": "1d112d826e9ad4197cd73f0ca16a102057e16136ec9c3955cc821787bebb8c71",
+      "scope": "Actual extracted BehaviorLens clipboard/print helpers with native DOM and print media; synthetic export permission; clipboard/print calls deliberately throw or are stubbed",
+      "network": "Navigation fulfilled locally; other requests blocked",
+      "checks": {
+        "clipboardFailureReported": true,
+        "baselineFailedCopyRetainsPlaintextControl": true,
+        "printFailureReported": true,
+        "baselineFailedPrintRetainsCopies": true,
+        "baselinePrintCssRevealsHiddenWorkspace": true,
+        "afterprintRemovesCopies": true,
+        "noBrowserRuntimeErrors": true
+      },
+      "errors": []
+    }
+  ],
+  "delivery": {
+    "checkedAt": "2026-10-26T13:24:16.858Z",
+    "reviewed": {
+      "sensitive_workspace_module.js": {
+        "bytes": 78933,
+        "sha256": "27d91b909a38b84c9a33273e1db459ff2b3ac44fba8e7d22f76a0f48033c088b",
+        "integrity": "sha384-3NQYtQFvFMP1371hFTkuoMhHypG3ozibX81SfbWzYXadPFSYqN5J1lly40c3nhTn"
+      },
+      "behavior_lens_module.js": {
+        "bytes": 2645062,
+        "sha256": "76098d862f4a6d1cbd1070eafd1ec7e64a7b299f0ae73efa774c64eeb711eb5c",
+        "integrity": "sha384-y4ek6mDRdzylbqmK4qWr8q2aGBJB1fQ9oX3d5U2hwteIcB+q3Qh8GUXK1BjVn2Yu"
+      },
+      "dynamic_assessment_module.js": {
+        "bytes": 1119487,
+        "sha256": "53bd23d46460c1d5d25c812d812b7bef71ff7cdac1a3f3963f271491b9136698",
+        "integrity": "sha384-wnHP/yhHTyWliLDz+4FQXb6KzBuk0c4/JiFuWV0lRHt1K+k+SD6shLbOx7CQSPin"
+      },
+      "allo_sheet/host_bridge.js": {
+        "bytes": 33829,
+        "sha256": "77024f78b56779873c6db621376980d767938e4002057cc28cdac9fc4e61138c",
+        "integrity": "sha384-6UQDfaqJzQXPll8iJtj1YxtraEWpO5jgeeUzru/rXXw7bzCAfyLLBsGLAWIWTnAD"
+      }
+    },
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "beforeSha256": "c9406726aa6067fd3f8986b47b905d775694844fceba131bbf7bd9dd35d1d6ef",
+        "afterSha256": "7cd22a53eba3cb842786c307c7cf8992ed910b8e1a10d764af3898f505c1a118",
+        "manifestId": "e57fb6c765d8e20151a3a13636dc79a03273f0fc61f218b8d6c5956871a9e9b1",
+        "previousManifestId": "95dc0b2d31d441f1b587a2054f28afe55c96d7c0a279e23da892112612f566e4",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=2ead5cb81e",
+            "after": "sensitive_workspace_module.js?v=27d91b909a"
+          },
+          {
+            "before": "behavior_lens_module.js?v=1d112d826e",
+            "after": "behavior_lens_module.js?v=76098d862f"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=c520497c21",
+            "after": "dynamic_assessment_module.js?v=53bd23d464"
+          },
+          {
+            "before": "allo_sheet/host_bridge.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "allo_sheet/host_bridge.js?v=77024f78b5"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "beforeSha256": "fbd093f4709b0f0966735a6999fe7cfc62a39b2b4c51a2b40e88a023d4f9f2eb",
+        "afterSha256": "4733cad8df1914e1acfab750a3386aa3f4d60ed1c7c06fc36d5d2a5686d6d17b",
+        "manifestId": "e57fb6c765d8e20151a3a13636dc79a03273f0fc61f218b8d6c5956871a9e9b1",
+        "previousManifestId": "95dc0b2d31d441f1b587a2054f28afe55c96d7c0a279e23da892112612f566e4",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=2ead5cb81e",
+            "after": "sensitive_workspace_module.js?v=27d91b909a"
+          },
+          {
+            "before": "behavior_lens_module.js?v=1d112d826e",
+            "after": "behavior_lens_module.js?v=76098d862f"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=c520497c21",
+            "after": "dynamic_assessment_module.js?v=53bd23d464"
+          },
+          {
+            "before": "allo_sheet/host_bridge.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "allo_sheet/host_bridge.js?v=77024f78b5"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "beforeSha256": "f92fe7c36b8c5401e6d34340ce18d2c80d42bbd594cd96e1b5d7175647c8cef2",
+        "afterSha256": "c9e72b28c9cc7e3528873199346f7ca5a0ccafbf5e3dbb76c5fafa326cea700c",
+        "manifestId": "e57fb6c765d8e20151a3a13636dc79a03273f0fc61f218b8d6c5956871a9e9b1",
+        "previousManifestId": "95dc0b2d31d441f1b587a2054f28afe55c96d7c0a279e23da892112612f566e4",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsSelectedAsset": true,
+        "replacements": [
+          {
+            "before": "sensitive_workspace_module.js?v=2ead5cb81e",
+            "after": "sensitive_workspace_module.js?v=27d91b909a"
+          },
+          {
+            "before": "behavior_lens_module.js?v=1d112d826e",
+            "after": "behavior_lens_module.js?v=76098d862f"
+          },
+          {
+            "before": "dynamic_assessment_module.js?v=c520497c21",
+            "after": "dynamic_assessment_module.js?v=53bd23d464"
+          },
+          {
+            "before": "allo_sheet/host_bridge.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "allo_sheet/host_bridge.js?v=77024f78b5"
+          }
+        ]
+      }
+    ],
+    "scope": "Only the four selected clinical credential/export module approvals and loader cache strings; no broad policy regeneration, build or release."
+  },
+  "peerReview": {
+    "scope": "Independent read-only baseline comparison of credential invalidation, temporary export DOM cleanup, queued clinical transfers and existing host compatibility",
+    "finding": "No blocking defect found; client lifecycle controls do not replace district authentication or retract delivered exports",
+    "reviewer": "/root/transient_independent_review",
+    "files": [
+      {
+        "path": "sensitive_workspace_module.js",
+        "sha256": "27d91b909a38b84c9a33273e1db459ff2b3ac44fba8e7d22f76a0f48033c088b"
+      },
+      {
+        "path": "behavior_lens_module.js",
+        "sha256": "76098d862f4a6d1cbd1070eafd1ec7e64a7b299f0ae73efa774c64eeb711eb5c"
+      },
+      {
+        "path": "dynamic_assessment_module.js",
+        "sha256": "53bd23d46460c1d5d25c812d812b7bef71ff7cdac1a3f3963f271491b9136698"
+      },
+      {
+        "path": "allo_sheet/host_bridge.js",
+        "sha256": "77024f78b56779873c6db621376980d767938e4002057cc28cdac9fc4e61138c"
+      }
+    ]
+  },
+  "validation": {
+    "sourcePublicMirrors": true,
+    "fourRuntimeModulesParse": true,
+    "threeFullHostsParse": true,
+    "actualEmbeddedPoliciesAcceptFourAssets": true,
+    "reviewedSourcesUnchanged": true,
+    "scopedGitDiffCheck": true
+  },
+  "files": [
+    {
+      "path": "tmp/clinical-credential-20261026/final-test-results.json",
+      "bytes": 12772,
+      "sha256": "55c6d24167c5fd46fa82d821e74c749bda1eee92d9620aa05413f29693288d08"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/bl-final-results.json",
+      "bytes": 7425,
+      "sha256": "4e43451a7f9fb572596c034e81266de4c8695e1e8b47c82f74c11e3c94c07669"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/sheet-transfer-final-results.json",
+      "bytes": 26113,
+      "sha256": "c2c5413d9e9c4719180eadfa757ab83de78a21f185f05af81b888eb630c0564b"
+    },
+    {
+      "path": "tmp/clinical-credential-20261026/browser-checks.json",
+      "bytes": 1344,
+      "sha256": "650c4080bcacc10366e17be5021aedf3feacf258e3b4e4117414c3bc8df69685"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/bl-browser-checks.json",
+      "bytes": 782,
+      "sha256": "907d8e1909d16ce6ffc6a0c30329babfa439205fc51d1cf807392c2851ea4fa1"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/sheet-browser-checks.json",
+      "bytes": 1540,
+      "sha256": "a592543d9afdef636ac2a41a06b91f164522c81edf29199d4e626f7c643cd798"
+    },
+    {
+      "path": "tmp/clinical-credential-20261026/baseline-results.json",
+      "bytes": 2275,
+      "sha256": "53c7351911c756cbb415b0dfec44c6fbd0fe45414cacd92352d9802225826727"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/da-transfer-baseline-results.json",
+      "bytes": 3257,
+      "sha256": "d9cb7acac7b04f5e00a256424f63c6a573d46de1e8782d8f48b0da5cbb257b92"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/bl-baseline-results.json",
+      "bytes": 4580,
+      "sha256": "bd8cfc30f96b15f14a8f02ec58d58919215c771f85dc1048dc74d3b18a751a42"
+    },
+    {
+      "path": "tmp/clinical-credential-20261026/browser-baseline.json",
+      "bytes": 1226,
+      "sha256": "7e5c692801bcacc0711b47dd6c829a2346274aeca66f415eac430297e3cf4078"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/bl-browser-baseline.json",
+      "bytes": 795,
+      "sha256": "7821a17d903c000981aa804e509f0d10e85913f8580a931f620a944289781e57"
+    },
+    {
+      "path": "tmp/clinical-credential-20261026/source-receipt.json",
+      "bytes": 371,
+      "sha256": "e262da3edc0590b96d41814f8973c8f27a6e5c47050ac979d6c48b33bb87256b"
+    },
+    {
+      "path": "tmp/clinical-credential-20261026/baseline-source.json",
+      "bytes": 126,
+      "sha256": "9e3ebdb702fee1123343ec12ca5de533b590f3d7f31567fb66f276f37402d375"
+    },
+    {
+      "path": "tmp/clinical-credential-20261026/browser-qa.cjs",
+      "bytes": 7392,
+      "sha256": "d356bf291025a0f2f5e9200eaabd8209f2144343fa1e9fe7d2964d14a778c370"
+    },
+    {
+      "path": "tmp/clinical-credential-20261026/sensitive_workspace_module.before.js",
+      "bytes": 78206,
+      "sha256": "2ead5cb81e291d18c8ee5944cac4610046eb3772303943140eff65af57e9397a"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/da-transfer-proof-receipt.json",
+      "bytes": 1044,
+      "sha256": "a81ff1b76a625fc6a717b232d12f5f4d97f909c2515b35f3a6d6048fcf8aecdd"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/da-transfer-revocation-proof.test.js",
+      "bytes": 5536,
+      "sha256": "74e085cb0d0dec3440e87c855f4665da0a5a31adae066d2c374a2b240908f8f2"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/dynamic_assessment_module.js.before",
+      "bytes": 1118969,
+      "sha256": "c520497c2106d64410ca5b887af4470812f0da22998cfa03bb3ef659b529b938"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/allo_sheet_host_bridge.js.before",
+      "bytes": 31468,
+      "sha256": "267ceace25bb4ccf9506ad84757586a6385eac2cd6647d0e643a2679e8e26aaa"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/behavior_lens_module.before.js",
+      "bytes": 2642128,
+      "sha256": "1d112d826e9ad4197cd73f0ca16a102057e16136ec9c3955cc821787bebb8c71"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/bl-browser-qa.cjs",
+      "bytes": 4584,
+      "sha256": "625e6cac60f1a73e345b3f76cac0aab76234ab13dc0f7f17e07bcfb538055e79"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/sheet-browser-qa.cjs",
+      "bytes": 8182,
+      "sha256": "1629f034cc49f9b4ae10af4722c752fb97c76b3692c42226962d4d721b986fbc"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/sheet-browser-failure.json",
+      "bytes": 887,
+      "sha256": "ca4b7febd68afd363850a6eabcf489d4f54b7a29e9e013356141c7fb49a5137d"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/delivery-validation.json",
+      "bytes": 5070,
+      "sha256": "3e3feeba913fcf069842d64be5aef2a2de7671e6a2c00cbb53a5db3ee4ac6004"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/peer-review.json",
+      "bytes": 877,
+      "sha256": "7e2c993631301468d8960b1d7d1aa65625056929675efa3a89e42d48c745b28f"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/pin-delivery.cjs",
+      "bytes": 4530,
+      "sha256": "40b5275931f3c31a213e2776bdf17852bd5a82433cabb6cd6acbbe6face76373"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/finalize-evidence.cjs",
+      "bytes": 9877,
+      "sha256": "87041f39580788b39532b638c91907e672512027f3c2072fb0320debf4bd0869"
+    },
+    {
+      "path": "tmp/clinical-export-20261026/scoped-diff-check.json",
+      "bytes": 180,
+      "sha256": "a79ad14246483b6b7e5372537b24e279d05f35ed3bbabe9aaad2b1991799b8e3"
+    },
+    {
+      "path": "sensitive_workspace_module.js",
+      "bytes": 78933,
+      "sha256": "27d91b909a38b84c9a33273e1db459ff2b3ac44fba8e7d22f76a0f48033c088b"
+    },
+    {
+      "path": "behavior_lens_module.js",
+      "bytes": 2645062,
+      "sha256": "76098d862f4a6d1cbd1070eafd1ec7e64a7b299f0ae73efa774c64eeb711eb5c"
+    },
+    {
+      "path": "dynamic_assessment_module.js",
+      "bytes": 1119487,
+      "sha256": "53bd23d46460c1d5d25c812d812b7bef71ff7cdac1a3f3963f271491b9136698"
+    },
+    {
+      "path": "allo_sheet/host_bridge.js",
+      "bytes": 33829,
+      "sha256": "77024f78b56779873c6db621376980d767938e4002057cc28cdac9fc4e61138c"
+    },
+    {
+      "path": "desktop/web-app/public/sensitive_workspace_module.js",
+      "bytes": 78933,
+      "sha256": "27d91b909a38b84c9a33273e1db459ff2b3ac44fba8e7d22f76a0f48033c088b"
+    },
+    {
+      "path": "desktop/web-app/public/behavior_lens_module.js",
+      "bytes": 2645062,
+      "sha256": "76098d862f4a6d1cbd1070eafd1ec7e64a7b299f0ae73efa774c64eeb711eb5c"
+    },
+    {
+      "path": "desktop/web-app/public/dynamic_assessment_module.js",
+      "bytes": 1119487,
+      "sha256": "53bd23d46460c1d5d25c812d812b7bef71ff7cdac1a3f3963f271491b9136698"
+    },
+    {
+      "path": "desktop/web-app/public/allo_sheet/host_bridge.js",
+      "bytes": 33829,
+      "sha256": "77024f78b56779873c6db621376980d767938e4002057cc28cdac9fc4e61138c"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3144857,
+      "sha256": "7cd22a53eba3cb842786c307c7cf8992ed910b8e1a10d764af3898f505c1a118"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3141490,
+      "sha256": "4733cad8df1914e1acfab750a3386aa3f4d60ed1c7c06fc36d5d2a5686d6d17b"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3141161,
+      "sha256": "c9e72b28c9cc7e3528873199346f7ca5a0ccafbf5e3dbb76c5fafa326cea700c"
+    },
+    {
+      "path": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "path": "tests/sensitive_workspace_credential_residue.test.js",
+      "bytes": 9076,
+      "sha256": "34fb93ee01db464d11cb9ed4c565a456d26573bdb6a6a434472966f006374060"
+    },
+    {
+      "path": "tests/sensitive_workspace_lock_boundary.test.js",
+      "bytes": 10918,
+      "sha256": "3f19d5cb6511cd0c0fd385657ee57fe6e977ea48c09ed5ebd0bf836add8453c3"
+    },
+    {
+      "path": "tests/behavior_lens_export_cleanup.test.js",
+      "bytes": 5042,
+      "sha256": "5a60ee816712d90510587819b25db4b52fcdb946947447a03e4d4524a03097ad"
+    },
+    {
+      "path": "tests/behavior_lens_protected_workspace.test.js",
+      "bytes": 17690,
+      "sha256": "0c1ef31179f1533b354714a3f03ed94fc0dcc5097568a1d4750d8031609b7f86"
+    },
+    {
+      "path": "tests/allosheet_request_auth.test.js",
+      "bytes": 5717,
+      "sha256": "45c7dcd0c2917644118c52204d4a15e05c4d07485809ba9df92bf102c18c123f"
+    },
+    {
+      "path": "tests/allosheet_security_contract.test.js",
+      "bytes": 35312,
+      "sha256": "038eb9485a1f6cd38bd20acf185bf0947c6a1478fdd5055e8c63f32b3b241dbf"
+    },
+    {
+      "path": "tests/behavior_lens_allosheet_handoff.test.js",
+      "bytes": 21183,
+      "sha256": "efdd192d03e7264c6901f4669b2486e7dfa680f397e722d0626c06c962baa07d"
+    },
+    {
+      "path": "tests/clinical_sheet_transfer.test.js",
+      "bytes": 14328,
+      "sha256": "ee5e9684518fd07d6060198715c6f6b0441ec99db6e6579dc24a8683aefaf123"
+    },
+    {
+      "path": "tests/dynamic_assessment_allosheet_handoff.test.js",
+      "bytes": 4932,
+      "sha256": "300d904c620325542c528a56ac3c35d6c171eb80a7585a95c0429d6f0bdbdcd4"
+    },
+    {
+      "path": "allo_crypto_module.js",
+      "bytes": 22716,
+      "sha256": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359"
+    },
+    {
+      "path": "allo_device_vault_module.js",
+      "bytes": 43286,
+      "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+    },
+    {
+      "path": "allo_device_storage_module.js",
+      "bytes": 71987,
+      "sha256": "1037903efd4db8a0d04b25cee3873dc0b1249b9690192bc15896db177e59e4ae"
+    },
+    {
+      "path": "allo_recovery_vault_integration_module.js",
+      "bytes": 3818,
+      "sha256": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/clinical-transient-data-followup.md",
+      "bytes": 6601,
+      "sha256": "bd11b3b1cece7118c8249cee6f9d3cc5e89f72069a525285a18c2c610c834321"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 20717,
+      "sha256": "434e0dfdcbcdb01c3f3626d071b3030a57146b0ab8f7a0bf9b7a15d880082a23"
+    },
+    {
+      "path": "docs/audits/2026-10-24-school-district/report.md",
+      "bytes": 40370,
+      "sha256": "0076dbc3d72c4d71ee31960b66315b35bf18c2c3d2ed14b2e613e70005715eae"
+    }
+  ],
+  "limitations": [
+    "Synthetic local checks only; no real records, district account, provider request, commit, push, build or deployment.",
+    "Client lifecycle guards are not district staff authentication or arbitrary same-origin script isolation.",
+    "Clearing application form and DOM state is not guaranteed secure memory erasure or browser password-manager control.",
+    "Already delivered transfers, clipboard copies, print jobs and downloads cannot be retracted by these changes.",
+    "Destination retention and deletion remain separate responsibilities; no remote purge or deletion schedule added.",
+    "Existing host-policy/canonical-source discrepancies remain with coordinated release reconciliation; repository-wide release checks not claimed.",
+    "Default Canvas real-record and external-AI restrictions remain unchanged; actual PPS deployment approval still required."
+  ]
+}

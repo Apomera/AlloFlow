@@ -115,13 +115,15 @@ function _alloCreateBrowserDeliveryPolicy(inputManifest, options) {
 function _alloConfigureBrowserDeliveryScript(script, url) {
   'use strict';
   var location = window.location;
+  var href = String(location.href || '');
+  var baseUrl = /^https?:\/\//i.test(href) ? href : 'https://alloflow-cdn.pages.dev/';
   var loopback = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname || '');
   var desktop = loopback && (location.pathname || '').indexOf('/app/') === 0;
   var usesLocal = desktop || (loopback && location.port === '3000');
   var candidate = usesLocal && typeof url === 'string'
     ? url.replace(/^https:\/\/alloflow-cdn\.pages\.dev\//, './') : url;
   return _alloCreateBrowserDeliveryPolicy(_alloBrowserDeliveryManifest, {
-    baseUrl: location.href,
+    baseUrl: baseUrl,
     isDesktopBundledApp: desktop,
     usesLocalModuleAssets: usesLocal
   }).configureScript(script, candidate);

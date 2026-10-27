@@ -1,0 +1,394 @@
+{
+  "checkedAt": "2026-10-26T09:58:10.396Z",
+  "scope": "Storage approval replay and protected clinical hydration; local synthetic evidence only",
+  "baseline": {
+    "checkedAt": "2026-10-26T09:35:11.930Z",
+    "syntheticOnly": true,
+    "realIndexedDB": true,
+    "network": "Every navigation locally fulfilled; other requests blocked",
+    "sourceSha256": "242eed10662190d15f7ef4ca6a0a247f8375c5b900b2a7f7250b560b96b88a57",
+    "unrelatedPopupAutoAuthorized": true,
+    "unrelatedPopupReadRecord": true,
+    "unrelatedPopupWroteRecord": true,
+    "secondApprovalWasClicked": false
+  },
+  "clinical": {
+    "reproduction": {
+      "staleView": true,
+      "conflict": "none",
+      "newerRecordOverwritten": true,
+      "otherEditSaved": true
+    },
+    "newRegressionSuite": {
+      "failed": 3,
+      "passed": 1,
+      "reason": "Unlock/recovery published stale plaintext with newer write stamps."
+    },
+    "log": "tmp/clinical-hydration-20261026/baseline.log",
+    "tombstoneRegression": {
+      "failed": 1,
+      "passed": 1,
+      "filteredOut": 5,
+      "log": "tmp/clinical-hydration-20261026/tombstone-before.log",
+      "reason": "Concurrent tombstone caused invalid-backup error and retained locked/enabled display state instead of reconciling deletion."
+    }
+  },
+  "tests": {
+    "files": 11,
+    "passed": 148,
+    "failed": 0,
+    "pending": 0,
+    "testFiles": [
+      "tests/allo_device_storage_a11y.test.js",
+      "tests/device_storage_bridge.test.js",
+      "tests/device_storage_bridge_security.test.js",
+      "tests/device_storage_consent_boundaries.test.js",
+      "tests/sensitive_workspace.test.js",
+      "tests/sensitive_workspace_deletion.test.js",
+      "tests/sensitive_workspace_deletion_races.test.js",
+      "tests/sensitive_workspace_hydration_races.test.js",
+      "tests/sensitive_workspace_migration.test.js",
+      "tests/sensitive_workspace_races.test.js",
+      "tests/storage_security_integration_contract.test.js"
+    ],
+    "command": "node node_modules/vitest/vitest.mjs run tests/allo_device_storage_a11y.test.js tests/device_storage_bridge.test.js tests/device_storage_bridge_security.test.js tests/device_storage_consent_boundaries.test.js tests/sensitive_workspace.test.js tests/sensitive_workspace_deletion.test.js tests/sensitive_workspace_deletion_races.test.js tests/sensitive_workspace_hydration_races.test.js tests/sensitive_workspace_migration.test.js tests/sensitive_workspace_races.test.js tests/storage_security_integration_contract.test.js --maxWorkers=1 --testTimeout=30000 --hookTimeout=120000 --reporter=default --reporter=json --outputFile.json=tmp/storage-boundaries-20261026/final-test-results.json"
+  },
+  "browser": {
+    "checkedAt": "2026-10-26T09:49:50.679Z",
+    "syntheticOnly": true,
+    "browser": "Microsoft Edge",
+    "realIndexedDB": true,
+    "network": "All navigations locally fulfilled; all other requests blocked",
+    "sourceHashes": {
+      "storage_bridge.html": "540eb3d14a8179e4099ab9856a2370a0a9f133992975c591c1fb89fae0216b48",
+      "allo_crypto_module.js": "8b3d88e739b3d592bc550c234998401a066b923279adf4afcd562d0d53473359",
+      "allo_device_vault_module.js": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+      "allo_recovery_vault_integration_module.js": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c",
+      "allo_device_storage_module.js": "df8328e91d4236c8ba00595958978b334ee22c3cc167b8084f23f11b12d768e9",
+      "sensitive_workspace_module.js": "219e89d87af17611d495a70d149aed2e3cc03c0fad4011153967e96cca1e16a3"
+    },
+    "checks": {
+      "legacyGrantDoesNotAuthorizeUnrelatedPopup": true,
+      "newConcretePopupNeedsApproval": true,
+      "popupApprovalReadsPreservedLegacyRecord": true,
+      "exactConcreteOriginCanReuseScopedGrant": true,
+      "concreteGrantCannotBeReplayedByOtherOrigin": true,
+      "popupGrantCannotAuthorizeIframeChannel": true,
+      "iframeEmbeddedClickAloneDoesNotAuthorize": true,
+      "iframeApprovalWindowHasNoDataReview": true,
+      "iframeCanWriteAfterSeparateApproval": true,
+      "iframeRetainsOriginalPartitionAcrossReopen": true,
+      "opaqueIframeNeedsFreshApproval": true,
+      "opaqueEmbeddedClickAloneDoesNotAuthorize": true,
+      "opaqueApprovalWindowHasNoDataReview": true,
+      "nativeOpaqueOriginWasUsed": true,
+      "opaqueIframeCanSave": true,
+      "opaqueGrantIsNeverReused": true,
+      "popupDenialLeavesOpaqueIframeUnauthorized": true,
+      "clinicalNativeConcurrentHydrationFailsClosed": true,
+      "clinicalNativeStaleSessionUnavailable": true,
+      "clinicalNativeCurrentRecordSurvives": true,
+      "noBrowserRuntimeErrors": true
+    },
+    "passed": 21,
+    "processExitCode": 0
+  },
+  "visual": {
+    "checkedAt": "2026-10-26T09:55:45.604Z",
+    "sourceHashes": {
+      "storage_bridge.html": "540eb3d14a8179e4099ab9856a2370a0a9f133992975c591c1fb89fae0216b48"
+    },
+    "checks": {
+      "accessBlockedBeforeReview": true,
+      "readyApprovalDialogHasNoHorizontalOverflow": true,
+      "keyboardCanReachDeny": true,
+      "keyboardDenialLeavesAccessBlocked": true
+    },
+    "imagesReviewed": true,
+    "processExit": "Interrupted during browser shutdown after all four assertions and screenshots were written; not a clean helper exit."
+  },
+  "delivery": {
+    "checkedAt": "2026-10-26T09:47:53.904Z",
+    "reviewed": {
+      "allo_device_storage_module.js": {
+        "bytes": 68569,
+        "sha256": "df8328e91d4236c8ba00595958978b334ee22c3cc167b8084f23f11b12d768e9",
+        "integrity": "sha384-rFQD2eiGXXY1vC9MWilWbbC/1Py+Ed4K4QVwe3jRH25uqO4RpItsSpkhbYCQx6xu"
+      },
+      "sensitive_workspace_module.js": {
+        "bytes": 71302,
+        "sha256": "219e89d87af17611d495a70d149aed2e3cc03c0fad4011153967e96cca1e16a3",
+        "integrity": "sha384-MwUjELyrgqi5GZGGDuCKI30/4gq35jf0ce53LBSqKsUc5563Ci+e2Wgu2gJ0Kakq"
+      }
+    },
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "beforeSha256": "339a03c5e2a3508d8d2ec0a28a74af497919b8adad9b74f3942e40bd9667ca1c",
+        "afterSha256": "fd055e24c21ad8ecb7d4b3d66e6a3ac0532232e888cd88c349a1a50f8eb1ab73",
+        "manifestId": "9cea8066662c341214f60636f912a8f374689a09348157c81d9c2b537a50569e",
+        "previousManifestId": "6a92fb068efe956dd6c8c7d033b0473a09ba5c732d2841945bef8c988215b60e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsBothAssets": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent",
+            "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=df8328e91d42"
+          },
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=219e89d87af1"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "beforeSha256": "f0f14c6f9a25d8f851270b669c08b9e1851527961dc30e0e460d37f8f3db0aa0",
+        "afterSha256": "b56c9bd59d537c1518c8953d72c4083873963b761a0c8d93d0e9a5ca04f71eab",
+        "manifestId": "9cea8066662c341214f60636f912a8f374689a09348157c81d9c2b537a50569e",
+        "previousManifestId": "6a92fb068efe956dd6c8c7d033b0473a09ba5c732d2841945bef8c988215b60e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": false,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsBothAssets": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent",
+            "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=df8328e91d42"
+          },
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=219e89d87af1"
+          }
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "beforeSha256": "a44ba0f89484e33238e9f2946585fae503236df3e4be9c8cdc2a4d7f55dab1b8",
+        "afterSha256": "855aa86d7b3c5dc6c38f42506db14ef24b995b3cb122ce9d12577a5b9348f515",
+        "manifestId": "9cea8066662c341214f60636f912a8f374689a09348157c81d9c2b537a50569e",
+        "previousManifestId": "6a92fb068efe956dd6c8c7d033b0473a09ba5c732d2841945bef8c988215b60e",
+        "otherAssetRecordsPreserved": true,
+        "embeddedPolicySourcePreserved": true,
+        "preExistingPolicyMatchesCanonical": true,
+        "fullHostParses": true,
+        "actualEmbeddedPolicyAcceptsBothAssets": true,
+        "replacements": [
+          {
+            "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent",
+            "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=df8328e91d42"
+          },
+          {
+            "before": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=b381955ed9023fbc513d36b57f5fb0c855d55442",
+            "after": "https://alloflow-cdn.pages.dev/sensitive_workspace_module.js?v=219e89d87af1"
+          }
+        ]
+      }
+    ],
+    "scope": "Only two selected asset approvals and their loader cache strings; no broad policy regeneration, build or release."
+  },
+  "validation": {
+    "rootPublicMirrors": true,
+    "inlineBridgeAndModulesParse": true,
+    "scopedDiffCheck": true
+  },
+  "files": [
+    {
+      "path": "storage_bridge.html",
+      "bytes": 62952,
+      "sha256": "540eb3d14a8179e4099ab9856a2370a0a9f133992975c591c1fb89fae0216b48"
+    },
+    {
+      "path": "allo_device_storage_module.js",
+      "bytes": 68569,
+      "sha256": "df8328e91d4236c8ba00595958978b334ee22c3cc167b8084f23f11b12d768e9"
+    },
+    {
+      "path": "sensitive_workspace_module.js",
+      "bytes": 71302,
+      "sha256": "219e89d87af17611d495a70d149aed2e3cc03c0fad4011153967e96cca1e16a3"
+    },
+    {
+      "path": "desktop/web-app/public/storage_bridge.html",
+      "bytes": 62952,
+      "sha256": "540eb3d14a8179e4099ab9856a2370a0a9f133992975c591c1fb89fae0216b48"
+    },
+    {
+      "path": "desktop/web-app/public/allo_device_storage_module.js",
+      "bytes": 68569,
+      "sha256": "df8328e91d4236c8ba00595958978b334ee22c3cc167b8084f23f11b12d768e9"
+    },
+    {
+      "path": "desktop/web-app/public/sensitive_workspace_module.js",
+      "bytes": 71302,
+      "sha256": "219e89d87af17611d495a70d149aed2e3cc03c0fad4011153967e96cca1e16a3"
+    },
+    {
+      "path": "AlloFlowANTI.txt",
+      "bytes": 3141891,
+      "sha256": "fd055e24c21ad8ecb7d4b3d66e6a3ac0532232e888cd88c349a1a50f8eb1ab73"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "bytes": 3141547,
+      "sha256": "b56c9bd59d537c1518c8953d72c4083873963b761a0c8d93d0e9a5ca04f71eab"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "bytes": 3141218,
+      "sha256": "855aa86d7b3c5dc6c38f42506db14ef24b995b3cb122ce9d12577a5b9348f515"
+    },
+    {
+      "path": "tests/allo_device_storage_a11y.test.js",
+      "bytes": 6656,
+      "sha256": "4b7003342600d96790e55ff8c791b5a0c72ec4720373800a5e9174ad96b66053"
+    },
+    {
+      "path": "tests/device_storage_bridge.test.js",
+      "bytes": 33915,
+      "sha256": "b1d0a90aca6729f6b592c75f09d7503d71394105e3e804b35dae4f5b809ce6ba"
+    },
+    {
+      "path": "tests/device_storage_bridge_security.test.js",
+      "bytes": 10084,
+      "sha256": "aa4f19c47ee454d3b1dbe983675b344fbf2fb1d7857bac72c18d1a7915674c2c"
+    },
+    {
+      "path": "tests/device_storage_consent_boundaries.test.js",
+      "bytes": 15289,
+      "sha256": "cfcb88538561997aee9435159d5d6ac11bb8c0f22d6c58c8026bbd1288944a9c"
+    },
+    {
+      "path": "tests/sensitive_workspace.test.js",
+      "bytes": 16770,
+      "sha256": "eab7c3437fcaa5412d133fc01bc522076f2e0dfa30144ad3370390ad7ef3a2b0"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion.test.js",
+      "bytes": 27395,
+      "sha256": "295f07a1c99c8eaefbb5d9c638c2b420618b1e3a64596a227f2966daad59090e"
+    },
+    {
+      "path": "tests/sensitive_workspace_deletion_races.test.js",
+      "bytes": 4986,
+      "sha256": "a312f906bf98bcf60a4463c7686cfad8ad308b2de78603536ca9c9eba2fe9200"
+    },
+    {
+      "path": "tests/sensitive_workspace_hydration_races.test.js",
+      "bytes": 9013,
+      "sha256": "f991a99763c4c2a6452969aa5934de1cb9a91953aab8561bb23b856355e445ab"
+    },
+    {
+      "path": "tests/sensitive_workspace_migration.test.js",
+      "bytes": 10022,
+      "sha256": "80b1103d1cdff65d4971dc8d05021f64314e7b96d88596ecf8be8361056a3153"
+    },
+    {
+      "path": "tests/sensitive_workspace_races.test.js",
+      "bytes": 8734,
+      "sha256": "b2ed1b4b5286be11f9b87a6f33b6dcc19d955d336f0f9599adca6ed6b3890cb8"
+    },
+    {
+      "path": "tests/storage_security_integration_contract.test.js",
+      "bytes": 7225,
+      "sha256": "f2c6977da3c5e7d58506fcecf4a1c306dcfc19915b6172473d5b5cbfd1b35f3f"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 17799,
+      "sha256": "79f57d48d45d59efb67cff21b6c28b4a0b8851a032745f76cd1cae357846a344"
+    },
+    {
+      "path": "docs/DEVICE_STORAGE_BRIDGE.md",
+      "bytes": 6264,
+      "sha256": "fbc0379e5651b59b6432c2af10238452d427a1fb88ee8526bbdcb3e4ebc43c8a"
+    },
+    {
+      "path": "docs/audits/2026-10-26-school-district/storage-boundaries-followup.md",
+      "bytes": 8995,
+      "sha256": "159c982761c168eb2e183b2c1e22ee53bf8dfddd40ecd110117f142828b83f52"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/popup-baseline.cjs",
+      "bytes": 3415,
+      "sha256": "46d3075ccdbd443e7577051187b8f3a081f56ecc61f5745caab940ec09ae0c0a"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/popup-baseline.json",
+      "bytes": 407,
+      "sha256": "28583905b040e975a52a4b358908450794e099f03ee06e6fcc975e8ef181a38d"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/storage_bridge.before.html",
+      "bytes": 53333,
+      "sha256": "242eed10662190d15f7ef4ca6a0a247f8375c5b900b2a7f7250b560b96b88a57"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/browser-qa.cjs",
+      "bytes": 14028,
+      "sha256": "74a400e4419ec2fd31cb57caec536bea0e788b810201691c0604de71c3499365"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/browser-checks.json",
+      "bytes": 1894,
+      "sha256": "18cf9fce30fe9a846b1724746237ba2f8bfb311114e4d3bf549f2160e7e901f3"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/approval-visual-checks.json",
+      "bytes": 359,
+      "sha256": "65e5e08e5889b189fb04fc986da00775cd984f661edf35404de8f0d2f64e7e02"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/approval-window.png",
+      "bytes": 36233,
+      "sha256": "d2d31a0daac75c6060adbb601e60fbde72631c175f99dbc7b83625a348a0b320"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/approval-window-mobile.png",
+      "bytes": 37570,
+      "sha256": "d03e837a4eed959faa3798da4c189373f99d493294ab8afc9bee247f5df31b5e"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/final-tests.log",
+      "bytes": 7565,
+      "sha256": "03600198c8a232e97344b8dec57b4cff8cdc78a0e70189549e93536967e775c1"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/final-test-results.json",
+      "bytes": 57625,
+      "sha256": "004c9222d7e844555d959912917c8426afa23d466dd28f2ae80e811cc875fa22"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/pin-delivery.cjs",
+      "bytes": 4536,
+      "sha256": "e8fd9bcec13234284b6631095a6e2e9f08f6d275498d55ac04c7eba6a0be0678"
+    },
+    {
+      "path": "tmp/storage-boundaries-20261026/delivery-validation.json",
+      "bytes": 4136,
+      "sha256": "19409e551391c5e213c512d450d4f430a69db8d80224cf684323641faf5b736e"
+    },
+    {
+      "path": "tmp/clinical-hydration-20261026/evidence.json",
+      "bytes": 3670,
+      "sha256": "089ab842eaca7108fa97840dbef8af012e5a1a1a7d6be0bb6cb91f4dc094f9b3"
+    },
+    {
+      "path": "tmp/bridge-audit-20261026/bridge-final.log",
+      "bytes": 250,
+      "sha256": "27907f182670641661b05c78c4ddead515ddb99ab634f4cbe9ee78d421d7c441"
+    }
+  ],
+  "limitations": [
+    "No production access, provider requests, real records, commit, push or deployment.",
+    "Actual PPS Canvas sandbox, popup policy and multi-session persistence require real deployment testing with synthetic data.",
+    "Host delivery policy source discrepancy pre-existed in two hosts; only selected asset approvals/cache strings were updated.",
+    "Old open/deployed bridge versions retain prior behavior until replaced.",
+    "Opaque client document navigation without an observed message remains a ds1 WindowProxy lifetime limitation.",
+    "Origin approval does not establish staff identity or distinguish apps on a shared origin."
+  ]
+}
