@@ -1,2 +1,0 @@
-const fs=require('node:fs');const lines=fs.readFileSync('C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/universe_flight_scene.js','utf8').split(/\r?\n/);for(const[first,last]of[[1740,1795],[2685,2730],[55,70]]){console.log(lines.slice(first-1,last).map((line,i)=>(first+i)+': '+line).join('\n'));}
-const ui=fs.readFileSync('C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/stem_tool_universe.js','utf8').split(/\r?\n/);for(const[first,last]of[[295,342],[225,265]])console.log(ui.slice(first-1,last).map((line,i)=>(first+i)+': '+line).join('\n'));

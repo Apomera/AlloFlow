@@ -1,1 +1,0 @@
-error: unknown option '--output-dir=reports/stem-refinement-team-2026-10-01/browser-artifacts-20261001'

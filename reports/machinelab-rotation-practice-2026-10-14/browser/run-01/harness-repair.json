@@ -1,7 +1,0 @@
-{
-  "cause": "Local units constant collided with the reused bootstrap binding before Chromium launch.",
-  "repair": "Rename only the local units binding and its indexed references to rotaryUnits.",
-  "beforeSha256": "f5f4a292c0699d07ee76711cd50028304cc0758b66978687831561d425845923",
-  "afterSha256": "626afcbe62da68826807ccdd25040b495c374128ca38930a324c90bbb3c11576",
-  "productionUnchanged": true
-}

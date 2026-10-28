@@ -1,8 +1,0 @@
-{
-  "refinedAt": "2026-10-03T18:49:00.031605+00:00",
-  "beforeSha256": "5ea7a51ae660484eef425d09ef7c63cb3356150c6cc63bb4d3aa43a8dc59e4bd",
-  "afterSha256": "94c957835b72add689958ecb5b21641511d3ef5ff0df09f1b149c237477d7088",
-  "original31PrefixBytePreserved": true,
-  "browserInvocationStarted": false,
-  "reason": "Literal source prompt makes recording optional with \u201cYou can record\u201d; drafted fixture expected an unused word."
-}

@@ -1,7 +1,0 @@
-{
-  "status": "interrupted",
-  "accepted": false,
-  "reason": "The execution session became unavailable. The recorded node process 29468 was confirmed absent and no final workflow result or exit code was written. The cause is unknown.",
-  "lastCompletedEvidence": "Initial, inclusive-boundary, just-outside and separating screenshots were saved. The last diagnostic checkpoint is paused state preservation.",
-  "action": "Preserve this incomplete attempt and run once in a fresh report directory."
-}

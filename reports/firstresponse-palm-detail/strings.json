@@ -1,7 +1,0 @@
-{
-  "palm_detail_view": "Palm detail view",
-  "palm_detail_cue": "Inspect the palm folds and fingers from a view aligned with the near hand. The view refits when you change the shown pose, arm guides, age, or viewer size.",
-  "palm_detail_compare": "Compare the completed poses before and after the body turns. Follow the same near palm while the torso changes.",
-  "palm_detail_before": "Inspect before the turn",
-  "palm_detail_after": "Inspect after the turn"
-}

@@ -1,6 +1,0 @@
-harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
-discovery checkpoint desktop-before-discovery 0
-discovery checkpoint desktop-discovery 19
-discovery checkpoint dark-phone-discovery 132
-discovery checkpoint forced-doubled-phone-discovery 198
-{"mounts":4,"routes":6,"checks":198,"screenshots":4,"errors":[]}

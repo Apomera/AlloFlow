@@ -1,3 +1,0 @@
-{
-  "row": "- 2026-10-09 | Codex Dissection checkpoint coaching IN PROGRESS: owns canonical/public stem_lab/stem_tool_dissection.js, focused unit additions, new tests/e2e/dissection-checkpoint-coaching.spec.ts and reports/dissection-checkpoint-coaching-2026-10-09. Place coaching beside the selected answer and improve retry readability; preserve grading, keyboard flow and saved work. No staging, commit, push or deployment."
-}

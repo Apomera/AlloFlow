@@ -1,7 +1,0 @@
-{
-  "exitCode": 0,
-  "stdout": "{\"passedGroups\":40,\"sourceSHA256\":\"7656a39cebc2183db3550704f804da7dc629788031807ef448c97a44a4c0ddc1\",\"errors\":[]}\n",
-  "stderr": "",
-  "sourceBefore": "7656a39cebc2183db3550704f804da7dc629788031807ef448c97a44a4c0ddc1",
-  "sourceAfter": "7656a39cebc2183db3550704f804da7dc629788031807ef448c97a44a4c0ddc1"
-}

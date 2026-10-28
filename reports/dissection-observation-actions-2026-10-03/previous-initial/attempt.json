@@ -1,8 +1,0 @@
-{
-  "passed": 54,
-  "failed": 1,
-  "source": "b8bf391446f2dde07e13744a69f50fde7ebb64d7a38e972777a55169de8faf9f",
-  "failure": "Observation reader regression completed every test-body assertion, then browser context teardown exceeded the unchanged 120000ms deadline.",
-  "traceReview": "The context fixture close took120.002s. Test-body assertions passed, including the final focus assertion. No application errors were logged; underlying browser or host cause is unproven.",
-  "action": "Rerun the unchanged55-case regression batch. Source, assertions, worker count and test deadlines unchanged."
-}

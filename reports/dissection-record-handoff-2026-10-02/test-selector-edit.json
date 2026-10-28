@@ -1,8 +1,0 @@
-{
-  "before": "0f1b52dd61a0e1984c247064a87cb6c9c36c056340c5bc79be9fbf7c3fca0e76",
-  "after": "9442759bb7615cb4e8fa23007305651cd3437a4f7aba63a9ee310da87eba5223",
-  "changes": [
-    "Correct the two confidence labels to the existing Somewhat sure wording.",
-    "Add explicit structure-trace completion and guided-evidence preservation coverage."
-  ]
-}

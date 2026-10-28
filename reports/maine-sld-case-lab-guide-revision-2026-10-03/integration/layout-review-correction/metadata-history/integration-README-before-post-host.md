@@ -1,9 +1,0 @@
-# Maine SLD corrected guide-revision integration
-
-All three immediate current shared hosts were archived before guarded atomic Maine loader pin changes from `0ceb5207` to `018f7f78`. Their original `389c69b2…` bytes are preserved in `pin-before/`; exact readbacks and reverse replacements verified that every other byte was preserved. The provisional guide-revision0ceb preview and evidence were archived and remain unchanged. See [setup](setup.json), [pin verification](pin-verification.json) and [static verification](static-verification.json).
-
-One unmodified newly pinned `App.jsx` snapshot was compiled into [source-preview](source-preview/preview.json), with no source transforms and no production output writes. Tested source SHA256 is `ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe`; bundle is `82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd`; exact module is `018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc`. Latest shared-host observations remain separate from this immutable target.
-
-The exact signature and exclusive localhost listener of released old PID9532/session34496 were checked before stopping only that process. New pure HTTP PID19880/managed session95388 serves the same [activity URL](http://127.0.0.1:65063/app/?tool=maine-sld-practice). The primary immutable assets were hash-verified and preloaded into memory before listening. [Runtime](source-preview/runtime.json), [managed ownership](managed-session.json), [transition guards](preview-transition-preflight.json), [switch](preview-switch.json) and [HTTP byte verification](served-verification.json) record the actual target; all three HTTP checks returned200 with exact snapshot hashes after the launch tool returned.
-
-Browser outcomes belong to the report validation records. No full application build, installer build, staging, commit, push or deployment was performed.

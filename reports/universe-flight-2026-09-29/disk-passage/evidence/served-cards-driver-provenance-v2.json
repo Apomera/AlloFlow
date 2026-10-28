@@ -1,9 +1,0 @@
-{
-  "previousDriverSha256": "15a411677bb0bee01dd5268c9dbbcc46c6abee9476cb62552a1f020ea61e6b3c",
-  "driverSha256": "054b8f2f7186707b38d87cc49d02d0f5bb2ccd2755218db71849be9d122f9264",
-  "preservedAttempt": "attempts/served-cards-01-manifest404",
-  "change": "Check manifest locally and in desktop mirror; verify all fifteen WEBPs through the preview server. The browser UI loads individual WEBPs and does not request manifest.json.",
-  "priorFailure": [
-    "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n404 !== 200\n"
-  ]
-}

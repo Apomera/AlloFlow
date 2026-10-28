@@ -1,8 +1,0 @@
-const fs=require('fs'),path=require('path'),crypto=require('crypto'),vm=require('vm'),repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
-const targets=['stem_lab/stem_tool_dissection.js','desktop/web-app/public/stem_lab/stem_tool_dissection.js'],before=fs.readFileSync(path.join(repo,targets[0])),next=fs.readFileSync(path.join(__dirname,'renderer-next.js'));
-if(sha(before)!=='b73e96799bd9bcd2312f2c81805289ee984119eea8b122623cb072aadb396d95'||!before.equals(fs.readFileSync(path.join(repo,targets[1]))))throw Error('Runtime drift');
-const old='@container dissection (max-width: 520px) { #diss-view-tools .diss-view-subgroup .diss-view-control-grid { grid-template-columns: minmax(0, 1fr); } }\n',added='@media print { [data-dissection-root] #diss-view-tools.diss-view-controls { display: none !important; } }\n';
-if(!next.equals(Buffer.from(before.toString().replace(old,old+added)))||before.toString().split(old).length!==2)throw Error('Unexpected print fix');new vm.Script(next.toString());
-for(const f of targets)if(!fs.readFileSync(path.join(repo,f)).equals(before))throw Error('Concurrent runtime change');
-for(const f of targets)fs.writeFileSync(path.join(repo,f),next);
-fs.writeFileSync(path.join(repo,'reports/dissection-view-chooser-2026-10-06/edits/print-fix.json'),JSON.stringify({beforeSha256:sha(before),afterSha256:sha(next),edits:[{before:old,after:old+added}],scope:'Resolve existing View grid/print specificity conflict; native controls unchanged',syntax:true,mirror:true},null,2));console.log(JSON.stringify({sourceSha256:sha(next),printFixOnly:true}));

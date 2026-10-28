@@ -1,8 +1,0 @@
-{
-  "beforeSha256": "c7eb2488927953f913f84cbe9a82b88b834aca899c8eed4a649ae3705d72d46f",
-  "afterSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
-  "onlyClinicalOverlayPaintOrderChanged": true,
-  "clinicalPathsUnchanged": true,
-  "reason": "Paint ACL discontinuity above active movement routes",
-  "overlay": "                regionalAtlasClinical && h('g', { className: 'anatomy-clinical-overlay', 'data-anatomy-clinical-overlay': 'acl_tear', 'aria-hidden': 'true' },\n                  h('path', { d: 'M289 193 L312 173 M327 160 L351 139', fill: 'none', stroke: '#7c3aed', strokeWidth: 9, strokeLinecap: 'round' }),\n                  h('path', { d: 'M313 164 L326 176 M326 164 L313 176', fill: 'none', stroke: '#be123c', strokeWidth: 3 })\n                ),\n"
-}

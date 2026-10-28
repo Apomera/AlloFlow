@@ -1,7 +1,0 @@
-{
-  "status": "interrupted",
-  "accepted": false,
-  "reason": "The execution call was aborted. Recorded node process 26812 was confirmed absent without a final result or exit code. The cause is unknown.",
-  "lastCompletedEvidence": "The workflow and page/context cleanup finished. The retained log stops during browser close; final input preservation and result writing were not recorded.",
-  "action": "Retain the evidence and run the unchanged workflow again in a fresh directory."
-}

@@ -1,7 +1,0 @@
-{
-  "cause": "Style measurements ran before the browser had applied forced-color focus and doubled-text changes; initial enlarged-text observation still reported18px names while final reported36px.",
-  "repair": "Wait two animation frames at visual inspection entry and after keyboard focus; require36px names in enlarged-text inspections. No production or existing assertions weakened.",
-  "beforeSha256": "e46e7aa6811182e9e4db52693a6193936ad9aa5c7c6ce645d27873327f32d895",
-  "afterSha256": "2beab2e1b1f695d9bf67821db5682a42a63bec0a15d2861e128ffaaa82c61150",
-  "productionUnchanged": true
-}

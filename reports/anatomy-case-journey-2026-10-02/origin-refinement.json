@@ -1,9 +1,0 @@
-{
-  "beforeLfSha256": "86ff354434ff3f3f17abb4700ec61c156ce66cb27a56ee4b52514415152a356d",
-  "afterLfSha256": "2fb12e25f3ca63870d5a7c827fe380ca53d31401fcf472735284e744085c4731",
-  "byteEqual": true,
-  "changes": [
-    "Retain raw 3D preference through Spotter",
-    "Require own fields in persisted return origins"
-  ]
-}

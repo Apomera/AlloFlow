@@ -1,7 +1,0 @@
-{
-  "passed": 21,
-  "failed": 6,
-  "source": "fa9b435a63d57677c7dbce2ce1e14d603a7f5d94295933c8be22f744772d4593",
-  "correction": "The layout check exposed the existing search field below the48px control target. Raised its minimum size to48px and inherited the review font before repeating the full suite. Test deadlines and assertions unchanged.",
-  "fixtureCorrection": "The practicalMode fixture initially lacked a countdown deadline, so the existing timer correctly ended that restored attempt. Added a valid future deadline, timer and targets and asserted that practical mode stays active. Product timer behavior and test deadlines unchanged."
-}

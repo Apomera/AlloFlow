@@ -1,9 +1,0 @@
-{
-  "preservedAt": "2026-10-02T21:13:47.407Z",
-  "moduleSha256": "ace588aeb71167631b24a7a2c07c0ad3dc02bbcc839322f995a2e8782b0f7aeb",
-  "sourceSha256": "999519429f7cc27477b3e811fb2dee3f4275053cb227a1d079a3d824ab101318",
-  "bundleSha256": "d9b65d527588ca48da3e726bf02f370d273b607f784c7c93d4994be745c8c017",
-  "moduleBaselineSource": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-practice-navigation-2026-10-02\\before\\maine_sld_practice_module.js",
-  "previousReportPreserved": true,
-  "scope": "Exact accepted ace588ae module and tested host/bundle evidence retained before navigation-pin updates; historical baseline."
-}

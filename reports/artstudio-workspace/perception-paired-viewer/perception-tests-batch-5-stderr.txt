@@ -1,2 +1,0 @@
-[33m[PLUGIN_TIMINGS] [0mYour build spent significant time in plugin `externalize-deps`. See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
-

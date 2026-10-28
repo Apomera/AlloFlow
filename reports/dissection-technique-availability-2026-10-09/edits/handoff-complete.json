@@ -1,5 +1,0 @@
-{
-  "before": "- 2026-10-09 | Codex Dissection technique availability IN PROGRESS: owns canonical/public stem_lab/stem_tool_dissection.js, tests/dissection_lab_improvements.test.js, new availability browser fixture and reports/dissection-technique-availability-2026-10-09. Make equivalent-action readiness visible and give pending learning checkpoints a focus-only route; preserve action gates, saved work and unrelated changes. No staging, commit, push or deployment.",
-  "after": "- 2026-10-09 | Codex Dissection technique availability COMPLETE LOCALLY; ownership RELEASED: visible equivalent-action reasons, focus-only Review plan / Explain result routes, truthful final-explanation status, responsive large-text/contrast styling. Canonical/public synchronized. Validation: 21 focused unit tests, 4 browser cases, 4 scoped axe audits (zero violations; two gradient checks manually resolved), syntax and scoped diff checks passed; 324 protected files preserved. Evidence: reports/dissection-technique-availability-2026-10-09/README.md. No staging, commit, push or deployment.",
-  "otherContentPreserved": true
-}

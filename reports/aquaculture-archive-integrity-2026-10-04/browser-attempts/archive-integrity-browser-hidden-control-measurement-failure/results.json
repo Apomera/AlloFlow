@@ -1,5 +1,0 @@
-{
-  "status": "failed",
-  "error": "Error: phone-duplicates-390 archive controls meet 44px target: {\"name\":\"Swap selected investigations\",\"width\":0,\"height\":44}\n    at assert (C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_archive_integrity_browser.cjs:33:47)\n    at visual (C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_archive_integrity_browser.cjs:77:32)\n    at async C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_archive_integrity_browser.cjs:114:432",
-  "results": []
-}

@@ -1,7 +1,0 @@
-{
-  "wrapperObservedExitCode": 1,
-  "reason": "ENOSPC: no space left on device while writing group-09.log after native return",
-  "completedNativeGroups": 8,
-  "group09NativeExit": "Unrecorded; not counted as passing. Empty partial receipt and log preserved.",
-  "recovery": "Disk space became available without deleting any files. A fresh run-02 verifies and reuses the eight completed groups, then executes remaining groups."
-}

@@ -1,7 +1,0 @@
-{
-  "path": "reports/machinelab-budget-utilization-2026-10-14/tests/run-02/group-07.log",
-  "originalText": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/machinelab_practice_flow.test.js\n[PureHelpers] 7 helpers registered\n\n",
-  "originalSha256": "b73e6fcc250fd3a4c0bd6b1df2a3a7626da1d9b6f2e168804e8c940bdf20c003",
-  "normalizedSha256": "39fa54fc281d10ac7ce40356c142eee76641600655d56598d66199acd95a7983",
-  "reason": "Removed one extra blank line at EOF from the interrupted, uncompleted group log. Original text preserved here; this group is excluded from final coverage."
-}

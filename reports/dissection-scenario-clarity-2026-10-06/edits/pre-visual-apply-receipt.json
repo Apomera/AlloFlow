@@ -1,9 +1,0 @@
-{
-  "sourceSha256": "ace3a133dd2720df60741a1242e0dbf9be05977677067429b1892318924223cf",
-  "unitSha256": "e2468a2b7e90db503e29ca3ae5c4c4d29f663e2c61de2c875ea1a9116b3eaba1",
-  "browserSha256": "d0b5a0ab9c9343963f9bb070ca48eb194d0e42ef51f3c2c331b0731191ba0246",
-  "sourceSyntax": true,
-  "browserSyntax": true,
-  "mirror": true,
-  "exactForwardAndInverse": true
-}

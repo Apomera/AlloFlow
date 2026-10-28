@@ -1,5 +1,0 @@
-{
-  "status": "No tests selected",
-  "cause": "The baseline grep incorrectly anchored the case title to the beginning of the full Playwright title, which also includes the project and file.",
-  "correction": "Removed the leading anchor. Test source, assertions, deadlines and product source unchanged."
-}

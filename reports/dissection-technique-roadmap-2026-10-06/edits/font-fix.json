@@ -1,9 +1,0 @@
-{
-  "at": "2026-10-07T02:28:10.691Z",
-  "beforeSha256": "5646ce64f266c0a82f74e7f3827d25c8fcab3e3b7c5c04a8a34eff801ce59ce4",
-  "afterSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
-  "before": ".diss-technique-roadmap { grid-column: 1 / -1; display: grid; min-width: 0; gap: .55rem; padding: .7rem; border: 1px solid #a9bdd3; border-radius: .75rem; background: #fff; color: #173f69; }",
-  "after": ".diss-technique-roadmap { font-size: 16px; grid-column: 1 / -1; display: grid; min-width: 0; gap: .55rem; padding: .7rem; border: 1px solid #a9bdd3; border-radius: .75rem; background: #fff; color: #173f69; }\n[data-dissection-root][data-text-size=\"large\"] .diss-technique-roadmap { font-size: 18px; }",
-  "exactInverse": true,
-  "cssOnly": true
-}

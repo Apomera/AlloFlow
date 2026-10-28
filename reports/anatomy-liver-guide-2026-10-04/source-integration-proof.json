@@ -1,8 +1,0 @@
-{
-  "baselineSha256": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
-  "sourceSha256": "e13900bcf029704f9f480f9e23a930297e3c527726ee41591619b79e02012f31",
-  "runtimeMirrorsIdentical": true,
-  "syntaxPassed": true,
-  "onlyLiverRendererAndScopedCssChanged": true,
-  "exactScopeReversal": true
-}

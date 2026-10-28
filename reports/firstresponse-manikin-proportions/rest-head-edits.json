@@ -1,7 +1,0 @@
-[
-  {
-    "name": "fit head back above training mat",
-    "before": "    headPivot.position.set(0, 0.07, -1.25 * profile.torso);",
-    "after": "    headPivot.position.set(0, 0.025 / ageScale - 0.30 + 0.30 * profile.head, -1.25 * profile.torso);"
-  }
-]

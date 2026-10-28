@@ -1,7 +1,0 @@
-{
-  "sourceSHA256": "93f67c2f6be8d44e3986e5b8cb4b5f350569f40c8b2f320bb96e22f8ef512551",
-  "baselineSHA256": "099de233e9f0d239d19dd28c946f48b696e70c8606d852c1cd23dbb7b9a9697e",
-  "expectedTests": 690,
-  "expectedFiles": 15,
-  "expectedBrowserGroups": 145
-}

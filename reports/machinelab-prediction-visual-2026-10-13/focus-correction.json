@@ -1,7 +1,0 @@
-{
-  "previousSourceSha256": "458d63e5be5dbceeb459959efff12b4c900ca00913a851946deb5116d2f5db04",
-  "sourceSha256": "beec1ea14944e6225b401e3f8b6235413535ed8f6059dbf3f4160ddf817b5af3",
-  "oldSelectors": ".ml-prediction button:focus-visible,.ml-prediction input:focus-visible,.ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}",
-  "newSelectors": ".ml-power-lab .ml-prediction button:focus-visible,.ml-power-lab .ml-prediction input:focus-visible,.ml-power-lab .ml-prediction select:focus-visible{outline:3px solid var(--ml-prediction-focus);outline-offset:3px}",
-  "reason": "Qualify focus selectors to override the later outer power-lab currentColor rule; behavior and callback code unchanged."
-}

@@ -1,2 +1,0 @@
-Mount 2026-10-10T04:24:51.729Z
-2026-10-10T04:25:03.272Z warning: Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently

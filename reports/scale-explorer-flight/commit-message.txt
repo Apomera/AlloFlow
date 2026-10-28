@@ -1,7 +1,0 @@
-Add immersive Everest flight controls and alpine atmosphere
-
-Navigate the measured terrain with an independent flight camera, desktop and touch controls, a live heading map, and altitude and clearance instruments. Save and restore flight viewpoints in the field notebook.
-
-Adds minimum 150 m terrain clearance, bounded travel, held-input cleanup, an alpine daylight sky and readable phone controls. Geometry retains the bundled 75 m elevation grid.
-
-Validation: 139 Scale Explorer unit checks and 19 real WebGL browser scenarios passed, including touch flight, notebook restoration and existing terrain and planetary views.

@@ -1,7 +1,0 @@
-{
-  "command": "node reports/machinelab-station-chooser-2026-10-14/run-tests.cjs reports/machinelab-station-chooser-2026-10-14/tests/run-02",
-  "execSessionId": 88116,
-  "observedExitCode": 0,
-  "observedPassedTests": 46,
-  "sourceSha256": "3a74ad7bf3fec0ca3ce62786d49f6d6460fe4e6fc73972c83a361c0598cb1bd7"
-}

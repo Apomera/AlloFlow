@@ -1,7 +1,0 @@
-{
-  "baseline": "9faaef017b8cff11cf5d0968334e861a84a34994415c4be2d67dc32e7af358fc",
-  "candidate": "49351974e8cbff677f9bda0a6a8b24f3ee5910d51f327ed7c7b17fa2b4c6e8ae",
-  "englishKeys": 62,
-  "scope": "Alveolus renderer and scoped CSS only",
-  "syntaxPassed": true
-}

@@ -1,6 +1,0 @@
-const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');
-const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',report=path.join(repo,'reports/dissection-replay-contact-2026-10-10');
-const runs={};for(const name of fs.readdirSync(report)){const file=path.join(report,name,'run.json');if(!fs.existsSync(file))continue;const run=JSON.parse(fs.readFileSync(file,'utf8'));runs[name]={pid:run.pid,start:run.start,end:run.end,exit:run.exitCode,stable:run.inputHashesStable};}
-const cmd="Get-CimInstance Win32_Process -Filter \"Name = 'node.exe'\" | Select-Object ProcessId,CreationDate,CommandLine | ConvertTo-Json -Depth 3";
-let processes;try{const all=JSON.parse(cp.execFileSync('powershell.exe',['-NoProfile','-Command',cmd],{encoding:'utf8',windowsHide:true}));processes=[].concat(all||[]).filter(p=>Object.values(runs).some(r=>r.pid===p.ProcessId)||/dissection-replay-(contact|review)\.spec\.ts|prior-review\.cjs|run\.cjs (browser|unit)/.test(p.CommandLine||''));}catch(err){processes={error:err.message};}
-const disk=fs.statfsSync(repo),output={at:new Date().toISOString(),freeMiB:disk.bavail*disk.bsize/1048576,runs,processes};fs.writeFileSync(path.join(report,'live-status.json'),JSON.stringify(output,null,2)+'\n');console.log(JSON.stringify(output,null,2));

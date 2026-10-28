@@ -1,3 +1,0 @@
-# Guide writer visibility correction
-
-The natural guide-to-Q9-to-note flow clipped27.3125px of the active writer at844x390. The complete writer and adjacentReturn span180.5px, which fits the212px main region with7px margins. Root and independent reviewer inspected actual probe pixels. A guide-only focus handler now schedules one measurement and minimally scrolls only main; it includes the return when that span fits, otherwise prioritizes the writer. It never focuses or changes selection, and does not scroll per keystroke. The old source/module/freeze and all initial attempted validation remain preserved. Canonical35test definitions remain unchanged.

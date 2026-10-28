@@ -1,9 +1,0 @@
-{
-  "completed": true,
-  "baselineHash": "055730a7aeffadae917724a86b708b8c7cc3aabb91ccd8059985f0809a43d702",
-  "candidateHash": "1174545d46eebc4a161236dec891b718474e9926b52e0fa827ff9b58a249a23f",
-  "replacement": {
-    "before": "disk-depth",
-    "after": "close-disk"
-  }
-}

@@ -1,9 +1,0 @@
-{
-  "sourceSha256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
-  "attempt": "initial focused import suite",
-  "processStarted": false,
-  "testsExecuted": 0,
-  "exitCode": 1,
-  "error": "MXC launcher: failed to create the process security environment: CreateProcessSecurityEnvironment failed (HRESULT = 0x80070020)",
-  "productFailure": false
-}

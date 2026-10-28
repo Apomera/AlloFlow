@@ -1,7 +1,0 @@
-{
-  "phase": "mount-and-workflows",
-  "checks": [],
-  "errors": [],
-  "loadedSourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
-  "error": "page.screenshot: Protocol error (Page.captureScreenshot): Unable to capture screenshot\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\.cache\\perception_import_comparison_regression.cjs:172:18"
-}

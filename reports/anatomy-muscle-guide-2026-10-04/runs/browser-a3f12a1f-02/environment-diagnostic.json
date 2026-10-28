@@ -1,9 +1,0 @@
-{
-  "observedAt": "2026-10-04T22:25:53.1972990Z",
-  "failure": "ENOSPC while writing before catalog snapshots; browser not dispatched",
-  "sourceExpected": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
-  "fixtureExpected": "e3127bc4256cfecb03299b82df8d7e2512cc0f93f3cc5fe7b0367dc75ca8e167",
-  "cleanupPerformed": false,
-  "diskFreeAfterRecovery": 12603584512,
-  "retry": "browser-a3f12a1f-03"
-}

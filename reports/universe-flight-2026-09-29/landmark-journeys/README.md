@@ -1,9 +1,0 @@
-# Enhancement 71 — Scenic destination cards and direct journeys
-
-Explore landmarks now shows authored scenic previews linked to each generated landmark, with separate Inspect and Fly here actions. The cards retain their numbers, camera distances, and live center visibility. Preview loading failures leave a numbered placeholder and usable actions. The compact scroll area contains the cards and explanatory note so previews and actions receive more room.
-
-Fly here uses the existing guided approach, matches pace toward approximately 20 playback seconds within scene limits, and pauses at the landmark’s nearest viewing distance. The origin is saved before pace and arrival settings change. Back is available during the trip and after arrival, restoring the camera, lens, counters, selected destination, pace, and previous arrival setting. An already selected and centered target still records a return point at launch. In-range destinations cannot start a redundant approach.
-
-Validation: 30 focused tests; 22 Chromium browser workflows; 5 accessibility checks with zero violations; 8 screenshots; 6 control reachability checks. Browser checks verify target-linked preview files, failed-image recovery, exact projection and opening pixel preservation, complete guided arrival at the correct catalog range, pause and exact Back restoration after the renderer’s existing yaw normalization, immediate Back for a matching target/heading, restoration of a wider arrival setting, stable row identity/focus behavior, phone/fullscreen/high contrast/landscape, and region cleanup. Rendering used Chromium SwiftShader; the complete flight used a narrow viewport to reduce software-rendering cost. Cross-device hardware GPU rendering was not tested.
-
-The renderer and all 18 scenic assets are unchanged. Canonical and desktop UI copies match; source syntax and scoped diff checks pass, and the patch reverses exactly to enhancement 70. Nothing staged or committed.

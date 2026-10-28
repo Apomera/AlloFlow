@@ -1,9 +1,0 @@
-{
-  "file": "tests/machinelab_prediction_percent.test.js",
-  "testedSnapshot": "reports/machinelab-prediction-percent-2026-10-14/tests/run-01/percent-test-snapshot.json",
-  "testedSha256": "2968044dc6c9114fecdcbc7baa4d8bb73669fe60c572a6f8a56fdf8ff7001908",
-  "currentSha256": "c9895f1ce7eb765624fd136425e311d32c1f0d1b757344e89292c4f3b7aa9ce9",
-  "change": "Remove exactly one blank line at EOF after validation; all executable test bytes unchanged.",
-  "requiresRerun": false,
-  "snapshotSha256": "5e2ccbc1f158aa21ce736064d13296c832f50ae639415051c803a44e0887200b"
-}

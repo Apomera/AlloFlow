@@ -1,9 +1,0 @@
-{
-  "beforeSha256": "a679c684270d23bb8558017543b8f283b57ef0db675b6dbe9590895ceb7c7b12",
-  "afterSha256": "d0670ff3711b4b5d0c23f98813b9fc5b90945657fcc51589a0c9139b0d3b92d8",
-  "forwardExact": true,
-  "inverseExact": true,
-  "mirrorExact": true,
-  "syntaxValid": true,
-  "edits": 23
-}

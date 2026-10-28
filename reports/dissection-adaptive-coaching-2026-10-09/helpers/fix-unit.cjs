@@ -1,6 +1,0 @@
-const fs=require('fs'),path=require('path'),crypto=require('crypto'),assert=require('assert/strict');
-const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',report=path.join(repo,'reports/dissection-adaptive-coaching-2026-10-09'),hash=b=>crypto.createHash('sha256').update(b).digest('hex'),file=path.join(repo,'tests/dissection_lab_improvements.test.js'),receiptFile=path.join(report,'edits/unit-edit.json');
-const receipt=JSON.parse(fs.readFileSync(receiptFile));let source=fs.readFileSync(file,'utf8');assert.equal(hash(source),receipt.current);
-const before="expect(html).toContain('Apply coaching setup');",after="expect(html).toContain('Review technique controls');";assert.equal(source.split(before).length,2);assert(Buffer.byteLength(source.slice(0,source.indexOf(before)))<receipt.insertionByteOffset);source=source.replace(before,after);
-fs.writeFileSync(file,source);receipt.edits.push({before,after});receipt.insertionByteOffset+=Buffer.byteLength(after)-Buffer.byteLength(before);receipt.current=hash(source);fs.writeFileSync(receiptFile,JSON.stringify(receipt,null,2));
-for(const name of ['verify.cjs','finalize.cjs']){const f=path.join(__dirname,name);fs.writeFileSync(f,fs.readFileSync(f,'utf8').replaceAll('unit-5','unit-6'));}console.log(receipt.current);

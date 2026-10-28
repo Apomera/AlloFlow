@@ -1,9 +1,0 @@
-{
-  "nativeActions": 34,
-  "exactControlOrder": true,
-  "exactAllOriginalProps": true,
-  "exactHandlers": true,
-  "exactNativeChildren": true,
-  "addedControlProps": "aria-describedby only",
-  "checks": "AST source-byte comparison across full View controls"
-}

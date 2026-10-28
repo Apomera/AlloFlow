@@ -1,7 +1,0 @@
-{
-  "command": "node reports/machinelab-motion-controls-2026-10-14/run-tests.cjs reports/machinelab-motion-controls-2026-10-14/tests/run-03",
-  "execSessionId": 87099,
-  "observedExitCode": 0,
-  "observedPassedTests": 93,
-  "sourceSha256": "4cd0b0866efcd019b1203f52614a8ca38eeee450f1e81010300f3b7d75c57010"
-}

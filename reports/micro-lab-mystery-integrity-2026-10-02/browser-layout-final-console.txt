@@ -1,6 +1,0 @@
-
-Running 1 test using 1 worker
-
-  ok 1 [chromium] › tests\e2e\microbiology-mystery-integrity.spec.ts:189:5 › phone and enlarged report navigation stays keyboard usable while imported markup and long untouched notes remain intact (12.8s)
-
-  1 passed (3.5m)

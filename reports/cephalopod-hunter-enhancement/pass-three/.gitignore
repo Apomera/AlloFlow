@@ -1,9 +1,0 @@
-*.log
-*.json
-!validation-summary.json
-*.generated.cjs
-apply-*.cjs
-refine-*.cjs
-browser-artifacts/
-retest-artifacts/
-*-artifacts/

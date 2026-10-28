@@ -1,4 +1,0 @@
-{
-  "before": "- 2026-10-09 | Codex Dissection monitor handoff BLOCKED: system drive full; ownership RELEASED. Source/tests unchanged; no tests run. Monitor, Simple steps and technique status review prepared. Evidence: reports/dissection-monitor-handoff-2026-10-09. No staging, commit, push or deployment.                                                                                                                              ",
-  "row": "- 2026-10-09 | Codex Dissection monitor handoff IN PROGRESS after storage recovery: owns canonical/public stem_lab/stem_tool_dissection.js, focused unit changes, tests/e2e/dissection-monitor-handoff.spec.ts and reports/dissection-monitor-handoff-2026-10-09. Align monitor navigation, Simple steps and technique status with the learning phase; preserve saved work and action gates. No staging, commit, push or deployment."
-}

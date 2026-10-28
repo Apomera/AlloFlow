@@ -1,8 +1,0 @@
-{
-  "beforeSha256": "bdd2a1fdd6716bc7400a8d37130cbae9596fe390b5a70f891952b784e8c136bb",
-  "afterSha256": "c7eb2488927953f913f84cbe9a82b88b834aca899c8eed4a649ae3705d72d46f",
-  "onlyDrawingFragmentKeyChanged": true,
-  "reason": "Give the drawing fragment a stable React list key",
-  "from": "function kneeDrawing(support) { return h(React.Fragment, null,",
-  "to": "function kneeDrawing(support) { return h(React.Fragment, { key: 'knee-drawing' },"
-}

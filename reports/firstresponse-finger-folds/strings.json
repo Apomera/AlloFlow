@@ -1,5 +1,0 @@
-{
-  "hand_landmark_prompt": "Follow one finger from its tip toward the wrist. Use the folds and nails to follow the same hand before and after the turn. Which side faces upward?",
-  "hand_landmark_check": "Check your observation",
-  "hand_landmark_answer": "The palm side faces upward in both poses. The folds help you follow its surface; the nails mark the back of the hand."
-}

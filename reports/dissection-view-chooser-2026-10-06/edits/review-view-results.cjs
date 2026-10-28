@@ -1,7 +1,0 @@
-const fs=require('fs'),path=require('path'),repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',report=path.join(repo,'reports/dissection-view-chooser-2026-10-06');
-const suffix=process.argv[2]||'3';if(!/^\d+$/.test(suffix))throw Error('Invalid sequence');const sequence=JSON.parse(fs.readFileSync(path.join(report,'sequence-'+suffix+'.json')));console.log(JSON.stringify(sequence));
-if(sequence.running){const log=path.join(report,sequence.running.label,'stdout.log');if(fs.existsSync(log))console.log(fs.readFileSync(log,'utf8').trim().split(/\r?\n/).slice(-6).join('\n'));}
-const out=path.join(report,'view-'+suffix),result=path.join(out,'results.json');
-if(!fs.existsSync(result))process.exit(0);const r=JSON.parse(fs.readFileSync(result)),axes=fs.readdirSync(path.join(out,'captures')).filter(n=>/-axe\.json$/.test(n)).map(file=>{const a=JSON.parse(fs.readFileSync(path.join(out,'captures',file)));return{file,violations:a.violations.length,incomplete:a.incomplete.map(x=>({id:x.id,nodes:x.nodes.length}))};});
-const review={browserStats:r.stats,scopedAudits:axes,fullAuditOutputsRetained:true,manualVisualReview:'Root inspected desktop and narrow large-text/high-contrast captures; no clipped controls or text observed. Independent visual review saved separately.'};
-fs.writeFileSync(path.join(__dirname,'view-results-review.json'),JSON.stringify(review,null,2));console.log(JSON.stringify(review));

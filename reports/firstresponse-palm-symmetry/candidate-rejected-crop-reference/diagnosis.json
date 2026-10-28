@@ -1,4 +1,0 @@
-{
-  "runtimeChanged": false,
-  "reason": "Crop reference now uses the unchanged palm surface. Its complete projection remains byte-exact; fitted crease depth changes are validated in their own buffers and geometric skin-fit checks. The previous combined projection differed only in minimum camera depth by 5.4132494264891307e-8."
-}

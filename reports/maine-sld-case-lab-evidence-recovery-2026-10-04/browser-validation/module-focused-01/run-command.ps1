@@ -1,9 +1,0 @@
-$ErrorActionPreference = 'Stop'
-if ((Get-FileHash -LiteralPath 'maine_sld_practice_module.js' -Algorithm SHA256).Hash.ToLowerInvariant() -ne '6ab45e2cbf3793f58d0510e5049028855169aa1150fa33209ad2d48179f0b424') { throw 'Module freeze changed' }
-if ((Get-FileHash -LiteralPath 'maine_sld_practice_source.jsx' -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'fd85f1e8e7613a885bb5c33196d6f137b54d73ba2bd3c41371f729899ce3a8a0') { throw 'Source freeze changed' }
-if ((Get-FileHash -LiteralPath 'tests/e2e/maine-sld-practice.spec.ts' -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'ab21f099c4723a58230e306ad8270dc198627a2b829e1a9ab33a29679483c37a') { throw 'Canonical spec changed' }
-$env:SLD_HOST_BASE_URL = 'http://127.0.0.1:65063/app'
-$env:SLD_REPORT_DIR = 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/evidence-recovery-validation/module-focused-01/browser'
-$env:PLAYWRIGHT_JSON_OUTPUT_NAME = 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/evidence-recovery-validation/module-focused-01/result.json'
-& 'C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe' node_modules/@playwright/test/cli.js test tests/e2e/maine-sld-practice.spec.ts --project=chromium --workers=1 --retries=0 --grep='most recent finding removal can restore exact roles|finding removal recovery keeps neighboring board focus|all52 scores, evidence and Q8/Q9 work survive|participant review edits return to each exact control|session save warning preserves open work and focus' --reporter=list,json --output='C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/evidence-recovery-validation/module-focused-01/artifacts' 2>&1 | Tee-Object -FilePath 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/evidence-recovery-validation/module-focused-01/run.log'
-exit $LASTEXITCODE

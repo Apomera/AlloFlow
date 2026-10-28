@@ -1,9 +1,0 @@
-{
-  "status": "passed",
-  "purpose": "browser startup diagnostic only",
-  "browser": "148.0.7778.96",
-  "durationMs": 3959,
-  "metrics": {
-    "missingFuelWidth": 100.2578125
-  }
-}

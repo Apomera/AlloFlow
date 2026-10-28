@@ -1,7 +1,0 @@
-{
-  "reason": "Duplicate startup receipt retained an empty interrupted console copy. Recovered exact original console bytes from attempt-1, whose process receipt is byte-identical.",
-  "source": "../attempt-1/console.log",
-  "recoveredSha256": "88de76e5c519df0b07fe12588df052ad43915f9b7eeb49fe395c494083f24858",
-  "matchesOriginalReceipt": true,
-  "emptyCopyRetained": "interrupted-empty-console.log"
-}

@@ -1,8 +1,0 @@
-{
-  "completed": true,
-  "scope": "Add stable summary fields after validating the completed primary/retry results and current input hashes; no reruns or assertion changes.",
-  "summaryDriverHash": "2d39ef4d5a458ef421efb835e6bd1c1fcab6c4c82d59c29cab66208db315dd2d",
-  "originalAggregateHash": "f9840a942b9bd0f91d619987dcc9b2073c5bad7e89353c264f2d2ecd7a8583a4",
-  "finalAggregateHash": "6c49bca5348acc1319c5fe2f4e714919d903d82f10e61dc72160f8be72428c19",
-  "installedTestHash": "ed7e3572a4a3ccc5760e2edf408e10e4e9d0bfc4e67a9a135af15e580cb07276"
-}

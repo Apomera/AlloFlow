@@ -1,9 +1,0 @@
-{
-  "driverSha256": "1c742ef08446a13e190344a62596b1d917c251361c5e347c1749999d35a3d388",
-  "baseDriverSha256": "6fce8e35a8a12fb60a60923d5dfcd8447f3ca5f5e37cfc27add0932349e0e0d6",
-  "poseFileSha256": "5004bb102f9d659236a31cc1c3d0d6409a159891a0dc478f9bcfda2c88609653",
-  "sourceReportSha256": "478e8080d6bbb3a8e9627e476b3e506dbd450b212d837d7e6ec5cb463faa86cb",
-  "preservesOriginalFailure": true,
-  "cases": 2,
-  "captures": 4
-}

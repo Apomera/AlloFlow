@@ -1,1 +1,0 @@
-module.exports={...require('../cell-explanation-refinement/playwright.config.cjs'),testMatch:['cell-specimen-notes-refinement.spec.ts','cell-explanation-refinement.spec.ts'],outputDir:'./browser-results'};

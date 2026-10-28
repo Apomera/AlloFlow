@@ -1,7 +1,0 @@
-{
-  "phase": "preview-add-undo",
-  "checks": [],
-  "errors": [],
-  "loadedSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073",
-  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   added: 0,\n+   free: 0,\n-   added: 6,\n-   free: 21,\n    skipped: 0\n  }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\.cache\\perception_finder_import_regression.cjs:79:12"
-}

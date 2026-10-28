@@ -1,8 +1,0 @@
-{
-  "command": "node reports/machinelab-task-setup-visual-2026-10-14/browser/run-native.cjs run-03",
-  "sessionId": 53038,
-  "exitCode": 0,
-  "chunkId": "d1697d",
-  "observedBy": "setup_browser",
-  "source": "tools.write_stdin final completion"
-}

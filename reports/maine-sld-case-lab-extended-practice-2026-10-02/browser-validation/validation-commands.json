@@ -1,7 +1,0 @@
-{
-  "workingDirectory": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
-  "browserCommand": "$env:SLD_HOST_BASE_URL = 'http://127.0.0.1:65061/app'\n$env:SLD_REPORT_DIR = 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/extended-validation/final-browser'\n$env:PLAYWRIGHT_JSON_OUTPUT_NAME = 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/extended-validation/final-browser-result.json'\n& 'C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe' node_modules/@playwright/test/cli.js test tests/e2e/maine-sld-practice.spec.ts --project=chromium --workers=1 --retries=0 --reporter=list,json --output='C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/extended-validation/final-browser-artifacts' 2>&1 | Tee-Object -FilePath 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/extended-validation/final-browser-run.log'\nexit $LASTEXITCODE",
-  "unitCommand": "& 'C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe' node_modules/vitest/vitest.mjs run tests/maine_sld_practice.test.js --maxWorkers=1 --reporter=default --reporter=json --outputFile='C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/extended-validation/unit-result.json' 2>&1 | Tee-Object -FilePath 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/extended-validation/unit-run.log'\nexit $LASTEXITCODE",
-  "browserExitCode": 0,
-  "unitExitCode": 0
-}

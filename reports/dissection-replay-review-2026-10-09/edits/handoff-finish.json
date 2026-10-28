@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10T04:23:57.346Z",
-  "beforeHash": "b1aa850ad4fb51fcd76e3bb6f995325aa159b4d45d48d6d3ddf963e5c8974289",
-  "afterHash": "168582013f3b6a2b15e21dc6a710e89b2b78dfb2197b36ad9a38e5ee9e98fc07",
-  "beforeRow": "- 2026-10-09 | Codex Dissection replay review | IN PROGRESS. Owns canonical/public stem_lab/stem_tool_dissection.js, new focused replay-review unit/browser tests and reports/dissection-replay-review-2026-10-09. Add learner-controlled paused action review and readable playback controls. Preserve shared work/index. No staging, commit, push or deployment.",
-  "afterRow": "- 2026-10-09 | Codex Dissection replay review | COMPLETE LOCALLY; ownership RELEASED. Learner-controlled paused action review, readable responsive controls, native focus/return focus, demo cancellation and fullscreen cancellation. 18 final unit checks and four Chromium scenarios pass; four scoped axe scans have zero violations. Source/runtime SHA256 ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654. 1046 protected files unchanged; 32 source edits reverse to baseline. Report reports/dissection-replay-review-2026-10-09/README.md. No staging, commit, push or deployment.",
-  "unrelatedRowsPreserved": true
-}

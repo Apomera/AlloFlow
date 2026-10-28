@@ -1,6 +1,0 @@
-{
-  "observedExitCode": 0,
-  "observedScenariosPassed": 16,
-  "countedFinalCoverage": false,
-  "reason": "Root rebuilt a restore-filter fix while the live-disk harness batch was running. The candidate start hash alone cannot establish all per-test module bytes. Retained for transparency, excluded from final coverage."
-}

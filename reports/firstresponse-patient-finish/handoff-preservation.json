@@ -1,9 +1,0 @@
-{
-  "beforeSHA256": "6f124decdc1c66fa19d65d9377e0e5c4770abeaba1101ccdf773669c05b1046c",
-  "afterSHA256": "e7e0207dacbd0da9a270f7b72be3eba07467df0474359b10527d0a7831a2628f",
-  "prefixBytes": 804555,
-  "suffixBytes": 0,
-  "prefixExact": true,
-  "suffixExact": true,
-  "onlyOwnRowChanged": true
-}

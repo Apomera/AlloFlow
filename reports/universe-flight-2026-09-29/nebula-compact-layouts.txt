@@ -1,1 +1,0 @@
-Encounter checks passed: 8 groups, 4 scoped accessibility checks.

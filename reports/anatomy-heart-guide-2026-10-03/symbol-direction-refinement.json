@@ -1,8 +1,0 @@
-{
-  "beforeSha256": "4d8cf640de08e1fc844266fcc0e71f82651053604fd9cab9120386ea0ea0b93b",
-  "afterSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
-  "onlyScopedSymbolDirectionChanged": true,
-  "reason": "Preserve O₂− and O₂+ order within RTL Arabic content",
-  "from": ".anatomy-tool-shell .anatomy-heart-flow-symbol{width:44px;height:32px;white-space:nowrap}",
-  "to": ".anatomy-tool-shell .anatomy-heart-flow-symbol{width:44px;height:32px;white-space:nowrap;direction:ltr;unicode-bidi:isolate}"
-}

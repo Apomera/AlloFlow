@@ -1,9 +1,0 @@
-{
-  "name": "view_misc_panels_module.js",
-  "sha256": "85efb2f5c229e58410def4b7c44d34f5c7114c0eae8f92e54053297ca5921d8c",
-  "mirrors": [
-    "desktop/web-app/public/view_misc_panels_module.js",
-    "desktop/app-build/view_misc_panels_module.js",
-    "desktop/web-app/build/view_misc_panels_module.js"
-  ]
-}

@@ -1,5 +1,0 @@
-Original focused run: 19 passed, 1 species-alignment case exceeded the unchanged 30000 ms limit.
-The unchanged isolated check passed in 1095 ms. No code, fixtures or limits were changed for recovery.
-Command: node --max-old-space-size=512 --max-semi-space-size=4 node_modules/vitest/vitest.mjs run tests/aquaculture_saved_comparison.test.js -t "aligns only original B species" --maxWorkers=1 --testTimeout=30000 --reporter=verbose
-Isolated result: 1 passed, 19 not selected by the diagnostic filter; duration 48.18 s including environment/import.
-The final focused-tests.json covers the complete unfiltered 13-file scope and supersedes this diagnostic run.

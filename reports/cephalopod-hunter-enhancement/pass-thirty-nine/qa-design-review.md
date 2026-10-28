@@ -1,5 +1,0 @@
-# Fish finish QA scope
-
-Historical default-shader assertions are retained through an exact source inverse while current anatomy checks continue to evaluate live production. Pass23 tail checks retain their historical full-attribute and material expectations through the same reviewed inverse. New current-finish tests recover the accepted source SHA and compare all original geometry attributes, frames, bounds and material settings across eight school indices; check exact per-triangle byte masks and shader filtered/fallback paths. Native low/balanced cases observe the actual linked GL program and scalar unsigned-byte non-normalized binding, static owned resources and original motion/pause/inspection/reduced-motion/disposal behavior. Native threat-memory and directed moving-prey strike cases provide gameplay regression coverage.
-
-Visual evaluation must compare matching diagnostic poses under original world lighting and check ordinary desktop/phone views. No sound, hardware FPS or biological validation claim is supported.

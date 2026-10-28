@@ -1,7 +1,0 @@
-{
-  "command": "node reports/machinelab-rotation-practice-2026-10-14/run-tests.cjs",
-  "execSessionId": 45724,
-  "observedExitCode": 0,
-  "observedPassedTests": 103,
-  "sourceSha256": "8fbf09087e942d99b52cc4a5c24c61718046cb3e7e3c6237d3208b70f915e040"
-}

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10T06:09:05.462Z",
-  "beforeHash": "23b5ec66b9b54ef92952adc3a99e9c8d7192db52d4dbc087c27af46ac0fad377",
-  "afterHash": "bae996a9168b792c65c8473d198d0f9507b76fdbea0eee81956904b116222bfd",
-  "beforeRow": "- 2026-10-10 | Codex Dissection replay contact | IN PROGRESS. Owns canonical/public stem_lab/stem_tool_dissection.js, new replay-contact unit/browser tests and reports/dissection-replay-contact-2026-10-10. Use each saved action contact and suppress unrelated current-tool hints during replay. Preserve shared work/index. No staging, commit, push or deployment.",
-  "afterRow": "- 2026-10-10 | Codex Dissection replay contact | COMPLETE LOCALLY; ownership RELEASED. Each action uses its recorded contact, readable saved/supported/illustrative provenance, forceps/pin hint suppression during replay, and new inspect/probe contact preservation. 44 focused unit checks and eight Chromium scenarios pass; four scoped axe scans have zero violations. Source/runtime SHA256 feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f. 1794 protected files unchanged; 18 edits reverse to baseline. Report reports/dissection-replay-contact-2026-10-10/README.md. No staging, commit, push or deployment.",
-  "unrelatedRowsPreserved": true
-}

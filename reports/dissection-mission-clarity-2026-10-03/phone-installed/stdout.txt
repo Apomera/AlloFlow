@@ -1,6 +1,0 @@
-
-Running 1 test using 1 worker
-
-  ok 1 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header phone shows complete status and keyboard shortcuts (1.4m)
-
-  1 passed (7.4m)

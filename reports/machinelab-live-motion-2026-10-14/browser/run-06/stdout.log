@@ -1,2 +1,0 @@
-harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
-{"checks":95,"observations":29,"screenshots":2,"errors":["Error: forced doubled phone work: large position and phase text\n    at check (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\ml_live_motion_qa.cjs:233:59)\n    at layout (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\ml_live_motion_qa.cjs:258:3)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\ml_live_motion_qa.cjs:286:299"]}

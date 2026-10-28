@@ -1,7 +1,0 @@
-{
-  "diffCheckExitCode": 0,
-  "diffCheckOutput": "",
-  "warning": "warning: in the working copy of 'tests/dissection_reference_workbench.test.js', CRLF will be replaced by LF the next time Git touches it\n",
-  "stagedFiles": [],
-  "temporarySpecs": []
-}

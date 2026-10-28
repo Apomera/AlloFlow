@@ -1,8 +1,0 @@
-{
-  "sourceChanged": false,
-  "previousHarnessSha256": "9dec20789afba70ecfa5eb3637a879fa3260f4802450af5b3fb9824d822d56cc",
-  "harnessSha256": "89e5796c16968c2374450d6e430506803e2b96f5d7ef266236600e2ee395927c",
-  "before": "await practice(kind).scrollIntoViewIfNeeded();await settle();await practice(kind).screenshot({path:path.join(OUT,name+'.png')});shots.push(name);checkpoint(name);",
-  "after": "const viewport=pg.viewportSize(),panel=practice(kind);await pg.evaluate(()=>document.fonts.ready);const height=await panel.evaluate(el=>Math.ceil(el.getBoundingClientRect().height));await pg.setViewportSize({width:viewport.width,height:Math.max(viewport.height,height+80)});await settle();await panel.evaluate(el=>el.scrollIntoView({block:'start',behavior:'instant'}));await settle();const bounds=await panel.boundingBox();check(bounds.y>=-1&&bounds.y+bounds.height<=pg.viewportSize().height+1,name+': entire panel is within capture viewport');await panel.screenshot({path:path.join(OUT,name+'.png'),animations:'disabled',caret:'hide'});shots.push(name);await pg.setViewportSize(viewport);await settle();checkpoint(name);",
-  "reason": "Fit the whole panel inside the viewport before element capture, then restore the viewport. Existing behavior, layout, focus and contrast assertions are unchanged; add a full-panel capture-bound assertion."
-}

@@ -1,9 +1,0 @@
-{
-  "startedAt": "2026-10-03T19:29:31.242Z",
-  "pid": 43492,
-  "baseUrl": "http://127.0.0.1:65063",
-  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
-  "moduleSha256": "338944e463ff7f0cd48a4c5e83188ba8f2537af467adbd0a8c38d3ce0afec863",
-  "bundleSha256": "e5b12aeb6ec8fbeae08972bd5735d1036a7e647bc0ac4daf0470b289849fcff0",
-  "pureHttpServe": true
-}

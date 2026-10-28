@@ -1,6 +1,0 @@
-{
-  "workingDirectory": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
-  "finalCommand": "$env:SLD_HOST_BASE_URL = 'http://127.0.0.1:65060/app'\n$env:SLD_REPORT_DIR = 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/deep-validation/final-browser'\n$env:PLAYWRIGHT_JSON_OUTPUT_NAME = 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/deep-validation/final-browser-result.json'\n& 'C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe' node_modules/@playwright/test/cli.js test tests/e2e/maine-sld-practice.spec.ts --project=chromium --workers=1 --retries=0 --reporter=list,json --output='C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/deep-validation/final-browser-artifacts' 2>&1 | Tee-Object -FilePath 'C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/deep-validation/final-browser-run.log'\nexit $LASTEXITCODE",
-  "listCommand": "node node_modules/@playwright/test/cli.js test tests/e2e/maine-sld-practice.spec.ts --project=chromium --workers=1 --retries=0 --list",
-  "exitCode": 0
-}

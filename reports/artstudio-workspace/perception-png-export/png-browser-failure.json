@@ -1,9 +1,0 @@
-{
-  "phase": "export-brightness",
-  "message": "download.saveAs: canceled",
-  "stack": "download.saveAs: canceled\n    at exportImage (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\perception-png-candidate\\dev-tools\\perception_lab_png_export_qa.cjs:25:161)\n    at async C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\perception-png-candidate\\dev-tools\\perception_lab_png_export_qa.cjs:32:86",
-  "checks": [],
-  "errors": [],
-  "sourceSHA256": "9b4703b4ff3a83a8ef93390fa5c11732ade08495d414dcc830178824d5c9715b",
-  "finalSourceSHA256": "9b4703b4ff3a83a8ef93390fa5c11732ade08495d414dcc830178824d5c9715b"
-}

@@ -1,9 +1,0 @@
-*.log
-*-exit.json
-*.cjs
-.inputs.json
-.reviewed.json
-browser-artifacts/
-regression/
-commit-git/
-commit-message.txt

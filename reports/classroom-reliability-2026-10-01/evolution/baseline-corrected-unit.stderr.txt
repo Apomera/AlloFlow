@@ -1,1 +1,0 @@
-[vitest-pool]: Timeout terminating forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/classroom-reliability-2026-10-01/evolution/evolab_reveal_integrity.test.js.

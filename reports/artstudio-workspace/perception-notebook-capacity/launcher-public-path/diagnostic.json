@@ -1,9 +1,0 @@
-{
-  "timestamp": "2026-10-04T23:29:23.9972092Z",
-  "stage": "preflight",
-  "testsExecuted": 0,
-  "exitCode": 1,
-  "reason": "Incorrect guessed mirror path public/stem_lab/stem_tool_perception.js; missing file before Vitest invocation.",
-  "sourceHash": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
-  "testHash": "c499c870af1e76fa0ce6166de1a7e4ac0af9c7e190d963c6c5b93ad5b3fbe3e3"
-}

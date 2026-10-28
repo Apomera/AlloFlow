@@ -1,8 +1,0 @@
-{
-  "reason": "React omits a data attribute assigned null. Blank-duration readout is still present, but the QA selector targeted the omitted attribute.",
-  "nativeExitCode": 1,
-  "priorHarnessSha256": "75ce2fe50678ea0270ffd383bac6c19216ed862210380833a9dfe9742f5859b3",
-  "correctedHarnessSha256": "d856b0993d638704e8f106142d76f7a4a24f9d20011e5b035ba7cf1a0aedd5f1",
-  "change": "Only blank-duration readout lookup changes to the first direct paragraph in the setup fieldset.",
-  "nextRun": "run-03"
-}

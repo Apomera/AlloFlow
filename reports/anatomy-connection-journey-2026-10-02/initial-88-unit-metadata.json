@@ -1,9 +1,0 @@
-{
-  "kind": "Initial diagnostic run before final origin and display fixes",
-  "tests": 88,
-  "passed": 88,
-  "failed": 0,
-  "sourceHashCapturedAtRun": false,
-  "laterAuditedSourceLfSha256": "5a8972f21d30abf9a460da6e1da1130bc9b19c1608a9f616631de2571e081493",
-  "note": "The later audited source hash was supplied by the root agent after this run; it is not a verified hash capture for the initial test execution."
-}

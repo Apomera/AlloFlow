@@ -1,8 +1,0 @@
-{
-  "passed": 242,
-  "failed": 1,
-  "source": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
-  "failure": "The comparative-anatomy catalog contract found source/public catalog byte drift. Orientation source, reference tests and canvas tests passed.",
-  "correction": "Guarded semantic and textual subset checks proved that the public copy only lacked39 existing Perception keys. Copied unchanged source bytes to the public mirror; tests and deadlines unchanged.",
-  "repair": "../catalog-mirror-repair.json"
-}

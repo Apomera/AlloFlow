@@ -1,5 +1,0 @@
-{
-  "Pattern": "^(?!Machine Lab: (every view|the |lever observation|force and distance|motion inspection|focus mechanism))",
-  "Receipt": "tests-final-16b.json",
-  "ExitCode": 0
-}

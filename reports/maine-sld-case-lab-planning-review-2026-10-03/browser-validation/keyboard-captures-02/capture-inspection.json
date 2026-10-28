@@ -1,7 +1,0 @@
-{
-  "inspected": true,
-  "accepted": ["planning-family-limit-return-keyboard-390-light.png", "planning-family-returned-edit-keyboard-390-light.png"],
-  "needsFocusedRecapture": "case-discussion-marisol-expanded-1366-light.png",
-  "reason": "Although the pre-screenshot DOM geometry recorded the discussion list inside the viewport, direct image inspection shows the top of participant review and selected evidence instead of the discussion list. The image is retained as a Debrief overview and is not evidence of visible task-list pixels.",
-  "followUp": "One viewport-only capture with settled scroll-container geometry; no suite, axe or build rerun."
-}

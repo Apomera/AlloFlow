@@ -1,7 +1,0 @@
-{
-  "error": "Tool execution was aborted during app refresh. Recorded child PID no longer exists; workflow produced no result JSON or PNG captures.",
-  "kind": "interrupted-before-result",
-  "exitCode": null,
-  "recordedPid": 39412,
-  "inputsUnchanged": true
-}

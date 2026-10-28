@@ -1,5 +1,0 @@
-[
-  {"name":"initial static definition-count guard","exitCode":1,"canonicalSpecWritten":false,"browserInvocationStarted":false,"reason":"Counted direct definitions rather than runtime scenarios. Existing prefix has 27 direct definitions plus six parameterized scenarios; the guard aborted before any write.","canonicalPrefixSha256":"32341725cd74244a0f50c9fb149b500bea68fcc179f5de41ba4d862e499014b8"},
-  {"name":"corrected append guard","exitCode":0,"canonicalSpecWritten":true,"browserInvocationStarted":false,"newDefinitions":2,"originalPrefixBytePreserved":true,"canonicalSpecSha256":"7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4"},
-  {"name":"optional esbuild syntax command","exitCode":1,"browserInvocationStarted":false,"reason":"Cannot find module ./desktop/web-app/node_modules/esbuild; the optional parser command did not run. Canonical append was already complete and intact."}
-]

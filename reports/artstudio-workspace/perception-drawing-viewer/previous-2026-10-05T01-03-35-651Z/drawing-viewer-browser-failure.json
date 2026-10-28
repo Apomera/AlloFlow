@@ -1,9 +1,0 @@
-{
-  "phase": "brightness-actual-trials",
-  "message": "Native modal must retain forward keyboard focus.",
-  "stack": "AssertionError [ERR_ASSERTION]: Native modal must retain forward keyboard focus.\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\perception_lab_drawing_viewer_qa.cjs:96:83",
-  "checks": [],
-  "errors": [],
-  "loadedSourceSHA256": "4ac069d954cc3bee3c3ce180fc56f755715487b86f2cc2e7c5c8d9f7595f81bb",
-  "finalSourceSHA256": "4ac069d954cc3bee3c3ce180fc56f755715487b86f2cc2e7c5c8d9f7595f81bb"
-}

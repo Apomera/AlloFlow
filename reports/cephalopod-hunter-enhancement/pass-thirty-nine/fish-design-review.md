@@ -1,3 +1,0 @@
-# Fish surface proposal
-
-Construction adds one unsigned-byte scalar part mask. Original position, normal, color, topology, part spans, bounds and materials remain; finish affects skin and eyes only. Curved gill-cover and mouth cues remain broad. Local staggered crescent scales use continuous-coordinate derivative footprints for anti-aliasing and distance fade; fine scales and eye fibers are absent on derivative-free fallback. Existing standard lighting provides eye highlights. No timers, uniforms, RNG or per-frame updates are added. Shared body/tail material uses one deterministic program key.

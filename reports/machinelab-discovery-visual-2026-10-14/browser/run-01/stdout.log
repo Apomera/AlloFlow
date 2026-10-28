@@ -1,6 +1,0 @@
-harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
-discovery checkpoint desktop-before-discovery 0
-discovery checkpoint desktop-discovery 19
-discovery checkpoint dark-phone-discovery 132
-discovery checkpoint forced-doubled-phone-discovery 158
-{"mounts":4,"routes":6,"checks":198,"screenshots":4,"errors":["pulley desktop: Inspect keyboard outline contrasts with its surrounding card","pulley desktop: Inspect moves keyboard focus to a visible enabled slider","windlass desktop: Inspect keyboard outline contrasts with its surrounding card","windlass desktop: Inspect moves keyboard focus to a visible enabled slider","wedge desktop: Inspect keyboard outline contrasts with its surrounding card","screw desktop: Inspect keyboard outline contrasts with its surrounding card","screw desktop: Inspect moves keyboard focus to a visible enabled slider","dark phone: Inspect moves keyboard focus to a visible enabled slider","forced phone: Inspect moves keyboard focus to a visible enabled slider","wedge forced doubled phone: steps, summary and explanation fit without horizontal clipping"]}

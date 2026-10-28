@@ -1,6 +1,0 @@
-{
-  "status": "interrupted",
-  "nativeExit": null,
-  "resultsPresentOnResume": false,
-  "description": "Execution session 37378 was unknown after the workspace session changed. Only the temporary host page remained. A Get-Process check found no remaining Node or Chromium processes before the fresh run-06 launch. This attempt is excluded from validation totals."
-}

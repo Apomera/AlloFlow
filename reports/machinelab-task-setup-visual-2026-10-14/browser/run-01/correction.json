@@ -1,8 +1,0 @@
-{
-  "reason": "Baseline git show exceeded execFileSync default 1 MiB buffer before any scenarios started.",
-  "nativeExitCode": 1,
-  "priorHarnessSha256": "e2680688ece6ea64880d683d0b222d80a45cf6380c73ab561885e0d3d6c474fb",
-  "correctedHarnessSha256": "75ce2fe50678ea0270ffd383bac6c19216ed862210380833a9dfe9742f5859b3",
-  "change": "The baseline execFileSync read adds maxBuffer:4*1024*1024; no production change.",
-  "nextRun": "run-02"
-}

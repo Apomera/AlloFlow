@@ -1,7 +1,0 @@
-{
-  "error": "Tool execution aborted during a client refresh before browser output. Recorded child PID no longer exists; no browser results or PNG captures were produced.",
-  "kind": "interrupted-before-output",
-  "exitCode": null,
-  "recordedPid": 9588,
-  "inputsUnchanged": true
-}

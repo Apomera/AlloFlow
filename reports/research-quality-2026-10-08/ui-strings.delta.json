@@ -1,8 +1,0 @@
-{
-  "input": {
-    "research_highlights": "Source highlights",
-    "research_view_passage": "View supporting passage {number}",
-    "research_ai_note_preview": "AI-linked notes, not page excerpts. Read the page to check the original wording.",
-    "research_matched_terms": "Matching topic words"
-  }
-}

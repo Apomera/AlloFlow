@@ -1,1 +1,0 @@
-Expanded focused Vitest run exited before JSON report: FATAL ERROR: Zone Allocation failed - process out of memory. V8 showed 125.1 (193.0) -> 69.9 (194.5) MB before failure. No assertion report produced. Rerun in smaller groups on the shared host.

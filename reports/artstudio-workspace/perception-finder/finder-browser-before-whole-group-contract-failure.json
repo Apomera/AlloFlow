@@ -1,7 +1,0 @@
-{
-  "phase": "observations-and-ordinals",
-  "checks": [],
-  "errors": [],
-  "loadedSourceSHA256": "6e1ad6f936e0a78cd293a7c029f90db1e22c235dc44500a54ad9531b7477c331",
-  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'study-b-3',\n    'study-b-2',\n+   'study-b-1'\n  ]\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\perception_lab_finder_qa.cjs:59:50"
-}

@@ -1,5 +1,0 @@
-{
-  "runtimeChanged": false,
-  "reason": "THREE Curve.toJSON serializes Vector3 control points as three-element arrays; the initial fixture assumed objects. Validation now reads the actual serialization and preserves x/z array entries exactly. Native baseline probe failed before candidate capture.",
-  "candidateSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a"
-}

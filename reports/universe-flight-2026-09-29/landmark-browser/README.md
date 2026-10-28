@@ -1,9 +1,0 @@
-# Enhancement 70 — Explore landmarks in the view
-
-A new Explore landmarks button on the discovery card opens a list of up to four catalog centers currently in view. Matching numbered buttons allow direct inspection from the 3D stage. Numbering and list identities stay fixed during pan and travel; current distances and center visibility update. Projected markers keep their actual positions and are omitted near the stage edges or when they overlap the panel, HUD, or another marker. Every retained landmark remains available through its list button. Closing and reopening rebuilds the list for the new view.
-
-Opening the browser preserves the scene and continues free travel. Inspect pauses and centers the chosen landmark while saving the origin for Back. The browser supports keyboard Escape, focus restoration, and focus transfer from a disappearing marker to its stable list row. Camera-coincident landmarks show At landmark center without an invented bearing. Short landscape fullscreen centers the browser between the persistent side controls.
-
-Validation: 30 focused tests; 16 Chromium browser workflows; five accessibility checks with zero violations; five screenshots; four control reachability checks. Browser checks cover exact marker projection, scene/pixel preservation on opening, frozen row IDs during pan/travel, marker and offscreen row inspection with exact Back restoration, Escape from both panel and marker, resize focus recovery, coincident center state, phone/fullscreen/high contrast/landscape, and cleanup on region change. Chromium used SwiftShader. Cross-device hardware GPU rendering was not tested.
-
-The renderer and all 18 generated preview assets are unchanged. Canonical and desktop UI copies match, source syntax and scoped diff checks pass, and the patch reverses exactly to enhancement 69. Nothing staged or committed.

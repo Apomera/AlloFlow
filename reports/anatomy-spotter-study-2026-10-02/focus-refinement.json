@@ -1,6 +1,0 @@
-{
-  "beforeLfSha256": "7553b0be34e239fbbdb9844621323904768013c48d5a1dc2f1617c2e3a3b8835",
-  "afterLfSha256": "c3ab2286e11e55351ed6ef7d72f0eee5b938da96980822dc46c7b7fd87a7b412",
-  "byteEqual": true,
-  "change": "Keep ordinary question/feedback return a no-op unless exiting model focus"
-}

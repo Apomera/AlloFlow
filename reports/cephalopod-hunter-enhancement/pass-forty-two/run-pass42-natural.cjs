@@ -1,4 +1,0 @@
-const fs=require('fs'),path=require('path'),cp=require('child_process'),assert=require('assert/strict'),repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',dir=path.join(repo,'reports/cephalopod-hunter-enhancement/pass-forty-two'),sha=JSON.parse(fs.readFileSync(path.join(dir,'change-guards.json'))).candidateSHA;
-assert.equal(JSON.parse(fs.readFileSync(path.join(dir,'final-native.json'))).stats.unexpected,0);
-const out=path.join(dir,'final-natural');assert.ok(!fs.existsSync(out));const args=[path.join(dir,'capture-native-natural.cjs'),'--source='+path.join(repo,'stem_lab/stem_tool_cephalopodlab.js'),'--out='+out,'--sha='+sha];
-const r=cp.spawnSync(process.execPath,args,{cwd:repo,windowsHide:true,stdio:'inherit'});fs.writeFileSync(path.join(dir,'final-natural-receipt.json'),JSON.stringify({command:[process.execPath,...args],exit:r.status,signal:r.signal,error:r.error?.message||null})+'\n');assert.equal(r.status,0);

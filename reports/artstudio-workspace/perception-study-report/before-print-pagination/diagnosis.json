@@ -1,9 +1,0 @@
-{
-  "success": false,
-  "total": 78,
-  "passed": 68,
-  "failed": 10,
-  "sourceBefore": "5d13df2ff4e47f226103c80c4637282194342517aac2f80b56e9570c05635965",
-  "sourceAfter": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
-  "diagnosis": "Nine expected median labels stale after intended absolute-unit correction (RGB vs RGB-code steps); one cleanup fixture exposed timers from previous tests using same mocked URL. Preserve assertions and correct unit expectations/timer ownership. Pagination source changed during this run; this is diagnostic evidence only."
-}

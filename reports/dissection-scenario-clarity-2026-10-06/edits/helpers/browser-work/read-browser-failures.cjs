@@ -1,3 +1,0 @@
-const fs=require('fs'),path=require('path'),repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',r=JSON.parse(fs.readFileSync(path.join(repo,'reports/dissection-scenario-clarity-2026-10-06/scenario-3/results.json'),'utf8'));
-function walk(s){for(const spec of s.specs||[])for(const t of spec.tests||[])for(const result of t.results||[])if(result.status!=='passed'&&result.status!=='skipped')console.log(JSON.stringify({title:spec.title,status:result.status,errors:result.errors}));for(const x of s.suites||[])walk(x);}walk(r);
-const src=fs.readFileSync(path.join(__dirname,'../source-work/renderer-next.js'),'utf8'),i=src.indexOf('function focusDissectionTarget(');if(i>=0)console.log(src.slice(i,i+2200));

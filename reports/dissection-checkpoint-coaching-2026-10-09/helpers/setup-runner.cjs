@@ -1,9 +1,0 @@
-const fs=require('fs'),path=require('path');
-const previous=path.join(__dirname,'../checkpoint-work');
-let runner=fs.readFileSync(path.join(previous,'run.cjs'),'utf8');
-runner=runner.replaceAll('dissection-monitor-handoff-2026-10-09','dissection-checkpoint-coaching-2026-10-09').replaceAll('.diss-monitor-handoff-20261009','.diss-checkpoint-coaching-20261009').replaceAll('dissection-monitor-handoff.spec.ts','dissection-checkpoint-coaching.spec.ts').replaceAll('DISSECTION_MONITOR','DISSECTION_COACHING').replaceAll("'availability'","'adjacent'").replaceAll('dissection-technique-availability.spec.ts','dissection-checkpoint-clarity.spec.ts').replaceAll('DISSECTION_AVAILABILITY_OUTPUT','DISSECTION_CHECKPOINT_OUTPUT').replaceAll('monitor handoff|technique availability|renders guided instruments','checkpoint coaching|monitor handoff|technique availability').replace("...(mode==='before'?['--grep','phone|desktop-final']:[])","...(mode==='before'?['--grep','phone|desktop-reflect']:mode==='adjacent'?['--grep','keyboard browsing|guided observation browsing']:[])").replaceAll('256*1048576','128*1048576');
-fs.writeFileSync(path.join(__dirname,'run.cjs'),runner);
-fs.writeFileSync(path.join(__dirname,'status.cjs'),fs.readFileSync(path.join(previous,'status.cjs'),'utf8').replaceAll('dissection-monitor-handoff-2026-10-09','dissection-checkpoint-coaching-2026-10-09').replace('availability','adjacent'));
-let apply=fs.readFileSync(path.join(previous,'apply.cjs'),'utf8').replaceAll('dissection-monitor-handoff-2026-10-09','dissection-checkpoint-coaching-2026-10-09').replaceAll('.monitor-handoff.tmp','.checkpoint-coaching.tmp').replaceAll('256*1048576','128*1048576');
-fs.writeFileSync(path.join(__dirname,'apply.cjs'),apply);
-console.log('Runner, status and atomic source application helpers prepared.');

@@ -1,5 +1,0 @@
-harness: {"tool":true,"three":true,"orbit":true,"orbitViewer":true,"voxel":true}
-native scenario 1 lever
-native scenario 2 screw
-native scenario 3 ramp
-native scenario 4 windlass

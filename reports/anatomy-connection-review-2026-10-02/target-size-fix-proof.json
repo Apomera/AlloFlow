@@ -1,7 +1,0 @@
-{
-  "beforeSourceLfSha256": "70a2f0bcfb39fe9b7f717161aa290346ebad0a3ae9e06ef8529be690bde36822",
-  "afterSourceLfSha256": "5835e6a9e7ccaa741824cc7a9ad4cc81c6d2ee63935c2fc1d23cfa1ed758a53c",
-  "styleRule": ".anatomy-tool-shell .anatomy-connections-panel button{min-width:44px}.anatomy-tool-shell .anatomy-connection-resources button{flex-shrink:0}",
-  "changes": "Only one added CSS style entry; all functions, markup and catalog calls remain byte-identical",
-  "exactInsertionReversalRestoresPreviousSource": true
-}

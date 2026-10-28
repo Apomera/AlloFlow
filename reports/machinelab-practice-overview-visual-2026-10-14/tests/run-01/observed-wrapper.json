@@ -1,7 +1,0 @@
-{
-  "command": "node reports/machinelab-practice-overview-visual-2026-10-14/run-tests.cjs",
-  "execSessionId": 51386,
-  "observedExitCode": 0,
-  "observedPassedTests": 75,
-  "sourceSha256": "acace95abe66b48440693edddd610c8f26aa7f1d7723f4c6aed7c75d41e0c366"
-}

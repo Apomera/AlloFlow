@@ -1,6 +1,0 @@
-{
-  "purpose": "Run the unchanged callout assertions against the saved previous simulator. Only source, spec, and helper paths differ.",
-  "originalSpecSha256": "bec3b5fba4c000d156c07f31c4fefff83b790da25a2222cf85ca36b17e7a1531",
-  "controlSpecSha256": "38c80854bda70025972f3f146aff2ccae0b280089bef8ed73310fad765d315ea",
-  "baselineSourceSha256": "90d7922145112ef4c87b0f84c579cc413ed9fa5aa0b2d33a04386dcd9ceacd4b"
-}

@@ -1,6 +1,0 @@
-{
-  "status": "interrupted-no-final-result",
-  "observedPassed": 9,
-  "expectedTests": 19,
-  "notes": "The shell session could no longer be resumed. No matching runner or Playwright process remained. Nine passes were observed in the tool output, including all five layout checks. No final results JSON or run metadata were produced. Preserved the layout captures, metrics and audits before repeating the full suite. Added an assertion and capture of the final row after scrolling; source and test deadlines unchanged."
-}

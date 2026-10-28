@@ -1,9 +1,0 @@
-{
-  "command": "node reports/machinelab-force-practice-2026-10-14/run-tests.cjs",
-  "execSessionId": 24111,
-  "observedExitCode": 1,
-  "completedSuccessfulGroupTests": 22,
-  "sourceSha256": "46f7638b058845f934dea933668fbab15c2aecf91928274b16770ca2476056a3",
-  "cause": "Test-only flush accessed a missing question control when the intentionally invalid model omits practice fields.",
-  "correction": "Guard mock selection synchronization by both DOM and rendered selection existence. Production and assertions unchanged. Original test-snapshot.js and failed results retained."
-}

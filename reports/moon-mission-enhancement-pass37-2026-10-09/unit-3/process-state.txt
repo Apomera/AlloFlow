@@ -1,5 +1,0 @@
-{
-  "pid": 29508,
-  "openError": 87,
-  "active": false
-}

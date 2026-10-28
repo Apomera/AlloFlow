@@ -1,3 +1,0 @@
-{"event":"setup-start","pid":25488,"timestamp":"2026-10-07T01:36:40.493Z","normalOptions":{}}
-{"event":"setup-finish","pid":25488,"timestamp":"2026-10-07T01:38:24.794Z","elapsedMs":104151.86690000001,"url":"http://localhost:3000/","documentReady":true,"windowIsGlobalThis":true}
-{"event":"teardown","pid":25488,"timestamp":"2026-10-07T01:39:33.865Z","documentRemoved":true}

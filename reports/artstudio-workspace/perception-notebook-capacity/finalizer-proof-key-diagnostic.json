@@ -1,6 +1,0 @@
-{
-  "kind": "evidence-field-name",
-  "initialFinding": "Finalizer expected a former adapter proof key; current aggregate records equivalent exactOutputOnlyTextEquality.",
-  "resolution": "Use the actual proof key and independently reconstruct/hash-check every original adapter. Product and browser evidence unchanged.",
-  "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
-}

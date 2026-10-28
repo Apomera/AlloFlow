@@ -1,8 +1,0 @@
-{
-  "sourceSha256": "935d6480a3a0f80645671628113edd0cd8004a803c8683c166626e08b04c7559",
-  "mirrorSha256": "935d6480a3a0f80645671628113edd0cd8004a803c8683c166626e08b04c7559",
-  "passed": 64,
-  "failed": 0,
-  "processes": 4,
-  "manifestSha256": "ca52d2b312e40acc95c2b54afd6a63fd4dc4ef8617fac9b6b191d5a47571e35a"
-}

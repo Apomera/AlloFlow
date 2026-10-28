@@ -1,8 +1,0 @@
-{
-  "command": "node reports/machinelab-compound-power-2026-10-11/browser/inspect-overflow.cjs",
-  "observedExitCode": 0,
-  "observedCompletionChunkId": "d12ae6",
-  "sourceSha256": "750ece0e963b91e3f8a16667543217ede7b0e1f733bea244506f25ad245f6278",
-  "diagnosticSha256": "9e8f635647792eb2410b7678495b364986760bf0f2ba9569dbc149ee4e56ec1a",
-  "scriptSha256": "128dd228179960c08106955e27081e7a1a753f486e3699bb2df5bb2754c473a5"
-}

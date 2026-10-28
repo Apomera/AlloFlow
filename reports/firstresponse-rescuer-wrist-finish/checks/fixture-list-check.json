@@ -1,6 +1,0 @@
-{
-  "exitCode": 0,
-  "stdout": "Listing tests:\n  firstresponse-wrists-preview.spec.ts:91:29 › rescuer wrist adult-oblique release and compression in matched native views\n  firstresponse-wrists-preview.spec.ts:91:29 › rescuer wrist adult-heel-side release and compression in matched native views\n  firstresponse-wrists-preview.spec.ts:91:29 › rescuer wrist child-heel-side-contrast release and compression in matched native views\nTotal: 3 tests in 1 file\n",
-  "stderr": "",
-  "browserLaunched": false
-}
