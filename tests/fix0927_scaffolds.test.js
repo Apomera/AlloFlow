@@ -113,7 +113,7 @@ describe('Mastery Check grading uses the session scaffold, counts drafts and rep
     const session = { isOpen: true, status: 'revision', draftText: 'Plants need carbon dioxide.', draftCount: 1, resourceId: 'A', sessionId: 's1' };
     const h = gradingHost({ session, active: B, history: [A, B], result: { status: 'mastery', rawScore: 91, gradingDetails: { rawScore: 91 } }, awarded: 0 });
     await h.submit();
-    expect(h.scope.handleMasteryGrading).toHaveBeenCalledWith('Plants need carbon dioxide.', 'RUBRIC-A', 'Plants', 2);
+    expect(h.scope.handleMasteryGrading).toHaveBeenCalledWith('Plants need carbon dioxide.', 'RUBRIC-A', 'Plants', { draftCount: 2, previousDraft: '' });
     expect(h.scope.handleScoreUpdate).toHaveBeenCalledWith(100, 'Mastery Writing', 'A');
     expect(h.state.session).toMatchObject({ status: 'mastery', draftCount: 2, finalScore: 91, xpAwarded: 0 });
     expect(h.scope.addToast.mock.calls.map(call => call[0]).join(' ')).not.toContain('+100 XP');
@@ -126,7 +126,7 @@ describe('Mastery Check grading uses the session scaffold, counts drafts and rep
     expect(h.state.session).toMatchObject({ status: 'revision', draftCount: 1, previousDraft: 'First try.', draftText: 'First try.' });
     const second = gradingHost({ session: { ...h.state.session, draftText: 'Second try.' }, active: A, history: [A], result: { status: 'revision', rawScore: 70, gradingDetails: { rawScore: 70 } } });
     await second.submit();
-    expect(second.scope.handleMasteryGrading.mock.calls[0][3]).toBe(2);
+    expect(second.scope.handleMasteryGrading.mock.calls[0][3]).toEqual({ draftCount: 2, previousDraft: 'First try.' });
     expect(second.state.session).toMatchObject({ draftCount: 2, previousDraft: 'Second try.' });
   });
 

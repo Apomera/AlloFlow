@@ -42,7 +42,8 @@ describe('static image control cleanup preserves document source', () => {
     // 2026-10-19: the MCP lane delivers a static document, so fixAndVerifyPdf passes staticDelivery.
     const delivered = strip(current, { stripImageReplace: true });
     expect(parse(delivered).querySelector('[data-alloflow-crop-control],[data-alloflow-image-replace],input[type="file"]')).toBeNull();
-    expect(delivered).toBe(current.replace(generatedButton, '').replace(current.match(/<label\b[\s\S]*?<\/label>/)[0], ''));
+    // (2026-10-27) ...and the crop editor's own data-crop coordinates, which nothing in a static file reads.
+    expect(delivered).toBe(current.replace(generatedButton, '').replace(current.match(/<label\b[\s\S]*?<\/label>/)[0], '').replace(/ data-crop="[^"<>]*"/g, ''));
     expect(strip(current)).toContain('data-alloflow-image-replace="pdf-img-1"');
   });
   it('fixAndVerifyPdf strips Replace only when the caller asks for a static delivery', () => {

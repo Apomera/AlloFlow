@@ -160,7 +160,7 @@ describe('quiz modes as customizable presets', () => {
     expect(quiz).toContain('function AssessmentItemEditor');
     expect(quiz).toContain('function AssessmentCoreFields');
     expect(quiz).toContain('function AssessmentDiagnosticFields');
-    expect(quiz).toContain('Regenerate item');
+    expect(quiz).toContain("t('quiz.authoring.regenerate')");
     expect(quiz).toContain('Dictate response');
     expect(quiz).toContain('window.SpeechRecognition || window.webkitSpeechRecognition');
     expect(app).toContain('const handleQuizQuestionAction');

@@ -19,7 +19,7 @@ const sandbox = { window: { StemLab: { registerTool() {} } }, console };
 vm.runInNewContext(SOURCE.replace("window.StemLab.registerTool('bridgeLab', {", `
   window.bridgeModel = { bridgeGoverningAnalysis, MATERIALS, BRIDGE_CHALLENGES, BRIDGE_CHALLENGE_MATERIALS, BRIDGE_STAR_MARGINS,
     bridgeChallengeScore, bridgeNormalizeChallengeRecords, bridgeChallengeRecord, BRIDGE_CHALLENGE_XP_PER_STAR,
-    bridgeChallengeExample, bridgeChallengeMaterialOptions };
+    bridgeChallengeExample, bridgeChallengeMaterialOptions, bridgeCrossingAnalysis, bridgeChallengeSite };
   window.StemLab.registerTool('bridgeLab', {`), sandbox);
 const M = sandbox.window.bridgeModel;
 const STYLES = ['warren', 'pratt', 'howe', 'ktruss'];
@@ -28,13 +28,24 @@ const SECTIONS = Array.from({ length: 59 }, (_, i) => 1000 + i * 500);
 
 // Member forces and buckling lengths depend on geometry and bracing only, so one real analysis per geometry
 // gives everything needed to size each material exactly; the winner is then re-checked with the real function.
-function cheapestDesign(ch) {
+// A vehicle challenge uses the crossing's force envelope (every truck position) instead of one load case;
+// `atMidSpanOnly` sizes for the truck parked at mid-span, the mistake the vehicle challenge is built to expose.
+function demands(base, atMidSpanOnly) {
+  const steel = M.MATERIALS.find(m => m.id === 'steel');
+  const gov = M.bridgeGoverningAnalysis({ ...base, vehiclePos: 0.5, materialId: 'steel', crossSectionMm2: 5000 }, steel);
+  if (base.loadMode !== 'vehicle' || atMidSpanOnly) return { force: gov.analysis.maxForce, cases: gov.compressionCases, totalLen: gov.analysis.totalLen };
+  const cr = M.bridgeCrossingAnalysis({ ...base, materialId: 'steel', crossSectionMm2: 5000 }, steel);
+  return cr.ok ? { force: cr.maxForce, cases: cr.compressionCases, totalLen: gov.analysis.totalLen } : null;
+}
+function cheapestDesign(ch, atMidSpanOnly) {
   const mats = M.MATERIALS.filter(m => M.BRIDGE_CHALLENGE_MATERIALS.includes(m.id));
   let best = null;
   for (const trussStyle of STYLES) for (const height of HEIGHTS) for (let brace = 1; brace <= ch.nBays; brace++) {
-    const base = { span: ch.span, nBays: ch.nBays, loadPerJoint: ch.loadPerJoint, loadMode: 'uniform', trussStyle, height, lateralBraceEvery: brace };
-    const gov = M.bridgeGoverningAnalysis({ ...base, materialId: 'steel', crossSectionMm2: 5000 }, mats.find(m => m.id === 'steel'));
-    const force = gov.analysis.maxForce, cases = gov.compressionCases, totalLen = gov.analysis.totalLen;
+    if (ch.loadMode === 'vehicle' && trussStyle === 'ktruss' && !atMidSpanOnly) continue;
+    const base = { ...M.bridgeChallengeSite(ch), trussStyle, height, lateralBraceEvery: brace };
+    const dem = demands(base, atMidSpanOnly);
+    if (!dem) continue;
+    const { force, cases, totalLen } = dem;
     for (const mat of mats) {
       const sfAt = area => {
         const yieldSF = mat.yieldMPa / (force * 1000 / area);
@@ -83,6 +94,22 @@ describe('pinned pars are the best this model allows', () => {
       let buck = Infinity;
       for (const c of gov.compressionCases) buck = Math.min(buck, (Math.PI ** 2 * mat.modulusGPa * 1000 * (area * area / 12)) / (c.lengthMm ** 2) / 1000 / c.forceKN);
       expect(Math.min(mat.yieldMPa / (gov.analysis.maxForce * 1000 / area), buck)).toBeCloseTo(real, 9);
+    }
+  });
+
+  it('the crossing-envelope sizing agrees with the worst truck position the real scoring finds', () => {
+    const ch = M.BRIDGE_CHALLENGES.find(c => c.loadMode === 'vehicle');
+    for (const [style, height, brace, matId, area] of [['warren', 6, 1, 'steel', 13000], ['pratt', 3, 2, 'wood', 30000], ['howe', 9.5, 3, 'composite', 8000]]) {
+      const mat = M.MATERIALS.find(m => m.id === matId);
+      const base = { ...M.bridgeChallengeSite(ch), trussStyle: style, height, lateralBraceEvery: brace };
+      const { force, cases } = demands(base, false);
+      let buck = Infinity;
+      for (const c of cases) buck = Math.min(buck, (Math.PI ** 2 * mat.modulusGPa * 1000 * (area * area / 12)) / (c.lengthMm ** 2) / 1000 / c.forceKN);
+      const real = M.bridgeChallengeScore(ch, { ...base, materialId: matId, crossSectionMm2: area });
+      expect(Math.min(mat.yieldMPa / (force * 1000 / area), buck), style).toBeCloseTo(real.sf, 9);
+      // and the real score is the minimum over positions sampled one by one, not a separate formula
+      const sampled = Math.min(...[0, 0.1, 0.25, 0.5, 0.75, 0.9, 1].map(p => M.bridgeGoverningAnalysis({ ...base, vehiclePos: p, materialId: matId, crossSectionMm2: area }, mat).governingSF));
+      expect(real.sf).toBeLessThanOrEqual(sampled + 1e-9);
     }
   });
 
@@ -135,6 +162,42 @@ describe('scoring', () => {
 
   it('XP is capped well inside the host 100-per-activity limit', () => {
     expect(M.BRIDGE_CHALLENGES.length * 3 * M.BRIDGE_CHALLENGE_XP_PER_STAR).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('the moving-vehicle challenge', () => {
+  const ch = () => M.BRIDGE_CHALLENGES.find(c => c.loadMode === 'vehicle');
+
+  it('its lesson is real: the cheapest design sized for a truck at mid-span fails when the truck stops elsewhere', () => {
+    const naive = cheapestDesign(ch(), true);
+    const s = M.bridgeChallengeScore(ch(), { ...naive.design, vehiclePos: 0.5 });
+    expect(s.positionSF, 'passes with the truck at mid-span').toBeGreaterThanOrEqual(ch().minSF);
+    expect(s.sf, 'but not at its worst position').toBeLessThan(ch().minSF);
+    expect(s.passes).toBe(false);
+    expect(Math.abs(s.worst.position - 0.5)).toBeGreaterThan(0.1);
+    expect(naive.value).toBeLessThan(ch().par); // the shortcut looks cheaper, which is the trap
+  });
+
+  it('the grade does not depend on where the truck happens to be parked', () => {
+    const base = M.bridgeChallengeExample(ch()).design;
+    const sfs = [0, 0.3, 0.5, 1].map(p => M.bridgeChallengeScore(ch(), { ...base, vehiclePos: p }));
+    for (const s of sfs) { expect(s.sf).toBeCloseTo(sfs[0].sf, 12); expect(s.stars).toBe(3); }
+    expect(new Set(sfs.map(s => s.positionSF.toFixed(6))).size).toBeGreaterThan(1);
+  });
+
+  it('is off site under a uniform load, another truck weight, or another span; and rejects the K-truss', () => {
+    const design = M.bridgeChallengeExample(ch()).design;
+    for (const change of [{ loadMode: 'uniform' }, { vehicleLoad: ch().vehicleLoad - 10 }, { span: ch().span - 1 }, { nBays: ch().nBays - 1 }]) {
+      const s = M.bridgeChallengeScore(ch(), { ...design, ...change });
+      expect(s.onSite, JSON.stringify(change)).toBe(false);
+      expect(s.stars).toBe(0);
+    }
+    const k = M.bridgeChallengeScore(ch(), { ...design, trussStyle: 'ktruss', crossSectionMm2: 30000 });
+    expect(k.styleOk).toBe(false);
+    expect(k.passes).toBe(false);
+    const forged = { stars: 3, value: 50000, design: { trussStyle: 'ktruss', height: 6, materialId: 'steel', crossSectionMm2: 13000, lateralBraceEvery: 1 } };
+    expect(M.bridgeNormalizeChallengeRecords({ [ch().id]: forged })).toEqual({});
+    expect(Object.keys(M.bridgeNormalizeChallengeRecords({ footbridge: forged }))).toEqual(['footbridge']);
   });
 });
 
@@ -242,6 +305,30 @@ describe('playing a challenge in the Stress Test', () => {
     expect(v.host.querySelector('[data-bridge-challenges]')).toBeTruthy();
   });
 
+  it('the haul-road challenge sets up a moving truck and grades the worst position, in words', () => {
+    const v = mount({ loadMode: 'uniform', trussStyle: 'ktruss', materialId: 'steel' });
+    click(button(v, 'Start: Quarry haul road'));
+    expect([v.state.span, v.state.nBays, v.state.loadMode, v.state.vehicleLoad]).toEqual([36, 6, 'vehicle', 300]);
+    const checks = [...v.host.querySelectorAll('[data-challenge-check]')];
+    expect(checks.length).toBe(4);
+    const style = checks.find(c => c.textContent.includes('Truss style'));
+    expect(style.getAttribute('data-challenge-check')).toBe('unmet');
+    expect(style.textContent).toContain('deep-beam approximation');
+    // the par design: met everywhere, and the card names where the truck does the most damage
+    const ex = M.bridgeChallengeExample(M.BRIDGE_CHALLENGES.find(c => c.id === 'haul_road'));
+    const v2 = mount({ challengeId: 'haul_road', ...ex.design, vehiclePos: 0.5 });
+    expect([...v2.host.querySelectorAll('[data-challenge-check]')].every(c => c.getAttribute('data-challenge-check') === 'met')).toBe(true);
+    const sf = [...v2.host.querySelectorAll('[data-challenge-check]')].find(c => c.textContent.includes('wherever the truck stops')).textContent;
+    expect(sf).toContain((ex.score.worst.position * 36).toFixed(1) + ' m from the left support');
+    expect(sf).toContain('member ' + ex.score.worst.member);
+    expect(sf).toContain('With the truck where it is now: ' + ex.score.positionSF.toFixed(2));
+    click(button(v2, 'Show a hint'));
+    expect(v2.host.querySelector('[data-challenge-hints]').textContent).toContain('worst place the truck can stop');
+    click(button(v2, 'Record this design'));
+    expect(v2.state.challengeRecords.haul_road.stars).toBe(3);
+    expect(awardXP).toHaveBeenCalledWith('bridgeLabChallenges', 15, 'Bridge design challenge');
+  });
+
   it('a forged saved record cannot crash the card or show junk', () => {
     const v = mount({ challengeRecords: { footbridge: { stars: 'lots', value: -1 }, county_road: 'x' }, challengeId: 'nonsense' });
     expect(v.host.querySelector('[data-bridge-challenges]')).toBeTruthy();
@@ -265,6 +352,13 @@ describe('worked example', () => {
       expect(ex.governs, ch.id).toBe(ex.bucklingSF < ex.yieldSF ? 'buckling' : 'yield');
       expect(Math.min(ex.yieldSF, ex.bucklingSF)).toBeCloseTo(ex.score.sf, 9);
     }
+  });
+
+  it('the vehicle example names its worst truck position, and it is not mid-span', () => {
+    const ch = M.BRIDGE_CHALLENGES.find(c => c.loadMode === 'vehicle');
+    const ex = M.bridgeChallengeExample(ch);
+    expect(ex.score.worst.position).toBe(M.bridgeCrossingAnalysis(ex.design, ex.material).worst.position);
+    expect(Math.abs(ex.score.worst.position - 0.5)).toBeGreaterThan(0.1);
   });
 
   it('the material comparison sizes each material to its smallest safe step, and none beats par', () => {
@@ -343,12 +437,15 @@ describe('worked example and print on the client', () => {
   it('the print portfolio lists challenge results against par, and says which came after the example', () => {
     const records = {
       footbridge: { stars: 2, value: 1100, design: { trussStyle: 'warren', height: 4, materialId: 'wood', crossSectionMm2: 18000, lateralBraceEvery: 1 } },
-      long_span: { stars: 3, value: 290000, afterExample: true, design: { trussStyle: 'howe', height: 7, materialId: 'steel', crossSectionMm2: 23500, lateralBraceEvery: 1 } }
+      long_span: { stars: 3, value: 290000, afterExample: true, design: { trussStyle: 'howe', height: 7, materialId: 'steel', crossSectionMm2: 23500, lateralBraceEvery: 1 } },
+      haul_road: { stars: 1, value: 120000, design: { trussStyle: 'warren', height: 6, materialId: 'steel', crossSectionMm2: 18000, lateralBraceEvery: 1 } }
     };
     const v = mount({ tab: 'print', challengeRecords: records });
     const section = v.host.querySelector('[data-bridge-print-challenges]');
     expect(section).toBeTruthy();
-    expect(section.querySelectorAll('[data-bridge-print-challenge]').length).toBe(2);
+    expect(section.querySelectorAll('[data-bridge-print-challenge]').length).toBe(3);
+    expect(section.querySelector('[data-bridge-print-challenge="haul_road"]').textContent).toContain('one 300 kN truck at any position');
+    expect(section.querySelector('[data-bridge-print-challenge="haul_road"]').textContent).not.toContain('per joint');
     expect(section.querySelector('[data-bridge-print-challenge="footbridge"]').textContent).toContain('2 of 3 stars');
     expect(section.querySelector('[data-bridge-print-challenge="footbridge"]').textContent).toContain('par of $931');
     expect(section.querySelector('[data-bridge-print-challenge="long_span"]').textContent).toContain('after viewing the worked example');

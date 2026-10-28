@@ -60,7 +60,7 @@ describe('frozen vocabulary locale payload', () => {
     expect(run(false, 'terms')).toMatchObject({ keys: 17, locales: 5, changedFiles: 0 });
     expect(parseArgs(['--check', '--batch=terms'])).toEqual({ apply: false, batch: 'terms' });
     for (const locale of ['spanish_latin_america', 'spanish_castilian']) for (const [key, value] of Object.entries(payload.locales[locale])) expect(lookup(JSON.parse(readFileSync('lang/' + locale + '.js', 'utf8')), key)).toBe(value);
-  });
+  }, 30000); // reads several multi-MB language packs
   it('rejects changed validation copy and broken nested placeholders', () => {
     const changed = structuredClone(english); changed.simplified.adapt_exact_terms_hint = 'All occurrences remain.';
     expect(() => validatePayload(payload, changed, 17)).toThrow(/English copy changed/);

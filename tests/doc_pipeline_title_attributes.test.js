@@ -14,7 +14,11 @@ const fixTitle = new Function('return ({' + source.slice(toolStart, toolEnd) + '
 const preflightStart = source.indexOf('        // 4. Ensure <title> is non-empty');
 const preflightEnd = source.indexOf('        // 5. Ensure all tables have scope', preflightStart);
 if (preflightStart < 0 || preflightEnd < preflightStart) throw new Error('Primary title preflight boundary missing');
-const preflight = new Function('accessibleHtml', '_fileName', 'let aiFixCount = 0;\n' + source.slice(preflightStart, preflightEnd) + '\nreturn accessibleHtml;');
+// The preflight names the page with _alloTitleFromHeading (h1 + subtitle line, 2026-10-27).
+const titleHelperStart = source.indexOf('function _alloTitleFromHeading(html) {');
+const titleHelperEnd = source.indexOf('\n}', titleHelperStart) + 2;
+if (titleHelperStart < 0 || titleHelperEnd < 2) throw new Error('Title helper boundary missing');
+const preflight = new Function('accessibleHtml', '_fileName', source.slice(titleHelperStart, titleHelperEnd) + '\nlet aiFixCount = 0;\n' + source.slice(preflightStart, preflightEnd) + '\nreturn accessibleHtml;');
 
 // The alternative requested-foundation mode uses the same live inventory to decide
 // whether a title is missing; exercise both paths with the real helper dependencies.

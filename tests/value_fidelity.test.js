@@ -63,7 +63,8 @@ describe('anti-drift: doc_pipeline ships the detector + the gate calls it', () =
     expect(pipeSrc).toMatch(/_numericFidelityLosses\s*=\s*function/);
   });
   it('the integrity gate calls it on the FINAL output (covers transform + fix paths)', () => {
-    expect(pipeSrc).toMatch(/_numericFidelityLosses\(_srcRaw,\s*htmlToPlainText\(_finalForIntegrity\)\)/);
+    // (2026-10-27) plus the numbers a numbered list draws (_alloListMarkerNumbers, anchored to the source)
+    expect(pipeSrc).toMatch(/_numericFidelityLosses\(_srcRaw,\s*htmlToPlainText\(_finalForIntegrity\)\s*\+\s*' '\s*\+\s*_alloListMarkerNumbers\(_srcRaw,\s*_finalForIntegrity\)\)/);
   });
   it('the detector uses the number-token regex + strips commas + skips single digits', () => {
     expect(pipeSrc).toMatch(/\\d\[\\d,\]\*/);            // the token matcher \d[\d,]*

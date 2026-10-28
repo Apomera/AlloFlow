@@ -107,10 +107,35 @@ describe('real pdf-lib documents', () => {
     expect(bad.findings.map((f) => f.type)).toContain('additional-actions');
   });
   const CHILDFIND = 'C:/tmp/remediation_corpus/new/mdoe-cds-child-find-intake-form.pdf';
-  it.skipIf(!existsSync(CHILDFIND))('the real child-find form: its field formatters are allowed, its document-level script still blocks', async () => {
+  // (2026-10-27) Its "document-level script" was an EMPTY /JavaScript name tree (<< >>): no script at all.
+  it.skipIf(!existsSync(CHILDFIND))('the real child-find form: its field formatters are allowed, and its empty document-level script tree holds nothing', async () => {
     const doc = await PDF.PDFDocument.load(new Uint8Array(readFileSync(CHILDFIND)), { updateMetadata: false });
     const r = scanActiveContent(doc, PDF);
-    expect(r.allowedFormattingScripts).toBeGreaterThanOrEqual(1);
-    expect(r.findings.map((f) => f.type)).toContain('javascript');
+    expect(r.allowedFormattingScripts).toBe(11);
+    expect(r.findings).toEqual([]);
+    expect(r).toMatchObject({ any: false, complete: true, unexaminedStructures: 0 });
+  });
+});
+
+describe('document-level JavaScript name tree (2026-10-27)', () => {
+  const scanNames = (jsTree) => scanActiveContent({ context: { lookup: (v) => v }, catalog: dict({ Names: dict({ JavaScript: jsTree }) }), getPages: () => [] }, PDFLibNS);
+  it('an EMPTY tree (no /Names, no /Kids) holds no script: nothing to report', () => {
+    const r = scanNames(dict({}));
+    expect(types(r)).toEqual([]);
+    expect(r).toMatchObject({ any: false, unexaminedStructures: 0 });
+  });
+  it('a tree with entries still blocks, one finding per script', () => {
+    const r = scanNames(dict({ Names: array(['init', js('app.alert(1)'), 'more', js('this.print()')]) }));
+    expect(types(r)).toEqual(['javascript']);
+    expect(r.findings[0].count).toBe(2);
+  });
+  it('an empty /Names array counts nothing; an unreadable /Names or a /Kids tree still fails closed', () => {
+    expect(types(scanNames(dict({ Names: array([]) })))).toEqual([]);
+    const kids = scanNames(dict({ Kids: array([dict({})]) }));
+    expect(types(kids)).toEqual(['javascript']);
+    expect(kids.unexaminedStructures).toBeGreaterThan(0);
+    const odd = scanNames(dict({ Names: 'not an array' }));
+    expect(types(odd)).toEqual(['javascript']);
+    expect(odd.unexaminedStructures).toBeGreaterThan(0);
   });
 });

@@ -10,6 +10,13 @@
 //  4. Dark reading themes left <summary> labels in their own dark color, and a translucent
 //     bg-indigo-50/50 box turned mid grey under light text.
 //  5. `.prose a` was #3b82f6 (3.68:1 on white); the Contrast theme had no link color at all.
+// Teach Live / Class Mailbox / roster sweep (2026-10-27):
+//  6. Dark theme had no -950 text remap: text-cyan-950 / text-amber-950 sat on the dark tint (1.1:1).
+//  7. Dark theme remapped bg-indigo-50 but not bg-indigo-50/60, which turned grey under light text.
+//  8. Contrast theme left text-indigo-700 links (2.65:1 on black) and the live lesson panel's inline
+//     light tints (yellow text on #f5f3ff) alone.
+// Tailwind utilities are not loaded here, so fixtures paint the utility's base color inline (no
+// !important), exactly what the theme rules must beat.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,7 +37,11 @@ const css = () => {
   const fonts = sheet('alloflow-ui-font-library-css'), assessment = sheet('sa-a11y-css');
   expect(fonts.length, 'UI font library sheet injected').toBeGreaterThan(100);
   expect(assessment.length, 'Assessment Center sheet injected').toBeGreaterThan(100);
-  return app + '\n' + fonts + '\n' + assessment;
+  // The Student Tools panel ships its CSS as one template literal inside the FAB stack module.
+  const fabSrc = fs.readFileSync(process.env.ALLO_FAB_STACK_CANDIDATE || path.join(root, 'view_fab_stack_module.js'), 'utf8');
+  const fab = (fabSrc.match(/`([^`]*\.alloflow-student-tools-panel \{[^`]*)`/) || [])[1] || '';
+  expect(fab.length, 'Student Tools panel CSS found').toBeGreaterThan(1000);
+  return app + '\n' + fonts + '\n' + assessment + '\n' + fab;
 };
 
 const FIXTURE = `
@@ -52,6 +63,28 @@ const FIXTURE = `
       <details><summary id="hc-summary" style="color:#4338ca">Word help</summary></details>
       <div class="bg-indigo-50/50" style="background-color:rgba(238,242,255,0.5)"><p id="hc-box-text">Type a response to enable submit</p></div>
     </div>
+  </div>
+  <div class="theme-dark" style="background:#0b1120;color:#f8fafc"><div style="background:#162032">
+    <div class="bg-cyan-50" style="background-color:#ecfeff"><span id="d-cyan950" class="text-cyan-950" style="color:#083344">Prepare live lesson</span></div>
+    <details open class="bg-amber-50 text-amber-950" style="background-color:#fffbeb;color:#451a03"><summary id="d-amber-summary">Why might Google say unverified app?</summary></details>
+    <details open class="bg-indigo-50/60 text-slate-700" style="background-color:rgba(238,242,255,0.6);color:#334155">
+      <summary id="d-roster-summary" class="text-indigo-800" style="color:#3730a3">How does this roster connect to AlloFlow?</summary>
+      <ul><li id="d-roster-li">Use codenames only.</li></ul>
+    </details>
+    <span id="d-pill" class="bg-emerald-200 text-emerald-950" style="background-color:#a7f3d0;color:#022c22">Ready</span>
+  </div></div>
+  <div class="theme-contrast" style="background:#000000;color:#ffff00">
+    <div class="bg-indigo-50" style="background-color:#eef2ff"><a id="c-indigo-link" href="#z" class="text-indigo-700 underline" style="color:#4338ca">view the same source online</a></div>
+    <section data-live-lesson-run="">
+      <details open style="background:#f5f3ff"><summary id="c-live-summary" style="color:rgb(91,33,182)">Private presenter cues</summary></details>
+      <ul><li id="c-live-li" style="background:rgba(255,255,255,0.92)"><strong id="c-live-strong" style="color:rgb(15,23,42)">Ready: Student-safe path.</strong></li></ul>
+    </section>
+  </div>
+  <div class="theme-dark" style="background:#0b1120;color:#f8fafc">
+    <div class="alloflow-student-tools-panel" style="position:static"><h2 id="d-tools-title" class="text-slate-900" style="color:#0f172a">Student tools</h2><p id="d-tools-sub" class="text-slate-500" style="color:#64748b">Read, focus, and practice your way</p></div>
+  </div>
+  <div class="theme-contrast" style="background:#000000;color:#ffff00">
+    <div class="alloflow-student-tools-panel" style="position:static"><h2 id="c-tools-title" class="text-slate-900" style="color:#0f172a">Student tools</h2></div>
   </div>`;
 
 beforeAll(async () => {
@@ -105,5 +138,31 @@ describe('in-app theme contrast regressions', () => {
   it('links in formatted content read in Light and in the Contrast theme', async () => {
     expect((await measure('l-link')).ratio, 'light link').toBeGreaterThanOrEqual(4.5);
     expect((await measure('c-link')).ratio, 'contrast link').toBeGreaterThanOrEqual(7);
+  });
+
+  it('Dark theme lightens -950 text on tinted cards but not on light pills', async () => {
+    expect((await measure('d-cyan950')).ratio, 'text-cyan-950 on dark cyan tint').toBeGreaterThanOrEqual(4.5);
+    expect((await measure('d-amber-summary')).ratio, 'text-amber-950 details on dark amber tint').toBeGreaterThanOrEqual(4.5);
+    expect((await measure('d-pill')).ratio, 'text-emerald-950 on bg-emerald-200 pill').toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('Dark theme darkens translucent -50 tints like bg-indigo-50/60', async () => {
+    expect((await measure('d-roster-summary')).ratio, 'roster summary').toBeGreaterThanOrEqual(4.5);
+    expect((await measure('d-roster-li')).ratio, 'roster list item').toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('Contrast theme yellows text links and flattens the live lesson panel', async () => {
+    expect((await measure('c-indigo-link')).ratio, 'text-indigo-700 link on black').toBeGreaterThanOrEqual(7);
+    for (const id of ['c-live-summary', 'c-live-strong']) {
+      const m = await measure(id);
+      expect(m.color, id + ' uses the contrast palette').toBe('rgb(255, 255, 0)');
+      expect(m.ratio, id).toBeGreaterThanOrEqual(7);
+    }
+  });
+
+  it('the Student Tools panel follows the Dark and Contrast themes', async () => {
+    expect((await measure('d-tools-title')).ratio, 'dark panel title').toBeGreaterThanOrEqual(4.5);
+    expect((await measure('d-tools-sub')).ratio, 'dark panel subtitle').toBeGreaterThanOrEqual(4.5);
+    expect((await measure('c-tools-title')).ratio, 'contrast panel title').toBeGreaterThanOrEqual(7);
   });
 });

@@ -154,8 +154,16 @@ describe('wiring pins', () => {
         expect(dispatcher).toContain('"successCriteria": [{ "id": "exact quiz concept label, or short-slug", "statement": "I can ...", "source": "quiz" }],');
         expect(dispatcher).toContain("_utils.normalizeSuccessCriteria(content.successCriteria, { concepts: _concepts, objectives: content.objectives })");
         expect(dispatcher).toContain("if (_latestQuiz) content.successCriteriaQuizId = _latestQuiz.id;");
-        expect(dispatcher).toContain('SUCCESS CRITERIA TO COVER (from the current lesson plan)');
+        // 2026-10-27: the plan's criteria now go through QuizModeStrategies.resolveCriteriaCoverage
+        // ("SUCCESS CRITERIA SAMPLED BY THIS CHECK"); a teacher may pick criteria, and with no pick every one is covered.
+        expect(dispatcher).toContain('_qmStrategies.resolveCriteriaCoverage(_criteriaPlan && _criteriaPlan.data.successCriteria');
+        expect(dispatcher).toContain("'SUCCESS CRITERIA SAMPLED BY THIS CHECK");
         expect(dispatcher.split('${_criteriaDirective}').length - 1).toBe(2);
+        const sandbox = { window: {}, console: { log() {} } };
+        vm.runInNewContext(read('quiz_mode_strategies.js'), sandbox);
+        const coverage = sandbox.window.AlloModules.QuizModeStrategies.resolveCriteriaCoverage(
+            [{ id: 'photosynthesis', statement: 'I can explain photosynthesis.' }, { id: 'roots', statement: 'I can describe roots.' }], undefined, 5, []);
+        expect(coverage.selectedIds).toEqual(['photosynthesis', 'roots']);
     });
 
     it('the plan view renders criteria with mastery and Reteach through the next-lesson machinery, and re-renders on rollup', () => {

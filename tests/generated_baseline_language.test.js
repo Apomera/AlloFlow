@@ -16,6 +16,10 @@ const footerStart = source.indexOf('var _alloOutputProvenanceFooterHtml = functi
 const footerEnd = source.indexOf('\n};', footerStart) + 3;
 if (footerStart < 0 || footerEnd < 3) throw new Error('Provenance footer helper extraction boundaries changed');
 const provenanceFooterHtml = new Function(source.slice(footerStart, footerEnd) + '\nreturn _alloOutputProvenanceFooterHtml;')();
+// The wrapper names the page with the real h1 + subtitle helper (2026-10-27).
+const titleStart = source.indexOf('function _alloTitleFromHeading(html) {');
+const titleEnd = source.indexOf('\n}', titleStart) + 2;
+const titleFromHeading = new Function(source.slice(titleStart, titleEnd) + '\nreturn _alloTitleFromHeading;')();
 // Execute the real wrapper and both initial audit calls, stopping before unrelated fixes.
 // The deterministic-text fixture bypasses the OCR spelling branch in this production segment.
 const baselineSource = source.slice(generationStart, baselineEnd);
@@ -32,6 +36,7 @@ async function captureInitialAudits(documentLanguage, rtl = false) {
     _fileName: 'guia-familias.pdf',
     _alloEscapePromptDisplayText: text => String(text),
     _alloOutputProvenanceFooterHtml: provenanceFooterHtml,
+    _alloTitleFromHeading: titleFromHeading,
     bodyContent: prose,
     pageCount: 1,
     extractedLength: prose.length,

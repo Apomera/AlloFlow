@@ -80,6 +80,68 @@ describe('Counter-illumination silhouette', () => {
   }, RENDER_TIMEOUT_MS);
 });
 
+// The Body Plan diagram shown without WebGL had its markers stacked on each
+// other inside the mantle and arm markers floating off the arms.
+describe('Body Plan flat diagram', () => {
+  const REGIONS = ['central-brain', 'arm-ganglion', 'eye', 'mantle', 'siphon', 'beak', 'gills', 'hearts', 'hectocotylus'];
+  function diagram(region) {
+    const svg = render({ activeSection: 'anatomy', anat3dStatus: 'failed', anatomyRegion: region }).querySelector('svg[aria-label^="Octopus anatomy diagram"]');
+    const markers = [...svg.querySelectorAll('g[style*="cursor"]')].map((g) => {
+      const c = g.querySelectorAll('circle')[1];
+      return { x: num(c, 'cx'), y: num(c, 'cy'), r: num(c, 'r') };
+    });
+    return { svg, markers };
+  }
+
+  it('keeps every region marker clear of the others', () => {
+    const { markers } = diagram('central-brain');
+    expect(markers).toHaveLength(REGIONS.length);
+    for (let i = 0; i < markers.length; i++) for (let j = i + 1; j < markers.length; j++) {
+      const a = markers[i], b = markers[j];
+      expect(Math.hypot(a.x - b.x, a.y - b.y), REGIONS[i] + ' vs ' + REGIONS[j]).toBeGreaterThan(a.r + b.r + 2);
+    }
+  }, RENDER_TIMEOUT_MS);
+
+  it('names the selected region without covering another marker or an eye', () => {
+    REGIONS.forEach((region, index) => {
+      const { svg, markers } = diagram(region);
+      const box = svg.querySelector('g.cl-anat-flat-label rect');
+      const x = num(box, 'x'), y = num(box, 'y'), w = num(box, 'width'), hgt = num(box, 'height');
+      expect(svg.querySelector('g.cl-anat-flat-label text').textContent.length, region).toBeGreaterThan(2);
+      const others = markers.filter((_, i) => i !== index).concat([{ x: 150, y: 164, r: 11 }, { x: 250, y: 164, r: 11 }]);
+      for (const c of others) {
+        const nx = Math.max(x, Math.min(c.x, x + w)), ny = Math.max(y, Math.min(c.y, y + hgt));
+        expect(Math.hypot(nx - c.x, ny - c.y), region + ' label vs marker at ' + c.x + ',' + c.y).toBeGreaterThan(c.r);
+      }
+    });
+  }, RENDER_TIMEOUT_MS);
+
+  it('puts the arm markers on the drawn arms', () => {
+    const { svg, markers } = diagram('central-brain');
+    const at = (id) => markers[REGIONS.indexOf(id)];
+    const ganglia = [...svg.querySelectorAll('circle[fill="#86efac"]')].map((c) => ({ x: num(c, 'cx'), y: num(c, 'cy') }));
+    expect(ganglia).toHaveLength(8);
+    const g = at('arm-ganglion');
+    expect(Math.min(...ganglia.map((p) => Math.hypot(p.x - g.x, p.y - g.y))), 'ganglia marker sits on a ganglion').toBeLessThan(2);
+    const tip = svg.querySelector('ellipse[fill="rgba(244,114,182,0.75)"]');
+    const hc = at('hectocotylus');
+    expect(Math.hypot(num(tip, 'cx') - hc.x, num(tip, 'cy') - hc.y), 'hectocotylus marker near the modified tip').toBeLessThan(26);
+  }, RENDER_TIMEOUT_MS);
+});
+
+// The sound spectrum cut names and figures at 22 characters ("Sperm whale
+// echolocat…") and ended its ticks at 10 kHz while bands ran on to 25 kHz.
+describe('Ocean Sounds spectrum labels', () => {
+  it('prints every source name and band in full, and labels the axis end', () => {
+    const svg = render({ activeSection: 'sounds' }).querySelector('svg[aria-label^="Marine soundscape"]');
+    const texts = [...svg.querySelectorAll('text')].map((t) => t.textContent);
+    expect(texts.filter((t) => t.includes('…'))).toEqual([]);
+    expect(texts).toContain('Sperm whaleecholocation clicks'); // two tspans, read back without the line break
+    expect(texts).toContain('5 kHz – 15 kHz');
+    expect(texts).toContain('25 kHz');
+  }, RENDER_TIMEOUT_MS);
+});
+
 describe('Life Cycle flow layout', () => {
   function layout() {
     const svg = render({ activeSection: 'lifecycle' }).querySelector('svg[aria-label^="Life cycle flow"]');

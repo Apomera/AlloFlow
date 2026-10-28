@@ -54,8 +54,11 @@ test('calls play spatially from real residents, are captioned, and stop when tur
   expect(rec.pans.length).toBeGreaterThan(0); expect(rec.pans.every((v: number) => v >= -1 && v <= 1)).toBe(true);
   expect(rec.freqs.some((f: number) => f > 1000)).toBe(true);
   // Each call is cued for its bird to show, timed with the synthesis.
+  // Read the caption first: each cue is recorded before its caption updates,
+  // so a call landing between the two reads cannot make this race.
+  const heardId = await heard.getAttribute('data-birdlab-heard');
   const cues = await page.evaluate(() => (window as any).__cues);
-  expect(cues.map((c: any) => c.id)).toContain(await heard.getAttribute('data-birdlab-heard'));
+  expect(cues.map((c: any) => c.id)).toContain(heardId);
   for (const c of cues) { expect(c.notes).toBeGreaterThan(0); expect(c.delay).toBe(.05); expect(c.ok).toBe(c.id !== 'mourningDove'); }
   await toggle.click();
   await expect(card).toHaveAttribute('data-birdlab-woodland-sounds', 'off');

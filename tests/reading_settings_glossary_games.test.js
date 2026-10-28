@@ -197,6 +197,44 @@ describe('flash cards: reading text follows the text size', () => {
   });
 });
 
+// 2026-10-27 review backlog: a dictionary sense that was not matched to the lesson's
+// definition must not be presented as the lesson's meaning. Uses the real matchers.
+describe('flash cards: dictionary sense provenance', () => {
+  function backWith(meanings, def = 'A plant part that makes food.') {
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    new Function(readFileSync(REPO + '/dictionary_loader.js', 'utf8'))();
+    window.AlloDictionary.getCached = () => ({ word: 'leaf', meanings: [{ partOfSpeech: 'noun', definitions: meanings.map((definition) => ({ definition })) }], source: 'Wiktionary' });
+    const data = words().map((w, i) => (i === 0 ? { ...w, def } : w));
+    const { container } = mount(flashcards({ isFlashcardFlipped: true, generatedContent: { id: 'deck', type: 'glossary', data }, filteredGlossaryData: data.map((item, i) => ({ ...item, _originalIdx: i })) }));
+    const dialog = flashcardDialog(container);
+    const box = [...dialog.querySelectorAll('details')].find((d) => d.className.includes('bg-white/10'));
+    expect(box, 'the dictionary box').toBeTruthy();
+    return { heading: box.querySelector('summary').textContent, text: box.textContent, note: box.querySelector('[data-dict-sense-unmatched]') };
+  }
+  const UNMATCHED = 'Dictionary meaning (not matched to this lesson)';
+
+  it('a sense that matches the lesson definition is shown as verified', () => {
+    const r = backWith(['A sheet of paper in a book.', 'The flat green part of a plant that makes food from sunlight.']);
+    expect(r.heading).toBe('Verified dictionary');
+    expect(r.text).toContain('makes food from sunlight');
+    expect(r.note).toBeNull();
+  });
+  it('no matching sense: the first sense is labelled as not matched to the lesson', () => {
+    const r = backWith(['A sheet of paper in a book.', 'To turn pages quickly.']);
+    expect(r.heading).toBe(UNMATCHED);
+    expect(r.text).toContain('A sheet of paper in a book.');
+    expect(r.note, 'the unmatched-sense note').toBeTruthy();
+  });
+  it('a tie between senses is not a match', () => {
+    const r = backWith(['A plant hormone.', 'Plant tissue in general.']);
+    expect(r.heading).toBe(UNMATCHED);
+  });
+  it('a card with no lesson definition is not called matched', () => {
+    const r = backWith(['A sheet of paper in a book.'], '');
+    expect(r.heading).toBe(UNMATCHED);
+  });
+});
+
 describe('Word Search: the Aa button and its text', () => {
   it('only with the bridge; beside Close in the header; opens the panel; Close still closes', () => {
     expect(aaButtons(mount(wordSearch()).container)).toEqual([]);

@@ -134,7 +134,8 @@ describe('resolveReviewFindings through the real pipeline', () => {
     const sent = JSON.parse(prompts[0].split('UNTRUSTED ITEMS DATA:\n"""\n')[1].split('\n"""')[0]);
     expect(sent[0].note).toBe('second: located'); // the note belongs to the element shown
     expect(sent[0].element).toBe('<p>Just a paragraph.</p>');
-    expect(sent[0].alsoFlagged).toEqual([{ note: 'first: unlocatable', element: '<p>gone</p>' }, { note: 'third: also flagged', element: '<p>Total 95</p>' }]);
+    // a located element is sent as its own markup (the engine snippet can be just the opening tag)
+    expect(sent[0].alsoFlagged).toEqual([{ note: 'first: unlocatable', element: '<p>gone</p>' }, { note: 'third: also flagged', element: '<p>Total 95 <a href="/r">report</a></p>' }]);
     expect(prompts[0]).toContain('"not-an-issue" must hold for every one of them');
     expect(out.dispositions[0]).toMatchObject({ action: 'not-an-issue', nodesShown: 3 });
     const single = await p.resolveReviewFindings(HTML, [findingFor('text_quoted_correctly', '/html[1]/body[1]/main[1]/p[1]')], {});
@@ -164,7 +165,8 @@ describe('automatic triage and the queue', () => {
   it('the view shows the model\'s reasons and offers the on-demand run, and never marks anything reviewed itself', () => {
     expect(VIEW).toContain('_runReviewTriage');
     // f5b045fc9 (2026-09-20) dropped the emoji from the button text.
-    expect(VIEW).toContain(": 'Ask AI to resolve'}</button>");
+    // 2026-10-27: the queue's words are translated keys (English fallback kept).
+    expect(VIEW.includes("(t('pdf_audit.review_queue.triage_button') || 'Ask AI to resolve')}</button>"), 'triage button').toBe(true);
     expect(VIEW).toContain('_triageLabel');
     expect(VIEW).toContain('_docPipeline.resolveReviewFindings');
     expect(VIEW).toContain('{ reviewTriage: summary }');

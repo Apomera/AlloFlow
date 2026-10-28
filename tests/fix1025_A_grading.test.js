@@ -223,7 +223,7 @@ describe('3. regenerate and repair keep the answer-cue safeguards', () => {
       isTeacherMode: true, isEditingQuiz: true, callGemini, handleQuizQuestionAction, inputText: 'Source.',
       generatedContent: { id: 'quiz-regen', type: 'quiz', title: 'T', data: { questions } }
     })));
-    const regen = [...host.querySelectorAll('button')].filter(el => el.textContent.trim() === 'Regenerate item');
+    const regen = [...host.querySelectorAll('button')].filter(el => ['Regenerate item', 'quiz.authoring.regenerate'].includes(el.textContent.trim()));
     expect(regen.length).toBe(3);
     await act(async () => regen[2].click());
     await flush(20);

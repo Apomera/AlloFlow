@@ -95,26 +95,59 @@ describe('deliveryExplanation', () => {
       verification: { equalAccess: { reviewFindings: [{ id: 'text_sensory_misuse', description: "Confirm the word(s) 'above' is used to indicate a logical rather than visual position" }] } } });
     // (2026-10-26) The common reminders read in plain words with the quoted text kept; a multi-element
     // finding says how many places; any other rule keeps the checker's sentence behind the prefix.
-    expect(named.needsAPerson).toEqual(['Check that "above" still makes sense without seeing the page (it should point to a place in reading order).']);
+    // (2026-10-27) Not "a place in reading order": the word may be "right" as in a legal right (osep2).
+    expect(named.needsAPerson).toEqual(['Check that "above" does not point at something only by where it sits on the page or how it looks.']);
+    // (2026-10-27) Several flagged places quote only the first word: "words such as", not a lone "right" (osep3).
+    const sensory = (nodes, description) => Verification.explainDelivery({ files: {}, verdictReasons: { review: [], cautions: [] },
+      verification: { equalAccess: { reviewFindings: [{ id: 'text_sensory_misuse', nodes, description }] } } }).needsAPerson[0];
+    expect(sensory(9, "Confirm the word(s) 'right' is used logically")).toBe('Check that words such as "right" do not point at something only by where it sits on the page or how it looks. (9 places)');
+    expect(sensory(1, 'Confirm the words are used logically')).toBe('Check that the wording does not point at something only by where it sits on the page or how it looks.');
+    // (2026-10-27) The list reminder in plain words (complaint2: six numbered section headings).
+    const listCheck = (nodes) => Verification.explainDelivery({ files: {}, verdictReasons: { review: [], cautions: [] },
+      verification: { equalAccess: { reviewFindings: [{ id: 'list_markup_review', nodes, description: 'Verify this is a list and if so, modify to use proper HTML elements for the list' }] } } }).needsAPerson[0];
+    expect(listCheck(6)).toBe('Check whether these items are really a list; if they are, it should be marked as a list. (6 places)');
+    expect(listCheck(1)).toBe('Check whether this is really a list; if it is, it should be marked as a list.');
     const plain = Verification.explainDelivery({ files: {}, verdictReasons: { review: [], cautions: [] },
       verification: { equalAccess: { reviewFindings: [
         { id: 'text_block_heading', nodes: 3, description: "Confirm this text 'Course Syllabus' is used as a heading and if so, modify to use a heading element or role" },
-        { id: 'text_quoted_correctly', nodes: 1, description: 'If the following text is a quotation, mark it as a quotation' }] } } });
+        { id: 'text_quoted_correctly', nodes: 1, description: "If the following text is a quotation, mark it as a <q> or <blockquote> element: 'ACHIEVING & ENGAGED STUDENTS, ' ... llow M. Below is the quotation '" },
+        { id: 'media_alt_brief', nodes: 7, description: 'Text alternative is more than 150 characters' },
+        { id: 'download_keyboard_controllable', nodes: 7, description: 'Verify that the file download mechanism does not cause a keyboard trap' },
+        { id: 'aria_landmark_name_unique', nodes: 1, description: 'Multiple landmarks share a name' }] } } });
     expect(plain.needsAPerson).toEqual([
       'Check whether "Course Syllabus" is a heading; if it is, it should be marked as one. (3 places)',
-      'A checker asks a person to confirm: If the following text is a quotation, mark it as a quotation']);
+      'Check whether "ACHIEVING & ENGAGED STUDENTS," is a quotation; if it is, it should be marked as one.',
+      'Check the image descriptions longer than 150 characters: each should still read well, with long detail in the visible text if needed. (7 places)',
+      'Check that the download links can be reached and used with the keyboard alone. (7 places)',
+      'A checker asks a person to confirm: Multiple landmarks share a name']);
     // An item the AI review judged not-an-issue becomes a quick check with the AI's reasoning (Aaron, 2026-10-25).
     const quick = Verification.explainDelivery({ files: {}, deliveryStatus: 'review-required',
       verdictReasons: { review: ['WCAG verification is review-required; review the engine coverage and unresolved evidence before distribution'], cautions: [] },
       verification: { equalAccess: { reviewFindings: [{ id: 'style_color_misuse', description: 'Verify color is not used as the only visual means of conveying information' }] } },
       reviewTriage: { dispositions: [{ key: 'equalAccess|potential|style_color_misuse', action: 'not-an-issue', reason: 'This style block only draws a focus ring.' }] } });
     expect(quick.needsAPerson).toEqual([]);
-    expect(quick.quickChecks).toEqual(['Check that colour is not the only way information is shown. (AI review: This style block only draws a focus ring.)']);
+    expect(quick.quickChecks).toEqual(['Check that colour is not the only way information is shown. (AI review found no problem: This style block only draws a focus ring.)']);
     // A one-sentence AI reason up to 400 characters is shown whole (syllabus_sie's 237-character reason was cut).
     const longReason = 'The flagged style block only defines focus indicators, which use a 2px outline plus a 4px box-shadow (and CanvasText in forced colours), and links in the body are underlined by default, so no information is conveyed by colour alone.';
     const whole = Verification.explainDelivery({ files: {}, verification: { equalAccess: { reviewFindings: [{ id: 'style_color_misuse', nodes: 1, description: 'Verify color' }] } },
       reviewTriage: { dispositions: [{ key: 'equalAccess|potential|style_color_misuse', action: 'not-an-issue', reason: longReason }] } });
-    expect(whole.quickChecks[0].endsWith('(AI review: ' + longReason + ')')).toBe(true);
+    expect(whole.quickChecks[0].endsWith('(AI review found no problem: ' + longReason + ')')).toBe(true);
+    // A 500-character reason (several elements covered) is shown whole.
+    const midReason = longReason + ' ' + longReason.slice(0, 260);
+    expect(midReason.length).toBeGreaterThan(450);
+    const mid = Verification.explainDelivery({ files: {}, verification: { equalAccess: { reviewFindings: [{ id: 'style_color_misuse', nodes: 1, description: 'Verify color' }] } },
+      reviewTriage: { dispositions: [{ key: 'equalAccess|potential|style_color_misuse', action: 'not-an-issue', reason: midReason }] } }).quickChecks[0];
+    expect(mid.endsWith('(AI review found no problem: ' + midReason + ')')).toBe(true);
+    // A reason over 600 characters is cut at a word with "…" (budget2: "...the full ax)" at 300).
+    const huge = longReason + ' ' + longReason + ' ' + longReason;
+    const cut = Verification.explainDelivery({ files: {}, verification: { equalAccess: { reviewFindings: [{ id: 'style_color_misuse', nodes: 1, description: 'Verify color' }] } },
+      reviewTriage: { dispositions: [{ key: 'equalAccess|potential|style_color_misuse', action: 'not-an-issue', reason: huge }] } }).quickChecks[0];
+    expect(cut.endsWith('…)')).toBe(true);
+    expect(cut.length).toBeLessThan(700);
+    // The orphan rule's detail is plain (the rule name stays in the code).
+    const orphanItem = Verification.explainDelivery({ files: {}, taggedPdfError: 'tagged_pdf_delivery_unverified (validator-failed: No orphaned semantic leaves)' }).items[0];
+    expect(orphanItem.detail).toBe("AlloFlow's own PDF check: some text in the accessible version is not linked to text on the PDF's pages.");
+    expect(orphanItem.code).toContain('No orphaned semantic leaves');
     expect(quick.headline).toMatch(/Only quick checks are left/);
     // The real cause in a delivery_unverified wrapper is explained, not the wrapper (Hebrew UDHR run).
     const ocr = Verification.explainDelivery({ files: {}, taggedPdfError: 'tagged_pdf_delivery_unverified (ocr-text-layer-incomplete: 2781 OCR character(s) could not be embedded; OCR character coverage was 62%)' });
@@ -137,9 +170,10 @@ describe('deliveryExplanation', () => {
     expect(orphan.nextStep).toMatch(/Running again gives the same result/);
     // The veraPDF path (delivery code, no wrapper) keeps the veraPDF wording.
     expect(Verification.explainDelivery({ files: { taggedPdf: 'x.pdf' }, taggedPdfDelivery: { ok: false, code: 'validator-failed' } }).items[0].meaning).toMatch(/veraPDF/);
-    // A reason over 400 characters is cut at a word boundary.
-    const overLongReason = 'This style block only draws a focus ring as a white outline plus a black shadow around the focused control and moves the skip link into view on focus, which conveys focus by outline and position change rather than by colour alone, so keyboard users always see where they are on the page, and in forced-colours mode the same ring is drawn in the system highlight colour so it stays visible to people who rely on that setting';
-    expect(overLongReason.length).toBeGreaterThan(400);
+    // A reason over 600 characters (was 400 until 2026-10-27; multi-element reasons run long) is cut at a word boundary.
+    const overLongReason = 'This style block only draws a focus ring as a white outline plus a black shadow around the focused control and moves the skip link into view on focus, which conveys focus by outline and position change rather than by colour alone, so keyboard users always see where they are on the page, and in forced-colours mode the same ring is drawn in the system highlight colour so it stays visible to people who rely on that setting'
+      + ', and the same holds for every other flagged element in this document because each of them uses the identical focus styling defined once in the shared stylesheet at the top of the page';
+    expect(overLongReason.length).toBeGreaterThan(600);
     const clipped = Verification.explainDelivery({ files: {}, verification: { equalAccess: { reviewFindings: [{ id: 'style_color_misuse', description: 'Verify color' }] } },
       reviewTriage: { dispositions: [{ key: 'equalAccess|potential|style_color_misuse', action: 'not-an-issue', reason: overLongReason }] } }).quickChecks[0];
     expect(clipped).toMatch(/…\)$/);

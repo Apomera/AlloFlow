@@ -61,3 +61,62 @@ it('an OCR transcript\'s markdown table syntax is layout, not missing text; real
  // a fill-in blank glued to a number ("195__" for the printed ", 195") is the same number
  expect(P.assessSourceCoverage({sourceText:'ending 195',outputHtml:'<p>ending 195__</p>',method:'vision-ocr'})).toMatchObject({missingTokens:0});
 });
+// (2026-10-27, expenditures: 109 "missing" words on a delivered document that held every word)
+const cov=(pages,html)=>P.assessSourceCoverage({sourceText:pages.map(p=>p.text).join('\n'),outputHtml:html,pages,method:'pdfjs'});
+it('a header block of over 80 words repeated at the top of every page is one passage',()=>{
+ const head=Array.from({length:100},(_,i)=>'head'+i).join(' ');
+ const pages=[1,2,3].map(n=>({pageNum:n,text:head+' body'+n+'a body'+n+'b'}));
+ expect(cov(pages,'<p>'+head+'</p>'+[1,2,3].map(n=>'<p>body'+n+'a body'+n+'b</p>').join(''))).toMatchObject({missingTokens:0});
+ // the same words on only one page are not furniture: dropping them from the output is still caught
+ expect(cov([{pageNum:1,text:head},{pageNum:2,text:'other words'},{pageNum:3,text:'more words'}],'<p>other words more words</p>').missingTokens).toBe(100);
+});
+it('two words the text layer glued together match the two output words; a glued word with one unknown half does not',()=>{
+ expect(P.assessSourceCoverage({sourceText:'Grant departmentscience total',outputHtml:'<p>Grant department science total</p>',method:'pdfjs'})).toMatchObject({missingTokens:0});
+ // one unknown half: the whole glued word is reported, not a half of it
+ const half=P.assessSourceCoverage({sourceText:'Grant departmentzzzqqq total',outputHtml:'<p>Grant department science total</p>',method:'pdfjs'});
+ expect(half).toMatchObject({missingTokens:1});expect(half.missingWords.map(w=>w.word)).toEqual(['departmentzzzqqq']);
+ // a word the output has whole is never split (split, its two copies would need two of each half)
+ expect(P.assessSourceCoverage({sourceText:'Grant department department',outputHtml:'<p>Grant department department depart ment</p>',method:'pdfjs'})).toMatchObject({missingTokens:0});
+});
+// (2026-10-27, agenda2: 38 "missing" words, all list markers or words glued across HTML line breaks)
+it('a lettered list credits its printed letters, only to items whose own text follows them',()=>{
+ const src='Committees: a. Elect the Finance Committee. b. Elect the Policy Committee.';
+ const items='<li>Elect the Finance Committee.</li><li>Elect the Policy Committee.</li>';
+ const run=html=>P.assessSourceCoverage({sourceText:src,outputHtml:'<p>Committees:</p>'+html,method:'pdfjs'});
+ expect(run('<ol style="list-style-type:lower-alpha">'+items+'</ol>')).toMatchObject({missingTokens:0});
+ expect(run('<ol type="A">'+items+'</ol>')).toMatchObject({missingTokens:0});
+ expect(run('<ol style="list-style:upper-latin inside">'+items+'</ol>')).toMatchObject({missingTokens:0});
+ // a list that draws numbers or bullets does not print these letters
+ expect(run('<ol>'+items+'</ol>').missingWords.map(w=>w.word)).toEqual(['a','b']);
+ expect(run('<ul>'+items+'</ul>').missingWords.map(w=>w.word)).toEqual(['a','b']);
+ expect(run('<ol type="i">'+items+'</ol>').missingWords.map(w=>w.word)).toEqual(['a','b']);
+ expect(run('<ol style="list-style-type:lower-roman">'+items+'</ol>').missingWords.map(w=>w.word)).toEqual(['a','b']);
+ // the letters must sit right before the item's own text
+ expect(run('<ol style="list-style-type:lower-alpha"><li>Elect the Policy Committee.</li><li>Elect the Finance Committee.</li></ol>').missingTokens).toBeGreaterThan(0);
+});
+it('a <br> inside a list item is a word break when matching its printed number',()=>{
+ const src='1. Approve the minutes of June 4. Motion: Second: Vote: Yea- Nay-';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:'<ol><li>Approve the minutes of June 4.<br><em>Motion:</em><br><em>Second:</em><br><em>Vote: Yea- Nay-</em></li></ol>',method:'pdfjs'})).toMatchObject({missingTokens:0});
+});
+it('a line glued to the next line\'s one-letter label splits there (child-find "InformationP: 877", "6661W: http")',()=>{
+ const html='<h2>Contact Information</h2><ul><li>P: 877-770-8883</li><li>F: (207) 624-6661</li><li>W: www.maine.gov</li></ul>';
+ expect(P.assessSourceCoverage({sourceText:'Contact InformationP: 877-770-8883 F: (207) 624-6661W: www.maine.gov',outputHtml:html,method:'pdfjs'})).toMatchObject({missingTokens:0});
+ // only when the part before the label is an output word, and only before a colon
+ expect(P.assessSourceCoverage({sourceText:'Contact InfrmationP: 877-770-8883',outputHtml:html,method:'pdfjs'}).missingWords.map(w=>w.word)).toEqual(['infrmationp']);
+ expect(P.assessSourceCoverage({sourceText:'Contact InformationP 877-770-8883',outputHtml:html,method:'pdfjs'}).missingTokens).toBeGreaterThan(0);
+});
+it('a hyphen before a line break in the HTML source does not glue two output words',()=>{
+ const src='Vote: Yea- Nay- Election of Board Officers';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:'<p><em>Vote: Yea- Nay-</em></p>\n<h2>Election of Board Officers</h2>',method:'pdfjs'})).toMatchObject({missingTokens:0});
+ // a hyphen-wrapped word in the SOURCE still rejoins
+ expect(P.assessSourceCoverage({sourceText:'the commit-\ntee met',outputHtml:'<p>the committee met</p>',method:'pdfjs'})).toMatchObject({missingTokens:0});
+});
+it('a bare page number ending each one-line page is furniture; a number that is not the page number still counts',()=>{
+ const row=n=>'Row '+['alpha','beta','gamma'][n-1]+' cost '+(n*11);
+ const pages=[1,2,3].map(n=>({pageNum:n,text:row(n)+' '+n}));
+ const html=[1,2,3].map(n=>'<p>'+row(n)+'</p>').join('');
+ expect(cov(pages,html)).toMatchObject({missingTokens:0});
+ // numbers that change page to page but are not the page's own (5, 6, 8 on pages 1-3) are content
+ const wrong=[[1,5],[2,6],[3,8]].map(([n,v])=>({pageNum:n,text:row(n)+' '+v}));
+ expect(cov(wrong,html).missingTokens).toBe(3);
+});

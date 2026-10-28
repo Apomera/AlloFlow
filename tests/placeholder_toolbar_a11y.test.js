@@ -76,7 +76,8 @@ describe('chart-data table carries a caption', () => {
   it('the AI-estimated chart data table opens with a caption naming the chart', () => {
     expect(PIPELINE).toContain("'<table><caption>' + esc2(_chartCaption) + '</caption><thead><tr>'");
     // 2026-10-26: a long alt is shortened at a sentence end or word boundary (tests/remediation_open_items_1026.test.js).
-    expect(PIPELINE.includes("const _chartCaption = 'Chart data, AI-estimated' + (_capAlt ? ': ' + _capShort : '');"), 'caption names the chart').toBe(true);
+    // 2026-10-28: the caption NAMES the chart (alt up to its colon) instead of repeating its values.
+    expect(PIPELINE.includes("const _chartCaption = 'Chart data, AI-estimated' + (_capAlt ? ': ' + (_capName || _capShort) : '');"), 'caption names the chart').toBe(true);
   });
 });
 

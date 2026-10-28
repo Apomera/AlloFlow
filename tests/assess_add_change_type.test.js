@@ -16,7 +16,9 @@ const { act } = React;
 
 const QUIZ_MODULE = process.env.ADDITEM_QUIZ_MODULE || 'view_quiz_module.js';
 const HOST_MODULE = process.env.ADDITEM_HOST_MODULE || 'host_handlers_module.js';
-const t = key => key;
+// English from ui_strings.js, so buttons read as teachers see them; unknown keys come back as the key.
+const _en = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
+const t = (key, params = {}) => { const v = key.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), _en); return typeof v === 'string' ? v.replace(/\{(\w+)\}/g, (m, n) => (params[n] ?? m)) : key; };
 let QuizView, internals, createHandlers;
 
 beforeAll(() => {

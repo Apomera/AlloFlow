@@ -70,7 +70,10 @@ test('the design-challenge card passes contrast and target size in every state',
     { tab: 'build', challengeId: 'footbridge', span: 20, nBays: 4, loadPerJoint: 20, loadMode: 'uniform', trussStyle: 'warren', height: 4, materialId: 'wood', crossSectionMm2: 16000, lateralBraceEvery: 1 },
     // worked example open (material table) and the printed results
     { tab: 'build', challengeId: 'county_road', challengeRevealed: { county_road: true }, challengeHint: 3, span: 40, nBays: 6, loadPerJoint: 80, loadMode: 'uniform', materialId: 'steel', challengeRecords: { county_road: record } },
-    { tab: 'print', challengeRecords: { county_road: { ...record, afterExample: true } } }
+    { tab: 'print', challengeRecords: { county_road: { ...record, afterExample: true } } },
+    // moving truck: K-truss refused with the example open, then the par design with its worst-position sentence
+    { tab: 'build', bridgeView: '2d', challengeId: 'haul_road', challengeHint: 3, challengeRevealed: { haul_road: true }, span: 36, nBays: 6, loadMode: 'vehicle', vehicleLoad: 300, trussStyle: 'ktruss', materialId: 'steel', crossSectionMm2: 20000 },
+    { tab: 'build', bridgeView: '2d', challengeId: 'haul_road', challengeHint: 1, span: 36, nBays: 6, loadMode: 'vehicle', vehicleLoad: 300, vehiclePos: 0.5, trussStyle: 'warren', height: 6, lateralBraceEvery: 1, materialId: 'steel', crossSectionMm2: 13000 }
   ]) {
     await mount(page, state);
     const card = page.locator('[data-bridge-challenges],[data-bridge-challenge-active],[data-bridge-print-challenges]').first();

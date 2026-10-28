@@ -1,4 +1,4 @@
-﻿// 2026-10-25 keyless corpus runs. Three ways a correct remediation reached families broken:
+// 2026-10-25 keyless corpus runs. Three ways a correct remediation reached families broken:
 // 1. the fix loop reverted to the pre-fix document whenever ANY checker's evidence was missing,
 //    so every fix pass was silently thrown away (a pass scoring AI 90 shipped as the pre-fix 25);
 // 2. a figure whose image never arrived shipped as an editor placeholder (buttons, drag handlers)
@@ -439,11 +439,15 @@ describe('scanned text layer over a script Tesseract cannot read', () => {
 describe('the generator placeholder title gives way to the printed title', () => {
   const start = '        // 4. Ensure <title> is non-empty';
   const code = sliceBetween(source, start, '        // 5. Ensure all tables have scope', FILE);
-  const preflight = new Function('accessibleHtml', '_fileName', 'let aiFixCount = 0;\n' + start + code + '\nreturn accessibleHtml;');
+  const helper = sliceBetween(source, 'function _alloTitleFromHeading(html) {', '\nfunction _alloExecutableActiveContentFindings', FILE);
+  const preflight = new Function('accessibleHtml', '_fileName', helper + 'let aiFixCount = 0;\n' + start + code + '\nreturn accessibleHtml;');
   const doc = (title, h1) => '<html lang="en"><head><meta charset="utf-8">' + title + '</head><body><main><h1>' + h1 + '</h1><p>x</p></main></body></html>';
   it('replaces "Accessible Document - <file>" with the h1 (English and Urdu UDHR runs)', () => {
     const out = preflight(doc('<title>Accessible Document — ohchr-udhr-english</title>', 'Universal Declaration of Human Rights'), 'ohchr-udhr-english.pdf');
     expect(out.match(/<title>[^<]*<\/title>/g)).toEqual(['<title>Universal Declaration of Human Rights</title>']);
+    // with the subtitle line printed under the h1, as the wrapper does (2026-10-27)
+    const sub = doc('<title>Accessible Document — msad35</title>', 'Maine SAD 35').replace('<p>x</p>', '<p>Regular Meeting Agenda</p>');
+    expect(preflight(sub, 'msad35.pdf').match(/<title>[^<]*<\/title>/g)).toEqual(['<title>Maine SAD 35 – Regular Meeting Agenda</title>']);
   });
   it('keeps an author title, and keeps the placeholder when no plain h1 can name the page', () => {
     const own = doc('<title>Accessible Document Guidelines</title>', 'Other');
@@ -526,7 +530,7 @@ describe('coverage: page furniture on pages handed over as one line, and printed
 });
 
 describe('the fix loop does not re-send a title finding the HTML already settled (USCIS civics)', () => {
-  const code = sliceBetween(source, 'function _alloTitleIssueSettled(issue, html) {', '\n}', { ...FILE, includeEnd: true });
+  const code = sliceBetween(source, 'function _alloTitleIssueSettled(issue, html) {', '\nfunction _alloExecutableActiveContentFindings', FILE);
   const settled = new Function(code + '\nreturn _alloTitleIssueSettled;')();
   const doc = (title, h1) => '<html><head><title>' + title + '</title></head><body><h1>' + h1 + '</h1></body></html>';
   const issue = { ruleId: 'document-title', issue: "title element reads 'Accessible Document \u2014 uscis-civics-100q'" };
@@ -538,6 +542,16 @@ describe('the fix loop does not re-send a title finding the HTML already settled
     expect(settled(issue, doc('Civics', 'Civics Questions for the Naturalization Test'))).toBe(false);
     expect(settled(issue, '<html><head><title>Civics</title></head><body><p>x</p></body></html>')).toBe(false);
     expect(settled(issue, doc('', 'Civics'))).toBe(false);
+  });
+  it('a finding that quotes the CURRENT title stays open (agenda2: the h1 named the district, not the agenda)', () => {
+    const agenda = doc('Maine School Administrative District No. 35', 'Maine School Administrative District No. 35');
+    expect(settled({ ruleId: 'document-title', location: '<title>Maine School Administrative District No. 35</title>' }, agenda)).toBe(false);
+    expect(settled({ ruleId: 'document-title', location: '&lt;title&gt;Maine School Administrative District No. 35&lt;/title&gt;' }, agenda)).toBe(false);
+    // a stale finding quoting the old placeholder is still settled
+    expect(settled({ ruleId: 'document-title', location: '<title>Accessible Document — msad35</title>' }, agenda)).toBe(true);
+    // the h1 plus its subtitle line is the derived title: settled too
+    const sub = '<html><head><title>Maine SAD 35 – Regular Meeting Agenda</title></head><body><h1>Maine SAD 35</h1><p>Regular Meeting Agenda</p></body></html>';
+    expect(settled(issue, sub)).toBe(true);
   });
   it('only ever applies to document-title findings', () => {
     expect(settled({ ruleId: 'image-alt', issue: 'x' }, doc('Civics', 'Civics'))).toBe(false);
@@ -592,7 +606,7 @@ describe('option B: a generic Equal Access reminder the AI review settled stops 
     const compact = V.compactVerificationEvidence({ equalAccess: apply(ea(), triage('not-an-issue')) });
     expect(compact.equalAccess.acknowledgedByAiReview).toEqual([expect.objectContaining({ id: 'style_color_misuse', reason: 'The style block only draws a focus ring.' })]);
     const out = V.explainDelivery({ files: {}, verification: compact });
-    expect(out.quickChecks).toEqual(expect.arrayContaining([expect.stringMatching(/^Check that colour is not the only way information is shown\. \(AI review: The style block only draws a focus ring\.\)$/)]));
+    expect(out.quickChecks).toEqual(expect.arrayContaining([expect.stringMatching(/^Check that colour is not the only way information is shown\. \(AI review found no problem: The style block only draws a focus ring\.\)$/)]));
     // Nothing acknowledged: the compact evidence keeps its original shape (no empty field).
     expect('acknowledgedByAiReview' in V.compactVerificationEvidence({ equalAccess: ea() }).equalAccess).toBe(false);
   });

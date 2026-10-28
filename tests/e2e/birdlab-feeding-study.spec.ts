@@ -4,7 +4,8 @@ import { GlHarness } from './helpers/stem_gl_harness';
 // The opt-in Feeding study: food sources in Free roam, guided food at each
 // neighbor's scripted feeding spot, and a woodland identical to before when off.
 test.use({ video: 'off', trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true } });
-test.describe.configure({ timeout: 300_000, retries: 0 });
+// 140 unpaused free-roam frames cost ~2 s each under software GL: 5.7-8.6 min measured 10-27, so 300 s always flaked.
+test.describe.configure({ timeout: 900_000, retries: 0 });
 const harness = new GlHarness({ toolId: 'birdLab', toolFile: 'stem_lab/stem_tool_birdlab.js', preScripts: ['stem_lab/stem_lab_module.js'], extraScripts: ['node_modules/axe-core/axe.min.js'], width: 1100, height: 1000, appStyles: true, layout: 'document',
   probes: "window.AlloPostFXEnabled=false;(()=>{const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=function(options){const renderer=new Original(options),render=renderer.render.bind(renderer);renderer.render=function(scene,camera){window.feedingWoodland={scene,camera,renderer};return render(scene,camera);};return renderer;};})();" });
 test.beforeAll(async () => harness.start());

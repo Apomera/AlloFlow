@@ -81,7 +81,8 @@ describe('teacher reveal answer guide', () => {
     const revealLabel = liveControls.lastIndexOf("t('quiz.correct_answer_label')");
     expect(revealLabel).toBeGreaterThanOrEqual(0);
     const reveal = liveControls.slice(Math.max(0, revealLabel - 500), revealLabel + 500);
-    expect(reveal).toContain('{liveAnswerGuide}');
+    // Rendered as-is or through the shared light-markdown formatter.
+    expect(reveal).toMatch(/\{(?:_quizLiveMd\(\)\.inline\()?liveAnswerGuide\)?\}/);
     expect(reveal).not.toContain('{question.correctAnswer}');
   });
 });

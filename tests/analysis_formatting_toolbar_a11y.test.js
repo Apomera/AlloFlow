@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const SOURCE = fs.readFileSync(path.resolve(process.cwd(), 'view_analysis_module.js'), 'utf8');
-const TOOLBAR_START = SOURCE.indexOf('className: "flex items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"');
-const TOOLBAR_END = SOURCE.indexOf('}), /*#__PURE__*/React.createElement("textarea", {', TOOLBAR_START);
-const TOOLBAR = SOURCE.slice(TOOLBAR_START, TOOLBAR_END);
+const TOOLBAR_START = SOURCE.indexOf('className: "flex flex-wrap items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"');
+const TOOLBAR_END = SOURCE.indexOf('/*#__PURE__*/React.createElement("textarea", {', TOOLBAR_START);
+const TOOLBAR = TOOLBAR_START < 0 || TOOLBAR_END < 0 ? '' : SOURCE.slice(TOOLBAR_START, TOOLBAR_END);
 
 function controlSource(command) {
   const click = `handleFormatText('${command}'`;
