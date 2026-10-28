@@ -15,8 +15,8 @@
 #   5.  Runs `firebase deploy --only hosting`
 #   6.  Auto-commits the post-deploy hash refs (the mirror files)
 #   7.  Pushes the post-deploy commit to origin
-#   8.  Mirrors main to the `backup` remote (Codeberg) — if configured
-#   9.  Pushes any new tags to backup
+#   8.  Pushes a slim copy of main to the private GitLab backup (warn-only)
+#   9.  (retired: tag push to the old Codeberg mirror)
 #  10.  Reports the live URL + final hash
 #
 # Aborts on any error. Run `./deploy.sh --help` for details.
@@ -61,8 +61,8 @@ WORKFLOW:
        ./deploy.sh "Extract FooView into CDN module"
 
 The script handles: source commit, push, hosted + desktop build staging,
-deploy, post-deploy commit (with hash refs), push, and mirror to the
-Codeberg backup.
+deploy, post-deploy commit (with hash refs), push, and the slim GitLab
+backup.
 
 To deploy the hosted app without rebuilding the local desktop artifact:
   SKIP_DESKTOP_BUILD=1 ./deploy.sh "Hosted release"
@@ -522,23 +522,18 @@ else
   echo "  Skipped (no post-deploy commit to push)."
 fi
 
-# ── Step 8: Mirror everything to Codeberg backup ──────────────────
+# ── Step 8: Off-site backup (slim copy of main on GitLab) ──────────
+# Codeberg's 750 MiB quota refused every push from 2026-10-19, and a failed push here
+# exited the script before Step 10 could verify the live site. The backup is now a slim
+# copy (dev-tools/push_slim_backup.sh) on a private GitLab project; a failure only warns.
 echo ""
-echo "=== Step 8: Mirror to Codeberg backup ==="
-if git remote get-url backup >/dev/null 2>&1; then
-  git push backup main
-  echo "  ✓ Mirrored main to backup (Codeberg)."
-
-  # Step 9: Push any tags that exist locally
-  if [[ -n "$(git tag -l)" ]]; then
-    echo ""
-    echo "=== Step 9: Push tags to backup ==="
-    git push backup --tags 2>&1 | tail -5 || echo "  (Tag push had warnings; main is already up-to-date.)"
-    echo "  ✓ Tags mirrored."
-  fi
+echo "=== Step 8: Off-site backup (GitLab, slim) ==="
+if [[ "${SKIP_BACKUP:-0}" == "1" ]]; then
+  echo "  Skipped (SKIP_BACKUP=1)."
+elif bash dev-tools/push_slim_backup.sh; then
+  echo "  ✓ Backup is current."
 else
-  echo "  WARNING: 'backup' remote not configured. Skipping Codeberg mirror."
-  echo "  To configure: git remote add backup https://codeberg.org/Pomera/AlloFlow-backup.git"
+  echo "  ⚠ Backup push failed; the deploy itself is unaffected. Rerun: bash dev-tools/push_slim_backup.sh"
 fi
 
 # ── Step 10: Post-deploy verification ─────────────────────────────
@@ -756,7 +751,7 @@ else
 fi
 echo "  Hash:      @${HASH_FINAL}"
 echo "  GitHub:    https://github.com/Apomera/AlloFlow"
-echo "  Codeberg:  https://codeberg.org/Pomera/AlloFlow-backup"
+echo "  Backup:    https://gitlab.com/aaron.pomeranz/alloflow-backup (private, slim)"
 if [[ -n "$PV_DETAILS" ]]; then
   printf "\n  Verification notes:%b\n" "$PV_DETAILS"
 fi
