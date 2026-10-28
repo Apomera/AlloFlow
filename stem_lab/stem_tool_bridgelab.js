@@ -99,26 +99,52 @@
     { id: 'featherweight', span: 30, nBays: 5, loadPerJoint: 50, minSF: 2.5, objective: 'mass', par: 2938.0,
       parDesign: { trussStyle: 'ktruss', height: 10.5, lateralBraceEvery: 1, materialId: 'wood', crossSectionMm2: 28000 } },
     { id: 'long_span', span: 70, nBays: 8, loadPerJoint: 60, minSF: 2, objective: 'cost', par: 282897.0,
-      parDesign: { trussStyle: 'howe', height: 7, lateralBraceEvery: 1, materialId: 'steel', crossSectionMm2: 23000 } }
+      parDesign: { trussStyle: 'howe', height: 7, lateralBraceEvery: 1, materialId: 'steel', crossSectionMm2: 23000 } },
+    // Graded at the worst place the truck can stop. Sized for mid-span alone, the cheapest design fails near a support.
+    { id: 'haul_road', span: 36, nBays: 6, loadMode: 'vehicle', vehicleLoad: 300, minSF: 2, objective: 'cost', par: 89701.0,
+      parDesign: { trussStyle: 'warren', height: 6, lateralBraceEvery: 1, materialId: 'steel', crossSectionMm2: 13000 } }
   ];
   // One star for a safe bridge; two within 25% of par; three within 5% of par.
   var BRIDGE_STAR_MARGINS = { two: 1.25, three: 1.05 };
   var BRIDGE_CHALLENGE_XP_PER_STAR = 5;
   function bridgeChallengeById(id) { return BRIDGE_CHALLENGES.filter(function(c) { return c.id === id; })[0] || null; }
-  // Score a design against a challenge with the same analysis the design brief shows.
+  function bridgeChallengeIsVehicle(challenge) { return challenge.loadMode === 'vehicle'; }
+  // The settings a challenge fixes.
+  function bridgeChallengeSite(challenge) {
+    return bridgeChallengeIsVehicle(challenge)
+      ? { span: challenge.span, nBays: challenge.nBays, loadMode: 'vehicle', vehicleLoad: challenge.vehicleLoad }
+      : { span: challenge.span, nBays: challenge.nBays, loadPerJoint: challenge.loadPerJoint, loadMode: 'uniform' };
+  }
+  // Yield and Euler margins over a whole crossing, from its force envelope (forces do not depend on the section).
+  function bridgeCrossingMargins(crossing, mat, areaMm2) {
+    var yieldSF = crossing.maxForce > 0 ? mat.yieldMPa * areaMm2 / (crossing.maxForce * 1000) : Infinity, bucklingSF = Infinity;
+    crossing.compressionCases.forEach(function(c) {
+      bucklingSF = Math.min(bucklingSF, Math.PI * Math.PI * mat.modulusGPa * 1000 * (areaMm2 * areaMm2 / 12) / (c.lengthMm * c.lengthMm) / 1000 / c.forceKN);
+    });
+    return { yieldSF: yieldSF, bucklingSF: bucklingSF };
+  }
+  // Score a design against a challenge with the same analysis the design brief shows. A vehicle challenge
+  // is graded at the worst place the truck can stop, which needs the exact solution the K-truss lacks.
   function bridgeChallengeScore(challenge, settings) {
-    var s = bridgeNormalizeSettings(settings);
-    var onSite = s.span === challenge.span && s.nBays === challenge.nBays && s.loadPerJoint === challenge.loadPerJoint && (s.loadMode || 'uniform') === 'uniform';
+    var s = bridgeNormalizeSettings(settings), vehicle = bridgeChallengeIsVehicle(challenge);
+    var onSite = vehicle
+      ? s.span === challenge.span && s.nBays === challenge.nBays && s.loadMode === 'vehicle' && s.vehicleLoad === challenge.vehicleLoad
+      : s.span === challenge.span && s.nBays === challenge.nBays && s.loadPerJoint === challenge.loadPerJoint && (s.loadMode || 'uniform') === 'uniform';
     var mat = MATERIALS.filter(function(m) { return m.id === s.materialId; })[0] || MATERIALS[3];
     var materialOk = BRIDGE_CHALLENGE_MATERIALS.indexOf(mat.id) >= 0;
+    var styleOk = !vehicle || (s.trussStyle || 'warren') !== 'ktruss';
     var gov = bridgeGoverningAnalysis(s, mat);
+    var crossing = vehicle && styleOk ? bridgeCrossingAnalysis(Object.assign({}, s, { loadMode: 'vehicle' }), mat) : null;
+    var worst = crossing && crossing.ok ? crossing.worst : null;
+    var sf = !vehicle ? gov.governingSF : worst ? worst.sf : 0;
     var volumeM3 = gov.analysis.totalLen * s.crossSectionMm2 / 1e6;
     var value = challenge.objective === 'mass' ? volumeM3 * mat.densityKgM3 : volumeM3 * mat.costPerM3;
-    var safe = gov.governingSF >= challenge.minSF;
-    var passes = onSite && materialOk && safe;
+    var safe = sf >= challenge.minSF;
+    var passes = onSite && materialOk && styleOk && safe;
     var two = challenge.par * BRIDGE_STAR_MARGINS.two, three = challenge.par * BRIDGE_STAR_MARGINS.three;
     return {
-      onSite: onSite, materialOk: materialOk, safe: safe, passes: passes, sf: gov.governingSF, value: value,
+      onSite: onSite, materialOk: materialOk, styleOk: styleOk, safe: safe, passes: passes, sf: sf, value: value,
+      crossing: crossing, worst: worst, positionSF: gov.governingSF,
       thresholds: { two: two, three: three },
       stars: !passes ? 0 : value <= three + 1e-6 ? 3 : value <= two + 1e-6 ? 2 : 1,
       design: { trussStyle: s.trussStyle || 'warren', height: s.height, materialId: mat.id, crossSectionMm2: s.crossSectionMm2, lateralBraceEvery: s.lateralBraceEvery || 1 }
@@ -140,7 +166,8 @@
         crossSectionMm2: Number(design.crossSectionMm2), lateralBraceEvery: Number(design.lateralBraceEvery)
       };
       if (!clean.trussStyle || !clean.materialId || !(clean.height >= 2 && clean.height <= 15) || !(clean.crossSectionMm2 >= 1000 && clean.crossSectionMm2 <= 30000)
-        || !Number.isInteger(clean.lateralBraceEvery) || clean.lateralBraceEvery < 1 || clean.lateralBraceEvery > challenge.nBays) return;
+        || !Number.isInteger(clean.lateralBraceEvery) || clean.lateralBraceEvery < 1 || clean.lateralBraceEvery > challenge.nBays
+        || (bridgeChallengeIsVehicle(challenge) && clean.trussStyle === 'ktruss')) return;
       out[challenge.id] = { stars: stars, value: value, design: clean, afterExample: r.afterExample === true };
     });
     return out;
@@ -148,11 +175,13 @@
   // Recording keeps the better attempt: more stars first, then the lower cost or mass.
   // The worked example: the par design analysed now, with the check that governs it.
   function bridgeChallengeExample(challenge) {
-    var design = Object.assign({ span: challenge.span, nBays: challenge.nBays, loadPerJoint: challenge.loadPerJoint, loadMode: 'uniform' }, challenge.parDesign);
+    var design = Object.assign(bridgeChallengeSite(challenge), challenge.parDesign);
     var mat = MATERIALS.filter(function(m) { return m.id === design.materialId; })[0];
+    var score = bridgeChallengeScore(challenge, design);
     var gov = bridgeGoverningAnalysis(design, mat);
-    return { design: design, material: mat, score: bridgeChallengeScore(challenge, design), yieldSF: gov.safetyFactor, bucklingSF: gov.bucklingMargin,
-      governs: gov.bucklingMargin < gov.safetyFactor ? 'buckling' : 'yield' };
+    var margins = score.crossing ? bridgeCrossingMargins(score.crossing, mat, design.crossSectionMm2) : { yieldSF: gov.safetyFactor, bucklingSF: gov.bucklingMargin };
+    return { design: design, material: mat, score: score, yieldSF: margins.yieldSF, bucklingSF: margins.bucklingSF,
+      governs: margins.bucklingSF < margins.yieldSF ? 'buckling' : 'yield' };
   }
   // What the example's geometry would need in each allowed material: the smallest passing slider step, and its score.
   // SF only rises with area, so a binary search over the 500 mm² steps finds it in about six analyses.
@@ -166,6 +195,7 @@
       return { materialId: materialId, value: at(found).value, crossSectionMm2: steps[found] };
     });
   }
+  var _bridgeExampleCache = {};
   function bridgeChallengeRecord(records, challenge, score, afterExample) {
     var current = records[challenge.id];
     if (!score.passes) return { records: records, improved: false, newStars: 0 };
@@ -188,15 +218,15 @@
       examples: 'Most highway overpasses, simple pedestrian bridges, log-across-a-stream.'
     },
     {
-      id: 'truss', name: 'Truss Bridge', icon: '▲', span: '40-300 m',
-      desc: 'A framework of triangles. Triangles can\'t change shape without breaking a member, so the truss is rigid. Loads are carried as tension or compression along the members — no bending.',
+      id: 'truss', name: 'Truss Bridge', icon: '▲', span: '40-550 m',
+      desc: 'A framework of triangles. Triangles can\'t change shape without breaking a member, so the truss is rigid. Loads are carried as tension or compression along the members — almost no bending.',
       strength: 'Very strong for its weight. Iron and steel trusses revolutionized 19th-century engineering.',
       weakness: 'Many small members = many places things can fail. Inspection is critical.',
-      examples: 'Brooklyn Bridge approach spans, Forth Bridge (Scotland), countless 19th-c. railroad bridges.'
+      examples: 'Brooklyn Bridge stiffening trusses, Forth Bridge (Scotland), countless 19th-c. railroad bridges.'
     },
     {
-      id: 'arch', name: 'Arch Bridge', icon: '∩', span: '50-500 m',
-      desc: 'A curve that pushes the load outward and downward into the abutments. The entire arch is in compression.',
+      id: 'arch', name: 'Arch Bridge', icon: '∩', span: '50-600 m',
+      desc: 'A curve that pushes the load outward and downward into the abutments. Under ideal loading, the arch itself is almost entirely in compression.',
       strength: 'Strong materials in compression (stone, concrete) work well. Some Roman arches are still in use 2,000 years later.',
       weakness: 'Needs very strong foundations to resist the outward thrust at each end.',
       examples: 'Roman aqueducts, Pont du Gard, Sydney Harbour Bridge (steel arch), New River Gorge.'
@@ -204,12 +234,12 @@
     {
       id: 'suspension', name: 'Suspension Bridge', icon: '⌣', span: '300-2000+ m',
       desc: 'The deck hangs from cables, which hang in a curve between two tall towers. The cables are in tension; the towers are in compression. Anchorages at each end resist the cable tension.',
-      strength: 'Currently the longest span bridges in the world. Akashi-Kaikyō in Japan has a 1,991 m main span.',
+      strength: 'Suspension bridges hold the span record: the 1915 Çanakkale Bridge in Turkey has a 2,023 m main span (Akashi-Kaikyō in Japan: 1,991 m).',
       weakness: 'Flexible — needs careful aerodynamic design to avoid wind-induced oscillation (the lesson of Tacoma Narrows).',
       examples: 'Golden Gate Bridge, Brooklyn Bridge (suspension + cable-stayed hybrid), Akashi-Kaikyō, Verrazzano-Narrows.'
     },
     {
-      id: 'cable_stayed', name: 'Cable-Stayed Bridge', icon: '✦', span: '200-1100 m',
+      id: 'cable_stayed', name: 'Cable-Stayed Bridge', icon: '✦', span: '200-1200 m',
       desc: 'Like a suspension bridge but the cables run directly from the towers to the deck (no main suspended cable). More cables, less material, stiffer than a suspension bridge.',
       strength: 'Faster and cheaper to build than a suspension bridge of similar span. Stiffer in wind.',
       weakness: 'Maximum span shorter than a full suspension bridge.',
@@ -225,19 +255,19 @@
       desc: 'Renewable, easy to work, light. Strong in tension and compression along the grain. Weak across the grain. Sensitive to moisture, fire, insects.',
       use: 'Historical timber bridges. Modern engineered wood (glulam, CLT) brings wood back for larger structures.' },
     { id: 'stone',    name: 'Stone',             yieldMPa: 100,  densityKgM3: 2700, modulusGPa: 50,  costRel: 3,  costPerM3: 2400,
-      desc: 'Very strong in compression, weak in tension. Heavy. Lasts millennia if well-built. Roman arch bridges from 100 BCE still stand.',
-      use: 'Roman aqueducts. Medieval bridges. Almost no longer used new because of cost and labor.' },
+      desc: 'Very strong in compression, weak in tension. Heavy. Lasts millennia if well-built. Rome\'s Pons Fabricius, built in 62 BCE, still stands.',
+      use: 'Roman aqueducts. Medieval bridges. Rarely used for new bridges today because of the labor and time needed to cut and place it.' },
     { id: 'iron',     name: 'Cast Iron',         yieldMPa: 200,  densityKgM3: 7200, modulusGPa: 100, costRel: 4,  costPerM3: 28800,
       desc: 'The first metal used at scale for bridges. Strong in compression, brittle and weak in tension. Many 19th-century failures.',
-      use: 'Iron Bridge (1779, Shropshire), Tay Bridge (1879, collapsed 1879). Largely replaced by steel by 1890.' },
+      use: 'Iron Bridge (1779, Shropshire), Tay Bridge (opened 1878, collapsed 1879). Cast iron girders fell from favor after failures such as the 1847 Dee Bridge collapse; wrought iron and then steel replaced it (the Forth Bridge, 1890, is steel).' },
     { id: 'steel',    name: 'Structural Steel',  yieldMPa: 350,  densityKgM3: 7850, modulusGPa: 200, costRel: 6,  costPerM3: 47100,
       desc: 'Strong in BOTH tension and compression. Ductile (bends before breaking, giving warning). The workhorse of modern bridge engineering.',
-      use: 'Most modern steel truss, arch, suspension, and cable-stayed bridges. Brooklyn, Golden Gate, every major suspension bridge.' },
+      use: 'Most modern steel truss, arch, suspension, and cable-stayed bridges. The Golden Gate Bridge, the cables of the Brooklyn Bridge, and nearly every major suspension bridge.' },
     { id: 'concrete', name: 'Reinforced Concrete', yieldMPa: 30, densityKgM3: 2400, modulusGPa: 30,  costRel: 3,  costPerM3: 7200,
       desc: 'Concrete: strong in compression, weak in tension. Reinforced with steel rebar to carry tension. Pre-stressed concrete uses tensioned cables for even more strength.',
-      use: 'Most modern highway and short-to-medium span bridges. Pre-stressed concrete dominates 30-150 m spans.' },
+      use: 'Most modern highway and short-to-medium span bridges. Pre-stressed concrete is the usual choice for short and medium spans: precast girders up to roughly 45-60 m, segmental box girders up to about 150 m.' },
     { id: 'composite', name: 'FRP Composite (fiber-reinforced polymer)', yieldMPa: 600, densityKgM3: 2000, modulusGPa: 40, costRel: 12, costPerM3: 24000,
-      desc: 'Fibers (carbon, glass, aramid) in a polymer matrix. Light, strong, corrosion-proof. Currently used in repair / strengthening more than new structures.',
+      desc: 'Fibers (carbon, glass, aramid) in a polymer matrix. Light, strong, corrosion-resistant. Currently used in repair / strengthening more than new structures.',
       use: 'Bridge deck repair, FRP rebar in corrosive environments, some specialty pedestrian bridges. Cost still limits widespread use.' }
   ];
 
@@ -247,16 +277,16 @@
   var FORCES = [
     { id: 'tension',   name: 'Tension',    color: '#dc2626', icon: '←→',
       desc: 'A force that pulls a member apart (stretches it). The fibers are being pulled along their length. Cables, ropes, and the bottom chord of a simple truss are in tension.',
-      good: 'Steel, kevlar, and most polymers handle tension well.', bad: 'Stone, brick, plain concrete, cast iron handle tension poorly. Hence "reinforced" concrete.' },
+      good: 'Steel, Kevlar, and other high-strength fibers handle tension well.', bad: 'Stone, brick, plain concrete, cast iron handle tension poorly. Hence "reinforced" concrete.' },
     { id: 'compression', name: 'Compression', color: '#2563eb', icon: '→←',
       desc: 'A force that pushes a member together (squeezes it). Long thin members in compression can BUCKLE before they reach their crushing strength — a critical failure mode.',
-      good: 'Stone, concrete, cast iron, brick all very good in compression.', bad: 'Long thin steel members can buckle. Eulerian buckling load = π²EI / L².' },
+      good: 'Stone, concrete, cast iron, brick all very good in compression.', bad: 'Long thin steel members can buckle. Euler buckling load = π²EI / (KL)² (K = 1 for pinned ends).' },
     { id: 'shear',     name: 'Shear',      color: '#f59e0b', icon: '⇉',
       desc: 'A force that tries to slide one part of a member past another, like scissors cutting paper. The diagonal members of a truss carry shear from one chord to the other.',
-      good: 'Steel handles shear well in bolted and welded connections.', bad: 'Connections are the most common shear-failure point. Bolt shear, weld shear, rivet shear.' },
+      good: 'Steel handles shear well in bolted and welded connections.', bad: 'Connections are a common weak point: bolt shear, weld shear, rivet shear.' },
     { id: 'bending',   name: 'Bending (flexure)', color: '#a855f7', icon: '⌒',
-      desc: 'A combination of tension on one side and compression on the other. A loaded beam bends; the bottom stretches (tension), the top compresses. The middle (the "neutral axis") has zero stress.',
-      good: 'I-beams concentrate material where it\'s needed — top and bottom flanges resist tension/compression; thin web resists shear.', bad: 'Bending creates very large local stresses near the supports of long beams.' },
+      desc: 'A combination of tension on one side and compression on the other. A loaded beam bends; the bottom stretches (tension), the top compresses. The middle (the "neutral axis") has zero bending stress.',
+      good: 'I-beams concentrate material where it\'s needed — top and bottom flanges resist tension/compression; thin web resists shear.', bad: 'Bending stress peaks at midspan of a simple beam (over the supports of a continuous one), so long beams need deep, heavy sections.' },
     { id: 'torsion',   name: 'Torsion (twist)', color: '#10b981', icon: '↻',
       desc: 'A force that tries to twist a member around its long axis. Bridge decks under uneven loading (or wind) experience torsion.',
       good: 'Closed cross-sections (box girders, tubes) resist torsion much better than open sections (I-beams).', bad: 'Tacoma Narrows (1940) failed via wind-induced torsional oscillation of its open H-shaped deck.' }
@@ -268,10 +298,10 @@
   var CASES = [
     {
       id: 'millennium', name: 'Millennium Bridge (London)', year: 2000, kind: 'failure', icon: '🚶',
-      what: 'A new pedestrian suspension bridge opened on June 10 2000. Within seconds of opening to the public, it began swaying side-to-side dramatically. The bridge was closed two days later + remained closed for nearly two years for engineering retrofit.',
-      why: 'PEDESTRIAN-INDUCED LATERAL VIBRATION. Pedestrians naturally walked at ~2 Hz vertical step rate, producing a 1 Hz lateral motion. When the bridge began to sway slightly, pedestrians instinctively adjusted their gait to compensate — locking in synchrony with the sway. The synchrony amplified the motion → more synchrony → bigger motion. Positive feedback loop, similar in principle to Tacoma but driven by pedestrians instead of wind.',
+      what: 'A new pedestrian suspension bridge opened on June 10 2000. Soon after opening to the public, it began swaying side-to-side dramatically as the crowd grew. The bridge was closed two days later + remained closed for nearly two years for engineering retrofit.',
+      why: 'PEDESTRIAN-INDUCED LATERAL VIBRATION. Pedestrians naturally walked at ~2 Hz vertical step rate, producing a sideways push near 1 Hz, close to the bridge\'s own lateral frequencies. When the bridge began to sway slightly, pedestrians instinctively adjusted their gait to compensate — locking in synchrony with the sway. The synchrony amplified the motion → more synchrony → bigger motion. Positive feedback loop, similar in principle to Tacoma but driven by pedestrians instead of wind.',
       lesson: 'Crowd loading and bridge motion can interact. Engineers must check pedestrian comfort and dynamic response as well as strength. Adding damping helped control the motion; passing a static load check alone would not have identified this problem.',
-      memory: 'The retrofit combined tuned mass dampers with 37 viscous dampers supplied by Taylor Devices. The bridge reopened in 2002. Inspection and testing remain part of maintaining the damping system.',
+      memory: 'The retrofit combined 52 tuned mass dampers with 37 viscous dampers supplied by Taylor Devices. The bridge reopened in 2002. Inspection and testing remain part of maintaining the damping system.',
       source: { label: 'Taylor Devices: Millennium Bridge damping', url: 'https://www.taylordevices.com/structural/millennium-bridge-london-england/' }
     },
     {
@@ -279,22 +309,24 @@
       what: 'Suspension bridge over Puget Sound in Washington. Span 853 m. Collapsed in moderate (~64 km/h) wind after only 4 months in service.',
       why: 'Aerodynamic flutter: motion of the flexible deck changed the aerodynamic forces acting on it, feeding energy into growing torsional oscillation. The deck geometry and low torsional stiffness made this interaction dangerous.',
       lesson: 'Long suspension bridges need aerodynamic assessment, often including wind-tunnel models. Deck shape, stiffness, and damping all matter. A box section or stiffening truss helps only when its behavior has been checked for the design conditions.',
-      memory: 'Iconic black-and-white film of "Galloping Gertie" twisting. The lone car abandoned on the bridge belonged to Leonard Coatsworth. His cocker spaniel Tubby was the only casualty.',
+      memory: 'Iconic film of "Galloping Gertie" twisting. The lone car abandoned on the bridge belonged to Leonard Coatsworth. His daughter\'s cocker spaniel Tubby was the only casualty.',
       source: { label: 'WSDOT: lessons from Tacoma Narrows', url: 'https://www.wsdot.wa.gov/TNBhistory/bridges-failure.htm' }
     },
     {
       id: 'tay', name: 'Tay Bridge', year: 1879, kind: 'failure', icon: '🌬️',
-      what: 'Iron railway bridge over the Firth of Tay in Scotland. The central spans collapsed in a storm while a passenger train was crossing. All 75 aboard died.',
-      why: 'Cast iron piers had defective casting. Wind loads underestimated. The bridge was specified for ~10 lb/ft² wind load when 30+ was realistic for the site. Quality control on the iron was inadequate.',
-      lesson: 'Wind loads must be measured at the actual site, not assumed. Material quality control became a regulated discipline. The disaster contributed to the founding of modern engineering codes.',
-      memory: 'The opening lines of William McGonagall\'s "The Tay Bridge Disaster" are sometimes called the worst poem in English. The historical lessons, however, were taken seriously.'
+      what: 'Iron railway bridge over the Firth of Tay in Scotland. The central spans collapsed in a storm while a passenger train was crossing. No one aboard survived; the inquiry estimated about 75 died.',
+      why: 'Weak cross-bracing and fastenings left the piers unable to resist the gale, and poorly cast iron columns (faulty lugs, filled blowholes) and poor maintenance made it worse. Wind load was badly underestimated: the designer cited ~10 lb/ft², and later calculations suggested about 20 lb/ft² was needed. Quality control on the iron was inadequate.',
+      lesson: 'Wind loads must be assessed for the actual site, not assumed. After the inquiry, British bridge designs had to allow for wind loads of up to 56 lb/ft².',
+      memory: 'The opening lines of William McGonagall\'s "The Tay Bridge Disaster" are sometimes called the worst poem in English. The historical lessons, however, were taken seriously.',
+      source: { label: 'Wikipedia: Tay Bridge disaster', url: 'https://en.wikipedia.org/wiki/Tay_Bridge_disaster' }
     },
     {
       id: 'hyatt', name: 'Hyatt Regency Walkway', year: 1981, kind: 'failure', icon: '🏨',
-      what: 'A suspended pedestrian walkway in the Hyatt Regency hotel in Kansas City collapsed during a tea dance, killing 114 and injuring 216. The deadliest US structural failure until 9/11.',
-      why: 'A late design change replaced a single long rod (supporting two walkways) with two shorter rods (one walkway suspended from the next). The change doubled the load on the upper connection. The connection failed.',
-      lesson: 'Design changes during construction must be fully re-engineered. Engineer of record carries responsibility. The case became required reading in engineering ethics. The two lead engineers lost their licenses.',
-      memory: 'Most every engineering ethics curriculum in the US covers Hyatt Regency. The story is: an "obvious" simplification by the contractor doubled the design load. No one re-checked.'
+      what: 'A suspended pedestrian walkway in the Hyatt Regency hotel in Kansas City collapsed during a tea dance, killing 114 and injuring about 200. One of the deadliest accidental structural collapses in US history.',
+      why: 'A late design change replaced a single long rod (supporting two walkways) with two shorter rods (one walkway suspended from the next). The change doubled the load on the upper connection, which was already weaker than the building code required in the original design. The connection failed.',
+      lesson: 'Design changes during construction must be fully re-engineered. Engineer of record carries responsibility. The case is widely taught in engineering ethics. The two lead engineers lost their Missouri engineering licenses.',
+      memory: 'It is a standard case in US engineering ethics courses. The story is: an "obvious" simplification proposed by the steel fabricator was approved without a calculation and doubled the load on the connection. No one re-checked.',
+      source: { label: 'NIST: Walkway collapse, Kansas City, 1981', url: 'https://www.nist.gov/el/walkway-collapse-kansas-city-missouri-1981' }
     },
     {
       id: 'silver', name: 'Silver Bridge', year: 1967, kind: 'failure', icon: '🔗',
@@ -307,9 +339,10 @@
     {
       id: 'brooklyn', name: 'Brooklyn Bridge', year: 1883, kind: 'success', icon: '🌉',
       what: 'First steel-wire suspension bridge. Span 486 m. Still in service 140+ years later, carrying over 100,000 vehicles a day.',
-      why: 'John Roebling pioneered the use of steel wire for the cables. After his death (he died of tetanus from an injury at the construction site), his son Washington took over; after Washington was paralyzed by caisson disease, his wife Emily Roebling effectively ran the project to completion. The bridge was designed with 6x the required load capacity — extreme safety factor.',
+      why: 'John Roebling pioneered the use of steel wire for the cables. After his death (he died of tetanus after a ferry crushed his foot during the site survey), his son Washington took over; after Washington was left bedridden by caisson disease, his wife Emily Roebling relayed his orders and handled much of the daily management through completion. Roebling designed the bridge with about 6x the required capacity — an extreme safety factor. A wire-supply fraud later cut that to roughly 4-5x, and extra wires were added.',
       lesson: 'A generous safety factor turns a longshot into a century of service. Innovation in materials (steel wire) opened new spans.',
-      memory: 'P. T. Barnum walked 21 elephants across the bridge in 1884 to prove it was safe. The bridge has carried trolleys, horses, cars, and pedestrians continuously since.'
+      memory: 'P. T. Barnum walked 21 elephants across the bridge in 1884 to prove it was safe. Over its life it has carried trolleys, horses, cars, and pedestrians; today it carries cars, bikes, and walkers.',
+      source: { label: 'Wikipedia: Brooklyn Bridge', url: 'https://en.wikipedia.org/wiki/Brooklyn_Bridge' }
     },
     {
       id: 'golden_gate', name: 'Golden Gate Bridge', year: 1937, kind: 'success', icon: '🌁',
@@ -322,17 +355,18 @@
     {
       id: 'akashi', name: 'Akashi-Kaikyō Bridge', year: 1998, kind: 'success', icon: '🗾',
       what: 'Currently the second-longest suspension bridge in the world (the 1915 Çanakkale in Turkey took the record in 2022). Main span 1,991 m. Connects Awaji Island to Honshu, Japan.',
-      why: 'Built across an earthquake zone with major tidal currents. During the 1995 Kobe earthquake (mid-construction), the two towers moved 1 m further apart from each other — the bridge was redesigned mid-construction to accommodate this. Withstood the earthquake.',
+      why: 'Built across an earthquake zone with major tidal currents. During the 1995 Kobe earthquake (mid-construction), the two towers moved about 1 m further apart, so the central span was built about 1 m longer than planned. The towers withstood the earthquake.',
       lesson: 'The towers use tuned mass dampers to reduce wind-induced vibration. Tower shape was also developed for aerodynamic stability. Engineers checked the structure during construction as well as in its completed form.',
       memory: 'The main span grew about 1 meter beyond its original design during construction after the Kobe earthquake shifted the foundations.',
       source: { label: 'JSCE: vibration control of the Akashi Kaikyo towers', url: 'https://doi.org/10.2208/jscej.1995.507_279' }
     },
     {
       id: 'millau', name: 'Millau Viaduct', year: 2004, kind: 'success', icon: '⛰️',
-      what: 'Cable-stayed bridge in southern France. Tallest bridge in the world (343 m to the top of the highest tower — taller than the Eiffel Tower). Span 2,460 m total, with seven masts.',
+      what: 'Cable-stayed bridge in southern France. One of the world\'s tallest bridges (343 m to the top of the highest mast — taller than the Eiffel Tower). Length 2,460 m (longest span 342 m), with seven masts.',
       why: 'Designed by Michel Virlogeux and Norman Foster. Built across a deep valley to bypass traffic congestion. Constructed using hydraulic launching of the deck across the towers — built on each side and pushed out to meet in the middle.',
-      lesson: 'Cable-stayed bridges have largely replaced suspension bridges for medium-to-large spans (200-1100 m range). Faster to build, stiffer in wind, cheaper per meter.',
-      memory: 'The decking was assembled in two halves, hydraulically pushed out from each side at 60 cm every 4 minutes, until they met in the middle.'
+      lesson: 'Cable-stayed bridges are often the economical choice for medium-to-long spans (roughly 200-1200 m): they can be built by cantilevering out from the towers and are stiffer than suspension bridges.',
+      memory: 'The decking was assembled in two halves, hydraulically pushed out from each side at 60 cm every 4 minutes, until they met in the middle.',
+      source: { label: 'Wikipedia: Millau Viaduct', url: 'https://en.wikipedia.org/wiki/Millau_Viaduct' }
     }
   ];
 
@@ -354,19 +388,19 @@
   var QUIZ_QUESTIONS = [
     { q: 'In a simply supported beam bridge under a load in the middle, which side of the beam is in tension?', choices: ['Top', 'Bottom', 'Both sides equally', 'Neither, only the supports'], answer: 1, explain: 'The bottom of the beam stretches (tension); the top compresses. This is why I-beams have flanges concentrating material at top and bottom — that\'s where the stress lives.' },
     { q: 'Why are triangles the basic unit of trusses?', choices: ['They look more elegant than rectangles in a finished bridge', 'A triangle cannot change shape without changing at least one side length', 'Triangles always distribute any load equally to all three sides', 'Building codes require triangles'], answer: 1, explain: 'An ideal triangle with fixed side lengths is geometrically stable. A pin-jointed rectangle can shear into a parallelogram without changing its side lengths. Real truss members stretch or shorten slightly under load, so a stable truss can still deform without breaking.' },
-    { q: 'What kind of forces are the cables of a suspension bridge under?', choices: ['Compression', 'Tension', 'Shear', 'Torsion'], answer: 1, explain: 'Cables can only carry tension. They hang in a curve (technically a catenary modified by deck loading) and pull on the towers and anchorages.' },
-    { q: 'Why did the Tacoma Narrows Bridge collapse in 1940?', choices: ['An earthquake along the Sound', 'Overloading by heavy traffic', 'Wind-induced aerodynamic flutter', 'A hidden manufacturing defect in the steel'], answer: 2, explain: 'Deck motion changed the wind forces, which fed energy into growing torsional oscillations. This interaction is aerodynamic flutter. Long suspension bridges require careful study of deck shape, stiffness, damping, and wind response, often using wind-tunnel models.', source: { label: 'WSDOT: lessons from Tacoma Narrows', url: 'https://www.wsdot.wa.gov/TNBhistory/bridges-failure.htm' } },
-    { q: 'Which material is strong in compression but weak in tension, requiring reinforcement?', choices: ['Structural steel', 'Laminated wood', 'Plain concrete', 'Composite'], answer: 2, explain: 'Plain concrete handles compression well but tension poorly. Adding steel rebar (which handles tension well) gives reinforced concrete — using each material for what it does best. Pre-stressed concrete adds another layer: putting the concrete in compression before it ever sees load.' },
+    { q: 'What kind of forces are the cables of a suspension bridge under?', choices: ['Compression', 'Tension', 'Shear', 'Torsion'], answer: 1, explain: 'Cables can only carry tension. Carrying a deck, they hang in a curve close to a parabola (a cable carrying only its own weight forms a catenary); they press down on the towers and pull on the anchorages.' },
+    { q: 'Why did the Tacoma Narrows Bridge collapse in 1940?', choices: ['An earthquake along the Sound', 'Overloading by heavy traffic', 'Wind-induced aerodynamic flutter', 'A hidden manufacturing defect in the steel'], answer: 2, explain: 'Deck motion changed the wind forces, which fed energy into growing torsional oscillations. This interaction is generally identified as aerodynamic (torsional) flutter. Long suspension bridges require careful study of deck shape, stiffness, damping, and wind response, often using wind-tunnel models.', source: { label: 'WSDOT: lessons from Tacoma Narrows', url: 'https://www.wsdot.wa.gov/TNBhistory/bridges-failure.htm' } },
+    { q: 'Which material is strong in compression but weak in tension, requiring reinforcement?', choices: ['Structural steel', 'Laminated wood', 'Plain concrete', 'Fiber-reinforced polymer'], answer: 2, explain: 'Plain concrete handles compression well but tension poorly. Adding steel rebar (which handles tension well) gives reinforced concrete — using each material for what it does best. Pre-stressed concrete adds another layer: putting the concrete in compression before it ever sees load.' },
     { q: 'In a Pratt truss bridge with the load on top, are the bottom chord members under tension or compression?', choices: ['Tension', 'Compression', 'Shear', 'Bending'], answer: 0, explain: 'Picture the bridge as a giant beam. The bottom of the beam wants to stretch — that\'s tension. So the bottom chord of any simply-supported truss is in tension; the top is in compression. This is true regardless of truss style (Warren, Pratt, Howe).' },
-    { q: 'What is "buckling"?', choices: ['A sudden failure of the bolted joints that connect truss members', 'A long compression member bending sideways before crushing', 'A wind-driven oscillation of the whole deck', 'Cracking that spreads through a concrete pier'], answer: 1, explain: 'A long, thin member in compression can bend sideways at a load far below its actual crushing strength. This is buckling, described by Euler. It is why compression members are stocky (think squat columns) rather than long and thin.' },
-    { q: 'Why was the Hyatt Regency walkway collapse (1981) an "ethics" failure as well as an engineering one?', choices: ['The walkways were built without the required city permits', 'A design change doubled the load on a connection and no one re-checked the calculations', 'The walkways were overloaded by far more visitors than any hotel could reasonably have expected', 'The steel used in the walkways turned out to be counterfeit'], answer: 1, explain: 'A late design change split a single long rod into two shorter rods, doubling the load on the upper connection. The change was made for ease of construction but no one re-engineered it. Engineer of record carries final responsibility. The case is required reading in engineering ethics.' },
+    { q: 'What is "buckling"?', choices: ['A sudden failure of the bolted joints that connect truss members', 'A long compression member bending sideways before crushing', 'A wind-driven oscillation of the whole deck', 'Cracking that spreads through a concrete pier'], answer: 1, explain: 'A long, thin member in compression can bend sideways at a load far below its actual crushing strength. This is buckling, described by Euler. It is why long compression members need a wide or hollow cross-section, or bracing, to resist buckling.' },
+    { q: 'Why was the Hyatt Regency walkway collapse (1981) an "ethics" failure as well as an engineering one?', choices: ['The walkways were built without the required city permits', 'A design change doubled the load on a connection and no one re-checked the calculations', 'The walkways were overloaded by far more visitors than any hotel could reasonably have expected', 'The steel used in the walkways turned out to be counterfeit'], answer: 1, explain: 'A late design change split a single long rod into two shorter rods, doubling the load on the upper connection. The change was made for ease of construction but no one re-engineered it. Engineer of record carries final responsibility. The case is widely taught in engineering ethics.' },
     { q: 'What does a safety factor describe in this bridge model?', choices: ['A measure of how quickly emergency crews could reach the bridge after a failure is reported', 'The ratio of modeled capacity to the force demand for a particular check', 'A legal waiver that limits the designer of the bridge from liability', 'The share of the budget reserved for safety equipment'], answer: 1, explain: 'A capacity-to-demand ratio of 2 means twice the modeled demand for that check. This lab compares material strength and elastic buckling and uses 2 as a classroom target. Real bridge design checks multiple limit states and uses specified load and resistance factors; there is no single universal bridge safety factor.', source: { label: 'FHWA: Load and Resistance Factor Design', url: 'https://www.fhwa.dot.gov/bridge/lrfd/' } },
     { q: 'What is the longest span for a SUSPENSION bridge in service today?', choices: ['~500 m', '~1,000 m', '~2,000 m', '~5,000 m'], answer: 2, explain: 'The 1915 Çanakkale Bridge in Turkey opened in 2022 with a main span of 2,023 m. Before that, Akashi-Kaikyō in Japan held the record at 1,991 m for 24 years. Suspension is still the way to go for the very longest spans.' },
     { q: 'Why do bridges have expansion joints?', choices: ['To give the deck a cleaner, more finished appearance', 'So the deck can expand and contract with temperature changes without breaking', 'To give bridge inspectors easier access to the structure underneath the roadway deck', 'To drain rainwater off the surface of the deck'], answer: 1, explain: 'Temperature changes alter member lengths. Expansion joints and bearings can accommodate that movement and limit restraint forces. Some bridges use integral designs instead of deck joints. The Golden Gate Bridge also moves vertically as temperature and traffic loading change cable geometry.', source: { label: 'Golden Gate Bridge: movement and loading conditions', url: 'https://www.goldengate.org/bridge/history-research/statistics-data/design-construction-stats/' } },
-    { q: 'Which is the LEAST appropriate use of stone as a bridge material?', choices: ['The arch ring of a Roman aqueduct carrying water', 'A medieval bridge over a stream', 'The tension members of a long modern bridge', 'A short pedestrian arch bridge'], answer: 2, explain: 'Stone is great in compression but weak in tension. The tension members of a long bridge need a tensile material like steel. Arches (which are entirely in compression) work beautifully in stone — Roman arches from 100 BCE are still in use. Putting stone in tension is asking for failure.' },
-    { q: 'In a Pratt truss bridge, which members are typically in TENSION?', choices: ['Only the vertical members, top to bottom', 'The diagonals only', 'The diagonals AND the bottom chord', 'Everything is in compression'], answer: 2, explain: 'A Pratt truss is designed so the diagonals slope toward the center, putting them in tension. The bottom chord is also in tension (like any simply-supported beam\'s bottom). The verticals carry compression, the top chord carries compression. Pratt uses tension-friendly steel for the diagonals + bottom — economical.' },
+    { q: 'Which is the LEAST appropriate use of stone as a bridge material?', choices: ['The arch ring of a Roman aqueduct carrying water', 'A medieval bridge over a stream', 'The tension members of a long modern bridge', 'A short pedestrian arch bridge'], answer: 2, explain: 'Stone is great in compression but weak in tension. The tension members of a long bridge need a tensile material like steel. Arches (which carry load mainly in compression) work beautifully in stone — Rome\'s Pons Fabricius, built in 62 BCE, is still in use. Putting stone in tension is asking for failure.' },
+    { q: 'In a Pratt truss bridge, which members are typically in TENSION?', choices: ['Only the vertical members, top to bottom', 'The diagonals only', 'The diagonals AND the bottom chord', 'Everything is in compression'], answer: 2, explain: 'A Pratt truss is designed so the interior diagonals slope down toward the center, putting them in tension. The bottom chord is also in tension (like any simply-supported beam\'s bottom). The verticals carry compression, the top chord carries compression. Pratt puts the long diagonals in tension, where slender members can\'t buckle — economical.' },
     { q: 'For fixed material, cross-section, and end restraint, what is the Euler buckling load proportional to?', choices: ['Length L (P_cr increases with longer members)', '1/L² (P_cr decreases with the square of length)', 'L² (P_cr increases with the square of length)', 'It does not depend on the length of the member at all'], answer: 1, explain: 'P_cr = π²EI / (KL)², where K describes the end restraint. With E, I, and K unchanged, doubling the unbraced length quarters the elastic buckling capacity. This lab assumes pinned ends (K = 1) and an ideal straight member; actual design must also account for imperfections and inelastic behavior.' },
-    { q: 'The "slenderness ratio" L/r of a compression member is critical to buckling. What does a HIGH slenderness ratio mean?', choices: ['The member is short + stocky (low buckling risk)', 'The member is long + thin (high buckling risk)', 'The member is wide + flat', 'It only applies to tension members'], answer: 1, explain: 'Slenderness ratio L/r = length divided by radius of gyration. High slenderness = long relative to its width = prone to buckling. Steel design codes typically limit slenderness to about 200 for compression members; structural designers will add bracing or change cross-section to keep it lower.' }
+    { q: 'The "slenderness ratio" L/r of a compression member is critical to buckling. What does a HIGH slenderness ratio mean?', choices: ['The member is short + stocky (low buckling risk)', 'The member is long + thin (high buckling risk)', 'The member is wide + flat', 'It only applies to tension members'], answer: 1, explain: 'Slenderness ratio L/r = length divided by radius of gyration. High slenderness = long relative to its width = prone to buckling. Steel building guidance recommends keeping slenderness under about 200, and bridge specifications are stricter (about 120 for primary compression members); designers add bracing or change the cross-section to keep it lower.' }
   ];
 
   // The authored bank put 9 of 15 correct answers at choice B (and none at
@@ -3086,6 +3120,7 @@
           case 'footbridge': return { title: __alloT('stem.bridgelab.challenge_footbridge', 'Village footbridge'), story: __alloT('stem.bridgelab.challenge_footbridge_story', 'A 20 m footbridge over a stream. Keep walkers safe and spend as little as possible.') };
           case 'county_road': return { title: __alloT('stem.bridgelab.challenge_county_road', 'County road bridge'), story: __alloT('stem.bridgelab.challenge_county_road_story', 'A 40 m crossing for farm traffic, modelled as a heavy load at every joint. Make it safe for the lowest cost.') };
           case 'featherweight': return { title: __alloT('stem.bridgelab.challenge_featherweight', 'Featherweight span'), story: __alloT('stem.bridgelab.challenge_featherweight_story', 'A 30 m bridge that will be flown in by helicopter. It needs extra safety margin, and every kilogram counts.') };
+          case 'haul_road': return { title: __alloT('stem.bridgelab.challenge_haul_road', 'Quarry haul road'), story: __alloT('stem.bridgelab.challenge_haul_road_story', 'A 36 m bridge for loaded quarry trucks. A truck can stop anywhere on it, so the bridge must be safe at every position, not just the middle.') };
           default: return { title: __alloT('stem.bridgelab.challenge_long_span', 'Long-span river crossing'), story: __alloT('stem.bridgelab.challenge_long_span_story', 'A 70 m gap with no pier allowed in the river. Make it safe for the lowest cost.') };
         }
       }
@@ -3109,15 +3144,17 @@
         var primary = { minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px solid #fbbf24', background: '#fbbf24', color: '#0b1220', fontWeight: 800, fontSize: 13, cursor: 'pointer' };
         var secondary = { minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px solid #94a3b8', background: '#0f172a', color: '#e2e8f0', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
         function siteText(challenge) {
-          return __alloT('stem.bridgelab.challenge_site', 'Span {span} m · {bays} bays · {load} kN at each joint · uniform load')
-            .replace('{span}', String(challenge.span)).replace('{bays}', String(challenge.nBays)).replace('{load}', String(challenge.loadPerJoint));
+          return (bridgeChallengeIsVehicle(challenge)
+            ? __alloT('stem.bridgelab.challenge_site_vehicle', 'Span {span} m · {bays} bays · one {load} kN truck that can stop anywhere on the span')
+            : __alloT('stem.bridgelab.challenge_site', 'Span {span} m · {bays} bays · {load} kN at each joint · uniform load'))
+            .replace('{span}', String(challenge.span)).replace('{bays}', String(challenge.nBays)).replace('{load}', String(bridgeChallengeIsVehicle(challenge) ? challenge.vehicleLoad : challenge.loadPerJoint));
         }
         function goalText(challenge) {
           return (challenge.objective === 'mass'
             ? __alloT('stem.bridgelab.challenge_goal_mass', 'Safety factor {sf} or more, as light as possible')
             : __alloT('stem.bridgelab.challenge_goal_cost', 'Safety factor {sf} or more, as cheap as possible')).replace('{sf}', challenge.minSF.toFixed(1));
         }
-        function siteState(challenge) { return { span: challenge.span, nBays: challenge.nBays, loadPerJoint: challenge.loadPerJoint, loadMode: 'uniform', autoDriving: false }; }
+        function siteState(challenge) { return Object.assign(bridgeChallengeSite(challenge), { autoDriving: false }); }
         function start(challenge) {
           var patch = Object.assign({ challengeId: challenge.id, challengeHint: 0, challengeNote: '' }, siteState(challenge));
           if (BRIDGE_CHALLENGE_MATERIALS.indexOf(d.materialId) < 0) patch.materialId = 'steel';
@@ -3145,7 +3182,7 @@
               }))));
         }
 
-        var text = bridgeChallengeText(active.id), score = bridgeChallengeScore(active, d), record = records[active.id];
+        var text = bridgeChallengeText(active.id), score = bridgeChallengeScore(active, d), record = records[active.id], vehicle = bridgeChallengeIsVehicle(active);
         function check(ok, label, detail) {
           return h('li', { 'data-challenge-check': ok ? 'met' : 'unmet', style: { display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 0', borderBottom: '1px solid #334155' } },
             h('span', { 'aria-hidden': 'true', style: { color: ok ? '#86efac' : '#fca5a5', fontWeight: 900, minWidth: 16 } }, ok ? '✓' : '✗'),
@@ -3166,9 +3203,11 @@
           if (result.newStars > 0 && !revealed && typeof awardXP === 'function') awardXP('bridgeLabChallenges', result.newStars * BRIDGE_CHALLENGE_XP_PER_STAR, __alloT('stem.bridgelab.challenge_xp_reason', 'Bridge design challenge'));
         }
         var hints = [
-          __alloT('stem.bridgelab.challenge_hint_1', 'Check the design brief: is the bridge limited by yield (the material crushing or tearing) or by buckling (a slender member bowing sideways)?'),
+          vehicle ? __alloT('stem.bridgelab.challenge_hint_vehicle_1', 'This challenge is graded at the worst place the truck can stop, not where it is now. Move the truck along the span and watch which member comes closest to failing.')
+            : __alloT('stem.bridgelab.challenge_hint_1', 'Check the design brief: is the bridge limited by yield (the material crushing or tearing) or by buckling (a slender member bowing sideways)?'),
           __alloT('stem.bridgelab.challenge_hint_2', 'A deeper truss lowers the chord forces, and closer lateral bracing shortens the length a top chord can buckle over.'),
-          __alloT('stem.bridgelab.challenge_hint_3', 'Compare materials by strength per dollar or per kilogram, not by strength alone. The cost optimizer further down can size a section for your geometry.')
+          vehicle ? __alloT('stem.bridgelab.challenge_hint_vehicle_3', 'In the cost optimizer, keep "Positions to optimize" on Whole crossing: it sizes each material for every place the truck can stop.')
+            : __alloT('stem.bridgelab.challenge_hint_3', 'Compare materials by strength per dollar or per kilogram, not by strength alone. The cost optimizer further down can size a section for your geometry.')
         ];
         return sectionCard('🏆 ' + __alloT('stem.bridgelab.challenge_active', 'Challenge') + ': ' + text.title,
           h('div', { 'data-bridge-challenge-active': active.id },
@@ -3177,7 +3216,17 @@
               check(score.onSite, __alloT('stem.bridgelab.challenge_check_site', 'Site'), siteText(active)),
               check(score.materialOk, __alloT('stem.bridgelab.challenge_check_material', 'Material: wood, steel or FRP composite'),
                 score.materialOk ? null : __alloT('stem.bridgelab.challenge_material_why', 'Stone, cast iron and reinforced concrete are left out because this simple axial model cannot represent how they carry tension.')),
-              check(score.safe, __alloT('stem.bridgelab.challenge_check_sf', 'Safety factor at least') + ' ' + active.minSF.toFixed(1),
+              vehicle ? check(score.styleOk, __alloT('stem.bridgelab.challenge_check_style', 'Truss style: Warren, Pratt or Howe'),
+                score.styleOk ? null : __alloT('stem.bridgelab.challenge_style_why', 'The crossing test needs exact member forces, and the K-truss here uses a deep-beam approximation.')) : null,
+              vehicle ? check(score.safe, __alloT('stem.bridgelab.challenge_check_sf_vehicle', 'Safety factor at least {sf} wherever the truck stops').replace('{sf}', active.minSF.toFixed(1)),
+                h('span', null,
+                  __alloT('stem.bridgelab.challenge_your_sf', 'Your design:') + ' ' + score.sf.toFixed(2)
+                    + (score.worst ? '. ' + (score.worst.mode === 'buckling'
+                      ? __alloT('stem.bridgelab.challenge_worst_buckling', 'Weakest with the truck {pos} m from the left support, where member {member} buckles first.')
+                      : __alloT('stem.bridgelab.challenge_worst_strength', 'Weakest with the truck {pos} m from the left support, where member {member} reaches its strength limit first.'))
+                      .replace('{pos}', (score.worst.position * active.span).toFixed(1)).replace('{member}', String(score.worst.member)) : ''),
+                  h('span', { style: { display: 'block' } }, __alloT('stem.bridgelab.challenge_now_sf', 'With the truck where it is now: {sf}.').replace('{sf}', isFinite(score.positionSF) ? score.positionSF.toFixed(2) : '—'))))
+              : check(score.safe, __alloT('stem.bridgelab.challenge_check_sf', 'Safety factor at least') + ' ' + active.minSF.toFixed(1),
                 __alloT('stem.bridgelab.challenge_your_sf', 'Your design:') + ' ' + score.sf.toFixed(2)),
               h('li', { 'data-challenge-score': true, style: { padding: '6px 0', fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } },
                 h('strong', null, (active.objective === 'mass' ? __alloT('stem.bridgelab.challenge_mass', 'Mass') : __alloT('stem.bridgelab.challenge_cost', 'Material cost')) + ': '),
@@ -3218,7 +3267,9 @@
             __alloT('stem.bridgelab.challenge_example_show', 'Show the best design this model allows')),
           h('span', { style: { display: 'block', marginTop: 4, fontSize: 12, color: '#cbd5e1' } },
             __alloT('stem.bridgelab.challenge_example_cost', 'After viewing it you can still record designs, but they earn no XP.')));
-        var example = bridgeChallengeExample(active), options = bridgeChallengeMaterialOptions(active, example.design);
+        // Depends only on the pinned challenge, and a vehicle one runs ~20 crossing analyses: work it out once.
+        var cached = _bridgeExampleCache[active.id] || (_bridgeExampleCache[active.id] = (function() { var ex = bridgeChallengeExample(active); return { example: ex, options: bridgeChallengeMaterialOptions(active, ex.design) }; })());
+        var example = cached.example, options = cached.options;
         var governs = example.governs === 'buckling'
           ? __alloT('stem.bridgelab.challenge_example_buckling', 'Buckling governs: the members are sized so the most slender compressed one does not bow sideways. Yield alone would allow a smaller section.')
           : __alloT('stem.bridgelab.challenge_example_yield', 'Yield governs: the members are sized for the material\'s strength. They are stocky enough that buckling is not the first failure.');
@@ -3230,6 +3281,9 @@
               .replace('{sf}', example.score.sf.toFixed(2)).replace('{yield}', example.yieldSF.toFixed(2)).replace('{buckling}', example.bucklingSF.toFixed(2))
               .replace('{value}', bridgeChallengeValueText(active, example.score.value))),
           h('p', { 'data-challenge-example-governs': example.governs, style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } }, governs),
+          example.score.worst ? h('p', { 'data-challenge-example-worst': example.score.worst.position, style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } },
+            __alloT('stem.bridgelab.challenge_example_worst', 'Its worst truck position is {pos} m from the left support, on member {member}. A design sized only for a truck at mid-span would be too weak there.')
+              .replace('{pos}', (example.score.worst.position * active.span).toFixed(1)).replace('{member}', String(example.score.worst.member))) : null,
           h('table', { 'data-challenge-example-materials': true, style: { width: '100%', borderCollapse: 'collapse', fontSize: 12.5, marginBottom: 6 } },
             h('caption', { style: { textAlign: 'left', fontWeight: 700, padding: '0 0 4px', color: '#f8fafc' } }, __alloT('stem.bridgelab.challenge_example_compare', 'The same geometry in each material')),
             h('thead', null, h('tr', null,
@@ -7912,7 +7966,7 @@
 
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#a7f3d0', lineHeight: 1.65, marginTop: 8 } },
               h('strong', null, __alloT('stem.bridgelab.catenary_vs_parabola', 'Catenary vs parabola: ')),
-              __alloT('stem.bridgelab.a_free_cable_under_its_own_weight_hang', 'A free cable under its own weight hangs in a CATENARY (cosh) shape. A cable supporting a uniformly distributed load (like a bridge deck) hangs in a PARABOLA. Real suspension cables are close to parabolic because the deck mass dominates the cable mass. The tool uses the parabolic approximation. Galileo first proposed a parabola; Huygens (1646, age 17) proved it was wrong for a free chain; Bernoulli + Leibniz + Huygens worked out the true catenary in 1691.')
+              __alloT('stem.bridgelab.a_free_cable_under_its_own_weight_hang', 'A free cable under its own weight hangs in a CATENARY (cosh) shape. A cable supporting a uniformly distributed load (like a bridge deck) hangs in a PARABOLA. Real suspension cables are close to parabolic because the deck mass dominates the cable mass. The tool uses the parabolic approximation. Galileo thought a hanging chain was close to a parabola; Huygens (1646, age 17) proved it was not; Johann Bernoulli + Leibniz + Huygens worked out the true catenary in 1691.')
             )
           );
         }
@@ -8046,11 +8100,11 @@
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.3)', fontSize: 11.5, color: '#bfdbfe', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.why_arches_stand_for_centuries', 'Why arches stand for centuries: ')),
-                  __alloT('stem.bridgelab.compression_is_what_stone_brick_and_co', 'Compression is what stone, brick, and concrete handle best. Roman arch bridges from 100 BCE are still in use because: (1) they are entirely in compression, no tension anywhere; (2) the abutments resist the horizontal thrust through sheer mass; (3) compressive forces have no fatigue limit in the way that bending or tension do — stone under steady compression effectively lasts forever.')
+                  __alloT('stem.bridgelab.compression_is_what_stone_brick_and_co', 'Compression is what stone, brick, and concrete handle best. The Pons Fabricius in Rome, built in 62 BCE, is still in use because: (1) its arches are almost entirely in compression, with little or no tension; (2) the abutments resist the horizontal thrust through sheer mass; (3) steady compression keeps cracks closed instead of pulling them open, so well-built stone does not wear out under load the way tension members can fatigue — stone in steady compression can last for millennia.')
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65, marginTop: 8 } },
                   h('strong', null, __alloT('stem.bridgelab.why_high_thrust_matters', 'Why high thrust matters: ')),
-                  __alloT('stem.bridgelab.flatter_arches_smaller_rise_need_much_', 'Flatter arches (smaller rise) need much more horizontal thrust. Roman arches were typically semicircular (rise = half the span) for that reason — the thrust is moderate and easily resisted. Modern shallow steel arches need enormous engineered abutments anchored into rock, or tied-arch designs where horizontal tie rods at deck level absorb the thrust (so the abutments only resist vertical load). Sydney Harbour Bridge and New River Gorge are tied-arch designs.')
+                  __alloT('stem.bridgelab.flatter_arches_smaller_rise_need_much_', 'Flatter arches (smaller rise) need much more horizontal thrust. Roman arches were typically semicircular (rise = half the span) for that reason — the thrust is moderate and easily resisted. Modern shallow steel arches need enormous engineered abutments anchored into rock, or tied-arch designs where horizontal tie rods at deck level absorb the thrust (so the abutments only resist vertical load). Sydney Harbour Bridge and New River Gorge Bridge are not tied arches: they pass their thrust into massive abutments and rock.')
                 )
               );
             }
@@ -8161,7 +8215,7 @@
 
               return h('div', null,
                 h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  __alloT('stem.bridgelab.most_modern_bridges_over_short_spans_8', 'Most modern bridges over short spans (< 80 m) are simply beams sitting on two supports. The internal forces are very different from trusses: members carry BENDING + SHEAR (not just tension/compression along their axis). The bottom of a loaded beam stretches; the top compresses. This is the simplest structural analysis, the foundation of every other one.')
+                  __alloT('stem.bridgelab.most_modern_bridges_over_short_spans_8', 'Most modern bridges over short spans (< 80 m) are beam or girder bridges, often just a deck on two supports. The internal forces are very different from trusses: members carry BENDING + SHEAR (not just tension/compression along their axis). The bottom of a loaded beam stretches; the top compresses. This is the simplest structural analysis, the foundation of every other one.')
                 ),
                 beamSvg(),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginTop: 12, marginBottom: 12 } },
@@ -8229,7 +8283,7 @@
                 ),
                 h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.why_i_beams', 'Why I-beams: ')),
-                  __alloT('stem.bridgelab.bending_stress_is_highest_at_the_top_b', 'Bending stress is highest at the top + bottom (far from the neutral axis), zero at the center. So material in the middle of the cross-section is wasted. The I-shape concentrates material as top + bottom flanges where it carries the bending, leaving a thin web in the middle that handles only shear. Same depth gets 3-5× more bending capacity than a solid rectangle of equal weight. This insight (Galileo, 1638) is the foundation of every steel beam ever made.')
+                  __alloT('stem.bridgelab.bending_stress_is_highest_at_the_top_b', 'Bending stress is highest at the top + bottom (far from the neutral axis), zero at the center. So material in the middle of the cross-section is wasted. The I-shape concentrates material as top + bottom flanges where it carries the bending, leaving a thin web in the middle that handles mostly shear. Same depth gets about 2× more bending capacity than a solid rectangle of equal weight (3× at the ideal limit). Galileo (1638) noticed that hollow shapes are stronger for their weight; the true theory of beam bending came later (Parent, Coulomb, Navier).')
                 )
               );
             }
@@ -8355,7 +8409,7 @@
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.cable_stayed_vs_suspension_the_trade', 'Cable-stayed vs suspension — the trade: ')),
-                  __alloT('stem.bridgelab.a_suspension_bridge_has_one_main_cable', 'A SUSPENSION bridge has ONE main cable carrying everything; very long spans possible but the deck is more flexible. A CABLE-STAYED bridge has many independent stays each handling its tributary load; stiffer in wind, easier to build (no main-cable spinning + no separate anchorages — the tower handles compression directly), but maximum economic span is ~1,100 m (vs ~2,000 m for suspension). Most new long bridges built since 1990 are cable-stayed.')
+                  __alloT('stem.bridgelab.a_suspension_bridge_has_one_main_cable', 'A SUSPENSION bridge has TWO main cables (one on each side of the deck) carrying everything; very long spans possible but the deck is more flexible. A CABLE-STAYED bridge has many independent stays each handling its tributary load; stiffer in wind, easier to build (no main-cable spinning + no giant ground anchorages — the deck carries the stays\' horizontal pull in compression), but the longest cable-stayed span so far is roughly 1,200 m (vs ~2,023 m for suspension). Cable-stayed is often the economical choice for mid-to-long spans.')
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.why_longer_stays_carry_more_force', 'Why longer stays carry MORE force: ')),
@@ -8687,7 +8741,7 @@
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.pedestrian_accessible_bridge_design', '♿ Pedestrian + accessible bridge design')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              __alloT('stem.bridgelab.a_bridge_that_excludes_people_is_half_', 'A bridge that excludes people is half-built. Modern pedestrian + accessible bridge design is governed by the ADA Accessibility Guidelines, PROWAG (Public Right-of-Way Accessibility Guidelines, 2023), AASHTO\'s Guide for the Development of Bicycle Facilities, and (in many states) more stringent local codes. The goal is not "minimum compliance." The goal is a bridge ANYONE can use, comfortably, in all weather.')
+              __alloT('stem.bridgelab.a_bridge_that_excludes_people_is_half_', 'A bridge that excludes people is half-built. Modern pedestrian + accessible bridge design is guided by the 2010 ADA Standards for Accessible Design, PROWAG (Public Right-of-Way Accessibility Guidelines, issued by the US Access Board in 2023), AASHTO\'s Guide for the Development of Bicycle Facilities, and (in many states) more stringent local codes. The goal is not "minimum compliance." The goal is a bridge ANYONE can use, comfortably, in all weather.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               ACC.map(function(t) {
@@ -8716,7 +8770,7 @@
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
               h('strong', null, __alloT('stem.bridgelab.the_framing_that_matters', 'The framing that matters: ')),
-              __alloT('stem.bridgelab.accessibility_is_not_a_special_needs_a', 'Accessibility is not a special-needs accommodation. About 1 in 4 US adults has a disability (CDC 2024). Add older adults, pregnant women, parents with strollers, people pulling luggage, kids on scooters, bike commuters, and the temporary injuries everyone has — and "accessible" design serves a clear MAJORITY of users. The "able-bodied adult on foot" the older codes were written for is the minority case, not the standard case.')
+              __alloT('stem.bridgelab.accessibility_is_not_a_special_needs_a', 'Accessibility is not a special-needs accommodation. About 1 in 4 US adults has a disability (CDC 2024). Add older adults, pregnant women, parents with strollers, people pulling luggage, kids on scooters, bike commuters, and the temporary injuries everyone has — and "accessible" design serves far more people than that 1 in 4. The "able-bodied adult on foot" the older codes were written for is only one of many users.')
             ),
             h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', fontSize: 11.5, color: '#fca5a5', lineHeight: 1.65 } },
               h('strong', null, __alloT('stem.bridgelab.test_with_the_people_who_depend_on_it', 'Test with the people who depend on it: ')),
@@ -8821,7 +8875,7 @@
               var sel = TECHNIQUES.find(function(t) { return t.id === d.selectedRepair; }) || TECHNIQUES[0];
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  __alloT('stem.bridgelab.about_90_of_bridge_engineering_work_is', 'About 90% of bridge engineering work is on EXISTING bridges, not new ones. Repair + retrofit extend life at a fraction of replacement cost. The right intervention depends on what\'s deteriorating + how badly.')
+                  __alloT('stem.bridgelab.about_90_of_bridge_engineering_work_is', 'Most bridge engineering work is on EXISTING bridges, not new ones. Repair + retrofit extend life at a fraction of replacement cost. The right intervention depends on what\'s deteriorating + how badly.')
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   TECHNIQUES.map(function(t) {
@@ -8852,11 +8906,11 @@
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.the_us_infrastructure_picture', 'The US infrastructure picture: ')),
-                  __alloT('stem.bridgelab.about_1_in_13_us_bridges_46_000_of_619', 'About 1 in 13 US bridges (~46,000 of 619,000) is in "poor" condition according to FHWA. Average bridge age is ~44 years; many were built in the 1950s-1970s federal highway expansion + are now reaching the end of their original design life. The 2021 Infrastructure Investment and Jobs Act allocated $40 billion specifically for bridge repair + replacement — the largest US bridge investment since 1956. Done well: substantial life-extension via repair + retrofit. Done poorly: replace-everything cycles that miss the opportunity to keep historic structures functioning longer.')
+                  __alloT('stem.bridgelab.about_1_in_13_us_bridges_46_000_of_619', 'About 1 in 15 US bridges (~42,000 of 624,000) is in "poor" condition according to FHWA. Average bridge age is ~47 years; many were built in the 1950s-1970s federal highway expansion + are now reaching the end of their original design life. The 2021 Infrastructure Investment and Jobs Act allocated $40 billion specifically for bridge repair + replacement — described by the White House as the largest dedicated bridge investment since the Interstate era. Done well: substantial life-extension via repair + retrofit. Done poorly: replace-everything cycles that miss the opportunity to keep historic structures functioning longer.')
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.seismic_retrofit_success_the_californi', 'Seismic retrofit success — the California program: ')),
-                  __alloT('stem.bridgelab.after_the_1971_san_fernando_1989_loma_', 'After the 1971 San Fernando + 1989 Loma Prieta earthquakes, California undertook a massive bridge retrofit program. CFRP wrapping + steel jacketing + isolation bearings + restrainer cables added to thousands of pre-1971 bridges. The 1994 Northridge + 2014 South Napa earthquakes both showed that retrofitted bridges performed far better than non-retrofitted ones — many would have collapsed had the retrofit work not been done. One of the most successful infrastructure investments in US history.')
+                  __alloT('stem.bridgelab.after_the_1971_san_fernando_1989_loma_', 'After the 1971 San Fernando + 1989 Loma Prieta earthquakes, California undertook a massive bridge retrofit program. CFRP wrapping + steel jacketing + isolation bearings + restrainer cables added to thousands of pre-1971 bridges. The 1994 Northridge earthquake showed that retrofitted bridges came through without serious damage, while several non-retrofitted bridges collapsed.')
                 )
               );
             })(),
@@ -8946,7 +9000,7 @@
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65, marginBottom: 8 } },
                   h('strong', null, 'History: '),
-                  __alloT('stem.bridgelab.eug_ne_freyssinet_france_1928_gustave_', 'Eugène Freyssinet (France, 1928) + Gustave Magnel (Belgium, 1940s) developed prestressed concrete. The technique required high-strength steel wire (developed 1900-30) — earlier "low-carbon" steel relaxed under sustained load + lost the precompression. Now standard worldwide for medium-span bridges (30-200 m). The Confederation Bridge (Canada, 12.9 km of prestressed concrete) + most US highway overpasses are prestressed.')
+                  __alloT('stem.bridgelab.eug_ne_freyssinet_france_1928_gustave_', 'Eugène Freyssinet (France, 1928) + Gustave Magnel (Belgium, 1940s) developed prestressed concrete. The technique required high-strength steel wire — earlier low-strength steel stretched too little to hold the precompression as the concrete shrank + crept. Now standard worldwide for short- and medium-span bridges. The Confederation Bridge (Canada, 12.9 km of prestressed concrete) + many US highway overpasses are prestressed.')
                 ),
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
@@ -9016,7 +9070,7 @@
               ];
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  __alloT('stem.bridgelab.every_bridge_stands_on_something_the_s', 'Every bridge stands on something. The strongest member designed by the best engineer fails if the FOUNDATION does. The 1907 Quebec Bridge, 1967 Silver Bridge, 1987 Schoharie Creek, and many others are partly foundation/anchorage failures. Soil mechanics + foundation engineering are as important as the superstructure design.')
+                  __alloT('stem.bridgelab.every_bridge_stands_on_something_the_s', 'Every bridge stands on something. The strongest member designed by the best engineer fails if the FOUNDATION does. The 1987 Schoharie Creek Bridge collapsed when floodwater scoured the soil from under a pier, and the 1989 Hatchie River bridge failed after the river channel migrated against its piers. Other failures, such as the 1907 Quebec Bridge (buckled compression chords) and the 1967 Silver Bridge (a cracked eyebar), began in the superstructure, so every part of the load path matters. Soil mechanics + foundation engineering are as important as the superstructure design.')
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   SOILS.map(function(s) {
@@ -9068,7 +9122,7 @@
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65, marginTop: 10 } },
                   h('strong', null, __alloT('stem.bridgelab.why_scour_kills_bridges', 'Why scour kills bridges: ')),
-                  __alloT('stem.bridgelab.flowing_water_erodes_soil_from_around_', 'Flowing water erodes soil from around bridge piers. As scour deepens, the foundation loses bearing area. Eventually it tips or the pier sinks. Schoharie Creek (1987, NY) collapsed during a flood from scour. The 2001 Hatchie River bridge (Tennessee) failure also. About 60% of US bridge failures involve scour. Modern bridges include scour-monitoring instruments + countermeasures (riprap, sheet piles, deeper foundations). The 1995 Federal Highway Administration requires every bridge over water to have a scour evaluation.')
+                  __alloT('stem.bridgelab.flowing_water_erodes_soil_from_around_', 'Flowing water erodes soil from around bridge piers. As scour deepens, the foundation loses bearing area. Eventually it tips or the pier sinks. Schoharie Creek (1987, NY) collapsed during a flood from scour. The 1989 Hatchie River bridge (Tennessee) failed after the river channel migrated against a pier; the NTSB found that the state had failed to evaluate and correct that migration. Studies of US bridge collapses attribute roughly 50-60% of them to hydraulic causes such as floods and scour. Modern bridges include scour-monitoring instruments + countermeasures (riprap, sheet piles, deeper foundations). Since 1991, FHWA guidance (Technical Advisory 5140.23) has had states screen existing bridges over water for scour risk and evaluate the vulnerable ones.')
                 )
               );
             })(),
@@ -9082,8 +9136,8 @@
                 wood:     { kgCO2perKg: 0.43, recycle: '~80% reclaimed or burned for energy', durability: '50-100 yr w/ treatment + maintenance', note: __alloT('stem.bridgelab.treated_wood_has_higher_ec_sustainably', 'Treated wood has higher EC; sustainably-managed forest wood has near-zero net EC over its lifetime (CO₂ sequestered while growing).') },
                 stone:    { kgCO2perKg: 0.07, recycle: '~100% can be reused as crushed aggregate', durability: '500-2000+ yr', note: __alloT('stem.bridgelab.lowest_embodied_carbon_of_any_building', 'Lowest embodied carbon of any building material if quarried near use. But quarrying disturbs ecosystems + transport costs energy.') },
                 iron:     { kgCO2perKg: 2.0,  recycle: '~75% recycled', durability: '50-100 yr', note: __alloT('stem.bridgelab.cast_iron_is_brittle_has_been_largely_', 'Cast iron is brittle + has been largely phased out for structural use. Lower embodied carbon than steel but worse mechanical properties.') },
-                steel:    { kgCO2perKg: 1.99, recycle: '~88% recycled globally (highest of any material)', durability: '100-150+ yr', note: __alloT('stem.bridgelab.new_steel_production_is_carbon_intensi', 'New steel production is carbon-intensive (most via blast furnace + coking coal). Recycled steel via electric-arc furnace cuts emissions by 70%+. "Green steel" via hydrogen is being deployed (HYBRIT in Sweden, ArcelorMittal in Spain).') },
-                concrete: { kgCO2perKg: 0.13, recycle: '~30% recycled, mostly as aggregate', durability: '50-100 yr', note: __alloT('stem.bridgelab.concrete_itself_has_low_embodied_carbo', 'Concrete itself has low embodied carbon per kg, but bridges use VAST amounts. Cement production alone is ~8% of global CO₂ emissions. Supplementary cementitious materials (fly ash, slag, calcined clay) cut this by 30-50%.') },
+                steel:    { kgCO2perKg: 1.99, recycle: '~88% recycled globally (highest of any material)', durability: '100-150+ yr', note: __alloT('stem.bridgelab.new_steel_production_is_carbon_intensi', 'New steel production is carbon-intensive (most via blast furnace + coking coal). Recycled steel via electric-arc furnace cuts emissions by 70%+. "Green steel" via hydrogen is at the pilot and demonstration stage (HYBRIT in Sweden).') },
+                concrete: { kgCO2perKg: 0.13, recycle: '~30% recycled, mostly as aggregate', durability: '50-100 yr', note: __alloT('stem.bridgelab.concrete_itself_has_low_embodied_carbo', 'Concrete itself has low embodied carbon per kg, but bridges use VAST amounts. Cement production alone is ~8% of global CO₂ emissions. Supplementary cementitious materials (fly ash, slag, calcined clay) can cut this by up to about 40%.') },
                 composite:{ kgCO2perKg: 8.0,  recycle: '<10% recycled (hard to separate fibers + resin)', durability: '50-75 yr', note: __alloT('stem.bridgelab.high_embodied_carbon_per_kg_difficult_', 'High embodied carbon per kg + difficult end-of-life. But weight savings can reduce total material. Best for retrofits + specialty applications, not yet competitive for primary structure.') }
               };
 
@@ -9101,7 +9155,7 @@
               var equivPersonYears = embCO2 / 14000;
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                  __alloT('stem.bridgelab.modern_bridge_design_considers_environ', 'Modern bridge design considers ENVIRONMENTAL cost alongside dollar cost. Cement is ~8% of global CO₂ emissions; steel ~7%. A typical bridge uses thousands of tons of these materials. Sustainable design = lower embodied carbon + longer life + end-of-life recyclability.')
+                  __alloT('stem.bridgelab.modern_bridge_design_considers_environ', 'Modern bridge design considers ENVIRONMENTAL cost alongside dollar cost. Cement is ~8% of global CO₂ emissions; steel ~7%. A large bridge uses thousands of tons of these materials. Sustainable design = lower embodied carbon + longer life + end-of-life recyclability.')
                 ),
                 h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #22c55e', marginBottom: 12 } },
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 8 } }, 'Your current design: ' + mat.name),
@@ -9129,15 +9183,15 @@
                   h('strong', null, __alloT('stem.bridgelab.sustainable_design_strategies', 'Sustainable design strategies: ')),
                   h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
                     h('li', null, h('strong', null, __alloT('stem.bridgelab.optimize_for_the_lifetime', 'Optimize for the LIFETIME: ')), __alloT('stem.bridgelab.a_bridge_that_lasts_150_years_has_lowe', 'A bridge that lasts 150 years has lower per-year carbon than one rebuilt at 60. Long-term durability planning matters.')),
-                    h('li', null, h('strong', null, __alloT('stem.bridgelab.use_less_material', 'Use less material: ')), __alloT('stem.bridgelab.high_strength_steel_advanced_cross_sec', 'High-strength steel + advanced cross-sections + optimized geometry can cut material 10-30% with no loss of capacity. The cost-optimizer in the Build tab is doing this.')),
-                    h('li', null, h('strong', null, __alloT('stem.bridgelab.recycled_content', 'Recycled content: ')), __alloT('stem.bridgelab.specify_minimum_recycled_steel_content', 'Specify minimum recycled steel content (typically 70-90% achievable). Replace 30-50% of cement with fly ash, slag, or calcined clay.')),
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.use_less_material', 'Use less material: ')), __alloT('stem.bridgelab.high_strength_steel_advanced_cross_sec', 'High-strength steel + advanced cross-sections + optimized geometry can reduce the material a design needs without losing capacity. The cost-optimizer in the Stress Test tab is doing this.')),
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.recycled_content', 'Recycled content: ')), __alloT('stem.bridgelab.specify_minimum_recycled_steel_content', 'Specify minimum recycled steel content (about 90%+ is typical for arc-furnace shapes + rebar, only about 25-30% for oxygen-furnace plate). Replace part of the cement with fly ash, slag, or calcined clay.')),
                     h('li', null, h('strong', null, __alloT('stem.bridgelab.design_for_disassembly', 'Design for disassembly: ')), __alloT('stem.bridgelab.bolted_modular_connections_enable_salv', 'Bolted + modular connections enable salvage at end of life. Older welded + rusted bridges get scrapped; modular ones get repurposed.')),
-                    h('li', null, h('strong', null, __alloT('stem.bridgelab.local_sourcing', 'Local sourcing: ')), __alloT('stem.bridgelab.transport_adds_embodied_carbon_sourcin', 'Transport adds embodied carbon. Sourcing materials within 500 km can cut total emissions 15-25%.'))
+                    h('li', null, h('strong', null, __alloT('stem.bridgelab.local_sourcing', 'Local sourcing: ')), __alloT('stem.bridgelab.transport_adds_embodied_carbon_sourcin', 'Transport adds embodied carbon, usually a few percent of the total (more for long-haul timber). Sourcing materials closer to the site trims it.'))
                   )
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.why_this_matters_now', 'Why this matters now: ')),
-                  __alloT('stem.bridgelab.infrastructure_construction_accounts_f', 'Infrastructure construction accounts for ~25-30% of global emissions. The 1971 National Bridge Inspection Standards (post-Silver-Bridge) created a database showing about 1 in 13 US bridges is in poor condition; thousands need replacement in the next 20 years. The Infrastructure Investment and Jobs Act (2021) funds bridge replacement at scale. Done well: lower-carbon materials + longer service life. Done poorly: same emissions, repeating the same mistakes.')
+                  __alloT('stem.bridgelab.infrastructure_construction_accounts_f', 'Construction and building materials account for roughly 10-20% of global CO₂ emissions. The 1971 National Bridge Inspection Standards (post-Silver-Bridge) created a database showing about 1 in 15 US bridges is in poor condition; thousands need replacement in the next 20 years. The Infrastructure Investment and Jobs Act (2021) funds bridge replacement at scale. Done well: lower-carbon materials + longer service life. Done poorly: same emissions, repeating the same mistakes.')
                 )
               );
             })(),
@@ -9262,7 +9316,7 @@
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 11.5, color: '#fecaca', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.silver_bridge_1967_fatigue_corrosion', 'Silver Bridge 1967 — fatigue + corrosion: ')),
-                  __alloT('stem.bridgelab.one_eyebar_of_the_silver_bridge_ohio_r', 'One eyebar of the Silver Bridge (Ohio River) had a tiny 2.5 mm defect from manufacturing 40 years earlier. Stress-corrosion-cracking grew it to critical size over decades of traffic cycles. On December 15 1967 it snapped during rush hour; the bridge had no redundancy + the entire structure collapsed into the river. 46 dead. Led directly to the 1971 National Bridge Inspection Standards — every public bridge in the US now gets inspected every 2 years.')
+                  __alloT('stem.bridgelab.one_eyebar_of_the_silver_bridge_ohio_r', 'One eyebar of the Silver Bridge (Ohio River) had a tiny crack, about 2.5 mm deep, that started at a corrosion pit. Stress-corrosion cracking and corrosion fatigue grew it to critical size over about 40 years of traffic cycles. On December 15 1967 it snapped during rush hour; the bridge had no redundancy + the entire structure collapsed into the river. 46 dead. Led directly to the 1971 National Bridge Inspection Standards — public-road bridges over 20 ft are now inspected at least every 2 years (some low-risk bridges every 4).')
                 )
               );
             })(),
@@ -9416,7 +9470,7 @@
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
               h('strong', null, __alloT('stem.bridgelab.the_institutional_reality', 'The institutional reality: ')),
-              __alloT('stem.bridgelab.the_technical_tools_for_bridge_monitor', 'The technical tools for bridge monitoring have advanced enormously in the past 20 years. The institutional capacity to USE them — funding for sensor installation, trained personnel for data analysis, clear chains of responsibility, political will to close + repair structures when warning signs appear — has advanced less. Most major bridge tragedies of the past 50 years (Silver, Mianus, I-35W, Morandi/Genoa, Pittsburgh Fern Hollow) have been institutional failures as much as technical ones.')
+              __alloT('stem.bridgelab.the_technical_tools_for_bridge_monitor', 'The technical tools for bridge monitoring have advanced enormously in the past 20 years. The institutional capacity to USE them — funding for sensor installation, trained personnel for data analysis, clear chains of responsibility, political will to close + repair structures when warning signs appear — has advanced less. Many major bridge tragedies since 1967 (Silver, Mianus, I-35W, Morandi/Genoa, Pittsburgh Fern Hollow) have been institutional failures as much as technical ones.')
             )
           );
         }
@@ -9625,7 +9679,7 @@
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.cypress_street_viaduct_1989_loma_priet', 'Cypress Street Viaduct (1989 Loma Prieta): ')),
-                  __alloT('stem.bridgelab.a_double_decker_freeway_in_oakland_bui', 'A double-decker freeway in Oakland built in the 1950s lacked the ductile detailing required by modern codes. When the M6.9 Loma Prieta earthquake hit, columns sheared, the upper deck collapsed onto the lower deck. 42 people died — the deadliest individual structural failure of the quake. The disaster accelerated retrofitting + replacement of pre-1971 California bridges. Many similar viaducts have since been demolished + replaced (or extensively retrofitted with steel jackets around columns + base isolators).')
+                  __alloT('stem.bridgelab.a_double_decker_freeway_in_oakland_bui', 'A double-decker freeway in Oakland built in the 1950s lacked the ductile detailing required by modern codes. When the M6.9 Loma Prieta earthquake hit, the joints between the lower and upper columns sheared, and the upper deck collapsed onto the lower deck. 42 people died — the deadliest individual structural failure of the quake. The disaster accelerated retrofitting + replacement of pre-1971 California bridges. Many similar viaducts have since been demolished + replaced (or extensively retrofitted with steel jackets around columns + base isolators).')
                 )
               );
             })(),
@@ -9711,7 +9765,7 @@
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.bridgelab.i_35w_mississippi_river_bridge_collaps', 'I-35W Mississippi River Bridge collapse (2007): ')),
-                  __alloT('stem.bridgelab.the_minneapolis_bridge_collapsed_durin', 'The Minneapolis bridge collapsed during evening rush hour, killing 13 + injuring 145. Investigation showed a design flaw (undersized gusset plates) combined with construction loads (resurfacing materials piled on the deck). The replacement bridge (St. Anthony Falls Bridge, 2008) was instrumented with 323 sensors during construction — strain gauges, accelerometers, temperature sensors, corrosion sensors. It is one of the most heavily-monitored bridges in the world. Lessons from the collapse drove federal investment in SHM technology across US bridges.')
+                  __alloT('stem.bridgelab.the_minneapolis_bridge_collapsed_durin', 'The Minneapolis bridge collapsed during evening rush hour, killing 13 + injuring 145. Investigation showed a design flaw (undersized gusset plates) combined with construction loads (resurfacing materials piled on the deck). The replacement bridge (St. Anthony Falls Bridge, 2008) was instrumented with hundreds of sensors during construction — strain gauges, accelerometers, temperature sensors, corrosion sensors. It is one of the most heavily-monitored bridges in the world. Lessons from the collapse raised interest in SHM technology across US bridges.')
                 )
               );
             })(),
@@ -9722,7 +9776,7 @@
           sectionCard('🔩 Connections — where most failures actually happen',
             h('div', null,
               h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                __alloT('stem.bridgelab.the_members_are_usually_not_what_fails', 'The members are usually not what fails — the connections between them are. Hyatt Regency (1981), Silver Bridge (1967), Tay Bridge (1879) were all connection failures, not material failures. Modern bridge engineering pays as much attention to joints as to members.')
+                __alloT('stem.bridgelab.the_members_are_usually_not_what_fails', 'The members are often not what fails — the connections between them are. Hyatt Regency (1981), Silver Bridge (1967), Tay Bridge (1879) all began at joints — a hanger-rod connection, an eyebar eye, bracing lugs. Modern bridge engineering pays as much attention to joints as to members.')
               ),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
                 CONNECTIONS.map(function(c) {
@@ -9754,7 +9808,7 @@
               ),
               h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.6 } },
                 h('strong', null, __alloT('stem.bridgelab.the_hyatt_regency_lesson', 'The Hyatt Regency lesson: ')),
-                __alloT('stem.bridgelab.the_1981_walkway_collapse_was_a_connec', 'The 1981 walkway collapse was a connection failure. A late design change replaced one long rod (suspending both walkways) with two shorter rods (each walkway hung from the next). The change DOUBLED the load on the upper connection. No one re-engineered. 114 dead, 216 injured. Engineer of record carries final responsibility — both lead engineers lost their licenses. Now required reading in engineering ethics curricula.')
+                __alloT('stem.bridgelab.the_1981_walkway_collapse_was_a_connec', 'The 1981 walkway collapse was a connection failure. A late design change replaced one long rod (suspending both walkways) with two shorter rods (each walkway hung from the next). The change DOUBLED the load on the upper connection. No one re-engineered. 114 dead, 216 injured. Engineer of record carries final responsibility — both lead engineers lost their Missouri engineering licenses. Now a standard case study in engineering ethics courses.')
               )
             ),
             AMBER
@@ -9882,7 +9936,7 @@
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.wind_tunnel_testing_of_long_span_bridg', '🌪️ Wind tunnel testing of long-span bridges')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              __alloT('stem.bridgelab.a_long_span_bridge_that_has_never_been', 'A long-span bridge that has never been in a wind tunnel is a long-span bridge that has skipped a fundamental design check. The discipline was forged in the wake of the 1940 Tacoma Narrows collapse + has matured into one of the most distinctive specialties in civil engineering. Every major suspension + cable-stayed bridge built since the 1970s has been wind-tunnel tested before construction.')
+              __alloT('stem.bridgelab.a_long_span_bridge_that_has_never_been', 'A long-span bridge that has never been in a wind tunnel is a long-span bridge that has skipped a fundamental design check. The discipline was forged in the wake of the 1940 Tacoma Narrows collapse + has matured into one of the most distinctive specialties in civil engineering. Virtually every major suspension + cable-stayed bridge built since the 1950s has been wind-tunnel tested before construction.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               WT.map(function(t) {
@@ -9978,7 +10032,7 @@
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
               h('strong', null, __alloT('stem.bridgelab.the_roebling_lineage', 'The Roebling lineage: ')),
-              __alloT('stem.bridgelab.john_a_roebling_invented_the_aerial_sp', 'John A. Roebling invented the aerial-spinning method while building the 1855 Niagara Falls railroad suspension bridge — the technique remains essentially unchanged 170 years later. He died in 1869 from injuries sustained during early construction of the Brooklyn Bridge; his son Washington took over + suffered decompression sickness ("caisson disease") supervising the pier sinking. His wife Emily Roebling effectively managed the project for the next decade. The Brooklyn Bridge opened in 1883 + still carries traffic today.')
+              __alloT('stem.bridgelab.john_a_roebling_invented_the_aerial_sp', 'John A. Roebling perfected the aerial-spinning method of building suspension-bridge cables, using it on the 1855 Niagara Falls railroad suspension bridge — the technique remains essentially unchanged 170 years later. He died in 1869 from injuries sustained while surveying the Brooklyn Bridge site; his son Washington took over + suffered decompression sickness ("caisson disease") supervising the pier sinking. Washington\'s wife Emily Roebling relayed his orders + managed much of the project for the next decade. The Brooklyn Bridge opened in 1883 + still carries traffic today.')
             )
           );
         }
@@ -10048,7 +10102,7 @@
         var selected = CASES.find(function(c) { return c.id === d.selectedCase; }) || CASES[0];
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            __alloT('stem.bridgelab.engineering_is_learned_at_least_as_muc', 'Engineering is learned at least as much from failures as from successes. The collapse of Tacoma Narrows changed how every bridge in the world is designed; the success of Brooklyn proved suspension bridges could last centuries.')
+            __alloT('stem.bridgelab.engineering_is_learned_at_least_as_muc', 'Engineering is learned at least as much from failures as from successes. The collapse of Tacoma Narrows changed how long-span bridges are designed; the success of Brooklyn proved suspension bridges could last well over a century.')
           ),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
             CASES.map(function(c) {
@@ -10210,7 +10264,7 @@
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
             h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, __alloT('stem.bridgelab.military_emergency_bridges', '⚒️ Military + emergency bridges')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
-              __alloT('stem.bridgelab.most_of_the_world_s_bridge_engineering', 'Most of the world\'s bridge engineering research between 1900 + 1990 happened in military contexts. The Bailey, Medium Girder, and ribbon-pontoon systems were designed to keep armies supplied across destroyed rivers — and now keep civilian communities connected after floods, earthquakes, hurricanes, and infrastructure failures. The modular + accelerated-construction techniques that dominate modern civilian bridge work descend directly from this lineage.')
+              __alloT('stem.bridgelab.most_of_the_world_s_bridge_engineering', 'Some of the most influential portable bridge designs came from military research. The Bailey, Medium Girder, and ribbon-pontoon systems were designed to keep armies supplied across destroyed rivers — and now keep civilian communities connected after floods, earthquakes, hurricanes, and infrastructure failures. Their ideas still shape temporary + emergency bridges and echo in accelerated-construction techniques.')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               MIL.map(function(t) {
@@ -10424,7 +10478,7 @@
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
               h('strong', null, __alloT('stem.bridgelab.for_maine_students_families', 'For Maine students + families: ')),
-              __alloT('stem.bridgelab.maine_spends_about_700m_year_on_transp', 'Maine spends about $700M/year on transportation infrastructure across all modes; bridges are a major slice of that. The Maine DOT publishes its annual Work Plan + 3-Year Transportation Improvement Program online (maine.gov/mdot). Major recent projects: the Penobscot Narrows Bridge replacement (2006, $85M), the Memorial Bridge / Sarah Mildred Long Bridge replacements in Portsmouth-Kittery (~$170M each), ongoing Maine Turnpike widenings + bridge replacements. Maine resisted highway tolling outside the Turnpike + has relied on federal + state gas-tax funding plus IIJA money. Students who care about Maine infrastructure can engage at MPO public meetings (Portland Area Comprehensive Transportation System, Greater Portland Council of Governments) + by writing to the Maine DOT Commissioner.')
+              __alloT('stem.bridgelab.maine_spends_about_700m_year_on_transp', 'Maine DOT\'s 2025-2027 Work Plan is about $4.8 billion over three years (roughly $1.6 billion a year) across all modes; bridges are a major slice of that. The Maine DOT publishes its annual Work Plan + 3-Year Transportation Improvement Program online (maine.gov/mdot). Major recent projects: the Penobscot Narrows Bridge replacement (2006, $85M), the Memorial Bridge / Sarah Mildred Long Bridge replacements in Portsmouth-Kittery (about $90M and $160M), ongoing Maine Turnpike widenings + bridge replacements. Maine resisted highway tolling outside the Turnpike + has relied on federal + state gas-tax funding plus IIJA money. Students who care about Maine infrastructure can engage at MPO public meetings (Portland Area Comprehensive Transportation System, Greater Portland Council of Governments) + by writing to the Maine DOT Commissioner.')
             )
           );
         }
@@ -10432,7 +10486,7 @@
         function abcAndPrefabSection() {
           var ABC = [
             { id: 'why', name: __alloT('stem.bridgelab.why_abc_exists', 'Why ABC exists'), emoji: '⏱️',
-              body: __alloT('stem.bridgelab.conventional_cast_in_place_bridge_cons', 'Conventional cast-in-place bridge construction takes months to years and closes a road or rail line for the entire duration. Long closures wreck communities (longer commutes, lost business, blocked emergency response, increased emissions from detours). The Federal Highway Administration (FHWA) coined the term "Accelerated Bridge Construction" (ABC) in the mid-2000s to capture techniques that compress the on-site closure to days or sometimes hours. The motivating insight: most of the bridge can be built OFF-site, in parallel with traffic continuing on-site, and then installed in a single short closure window.'),
+              body: __alloT('stem.bridgelab.conventional_cast_in_place_bridge_cons', 'Conventional cast-in-place bridge construction takes months to years and closes a road or rail line for the entire duration. Long closures wreck communities (longer commutes, lost business, blocked emergency response, increased emissions from detours). The Federal Highway Administration (FHWA) has promoted "Accelerated Bridge Construction" (ABC) since the early 2000s to capture techniques that compress the on-site closure to days or sometimes hours. The motivating insight: most of the bridge can be built OFF-site, in parallel with traffic continuing on-site, and then installed in a single short closure window.'),
               caveat: 'ABC is more expensive PER BRIDGE than conventional construction (typically 10-30% higher direct cost, sometimes more). But the savings in user costs (driver time, business disruption, detour fuel) often exceed the extra construction cost by 5-10×. For a high-traffic interstate bridge, ABC pays for itself many times over. For a remote low-traffic rural bridge, conventional construction is usually the right answer. The choice should be driven by the WHOLE cost, including users.'
             },
             { id: 'prefab', name: __alloT('stem.bridgelab.prefabricated_bridge_elements_pbes', 'Prefabricated bridge elements (PBES)'), emoji: '🏭',
@@ -10440,23 +10494,23 @@
               caveat: 'Factory-quality construction beats field-quality almost every time. Concrete cured at 70°F in 50% humidity, with controlled curing time + zero rain, is far more consistent than concrete poured on a windy 95°F day with rain incoming. Steel welded inside a fabricator\'s shop has fewer defects than steel welded on a scaffold over a river. The cost premium of factory construction is partly paid back by better long-term durability.'
             },
             { id: 'sps', name: __alloT('stem.bridgelab.self_propelled_modular_transporters_sp', 'Self-propelled modular transporters (SPMTs)'), emoji: '🚛',
-              body: __alloT('stem.bridgelab.spmts_are_massive_multi_axle_hydraulic', 'SPMTs are massive multi-axle hydraulically-leveled platforms that can carry entire bridge spans — sometimes thousands of tons — and roll them into place along a highway closure. Each axle has its own steering + hydraulic suspension, so the SPMT can crab sideways, rotate in place, and self-level over uneven ground. Multiple SPMT trailers can be linked together. The Massena Bridge replacement (Massachusetts, 2014) used SPMTs to roll a 416-ton bridge span ~5 miles from a staging area + lower it onto its piers in a single 55-hour weekend closure. Total bridge replacement: 4 days. Conventional construction would have taken 6+ months of partial closure.'),
+              body: __alloT('stem.bridgelab.spmts_are_massive_multi_axle_hydraulic', 'SPMTs are massive multi-axle hydraulically-leveled platforms that can carry entire bridge spans — often hundreds of tons — and roll them into place along a highway closure. Each axle line has its own steering + hydraulic suspension, so the SPMT can crab sideways, rotate in place, and self-level over uneven ground. Multiple SPMT trailers can be linked together. The Cedar Street Bridge over Route 9 in Wellesley, Massachusetts (2011) was built on temporary supports beside the road; SPMTs then rolled the finished two-span steel bridge into place, and the road was closed for only 62 hours over a holiday weekend.'),
               caveat: 'SPMT moves are spectacular + heavily filmed. They are also high-risk events — once the move starts, you cannot stop midway. Every conceivable failure mode (axle failure, hydraulic leak, weather, traffic incident on the route) must be pre-planned. Failed SPMT moves are rare but extremely expensive when they happen.'
             },
             { id: 'slide', name: __alloT('stem.bridgelab.lateral_slide_in_construction', 'Lateral slide-in construction'), emoji: '↔️',
-              body: __alloT('stem.bridgelab.instead_of_using_spmts_the_new_bridge_', 'Instead of using SPMTs, the new bridge is built alongside the existing bridge on temporary supports. During a short closure, the old bridge is demolished + the new bridge is slid sideways into its final position on hydraulic jacks or rollers, typically 20-40 feet. The Wells Avenue Bridge replacement (Newton, MA, 2009) was one of the first US slide-ins; the Pulaski Skyway in NJ used a slide-in for one span in 2014. The Massachusetts I-93 fast-14 project (2011) replaced 14 bridges in 14 weekends using slide-in + other ABC techniques, saving an estimated 4+ years of conventional construction time.'),
+              body: __alloT('stem.bridgelab.instead_of_using_spmts_the_new_bridge_', 'Instead of using SPMTs, the new bridge is built alongside the existing bridge on temporary supports. During a short closure, the old bridge is demolished + the new bridge is slid sideways into its final position on jacks, rollers, or low-friction pads. FHWA\'s Every Day Counts program promotes slide-in construction, and roadway closures typically last 48 to 72 hours or less. The Massachusetts I-93 Fast 14 project (2011) used yet another ABC technique, prefabricated superstructures set by crane, to replace 14 bridges in 10 weekends, cutting about 3 years from the conventional schedule.'),
               caveat: 'Lateral slide requires temporary support structures that are themselves substantial engineering projects. The geometry needs to allow space alongside the existing bridge. Slide-ins work best in interstate-highway corridors with wide right-of-ways; they are difficult in urban canyons or constrained sites.'
             },
             { id: 'gpr', name: __alloT('stem.bridgelab.geosynthetic_reinforced_soil_grs_ibs', 'Geosynthetic Reinforced Soil (GRS-IBS)'), emoji: '🪨',
-              body: __alloT('stem.bridgelab.grs_ibs_geosynthetic_reinforced_soil_i', 'GRS-IBS (Geosynthetic Reinforced Soil — Integrated Bridge System) replaces conventional reinforced-concrete abutments + piles with alternating layers of compacted granular fill + geosynthetic reinforcement (essentially industrial-strength plastic mesh). The result is a stable abutment that supports the bridge directly, with no pile foundations needed. GRS abutments can be built in days using standard earthwork crews. They cost 25-60% less than conventional abutments, eliminate the joint between superstructure + approach (a major maintenance headache), and are particularly well-suited to short-span single-lane bridges. FHWA reports 200+ GRS-IBS bridges built in the US since 2005, with very low maintenance costs.'),
+              body: __alloT('stem.bridgelab.grs_ibs_geosynthetic_reinforced_soil_i', 'GRS-IBS (Geosynthetic Reinforced Soil — Integrated Bridge System) replaces conventional reinforced-concrete abutments + piles with alternating layers of compacted granular fill + geosynthetic reinforcement (essentially industrial-strength plastic mesh). The result is a stable abutment that supports the bridge directly, with no pile foundations needed. GRS abutments can be built in days using standard earthwork crews. They can cost 25-60% less than conventional abutments, eliminate the joint between superstructure + approach (a major maintenance headache), and are particularly well-suited to short-span bridges. Hundreds of GRS-IBS bridges have been built in the US since 2005, with very low maintenance costs.'),
               caveat: 'GRS-IBS works best for shorter spans (typically under 130 feet) with light-to-moderate truck traffic. It is not appropriate for long spans, heavy-haul freight routes, or sites with unstable soils. The design is conservative + heavily standardized (FHWA published design guides + standard details) — a practical bridge solution rather than a fancy one.'
             },
             { id: 'designs', name: __alloT('stem.bridgelab.standard_abc_bridge_designs', 'Standard ABC bridge designs'), emoji: '📋',
-              body: __alloT('stem.bridgelab.several_states_have_developed_pre_engi', 'Several states have developed pre-engineered standard bridges for the most common short-span applications. The Vermont Agency of Transportation\'s ABC standard plans cover spans from 25-80 feet, with detailed precast deck + abutment specs that any local contractor can build. The Federal Lands Highway Program has similar plans for remote sites. The advantage: instead of paying for a custom design ($100K+ engineering), a small-town bridge replacement can use a standard plan ($5-10K design fee) + standard precast pieces. Lead time drops from 18 months to 6 months for a typical rural bridge.'),
+              body: __alloT('stem.bridgelab.several_states_have_developed_pre_engi', 'Several states have developed pre-engineered standard bridges for the most common short-span applications, with detailed precast deck + abutment specs that local contractors can build. Vermont\'s Accelerated Bridge Program uses precast + slide-in methods, and the Federal Lands Highway program considers prefabricated bridges first, including at remote sites. The advantage: instead of paying for a custom design, a small-town bridge replacement can use a standard plan + standard precast pieces, which shortens the design and delivery time for a typical rural bridge.'),
               caveat: 'Standard designs work because they cover the most common cases conservatively. They do NOT work for unusual sites (skewed crossings, complex traffic, environmentally-sensitive locations). Engineering judgment is still needed to decide whether the standard applies. Some communities have had bad experiences using standard plans inappropriately, then blaming the standard rather than the design choice.'
             },
             { id: 'success', name: __alloT('stem.bridgelab.success_cases', 'Success cases'), emoji: '🎯',
-              body: __alloT('stem.bridgelab.a_massachusetts_fast_14_i_93_2011_repl', '(a) Massachusetts Fast-14 (I-93, 2011): replaced 14 bridges over 14 consecutive weekend closures. Each weekend: Friday 11 PM close, Monday 5 AM open. Total project: 10 weeks vs estimated 4 years conventional. Massive media coverage; widely cited as the proof-of-concept event for US ABC. (b) Utah Riverdale Road bridge over I-84 (2007): first US use of SPMTs to slide an entire bridge into place. (c) Iowa Lower Mud River bridge (2010): demonstrator GRS-IBS bridge built in 23 working days at 30% lower cost. (d) Florida 17th Street Causeway Bridge approaches (2009-2011): SPMT-installed bridge segments with overnight closures. ABC has shipped at scale in the US for nearly 20 years now.'),
+              body: __alloT('stem.bridgelab.a_massachusetts_fast_14_i_93_2011_repl', '(a) Massachusetts Fast 14 (I-93, 2011): replaced 14 bridges in 10 weekend closures between June and August, each about 55 hours from Friday night to Monday morning, vs an estimated 4 years of conventional construction. Massive media coverage; widely cited as a landmark US ABC project. (b) Utah Riverdale Road bridge over I-84 (2008): Utah DOT used SPMTs to move a prefabricated bridge into place. (c) Cedar Street Bridge, Wellesley, Massachusetts (2011): a two-span steel bridge rolled into place on SPMTs during a 62-hour holiday-weekend closure. (d) Lewis and Clark Bridge, Washington/Oregon (2003-04): 103 prefabricated deck panels moved into place by SPMT, one per night. ABC has been used at scale in the US for more than 20 years now.'),
               caveat: 'ABC works best where someone in the owner agency genuinely champions it + accepts the upfront design + coordination effort. It is not magic: it shifts construction risk + complexity from on-site to off-site + adds the move-day risk. Projects with poor early planning can fail just like any other.'
             },
             { id: 'limits', name: __alloT('stem.bridgelab.what_abc_cannot_do_well', 'What ABC cannot do well'), emoji: '🚫',
@@ -10498,7 +10552,7 @@
               caveat: 'FEA gives an APPROXIMATE answer. The approximation gets better as the mesh gets finer (more, smaller elements). But finer meshes cost more computer time. A real FEA workflow is: start coarse, refine where stress gradients are sharp (around bolt holes, weld toes, supports), check convergence by halving element size and seeing if the answer changes.'
             },
             { id: 'history', name: __alloT('stem.bridgelab.how_fea_was_invented', 'How FEA was invented'), emoji: '📜',
-              body: __alloT('stem.bridgelab.the_conceptual_foundations_come_from_r', 'The conceptual foundations come from Richard Courant\'s variational methods (1943) and earlier matrix structural analysis (the Slope-Deflection method, 1915). The modern form of FEA was developed in the 1950s-60s primarily for AIRCRAFT analysis (Boeing 707, supersonic transport designs). Key figures: Ray Clough at Berkeley (who coined the term "finite element method" in 1960), John Argyris at Imperial College London + Stuttgart, Olek Zienkiewicz at Swansea (who wrote the foundational textbook in 1967, still cited). Bridge engineering adopted FEA in the 1970s once mainframe computers became affordable. By 2000, every major bridge in the world was designed using FEA software (ANSYS, ABAQUS, SAP2000, MIDAS, LUSAS).'),
+              body: __alloT('stem.bridgelab.the_conceptual_foundations_come_from_r', 'The conceptual foundations come from Richard Courant\'s variational methods (1943) and earlier hand methods of structural analysis (the Slope-Deflection method, 1915). The modern form of FEA was developed in the 1950s-60s primarily for AIRCRAFT analysis (Boeing delta-wing structures). Key figures: Ray Clough at Berkeley (who coined the term "finite element method" in 1960), John Argyris at Imperial College London + Stuttgart, Olek Zienkiewicz at Swansea (who wrote the foundational textbook in 1967, still cited). Bridge engineering adopted FEA in the 1970s once mainframe computers became affordable. By 2000, nearly every major bridge in the world was designed using FEA software (ANSYS, ABAQUS, SAP2000, MIDAS, LUSAS).'),
               caveat: 'FEA democratized analysis. A method that once required a research mainframe now runs on a laptop in minutes. This is enormous progress — and a hazard. A college sophomore can now run an FEA analysis they cannot interpret, get a colorful stress plot, and believe it. The software does not catch unit errors, bad meshes, or wrong boundary conditions. Garbage in, beautiful colorful garbage out.'
             },
             { id: 'mesh', name: __alloT('stem.bridgelab.the_mesh_matters', 'The mesh matters'), emoji: '🕸️',
@@ -10514,15 +10568,15 @@
               caveat: 'Mixing element types correctly is its own art. A beam element connected to a solid element needs a "rigid link" or "MPC" to enforce that the cross-section stays plane. Get this wrong and the connection is artificially flexible.'
             },
             { id: 'linear', name: __alloT('stem.bridgelab.linear_vs_nonlinear', 'Linear vs nonlinear'), emoji: '↗️',
-              body: __alloT('stem.bridgelab.a_linear_fea_assumes_a_small_displacem', 'A LINEAR FEA assumes (a) small displacements, (b) elastic material (stress proportional to strain, no permanent deformation), (c) boundary conditions don\'t change during loading. Doubles the load, doubles the displacement and stress everywhere. Most bridge-design work is linear, by code. NONLINEAR FEA relaxes these. Material nonlinearity (plastic yielding, concrete cracking). Geometric nonlinearity (large deflections — e.g., cable-stayed bridges where cable sag changes as load increases). Contact nonlinearity (bearings opening + closing). Time-dependent nonlinearity (concrete creep, steel relaxation). Nonlinear analysis is honest about post-yield behavior but is slower, sensitive to solver settings, and harder to interpret.'),
+              body: __alloT('stem.bridgelab.a_linear_fea_assumes_a_small_displacem', 'A LINEAR FEA assumes (a) small displacements, (b) elastic material (stress proportional to strain, no permanent deformation), (c) boundary conditions don\'t change during loading. Double the load and the displacement and stress double everywhere. Most bridge-design work is linear, by code. NONLINEAR FEA relaxes these. Material nonlinearity (plastic yielding, concrete cracking). Geometric nonlinearity (large deflections — e.g., cable-stayed bridges where cable sag changes as load increases). Contact nonlinearity (bearings opening + closing). Time-dependent nonlinearity (concrete creep, steel relaxation). Nonlinear analysis is honest about post-yield behavior but is slower, sensitive to solver settings, and harder to interpret.'),
               caveat: 'For most code-based design checks, linear FEA + a safety factor is enough. For seismic analysis, blast analysis, and progressive-collapse studies, nonlinear is required. The classic mistake: running a linear analysis past the yield point of the material and reporting impossible stress numbers because the model never knew to yield.'
             },
             { id: 'verify', name: __alloT('stem.bridgelab.how_to_trust_an_fea_result', 'How to trust an FEA result'), emoji: '✅',
-              body: __alloT('stem.bridgelab.professional_verification_1_sanity_che', 'Professional verification: (1) Sanity check magnitudes — does the maximum stress match a hand calculation within ~20%? (2) Reaction sum — do the support reactions equal the applied loads (force balance)? (3) Symmetry check — if loading + geometry are symmetric, the answer must be symmetric. (4) Mesh convergence — halve the element size; does the answer move <5%? (5) Energy check — is strain energy a smooth function of load (not jumping)? (6) Independent re-analysis — run the model in a second software package. (7) Physical correlation — load test the actual structure; sensors at critical points should match FEA within ~10%.'),
+              body: __alloT('stem.bridgelab.professional_verification_1_sanity_che', 'Professional verification (typical rules of thumb, not code limits): (1) Sanity check magnitudes — does the maximum stress match a hand calculation within ~20%? (2) Reaction sum — do the support reactions equal the applied loads (force balance)? (3) Symmetry check — if loading + geometry are symmetric, the answer must be symmetric. (4) Mesh convergence — halve the element size; does the answer move <5%? (5) Energy check — is strain energy a smooth function of load (not jumping)? (6) Independent re-analysis — run the model in a second software package. (7) Physical correlation — load test the actual structure; sensors at critical points should match FEA within ~10%.'),
               caveat: 'Most production bridge FEA models are NOT physically validated. They are validated by code conformance + hand-check cross-references. A small percentage of bridges (long-span, unusual, retrofitted) get full instrumentation + monitoring; almost everything else relies on the analyst\'s judgment + the code\'s safety factors.'
             },
             { id: 'limits', name: __alloT('stem.bridgelab.what_fea_cannot_tell_you', 'What FEA cannot tell you'), emoji: '🚫',
-              body: __alloT('stem.bridgelab.a_whether_your_design_is_good_fea_tell', '(a) Whether your design is GOOD. FEA tells you stress; you decide if it is acceptable. (b) Whether your materials behave as modeled. Real concrete varies in strength batch-to-batch by 15-25%. Real welds have unknown internal defects. FEA assumes idealized homogeneous material. (c) What will happen at the limit. FEA does not know how the bridge fails — that comes from material science, fracture mechanics, and engineering experience. (d) Long-term behavior. Creep, fatigue, corrosion, weather, traffic patterns, climate change — FEA alone does not capture these; you bolt extra analyses on top. (e) The "unknown unknown." FEA cannot model failure modes you didn\'t think to include. Tacoma Narrows would not have shown flutter in 1940s FEA because the aerodynamic-elastic coupling wasn\'t in the model. Every famous bridge collapse has involved a failure mode the designers did not think to analyze.'),
+              body: __alloT('stem.bridgelab.a_whether_your_design_is_good_fea_tell', '(a) Whether your design is GOOD. FEA tells you stress; you decide if it is acceptable. (b) Whether your materials behave as modeled. Real concrete strength varies from batch to batch. Real welds have unknown internal defects. FEA assumes idealized homogeneous material. (c) What will happen at the limit. FEA does not know how the bridge fails — that comes from material science, fracture mechanics, and engineering experience. (d) Long-term behavior. Creep, fatigue, corrosion, weather, traffic patterns, climate change — FEA alone does not capture these; you bolt extra analyses on top. (e) The "unknown unknown." FEA cannot model failure modes you didn\'t think to include. A structural FEA of the Tacoma Narrows deck without aerodynamic loads would not have shown the flutter that destroyed it, because the aerodynamic-elastic coupling wasn\'t in the model. Many famous bridge collapses have involved a failure mode the designers did not think to analyze.'),
               caveat: 'FEA is the most powerful structural-analysis tool ever invented. It is also the easiest tool to MISUSE. Healthy bridge engineering treats FEA as a thinking aid, not an oracle. Designers who let the colored stress plot decide the design — without judgment, hand checks, code knowledge, and skepticism — are the ones who eventually have a problem.'
             }
           ];
@@ -10986,7 +11040,8 @@
                   return h('article', { key: challenge.id, style: evidenceStyle, 'data-bridge-print-challenge': challenge.id },
                     h('h4', { style: { fontSize: 14, margin: '0 0 8px' } }, bridgeChallengeText(challenge.id).title),
                     h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } }, h('tbody', null,
-                      printRow(__alloT('stem.bridgelab.challenge_print_brief', 'Brief'), challenge.span + ' m span; ' + challenge.nBays + ' bays; ' + challenge.loadPerJoint + ' kN per joint; safety factor at least ' + challenge.minSF.toFixed(1)),
+                      printRow(__alloT('stem.bridgelab.challenge_print_brief', 'Brief'), challenge.span + ' m span; ' + challenge.nBays + ' bays; '
+                        + (bridgeChallengeIsVehicle(challenge) ? 'one ' + challenge.vehicleLoad + ' kN truck at any position' : challenge.loadPerJoint + ' kN per joint') + '; safety factor at least ' + challenge.minSF.toFixed(1)),
                       printRow(__alloT('stem.bridgelab.challenge_print_design', 'Recorded design'), bridgeChallengeDesignText(r.design)),
                       printRow(__alloT('stem.bridgelab.challenge_print_result', 'Result'), bridgeStarsText(r.stars) + '; ' + bridgeChallengeValueText(challenge, r.value) + ' against a par of ' + bridgeChallengeValueText(challenge, challenge.par)
                         + (r.afterExample ? '; recorded after viewing the worked example' : '')))));
@@ -11023,7 +11078,7 @@
             ),
 
             h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
-              __alloT('stem.bridgelab.sources_ngss_lead_states_2013_hibbeler', 'Sources: NGSS Lead States (2013) · Hibbeler, R.C. (2017), Structural Analysis · AASHTO LRFD Bridge Design Specifications · Petroski, H. (1994), Design Paradigms (Tacoma Narrows + Tay Bridge + Hyatt). Printed from AlloFlow STEAM Lab.')
+              __alloT('stem.bridgelab.sources_ngss_lead_states_2013_hibbeler', 'Sources: NGSS Lead States (2013) · Hibbeler, R.C. (2017), Structural Analysis · AASHTO LRFD Bridge Design Specifications · Petroski, H. (1994), Design Paradigms (case histories of bridge design and failure). Printed from AlloFlow STEAM Lab.')
             )
           )
         );

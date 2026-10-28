@@ -824,7 +824,8 @@
     };
     // Blue jays displace smaller birds; the grouse is too large to be moved off.
     function displacedByJay(bird){return bird.id!=='blueJay'&&bird.id!=='grouse';}
-    var feeding=null;
+    var feeding=null,wet=false;
+    function setWeather(value){wet=value==='rain';}
     function jayFeedingAt(source){
       return residents.some(function(other){return other.id==='blueJay'&&other.free.kind==='forage'&&other.free.food===source;});
     }
@@ -832,7 +833,8 @@
       var diet=DIETS[bird.id];if(!diet)return false;
       var here=null,best=null,bestScore=0;
       feeding.sources.forEach(function(source){
-        var weight=diet[source.kind]||0;if(!weight||source.amount<.12)return;
+        // Earthworms come up on wet ground, so rain draws worm-eaters to the lawn.
+        var weight=(diet[source.kind]||0)*(wet&&source.kind==='worm'?2.2:1);if(!weight||source.amount<.12)return;
         if(state.avoid&&state.avoid.id===source.id&&freeTime<state.avoid.until)return;
         if(displacedByJay(bird)&&jayFeedingAt(source))return;
         var distance=Math.hypot(bird.originX-source.x,bird.originZ-source.z);
@@ -1036,15 +1038,19 @@
       }
       state.course.length=0;state.elapsed=0;state.actionCount++;
       var choice=randomChoice(state),flyChance=bird.id==='grouse'?.12:bird.id==='blueJay'?.32:.25;
-      var kind=escape?'flight':(prior==='ground'||prior==='flight')?(choice<.65?'forage':'rest'):
-        choice<flyChance?'flight':choice<.70?'ground':choice<.89?'forage':'rest';
+      // In steady rain birds sit tight: fewer flights, more rest and preening,
+      // while robins keep working the ground. The same draws are reweighted,
+      // so a dry woodland follows exactly its usual sequence.
+      var robinWet=wet&&bird.id==='robin';
+      var kind=escape?'flight':(prior==='ground'||prior==='flight')?(choice<(robinWet?.75:wet?.5:.65)?'forage':'rest'):
+        choice<flyChance*(wet?.4:1)?'flight':choice<(robinWet?.35:wet?.45:.70)?'ground':choice<(robinWet?.85:wet?.72:.89)?'forage':'rest';
       // Hold and assess after a disturbance before resuming feeding; this also
       // avoids an automatic flight/forage/flight cycle beside a quiet observer.
       if(!escape&&(state.alertness>.42||state.cooldown>0))kind='rest';
       // Groom only when settled, with a refractory interval so it stays an
       // occasional maintenance behavior rather than a repeated idle loop.
       if(kind==='rest'&&bird.model&&state.alertness<.18&&state.cooldown===0&&freeTime>=state.preenAfter&&
-          (choice>.94||((prior==='ground'||prior==='flight')&&choice>.78)))kind='preen';
+          (choice>(wet?.8:.94)||((prior==='ground'||prior==='flight')&&choice>(wet?.6:.78))))kind='preen';
       state.kind=kind;state.alarmed=!!escape;
       state.preenExit=-1;state.preenExitWeight=0;
       if(feeding){state.food=null;state.target=null;}
@@ -1052,7 +1058,7 @@
       if(kind==='preen') {
         state.preenSide=randomChoice(state)<.5?-1:1;
         state.duration=3.4+randomChoice(state)*1.3;
-        state.preenAfter=freeTime+18+randomChoice(state)*12;
+        state.preenAfter=freeTime+(18+randomChoice(state)*12)*(wet?.5:1);
         return;
       }
       if(escape)state.cooldown=2.2;
@@ -1098,7 +1104,8 @@
     function advanceFree(dt,observer) {
       freeTime+=dt;
       if(feeding) {
-        feeding.sources.forEach(function(source){source.amount=Math.min(1,source.amount+source.regrow*dt);});
+        // Wet ground brings earthworms up, so the lawn restocks faster in rain.
+        feeding.sources.forEach(function(source){source.amount=Math.min(1,source.amount+source.regrow*(wet&&source.kind==='worm'?3:1)*dt);});
         residents.forEach(function(jay){
           if(jay.id!=='blueJay'||jay.free.kind!=='forage'||!jay.free.food)return;
           residents.forEach(function(other){
@@ -1236,6 +1243,7 @@
           if(state.alertness>.30)bird.behavior='Watching the observer';
           else if(state.cooldown>0)bird.behavior='Settling after disturbance';
           else if(state.kind==='forage')bird.behavior='Searching for food';
+          else if(wet&&state.kind==='rest')bird.behavior='Sitting tight in the rain';
         }
         if(feeding&&!state.alarmed) {
           if(state.displaced>=0&&freeTime-state.displaced<2.5)bird.behavior='Displaced by a blue jay';
@@ -1290,7 +1298,7 @@
       return spots;
     }
     return { root: root, update: update, setMode: setMode, snapshot: snapshot, getFocus: getFocus, isShared: isShared, setExtraContactShadow: setExtraContactShadow,
-      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, guidedForageSpots: guidedForageSpots, dispose: dispose };
+      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, setWeather: setWeather, guidedForageSpots: guidedForageSpots, dispose: dispose };
   }
   global.BirdLab3DWildlife = { create: create };
 }(window));

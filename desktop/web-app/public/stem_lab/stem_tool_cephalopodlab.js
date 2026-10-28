@@ -2216,7 +2216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.cephalopod_camouflage_works_against_po', 'Cephalopod camouflage works against POLARIZATION-sensitive predators (like other cephalopods) via polarized-light skin elements — a hidden visual channel humans don\'t see.'), cite: 'Shashar et al., 2010 — Vision Res.' },
         // ─── Cognition + intelligence ───
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_can_open_jars_both_standard_', 'Octopuses can OPEN JARS — both standard threaded jars and locked-mechanism food puzzles. They learn faster after watching another octopus do it.'), cite: 'Fiorito & Scotto, 1992 — Science.' },
-        { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_recognize_individual_humans_', 'Octopuses recognize individual humans by face — even when those humans wear identical lab coats.'), cite: 'Anderson, Mather, Monette & Zimsen, 2010 — J. Appl. Anim. Welf. Sci.' },
+        { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_recognize_individual_humans_', 'Octopuses can tell individual humans apart: giant Pacific octopuses responded differently to a person who fed them and one who touched them with a bristly stick (Anderson et al. 2010). Which cues they use is not yet known.'), cite: 'Anderson, Mather, Monette & Zimsen, 2010 — J. Appl. Anim. Welf. Sci.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.cephalopods_have_been_observed_playing', 'Cephalopods have been observed PLAYING — repeatedly releasing and re-grabbing a buoyant pill bottle in a tank current with no food reward.'), cite: 'Mather & Anderson, 1999 — J. Comp. Psychol.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.the_arms_of_an_octopus_are_semi_autono', 'The arms of an octopus are SEMI-AUTONOMOUS — they can solve simple problems (like wrapping around food) without direction from the central brain.'), cite: 'Levy, Flash & Hochner, 2011 — Curr. Biol.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_pass_mirror_tests_differentl', 'Octopuses pass mirror tests differently than vertebrates — they\'re curious but don\'t recognize the reflection as "self."'), cite: 'Mather & Anderson, 2010 — Brain Behav. Evol.' },
@@ -2259,7 +2259,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.microplastics_have_been_documented_in_', 'Microplastics, mostly tiny fibers, have been found in the guts of wild cuttlefish and squid. In some small studies, every animal sampled had them.'), cite: 'Oliveira et al., 2020.' },
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.coral_bleaching_events_have_occurred_g', 'NOAA has recorded four global coral bleaching events: 1998, 2010, 2014 to 2017, and 2023 to 2025. Each one reached further: bleaching-level heat stress hit 21%, then 37%, 68% and 84% of reef area worldwide. Reef-dwelling octopuses lose habitat.'), cite: 'NOAA Coral Reef Watch, 2025.' },
         // ─── Biomedical ───
-        { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.tetrodotoxin_from_blue_ringed_octopuse', 'Tetrodotoxin from blue-ringed octopuses is being investigated as a non-opioid pain medication for cancer (Tectin/Tetrodin). Phase 3 clinical trials underway.'), cite: 'Hagen et al., 2008 — Curr. Oncol.' },
+        { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.tetrodotoxin_from_blue_ringed_octopuse', 'Tetrodotoxin, the toxin blue-ringed octopuses carry, has been tested in clinical trials as a non-opioid treatment for cancer pain. The supply for those trials is purified from pufferfish, not octopuses.'), cite: 'Hagen et al., 2008 — Curr. Oncol.' },
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.the_hodgkin_huxley_1952_papers_on_the_', 'The Hodgkin & Huxley 1952 papers on the squid giant axon won the 1963 Nobel Prize and established all of modern neurophysiology.'), cite: 'Hodgkin & Huxley, 1952 — J. Physiol.' },
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.octopus_suction_cup_adhesion_is_being_', 'Octopus suction-cup adhesion is being engineered into medical patches that adhere to wet tissue — for burn wound dressing + cardiac patches.'), cite: 'Baik et al., 2017 — Nature.' },
         // ─── Behavior ───
@@ -2271,7 +2271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // ─── Curiosities ───
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_5_kg_octopus_can_fit_through_any_hol', 'A 5 kg octopus can fit through any hole that\'s 2 cm wide. The only rigid structure in the body is the beak — everything else is squeezable muscle.'), cite: 'Anderson et al., 1999.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_color_cells_chromatophores_', 'Cephalopod color cells (chromatophores) can fire 100+ times per second when displaying — fast enough to create rolling "passing cloud" patterns across the skin.'), cite: 'Hanlon, 2007.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_world_s_largest_invertebrate_is_th', 'The world\'s largest invertebrate is the colossal squid — Mesonychoteuthis hamiltoni — with documented specimens up to 14 m long, including the longest known animal eyes (27 cm diameter).'), cite: 'Roper & Voss, 1983 — Mem. Mus. Vict.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_world_s_largest_invertebrate_is_th', 'The world\'s heaviest invertebrate is the colossal squid, Mesonychoteuthis hamiltoni: the largest specimen examined weighed about 495 kg. It also has the largest known animal eyes, about 27 cm across.'), cite: 'Roper & Voss, 1983 — Mem. Mus. Vict.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.some_deep_sea_octopuses_are_translucen', 'Some deep-sea octopuses are TRANSLUCENT, so you can see right through much of their body. The glass octopus (Vitreledonella richardi) is an example.'), cite: 'Joubin, 1918 (first description of the glass octopus).' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.octopuses_lack_swim_bladders_they_cont', 'Octopuses lack swim bladders. They control buoyancy via differential body compression + arm spreading.'), cite: 'Hanlon & Messenger, 2018.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_octopus_emoji_was_added_to_unicode', 'The octopus emoji 🐙 was added to Unicode 6.0 in 2010. The squid emoji 🦑 followed in 2016.'), cite: 'Unicode.org' },
@@ -2281,19 +2281,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // ─── Massive expansion of biology facts (v0.15) ──────────────
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.cephalopod_eyes_are_converged_with_ver', 'Cephalopod eyes are CONVERGED with vertebrate eyes — they evolved independently to produce similar structures (lens, retina, iris). This is one of the most famous examples of convergent evolution.'), cite: 'Tomarev & Piatigorsky, 1996.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.an_octopus_mantle_can_contract_at_abou', 'An octopus mantle can contract at about 0.2 m/s during a jet — by squid standards relatively slow. Squid mantle contraction during full jet can reach 0.8 m/s.'), cite: 'O\'Dor, 1988.' },
-        { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.cephalopod_neurons_have_cartographic_m', 'Cephalopod neurons have CARTOGRAPHIC mappings — different brain regions handle different arms. Damage to one region affects only that arm.'), cite: 'Hochner et al., 2006.' },
+        { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.cephalopod_neurons_have_cartographic_m', 'Octopus brains do not map the body the way ours do: stimulating one spot in the higher motor centers can move several arms at once (Zullo et al. 2009). Much of each arm\'s control happens in the arm itself.'), cite: 'Hochner et al., 2006.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.the_cephalopod_beak_is_made_of_chitin_', 'The Cephalopod beak is made of chitin and protein, similar to insect cuticle. It is the only hard structure in the body of most octopus species.'), cite: 'Miserez et al., 2008 — Science.' },
-        { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.octopuses_can_adjust_their_pupil_size_', 'Octopuses can adjust their PUPIL SIZE within seconds — pupils can be u-shaped, w-shaped, or fully round depending on light conditions.'), cite: 'Hanlon & Messenger, 2018.' },
+        { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.octopuses_can_adjust_their_pupil_size_', 'Octopuses adjust their pupils within seconds. In bright light the pupil closes to a horizontal slit that stays level as the animal tilts; in dim light it opens wide and nearly round.'), cite: 'Hanlon & Messenger, 2018.' },
         { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.cuttlefish_papillae_3d_skin_bumps_can_', 'Cuttlefish papillae (3D skin bumps) can persist for hours after the rest of the skin pattern has shifted — texture is locked in longer than color.'), cite: 'Allen et al., 2017.' },
-        { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.in_total_darkness_octopus_skin_chromat', 'In total darkness, octopus skin chromatophores still respond to LOCAL light signals via skin opsins — they\'re always "on" even when eyes are closed.'), cite: 'Ramirez & Oakley, 2015.' },
-        { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.some_octopuses_can_recognize_themselve', 'Some octopuses can recognize themselves in a mirror if the mirror is small + tilted. The criteria for mirror self-recognition in cephalopods is contested.'), cite: 'Anderson et al., 2010.' },
+        { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.in_total_darkness_octopus_skin_chromat', 'Octopus skin can sense light by itself: isolated skin from the California two-spot octopus expanded its chromatophores when lit, using opsins in the skin rather than the eyes (Ramirez & Oakley 2015).'), cite: 'Ramirez & Oakley, 2015.' },
+        { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.some_octopuses_can_recognize_themselve', 'No octopus or cuttlefish has passed a mirror mark test. Some show interest in mirrors, but whether any cephalopod recognizes its own reflection is unknown and contested.'), cite: 'Anderson et al., 2010.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.cuttlefish_remember_when_and_where_spe', 'Cuttlefish remember WHEN AND WHERE specific events occurred — a form of episodic-like memory documented by Schnell et al. (2021).'), cite: 'Schnell et al., 2021.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_can_solve_some_maze_tasks_fa', 'Octopuses can solve some maze tasks faster than rats in similar paradigms — though direct comparison is hard given the different ecological pressures.'), cite: 'Mather & Anderson, 1999.' },
         { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.cuttlefish_can_predict_the_trajectory_', 'Cuttlefish can predict the trajectory of moving prey — they fire their feeding tentacles to the projected position, not where the prey currently is.'), cite: 'Hanlon & Messenger, 2018.' },
         { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.some_octopuses_ambush_prey_from_inside', 'Some octopuses ambush prey from inside dens, only extending one arm to grab passers-by. They\'re patient — willing to wait many minutes.'), cite: 'Mather, 1991.' },
         { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.humboldt_squid_have_been_documented_hu', 'Humboldt squid have been documented hunting in coordinated waves — sweeping fish toward shore where they\'re easier to catch.'), cite: 'Rosa & Seibel, 2008.' },
         { cat: 'Defense', fact: __alloT('stem.cephalopodlab.vampire_squid_ink_is_replaced_by_glowi', 'Vampire squid ink is replaced by glowing bioluminescent mucus — at their habitat depth (200-1000 m), ink would be useless.'), cite: 'Robison et al., 2003.' },
-        { cat: 'Defense', fact: __alloT('stem.cephalopodlab.nautilus_shell_can_withstand_pressures', 'Nautilus shell can withstand pressures up to ~80 m depth before structural failure begins. Below ~600 m the shell collapses, killing the animal.'), cite: 'Ward & Greenwald, 1981 — Phil. Trans. R. Soc. B.' },
+        { cat: 'Defense', fact: __alloT('stem.cephalopodlab.nautilus_shell_can_withstand_pressures', 'Experiments on living nautiluses found their shells imploding at depths of about 785 to 830 m (Kanie & Hattori 1983), so shell strength sets how deep a nautilus can live.'), cite: 'Ward & Greenwald, 1981 — Phil. Trans. R. Soc. B.' },
         { cat: 'Defense', fact: __alloT('stem.cephalopodlab.some_octopuses_can_zoom_through_small_', 'Some octopuses can ZOOM through small gaps — fitting through holes the size of a quarter coin for 5-pound adults.'), cite: 'Anderson et al., 1999.' },
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.argonaut_octopus_females_secrete_a_thi', 'Argonaut octopus females secrete a thin shell from membrane-like tissue at the tips of their dorsal arms. The shell holds the eggs.'), cite: 'Finn & Norman, 2010.' },
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.hawaiian_bobtail_squid_lay_50_100_smal', 'Hawaiian bobtail squid lay 50-100 small eggs per clutch and have MULTIPLE clutches over their 3-10 month lifespan — unusually polyparous for cephalopods.'), cite: 'Singley, 1983.' },
@@ -2313,7 +2313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.octopuses_have_been_observed_kicking_s', 'Octopuses have been observed kicking shells out of their dens — discarded prey shells form distinctive "middens" that can be used to identify den sites.'), cite: 'Mather, 1994.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.some_octopuses_appear_to_prefer_partic', 'Some octopuses appear to PREFER particular caregivers — they emerge for one researcher but not another, even with the same approach behavior.'), cite: 'Anderson et al., 2010.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.cuttlefish_lateralize_their_displays_u', 'Cuttlefish lateralize their displays — using one side of the body for one audience and the other side for another. A "two-faced" tactic.'), cite: 'Brown et al., 2012.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_smallest_cephalopod_idiosepius_pyg', 'The smallest cephalopod (Idiosepius pygmaeus, the pygmy squid) is only 1.5 cm long. The largest (colossal squid) reaches 14 m and 750 kg.'), cite: 'Roper & Voss, 1983.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_smallest_cephalopod_idiosepius_pyg', 'The smallest cephalopods, pygmy squids such as Idiosepius pygmaeus, are under 2 cm long. The heaviest, the colossal squid, reaches about 495 kg, and the longest is the giant squid, at roughly 12 m including its tentacles.'), cite: 'Roper & Voss, 1983.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_ink_has_been_used_as_a_dye_', 'Cephalopod ink has been used as a dye + writing ink since antiquity. The word "sepia" (a brown color) comes from the cuttlefish genus Sepia.'), cite: 'Mathew, 2007.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.octopuses_can_taste_with_their_suckers', 'Octopuses can taste with their suckers — the molecular detail of how this works was resolved only in 2020 (van Giesen et al., Cell).'), cite: 'van Giesen et al., 2020.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.some_deep_sea_octopuses_live_close_to_', 'Some deep-sea octopuses live beside hydrothermal vents. Vulcanoctopus hydrothermalis is known only from vents on the East Pacific Rise, about 2,600 m deep.'), cite: 'González et al., 1998, Cah. Biol. Mar.' },
@@ -2338,29 +2338,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_first_giant_squid_to_be_photograph', 'The first GIANT SQUID to be photographed alive was recorded in 2004 by Japanese researchers Kubodera + Mori using a sperm-whale-baited camera at 900 m depth.'), cite: 'Kubodera & Mori, 2005.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_fossils_are_typically_found', 'Cephalopod fossils are typically found in MARINE sediments — they have never lived in freshwater (with the partial exception of some brackish-tolerant species).'), cite: 'Brusca et al., 2016.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.some_cephalopod_species_can_produce_so', 'Some cephalopod species can produce SOUND by squirting water through their siphon at high speed — creating audible clicks. The function is unclear.'), cite: 'Hanlon & Messenger, 2018.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_blue_blood_was_first_identi', 'Cephalopod blue blood was first identified in 1851 by French biologist Alfred Frédéricq — though hemocyanin\'s copper basis wasn\'t mapped until the 20th century.'), cite: 'Markl, 2014.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_blue_blood_was_first_identi', 'Hemocyanin, the copper-based protein that turns cephalopod blood blue when it carries oxygen, was named in 1878 by the Belgian physiologist Léon Fredericq, who studied it in octopus blood.'), cite: 'Markl, 2014.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2020_study_identified_an_unprecedent', 'A 2020 study identified an unprecedented level of NEURAL DIVERSITY in cephalopod brains — over 100 distinct neuron types described in octopus.'), cite: 'Styfhals et al., 2020 — Nat. Commun.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cuttlefish_ink_sepia_melanin_has_been_', 'Cuttlefish ink (Sepia melanin) has been used in art + writing for centuries. It\'s the source of the brown "sepia" tone of old photographs.'), cite: 'Derby, 2014.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2024_study_found_octopus_statocysts_', 'A 2024 study found octopus statocysts function as inertial navigation sensors — providing better orientation than was previously appreciated.'), cite: 'Williamson 1995 + recent follow-ups.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.cephalopod_axons_are_1_mm_in_diameter_', 'Cephalopod axons are ~1 mm in diameter — over 1000x larger than mammalian neurons. This is why Hodgkin + Huxley used them for the 1952 Nobel-Prize-winning work.'), cite: 'Hodgkin & Huxley, 1952.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.octopuses_produce_massive_amounts_of_m', 'Octopuses produce massive amounts of mucus — used for camouflage, anti-friction during squeezing, and protection from infection.'), cite: 'Hanlon & Forsythe, 1990.' },
-        { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.cephalopod_skin_chromatophores_can_pro', 'Cephalopod skin chromatophores can produce roughly 100 distinct colors per square millimeter in a fully active state.'), cite: 'Hanlon, 2007.' },
-        { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_recognize_individual_humans__2', 'Octopuses recognize individual humans by sight — even when researchers swap clothes or hide their faces. Likely they use a combination of cues.'), cite: 'Anderson et al., 2010.' },
+        { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.cephalopod_skin_chromatophores_can_pro', 'Each chromatophore holds a single pigment: yellow, orange, red, brown or black. Cephalopods make their range of skin colors by combining many small chromatophores with reflecting cells beneath them.'), cite: 'Hanlon, 2007.' },
+        { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_recognize_individual_humans__2', 'Octopuses can learn to treat particular people differently, for example a keeper who feeds them and one who does not. Which cues they use, whether shape, movement, smell or something else, is still not known.'), cite: 'Anderson et al., 2010.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.studies_on_octopus_learning_include_bo', 'Studies on octopus learning include both POSITIVE and NEGATIVE reinforcement. Octopuses learn faster with positive reinforcement (food rewards).'), cite: 'Hochner et al., 2006.' },
         { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.octopus_saliva_contains_30_different_t', 'Octopus saliva contains 30+ different toxic + paralytic compounds — different combinations are used for different prey.'), cite: 'Fry et al., 2010.' },
         { cat: 'Defense', fact: __alloT('stem.cephalopodlab.the_biggest_factor_in_cephalopod_survi', 'The biggest factor in cephalopod survival is hiding successfully. Wild octopuses spend ~80% of their lives in dens.'), cite: 'Mather, 1991.' },
         { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.octopus_aquaculture_s_biggest_welfare_', 'Octopus aquaculture\'s biggest welfare concern is paralarval survival — most farmed octopuses don\'t reach adulthood due to poor early-life conditions.'), cite: 'O\'Brien et al. (multiple papers).' },
-        { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_first_fossil_evidence_of_cephalopo', 'The first fossil evidence of cephalopod camouflage skin is from preserved fossil ammonoids — pigment cells survived in some Mesozoic shales.'), cite: 'Glass et al., 2012 — Proc. R. Soc. B.' },
+        { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.the_first_fossil_evidence_of_cephalopo', 'Skin rarely fossilizes, so there is almost no fossil record of cephalopod color cells. Fossil ink lasts better: two Jurassic cephalopod ink sacs more than 160 million years old still contained melanin (Glass et al. 2012).'), cite: 'Glass et al., 2012 — Proc. R. Soc. B.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.cephalopods_are_highly_susceptible_to_', 'Ocean acidification can harm some cephalopods. Squid raised in high carbon dioxide water grew smaller, misshapen balance stones (statoliths). Cuttlefish, though, kept building their cuttlebone, so effects differ by species.'), cite: 'Kaplan et al., 2013; Gutowska et al., 2008.' },
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.aquaculture_proponents_argue_farmed_ce', 'Aquaculture proponents argue farmed cephalopods could reduce wild-fishery pressure. Critics argue cephalopod farming creates new welfare problems.'), cite: 'CIWF + Eurogroup positions, 2024.' },
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.octopus_arm_motor_coordination_involve', 'Octopus arm motor coordination involves a "stiffening wave" — useful for soft robotics + prosthetics. Hochner lab is leading this work.'), cite: 'Levy et al., 2011; ongoing.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.octopus_play_behavior_has_now_been_doc', 'Octopus play behavior has now been documented in multiple species — including with rubber duckies + pill bottles + non-food objects.'), cite: 'Mather & Anderson, 1999.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2024_specimen_of_pacific_octopus_was', 'A 2024 specimen of Pacific octopus was found to be 51 years old — much older than the typical 1-2 year wild lifespan estimate. The age was determined by statolith ring counting.'), cite: 'Anderson et al., follow-up papers (in press).' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2024_specimen_of_pacific_octopus_was', 'Giant Pacific octopuses usually live 3 to 5 years. Octopuses are hard to age: their statoliths lack clear daily rings, so researchers count growth rings in their stylets, small remnants of the ancestral shell.'), cite: 'Anderson et al., follow-up papers (in press).' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_have_inspired_the_cthulhu_', 'Cephalopods have inspired the Cthulhu mythos in horror writing — H. P. Lovecraft\'s Cthulhu is explicitly cephalopod-shaped.'), cite: 'Cultural reference; CULTURAL_REFS section.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_octopus_emoji_was_added_to_unicode_2', 'The OCTOPUS EMOJI 🐙 was added to Unicode in 2010 (Unicode 6.0). The squid emoji 🦑 came in 2016 (Unicode 9.0).'), cite: 'Unicode Consortium.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.sea_otters_are_major_predators_of_gian', 'Sea otters are MAJOR predators of giant Pacific octopus — they crack open the octopus on rocks held against their chests.'), cite: 'Estes et al., 2003.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_have_a_cartilaginous_crani', 'Cephalopods have a CARTILAGINOUS CRANIUM around the central brain — providing some skeletal protection despite being soft-bodied invertebrates.'), cite: 'Hanlon & Messenger, 2018.' },
-        { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.a_cephalopod_statocyst_contains_statol', 'A cephalopod statocyst contains statoliths that grow ~1 ring per day — like fish otoliths. Counting rings gives a precise age estimate.'), cite: 'Lipinski et al., 1991.' },
+        { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.a_cephalopod_statocyst_contains_statol', 'A squid statocyst contains a statolith that grows about one ring per day, like a fish otolith. Counting the rings gives a squid\'s age; octopuses are aged from their stylets instead.'), cite: 'Lipinski et al., 1991.' },
         { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.iridophore_films_can_shift_wavelength_', 'Iridophore films can shift wavelength reflection by ~100 nm via simple hydration changes — making them tunable optical materials.'), cite: 'DeMartini et al., 2013.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.cuttlefish_appear_to_have_number_sense', 'Cuttlefish appear to have number sense — they can choose the larger of two prey items when offered.'), cite: 'Yang & Chiao, 2016 — Proc. R. Soc. B.' },
         { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.mimic_octopuses_choose_which_model_to_', 'Mimic octopuses choose which model to mimic based on the SPECIFIC PREDATOR they\'re facing. Lab studies show this is learned over time.'), cite: 'Norman et al., 2001.' },
@@ -2372,21 +2372,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.octopus_arms_generate_force_via_muscul', 'Octopus arms generate force via "muscular hydrostat" principle — useful in designing micro-surgical tools that need precision + flexibility.'), cite: 'Kier & Smith, 1985; biomimetic surgery research.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.some_octopus_species_exhibit_fishing_b', 'Some octopus species exhibit "fishing" behavior — using their arms to lure small fish into a den where they can be ambushed.'), cite: 'Mather, 1988 — Bull. Mar. Sci.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_can_sense_electrical_field', 'Cephalopods can sense electrical fields — though much less sensitively than sharks. The mechanism + ecology of this is still being mapped.'), cite: 'Recent research; Mather & Hanlon.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.in_ancient_egyptian_tomb_paintings_145', 'In ancient Egyptian tomb paintings (~1450 BCE), octopuses are depicted alongside other Mediterranean fauna — early documentation of zoological interest.'), cite: 'Egyptian archaeology surveys.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.in_ancient_egyptian_tomb_paintings_145', 'Minoan pottery from Crete, made around 1500 BCE, is decorated with painted octopuses: some of the oldest detailed art showing them.'), cite: 'Egyptian archaeology surveys.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.sperm_whales_eat_100_million_tonnes_of', 'Sperm whales eat ~100 million tonnes of cephalopod biomass per YEAR globally — making sperm whales among the largest cephalopod predators on Earth.'), cite: 'Clarke, 1980.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_blood_does_not_clot_like_ve', 'Cephalopod blood does NOT clot like vertebrate blood. Instead, hemocytes seal wounds via a different mechanism.'), cite: 'Hanlon & Forsythe, 1990.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_are_major_bait_organisms_i', 'Cephalopods are major bait organisms in commercial sport-fishing — particularly for marlin + sailfish.'), cite: 'Hanlon & Forsythe, 1990.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.squid_sushi_ika_is_the_second_most_con', 'Squid sushi (ika) is the second-most-consumed seafood in Japan by volume. Most of the squid eaten globally comes from a few large pelagic species.'), cite: 'FAO Fisheries Statistics.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_have_inspired_entire_art_m', 'Cephalopods have inspired entire art movements — Hokusai\'s "Dream of the Fisherman\'s Wife" (1814) influenced 200+ years of erotic art.'), cite: 'Cultural reference; CULTURAL_REFS section.' },
         // ─── Final massive expansion of biology facts (v0.15 push) ───
-        { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.an_octopus_arm_has_thousands_of_sucker', 'An octopus arm has thousands of suckers, each with up to 10,000 chemoreceptor cells. A single arm can taste more than your entire mouth + nose combined.'), cite: 'van Giesen et al., 2020 — Cell.' },
+        { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.an_octopus_arm_has_thousands_of_sucker', 'A giant Pacific octopus has about 2,000 suckers across its eight arms (roughly 280 per arm), and each sucker carries thousands of chemoreceptor cells that let it taste what it touches.'), cite: 'van Giesen et al., 2020 — Cell.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.cephalopod_beak_is_among_the_hardest_b', 'Cephalopod beak is among the hardest biological materials known. It has a gradient stiffness — soft at the base + extremely hard at the cutting edge — that engineers are studying for biomaterial design.'), cite: 'Miserez et al., 2008 — Science.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.squid_axons_are_large_enough_1_mm_diam', 'Squid axons are large enough (1 mm diameter) that early electrophysiologists could insert microelectrodes by HAND. This was crucial for Hodgkin & Huxley\'s Nobel-Prize-winning work.'), cite: 'Hodgkin & Huxley, 1952.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.the_cephalopod_statocyst_is_a_paired_o', 'The cephalopod statocyst is a paired organ similar in function to the vertebrate inner ear — providing gravity + acceleration sensing for balance + orientation.'), cite: 'Williamson, 1995 — J. Exp. Biol.' },
         { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.cuttlefish_can_produce_over_30_distinc', 'Cuttlefish can produce over 30 distinct body-pattern combinations using their chromatophores + iridophores + leucophores + papillae. Each is suited to a particular environmental context.'), cite: 'Hanlon & Messenger, 2018.' },
         { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.iridophores_aren_t_just_for_camouflage', 'Iridophores aren\'t just for camouflage. In some species they signal individual identity — like a fingerprint pattern that other cephalopods may recognize.'), cite: 'Mäthger et al., 2009.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_solve_maze_tasks_faster_afte', 'Octopuses solve maze tasks faster after watching another octopus solve the same maze — observational learning at a level rare in invertebrates.'), cite: 'Fiorito & Scotto, 1992.' },
-        { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.in_a_2024_study_cuttlefish_demonstrate', 'In a 2024 study, cuttlefish demonstrated EPISODIC-LIKE memory — recalling what, where, and WHEN specific events occurred. Previously considered a uniquely vertebrate ability.'), cite: 'Jozet-Alves et al., 2013, 2024 (follow-up).' },
+        { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.in_a_2024_study_cuttlefish_demonstrate', 'Cuttlefish have episodic-like memory: in 2013 they were shown to remember what they had eaten, where, and how long ago (Jozet-Alves et al.). This was once thought to be limited to mammals and birds.'), cite: 'Jozet-Alves et al., 2013, 2024 (follow-up).' },
         { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.cuttlefish_stalking_strategy_involves_', 'Cuttlefish stalking strategy involves a slow approach with arms tucked + chromatophore pattern matched to substrate. They wait until they\'re within 1 body-length before firing tentacles.'), cite: 'Messenger, 1968 — Anim. Behav.' },
         { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.humboldt_squid_hunt_in_coordinated_wav', 'Humboldt squid hunt in coordinated waves — when one squid attacks, others follow within seconds. This creates "feeding frenzies" that can leave fish populations decimated.'), cite: 'Hoving et al., 2013.' },
         { cat: 'Defense', fact: __alloT('stem.cephalopodlab.octopus_ink_isn_t_just_a_smokescreen_i', 'Octopus ink isn\'t just a smokescreen — it has chemicals that confuse predator chemoreception + may attract predators TO the ink cloud while the octopus escapes elsewhere.'), cite: 'Derby, 2014.' },
@@ -2409,7 +2409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2017_expedition_documented_a_transpa', 'The glass octopus (Vitreledonella richardi), first described in 1918, is transparent and nearly colorless, so its internal organs can be seen through the body wall.'), cite: 'Joubin, 1918.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_ink_has_been_used_in_writin', 'Cephalopod ink has been used in writing + art for over 2000 years. The word "sepia" (a brown pigment) comes from the cuttlefish genus Sepia.'), cite: 'Cultural reference.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_chromatophore_driven_body_p', 'Cephalopod chromatophore-driven body patterns are so complex that they\'re being studied as a model for understanding INFORMATION CODING in biological systems.'), cite: 'Reiter et al., 2023 — Nature.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2024_paper_documented_that_wild_paci', 'A 2024 paper documented that wild Pacific octopus can be aged to 51 years using statolith ring counting — challenging the typical 1-2 year lifespan estimate for some specimens.'), cite: 'Recent statolith research; in press.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2024_paper_documented_that_wild_paci', 'There is no evidence of very old wild octopuses. Giant Pacific octopuses live about 3 to 5 years, and most octopus species only 1 to 2.'), cite: 'Recent statolith research; in press.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.cephalopod_arms_can_regenerate_if_seve', 'Cephalopod arms can REGENERATE if severed. Full regeneration takes 4-6 weeks + restores both sensory + motor function. Imperadore is leading research on the cellular mechanisms.'), cite: 'Imperadore et al., 2017.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.octopus_suckers_grip_via_negative_pres', 'Octopus suckers grip via NEGATIVE PRESSURE generated by a small muscular piston in each cup. They can adhere to wet, rough, and irregular surfaces — challenging for conventional adhesives.'), cite: 'Baik et al., 2017 — Nature.' },
         { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.chromatophore_iridophore_leucophore_pa', 'Chromatophore + iridophore + leucophore + papillae coordination is controlled by ~38 distinct neural lobes in the cephalopod brain. The chromatic system is among the most-studied invertebrate motor systems.'), cite: 'Young, 1971.' },
@@ -2431,7 +2431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.cuttlefish_exhibit_lateralized_display', 'Cuttlefish exhibit LATERALIZED displays — showing different patterns on the left + right sides of the body to convey different information to different audiences simultaneously.'), cite: 'Brown et al., 2012.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_greek_word_kephalopoda_means_head_', 'The Greek word κεφαλόποδα (kephalopoda) means "head-foot" — referring to the unique cephalopod body plan where the arms emerge directly from the head.'), cite: 'Etymology.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.aristotle_wrote_about_cephalopods_in_d', 'Aristotle wrote about cephalopods in detail in his Historia Animalium (~350 BCE). His observations on mating, parental care, and hunting were unusually accurate for the time + were not fully verified until the 20th century.'), cite: 'Lefkowitz, 2008.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_colossal_squid_mesonychoteuthis_ha', 'The colossal squid (Mesonychoteuthis hamiltoni) holds the title of LARGEST INVERTEBRATE on Earth — with documented specimens up to 14 m mantle length + 750 kg mass.'), cite: 'Roper & Voss, 1983.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_colossal_squid_mesonychoteuthis_ha', 'The colossal squid (Mesonychoteuthis hamiltoni) is the heaviest known invertebrate. The largest specimen ever examined weighed about 495 kg, with a mantle about 2.5 m long.'), cite: 'Roper & Voss, 1983.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.eye_sucker_chemoreceptor_cells_in_octo', 'Eye-sucker chemoreceptor cells in octopuses detect HYDROPHOBIC molecules. Van Giesen 2020 (Cell) resolved the molecular structure, opening new biomimetic sensor design.'), cite: 'van Giesen et al., 2020 — Cell.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_are_sometimes_called_inver', 'Cephalopods are sometimes called "invertebrate vertebrates" — they have a single high level of neural complexity + behavioral plasticity normally reserved for vertebrates.'), cite: 'Mather & Anderson, 2010.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_2018_steele_et_al_paper_proposing_', 'The 2018 Steele et al. paper proposing cephalopod genomes might be extraterrestrial was widely criticized but generated mainstream media attention. Mainstream evolutionary biology rejects the hypothesis.'), cite: 'Steele et al., 2018 (widely criticized).' },
@@ -2444,27 +2444,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.cephalopod_genomes_are_spectacularly_l', 'Cephalopod genomes are SPECTACULARLY large + complex compared to other invertebrates. Octopus bimaculoides genome is ~2.7 Gb, with expanded gene families for nervous system development.'), cite: 'Albertin et al., 2015.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.cephalopod_populations_respond_to_envi', 'Cephalopod populations respond to ENVIRONMENTAL CHANGE faster than many fish populations — short life cycles allow rapid generational turnover, enabling rapid evolutionary response.'), cite: 'Doubleday et al., 2016.' },
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.in_2024_several_european_countries_uk_', 'In 2024, Washington and California became the first US states to ban octopus farming. California also banned selling farmed octopus.'), cite: 'Washington HB 1153 (2024); California AB 3162 (2024).' },
-        { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.tetrodotoxin_pain_medication_tectin_te', 'Tetrodotoxin pain medication (Tectin/Tetrodin) is in Phase 3 clinical trials for cancer pain. Approval in Canada (2018) for cancer pain established it as a real biomedical translation.'), cite: 'Hagen et al., 2008.' },
+        { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.tetrodotoxin_pain_medication_tectin_te', 'Tetrodotoxin has been tested in clinical trials for cancer pain and for chemotherapy-induced nerve pain, but it is not an approved medicine. The supply for these trials comes from pufferfish.'), cite: 'Hagen et al., 2008.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.cuttlefish_use_polarization_vision_to_', 'Cuttlefish use POLARIZATION VISION to detect transparent prey — fish that are invisible to most predators are visible to cuttlefish polarization-sensitive eyes.'), cite: 'Shashar et al., 2010.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_bobtail_squid_vibrio_fischeri_symb', 'The bobtail squid + Vibrio fischeri symbiosis is the FOUNDATIONAL MODEL for ALL host-microbiome research, including the Human Microbiome Project that began in 2007.'), cite: 'McFall-Ngai & Ruby, 1991.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_taxonomy_is_still_being_rev', 'Cephalopod taxonomy is still being revised — new species are described every year, and DNA evidence sometimes reveals that "single species" are actually species complexes containing 3-5+ separate species.'), cite: 'Recent taxonomic literature.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2023_expedition_off_indonesia_discov', 'A 2023 expedition off Indonesia discovered THREE new cephalopod species in a single dive — illustrating how much cephalopod biodiversity remains undescribed.'), cite: 'Recent discovery reports.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_inspired_architecture_has_e', 'Cephalopod-inspired architecture has emerged — some buildings + bridges use shell-like load distribution principles derived from nautilus shell biomechanics.'), cite: 'Biomimicry literature.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_are_featured_in_dozens_of_', 'Cephalopods are featured in dozens of national currency designs — including Greek euro coins (octopus), Japanese coins (squid), and others. Their cultural importance is significant.'), cite: 'Cultural reference.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopods_are_featured_in_dozens_of_', 'Octopuses appear on ancient Greek coins, including coins from Syracuse, Kroton and Eretria, and modern mints still use them: Palau issued an octopus silver dollar in 2008 as part of a marine-life series.'), cite: 'Cultural reference.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.in_hawaiian_tradition_the_octopus_he_e', 'In Hawaiian tradition, the octopus (he\'e) plays a role in the creation chant Kumulipo — featuring among the earliest creatures in the cosmological sequence.'), cite: 'Hawaiian indigenous knowledge.' },
         { cat: 'Anatomy', fact: __alloT('stem.cephalopodlab.the_cephalopod_ganglion_in_each_arm_th', 'The cephalopod GANGLION in each arm (the "second brain") contains ~40 million neurons + handles complex sensory + motor integration LOCALLY — without referring to the central brain for routine arm movements.'), cite: 'Hochner et al., 2006.' },
-        { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.in_experiments_predator_fish_failed_to', 'In experiments, predator fish failed to detect fully-camouflaged cuttlefish for 60+ seconds — vs. 4 seconds for uncamouflaged controls. Camouflage provides a 15x survival multiplier.'), cite: 'Allen et al., 2010.' },
+        { cat: 'Camouflage', fact: __alloT('stem.cephalopodlab.in_experiments_predator_fish_failed_to', 'Cuttlefish camouflage is tuned to how predators see. Measurements of giant cuttlefish against their backgrounds in southern Australia found that brightness contrast, more than color, is what gives a cuttlefish away to fish.'), cite: 'Allen et al., 2010.' },
         { cat: 'Cognition', fact: __alloT('stem.cephalopodlab.octopuses_cuttlefish_solve_mirror_rela', 'Octopuses + cuttlefish solve mirror-related tasks differently than vertebrates. Some studies show interest in mirrors; none have demonstrated unambiguous self-recognition. The interpretation is contested.'), cite: 'Mather & Anderson, 2010.' },
         { cat: 'Hunting', fact: __alloT('stem.cephalopodlab.cuttlefish_use_hypnotic_display_passin', 'Cuttlefish use HYPNOTIC DISPLAY ("passing cloud") to mesmerize prey before tentacle strike. Cause-and-effect of the display is documented in lab + field — prey freeze for 1-2 seconds.'), cite: 'Hanlon, 2007.' },
         { cat: 'Defense', fact: __alloT('stem.cephalopodlab.blue_ringed_octopuses_can_rapidly_flas', 'Blue-ringed octopuses can rapidly flash their iridescent blue rings — completing the full display in <60 ms. This APOSEMATIC signal warns predators of their tetrodotoxin venom.'), cite: 'Mäthger et al., 2008.' },
-        { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.cephalopods_are_nearly_all_semelparous', 'Cephalopods are nearly ALL semelparous (reproduce once + die). Exceptions include bobtail squid + some cuttlefish that may produce multiple egg clutches before death.'), cite: 'Boyle & Rodhouse, 2005.' },
+        { cat: 'Reproduction', fact: __alloT('stem.cephalopodlab.cephalopods_are_nearly_all_semelparous', 'Most cephalopods are semelparous: they breed once and die. The clearest exception is the nautilus, which breeds year after year in a life that can last 20 years or more. Some bobtail squid and cuttlefish lay several clutches before they die.'), cite: 'Boyle & Rodhouse, 2005.' },
         { cat: 'Evolution', fact: __alloT('stem.cephalopodlab.cephalopod_intelligence_camouflage_ink', 'Cephalopod intelligence + camouflage + ink + tool use ALL appear to have evolved AFTER the loss of the external shell. Vulnerability drove behavioral complexity.'), cite: 'Albertin et al., 2015 — Nature.' },
         { cat: 'Ecology', fact: __alloT('stem.cephalopodlab.cephalopod_prey_populations_have_measu', 'Cephalopod prey populations have measurable effects on cephalopod abundance — overfishing of crab populations correlates with lower octopus density at the same sites.'), cite: 'Mather, 1991.' },
         { cat: 'Conservation', fact: __alloT('stem.cephalopodlab.the_nautilus_allonautilus_species_cite', 'The Nautilus + Allonautilus species CITES Appendix II listing (2017) was the first international trade protection ever given to any cephalopod. It came after decades of advocacy by marine biologists.'), cite: 'CITES CoP17, 2016 (in force January 2017).' },
         { cat: 'Biomedical', fact: __alloT('stem.cephalopodlab.cephalopod_sucker_inspired_adhesives_a', 'Cephalopod sucker-inspired adhesives are being used in surgical patches for closing wounds on moist tissue — particularly burn injuries where conventional adhesives fail.'), cite: 'Baik et al., 2017.' },
         { cat: 'Behavior', fact: __alloT('stem.cephalopodlab.octopuses_have_been_documented_using_r', 'Octopuses have been documented using ROCKS to break open clams — beating clams against substrate until shells crack. This is INSTRUMENTAL TOOL USE.'), cite: 'Anderson et al., 2007.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2022_expedition_off_bermuda_discover', 'A 2022 expedition off Bermuda discovered a new octopus species (named Eledone bermudensis) — illustrating that even relatively well-studied Atlantic + Caribbean waters still contain undescribed cephalopod biodiversity.'), cite: 'Recent taxonomic reports.' },
-        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_rna_editing_was_discovered_', 'Cephalopod RNA editing was discovered DURING the octopus genome project (2015). The Liscovitch-Brauer 2017 paper detailed its scale + uniqueness — opening an entire field.'), cite: 'Liscovitch-Brauer et al., 2017.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.a_2022_expedition_off_bermuda_discover', 'In 2021 the octopus behind Australia\'s largest octopus fishery was described as a new species, Octopus djinda, after anatomy and DNA showed it differs from the gloomy octopus of eastern Australia (Amor & Hart 2021).'), cite: 'Recent taxonomic reports.' },
+        { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.cephalopod_rna_editing_was_discovered_', 'Cephalopod RNA editing was studied in squid nerve channels years before the octopus genome was sequenced (2015). Liscovitch-Brauer et al. 2017 then showed its scale: most brain transcripts in octopus and squid carry protein-recoding edits.'), cite: 'Liscovitch-Brauer et al., 2017.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.the_cephalopod_marshmallow_test_schnel', 'The "Cephalopod Marshmallow Test" (Schnell 2021) demonstrated cuttlefish self-control. The result reset our understanding of what invertebrate cognition can include.'), cite: 'Schnell et al., 2021.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.octopus_emoji_squid_emoji_are_among_th', 'Octopus emoji 🐙 + squid emoji 🦑 are among the most-used animal emojis on social media — reflecting their popular-culture appeal in the 2020s.'), cite: 'Unicode + social media analytics.' },
         { cat: 'Curiosities', fact: __alloT('stem.cephalopodlab.some_deep_sea_cephalopods_magnapinna_s', 'Some deep-sea cephalopods (Magnapinna squids) have arms that hang straight down + spread laterally, forming a giant "umbrella" — possibly for filter-feeding or prey detection.'), cite: 'Vecchione et al., 2013 — Deep-Sea Res.' },
@@ -6548,7 +6548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             { feature: 'Photoreceptor layer position', cephalopod: 'Receptors facing the LIGHT', vertebrate: 'Receptors facing AWAY from light (inverted retina)', sameOrDifferent: 'Different' },
             { feature: 'Blind spot', cephalopod: 'NO blind spot — nerves exit behind retina', vertebrate: 'Has blind spot where optic nerve exits', sameOrDifferent: 'Different' },
             { feature: 'Color vision', cephalopod: 'Functionally color-blind (1 opsin)', vertebrate: 'Color vision typical (2-4 opsins)', sameOrDifferent: 'Different' },
-            { feature: 'Polarization vision', cephalopod: 'Yes — important channel', vertebrate: 'Limited; some fish + mantis shrimp', sameOrDifferent: 'Different' },
+            { feature: 'Polarization vision', cephalopod: 'Yes — important channel', vertebrate: 'Limited; some fish (e.g. anchovies)', sameOrDifferent: 'Different' },
             { feature: 'Origin', cephalopod: 'Evolved ~500 MYA in cephalopod lineage', vertebrate: 'Evolved ~520 MYA in vertebrate lineage', sameOrDifferent: 'Independent origin' },
           ],
           significance: 'A textbook example of convergent evolution + how similar visual challenges can produce similar solutions in distant lineages. But the differences (color blindness, no blind spot, polarization) reveal the limits of convergence.',
@@ -6560,7 +6560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           rows: [
             { feature: 'Number of arms', octopus: '8', squid: '8 arms + 2 long tentacles = 10', cuttlefish: '8 arms + 2 retractable tentacles' },
             { feature: 'Internal shell', octopus: 'None', squid: 'Reduced internal shell (pen/gladius)', cuttlefish: 'Internal cuttlebone (calcium carbonate)' },
-            { feature: 'Buoyancy', octopus: 'Neutral via density', squid: 'Lift via swimming', cuttlefish: 'Gas/liquid balance in cuttlebone' },
+            { feature: 'Buoyancy', octopus: 'Slightly heavier than water; rests on the bottom', squid: 'Lift via swimming', cuttlefish: 'Gas/liquid balance in cuttlebone' },
             { feature: 'Primary habitat', octopus: 'Benthic (sea floor)', squid: 'Pelagic (open water)', cuttlefish: 'Demersal (near-bottom)' },
             { feature: 'Swimming mode', octopus: 'Crawl + occasional jet', squid: 'Continuous jet', cuttlefish: 'Fin undulation + jet' },
             { feature: 'Camouflage quality', octopus: 'Excellent', squid: 'Limited (pelagic)', cuttlefish: 'Excellent + fastest changes' },
@@ -6573,11 +6573,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           id: 'cephalopod_vs_mammal_brain',
           title: __alloT('stem.cephalopodlab.cephalopod_brain_vs_mammal_brain', 'Cephalopod Brain vs. Mammal Brain'),
           rows: [
-            { feature: 'Total neurons', cephalopod: '500 million (octopus; comparable to dog)', mammal: '86 billion (human); 2 million (mouse)' },
+            { feature: 'Total neurons', cephalopod: '~500 million (octopus; similar to a dog\'s cerebral cortex)', mammal: '~86 billion (human); ~70 million (mouse)' },
             { feature: 'Neuron distribution', cephalopod: '2/3 in arms, 1/3 in central brain', mammal: 'Highly concentrated in brain' },
             { feature: 'Brain organization', cephalopod: 'Distributed; ring around esophagus', mammal: 'Centralized in skull, layered cortex' },
             { feature: 'Cell types', cephalopod: 'Distinct cephalopod-specific cell types; some genes unique', mammal: 'Vertebrate-typical cell types' },
-            { feature: 'RNA editing', cephalopod: 'Massive (1-10x more than vertebrates)', mammal: 'Limited' },
+            { feature: 'RNA editing', cephalopod: 'Extensive: most brain transcripts carry protein-recoding edits (coleoids)', mammal: 'Limited: few recoding sites' },
             { feature: 'Learning', cephalopod: 'Documented in many paradigms', mammal: 'Extensively documented' },
             { feature: 'Sleep', cephalopod: 'REM-like state observed in some species', mammal: 'REM + NREM cycles' },
             { feature: 'Lifespan-cognition trade-off', cephalopod: 'Smart + dies young (1-5 yr)', mammal: 'Most: long life enables generational learning' },
@@ -8301,7 +8301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           standard: 'HS-LS1-2',
           question: __alloT('stem.cephalopodlab.how_does_an_octopus_change_color_when_', 'How does an octopus change color when most octopuses are color-blind?'),
           options: [
-            { text: __alloT('stem.cephalopodlab.they_detect_color_using_polarized_ligh', 'They detect color using polarized-light cues + skin opsin photoreceptors'), correct: true, explanation: __alloT('stem.cephalopodlab.best_supported_hypothesis_polarization', 'Best-supported hypothesis. Polarization-vision is well documented; skin opsin expression confirmed by Ramirez & Oakley 2015.') },
+            { text: __alloT('stem.cephalopodlab.they_detect_color_using_polarized_ligh', 'Unsettled: skin opsins and pupil-shape color cues are leading ideas'), correct: true, explanation: __alloT('stem.cephalopodlab.best_supported_hypothesis_polarization', 'Correct. No single answer is settled. Light-sensing opsins occur in octopus skin (Ramirez & Oakley 2015), and Stubbs & Stubbs (2016) proposed that U- and W-shaped pupils let color blur reveal hue. Polarization vision is real but carries no color.') },
             { text: __alloT('stem.cephalopodlab.they_evolved_temporary_color_vision_in', 'They evolved temporary color vision in the eyes during stress'), correct: false, explanation: __alloT('stem.cephalopodlab.no_there_is_no_evidence_for_transient_', 'No — there is no evidence for transient color vision in cephalopods.') },
             { text: __alloT('stem.cephalopodlab.they_communicate_substrate_color_via_c', 'They communicate substrate color via chemoreceptors on their suckers'), correct: false, explanation: __alloT('stem.cephalopodlab.sucker_chemoreceptors_taste_they_don_t', 'Sucker chemoreceptors taste, they don\'t detect color.') },
             { text: __alloT('stem.cephalopodlab.they_guess_randomly_and_only_match_by_', 'They guess randomly and only match by coincidence'), correct: false, explanation: __alloT('stem.cephalopodlab.no_accuracy_is_way_too_high_to_be_rand', 'No — accuracy is way too high to be random matching.') },
@@ -8651,9 +8651,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           domain: 'Vision',
           difficulty: 'advanced',
           standard: 'HS-LS1-1',
-          question: __alloT('stem.cephalopodlab.octopus_eyes_have_an_unusual_w_shaped_', 'Octopus eyes have an unusual "W-shaped" feature. What is it?'),
+          question: __alloT('stem.cephalopodlab.octopus_eyes_have_an_unusual_w_shaped_', 'Cuttlefish eyes have an unusual "W-shaped" feature. What is it?'),
           options: [
-            { text: __alloT('stem.cephalopodlab.the_pupil_shape_when_iris_contracts', 'The pupil shape (when iris contracts)'), correct: true, explanation: __alloT('stem.cephalopodlab.correct_octopus_and_cuttlefish_pupils_', 'Correct. Octopus and cuttlefish pupils contract to a horizontal W or U shape (not a round dot like ours). The Stubbs & Stubbs 2016 hypothesis proposes this shape enables color discrimination via chromatic aberration.') },
+            { text: __alloT('stem.cephalopodlab.the_pupil_shape_when_iris_contracts', 'The pupil shape (when iris contracts)'), correct: true, explanation: __alloT('stem.cephalopodlab.correct_octopus_and_cuttlefish_pupils_', 'Correct. In bright light a cuttlefish pupil closes to a W shape and an octopus\'s to a horizontal slit, not a round dot like ours. The Stubbs & Stubbs 2016 hypothesis proposes that such pupils enable color discrimination via chromatic aberration.') },
             { text: __alloT('stem.cephalopodlab.a_pattern_on_the_eye_exterior', 'A pattern on the eye exterior'), correct: false, explanation: 'No.' },
             { text: __alloT('stem.cephalopodlab.the_shape_of_the_visual_cortex', 'The shape of the visual cortex'), correct: false, explanation: 'No.' },
             { text: __alloT('stem.cephalopodlab.a_retinal_nerve_pathway', 'A retinal nerve pathway'), correct: false, explanation: 'No.' },
@@ -10049,7 +10049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           fact: __alloT('stem.cephalopodlab.real_pearl_bearing_oysters_pinctada_fo', 'Real pearl-bearing oysters (Pinctada) form pearls as a defense against irritants. The nacre composition is the same calcium carbonate + protein matrix as their shell interior.'),
           citation: 'Webster, 1994 — Gems: Their Sources, Descriptions and Identification.' },
         nightSurvived:       { title: __alloT('stem.cephalopodlab.night_owl', 'Night Owl'), icon: '🌙', desc: __alloT('stem.cephalopodlab.survive_a_full_night_cycle', 'Survive a full night cycle.'),
-          fact: __alloT('stem.cephalopodlab.most_octopuses_are_nocturnal_or_crepus', 'Most octopuses are nocturnal or crepuscular. Their eyes have W-shaped pupils that allow them to see in low light and discriminate polarized light (though they may be color-blind).'),
+          fact: __alloT('stem.cephalopodlab.most_octopuses_are_nocturnal_or_crepus', 'Most octopuses are nocturnal or crepuscular. Their large eyes, with horizontal slit-shaped pupils, see well in low light and detect polarized light (though they may be color-blind).'),
           citation: 'Stubbs & Stubbs, 2016 — PNAS, chromatic aberration vision hypothesis.' },
         landmarkVisited:     { title: __alloT('stem.cephalopodlab.reef_cartographer', 'Reef Cartographer'), icon: '🗺', desc: __alloT('stem.cephalopodlab.get_close_to_a_sunken_landmark', 'Get close to a sunken landmark.'),
           fact: __alloT('stem.cephalopodlab.modern_reefs_are_saturated_with_anthro', 'Modern reefs are saturated with anthropogenic objects — from intentional artificial reefs to lost gear and shipwrecks. Octopuses readily adopt these as den sites; some studies find more octopuses on wrecks than natural reef.'),
@@ -10084,7 +10084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           fact: __alloT('stem.cephalopodlab.the_current_understanding_of_octopus_c', 'The current understanding of octopus camouflage matching is that they integrate INTENSITY (chromatophores), TEXTURE (papillae), and PATTERN (uniform / mottle / disruptive) — three independent dimensions matched simultaneously in ~150 ms.'),
           citation: 'Hanlon, 2007 — Curr. Biol.' },
         midnightHunt:        { title: __alloT('stem.cephalopodlab.nightcrawler', 'Nightcrawler'), icon: '🌑', desc: __alloT('stem.cephalopodlab.catch_any_prey_at_night', 'Catch any prey at night.'),
-          fact: __alloT('stem.cephalopodlab.most_coastal_octopuses_are_nocturnal_h', 'Most coastal octopuses are nocturnal, hunting between dusk and dawn. Their large pupils (proportional to body size, even larger than human) and W-shaped pupil aperture optimize for low-light visibility.'),
+          fact: __alloT('stem.cephalopodlab.most_coastal_octopuses_are_nocturnal_h', 'Most coastal octopuses are nocturnal, hunting between dusk and dawn. Their large pupils (proportional to body size, even larger than human) gather light in the dark and close to a horizontal slit in bright light.'),
           citation: 'Stubbs & Stubbs, 2016 — PNAS.' },
         dawnDive:            { title: __alloT('stem.cephalopodlab.early_riser', 'Early Riser'), icon: '🌅', desc: __alloT('stem.cephalopodlab.begin_a_dive_at_dawn', 'Begin a dive at dawn.'),
           fact: __alloT('stem.cephalopodlab.octopuses_time_their_den_emergence_by_', 'Octopuses time their den emergence by light cues, but they also exhibit ENDOGENOUS circadian rhythms that persist for ~5 days under constant darkness in lab.'),
@@ -10729,7 +10729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { key: 'oliveira2020', authors: 'Oliveira, A. R., Sardinha-Silva, A., Andrews, P. L. R., Green, D., Cooke, G. M., Hall, S., Blackburn, K., & Sykes, A. V.', year: 2020, title: __alloT('stem.cephalopodlab.microplastic_contamination_in_commerci', 'Microplastics presence in cultured and wild-caught cuttlefish, Sepia officinalis'), journal: 'Mar. Pollut. Bull.', vol: '160', pages: '111553' },
         { key: 'ramirez2015', authors: 'Ramirez, M. D., & Oakley, T. H.', year: 2015, title: __alloT('stem.cephalopodlab.eye_independent_light_activated_chroma', 'Eye-independent, light-activated chromatophore expansion (LACE) and expression of phototransduction genes in the skin of Octopus bimaculoides'), journal: 'J. Exp. Biol.', vol: '218', pages: '1513-1520' },
         { key: 'robison2014', authors: 'Robison, B., Seibel, B., & Drazen, J.', year: 2014, title: __alloT('stem.cephalopodlab.deep_sea_octopus_graneledone_boreopaci', 'Deep-sea octopus (Graneledone boreopacifica) conducts the longest known egg-brooding period of any animal'), journal: 'PLoS ONE', vol: '9', pages: 'e103437' },
-        { key: 'shashar2010', authors: 'Shashar, N., Hagan, R., Boal, J. G., & Hanlon, R. T.', year: 2010, title: __alloT('stem.cephalopodlab.cuttlefish_use_polarization_sensitivit', 'Cuttlefish use polarization sensitivity in predation on silvery fish'), journal: 'Vision Res.', vol: '40', pages: '71-75' },
+        { key: 'shashar2010', authors: 'Shashar, N., Hagan, R., Boal, J. G., & Hanlon, R. T.', year: 2000, title: __alloT('stem.cephalopodlab.cuttlefish_use_polarization_sensitivit', 'Cuttlefish use polarization sensitivity in predation on silvery fish'), journal: 'Vision Res.', vol: '40', pages: '71-75' },
         { key: 'stubbs2016', authors: 'Stubbs, A. L., & Stubbs, C. W.', year: 2016, title: __alloT('stem.cephalopodlab.spectral_discrimination_in_color_blind_2', 'Spectral discrimination in color blind animals via chromatic aberration and pupil shape'), journal: 'PNAS', vol: '113', pages: '8206-8211' },
         { key: 'tanner2017', authors: 'Tanner, A. R., Fuchs, D., Winkelmann, I. E., et al.', year: 2017, title: __alloT('stem.cephalopodlab.molecular_clocks_indicate_turnover_and', 'Molecular clocks indicate turnover and diversification of modern coleoid cephalopods during the Mesozoic Marine Revolution'), journal: 'Proc. R. Soc. B', vol: '284', pages: '20162818' },
         { key: 'vangiesen2020', authors: 'van Giesen, L., Kilian, P. B., Allard, C. A. H., & Bellono, N. W.', year: 2020, title: __alloT('stem.cephalopodlab.molecular_basis_of_chemotactile_sensat', 'Molecular basis of chemotactile sensation in octopus'), journal: 'Cell', vol: '183', pages: '594-604' },
@@ -10749,13 +10749,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { key: 'caldwell2015', authors: 'Caldwell, R. L., Ross, R., Rodaniche, A., & Huffard, C. L.', year: 2015, title: __alloT('stem.cephalopodlab.behavior_and_body_patterns_of_the_larg', 'Behavior and body patterns of the Larger Pacific Striped Octopus'), journal: 'PLoS ONE', vol: '10', pages: 'e0134152' },
         { key: 'chavez2003', authors: 'Chavez, F. P., Ryan, J., Lluch-Cota, S. E., & Niquen, M.', year: 2003, title: __alloT('stem.cephalopodlab.from_anchovies_to_sardines_and_back_mu', 'From anchovies to sardines and back: multidecadal change in the Pacific Ocean'), journal: 'Science', vol: '299', pages: '217-221' },
         { key: 'connell1978', authors: 'Connell, J. H.', year: 1978, title: __alloT('stem.cephalopodlab.diversity_in_tropical_rain_forests_and', 'Diversity in tropical rain forests and coral reefs'), journal: 'Science', vol: '199', pages: '1302-1310' },
-        { key: 'crookes2008', authors: 'Crookes, W. J., Ding, L. L., Huang, Q. L., et al.', year: 2008, title: __alloT('stem.cephalopodlab.reflectins_the_unusual_proteins_of_squ', 'Reflectins: the unusual proteins of squid reflective tissues'), journal: 'Soft Matter', vol: '4', pages: '74-85' },
+        { key: 'crookes2008', authors: 'Crookes, W. J., Ding, L. L., Huang, Q. L., et al.', year: 2004, title: __alloT('stem.cephalopodlab.reflectins_the_unusual_proteins_of_squ', 'Reflectins: the unusual proteins of squid reflective tissues'), journal: 'Science', vol: '303', pages: '235-238' },
         { key: 'davies2009', authors: 'Davies, R. W. D., Cripps, S. J., Nickson, A., & Porter, G.', year: 2009, title: __alloT('stem.cephalopodlab.defining_and_estimating_global_marine_', 'Defining and estimating global marine fisheries bycatch'), journal: 'Mar. Policy', vol: '33', pages: '661-672' },
         { key: 'demartini2013', authors: 'DeMartini, D. G., Krogstad, D. V., & Morse, D. E.', year: 2013, title: __alloT('stem.cephalopodlab.membrane_invaginations_facilitate_reve', 'Membrane invaginations facilitate reversible water flux driving tunable iridescence in a dynamic biophotonic system'), journal: 'PNAS', vol: '110', pages: '2552-2556' },
         { key: 'duarte2002', authors: 'Duarte, C. M.', year: 2002, title: __alloT('stem.cephalopodlab.the_future_of_seagrass_meadows', 'The future of seagrass meadows'), journal: 'Environ. Conserv.', vol: '29', pages: '192-206' },
         { key: 'erspamer1951', authors: 'Erspamer, V., & Boretti, G.', year: 1951, title: __alloT('stem.cephalopodlab.identification_and_characterization_of', 'Identification and characterization of octopamine in extracts of posterior salivary glands of Octopus vulgaris'), journal: 'Arch. Int. Pharmacodyn.', vol: '88', pages: '296' },
         { key: 'finn2010', authors: 'Finn, J. K., & Norman, M. D.', year: 2010, title: __alloT('stem.cephalopodlab.the_argonaut_shell_gas_mediated_buoyan', 'The argonaut shell: gas-mediated buoyancy control in a pelagic octopus'), journal: 'Proc. R. Soc. B', vol: '278', pages: '2967-2971' },
-        { key: 'fiorito1994', authors: 'Fiorito, G., Biederman, G. B., & Davis, V. A.', year: 1994, title: __alloT('stem.cephalopodlab.cognition_lifespan_in_cephalopods', 'Cognition + lifespan in cephalopods'), journal: 'Anim. Cogn.', vol: '5', pages: '23-31' },
+        { key: 'fiorito1994', authors: 'Fiorito, G., Biederman, G. B., Davey, V. A., & Gherardi, F.', year: 1998, title: __alloT('stem.cephalopodlab.cognition_lifespan_in_cephalopods', 'The role of stimulus preexposure in problem solving in Octopus vulgaris'), journal: 'Anim. Cogn.', vol: '1', pages: '107-112' },
         { key: 'galloway2016', authors: 'Galloway, K. C., Becker, K. P., Phillips, B., et al.', year: 2016, title: __alloT('stem.cephalopodlab.soft_robotic_grippers_for_biological_s', 'Soft robotic grippers for biological sampling on deep reefs'), journal: 'Soft Robotics', vol: '3', pages: '23-33' },
         { key: 'godfreysmith2016', authors: 'Godfrey-Smith, P.', year: 2016, title: __alloT('stem.cephalopodlab.other_minds_the_octopus_the_sea_and_th_2', 'Other Minds: The Octopus, the Sea, and the Deep Origins of Consciousness'), journal: 'Farrar, Straus and Giroux (book)' },
         { key: 'haddock2014', authors: 'Haddock, S. H.', year: 2014, title: __alloT('stem.cephalopodlab.bioluminescence_in_the_sea', 'Bioluminescence in the sea'), journal: 'Curr. Biol.', vol: '24', pages: 'R987-R989' },
@@ -10793,7 +10793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { key: 'phan2013', authors: 'Phan, L., Walkup, W. G., Ordinario, D. D., et al.', year: 2013, title: __alloT('stem.cephalopodlab.reconfigurable_infrared_camouflage_coa', 'Reconfigurable infrared camouflage coatings from a cephalopod protein'), journal: 'Adv. Mater.', vol: '25', pages: '5621-5625' },
         { key: 'piraino1996', authors: 'Piraino, S., Boero, F., Aeschbach, B., & Schmid, V.', year: 1996, title: __alloT('stem.cephalopodlab.reversing_the_life_cycle_medusae_trans', 'Reversing the life cycle: medusae transforming into polyps and cell transdifferentiation in Turritopsis nutricula'), journal: 'Biol. Bull.', vol: '190', pages: '302-312' },
         { key: 'powell2018', authors: 'Powell, S. B., Garnett, R., Marshall, J., Rizk, C., & Gruev, V.', year: 2018, title: __alloT('stem.cephalopodlab.bioinspired_polarization_vision_enable', 'Bioinspired polarization vision enables underwater geolocalization'), journal: 'Sci. Adv.', vol: '4', pages: 'eaao6841' },
-        { key: 'rosenthal2017', authors: 'Rosenthal, J. J. C.', year: 2017, title: __alloT('stem.cephalopodlab.the_emerging_role_of_rna_editing_in_pl', 'The emerging role of RNA editing in plasticity'), journal: 'J. Exp. Biol.', vol: '218', pages: '1812-1821' },
+        { key: 'rosenthal2017', authors: 'Rosenthal, J. J. C.', year: 2015, title: __alloT('stem.cephalopodlab.the_emerging_role_of_rna_editing_in_pl', 'The emerging role of RNA editing in plasticity'), journal: 'J. Exp. Biol.', vol: '218', pages: '1812-1821' },
         { key: 'scheel2017', authors: 'Scheel, D., Chancellor, S., Hing, M., Lawrence, M., Linquist, S., & Godfrey-Smith, P.', year: 2017, title: __alloT('stem.cephalopodlab.a_second_site_occupied_by_octopus_tetr', 'A second site occupied by Octopus tetricus at high densities, with notes on their ecology and behavior'), journal: 'Mar. Freshw. Behav. Physiol.', vol: '50', pages: '285-291' },
         { key: 'schnell2021', authors: 'Schnell, A. K., Boeckle, M., Rivera, M., Clayton, N. S., & Hanlon, R. T.', year: 2021, title: __alloT('stem.cephalopodlab.cuttlefish_exert_self_control_in_a_del', 'Cuttlefish exert self-control in a delay of gratification task'), journal: 'Proc. R. Soc. B', vol: '288', pages: '20203161' },
         { key: 'schulte2010', authors: 'Schulte, P., Alegret, L., Arenillas, I., et al.', year: 2010, title: __alloT('stem.cephalopodlab.the_chicxulub_asteroid_impact_and_mass', 'The Chicxulub asteroid impact and mass extinction at the Cretaceous-Paleogene boundary'), journal: 'Science', vol: '327', pages: '1214-1218' },
@@ -10812,21 +10812,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         { key: 'mather1988', authors: 'Mather, J. A.', year: 1988, title: __alloT('stem.cephalopodlab.daytime_activity_of_juvenile_octopus_v', 'Daytime activity of juvenile Octopus vulgaris in Bermuda'), journal: 'Bull. Mar. Sci.', vol: '43', pages: '320-330' },
         { key: 'estes1995', authors: 'Estes, J. A., & Duggins, D. O.', year: 1995, title: __alloT('stem.cephalopodlab.sea_otters_and_kelp_forests_in_alaska_', 'Sea otters and kelp forests in Alaska: generality and variation in a community ecological paradigm'), journal: 'Ecol. Monogr.', vol: '65', pages: '75-100' },
         { key: 'hughes2017book', authors: 'Hughes, T. P., Kerry, J. T., Álvarez-Noriega, M., et al.', year: 2017, title: __alloT('stem.cephalopodlab.global_warming_and_recurrent_mass_blea_3', 'Global warming and recurrent mass bleaching of corals'), journal: 'Nature', vol: '543', pages: '373-377' },
-        { key: 'lapota2008', authors: 'Lapota, D., & Walter, M.', year: 2008, title: __alloT('stem.cephalopodlab.bioluminescence_in_cephalopods_2', 'Bioluminescence in cephalopods'), journal: 'in: Bioluminescence in the Sea (book chapter)', vol: '' },
+        { key: 'lapota2008', authors: 'Otjacques, E., et al.', year: 2023, title: __alloT('stem.cephalopodlab.bioluminescence_in_cephalopods_2', 'Bioluminescence in cephalopods: biodiversity, biogeography and research trends'), journal: 'Front. Mar. Sci.', vol: '10' },
         { key: 'leving2015', authors: 'Levin, L. A., & Le Bris, N.', year: 2015, title: __alloT('stem.cephalopodlab.the_deep_ocean_under_climate_change', 'The deep ocean under climate change'), journal: 'Science', vol: '350', pages: '766-768' },
-        { key: 'mather2002', authors: 'Mather, J. A.', year: 2002, title: __alloT('stem.cephalopodlab.cephalopod_skills', 'Cephalopod skills'), journal: 'in: Cephalopod Cognition (Cambridge University Press book chapter)', vol: '' },
+        { key: 'mather2002', authors: 'Mather, J. A., Leite, T. S., & Anderson, R. C.', year: 2014, title: __alloT('stem.cephalopodlab.cephalopod_skills', 'Foraging and cognitive competence in octopuses'), journal: 'in: Cephalopod Cognition (Cambridge University Press, book chapter)', vol: '' },
         { key: 'stewart2014', authors: 'Stewart, J. S., Hazen, E. L., Bograd, S. J., et al.', year: 2014, title: __alloT('stem.cephalopodlab.combined_climate_and_prey_mediated_ran', 'Combined climate- and prey-mediated range expansion of Humboldt squid (Dosidicus gigas), a large marine predator in the California Current System'), journal: 'Glob. Change Biol.', vol: '20', pages: '1832-1843' },
         { key: 'doubleday2016b', authors: 'Doubleday, Z. A., Prowse, T. A. A., Arkhipkin, A., et al.', year: 2016, title: __alloT('stem.cephalopodlab.global_proliferation_of_cephalopods_2', 'Global proliferation of cephalopods'), journal: 'Curr. Biol.', vol: '26', pages: 'R406-R407' },
         { key: 'roberts2002', authors: 'Roberts, C. M.', year: 2002, title: __alloT('stem.cephalopodlab.deep_impact_the_rising_toll_of_fishing', 'Deep impact: the rising toll of fishing in the deep sea'), journal: 'Trends Ecol. Evol.', vol: '17', pages: '242-245' },
         { key: 'cousteau1973', authors: 'Cousteau, J.-Y., & Diolé, P.', year: 1973, title: __alloT('stem.cephalopodlab.octopus_and_squid_the_soft_intelligenc', 'Octopus and Squid: The Soft Intelligence'), journal: 'Doubleday (book)' },
-        { key: 'lefkowitz2008', authors: 'Lefkowitz, J. B.', year: 2008, title: __alloT('stem.cephalopodlab.aristotle_s_biology', 'Aristotle\'s biology'), journal: 'History of Science', vol: '46', pages: '463-492' },
+        { key: 'lefkowitz2008', authors: 'Lennox, J. G.', year: 2021, title: __alloT('stem.cephalopodlab.aristotle_s_biology', 'Aristotle\'s biology'), journal: 'Stanford Encyclopedia of Philosophy (Summer 2021 edition)', vol: '' },
         { key: 'unicode2010', authors: 'Unicode Consortium', year: 2010, title: __alloT('stem.cephalopodlab.unicode_6_0_emoji_additions', 'Unicode 6.0: emoji additions'), journal: 'Unicode Technical Standard' },
         { key: 'phan2016', authors: 'Phan, L., Kautz, R., Leung, E. M., Naughton, K. L., Van Dyke, Y., & Gorodetsky, A. A.', year: 2016, title: __alloT('stem.cephalopodlab.reconfigurable_infrared_camouflage_coa_2', 'Reconfigurable infrared camouflage coatings inspired by cephalopod skin'), journal: 'Chem. Mater.', vol: '28', pages: '4485-4493' },
         { key: 'naef1923', authors: 'Naef, A.', year: 1923, title: __alloT('stem.cephalopodlab.cephalopoda_fauna_and_flora_of_the_bay', 'Cephalopoda (Fauna and Flora of the Bay of Naples)'), journal: 'Smithsonian translation' },
         { key: 'singley1983', authors: 'Singley, C. T.', year: 1983, title: __alloT('stem.cephalopodlab.euprymna_scolopes_the_hawaiian_bobtail', 'Euprymna scolopes (the Hawaiian bobtail squid)'), journal: 'Cephalopod Life Cycles (Vol I, book chapter)' },
         { key: 'cigliano1995', authors: 'Cigliano, J. A.', year: 1995, title: __alloT('stem.cephalopodlab.assessment_of_the_mating_history_of_fe', 'Assessment of the mating history of female pygmy octopuses and a possible sperm competition mechanism'), journal: 'J. Mar. Biol. Assoc. UK', vol: '75', pages: '687-701' },
         { key: 'maldonado1964b', authors: 'Maldonado, H.', year: 1964, title: __alloT('stem.cephalopodlab.the_control_of_attack_by_octopus_2', 'The control of attack by Octopus'), journal: 'Z. vgl. Physiol.', vol: '47', pages: '656-674' },
-        { key: 'shashar2010b', authors: 'Shashar, N., Hagan, R., Boal, J. G., & Hanlon, R. T.', year: 2010, title: __alloT('stem.cephalopodlab.cuttlefish_use_polarization_sensitivit_2', 'Cuttlefish use polarization sensitivity in predation on silvery fish'), journal: 'Vision Research', vol: '40', pages: '71-75' },
+        { key: 'shashar2010b', authors: 'Shashar, N., Hagan, R., Boal, J. G., & Hanlon, R. T.', year: 2000, title: __alloT('stem.cephalopodlab.cuttlefish_use_polarization_sensitivit_2', 'Cuttlefish use polarization sensitivity in predation on silvery fish'), journal: 'Vision Research', vol: '40', pages: '71-75' },
         { key: 'mather2010book', authors: 'Mather, J. A., Anderson, R. C., & Wood, J. B.', year: 2010, title: __alloT('stem.cephalopodlab.octopus_the_ocean_s_intelligent_invert_3', 'Octopus: The Ocean\'s Intelligent Invertebrate'), journal: 'Timber Press (book)' },
         { key: 'klug2002', authors: 'Klug, C.', year: 2002, title: __alloT('stem.cephalopodlab.quantitative_stratigraphic_comparison_', 'Quantitative stratigraphic comparison of Northwest African and Western European Pragian and Emsian (Lower Devonian) cephalopod faunas'), journal: 'Lethaia', vol: '35', pages: '215-225' },
         { key: 'sigwart2014', authors: 'Sigwart, J. D., Sutton, M. D., Bennett, K. D., & Schultheiss, C.', year: 2014, title: __alloT('stem.cephalopodlab.how_not_to_reconstruct_invertebrate_an', 'How (not) to reconstruct invertebrate ancestral states'), journal: 'Mar. Biol.', vol: '161', pages: '1741-1755' },
@@ -16821,6 +16821,96 @@ function createCLHuntFish(T,index){
           if(any){plumePosAttr.needsUpdate=true;plumeAlphaAttr.needsUpdate=true;plumeGrowAttr.needsUpdate=true;}
         }
 
+        // ─── Ambient shoal ───
+        // A daytime reef has small plankton-picking fish milling above it. One
+        // instanced mesh of fusiliers (blue back, yellow tail) drifts in midwater
+        // and opens around the player's animal the way real bait fish part for a
+        // predator, then closes again. Decorative only: not prey, no collisions,
+        // its own seeded generator, and gone in the dark or the deep.
+        var SHOAL_COUNT=quality==='low'?28:quality==='high'?70:48;
+        var shoalSeed=90731;function shoalRandom(){shoalSeed=(Math.imul(shoalSeed,1664525)+1013904223)>>>0;return shoalSeed/4294967296;}
+        function createCLHuntShoalFishGeometry(T){
+          var sections=[[0.11,0.034],[0.05,0.05],[-0.02,0.048],[-0.08,0.03],[-0.115,0.014]],rings=[],pos=[],col=[];
+          var shade=function(y,r){var t=r>0?y/r:0;return t>0.25?[0.17,0.38,0.62]:t<-0.35?[0.92,0.94,0.95]:[0.74,0.81,0.86];};
+          sections.forEach(function(sec){var ring=[];for(var k=0;k<6;k++){var a=k*Math.PI/3;ring.push([Math.cos(a)*sec[1]*0.55,Math.sin(a)*sec[1],sec[0],sec[1]]);}rings.push(ring);});
+          var tri=function(a,b,c,ca,cb,cc){pos.push(a[0],a[1],a[2],b[0],b[1],b[2],c[0],c[1],c[2]);col.push.apply(col,ca.concat(cb,cc));};
+          var nose=[0,0,0.15],tailRoot=[0,0,-0.125];
+          for(var k=0;k<6;k++){var a=rings[0][k],b=rings[0][(k+1)%6];tri(nose,a,b,[0.6,0.7,0.78],shade(a[1],a[3]),shade(b[1],b[3]));}
+          for(var r=0;r<rings.length-1;r++)for(var k=0;k<6;k++){
+            var a=rings[r][k],b=rings[r][(k+1)%6],c=rings[r+1][k],d=rings[r+1][(k+1)%6];
+            tri(a,c,b,shade(a[1],a[3]),shade(c[1],c[3]),shade(b[1],b[3]));tri(b,c,d,shade(b[1],b[3]),shade(c[1],c[3]),shade(d[1],d[3]));
+          }
+          var last=rings[rings.length-1],yellow=[0.95,0.76,0.18];
+          for(var k=0;k<6;k++){var a=last[k],b=last[(k+1)%6];tri(a,tailRoot,b,shade(a[1],a[3]),yellow,shade(b[1],b[3]));}
+          // forked tail
+          tri([0,0,-0.11],[0,0.065,-0.2],[0,0.008,-0.155],yellow,yellow,yellow);
+          tri([0,0,-0.11],[0,-0.008,-0.155],[0,-0.065,-0.2],yellow,yellow,yellow);
+          var geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(pos,3));geo.setAttribute('color',new T.Float32BufferAttribute(col,3));geo.scale(1.3,1.3,1.3);geo.computeVertexNormals();return geo;
+        }
+        var shoalMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.45,metalness:0.15,side:THREE.DoubleSide});shoalMat.name='cl-ambient-shoal-material';
+        var shoalMesh=new THREE.InstancedMesh(createCLHuntShoalFishGeometry(THREE),shoalMat,SHOAL_COUNT);
+        shoalMesh.name='cl-ambient-shoal';shoalMesh.frustumCulled=false;shoalMesh.visible=false;scene.add(shoalMesh);
+        var shoalPos=new Float32Array(SHOAL_COUNT*3),shoalVel=new Float32Array(SHOAL_COUNT*3),shoalOff=new Float32Array(SHOAL_COUNT*3),shoalPhase=new Float32Array(SHOAL_COUNT);
+        for(var sh=0;sh<SHOAL_COUNT;sh++){
+          var sr=Math.cbrt(shoalRandom()),sa=shoalRandom()*Math.PI*2,sb=Math.acos(shoalRandom()*2-1);
+          shoalOff[sh*3]=Math.sin(sb)*Math.cos(sa)*3.2*sr;shoalOff[sh*3+1]=Math.cos(sb)*1.0*sr;shoalOff[sh*3+2]=Math.sin(sb)*Math.sin(sa)*3.2*sr;
+          shoalPhase[sh]=shoalRandom()*Math.PI*2;
+        }
+        var shoal={center:new THREE.Vector3(),heading:0,turn:0,time:0,primed:false},shoalDummy=new THREE.Object3D(),shoalLook=new THREE.Vector3();
+        function placeShoalNear(){
+          // re-forms 7-10 m ahead of the camera and swims across the view, so it is
+          // seen without ever popping in at arm's length
+          // "ahead" is camera to animal: the camera's own matrix is not set on the first frame
+          var o=octopus.position,lx=o.x-camera.position.x,lz=o.z-camera.position.z;
+          if(Math.hypot(lx,lz)<0.01){camera.getWorldDirection(shoalLook);lx=shoalLook.x;lz=shoalLook.z;}
+          var ahead=Math.atan2(lx,lz),a=ahead+(shoalRandom()*2-1)*0.5,dist=7+shoalRandom()*3;
+          shoal.center.set(o.x+Math.sin(a)*dist,Math.max(1.4,o.y+1+shoalRandom()),o.z+Math.cos(a)*dist);
+          shoal.heading=a+(shoalRandom()<0.5?1:-1)*Math.PI/2;shoal.turn=0;
+          for(var i=0;i<SHOAL_COUNT;i++){var ix=i*3;shoalPos[ix]=shoal.center.x+shoalOff[ix];shoalPos[ix+1]=shoal.center.y+shoalOff[ix+1];shoalPos[ix+2]=shoal.center.z+shoalOff[ix+2];
+            shoalVel[ix]=Math.sin(shoal.heading)*0.8;shoalVel[ix+1]=0;shoalVel[ix+2]=Math.cos(shoal.heading)*0.8;}
+        }
+        function updateAmbientShoal(dt,light,day,reducedMotion){
+          // fusiliers feed by day and shelter in the reef at night; no reef fish in the deep
+          var show=light>0.15&&day>0.3;shoalMesh.visible=show;
+          if(!show){shoal.primed=false;return;}
+          var o=octopus.position;
+          if(!shoal.primed||shoal.center.distanceTo(o)>34){placeShoalNear();shoal.primed=true;shoal.behind=0;}
+          // The chase camera settles after the first frames and swings with the animal,
+          // so a shoal left behind the camera for a while re-forms ahead (unseen either way).
+          var bx=shoal.center.x-camera.position.x,bz=shoal.center.z-camera.position.z,fx=o.x-camera.position.x,fz=o.z-camera.position.z;
+          shoal.behind=bx*fx+bz*fz<0?(shoal.behind||0)+dt:0;
+          if(shoal.behind>1.5){placeShoalNear();shoal.behind=0;}
+          shoal.time+=dt;
+          var calm=reducedMotion?0.4:1,speed=reducedMotion?0.35:0.8;
+          shoal.turn=Math.max(-0.35,Math.min(0.35,shoal.turn+(shoalRandom()*2-1)*dt*0.6));
+          // the whole shoal veers away from a predator closing on it
+          var cdx=shoal.center.x-o.x,cdz=shoal.center.z-o.z,cd=Math.hypot(cdx,cdz);
+          if(cd<7&&cd>0.01){var away=Math.atan2(cdx,cdz),diff=Math.atan2(Math.sin(away-shoal.heading),Math.cos(away-shoal.heading));shoal.turn+=diff*dt*0.8*calm;}
+          shoal.heading+=shoal.turn*dt*calm;
+          shoal.center.x+=Math.sin(shoal.heading)*speed*dt;shoal.center.z+=Math.cos(shoal.heading)*speed*dt;
+          shoal.center.y+=(Math.max(1.4,o.y+1.5)-shoal.center.y)*Math.min(1,dt*0.3);
+          var sinH=Math.sin(shoal.heading),cosH=Math.cos(shoal.heading),maxSpeed=reducedMotion?0.9:2.6,flee=3.2;
+          for(var i=0;i<SHOAL_COUNT;i++){
+            var ix=i*3,ox=shoalOff[ix],oy=shoalOff[ix+1],oz=shoalOff[ix+2];
+            var tx=shoal.center.x+ox*cosH+oz*sinH,ty=shoal.center.y+oy+(reducedMotion?0:0.12*Math.sin(shoal.time*1.3+shoalPhase[i])),tz=shoal.center.z-ox*sinH+oz*cosH;
+            var px=shoalPos[ix],py=shoalPos[ix+1],pz=shoalPos[ix+2];
+            var ax=(tx-px)*1.6-shoalVel[ix]*0.9,ay=(ty-py)*1.6-shoalVel[ix+1]*0.9,az=(tz-pz)*1.6-shoalVel[ix+2]*0.9;
+            // fountain effect: each fish near the predator darts out of its path
+            var dx=px-o.x,dy=py-o.y,dz=pz-o.z,d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+            if(d<flee&&d>0.01){var push=(flee-d)/flee*(reducedMotion?3:9);ax+=dx/d*push;ay+=dy/d*push*0.5;az+=dz/d*push;}
+            var vx=shoalVel[ix]+ax*dt,vy=shoalVel[ix+1]+ay*dt,vz=shoalVel[ix+2]+az*dt,v=Math.sqrt(vx*vx+vy*vy+vz*vz);
+            if(v>maxSpeed){vx*=maxSpeed/v;vy*=maxSpeed/v;vz*=maxSpeed/v;v=maxSpeed;}
+            shoalVel[ix]=vx;shoalVel[ix+1]=vy;shoalVel[ix+2]=vz;
+            px+=vx*dt;py=Math.max(0.4,py+vy*dt);pz+=vz*dt;shoalPos[ix]=px;shoalPos[ix+1]=py;shoalPos[ix+2]=pz;
+            shoalDummy.position.set(px,py,pz);
+            if(v>0.05)shoalLook.set(px+vx,py+vy*0.4,pz+vz);else shoalLook.set(px+sinH,py,pz+cosH);
+            shoalDummy.lookAt(shoalLook);
+            if(!reducedMotion)shoalDummy.rotateY(Math.sin(shoal.time*9+shoalPhase[i])*0.12);
+            shoalDummy.updateMatrix();shoalMesh.setMatrixAt(i,shoalDummy.matrix);
+          }
+          shoalMesh.instanceMatrix.needsUpdate=true;
+        }
+
         // ─── Jellyfish (ambient drifting bells) ─────────────────────
         // 5 moon-jellies pulse and drift through mid-water. Pure ambient
         // visual life — they don't interact with the player or predators.
@@ -19128,6 +19218,7 @@ function createCLHuntFish(T,index){
             animal.selfLight((species.id === 'vampireSquid' ? 0.9 : 0.3) * (1 - depthLight));
             updateStimulatedBioluminescence(dt, Math.max(1 - depthLight, (1 - dayMix) * 0.85), gameState.a11y.reducedMotion);
             updateJetPlume(dt, !!gameState.isJetting, depthLight * (0.3 + 0.7 * dayMix), gameState.a11y.reducedMotion);
+            updateAmbientShoal(dt, depthLight, dayMix, gameState.a11y.reducedMotion);
             updateHuntSoundscape(depthLight, !!gameState.isJetting);
 
             // ─── Nautilus shell rotation (subtle) ─────────────────
@@ -22352,31 +22443,110 @@ function createCLHuntFish(T,index){
         }
         // The flat diagram this tab shipped with is now the fallback: a
         // Chromebook with WebGL disabled or a filtered CDN loses nothing.
-        var anatFlatDiagram = h('svg', { width: '100%', height: 320, viewBox: '60 30 280 260', role: 'img',
+        // Seen from above with the arms toward the bottom, the mantle drawn
+        // as a cutaway so the gills and hearts its markers name are visible.
+        // Marker positions live here, so each sits on the structure it names.
+        var ANAT_FLAT_AT = {
+          'mantle': { x: 200, y: 44, r: 11 }, 'gills': { x: 172, y: 96, r: 8 }, 'hearts': { x: 200, y: 112, r: 8 },
+          'siphon': { x: 270, y: 140, r: 8 }, 'eye': { x: 150, y: 164, r: 9 }, 'central-brain': { x: 200, y: 164, r: 10 },
+          'beak': { x: 200, y: 203, r: 8 }
+        };
+        // One tapered, curling arm: centre line by small steps, then each side.
+        var anatArmAt = {};
+        function anatArm(key, angle, curl, len, stroke, fill, hecto) {
+          var x = 200 + Math.sin(angle) * 34, y = 196 + Math.cos(angle) * 10, dir = angle * 1.25;
+          var pts = [], steps = 26;
+          for (var i = 0; i <= steps; i++) {
+            var t = i / steps;
+            pts.push({ x: x, y: y, t: t, a: dir });
+            dir += (curl * t * t * 2.6 + curl * 0.18) / steps;
+            x += Math.sin(dir) * len / steps; y += Math.cos(dir) * len / steps;
+          }
+          var left = [], right = [], suckers = [];
+          pts.forEach(function(q) {
+            var w = 7.5 * (1 - q.t) + 1.1, nx = Math.cos(q.a), ny = -Math.sin(q.a);
+            left.push((q.x + nx * w).toFixed(1) + ' ' + (q.y + ny * w).toFixed(1));
+            right.unshift((q.x - nx * w).toFixed(1) + ' ' + (q.y - ny * w).toFixed(1));
+            if (q.t > 0.1 && q.t < 0.86) suckers.push(h('circle', { key: 's' + suckers.length, cx: (q.x - nx * w * 0.35).toFixed(1), cy: (q.y - ny * w * 0.35).toFixed(1), r: (0.6 + 2.0 * (1 - q.t)).toFixed(2), fill: 'rgba(253,230,138,0.55)' }));
+          });
+          var tip = pts[pts.length - 1];
+          anatArmAt[key] = { ganglion: pts[9], nearTip: pts[21] };
+          return h('g', { key: key },
+            h('path', { d: 'M ' + left.join(' L ') + ' L ' + right.join(' L ') + ' Z', fill: fill, stroke: stroke, strokeWidth: 1, strokeLinejoin: 'round' }),
+            suckers,
+            hecto ? h('ellipse', { cx: tip.x.toFixed(1), cy: tip.y.toFixed(1), rx: 4, ry: 2.4, fill: 'rgba(244,114,182,0.75)', stroke: '#f472b6', strokeWidth: 1 }) : null,
+            // one ganglion per arm on the nerve cord, a third of the way out
+            h('circle', { cx: pts[9].x.toFixed(1), cy: pts[9].y.toFixed(1), r: 2.2, fill: '#86efac', opacity: 0.85 }));
+        }
+        // Eight arms, left four mirrored by the right four; the hectocotylus is
+        // the third arm on the animal's right, which is the viewer's left here.
+        var anatArms = [[-1.25, -1.1, 104], [-0.78, -1.3, 118], [-0.38, -1.0, 124], [-0.12, -0.6, 112],
+          [0.12, 0.6, 112], [0.38, 1.0, 124], [0.78, 1.3, 118], [1.25, 1.1, 104]].map(function(a, i) {
+          var hecto = i === 1;
+          return anatArm('arm' + i, a[0], a[1], a[2], hecto ? '#f472b6' : '#a78bfa', hecto ? 'rgba(244,114,182,0.28)' : 'rgba(167,139,250,0.30)', hecto);
+        });
+        ANAT_FLAT_AT['arm-ganglion'] = { x: Math.round(anatArmAt.arm6.ganglion.x), y: Math.round(anatArmAt.arm6.ganglion.y), r: 9 };
+        ANAT_FLAT_AT['hectocotylus'] = { x: Math.round(anatArmAt.arm1.nearTip.x), y: Math.round(anatArmAt.arm1.nearTip.y), r: 9 };
+        var anatFlatDiagram = h('svg', { width: '100%', height: 320, viewBox: '20 0 360 330', role: 'img',
             'aria-label': __alloT('stem.cephalopodlab.octopus_anatomy_accessible_summary', 'Octopus anatomy diagram') + '. Selected region: ' + highlighted.name + '. Use the All regions buttons below to explore.',
             style: { background: 'rgba(15,23,42,0.5)', borderRadius: 12, border: '1px solid rgba(100,116,139,0.3)' } },
-          h('ellipse', { cx: 200, cy: 65, rx: 50, ry: 38, fill: 'rgba(251,146,60,0.15)', stroke: '#fb923c', strokeWidth: 1.5 }),
-          h('ellipse', { cx: 200, cy: 110, rx: 32, ry: 22, fill: 'rgba(167,139,250,0.15)', stroke: '#a78bfa', strokeWidth: 1.5 }),
-          h('circle', { cx: 175, cy: 105, r: 6, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
-          h('circle', { cx: 175, cy: 105, r: 3, fill: '#1c1410' }),
-          h('circle', { cx: 225, cy: 105, r: 6, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
-          h('circle', { cx: 225, cy: 105, r: 3, fill: '#1c1410' }),
-          [-50, -32, -14, 4, 22, 40, 58, 76].map(function(deg, i) {
-            var rad = deg * Math.PI / 180;
-            return h('path', { key: i,
-              d: 'M 200 145 Q ' + (200 + Math.sin(rad) * 50) + ' ' + (175 + Math.cos(rad) * 30) + ' ' + (200 + Math.sin(rad) * 90) + ' ' + (200 + Math.cos(rad) * 90),
-              fill: 'none', stroke: '#a78bfa', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.6 });
+          // web between the arm bases, under the arms
+          h('path', { d: 'M 150 200 Q 132 236 120 262 Q 160 238 200 246 Q 240 238 280 262 Q 268 236 250 200 Z', fill: 'rgba(167,139,250,0.16)', stroke: 'rgba(167,139,250,0.35)', strokeWidth: 1 }),
+          anatArms,
+          // beak at the hub of the arms, on the underside
+          h('circle', { cx: 200, cy: 203, r: 9, fill: 'rgba(15,23,42,0.85)', stroke: 'rgba(252,165,165,0.6)', strokeWidth: 1, strokeDasharray: '2 2' }),
+          h('path', { d: 'M 196 199 Q 200 210 204 199 Q 200 203 196 199 Z', fill: '#fca5a5' }),
+          // head and siphon
+          h('path', { d: 'M 236 142 Q 262 134 276 142 Q 280 150 274 152 Q 258 150 238 156 Z', fill: 'rgba(56,189,248,0.25)', stroke: '#38bdf8', strokeWidth: 1.2 }),
+          h('ellipse', { cx: 200, cy: 166, rx: 58, ry: 26, fill: 'rgba(167,139,250,0.22)', stroke: '#a78bfa', strokeWidth: 1.5 }),
+          [150, 250].map(function(ex) {
+            return h('g', { key: 'eye' + ex },
+              h('ellipse', { cx: ex, cy: 164, rx: 11, ry: 9, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
+              h('rect', { x: ex - 6, y: 162.6, width: 12, height: 2.8, rx: 1.4, fill: '#1c1410' }));
           }),
+          // the brain is a ring: the esophagus passes through the middle
+          h('circle', { cx: 200, cy: 164, r: 7, fill: 'none', stroke: '#f9a8d4', strokeWidth: 3.5, opacity: 0.85 }),
+          // mantle as a cutaway: gills, two branchial hearts and the systemic heart inside
+          h('path', { d: 'M 200 18 C 256 18 274 66 268 108 C 264 134 240 146 200 146 C 160 146 136 134 132 108 C 126 66 144 18 200 18 Z', fill: 'rgba(251,146,60,0.13)', stroke: '#fb923c', strokeWidth: 1.6 }),
+          [172, 228].map(function(gx) {
+            return h('g', { key: 'gill' + gx },
+              h('ellipse', { cx: gx, cy: 98, rx: 9, ry: 24, fill: 'rgba(14,165,233,0.22)', stroke: '#0ea5e9', strokeWidth: 1 }),
+              [-16, -8, 0, 8, 16].map(function(dy) { return h('path', { key: dy, d: 'M ' + (gx - 7) + ' ' + (98 + dy) + ' L ' + (gx + 7) + ' ' + (98 + dy), stroke: 'rgba(125,211,252,0.55)', strokeWidth: 1 }); }),
+              h('circle', { cx: gx + (gx < 200 ? 6 : -6), cy: 126, r: 4, fill: 'rgba(220,38,38,0.55)', stroke: '#f87171', strokeWidth: 1 }));
+          }),
+          h('path', { d: 'M 200 104 C 192 96 184 104 200 120 C 216 104 208 96 200 104 Z', fill: 'rgba(220,38,38,0.55)', stroke: '#f87171', strokeWidth: 1 }),
+          // region markers, each on its structure; the selected one is named
           ANATOMY.map(function(a) {
+            var at = ANAT_FLAT_AT[a.id] || { x: a.cx, y: a.cy, r: a.r };
             var isHighlighted = a.id === highlightedId;
             return h('g', { key: a.id, style: { cursor: 'pointer' },
               onClick: function() { setCL({ anatomyRegion: a.id }); awardXP(1); clAnnounce('Selected ' + a.name); } },
-              h('circle', { cx: a.cx, cy: a.cy, r: a.r + 8, fill: 'transparent' }),
-              h('circle', { cx: a.cx, cy: a.cy, r: a.r,
-                fill: isHighlighted ? a.color : 'rgba(15,23,42,0.7)',
-                stroke: a.color, strokeWidth: 2.5, opacity: isHighlighted ? 1 : 0.8 }),
-              h('text', { x: a.cx, y: a.cy + 4, textAnchor: 'middle', fontSize: 13, pointerEvents: 'none' }, a.emoji));
-          }));
+              h('circle', { cx: at.x, cy: at.y, r: at.r + 7, fill: 'transparent' }),
+              h('circle', { cx: at.x, cy: at.y, r: at.r,
+                fill: isHighlighted ? a.color : 'rgba(15,23,42,0.75)',
+                stroke: isHighlighted ? '#f8fafc' : a.color, strokeWidth: isHighlighted ? 2.5 : 2, opacity: isHighlighted ? 1 : 0.9 }),
+              h('text', { x: at.x, y: at.y + 4, textAnchor: 'middle', fontSize: at.r > 9 ? 12 : 10, pointerEvents: 'none' }, a.emoji));
+          }),
+          (function() {
+            var at = ANAT_FLAT_AT[highlighted.id] || { x: highlighted.cx, y: highlighted.cy, r: highlighted.r };
+            var name = String(highlighted.name), w = Math.min(150, name.length * 6.4 + 16), gap = at.r + 6;
+            var blockers = [{ x: 150, y: 164, r: 12 }, { x: 250, y: 164, r: 12 }].concat(ANATOMY.filter(function(o) { return o.id !== highlighted.id; }).map(function(o) {
+              var q = ANAT_FLAT_AT[o.id] || { x: o.cx, y: o.cy, r: o.r }; return { x: q.x, y: q.y, r: q.r + 3 };
+            }));
+            var spots = [[at.x + gap, at.y - 10], [at.x - gap - w, at.y - 10], [at.x - w / 2, at.y - gap - 20], [at.x - w / 2, at.y + gap]];
+            var clear = function(b) {
+              if (b[0] < 22 || b[0] + w > 378 || b[1] < 2 || b[1] + 20 > 328) return false;
+              return blockers.every(function(c) {
+                var nx = Math.max(b[0], Math.min(c.x, b[0] + w)), ny = Math.max(b[1], Math.min(c.y, b[1] + 20));
+                return (nx - c.x) * (nx - c.x) + (ny - c.y) * (ny - c.y) > c.r * c.r;
+              });
+            };
+            var box = spots.filter(clear)[0] || spots[0];
+            var lx = Math.max(22, Math.min(378 - w, box[0])), ly = Math.max(2, Math.min(308, box[1]));
+            return h('g', { 'aria-hidden': 'true', pointerEvents: 'none', className: 'cl-anat-flat-label' },
+              h('rect', { x: lx, y: ly, width: w, height: 20, rx: 6, fill: '#0f172a', stroke: highlighted.color, strokeWidth: 1.2 }),
+              h('text', { x: lx + w / 2, y: ly + 14, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#f8fafc' }, name));
+          })());
 
         return h('div', null,
           panelHeader(__alloT('stem.cephalopodlab.hdr_body_plan_9_brains', '🧠 Body Plan & 9 Brains'),
@@ -26550,15 +26720,23 @@ function createCLHuntFish(T,index){
         var unplotted = bands.filter(function(b) { return !b.band; });
         var spectrum = (function() {
           if (!plotted.length) return null;
-          var W = 680, L = 92, R = 648, rowH = 22, TOP = 34;
+          var W = 680, L = 146, R = 636, rowH = 24, TOP = 34;
           var H = TOP + plotted.length * rowH + 34;
           var MIN = 0.1, MAX = 25000;
           var xAt = function(hz) {
             var t = (Math.log10(Math.max(MIN, Math.min(MAX, hz))) - Math.log10(MIN)) / (Math.log10(MAX) - Math.log10(MIN));
             return L + t * (R - L);
           };
-          var TICKS = [0.1, 1, 10, 100, 1000, 10000];
+          var TICKS = [0.1, 1, 10, 100, 1000, 10000, MAX];
           var tickLabel = function(hz) { return hz >= 1000 ? (hz / 1000) + ' kHz' : hz + ' Hz'; };
+          // A name too long for the column wraps at the space nearest its middle
+          // instead of being cut off; the full figure is in each card below.
+          var nameLines = function(name) {
+            if (name.length <= 26) return [name];
+            var mid = name.length / 2, best = -1;
+            for (var i = 0; i < name.length; i++) if (name[i] === ' ' && (best < 0 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
+            return best < 0 ? [name] : [name.slice(0, best), name.slice(best + 1)];
+          };
           var summary = __alloT('stem.cephalopodlab.sounds_chart_summary', 'Marine soundscape on a logarithmic frequency axis from 0.1 Hz to 25 kHz. ') +
             plotted.map(function(b) { return b.s.name + ', ' + b.s.frequency; }).join('; ') + '.';
           return h('div', { style: cardStyle() },
@@ -26576,14 +26754,17 @@ function createCLHuntFish(T,index){
                   var y = TOP + i * rowH;
                   var x1 = xAt(b.band.lo), x2 = xAt(b.band.hi);
                   return h('g', { key: b.s.id },
-                    h('text', { x: L - 8, y: y + 11, textAnchor: 'end', fontSize: 9.5, fill: '#e2e8f0' },
-                      b.s.name.length > 22 ? b.s.name.slice(0, 21) + '…' : b.s.name),
+                    (function() {
+                      var lines = nameLines(b.s.name);
+                      return h('text', { x: L - 8, y: lines.length > 1 ? y + 6 : y + 11, textAnchor: 'end', fontSize: 9.5, fill: '#e2e8f0' },
+                        lines.map(function(line, li) { return h('tspan', { key: li, x: L - 8, dy: li ? 10 : 0 }, line); }));
+                    })(),
                     h('rect', { x: x1, y: y + 3, width: Math.max(3, x2 - x1), height: 11, rx: 4, fill: '#38bdf8', opacity: 0.75 }),
                     (function() {
                       // Label after the bar, unless that would run past the axis
                       // — then put it before the bar instead. A bar reaching the
                       // right edge otherwise gets its own label printed over it.
-                      var txt = b.s.frequency.length > 22 ? b.s.frequency.slice(0, 21) + '…' : b.s.frequency;
+                      var txt = tickLabel(b.band.lo) + ' – ' + tickLabel(b.band.hi);
                       var w = txt.length * 4.6;
                       if ((x2 + 6 + w) < R) {
                         return h('text', { x: x2 + 6, y: y + 12, fontSize: 8.5, fill: '#7dd3fc', fontFamily: 'ui-monospace, Menlo, monospace' }, txt);

@@ -58,6 +58,625 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
 
   // ═══════════════════════════════════════════
+  // Voice studio + trainers (shared with Rachel Pomeranz's website, where they were built).
+  // Generated from the site repo (Apomera/rachel-pomeranz-site, src/lib) by a converter that
+  // wraps each module in its own scope; change the site modules and regenerate, not this copy.
+  // ═══════════════════════════════════════════
+  var VSR = (function () {
+    'use strict';
+  var mod_common = (function () {
+    // Shared pieces for the Practice Room trainers: seeded randomness, voice types and a small synth.
+    // Framework-free with no imports, so the trainers can also run inside AlloFlow.
+
+    // ---- Seeded randomness -------------------------------------------------------------
+    // The same seed always gives the same exercise, so a teacher can hand out a code (or a link)
+    // and every student gets the identical melody or rhythm.
+
+    /** FNV-1a: a string to a 32-bit seed. */
+    function hashSeed(str) {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      return h >>> 0;
+    }
+
+    /** mulberry32: a fast, good-enough PRNG returning numbers in [0, 1). */
+    function seededRandom(seed) {
+      let a = typeof seed === 'number' ? seed >>> 0 : hashSeed(String(seed));
+      const rand = () => {
+        a = (a + 0x6d2b79f5) >>> 0;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      rand.int = (lo, hi) => lo + Math.floor(rand() * (hi - lo + 1)); // inclusive
+      rand.pick = (list) => list[Math.floor(rand() * list.length)];
+      /** Pick from [[value, weight], ...]. */
+      rand.weighted = (pairs) => {
+        const total = pairs.reduce((s, [, w]) => s + Math.max(0, w), 0);
+        let r = rand() * total;
+        for (const [v, w] of pairs) {
+          r -= Math.max(0, w);
+          if (r < 0) return v;
+        }
+        return pairs[pairs.length - 1][0];
+      };
+      return rand;
+    }
+
+    // No 0/O, 1/I/L: codes are read aloud and typed by students.
+    const CODE_CHARS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+    /** A short, friendly exercise code like "K7QX2". */
+    function newCode(length = 5) {
+      const buf = new Uint32Array(length);
+      crypto.getRandomValues(buf);
+      return Array.from(buf, (n) => CODE_CHARS[n % CODE_CHARS.length]).join('');
+    }
+
+    /** Today's date as YYYYMMDD in the visitor's own time zone (not UTC). */
+    function todayStamp(d = new Date()) {
+      return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // ---- Voice types -------------------------------------------------------------------
+    // Comfortable practice ranges (MIDI), deliberately inside the full professional ranges.
+    // Tenors read treble clef an octave down; baritones and basses read bass clef.
+
+    const VOICE_TYPES = {
+      soprano: { label: 'Soprano', low: 60, high: 79, clef: 'treble' },
+      mezzo: { label: 'Mezzo-soprano', low: 57, high: 76, clef: 'treble' },
+      alto: { label: 'Alto', low: 53, high: 72, clef: 'treble' },
+      tenor: { label: 'Tenor', low: 48, high: 67, clef: 'treble8' },
+      baritone: { label: 'Baritone', low: 45, high: 64, clef: 'bass' },
+      bass: { label: 'Bass', low: 40, high: 60, clef: 'bass' },
+    };
+
+    const VOICE_KEY = 'rp-voice-type';
+
+    function loadVoiceType() {
+      try {
+        const v = localStorage.getItem(VOICE_KEY);
+        return VOICE_TYPES[v] ? v : 'mezzo';
+      } catch {
+        return 'mezzo';
+      }
+    }
+
+    function saveVoiceType(v) {
+      try {
+        localStorage.setItem(VOICE_KEY, v);
+      } catch {}
+    }
+
+    // ---- Notes -------------------------------------------------------------------------
+
+    const NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    const SHARP_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+    const FLAT_NAMES = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
+    /** Note name with octave. spelling: 'sharps' or 'flats' to follow a key; by default the common mix. */
+    const noteLabel = (midi, spelling) =>
+      `${(spelling === 'sharps' ? SHARP_NAMES : spelling === 'flats' ? FLAT_NAMES : NAMES)[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
+    const midiToHz = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
+
+    // ---- A small synth -----------------------------------------------------------------
+
+    /**
+     * iPhones and iPads mute Web Audio when the side switch is on silent (videos still play), so
+     * declare the sound as media playback (Safari 17+) and, on older iOS, start a silent looping
+     * <audio> element that moves the page into the media channel. Must run inside a tap.
+     * (Same as routeAudioAsMedia in score-player.js; each module stays import-free.)
+     */
+    function routeAudioAsMedia() {
+      try {
+        if (navigator.audioSession && navigator.audioSession.type === 'auto') navigator.audioSession.type = 'playback';
+      } catch {}
+      const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
+      if (!ios || routeAudioAsMedia.el) return;
+      const n = 2000; // a quarter second of silent 8 kHz, 8-bit WAV
+      const bytes = new Uint8Array(44 + n);
+      const dv = new DataView(bytes.buffer);
+      const put = (at, s) => [...s].forEach((ch, i) => (bytes[at + i] = ch.charCodeAt(0)));
+      put(0, 'RIFF');
+      dv.setUint32(4, 36 + n, true);
+      put(8, 'WAVEfmt ');
+      dv.setUint32(16, 16, true);
+      dv.setUint16(20, 1, true);
+      dv.setUint16(22, 1, true);
+      dv.setUint32(24, 8000, true);
+      dv.setUint32(28, 8000, true);
+      dv.setUint16(32, 1, true);
+      dv.setUint16(34, 8, true);
+      put(36, 'data');
+      dv.setUint32(40, n, true);
+      bytes.fill(128, 44);
+      let bin = '';
+      bytes.forEach((b) => (bin += String.fromCharCode(b)));
+      const el = document.createElement('audio');
+      el.setAttribute('x-webkit-airplay', 'deny');
+      el.loop = true;
+      el.src = 'data:audio/wav;base64,' + btoa(bin);
+      el.play().catch(() => {});
+      routeAudioAsMedia.el = el;
+    }
+    // One AudioContext per page; every sound is scheduled on its clock so rhythms stay exact.
+
+    class Tones {
+      get ctx() {
+        if (!this._ctx) {
+          this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+          this.out = this._ctx.createDynamicsCompressor();
+          this.out.connect(this._ctx.destination);
+        }
+        return this._ctx;
+      }
+
+      async ready() {
+        routeAudioAsMedia();
+        const c = this.ctx;
+        if (c.state !== 'running') await c.resume();
+        // resume() can resolve before the audio clock starts moving (seconds, on a busy device).
+        // Anything scheduled or timed before then drifts, so wait until the clock is really running.
+        const t0 = performance.now();
+        while (performance.now() - t0 < 4000) {
+          const ts = c.getOutputTimestamp?.();
+          if (c.currentTime > 0.02 && (!ts || ts.contextTime > 0)) break;
+          await new Promise((r) => setTimeout(r, 20));
+        }
+        return c;
+      }
+
+      now() {
+        return this.ctx.currentTime;
+      }
+
+      /**
+       * The audio-clock time the listener was HEARING when an input event happened. People tap along
+       * to the speakers, which run behind the clock (Bluetooth by 0.2 s or more), so taps are compared
+       * with what was audible, not with what was being scheduled.
+       */
+      heardTime(timeStamp) {
+        const c = this.ctx;
+        const ts = c.getOutputTimestamp?.();
+        // getOutputTimestamp pairs the context time now leaving the speakers with a performance.now() time.
+        if (ts && ts.performanceTime > 0 && typeof timeStamp === 'number') return ts.contextTime + (timeStamp - ts.performanceTime) / 1000;
+        return c.currentTime - Math.max(0, Math.min(0.4, (c.outputLatency || 0) + (c.baseLatency || 0)));
+      }
+
+      /** A soft practice-piano note. */
+      piano(midi, at = this.now(), dur = 0.9, level = 1) {
+        const c = this.ctx;
+        const f = midiToHz(midi);
+        const env = c.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(0.5 * level, at + 0.006);
+        env.gain.exponentialRampToValueAtTime(0.2 * level, at + 0.25);
+        env.gain.setTargetAtTime(0.0001, at + dur, 0.12);
+        const filter = c.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(Math.min(9000, f * 8), at);
+        filter.frequency.exponentialRampToValueAtTime(Math.min(4000, f * 3), at + 0.4);
+        const o1 = c.createOscillator();
+        o1.type = 'triangle';
+        o1.frequency.value = f;
+        const o2 = c.createOscillator();
+        o2.frequency.value = f * 2.001;
+        const h2 = c.createGain();
+        h2.gain.value = 0.22;
+        o1.connect(filter);
+        o2.connect(h2).connect(filter);
+        filter.connect(env).connect(this.out);
+        for (const o of [o1, o2]) {
+          o.start(at);
+          o.stop(at + dur + 1);
+        }
+      }
+
+      chord(midis, at = this.now(), dur = 1.2) {
+        midis.forEach((m) => this.piano(m, at, dur, 0.55));
+      }
+
+      /** Metronome tick, higher on the downbeat. */
+      click(at = this.now(), accent = false, level = 1) {
+        const c = this.ctx;
+        const o = c.createOscillator();
+        o.frequency.value = accent ? 1500 : 1000;
+        const env = c.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime((accent ? 0.45 : 0.28) * level, at + 0.002);
+        env.gain.exponentialRampToValueAtTime(0.001, at + 0.05);
+        o.connect(env).connect(this.out);
+        o.start(at);
+        o.stop(at + 0.06);
+      }
+
+      /** A woodblock-ish knock for rhythm patterns, distinct from the metronome. */
+      knock(at = this.now(), level = 1) {
+        const c = this.ctx;
+        const o = c.createOscillator();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(820, at);
+        o.frequency.exponentialRampToValueAtTime(520, at + 0.06);
+        const env = c.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(0.6 * level, at + 0.002);
+        env.gain.exponentialRampToValueAtTime(0.001, at + 0.12);
+        o.connect(env).connect(this.out);
+        o.start(at);
+        o.stop(at + 0.14);
+      }
+
+      /** A gentle two-note chime for success. */
+      chime(at = this.now()) {
+        this.piano(84, at, 0.5, 0.45);
+        this.piano(91, at + 0.12, 0.8, 0.45);
+      }
+    }
+
+    return { hashSeed, seededRandom, newCode, todayStamp, VOICE_TYPES, loadVoiceType, saveVoiceType, noteLabel, midiToHz, routeAudioAsMedia, Tones };
+  })();
+  var mod_rhythm = (function () {
+    // Rhythm clap-back: seeded rhythm generator, notation (MusicXML) and the tap scorer.
+    // scoreRhythm() is ported from AlloFlow's Music Lab (stem_tool_music.js), where it has its own tests.
+
+    // Durations are in sixteenths (4 = a quarter note). A cell fills one beat or more; 'r' marks a rest.
+    // Simple time: the beat is a quarter (4). Compound time (6/8): the beat is a dotted quarter (6).
+    const SIMPLE_CELLS = [
+      { d: [4], level: 1 },
+      { d: [8], level: 1 },
+      { d: ['r4'], level: 1 },
+      { d: [2, 2], level: 2 },
+      { d: [6, 2], level: 2 },
+      { d: [12], level: 2 },
+      { d: ['r2', 2], level: 3 },
+      { d: [3, 1], level: 3 },
+      { d: [2, 1, 1], level: 3 },
+      { d: [1, 1, 2], level: 3 },
+      { d: [1, 1, 1, 1], level: 3 },
+      { d: [2, 4, 2], level: 4 }, // syncopation across the beat
+      { d: [1, 2, 1], level: 4 },
+      { d: [1, 3], level: 4 }, // Scotch snap
+      { d: ['r1', 1, 2], level: 4 },
+      { d: [2, 'r2'], level: 4 },
+    ];
+    const COMPOUND_CELLS = [
+      { d: [6], level: 1 },
+      { d: [12], level: 1 },
+      { d: [4, 2], level: 1 },
+      { d: [2, 2, 2], level: 2 },
+      { d: ['r6'], level: 2 },
+      { d: [3, 1, 2], level: 3 },
+      { d: [2, 4], level: 3 },
+      { d: ['r2', 2, 2], level: 3 },
+      { d: [1, 1, 2, 2], level: 4 },
+      { d: [2, 1, 1, 2], level: 4 },
+      { d: [2, 'r2', 2], level: 4 },
+    ];
+
+    const METERS = {
+      '4/4': { beats: 4, beat: 4, num: 4, den: 4 },
+      '3/4': { beats: 3, beat: 4, num: 3, den: 4 },
+      '2/4': { beats: 2, beat: 4, num: 2, den: 4 },
+      '6/8': { beats: 2, beat: 6, num: 6, den: 8 },
+    };
+
+    const RHYTHM_LEVELS = [
+      { level: 1, name: 'Level 1: quarters and halves', meters: ['4/4', '3/4'], bars: 1 },
+      { level: 2, name: 'Level 2: eighth notes and dots', meters: ['4/4', '3/4', '2/4'], bars: 1 },
+      { level: 3, name: 'Level 3: sixteenths and rests', meters: ['4/4', '3/4', '6/8'], bars: 2 },
+      { level: 4, name: 'Level 4: syncopation', meters: ['4/4', '3/4', '6/8', '2/4'], bars: 2 },
+    ];
+
+    /**
+     * Generate a rhythm. Returns { meter, bars: [[{ dur, rest }]], onsets: [beats...], beats }.
+     * Onsets are in beats from the start (the unit the scorer works in).
+     */
+    function generateRhythm(rand, level, meterName) {
+      const L = RHYTHM_LEVELS[Math.max(0, Math.min(RHYTHM_LEVELS.length - 1, level - 1))];
+      const meter = METERS[meterName || rand.pick(L.meters)] || METERS['4/4'];
+      const name = Object.keys(METERS).find((k) => METERS[k] === meter);
+      const cells = (meter.beat === 6 ? COMPOUND_CELLS : SIMPLE_CELLS).filter((c) => c.level <= L.level);
+      const barLen = meter.beats * meter.beat;
+      const bars = [];
+      for (let b = 0; b < L.bars; b++) {
+        for (let attempt = 0; attempt < 40; attempt++) {
+          const bar = [];
+          let pos = 0;
+          while (pos < barLen) {
+            const fits = cells.filter((c) => {
+              const len = c.d.reduce((s, x) => s + dur(x), 0);
+              // Cells longer than a beat start where they read clearly: on a multiple of their own length.
+              return pos + len <= barLen && (len <= meter.beat || pos % len === 0);
+            });
+            // Favour cells at the student's level so each level actually sounds different.
+            const cell = rand.weighted(fits.map((c) => [c, c.level === L.level ? 3 : 1 + (c.d.length > 1 ? 0.5 : 0)]));
+            for (const x of cell.d) bar.push({ dur: dur(x), rest: typeof x === 'string' });
+            pos += cell.d.reduce((s, x) => s + dur(x), 0);
+          }
+          const notes = bar.filter((n) => !n.rest).length;
+          // Begin the first bar on a note, keep at least two notes per bar, and not too many rests.
+          if ((b === 0 && bar[0].rest) || notes < 2 || bar.filter((n) => n.rest).length > 2) continue;
+          // Avoid a bar identical to the previous one (boring) unless we're out of tries.
+          if (b > 0 && attempt < 30 && JSON.stringify(bar) === JSON.stringify(bars[b - 1])) continue;
+          bars.push(bar);
+          break;
+        }
+      }
+      const onsets = [];
+      let pos = 0;
+      for (const bar of bars)
+        for (const n of bar) {
+          if (!n.rest) onsets.push(pos / meter.beat);
+          pos += n.dur;
+        }
+      return { meter: name, num: meter.num, den: meter.den, beatsPerBar: meter.beats, beatUnit: meter.beat, bars, onsets, beats: pos / meter.beat };
+    }
+
+    function dur(x) {
+      return typeof x === 'string' ? Number(x.slice(1)) : x;
+    }
+
+    const TYPES = { 1: ['16th', 0], 2: ['eighth', 0], 3: ['eighth', 1], 4: ['quarter', 0], 6: ['quarter', 1], 8: ['half', 0], 12: ['half', 1], 16: ['whole', 0] };
+
+    /** MusicXML for a one-line rhythm staff (percussion clef). */
+    function rhythmToMusicXML(r, bpm) {
+      const measures = r.bars
+        .map((bar, i) => {
+          const attrs =
+            i === 0
+              ? `<attributes><divisions>4</divisions><key><fifths>0</fifths></key><time><beats>${r.num}</beats><beat-type>${r.den}</beat-type></time><clef><sign>percussion</sign></clef><staff-details><staff-lines>1</staff-lines></staff-details></attributes>` +
+                `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit>${r.beatUnit === 6 ? '<beat-unit-dot/>' : ''}<per-minute>${bpm}</per-minute></metronome></direction-type><sound tempo="${r.beatUnit === 6 ? bpm * 1.5 : bpm}"/></direction>`
+              : '';
+          const beams = beamsFor(bar, r.beatUnit);
+          const notes = bar
+            .map((n, k) => {
+              const [type, dots] = TYPES[n.dur];
+              const dot = dots ? '<dot/>' : '';
+              if (n.rest) return `<note><rest/><duration>${n.dur}</duration><type>${type}</type>${dot}</note>`;
+              return `<note><unpitched><display-step>E</display-step><display-octave>4</display-octave></unpitched><duration>${n.dur}</duration><type>${type}</type>${dot}<stem>up</stem>${beams[k] || ''}</note>`;
+            })
+            .join('');
+          const end = i === r.bars.length - 1 ? '<barline location="right"><bar-style>light-heavy</bar-style></barline>' : '';
+          return `<measure number="${i + 1}">${attrs}${notes}${end}</measure>`;
+        })
+        .join('');
+      return xmlDoc('Rhythm', measures);
+    }
+
+    /**
+     * Beam elements for one bar: notes shorter than a quarter are beamed within each beat,
+     * with a second beam (or hook) for sixteenths. Shared with the melody writer.
+     */
+    function beamsFor(bar, beat) {
+      const out = new Array(bar.length).fill('');
+      let pos = 0;
+      const groups = new Map();
+      bar.forEach((n, k) => {
+        const g = Math.floor(pos / beat);
+        if (!groups.has(g)) groups.set(g, []);
+        groups.get(g).push(k);
+        pos += n.dur;
+      });
+      for (const idx of groups.values()) {
+        // Split each beat into runs of beamable notes (no rests, shorter than a quarter).
+        let run = [];
+        const flush = () => {
+          if (run.length >= 2) {
+            run.forEach((k, j) => {
+              const b1 = j === 0 ? 'begin' : j === run.length - 1 ? 'end' : 'continue';
+              let b2 = '';
+              if (bar[k].dur <= 1) {
+                const prev = j > 0 && bar[run[j - 1]].dur <= 1;
+                const next = j < run.length - 1 && bar[run[j + 1]].dur <= 1;
+                b2 = prev && next ? 'continue' : prev ? 'end' : next ? 'begin' : j === 0 ? 'forward hook' : 'backward hook';
+              }
+              out[k] = `<beam number="1">${b1}</beam>` + (b2 ? `<beam number="2">${b2}</beam>` : '');
+            });
+          }
+          run = [];
+        };
+        for (const k of idx) {
+          if (!bar[k].rest && bar[k].dur < 4) run.push(k);
+          else flush();
+        }
+        flush();
+      }
+      return out;
+    }
+
+    function xmlDoc(partName, measures) {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+    <score-partwise version="4.0"><part-list><score-part id="P1"><part-name print-object="no">${partName}</part-name></score-part></part-list><part id="P1">${measures}</part></score-partwise>`;
+    }
+
+    // ---- Scoring (ported from AlloFlow) -------------------------------------------------
+
+    // Grading bands as a fraction of one beat, so they scale with tempo.
+    const TIGHT_FRACTION = 0.06; // on the money
+    const CLOSE_FRACTION = 0.14; // recognisably the right rhythm
+    const MATCH_FRACTION = 0.5; // beyond half a beat a tap belongs to another onset
+
+    /**
+     * Score taps against expected onsets (both in ms from the same origin). Matching is greedy over
+     * the closest pairs first, so one early tap doesn't push every later tap onto the wrong onset.
+     * Returns per-onset grades ('tight' | 'close' | 'loose' | 'missed'), extras, bias and accuracy 0-1.
+     */
+    function scoreRhythm(expectedMs, tapsMs, beatMs) {
+      const expected = (expectedMs || []).slice();
+      const taps = (tapsMs || []).slice().sort((a, b) => a - b);
+      const beat = typeof beatMs === 'number' && isFinite(beatMs) && beatMs > 0 ? beatMs : 500;
+      const matchWindow = beat * MATCH_FRACTION;
+      const tightMs = beat * TIGHT_FRACTION;
+      const closeMs = beat * CLOSE_FRACTION;
+
+      const pairs = [];
+      expected.forEach((ex, e) =>
+        taps.forEach((tap, t) => {
+          const delta = tap - ex;
+          if (Math.abs(delta) <= matchWindow) pairs.push({ e, t, delta, abs: Math.abs(delta) });
+        }),
+      );
+      pairs.sort((a, b) => a.abs - b.abs);
+
+      const usedE = new Set();
+      const usedT = new Set();
+      const onsets = expected.map((ms) => ({ expectedMs: ms, tapMs: null, deltaMs: null, grade: 'missed' }));
+      for (const p of pairs) {
+        if (usedE.has(p.e) || usedT.has(p.t)) continue;
+        usedE.add(p.e);
+        usedT.add(p.t);
+        onsets[p.e] = { expectedMs: expected[p.e], tapMs: taps[p.t], deltaMs: p.delta, grade: p.abs <= tightMs ? 'tight' : p.abs <= closeMs ? 'close' : 'loose' };
+      }
+      const extras = taps.filter((_, t) => !usedT.has(t));
+      const hits = onsets.filter((o) => o.tapMs !== null);
+      const abs = hits.map((o) => Math.abs(o.deltaMs));
+      // Each onset earns credit by how tightly it was hit; extra taps cost as much as a miss.
+      const credit = onsets.reduce((s, o) => s + ({ tight: 1, close: 0.75, loose: 0.35 }[o.grade] || 0), 0);
+      return {
+        onsets,
+        extras,
+        hit: hits.length,
+        missed: onsets.length - hits.length,
+        extra: extras.length,
+        meanAbsMs: abs.length ? abs.reduce((a, b) => a + b, 0) / abs.length : 0,
+        maxAbsMs: abs.length ? Math.max(...abs) : 0,
+        biasMs: hits.length ? hits.reduce((a, o) => a + o.deltaMs, 0) / hits.length : 0, // + = behind the beat
+        accuracy: Math.max(0, Math.min(1, credit / Math.max(1, expected.length + extras.length))),
+        tightMs,
+        closeMs,
+      };
+    }
+
+    return { SIMPLE_CELLS, COMPOUND_CELLS, METERS, RHYTHM_LEVELS, generateRhythm, rhythmToMusicXML, beamsFor, xmlDoc, scoreRhythm };
+  })();
+    return Object.assign({}, mod_common, mod_rhythm);
+  })();
+  // ═══ End voice studio block ═══
+
+  // Generated rhythms for Clap-Back: real notation (OpenSheetMusicDisplay, loaded on first use like
+  // three.js elsewhere) and a timeline of taps against the written notes.
+  var VSR_OSMD_URL = 'https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@2.2.1/build/opensheetmusicdisplay.min.js';
+  var _vsrOsmdPromise = null;
+  function vsrLoadOSMD() {
+    if (window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay) return Promise.resolve(window.opensheetmusicdisplay);
+    if (_vsrOsmdPromise) return _vsrOsmdPromise;
+    _vsrOsmdPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = VSR_OSMD_URL;
+      s.async = true;
+      s.onload = function () {
+        if (window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay) resolve(window.opensheetmusicdisplay);
+        else { _vsrOsmdPromise = null; reject(new Error('notation library missing')); }
+      };
+      s.onerror = function () { _vsrOsmdPromise = null; reject(new Error('notation library failed to load')); };
+      document.head.appendChild(s);
+    });
+    return _vsrOsmdPromise;
+  }
+
+  // How far the speakers run behind the audio clock. A student taps to what they HEAR, so a tap is
+  // compared with the sound that was audible then (Bluetooth headphones can lag 0.2 s or more).
+  function vsrOutputLag(actx) {
+    try {
+      var ts = actx.getOutputTimestamp && actx.getOutputTimestamp();
+      if (ts && ts.contextTime > 0 && ts.performanceTime > 0) {
+        var heard = ts.contextTime + (performance.now() - ts.performanceTime) / 1000;
+        // Not clamped at 0: currentTime can step in large chunks and trail the smooth estimate.
+        return Math.max(-0.5, Math.min(0.5, actx.currentTime - heard));
+      }
+      return Math.max(0, Math.min(0.5, (actx.outputLatency || 0) + (actx.baseLatency || 0)));
+    } catch (e) { return 0; }
+  }
+  // Seconds to subtract from 'now' for a tap: the speaker lag, plus how long the event waited
+  // before its handler ran (a busy re-render must not make a student look late).
+  function vsrTapOffset(actx, ev) {
+    var waited = ev && typeof ev.timeStamp === 'number' && ev.timeStamp > 0 ? Math.max(0, Math.min(0.5, (performance.now() - ev.timeStamp) / 1000)) : 0;
+    return vsrOutputLag(actx) + waited;
+  }
+  // Mouse and touch taps count on pointerdown (a click waits for the release); keyboard taps
+  // arrive as clicks with detail 0, so only those clicks are kept.
+  function vsrTapIgnored(e) { return !!(e && e.type === 'click' && e.detail !== 0); }
+
+  function vsrMakeGen(level, meter) {
+    var r = VSR.generateRhythm(VSR.seededRandom(VSR.newCode()), level, meter || undefined);
+    return { id: 'gen' + level, level: level, name: 'Generated', beats: r.beats, onsets: r.onsets, beatsPerBar: r.beatsPerBar,
+      bars: r.bars, num: r.num, den: r.den, beatUnit: r.beatUnit, meter: r.meter };
+  }
+
+  var VSR_GRADE_COLORS = { tight: '#16a34a', close: '#65a30d', loose: '#d97706', missed: '#dc2626' };
+
+  function VsrRhythmNotation(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var boxRef = React.useRef(null);
+    var osmdRef = React.useRef(null);
+    var notesRef = React.useRef([]);
+    var stS = React.useState('loading'); var state = stS[0]; var setState = stS[1];
+    var xml = VSR.rhythmToMusicXML(p.rhythm, 80);
+    React.useEffect(function () {
+      var alive = true;
+      vsrLoadOSMD().then(function (OSMD) {
+        if (!alive || !boxRef.current) return;
+        if (!osmdRef.current) osmdRef.current = new OSMD.OpenSheetMusicDisplay(boxRef.current, { autoResize: true, backend: 'svg', drawTitle: false, drawPartNames: false, drawMetronomeMarks: false });
+        var o = osmdRef.current;
+        return o.load(xml).then(function () {
+          o.Zoom = 0.9;
+          o.render(); // the cursor only exists after a first render
+          notesRef.current = [];
+          var cur = o.cursor;
+          cur.reset();
+          while (!cur.Iterator.EndReached) {
+            cur.Iterator.CurrentVoiceEntries.forEach(function (ve) { ve.Notes.forEach(function (n) { if (!n.isRest()) notesRef.current.push(n); }); });
+            cur.next();
+          }
+          cur.hide();
+          notesRef.current.forEach(function (n, i) { n.NoteheadColor = p.grades && p.grades[i] ? VSR_GRADE_COLORS[p.grades[i]] : undefined; });
+          o.render();
+          if (alive) setState('ready');
+        });
+      }).catch(function (e) { console.warn('[Music] notation failed', e); if (alive) setState('error'); });
+      return function () { alive = false; };
+    }, [xml, (p.grades || []).join(',')]);
+    return h('div', null,
+      h('div', { ref: boxRef, role: 'img', 'aria-label': p.label, className: 'rounded-lg border border-rose-200 overflow-x-auto', style: { background: '#fff', minHeight: 70 } }),
+      state === 'error' && h('p', { className: 'text-[0.6875rem] text-rose-800 mt-1' }, p.errorText));
+  }
+
+  // Written notes (gold) above, the student's taps below, joined when they matched.
+  function VsrTimeline(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var r = p.result;
+    var total = r.beats * r.beatMs;
+    var W = 1000;
+    var x = function (ms) { return 20 + (Math.max(-r.beatMs / 2, Math.min(total + r.beatMs / 2, ms)) / total) * (W - 40); };
+    var parts = [];
+    for (var b = 0; b <= r.beats; b++) {
+      var barLine = b % (r.beatsPerBar || r.beats) === 0;
+      parts.push(h('line', { key: 'g' + b, x1: x(b * r.beatMs), x2: x(b * r.beatMs), y1: 6, y2: 62, stroke: '#64748b', strokeOpacity: barLine ? 0.6 : 0.2 }));
+    }
+    r.expected.forEach(function (ms, i) {
+      var g = r.grades[i];
+      parts.push(h('rect', { key: 'e' + i, x: x(ms) - 4, y: 12, width: 8, height: 12, rx: 2, fill: '#b45309' }));
+      if (r.taps[i] !== null && r.taps[i] !== undefined) {
+        parts.push(h('line', { key: 'l' + i, x1: x(ms), y1: 24, x2: x(r.taps[i]), y2: 42, stroke: VSR_GRADE_COLORS[g], strokeWidth: 2 }));
+        parts.push(h('circle', { key: 'c' + i, cx: x(r.taps[i]), cy: 47, r: 6, fill: VSR_GRADE_COLORS[g] }));
+      }
+    });
+    (r.extras || []).forEach(function (ms, i) {
+      parts.push(h('circle', { key: 'x' + i, cx: x(ms), cy: 47, r: 5.5, fill: 'none', stroke: '#dc2626', strokeWidth: 2 }));
+    });
+    return h('figure', { className: 'mt-2 mb-0' },
+      h('svg', { viewBox: '0 0 ' + W + ' 66', role: 'img', 'aria-label': p.label, style: { width: '100%', height: 'auto', maxHeight: 84, display: 'block' } }, parts),
+      h('figcaption', { className: 'flex gap-4 text-[0.6875rem] text-slate-700' }, h('span', null, p.writtenText + ' ■'), h('span', null, p.tapsText + ' ●')));
+  }
+
+
+  // ═══════════════════════════════════════════
   // Rhythm Clap-Back — pattern bank and scoring
   // ═══════════════════════════════════════════
 
@@ -1466,6 +2085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           }
 
           function rhythmPatternById(id) {
+            if (/^gen[1-4]$/.test(id || '') && d.rhythmGen && d.rhythmGen.id === id) return d.rhythmGen;
             for (var i = 0; i < RHYTHM_PATTERNS.length; i++) {
               if (RHYTHM_PATTERNS[i].id === id) return RHYTHM_PATTERNS[i];
             }
@@ -1549,6 +2169,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               meanAbsMs: Math.round(result.meanAbsMs),
               biasMs: Math.round(result.biasMs),
               grades: result.onsets.map(function (o) { return o.grade; }),
+              expected: expected,
+              taps: result.onsets.map(function (o) { return o.tapMs; }),
+              extras: result.extras,
+              beatMs: beatMs,
+              beats: pattern.beats,
+              beatsPerBar: pattern.beatsPerBar || pattern.beats,
               passed: passed
             });
             if (passed) {
@@ -1576,14 +2202,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           }
 
           function recordRhythmTap() {
-            if (d.rhythmPhase !== 'record') return;
+            if (d.rhythmPhase !== 'record' || vsrTapIgnored(arguments[0])) return;
             var run = _rhythmRun.current;
             var audio = getCtx();
-            // Read the same clock the reference was scheduled on. Using Date.now()
-            // against a setTimeout-derived origin folded the timer's lateness into
-            // every measurement.
+            // The clock the reference was scheduled on (not Date.now()), less the speaker
+            // lag and the time the event waited for this handler (see vsrTapOffset).
             if (audio && audio.ctx && typeof run.recordStartSec === 'number') {
-              run.taps.push((audio.ctx.currentTime - run.recordStartSec) * 1000);
+              run.taps.push((audio.ctx.currentTime - run.recordStartSec - vsrTapOffset(audio.ctx, arguments[0])) * 1000);
             }
             playDrum('rim');
             upd('rhythmTapCount', run.taps.length);
@@ -2964,12 +3589,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     'aria-label': __alloT('stem.music.rhythm_choose_pattern', 'Choose a rhythm pattern'),
                     value: d.rhythmPatternId || RHYTHM_PATTERNS[0].id,
                     disabled: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
-                    onChange: function (e) { upd('rhythmPatternId', e.target.value); upd('rhythmResult', null); },
+                    onChange: function (e) {
+                      var v = e.target.value;
+                      if (/^gen[1-4]$/.test(v)) upd('rhythmGen', vsrMakeGen(Number(v.slice(3))));
+                      upd('rhythmPatternId', v); upd('rhythmResult', null);
+                    },
                     className: "ml-auto px-1.5 py-0.5 rounded text-[0.6875rem] font-bold bg-white border border-rose-500"
                   }, RHYTHM_PATTERNS.map(function (p) {
                     return React.createElement("option", { key: p.id, value: p.id },
                       __alloFmt('stem.music.rhythm_option', 'L{level} \u2014 {name}', { level: p.level, name: __alloT('stem.music.rhythm_' + p.id, p.name) }));
-                  })),
+                  }).concat([1, 2, 3, 4].map(function (lv) {
+                    return React.createElement("option", { key: 'gen' + lv, value: 'gen' + lv },
+                      __alloFmt('stem.music.rhythm_option', 'L{level} \u2014 {name}', { level: lv, name: t('stem.music.rg_generated', 'New rhythm every time') }));
+                  }))),
+                  /^gen[1-4]$/.test(d.rhythmPatternId || '') && React.createElement("button", {
+                    disabled: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
+                    onClick: function () { upd('rhythmGen', vsrMakeGen(Number(d.rhythmPatternId.slice(3)))); upd('rhythmResult', null); },
+                    className: "px-2 py-1 rounded-lg text-xs font-bold bg-white border border-rose-500 text-rose-800"
+                  }, t('stem.music.rg_new', 'New rhythm')),
                   React.createElement("button", {
                     'aria-label': __alloT('stem.music.rhythm_play_pattern', 'Play the rhythm, then tap it back'),
                     disabled: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
@@ -2979,6 +3616,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     : d.rhythmPhase === 'record' ? '\uD83D\uDD34 ' + __alloT('stem.music.rhythm_recording', 'Tap now!')
                     : '\u25B6 ' + __alloT('stem.music.rhythm_start', 'Start'))
                 ),
+
+                // Generated rhythms are written out as notation, coloured by result after a round.
+                (function () {
+                  var gp = rhythmPatternById(d.rhythmPatternId);
+                  if (!gp.bars) return null;
+                  var gr = (d.rhythmResult && d.rhythmResult.patternId === gp.id) ? d.rhythmResult.grades : null;
+                  return React.createElement("div", { className: "mb-2" }, React.createElement(VsrRhythmNotation, {
+                    React: React, rhythm: gp, grades: gr,
+                    label: __alloFmt('stem.music.aria_rhythm_pattern', '{name}: {count} taps across {beats} beats', { name: gp.meter, count: gp.onsets.length, beats: gp.beats }),
+                    errorText: t('stem.music.rg_notation_failed', 'The notation could not load; the strip below still shows the rhythm.')
+                  }));
+                })(),
 
                 // Notation strip: where the onsets fall inside the bar.
                 (function () {
@@ -3010,6 +3659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("button", {
                   'aria-label': __alloT('stem.music.rhythm_tap_here', 'Tap the rhythm here'),
                   disabled: d.rhythmPhase !== 'record',
+                  onPointerDown: recordRhythmTap,
                   onClick: recordRhythmTap,
                   className: "w-full py-3 rounded-lg text-sm font-black transition-all " +
                     (d.rhythmPhase === 'record' ? 'bg-rose-600 text-white hover:bg-rose-700 active:scale-[0.99]' : 'bg-slate-100 text-slate-600')
@@ -3034,7 +3684,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       ? __alloT('stem.music.rhythm_bias_centred', 'Your taps sat right on the beat.')
                       : d.rhythmResult.biasMs > 0
                         ? __alloFmt('stem.music.rhythm_bias_late', 'On average you were {n} ms behind the beat.', { n: d.rhythmResult.biasMs })
-                        : __alloFmt('stem.music.rhythm_bias_early', 'On average you were {n} ms ahead of the beat.', { n: Math.abs(d.rhythmResult.biasMs) }))
+                        : __alloFmt('stem.music.rhythm_bias_early', 'On average you were {n} ms ahead of the beat.', { n: Math.abs(d.rhythmResult.biasMs) })),
+                  d.rhythmResult.expected && React.createElement(VsrTimeline, {
+                    React: React, result: d.rhythmResult,
+                    label: t('stem.music.rg_timeline', 'Timeline: written notes above, your taps below'),
+                    writtenText: t('stem.music.rg_written', 'Written notes'),
+                    tapsText: t('stem.music.rg_taps', 'Your taps')
+                  })
                 ),
 
                 React.createElement("p", { className: "text-[0.6875rem] text-rose-700 mt-2 leading-relaxed" },

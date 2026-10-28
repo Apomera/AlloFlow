@@ -2018,9 +2018,109 @@
       }
       if (food.guided) food.guided.visible = !!visible;
     }
+    // Dawn ground mist: soft sheets that hang low over the clearing, drift on
+    // the shared clock and thin out near or below the camera. Built on first use;
+    // still under reduced motion.
+    var mist = null;
+    function setMist(value) {
+      if (value && !mist) {
+        var sheet = canvas(128), g = sheet.getContext('2d');
+        for (var puff = 0; puff < 20; puff++) {
+          var px = 30 + hash(puff, 941) * 68, py = 72 + (hash(puff + 3, 943) - .5) * 22, pr = 14 + hash(puff + 5, 947) * 18;
+          var grad = g.createRadialGradient(px, py, 0, px, py, pr);
+          grad.addColorStop(0, 'rgba(255,255,255,.30)'); grad.addColorStop(1, 'rgba(255,255,255,0)');
+          g.fillStyle = grad; g.fillRect(0, 0, 128, 128);
+        }
+        // An elliptical mask clears every edge, so no sheet shows a border
+        // or a hard line where it meets sloping ground.
+        g.globalCompositeOperation = 'destination-in'; g.save(); g.translate(64, 72); g.scale(1, .5);
+        var edge = g.createRadialGradient(0, 0, 0, 0, 0, 64);
+        edge.addColorStop(0, 'rgba(0,0,0,1)'); edge.addColorStop(.45, 'rgba(0,0,0,.85)'); edge.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = edge; g.fillRect(-64, -150, 128, 300); g.restore(); g.globalCompositeOperation = 'source-over';
+        var map = texture(sheet), motion = { value: options.reducedMotion ? 0 : 1 };
+        // r128 uploads neither viewMatrix nor cameraPosition for sprites, so
+        // the drift is applied in each sheet's local space and the camera
+        // height arrives through a per-draw uniform.
+        var eye = { value: 0 }, setEye = function (renderer, scene, camera) { eye.value = camera.matrixWorld.elements[13]; };
+        var head = 'uniform float blMistClock;\nuniform float blMistSeed;\nuniform float blMistMotion;\nuniform float blMistEye;\nvarying float blMistNear;\n';
+        mist = new THREE.Group(); mist.name = 'dawn-ground-mist'; mist.userData.motion = motion; root.add(mist);
+        for (var i = 0, count = detailed ? 16 : 9; i < count; i++) {
+          var angle = hash(i, 931) * Math.PI * 2, range = 2.5 + hash(i + 7, 933) * 11, mx = Math.cos(angle) * range, mz = Math.sin(angle) * range;
+          var mat = keep(new THREE.SpriteMaterial({ map: map, color: 0xf4e6e3, transparent: true, opacity: .5, depthWrite: false }));
+          mat.onBeforeCompile = (function (seed) {
+            return function (shader) {
+              shader.uniforms.blMistClock = clock; shader.uniforms.blMistSeed = seed; shader.uniforms.blMistMotion = motion; shader.uniforms.blMistEye = eye;
+              shader.vertexShader = head + shader.vertexShader.replace('vec4 mvPosition = modelViewMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );', [
+                'vec3 blMistDrift = vec3(sin(blMistClock * .035 + blMistSeed * 6.3) * .9, 0., cos(blMistClock * .028 + blMistSeed * 4.1) * .7) * blMistMotion;',
+                'vec4 mvPosition = modelViewMatrix * vec4(blMistDrift / vec3(length(modelMatrix[0].xyz), length(modelMatrix[1].xyz), length(modelMatrix[2].xyz)), 1.0);',
+                'blMistNear = smoothstep(2.5, 7., -mvPosition.z) * (1. - .9 * smoothstep(.8, 2.6, blMistEye - modelMatrix[3].y));'
+              ].join('\n'));
+              shader.fragmentShader = head + shader.fragmentShader.replace('#include <alphatest_fragment>',
+                'diffuseColor.a *= blMistNear * (1. - .2 * blMistMotion * (.5 + .5 * sin(blMistClock * .11 + blMistSeed * 9.)));\n#include <alphatest_fragment>');
+            };
+          }({ value: hash(i + 11, 937) }));
+          mat.customProgramCacheKey = function () { return 'birdlab-dawn-mist-v1'; };
+          var sprite = new THREE.Sprite(mat); sprite.name = 'dawn-mist-sheet'; sprite.onBeforeRender = setEye;
+          var tall = 1.6 + hash(i + 19, 953) * .7;
+          sprite.scale.set(5 + hash(i + 17, 951) * 4, tall, 1);
+          sprite.position.set(mx, groundHeight(mx, mz) + .31 * tall - .05 + hash(i + 13, 939) * .2, mz);
+          mist.add(sprite);
+        }
+      }
+      if (mist) mist.visible = !!value;
+    }
+    // Light rain: streaks falling through a box over the clearing on the
+    // shared clock, and rings spreading where drops land. Built on first use;
+    // under reduced motion the streaks hold still and the rings stay hidden.
+    var rain = null;
+    function setRain(value) {
+      if (value && !rain) {
+        var count = detailed ? 2400 : 1000, streaks = new Float32Array(count * 6), info = new Float32Array(count * 4);
+        for (var i = 0; i < count; i++) {
+          var rx = (hash(i, 961) - .5) * 36, rz = (hash(i + 3, 963) - .5) * 36, ry = hash(i + 5, 967) * 14, seed = hash(i + 7, 971);
+          streaks.set([rx, ry, rz, rx, ry, rz], i * 6); info.set([seed, 0, seed, 1], i * 4);
+        }
+        var motion = { value: options.reducedMotion ? 0 : 1 };
+        var streakGeo = geometry(new THREE.BufferGeometry());
+        streakGeo.setAttribute('position', new THREE.BufferAttribute(streaks, 3));
+        streakGeo.setAttribute('blRain', new THREE.BufferAttribute(info, 2));
+        var streakMat = keep(new THREE.LineBasicMaterial({ color: 0xc4d0d8, transparent: true, opacity: .42, depthWrite: false }));
+        streakMat.onBeforeCompile = function (shader) {
+          shader.uniforms.blRainClock = clock; shader.uniforms.blRainMotion = motion;
+          shader.vertexShader = 'uniform float blRainClock;\nuniform float blRainMotion;\nattribute vec2 blRain;\n' + shader.vertexShader.replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'float blFall = blRainMotion * blRainClock * (7.0 + blRain.x * 2.0);',
+            'transformed.y = mod(position.y - blFall, 14.0) - 1.5 + blRain.y * (.28 + blRain.x * .12);',
+            'transformed.x += blRain.y * .05;'
+          ].join('\n'));
+        };
+        streakMat.customProgramCacheKey = function () { return 'birdlab-rain-streaks-v1'; };
+        var lines = new THREE.LineSegments(streakGeo, streakMat); lines.name = 'rain-streaks'; lines.frustumCulled = false;
+        var ringCount = detailed ? 70 : 35, ringGeo = geometry(new THREE.RingGeometry(.84, 1, 28)), ringSeeds = new Float32Array(ringCount);
+        ringGeo.rotateX(-Math.PI / 2);
+        var ringMat = keep(new THREE.MeshBasicMaterial({ color: 0xe6edf0, transparent: true, opacity: .32, depthWrite: false }));
+        ringMat.onBeforeCompile = function (shader) {
+          shader.uniforms.blRainClock = clock;
+          shader.vertexShader = 'uniform float blRainClock;\nattribute float blRipple;\nvarying float blRipplePhase;\n' + shader.vertexShader.replace('#include <begin_vertex>',
+            '#include <begin_vertex>\nblRipplePhase = fract(blRainClock * .9 + blRipple);\ntransformed.xz *= .25 + blRipplePhase;');
+          shader.fragmentShader = 'varying float blRipplePhase;\n' + shader.fragmentShader.replace('#include <alphatest_fragment>', 'diffuseColor.a *= 1. - blRipplePhase;\n#include <alphatest_fragment>');
+        };
+        ringMat.customProgramCacheKey = function () { return 'birdlab-rain-ripples-v1'; };
+        var rings = new THREE.InstancedMesh(ringGeo, ringMat, ringCount); rings.name = 'rain-ripples'; rings.frustumCulled = false;
+        for (var r = 0; r < ringCount; r++) {
+          var angle = hash(r, 973) * Math.PI * 2, range = Math.sqrt(hash(r + 3, 977)) * 9, px = Math.cos(angle) * range, pz = Math.sin(angle) * range;
+          dummy.position.set(px, groundHeight(px, pz) + .015, pz); dummy.rotation.set(0, 0, 0); dummy.scale.setScalar(.1 + hash(r + 5, 979) * .06);
+          dummy.updateMatrix(); rings.setMatrixAt(r, dummy.matrix); ringSeeds[r] = hash(r + 9, 983);
+        }
+        ringGeo.setAttribute('blRipple', new THREE.InstancedBufferAttribute(ringSeeds, 1));
+        rings.instanceMatrix.needsUpdate = true; rings.visible = !options.reducedMotion;
+        rain = new THREE.Group(); rain.name = 'rain-shower'; rain.userData.motion = motion; rain.add(lines, rings); root.add(rain);
+      }
+      if (rain) rain.visible = !!value;
+    }
     return { root: root, perch: new THREE.Vector3(0, 3.2, 0), perches:observationPerches, isBlocked:isBlocked, groundHeight: groundHeight,
       groundSurfaceHeight: function(x,z) { return groundSurfaceAt(x,z).height; }, update: update, dispose: dispose,
-      getFoodSources: getFoodSources, setFoodVisible: setFoodVisible, setFoodLevels: setFoodLevels, setGuidedFood: setGuidedFood };
+      getFoodSources: getFoodSources, setFoodVisible: setFoodVisible, setFoodLevels: setFoodLevels, setGuidedFood: setGuidedFood, setMist: setMist, setRain: setRain };
   }
   global.BirdLab3DHabitat = { create: create };
 })(typeof window !== 'undefined' ? window : globalThis);

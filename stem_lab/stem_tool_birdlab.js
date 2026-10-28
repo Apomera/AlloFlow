@@ -174,7 +174,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-3d-camera-buttons button { padding:8px 3px; font-size:12px; }',
       '.birdlab-3d-lighting-label { margin-top:18px; }',
       '.birdlab-3d-lighting-buttons { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:9px; }',
+      '.birdlab-3d-lighting-buttons.birdlab-3d-light-presets { grid-template-columns:repeat(3,minmax(0,1fr)); }',
       '.birdlab-3d-lighting-buttons button { padding:8px 5px; font-size:11px; }',
+      '.birdlab-3d-weather-buttons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; margin-top:9px; }',
+      '.birdlab-3d-weather-buttons button { padding:8px 5px; font-size:11px; }',
       '.birdlab-3d-moments { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:12px; }',
       '.birdlab-3d-moments button { padding:8px 6px; font-size:12px; }',
       '.birdlab-wingtip-projections{margin-top:20px;padding:18px;border:1px solid #a7baa7;border-radius:13px;background:#edf2e5;color:#264735}.birdlab-wingtip-projections h3{margin:0 0 8px;font:400 23px/1.2 Georgia,serif}.birdlab-wingtip-projections>p{font-size:12px;line-height:1.7;margin:7px 0}.birdlab-wingtip-projection-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.birdlab-wingtip-projection-grid figure{margin:0;border:1px solid #90afa2;border-radius:10px;background:#153c37;overflow:hidden}.birdlab-wingtip-projection-grid svg{width:100%;height:auto;display:block}.birdlab-wingtip-projection-grid figcaption{padding:7px 10px;color:#e8f5e9;font-size:11px;line-height:1.5;border-top:1px solid #527a6c}.birdlab-wingtip-projection-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.birdlab-wingtip-projection-actions span{font-size:12px;color:#435d44}.birdlab-wingtip-projections button{font-size:12px}.birdlab-wingtip-views{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}.birdlab-wingtip-views button{padding:9px 12px}.birdlab-wingtip-projections button:disabled{opacity:.5}.birdlab-wingtip-projections svg text{font:600 13px system-ui;fill:#e6f2e8}@container birdlab-observatory (max-width:660px){.birdlab-wingtip-projection-grid{grid-template-columns:minmax(0,1fr)}.birdlab-wingtip-projections{padding:12px}.birdlab-wingtip-projection-grid figure{display:grid;grid-template-columns:minmax(0,1fr) 95px;align-items:center}.birdlab-wingtip-projection-grid figcaption{border-top:0;border-left:1px solid #527a6c}.birdlab-wingtip-projections svg text{font-size:16px}}',
@@ -285,6 +288,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       try { soundRef.current.ctx.resume(); } catch (e) {}
       setSoundOn(true);
     }
+    // Rain hiss: looped, low-passed noise under the calls while it rains.
+    React.useEffect(function() {
+      var audio = soundRef.current;
+      if (!soundOn || state.weather !== 'rain' || !audio || !audio.ctx.createBufferSource || !audio.ctx.createBuffer) return;
+      var ctx = audio.ctx, length = Math.floor(ctx.sampleRate * 2), buffer = ctx.createBuffer(1, length, ctx.sampleRate), data = buffer.getChannelData(0), last = 0;
+      for (var i = 0; i < length; i++) { last = last * .6 + (Math.random() * 2 - 1) * .4; data[i] = last; }
+      var source = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), gain = ctx.createGain();
+      source.buffer = buffer; source.loop = true; filter.type = 'lowpass'; filter.frequency.value = 2400; gain.gain.value = .16;
+      source.connect(filter); filter.connect(gain); gain.connect(audio.master); source.start();
+      return function() { try { source.stop(); } catch (e) {} try { gain.disconnect(); } catch (e) {} };
+    }, [soundOn, state.weather]);
     React.useEffect(function() { return function() { if (soundRef.current) try { soundRef.current.ctx.close(); } catch (e) {} soundRef.current = null; }; }, []);
     React.useEffect(function() {
       if (!soundOn || !soundRef.current) return;
@@ -295,9 +309,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         current.wildlife.forEach(function(row) {
           var entry = WOODLAND_CALLS[row.id];
           if (!entry) return;
-          if (next[row.id] == null) next[row.id] = now + 1 + Math.random() * entry.every;
-          if (now < next[row.id] || voices >= 2) return;
-          next[row.id] = now + entry.every * (.6 + Math.random() * .8);
+          var every = birdLabCallInterval(entry, current.lighting, current.weather);
+          if (next[row.id] == null) next[row.id] = now + 1 + Math.random() * every;
+          if (now < next[row.id] || voices >= (current.lighting === 'dawn' ? 3 : 2)) return;
+          next[row.id] = now + every * (.6 + Math.random() * .8);
           var bearing = birdLabSoundBearing(current.cameraPosition, current.cameraTarget, row.position[0], row.position[2]);
           voices++;
           birdLabPlaySpatialCall(soundRef.current, entry.sketch, bearing.pan, bearing.distance, function() { voices = Math.max(0, voices - 1); });
@@ -608,14 +623,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         h('p',null,'Hold a pose, then move the main light around the woodland. Look for feather edges, changing highlights and shadows. The bird’s shape and painted markings stay the same.'),
         h('div',{className:'birdlab-course-actions',role:'group','aria-label':t("stem.birdlab.a11y_main_light_directions", "Main light directions")},presets.map(function(preset){return h('button',{key:preset.id,type:'button','data-light-preset':preset.id,'aria-pressed':String(Math.abs(study.azimuth-preset.azimuth)<.051&&Math.abs(study.elevation-preset.elevation)<.051),onClick:function(){command('setLightDirection',{azimuth:preset.azimuth,elevation:preset.elevation});}},preset.label);})),
         control('azimuth','Turn around the world · azimuth',study.azimuth,-180,180),control('elevation','Lift above level · elevation',study.elevation,5,85),
-        h('div',{className:'birdlab-course-values'},h('div',null,'Current azimuth',h('strong',{'data-light-value':'azimuth'},study.azimuth.toFixed(1)+'°')),h('div',null,'Current elevation',h('strong',{'data-light-value':'elevation'},study.elevation.toFixed(1)+'°')),h('div',null,'Shared palette',h('strong',null,study.palette==='golden'?'Golden hour':'Daylight'))),
+        h('div',{className:'birdlab-course-values'},h('div',null,'Current azimuth',h('strong',{'data-light-value':'azimuth'},study.azimuth.toFixed(1)+'°')),h('div',null,'Current elevation',h('strong',{'data-light-value':'elevation'},study.elevation.toFixed(1)+'°')),h('div',null,'Shared palette',h('strong',null,BIRDLAB_LIGHT_NAMES[study.palette]||'Daylight'))),
         h('div',{className:'birdlab-course-legend'},h('span',{style:{'--course-color':'#ffcf76'}},'Gold · current direction'),h('span',{style:{'--course-color':'#65e4d4'}},'Mint dashed · pinned direction')),
         h('div',{className:'birdlab-course-charts'},chart('plan'),chart('elevation')),
         h('div',{className:'birdlab-course-actions'},h('button',{type:'button','data-light-pin':'true',onClick:function(){command('pinLightDirection');}},pin?'Replace pinned direction':'Pin light direction'),h('button',{type:'button','data-light-restore':'true',disabled:!pin,onClick:function(){command('restoreLightDirection');}},'Return to pinned direction'),h('button',{type:'button','data-light-clear':'true',disabled:!pin,onClick:function(){command('clearLightDirection');}},'Clear reference')),
         pin?h('p',{'data-light-reference':'true'},'Pinned direction · azimuth '+pin.azimuth.toFixed(1)+'° · elevation '+pin.elevation.toFixed(1)+'°. The reference holds a direction, not a second light or a saved image. Both diagrams use the current shared palette.'):h('p',null,'Pin a direction, move the light, then return to the reference to compare the same surface again.'),
-        h('div',{className:'birdlab-course-actions'},h('button',{type:'button',onClick:function(){command('setLighting','daylight');}},'Reset daylight'),h('button',{type:'button',onClick:function(){command('setLighting','golden');}},'Reset golden hour')),
+        h('div',{className:'birdlab-course-actions'},h('button',{type:'button',onClick:function(){command('setLighting','daylight');}},'Reset daylight'),h('button',{type:'button',onClick:function(){command('setLighting','golden');}},'Reset golden hour'),h('button',{type:'button',onClick:function(){command('setLighting','dawn');}},'Reset dawn')),
         h('p',null,'Try Side light, then Low raking light. Orbit the paused hawk to inspect its wings. Which edges become easier to see? The Flight timeline above selects a different pose.'),
-        h('p',{className:'birdlab-3d-hint'},'Azimuth 0° faces world +Z and +90° faces +X; these are model axes, not compass bearings. Elevation is measured above the level world plane, independent of terrain slope. Arrows point toward the source; light arrives in the opposite direction. Moving the main light keeps its color, strength, fill lights, haze and exposure fixed. Reset daylight or Reset golden hour restores that complete palette and its original direction. This stylized rendering is not a geographic sun-path model, calibrated reflectance, bird vision or a plumage-identification test. Opening the study pauses the flight; Play flight can resume it with the chosen lighting.'));
+        h('p',{className:'birdlab-3d-hint'},'Azimuth 0° faces world +Z and +90° faces +X; these are model axes, not compass bearings. Elevation is measured above the level world plane, independent of terrain slope. Arrows point toward the source; light arrives in the opposite direction. Moving the main light keeps its color, strength, fill lights, haze and exposure fixed. Reset daylight, Reset golden hour or Reset dawn restores that complete palette and its original direction. This stylized rendering is not a geographic sun-path model, calibrated reflectance, bird vision or a plumage-identification test. Opening the study pauses the flight; Play flight can resume it with the chosen lighting.'));
     }
     function renderPerspectiveRuler(){
       var study=state.perspectiveInvestigation;if(!study)return null;
@@ -741,6 +756,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         h('p',null,'Each bird calls now and then from where it is. Calls pan left or right and grow fainter with distance, so you can find a bird by ear. Then watch it: a calling bird lifts its head and opens its bill, wider for higher notes; a grouse beats its wings.'),
         h('button',{type:'button',disabled:disabled,'aria-pressed':String(soundOn),'data-birdlab-sounds-toggle':'true',onClick:toggleSound},soundOn?'Turn sounds off':'Turn sounds on'),
         soundOn?h('p',{className:'birdlab-3d-sound-caption','data-birdlab-heard':heard?heard.id:''},heard?'Heard: '+heard.name+', '+heard.words+', about '+Math.max(1,Math.round(heard.distance))+' m away. '+heard.label+'.':'Listening…'):null,
+        state.weather==='rain'?h('p',{className:'birdlab-3d-hint','data-birdlab-rain-calls':'true'},'Light rain: many songbirds call less in steady rain, so calls come about half as often, under the hiss of the shower.'):null,
+        state.lighting==='dawn'?h('p',{className:'birdlab-3d-hint','data-birdlab-dawn-chorus':'true'},'Dawn chorus: many songbirds call and sing most around sunrise, so calls come about twice as often now.'):null,
         h('p',{className:'birdlab-3d-hint'},'Synthesized outlines of each species’ song or call, not recordings. A ruffed grouse “drums” with its wings, a low sound felt as much as heard.'));
     }
     return h('main', {className:'birdlab-3d', 'data-birdlab-3d-shell':'true', 'data-birdlab-3d-mode':free?'free':'guided', 'data-birdlab-3d-ready':String(state.ready && !error), 'data-birdlab-3d-paused':String(state.paused), 'data-birdlab-3d-phase':phase},
@@ -844,14 +861,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             free?h('section',{className:'birdlab-3d-card','aria-labelledby':'birdlab-3d-notebook-title'},
               h('div',{className:'birdlab-3d-eyebrow'},'This visit'),h('h2',{id:'birdlab-3d-notebook-title'},'Field notebook'),
               h('p',null,sightings.length?sightings.length+' species recorded':'Your notebook is waiting for its first sighting.'),
-              sightings.length?h('ol',{className:'birdlab-3d-notebook'},sightings.map(function(entry){return h('li',{key:entry.id},h('strong',null,entry.name),h('small',{style:{fontStyle:'italic'}},entry.scientificName),h('small',null,entry.behavior),entry.food?h('small',{'data-birdlab-sighting-food':entry.food.kind},'Diet evidence · '+entry.food.label):null,h('small',null,distanceLabel(entry.distance),' · ',visitTime(entry.time),' into your visit'));})):h('p',null,'Identify an animal through your binoculars, then choose Record sighting.'),
+              sightings.length?h('ol',{className:'birdlab-3d-notebook'},sightings.map(function(entry){return h('li',{key:entry.id},h('strong',null,entry.name),h('small',{style:{fontStyle:'italic'}},entry.scientificName),h('small',null,entry.behavior),entry.food?h('small',{'data-birdlab-sighting-food':entry.food.kind},'Diet evidence · '+entry.food.label):null,entry.conditions?h('small',{'data-birdlab-sighting-conditions':entry.conditions.light+' '+entry.conditions.weather},'Conditions · '+(BIRDLAB_LIGHT_NAMES[entry.conditions.light]||'Daylight')+(entry.conditions.weather==='rain'?', light rain':', clear')):null,h('small',null,distanceLabel(entry.distance),' · ',visitTime(entry.time),' into your visit'));})):h('p',null,'Identify an animal through your binoculars, then choose Record sighting.'),
+              sightings.length?h('p',{className:'birdlab-3d-hint','data-birdlab-conditions-hint':'true'},'Each entry notes the light and weather, as field checklists do: bird activity changes with both.'):null,
               h('p',{className:'birdlab-3d-hint'},'One entry per species. Notes stay here while you switch views during this visit.')):null,
             renderFeedingStudy(),
             renderWoodlandSounds(),
             renderResidentInspection(),
             h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Your viewpoint'), !free?h('div', {className:'birdlab-3d-camera-buttons', role:'group', 'aria-label':t('stem.birdlab.a11y_camera_view', 'Camera view')}, ['orbit','follow','wide'].map(function(camera) { return h('button', {key:camera, type:'button', disabled:disabled, 'aria-pressed':String(state.camera === camera), onClick:function() { command('setCamera', camera, {camera:camera}); }}, camera === 'orbit' ? 'Orbit' : camera === 'follow' ? 'Follow' : 'Habitat'); })):null, h('p', null, free?(state.crouching?'You are crouching with slower steps and a lower viewpoint. Stand up for a wider view across the clearing.':'Walk at eye level, or crouch for a lower, quieter approach. Raise binoculars for a closer view and lower them to find your way.'):watchingNeighbor ? 'Move around this bird or zoom closer to study its field marks.' : state.camera === 'follow' ? 'Travel alongside the hawk as it crosses the clearing.' : state.camera === 'wide' ? 'See the flight path in the wider woodland.' : 'Circle the hawk to examine its wings and feather layers.'),
-              h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland light'), h('div', {className:'birdlab-3d-lighting-buttons', role:'group', 'aria-label':t('stem.birdlab.a11y_woodland_lighting', 'Woodland lighting')}, [{value:'daylight', label:'Daylight'}, {value:'golden', label:'Golden hour'}].map(function(light) { return h('button', {key:light.value, type:'button', disabled:disabled, 'aria-pressed':String(state.lighting === light.value&&!state.lightingDirectionCustom), onClick:function() { command('setLighting', light.value, {lighting:light.value}); }}, light.label); })),
-              state.lightingDirectionCustom?h('p',{className:'birdlab-3d-hint','data-birdlab-custom-light':'true'},'Custom direction · '+(state.lighting==='golden'?'Golden hour':'Daylight')+' palette. Choose a lighting preset to reset.'):null,
+              h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland light'), h('div', {className:'birdlab-3d-lighting-buttons birdlab-3d-light-presets', role:'group', 'aria-label':t('stem.birdlab.a11y_woodland_lighting', 'Woodland lighting')}, [{value:'dawn', label:'Dawn'}, {value:'daylight', label:'Daylight'}, {value:'golden', label:'Golden hour'}].map(function(light) { return h('button', {key:light.value, type:'button', disabled:disabled, 'aria-pressed':String(state.lighting === light.value&&!state.lightingDirectionCustom), onClick:function() { command('setLighting', light.value, {lighting:light.value}); }}, light.label); })),
+              state.lightingDirectionCustom?h('p',{className:'birdlab-3d-hint','data-birdlab-custom-light':'true'},'Custom direction · '+(BIRDLAB_LIGHT_NAMES[state.lighting]||'Daylight')+' palette. Choose a lighting preset to reset.'):null,
+              h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Weather'), h('div', {className:'birdlab-3d-weather-buttons', role:'group', 'aria-label':'Woodland weather', 'data-birdlab-weather':state.weather||'clear'}, [{value:'clear', label:'Clear'}, {value:'rain', label:'Light rain'}].map(function(sky) { return h('button', {key:sky.value, type:'button', disabled:disabled, 'aria-pressed':String((state.weather||'clear') === sky.value), onClick:function() { command('setWeather', sky.value, {weather:sky.value}); }}, sky.label); })),
+              state.weather==='rain'?h('p',{className:'birdlab-3d-hint','data-birdlab-rain-note':'true'},'A light shower greys whichever light you chose. In real rain, birds often sit tight and preen, while robins may feed on wet lawns where earthworms come up. In Free roam the residents do the same: fewer flights, more preening, and robins still working the lawn.'):null,
               !free?h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland neighbors'):null, !free?h('div', {className:'birdlab-3d-lighting-buttons', role:'group', 'aria-label':t('stem.birdlab.a11y_observe_woodland_birds', 'Observe woodland birds')}, residentChoices.map(function(other) { return h('button', {key:other.id,type:'button',disabled:disabled,'data-birdlab-resident-camera':other.id,'aria-pressed':String(state.camera===other.id),onClick:function(){command('setCamera',other.id,{camera:other.id});}},other.label); })):null),
             !free&&watchingNeighbor && (state.camera==='mourningDove'||state.camera==='grouse') ? h('section', {className:'birdlab-3d-card'}, h('div',{className:'birdlab-3d-eyebrow'},'Observe this bird'),
               h('button',{type:'button',disabled:disabled,'aria-pressed':String(!!state.repeatFlights),'aria-describedby':'birdlab-3d-repeat-help',onClick:function(){command('setRepeatFlights',!state.repeatFlights,{repeatFlights:!state.repeatFlights});}},'Repeat flights'),
@@ -2098,6 +2118,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-thermo-steps button[aria-pressed="true"] { background:#31583c; color:#fff8e2; border-color:#31583c; }',
       '.birdlab-dawn-stage { overflow:hidden; border:1px solid #4d6561; border-radius:12px; background:#213f44; }',
       '.birdlab-dawn-stage svg { display:block; width:100%; height:auto; }',
+      '.birdlab-dawn-sun { transition:transform 1.4s cubic-bezier(.3,.6,.3,1); }',
+      '.birdlab-dawn-ease { transition:opacity 1.1s ease, fill 1.1s ease, stop-color 1.1s ease; }',
+      '@keyframes birdlab-dawn-twinkle { 0%,100% { opacity:1; } 50% { opacity:.35; } }',
+      '@keyframes birdlab-dawn-drift { from { transform:translateX(-14px); } to { transform:translateX(14px); } }',
+      '@keyframes birdlab-dawn-voice { 0%,100% { opacity:1; transform:translateX(0); } 50% { opacity:.45; transform:translateX(-3px); } }',
+      '@keyframes birdlab-dawn-shimmer { 0%,100% { stroke-dashoffset:0; } 50% { stroke-dashoffset:6; } }',
+      '.birdlab-dawn-twinkle { animation:birdlab-dawn-twinkle 2.6s ease-in-out infinite; }',
+      '.birdlab-dawn-mist { animation:birdlab-dawn-drift 11s ease-in-out infinite alternate; }',
+      '.birdlab-dawn-mist--slow { animation-duration:16s; animation-direction:alternate-reverse; }',
+      '.birdlab-dawn-voice { animation:birdlab-dawn-voice 1.8s ease-in-out infinite; }',
+      '.birdlab-dawn-shimmer { stroke-dasharray:14 4; animation:birdlab-dawn-shimmer 3s ease-in-out infinite; }',
+      '@media (prefers-reduced-motion: reduce) { .birdlab-dawn-twinkle, .birdlab-dawn-mist, .birdlab-dawn-voice, .birdlab-dawn-shimmer { animation:none !important; } .birdlab-dawn-sun, .birdlab-dawn-ease { transition:none !important; } }',
       '.birdlab-dawn-singers { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr)); gap:8px; margin:15px 0; }',
       '.birdlab-dawn-singers button { display:flex; gap:11px; align-items:center; padding:11px; min-height:65px; border:1px solid #b6c8a9; border-radius:9px; background:#fffdf1; color:#3c5437; text-align:left; font-size:12px; cursor:pointer; }',
       '.birdlab-dawn-singers button[aria-pressed="true"] { border-color:#31583c; box-shadow:inset 0 0 0 2px #31583c; background:#eaf0dd; }',
@@ -8749,6 +8781,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var on = 0;
     return birdLabCallTones({ sketch: sketch }).map(function(n) { var cue = { on: on, dur: n.dur, freq: n.freq, trill: n.trill || 0 }; on += n.dur + n.gap; return cue; });
   }
+  // Mean seconds between one resident's calls. At dawn the woodland calls
+  // about twice as often (the dawn chorus); in steady rain, less often.
+  function birdLabCallInterval(entry, lighting, weather) { return entry.every * (lighting === 'dawn' ? .45 : 1) * (weather === 'rain' ? 1.8 : 1); }
+  var BIRDLAB_LIGHT_NAMES = { dawn: 'Dawn', daylight: 'Daylight', golden: 'Golden hour' };
   function birdLabCallLevel(distance) { return Math.max(.06, Math.min(1, 2.2 / (1.2 + Math.max(0, distance)))); }
   // The trainer's synthesis, routed through a level, a distance muffle and a
   // stereo pan. Returns the call's length in seconds.
@@ -8791,7 +8827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       mnemonicTones: birdLabMnemonicTones, callTones: birdLabCallTones,
       classifyCallShape: birdLabClassifyCallShape, callRegister: birdLabCallRegister,
       callQuality: birdLabCallQuality, describeCall: birdLabDescribeCall,
-      WOODLAND_CALLS: WOODLAND_CALLS, soundBearing: birdLabSoundBearing, callLevel: birdLabCallLevel, songCues: birdLabSongCues
+      WOODLAND_CALLS: WOODLAND_CALLS, soundBearing: birdLabSoundBearing, callLevel: birdLabCallLevel, songCues: birdLabSongCues, callInterval: birdLabCallInterval
     });
   } catch (e) {}
 
@@ -11509,43 +11545,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     };
     function f1(n) { return Math.round(n * 10) / 10; }
     function nameOf(profile) { return String(profile.name).split(' (')[0]; }
-    // One owl standing on y = 0, centred on x = 0, `H` px tall.
+    // One owl standing on y = 0, centred on x = 0, `H` px tall: an owl
+    // silhouette with folded wings, a radiating facial disc, lidded eyes
+    // and feathered toes with talons, all inside the same height envelope.
     function owl(h, sp, H, key) {
       var W = H * sp.wr, out = [], i;
-      var bodyCy = -H * 0.36, headCy = -H * 0.76;
-      out.push(h('ellipse', { key: key + 'tail', cx: 0, cy: f1(-H * 0.06), rx: f1(W * 0.22), ry: f1(H * 0.08), fill: sp.rim, opacity: 0.6 }));
-      out.push(h('ellipse', { key: key + 'body', cx: 0, cy: f1(bodyCy), rx: f1(W / 2), ry: f1(H * 0.36), fill: sp.body, 'data-owl-part': 'body' }));
-      if (sp.breast) out.push(h('ellipse', { key: key + 'br', cx: 0, cy: f1(bodyCy + H * 0.04), rx: f1(W * 0.3), ry: f1(H * 0.26), fill: sp.breast }));
+      var bodyCy = -H * 0.36, headCy = -H * 0.76, line = Math.max(0.5, H * 0.008);
+      out.push(h('path', { key: key + 'tail', d: 'M ' + f1(-W * 0.2) + ' ' + f1(-H * 0.1) + ' L ' + f1(-W * 0.14) + ' ' + f1(-H * 0.01) + ' L ' + f1(W * 0.14) + ' ' + f1(-H * 0.01) + ' L ' + f1(W * 0.2) + ' ' + f1(-H * 0.1) + ' Z', fill: sp.rim, opacity: 0.7 }));
+      out.push(h('path', { key: key + 'body', 'data-owl-part': 'body', fill: sp.body,
+        d: 'M ' + f1(-W * 0.43) + ' ' + f1(-H * 0.58) + ' C ' + f1(-W * 0.57) + ' ' + f1(-H * 0.42) + ' ' + f1(-W * 0.53) + ' ' + f1(-H * 0.14) + ' ' + f1(-W * 0.27) + ' ' + f1(-H * 0.04) +
+          ' L ' + f1(W * 0.27) + ' ' + f1(-H * 0.04) + ' C ' + f1(W * 0.53) + ' ' + f1(-H * 0.14) + ' ' + f1(W * 0.57) + ' ' + f1(-H * 0.42) + ' ' + f1(W * 0.43) + ' ' + f1(-H * 0.58) +
+          ' Q 0 ' + f1(-H * 0.68) + ' ' + f1(-W * 0.43) + ' ' + f1(-H * 0.58) + ' Z' }));
+      out.push(h('ellipse', { key: key + 'front', cx: 0, cy: f1(bodyCy + H * 0.02), rx: f1(W * 0.3), ry: f1(H * 0.27), fill: sp.breast || '#ffffff', opacity: sp.breast ? 1 : 0.13 }));
       // Breast pattern: barred (bars on the chest, streaks below), bars, streaks or flecks.
       for (i = 0; i < 6; i++) {
         var y = bodyCy - H * 0.16 + i * H * 0.07, half = W * 0.26;
         if (sp.pattern === 'bars' || (sp.pattern === 'barred' && i < 2)) {
-          out.push(h('line', { key: key + 'b' + i, x1: f1(-half), y1: f1(y), x2: f1(half), y2: f1(y), stroke: sp.ink, strokeWidth: f1(Math.max(0.8, H * 0.012)), opacity: 0.7 }));
+          out.push(h('path', { key: key + 'b' + i, d: 'M ' + f1(-half) + ' ' + f1(y) + ' Q 0 ' + f1(y + H * 0.012) + ' ' + f1(half) + ' ' + f1(y), fill: 'none', stroke: sp.ink, strokeWidth: f1(Math.max(0.8, H * 0.012)), opacity: 0.7 }));
         } else if (sp.pattern === 'streaks' || sp.pattern === 'barred') {
-          for (var k = -1; k <= 1; k++) out.push(h('line', { key: key + 's' + i + k, x1: f1(k * half * 0.6), y1: f1(y), x2: f1(k * half * 0.6), y2: f1(y + H * 0.045), stroke: sp.ink, strokeWidth: f1(Math.max(0.8, H * 0.014)), strokeLinecap: 'round', opacity: 0.75 }));
+          for (var k = -1; k <= 1; k++) out.push(h('line', { key: key + 's' + i + k, x1: f1(k * half * 0.6), y1: f1(y), x2: f1(k * half * 0.6), y2: f1(y + H * 0.045), stroke: sp.ink, strokeWidth: f1(Math.max(0.8, H * 0.014)), strokeLinecap: 'round', opacity: 0.6 }));
         } else if (sp.pattern === 'flecks' && i % 2 === 0) {
           for (var q = -1; q <= 1; q += 2) out.push(h('line', { key: key + 'f' + i + q, x1: f1(q * half * 0.5 - H * 0.02), y1: f1(y), x2: f1(q * half * 0.5 + H * 0.02), y2: f1(y), stroke: sp.ink, strokeWidth: f1(Math.max(0.6, H * 0.01)), opacity: 0.55 }));
         }
       }
+      // Folded wings: a darker cloak over each side, pale scapular spots,
+      // and the primary tips crossing toward the tail.
+      [-1, 1].forEach(function(s) {
+        var wing = 'M ' + f1(s * W * 0.42) + ' ' + f1(-H * 0.58) + ' C ' + f1(s * W * 0.58) + ' ' + f1(-H * 0.4) + ' ' + f1(s * W * 0.5) + ' ' + f1(-H * 0.14) + ' ' + f1(s * W * 0.2) + ' ' + f1(-H * 0.07) +
+          ' C ' + f1(s * W * 0.3) + ' ' + f1(-H * 0.24) + ' ' + f1(s * W * 0.33) + ' ' + f1(-H * 0.44) + ' ' + f1(s * W * 0.3) + ' ' + f1(-H * 0.56) + ' Z';
+        out.push(h('path', { key: key + 'wing' + s, d: wing, fill: sp.body }));
+        out.push(h('path', { key: key + 'wingshade' + s, d: wing, fill: sp.rim, opacity: 0.3, 'data-owl-part': 'wing' }));
+        for (var spot = 0; spot < 3; spot++) out.push(h('circle', { key: key + 'spot' + s + spot, cx: f1(s * W * (0.42 - spot * 0.03)), cy: f1(-H * (0.46 - spot * 0.08)), r: f1(Math.max(0.6, H * 0.011)), fill: '#f6f0e3', opacity: 0.75 }));
+        out.push(h('path', { key: key + 'prim' + s, d: 'M ' + f1(s * W * 0.36) + ' ' + f1(-H * 0.2) + ' L ' + f1(s * W * 0.22) + ' ' + f1(-H * 0.08) + ' M ' + f1(s * W * 0.42) + ' ' + f1(-H * 0.22) + ' L ' + f1(s * W * 0.27) + ' ' + f1(-H * 0.09), stroke: sp.rim, strokeWidth: f1(line), opacity: 0.6 }));
+      });
       if (sp.tufts) {
         var tl = sp.tufts[0] * H, sp2 = sp.tufts[1] * W;
         [-1, 1].forEach(function(s) {
-          out.push(h('path', { key: key + 'tuft' + s, d: 'M ' + f1(s * (sp2 - W * 0.08)) + ' ' + f1(headCy - H * 0.14) + ' L ' + f1(s * (sp2 + W * 0.06)) + ' ' + f1(headCy - H * 0.14 - tl) +
-            ' L ' + f1(s * (sp2 + W * 0.1)) + ' ' + f1(headCy - H * 0.1) + ' Z', fill: sp.body, stroke: sp.rim, strokeWidth: f1(Math.max(0.6, H * 0.01)), 'data-owl-part': 'tuft' }));
+          var root = headCy - H * 0.14, inner = s * (sp2 - W * 0.08), outer = s * (sp2 + W * 0.1), tip = s * (sp2 + W * 0.06);
+          out.push(h('path', { key: key + 'tuft' + s, 'data-owl-part': 'tuft', fill: sp.body, stroke: sp.rim, strokeWidth: f1(Math.max(0.6, H * 0.01)), strokeLinejoin: 'round',
+            d: 'M ' + f1(inner) + ' ' + f1(root) + ' L ' + f1(tip - s * W * 0.03) + ' ' + f1(root - tl * 0.7) + ' L ' + f1(tip) + ' ' + f1(root - tl) +
+              ' L ' + f1(tip + s * W * 0.015) + ' ' + f1(root - tl * 0.62) + ' L ' + f1(outer) + ' ' + f1(headCy - H * 0.1) + ' Z' }));
         });
       }
       out.push(h('ellipse', { key: key + 'head', cx: 0, cy: f1(headCy), rx: f1(W * 0.48), ry: f1(H * 0.2), fill: sp.body }));
       out.push(h('ellipse', { key: key + 'disc', cx: 0, cy: f1(headCy + H * 0.01), rx: f1(W * 0.42), ry: f1(H * 0.16), fill: sp.disc, stroke: sp.rim, strokeWidth: f1(Math.max(0.8, H * 0.018)), 'data-owl-part': 'disc' }));
-      if (sp.rings) for (i = 1; i <= 2; i++) out.push(h('ellipse', { key: key + 'ring' + i, cx: 0, cy: f1(headCy + H * 0.01), rx: f1(W * 0.42 * (1 - i * 0.22)), ry: f1(H * 0.16 * (1 - i * 0.22)), fill: 'none', stroke: sp.rim, strokeWidth: f1(Math.max(0.5, H * 0.008)), opacity: 0.45 }));
+      // Fine feathers radiate from each eye across the disc.
+      [-1, 1].forEach(function(s) {
+        var d = '';
+        for (var r = 0; r < 7; r++) {
+          var a = (-70 + r * 28) * Math.PI / 180, cx = s * W * 0.16, cy = headCy - H * 0.005;
+          d += 'M ' + f1(cx + s * Math.cos(a) * W * 0.12) + ' ' + f1(cy + Math.sin(a) * H * 0.06) + ' L ' + f1(cx + s * Math.cos(a) * W * 0.24) + ' ' + f1(cy + Math.sin(a) * H * 0.12) + ' ';
+        }
+        out.push(h('path', { key: key + 'rays' + s, d: d, stroke: sp.rim, strokeWidth: f1(line * 0.8), opacity: 0.22, fill: 'none' }));
+      });
+      if (sp.rings) for (i = 1; i <= 2; i++) out.push(h('ellipse', { key: key + 'ring' + i, cx: 0, cy: f1(headCy + H * 0.01), rx: f1(W * 0.42 * (1 - i * 0.22)), ry: f1(H * 0.16 * (1 - i * 0.22)), fill: 'none', stroke: sp.rim, strokeWidth: f1(Math.max(0.5, H * 0.01)), opacity: 0.55 }));
       if (sp.throat) out.push(h('ellipse', { key: key + 'throat', cx: 0, cy: f1(headCy + H * 0.2), rx: f1(W * 0.16), ry: f1(H * 0.035), fill: sp.throat }));
+      // Pale brows meeting above the bill: the "V" of horned and screech owls.
+      if (sp.tufts && sp.tufts[0] > 0.1) out.push(h('path', { key: key + 'brow', d: 'M ' + f1(-W * 0.3) + ' ' + f1(headCy - H * 0.06) + ' Q ' + f1(-W * 0.1) + ' ' + f1(headCy - H * 0.05) + ' 0 ' + f1(headCy + H * 0.02) + ' Q ' + f1(W * 0.1) + ' ' + f1(headCy - H * 0.05) + ' ' + f1(W * 0.3) + ' ' + f1(headCy - H * 0.06), fill: 'none', stroke: '#f3ece0', strokeWidth: f1(Math.max(0.8, H * 0.014)), strokeLinecap: 'round', opacity: 0.8 }));
       [-1, 1].forEach(function(s) {
         var ex = s * W * 0.16, ey = headCy - H * 0.005, er = Math.max(1.6, W * 0.085);
         if (sp.eyePatch) out.push(h('circle', { key: key + 'patch' + s, cx: f1(ex), cy: f1(ey), r: f1(er * 1.55), fill: sp.eyePatch, opacity: 0.85 }));
         out.push(h('circle', { key: key + 'eye' + s, cx: f1(ex), cy: f1(ey), r: f1(er), fill: sp.iris, stroke: '#1f1a17', strokeWidth: f1(Math.max(0.4, er * 0.12)), 'data-owl-eye': sp.iris }));
         out.push(h('circle', { key: key + 'pupil' + s, cx: f1(ex), cy: f1(ey), r: f1(er * 0.5), fill: '#0b0b0b' }));
+        out.push(h('circle', { key: key + 'glint' + s, cx: f1(ex - er * 0.28), cy: f1(ey - er * 0.3), r: f1(er * 0.18), fill: '#ffffff', opacity: 0.9 }));
+        out.push(h('path', { key: key + 'lid' + s, d: 'M ' + f1(ex - er * 1.05) + ' ' + f1(ey - er * 0.2) + ' Q ' + f1(ex) + ' ' + f1(ey - er * 1.25) + ' ' + f1(ex + er * 1.05) + ' ' + f1(ey - er * 0.2), fill: 'none', stroke: sp.rim, strokeWidth: f1(Math.max(0.5, er * 0.16)), strokeLinecap: 'round', opacity: 0.8 }));
       });
+      out.push(h('path', { key: key + 'bristle', d: 'M ' + f1(-W * 0.07) + ' ' + f1(headCy + H * 0.035) + ' L ' + f1(-W * 0.02) + ' ' + f1(headCy + H * 0.06) + ' M ' + f1(W * 0.07) + ' ' + f1(headCy + H * 0.035) + ' L ' + f1(W * 0.02) + ' ' + f1(headCy + H * 0.06), stroke: sp.disc === '#fbfbf8' ? '#c9c5bd' : sp.rim, strokeWidth: f1(line), opacity: 0.5 }));
       out.push(h('path', { key: key + 'bill', d: 'M ' + f1(-W * 0.04) + ' ' + f1(headCy + H * 0.04) + ' L ' + f1(W * 0.04) + ' ' + f1(headCy + H * 0.04) + ' L 0 ' + f1(headCy + H * 0.09) + ' Z', fill: '#d6c9a8', stroke: '#3b3226', strokeWidth: 0.5 }));
-      out.push(h('path', { key: key + 'feet', d: 'M ' + f1(-W * 0.18) + ' 0 l ' + f1(W * 0.1) + ' 0 M ' + f1(W * 0.08) + ' 0 l ' + f1(W * 0.1) + ' 0', stroke: '#3b3226', strokeWidth: f1(Math.max(1, H * 0.02)), strokeLinecap: 'round' }));
+      // Feathered toes with dark talons, standing on the line.
+      [-1, 1].forEach(function(s) {
+        var fx = s * W * 0.13, toe = Math.max(1.2, W * 0.07);
+        out.push(h('ellipse', { key: key + 'toe' + s, cx: f1(fx), cy: f1(-H * 0.025), rx: f1(toe), ry: f1(Math.max(0.9, H * 0.025)), fill: sp.breast || sp.disc }));
+        out.push(h('path', { key: key + 'talon' + s, d: [-1, 0, 1].map(function(t) { var tx = fx + t * toe * 0.6; return 'M ' + f1(tx) + ' ' + f1(-H * 0.012) + ' q ' + f1(toe * 0.15) + ' ' + f1(H * 0.012) + ' ' + f1(toe * 0.35) + ' ' + f1(H * 0.01); }).join(' '),
+          fill: 'none', stroke: '#1f1a17', strokeWidth: f1(Math.max(0.7, H * 0.012)), strokeLinecap: 'round' }));
+      });
       return out;
     }
     // The line-up: largest to smallest, each a button that picks its profile.
@@ -11734,13 +11807,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     // tip; y down), for shape k. The right wing is its mirror.
     function wingPath(k, bw) {
       var S = SHAPES[k], c0 = S.chord, c1 = S.tipChord, lead = -0.02;
-      var pts = [[-bw, lead - 0.02]];
+      var pts = [[-bw, lead - 0.02, 1]];
       if (S.crook) {
         pts.push([-0.42, lead - 0.16]);         // wrist pushed forward
         pts.push([-0.86, lead + 0.1]);          // hand swept back
       } else if (S.tip === 'point') {
         pts.push([-0.5, lead - 0.01]);
-        pts.push([-1, lead + S.sweep]);         // pointed, swept tip
+        pts.push([-1, lead + S.sweep, 1]);      // pointed, swept tip
       } else {
         pts.push([-0.82, lead - 0.03]);
       }
@@ -11749,7 +11822,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var tipX = -1, n = S.fingers, top = pts[pts.length - 1][1], bot = top + c1;
         for (var i = 0; i < n; i++) {
           var yy = top + (bot - top) * (i + 0.5) / n, reach = tipX + Math.abs(i - n / 2) * 0.012;
-          pts.push([reach, yy - 0.012]); pts.push([reach + 0.07, yy + 0.02]);
+          pts.push([reach, yy - 0.012, 1]); pts.push([reach + 0.07, yy + 0.02, 1]);
         }
         pts.push([-0.8, bot + (S.crook ? 0.06 : 0.02)]);
       } else if (S.tip === 'round') {
@@ -11760,13 +11833,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         pts.push([-0.5, lead + c0 * 0.62]);
       }
       if (S.crook) pts.push([-0.46, lead + c0 * 0.55]);
-      pts.push([-bw, lead + c0]);
+      pts.push([-bw, lead + c0, 1]);
       pts.trail = pts.length - 3;
       return pts;
     }
     function poly(pts, sx, sy, mirror) {
       return 'M ' + pts.map(function(p) { return f1((mirror ? -p[0] : p[0]) * sx) + ' ' + f1(p[1] * sy); }).join(' L ') + ' Z';
     }
+    // The same outline with rounded joints: each vertex becomes the control
+    // point of a curve between edge midpoints. Flagged points (the root on
+    // the body, primary fingers, a falcon's tip) stay sharp corners.
+    function smoothPoly(pts, sx, sy, mirror) {
+      var P = pts.map(function(p) { return [f1((mirror ? -p[0] : p[0]) * sx), f1(p[1] * sy), p[2]]; }), n = P.length;
+      function mid(a, b) { return f1((a[0] + b[0]) / 2) + ' ' + f1((a[1] + b[1]) / 2); }
+      var d = 'M ' + mid(P[n - 1], P[0]);
+      for (var i = 0; i < n; i++) {
+        var cur = P[i], next = P[(i + 1) % n];
+        d += cur[2] ? ' L ' + cur[0] + ' ' + cur[1] + ' L ' + mid(cur, next) : ' Q ' + cur[0] + ' ' + cur[1] + ' ' + mid(cur, next);
+      }
+      return d + ' Z';
+    }
+    // Approximate leading edge and chord along the half-span (0 body .. 1 tip),
+    // used only to place feather detail that the wing outline then clips.
+    function wingFrame(k, bw, x) {
+      var S = SHAPES[k], lead = -0.02, t = Math.max(0, Math.min(1, (x - bw) / (0.82 - bw)));
+      if (S.tip === 'point') return { lead: x < 0.5 ? lead : lead + S.sweep * (x - 0.5) / 0.5, chord: S.chord * (1 - Math.max(0, Math.min(1, (x - bw) / (1 - bw)))) + 0.02 };
+      if (S.crook) return { lead: x < 0.42 ? lead - 0.16 * (x - bw) / (0.42 - bw) : lead - 0.16 + 0.26 * (x - 0.42) / 0.44, chord: S.chord + (S.tipChord - S.chord) * t };
+      return { lead: lead - 0.02, chord: S.chord + (S.tipChord - S.chord) * t };
+    }
+    function isDark(hex) { var v = parseInt(String(hex).slice(1), 16); return ((v >> 16) * 0.299 + ((v >> 8) & 255) * 0.587 + (v & 255) * 0.114) < 110; }
     // One raptor, centred on the wing leading edge, `spanPx` wide.
     function raptor(h, name, p, spanPx, key) {
       var b = BIRDS[name], S = SHAPES[b.shape], half = spanPx / 2, out = [];
@@ -11783,15 +11878,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         tail = 'M ' + f1(-tw * 0.5) + ' ' + f1(tailTop) + ' L ' + f1(-tw * 0.5) + ' ' + f1(tailEnd) + (round ? ' Q 0 ' + f1(tailEnd + tw * 0.5) + ' ' : ' L ') + f1(tw * 0.5) + ' ' + f1(tailEnd) + ' L ' + f1(tw * 0.5) + ' ' + f1(tailTop) + ' Z';
       }
       out.push(h('path', { key: key + 'tail', d: tail, fill: b.tailCol, stroke: '#1f2933', strokeWidth: 0.8, 'data-raptor-part': 'tail' }));
+      var clipBase = 'raptor-' + String(key).replace(/[^A-Za-z0-9]/g, ''), ink = isDark(b.under) ? 'rgba(255,255,255,.16)' : 'rgba(31,41,51,.26)';
+      out.push(h('clipPath', { key: key + 'tclip', id: clipBase + '-tail' }, h('path', { d: tail })));
+      out.push(h('path', { key: key + 'rect', clipPath: 'url(#' + clipBase + '-tail)', 'data-raptor-detail': 'rectrices', fill: 'none', stroke: isDark(b.tailCol) ? 'rgba(255,255,255,.18)' : 'rgba(31,41,51,.22)', strokeWidth: 0.5,
+        d: [-3, -2, -1, 0, 1, 2, 3].map(function(r) { return 'M ' + f1(r * tw * 0.07) + ' ' + f1(tailTop) + ' L ' + f1(r * tw * (S.tail === 'fan' ? 0.16 : 0.12)) + ' ' + f1(tailEnd + tw * 0.4); }).join(' ') }));
       if (b.tailBands) for (var i = 1; i <= 3; i++) {
         var ty = tailTop + (tailEnd - tailTop) * i / 4;
         out.push(h('line', { key: key + 'tb' + i, x1: f1(-tw * 0.45), y1: f1(ty), x2: f1(tw * 0.45), y2: f1(ty), stroke: b.tailBands, strokeWidth: f1(Math.max(1, L * 0.03)) }));
       }
       // Wings.
-      var wing = wingPath(b.shape, bw);
+      var wing = wingPath(b.shape, bw), barred = { buteo: 1, accipiter: 1, falcon: 1, harrier: 1 }[b.shape];
       [false, true].forEach(function(m) {
-        out.push(h('path', { key: key + 'w' + m, d: poly(wing, half, sy, m), fill: b.under, stroke: '#1f2933', strokeWidth: 0.8, strokeLinejoin: 'round', 'data-raptor-part': 'wing' }));
+        var outline = smoothPoly(wing, half, sy, m), clipId = clipBase + (m ? '-R' : '-L'), wingOut = out;
+        out.push(h('clipPath', { key: key + 'clip' + m, id: clipId }, h('path', { d: outline })));
+        out.push(h('path', { key: key + 'w' + m, d: outline, fill: b.under, stroke: '#1f2933', strokeWidth: 0.8, strokeLinejoin: 'round', 'data-raptor-part': 'wing' }));
         var s = m ? 1 : -1;
+        out = [];
+        // Flight feathers behind the coverts: one line per feather, and fine
+        // barring across them on the barred groups.
+        var remiges = '', covert = '', x;
+        for (x = bw + 0.04; x < 0.99; x += 0.045) {
+          var fr = wingFrame(b.shape, bw, x), y0 = fr.lead + fr.chord * 0.5;
+          remiges += 'M ' + f1(s * x * half) + ' ' + f1(y0 * sy) + ' L ' + f1(s * (x + 0.012) * half) + ' ' + f1((y0 + fr.chord * 0.8) * sy) + ' ';
+          covert += (covert ? ' L ' : 'M ') + f1(s * x * half) + ' ' + f1(y0 * sy);
+        }
+        out.push(h('path', { key: key + 'rm' + m, d: remiges, fill: 'none', stroke: ink, strokeWidth: 0.5, 'data-raptor-detail': 'remiges' }));
+        out.push(h('path', { key: key + 'cv' + m, d: covert, fill: 'none', stroke: ink, strokeWidth: 0.6 }));
+        if (barred) for (var bar = 1; bar <= 3; bar++) {
+          var barD = '';
+          for (x = bw + 0.04; x < 0.99; x += 0.06) { var fb = wingFrame(b.shape, bw, x); barD += (barD ? ' L ' : 'M ') + f1(s * x * half) + ' ' + f1((fb.lead + fb.chord * (0.56 + bar * 0.13)) * sy); }
+          out.push(h('path', { key: key + 'bar' + m + bar, d: barD, fill: 'none', stroke: ink, strokeWidth: 0.55, strokeDasharray: '2 1.6', 'data-raptor-detail': 'barring' }));
+        }
         if (b.flight) out.push(h('path', { key: key + 'fl' + m, d: poly(wing.filter(function(pt) { return pt[1] > S.chord * 0.3 - 0.02 || pt[0] < -0.8; }).concat([[-bw, S.chord * 0.45]]), half, sy, m), fill: b.flight, opacity: 0.85 }));
         if (b.carpal) out.push(h('ellipse', { key: key + 'cp' + m, cx: f1(s * 0.44 * half), cy: f1(-0.06 * sy), rx: f1(0.05 * half), ry: f1(0.035 * half), fill: b.carpal, 'data-raptor-mark': 'carpal' }));
         if (b.patagial) out.push(h('line', { key: key + 'pt' + m, x1: f1(s * 0.1 * half), y1: f1(-0.02 * sy), x2: f1(s * 0.44 * half), y2: f1(-0.04 * sy), stroke: b.patagial, strokeWidth: f1(Math.max(1.2, half * 0.035)), strokeLinecap: 'round', 'data-raptor-mark': 'patagial' }));
@@ -11802,6 +11919,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           out.push(h('path', { key: key + 'tr' + m, d: poly(band, half, sy, m), fill: b.trailing, opacity: 0.85, 'data-raptor-mark': 'trailing' }));
         }
         if (b.tips) out.push(h('path', { key: key + 'tp' + m, d: poly(wing.filter(function(pt) { return pt[0] < -0.8; }), half, sy, m), fill: b.tips, 'data-raptor-mark': 'tips' }));
+        var detail = out; out = wingOut;
+        out.push(h('g', { key: key + 'detail' + m, clipPath: 'url(#' + clipId + ')' }, detail));
+        out.push(h('path', { key: key + 'edge' + m, d: outline, fill: 'none', stroke: '#1f2933', strokeWidth: 0.8, strokeLinejoin: 'round' }));
       });
       // Body + head.
       out.push(h('ellipse', { key: key + 'body', cx: 0, cy: f1(L * 0.02), rx: f1(bw * half * 1.1), ry: f1(L * 0.3), fill: b.body, stroke: '#1f2933', strokeWidth: 0.8 }));
@@ -11812,6 +11932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
       var headR = Math.max(3, (b.shape === 'vulture' ? 0.045 : b.shape === 'eagle' ? 0.08 : 0.065) * half);
       out.push(h('circle', { key: key + 'head', cx: 0, cy: f1(headY), r: f1(headR), fill: b.head, stroke: '#1f2933', strokeWidth: 0.8, 'data-raptor-part': 'head' }));
+      if (b.shape !== 'eagle') out.push(h('path', { key: key + 'hook', 'data-raptor-part': 'bill', d: 'M ' + f1(-headR * 0.3) + ' ' + f1(headY - headR * 0.82) + ' L 0 ' + f1(headY - headR * 1.38) + ' L ' + f1(headR * 0.3) + ' ' + f1(headY - headR * 0.82) + ' Z', fill: b.shape === 'vulture' ? '#f5f5f4' : '#3f3f46', stroke: '#1f2933', strokeWidth: 0.4 }));
       if (b.shape === 'eagle') out.push(h('path', { key: key + 'bill', d: 'M ' + f1(-headR * 0.35) + ' ' + f1(headY - headR * 0.8) + ' L 0 ' + f1(headY - headR * 1.6) + ' L ' + f1(headR * 0.35) + ' ' + f1(headY - headR * 0.8) + ' Z', fill: '#facc15', stroke: '#1f2933', strokeWidth: 0.5 }));
       return out;
     }
@@ -27243,71 +27364,251 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // eight near-identical dashes for a panel whose whole lesson is "8 bill
       // shapes — click to learn what each one eats". A bill has no readable
       // shape without a head to give it scale and a place to attach, which is
-      // why every field guide draws it that way. Head is neutral grey so the
-      // bill carries the colour and the eye is the only other mark.
+      // why every field guide draws it that way. The head stays a neutral
+      // grey (shaded crown, pale throat, ringed eye) so the bill carries the
+      // colour. Each bill is two mandibles meeting at the commissure, with a
+      // nostril and the feature that does the work: cere, nail, lamellae,
+      // chisel tip, grooves. A small seed or insect shows what some handle.
       var beakHead = function(h) {
         return [
-          h('path', { key: 'hd', d: 'M 13 4.4 C 7.5 2.4 1.6 4.6 1.6 10 C 1.6 15.4 7.5 17.6 13 15.6 Z', fill: '#8d8578' }),
-          h('circle', { key: 'ey', cx: 7.4, cy: 8.6, r: 1.15, fill: '#12161c' })
+          h('path', { key: 'hd', d: 'M 9.5 3.6 C 5 3.4 1.6 5.6 1.6 10 C 1.6 14.6 5.6 16.8 10 16.2 C 12.4 15.8 13.7 13.4 13.7 10 C 13.7 6.6 12.2 3.8 9.5 3.6 Z', fill: '#8d8578' }),
+          h('path', { key: 'cr', d: 'M 9.5 3.6 C 5 3.4 1.6 5.6 1.6 10 C 3.4 7.2 7.6 5.6 13.3 7.2 C 12.7 5 11.4 3.7 9.5 3.6 Z', fill: '#716a5f' }),
+          h('path', { key: 'th', d: 'M 13.5 12 C 12.9 14.6 11.4 15.9 10 16.2 C 5.6 16.8 2.8 15 2.2 12.6 C 5 14.3 9.4 14.4 13.5 12 Z', fill: '#aaa294' }),
+          h('path', { key: 'fx', d: 'M 3.6 7.4 q .8 -.7 1.6 0 M 5.8 5.6 q .8 -.7 1.6 0 M 8.4 4.9 q .8 -.7 1.6 0 M 2.9 10.4 q .8 -.7 1.6 0', fill: 'none', stroke: '#5e574d', strokeWidth: 0.3, opacity: 0.7 }),
+          h('ellipse', { key: 'hl', cx: 5.6, cy: 9.8, rx: 3.2, ry: 2, fill: '#ffffff', opacity: 0.1 }),
+          h('circle', { key: 'er', cx: 7.4, cy: 8.6, r: 1.6, fill: '#d6d0c2' }),
+          h('circle', { key: 'ey', cx: 7.4, cy: 8.6, r: 1.15, fill: '#12161c' }),
+          h('circle', { key: 'gl', cx: 7.02, cy: 8.2, r: 0.36, fill: '#ffffff' })
         ];
       };
-      var beakArt = function(h, billPath, fill, extra) {
+      // bill: { upper, lower, upperFill, lowerFill, gape (commissure line), naris: [x, y, rx, ry], extras(h) }
+      var beakArt = function(h, bill) {
         var kids = beakHead(h);
-        kids.push(h('path', { key: 'bl', d: billPath, fill: fill, stroke: '#00000022', strokeWidth: 0.3 }));
-        if (extra) kids.push(extra);
-        return h('g', null, kids);
+        kids.push(h('path', { key: 'lo', d: bill.lower, fill: bill.lowerFill, stroke: '#00000026', strokeWidth: 0.25 }));
+        kids.push(h('path', { key: 'up', d: bill.upper, fill: bill.upperFill, stroke: '#00000026', strokeWidth: 0.25 }));
+        if (bill.shine) kids.push(h('path', { key: 'sh', d: bill.shine, fill: 'none', stroke: '#ffffff', strokeWidth: 0.35, strokeLinecap: 'round', opacity: 0.35 }));
+        kids.push(h('path', { key: 'gp', d: bill.gape, fill: 'none', stroke: '#1b1916', strokeWidth: 0.35, strokeLinecap: 'round', opacity: 0.8 }));
+        if (bill.naris) kids.push(h('ellipse', { key: 'nr', cx: bill.naris[0], cy: bill.naris[1], rx: bill.naris[2], ry: bill.naris[3], fill: '#1b1916', opacity: 0.75 }));
+        var extras = bill.extras ? bill.extras(h) : [];
+        kids.push(h('g', { key: 'ex', 'data-bill-features': extras.map(function(part) { return part.key; }).join(' ') }, extras));
+        return h('g', { 'data-beak-anatomy': 'mandibles' }, kids);
       };
       var BEAK_TYPES = [
         {
           id: 'cone', label: __alloT('stem.birdlab.cone_seed_cracker', 'Cone (seed-cracker)'),
           diet: 'Seeds — strong jaw muscles to crack hard shells',
           examples: 'Northern Cardinal, House Finch, Evening Grosbeak, sparrows',
-          svg: function(h) { return beakArt(h, 'M 12 5.6 L 25 10 L 12 14.4 Z', '#4a4640'); }
+          svg: function(h) { return beakArt(h, { upper: 'M 11.8 5.6 Q 18.4 6.2 24.8 9.9 L 11.8 10.4 Z', lower: 'M 11.8 10.4 L 24.8 9.9 Q 18.4 13.6 11.8 14.4 Z',
+            upperFill: '#4a4640', lowerFill: '#6b655c', gape: 'M 11.6 10.9 L 24.6 9.95', shine: 'M 13.4 6.6 Q 18.6 7.2 23 9.2', naris: [14.4, 7.5, 0.55, 0.32],
+            extras: function(h) { return [h('path', { key: 'seed', d: 'M 25.2 10.3 Q 27.4 9.2 28.4 10.6 Q 27.2 11.9 25.2 10.3 Z', fill: '#c9a46a', stroke: '#7a5b2e', strokeWidth: 0.25 })]; } }); }
         },
         {
           id: 'hook', label: __alloT('stem.birdlab.hook_raptor', 'Hook (raptor)'),
           diet: 'Tearing meat from prey — hooked tip rips, sharp edges slice',
           examples: 'Bald Eagle, Cooper\'s Hawk, owls, falcons',
-          svg: function(h) { return beakArt(h, 'M 12 5.4 L 21 6.4 Q 26.5 8 26.6 11.4 Q 24.4 14.6 22.4 11.6 Q 20 9.4 12 13.4 Z', '#3f3b36'); }
+          svg: function(h) { return beakArt(h, { upper: 'M 16.2 5.8 Q 22.6 5.5 25.5 8.6 Q 26.9 10.9 25.6 13.3 Q 25 11.6 23.5 11 Q 20.4 10.5 16.2 11.1 Z', lower: 'M 11.8 11.6 L 16.4 11.1 Q 20.4 10.7 23 11.4 Q 20 13.2 11.8 13.9 Z',
+            upperFill: '#3f3b36', lowerFill: '#57524b', gape: 'M 11.8 11.6 L 16.4 11.1 Q 20.4 10.7 23.2 11.3', shine: 'M 17.4 6.4 Q 22.8 6.4 25 9.2',
+            extras: function(h) { return [h('path', { key: 'cere', d: 'M 11.8 5.4 Q 14.8 5 16.6 5.8 L 16.6 11.1 L 11.8 11.6 Z', fill: '#e8c13f', stroke: '#9a7a1c', strokeWidth: 0.25 }),
+              h('ellipse', { key: 'cn', cx: 14.3, cy: 7.6, rx: 0.55, ry: 0.42, fill: '#1b1916' })]; } }); }
         },
         {
           id: 'spear', label: __alloT('stem.birdlab.spear_fish', 'Spear (fish)'),
           diet: 'Fish — long sharp bill stabs through water at high speed',
           examples: 'Great Blue Heron, egrets, kingfishers (slightly modified version)',
-          svg: function(h) { return beakArt(h, 'M 12 7.9 L 34 10 L 12 12.1 Z', '#e8c440'); }
+          svg: function(h) { return beakArt(h, { upper: 'M 11.8 7.6 L 33.9 9.95 L 11.8 10.15 Z', lower: 'M 11.8 10.15 L 33.9 9.95 L 11.8 12.5 Z',
+            upperFill: '#d6ad34', lowerFill: '#ecca5c', gape: 'M 11.8 10.15 L 33.6 9.97', shine: 'M 13.2 8.3 L 30 9.7',
+            extras: function(h) { return [h('path', { key: 'lore', d: 'M 9 7.9 Q 10.8 7.3 12.2 7.7 L 12.2 9.6 Q 10.6 9.8 9 9.1 Z', fill: '#c8c86a' }),
+              h('path', { key: 'slit', d: 'M 13.4 8.5 L 17.6 8.95', stroke: '#3a2f12', strokeWidth: 0.3, strokeLinecap: 'round' })]; } }); }
         },
         {
           id: 'tube', label: __alloT('stem.birdlab.tube_nectar', 'Tube (nectar)'),
           diet: 'Flower nectar — long thin bill probes deep flower throats; tongue extends past bill tip',
           examples: 'Hummingbirds (Ruby-throated common in Maine summers)',
-          svg: function(h) { return beakArt(h, 'M 12 8.9 Q 24 9.5 34.2 10.6 L 34.2 11.4 Q 24 10.7 12 11.1 Z', '#1f1c1a'); }
+          svg: function(h) { return beakArt(h, { upper: 'M 11.8 8.9 Q 23 9.3 33.4 10.2 L 33.4 10.45 Q 23 10.05 11.8 10.25 Z', lower: 'M 11.8 10.25 Q 23 10.05 33.4 10.45 L 33.2 10.75 Q 23 10.7 11.8 11.3 Z',
+            upperFill: '#1f1c1a', lowerFill: '#34302c', gape: 'M 11.8 10.25 Q 23 10.05 33.2 10.45', naris: [13.2, 9.5, 0.5, 0.22],
+            extras: function(h) { return [h('path', { key: 'tongue', d: 'M 33.3 10.5 L 34.6 10.3 M 33.3 10.5 L 34.6 10.75', fill: 'none', stroke: '#d77a8b', strokeWidth: 0.28, strokeLinecap: 'round' })]; } }); }
         },
         {
           id: 'chisel', label: __alloT('stem.birdlab.chisel_excavator', 'Chisel (excavator)'),
           diet: 'Insects in wood + sap — bill is straight chisel; skull and neck shock-absorb hammering',
           examples: 'Pileated Woodpecker, all woodpeckers',
-          svg: function(h) { return beakArt(h, 'M 12 6.2 L 26.5 8.5 L 26.5 11.5 L 12 13.8 Z', '#ddcfa2'); }
+          svg: function(h) { return beakArt(h, { upper: 'M 11.8 6.2 L 26.6 8.7 L 26.6 10.05 L 11.8 10.05 Z', lower: 'M 11.8 10.05 L 26.6 10.05 L 26.6 11.3 L 11.8 13.8 Z',
+            upperFill: '#d6c797', lowerFill: '#c3b384', gape: 'M 11.8 10.05 L 26.5 10.05', shine: 'M 12.6 7.5 L 25.8 9.2',
+            extras: function(h) { return [h('path', { key: 'tip', d: 'M 26.6 8.7 L 26.6 11.3', stroke: '#6e6343', strokeWidth: 0.4 }),
+              h('path', { key: 'bristles', d: 'M 12 6.6 l 1.4 .5 M 12.2 7.3 l 1.6 .4 M 12.4 8 l 1.5 .3 M 12.5 8.6 l 1.3 .2', fill: 'none', stroke: '#4d463d', strokeWidth: 0.35, strokeLinecap: 'round' })]; } }); }
         },
         {
           id: 'filter', label: __alloT('stem.birdlab.filter_dabbler', 'Filter (dabbler)'),
           diet: 'Floating plants + small invertebrates — flat bill with comb-like edges strains water',
           examples: 'Mallard, Common Eider, geese',
-          svg: function(h) { return beakArt(h, 'M 12 5.8 L 24 6.4 Q 28.6 7.6 28.6 10 Q 28.6 12.6 24 13.6 L 12 14.2 Z', '#e0bf4a'); }
+          svg: function(h) { return beakArt(h, { upper: 'M 11.6 5.8 Q 18 5.6 24 6.6 Q 28.8 7.6 28.8 9.8 Q 28.8 10.4 28.2 10.5 L 11.6 10.6 Z', lower: 'M 11.6 10.6 L 28.2 10.5 Q 27.6 12.6 23.6 13.2 L 11.6 13.8 Z',
+            upperFill: '#d9b641', lowerFill: '#c2a03a', gape: 'M 11.6 10.6 L 28.2 10.5', shine: 'M 13 6.6 Q 20 6.4 25.6 7.6', naris: [16.6, 7.7, 0.95, 0.42],
+            extras: function(h) { return [h('path', { key: 'nail', d: 'M 27.1 7.3 Q 28.9 7.9 28.8 9.8 Q 28.4 10.45 27.6 10.45 Q 27.9 8.8 27.1 7.3 Z', fill: '#3a3226' }),
+              h('path', { key: 'lamellae', d: [14, 15.2, 16.4, 17.6, 18.8, 20, 21.2, 22.4, 23.6, 24.8, 26].map(function(x) { return 'M ' + x + ' 10.7 v .75'; }).join(' '), stroke: '#6f5a1f', strokeWidth: 0.25 })]; } }); }
         },
         {
           id: 'parrot', label: __alloT('stem.birdlab.parrot_like_wedge', 'Parrot-like wedge'),
           diet: 'Small fish — colorful triangular bill carries multiple fish at once for chicks',
           examples: 'Atlantic Puffin (the Maine icon) — and other auks',
-          svg: function(h) { return beakArt(h, 'M 12 4.6 L 23.5 6.6 Q 26.6 10 23.5 13.6 L 12 15.4 Z', '#e85a20',
-            h('path', { key: 'bd', d: 'M 16.4 7.4 L 24.6 8.8 Q 25.6 10 24.6 11.4 L 16.4 12.6 Z', fill: '#f0c520' })); }
+          svg: function(h) { return beakArt(h, { upper: 'M 11.8 4.6 Q 19.4 5.8 25.2 9.7 L 25.3 10.1 L 11.8 10.1 Z', lower: 'M 11.8 10.1 L 25.3 10.1 L 24.9 10.6 Q 19.4 13.9 11.8 15.4 Z',
+            upperFill: '#e85a20', lowerFill: '#de4f1c', gape: 'M 12.6 10.1 L 25.2 10.1',
+            extras: function(h) { return [h('path', { key: 'plate', d: 'M 11.8 4.6 L 15.4 5.2 L 15.4 14.9 L 11.8 15.4 Z', fill: '#5f6b7c' }),
+              h('path', { key: 'ridge', d: 'M 15.4 5.2 L 16.7 5.45 L 16.7 14.7 L 15.4 14.9 Z', fill: '#f0c520' }),
+              h('path', { key: 'grooves', d: 'M 18.8 6.3 Q 19.8 10 18.8 13.6 M 21.4 7.4 Q 22.2 10 21.4 12.6', fill: 'none', stroke: '#f7a36a', strokeWidth: 0.35 }),
+              h('circle', { key: 'rosette', cx: 12.5, cy: 10.6, r: 0.8, fill: '#f3c63c' })]; } }); }
         },
         {
           id: 'thin', label: __alloT('stem.birdlab.thin_probe_insectivore', 'Thin probe (insectivore)'),
           diet: 'Insects on leaves + bark — slender bill plucks small bugs',
           examples: 'Red-eyed Vireo, warblers, kinglets',
-          svg: function(h) { return beakArt(h, 'M 12 8.8 L 23.5 10 L 12 11.2 Z', '#43403c'); }
+          svg: function(h) { return beakArt(h, { upper: 'M 11.8 8.6 Q 18 9 23.6 9.95 L 11.8 10.1 Z', lower: 'M 11.8 10.1 L 23.6 9.95 Q 18 10.8 11.8 11.5 Z',
+            upperFill: '#43403c', lowerFill: '#5c5852', gape: 'M 11.8 10.1 L 23.4 9.96', naris: [13.6, 9.2, 0.4, 0.2],
+            extras: function(h) { return [h('path', { key: 'rictal', d: 'M 12 9.8 l -1.6 -.8 M 12 10.3 l -1.7 .1', fill: 'none', stroke: '#3a3733', strokeWidth: 0.22 }),
+              h('ellipse', { key: 'wing', cx: 25.3, cy: 9.2, rx: 0.8, ry: 0.4, fill: '#dfe7ec', opacity: 0.85, transform: 'rotate(-25 25.3 9.2)' }),
+              h('ellipse', { key: 'bug', cx: 25.2, cy: 9.75, rx: 0.75, ry: 0.36, fill: '#3b3a2c' })]; } }); }
         }
       ];
+
+      // Foot art: a scaled tarsus, jointed toes with knuckle pads and claws
+      // that curve from the last toe segment. Toes are polylines from the
+      // ankle outward; `curl` (+1 / -1) picks which side a claw hooks toward.
+      var footPt = function(p) { return p[0].toFixed(2) + ' ' + p[1].toFixed(2); };
+      var footLeg = function(h, x, y1, y2, w, fill, ink) {
+        var kids = [h('path', { key: 'leg', 'data-foot-part': 'tarsus', d: 'M ' + (x - w / 2) + ' ' + y1 + ' L ' + (x - w * 0.42) + ' ' + y2 + ' L ' + (x + w * 0.42) + ' ' + y2 + ' L ' + (x + w / 2) + ' ' + y1 + ' Z', fill: fill, stroke: ink, strokeWidth: 0.45 })];
+        for (var y = y1 + 1.5, n = 0; y < y2 - 0.5; y += 1.6, n++) kids.push(h('path', { key: 'sc' + n, d: 'M ' + (x - w * 0.44) + ' ' + y.toFixed(2) + ' Q ' + x + ' ' + (y + 0.7).toFixed(2) + ' ' + (x + w * 0.44) + ' ' + y.toFixed(2), fill: 'none', stroke: ink, strokeWidth: 0.28, opacity: 0.6 }));
+        kids.push(h('path', { key: 'hl', d: 'M ' + (x - w * 0.2) + ' ' + (y1 + 0.6) + ' L ' + (x - w * 0.18) + ' ' + (y2 - 0.6), stroke: '#ffffff', strokeWidth: 0.4, opacity: 0.35 }));
+        return kids;
+      };
+      var footToe = function(h, key, pts, w, fill, ink, claw, curl) {
+        var d = 'M ' + pts.map(footPt).join(' L '), kids = [
+          h('path', { key: key + 'o', d: d, fill: 'none', stroke: ink, strokeWidth: w + 0.7, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          h('path', { key: key + 'f', d: d, fill: 'none', stroke: fill, strokeWidth: w, strokeLinecap: 'round', strokeLinejoin: 'round', 'data-foot-part': 'toe' })];
+        for (var i = 1; i < pts.length - 1; i++) kids.push(h('circle', { key: key + 'k' + i, cx: pts[i][0], cy: pts[i][1], r: (w * 0.5).toFixed(2), fill: fill, stroke: ink, strokeWidth: 0.25, strokeOpacity: 0.7 }));
+        if (claw) {
+          var p = pts[pts.length - 1], q = pts[pts.length - 2], ux = p[0] - q[0], uy = p[1] - q[1], ul = Math.sqrt(ux * ux + uy * uy) || 1;
+          ux /= ul; uy /= ul;
+          var nx = -uy * (curl || 1), ny = ux * (curl || 1), b = w * 0.42;
+          var tip = [p[0] + ux * claw * 0.75 + nx * claw * 0.5, p[1] + uy * claw * 0.75 + ny * claw * 0.5];
+          kids.push(h('path', { key: key + 'c', 'data-foot-part': 'claw', fill: '#1c1917',
+            d: 'M ' + footPt([p[0] - nx * b, p[1] - ny * b]) + ' Q ' + footPt([p[0] + ux * claw * 0.8 - nx * b * 0.2, p[1] + uy * claw * 0.8 - ny * b * 0.2]) + ' ' + footPt(tip) +
+              ' Q ' + footPt([p[0] + ux * claw * 0.3 + nx * b * 0.9, p[1] + uy * claw * 0.3 + ny * b * 0.9]) + ' ' + footPt([p[0] + nx * b, p[1] + ny * b]) + ' Z' }));
+        }
+        return kids;
+      };
+      var FOOT_ART = {
+        perching: function(h) {
+          // Side view: three toes wrap the front of the branch, the hind toe the back.
+          return h('g', null,
+            h('path', { d: 'M 1 24 Q 20 22.4 39 24 L 39 31 Q 20 32.4 1 31 Z', fill: '#8b5a2b', stroke: '#4a2c10', strokeWidth: 0.5 }),
+            h('path', { d: 'M 4 26 q 4 -.6 8 0 M 22 27.4 q 5 -.6 10 .2 M 9 29.4 q 4 -.4 7 0 M 30 25.6 q 3 -.3 6 0', fill: 'none', stroke: '#5c3815', strokeWidth: 0.45, opacity: 0.8 }),
+            footLeg(h, 20, 2, 19, 2.6, '#c9a36a', '#6b4a22'),
+            footToe(h, 't3', [[20, 19], [15.6, 21.4], [12, 24.4], [10.8, 27.6]], 1.6, '#d4ae74', '#6b4a22', 2.2, 1),
+            footToe(h, 't2', [[20, 19], [17.2, 22.4], [14.8, 25.6], [14.6, 28.6]], 1.6, '#cfa86d', '#6b4a22', 2.2, 1),
+            footToe(h, 'hx', [[20, 19], [24.2, 21.6], [27, 25], [27, 28]], 1.6, '#c09a62', '#6b4a22', 2.2, -1));
+        },
+        raptor: function(h) {
+          return h('g', null,
+            h('path', { d: 'M 15.4 1 Q 20 -0.4 24.6 1 L 24.2 7.6 Q 20 9.2 15.8 7.6 Z', fill: '#7c5a3a' }),
+            h('path', { d: 'M 16.2 4.6 l 1 2 M 18.6 5 l .6 2.4 M 21.4 5 l -.6 2.4 M 23.8 4.6 l -1 2', stroke: '#4a3320', strokeWidth: 0.4 }),
+            footLeg(h, 20, 7, 17, 5, '#f2bf2e', '#8a5a0c'),
+            footToe(h, 't1', [[20, 17], [14.2, 19.6], [9.8, 23.4], [7.6, 27]], 2.6, '#f4c43a', '#8a5a0c', 4, -1),
+            footToe(h, 't2', [[20, 17], [18.6, 21.6], [17.6, 26], [17.8, 29.6]], 2.6, '#f4c43a', '#8a5a0c', 4, -1),
+            footToe(h, 't3', [[20, 17], [25.8, 19.6], [30.2, 23.4], [32.4, 27]], 2.6, '#f4c43a', '#8a5a0c', 4, 1),
+            footToe(h, 'hx', [[20, 17], [23.2, 21.4], [25.6, 24.4]], 2.8, '#e8b52c', '#8a5a0c', 5, 1));
+        },
+        climbing: function(h) {
+          // Clinging to bark: two toes up, two down, claws in the bark and the
+          // stiff tail braced below as a third leg.
+          return h('g', null,
+            h('rect', { x: 2, y: 0, width: 10.6, height: 40, fill: '#6b3410' }),
+            h('path', { d: 'M 4 3 q 2 3 0 6 M 8 10 q 2 3 0 6 M 5 18 q 2 3 0 6 M 9 25 q 2 3 0 6 M 4.6 31 q 2 3 0 6 M 9.6 2 q 2 3 0 6', fill: 'none', stroke: '#3f1d04', strokeWidth: 0.7 }),
+            h('path', { d: 'M 38.6 25.4 L 12.8 35.2 L 13.4 37.4 L 39 29.6 Z', fill: '#2b2b2b' }),
+            h('path', { 'data-foot-part': 'tarsus', d: 'M 33 12 L 22 20', stroke: '#3f3f3f', strokeWidth: 3.3, strokeLinecap: 'round' }),
+            h('path', { d: 'M 33 12 L 22 20', stroke: '#9a9a9a', strokeWidth: 2.6, strokeLinecap: 'round' }),
+            h('path', { d: 'M 30.6 12.3 l 1.2 1.8 M 28.2 14 l 1.2 1.8 M 25.8 15.7 l 1.2 1.8 M 23.6 17.4 l 1.2 1.8', stroke: '#3f3f3f', strokeWidth: 0.3, opacity: 0.7 }),
+            footToe(h, 'u1', [[22, 20], [17.6, 15.6], [13.6, 12.2]], 1.6, '#b2b2b2', '#3f3f3f', 2.2, -1),
+            footToe(h, 'u2', [[22, 20], [17.8, 17.6], [13.8, 16.4]], 1.5, '#a3a3a3', '#3f3f3f', 2, -1),
+            footToe(h, 'd1', [[22, 20], [17.6, 24.4], [13.6, 27.8]], 1.6, '#b2b2b2', '#3f3f3f', 2.2, 1),
+            footToe(h, 'd2', [[22, 20], [17.8, 22.4], [13.8, 23.6]], 1.5, '#a3a3a3', '#3f3f3f', 2, 1));
+        },
+        webbed: function(h) {
+          return h('g', null,
+            h('path', { d: 'M 1 9 Q 6 7.4 11 9 T 21 9 T 31 9 T 39 9', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.1 }),
+            h('path', { d: 'M 4 12.4 Q 8 11.2 12 12.4 M 26 12.4 Q 31 11.2 36 12.4', fill: 'none', stroke: '#bae6fd', strokeWidth: 0.8 }),
+            footLeg(h, 20, 4, 15, 2.8, '#f08a24', '#9a4a0a'),
+            h('path', { 'data-foot-part': 'web', d: 'M 20 15 L 8.4 31 Q 11.6 30 14.2 32.6 Q 17 31.4 20 33.6 Q 23 31.4 25.8 32.6 Q 28.4 30 31.6 31 Z', fill: '#f39a36', stroke: '#9a4a0a', strokeWidth: 0.5 }),
+            footToe(h, 't1', [[20, 15], [14, 23], [8.4, 31]], 1.3, '#f6a443', '#9a4a0a', 1.4, -1),
+            footToe(h, 't2', [[20, 15], [20, 24], [20, 33.4]], 1.3, '#f6a443', '#9a4a0a', 1.4, 1),
+            footToe(h, 't3', [[20, 15], [26, 23], [31.6, 31]], 1.3, '#f6a443', '#9a4a0a', 1.4, 1));
+        },
+        wading: function(h) {
+          return h('g', null,
+            h('ellipse', { cx: 20, cy: 35.5, rx: 19, ry: 3.4, fill: '#7a6a4a', opacity: 0.55 }),
+            h('ellipse', { cx: 29, cy: 34.6, rx: 6, ry: 1.8, fill: '#3f8f4f', opacity: 0.8 }),
+            footLeg(h, 20, 0, 24, 1.8, '#9c9a52', '#4e4c22'),
+            footToe(h, 't1', [[20, 24], [12.6, 28.6], [5.4, 32.6], [1.8, 34.4]], 1.1, '#a8a65c', '#4e4c22', 1.2, -1),
+            footToe(h, 't2', [[20, 24], [18.2, 29.4], [16.6, 34], [15.8, 37.4]], 1.1, '#a8a65c', '#4e4c22', 1.2, -1),
+            footToe(h, 't3', [[20, 24], [25.4, 29], [29.6, 33.4], [32.4, 36.4]], 1.1, '#a8a65c', '#4e4c22', 1.2, 1),
+            footToe(h, 'hx', [[20, 24], [26.2, 26.2], [32.4, 28.4], [37.6, 30.2]], 1, '#9a984f', '#4e4c22', 1.2, 1));
+        },
+        shorebird: function(h) {
+          return h('g', null,
+            h('ellipse', { cx: 20, cy: 35.5, rx: 19, ry: 2.8, fill: '#f1dca0', opacity: 0.8 }),
+            h('path', { d: 'M 3 34.6 l 1.6 -1.6 M 4.6 33 l 1.6 1.6 M 4.6 33 v 2.2 M 33 34.6 l 1.6 -1.6 M 34.6 33 l 1.6 1.6 M 34.6 33 v 2.2', stroke: '#b89b5a', strokeWidth: 0.4 }),
+            footLeg(h, 20, 3, 20, 2.2, '#e9a630', '#8a5a0c'),
+            h('path', { 'data-foot-part': 'web', d: 'M 20 20 L 14.2 25.8 Q 17 25.4 20 26.8 Q 23 25.4 25.8 25.8 Z', fill: '#efae3c', stroke: '#8a5a0c', strokeWidth: 0.4 }),
+            footToe(h, 't1', [[20, 20], [14.2, 25.8], [9.6, 30.6]], 1.2, '#f0b240', '#8a5a0c', 1.2, -1),
+            footToe(h, 't2', [[20, 20], [20, 26.4], [20, 32]], 1.2, '#f0b240', '#8a5a0c', 1.2, 1),
+            footToe(h, 't3', [[20, 20], [25.8, 25.8], [30.4, 30.6]], 1.2, '#f0b240', '#8a5a0c', 1.2, 1),
+            footToe(h, 'hx', [[20, 20], [22.2, 22.4]], 0.9, '#e0a02c', '#8a5a0c', 0.8, 1));
+        },
+        lobed: function(h) {
+          var lobes = [];
+          [[[20, 19], [14.4, 25.4], [8.6, 32.2]], [[20, 19], [20, 26.6], [20, 34.4]], [[20, 19], [25.6, 25.4], [31.4, 32.2]]].forEach(function(toe, t) {
+            for (var s = 0; s < 2; s++) {
+              var a = toe[s], b = toe[s + 1], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
+              lobes.push(h('ellipse', { key: 'l' + t + s, 'data-foot-part': 'lobe', cx: mx.toFixed(2), cy: my.toFixed(2), rx: 3.6, ry: 2.1, transform: 'rotate(' + ang.toFixed(1) + ' ' + mx.toFixed(2) + ' ' + my.toFixed(2) + ')', fill: '#9fb0c4', stroke: '#475569', strokeWidth: 0.4 }));
+            }
+          });
+          return h('g', null,
+            h('path', { d: 'M 1 9 Q 7 7.4 13 9 T 25 9 T 39 9', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.1 }),
+            h('rect', { x: 1, y: 9, width: 38, height: 30, fill: '#bae6fd', opacity: 0.3 }),
+            footLeg(h, 20, 5, 19, 2.6, '#8f9aa6', '#475569'),
+            lobes,
+            footToe(h, 't1', [[20, 19], [14.4, 25.4], [8.6, 32.2]], 1.1, '#6b7785', '#334155', 1.2, -1),
+            footToe(h, 't2', [[20, 19], [20, 26.6], [20, 34.4]], 1.1, '#6b7785', '#334155', 1.2, 1),
+            footToe(h, 't3', [[20, 19], [25.6, 25.4], [31.4, 32.2]], 1.1, '#6b7785', '#334155', 1.2, 1),
+            footToe(h, 'hx', [[20, 19], [23, 22.6]], 0.9, '#6b7785', '#334155', 0.8, 1));
+        },
+        gamebird: function(h) {
+          return h('g', null,
+            h('ellipse', { cx: 20, cy: 35.4, rx: 19, ry: 2.8, fill: '#d6d3d1', opacity: 0.85 }),
+            h('path', { d: 'M 4 34.6 Q 8 31.4 12 34.4 Z M 27 34.4 Q 31 31.2 35 34.2 Z M 15 35.6 Q 17 34.2 19 35.6 Z', fill: '#a16207', opacity: 0.6 }),
+            footLeg(h, 20, 4, 19, 4.4, '#a8a29e', '#44403c'),
+            footToe(h, 't1', [[20, 19], [14.6, 24.6], [10, 30], [8, 33]], 2.4, '#b3ada8', '#44403c', 1.3, -1),
+            footToe(h, 't2', [[20, 19], [20, 25.4], [20, 30.6], [20, 33.6]], 2.4, '#b3ada8', '#44403c', 1.3, 1),
+            footToe(h, 't3', [[20, 19], [25.4, 24.6], [30, 30], [32, 33]], 2.4, '#b3ada8', '#44403c', 1.3, 1),
+            // Hind toe held clear of the ground: a walking foot, not a perching one.
+            footToe(h, 'hx', [[20, 19], [23.6, 22.2], [26, 24.2]], 1.6, '#9c9692', '#44403c', 1, 1));
+        },
+        osprey: function(h) {
+          var spicules = 'M 11.6 21.4 l -1.5 1 M 10.4 24 l -1.5 1 M 16.6 21.6 l -1.4 1 M 16 24.4 l -1.4 1 M 23.4 21.6 l 1.4 1 M 24 24.4 l 1.4 1 M 28.4 21.4 l 1.5 1 M 29.6 24 l 1.5 1';
+          return h('g', null,
+            // The fish held crosswise is the reason the foot is shaped this way.
+            h('path', { d: 'M 4.6 28 Q 12 21.6 24 23.4 Q 31 24.6 35 28 Q 31 31.4 24 32.6 Q 12 34.4 4.6 28 Z', fill: '#a9c4dd', stroke: '#1d4ed8', strokeWidth: 0.5 }),
+            h('path', { d: 'M 35 28 L 39.4 23.8 L 38.4 28 L 39.4 32.2 Z', fill: '#a9c4dd', stroke: '#1d4ed8', strokeWidth: 0.5 }),
+            h('path', { d: 'M 7 26.4 Q 18 23.6 33 27', fill: 'none', stroke: '#5b7fa6', strokeWidth: 0.6 }),
+            h('circle', { cx: 7.6, cy: 27.4, r: 0.8, fill: '#1e3a8a' }),
+            footLeg(h, 20, 2, 14, 3, '#cdd5df', '#4b5563'),
+            // Two toes forward, two back: the outer toe has swung round to join the hallux.
+            footToe(h, 'f1', [[20, 14], [14.6, 17.4], [11, 21.6], [9.4, 25.6]], 2.4, '#c4c9d1', '#52525b', 3, -1),
+            footToe(h, 'f2', [[20, 14], [17.4, 18.4], [15.8, 22.6], [15.4, 26.6]], 2.4, '#c4c9d1', '#52525b', 3, -1),
+            footToe(h, 'b1', [[20, 14], [22.6, 18.4], [24.2, 22.6], [24.6, 26.6]], 2.4, '#a6abb3', '#52525b', 3, 1),
+            footToe(h, 'b2', [[20, 14], [25.4, 17.4], [29, 21.6], [30.6, 25.6]], 2.4, '#a6abb3', '#52525b', 3, 1),
+            // Spicules: the spiny scales that stop a wet fish sliding free.
+            h('path', { 'data-foot-part': 'spicules', d: spicules, stroke: '#3f3f46', strokeWidth: 0.7, strokeLinecap: 'round' }));
+        }
+      };
 
       // RENAMED from FOOT_TYPES. This array is declared in the component scope,
       // OUTSIDE BeakFeetLab, so as FOOT_TYPES it shadowed the module-level
@@ -27321,160 +27622,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           id: 'perching', label: __alloT('stem.birdlab.perching_anisodactyl', 'Perching (anisodactyl)'),
           lifestyle: 'Songbirds — 3 toes forward + 1 back; tendons LOCK around branch when bird relaxes',
           examples: 'Robin, chickadee, cardinal, blue jay — most birds you\'ll see at a feeder',
-          svg: function(h) {
-            // 3 toes wrapping a horizontal branch + 1 back toe
-            return h('g', null,
-              // Branch (cross-section)
-              h('ellipse', { cx: 20, cy: 26, rx: 18, ry: 5, fill: '#92400e', stroke: '#451a03', strokeWidth: 0.5 }),
-              h('path', { d: 'M 4 26 Q 4 21 8 21 L 32 21 Q 36 21 36 26', fill: '#a16207', stroke: '#451a03', strokeWidth: 0.5 }),
-              // Leg
-              h('line', { x1: 20, y1: 4, x2: 20, y2: 18, stroke: '#fde68a', strokeWidth: 3, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 4, x2: 20, y2: 18, stroke: '#a16207', strokeWidth: 1, strokeLinecap: 'round' }),
-              // Front 3 toes curling over branch
-              h('path', { d: 'M 20 18 Q 12 22 8 28', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
-              h('path', { d: 'M 20 18 Q 20 24 20 30', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
-              h('path', { d: 'M 20 18 Q 28 22 32 28', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
-              // Back toe (hallux) — wraps backward under branch
-              h('path', { d: 'M 20 18 Q 22 25 26 28', fill: 'none', stroke: '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
-              // Toe tips (claws)
-              h('circle', { cx: 8, cy: 28, r: 0.8, fill: '#1c1917' }),
-              h('circle', { cx: 20, cy: 30, r: 0.8, fill: '#1c1917' }),
-              h('circle', { cx: 32, cy: 28, r: 0.8, fill: '#1c1917' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.perching(h); }
         },
         {
           id: 'raptor', label: __alloT('stem.birdlab.raptor_talons', 'Raptor talons'),
           lifestyle: 'Hawks, eagles, owls — powerful crushing grip with curved talons',
           examples: 'Bald Eagle, Cooper\'s Hawk, owls — designed to kill prey on contact',
-          svg: function(h) {
-            return h('g', null,
-              // Thick yellow leg
-              h('rect', { x: 17, y: 2, width: 6, height: 14, rx: 2, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 0.6 }),
-              // Scales
-              [5, 8, 11, 14].map(function(y, i) {
-                return h('line', { key: 'sc' + i, x1: 17, y1: y, x2: 23, y2: y, stroke: '#92400e', strokeWidth: 0.4, opacity: 0.6 });
-              }),
-              // 3 forward talons - curved, sharp
-              h('path', { d: 'M 20 16 Q 12 20 6 26 Q 4 30 7 32', fill: 'none', stroke: '#1c1917', strokeWidth: 2.5, strokeLinecap: 'round' }),
-              h('path', { d: 'M 20 16 Q 20 22 19 30 Q 19 33 20 34', fill: 'none', stroke: '#1c1917', strokeWidth: 2.5, strokeLinecap: 'round' }),
-              h('path', { d: 'M 20 16 Q 28 20 34 26 Q 36 30 33 32', fill: 'none', stroke: '#1c1917', strokeWidth: 2.5, strokeLinecap: 'round' }),
-              // Back talon (hallux — kill talon, the largest)
-              h('path', { d: 'M 20 16 Q 24 22 28 26 Q 30 28 28 30', fill: 'none', stroke: '#1c1917', strokeWidth: 3, strokeLinecap: 'round' }),
-              // Talon tips (sharp triangles)
-              h('path', { d: 'M 5 32 L 8 30 L 8 33 Z', fill: '#1c1917' }),
-              h('path', { d: 'M 18 34 L 21 32 L 21 36 Z', fill: '#1c1917' }),
-              h('path', { d: 'M 31 32 L 34 30 L 34 33 Z', fill: '#1c1917' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.raptor(h); }
         },
         {
           id: 'climbing', label: __alloT('stem.birdlab.climbing_zygodactyl', 'Climbing (zygodactyl)'),
           lifestyle: 'Woodpeckers + parrots — 2 toes forward + 2 back; clings to vertical bark while hammering',
           examples: 'Pileated Woodpecker, all woodpeckers, nuthatches (use modified version)',
-          svg: function(h) {
-            return h('g', null,
-              // Vertical tree trunk (textured)
-              h('rect', { x: 14, y: 0, width: 12, height: 40, fill: '#6b3410' }),
-              h('path', { d: 'M 14 6 L 17 4 M 14 14 L 17 12 M 14 22 L 17 20 M 14 30 L 17 28', stroke: '#3f1d04', strokeWidth: 0.8 }),
-              h('path', { d: 'M 26 8 L 23 6 M 26 18 L 23 16 M 26 26 L 23 24 M 26 36 L 23 34', stroke: '#3f1d04', strokeWidth: 0.8 }),
-              // Leg (horizontal — bird is clinging)
-              h('rect', { x: 17, y: 18, width: 8, height: 4, rx: 1.5, fill: '#fde68a', stroke: '#92400e', strokeWidth: 0.4 }),
-              // 2 forward toes (above)
-              h('path', { d: 'M 20 19 L 12 12 L 9 14', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
-              h('path', { d: 'M 22 19 L 30 12 L 33 14', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
-              // 2 back toes (below)
-              h('path', { d: 'M 20 22 L 12 30 L 9 28', fill: 'none', stroke: '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
-              h('path', { d: 'M 22 22 L 30 30 L 33 28', fill: 'none', stroke: '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
-              // Claws
-              h('circle', { cx: 9, cy: 14, r: 0.7, fill: '#1c1917' }),
-              h('circle', { cx: 33, cy: 14, r: 0.7, fill: '#1c1917' }),
-              h('circle', { cx: 9, cy: 28, r: 0.7, fill: '#1c1917' }),
-              h('circle', { cx: 33, cy: 28, r: 0.7, fill: '#1c1917' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.climbing(h); }
         },
         {
           id: 'webbed', label: __alloT('stem.birdlab.webbed', 'Webbed'),
           lifestyle: 'Swimming — paddle-like skin between front toes; powerful underwater propulsion',
           examples: 'Mallard, Common Eider, gulls, ducks, geese',
-          svg: function(h) {
-            return h('g', null,
-              // Water surface line
-              h('path', { d: 'M 2 8 Q 8 6 14 8 Q 20 6 26 8 Q 32 6 38 8', fill: 'none', stroke: '#0ea5e9', strokeWidth: 1, opacity: 0.6 }),
-              h('path', { d: 'M 2 4 Q 8 2 14 4 Q 20 2 26 4 Q 32 2 38 4', fill: 'none', stroke: '#0ea5e9', strokeWidth: 0.7, opacity: 0.4 }),
-              // Leg
-              h('rect', { x: 18, y: 8, width: 4, height: 8, fill: '#f59e0b', stroke: '#92400e', strokeWidth: 0.4 }),
-              // Webbed foot — 3 toes connected by skin
-              h('path', { d: 'M 20 16 L 8 32 L 16 34 L 20 24 L 24 34 L 32 32 Z',
-                fill: '#fbbf24', stroke: '#92400e', strokeWidth: 0.7 }),
-              // Toe bones inside webbing (suggesting structure)
-              h('line', { x1: 20, y1: 16, x2: 9, y2: 32, stroke: '#92400e', strokeWidth: 0.5, opacity: 0.7 }),
-              h('line', { x1: 20, y1: 16, x2: 20, y2: 30, stroke: '#92400e', strokeWidth: 0.5, opacity: 0.7 }),
-              h('line', { x1: 20, y1: 16, x2: 31, y2: 32, stroke: '#92400e', strokeWidth: 0.5, opacity: 0.7 }),
-              // Claws
-              h('circle', { cx: 9, cy: 32, r: 0.6, fill: '#1c1917' }),
-              h('circle', { cx: 20, cy: 24, r: 0.6, fill: '#1c1917' }),
-              h('circle', { cx: 31, cy: 32, r: 0.6, fill: '#1c1917' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.webbed(h); }
         },
         {
           id: 'wading', label: __alloT('stem.birdlab.wading_long_toes', 'Wading (long toes)'),
           lifestyle: 'Long unwebbed toes spread weight across mud and lily pads without sinking',
           examples: 'Great Blue Heron, egrets, sandpipers, rails',
-          svg: function(h) {
-            return h('g', null,
-              // Lily pad / mud
-              h('ellipse', { cx: 20, cy: 36, rx: 18, ry: 3, fill: '#16a34a', opacity: 0.7 }),
-              h('path', { d: 'M 6 36 Q 14 33 22 36 Q 30 33 36 36', fill: 'none', stroke: '#15803d', strokeWidth: 0.6 }),
-              // Long thin leg
-              h('line', { x1: 20, y1: 0, x2: 20, y2: 22, stroke: '#fde68a', strokeWidth: 2.5, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 0, x2: 20, y2: 22, stroke: '#a16207', strokeWidth: 0.8, strokeLinecap: 'round' }),
-              // Long thin toes spread in 4 directions (wide stance)
-              h('line', { x1: 20, y1: 22, x2: 4, y2: 36, stroke: '#fbbf24', strokeWidth: 1.5, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 22, x2: 14, y2: 38, stroke: '#fbbf24', strokeWidth: 1.5, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 22, x2: 26, y2: 38, stroke: '#fbbf24', strokeWidth: 1.5, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 22, x2: 36, y2: 36, stroke: '#fbbf24', strokeWidth: 1.5, strokeLinecap: 'round' }),
-              // Back toe
-              h('line', { x1: 20, y1: 22, x2: 20, y2: 30, stroke: '#d97706', strokeWidth: 1.4, strokeLinecap: 'round' }),
-              // Claws
-              h('circle', { cx: 4, cy: 36, r: 0.5, fill: '#1c1917' }),
-              h('circle', { cx: 14, cy: 38, r: 0.5, fill: '#1c1917' }),
-              h('circle', { cx: 26, cy: 38, r: 0.5, fill: '#1c1917' }),
-              h('circle', { cx: 36, cy: 36, r: 0.5, fill: '#1c1917' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.wading(h); }
         },
         {
           id: 'shorebird', label: __alloT('stem.birdlab.shorebird_small_webbing', 'Shorebird (small webbing)'),
           lifestyle: 'Mix of running fast on sand + swimming when needed; partial webbing',
           examples: 'Sandpipers, plovers (Piping Plover endangered in Maine), gulls (semi-webbed)',
-          svg: function(h) {
-            return h('g', null,
-              // Sand/wet beach
-              h('ellipse', { cx: 20, cy: 36, rx: 18, ry: 2.5, fill: '#fde68a', opacity: 0.7 }),
-              h('circle', { cx: 6, cy: 35, r: 0.6, fill: '#a16207', opacity: 0.5 }),
-              h('circle', { cx: 12, cy: 36, r: 0.5, fill: '#a16207', opacity: 0.5 }),
-              h('circle', { cx: 28, cy: 36, r: 0.6, fill: '#a16207', opacity: 0.5 }),
-              h('circle', { cx: 34, cy: 35, r: 0.5, fill: '#a16207', opacity: 0.5 }),
-              // Leg
-              h('rect', { x: 18.5, y: 6, width: 3, height: 14, fill: '#f59e0b', stroke: '#92400e', strokeWidth: 0.4 }),
-              // 3 forward toes with PARTIAL webbing at base
-              h('path', { d: 'M 20 20 L 8 32 L 12 34 Q 16 30 20 30 Q 24 30 28 34 L 32 32 Z',
-                fill: '#fbbf24', stroke: '#92400e', strokeWidth: 0.6, opacity: 0.55 }),
-              // Distinct toes (drawn over the webbing)
-              h('line', { x1: 20, y1: 20, x2: 8, y2: 32, stroke: '#92400e', strokeWidth: 1.4, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 20, x2: 20, y2: 32, stroke: '#92400e', strokeWidth: 1.4, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 20, x2: 32, y2: 32, stroke: '#92400e', strokeWidth: 1.4, strokeLinecap: 'round' }),
-              // Tiny back toe
-              h('line', { x1: 20, y1: 20, x2: 22, y2: 24, stroke: '#d97706', strokeWidth: 1, strokeLinecap: 'round' }),
-              // Claws
-              h('circle', { cx: 8, cy: 32, r: 0.5, fill: '#1c1917' }),
-              h('circle', { cx: 20, cy: 32, r: 0.5, fill: '#1c1917' }),
-              h('circle', { cx: 32, cy: 32, r: 0.5, fill: '#1c1917' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.shorebird(h); }
         },
         // The Foot Types view describes eight feet in prose but only six were
         // ever drawn. Lobed and gamebird feet are added here so the reference
@@ -27486,57 +27664,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           id: 'lobed', label: __alloT('stem.birdlab.lobed_swimmer', 'Lobed (swimming)'),
           lifestyle: 'Swims by paddling with flaps of skin on each toe, then walks off onto land — full webs cannot do both',
           examples: 'American Coot, Pied-billed Grebe, Red-necked Phalarope',
-          svg: function(h) {
-            return h('g', null,
-              // Water line
-              h('path', { d: 'M 2 10 Q 8 8 14 10 Q 20 12 26 10 Q 32 8 38 10', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.2, opacity: 0.9 }),
-              h('rect', { x: 2, y: 10, width: 36, height: 28, fill: '#bae6fd', opacity: 0.35 }),
-              // Leg
-              h('rect', { x: 18.5, y: 6, width: 3, height: 13, fill: '#a3a3a3', stroke: '#525252', strokeWidth: 0.4 }),
-              // 3 forward toes, each carrying its own separate lobes
-              h('line', { x1: 20, y1: 19, x2: 8, y2: 33, stroke: '#525252', strokeWidth: 1.5, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 19, x2: 20, y2: 35, stroke: '#525252', strokeWidth: 1.5, strokeLinecap: 'round' }),
-              h('line', { x1: 20, y1: 19, x2: 32, y2: 33, stroke: '#525252', strokeWidth: 1.5, strokeLinecap: 'round' }),
-              h('ellipse', { cx: 14.5, cy: 25, rx: 3.4, ry: 2, transform: 'rotate(49 14.5 25)', fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
-              h('ellipse', { cx: 10.5, cy: 30, rx: 3.4, ry: 2, transform: 'rotate(49 10.5 30)', fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
-              h('ellipse', { cx: 20, cy: 25, rx: 2, ry: 3.4, fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
-              h('ellipse', { cx: 20, cy: 31, rx: 2, ry: 3.4, fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
-              h('ellipse', { cx: 25.5, cy: 25, rx: 3.4, ry: 2, transform: 'rotate(-49 25.5 25)', fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
-              h('ellipse', { cx: 29.5, cy: 30, rx: 3.4, ry: 2, transform: 'rotate(-49 29.5 30)', fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
-              // Small back toe
-              h('line', { x1: 20, y1: 19, x2: 23, y2: 23, stroke: '#737373', strokeWidth: 1.1, strokeLinecap: 'round' }),
-              h('circle', { cx: 8, cy: 33, r: 0.5, fill: '#1c1917' }),
-              h('circle', { cx: 20, cy: 35, r: 0.5, fill: '#1c1917' }),
-              h('circle', { cx: 32, cy: 33, r: 0.5, fill: '#1c1917' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.lobed(h); }
         },
         {
           id: 'gamebird', label: __alloT('stem.birdlab.gamebird_walking', 'Gamebird (walking)'),
           lifestyle: 'Heavy ground bird — stout toes and short blunt claws for scratching leaf litter, hind toe raised clear of the ground',
           examples: 'Wild Turkey, Ruffed Grouse, Ring-necked Pheasant',
-          svg: function(h) {
-            return h('g', null,
-              // Leaf litter
-              h('ellipse', { cx: 20, cy: 35, rx: 18, ry: 2.5, fill: '#d6d3d1', opacity: 0.8 }),
-              h('path', { d: 'M 5 34 Q 9 31 13 34 Z', fill: '#a16207', opacity: 0.55 }),
-              h('path', { d: 'M 28 34 Q 32 31 36 34 Z', fill: '#a16207', opacity: 0.55 }),
-              // Thick leg
-              h('rect', { x: 17.5, y: 5, width: 5, height: 14, rx: 1, fill: '#a8a29e', stroke: '#44403c', strokeWidth: 0.5 }),
-              h('path', { d: 'M 17.5 8 L 22.5 8 M 17.5 11 L 22.5 11 M 17.5 14 L 22.5 14', stroke: '#78716c', strokeWidth: 0.5 }),
-              // 3 stout forward toes, blunt not hooked
-              h('path', { d: 'M 20 19 L 7 32 L 10 34 L 21 22 Z', fill: '#a8a29e', stroke: '#44403c', strokeWidth: 0.8 }),
-              h('path', { d: 'M 18.6 19 L 18.6 34 L 21.4 34 L 21.4 19 Z', fill: '#a8a29e', stroke: '#44403c', strokeWidth: 0.8 }),
-              h('path', { d: 'M 20 19 L 33 32 L 30 34 L 19 22 Z', fill: '#a8a29e', stroke: '#44403c', strokeWidth: 0.8 }),
-              // Hind toe held ABOVE the ground — the mark that separates a
-              // walking foot from a perching one
-              h('line', { x1: 20, y1: 19, x2: 25, y2: 25, stroke: '#78716c', strokeWidth: 1.6, strokeLinecap: 'round' }),
-              // Short blunt claws
-              h('path', { d: 'M 8.5 33 L 6 35', stroke: '#1c1917', strokeWidth: 1.2, strokeLinecap: 'round' }),
-              h('path', { d: 'M 20 34 L 20 36.5', stroke: '#1c1917', strokeWidth: 1.2, strokeLinecap: 'round' }),
-              h('path', { d: 'M 31.5 33 L 34 35', stroke: '#1c1917', strokeWidth: 1.2, strokeLinecap: 'round' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.gamebird(h); }
         },
         {
           // Drawn only after checking the literature, because the Foot Types
@@ -27546,33 +27680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           id: 'osprey', label: __alloT('stem.birdlab.fish_grasping_osprey', 'Fish-grasping (Osprey)'),
           lifestyle: 'Clamps a slippery fish from both sides — outer toe rotates back, and spiny toe pads stop the fish sliding free',
           examples: 'Osprey — Maine coast, lakes + river mouths; also Grey-headed + Lesser Fish Eagles',
-          svg: function(h) {
-            return h('g', null,
-              // Fish held crosswise, the reason the foot is shaped this way
-              h('ellipse', { cx: 20, cy: 28, rx: 15, ry: 5, fill: '#93c5fd', stroke: '#1d4ed8', strokeWidth: 0.5 }),
-              h('path', { d: 'M 35 28 L 39 24 L 39 32 Z', fill: '#93c5fd', stroke: '#1d4ed8', strokeWidth: 0.5 }),
-              h('circle', { cx: 8, cy: 27, r: 0.8, fill: '#1e3a8a' }),
-              // Leg
-              h('rect', { x: 18.5, y: 3, width: 3, height: 11, fill: '#cbd5e1', stroke: '#4b5563', strokeWidth: 0.4 }),
-              // TWO toes forward
-              h('path', { d: 'M 20 14 Q 12 18 9 26', fill: 'none', stroke: '#b4b4bb', strokeWidth: 2.6, strokeLinecap: 'round' }),
-              h('path', { d: 'M 20 14 Q 16 19 15 27', fill: 'none', stroke: '#b4b4bb', strokeWidth: 2.6, strokeLinecap: 'round' }),
-              // TWO toes back — the outer toe has swung round to join the hallux
-              h('path', { d: 'M 20 14 Q 24 19 25 27', fill: 'none', stroke: '#71717a', strokeWidth: 2.6, strokeLinecap: 'round' }),
-              h('path', { d: 'M 20 14 Q 28 18 31 26', fill: 'none', stroke: '#71717a', strokeWidth: 2.6, strokeLinecap: 'round' }),
-              // Spicules — the spiny scales that stop a wet fish sliding out
-              h('path', {
-                d: 'M 11 22 l -1.6 1 M 13 25 l -1.6 1 M 16.5 22 l -1.6 1 M 17.5 25 l -1.6 1 '
-                  + 'M 23.5 22 l 1.6 1 M 22.5 25 l 1.6 1 M 29 22 l 1.6 1 M 27 25 l 1.6 1',
-                stroke: '#52525b', strokeWidth: 0.7, strokeLinecap: 'round'
-              }),
-              // Talons closing under the fish from both sides
-              h('path', { d: 'M 9 26 Q 8 30 11 32', fill: 'none', stroke: '#18181b', strokeWidth: 1.3, strokeLinecap: 'round' }),
-              h('path', { d: 'M 15 27 Q 15 31 18 33', fill: 'none', stroke: '#18181b', strokeWidth: 1.3, strokeLinecap: 'round' }),
-              h('path', { d: 'M 25 27 Q 25 31 22 33', fill: 'none', stroke: '#18181b', strokeWidth: 1.3, strokeLinecap: 'round' }),
-              h('path', { d: 'M 31 26 Q 32 30 29 32', fill: 'none', stroke: '#18181b', strokeWidth: 1.3, strokeLinecap: 'round' })
-            );
-          }
+          svg: function(h) { return FOOT_ART.osprey(h); }
         }
       ];
 
@@ -37198,14 +37306,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'birdlab-dawn-stage' },
                   h('div', { className: 'birdlab-equipment-view-label' }, h('span', null, __alloT('stem.birdlab.dawn_study_window', 'WOODLAND + WETLAND EDGE')), h('strong', null, phases[phase])),
                   h('svg', { viewBox: '0 0 640 350', role: 'img', 'aria-label': __alloFill(__alloT('stem.birdlab.dawn_study_art_label', '{value1}: four illustrated birds remain in the scene. Curved gold marks indicate voices in this invented sequence; a ring highlights the selected bird.'), { value1: phases[phase] }) },
-                    h('defs', null, h('linearGradient', { id: 'birdlab-dawn-study-sky', 'data-dawn-sky': phase, x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: '0%', stopColor: skies[phase][0] }), h('stop', { offset: '100%', stopColor: skies[phase][1] }))),
+                    h('defs', null, h('linearGradient', { id: 'birdlab-dawn-study-sky', 'data-dawn-sky': phase, x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { className: 'birdlab-dawn-ease', offset: '0%', stopColor: skies[phase][0] }), h('stop', { className: 'birdlab-dawn-ease', offset: '100%', stopColor: skies[phase][1] })),
+                      h('radialGradient', { id: 'birdlab-dawn-sun-glow' }, h('stop', { offset: '0%', stopColor: '#ffe9b8', stopOpacity: .9 }), h('stop', { offset: '35%', stopColor: '#ffd59a', stopOpacity: .35 }), h('stop', { offset: '100%', stopColor: '#ffd59a', stopOpacity: 0 })),
+                      h('filter', { id: 'birdlab-dawn-soft', x: '-20%', y: '-200%', width: '140%', height: '500%' }, h('feGaussianBlur', { stdDeviation: 5 }))),
                     h('rect', { width: 640, height: 350, fill: 'url(#birdlab-dawn-study-sky)' }),
-                    phase === 0 ? [85, 196, 373, 569].map(function(x, i) { return h('circle', { key: x, cx: x, cy: 32 + i % 2 * 30, r: 1.6, fill: '#f6e4bb' }); }) : null,
-                    h('circle', { cx: 490, cy: [318, 255, 202, 100][phase], r: 35, fill: '#ffe3a0', opacity: phase === 0 ? .2 : .85 }),
+                    // The sun climbs on one eased transform; its glow and sunrise
+                    // rays travel with it, so no phase jumps.
+                    h('g', { className: 'birdlab-dawn-sun', 'data-dawn-sun': phase, style: { transform: 'translateY(' + [318, 255, 202, 100][phase] + 'px)' } },
+                      h('circle', { className: 'birdlab-dawn-ease', cx: 490, cy: 0, r: 120, fill: 'url(#birdlab-dawn-sun-glow)', opacity: [.18, .5, .8, .3][phase] }),
+                      h('g', { className: 'birdlab-dawn-ease', opacity: [0, .25, .9, .3][phase] }, [-168, -146, -124, -102, -80, -58, -36, -14].map(function(deg, i) {
+                        var a = deg * Math.PI / 180, b = (deg + 5) * Math.PI / 180, far = 300 + (i % 3) * 40;
+                        return h('path', { key: deg, d: 'M490 0L' + (490 + Math.cos(a) * far).toFixed(1) + ' ' + (Math.sin(a) * far).toFixed(1) + 'L' + (490 + Math.cos(b) * far).toFixed(1) + ' ' + (Math.sin(b) * far).toFixed(1) + 'Z', fill: '#fff1c4', opacity: .13 });
+                      })),
+                      h('circle', { className: 'birdlab-dawn-ease', cx: 490, cy: 0, r: 35, fill: '#ffe3a0', opacity: phase === 0 ? .2 : .85 })),
+                    // A far conifer ridge picks up the sky's colour through the morning.
+                    h('path', { className: 'birdlab-dawn-ease', 'data-dawn-ridge': '', d: (function() { var path = 'M0 262L0 240', x = 0; for (var i = 0; x < 640; i++) { var w = 9 + (i * 7) % 9, base = 238 + Math.sin(x * .021) * 8; path += 'L' + (x + w / 2).toFixed(1) + ' ' + (base - 9 - (i * 5) % 7 * 2.4).toFixed(1) + 'L' + (x + w).toFixed(1) + ' ' + (base + 1).toFixed(1); x += w; } return path + 'L640 350H0Z'; }()), fill: ['#34445a', '#62777f', '#86a7a3', '#97bbb2'][phase] }),
                     h('path', { d: 'M0 271Q104 167 205 259T427 236T640 252V350H0Z', fill: '#698d7e', opacity: .7 }),
+                    h('ellipse', { className: 'birdlab-dawn-mist birdlab-dawn-ease', cx: 330, cy: 262, rx: 150, ry: 9, fill: '#eef2f0', filter: 'url(#birdlab-dawn-soft)', opacity: [.5, .5, .2, 0][phase] }),
                     h('path', { d: 'M0 296Q175 248 300 288T640 275V350H0Z', fill: '#426b59' }),
+                    h('path', { className: 'birdlab-dawn-ease', d: 'M0 296Q175 248 300 288T640 275', fill: 'none', stroke: '#ffd59a', strokeWidth: 2.5, opacity: [0, .25, .65, .22][phase] }),
                     h('path', { d: 'M343 314Q499 279 640 293V350H330Z', fill: '#97bab5' }),
+                    h('path', { className: 'birdlab-dawn-shimmer birdlab-dawn-ease', 'data-dawn-reflection': '', d: 'M448 303h84M458 311h64M466 319h48M474 328h32M481 337h18M486 345h8', fill: 'none', stroke: '#ffd98a', strokeWidth: 3, strokeLinecap: 'round', opacity: [0, .5, .95, .55][phase] }),
                     h('path', { d: 'M390 326Q491 314 580 320M440 338H609', fill: 'none', stroke: '#d4e1ca', strokeWidth: 2, opacity: .6 }),
+                    h('g', { className: 'birdlab-dawn-ease', 'data-dawn-mist': [.55, .5, .22, 0][phase], opacity: [.55, .5, .22, 0][phase] },
+                      h('ellipse', { className: 'birdlab-dawn-mist', cx: 470, cy: 304, rx: 190, ry: 13, fill: '#eef2f0', filter: 'url(#birdlab-dawn-soft)' }),
+                      h('ellipse', { className: 'birdlab-dawn-mist birdlab-dawn-mist--slow', cx: 170, cy: 290, rx: 170, ry: 11, fill: '#e7edec', filter: 'url(#birdlab-dawn-soft)' })),
                     h('path', { d: 'M27 350L42 -10H72L67 350Z', fill: '#334f44' }),
                     h('path', { d: 'M57 242Q109 229 175 233M60 166Q168 152 265 146M62 77Q251 36 430 116', fill: 'none', stroke: '#334f44', strokeWidth: 10, strokeLinecap: 'round' }),
                     [86, 160, 255, 347, 428].map(function(x, i) { return h('ellipse', { key: x, cx: x, cy: 27 + (i % 2) * 20, rx: 74, ry: 39, fill: i % 2 ? '#3c6551' : '#496f56' }); }),
@@ -37213,9 +37338,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     birds.map(function(bird) {
                       var vocal = active.indexOf(bird.id) !== -1;
                       return h('g', { key: bird.id, 'data-dawn-scene-bird': bird.id, 'data-dawn-singing': vocal ? 'true' : 'false' },
+                        h('g', { transform: 'translate(' + (bird.x - 30) + ' ' + (bird.y - 30) + ') scale(2)' }, BIRDS[bird.id].svg(h)));
+                    }),
+                    // Low light flattens colour before sunrise: one reason to
+                    // listen first. Rings and voice marks stay above the veil.
+                    h('rect', { className: 'birdlab-dawn-ease', 'data-dawn-veil': [.46, .2, 0, 0][phase], width: 640, height: 350, fill: '#1b2948', opacity: [.46, .2, 0, 0][phase], style: { mixBlendMode: 'multiply' } }),
+                    h('g', { className: 'birdlab-dawn-ease', 'data-dawn-stars': '', opacity: [1, .35, 0, 0][phase] },
+                      [[318, 108], [352, 18], [389, 66], [433, 136], [466, 42], [511, 98], [543, 22], [571, 128], [604, 74], [626, 30], [290, 128], [452, 92], [588, 160], [620, 118]].map(function(star, i) {
+                        return h('circle', { key: i, className: 'birdlab-dawn-twinkle', cx: star[0], cy: star[1], r: i % 3 ? 1.3 : 1.9, fill: '#f6e4bb', style: { animationDelay: (i * .37 % 2.6).toFixed(2) + 's' } });
+                      }),
+                      h('path', { d: 'M592 36a13 13 0 1 0 0 26a10 10 0 1 1 0 -26z', fill: '#f3ead2', opacity: .85 })),
+                    birds.map(function(bird, index) {
+                      var vocal = active.indexOf(bird.id) !== -1;
+                      return h('g', { key: bird.id + '-marks' },
                         singer === bird.id ? h('circle', { cx: bird.x, cy: bird.y, r: 38, fill: '#fff8d2', fillOpacity: .12, stroke: '#fff1b5', strokeWidth: 2, strokeDasharray: '3 3' }) : null,
-                        h('g', { transform: 'translate(' + (bird.x - 30) + ' ' + (bird.y - 30) + ') scale(2)' }, BIRDS[bird.id].svg(h)),
-                        vocal ? h('path', { d: 'M' + (bird.x - 36) + ' ' + (bird.y - 18) + 'q-11 10 0 20m-8 -26q-18 16 0 32', fill: 'none', stroke: '#ffe2a0', strokeWidth: 2.5, strokeLinecap: 'round' }) : null);
+                        vocal ? h('path', { className: 'birdlab-dawn-voice', 'data-dawn-voice': bird.id, style: { animationDelay: (index * .45) + 's' }, d: 'M' + (bird.x - 36) + ' ' + (bird.y - 18) + 'q-11 10 0 20m-8 -26q-18 16 0 32', fill: 'none', stroke: '#ffe2a0', strokeWidth: 2.5, strokeLinecap: 'round' }) : null);
                     }))),
                 h('p', { className: 'birdlab-equipment-note' }, __alloT('stem.birdlab.dawn_study_visual_note', 'Visual practice only; no audio plays. These voice marks are invented, not recordings, measured loudness or a prediction of your local chorus. All four birds stay in the scene, even when quiet.'))),
               h('div', { className: 'birdlab-equipment-panel' },

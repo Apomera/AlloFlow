@@ -2079,6 +2079,3977 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   // Tool Registration
   // ═══════════════════════════════════════════
 
+  // ═══════════════════════════════════════════
+  // Voice studio + trainers (shared with Rachel Pomeranz's website, where they were built).
+  // Generated from the site repo (Apomera/rachel-pomeranz-site, src/lib) by a converter that
+  // wraps each module in its own scope; change the site modules and regenerate, not this copy.
+  // ═══════════════════════════════════════════
+  var VS = (function () {
+    'use strict';
+  var mod_common = (function () {
+    // Shared pieces for the Practice Room trainers: seeded randomness, voice types and a small synth.
+    // Framework-free with no imports, so the trainers can also run inside AlloFlow.
+
+    // ---- Seeded randomness -------------------------------------------------------------
+    // The same seed always gives the same exercise, so a teacher can hand out a code (or a link)
+    // and every student gets the identical melody or rhythm.
+
+    /** FNV-1a: a string to a 32-bit seed. */
+    function hashSeed(str) {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      return h >>> 0;
+    }
+
+    /** mulberry32: a fast, good-enough PRNG returning numbers in [0, 1). */
+    function seededRandom(seed) {
+      let a = typeof seed === 'number' ? seed >>> 0 : hashSeed(String(seed));
+      const rand = () => {
+        a = (a + 0x6d2b79f5) >>> 0;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      rand.int = (lo, hi) => lo + Math.floor(rand() * (hi - lo + 1)); // inclusive
+      rand.pick = (list) => list[Math.floor(rand() * list.length)];
+      /** Pick from [[value, weight], ...]. */
+      rand.weighted = (pairs) => {
+        const total = pairs.reduce((s, [, w]) => s + Math.max(0, w), 0);
+        let r = rand() * total;
+        for (const [v, w] of pairs) {
+          r -= Math.max(0, w);
+          if (r < 0) return v;
+        }
+        return pairs[pairs.length - 1][0];
+      };
+      return rand;
+    }
+
+    // No 0/O, 1/I/L: codes are read aloud and typed by students.
+    const CODE_CHARS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+    /** A short, friendly exercise code like "K7QX2". */
+    function newCode(length = 5) {
+      const buf = new Uint32Array(length);
+      crypto.getRandomValues(buf);
+      return Array.from(buf, (n) => CODE_CHARS[n % CODE_CHARS.length]).join('');
+    }
+
+    /** Today's date as YYYYMMDD in the visitor's own time zone (not UTC). */
+    function todayStamp(d = new Date()) {
+      return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // ---- Voice types -------------------------------------------------------------------
+    // Comfortable practice ranges (MIDI), deliberately inside the full professional ranges.
+    // Tenors read treble clef an octave down; baritones and basses read bass clef.
+
+    const VOICE_TYPES = {
+      soprano: { label: 'Soprano', low: 60, high: 79, clef: 'treble' },
+      mezzo: { label: 'Mezzo-soprano', low: 57, high: 76, clef: 'treble' },
+      alto: { label: 'Alto', low: 53, high: 72, clef: 'treble' },
+      tenor: { label: 'Tenor', low: 48, high: 67, clef: 'treble8' },
+      baritone: { label: 'Baritone', low: 45, high: 64, clef: 'bass' },
+      bass: { label: 'Bass', low: 40, high: 60, clef: 'bass' },
+    };
+
+    const VOICE_KEY = 'rp-voice-type';
+
+    function loadVoiceType() {
+      try {
+        const v = localStorage.getItem(VOICE_KEY);
+        return VOICE_TYPES[v] ? v : 'mezzo';
+      } catch {
+        return 'mezzo';
+      }
+    }
+
+    function saveVoiceType(v) {
+      try {
+        localStorage.setItem(VOICE_KEY, v);
+      } catch {}
+    }
+
+    // ---- Notes -------------------------------------------------------------------------
+
+    const NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    const SHARP_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+    const FLAT_NAMES = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
+    /** Note name with octave. spelling: 'sharps' or 'flats' to follow a key; by default the common mix. */
+    const noteLabel = (midi, spelling) =>
+      `${(spelling === 'sharps' ? SHARP_NAMES : spelling === 'flats' ? FLAT_NAMES : NAMES)[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
+    const midiToHz = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
+
+    // ---- A small synth -----------------------------------------------------------------
+
+    /**
+     * iPhones and iPads mute Web Audio when the side switch is on silent (videos still play), so
+     * declare the sound as media playback (Safari 17+) and, on older iOS, start a silent looping
+     * <audio> element that moves the page into the media channel. Must run inside a tap.
+     * (Same as routeAudioAsMedia in score-player.js; each module stays import-free.)
+     */
+    function routeAudioAsMedia() {
+      try {
+        if (navigator.audioSession && navigator.audioSession.type === 'auto') navigator.audioSession.type = 'playback';
+      } catch {}
+      const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
+      if (!ios || routeAudioAsMedia.el) return;
+      const n = 2000; // a quarter second of silent 8 kHz, 8-bit WAV
+      const bytes = new Uint8Array(44 + n);
+      const dv = new DataView(bytes.buffer);
+      const put = (at, s) => [...s].forEach((ch, i) => (bytes[at + i] = ch.charCodeAt(0)));
+      put(0, 'RIFF');
+      dv.setUint32(4, 36 + n, true);
+      put(8, 'WAVEfmt ');
+      dv.setUint32(16, 16, true);
+      dv.setUint16(20, 1, true);
+      dv.setUint16(22, 1, true);
+      dv.setUint32(24, 8000, true);
+      dv.setUint32(28, 8000, true);
+      dv.setUint16(32, 1, true);
+      dv.setUint16(34, 8, true);
+      put(36, 'data');
+      dv.setUint32(40, n, true);
+      bytes.fill(128, 44);
+      let bin = '';
+      bytes.forEach((b) => (bin += String.fromCharCode(b)));
+      const el = document.createElement('audio');
+      el.setAttribute('x-webkit-airplay', 'deny');
+      el.loop = true;
+      el.src = 'data:audio/wav;base64,' + btoa(bin);
+      el.play().catch(() => {});
+      routeAudioAsMedia.el = el;
+    }
+    // One AudioContext per page; every sound is scheduled on its clock so rhythms stay exact.
+
+    class Tones {
+      get ctx() {
+        if (!this._ctx) {
+          this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+          this.out = this._ctx.createDynamicsCompressor();
+          this.out.connect(this._ctx.destination);
+        }
+        return this._ctx;
+      }
+
+      async ready() {
+        routeAudioAsMedia();
+        const c = this.ctx;
+        if (c.state !== 'running') await c.resume();
+        // resume() can resolve before the audio clock starts moving (seconds, on a busy device).
+        // Anything scheduled or timed before then drifts, so wait until the clock is really running.
+        const t0 = performance.now();
+        while (performance.now() - t0 < 4000) {
+          const ts = c.getOutputTimestamp?.();
+          if (c.currentTime > 0.02 && (!ts || ts.contextTime > 0)) break;
+          await new Promise((r) => setTimeout(r, 20));
+        }
+        return c;
+      }
+
+      now() {
+        return this.ctx.currentTime;
+      }
+
+      /**
+       * The audio-clock time the listener was HEARING when an input event happened. People tap along
+       * to the speakers, which run behind the clock (Bluetooth by 0.2 s or more), so taps are compared
+       * with what was audible, not with what was being scheduled.
+       */
+      heardTime(timeStamp) {
+        const c = this.ctx;
+        const ts = c.getOutputTimestamp?.();
+        // getOutputTimestamp pairs the context time now leaving the speakers with a performance.now() time.
+        if (ts && ts.performanceTime > 0 && typeof timeStamp === 'number') return ts.contextTime + (timeStamp - ts.performanceTime) / 1000;
+        return c.currentTime - Math.max(0, Math.min(0.4, (c.outputLatency || 0) + (c.baseLatency || 0)));
+      }
+
+      /** A soft practice-piano note. */
+      piano(midi, at = this.now(), dur = 0.9, level = 1) {
+        const c = this.ctx;
+        const f = midiToHz(midi);
+        const env = c.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(0.5 * level, at + 0.006);
+        env.gain.exponentialRampToValueAtTime(0.2 * level, at + 0.25);
+        env.gain.setTargetAtTime(0.0001, at + dur, 0.12);
+        const filter = c.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(Math.min(9000, f * 8), at);
+        filter.frequency.exponentialRampToValueAtTime(Math.min(4000, f * 3), at + 0.4);
+        const o1 = c.createOscillator();
+        o1.type = 'triangle';
+        o1.frequency.value = f;
+        const o2 = c.createOscillator();
+        o2.frequency.value = f * 2.001;
+        const h2 = c.createGain();
+        h2.gain.value = 0.22;
+        o1.connect(filter);
+        o2.connect(h2).connect(filter);
+        filter.connect(env).connect(this.out);
+        for (const o of [o1, o2]) {
+          o.start(at);
+          o.stop(at + dur + 1);
+        }
+      }
+
+      chord(midis, at = this.now(), dur = 1.2) {
+        midis.forEach((m) => this.piano(m, at, dur, 0.55));
+      }
+
+      /** Metronome tick, higher on the downbeat. */
+      click(at = this.now(), accent = false, level = 1) {
+        const c = this.ctx;
+        const o = c.createOscillator();
+        o.frequency.value = accent ? 1500 : 1000;
+        const env = c.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime((accent ? 0.45 : 0.28) * level, at + 0.002);
+        env.gain.exponentialRampToValueAtTime(0.001, at + 0.05);
+        o.connect(env).connect(this.out);
+        o.start(at);
+        o.stop(at + 0.06);
+      }
+
+      /** A woodblock-ish knock for rhythm patterns, distinct from the metronome. */
+      knock(at = this.now(), level = 1) {
+        const c = this.ctx;
+        const o = c.createOscillator();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(820, at);
+        o.frequency.exponentialRampToValueAtTime(520, at + 0.06);
+        const env = c.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(0.6 * level, at + 0.002);
+        env.gain.exponentialRampToValueAtTime(0.001, at + 0.12);
+        o.connect(env).connect(this.out);
+        o.start(at);
+        o.stop(at + 0.14);
+      }
+
+      /** A gentle two-note chime for success. */
+      chime(at = this.now()) {
+        this.piano(84, at, 0.5, 0.45);
+        this.piano(91, at + 0.12, 0.8, 0.45);
+      }
+    }
+
+    return { hashSeed, seededRandom, newCode, todayStamp, VOICE_TYPES, loadVoiceType, saveVoiceType, noteLabel, midiToHz, routeAudioAsMedia, Tones };
+  })();
+  var mod_rhythm = (function () {
+    // Rhythm clap-back: seeded rhythm generator, notation (MusicXML) and the tap scorer.
+    // scoreRhythm() is ported from AlloFlow's Music Lab (stem_tool_music.js), where it has its own tests.
+
+    // Durations are in sixteenths (4 = a quarter note). A cell fills one beat or more; 'r' marks a rest.
+    // Simple time: the beat is a quarter (4). Compound time (6/8): the beat is a dotted quarter (6).
+    const SIMPLE_CELLS = [
+      { d: [4], level: 1 },
+      { d: [8], level: 1 },
+      { d: ['r4'], level: 1 },
+      { d: [2, 2], level: 2 },
+      { d: [6, 2], level: 2 },
+      { d: [12], level: 2 },
+      { d: ['r2', 2], level: 3 },
+      { d: [3, 1], level: 3 },
+      { d: [2, 1, 1], level: 3 },
+      { d: [1, 1, 2], level: 3 },
+      { d: [1, 1, 1, 1], level: 3 },
+      { d: [2, 4, 2], level: 4 }, // syncopation across the beat
+      { d: [1, 2, 1], level: 4 },
+      { d: [1, 3], level: 4 }, // Scotch snap
+      { d: ['r1', 1, 2], level: 4 },
+      { d: [2, 'r2'], level: 4 },
+    ];
+    const COMPOUND_CELLS = [
+      { d: [6], level: 1 },
+      { d: [12], level: 1 },
+      { d: [4, 2], level: 1 },
+      { d: [2, 2, 2], level: 2 },
+      { d: ['r6'], level: 2 },
+      { d: [3, 1, 2], level: 3 },
+      { d: [2, 4], level: 3 },
+      { d: ['r2', 2, 2], level: 3 },
+      { d: [1, 1, 2, 2], level: 4 },
+      { d: [2, 1, 1, 2], level: 4 },
+      { d: [2, 'r2', 2], level: 4 },
+    ];
+
+    const METERS = {
+      '4/4': { beats: 4, beat: 4, num: 4, den: 4 },
+      '3/4': { beats: 3, beat: 4, num: 3, den: 4 },
+      '2/4': { beats: 2, beat: 4, num: 2, den: 4 },
+      '6/8': { beats: 2, beat: 6, num: 6, den: 8 },
+    };
+
+    const RHYTHM_LEVELS = [
+      { level: 1, name: 'Level 1: quarters and halves', meters: ['4/4', '3/4'], bars: 1 },
+      { level: 2, name: 'Level 2: eighth notes and dots', meters: ['4/4', '3/4', '2/4'], bars: 1 },
+      { level: 3, name: 'Level 3: sixteenths and rests', meters: ['4/4', '3/4', '6/8'], bars: 2 },
+      { level: 4, name: 'Level 4: syncopation', meters: ['4/4', '3/4', '6/8', '2/4'], bars: 2 },
+    ];
+
+    /**
+     * Generate a rhythm. Returns { meter, bars: [[{ dur, rest }]], onsets: [beats...], beats }.
+     * Onsets are in beats from the start (the unit the scorer works in).
+     */
+    function generateRhythm(rand, level, meterName) {
+      const L = RHYTHM_LEVELS[Math.max(0, Math.min(RHYTHM_LEVELS.length - 1, level - 1))];
+      const meter = METERS[meterName || rand.pick(L.meters)] || METERS['4/4'];
+      const name = Object.keys(METERS).find((k) => METERS[k] === meter);
+      const cells = (meter.beat === 6 ? COMPOUND_CELLS : SIMPLE_CELLS).filter((c) => c.level <= L.level);
+      const barLen = meter.beats * meter.beat;
+      const bars = [];
+      for (let b = 0; b < L.bars; b++) {
+        for (let attempt = 0; attempt < 40; attempt++) {
+          const bar = [];
+          let pos = 0;
+          while (pos < barLen) {
+            const fits = cells.filter((c) => {
+              const len = c.d.reduce((s, x) => s + dur(x), 0);
+              // Cells longer than a beat start where they read clearly: on a multiple of their own length.
+              return pos + len <= barLen && (len <= meter.beat || pos % len === 0);
+            });
+            // Favour cells at the student's level so each level actually sounds different.
+            const cell = rand.weighted(fits.map((c) => [c, c.level === L.level ? 3 : 1 + (c.d.length > 1 ? 0.5 : 0)]));
+            for (const x of cell.d) bar.push({ dur: dur(x), rest: typeof x === 'string' });
+            pos += cell.d.reduce((s, x) => s + dur(x), 0);
+          }
+          const notes = bar.filter((n) => !n.rest).length;
+          // Begin the first bar on a note, keep at least two notes per bar, and not too many rests.
+          if ((b === 0 && bar[0].rest) || notes < 2 || bar.filter((n) => n.rest).length > 2) continue;
+          // Avoid a bar identical to the previous one (boring) unless we're out of tries.
+          if (b > 0 && attempt < 30 && JSON.stringify(bar) === JSON.stringify(bars[b - 1])) continue;
+          bars.push(bar);
+          break;
+        }
+      }
+      const onsets = [];
+      let pos = 0;
+      for (const bar of bars)
+        for (const n of bar) {
+          if (!n.rest) onsets.push(pos / meter.beat);
+          pos += n.dur;
+        }
+      return { meter: name, num: meter.num, den: meter.den, beatsPerBar: meter.beats, beatUnit: meter.beat, bars, onsets, beats: pos / meter.beat };
+    }
+
+    function dur(x) {
+      return typeof x === 'string' ? Number(x.slice(1)) : x;
+    }
+
+    const TYPES = { 1: ['16th', 0], 2: ['eighth', 0], 3: ['eighth', 1], 4: ['quarter', 0], 6: ['quarter', 1], 8: ['half', 0], 12: ['half', 1], 16: ['whole', 0] };
+
+    /** MusicXML for a one-line rhythm staff (percussion clef). */
+    function rhythmToMusicXML(r, bpm) {
+      const measures = r.bars
+        .map((bar, i) => {
+          const attrs =
+            i === 0
+              ? `<attributes><divisions>4</divisions><key><fifths>0</fifths></key><time><beats>${r.num}</beats><beat-type>${r.den}</beat-type></time><clef><sign>percussion</sign></clef><staff-details><staff-lines>1</staff-lines></staff-details></attributes>` +
+                `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit>${r.beatUnit === 6 ? '<beat-unit-dot/>' : ''}<per-minute>${bpm}</per-minute></metronome></direction-type><sound tempo="${r.beatUnit === 6 ? bpm * 1.5 : bpm}"/></direction>`
+              : '';
+          const beams = beamsFor(bar, r.beatUnit);
+          const notes = bar
+            .map((n, k) => {
+              const [type, dots] = TYPES[n.dur];
+              const dot = dots ? '<dot/>' : '';
+              if (n.rest) return `<note><rest/><duration>${n.dur}</duration><type>${type}</type>${dot}</note>`;
+              return `<note><unpitched><display-step>E</display-step><display-octave>4</display-octave></unpitched><duration>${n.dur}</duration><type>${type}</type>${dot}<stem>up</stem>${beams[k] || ''}</note>`;
+            })
+            .join('');
+          const end = i === r.bars.length - 1 ? '<barline location="right"><bar-style>light-heavy</bar-style></barline>' : '';
+          return `<measure number="${i + 1}">${attrs}${notes}${end}</measure>`;
+        })
+        .join('');
+      return xmlDoc('Rhythm', measures);
+    }
+
+    /**
+     * Beam elements for one bar: notes shorter than a quarter are beamed within each beat,
+     * with a second beam (or hook) for sixteenths. Shared with the melody writer.
+     */
+    function beamsFor(bar, beat) {
+      const out = new Array(bar.length).fill('');
+      let pos = 0;
+      const groups = new Map();
+      bar.forEach((n, k) => {
+        const g = Math.floor(pos / beat);
+        if (!groups.has(g)) groups.set(g, []);
+        groups.get(g).push(k);
+        pos += n.dur;
+      });
+      for (const idx of groups.values()) {
+        // Split each beat into runs of beamable notes (no rests, shorter than a quarter).
+        let run = [];
+        const flush = () => {
+          if (run.length >= 2) {
+            run.forEach((k, j) => {
+              const b1 = j === 0 ? 'begin' : j === run.length - 1 ? 'end' : 'continue';
+              let b2 = '';
+              if (bar[k].dur <= 1) {
+                const prev = j > 0 && bar[run[j - 1]].dur <= 1;
+                const next = j < run.length - 1 && bar[run[j + 1]].dur <= 1;
+                b2 = prev && next ? 'continue' : prev ? 'end' : next ? 'begin' : j === 0 ? 'forward hook' : 'backward hook';
+              }
+              out[k] = `<beam number="1">${b1}</beam>` + (b2 ? `<beam number="2">${b2}</beam>` : '');
+            });
+          }
+          run = [];
+        };
+        for (const k of idx) {
+          if (!bar[k].rest && bar[k].dur < 4) run.push(k);
+          else flush();
+        }
+        flush();
+      }
+      return out;
+    }
+
+    function xmlDoc(partName, measures) {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+    <score-partwise version="4.0"><part-list><score-part id="P1"><part-name print-object="no">${partName}</part-name></score-part></part-list><part id="P1">${measures}</part></score-partwise>`;
+    }
+
+    // ---- Scoring (ported from AlloFlow) -------------------------------------------------
+
+    // Grading bands as a fraction of one beat, so they scale with tempo.
+    const TIGHT_FRACTION = 0.06; // on the money
+    const CLOSE_FRACTION = 0.14; // recognisably the right rhythm
+    const MATCH_FRACTION = 0.5; // beyond half a beat a tap belongs to another onset
+
+    /**
+     * Score taps against expected onsets (both in ms from the same origin). Matching is greedy over
+     * the closest pairs first, so one early tap doesn't push every later tap onto the wrong onset.
+     * Returns per-onset grades ('tight' | 'close' | 'loose' | 'missed'), extras, bias and accuracy 0-1.
+     */
+    function scoreRhythm(expectedMs, tapsMs, beatMs) {
+      const expected = (expectedMs || []).slice();
+      const taps = (tapsMs || []).slice().sort((a, b) => a - b);
+      const beat = typeof beatMs === 'number' && isFinite(beatMs) && beatMs > 0 ? beatMs : 500;
+      const matchWindow = beat * MATCH_FRACTION;
+      const tightMs = beat * TIGHT_FRACTION;
+      const closeMs = beat * CLOSE_FRACTION;
+
+      const pairs = [];
+      expected.forEach((ex, e) =>
+        taps.forEach((tap, t) => {
+          const delta = tap - ex;
+          if (Math.abs(delta) <= matchWindow) pairs.push({ e, t, delta, abs: Math.abs(delta) });
+        }),
+      );
+      pairs.sort((a, b) => a.abs - b.abs);
+
+      const usedE = new Set();
+      const usedT = new Set();
+      const onsets = expected.map((ms) => ({ expectedMs: ms, tapMs: null, deltaMs: null, grade: 'missed' }));
+      for (const p of pairs) {
+        if (usedE.has(p.e) || usedT.has(p.t)) continue;
+        usedE.add(p.e);
+        usedT.add(p.t);
+        onsets[p.e] = { expectedMs: expected[p.e], tapMs: taps[p.t], deltaMs: p.delta, grade: p.abs <= tightMs ? 'tight' : p.abs <= closeMs ? 'close' : 'loose' };
+      }
+      const extras = taps.filter((_, t) => !usedT.has(t));
+      const hits = onsets.filter((o) => o.tapMs !== null);
+      const abs = hits.map((o) => Math.abs(o.deltaMs));
+      // Each onset earns credit by how tightly it was hit; extra taps cost as much as a miss.
+      const credit = onsets.reduce((s, o) => s + ({ tight: 1, close: 0.75, loose: 0.35 }[o.grade] || 0), 0);
+      return {
+        onsets,
+        extras,
+        hit: hits.length,
+        missed: onsets.length - hits.length,
+        extra: extras.length,
+        meanAbsMs: abs.length ? abs.reduce((a, b) => a + b, 0) / abs.length : 0,
+        maxAbsMs: abs.length ? Math.max(...abs) : 0,
+        biasMs: hits.length ? hits.reduce((a, o) => a + o.deltaMs, 0) / hits.length : 0, // + = behind the beat
+        accuracy: Math.max(0, Math.min(1, credit / Math.max(1, expected.length + extras.length))),
+        tightMs,
+        closeMs,
+      };
+    }
+
+    return { SIMPLE_CELLS, COMPOUND_CELLS, METERS, RHYTHM_LEVELS, generateRhythm, rhythmToMusicXML, beamsFor, xmlDoc, scoreRhythm };
+  })();
+  var mod_melody_gen = (function () {
+    // Sight-singing melody generator. A seed always produces the same melody, so a teacher can share
+    // an exercise as a code or link. Melodies follow a simple chord plan (strong beats land on chord
+    // tones, leaps recover by step, phrases end with a cadence), so they sound like music rather
+    // than random notes, and the levels add range, leaps, keys, rhythms and chromatic notes.
+    //
+    //   const m = generateMelody({ seed: 'K7QX2', level: 3, voice: VOICE_TYPES.mezzo });
+    //   m.xml  -> MusicXML for the score player;  m.notes -> [{ midi, dur }] for grading
+
+    var seededRandom = mod_common.seededRandom;
+    var METERS = mod_rhythm.METERS, beamsFor = mod_rhythm.beamsFor, xmlDoc = mod_rhythm.xmlDoc;
+    // Melody rhythms, in sixteenths ('r' = rest), with the level they appear at and how often.
+    // Singers find rhythm hard enough while reading pitch, so the simple cells stay most common.
+    const MELODY_CELLS = {
+      simple: [
+        { d: [4], level: 1, w: 3 },
+        { d: [8], level: 1, w: 2 },
+        { d: [2, 2], level: 2, w: 1.5 },
+        { d: [6, 2], level: 2, w: 1 },
+        { d: [12], level: 2, w: 0.6 },
+        { d: [3, 1], level: 3, w: 0.6 },
+        { d: [1, 1, 2], level: 4, w: 0.45 },
+        { d: [2, 1, 1], level: 4, w: 0.45 },
+        { d: ['r4'], level: 4, w: 0.3 },
+        { d: ['r2', 2], level: 4, w: 0.3 },
+        { d: [2, 4, 2], level: 5, w: 0.6 },
+        { d: [1, 1, 1, 1], level: 5, w: 0.25 },
+        { d: [1, 2, 1], level: 6, w: 0.3 },
+        { d: [1, 3], level: 6, w: 0.3 },
+      ],
+      compound: [
+        { d: [6], level: 4, w: 2 },
+        { d: [4, 2], level: 4, w: 2 },
+        { d: [2, 2, 2], level: 4, w: 1.5 },
+        { d: [12], level: 4, w: 0.8 },
+        { d: [3, 1, 2], level: 5, w: 0.6 },
+        { d: [2, 4], level: 5, w: 0.5 },
+        { d: ['r2', 2, 2], level: 5, w: 0.3 },
+        { d: [2, 1, 1, 2], level: 6, w: 0.4 },
+      ],
+    };
+
+    // leap: largest interval in scale steps (2 = a third, 4 = a fifth, 7 = an octave).
+    // chroma: share of chromatic notes. Rhythms come from MELODY_CELLS by level.
+    const SIGHT_LEVELS = [
+      { level: 1, name: 'Level 1: Steps', fifths: [-1, 0, 1], minor: 0, meters: ['4/4'], bars: 4, span: 5, leap: 2, chroma: 0, tempo: 72, chords: [0, 3, 4] },
+      { level: 2, name: 'Level 2: Skips', fifths: [-2, -1, 0, 1, 2], minor: 0, meters: ['4/4', '3/4'], bars: 4, span: 7, leap: 4, chroma: 0, tempo: 76, chords: [0, 3, 4] },
+      { level: 3, name: 'Level 3: Leaps and minor keys', fifths: [-3, -2, -1, 0, 1, 2, 3], minor: 0.35, meters: ['4/4', '3/4', '2/4'], bars: 6, span: 8, leap: 5, chroma: 0, tempo: 80, chords: [0, 1, 3, 4, 5] },
+      { level: 4, name: 'Level 4: Chromatic notes and 6/8', fifths: [-4, -3, -2, -1, 0, 1, 2, 3, 4], minor: 0.4, meters: ['4/4', '3/4', '6/8'], bars: 8, span: 9, leap: 7, chroma: 0.12, tempo: 84, chords: [0, 1, 2, 3, 4, 5] },
+      { level: 5, name: 'Level 5: Advanced', fifths: [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], minor: 0.45, meters: ['4/4', '3/4', '6/8', '2/4'], bars: 8, span: 10, leap: 7, chroma: 0.2, tempo: 88, chords: [0, 1, 2, 3, 4, 5] },
+      { level: 6, name: 'Level 6: Conservatory', fifths: [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6], minor: 0.5, meters: ['4/4', '3/4', '6/8', '2/4'], bars: 8, span: 11, leap: 7, chroma: 0.3, tempo: 92, chords: [0, 1, 2, 3, 4, 5] },
+    ];
+
+    const MAJOR = [0, 2, 4, 5, 7, 9, 11];
+    const MINOR = [0, 2, 3, 5, 7, 8, 10]; // natural; the leading tone is raised where it resolves
+    const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const LETTER_PC = [0, 2, 4, 5, 7, 9, 11];
+    const SHARP_ORDER = [3, 0, 4, 1, 5, 2, 6]; // F C G D A E B
+    const FLAT_ORDER = [6, 2, 5, 1, 4, 0, 3]; // B E A D G C F
+    const ROMAN = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii'];
+    // Where each chord tends to go next (by scale-degree root).
+    const NEXT = { 0: [3, 4, 5, 1], 1: [4, 4, 3], 2: [5, 3], 3: [4, 0, 1], 4: [0, 5, 0], 5: [1, 3, 4] };
+    const TYPES = { 1: ['16th', 0], 2: ['eighth', 0], 3: ['eighth', 1], 4: ['quarter', 0], 6: ['quarter', 1], 8: ['half', 0], 12: ['half', 1], 16: ['whole', 0] };
+
+    const mod = (n, m) => ((n % m) + m) % m;
+    const keyAlter = (letter, fifths) =>
+      fifths > 0 && SHARP_ORDER.indexOf(letter) < fifths ? 1 : fifths < 0 && FLAT_ORDER.indexOf(letter) < -fifths ? -1 : 0;
+    const accName = (a) => (a > 0 ? '♯'.repeat(a) : '♭'.repeat(-a));
+
+    /** A written note's name as it appears in the score, e.g. D♯4. */
+    const spelledName = (n) => `${LETTERS[n.letter]}${accName(n.alter)}${n.octave}`;
+
+    function keyName(fifths, minor) {
+      const letter = mod(4 * fifths + (minor ? 5 : 0), 7);
+      return `${LETTERS[letter]}${accName(keyAlter(letter, fifths))} ${minor ? 'minor' : 'major'}`;
+    }
+
+    /**
+     * @param {{ seed: string, level: number, voice: { low: number, high: number, clef: string }, meter?: string }} opts
+     */
+    function generateMelody({ seed, level, voice, meter: forceMeter }) {
+      const L = SIGHT_LEVELS[Math.max(0, Math.min(SIGHT_LEVELS.length - 1, level - 1))];
+      const rand = seededRandom(`${seed}|L${L.level}|${voice.low}-${voice.high}`);
+      for (let attempt = 0; attempt < 200; attempt++) {
+        const m = tryMelody(rand, L, voice, forceMeter);
+        if (m) return { ...m, seed, level: L.level };
+      }
+      throw new Error('Could not generate a melody for these settings.');
+    }
+
+    function tryMelody(rand, L, voice, forceMeter) {
+      // ---- Key, mode, meter, range ----
+      const fifths = rand.pick(L.fifths);
+      const minor = rand() < L.minor;
+      const scale = minor ? MINOR : MAJOR;
+      const tonicPc = mod(fifths * 7 + (minor ? 9 : 0), 12);
+      const tonicLetter = mod(4 * fifths + (minor ? 5 : 0), 7);
+      const meterName = forceMeter || rand.pick(L.meters);
+      const meter = METERS[meterName];
+      const semis = (d) => 12 * Math.floor(d / 7) + scale[mod(d, 7)];
+
+      // A window of `span` scale steps that contains the tonic, placed inside the voice's range.
+      let span = L.span;
+      let placed = null;
+      for (; span >= 4 && !placed; span--) {
+        const w0 = -rand.int(0, Math.min(4, span - 3));
+        const fits = [];
+        for (let k = 1; k <= 9; k++) {
+          const t = tonicPc + 12 * k;
+          if (t + semis(w0) >= voice.low && t + semis(w0 + span) <= voice.high) fits.push(t);
+        }
+        if (fits.length) placed = { tonic: rand.pick(fits), lo: w0, hi: w0 + span };
+      }
+      if (!placed) return null;
+      const { tonic, lo, hi } = placed;
+      const center = (lo + hi) / 2;
+
+      // ---- Chord plan ----
+      const n = L.bars;
+      const chords = [0];
+      for (let b = 1; b < n; b++) {
+        if (b === n - 1) chords.push(0);
+        else if (b === n - 2 || (n === 8 && b === 3)) chords.push(4); // cadences: V before the end, half cadence mid-way
+        else {
+          const options = NEXT[chords[b - 1]].filter((c) => L.chords.includes(c));
+          chords.push(options.length ? rand.pick(options) : rand.pick(L.chords));
+        }
+      }
+      const chordTones = (c) => [c, c + 2, c + 4].map((x) => mod(x, 7)).concat(c === 4 && L.level >= 3 ? [3] : []); // V7 from level 3
+
+      // ---- Rhythm ----
+      const barLen = meter.beats * meter.beat;
+      const cells = MELODY_CELLS[meter.beat === 6 ? 'compound' : 'simple'].filter((c) => c.level <= L.level);
+      const fill = (len, startPos, avoidRestAtStart) => {
+        const out = [];
+        let pos = 0;
+        let guard = 0;
+        while (pos < len && guard++ < 50) {
+          const fits = cells.filter((c) => {
+            const cl = c.d.reduce((s, x) => s + dur(x), 0);
+            if (pos + cl > len) return false;
+            if (avoidRestAtStart && pos === 0 && typeof c.d[0] === 'string') return false;
+            return cl <= meter.beat || (startPos + pos) % cl === 0;
+          });
+          if (!fits.length) return null;
+          const cell = rand.weighted(fits.map((c) => [c, c.w]));
+          for (const x of cell.d) {
+            out.push({ dur: dur(x), rest: typeof x === 'string', pos: startPos + pos });
+            pos += dur(x);
+          }
+        }
+        return pos === len ? out : null;
+      };
+      const rhythm = [];
+      for (let b = 0; b < n; b++) {
+        let bar;
+        if (b === n - 1) bar = [{ dur: barLen === 16 ? 16 : 12 <= barLen ? 12 : barLen, rest: false, pos: 0 }];
+        else if (n === 8 && b === 3) {
+          // Half cadence: end the first phrase on a long note.
+          const long = meter.beat === 6 ? 6 : barLen === 12 ? 8 : barLen === 8 ? 4 : 8;
+          const head = fill(barLen - long, 0, true);
+          bar = head ? [...head, { dur: long, rest: false, pos: barLen - long }] : null;
+        } else if (n === 8 && (b === 4 || b === 5)) bar = rhythm[b - 4].map((x) => ({ ...x })); // second phrase echoes the first
+        else bar = fill(barLen, 0, b === 0);
+        if (!bar) return null;
+        if (b === n - 1 && barLen !== bar[0].dur) bar.push({ dur: barLen - bar[0].dur, rest: true, pos: bar[0].dur });
+        rhythm.push(bar);
+      }
+
+      // ---- Pitches ----
+      const leapCost = [1, 1.0, 0.85, 0.7, 0.6, 0.5][L.level - 1];
+      const IV_COST = [1.4, 0, 0.9, 1.6, 2.0, 2.6, 3.4, 2.6]; // by scale steps: repeat, step, third ... octave
+      const notes = [];
+      let prev = null;
+      let prevIv = 0;
+      let prevDur = 4;
+      const recent = []; // the last few pitches, to avoid see-sawing between two notes
+      let repeats = 0;
+      const total = rhythm.reduce((s, bar) => s + bar.filter((x) => !x.rest).length, 0);
+      let index = 0;
+      let finalTonic = null;
+      for (let b = 0; b < n; b++) {
+        const ct = chordTones(chords[b]);
+        for (const slot of rhythm[b]) {
+          if (slot.rest) {
+            notes.push({ rest: true, dur: slot.dur, bar: b });
+            continue;
+          }
+          const strong = slot.pos === 0 || (barLen === 16 && slot.pos === 8) || (meter.beat === 6 && slot.pos === 6);
+          const isLast = index === total - 1;
+          const isPenult = index === total - 2;
+          let cands = [];
+          for (let d = lo; d <= hi; d++) cands.push(d);
+          if (prev === null) cands = cands.filter((d) => [0, 2, 4].includes(mod(d, 7)) && Math.abs(d - center) <= 3);
+          if (!cands.length) return null;
+          if (isLast) cands = [finalTonic];
+          if (isPenult) {
+            // Approach the final tonic by step, from above (2) or below (the leading tone).
+            const tonics = [];
+            for (let d = lo; d <= hi; d++) if (mod(d, 7) === 0) tonics.push(d);
+            const options = [];
+            for (const t of tonics) for (const d of [t + 1, t - 1]) if (d >= lo && d <= hi) options.push([d, t]);
+            cands = options.map(([d]) => d);
+            if (!cands.length) return null;
+          }
+          const weights = cands.map((d) => {
+            let cost = 0;
+            if (prev !== null) {
+              const iv = d - prev;
+              const a = Math.abs(iv);
+              if (a > L.leap) return [d, 0];
+              cost += a <= 1 ? IV_COST[a] : IV_COST[a] * leapCost;
+              if (a === 0 && repeats >= 1) cost += 4;
+              // Quick notes move by step or small skip: a big leap between sixteenths is a stumble, not a challenge.
+              const quick = Math.min(slot.dur, prevDur);
+              if (a >= 3 && quick <= 1) return [d, 0];
+              if (a >= 4 && quick <= 2) cost += 1.5;
+              if (Math.abs(prevIv) === 1 && a === 1 && iv !== prevIv && d > lo && d < hi) cost += 0.5; // keep a scale moving
+              if (d === recent[recent.length - 2] && a >= 1) cost += recent[recent.length - 1] === recent[recent.length - 3] ? 3 : 0.9;
+              if (Math.abs(prevIv) >= 3 && (Math.sign(iv) === Math.sign(prevIv) || a > 1)) cost += L.level >= 6 ? 1 : 2.5; // recover from a leap
+              if (Math.abs(prevIv) >= 2 && a >= 2 && Math.sign(iv) === Math.sign(prevIv) && Math.abs(prevIv) + a > 7) return [d, 0];
+              if (mod(prev, 7) === 6 && d !== prev + 1 && L.level < 5) cost += 2.5; // leading tone wants to rise
+              const semisApart = Math.abs(semis(d) - semis(prev));
+              if (semisApart === 6 && L.level < 5) return [d, 0];
+            }
+            if (strong && !ct.includes(mod(d, 7))) cost += L.level === 1 ? 1 : 1.6;
+            if (!strong && prev !== null && Math.abs(d - prev) > 1 && !ct.includes(mod(d, 7))) cost += 1.2;
+            cost += 0.12 * Math.abs(d - center);
+            return [d, Math.exp(-1.4 * cost)];
+          });
+          const d = rand.weighted(weights.filter(([, w]) => w > 0).length ? weights : [[cands[0], 1]]);
+          if (prev !== null && Math.abs(d - prev) > L.leap) return null;
+          if (isPenult) finalTonic = mod(d, 7) === 1 ? d - 1 : d + 1;
+          if (prev !== null) {
+            prevIv = d - prev;
+            repeats = d === prev ? repeats + 1 : 0;
+          }
+          prev = d;
+          recent.push(d);
+          prevDur = slot.dur;
+          notes.push({ d, alt: 0, dur: slot.dur, bar: b, strong, chord: chords[b] });
+          index++;
+        }
+      }
+
+      // ---- Alterations: leading tones in minor, then chromatic colour ----
+      const sung = notes.filter((x) => !x.rest);
+      if (minor) {
+        sung.forEach((x, i) => {
+          const next = sung[i + 1];
+          if (mod(x.d, 7) === 6 && ((next && next.d === x.d + 1) || (x.chord === 4 && (!next || next.d >= x.d)))) x.alt = 1;
+        });
+        // Melodic minor: going up 6-7-8, raise the 6th too, so there's no augmented 2nd below level 5.
+        sung.forEach((x, i) => {
+          const next = sung[i + 1];
+          if (mod(x.d, 7) === 5 && next && next.d === x.d + 1 && next.alt === 1 && (L.level < 5 || rand() < 0.6)) x.alt = 1;
+        });
+      }
+      const midiOf = (x) => tonic + semis(x.d) + x.alt;
+      if (L.chroma > 0) {
+        sung.forEach((x, i) => {
+          const next = sung[i + 1];
+          if (!next || i === 0 || i >= sung.length - 2 || x.strong || x.alt || rand() >= L.chroma) return;
+          const gap = midiOf(next) - midiOf(x);
+          if (Math.abs(gap) !== 2 || Math.abs(next.d - x.d) !== 1) return;
+          x.alt = gap > 0 ? 1 : -1; // approach the next note by a half step
+          const back = Math.abs(midiOf(x) - midiOf(sung[i - 1]));
+          if ((back === 6 && L.level < 5) || back > 12 || back === 0) x.alt = 0;
+        });
+      }
+
+      // ---- Validate ----
+      for (let i = 1; i < sung.length; i++) {
+        const a = sung[i - 1];
+        const b = sung[i];
+        const semi = Math.abs(midiOf(b) - midiOf(a));
+        const steps = Math.abs(b.d - a.d);
+        if (semi === 6 && L.level < 5) return null;
+        if (steps === 1 && semi === 3 && L.level < 5) return null; // augmented 2nd
+        if (steps === 2 && (semi === 2 || semi === 5) && L.level < 6) return null; // diminished/augmented 3rd
+        if (semi > 12) return null;
+      }
+      const midis = sung.map(midiOf);
+      if (Math.min(...midis) < voice.low || Math.max(...midis) > voice.high) return null;
+
+      // ---- Spell and write MusicXML ----
+      const out = notes.map((x) => {
+        if (x.rest) return { rest: true, dur: x.dur, bar: x.bar };
+        const midi = midiOf(x);
+        const letter = mod(tonicLetter + x.d, 7);
+        const octave = Math.round((midi - LETTER_PC[letter]) / 12) - 1;
+        const alter = midi - (LETTER_PC[letter] + 12 * (octave + 1));
+        return { midi, dur: x.dur, bar: x.bar, letter, octave, alter };
+      });
+      const quarterBpm = meter.beat === 6 ? Math.round(L.tempo * 0.8) * 1.5 : L.tempo;
+      const xml = toMusicXML(out, { fifths, minor, meter, meterName, clef: voice.clef, quarterBpm, beatBpm: meter.beat === 6 ? Math.round(L.tempo * 0.8) : L.tempo });
+      const firstSung = out.find((x) => !x.rest);
+      return {
+        xml,
+        notes: out,
+        key: { fifths, minor, name: keyName(fifths, minor) },
+        meter: meterName,
+        bpm: quarterBpm,
+        tonicMidi: tonic,
+        firstMidi: firstSung.midi,
+        chords: chords.map((c) => (minor && c === 4 ? 'V' : ROMAN[c])),
+      };
+    }
+
+    function dur(x) {
+      return typeof x === 'string' ? Number(x.slice(1)) : x;
+    }
+
+    function toMusicXML(notes, { fifths, minor, meter, clef, quarterBpm, beatBpm }) {
+      const clefXml =
+        clef === 'bass'
+          ? '<clef><sign>F</sign><line>4</line></clef>'
+          : clef === 'treble8'
+            ? '<clef><sign>G</sign><line>2</line><clef-octave-change>-1</clef-octave-change></clef>'
+            : '<clef><sign>G</sign><line>2</line></clef>';
+      const bars = [];
+      for (const x of notes) (bars[x.bar] = bars[x.bar] || []).push(x);
+      const measures = bars
+        .map((bar, i) => {
+          const attrs =
+            i === 0
+              ? `<attributes><divisions>4</divisions><key><fifths>${fifths}</fifths><mode>${minor ? 'minor' : 'major'}</mode></key><time><beats>${meter.num}</beats><beat-type>${meter.den}</beat-type></time>${clefXml}</attributes>` +
+                `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit>${meter.beat === 6 ? '<beat-unit-dot/>' : ''}<per-minute>${beatBpm}</per-minute></metronome></direction-type><sound tempo="${quarterBpm}"/></direction>`
+              : '';
+          const beams = beamsFor(bar, meter.beat);
+          const state = new Map(); // accidentals carry through the bar
+          const body = bar
+            .map((x, k) => {
+              const [type, dots] = TYPES[x.dur];
+              const dot = dots ? '<dot/>' : '';
+              if (x.rest) return `<note><rest/><duration>${x.dur}</duration><type>${type}</type>${dot}</note>`;
+              const id = `${x.letter}${x.octave}`;
+              const current = state.has(id) ? state.get(id) : keyAlter(x.letter, fifths);
+              let acc = '';
+              if (x.alter !== current) {
+                acc = `<accidental>${{ 2: 'double-sharp', 1: 'sharp', 0: 'natural', '-1': 'flat', '-2': 'flat-flat' }[x.alter]}</accidental>`;
+                state.set(id, x.alter);
+              }
+              const alter = x.alter ? `<alter>${x.alter}</alter>` : '';
+              return `<note><pitch><step>${LETTERS[x.letter]}</step>${alter}<octave>${x.octave}</octave></pitch><duration>${x.dur}</duration><type>${type}</type>${dot}${acc}${beams[k] || ''}</note>`;
+            })
+            .join('');
+          const end = i === bars.length - 1 ? '<barline location="right"><bar-style>light-heavy</bar-style></barline>' : '';
+          return `<measure number="${i + 1}">${attrs}${body}${end}</measure>`;
+        })
+        .join('');
+      return xmlDoc('Voice', measures);
+    }
+
+    return { SIGHT_LEVELS, spelledName, keyName, generateMelody };
+  })();
+  var mod_intervals = (function () {
+    // Intervals for the ear trainer: names, levels and a familiar tune that starts with each one.
+    // Song cues are titles only (no audio); they're the classic memory hooks voice teachers use.
+
+    const INTERVALS = [
+      { semis: 1, name: 'Minor 2nd', short: 'm2', up: 'Jaws', down: 'Joy to the World' },
+      { semis: 2, name: 'Major 2nd', short: 'M2', up: 'Happy Birthday', down: 'Mary Had a Little Lamb' },
+      { semis: 3, name: 'Minor 3rd', short: 'm3', up: 'Greensleeves', down: 'Hey Jude' },
+      { semis: 4, name: 'Major 3rd', short: 'M3', up: 'When the Saints Go Marching In', down: 'Swing Low, Sweet Chariot' },
+      { semis: 5, name: 'Perfect 4th', short: 'P4', up: 'Here Comes the Bride', down: 'Eine kleine Nachtmusik' },
+      { semis: 6, name: 'Tritone', short: 'TT', up: 'Maria (West Side Story)', down: null },
+      { semis: 7, name: 'Perfect 5th', short: 'P5', up: 'Twinkle, Twinkle, Little Star', down: 'The Flintstones' },
+      { semis: 8, name: 'Minor 6th', short: 'm6', up: 'The Entertainer', down: null },
+      { semis: 9, name: 'Major 6th', short: 'M6', up: 'My Bonnie Lies Over the Ocean', down: 'Nobody Knows the Trouble I’ve Seen' },
+      { semis: 10, name: 'Minor 7th', short: 'm7', up: 'Somewhere (West Side Story)', down: null },
+      { semis: 11, name: 'Major 7th', short: 'M7', up: 'Take On Me (chorus)', down: null },
+      { semis: 12, name: 'Octave', short: 'P8', up: 'Somewhere Over the Rainbow', down: null },
+    ];
+
+    const INTERVAL_LEVELS = [
+      { level: 1, name: 'Level 1: steps, thirds, fifths', semis: [2, 4, 7, 12], down: false },
+      { level: 2, name: 'Level 2: add minor and the fourth', semis: [1, 2, 3, 4, 5, 7, 9, 12], down: false },
+      { level: 3, name: 'Level 3: up and down', semis: [1, 2, 3, 4, 5, 7, 8, 9, 12], down: true },
+      { level: 4, name: 'Level 4: every interval', semis: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], down: true },
+    ];
+
+    const intervalBySemis = (s) => INTERVALS.find((i) => i.semis === s);
+
+    /**
+     * A question: a reference note and a target note an interval away, both inside the voice range.
+     * @param {() => number} rand  random function (Math.random or seeded)
+     * @param {{ level: number, low: number, high: number, avoid?: number }} opts  avoid: last interval, for variety
+     */
+    function makeIntervalQuestion(rand, { level, low, high, avoid }) {
+      const L = INTERVAL_LEVELS[Math.max(0, Math.min(INTERVAL_LEVELS.length - 1, level - 1))];
+      let pool = L.semis.filter((s) => s !== avoid);
+      if (!pool.length) pool = L.semis;
+      const semis = pool[Math.floor(rand() * pool.length)];
+      const dir = L.down && rand() < 0.5 ? -1 : 1;
+      // Keep both notes a little inside the range so nothing strains.
+      const lo = low + 1;
+      const hi = high - 1;
+      const minRef = dir > 0 ? lo : lo + semis;
+      const maxRef = dir > 0 ? hi - semis : hi;
+      const ref = minRef + Math.floor(rand() * Math.max(1, maxRef - minRef + 1));
+      return { semis, dir, ref, target: ref + dir * semis, interval: intervalBySemis(semis) };
+    }
+
+    // Spelling: a third must look like a third (C to E, D♭ to F), never C♯ to F.
+    const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const LETTER_PC = [0, 2, 4, 5, 7, 9, 11];
+    const STEPS = { 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 5, 9: 5, 10: 6, 11: 6, 12: 7 }; // letters apart (tritone = augmented 4th)
+    const ACC = { '-2': '𝄫', '-1': '♭', 0: '', 1: '♯', 2: '𝄪' };
+
+    function spell(midi, letter) {
+      const octave = Math.round((midi - LETTER_PC[letter]) / 12) - 1;
+      const alter = midi - (LETTER_PC[letter] + 12 * (octave + 1));
+      return { letter, alter, octave, name: `${LETTERS[letter]}${ACC[alter] ?? '?'}${octave}` };
+    }
+
+    /** Both notes of a question, spelled as the interval: { from: 'D♭4', to: 'F4' }. */
+    function spellInterval(q) {
+      // Try the plain spelling of the first note, then its sharp/flat twin, and keep the cleaner pair.
+      const options = [];
+      for (let letter = 0; letter < 7; letter++) {
+        const a = spell(q.ref, letter);
+        if (Math.abs(a.alter) > 1) continue;
+        const bLetter = (letter + q.dir * STEPS[q.semis] + 70) % 7;
+        const b = spell(q.target, bLetter);
+        if (Math.abs(b.alter) > 2) continue;
+        options.push({ from: a.name, to: b.name, cost: Math.abs(a.alter) + Math.abs(b.alter) * 1.5 });
+      }
+      options.sort((x, y) => x.cost - y.cost);
+      return options[0] || { from: '', to: '' };
+    }
+
+    function describeInterval(q) {
+      return `${q.interval.name} ${q.dir > 0 ? 'up' : 'down'}`;
+    }
+
+    function songCue(q) {
+      const cue = q.dir > 0 ? q.interval.up : q.interval.down;
+      return cue ? `“${cue}” starts with ${q.semis === 12 ? "an" : "a"} ${q.interval.name.toLowerCase()} ${q.dir > 0 ? 'up' : 'down'}.` : null;
+    }
+
+    return { INTERVALS, INTERVAL_LEVELS, intervalBySemis, makeIntervalQuestion, spellInterval, describeInterval, songCue };
+  })();
+  var mod_grade = (function () {
+    // Grade a sung melody, note by note, from timed pitch readings.
+    // notes:  [{ sec, dur, midi }] in score seconds;  frames: [{ t, midi | null }] in the same clock.
+
+    const GRADE_BANDS = { tune: 30, near: 60 }; // cents: in tune / right note but off
+
+    /**
+     * @returns {{ grade: 'tune'|'near'|'wrong'|'missed', cents: number|null, sungMidi: number|null }[]}
+     */
+    function gradeSung(notes, frames, bands = GRADE_BANDS) {
+      return notes.map((n) => {
+        // Skip the start of each note (the singer is still arriving) and the very end.
+        const from = n.sec + Math.min(0.15, n.dur * 0.3);
+        const to = n.sec + n.dur - Math.min(0.06, n.dur * 0.15);
+        const inside = frames.filter((f) => f.t >= from && f.t <= to);
+        const offs = inside.filter((f) => f.midi !== null).map((f) => f.midi - n.midi);
+        if (!offs.length || offs.length < inside.length * 0.4) return { grade: 'missed', cents: null, sungMidi: null };
+        offs.sort((a, b) => a - b);
+        let off = offs[Math.floor(offs.length / 2)];
+        off -= 12 * Math.round(off / 12); // another octave still counts
+        const cents = Math.round(off * 100);
+        const a = Math.abs(cents);
+        return { grade: a <= bands.tune ? 'tune' : a <= bands.near ? 'near' : 'wrong', cents, sungMidi: n.midi + Math.round(off) };
+      });
+    }
+
+    return { GRADE_BANDS, gradeSung };
+  })();
+  var mod_voice_analyzer = (function () {
+    // Voice analyzer: turns a microphone (or any Web Audio source) into live measurements for
+    // singers and instrumentalists: pitch, cents, vibrato, steadiness, loudness, "ring",
+    // brightness, breathiness and phrase length. Everything runs on the device; nothing is
+    // recorded or sent anywhere.
+    //
+    // Framework-free with no imports, so it can also run inside AlloFlow (Singing Lab / Music Lab).
+    //
+    //   const va = new VoiceAnalyzer({ mode: 'voice' });
+    //   va.onFrame((f) => draw(f));
+    //   await va.startMicrophone();          // or va.connectSource(audioNode) for files/tests
+    //   va.setTarget(() => player.currentVoiceMidi());   // optional: sing-along target
+    //
+    // The pure function analyzeBlock() is exported for testing with synthetic signals.
+
+    const MODES = {
+      voice: { minHz: 65, maxHz: 1100, clarity: 0.82, label: 'Voice' },
+      instrument: { minHz: 40, maxHz: 4200, clarity: 0.8, label: 'Instrument' },
+    };
+
+    const NOTE_NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    const SILENCE_DB = -52; // below this RMS level the frame counts as silence
+    const PHRASE_GAP = 0.3; // seconds of silence that end a phrase
+
+    const midiFromHz = (hz, a4 = 440) => 69 + 12 * Math.log2(hz / a4);
+    const noteName = (midi) => `${NOTE_NAMES[((Math.round(midi) % 12) + 12) % 12]}${Math.floor(Math.round(midi) / 12) - 1}`;
+
+    // ---- Pure signal analysis ------------------------------------------------------
+
+    // In-place radix-2 FFT on separate real/imaginary arrays (length must be a power of two).
+    function fft(re, im) {
+      const n = re.length;
+      for (let i = 1, j = 0; i < n; i++) {
+        let bit = n >> 1;
+        for (; j & bit; bit >>= 1) j ^= bit;
+        j ^= bit;
+        if (i < j) {
+          [re[i], re[j]] = [re[j], re[i]];
+          [im[i], im[j]] = [im[j], im[i]];
+        }
+      }
+      for (let len = 2; len <= n; len <<= 1) {
+        const ang = (-2 * Math.PI) / len;
+        const wr = Math.cos(ang);
+        const wi = Math.sin(ang);
+        for (let i = 0; i < n; i += len) {
+          let cr = 1;
+          let ci = 0;
+          for (let k = 0; k < len / 2; k++) {
+            const a = i + k;
+            const b = a + len / 2;
+            const tr = re[b] * cr - im[b] * ci;
+            const ti = re[b] * ci + im[b] * cr;
+            re[b] = re[a] - tr;
+            im[b] = im[a] - ti;
+            re[a] += tr;
+            im[a] += ti;
+            const ncr = cr * wr - ci * wi;
+            ci = cr * wi + ci * wr;
+            cr = ncr;
+          }
+        }
+      }
+    }
+
+    const scratch = new Map();
+    function buffers(size) {
+      if (!scratch.has(size)) scratch.set(size, { re: new Float64Array(size), im: new Float64Array(size) });
+      return scratch.get(size);
+    }
+
+    /**
+     * Pitch by the McLeod Pitch Method (normalised square difference), with the autocorrelation
+     * computed by FFT so it stays cheap enough for phones.
+     * @returns {{ hz: number, clarity: number } | null}
+     */
+    function detectPitch(x, sampleRate, { minHz, maxHz, clarity: minClarity }) {
+      const n = x.length;
+      const size = 1 << Math.ceil(Math.log2(n * 2));
+      const { re, im } = buffers(size);
+      re.fill(0);
+      im.fill(0);
+      let mean = 0;
+      for (let i = 0; i < n; i++) mean += x[i];
+      mean /= n;
+      for (let i = 0; i < n; i++) re[i] = x[i] - mean;
+      fft(re, im);
+      for (let i = 0; i < size; i++) {
+        re[i] = re[i] * re[i] + im[i] * im[i];
+        im[i] = 0;
+      }
+      fft(re, im); // power spectrum -> autocorrelation (unnormalised, reversed order is symmetric)
+      const acf = (tau) => re[tau] / size;
+
+      const maxLag = Math.min(n - 2, Math.floor(sampleRate / minHz));
+      const minLag = Math.max(2, Math.floor(sampleRate / maxHz));
+      // m'(tau) = sum of x[j]^2 + x[j+tau]^2, computed incrementally.
+      let m = 2 * acf(0);
+      const nsdf = new Float64Array(maxLag + 2);
+      const sq = (i) => (x[i] - mean) * (x[i] - mean);
+      for (let tau = 0; tau <= maxLag + 1; tau++) {
+        nsdf[tau] = m > 0 ? (2 * acf(tau)) / m : 0;
+        m -= sq(tau) + sq(n - 1 - tau);
+      }
+
+      // Key maxima: the highest point between each upward and downward zero crossing.
+      const peaks = [];
+      let tau = 1;
+      while (tau < maxLag && nsdf[tau] > 0) tau++; // skip the lobe around zero lag
+      while (tau < maxLag) {
+        while (tau < maxLag && nsdf[tau] <= 0) tau++;
+        let best = tau;
+        while (tau < maxLag && nsdf[tau] > 0) {
+          if (nsdf[tau] > nsdf[best]) best = tau;
+          tau++;
+        }
+        if (best >= minLag && best < maxLag) peaks.push(best);
+      }
+      if (!peaks.length) return null;
+      const top = Math.max(...peaks.map((p) => nsdf[p]));
+      const pick = peaks.find((p) => nsdf[p] >= 0.9 * top);
+      if (nsdf[pick] < minClarity) return null;
+      // Parabolic interpolation around the chosen peak.
+      const a = nsdf[pick - 1];
+      const b = nsdf[pick];
+      const c = nsdf[pick + 1];
+      const shift = (a - c) / (2 * (a - 2 * b + c)) || 0;
+      const period = pick + Math.max(-0.5, Math.min(0.5, shift));
+      const hz = sampleRate / period;
+      if (hz < minHz || hz > maxHz) return null;
+      return { hz, clarity: Math.min(1, b - 0.25 * (a - c) * shift) };
+    }
+
+    /**
+     * Spectral measures from a magnitude spectrum in decibels (as given by AnalyserNode).
+     * ring = share of energy in 2.5–3.5 kHz (the "singer's formant") versus 0.3–2.5 kHz.
+     */
+    function spectralFeatures(db, sampleRate) {
+      const binHz = sampleRate / 2 / db.length;
+      let total = 0;
+      let weighted = 0;
+      let low = 0;
+      let ring = 0;
+      let logSum = 0;
+      let count = 0;
+      for (let i = 1; i < db.length; i++) {
+        const hz = i * binHz;
+        if (hz < 80 || hz > 8000) continue;
+        const p = Math.pow(10, db[i] / 10);
+        total += p;
+        weighted += p * hz;
+        if (hz >= 300 && hz < 2500) low += p;
+        else if (hz >= 2500 && hz <= 3500) ring += p;
+        logSum += Math.log(p + 1e-20);
+        count++;
+      }
+      if (total <= 0) return { centroid: 0, ring: 0, flatness: 1 };
+      return {
+        centroid: weighted / total,
+        ring: ring / (low + ring + 1e-12),
+        flatness: Math.exp(logSum / count) / (total / count), // 1 = noise-like, near 0 = tonal
+      };
+    }
+
+    /** Vibrato from a recent pitch track in cents: rate (Hz) and extent (± cents), or null. */
+    function measureVibrato(times, cents) {
+      const n = cents.length;
+      if (n < 12 || times[n - 1] - times[0] < 0.6) return null;
+      // Remove the slow line (the note itself) with a ~0.35 s moving average.
+      const span = times[n - 1] - times[0];
+      const w = Math.max(3, Math.round((n * 0.35) / span));
+      const detr = cents.map((c, i) => {
+        let s = 0;
+        let k = 0;
+        for (let j = Math.max(0, i - w); j <= Math.min(n - 1, i + w); j++, k++) s += cents[j];
+        return c - s / k;
+      });
+      const edge = Math.min(w, Math.floor(n / 4));
+      const core = detr.slice(edge, n - edge);
+      const t = times.slice(edge, n - edge);
+      // Time whole half-cycles from the first zero crossing to the last (interpolated), so
+      // partial cycles at the window edges don't drag the rate down.
+      const crossTimes = [];
+      for (let i = 1; i < core.length; i++) {
+        if ((core[i - 1] < 0) !== (core[i] < 0)) {
+          const f = core[i - 1] / (core[i - 1] - core[i]);
+          crossTimes.push(t[i - 1] + f * (t[i] - t[i - 1]));
+        }
+      }
+      if (crossTimes.length < 3) return null;
+      const dur = crossTimes[crossTimes.length - 1] - crossTimes[0];
+      if (dur <= 0.25) return null;
+      const rate = (crossTimes.length - 1) / 2 / dur;
+      const rms = Math.sqrt(core.reduce((s, v) => s + v * v, 0) / core.length);
+      const extent = rms * Math.SQRT2; // sine amplitude from its RMS
+      if (rate < 3.5 || rate > 9 || extent < 8) return null;
+      return { rate, extent };
+    }
+
+    // ---- Audio-thread tap ------------------------------------------------------------
+
+    // A tiny AudioWorklet that runs on the browser's audio thread and hands the main thread a
+    // window of the latest samples 40 times a second, stamped with the audio clock. A busy page
+    // may receive these late, but each carries the exact time it was captured, so vibrato and
+    // phrase timing stay accurate. (Inlined as a string so the module has no extra file to serve.)
+    const TAP_WINDOW = 4096;
+    const TAP_SOURCE = `
+    class VoiceTap extends AudioWorkletProcessor {
+      constructor() {
+        super();
+        this.ring = new Float32Array(${TAP_WINDOW});
+        this.pos = 0;
+        this.filled = 0;
+        this.since = 0;
+        this.hop = sampleRate / 40;
+      }
+      process(inputs) {
+        const ch = inputs[0] && inputs[0][0];
+        const n = ch ? ch.length : 128;
+        for (let i = 0; i < n; i++) {
+          this.ring[this.pos] = ch ? ch[i] : 0;
+          this.pos = (this.pos + 1) % ${TAP_WINDOW};
+        }
+        this.filled = Math.min(${TAP_WINDOW}, this.filled + n);
+        if (this.filled < ${TAP_WINDOW}) return true;
+        this.since += n;
+        if (this.since >= this.hop) {
+          this.since -= this.hop;
+          const out = new Float32Array(${TAP_WINDOW});
+          out.set(this.ring.subarray(this.pos));
+          out.set(this.ring.subarray(0, this.pos), ${TAP_WINDOW} - this.pos);
+          this.port.postMessage({ t: currentTime + n / sampleRate, samples: out }, [out.buffer]);
+        }
+        return true;
+      }
+    }
+    registerProcessor('voice-tap', VoiceTap);
+    `;
+    const tapModules = new WeakMap();
+
+    /** An AudioWorkletNode that posts { t, samples } frames, or null where AudioWorklet is unavailable. */
+    async function createTap(ctx) {
+      if (!ctx.audioWorklet || typeof AudioWorkletNode === 'undefined') return null;
+      if (!tapModules.has(ctx)) {
+        const url = URL.createObjectURL(new Blob([TAP_SOURCE], { type: 'text/javascript' }));
+        tapModules.set(ctx, ctx.audioWorklet.addModule(url).finally(() => URL.revokeObjectURL(url)));
+      }
+      try {
+        await tapModules.get(ctx);
+        // One silent output, connected onward, so every browser keeps pulling audio through it.
+        return new AudioWorkletNode(ctx, 'voice-tap', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });
+      } catch {
+        tapModules.delete(ctx);
+        return null;
+      }
+    }
+
+    // ---- Live analyzer -------------------------------------------------------------
+
+    class VoiceAnalyzer {
+      constructor({ mode = 'voice', a4 = 440 } = {}) {
+        this.mode = mode;
+        this.a4 = a4;
+        this.listeners = new Set();
+        this.target = null;
+        this.reset();
+      }
+
+      onFrame(fn) {
+        this.listeners.add(fn);
+        return () => this.listeners.delete(fn);
+      }
+
+      setMode(mode) {
+        this.mode = MODES[mode] ? mode : 'voice';
+      }
+
+      /** A function returning the target MIDI note right now (or null), e.g. from a score player. */
+      setTarget(fn) {
+        this.target = fn;
+      }
+
+      reset() {
+        this.track = []; // { t, midi } of voiced frames, last few seconds
+        this.recentMidi = [];
+        this.phrase = { start: null, lastVoiced: null, longest: 0, last: 0 };
+        this.stats = { voicedFrames: 0, voicedSeconds: 0, targetFrames: 0, within15: 0, within25: 0, phrases: 0, lowest: null, highest: null, steadiness: [], vibratoRates: [], vibratoExtents: [] };
+      }
+
+      async startMicrophone() {
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error('This browser cannot use the microphone here (it needs a secure https page).');
+        // Turn off voice processing: auto gain and noise suppression distort loudness and vibrato.
+        // On iPhone, tell Safari the page records AND plays, so a sing-along keeps its piano.
+        try {
+          if (navigator.audioSession) navigator.audioSession.type = 'play-and-record';
+        } catch {}
+        this.stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+        });
+        const ctx = this._context();
+        if (ctx.state !== 'running') await ctx.resume();
+        await this.connectSource(ctx.createMediaStreamSource(this.stream));
+      }
+
+      /**
+       * Analyse any Web Audio node (an audio file, an oscillator in tests). Samples come from the
+       * audio-thread tap when the browser has AudioWorklet, otherwise from a 40 Hz timer.
+       * Pass { worklet: false } to force the timer.
+       */
+      async connectSource(node, { worklet = true } = {}) {
+        const ctx = node.context;
+        this.ctx = ctx;
+        this._disconnect();
+        this.analyser = ctx.createAnalyser();
+        this.analyser.fftSize = 4096; // ~85 ms: enough cycles for low notes
+        this.analyser.smoothingTimeConstant = 0.3;
+        node.connect(this.analyser);
+        this.input = node;
+        this.time = new Float32Array(this.mode === 'instrument' ? 4096 : 2048);
+        this.freq = new Float32Array(this.analyser.frequencyBinCount);
+        this.running = true;
+        this.t0 = performance.now();
+        this.audioT0 = null;
+        this.lastStep = undefined;
+        const tap = worklet ? await createTap(ctx) : null;
+        if (!this.running || this.input !== node) {
+          tap?.disconnect();
+          return; // stopped (or switched source) while the worklet loaded
+        }
+        if (tap) {
+          this.tap = tap;
+          this.clock = 'audio';
+          tap.port.onmessage = (e) => this._step(e.data.samples, e.data.t);
+          node.connect(tap);
+          tap.connect(ctx.destination); // silent: the tap writes nothing to its output
+        } else {
+          this.clock = 'timer';
+          this.timer = setInterval(() => this._step(), 1000 / 40);
+        }
+      }
+
+      /**
+       * Analyse an <audio> element (e.g. an uploaded recording) while it plays through the speakers.
+       * Each element can only be connected once, so pass a fresh element per file.
+       */
+      async analyzeMediaElement(el) {
+        const ctx = this._context();
+        if (ctx.state !== 'running') await ctx.resume();
+        const src = ctx.createMediaElementSource(el);
+        src.connect(ctx.destination);
+        await this.connectSource(src);
+      }
+
+      stop() {
+        this.running = false;
+        this._disconnect();
+        this.stream?.getTracks().forEach((t) => t.stop());
+        this.stream = null;
+        this.input = null;
+      }
+
+      _disconnect() {
+        clearInterval(this.timer);
+        this.timer = null;
+        if (this.tap) {
+          this.tap.port.onmessage = null;
+          this.tap.disconnect();
+          this.tap = null;
+        }
+        this.input?.disconnect();
+      }
+
+      summary() {
+        const s = this.stats;
+        const avg = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
+        return {
+          seconds: s.voicedSeconds,
+          phrases: s.phrases + (this.phrase.start !== null ? 1 : 0),
+          longestPhrase: this.phrase.longest,
+          lowest: s.lowest,
+          highest: s.highest,
+          steadiness: avg(s.steadiness),
+          inTune15: s.targetFrames ? s.within15 / s.targetFrames : null,
+          inTune25: s.targetFrames ? s.within25 / s.targetFrames : null,
+          vibratoRate: avg(s.vibratoRates),
+          vibratoExtent: avg(s.vibratoExtents),
+        };
+      }
+
+      _context() {
+        if (!this.ownCtx) this.ownCtx = new (window.AudioContext || window.webkitAudioContext)();
+        return this.ownCtx;
+      }
+
+      /** One analysis frame: from a tap window stamped with audio time, or (timer) from the AnalyserNode. */
+      _step(samples, audioTime) {
+        if (!this.running) return;
+        const cfg = MODES[this.mode];
+        const size = this.mode === 'instrument' ? 4096 : 2048;
+        let now;
+        if (samples) {
+          this.audioT0 = this.audioT0 ?? audioTime;
+          now = audioTime - this.audioT0;
+          this.time = samples.length > size ? samples.subarray(samples.length - size) : samples;
+        } else {
+          now = (performance.now() - this.t0) / 1000;
+          if (this.time.length !== size) this.time = new Float32Array(size);
+          this.analyser.getFloatTimeDomainData(this.time);
+        }
+        this.analyser.getFloatFrequencyData(this.freq);
+
+        let sum = 0;
+        for (let i = 0; i < this.time.length; i++) sum += this.time[i] * this.time[i];
+        const db = 10 * Math.log10(sum / this.time.length + 1e-12);
+        const loud = db > SILENCE_DB;
+        const pitch = loud ? detectPitch(this.time, this.ctx.sampleRate, cfg) : null;
+
+        // Median of three readings removes single-frame octave slips. (It also clips vibrato
+        // peaks, so the vibrato track below keeps the raw reading whenever it agrees.)
+        let midi = null;
+        let raw = null;
+        if (pitch) {
+          raw = midiFromHz(pitch.hz, this.a4);
+          this.recentMidi.push(raw);
+          if (this.recentMidi.length > 3) this.recentMidi.shift();
+          midi = [...this.recentMidi].sort((a, b) => a - b)[Math.floor(this.recentMidi.length / 2)];
+        } else {
+          this.recentMidi = [];
+        }
+
+        // Phrase timing.
+        const ph = this.phrase;
+        if (midi !== null) {
+          if (ph.start === null || now - ph.lastVoiced > PHRASE_GAP) ph.start = now;
+          ph.lastVoiced = now;
+          ph.current = now - ph.start;
+          ph.longest = Math.max(ph.longest, ph.current);
+        } else if (ph.start !== null && now - ph.lastVoiced > PHRASE_GAP) {
+          ph.last = ph.lastVoiced - ph.start;
+          if (ph.last > 0.4) this.stats.phrases++;
+          ph.start = null;
+          ph.current = 0;
+        }
+
+        // Pitch track for vibrato and steadiness (last 1.5 s of the current note).
+        if (midi !== null) {
+          const prev = this.track[this.track.length - 1];
+          if (prev && (now - prev.t > 0.15 || Math.abs(midi - prev.midi) > 1.2)) this.track = []; // new note
+          this.track.push({ t: now, midi: Math.abs(raw - midi) < 0.6 ? raw : midi });
+          while (this.track.length && now - this.track[0].t > 1.5) this.track.shift();
+        } else {
+          this.track = [];
+        }
+        let vibrato = null;
+        let steadiness = null;
+        if (this.track.length > 8) {
+          const center = this.track.reduce((s, p) => s + p.midi, 0) / this.track.length;
+          const cents = this.track.map((p) => (p.midi - center) * 100);
+          vibrato = measureVibrato(this.track.map((p) => p.t), cents);
+          const sd = Math.sqrt(cents.reduce((s, c) => s + c * c, 0) / cents.length);
+          // Vibrato is intentional, so it doesn't count against steadiness.
+          const wobble = vibrato ? Math.max(0, sd - vibrato.extent / Math.SQRT2) : sd;
+          steadiness = Math.max(0, Math.min(1, 1 - wobble / 40));
+          if (this.track.length % 10 === 0) {
+            this.stats.steadiness.push(steadiness);
+            if (vibrato) {
+              this.stats.vibratoRates.push(vibrato.rate);
+              this.stats.vibratoExtents.push(vibrato.extent);
+            }
+          }
+        }
+
+        // The pitch a listener hears: with vibrato that's the centre of the oscillation, so tuning
+        // (needle, note name, sing-along scoring) uses the average of the last half second.
+        let heard = midi;
+        if (midi !== null) {
+          const recent = this.track.filter((p) => now - p.t <= 0.5);
+          if (recent.length >= 4) heard = recent.reduce((s, p) => s + p.midi, 0) / recent.length;
+        }
+
+        const spectral = loud ? spectralFeatures(this.freq, this.ctx.sampleRate) : { centroid: 0, ring: 0, flatness: 1 };
+        const target = this.target ? this.target() : null;
+        let targetCents = null;
+        if (heard !== null && target !== null && target !== undefined) {
+          // Compare within an octave: a lower voice singing the melody an octave down still counts.
+          let diff = (heard - target) * 100;
+          diff = ((((diff + 600) % 1200) + 1200) % 1200) - 600;
+          targetCents = diff;
+          this.stats.targetFrames++;
+          if (Math.abs(diff) <= 15) this.stats.within15++;
+          if (Math.abs(diff) <= 25) this.stats.within25++;
+        }
+        // Real elapsed time, not frames x 40: a busy device runs fewer frames than planned.
+        const dt = this.lastStep === undefined ? 0 : Math.min(0.1, now - this.lastStep);
+        this.lastStep = now;
+        if (midi !== null) {
+          this.stats.voicedFrames++;
+          this.stats.voicedSeconds += dt;
+          // Range from held notes only (half a second or more), so a passing slip doesn't count.
+          if (this.track.length >= 20) {
+            this.stats.lowest = Math.min(this.stats.lowest ?? Infinity, Math.round(heard));
+            this.stats.highest = Math.max(this.stats.highest ?? -Infinity, Math.round(heard));
+          }
+        }
+
+        const frame = {
+          t: now,
+          mode: this.mode,
+          voiced: midi !== null,
+          hz: heard !== null ? this.a4 * Math.pow(2, (heard - 69) / 12) : null,
+          midi, // instantaneous: the visuals show the full vibrato shimmer
+          heardMidi: heard,
+          note: heard !== null ? noteName(heard) : null,
+          cents: heard !== null ? (heard - Math.round(heard)) * 100 : null,
+          clarity: pitch?.clarity ?? 0,
+          db,
+          loudness: Math.max(0, Math.min(1, (db - SILENCE_DB) / 45)),
+          vibrato,
+          steadiness,
+          brightness: Math.max(0, Math.min(1, (spectral.centroid - 300) / 3500)),
+          ring: Math.max(0, Math.min(1, spectral.ring * 4)),
+          breathiness: loud ? Math.max(0, Math.min(1, spectral.flatness * 3 + (1 - (pitch?.clarity ?? 0)) * 0.6)) : null,
+          phrase: { current: ph.current || 0, last: ph.last, longest: ph.longest },
+          target,
+          targetCents,
+        };
+        for (const fn of this.listeners) fn(frame);
+      }
+    }
+
+    return { MODES, midiFromHz, noteName, detectPitch, spectralFeatures, measureVibrato, VoiceAnalyzer };
+  })();
+  var mod_voice_visuals = (function () {
+    // Voice visuals: an immersive canvas scene ("Aurora") plus optional formal meters, driven by
+    // frames from VoiceAnalyzer. Framework-free, no imports: reusable in AlloFlow.
+    //
+    //   const vis = new VoiceVisuals(canvas, { palette: 'opera', mode: 'voice' });
+    //   analyzer.onFrame((f) => vis.push(f));
+    //   vis.setTargets((before, after) => player.voiceWindow(before, after)); // optional sing-along
+    //   vis.start();
+    //
+    //   const meters = createMeters(element, { mode: 'voice' });
+    //   analyzer.onFrame((f) => meters.update(f));
+
+    const PALETTES = {
+      opera: { label: 'Opera (burgundy & gold)', bg: ['#1b0f13', '#2c141b'], hues: [345, 20, 42], spark: '#f2d49b', target: '242,212,155', guide: '242,226,210' },
+      aurora: { label: 'Northern lights', bg: ['#04121a', '#0a2430'], hues: [165, 195, 280], spark: '#b9fff1', target: '185,255,241', guide: '200,235,240' },
+      dusk: { label: 'Dusk (rose & lilac)', bg: ['#140f22', '#251733'], hues: [320, 280, 25], spark: '#ffd6e8', target: '255,214,232', guide: '235,220,245' },
+      prism: { label: 'Prism (a color per note)', bg: ['#07070b', '#141420'], hues: null, spark: '#ffffff', target: '255,255,255', guide: '220,220,235' },
+      contrast: { label: 'High contrast', bg: ['#000000', '#000000'], hues: [55, 55, 55], spark: '#ffffff', target: '255,255,255', guide: '255,255,255', bold: true },
+    };
+
+    const NOTE = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    const RANGES = { voice: [43, 84], instrument: [28, 96] }; // default MIDI view (G2–C6, E1–C7)
+
+    class VoiceVisuals {
+      constructor(canvas, { palette = 'opera', mode = 'voice', calm = false, history = 7, guides = true, scene = 'aurora', explore = false } = {}) {
+        // explore: free play. No note lines or names, and nothing rewards being "right" (no tuning sparkles).
+        this.explore = explore;
+        this.canvas = canvas;
+        this.g = canvas.getContext('2d');
+        this.palette = palette;
+        this.mode = mode;
+        this.calm = calm || matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.history = history; // seconds of trail on screen
+        this.guides = guides;
+        this.points = [];
+        this.sparks = [];
+        this.view = [...RANGES[mode]];
+        this.targets = null;
+        this.scene = scene; // aurora | bloom | constellation | ripples | paint
+        this.notes = []; // finished held notes
+        this.cur = null; // the note being held now
+        this.hits = new Set(); // song notes sung in tune (Constellation)
+        this.resize = this.resize.bind(this);
+        this.ro = new ResizeObserver(this.resize);
+        this.ro.observe(canvas);
+        this.resize();
+      }
+
+      set(options) {
+        Object.assign(this, options);
+        if (options.mode) this.view = [...RANGES[options.mode]];
+      }
+
+      /** A function (secondsBefore, secondsAfter) -> [{ start, dur, midi }] with times relative to now. */
+      setTargets(fn) {
+        this.targets = fn;
+      }
+
+      push(f) {
+        this.last = f;
+        const now = performance.now() / 1000;
+        this.points.push({ t: now, f });
+        while (this.points.length && now - this.points[0].t > this.history * 2 + 1) this.points.shift();
+        this._trackNote(f, now);
+        // The view glides to follow the singer (about ±10 semitones; wider for instruments),
+        // so movement fills the screen instead of hugging a thin line.
+        if (f.voiced) this.center = this.center === undefined ? f.midi : this.center + (f.midi - this.center) * 0.04;
+      }
+
+      _updateView(targetNotes) {
+        const span = this.mode === 'instrument' ? 26 : 20;
+        let lo = (this.center ?? (RANGES[this.mode][0] + RANGES[this.mode][1]) / 2) - span / 2;
+        let hi = lo + span;
+        // Keep the song's upcoming notes in sight during a sing-along.
+        for (const n of targetNotes || []) {
+          lo = Math.min(lo, n.midi - 3);
+          hi = Math.max(hi, n.midi + 3);
+        }
+        const [vl, vh] = this.view;
+        this.view = [vl + (lo - vl) * 0.08, vh + (hi - vh) * 0.08];
+      }
+
+      start() {
+        if (this.raf) return;
+        const loop = () => {
+          this.draw();
+          this.raf = requestAnimationFrame(loop);
+        };
+        this.raf = requestAnimationFrame(loop);
+      }
+
+      stop() {
+        cancelAnimationFrame(this.raf);
+        this.raf = null;
+      }
+
+      destroy() {
+        this.stop();
+        this.ro.disconnect();
+      }
+
+      resize() {
+        const r = this.canvas.getBoundingClientRect();
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        this.w = Math.max(1, r.width);
+        this.h = Math.max(1, r.height);
+        this.canvas.width = Math.round(this.w * dpr);
+        this.canvas.height = Math.round(this.h * dpr);
+        this.g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // Glow layer at quarter resolution: stretched back up, it blurs into a soft haze for free.
+        this.glow = this.glow ?? document.createElement('canvas');
+        this.glow.width = Math.max(1, Math.round(this.w / 4));
+        this.glow.height = Math.max(1, Math.round(this.h / 4));
+        this.gg = this.glow.getContext('2d');
+        this.gg.setTransform(0.25, 0, 0, 0.25, 0, 0);
+      }
+
+      // ---- Drawing ------------------------------------------------------------------
+
+      hueFor(midi, i = 0) {
+        const p = PALETTES[this.palette];
+        if (!p.hues) return (((Math.round(midi) % 12) * 7) % 12) * 30; // circle of fifths around the colour wheel
+        const [lo, hi] = this.view;
+        const k = Math.max(0, Math.min(1, (midi - lo) / (hi - lo)));
+        const a = p.hues[0];
+        const b = p.hues[Math.min(p.hues.length - 1, 1 + (i % 2))];
+        let d = b - a;
+        if (Math.abs(d) > 180) d -= Math.sign(d) * 360;
+        return (a + d * k + 360) % 360;
+      }
+
+      y(midi) {
+        const [lo, hi] = this.view;
+        const pad = this.h * 0.08;
+        return this.h - pad - ((midi - lo) / (hi - lo)) * (this.h - 2 * pad);
+      }
+
+      draw() {
+        const g = this.g;
+        const { w, h } = this;
+        const p = PALETTES[this.palette];
+        const now = performance.now() / 1000;
+        const sing = !!this.targets;
+        const headX = w * (sing ? 0.6 : 0.82); // leave room on the right for upcoming notes
+        const xAt = (t) => headX - ((now - t) / this.history) * headX;
+        const notes = sing ? this.targets(this.history, ((w - headX) / headX) * this.history) || [] : null;
+        this._updateView(notes);
+
+        // Night-sky background with a faint, slowly twinkling star field.
+        const bg = g.createLinearGradient(0, 0, 0, h);
+        bg.addColorStop(0, p.bg[1]);
+        bg.addColorStop(1, p.bg[0]);
+        g.globalCompositeOperation = 'source-over';
+        g.fillStyle = bg;
+        g.fillRect(0, 0, w, h);
+        if (!p.bold) {
+          this.stars = this.stars ?? Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.1 + 0.3, s: Math.random() * 6 }));
+          g.fillStyle = `rgb(${p.guide})`;
+          for (const s of this.stars) {
+            g.globalAlpha = 0.07 + (this.calm ? 0.06 : 0.12 * (0.5 + 0.5 * Math.sin(now * 0.8 + s.s)));
+            g.beginPath();
+            g.arc(s.x * w, s.y * h, s.r, 0, Math.PI * 2);
+            g.fill();
+          }
+          g.globalAlpha = 1;
+        }
+
+        // Free-play scenes have their own layout (no timeline, no pitch axis).
+        if (this.scene === 'ripples' || this.scene === 'paint') {
+          if (this.scene === 'ripples') this._drawRipples(g, p, now);
+          else this._drawPaint(g, p, now);
+          this._drawHint(g, p, now, false);
+          return;
+        }
+
+        // Note guides: a faint line for every C, labelled, like ledger lines in the dark.
+        if (this.guides && !this.explore) {
+          g.font = '11px system-ui, sans-serif';
+          g.textBaseline = 'middle';
+          const [lo, hi] = this.view;
+          for (let m = Math.ceil(lo); m <= Math.floor(hi); m++) {
+            if (m % 12 !== 0 && !(p.bold && m % 12 === 7)) continue;
+            const yy = this.y(m);
+            g.strokeStyle = `rgba(${p.guide},${p.bold ? 0.45 : 0.12})`;
+            g.lineWidth = 1;
+            g.beginPath();
+            g.moveTo(34, yy);
+            g.lineTo(w, yy);
+            g.stroke();
+            g.fillStyle = `rgba(${p.guide},${p.bold ? 0.9 : 0.45})`;
+            g.fillText(`${NOTE[m % 12]}${Math.floor(m / 12) - 1}`, 6, yy);
+          }
+        }
+
+        // Sing-along: the song's notes as soft bars; the current one glows.
+        let current = null;
+        if (sing && this.scene !== 'constellation') {
+          for (const n of notes) {
+            const x0 = headX + (n.start / this.history) * headX;
+            const x1 = headX + ((n.start + n.dur) / this.history) * headX;
+            const yy = this.y(n.midi);
+            const live = n.start <= 0 && n.start + n.dur > 0;
+            if (live) current = n;
+            g.fillStyle = `rgba(${p.target},${live ? 0.45 : 0.24})`;
+            roundRect(g, x0, yy - 7, Math.max(4, x1 - x0 - 2), 14, 7);
+            g.fill();
+            if (live) {
+              g.strokeStyle = `rgba(${p.target},0.8)`;
+              g.lineWidth = 1.5;
+              g.stroke();
+            }
+          }
+          g.strokeStyle = `rgba(${p.guide},0.25)`;
+          g.setLineDash([3, 5]);
+          g.beginPath();
+          g.moveTo(headX, 0);
+          g.lineTo(headX, h);
+          g.stroke();
+          g.setLineDash([]);
+        }
+
+        const pts = this.points.filter((q) => now - q.t <= this.history);
+        if (this.scene === 'bloom') this._drawBloom(g, p, now, headX);
+        else if (this.scene === 'constellation') this._drawConstellation(g, p, now, headX, sing, notes);
+        else this._drawAurora(g, p, now, headX, xAt, pts);
+
+        // The head: an orb whose halo grows with "ring" (or brightness for instruments).
+        const f = this.last;
+        if (f?.voiced && now - this.points[this.points.length - 1].t < 0.3) {
+          const yy = this.y(f.midi);
+          const hue = this.hueFor(f.midi);
+          const glow = this.mode === 'voice' ? f.ring : f.brightness;
+          const r = 6 + f.loudness * 14;
+          const halo = g.createRadialGradient(headX, yy, 0, headX, yy, r * (2.5 + glow * 3));
+          halo.addColorStop(0, `hsla(${hue},90%,85%,0.9)`);
+          halo.addColorStop(0.35, `hsla(${hue},90%,65%,${0.25 + glow * 0.35})`);
+          halo.addColorStop(1, `hsla(${hue},90%,50%,0)`);
+          if (this.scene !== 'bloom') {
+            g.fillStyle = halo;
+            g.beginPath();
+            g.arc(headX, yy, r * (2.5 + glow * 3), 0, Math.PI * 2);
+            g.fill();
+          }
+
+          // Sparkles reward steady (and, with a song, in-tune) singing.
+          const inTune = f.targetCents !== null && Math.abs(f.targetCents) <= 25;
+          const steady = (f.steadiness ?? 0) > 0.7;
+          const sparkle = this.explore ? f.loudness > 0.35 : inTune || (!sing && steady);
+          if (!this.calm && sparkle && Math.random() < 0.6) {
+            for (let k = 0; k < (inTune ? 3 : 1); k++) {
+              this.sparks.push({ x: headX, y: yy, vx: -40 - Math.random() * 60, vy: (Math.random() - 0.5) * 50 - 15, life: 1, gold: inTune });
+            }
+          }
+        }
+        const dt = 1 / 60;
+        g.fillStyle = p.spark;
+        for (const s of this.sparks) {
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+          s.life -= dt * 0.9;
+          g.globalAlpha = Math.max(0, s.life);
+          g.beginPath();
+          g.arc(s.x, s.y, s.gold ? 2.2 : 1.5, 0, Math.PI * 2);
+          g.fill();
+        }
+        g.globalAlpha = 1;
+        this.sparks = this.sparks.filter((s) => s.life > 0).slice(-300);
+        g.globalCompositeOperation = 'source-over';
+
+        this._drawHint(g, p, now, sing, pts);
+        this.currentTarget = current;
+      }
+
+      // A quiet hint when nothing is coming in.
+      _drawHint(g, p, now, sing, pts = this.points.filter((q) => now - q.t <= this.history)) {
+        const f = this.last;
+        if (!f || now - (this.points[this.points.length - 1]?.t ?? 0) > 1.5 || !pts.some((q) => q.f.voiced)) {
+          g.fillStyle = `rgba(${p.guide},0.55)`;
+          g.font = '15px system-ui, sans-serif';
+          g.textAlign = 'center';
+          g.fillText(this.hint || (sing ? 'Sing along when the music starts…' : 'Sing or play a long note…'), this.w / 2, this.h / 2);
+          g.textAlign = 'start';
+        }
+      }
+
+      // ---- Ripples (free play): every sound sends out a ring --------------------------
+      // Direction = the note, around the circle of fifths; distance from the centre = how high;
+      // size = loudness; a wobbling edge = vibrato. The centre breathes with your volume.
+
+      _drawRipples(g, p, now) {
+        const { w, h } = this;
+        const f = this.last;
+        const fresh = f && this.points.length && now - this.points[this.points.length - 1].t < 0.2;
+        this.rings = this.rings ?? [];
+        const [lo, hi] = this.mode === 'voice' ? [40, 88] : [28, 100];
+        if (fresh && f.voiced && (!this.lastRing || now - this.lastRing > (this.calm ? 0.35 : 0.14))) {
+          this.lastRing = now;
+          const pc = ((Math.round(f.midi) % 12) + 12) % 12;
+          const ang = (((pc * 7) % 12) / 12) * Math.PI * 2 - Math.PI / 2;
+          const dist = 0.1 + 0.34 * Math.max(0, Math.min(1, (f.midi - lo) / (hi - lo)));
+          const R = Math.min(w, h);
+          this.rings.push({
+            x: w / 2 + Math.cos(ang) * dist * R,
+            y: h / 2 + Math.sin(ang) * dist * R,
+            born: now,
+            hue: this.hueFor(f.midi),
+            size: 0.35 + f.loudness,
+            vib: f.vibrato ? f.vibrato.extent : 0,
+            glow: this.mode === 'voice' ? f.ring : f.brightness,
+            seed: Math.random() * 10,
+          });
+          if (this.rings.length > 160) this.rings.shift();
+        }
+        const life = this.calm ? 4.5 : 3.2;
+        g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
+        for (const r of this.rings) {
+          const age = now - r.born;
+          if (age > life) continue;
+          const k = age / life;
+          const rad = 6 + k * Math.min(w, h) * 0.22 * r.size;
+          g.strokeStyle = `hsla(${r.hue},90%,${p.bold ? 72 : 66}%,${(1 - k) * (p.bold ? 0.9 : 0.6)})`;
+          g.lineWidth = 1 + r.size * 4 * (1 - k);
+          const wob = this.calm ? 0 : Math.min(12, r.vib / 4);
+          g.beginPath();
+          for (let a = 0; a <= 72; a++) {
+            const t = (a / 72) * Math.PI * 2;
+            const rr = rad + wob * Math.sin(t * 6 + now * 4 + r.seed);
+            const X = r.x + Math.cos(t) * rr;
+            const Y = r.y + Math.sin(t) * rr;
+            if (a) g.lineTo(X, Y);
+            else g.moveTo(X, Y);
+          }
+          g.stroke();
+          if (age < 0.7) {
+            const cr = 14 + r.glow * 30;
+            const core = g.createRadialGradient(r.x, r.y, 0, r.x, r.y, cr);
+            core.addColorStop(0, `hsla(${r.hue},95%,85%,${(1 - age / 0.7) * 0.7})`);
+            core.addColorStop(1, `hsla(${r.hue},95%,60%,0)`);
+            g.fillStyle = core;
+            g.beginPath();
+            g.arc(r.x, r.y, cr, 0, Math.PI * 2);
+            g.fill();
+          }
+        }
+        this.rings = this.rings.filter((r) => now - r.born < life);
+        // The centre breathes with how loud you are.
+        const L = fresh && f.voiced ? f.loudness : 0;
+        this.centreLevel = (this.centreLevel || 0) + (L - (this.centreLevel || 0)) * 0.08;
+        const cr = 24 + this.centreLevel * Math.min(w, h) * 0.18;
+        const hue = f && f.voiced ? this.hueFor(f.midi) : (this.lastHue ?? 30);
+        this.lastHue = hue;
+        const c = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, cr);
+        c.addColorStop(0, `hsla(${hue},80%,75%,${0.12 + this.centreLevel * 0.35})`);
+        c.addColorStop(1, `hsla(${hue},80%,50%,0)`);
+        g.fillStyle = c;
+        g.beginPath();
+        g.arc(w / 2, h / 2, cr, 0, Math.PI * 2);
+        g.fill();
+        g.globalCompositeOperation = 'source-over';
+      }
+
+      // ---- Paint (free play): your sound is a brush ------------------------------------
+      // The brush wanders over the page; pitch lifts it, loudness widens it, vibrato ripples it,
+      // breathy sounds spray. Strokes stay, so a session becomes a picture (see snapshot()).
+
+      _drawPaint(g, p, now) {
+        const { w, h } = this;
+        const dpr = this.canvas.width / w;
+        if (!this.paper || this.paper.width !== this.canvas.width || this.paper.height !== this.canvas.height) {
+          const old = this.paper;
+          this.paper = document.createElement('canvas');
+          this.paper.width = this.canvas.width;
+          this.paper.height = this.canvas.height;
+          const pg0 = this.paper.getContext('2d');
+          const bg = pg0.createLinearGradient(0, 0, 0, this.paper.height);
+          bg.addColorStop(0, p.bg[1]);
+          bg.addColorStop(1, p.bg[0]);
+          pg0.fillStyle = bg;
+          pg0.fillRect(0, 0, this.paper.width, this.paper.height);
+          if (old) pg0.drawImage(old, 0, 0, this.paper.width, this.paper.height); // keep the picture on resize
+          this.brush = null;
+        }
+        const pg = this.paper.getContext('2d');
+        pg.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const f = this.last;
+        const fresh = f && this.points.length && now - this.points[this.points.length - 1].t < 0.2;
+        const [lo, hi] = this.mode === 'voice' ? [40, 88] : [28, 100];
+        // A slow sweep across the page (about 12 s each way) with a gentle drift, so strokes cover it.
+        const t = now * (this.calm ? 0.16 : 0.26);
+        const lift = f && f.voiced ? Math.max(0, Math.min(1, (f.midi - lo) / (hi - lo))) : 0.5;
+        const bx = w * (0.5 + 0.43 * Math.sin(t)) + w * 0.04 * Math.sin(t * 3.7);
+        const by = h * (0.9 - 0.78 * lift) + h * 0.06 * Math.sin(t * 2.3);
+        if (fresh && f.voiced) {
+          const hue = this.hueFor(f.midi);
+          const prev = this.brush;
+          const ripple = this.calm || !f.vibrato ? 0 : Math.min(10, f.vibrato.extent / 5) * Math.sin(now * 2 * Math.PI * f.vibrato.rate);
+          const x = bx;
+          const y = by + ripple;
+          if (prev && Math.hypot(prev.x - x, prev.y - y) < Math.max(w, h) * 0.15) {
+            // Normal blending, like paint: colours build up without blowing out to white.
+            pg.globalCompositeOperation = 'source-over';
+            pg.strokeStyle = `hsla(${hue},80%,${p.bold ? 62 : 58}%,${p.bold ? 0.9 : 0.22})`;
+            pg.lineWidth = 2 + f.loudness * 26;
+            pg.lineCap = 'round';
+            pg.beginPath();
+            pg.moveTo(prev.x, prev.y);
+            pg.lineTo(x, y);
+            pg.stroke();
+            // A fine bright line down the middle of the stroke, brighter with more ring.
+            const glow = this.mode === 'voice' ? f.ring : f.brightness;
+            pg.strokeStyle = `hsla(${(hue + 30) % 360},95%,82%,${0.1 + glow * 0.3})`;
+            pg.lineWidth = 1 + glow * 2;
+            pg.beginPath();
+            pg.moveTo(prev.x, prev.y);
+            pg.lineTo(x, y);
+            pg.stroke();
+            if ((f.breathiness ?? 0) > 0.35) {
+              pg.fillStyle = `hsla(${hue},70%,75%,0.25)`;
+              for (let k = 0; k < 6; k++) {
+                const a = Math.random() * Math.PI * 2;
+                const d = Math.random() * (10 + f.loudness * 30);
+                pg.fillRect(x + Math.cos(a) * d, y + Math.sin(a) * d, 1.5, 1.5);
+              }
+            }
+            pg.globalCompositeOperation = 'source-over';
+          }
+          this.brush = { x, y };
+        } else this.brush = null;
+        g.drawImage(this.paper, 0, 0, w, h);
+        // Where the brush is now: a soft ring, so you can steer it.
+        g.strokeStyle = `rgba(${p.guide},0.35)`;
+        g.lineWidth = 1.5;
+        g.beginPath();
+        g.arc(bx, by, 10, 0, Math.PI * 2);
+        g.stroke();
+      }
+
+      /** Start a fresh painting (Paint scene). */
+      clearPaint() {
+        this.paper = null;
+        this.brush = null;
+      }
+
+      /** The current picture (Paint scene) or frame, as a PNG blob. */
+      snapshot() {
+        const src = this.scene === 'paint' && this.paper ? this.paper : this.canvas;
+        return new Promise((resolve) => src.toBlob(resolve, 'image/png'));
+      }
+
+      // ---- Aurora: a luminous band with light curtains -------------------------------
+
+      _drawAurora(g, p, now, headX, xAt, pts) {
+        const { w, h } = this;
+        // The voice as an aurora: a luminous band (thicker when louder) with a shimmering edge
+        // (stronger with vibrato), soft light rays falling from it, and a trail that fades.
+        g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
+        const runs = [];
+        let run = [];
+        for (const q of pts) {
+          if (q.f.voiced) run.push(q);
+          else if (run.length) {
+            runs.push(run);
+            run = [];
+          }
+        }
+        if (run.length) runs.push(run);
+        const gg = this.gg;
+        const soft = !p.bold; // the high-contrast look skips glow for maximum clarity
+        if (soft) {
+          gg.globalCompositeOperation = 'source-over';
+          gg.clearRect(0, 0, w, h);
+          gg.globalCompositeOperation = 'lighter';
+        }
+        for (const r of runs) {
+          if (r.length < 2) continue;
+          const P = r.map(({ t, f }) => ({
+            t,
+            x: xAt(t),
+            y: this.y(f.midi),
+            th: (p.bold ? 6 : 4) + f.loudness * (p.bold ? 10 : 30),
+            hue: this.hueFor(f.midi),
+            fade: Math.max(0, 1 - (now - t) / this.history),
+            vib: f.vibrato ? f.vibrato.extent : 0,
+          }));
+          // Taper both ends so each note fades in and out instead of starting with a hard edge.
+          P.forEach((q, i) => (q.th *= Math.min(1, (i + 1) / 6, (P.length - i) / 4)));
+          const a = P[0];
+          const b = P[P.length - 1];
+
+          if (soft) {
+            // Aurora curtain: light falling from the band, drawn on the low-resolution glow layer.
+            if (!this.calm) {
+              const top = Math.min(...P.map((q) => q.y));
+              const depth = 40 + Math.max(...P.map((q) => q.th)) * 3.5;
+              const curtain = gg.createLinearGradient(0, top, 0, top + depth + 20);
+              curtain.addColorStop(0, `hsla(${b.hue},85%,62%,${0.2 * b.fade})`);
+              curtain.addColorStop(1, `hsla(${b.hue},85%,45%,0)`);
+              gg.fillStyle = curtain;
+              gg.beginPath();
+              P.forEach((q, i) => gg.lineTo(q.x, q.y + Math.sin(q.t * 3 + i * 0.2) * 3));
+              // Many soft fingers of light, like real aurora streaks, drifting slowly.
+              for (let i = P.length - 1; i >= 0; i--) {
+                const streak = (0.5 + 0.5 * Math.sin(i * 0.5 + P[i].t * 0.6)) * 0.65 + (0.5 + 0.5 * Math.sin(i * 0.21 - P[i].t * 0.4)) * 0.35;
+                gg.lineTo(P[i].x, P[i].y + depth * (0.25 + 0.75 * streak));
+              }
+              gg.closePath();
+              gg.fill();
+            }
+            // The luminous band (shimmers more with vibrato).
+            const edge = (q, i, s) => (this.calm ? 0 : Math.sin(q.t * 5 + i * 0.15 + s) * (0.6 + q.vib / 15));
+            gg.beginPath();
+            P.forEach((q, i) => gg.lineTo(q.x, q.y - q.th * 0.7 - edge(q, i, 0)));
+            for (let i = P.length - 1; i >= 0; i--) gg.lineTo(P[i].x, P[i].y + P[i].th * 0.7 + edge(P[i], i, 1.7));
+            gg.closePath();
+            const band = gg.createLinearGradient(a.x, 0, b.x, 0);
+            band.addColorStop(0, `hsla(${a.hue},90%,60%,${0.32 * a.fade * a.fade})`);
+            band.addColorStop(1, `hsla(${b.hue},90%,64%,${0.5 * b.fade})`);
+            gg.fillStyle = band;
+            gg.fill();
+          }
+
+          // Crisp core line, smoothed into curves through the midpoints; colour follows the notes.
+          g.lineCap = 'round';
+          g.lineJoin = 'round';
+          for (const [width, alpha, light] of p.bold ? [[4, 1, 70]] : [[5, 0.18, 70], [1.8, 0.95, 84]]) {
+            g.lineWidth = width;
+            for (let s = 0; s < P.length - 1; s += 10) {
+              const chunk = P.slice(s, s + 11);
+              const q = chunk[chunk.length - 1];
+              g.strokeStyle = `hsla(${q.hue},95%,${light}%,${alpha * (p.bold ? 1 : q.fade)})`;
+              g.beginPath();
+              g.moveTo(chunk[0].x, chunk[0].y);
+              for (let i = 1; i < chunk.length - 1; i++) {
+                g.quadraticCurveTo(chunk[i].x, chunk[i].y, (chunk[i].x + chunk[i + 1].x) / 2, (chunk[i].y + chunk[i + 1].y) / 2);
+              }
+              const end = chunk[chunk.length - 1];
+              g.lineTo(end.x, end.y);
+              g.stroke();
+            }
+          }
+        }
+        if (soft && runs.length) {
+          // Stretch the quarter-size glow layer back up: smoothing turns it into a soft haze.
+          g.imageSmoothingEnabled = true;
+          g.imageSmoothingQuality = 'high';
+          g.drawImage(this.glow, 0, 0, w, h);
+        }
+      }
+
+      // ---- Held notes (shared by Bloom and Constellation) ------------------------------
+
+      _trackNote(f, now) {
+        const c = this.cur;
+        if (f.voiced) {
+          if (c && (now - c.last > 0.25 || Math.abs(f.midi - c.midi) > 0.9)) this._endNote();
+          if (!this.cur) this.cur = { start: now, last: now, midi: f.midi, n: 0, loud: 0, steady: 0.7, vib: 0, ring: 0, inTune: false, seed: Math.random() * 10 };
+          const n = this.cur;
+          n.last = now;
+          n.n++;
+          n.midi += ((f.heardMidi ?? f.midi) - n.midi) / Math.min(n.n, 12);
+          n.loud = Math.max(n.loud, f.loudness);
+          if (f.steadiness !== null) n.steady = f.steadiness;
+          n.vib = f.vibrato ? f.vibrato.extent : n.vib * 0.95;
+          n.ring = Math.max(n.ring, this.mode === 'voice' ? f.ring : f.brightness);
+          if (f.targetCents !== null && Math.abs(f.targetCents) <= 25) n.inTune = true;
+        } else if (c && now - c.last > 0.25) {
+          this._endNote();
+        }
+      }
+
+      _endNote() {
+        const n = this.cur;
+        this.cur = null;
+        if (n && n.last - n.start >= 0.3) {
+          n.end = n.last;
+          this.notes.push(n);
+          if (this.notes.length > 80) this.notes.shift();
+        }
+      }
+
+      _heldNotes(now, span) {
+        const list = this.notes.filter((n) => now - n.end < span);
+        if (this.cur && this.cur.last - this.cur.start > 0.12 && now - this.cur.last < 0.3) list.push({ ...this.cur, end: now, growing: true });
+        return list;
+      }
+
+      // ---- Bloom: every held note grows a flower in a slowly drifting garden -----------
+
+      _drawBloom(g, p, now, headX) {
+        const { h } = this;
+        const span = 24; // seconds of garden on screen
+        g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
+        for (const n of this._heldNotes(now, span)) {
+          const x = headX - ((now - n.end) / span) * headX;
+          const y = this.y(n.midi);
+          const open = Math.min(1, (n.end - n.start) / 1.2); // a bloom opens over about a second
+          const size = (10 + n.loud * 26) * (0.35 + 0.65 * open);
+          const fade = Math.max(0, 1 - (now - n.end) / span);
+          const hue = this.hueFor(n.midi);
+          const sway = this.calm ? 0 : Math.sin(now * 0.8 + n.seed) * 8;
+          g.strokeStyle = p.bold ? `rgba(${p.guide},0.7)` : `hsla(${hue},40%,45%,${0.35 * fade})`;
+          g.lineWidth = p.bold ? 2 : 1.5;
+          g.beginPath();
+          g.moveTo(x, y + size * 0.3);
+          g.quadraticCurveTo(x + sway, (y + h) / 2, x + sway * 0.5, h);
+          g.stroke();
+          this._flower(g, p, x, y, size, n, hue, open, fade, now);
+        }
+      }
+
+      _flower(g, p, x, y, size, n, hue, open, fade, now) {
+        const petals = Math.min(9, 5 + Math.floor((n.end - n.start) / 1.5)); // longer notes, fuller flowers
+        const uneven = 1 - (n.steady ?? 0.7); // an unsteady note grows uneven petals
+        const ripple = Math.min(1, (n.vib || 0) / 40); // vibrato ripples the petal edges
+        const rot = n.seed + (this.calm ? 0 : now * 0.05);
+        const tint = g.createRadialGradient(x, y, 0, x, y, size * 1.5);
+        tint.addColorStop(0, `hsla(${hue},90%,82%,${(p.bold ? 1 : 0.55) * fade})`);
+        tint.addColorStop(1, `hsla(${hue},90%,55%,${(p.bold ? 0.9 : 0.1) * fade})`);
+        g.fillStyle = tint;
+        const steps = 14;
+        for (let k = 0; k < petals; k++) {
+          const a = rot + (k * Math.PI * 2) / petals;
+          const len = size * (1 + uneven * 0.5 * Math.sin(k * 2.3 + n.seed));
+          const wid = len * 0.4 * (0.6 + 0.4 * open);
+          const ca = Math.cos(a);
+          const sa = Math.sin(a);
+          g.beginPath();
+          for (let side = 1; side >= -1; side -= 2) {
+            for (let s = 0; s <= steps; s++) {
+              const u = side > 0 ? s / steps : 1 - s / steps;
+              const r = len * u;
+              const half = side * Math.sin(Math.PI * u) * wid * (1 + ripple * 0.25 * Math.sin(u * 18 + (this.calm ? 0 : now * 6)));
+              g.lineTo(x + ca * r - sa * half, y + sa * r + ca * half);
+            }
+          }
+          g.closePath();
+          g.fill();
+        }
+        // The glowing centre is brighter with more "ring"; an in-tune note gets a golden heart.
+        const cr = 3 + size * 0.18;
+        const core = g.createRadialGradient(x, y, 0, x, y, cr * (2 + n.ring * 2));
+        core.addColorStop(0, n.inTune ? `rgba(${p.target},${0.95 * fade})` : `hsla(${(hue + 40) % 360},95%,88%,${0.9 * fade})`);
+        core.addColorStop(1, `hsla(${hue},95%,60%,0)`);
+        g.fillStyle = core;
+        g.beginPath();
+        g.arc(x, y, cr * (2 + n.ring * 2), 0, Math.PI * 2);
+        g.fill();
+      }
+
+      // ---- Constellation: held notes become stars; a song's notes light up when sung ----
+
+      _drawConstellation(g, p, now, headX, sing, targets) {
+        const span = sing ? this.history : this.history * 2;
+        const xS = (t) => headX - ((now - t) / span) * headX;
+        g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
+
+        // Faint dust where the voice has passed, so the sky shows the whole line.
+        g.fillStyle = `rgb(${p.guide})`;
+        for (let i = 0; i < this.points.length; i += 2) {
+          const { t, f } = this.points[i];
+          if (!f.voiced || now - t > span) continue;
+          g.globalAlpha = 0.25 * (1 - (now - t) / span);
+          g.fillRect(xS(t), this.y(f.midi), 1.4, 1.4);
+        }
+        g.globalAlpha = 1;
+
+        // The song's notes: dim stars that ignite gold once sung in tune.
+        if (sing) {
+          for (const n of targets) {
+            const key = `${n.midi}@${Math.round((now + n.start) * 4)}`;
+            const live = n.start <= 0 && n.start + n.dur > 0;
+            if (live && this.last?.voiced && this.last.targetCents !== null && Math.abs(this.last.targetCents) <= 25) this.hits.add(key);
+            const x = headX + ((n.start + n.dur / 2) / this.history) * headX;
+            const r = Math.min(9, 3 + n.dur * 2.5);
+            if (this.hits.has(key)) this._star(g, x, this.y(n.midi), r * 1.6, `${p.target}`, 1, now);
+            else {
+              g.strokeStyle = `rgba(${p.target},${live ? 0.75 : 0.35})`;
+              g.lineWidth = 1;
+              g.beginPath();
+              g.arc(x, this.y(n.midi), r * (live && !this.calm ? 1 + 0.15 * Math.sin(now * 8) : 1), 0, Math.PI * 2);
+              g.stroke();
+            }
+          }
+          if (this.hits.size > 600) this.hits = new Set([...this.hits].slice(-300));
+        }
+
+        // The singer's held notes as stars, joined into constellations.
+        const stars = this._heldNotes(now, span).map((n) => ({
+          n,
+          x: xS((n.start + n.end) / 2),
+          y: this.y(n.midi),
+          r: 2.5 + n.loud * 6 + Math.min(4, (n.end - n.start) * 1.2),
+          fade: Math.max(0, 1 - (now - n.end) / span),
+        }));
+        for (let i = 1; i < stars.length; i++) {
+          const a = stars[i - 1];
+          const b = stars[i];
+          if (b.n.start - a.n.end > 1.5) continue;
+          g.strokeStyle = `rgba(${p.guide},${0.28 * Math.min(a.fade, b.fade)})`;
+          g.lineWidth = 1;
+          g.beginPath();
+          g.moveTo(a.x, a.y);
+          g.lineTo(b.x, b.y);
+          g.stroke();
+        }
+        for (const s of stars) {
+          const hue = this.hueFor(s.n.midi);
+          this._star(g, s.x, s.y, s.r * (1 + s.n.ring * 0.6), `hsl(${hue},90%,78%)`, s.fade, now, s.n.seed);
+        }
+      }
+
+      // A soft glowing star with four spikes that twinkle gently.
+      _star(g, x, y, r, color, alpha, now, seed = 0) {
+        const rgb = color.startsWith('hsl') ? null : color;
+        const fill = (a) => (rgb ? `rgba(${rgb},${a})` : color.replace('hsl(', 'hsla(').replace(')', `,${a})`));
+        const tw = this.calm ? 1 : 0.85 + 0.15 * Math.sin(now * 3 + seed * 7);
+        const glow = g.createRadialGradient(x, y, 0, x, y, r * 3);
+        glow.addColorStop(0, fill(0.9 * alpha));
+        glow.addColorStop(0.3, fill(0.3 * alpha));
+        glow.addColorStop(1, fill(0));
+        g.fillStyle = glow;
+        g.beginPath();
+        g.arc(x, y, r * 3, 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = fill(0.7 * alpha * tw);
+        g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(x - r * 2.6 * tw, y);
+        g.lineTo(x + r * 2.6 * tw, y);
+        g.moveTo(x, y - r * 2.6 * tw);
+        g.lineTo(x, y + r * 2.6 * tw);
+        g.stroke();
+      }
+
+    }
+
+    function roundRect(g, x, y, w, h, r) {
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.arcTo(x + w, y, x + w, y + h, r);
+      g.arcTo(x + w, y + h, x, y + h, r);
+      g.arcTo(x, y + h, x, y, r);
+      g.arcTo(x, y, x + w, y, r);
+      g.closePath();
+    }
+
+    const noteOf = (midi) => `${NOTE[((Math.round(midi) % 12) + 12) % 12]}${Math.floor(Math.round(midi) / 12) - 1}`;
+
+    // ---- Meters ------------------------------------------------------------------------
+
+    /**
+     * Formal meters as plain HTML (readable by screen readers, stylable by the host page).
+     * Returns { update(frame), setMode(mode) }.
+     */
+    function createMeters(root, { mode = 'voice' } = {}) {
+      root.innerHTML = `
+        <div class="vm-note"><span class="vm-label">Note</span><strong data-v="note">–</strong><span data-v="hz"></span></div>
+        <div class="vm-tuner"><span class="vm-label">Tuning</span>
+          <svg viewBox="0 0 120 64" aria-hidden="true"><path d="M10 60 A50 50 0 0 1 110 60" class="vm-arc"/><path d="M47 13 A50 50 0 0 1 73 13" class="vm-zone"/><line x1="60" y1="60" x2="60" y2="16" class="vm-needle" data-v="needle"/></svg>
+          <strong data-v="cents">–</strong></div>
+        <div class="vm-bar" data-meter="steady"><span class="vm-label">Steadiness</span><i><b data-v="steady"></b></i></div>
+        <div class="vm-vib"><span class="vm-label">Vibrato</span><strong data-v="vib">–</strong></div>
+        <div class="vm-bar"><span class="vm-label">Loudness</span><i><b data-v="loud"></b></i></div>
+        <div class="vm-bar"><span class="vm-label" data-v="ringLabel">Ring</span><i><b data-v="ring"></b></i></div>
+        <div class="vm-phrase"><span class="vm-label" data-v="phraseLabel">Phrase</span><strong data-v="phrase">0.0 s</strong><span data-v="longest">longest 0.0 s</span></div>`;
+      const $ = (k) => root.querySelector(`[data-v="${k}"]`);
+      const pct = (v) => `${Math.round(Math.max(0, Math.min(1, v ?? 0)) * 100)}%`;
+      let m = mode;
+      const setMode = (next) => {
+        m = next;
+        $('ringLabel').textContent = m === 'voice' ? 'Ring' : 'Brightness';
+        $('phraseLabel').textContent = m === 'voice' ? 'Phrase' : 'Note length';
+      };
+      setMode(mode);
+      let lastText = 0;
+      return {
+        setMode,
+        update(f) {
+          // Numbers update ~8 times a second so they stay readable; bars move every frame.
+          const now = performance.now();
+          const text = now - lastText > 120;
+          const c = f.targetCents ?? f.cents;
+          $('needle').setAttribute('transform', `rotate(${f.voiced ? Math.max(-50, Math.min(50, c ?? 0)) * 0.9 : 0} 60 60)`);
+          root.dataset.tune = !f.voiced ? 'none' : Math.abs(c) <= 15 ? 'good' : Math.abs(c) <= 30 ? 'near' : 'off';
+          $('steady').style.width = pct(f.steadiness);
+          $('loud').style.width = pct(f.loudness);
+          $('ring').style.width = pct(m === 'voice' ? f.ring : f.brightness);
+          if (!text) return;
+          lastText = now;
+          $('note').textContent = f.voiced ? f.note : '–';
+          $('hz').textContent = f.voiced ? `${f.hz.toFixed(1)} Hz` : '';
+          const rc = Math.round(c ?? 0);
+          // Far from the song's note, cents stop being useful: name the note the song wants instead.
+          const far = f.targetCents !== null && Math.abs(f.targetCents) > 150;
+          $('cents').textContent = !f.voiced ? '–' : far ? `Song note: ${noteOf(f.target)}` : `${rc > 0 ? '+' : rc < 0 ? '−' : ''}${Math.abs(rc)} cents${f.targetCents !== null ? ' from the song' : ''}`;
+          $('vib').textContent = f.vibrato ? `${f.vibrato.rate.toFixed(1)} per second · ±${Math.round(f.vibrato.extent)} cents` : f.voiced ? 'none' : '–';
+          $('phrase').textContent = `${f.phrase.current.toFixed(1)} s`;
+          $('longest').textContent = `longest ${f.phrase.longest.toFixed(1)} s`;
+        },
+      };
+    }
+
+    return { PALETTES, VoiceVisuals, createMeters };
+  })();
+  var mod_score_player = (function () {
+    // Score player: renders a MusicXML (.musicxml or compressed .mxl) score with
+    // OpenSheetMusicDisplay and plays the voice line and piano with the Web Audio API.
+    //
+    // Self-contained on purpose: no framework and no imports. The caller passes in the
+    // OpenSheetMusicDisplay module, so the same file can run on Rachel's site and inside
+    // AlloFlow (Singing Lab / Open Groove).
+    //
+    //   const player = new ScorePlayer({ OSMD, container, onChange });
+    //   await player.load(binaryStringOrXml);
+    //   player.play(); player.setTempo(0.8); player.setTranspose(-2); player.setLoop(5, 8);
+    //   player.setClick(true); player.play({ countIn: true });   // metronome + one bar of count-in
+
+    const VOICE_NAME = /voice|voix|voce|singstimme|stimme|soprano|mezzo|alto|tenor|bariton|bass|sopran|canto|gesang/i;
+    const LOOKAHEAD = 0.15; // seconds of audio scheduled ahead of the play head
+    const TICK_MS = 25;
+
+    const midiToFreq = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
+
+    /**
+     * iPhones and iPads mute Web Audio when the side switch is on silent (videos still play).
+     * Declare this page's sound as media playback (Safari 17+), and on older iOS start a silent
+     * looping <audio> element, which moves the page into the media channel. Call from a tap.
+     * Shared with the trainers (lib/training/common.js) and kept self-contained here.
+     */
+    function routeAudioAsMedia() {
+      try {
+        if (navigator.audioSession && navigator.audioSession.type === 'auto') navigator.audioSession.type = 'playback';
+      } catch {}
+      const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
+      if (!ios || routeAudioAsMedia.el) return;
+      // A few hundred milliseconds of silent 8 kHz WAV, built here so there's no extra file.
+      const n = 2000;
+      const bytes = new Uint8Array(44 + n);
+      const dv = new DataView(bytes.buffer);
+      [..."RIFF"].forEach((ch, i) => (bytes[i] = ch.charCodeAt(0)));
+      dv.setUint32(4, 36 + n, true);
+      [..."WAVEfmt "].forEach((ch, i) => (bytes[8 + i] = ch.charCodeAt(0)));
+      dv.setUint32(16, 16, true);
+      dv.setUint16(20, 1, true);
+      dv.setUint16(22, 1, true);
+      dv.setUint32(24, 8000, true);
+      dv.setUint32(28, 8000, true);
+      dv.setUint16(32, 1, true);
+      dv.setUint16(34, 8, true);
+      [..."data"].forEach((ch, i) => (bytes[36 + i] = ch.charCodeAt(0)));
+      dv.setUint32(40, n, true);
+      bytes.fill(128, 44);
+      let bin = '';
+      bytes.forEach((b) => (bin += String.fromCharCode(b)));
+      const el = document.createElement('audio');
+      el.setAttribute('x-webkit-airplay', 'deny');
+      el.loop = true;
+      el.src = 'data:audio/wav;base64,' + btoa(bin);
+      el.play().catch(() => {});
+      routeAudioAsMedia.el = el;
+    }
+
+    class ScorePlayer {
+      /**
+       * @param {{ OSMD: any, container: HTMLElement, onChange?: (state: object) => void, osmdOptions?: object, zoom?: number }} opts
+       */
+      constructor({ OSMD, container, onChange, osmdOptions = {}, zoom }) {
+        this.OSMD = OSMD;
+        this.container = container;
+        this.onChange = onChange || (() => {});
+        this.osmd = new OSMD.OpenSheetMusicDisplay(container, {
+          autoResize: true,
+          backend: 'svg',
+          drawTitle: false,
+          drawSubtitle: false,
+          drawComposer: false,
+          drawLyricist: false,
+          drawPartNames: true,
+          followCursor: true,
+          ...osmdOptions,
+        });
+        this.zoom = zoom || 1; // smaller on phones so lyrics have room
+        this.tempo = 1; // playback rate: 1 = the score's tempo
+        this.transpose = 0; // semitones
+        this.melodyOctave = 0; // the singer's octave: moves the melody guide and targets, not the notation or piano
+        this.parts = { voice: true, piano: true, choir: true }; // choir: the other sung parts
+        this.click = false; // metronome click on every beat
+        this.loop = null; // { from, to } measure indexes, inclusive
+        this.playing = false;
+        this.ctx = null;
+        this.active = new Set();
+        this.cursorStep = -1;
+      }
+
+      /** Load a score: XML text, or the binary string of a compressed .mxl file. */
+      async load(source) {
+        this.stop();
+        await this.osmd.load(source);
+        if (this.OSMD.TransposeCalculator) this.osmd.TransposeCalculator = new this.OSMD.TransposeCalculator();
+        this.osmd.Zoom = this.zoom; // OSMD spells it Zoom, and loading a score resets it
+        this.osmd.render();
+        this.timeline = this._buildTimeline();
+        this.myPart = this.timeline.voiceParts[0]?.key ?? null;
+        this._applyRoles();
+        this.position = 0;
+        this._showCursorAt(0);
+        this._emit();
+        return this.info();
+      }
+
+      info() {
+        const t = this.timeline;
+        return {
+          measures: t.measureStarts.length,
+          seconds: t.total,
+          bpm: t.bpm,
+          hasVoice: t.events.some((e) => e.part === 'voice'),
+          voiceParts: t.voiceParts,
+          myPart: this.myPart,
+          firstVoiceMidi: t.events.find((e) => e.part === 'voice')?.midi ?? null,
+        };
+      }
+
+      /**
+       * Follow the cursor by scrolling a box (e.g. the score's own container) instead of the whole
+       * page, so things above the score stay in view. Pass null to go back to page scrolling.
+       */
+      setFollow(el) {
+        this.followEl = el || null;
+        this.osmd.FollowCursor = !el;
+        if (el) this._scrollBoxToCursor();
+      }
+
+      _scrollBoxToCursor() {
+        const img = this.osmd.cursor?.cursorElement;
+        const box = this.followEl;
+        if (!img || !box) return;
+        const r = img.getBoundingClientRect();
+        const top = r.top - box.getBoundingClientRect().top + box.scrollTop;
+        if (top < box.scrollTop + 16 || top + r.height > box.scrollTop + box.clientHeight - 16) {
+          box.scrollTo({ top: Math.max(0, top - box.clientHeight * 0.2), behavior: 'smooth' });
+        }
+      }
+
+      /** The melody note sounding at the play head (with transposition), or null. For sing-along feedback. */
+      currentVoiceMidi() {
+        if (!this.playing) return null;
+        const pos = this._now();
+        const e = this.timeline.events.find((v) => v.part === 'voice' && v.sec <= pos && pos < v.sec + v.dur);
+        return e ? e.midi + this.transpose + 12 * this.melodyOctave : null;
+      }
+
+      /** Melody notes around the play head, in real seconds relative to now (negative = past). */
+      voiceWindow(before, after) {
+        const pos = this.playing ? this._now() : this.position;
+        const from = pos - before * this.tempo;
+        const to = pos + after * this.tempo;
+        const out = [];
+        for (const e of this.timeline.events) {
+          if (e.part !== 'voice' || e.sec + e.dur < from) continue;
+          if (e.sec > to) break;
+          out.push({ start: (e.sec - pos) / this.tempo, dur: e.dur / this.tempo, midi: e.midi + this.transpose + 12 * this.melodyOctave });
+        }
+        return out;
+      }
+
+      // Walk the score once with OSMD's cursor and turn it into timed note events.
+      _buildTimeline() {
+        const sheet = this.osmd.Sheet;
+        // Sung parts: instruments with lyrics or a voice name. (No lyrics anywhere: the first instrument.)
+        const vocal = new Set(sheet.Instruments.filter((inst) => inst.HasLyrics || VOICE_NAME.test(inst.Name || '')));
+        if (!vocal.size && sheet.Instruments.length > 1) vocal.add(sheet.Instruments[0]);
+        const partVoices = new Map(); // part key -> { inst index, voice id }
+
+        const cursor = this.osmd.cursor;
+        cursor.reset();
+        const it = cursor.Iterator;
+        const events = [];
+        const steps = []; // one entry per cursor position: { sec, measure }
+        const measureStarts = [];
+        let lastWhole = 0;
+        let sec = 0;
+        let bpm = sheet.SourceMeasures[0]?.TempoInBPM || sheet.DefaultStartTempoInBpm || 100;
+        const firstBpm = bpm;
+        const measureBpm = [];
+
+        while (!it.EndReached) {
+          const whole = it.currentTimeStamp.RealValue;
+          sec += Math.max(0, whole - lastWhole) * 4 * (60 / bpm); // whole notes -> quarter beats -> seconds
+          lastWhole = whole;
+          const measure = it.CurrentMeasureIndex;
+          bpm = it.CurrentMeasure?.TempoInBPM || bpm;
+          if (measureStarts[measure] === undefined) {
+            measureStarts[measure] = sec;
+            measureBpm[measure] = bpm;
+          }
+          steps.push({ sec, measure });
+
+          for (const ve of it.CurrentVoiceEntries) {
+            if (ve.IsGrace) continue;
+            const inst = ve.ParentSourceStaffEntry?.ParentStaff?.ParentInstrument;
+            const isVocal = vocal.has(inst);
+            const instIndex = sheet.Instruments.indexOf(inst);
+            // A choir staff can hold two parts (e.g. soprano and alto): one part per voice in the staff.
+            const pk = `${instIndex}:${ve.ParentVoice?.VoiceId ?? 0}`;
+            if (isVocal && !partVoices.has(pk)) partVoices.set(pk, { instIndex, voiceId: ve.ParentVoice?.VoiceId ?? 0, name: inst?.Name || '' });
+            // In a chord on one sung part, the top note is the part's line; the rest sound with the other voices.
+            const sungNotes = [...ve.Notes].filter((n) => !n.isRest() && n.Pitch).sort((a, b) => b.Pitch.Frequency - a.Pitch.Frequency);
+            for (const note of ve.Notes) {
+              if (note.isRest() || !note.Pitch) continue;
+              let whole = note.Length.RealValue;
+              const tie = note.NoteTie;
+              if (tie) {
+                if (tie.StartNote !== note) continue; // continuation of a tie: already counted
+                whole = tie.Notes.reduce((sum, n) => sum + n.Length.RealValue, 0);
+              }
+              const midi = Math.round(69 + 12 * Math.log2(note.Pitch.Frequency / 440));
+              events.push({ sec, dur: whole * 4 * (60 / bpm), midi, part: 'piano', measure, note, pk, vocal: isVocal, sub: sungNotes[0] !== note });
+            }
+          }
+          it.moveToNext();
+        }
+        // Close the timeline at the end of the last note.
+        const total = Math.max(sec, ...events.map((e) => e.sec + e.dur));
+        for (let m = 0; m < measureStarts.length; m++) if (measureStarts[m] === undefined) measureStarts[m] = measureStarts[m - 1] ?? 0;
+        events.sort((a, b) => a.sec - b.sec);
+        cursor.reset();
+        const clicks = this._buildClicks(sheet, measureStarts, measureBpm, total);
+        // The sung parts a singer can choose as theirs, in score order; a staff with two parts gets upper/lower.
+        const counts = {};
+        for (const e of events) if (e.vocal && !e.sub) counts[e.pk] = (counts[e.pk] || 0) + 1;
+        const keys = [...partVoices.keys()].filter((k) => (counts[k] || 0) >= 8).sort((a, b) => {
+          const [ia, va] = a.split(':').map(Number);
+          const [ib, vb] = b.split(':').map(Number);
+          return ia - ib || va - vb;
+        });
+        const perInst = {};
+        for (const k of keys) perInst[k.split(':')[0]] = (perInst[k.split(':')[0]] || 0) + 1;
+        const seenInInst = {};
+        const voiceParts = keys.map((k) => {
+          const v = partVoices.get(k);
+          const n = (seenInInst[v.instIndex] = (seenInInst[v.instIndex] || 0) + 1);
+          const base = (v.name || 'Voice').replace(/\s+/g, ' ').trim();
+          const many = perInst[v.instIndex];
+          return { key: k, name: many === 2 ? `${base} (${n === 1 ? 'upper' : 'lower'})` : many > 2 ? `${base} ${n}` : base };
+        });
+        return { events, steps, measureStarts, total, bpm: firstBpm, clicks, voiceParts, firstBeat: clicks[1] ? clicks[1].sec - clicks[0].sec : 60 / firstBpm, beatsPerBar: this._beatsIn(sheet.SourceMeasures[0]) };
+      }
+
+      // A metronome beat: the denominator note, or the dotted beat in compound time (6/8 = two beats).
+      _beatsIn(measure) {
+        const sig = measure?.ActiveTimeSignature;
+        const num = sig?.Numerator || 4;
+        const den = sig?.Denominator || 4;
+        const compound = den >= 8 && num % 3 === 0 && num > 3;
+        return { beats: compound ? num / 3 : num, beatWhole: (compound ? 3 : 1) / den };
+      }
+
+      // Click times for every beat, accented on each downbeat. A short pickup bar counts back from its end.
+      _buildClicks(sheet, measureStarts, measureBpm, total) {
+        const clicks = [];
+        for (let m = 0; m < measureStarts.length; m++) {
+          const { beatWhole } = this._beatsIn(sheet.SourceMeasures[m]);
+          const beatSec = beatWhole * 4 * (60 / (measureBpm[m] || 100));
+          const start = measureStarts[m];
+          const end = m + 1 < measureStarts.length ? measureStarts[m + 1] : total;
+          const full = (sheet.SourceMeasures[m]?.Duration?.RealValue || 1) * 4 * (60 / (measureBpm[m] || 100));
+          const pickup = end - start < full - 1e-3;
+          const offset = pickup ? (end - start) % beatSec : 0;
+          for (let t = start + offset, k = 0; t < end - 1e-3; t += beatSec, k++) clicks.push({ sec: t, accent: k === 0 && !pickup });
+        }
+        return clicks;
+      }
+
+      // ---- Transport -----------------------------------------------------------
+
+      /** @param {{ countIn?: boolean }} [opts] countIn: one bar of clicks before the music starts. */
+      async play({ countIn = false } = {}) {
+        if (this.playing || this.starting || !this.timeline) return;
+        this._ensureAudio();
+        // Start the clock only once audio is really running, or the play head would sit still.
+        if (this.ctx.state !== 'running') {
+          this.starting = true;
+          try {
+            await this.ctx.resume();
+          } finally {
+            this.starting = false;
+          }
+        }
+        if (this.position >= this.timeline.total - 0.01) this.position = this.loop ? this._loopBounds().start : 0;
+        this.playing = true;
+        const beat = this.timeline.firstBeat / this.tempo;
+        const lead = countIn ? this.timeline.beatsPerBar.beats * beat : 0;
+        this._startFrom(this.position, lead);
+        for (let k = 0; countIn && k < this.timeline.beatsPerBar.beats; k++) this._click(this.startCtx - lead + k * beat, k === 0);
+        this.timer = setInterval(() => this._tick(), TICK_MS);
+        const frame = () => {
+          if (!this.playing) return;
+          this.position = Math.max(this.startSec, this._now());
+          this._showCursorAt(this.position);
+          this._emit();
+          this.raf = requestAnimationFrame(frame);
+        };
+        this.raf = requestAnimationFrame(frame);
+        this._emit();
+      }
+
+      pause() {
+        if (!this.playing) return;
+        this.position = Math.max(this.startSec, this._now());
+        this.playing = false;
+        clearInterval(this.timer);
+        cancelAnimationFrame(this.raf);
+        this._silence();
+        this._emit();
+      }
+
+      stop() {
+        this.pause();
+        this.position = this.loop && this.timeline ? this._loopBounds().start : 0;
+        if (this.timeline) this._showCursorAt(this.position);
+        this._emit();
+      }
+
+      seekToMeasure(index) {
+        const m = Math.max(0, Math.min(index, this.timeline.measureStarts.length - 1));
+        this._seek(this.timeline.measureStarts[m]);
+      }
+
+      /** Playback speed as a fraction of the score's tempo (e.g. 0.75 = 75%). */
+      setTempo(rate) {
+        const wasPlaying = this.playing;
+        if (wasPlaying) this.pause();
+        this.tempo = Math.max(0.25, Math.min(2, rate));
+        if (wasPlaying) this.play();
+        this._emit();
+      }
+
+      /** Transpose audio and notation by semitones. */
+      setTranspose(semitones) {
+        const wasPlaying = this.playing;
+        if (wasPlaying) this.pause();
+        this.transpose = Math.max(-12, Math.min(12, Math.round(semitones)));
+        if (this.osmd.TransposeCalculator) {
+          this.osmd.Sheet.Transpose = this.transpose;
+          this.osmd.updateGraphic();
+          this.osmd.render();
+          this.cursorStep = -1;
+          this._showCursorAt(this.position);
+        }
+        if (wasPlaying) this.play();
+        this._emit();
+      }
+
+      /**
+       * Sing the melody an octave (or two) lower or higher than written, as tenors, baritones and basses
+       * do with treble-clef songs. Moves the melody guide, targets and starting note; notation and piano stay.
+       */
+      setMelodyOctave(n) {
+        this.melodyOctave = Math.max(-2, Math.min(2, Math.round(n) || 0));
+        if (this.playing) this._seek(this._now());
+        this._emit();
+      }
+
+      /**
+       * Choose which sung part is yours (a key from info().voiceParts): it becomes the melody guide and the
+       * feedback target; the other sung parts play softly as "other voices".
+       */
+      setMyPart(key) {
+        if (!this.timeline.voiceParts.some((v) => v.key === key)) return;
+        this.myPart = key;
+        this._applyRoles();
+        if (this.playing) this._seek(this._now());
+        this._emit();
+      }
+
+      _applyRoles() {
+        for (const e of this.timeline.events) e.part = !e.vocal ? 'piano' : e.pk === this.myPart && !e.sub ? 'voice' : 'choir';
+      }
+
+      /** Metronome click on every beat while playing. */
+      setClick(on) {
+        this.click = !!on;
+        if (this.playing) this._seek(this._now());
+        this._emit();
+      }
+
+      /** Score time in seconds at the play head; negative-going (before startSec) during a count-in. */
+      scoreTime() {
+        return this.playing ? this._now() : this.position;
+      }
+
+      /** The melody's notes in order: { sec, dur, midi } in score seconds (before any count-in). */
+      voiceNotes() {
+        return this.timeline.events.filter((e) => e.part === 'voice').map(({ sec, dur, midi }) => ({ sec, dur, midi: midi + this.transpose + 12 * this.melodyOctave }));
+      }
+
+      /**
+       * Colour the melody's noteheads, e.g. to show which sung notes were right.
+       * colors: an array matching voiceNotes() (a CSS color, or null for the default); omit to clear.
+       */
+      markVoiceNotes(colors = []) {
+        const voice = this.timeline.events.filter((e) => e.part === 'voice');
+        voice.forEach((e, i) => (e.note.NoteheadColor = colors[i] || undefined));
+        this.osmd.render();
+        this.cursorStep = -1;
+        this._showCursorAt(this.position);
+      }
+
+      setPart(part, on) {
+        this.parts[part] = !!on;
+        if (this.playing) this._seek(this._now()); // reschedule without the muted part
+        this._emit();
+      }
+
+      /** Loop measures `from`..`to` (0-based, inclusive). Pass null to stop looping. */
+      setLoop(from, to) {
+        if (from === null || from === undefined) {
+          this.loop = null;
+        } else {
+          const last = this.timeline.measureStarts.length - 1;
+          const a = Math.max(0, Math.min(from, last));
+          const b = Math.max(a, Math.min(to, last));
+          this.loop = { from: a, to: b };
+          const { start, end } = this._loopBounds();
+          if (this.position < start || this.position >= end) this._seek(start);
+        }
+        this._emit();
+      }
+
+      /** Play the singer's first note (in the current key) so they can find their pitch. */
+      playStartingNote(seconds = 1.6) {
+        const midi = this.info().firstVoiceMidi;
+        if (midi === null) return;
+        this._ensureAudio();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const t = this.ctx.currentTime + 0.03;
+        const sung = midi + this.transpose + 12 * this.melodyOctave;
+        this._voiceNote(sung, t, seconds, this.ctx.destination);
+        this._pianoNote(sung, t, seconds, this.ctx.destination, 0.35);
+      }
+
+      destroy() {
+        this.pause();
+        this.ctx?.close();
+        this.osmd.clear?.();
+      }
+
+      // ---- Internals -------------------------------------------------------------
+
+      _loopBounds() {
+        const ms = this.timeline.measureStarts;
+        return { start: ms[this.loop.from], end: this.loop.to + 1 < ms.length ? ms[this.loop.to + 1] : this.timeline.total };
+      }
+
+      _seek(sec) {
+        const wasPlaying = this.playing;
+        if (wasPlaying) this.pause();
+        this.position = Math.max(0, Math.min(sec, this.timeline.total));
+        this._showCursorAt(this.position);
+        if (wasPlaying) this.play();
+        this._emit();
+      }
+
+      _now() {
+        return this.startSec + (this.ctx.currentTime - this.startCtx) * this.tempo;
+      }
+
+      _startFrom(sec, lead = 0) {
+        this.startSec = sec;
+        this.startCtx = this.ctx.currentTime + 0.06 + lead;
+        const ev = this.timeline.events;
+        let i = 0;
+        while (i < ev.length && ev[i].sec < sec - 1e-6) i++;
+        this.next = i;
+        const cl = this.timeline.clicks;
+        let c = 0;
+        while (c < cl.length && cl[c].sec < sec - 1e-6) c++;
+        this.nextClick = c;
+      }
+
+      _tick() {
+        const now = this._now();
+        const end = this.loop ? this._loopBounds().end : this.timeline.total;
+        if (now >= end) {
+          if (this.loop) {
+            this._silence();
+            this._startFrom(this._loopBounds().start);
+          } else {
+            this.pause();
+            this.position = this.timeline.total;
+            this._emit();
+          }
+          return;
+        }
+        const horizon = now + LOOKAHEAD * this.tempo;
+        const ev = this.timeline.events;
+        while (this.next < ev.length && ev[this.next].sec <= horizon && ev[this.next].sec < end) {
+          const e = ev[this.next++];
+          if (!this.parts[e.part]) continue;
+          const at = this.startCtx + (e.sec - this.startSec) / this.tempo;
+          const dur = Math.min(e.dur, end - e.sec) / this.tempo;
+          if (e.part === 'voice') this._voiceNote(e.midi + this.transpose + 12 * this.melodyOctave, at, dur, this.voiceBus);
+          else if (e.part === 'choir') this._voiceNote(e.midi + this.transpose, at, dur, this.choirBus);
+          else this._pianoNote(e.midi + this.transpose, at, dur, this.pianoBus);
+        }
+        const cl = this.timeline.clicks;
+        while (this.nextClick < cl.length && cl[this.nextClick].sec <= horizon && cl[this.nextClick].sec < end - 1e-3) {
+          const c = cl[this.nextClick++];
+          if (this.click) this._click(this.startCtx + (c.sec - this.startSec) / this.tempo, c.accent);
+        }
+      }
+
+      // A short woodblock-like tick, higher on the downbeat.
+      _click(at, accent) {
+        const ctx = this.ctx;
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = accent ? 1500 : 1000;
+        const env = ctx.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(accent ? 0.5 : 0.32, at + 0.002);
+        env.gain.exponentialRampToValueAtTime(0.001, at + 0.05);
+        o.connect(env).connect(this.clickBus);
+        o.start(at);
+        this._track([o], env, at + 0.06);
+      }
+
+      _ensureAudio() {
+        routeAudioAsMedia(); // every Play/Starting note is a tap, so this runs inside one
+        if (this.ctx) return;
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new Ctx();
+        const comp = this.ctx.createDynamicsCompressor();
+        comp.connect(this.ctx.destination);
+        this.voiceBus = this.ctx.createGain();
+        this.voiceBus.gain.value = 0.55;
+        this.pianoBus = this.ctx.createGain();
+        this.pianoBus.gain.value = 0.32;
+        this.clickBus = this.ctx.createGain();
+        this.clickBus.gain.value = 0.6;
+        this.choirBus = this.ctx.createGain();
+        this.choirBus.gain.value = 0.22;
+        this.choirBus.connect(comp);
+        this.voiceBus.connect(comp);
+        this.pianoBus.connect(comp);
+        this.clickBus.connect(comp);
+      }
+
+      _track(nodes, gain, stopAt) {
+        const entry = { nodes, gain };
+        this.active.add(entry);
+        nodes[0].onended = () => this.active.delete(entry);
+        for (const n of nodes) n.stop(stopAt);
+      }
+
+      _silence() {
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        for (const { nodes, gain } of this.active) {
+          gain.gain.cancelScheduledValues(t);
+          gain.gain.setTargetAtTime(0, t, 0.015);
+          for (const n of nodes) {
+            try { n.stop(t + 0.08); } catch {}
+          }
+        }
+        this.active.clear();
+      }
+
+      // Soft, slightly breathy "oo" with delayed vibrato: a guide melody, not an imitation singer.
+      _voiceNote(midi, at, dur, out) {
+        const ctx = this.ctx;
+        const f = midiToFreq(midi);
+        const env = ctx.createGain();
+        const len = Math.max(0.08, dur);
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(0.9, at + Math.min(0.06, len / 3));
+        env.gain.setValueAtTime(0.9, at + Math.max(0.06, len - 0.07));
+        env.gain.linearRampToValueAtTime(0, at + len);
+        const o1 = ctx.createOscillator();
+        o1.type = 'sine';
+        o1.frequency.value = f;
+        const o2 = ctx.createOscillator();
+        o2.type = 'triangle';
+        o2.frequency.value = f * 2;
+        const h2 = ctx.createGain();
+        h2.gain.value = 0.08;
+        const lfo = ctx.createOscillator();
+        lfo.frequency.value = 5.4;
+        const depth = ctx.createGain();
+        depth.gain.setValueAtTime(0, at);
+        depth.gain.linearRampToValueAtTime(f * 0.006, at + Math.min(0.45, len)); // vibrato eases in
+        lfo.connect(depth);
+        depth.connect(o1.frequency);
+        depth.connect(o2.frequency);
+        o1.connect(env);
+        o2.connect(h2).connect(env);
+        env.connect(out);
+        for (const n of [o1, o2, lfo]) n.start(at);
+        this._track([o1, o2, lfo], env, at + len + 0.05);
+      }
+
+      // Plucked-then-decaying tone with a little brightness: a practice piano, not a concert grand.
+      _pianoNote(midi, at, dur, out, level = 1) {
+        const ctx = this.ctx;
+        const f = midiToFreq(midi);
+        const len = Math.max(0.12, dur);
+        const tail = Math.min(2.2, len + 0.35);
+        const env = ctx.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(0.7 * level, at + 0.006);
+        env.gain.exponentialRampToValueAtTime(0.28 * level, at + 0.25);
+        env.gain.setTargetAtTime(0.0001, at + len, 0.12);
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(Math.min(9000, f * 8), at);
+        filter.frequency.exponentialRampToValueAtTime(Math.min(4000, f * 3), at + 0.4);
+        const o1 = ctx.createOscillator();
+        o1.type = 'triangle';
+        o1.frequency.value = f;
+        const o2 = ctx.createOscillator();
+        o2.type = 'sine';
+        o2.frequency.value = f * 2.001;
+        const h2 = ctx.createGain();
+        h2.gain.value = 0.22;
+        o1.connect(filter);
+        o2.connect(h2).connect(filter);
+        filter.connect(env).connect(out);
+        o1.start(at);
+        o2.start(at);
+        this._track([o1, o2], env, at + tail);
+      }
+
+      // Keep OSMD's cursor on the note being played.
+      _showCursorAt(sec) {
+        const steps = this.timeline?.steps;
+        if (!steps?.length) return;
+        let lo = 0;
+        let hi = steps.length - 1;
+        while (lo < hi) {
+          const mid = (lo + hi + 1) >> 1;
+          if (steps[mid].sec <= sec + 1e-6) lo = mid;
+          else hi = mid - 1;
+        }
+        const cursor = this.osmd.cursor;
+        if (this.cursorStep < 0 || lo < this.cursorStep) {
+          cursor.reset();
+          cursor.show();
+          this.cursorStep = 0;
+        }
+        const moved = this.cursorStep !== lo;
+        while (this.cursorStep < lo) {
+          cursor.next();
+          this.cursorStep++;
+        }
+        this.measure = steps[lo].measure;
+        if (moved && this.followEl) this._scrollBoxToCursor();
+      }
+
+      _emit() {
+        if (!this.timeline) return;
+        this.onChange({
+          playing: this.playing,
+          measure: this.measure ?? 0,
+          measures: this.timeline.measureStarts.length,
+          tempo: this.tempo,
+          bpm: Math.round(this.timeline.bpm * this.tempo),
+          transpose: this.transpose,
+          melodyOctave: this.melodyOctave,
+          parts: { ...this.parts },
+          myPart: this.myPart,
+          click: this.click,
+          loop: this.loop ? { ...this.loop } : null,
+        });
+      }
+    }
+
+    return { routeAudioAsMedia, ScorePlayer };
+  })();
+  var mod_warmups = (function () {
+    // Warm-up patterns and the plan for playing one through a singer's range.
+    // notes: [semitones above the round's starting note, beats, sounding fraction (1 = legato, 0.4 = staccato)]
+    // A starter set of standard exercises; Rachel can swap in her own.
+
+    const WARMUPS = [
+      {
+        id: 'lip-trill',
+        name: 'Lip trills on five notes',
+        sound: 'a lip trill (“brrr”), or a hum (“mm”)',
+        how: 'Keep your lips loose and let the air do the work. If lip trills are tricky, rest a finger on each cheek, or hum instead.',
+        why: 'Gets breath and voice working together with almost no effort: the gentlest way to start.',
+        bpm: 132,
+        notes: [[0, 0.5], [2, 0.5], [4, 0.5], [5, 0.5], [7, 0.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 1.5]],
+      },
+      {
+        id: 'siren',
+        name: 'Sirens',
+        sound: '“woo” or “ng” (as at the end of “sing”)',
+        how: 'Slide smoothly from the low note up to the high one and back, like a siren, with no bumps or breaks. Stay light at the top.',
+        why: 'Stretches the voice gently across its range and smooths the shift between low and high.',
+        bpm: 72,
+        notes: [[0, 1], [12, 1], [0, 2]],
+      },
+      {
+        id: 'vowels',
+        name: 'Five-note scale on the vowels',
+        sound: '“mee-meh-mah-moh-moo”, one vowel per note',
+        how: 'Keep the same open, relaxed space in your mouth as the vowels change, and let the “m” buzz forward on your lips.',
+        why: 'Evens out your vowels and keeps the tone consistent from note to note.',
+        bpm: 120,
+        notes: [[0, 0.5], [2, 0.5], [4, 0.5], [5, 0.5], [7, 0.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 1.5]],
+      },
+      {
+        id: 'arpeggio',
+        name: 'Arpeggio on “ah”',
+        sound: '“ah” (or “yah” to keep it light)',
+        how: 'Sing up the chord and back down in one breath. Let the top note float rather than pushing up to it.',
+        why: 'Builds flexibility and an easy connection between the middle and top of your voice.',
+        bpm: 112,
+        notes: [[0, 0.5], [4, 0.5], [7, 0.5], [12, 1], [7, 0.5], [4, 0.5], [0, 1.5]],
+      },
+      {
+        id: 'staccato',
+        name: 'Staccato “ha” arpeggio',
+        sound: '“ha” on every note, short and bouncy',
+        how: 'Each note is a tiny, light laugh from the belly. Let your stomach muscles bounce; keep your throat relaxed.',
+        why: 'Wakes up breath support and clean, precise onsets without strain.',
+        bpm: 112,
+        notes: [[0, 0.5, 0.4], [4, 0.5, 0.4], [7, 0.5, 0.4], [4, 0.5, 0.4], [0, 1, 0.4]],
+      },
+      {
+        id: 'octave',
+        name: 'Octave slides on “yah”',
+        sound: '“yah”',
+        how: 'Leap to the top note and slide back down through every note in between. Aim for one smooth, connected sound.',
+        why: 'Practices big leaps while keeping the voice connected through the middle.',
+        bpm: 84,
+        notes: [[0, 1], [12, 1], [0, 2]],
+      },
+      {
+        id: 'descending',
+        name: 'Bright descending scale on “nyah”',
+        sound: '“nyah”, bright and a little silly',
+        how: 'Start at the top and come down five notes, keeping the bright “ny” buzz as you go lower.',
+        why: 'Encourages forward, ringing resonance and carries an easy top down into the lower voice.',
+        bpm: 120,
+        notes: [[7, 0.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 1.5]],
+      },
+      {
+        id: 'nine-note',
+        name: 'Nine-note scale (agility)',
+        sound: '“ah”, or “oo” for a softer tone',
+        how: 'Up nine notes and back in one breath. Keep it light and even; slow the speed down until it feels easy.',
+        why: 'Builds agility and breath management for longer runs and phrases.',
+        bpm: 108,
+        notes: [[0, 0.5], [2, 0.5], [4, 0.5], [5, 0.5], [7, 0.5], [9, 0.5], [11, 0.5], [12, 0.5], [14, 0.5], [12, 0.5], [11, 0.5], [9, 0.5], [7, 0.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 1.5]],
+      },
+      {
+        id: 'messa',
+        name: 'Messa di voce (swell)',
+        sound: '“ah” or “oo” on one long note',
+        how: 'Start very soft, swell gradually to a full sound, then fade back to soft, all on one steady breath.',
+        why: 'Develops breath control and the ability to change volume without the pitch or tone wobbling.',
+        bpm: 72,
+        notes: [[0, 8]],
+      },
+    ];
+
+    /**
+     * The full sequence for one warm-up: a chord in each new key, then the pattern, moving up (and/or
+     * down) a half step per round, staying inside [low, high] (MIDI).
+     * @returns {{ events: {kind:'chord'|'note', t:number, dur:number, midi?:number, midis?:number[], index?:number}[], rounds:number[], total:number }}
+     */
+    function planWarmup(w, { low, high, bpm, dir = 'updown' }) {
+      const beat = 60 / bpm;
+      const top = Math.max(...w.notes.map((n) => n[0]));
+      const first = low + 1;
+      const last = Math.max(first, high - 1 - top);
+      const upRounds = [];
+      for (let r = first; r <= last; r++) upRounds.push(r);
+      const rounds = dir === 'up' ? upRounds : dir === 'down' ? [...upRounds].reverse() : upRounds.concat(upRounds.slice(0, -1).reverse());
+      const events = [];
+      let t = 0;
+      for (const root of rounds) {
+        // The key's chord, low in the piano, so the singer hears where the round starts.
+        events.push({ kind: 'chord', t, dur: beat * 0.9, midis: [root - 12, root - 5, root, root + 4].filter((m) => m >= 33) });
+        t += beat * 1.5;
+        w.notes.forEach(([semi, beats, sounding = 0.95], index) => {
+          events.push({ kind: 'note', t, dur: beat * beats * sounding, midi: root + semi, index });
+          t += beat * beats;
+        });
+        t += beat; // a breath before the next round
+      }
+      return { events, rounds, total: t };
+    }
+
+    return { WARMUPS, planWarmup };
+  })();
+    return Object.assign({}, mod_common, mod_rhythm, mod_melody_gen, mod_intervals, mod_grade, mod_voice_analyzer, mod_voice_visuals, mod_score_player, mod_warmups);
+  })();
+  // ═══ End voice studio block ═══
+
+  // ═══════════════════════════════════════════
+  // Voice studio panels (module scope, so React keeps their identity across host re-renders):
+  // Voice Mirror tab, Sight Reading "Levels" mode, and Interval Singer "Name it" mode.
+  // Each takes { React, t, isDark, isContrast, reducedMotion, classes, prefs, savePrefs, announce, awardXP }.
+  // ═══════════════════════════════════════════
+
+  function vsFmt(s, vars) {
+    return String(s).replace(/\{(\w+)\}/g, function (whole, name) {
+      return vars && Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : whole;
+    });
+  }
+
+  // The notation renderer (OpenSheetMusicDisplay, BSD-3) loads on first use, like three.js elsewhere.
+  var VS_OSMD_URL = 'https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@2.2.1/build/opensheetmusicdisplay.min.js';
+  var _vsOsmdPromise = null;
+  function vsLoadOSMD() {
+    if (window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay) return Promise.resolve(window.opensheetmusicdisplay);
+    if (_vsOsmdPromise) return _vsOsmdPromise;
+    _vsOsmdPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = VS_OSMD_URL;
+      s.async = true;
+      s.onload = function () {
+        if (window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay) resolve(window.opensheetmusicdisplay);
+        else { _vsOsmdPromise = null; reject(new Error('notation library missing')); }
+      };
+      s.onerror = function () { _vsOsmdPromise = null; reject(new Error('notation library failed to load')); };
+      document.head.appendChild(s);
+    });
+    return _vsOsmdPromise;
+  }
+
+  function vsMicError(t, e) {
+    var name = e && e.name;
+    if (name === 'NotAllowedError') return t('stem.singing.vs_mic_blocked', 'The browser blocked the microphone. Allow it in the address bar, then try again.');
+    if (name === 'NotFoundError') return t('stem.singing.vs_mic_missing', 'No microphone was found. Plug one in or check your sound settings.');
+    return vsFmt(t('stem.singing.vs_mic_failed', 'The microphone could not start: {reason}'), { reason: (e && e.message) || String(e) });
+  }
+
+  // Translated labels for the shared data (voice types, levels, intervals, key names).
+  function vsVoiceLabels(t) {
+    return {
+      soprano: t('stem.singing.vs_voice_soprano', 'Soprano'),
+      mezzo: t('stem.singing.vs_voice_mezzo', 'Mezzo-soprano'),
+      alto: t('stem.singing.vs_voice_alto', 'Alto'),
+      tenor: t('stem.singing.vs_voice_tenor', 'Tenor'),
+      baritone: t('stem.singing.vs_voice_baritone', 'Baritone'),
+      bass: t('stem.singing.vs_voice_bass', 'Bass')
+    };
+  }
+  function vsIntervalNames(t) {
+    return {
+      1: t('stem.singing.vs_iv_m2', 'Minor 2nd'),
+      2: t('stem.singing.vs_iv_M2', 'Major 2nd'),
+      3: t('stem.singing.vs_iv_m3', 'Minor 3rd'),
+      4: t('stem.singing.vs_iv_M3', 'Major 3rd'),
+      5: t('stem.singing.vs_iv_P4', 'Perfect 4th'),
+      6: t('stem.singing.vs_iv_TT', 'Tritone'),
+      7: t('stem.singing.vs_iv_P5', 'Perfect 5th'),
+      8: t('stem.singing.vs_iv_m6', 'Minor 6th'),
+      9: t('stem.singing.vs_iv_M6', 'Major 6th'),
+      10: t('stem.singing.vs_iv_m7', 'Minor 7th'),
+      11: t('stem.singing.vs_iv_M7', 'Major 7th'),
+      12: t('stem.singing.vs_iv_P8', 'Octave')
+    };
+  }
+  function vsKeyLabel(t, key) {
+    var tonic = VS.keyName(key.fifths, key.minor).split(' ')[0];
+    return key.minor
+      ? vsFmt(t('stem.singing.vs_key_minor', '{note} minor'), { note: tonic })
+      : vsFmt(t('stem.singing.vs_key_major', '{note} major'), { note: tonic });
+  }
+  // "“Here Comes the Bride” starts with this interval going up." Song titles stay in English.
+  function vsSongCue(t, semis, dir) {
+    var iv = VS.intervalBySemis(semis);
+    var song = iv && (dir > 0 ? iv.up : iv.down);
+    if (!song) return '';
+    return dir > 0
+      ? vsFmt(t('stem.singing.vs_cue_up', '“{song}” starts with this interval going up.'), { song: song })
+      : vsFmt(t('stem.singing.vs_cue_down', '“{song}” starts with this interval going down.'), { song: song });
+  }
+  function vsSpell(semis, dir, ref) {
+    if (!semis) { var n = VS.noteLabel(ref); return { from: n, to: n }; }
+    return VS.spellInterval({ ref: ref, semis: semis, dir: dir, target: ref + dir * semis });
+  }
+
+  // ───────────────────────── Voice Mirror ─────────────────────────
+  function VsVoiceMirror(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var c = p.classes;
+    var prefs = Object.assign({ mode: 'voice', scene: 'aurora', palette: p.isContrast ? 'contrast' : 'opera', meters: true, guides: true, calm: !!p.reducedMotion, a4: 440, explore: false }, p.prefs || {});
+    var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
+    var canvasRef = React.useRef(null);
+    var holderRef = React.useRef(null);
+    var visRef = React.useRef(null);
+    var anRef = React.useRef(null);
+    var audioRef = React.useRef(null);
+    var lastRef = React.useRef(0);
+    var meterS = React.useState(null); var meter = meterS[0]; var setMeter = meterS[1];
+    var runS = React.useState(''); var running = runS[0]; var setRunning = runS[1];
+    var errS = React.useState(''); var err = errS[0]; var setErr = errS[1];
+    var sumS = React.useState(null); var summary = sumS[0]; var setSummary = sumS[1];
+    var hint = t('stem.singing.vs_hint', 'Sing or play a long note…');
+
+    React.useEffect(function () {
+      var vis = new VS.VoiceVisuals(canvasRef.current, { palette: prefs.palette, mode: prefs.mode, calm: prefs.calm, guides: prefs.guides && !prefs.explore, scene: prefs.scene, explore: !!prefs.explore });
+      vis.set({ hint: hint });
+      vis.start();
+      visRef.current = vis;
+      return function () {
+        if (anRef.current) anRef.current.stop();
+        anRef.current = null;
+        if (audioRef.current) { audioRef.current.pause(); URL.revokeObjectURL(audioRef.current.src); }
+        vis.destroy();
+        visRef.current = null;
+      };
+    }, []);
+    React.useEffect(function () {
+      if (visRef.current) visRef.current.set({ palette: prefs.palette, mode: prefs.mode, calm: prefs.calm, guides: prefs.guides && !prefs.explore, scene: prefs.scene, explore: !!prefs.explore, hint: hint });
+      if (anRef.current) { anRef.current.setMode(prefs.mode); anRef.current.a4 = prefs.a4; }
+    }, [prefs.palette, prefs.mode, prefs.calm, prefs.guides, prefs.scene, prefs.a4, prefs.explore, hint]);
+
+    function begin(kind, connect) {
+      setErr('');
+      setSummary(null);
+      var a = new VS.VoiceAnalyzer({ mode: prefs.mode, a4: prefs.a4 });
+      a.onFrame(function (f) {
+        if (visRef.current) visRef.current.push(f);
+        var now = performance.now();
+        if (now - lastRef.current > 125) { lastRef.current = now; setMeter(f); }
+      });
+      return Promise.resolve(connect(a)).then(function () {
+        anRef.current = a;
+        setRunning(kind);
+        if (p.announce) p.announce(kind === 'mic' ? t('stem.singing.vs_sr_listening', 'Voice Mirror is listening.') : t('stem.singing.vs_sr_analyzing', 'Analyzing the recording.'));
+      }).catch(function (e) {
+        a.stop();
+        setErr(vsMicError(t, e));
+      });
+    }
+    function stop() {
+      var a = anRef.current;
+      if (!a) return;
+      var s = a.summary();
+      a.stop();
+      anRef.current = null;
+      if (audioRef.current) audioRef.current.pause();
+      setRunning('');
+      setMeter(null);
+      setSummary(prefs.explore ? null : s); // free play keeps no score
+      if (p.announce) p.announce(t('stem.singing.vs_sr_stopped', 'Stopped. Your session summary is below.'));
+      if (s.seconds >= 20 && p.awardXP) p.awardXP('singing_mirror', 5, 'Singing: Voice Mirror session');
+    }
+    function onFile(e) {
+      var file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      if (anRef.current) stop();
+      // A media element can feed the analyser only once, so every file gets a fresh element.
+      if (audioRef.current) { audioRef.current.pause(); URL.revokeObjectURL(audioRef.current.src); }
+      var el = document.createElement('audio');
+      el.controls = true;
+      el.className = 'w-full mt-2';
+      el.setAttribute('aria-label', vsFmt(t('stem.singing.vs_recording_label', 'Recording: {name}'), { name: file.name }));
+      el.src = URL.createObjectURL(file);
+      el.addEventListener('ended', stop);
+      audioRef.current = el;
+      if (holderRef.current) { holderRef.current.innerHTML = ''; holderRef.current.appendChild(el); }
+      begin('file', function (a) { return a.analyzeMediaElement(el).then(function () { return el.play(); }); });
+    }
+
+    var voice = prefs.mode === 'voice';
+    var dark = p.isDark || p.isContrast;
+    var boxCls = 'rounded-lg p-2 ' + (dark ? 'bg-slate-900 border border-slate-600' : 'bg-slate-50 border border-slate-300');
+    var labCls = 'text-[0.6875rem] font-bold uppercase tracking-wide ' + (dark ? 'text-slate-300' : 'text-slate-600');
+    var valCls = 'text-sm font-bold ' + (dark ? 'text-white' : 'text-slate-900');
+    var pct = function (v) { return Math.round(Math.max(0, Math.min(1, v || 0)) * 100); };
+    var bar = function (label, v) {
+      return h('div', { className: boxCls },
+        h('div', { className: labCls }, label),
+        h('div', { className: 'flex items-center gap-2 mt-1' },
+          h('div', { className: 'flex-1 h-2 rounded-full overflow-hidden ' + (dark ? 'bg-slate-700' : 'bg-slate-200') },
+            h('div', { className: 'h-2 rounded-full bg-rose-600', style: { width: pct(v) + '%' } })),
+          h('span', { className: valCls + ' tabular-nums' }, meter && meter.voiced ? pct(v) + '%' : '–')));
+    };
+    var f = meter;
+    var cents = f && f.voiced ? Math.round(f.cents || 0) : 0;
+    var tune = !f || !f.voiced ? 'none' : Math.abs(cents) <= 15 ? 'good' : Math.abs(cents) <= 30 ? 'near' : 'off';
+    var needleColor = tune === 'good' ? '#16a34a' : tune === 'near' ? '#d97706' : tune === 'off' ? '#e11d48' : (dark ? '#cbd5e1' : '#475569');
+
+    var meters = prefs.meters && !prefs.explore && h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(9rem, 1fr))' } },
+      h('div', { className: boxCls },
+        h('div', { className: labCls }, t('stem.singing.vs_m_note', 'Note')),
+        h('div', { className: 'text-2xl font-black ' + (dark ? 'text-white' : 'text-slate-900') }, f && f.voiced ? f.note : '–'),
+        h('div', { className: 'text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600') }, f && f.voiced ? f.hz.toFixed(1) + ' Hz' : '')),
+      h('div', { className: boxCls },
+        h('div', { className: labCls }, t('stem.singing.vs_m_tuning', 'Tuning')),
+        h('svg', { viewBox: '0 0 120 64', className: 'w-full', style: { maxHeight: 56 }, 'aria-hidden': 'true' },
+          h('path', { d: 'M10 60 A50 50 0 0 1 110 60', fill: 'none', stroke: dark ? '#475569' : '#cbd5e1', strokeWidth: 6, strokeLinecap: 'round' }),
+          h('path', { d: 'M47 13 A50 50 0 0 1 73 13', fill: 'none', stroke: '#16a34a', strokeWidth: 6, strokeLinecap: 'round' }),
+          h('line', { x1: 60, y1: 60, x2: 60, y2: 16, stroke: needleColor, strokeWidth: 3, strokeLinecap: 'round', transform: 'rotate(' + (f && f.voiced ? Math.max(-50, Math.min(50, cents)) * 0.9 : 0) + ' 60 60)' })),
+        h('div', { className: valCls + ' text-center' }, f && f.voiced
+          ? vsFmt(t('stem.singing.vs_m_cents', '{n} cents'), { n: (cents > 0 ? '+' : cents < 0 ? '−' : '') + Math.abs(cents) })
+          : '–')),
+      bar(t('stem.singing.vs_m_steadiness', 'Steadiness'), f && f.steadiness),
+      h('div', { className: boxCls },
+        h('div', { className: labCls }, t('stem.singing.vs_m_vibrato', 'Vibrato')),
+        h('div', { className: valCls + ' mt-1' }, f && f.vibrato
+          ? vsFmt(t('stem.singing.vs_m_vibrato_value', '{rate} per second · ±{extent} cents'), { rate: f.vibrato.rate.toFixed(1), extent: Math.round(f.vibrato.extent) })
+          : f && f.voiced ? t('stem.singing.vs_m_none', 'none') : '–')),
+      bar(t('stem.singing.vs_m_loudness', 'Loudness'), f && f.loudness),
+      bar(voice ? t('stem.singing.vs_m_ring', 'Ring') : t('stem.singing.vs_m_brightness', 'Brightness'), f && (voice ? f.ring : f.brightness)),
+      h('div', { className: boxCls },
+        h('div', { className: labCls }, voice ? t('stem.singing.vs_m_phrase', 'Phrase') : t('stem.singing.vs_m_note_length', 'Note length')),
+        h('div', { className: valCls + ' mt-1 tabular-nums' }, (f ? f.phrase.current : 0).toFixed(1) + ' s'),
+        h('div', { className: 'text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600') },
+          vsFmt(t('stem.singing.vs_m_longest', 'longest {n} s'), { n: (f ? f.phrase.longest : 0).toFixed(1) }))));
+
+    var summaryRows = [];
+    if (summary) {
+      var s = summary;
+      var dur = function (sec) { var m = Math.floor(sec / 60); var r = Math.round(sec % 60); return m ? vsFmt(t('stem.singing.vs_min_sec', '{m} min {s} s'), { m: m, s: r }) : r + ' s'; };
+      summaryRows.push([voice ? t('stem.singing.vs_s_singing_time', 'Singing time') : t('stem.singing.vs_s_playing_time', 'Playing time'), dur(s.seconds)]);
+      if (s.phrases) summaryRows.push([voice ? t('stem.singing.vs_s_phrases', 'Phrases') : t('stem.singing.vs_s_passages', 'Passages'), String(s.phrases)]);
+      summaryRows.push([voice ? t('stem.singing.vs_s_longest_phrase', 'Longest phrase') : t('stem.singing.vs_s_longest_note', 'Longest note'), s.longestPhrase.toFixed(1) + ' s']);
+      if (s.lowest !== null && s.highest !== null) summaryRows.push([t('stem.singing.vs_s_range', 'Range'), s.lowest === s.highest ? VS.noteLabel(s.lowest) : VS.noteLabel(s.lowest) + ' – ' + VS.noteLabel(s.highest)]);
+      if (s.steadiness !== null) summaryRows.push([t('stem.singing.vs_s_steadiness', 'Average steadiness'), Math.round(s.steadiness * 100) + '%']);
+      if (s.vibratoRate) summaryRows.push([t('stem.singing.vs_m_vibrato', 'Vibrato'), vsFmt(t('stem.singing.vs_m_vibrato_value', '{rate} per second · ±{extent} cents'), { rate: s.vibratoRate.toFixed(1), extent: Math.round(s.vibratoExtent || 0) })]);
+    }
+
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var segBtn = function (val, label) {
+      var on = prefs.mode === val;
+      return h('button', { key: val, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function () { set({ mode: val }); },
+        className: 'px-3 py-1 text-xs font-bold ' + (on ? 'bg-rose-700 text-white' : (dark ? 'text-slate-200' : 'text-slate-700')) }, label);
+    };
+    var check = function (key, label) {
+      return h('label', { className: 'inline-flex items-center gap-1.5 text-xs font-semibold ' + (dark ? 'text-slate-200' : 'text-slate-700') },
+        h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs[key], onChange: function (e) { var o = {}; o[key] = e.target.checked; set(o); } }), label);
+    };
+
+    return h('div', { className: 'space-y-3' },
+      h('div', { className: 'relative rounded-xl overflow-hidden', style: { background: '#120a0d' } },
+        h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: 'block', width: '100%', height: 'clamp(260px, 48vh, 520px)' } }),
+        !running && h('div', { className: 'absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center', style: { background: 'rgba(18,10,13,0.72)', color: '#f3e9de' } },
+          h('button', { type: 'button', className: c.btnPrimary, onClick: function () { begin('mic', function (a) { return a.startMicrophone(); }); } },
+            '🎤 ' + t('stem.singing.vs_mic_on', 'Turn on the microphone')),
+          h('p', { className: 'text-xs max-w-md', style: { color: '#e7d9cc' } }, t('stem.singing.vs_private', 'Your sound is analyzed on this device only. Nothing is recorded or sent anywhere.')),
+          h('label', { className: 'text-xs font-bold underline cursor-pointer', style: { color: '#f2d49b' } },
+            h('input', { type: 'file', accept: 'audio/*', className: 'sr-only', onChange: onFile }),
+            t('stem.singing.vs_analyze_recording', 'Or analyze a recording')),
+          err && h('p', { role: 'alert', className: 'text-xs font-bold', style: { color: '#ffd2d2' } }, err))),
+      h('div', { ref: holderRef }),
+      h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+        h('div', { role: 'group', 'aria-label': t('stem.singing.vs_what_practicing', 'What are you practicing?'), className: 'inline-flex rounded-full overflow-hidden border ' + (dark ? 'border-slate-500' : 'border-rose-300') },
+          segBtn('voice', t('stem.singing.vs_voice', 'Voice')), segBtn('instrument', t('stem.singing.vs_instrument', 'Instrument'))),
+        h('label', { className: 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700') }, t('stem.singing.vs_scene', 'Scene'),
+          h('select', { className: selCls, value: prefs.scene, onChange: function (e) { set({ scene: e.target.value }); } },
+            h('option', { value: 'aurora' }, t('stem.singing.vs_scene_aurora', 'Aurora')),
+            h('option', { value: 'bloom' }, t('stem.singing.vs_scene_bloom', 'Bloom')),
+            h('option', { value: 'constellation' }, t('stem.singing.vs_scene_constellation', 'Constellation')),
+            h('option', { value: 'ripples' }, t('stem.singing.vs_scene_ripples', 'Ripples')),
+            h('option', { value: 'paint' }, t('stem.singing.vs_scene_paint', 'Paint')))),
+        h('label', { className: 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700') }, t('stem.singing.vs_look', 'Look'),
+          h('select', { className: selCls, value: prefs.palette, onChange: function (e) { set({ palette: e.target.value }); } },
+            h('option', { value: 'opera' }, t('stem.singing.vs_pal_opera', 'Opera (burgundy & gold)')),
+            h('option', { value: 'aurora' }, t('stem.singing.vs_pal_aurora', 'Northern lights')),
+            h('option', { value: 'dusk' }, t('stem.singing.vs_pal_dusk', 'Dusk (rose & lilac)')),
+            h('option', { value: 'prism' }, t('stem.singing.vs_pal_prism', 'Prism (a color per note)')),
+            h('option', { value: 'contrast' }, t('stem.singing.vs_pal_contrast', 'High contrast')))),
+        !prefs.explore && check('meters', t('stem.singing.vs_meters', 'Meters')),
+        !prefs.explore && check('guides', t('stem.singing.vs_note_lines', 'Note lines')),
+        check('calm', t('stem.singing.vs_calm', 'Calm motion')),
+        check('explore', t('stem.singing.vs_free_play', 'Free play (no tuning feedback)')),
+        prefs.scene === 'paint' && h('button', { type: 'button', className: c.btnSecondary, onClick: function () { if (visRef.current) visRef.current.clearPaint(); } }, t('stem.singing.vs_new_painting', 'New painting')),
+        prefs.scene === 'paint' && h('button', { type: 'button', className: c.btnSecondary, onClick: function () {
+          if (!visRef.current) return;
+          visRef.current.snapshot().then(function (blob) {
+            if (!blob) return;
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'my-sound-painting.png';
+            a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+          });
+        } }, t('stem.singing.vs_save_picture', 'Save picture')),
+        !prefs.explore && h('label', { className: 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700') }, t('stem.singing.vs_tuning_ref', 'Tuning'),
+          h('select', { className: selCls, value: String(prefs.a4), onChange: function (e) { set({ a4: Number(e.target.value) }); } },
+            h('option', { value: '440' }, 'A = 440'),
+            h('option', { value: '442' }, 'A = 442'),
+            h('option', { value: '415' }, t('stem.singing.vs_baroque', 'A = 415 (Baroque)')))),
+        running && h('button', { type: 'button', className: c.btnSecondary + ' ml-auto', onClick: stop },
+          running === 'mic' ? t('stem.singing.vs_stop_mic', 'Stop microphone') : t('stem.singing.vs_stop_analyzing', 'Stop analyzing'))),
+      meters,
+      summary && h('div', { className: c.cardClass, role: 'status' },
+        h('h4', { className: c.headingClass + ' text-sm mb-2' }, t('stem.singing.vs_summary', 'Session summary')),
+        h('dl', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(11rem, 1fr))' } },
+          summaryRows.map(function (r) {
+            return h('div', { key: r[0] },
+              h('dt', { className: labCls }, r[0]),
+              h('dd', { className: valCls + ' m-0' }, r[1]));
+          }))),
+      prefs.explore && h('p', { className: c.subTextClass }, t('stem.singing.vs_free_play_help', 'Free play: no notes to hit and nothing to get right. Ripples sends out a ring for every sound; Paint turns your voice into a brush (higher lifts it, louder widens it).')),
+      !prefs.explore && h('p', { className: c.subTextClass }, voice
+        ? t('stem.singing.vs_guide_voice', 'Height is pitch, color is the note, thickness is volume, and shimmer is vibrato. Bloom grows a flower for every held note; Constellation turns them into linked stars.')
+        : t('stem.singing.vs_guide_instrument', 'Instrument mode widens the pitch range and shows brightness instead of the singer’s ring.'))
+    );
+  }
+
+  // ───────────────────────── Sight Reading: Levels ─────────────────────────
+  var VS_GRADE_COLORS = { tune: '#15803d', near: '#b45309', wrong: '#be123c', missed: '#6b7280' };
+
+  function VsSightLevels(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var c = p.classes;
+    var prefs = Object.assign({ level: 1, voice: 'mezzo', speed: 100, click: true, showNote: true, best: {} }, p.prefs || {});
+    var prefsRef = React.useRef(prefs);
+    prefsRef.current = prefs;
+    var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
+    var codeS = React.useState(function () { return (p.prefs && p.prefs.code) || VS.newCode(); });
+    var code = codeS[0]; var setCode = codeS[1];
+    var codeRef = React.useRef(code);
+    codeRef.current = code;
+    var scoreRef = React.useRef(null);
+    var playerRef = React.useRef(null);
+    var melRef = React.useRef(null);
+    var anRef = React.useRef(null);
+    var framesRef = React.useRef([]);
+    var modeRef = React.useRef(null);
+    var tonesRef = React.useRef(null);
+    var liveAtRef = React.useRef(0);
+    var loadS = React.useState('loading'); var load = loadS[0]; var setLoad = loadS[1];
+    var metaS = React.useState(null); var meta = metaS[0]; var setMeta = metaS[1];
+    var modeS = React.useState(null); var mode = modeS[0]; var setMode = modeS[1];
+    var liveS = React.useState(''); var live = liveS[0]; var setLive = liveS[1];
+    var resS = React.useState(null); var result = resS[0]; var setResult = resS[1];
+    var inS = React.useState(''); var codeInput = inS[0]; var setCodeInput = inS[1];
+    var errS = React.useState(''); var err = errS[0]; var setErr = errS[1];
+    var voiceLabels = vsVoiceLabels(t);
+    var levelNames = {
+      1: t('stem.singing.vs_lvl1', 'Level 1: Steps'),
+      2: t('stem.singing.vs_lvl2', 'Level 2: Skips'),
+      3: t('stem.singing.vs_lvl3', 'Level 3: Leaps and minor keys'),
+      4: t('stem.singing.vs_lvl4', 'Level 4: Chromatic notes and 6/8'),
+      5: t('stem.singing.vs_lvl5', 'Level 5: Advanced'),
+      6: t('stem.singing.vs_lvl6', 'Level 6: Conservatory')
+    };
+    var texts = {
+      countIn: t('stem.singing.vs_count_in', 'Count-in…'),
+      listening: t('stem.singing.vs_listening', 'Listening…'),
+      singing: t('stem.singing.vs_youre_singing', 'You’re singing {note}')
+    };
+    var textsRef = React.useRef(texts);
+    textsRef.current = texts;
+
+    React.useEffect(function () {
+      var alive = true;
+      vsLoadOSMD().then(function (OSMD) {
+        if (!alive || !scoreRef.current) return;
+        var narrow = window.matchMedia && window.matchMedia('(max-width: 700px)').matches;
+        playerRef.current = new VS.ScorePlayer({
+          OSMD: OSMD,
+          container: scoreRef.current,
+          zoom: narrow ? 0.75 : 1,
+          osmdOptions: { drawPartNames: false, drawMetronomeMarks: true, cursorsOptions: [{ type: 0, color: '#be123c', alpha: 0.28, follow: true }] },
+          onChange: function (s) { if (!s.playing && modeRef.current) finish(); }
+        });
+        setLoad('ready');
+      }).catch(function () { if (alive) setLoad('error'); });
+      return function () {
+        alive = false;
+        modeRef.current = null;
+        if (anRef.current) anRef.current.stop();
+        if (playerRef.current) playerRef.current.destroy();
+      };
+    }, []);
+
+    React.useEffect(function () {
+      if (load !== 'ready') return;
+      var player = playerRef.current;
+      stopAll();
+      var m;
+      try {
+        m = VS.generateMelody({ seed: code, level: prefs.level, voice: VS.VOICE_TYPES[prefs.voice] || VS.VOICE_TYPES.mezzo });
+      } catch (e) {
+        setErr(t('stem.singing.vs_write_failed', 'That melody could not be written. Try a new melody.'));
+        return;
+      }
+      melRef.current = m;
+      setErr('');
+      setResult(null);
+      player.load(m.xml).then(function () {
+        player.setTempo(prefsRef.current.speed / 100);
+        setMeta({ key: m.key, meter: m.meter, notes: m.notes.filter(function (n) { return !n.rest; }).length, first: VS.spelledName(m.notes.find(function (n) { return !n.rest; })) });
+      });
+      if ((p.prefs || {}).code !== code) set({ code: code });
+    }, [load, code, prefs.level, prefs.voice]);
+
+    function ensureMic() {
+      if (anRef.current) return Promise.resolve(anRef.current);
+      var a = new VS.VoiceAnalyzer({ mode: 'voice' });
+      a.onFrame(function (f) {
+        if (modeRef.current !== 'sing' || !playerRef.current) return;
+        var player = playerRef.current;
+        var tm = player.scoreTime() - 0.06 * player.tempo; // frames arrive a little after the sound
+        var now = performance.now();
+        var showText = now - liveAtRef.current > 150;
+        if (tm < 0) { if (showText) { liveAtRef.current = now; setLive(textsRef.current.countIn); } return; }
+        framesRef.current.push({ t: tm, midi: f.voiced ? f.midi : null });
+        if (showText) {
+          liveAtRef.current = now;
+          setLive(prefsRef.current.showNote && f.voiced ? vsFmt(textsRef.current.singing, { note: f.note }) : textsRef.current.listening);
+        }
+      });
+      return a.startMicrophone().then(function () { anRef.current = a; return a; });
+    }
+
+    function stopAll() {
+      var was = modeRef.current;
+      modeRef.current = null;
+      setMode(null);
+      setLive('');
+      if (playerRef.current && playerRef.current.playing) playerRef.current.pause();
+      if (was === 'sing' && framesRef.current.length) grade();
+    }
+    function finish() {
+      var was = modeRef.current;
+      modeRef.current = null;
+      setMode(null);
+      setLive('');
+      if (was === 'sing') grade();
+      if (playerRef.current) playerRef.current.stop();
+    }
+    function sing() {
+      if (modeRef.current === 'sing') { stopAll(); return; }
+      stopAll();
+      setErr('');
+      ensureMic().then(function () {
+        var player = playerRef.current;
+        framesRef.current = [];
+        setResult(null);
+        player.markVoiceNotes();
+        player.stop();
+        player.setPart('voice', false);
+        player.setClick(!!prefsRef.current.click);
+        modeRef.current = 'sing';
+        setMode('sing');
+        setLive(textsRef.current.countIn);
+        if (p.announce) p.announce(t('stem.singing.vs_sr_count_in', 'Count-in, then sing.'));
+        player.play({ countIn: true });
+      }).catch(function (e) { setErr(vsMicError(t, e)); });
+    }
+    function hear() {
+      stopAll();
+      var player = playerRef.current;
+      player.markVoiceNotes();
+      player.stop();
+      player.setPart('voice', true);
+      player.setClick(false);
+      modeRef.current = 'hear';
+      setMode('hear');
+      player.play();
+    }
+    function keyAndNote() {
+      stopAll();
+      var m = melRef.current;
+      if (!m) return;
+      if (!tonesRef.current) tonesRef.current = new VS.Tones();
+      var tones = tonesRef.current;
+      tones.ready().then(function (ctx) {
+        var t0 = ctx.currentTime + 0.05;
+        var third = m.key.minor ? 3 : 4;
+        var root = m.tonicMidi;
+        while (root - m.firstMidi > 7) root -= 12;
+        while (m.firstMidi - root > 12) root += 12;
+        [0, third, 7, 12].forEach(function (s, i) { tones.piano(root + s, t0 + i * 0.32, 0.5, 0.8); });
+        tones.chord([root, root + third, root + 7], t0 + 1.4, 1.2);
+        tones.piano(m.firstMidi, t0 + 2.9, 1.4, 1);
+      });
+      if (p.announce && meta) p.announce(vsKeyLabel(t, m.key) + '. ' + vsFmt(t('stem.singing.vs_first_note', 'First note {note}.'), { note: meta.first }));
+    }
+
+    function grade() {
+      var player = playerRef.current;
+      var m = melRef.current;
+      var frames = framesRef.current;
+      if (!player || !m || !frames.length) return;
+      var reached = frames[frames.length - 1].t;
+      var notes = player.voiceNotes().filter(function (n) { return n.sec + n.dur * 0.5 < reached; });
+      if (!notes.length) return;
+      var sung = m.notes.filter(function (n) { return !n.rest; });
+      var spelling = m.key.fifths > 0 || m.key.minor ? 'sharps' : m.key.fifths < 0 ? 'flats' : undefined;
+      var grades = VS.gradeSung(notes, frames);
+      var count = { tune: 0, near: 0, wrong: 0, missed: 0 };
+      var problems = [];
+      grades.forEach(function (g, i) {
+        count[g.grade]++;
+        var where = vsFmt(t('stem.singing.vs_where', 'Bar {bar}, {note}'), { bar: (sung[i] ? sung[i].bar : 0) + 1, note: sung[i] ? VS.spelledName(sung[i]) : VS.noteLabel(notes[i].midi) });
+        if (g.grade === 'missed') problems.push(where + ': ' + t('stem.singing.vs_not_heard', 'not heard'));
+        else if (g.grade === 'near') problems.push(where + ': ' + (g.cents > 0 ? t('stem.singing.vs_bit_sharp', 'right note, a little sharp') : t('stem.singing.vs_bit_flat', 'right note, a little flat')));
+        else if (g.grade === 'wrong') {
+          var steps = g.sungMidi - notes[i].midi;
+          var tmpl = Math.abs(steps) === 1
+            ? (steps > 0 ? t('stem.singing.vs_sang_high_1', 'you sang {note} (a half step high)') : t('stem.singing.vs_sang_low_1', 'you sang {note} (a half step low)'))
+            : (steps > 0 ? t('stem.singing.vs_sang_high', 'you sang {note} ({n} half steps high)') : t('stem.singing.vs_sang_low', 'you sang {note} ({n} half steps low)'));
+          problems.push(where + ': ' + vsFmt(tmpl, { note: VS.noteLabel(g.sungMidi, spelling), n: Math.abs(steps) }));
+        }
+      });
+      player.markVoiceNotes(grades.map(function (g) { return VS_GRADE_COLORS[g.grade]; }));
+      var pct = Math.round((100 * (count.tune + count.near * 0.75)) / notes.length);
+      var bestKey = prefsRef.current.level + ':' + prefsRef.current.voice + ':' + codeRef.current;
+      var best = Math.max(pct, (prefsRef.current.best || {})[bestKey] || 0);
+      if (pct >= ((prefsRef.current.best || {})[bestKey] || 0)) {
+        var nb = Object.assign({}, prefsRef.current.best || {});
+        nb[bestKey] = pct;
+        var keys = Object.keys(nb);
+        if (keys.length > 60) delete nb[keys[0]];
+        p.savePrefs(Object.assign({}, prefsRef.current, { best: nb }));
+      }
+      var r = { counted: notes.length, right: count.tune + count.near, pct: pct, best: best, count: count, problems: problems };
+      setResult(r);
+      if (p.announce) p.announce(vsFmt(t('stem.singing.vs_score_line', '{right} of {total} notes right · {pct}%'), { right: r.right, total: r.counted, pct: pct }));
+      if (pct >= 80 && p.awardXP) p.awardXP('singing_sight_levels', 10, 'Singing: sight-singing level ' + prefsRef.current.level);
+    }
+
+    var dark = p.isDark || p.isContrast;
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var lab = 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    var ready = load === 'ready' && meta;
+    return h('div', { className: 'space-y-3' },
+      h('div', { className: c.cardClass + ' space-y-3' },
+        h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+          h('label', { className: lab }, t('stem.singing.vs_level', 'Level'),
+            h('select', { className: selCls, value: String(prefs.level), onChange: function (e) { set({ level: Number(e.target.value) }); } },
+              [1, 2, 3, 4, 5, 6].map(function (l) { return h('option', { key: l, value: String(l) }, levelNames[l]); }))),
+          h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
+            h('select', { className: selCls, value: prefs.voice, onChange: function (e) { set({ voice: e.target.value }); } },
+              Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
+          h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: prefs.speed }),
+            h('input', { type: 'range', min: 50, max: 130, step: 5, value: prefs.speed, className: 'accent-rose-600',
+              onChange: function (e) { var v = Number(e.target.value); set({ speed: v }); if (playerRef.current) playerRef.current.setTempo(v / 100); } })),
+          h('label', { className: lab }, h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs.click, onChange: function (e) { set({ click: e.target.checked }); } }), t('stem.singing.vs_click', 'Click while I sing')),
+          h('label', { className: lab }, h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs.showNote, onChange: function (e) { set({ showNote: e.target.checked }); } }), t('stem.singing.vs_show_note', 'Show my note'))),
+        h('div', { className: 'flex flex-wrap gap-2' },
+          h('button', { type: 'button', className: c.btnPrimary, disabled: !ready, onClick: sing }, mode === 'sing' ? t('stem.singing.vs_stop', 'Stop') : '🎤 ' + t('stem.singing.vs_sing_it', 'Sing it')),
+          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: keyAndNote }, t('stem.singing.vs_key_first', 'Key + first note')),
+          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { mode === 'hear' ? stopAll() : hear(); } }, mode === 'hear' ? t('stem.singing.vs_stop', 'Stop') : t('stem.singing.vs_hear_it', 'Hear it')),
+          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { setCode(VS.newCode()); } }, t('stem.singing.vs_new_melody', 'New melody')),
+          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { setCode('D' + VS.todayStamp()); } }, t('stem.singing.vs_today', 'Today’s melody')))),
+      h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' },
+        h('p', { className: c.headingClass + ' text-sm m-0' }, meta
+          ? [vsFmt(t('stem.singing.vs_level_n', 'Level {n}'), { n: prefs.level }), vsKeyLabel(t, meta.key), meta.meter, voiceLabels[prefs.voice]].join(' · ')
+          : (load === 'error' ? '' : t('stem.singing.vs_loading_music', 'Loading the music display…'))),
+        h('form', { className: 'flex items-center gap-2', onSubmit: function (e) {
+          e.preventDefault();
+          var v = codeInput.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 12);
+          if (v) { setCode(v); setCodeInput(''); }
+        } },
+          h('span', { className: c.subTextClass }, vsFmt(t('stem.singing.vs_exercise_code', 'Exercise {code}'), { code: code })),
+          h('input', { type: 'text', value: codeInput, maxLength: 12, placeholder: t('stem.singing.vs_have_code', 'Have a code?'), 'aria-label': t('stem.singing.vs_code_label', 'Exercise code'),
+            onChange: function (e) { setCodeInput(e.target.value); }, className: selCls + ' w-40 uppercase' }),
+          h('button', { type: 'submit', className: c.btnSecondary }, t('stem.singing.vs_go', 'Go')))),
+      live && h('p', { className: 'text-sm font-bold text-rose-700 m-0', role: 'status' }, '● ' + live),
+      err && h('p', { role: 'alert', className: 'text-sm font-bold text-rose-700 m-0' }, err),
+      load === 'error' && h('p', { role: 'alert', className: 'text-sm font-bold text-rose-700 m-0' }, t('stem.singing.vs_osmd_failed', 'The music display could not load. Check the internet connection, then reopen this tab.')),
+      h('div', { ref: scoreRef, role: 'img', className: 'rounded-xl border overflow-x-auto', style: { background: '#fff', minHeight: 140, borderColor: '#cbd5e1' },
+        'aria-label': meta ? vsFmt(t('stem.singing.vs_score_label', 'Melody in {key}, {meter} time, {n} notes, starting on {first}'), { key: vsKeyLabel(t, meta.key), meter: meta.meter, n: meta.notes, first: meta.first }) : t('stem.singing.vs_score_loading', 'Sight-singing melody') }),
+      result && h('div', { className: c.cardClass + ' space-y-2', role: 'status' },
+        h('p', { className: c.headingClass + ' text-base m-0' }, vsFmt(t('stem.singing.vs_score_line', '{right} of {total} notes right · {pct}%'), { right: result.right, total: result.counted, pct: result.pct }) +
+          (result.best > result.pct ? ' · ' + vsFmt(t('stem.singing.vs_best', 'your best: {pct}%'), { pct: result.best }) : '')),
+        h('ul', { className: 'flex flex-wrap gap-x-4 gap-y-1 text-xs m-0 p-0 list-none' },
+          [['tune', t('stem.singing.vs_g_tune', 'In tune')], ['near', t('stem.singing.vs_g_near', 'Right note, a little off')], ['wrong', t('stem.singing.vs_g_wrong', 'Wrong note')], ['missed', t('stem.singing.vs_g_missed', 'Not heard')]].map(function (g) {
+            return h('li', { key: g[0], className: 'inline-flex items-center gap-1.5 ' + (dark ? 'text-slate-200' : 'text-slate-700') },
+              h('span', { 'aria-hidden': 'true', className: 'inline-block w-3 h-3 rounded-full', style: { background: VS_GRADE_COLORS[g[0]] } }), g[1] + ': ' + result.count[g[0]]);
+          })),
+        result.problems.length > 0 && h('ul', { className: 'list-disc pl-5 text-xs space-y-0.5 ' + (dark ? 'text-slate-200' : 'text-slate-700') },
+          result.problems.slice(0, 8).map(function (pr, i) { return h('li', { key: i }, pr); })),
+        h('p', { className: c.subTextClass + ' italic m-0' }, result.pct >= 90
+          ? t('stem.singing.vs_tip_great', 'Lovely. Try the next level, or a new melody at a faster speed.')
+          : result.pct >= 60
+            ? t('stem.singing.vs_tip_good', 'Good work. Press “Hear it” to check the tricky spots, then sing it again.')
+            : t('stem.singing.vs_tip_slow', 'Take it slower: lower the speed, play “Key + first note”, and hum through it once before you sing.'))),
+      h('p', { className: c.subTextClass }, t('stem.singing.vs_sight_help', 'Every melody has a code: share it and everyone gets the same melody. “Today’s melody” is the same for everyone all day. Singing in another octave still counts.'))
+    );
+  }
+
+  // ───────────────────────── Interval Singer: Name it ─────────────────────────
+  function VsIntervalName(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var c = p.classes;
+    var prefs = Object.assign({ level: 1, harmonic: false, voice: 'mezzo' }, p.prefs || {});
+    var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
+    var tonesRef = React.useRef(null);
+    var qS = React.useState(null); var q = qS[0]; var setQ = qS[1];
+    var ansS = React.useState(null); var answer = ansS[0]; var setAnswer = ansS[1];
+    var tallyS = React.useState({ right: 0, asked: 0, streak: 0 }); var tally = tallyS[0]; var setTally = tallyS[1];
+    var names = vsIntervalNames(t);
+    var voiceLabels = vsVoiceLabels(t);
+    var L = VS.INTERVAL_LEVELS[Math.max(0, Math.min(VS.INTERVAL_LEVELS.length - 1, prefs.level - 1))];
+    var levelNames = {
+      1: t('stem.singing.vs_ilvl1', 'Level 1: steps, thirds, fifths'),
+      2: t('stem.singing.vs_ilvl2', 'Level 2: add minor and the fourth'),
+      3: t('stem.singing.vs_ilvl3', 'Level 3: up and down'),
+      4: t('stem.singing.vs_ilvl4', 'Level 4: every interval')
+    };
+
+    function play(question) {
+      if (!tonesRef.current) tonesRef.current = new VS.Tones();
+      var tones = tonesRef.current;
+      tones.ready().then(function (ctx) {
+        var t0 = ctx.currentTime + 0.05;
+        if (prefs.harmonic) tones.chord([question.ref, question.target], t0, 1.4);
+        else { tones.piano(question.ref, t0, 0.75); tones.piano(question.target, t0 + 0.85, 1.1); }
+      });
+    }
+    function next() {
+      var v = VS.VOICE_TYPES[prefs.voice] || VS.VOICE_TYPES.mezzo;
+      var nq = VS.makeIntervalQuestion(Math.random, { level: prefs.level, low: v.low, high: v.high, avoid: q && q.semis });
+      setQ(nq);
+      setAnswer(null);
+      setTally(function (x) { return Object.assign({}, x, { asked: x.asked + 1 }); });
+      play(nq);
+    }
+    function choose(semis) {
+      if (!q || answer) return;
+      var ok = semis === q.semis;
+      setAnswer({ semis: semis, ok: ok });
+      setTally(function (x) { return { right: x.right + (ok ? 1 : 0), asked: x.asked, streak: ok ? x.streak + 1 : 0 }; });
+      if (ok && tonesRef.current) tonesRef.current.chime(tonesRef.current.now() + 0.05);
+      var sp = vsSpell(q.semis, q.dir, q.ref);
+      var desc = vsFmt(q.dir > 0 ? t('stem.singing.vs_iv_up', '{name} up') : t('stem.singing.vs_iv_down', '{name} down'), { name: names[q.semis] });
+      var msg = (ok ? t('stem.singing.vs_yes', 'Yes!') : t('stem.singing.vs_not_quite', 'Not quite.')) + ' ' + desc + ' (' + sp.from + ' → ' + sp.to + '). ' + vsSongCue(t, q.semis, q.dir);
+      if (p.announce) p.announce(msg);
+      if (ok && p.awardXP && (tally.streak + 1) % 5 === 0) p.awardXP('singing_interval_ear', 5, 'Singing: interval ear training streak');
+    }
+
+    var dark = p.isDark || p.isContrast;
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var lab = 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    var feedback = '';
+    if (q && answer) {
+      var sp = vsSpell(q.semis, q.dir, q.ref);
+      var desc = vsFmt(q.dir > 0 ? t('stem.singing.vs_iv_up', '{name} up') : t('stem.singing.vs_iv_down', '{name} down'), { name: names[q.semis] });
+      feedback = (answer.ok
+        ? t('stem.singing.vs_yes', 'Yes!') + ' ' + desc
+        : vsFmt(t('stem.singing.vs_it_was', 'Not quite. It was: {answer}. You chose: {guess}.'), { answer: desc, guess: names[answer.semis] })) +
+        ' (' + sp.from + ' → ' + sp.to + ') ' + vsSongCue(t, q.semis, q.dir);
+    }
+    return h('div', { className: 'space-y-3' },
+      h('div', { className: c.cardClass + ' space-y-3' },
+        h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_name_intro', 'Listen to two notes and name the interval between them. Use a song you know to find it in your head.')),
+        h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+          h('label', { className: lab }, t('stem.singing.vs_level', 'Level'),
+            h('select', { className: selCls, value: String(prefs.level), onChange: function (e) { set({ level: Number(e.target.value) }); setQ(null); setAnswer(null); } },
+              [1, 2, 3, 4].map(function (l) { return h('option', { key: l, value: String(l) }, levelNames[l]); }))),
+          h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
+            h('select', { className: selCls, value: prefs.voice, onChange: function (e) { set({ voice: e.target.value }); setQ(null); setAnswer(null); } },
+              Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
+          h('label', { className: lab }, h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs.harmonic, onChange: function (e) { set({ harmonic: e.target.checked }); } }), t('stem.singing.vs_together', 'Play both notes together')),
+          h('button', { type: 'button', className: c.btnPrimary, onClick: function () { if (!q || answer) next(); else play(q); } },
+            !q ? '▶ ' + t('stem.singing.vs_play', 'Play') : answer ? t('stem.singing.vs_next', 'Next') + ' →' : '🔁 ' + t('stem.singing.vs_play_again', 'Play again')),
+          tally.asked > 0 && h('span', { className: c.subTextClass + ' ml-auto tabular-nums' },
+            vsFmt(t('stem.singing.vs_tally', '{right} of {asked} right · streak {streak}'), tally))),
+        q && L.down && !answer && h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_up_or_down', 'It may go up or down.'))),
+      h('div', { role: 'group', 'aria-label': t('stem.singing.vs_your_answer', 'Your answer'), className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fill, minmax(8.5rem, 1fr))' } },
+        L.semis.map(function (s) {
+          var isAnswer = answer && s === q.semis;
+          var isWrong = answer && !answer.ok && s === answer.semis;
+          return h('button', { key: s, type: 'button', disabled: !q || !!answer, onClick: function () { choose(s); },
+            className: 'px-2 py-2 rounded-lg text-sm font-bold border transition-colors ' +
+              (isAnswer ? 'bg-green-700 border-green-700 text-white' : isWrong ? 'bg-rose-700 border-rose-700 text-white'
+                : (dark ? 'bg-slate-800 border-slate-500 text-slate-100 hover:border-rose-400' : 'bg-white border-slate-400 text-slate-800 hover:border-rose-600')) +
+              ((!q || answer) && !isAnswer && !isWrong ? ' opacity-60' : '') },
+            names[s] + (isAnswer ? ' ✓' : isWrong ? ' ✗' : ''));
+        })),
+      feedback && h('p', { role: 'status', className: 'text-sm font-bold m-0 ' + (answer && answer.ok ? (dark ? 'text-green-300' : 'text-green-800') : (dark ? 'text-rose-300' : 'text-rose-800')) }, feedback)
+    );
+  }
+
+  // Translated warm-up texts (same wording as the exercise data in the voice-studio block).
+  function vsWarmupText(t) {
+    return {
+      'lip-trill': {
+        name: t('stem.singing.vs_wu_lip_trill_name', 'Lip trills on five notes'),
+        sound: t('stem.singing.vs_wu_lip_trill_sound', 'a lip trill (“brrr”), or a hum (“mm”)'),
+        how: t('stem.singing.vs_wu_lip_trill_how', 'Keep your lips loose and let the air do the work. If lip trills are tricky, rest a finger on each cheek, or hum instead.'),
+        why: t('stem.singing.vs_wu_lip_trill_why', 'Gets breath and voice working together with almost no effort: the gentlest way to start.'),
+      },
+      'siren': {
+        name: t('stem.singing.vs_wu_siren_name', 'Sirens'),
+        sound: t('stem.singing.vs_wu_siren_sound', '“woo” or “ng” (as at the end of “sing”)'),
+        how: t('stem.singing.vs_wu_siren_how', 'Slide smoothly from the low note up to the high one and back, like a siren, with no bumps or breaks. Stay light at the top.'),
+        why: t('stem.singing.vs_wu_siren_why', 'Stretches the voice gently across its range and smooths the shift between low and high.'),
+      },
+      'vowels': {
+        name: t('stem.singing.vs_wu_vowels_name', 'Five-note scale on the vowels'),
+        sound: t('stem.singing.vs_wu_vowels_sound', '“mee-meh-mah-moh-moo”, one vowel per note'),
+        how: t('stem.singing.vs_wu_vowels_how', 'Keep the same open, relaxed space in your mouth as the vowels change, and let the “m” buzz forward on your lips.'),
+        why: t('stem.singing.vs_wu_vowels_why', 'Evens out your vowels and keeps the tone consistent from note to note.'),
+      },
+      'arpeggio': {
+        name: t('stem.singing.vs_wu_arpeggio_name', 'Arpeggio on “ah”'),
+        sound: t('stem.singing.vs_wu_arpeggio_sound', '“ah” (or “yah” to keep it light)'),
+        how: t('stem.singing.vs_wu_arpeggio_how', 'Sing up the chord and back down in one breath. Let the top note float rather than pushing up to it.'),
+        why: t('stem.singing.vs_wu_arpeggio_why', 'Builds flexibility and an easy connection between the middle and top of your voice.'),
+      },
+      'staccato': {
+        name: t('stem.singing.vs_wu_staccato_name', 'Staccato “ha” arpeggio'),
+        sound: t('stem.singing.vs_wu_staccato_sound', '“ha” on every note, short and bouncy'),
+        how: t('stem.singing.vs_wu_staccato_how', 'Each note is a tiny, light laugh from the belly. Let your stomach muscles bounce; keep your throat relaxed.'),
+        why: t('stem.singing.vs_wu_staccato_why', 'Wakes up breath support and clean, precise onsets without strain.'),
+      },
+      'octave': {
+        name: t('stem.singing.vs_wu_octave_name', 'Octave slides on “yah”'),
+        sound: t('stem.singing.vs_wu_octave_sound', '“yah”'),
+        how: t('stem.singing.vs_wu_octave_how', 'Leap to the top note and slide back down through every note in between. Aim for one smooth, connected sound.'),
+        why: t('stem.singing.vs_wu_octave_why', 'Practices big leaps while keeping the voice connected through the middle.'),
+      },
+      'descending': {
+        name: t('stem.singing.vs_wu_descending_name', 'Bright descending scale on “nyah”'),
+        sound: t('stem.singing.vs_wu_descending_sound', '“nyah”, bright and a little silly'),
+        how: t('stem.singing.vs_wu_descending_how', 'Start at the top and come down five notes, keeping the bright “ny” buzz as you go lower.'),
+        why: t('stem.singing.vs_wu_descending_why', 'Encourages forward, ringing resonance and carries an easy top down into the lower voice.'),
+      },
+      'nine-note': {
+        name: t('stem.singing.vs_wu_nine_note_name', 'Nine-note scale (agility)'),
+        sound: t('stem.singing.vs_wu_nine_note_sound', '“ah”, or “oo” for a softer tone'),
+        how: t('stem.singing.vs_wu_nine_note_how', 'Up nine notes and back in one breath. Keep it light and even; slow the speed down until it feels easy.'),
+        why: t('stem.singing.vs_wu_nine_note_why', 'Builds agility and breath management for longer runs and phrases.'),
+      },
+      'messa': {
+        name: t('stem.singing.vs_wu_messa_name', 'Messa di voce (swell)'),
+        sound: t('stem.singing.vs_wu_messa_sound', '“ah” or “oo” on one long note'),
+        how: t('stem.singing.vs_wu_messa_how', 'Start very soft, swell gradually to a full sound, then fade back to soft, all on one steady breath.'),
+        why: t('stem.singing.vs_wu_messa_why', 'Develops breath control and the ability to change volume without the pitch or tone wobbling.'),
+      },
+    };
+  }
+
+
+  // ───────────────────────── Guided warm-ups ─────────────────────────
+  // The piano plays the key's chord, then the pattern, moving a half step per round through the voice's range.
+  function VsWarmups(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var c = p.classes;
+    var prefs = Object.assign({ voice: 'mezzo', speed: 100, dir: 'updown', stretch: 0 }, p.prefs || {});
+    var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
+    var texts = vsWarmupText(t);
+    var voiceLabels = vsVoiceLabels(t);
+    var tonesRef = React.useRef(null);
+    var runRef = React.useRef(null);
+    var activeS = React.useState(null); var active = activeS[0]; var setActive = activeS[1];
+    var dotS = React.useState(-1); var dot = dotS[0]; var setDot = dotS[1];
+    var nowS = React.useState(''); var nowText = nowS[0]; var setNowText = nowS[1];
+
+    function stop() {
+      var r = runRef.current;
+      if (!r) return;
+      clearInterval(r.timer);
+      cancelAnimationFrame(r.raf);
+      runRef.current = null;
+      setActive(null);
+      setDot(-1);
+    }
+    React.useEffect(function () { return stop; }, []);
+
+    function start(w) {
+      var was = runRef.current && runRef.current.id;
+      stop();
+      if (was === w.id) { setNowText(''); return; }
+      if (!tonesRef.current) tonesRef.current = new VS.Tones();
+      var tones = tonesRef.current;
+      var voice = VS.VOICE_TYPES[prefs.voice] || VS.VOICE_TYPES.mezzo;
+      var plan = VS.planWarmup(w, { low: voice.low - prefs.stretch, high: voice.high + prefs.stretch, bpm: w.bpm * (prefs.speed / 100), dir: prefs.dir });
+      var name = (texts[w.id] || {}).name || w.name;
+      tones.ready().then(function (ctx) {
+        var t0 = ctx.currentTime + 0.15;
+        var run = { id: w.id, timer: 0, raf: 0, next: 0 };
+        runRef.current = run;
+        setActive(w.id);
+        var schedule = function () {
+          if (runRef.current !== run) return;
+          var horizon = ctx.currentTime + 0.3;
+          while (run.next < plan.events.length && t0 + plan.events[run.next].t <= horizon) {
+            var e = plan.events[run.next++];
+            if (e.kind === 'chord') tones.chord(e.midis, t0 + e.t, e.dur);
+            else tones.piano(e.midi, t0 + e.t, e.dur, 0.9);
+          }
+          if (run.next >= plan.events.length && ctx.currentTime > t0 + plan.total + 0.5) {
+            stop();
+            setNowText(t('stem.singing.vs_wu_done', 'Done. Nicely warmed up!'));
+          }
+        };
+        run.timer = setInterval(schedule, 40);
+        schedule();
+        var lastRound = -1;
+        var frame = function () {
+          if (runRef.current !== run) return;
+          var tt = tones.heardTime(performance.now()) - t0;
+          var cur = null;
+          var round = -1;
+          for (var i = 0; i < plan.events.length; i++) {
+            var ev = plan.events[i];
+            if (ev.t > tt) break;
+            if (ev.kind === 'chord') round++;
+            else if (tt < ev.t + ev.dur) cur = ev;
+          }
+          setDot(cur ? cur.index : -1);
+          if (round !== lastRound && round >= 0) {
+            lastRound = round;
+            setNowText(vsFmt(t('stem.singing.vs_wu_round', '{name}: round {n} of {total}, starting on {note}'), { name: name, n: round + 1, total: plan.rounds.length, note: VS.noteLabel(plan.rounds[round]) }));
+          }
+          run.raf = requestAnimationFrame(frame);
+        };
+        run.raf = requestAnimationFrame(frame);
+      });
+    }
+
+    var dark = p.isDark || p.isContrast;
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var lab = 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    return h('div', { className: c.cardClass + ' space-y-3' },
+      h('h3', { className: c.headingClass + ' text-sm' }, '🎹 ' + t('stem.singing.vs_wu_title', 'Guided warm-ups with piano')),
+      h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_wu_intro', 'Pick your voice and press Start: the piano plays each pattern, moving up a half step at a time and back down again.')),
+      h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+        h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
+          h('select', { className: selCls, value: prefs.voice, onChange: function (e) { set({ voice: e.target.value }); } },
+            Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
+        h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: prefs.speed }),
+          h('input', { type: 'range', min: 60, max: 140, step: 5, value: prefs.speed, className: 'accent-rose-600', onChange: function (e) { set({ speed: Number(e.target.value) }); } })),
+        h('label', { className: lab }, t('stem.singing.vs_wu_direction', 'Direction'),
+          h('select', { className: selCls, value: prefs.dir, onChange: function (e) { set({ dir: e.target.value }); } },
+            h('option', { value: 'updown' }, t('stem.singing.vs_wu_updown', 'Up, then back down')),
+            h('option', { value: 'up' }, t('stem.singing.vs_wu_up', 'Up only')),
+            h('option', { value: 'down' }, t('stem.singing.vs_wu_down', 'Down only (from the top)')))),
+        h('label', { className: lab }, t('stem.singing.vs_wu_range', 'Range'),
+          h('select', { className: selCls, value: String(prefs.stretch), onChange: function (e) { set({ stretch: Number(e.target.value) }); } },
+            h('option', { value: '-2' }, t('stem.singing.vs_wu_gentle', 'Gentle (stay in the middle)')),
+            h('option', { value: '0' }, t('stem.singing.vs_wu_comfortable', 'Comfortable')),
+            h('option', { value: '2' }, t('stem.singing.vs_wu_stretch', 'Stretch (a little higher and lower)'))))),
+      nowText && h('p', { role: 'status', className: 'text-sm font-bold text-rose-700 m-0' }, nowText),
+      h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fill, minmax(17rem, 1fr))' } },
+        VS.WARMUPS.map(function (w) {
+          var tx = texts[w.id] || w;
+          var on = active === w.id;
+          var top = Math.max.apply(null, [12].concat(w.notes.map(function (n) { return n[0]; })));
+          return h('div', { key: w.id, className: 'rounded-lg p-3 space-y-1 border ' + (on ? 'border-rose-600 ring-2 ring-rose-300' : (dark ? 'border-slate-600' : 'border-slate-300')) },
+            h('div', { className: 'flex items-center justify-between gap-2' },
+              h('h4', { className: c.headingClass + ' text-sm m-0' }, tx.name),
+              h('button', { type: 'button', className: on ? c.btnSecondary : c.btnPrimary, onClick: function () { start(w); } },
+                on ? t('stem.singing.vs_stop', 'Stop') : t('stem.singing.vs_wu_start', 'Start'))),
+            h('p', { className: 'text-xs m-0 ' + (dark ? 'text-rose-300' : 'text-rose-800') }, vsFmt(t('stem.singing.vs_wu_sing_on', 'Sing on: {sound}'), { sound: tx.sound })),
+            h('p', { className: c.subTextClass + ' m-0' }, tx.how),
+            h('p', { className: c.subTextClass + ' m-0 italic' }, tx.why),
+            h('svg', { viewBox: '0 0 ' + (w.notes.length * 22 + 10) + ' 64', className: 'w-full', style: { maxWidth: '20rem', height: 'auto' }, 'aria-hidden': 'true' },
+              w.notes.map(function (n, i) {
+                return h('circle', { key: i, cx: i * 22 + 16, cy: 56 - (n[0] / top) * 44, r: 6, fill: on && dot === i ? '#be123c' : (dark ? '#64748b' : '#cbd5e1') });
+              })));
+        })),
+      h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_wu_care', 'Warm up gently: stay light, sip water, and stop if anything feels scratchy or tight.')));
+  }
+
   window.StemLab.registerTool('singing', {
     icon: '\uD83C\uDFA4',
     label: 'Singing Lab',
@@ -2175,6 +6146,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // ── Tab state ──
         var TABS = [
           { id: 'pitch', label: t('stem.singing.pitch_detective', 'Pitch Detective'), icon: '\uD83C\uDFAF' },
+          { id: 'mirror', label: t('stem.singing.vs_tab_mirror', 'Voice Mirror'), icon: '\u2728' },
           { id: 'range', label: t('stem.singing.vocal_range', 'Vocal Range'), icon: '\uD83C\uDFB9' },
           { id: 'vibrato', label: t('stem.singing.vibrato_lab', 'Vibrato Lab'), icon: '\uD83C\uDF0A' },
           { id: 'intervals', label: t('stem.singing.interval_singer', 'Interval Singer'), icon: '\uD83C\uDFB5' },
@@ -2346,7 +6318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var srDifficulty = srDifficultyState[0];
         var setSrDifficulty = srDifficultyState[1];
 
-        var srSourceState = React.useState('generate'); // 'generate' | 'melody' | 'ai'
+        var srSourceState = React.useState('levels'); // 'levels' | 'generate' | 'melody' | 'ai'
         var srSource = srSourceState[0];
         var setSrSource = srSourceState[1];
 
@@ -2921,6 +6893,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // Mic toggle button (shared across tabs)
         // ════════════════════════════════════════
 
+        // Props for the voice-studio panels; each keeps its settings under its own toolData key.
+        function vsProps(key) {
+          return {
+            React: React,
+            t: t,
+            isDark: isDark,
+            isContrast: !!ctx.isContrast,
+            reducedMotion: reducedMotion,
+            classes: { cardClass: cardClass, headingClass: headingClass, subTextClass: subTextClass, btnPrimary: btnPrimary, btnSecondary: btnSecondary },
+            prefs: d['vs_' + key],
+            savePrefs: function (v) { upd('vs_' + key, v); },
+            announce: announceToSR,
+            awardXP: awardStemXP
+          };
+        }
+
         function renderMicToggle() {
           return h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
@@ -3448,6 +7436,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // ════════════════════════════════════════
 
         function renderIntervalSinger() {
+          var vsIvMode = d.vsIntervalMode === 'name' ? 'name' : 'sing';
+          function intervalModeSwitch() {
+            return h('div', { role: 'group', 'aria-label': t('stem.singing.vs_iv_mode', 'Interval exercise'), className: 'inline-flex rounded-full overflow-hidden border ' + (isDark ? 'border-slate-500' : 'border-rose-300') },
+              [['sing', t('stem.singing.vs_iv_sing_it', 'Sing it')], ['name', t('stem.singing.vs_iv_name_it', 'Name it (ear training)')]].map(function (m) {
+                var on = vsIvMode === m[0];
+                return h('button', { key: m[0], type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function () { upd('vsIntervalMode', m[0]); },
+                  className: 'px-3 py-1.5 text-xs font-bold ' + (on ? 'bg-rose-700 text-white' : (isDark ? 'text-slate-200' : 'text-slate-700')) }, m[1]);
+              }));
+          }
+          if (vsIvMode === 'name') return h('div', { className: 'space-y-4' }, intervalModeSwitch(), h(VsIntervalName, vsProps('intervalName')));
           // Available intervals for selected level
           var availableIntervals = INTERVALS.filter(function(iv) { return iv.level <= intervalLevel; });
 
@@ -3489,6 +7487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           }
 
           return h('div', { className: 'space-y-4' },
+            intervalModeSwitch(),
             renderMicToggle(),
 
             // Controls
@@ -3569,7 +7568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   h('div', { className: 'text-lg font-bold  tracking-tight' + (isDark ? 'text-rose-300' : 'text-rose-600') },
                     'Sing a ' + intervalActive.interval.name + ' ' + intervalActive.direction.toUpperCase()),
                   h('div', { className: headingClass + ' text-2xl mt-2' },
-                    'From: ' + midiToNoteName(intervalActive.refMidi).str + ' \u2192 Target: ' + midiToNoteName(intervalActive.targetMidi).str),
+                    (function () { var sp = vsSpell(intervalActive.interval.semitones, intervalActive.direction === 'down' ? -1 : 1, intervalActive.refMidi); return vsFmt(t('stem.singing.vs_from_to', 'From {from} \u2192 target {to}'), sp); })()),
                   currentNote.midi > 0 && h('div', {
                     className: 'mt-2 text-sm',
                     style: { color: Math.abs(currentNote.midi - intervalActive.targetMidi) * 100 <= 15 ? '#22c55e' : '#ef4444' }
@@ -3624,6 +7623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   h('div', { className: 'text-2xl mb-1' }, '\u2705'),
                   h('div', { className: headingClass + ' text-lg' },
                     intervalActive.interval.name + ' ' + intervalActive.direction.toUpperCase() + ' \u2014 Correct!'),
+                  vsSongCue(t, intervalActive.interval.semitones, intervalActive.direction === 'down' ? -1 : 1) && h('p', { className: subTextClass + ' mt-1' }, vsSongCue(t, intervalActive.interval.semitones, intervalActive.direction === 'down' ? -1 : 1)),
                   h('div', { className: 'flex justify-center gap-6 mt-2' },
                     h('div', null,
                       h('div', { className: subTextClass }, t('stem.singing.accuracy', 'Accuracy')),
@@ -3750,6 +7750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           }
 
           return h('div', { className: 'space-y-4' },
+            h(VsWarmups, vsProps('warmups')),
             renderMicToggle(),
 
             // ── Interactive Vocal Anatomy ──
@@ -4202,6 +8203,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // ════════════════════════════════════════
 
         function renderSightReading() {
+          // Exercise source buttons, shared by the classic trainer and the Levels trainer.
+          function srSourceTabs() {
+            return h('div', { className: 'flex flex-wrap gap-1 mb-3' },
+                h('button', {
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
+                    (srSource === 'levels'
+                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
+                  'aria-pressed': srSource === 'levels' ? 'true' : 'false',
+                  onClick: function() { setSrSource('levels'); }
+                }, t('stem.singing.vs_levels', 'Levels 1–6')),
+                h('button', {
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
+                    (srSource === 'generate'
+                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
+                  onClick: function() { setSrSource('generate'); }
+                }, t('stem.singing.random', 'Random')),
+                h('button', {
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
+                    (srSource === 'melody'
+                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
+                  onClick: function() { setSrSource('melody'); }
+                }, t('stem.singing.melodies', 'Melodies')),
+                callGemini && h('button', {
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
+                    (srSource === 'ai'
+                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
+                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
+                  onClick: function() { setSrSource('ai'); }
+                }, t('stem.singing.ai_generate', 'AI Generate'))
+              );
+          }
+
+          if (srSource === 'levels') {
+            return h('div', { className: 'space-y-4' },
+              h('div', { className: cardClass },
+                h('h3', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' }, '\uD83C\uDFBC', t('stem.singing.sight_reading_trainer', 'Sight Reading Trainer')),
+                srSourceTabs(),
+                h('p', { className: subTextClass }, t('stem.singing.vs_levels_intro', 'A new melody every time, written for your voice. Sing it in time after a count-in, and every note is checked.'))),
+              h(VsSightLevels, vsProps('sight')));
+          }
           // Persisted scores
           var srScores = d.sightReadScores || {}; // { easy: {stars, time}, medium: ..., hard: ... }
 
@@ -4371,30 +8415,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               h('p', { className: subTextClass + ' mb-3' },
                 t('stem.singing.read_the_notes_on_the_staff_and_sing_t', 'Read the notes on the staff and sing them in order. Real-time pitch detection checks your accuracy.')),
 
-              // Source tabs
-              h('div', { className: 'flex gap-1 mb-3' },
-                h('button', {
-                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
-                    (srSource === 'generate'
-                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
-                  onClick: function() { setSrSource('generate'); }
-                }, t('stem.singing.random', 'Random')),
-                h('button', {
-                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
-                    (srSource === 'melody'
-                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
-                  onClick: function() { setSrSource('melody'); }
-                }, t('stem.singing.melodies', 'Melodies')),
-                callGemini && h('button', {
-                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
-                    (srSource === 'ai'
-                      ? (isDark ? 'bg-rose-600 text-white' : 'bg-rose-700 text-white')
-                      : (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')),
-                  onClick: function() { setSrSource('ai'); }
-                }, t('stem.singing.ai_generate', 'AI Generate'))
-              ),
+              srSourceTabs(),
 
               // Difficulty selector (for generate & ai modes)
               (srSource === 'generate' || srSource === 'ai') && h('div', { className: 'flex items-center gap-3 mb-3' },
@@ -4749,6 +8770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           (function() {
             var TAB_META = {
               pitch:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: t('stem.singing.pitch_detective_2', 'Pitch Detective'),           hint: t('stem.singing.sing_into_the_mic_the_lab_tracks_frequ', 'Sing into the mic; the lab tracks frequency in real time. Trained singers hold pitch within ±5 cents (1/20th of a semitone) — that is what perfect-pitch matching looks like.') },
+              mirror:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\u2728', title: t('stem.singing.vs_tab_mirror_title', 'Voice Mirror — see your sound'), hint: t('stem.singing.vs_tab_mirror_hint', 'Sing or play and watch it become light: pitch, tuning, vibrato, steadiness and ring, with optional meters.') },
               range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: t('stem.singing.vocal_range_your_tessitura', 'Vocal Range — your tessitura'), hint: t('stem.singing.most_untrained_voices_span_1_5_2_octav', 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.') },
               vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: t('stem.singing.vibrato_lab_2', 'Vibrato Lab'),                hint: t('stem.singing.healthy_vibrato_5_7_hz_oscillation_60_', 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.') },
               intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: t('stem.singing.interval_singer_ear_training', 'Interval Singer — ear training'), hint: t('stem.singing.major_3rd_vs_minor_3rd_is_the_single_m', 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.') },
@@ -4786,6 +8808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             'aria-label': (TABS.find(function(t) { return t.id === activeTab; }) || {}).label + ' panel'
           },
             activeTab === 'pitch' && renderPitchDetective(),
+            activeTab === 'mirror' && h(VsVoiceMirror, vsProps('mirror')),
             activeTab === 'range' && renderVocalRange(),
             activeTab === 'vibrato' && renderVibratoLab(),
             activeTab === 'intervals' && renderIntervalSinger(),
