@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T22:54:51.946Z",
+  "generatedAt": "2026-10-28T06:12:02.762Z",
   "sourceCount": 7,
   "languageCount": 63,
   "expectedLanguageCount": 63,
@@ -68,7 +68,48 @@
   "placeholderMismatch": [],
   "duplicateConflicts": [],
   "recoverable": [],
-  "superseded": [],
+  "superseded": [
+    {
+      "source": "cmd-delta-20260801",
+      "slug": "dutch",
+      "key": "cmd.run_lesson_blueprint_hint",
+      "value": "Genereert alle resources in het huidige plan",
+      "english": "Generates every resource in the current plan",
+      "current": "Genereert alle bronnen in het huidige plan"
+    },
+    {
+      "source": "cmd-delta-20260816",
+      "slug": "hebrew",
+      "key": "cmd.open_learning_web_explorer",
+      "value": "פתיחת Learning Web: Explore",
+      "english": "Open Learning Web: Explore",
+      "current": "פתח את Learning Web: Explore"
+    },
+    {
+      "source": "cmd-delta-20260816",
+      "slug": "korean",
+      "key": "cmd.open_learning_web_explorer_done",
+      "value": "Learning Web: Explore을 열었습니다.",
+      "english": "Learning Web: Explore opened.",
+      "current": "Learning Web: Explore를 열었습니다."
+    },
+    {
+      "source": "cmd-delta-20260816",
+      "slug": "latin",
+      "key": "cmd.open_learning_web_explorer",
+      "value": "Learning Web: Explore aperire",
+      "english": "Open Learning Web: Explore",
+      "current": "Learning Web: Explore aperi"
+    },
+    {
+      "source": "cmd-delta-20260816",
+      "slug": "tamil",
+      "key": "cmd.open_learning_web_explorer",
+      "value": "Learning Web: Explore திறக்கவும்",
+      "english": "Open Learning Web: Explore",
+      "current": "Learning Web: Explore ஐத் திற"
+    }
+  ],
   "summary": {
     "errors": 0,
     "missingPacks": 0,
@@ -77,6 +118,6 @@
     "placeholderMismatch": 0,
     "duplicateConflicts": 0,
     "recoverable": 0,
-    "superseded": 0
+    "superseded": 5
   }
 }

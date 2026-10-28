@@ -424,5 +424,11 @@
   "4f_octave": "4f (Octave)",
   "5f_third": "5f (Third)",
   "6f_fifth": "6f (Fifth)",
-  "a11y_mod_ratio": "Mod Ratio"
+  "a11y_mod_ratio": "Mod Ratio",
+  "rg_generated": "New rhythm every time",
+  "rg_new": "New rhythm",
+  "rg_notation_failed": "The notation could not load; the strip below still shows the rhythm.",
+  "rg_timeline": "Timeline: written notes above, your taps below",
+  "rg_written": "Written notes",
+  "rg_taps": "Your taps"
 }
