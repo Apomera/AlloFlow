@@ -16,8 +16,13 @@
 //
 // Running all 2,236 test files locally would take long enough that it would be
 // skipped, which is how gates die. So this runs only what the change touches, via
-// vitest --changed, which resolves the affected set from git plus the import
-// graph. On a representative deploy that is ~5 files / ~30 seconds.
+// vitest related, which resolves the affected set from the import graph. On a
+// representative deploy that is ~5 files / ~30 seconds.
+//
+// The file list comes from git, TRACKED files only. vitest --changed also counts
+// every untracked file (`git ls-files --others`); with 72,878 untracked scratch
+// files from other sessions on 2026-10-28 that turned a two-file commit into a
+// 2-hour silent run that the 120-file cap below never saw.
 //
 // Quarantined files are excluded for exactly the reason run_unit_shard.cjs excludes
 // them (audit finding H1): a gate that is permanently red gates nothing. Their
@@ -39,13 +44,13 @@ function git(argv) {
 }
 
 // Pick what "changed" means. Pre-commit (deploy.sh's gate phase) the work is
-// staged, so bare --changed is right: it means uncommitted, staged included.
+// staged, so the uncommitted tracked files are right, staged included.
 // Post-commit, or on a clean tree, fall back to what the last commit touched so
 // the gate is still meaningful when run by hand after a deploy.
 function resolveBase() {
   if (baseArg) return baseArg.slice('--base='.length);
   const dirty = git(['status', '--porcelain', '--untracked-files=no']);
-  if (dirty) return null;            // null => bare --changed (working tree)
+  if (dirty) return null;            // null => uncommitted tracked changes
   return 'HEAD~1';
 }
 
@@ -72,27 +77,36 @@ const base = resolveBase();
 // this batch â€” so the cheap check has to come first or the gate is slow precisely
 // when it is about to decline to run.
 const MAX_CHANGED_FILES = 120;
-function changedFileCount() {
+function changedFiles() {
   const staged = git(['diff', '--cached', '--name-only']);
   const unstaged = git(['diff', '--name-only']);
-  // On a clean tree Vitest compares against base, so the cap must include
-  // that same committed range rather than measuring only uncommitted files.
+  // On a clean tree the scope is the committed range from base, so the cap
+  // must include that range rather than measuring only uncommitted files.
   const committed = base ? git(['diff', '--name-only', base, 'HEAD']) : '';
   const set = new Set(
     (staged + '\n' + unstaged + '\n' + committed).split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
   );
-  return set.size;
+  return [...set];
 }
-const changed = changedFileCount();
-if (changed > MAX_CHANGED_FILES) {
-  console.log('check_changed_tests: ' + changed + ' files changed â€” over the ' + MAX_CHANGED_FILES
+const files = changedFiles();
+if (files.length > MAX_CHANGED_FILES) {
+  console.log('check_changed_tests: ' + files.length + ' files changed â€” over the ' + MAX_CHANGED_FILES
     + '-file cap for a pre-publish check.');
   console.log('check_changed_tests: SKIPPED â€” the blocking 8-shard unit job in CI covers this push.');
   process.exit(0);
 }
 
-const vitestArgs = ['vitest', 'run', '--changed'];
-if (base) vitestArgs.push(base);
+// Only a file a test can import can sit in a test's import graph, so a change of
+// reports, docs or AlloFlowANTI.txt alone selects nothing. Saying so up front
+// skips the ~20-minute graph resolve vitest would spend reaching the same answer.
+const importable = files.filter((f) => /\.(?:[cm]?[jt]sx?|json)$/i.test(f));
+if (!importable.length) {
+  console.log('check_changed_tests: no test files cover this change (' + files.length
+    + ' changed, none importable) â€” nothing to run.');
+  process.exit(0);
+}
+
+const vitestArgs = [ROOT + '/node_modules/vitest/vitest.mjs', 'related', ...importable, '--run'];
 // --maxWorkers=2 matches run_unit_shard.cjs. Higher contends with the rest of a
 // deploy (the CRA production build is running for part of it) and the flaky
 // entries in QUARANTINE.txt are all "times out under full-suite contention".
@@ -101,14 +115,17 @@ for (const file of quarantined) vitestArgs.push('--exclude', file);
 
 if (!QUIET) {
   console.log('check_changed_tests: running tests affected by '
+    + importable.length + ' file(s) changed in '
     + (base ? 'commit range ' + base + '..HEAD' : 'the working tree')
     + (quarantined.length ? ' (excluding ' + quarantined.length + ' quarantined file(s))' : ''));
 }
 
-const res = spawnSync('npx', vitestArgs, {
+// No shell: the file list can pass cmd.exe's 8 KB line limit. The large buffer
+// keeps jsdom's CSS parse noise from killing the run with ENOBUFS.
+const res = spawnSync(process.execPath, vitestArgs, {
   cwd: ROOT,
   encoding: 'utf8',
-  shell: process.platform === 'win32',
+  maxBuffer: 256 * 1024 * 1024,
 });
 const output = String(res.stdout || '') + String(res.stderr || '');
 if (!QUIET) process.stdout.write(output);
