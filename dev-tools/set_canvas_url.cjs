@@ -4,12 +4,16 @@
 /**
  * One command to change the Gemini Canvas link, and one check to prove it did not drift.
  *
- * The Canvas address changes with every release, and it was living in five places that all had to
- * agree: release.json (what the launcher fetches at runtime), the matching entry in releases.json,
- * the launcher's fallback constant, the launcher's button href (what a visitor gets before any
- * JavaScript runs), and the in-app modal that opens Canvas directly. Updating four of five is
- * silent: the launcher looks right while the in-app button still sends people to a dead release,
- * or a no-JavaScript visitor gets the old link from the raw href.
+ * The Canvas address changes with every release, and it lives in four places that all have to
+ * agree: release.json (what the launcher and the in-app button fetch at runtime), the matching
+ * entry in releases.json, the launcher's fallback constant, and the launcher's button href (what a
+ * visitor gets before any JavaScript runs). Updating three of four is silent: the launcher looks
+ * right while a no-JavaScript visitor gets the old link from the raw href.
+ *
+ * The in-app button (view_misc_modals) used to hold a fifth copy. It no longer does: that module
+ * is integrity-pinned, so stamping a new link into it after a Canvas build was cut made the build
+ * reject the module ([CDN-FAIL] MiscModals, 2026-10-28). --check now FAILS if a share link
+ * reappears there, so a link change stays commit + push only, with no rebuild and no deploy.
  *
  * release.json is the source of truth. Everything else is stamped from it.
  *
@@ -78,27 +82,16 @@ function sites() {
       get: (text) => firstMatch(text, /id="launch-btn"[^>]*?href="([^"]+)"/s),
       set: (text, url) => text.replace(/(id="launch-btn"[\s\S]*?href=")[^"]+(")/, `$1${url}$2`),
     },
-    {
-      // The button now reads release.json at runtime (so a student on an older pinned
-      // build still lands on the newest Canvas); this constant is its offline fallback
-      // and the ONLY link literal in the source. The compiled module is checked below.
-      label: 'view_misc_modals_source.jsx (in-app open-Canvas button fallback)',
-      file: path.join(ROOT, 'view_misc_modals_source.jsx'),
-      get: (text) => firstMatch(text, /CANVAS_SHARE_URL_FALLBACK\s*=\s*'(https:\/\/share\.gemini\.google\/[^']+)'/),
-      set: (text, url) => text.replace(/(CANVAS_SHARE_URL_FALLBACK\s*=\s*')https:\/\/share\.gemini\.google\/[^']+(')/, `$1${url}$2`),
-    },
   ];
 }
 
-/** The in-app button ships as a compiled module; a stale build is the silent failure. */
-const BUILT_MODULES = [
+/** Integrity-pinned app files that must never carry a share link (see the header). */
+const LINK_FREE_FILES = [
+  path.join(ROOT, 'view_misc_modals_source.jsx'),
   path.join(ROOT, 'view_misc_modals_module.js'),
   path.join(MIRROR, 'view_misc_modals_module.js'),
 ];
-function rebuildMiscModals() {
-  const { execFileSync } = require('child_process');
-  execFileSync(process.execPath, [path.join(ROOT, '_build_view_misc_modals_module.js')], { cwd: ROOT, stdio: 'pipe' });
-}
+const SHARE_LINK = /https:\/\/(?:share\.gemini\.google|gemini\.google\.com\/share)\/[A-Za-z0-9_-]+/;
 
 function check() {
   const found = sites().map((site) => ({ label: site.label, url: site.get(read(site.file)) }));
@@ -125,16 +118,14 @@ function check() {
     console.error('\nCANVAS URL: FAIL — these differ from their published mirror: ' + drifted.join(', '));
     return 1;
   }
-  // The compiled module (root = CDN, public = desktop) must carry the same link, or the
-  // source was stamped and never rebuilt - which is how the in-app button once shipped
-  // a release behind.
-  const stale = BUILT_MODULES.filter((file) => !fs.existsSync(file) || !read(file).includes(urls[0]));
-  if (stale.length) {
-    console.error('\nCANVAS URL: FAIL — built module does not carry ' + urls[0] + ': ' + stale.map((f) => path.relative(ROOT, f)).join(', '));
-    console.error('Run: node _build_view_misc_modals_module.js');
+  const pinned = LINK_FREE_FILES.filter((file) => fs.existsSync(file) && SHARE_LINK.test(read(file)));
+  if (pinned.length) {
+    console.error('\nCANVAS URL: FAIL — a share link is compiled into an integrity-pinned app file: '
+      + pinned.map((f) => path.relative(ROOT, f)).join(', '));
+    console.error('The in-app button reads release.json at runtime and falls back to the launcher; keep links out of it.');
     return 1;
   }
-  console.log('\nCANVAS URL: PASS (one link, ' + urls[0] + ', in all ' + found.length + ' places, built module and mirrors in sync)');
+  console.log('\nCANVAS URL: PASS (one link, ' + urls[0] + ', in all ' + found.length + ' places, mirrors in sync, no link in pinned app files)');
   return 0;
 }
 
@@ -163,17 +154,9 @@ function update(url) {
     fs.copyFileSync(source, mirrored);
     console.log('  mirrored   desktop/web-app/public/' + name);
   });
-  // Rebuild the module here rather than asking the operator to remember to.
-  try {
-    rebuildMiscModals();
-    console.log('  rebuilt    view_misc_modals_module.js (root + desktop/web-app/public)');
-  } catch (error) {
-    console.error('\nCANVAS URL: FAIL — could not rebuild view_misc_modals_module.js: ' + String(error.message).split(String.fromCharCode(10))[0]);
-    return 1;
-  }
   console.log('\n' + changed + ' file(s) changed. Still to do:');
-  console.log('  git add + commit + push                   (the promo site is Pages off main)');
-  console.log('  ./deploy.sh                               (the CDN app copy updates on deploy)');
+  console.log('  commit these files by pathspec + push     (Cloudflare and GitHub Pages rebuild from the push)');
+  console.log('  no deploy.sh                              (no app module changes, so no Canvas build is disturbed)');
   return 0;
 }
 

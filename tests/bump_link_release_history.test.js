@@ -21,14 +21,18 @@ it('publishes the new shared link while preserving release history and current m
     write('releases.json', JSON.stringify([oldRelease]));
     write('launch.html', `const FALLBACK_CANVAS_URL = "${oldUrl}";\nconst FALLBACK_VERSION = "1.6";\n<span id="version-label">v1.6</span>\n<a id="launch-btn" href="${oldUrl}">Launch</a>`);
     write('index.html', '<span data-version-label>v1.6</span>');
-    write('view_misc_modals_source.jsx', `const CANVAS_SHARE_URL_FALLBACK = '${oldUrl}';`);
+    // The in-app button holds no link (it is integrity-pinned), so a link change must
+    // leave both the source and the built module untouched.
+    const appModule = "const CANVAS_FALLBACK_URL = 'https://alloflow-cdn.pages.dev/launch';";
+    write('view_misc_modals_source.jsx', appModule);
+    write('view_misc_modals_module.js', appModule);
+    write('desktop/web-app/public/view_misc_modals_module.js', appModule);
     for (const name of ['release.json', 'releases.json', 'launch.html']) {
       write('desktop/web-app/public/' + name, fs.readFileSync(path.join(fixture, name)));
     }
     write('dev-tools/set_canvas_url.cjs', fs.readFileSync('dev-tools/set_canvas_url.cjs'));
-    // The release workflow is under test; compiler fidelity is covered by the
-    // module checks. This fixture builder preserves the real delegate's output contract.
-    write('_build_view_misc_modals_module.js', `const fs = require('node:fs');\nconst source = fs.readFileSync('view_misc_modals_source.jsx');\nfs.writeFileSync('view_misc_modals_module.js', source);\nfs.writeFileSync('desktop/web-app/public/view_misc_modals_module.js', source);`);
+    // A builder that marks its output, so a rebuild during the release would show.
+    write('_build_view_misc_modals_module.js', `const fs = require('node:fs');\nfs.writeFileSync('view_misc_modals_module.js', 'REBUILT');\nfs.writeFileSync('desktop/web-app/public/view_misc_modals_module.js', 'REBUILT');`);
     const script = fs.readFileSync('bump-link.mjs', 'utf8').replace(
       'const REPO_ROOT = "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated";',
       'const REPO_ROOT = ' + JSON.stringify(fixture.replace(/\\/g, '/')) + ';'
@@ -43,7 +47,9 @@ it('publishes the new shared link while preserving release history and current m
       expect(fs.readFileSync(path.join(fixture, 'desktop/web-app/public', name), 'utf8')).toBe(fs.readFileSync(path.join(fixture, name), 'utf8'));
     }
     expect(fs.readFileSync(path.join(fixture, 'index.html'), 'utf8')).toContain('v1.7');
-    expect(fs.readFileSync(path.join(fixture, 'view_misc_modals_module.js'), 'utf8')).toContain(newUrl);
+    for (const name of ['view_misc_modals_source.jsx', 'view_misc_modals_module.js', 'desktop/web-app/public/view_misc_modals_module.js']) {
+      expect(fs.readFileSync(path.join(fixture, name), 'utf8'), name).toBe(appModule);
+    }
     expect(result.stdout).toContain('set_canvas_url --check');
   } finally {
     const resolved = fs.realpathSync(fixture);

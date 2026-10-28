@@ -11,10 +11,12 @@
 
 // The current Gemini Canvas share link. release.json is the ONE source of truth and
 // launch.html already reads it at runtime; this module does the same, so a student on
-// an older pinned build still lands on the newest Canvas. The constant below is only
-// the offline fallback, and `node bump-link.mjs <url> "<notes>"` restamps it together
-// with launch.html and release.json - do not edit it by hand.
-const CANVAS_SHARE_URL_FALLBACK = 'https://share.gemini.google/x0Cn2QMujxu6';
+// an older pinned build still lands on the newest Canvas. Until that fetch lands, or if
+// it fails, the button opens the launcher, which forwards to the current link.
+// No share link is compiled in: this module is integrity-pinned, and stamping a new
+// link into it after a Canvas build was cut made that build reject the module
+// ([CDN-FAIL] MiscModals, 2026-10-28). tests/canvas_link_in_app_runtime.test.js holds it.
+const CANVAS_FALLBACK_URL = 'https://alloflow-cdn.pages.dev/launch';
 const CANVAS_RELEASE_JSON_URL = 'https://alloflow-cdn.pages.dev/release.json';
 const CANVAS_SHARE_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 
@@ -1950,7 +1952,7 @@ function AIBackendModalBody(props) {
   const prevGuidedViewRef = React.useRef('choose');
   // Fetched on mount, not on click: window.open must run inside the click's user
   // gesture or popup blockers eat it, so the URL has to be known beforehand.
-  const [canvasShareUrl, setCanvasShareUrl] = React.useState(CANVAS_SHARE_URL_FALLBACK);
+  const [canvasShareUrl, setCanvasShareUrl] = React.useState(CANVAS_FALLBACK_URL);
   React.useEffect(() => {
     let alive = true;
     if (typeof fetch !== 'function') return undefined;
@@ -2531,7 +2533,7 @@ function AIBackendModalBody(props) {
         {/* Canvas-first card (W7, 2026-08-16): the zero-setup path. A visitor who
             arrived keyless (deep link, shared shell) is one click from the full
             free experience instead of a key hunt. The share URL comes from
-            release.json at runtime (see CANVAS_SHARE_URL_FALLBACK at the top).
+            release.json at runtime (see CANVAS_FALLBACK_URL at the top).
             No quota numbers or plan pricing here on purpose — they rot into
             false claims; "your plan's daily quota" plus Google's own page. */}
         {!connected && guidedCard({ 'data-help-key': 'ai_backend_guided_card_canvas' },

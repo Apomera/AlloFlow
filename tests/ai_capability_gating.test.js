@@ -115,7 +115,9 @@ describe('wiring', () => {
   });
   it('the AI Backend modal leads keyless users with the Canvas card, link intact', () => {
     expect(modals).toContain('guided_card_canvas_title');
-    expect(modals).toContain('https://share.gemini.google/');
+    // The link comes from release.json at runtime; offline it is the launcher.
+    expect(modals).toContain('https://alloflow-cdn.pages.dev/release.json');
+    expect(modals).toContain("CANVAS_FALLBACK_URL = 'https://alloflow-cdn.pages.dev/launch'");
     // Never state quota numbers in UI copy — they rot into false claims.
     expect(modals).not.toMatch(/\d+\s*(requests|prompts|queries)\s*(per|a)\s*day/i);
   });

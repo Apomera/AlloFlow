@@ -15,8 +15,9 @@
 //      visible version label in launch.html.
 //   4. Rewrites the data-version-label element in index.html (warning-only).
 //   5. Runs dev-tools/set_canvas_url.cjs, the ONE list of every place the link is
-//      held (it also stamps the in-app "Use AlloFlow inside Gemini Canvas" button
-//      and rebuilds its compiled module). Before this step existed the in-app
+//      held. The in-app "Use AlloFlow inside Gemini Canvas" button no longer holds a
+//      copy (it reads release.json and falls back to the launcher), so a link change
+//      never rebuilds an app module and needs no deploy.sh. Before this step existed the in-app
 //      button was a hand-maintained copy and shipped release 1.4 still pointing at
 //      the 1.3 link. Steps 1-3 above overlap with that list; the delegate finds them
 //      already current and stamps only what is left.
@@ -258,11 +259,10 @@ async function rewriteIndexHtml(newVersion) {
   info(`  index.html: navbar version -> v${newVersion}`);
 }
 
-// ---------- in-app Canvas button rewrite + rebuild --------------------------
-// The module reads release.json at runtime; this keeps its OFFLINE fallback on the
-// same link and rebuilds the compiled module so the repo root and the desktop
-// mirror both carry it. Hard failure on purpose: a silent skip here is exactly how
-// release 1.4 shipped the in-app button still pointing at the 1.3 link.
+// ---------- every other link site (set_canvas_url) --------------------------
+// Stamps the remaining sites and mirrors, then proves one link everywhere and none
+// compiled into the integrity-pinned in-app button. Hard failure on purpose: a
+// silent skip here is exactly how release 1.4 shipped a button on the 1.3 link.
 
 async function rewriteMiscModals(newUrl) {
   if (!(await exists(SET_CANVAS_URL))) die(7, `${SET_CANVAS_URL} not found; the in-app Canvas button would keep the old link.`);
@@ -275,13 +275,13 @@ async function rewriteMiscModals(newUrl) {
   }
   out.trim().split(String.fromCharCode(10)).filter((line) => /changed|rebuilt|mirrored|unchanged/.test(line))
     .forEach((line) => info(`  ${line.trim()}`));
-  // The delegate's own check is the proof: one link everywhere, module rebuilt.
+  // The delegate's own check is the proof: one link everywhere, none in app modules.
   try {
     execSync(`node "${SET_CANVAS_URL}" --check`, { cwd: REPO_ROOT, stdio: "pipe" });
   } catch (e) {
     die(7, `set_canvas_url --check failed after stamping: ${String((e.stdout && e.stdout.toString()) || e.message).trim().split(String.fromCharCode(10)).slice(-4).join(" | ")}`);
   }
-  info(`  set_canvas_url --check: one link in every place, built module and mirrors in sync`);
+  info(`  set_canvas_url --check: one link in every place, mirrors in sync, no link in app modules`);
 }
 
 // ---------- JSON writes -----------------------------------------------------

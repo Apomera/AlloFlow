@@ -5,8 +5,10 @@
 // its module build (`?v=<hash>`), so a student on an older build used to carry an
 // older hardcoded link forever. Fetching release.json at mount means the button opens
 // the newest Canvas regardless of which build is running - which is the only way the
-// app can point a stale user at the fresh link at all. The constant in the source is
-// the offline fallback only, and dev-tools/set_canvas_url.cjs stamps it with the rest.
+// app can point a stale user at the fresh link at all. Offline, it opens the launcher,
+// which forwards to the current link. No share link is compiled in: the module is
+// integrity-pinned, and stamping one in after a Canvas build was cut made that build
+// reject the module ([CDN-FAIL] MiscModals, 2026-10-28).
 //
 // The URL is fetched on MOUNT, not on click: window.open must run inside the click's
 // own user gesture or popup blockers eat it, so the address has to be known already.
@@ -19,7 +21,7 @@ import { loadAlloModule } from './setup.js';
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const SOURCE = readFileSync(resolve(process.cwd(), 'view_misc_modals_source.jsx'), 'utf8');
-const FALLBACK = SOURCE.match(/CANVAS_SHARE_URL_FALLBACK\s*=\s*'([^']+)'/)[1];
+const FALLBACK = SOURCE.match(/CANVAS_FALLBACK_URL\s*=\s*'([^']+)'/)[1];
 const NEWER = 'https://share.gemini.google/NEWER0000abc';
 
 let React, ReactDOMClient, act, Modal;
@@ -87,7 +89,8 @@ describe('in-app Canvas button reads release.json', () => {
     expect(opened).toEqual([NEWER]);
   });
 
-  it('falls back to the compiled-in link when release.json is unreachable', async () => {
+  it('falls back to the launcher when release.json is unreachable', async () => {
+    expect(FALLBACK).toBe('https://alloflow-cdn.pages.dev/launch');
     global.fetch = vi.fn(async () => { throw new Error('offline'); });
     await render();
     await clickCanvasCard();
@@ -102,9 +105,9 @@ describe('in-app Canvas button reads release.json', () => {
     expect(opened).toEqual([FALLBACK]);
   });
 
-  it('keeps exactly one link literal in the source, the one set_canvas_url stamps', () => {
+  it('compiles in no share link, so a link change never alters this pinned module', () => {
     const literals = SOURCE.match(/https:\/\/share\.gemini\.google\/[A-Za-z0-9_-]+/g) || [];
-    expect(literals).toEqual([FALLBACK]);
+    expect(literals).toEqual([]);
     expect(SOURCE).toContain("window.open(canvasShareUrl, '_blank', 'noopener')");
   });
 });
