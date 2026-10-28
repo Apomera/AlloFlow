@@ -17,7 +17,9 @@ const REPO_ROOT = path.resolve(DESKTOP_ROOT, '..');
 const APP_ROOT = path.join(REPO_ROOT, 'desktop/web-app');
 const APP_BUILD = path.join(APP_ROOT, 'build');
 const DESKTOP_APP_BUILD = path.join(DESKTOP_ROOT, 'app-build');
-const GOOGLE_API_KEY_PATTERN = /AIza[0-9A-Za-z_-]{20,}/g;
+// Exact key shape (AIza + 35, as check_secrets.cjs), never inside a longer
+// base64 run: {20,} matched a Test Prep data blob and broke delivery hashes.
+const GOOGLE_API_KEY_PATTERN = /(?<![0-9A-Za-z_\-+/])AIza[0-9A-Za-z_-]{35}(?![0-9A-Za-z_\-+/])/g;
 const BUILD_INPUT_FINGERPRINT_FILE = '.alloflow-desktop-build-input.json';
 const DESKTOP_REACT_BUILD_RUNNER = path.join(__dirname, 'run-desktop-react-build.cjs');
 const BUILD_INPUT_SCHEMA = 1;
