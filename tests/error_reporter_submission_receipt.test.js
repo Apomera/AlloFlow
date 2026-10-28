@@ -601,3 +601,35 @@ describe('optional error report description', () => {
     expect(field.scrollTop).toBe(24);
   });
 });
+
+// Send stays greyed out until the review box is checked. Without a reason next to
+// the button it looked broken (reported 2026-10-28), so the footer says why and
+// offers a way to the checkbox.
+describe('explaining why Send is off', () => {
+  it('names the checkbox next to a disabled Send and links the hint to the button', () => {
+    const { w } = boot();
+    const hint = element(w, 'aer-send-hint');
+    expect(element(w, 'aer-send').disabled).toBe(true);
+    expect(hint.hidden).toBe(false);
+    expect(hint.textContent).toContain('I reviewed this report');
+    expect(element(w, 'aer-send').getAttribute('aria-describedby')).toBe('aer-send-hint');
+    expect(element(w, 'aer-review-confirm').closest('label').textContent).toContain('Required to send:');
+  });
+
+  it('moves focus to the review checkbox from the hint', () => {
+    const { w } = boot();
+    click(w, 'aer-goto-confirm');
+    expect(w.document.activeElement).toBe(element(w, 'aer-review-confirm'));
+  });
+
+  it('hides the hint once the report is confirmed, and shows it again when unchecked', () => {
+    const { w } = boot();
+    confirmReview(w);
+    expect(element(w, 'aer-send-hint').hidden).toBe(true);
+    expect(element(w, 'aer-send').hasAttribute('aria-describedby')).toBe(false);
+    element(w, 'aer-review-confirm').click();
+    expect(element(w, 'aer-send').disabled).toBe(true);
+    expect(element(w, 'aer-send-hint').hidden).toBe(false);
+    expect(element(w, 'aer-send').getAttribute('aria-describedby')).toBe('aer-send-hint');
+  });
+});

@@ -593,6 +593,16 @@
     if (checkbox) checkbox.checked = !!confirmed;
     var send = panel.querySelector('#aer-send');
     if (send) send.disabled = submission.status === 'sending' || submission.status === 'saved' || !confirmed;
+    // The footer is not re-rendered on a checkbox change, so the hint toggles here.
+    var hint = panel.querySelector('#aer-send-hint');
+    var needsConfirm = needsReviewConfirmation(policy, confirmed);
+    if (hint) hint.hidden = !needsConfirm;
+    if (send) { if (needsConfirm) send.setAttribute('aria-describedby', 'aer-send-hint'); else send.removeAttribute('aria-describedby'); }
+  }
+  // Send is greyed out until the review box is checked; without saying so, the
+  // button looked broken (reported 2026-10-28).
+  function needsReviewConfirmation(policy, confirmed) {
+    return policy.enabled && !confirmed && submission.status !== 'sending' && submission.status !== 'saved';
   }
   function sanitizeReviewDraft() {
     var changed = captureDescriptionDraft();
@@ -1027,7 +1037,7 @@
       '<label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font:13px/1.5 system-ui,sans-serif;"><input id="aer-review-confirm" type="checkbox"' +
         (locked || !policy.enabled ? ' disabled' : '') +
         (reviewedSignature && reviewedSignature === payloadSignature(policy) ? ' checked' : '') +
-      '>I reviewed this report and am permitted to send these fields to the support destination shown above.</label></section>';
+      '><span><strong>Required to send:</strong> I reviewed this report and am permitted to send these fields to the support destination shown above.</span></label></section>';
   }
 
   function submissionFooterHtml() {
@@ -1048,7 +1058,10 @@
         (saved ? '<p style="margin:6px 0 0;"><strong>' + (submission.id ? 'Receipt: <span id="aer-receipt-id">' + escapeHtml(submission.id) + '</span>' : 'No receipt ID was returned by the server.') + '</strong><br>Saved: ' + escapeHtml(submission.savedAt) + '</p>' : '') +
         (failed ? '<p style="margin:6px 0 0;">' + (policy.enabled && policy.allowGoogleFormFallback ? 'You can use Copy log above, paste it into the report form, and press Submit there. Opening the form does not send your report.' : 'Copy log remains available for your approved support process.') + (submission.formOpened ? ' This app cannot confirm a submission made in that form.' : '') + '</p>' : '') +
       '</div>' +
-      '<button id="aer-send" type="button"' + (busy || saved || !confirmed ? ' disabled' : '') + ' style="background:' + (saved ? '#15803d' : '#0d9488') + ';border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:' + (busy || saved || !confirmed ? 'default' : 'pointer') + ';">' +
+      '<p id="aer-send-hint" style="width:100%;margin:0;font:13px/1.5 system-ui,sans-serif;color:#854d0e;"' + (needsReviewConfirmation(policy, confirmed) ? '' : ' hidden') + '>' +
+        'Send is off until you check “I reviewed this report…” in the review section above. ' +
+        '<button id="aer-goto-confirm" type="button" style="background:none;border:none;padding:0;color:#0f766e;font:700 13px/1.5 system-ui,sans-serif;text-decoration:underline;cursor:pointer;">Go to the checkbox</button></p>' +
+      '<button id="aer-send" type="button"' + (busy || saved || !confirmed ? ' disabled' : '') + (needsReviewConfirmation(policy, confirmed) ? ' aria-describedby="aer-send-hint"' : '') + ' style="background:' + (saved ? '#15803d' : '#0d9488') + ';border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:' + (busy || saved || !confirmed ? 'default' : 'pointer') + ';">' +
         (busy ? 'Sending…' : saved ? 'Report saved' : failed ? 'Try sending again' : 'Send reviewed report') + '</button>' +
       (saved && submission.id ? '<button id="aer-copy-receipt" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">Copy receipt</button>' : '') +
       (saved ? '<button id="aer-new-report" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">New report</button>' : '') +
@@ -1566,6 +1579,12 @@
       refreshPanelIfOpen();
     };
     if ($('aer-send')) $('aer-send').onclick = submitReport;
+    if ($('aer-goto-confirm')) $('aer-goto-confirm').onclick = function () {
+      var box = $('aer-review-confirm');
+      if (!box) return;
+      if (box.scrollIntoView) box.scrollIntoView({ block: 'center' });
+      box.focus();
+    };
     if ($('aer-copy-receipt')) $('aer-copy-receipt').onclick = function () {
       if (submission.status !== 'saved' || !submission.id) return;
       copyDiagnosticsText('AlloFlow report saved\nReceipt: ' + submission.id + '\nSaved: ' + submission.savedAt + '\nStorage confirmed; developer review is not confirmed.', 'aer-copy-receipt', 'Copy receipt');
