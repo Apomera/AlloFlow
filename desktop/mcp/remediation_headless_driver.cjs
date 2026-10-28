@@ -2269,7 +2269,8 @@ function createDriver(options) {
             skipped: cur.reviewTriage.skipped ? String(cur.reviewTriage.skipped).slice(0, 40) : null,
             dispositions: (Array.isArray(cur.reviewTriage.dispositions) ? cur.reviewTriage.dispositions : []).slice(0, 50).map((d) => ({
               key: String((d && d.key) || '').slice(0, 200), action: String((d && d.action) || '').slice(0, 20), applied: !!(d && d.applied), stillFlagged: !!(d && d.stillFlagged),
-              reason: String((d && d.reason) || '').slice(0, 300), skipReason: d && d.skipReason ? String(d.skipReason).slice(0, 80) : null,
+              // 600 at a word with "…" (was a bare 300 cut: "...and 'below' and 'above' refer)", osep3 2026-10-27)
+              reason: ((r) => (r.length > 600 ? r.slice(0, 600).replace(/\s+\S*$/, '') + '…' : r))(String((d && d.reason) || '')), skipReason: d && d.skipReason ? String(d.skipReason).slice(0, 80) : null,
             })),
           } : null,
           fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),

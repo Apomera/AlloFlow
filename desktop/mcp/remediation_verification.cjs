@@ -134,7 +134,7 @@ function applyPdfDeliveryEvidence(summary,evidence) {
 const WITHHOLD_EXPLANATIONS={
   active_content_scan_unavailable:['The original PDF has parts AlloFlow cannot safely inspect (for example an XFA fillable form, embedded files or an unusually deep structure), so no tagged PDF was made.','Share the accessible HTML, or have a person rebuild the PDF from it in Word or Acrobat.'],
   active_content_requires_review:['The original PDF contains scripts, launch actions or embedded files, so no tagged PDF was made. In a fillable form these are often just date or phone-number formatting.','Share the accessible HTML. If a fillable PDF is needed, ask whoever made the form for a version without scripts, or have someone review them first.'],
-  content_coverage_requires_review:['The accessible version may be missing words from the original, so the tagged PDF was held back.','Search the original for the words listed below and check that each one is in the accessible version. Often they are page numbers, a raised "nd" or "th", or a word the PDF split in two. Running again gives the same result; share once a person confirms nothing is lost.'],
+  content_coverage_requires_review:['The accessible version may be missing words from the original, so the tagged PDF was held back.','Search the original for the words listed below and check that each one is in the accessible version. Often they are page numbers, chart axis labels, a title printed twice, a raised "nd" or "th", or a word the PDF split in two. Running again gives the same result; share once a person confirms nothing is lost.'],
   distribution_review_required:['The accessible HTML still has findings a person must check, so the tagged PDF was held back.','Work through the review findings in this report, then run again.'],
   distribution_verdict_unavailable:['AlloFlow could not reach a final verdict for this document, so the tagged PDF was held back.','Run the document again. If it repeats, keep this report for support.'],
   tagged_pdf_delivery_unverified:['A tagged PDF was built but failed AlloFlow\'s own structure check after saving.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
@@ -164,7 +164,9 @@ function explainDelivery(summary){
         :/orphaned semantic leaves/i.test(String(inner[2]))
         // Spanish UDHR: "No orphaned semantic leaves" reached teachers verbatim, with "run again" for a deterministic result.
         ?['Some parts of the accessible version could not be matched to the text on the PDF\'s pages, so a screen reader would skip them in the tagged PDF. It was held back.','Share the accessible HTML, which has everything. Running again gives the same result; keep this report for support.']
-        :['The tagged PDF was built but failed AlloFlow\'s own PDF check (named below), so it was held back.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'];}
+        :['The tagged PDF was built but failed AlloFlow\'s own PDF check (named below), so it was held back.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'];
+      // The rule name stays in `code`; the detail says it plainly (osep2: "No orphaned semantic leaves" read as jargon).
+      if(/orphaned semantic leaves/i.test(String(inner[2])))detail='AlloFlow\'s own PDF check: some text in the accessible version is not linked to text on the PDF\'s pages.';}
     // validator-error has several causes; only a Java failure should send a teacher to install Java.
     if(k==='validator-error'&&detail&&!/java/i.test(String(detail)))e=/runtime_build_changed|restart/i.test(String(detail))
       ?['The independent veraPDF check was skipped because AlloFlow was updated while this document was running.','Restart the AlloFlow connector (or the app that hosts it) and run the document again.']
@@ -194,19 +196,32 @@ function explainDelivery(summary){
   const PLAIN={
     style_color_misuse:()=>'Check that colour is not the only way information is shown.',
     text_block_heading:q=>'Check whether '+(q?'"'+q+'"':'this text')+' is a heading; if it is, it should be marked as one.',
-    text_sensory_misuse:q=>'Check that '+(q?'"'+q+'"':'the wording')+' still makes sense without seeing the page (it should point to a place in reading order).'};
-  const describe=f=>{const q=(f.description.match(/'([^']{1,80})'/)||[])[1];const base=PLAIN[f.id]?PLAIN[f.id](q):f.description.trim().slice(0,240);return base+(Number(f.nodes)>1?' ('+Number(f.nodes)+' places)':'');};
+    // (2026-10-27) "should point to a place in reading order" misled when the word was "right" as in a legal right (osep2).
+    // n>1: the checker flagged different words in different places (osep3: "right", "small", "below", "above").
+    text_sensory_misuse:(q,n)=>'Check that '+(q?(n>1?'words such as "'+q+'"':'"'+q+'"'):'the wording')+(q&&n>1?' do':' does')+' not point at something only by where it sits on the page or how it looks.',
+    text_quoted_correctly:q=>'Check whether '+(q?'"'+q.trim()+'"':'this text')+' is a quotation; if it is, it should be marked as one.',
+    media_alt_brief:()=>'Check the image descriptions longer than 150 characters: each should still read well, with long detail in the visible text if needed.',
+    download_keyboard_controllable:()=>'Check that the download links can be reached and used with the keyboard alone.',
+    // (2026-10-27) complaint2 showed the checker's "Verify this is a list and if so, modify to use proper HTML elements".
+    list_markup_review:(q,n)=>'Check whether '+(n>1?'these items are':'this is')+' really a list; if '+(n>1?'they are':'it is')+', it should be marked as a list.'};
+  const describe=f=>{const q=(f.description.match(/'([^']{1,80})'/)||[])[1];const base=PLAIN[f.id]?PLAIN[f.id](q,Number(f.nodes)):f.description.trim().slice(0,240);return base+(Number(f.nodes)>1?' ('+Number(f.nodes)+' places)':'');};
   const withDesc=eaReview.filter(f=>f&&typeof f.description==='string'&&f.description.trim()).slice(0,8);
   const clip=(t,n)=>{t=String(t).trim();return t.length>n?t.slice(0,n).replace(/\s+\S*$/,'')+'…':t;};
-  const quickChecks=withDesc.filter(f=>aiSaysFine(f.id)).map(f=>{const d=aiSaysFine(f.id);return describe(f)+(d.reason?' (AI review: '+clip(d.reason,400)+')':'');});
+  const quickChecks=withDesc.filter(f=>aiSaysFine(f.id)).map(f=>{const d=aiSaysFine(f.id);return describe(f)+(d.reason?' (AI review found no problem: '+clip(d.reason,600)+')':'');});
   // A reminder the AI review settled has left the checker's counts but is still a person's quick check.
   const acked=(s.verification&&s.verification.equalAccess&&Array.isArray(s.verification.equalAccess.acknowledgedByAiReview))?s.verification.equalAccess.acknowledgedByAiReview:[];
-  for(const f of acked.slice(0,5))if(f&&typeof f.description==='string'&&f.description.trim())quickChecks.push(describe(f)+(f.reason?' (AI review: '+clip(f.reason,400)+')':''));
+  for(const f of acked.slice(0,5))if(f&&typeof f.description==='string'&&f.description.trim())quickChecks.push(describe(f)+(f.reason?' (AI review found no problem: '+clip(f.reason,600)+')':''));
   const named=withDesc.filter(f=>!aiSaysFine(f.id)).slice(0,5).map(f=>(PLAIN[f.id]?'':'A checker asks a person to confirm: ')+describe(f));
   let needs=list(reasons.review);
   const generic=needs.findIndex(x=>/^The automated accessibility checkers left items/.test(x));
   if(generic>=0&&(named.length||quickChecks.length))needs=needs.slice(0,generic).concat(named,needs.slice(generic+1));
   else if(named.length)needs=needs.concat(named);
+  // (2026-10-27) One cause, one line: budget2 listed "content fidelity needs a human check", "numbers may have
+  // changed..." and "Source content coverage requires review" for the same missing chart axis labels.
+  const covRe=[/^content fidelity needs a human check/i,/^numbers may have changed between source and output/i,/^Source content coverage requires review$/i];
+  const isCov=x=>covRe.some(r=>r.test(x));
+  if(needs.filter(isCov).length>=2){const at=needs.findIndex(isCov);needs=needs.filter(x=>!isCov(x));
+    needs.splice(at,0,'Some words or numbers from the original are not in the accessible version'+(wordList?' (listed with the tagged-PDF item below)':'')+'. Check them against the original before sharing: they are often chart axis labels, page numbers or a title printed twice, but a changed score, date or percentage must be fixed.');}
   return {needsAPerson:needs.slice(0,12),quickChecks,worthAGlance:list(reasons.cautions),headline:ready?'Automated checks passed for everything they can test. A person should still read it once before sharing.'
       // One instruction, not two: each item's own next step says what to do (Urdu UDHR: "check it" vs "share it").
       :items.length?'No tagged PDF was made for this file. The reason and what to do instead are below.'
@@ -332,7 +347,7 @@ function compactVerificationEvidence(source) {
     };
     // Reminders this run's AI review settled (pipeline _alloApplyReminderTriage): out of the counts, still
     // reported; present only when there are some, so the evidence shape is unchanged otherwise.
-    const acked = list(ea.acknowledgedByAiReview, 20).map((f) => Object.assign(rule(f), { reason: str(f.reason, 300) }));
+    const acked = list(ea.acknowledgedByAiReview, 20).map((f) => Object.assign(rule(f), { reason: str(f.reason, 600) }));
     if (acked.length) out.equalAccess.acknowledgedByAiReview = acked;
   }
   if (!out.ai && !out.axe && !out.equalAccess) return null;

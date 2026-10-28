@@ -154,6 +154,7 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // "-1- www.uscis.gov" on 11 pages, ~400 "missing" words), which the line rule below never sees. Words
   // that 3+ pages (and 60% of them) end or start with, a page number aside, are one passage: keep one
   // copy. Runs before the word mending below, which would change the text it searches for.
+  const pageNumDropped=new Set(); // pages whose own number the word rule already dropped
   if(Array.isArray(pages)&&pages.length>1){
     sourceText=String(sourceText||'').normalize('NFKC');
     // A dash glued to a page number is its own word: "Page 2\u2014Dear Colleague" (OSEP letter, 2026-10-26).
@@ -165,7 +166,10 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     for(const fromEnd of [true,false]){
       let active=pw.map((_,i)=>i).filter(i=>pw[i].length);
       const seq=[];
-      for(let k=0;k<80&&active.length>=minPages;k++){
+      // 400 words (was 80): print-title rows repeated under a table's header on every page run longer
+      // (expenditures: header + 3 rows, ~70 words; the Acton row past word 80 was "missing" x5, 2026-10-27).
+      // The run only grows while 60% of the pages (3+) share the SAME words, so a longer limit cannot merge text.
+      for(let k=0;k<400&&active.length>=minPages;k++){
         const at=i=>{const w=pw[i],j=fromEnd?w.length-1-k:k;return j>=0&&j<w.length?w[j]:null;};
         const toks=active.map(at);
         // A page number changes page to page; the same number on every page ("65") is text.
@@ -193,6 +197,15 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
       // The kept copy, as printed, minus its page number(s) (the captured groups, left to right).
       const holes=ordered.filter(t=>t===null).length;
       sourceText=sourceText.replace(re,(m,...g)=>{if(!first)return ' ';first=false;let at=0,kept='';for(const n of g.slice(0,holes)){const k=m.indexOf(n,at);if(k<0)continue;kept+=m.slice(at,k);at=k+n.length;}return (kept+m.slice(at)).replace(/\s+/g,' ').trim();});
+    }
+    // A BARE page number as a page's last (or first) word on 60% of the pages (3+) is furniture: one copy per
+    // page goes (expenditures: "1".."5" were the last "missing" words, 2026-10-27). Coverage counts words, so
+    // which copy of "1" goes does not matter; it runs AFTER the repeated-passage rule above, whose patterns an
+    // earlier removal would break. The line rule below skips pages handled here.
+    for(const fromEnd of [true,false]){
+      const hits=pw.map((w,i)=>{const t=fromEnd?w[w.length-1]:w[0];const num=Number(pages[i]&&pages[i].pageNum)||i+1;return t!==undefined&&new RegExp('^[-\\u2013\\u2014(]?'+num+'[-\\u2013\\u2014)]?$').test(t)?t:null;});
+      if(hits.filter(Boolean).length<minPages)continue;
+      hits.forEach((t,i)=>{if(!t||pageNumDropped.has(i))return;const re=new RegExp('(^|\\s)'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=\\s|$)');if(re.test(sourceText)){sourceText=sourceText.replace(re,'$1');pageNumDropped.add(i);}});
     }
   }
   // A running header or footer printed on every page is one passage, written once in reading order
@@ -242,12 +255,21 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     // only when the output has the joined word and neither piece is a word there (OSEP letter, 2026-10-26).
     // Lookahead: the second piece is not consumed, so it can still pair with what follows.
     sourceText=sourceText.replace(/(?<![\p{L}\p{N}])([\p{L}\p{N}]{3,})\s+(?=([\p{L}\p{N}]{2,})(?![\p{L}\p{N}]))/gu,(m,a,b)=>{const j=(a+b).toLowerCase();return outWords.has(j)&&!outWords.has(a.toLowerCase())&&!outWords.has(b.toLowerCase())?a:m;});
+    // The reverse: a text layer that glues two words where a cell's name wraps onto the next line
+    // ("departmentscience", "csdscience": expenditures, 2026-10-27). A letters-only word missing from the
+    // output splits into two output words of 3+ letters each: the first such split, left to right.
+    sourceText=sourceText.replace(/(?<![\p{L}\p{N}])(\p{L}{6,})(?![\p{L}\p{N}])/gu,(w)=>{const lw=w.toLowerCase();if(outWords.has(lw))return w;for(let i=3;i<=lw.length-3;i++){if(outWords.has(lw.slice(0,i))&&outWords.has(lw.slice(i)))return w.slice(0,i)+' '+w.slice(i);}return w;});
+    // A line's last word glued to the next line's one-letter label ("InformationP: 877", "6661W: http":
+    // child-find, 2026-10-27): a lowercase letter or digit then an uppercase letter and a colon splits there,
+    // when the part before it is an output word.
+    sourceText=sourceText.replace(/(?<![\p{L}\p{N}])([\p{L}\p{N}]*[\p{Ll}\p{N}])(\p{Lu})(?=:)/gu,(m,a,b)=>outWords.has(a.toLowerCase())?a+' '+b:m);
   }
   // A page's own number printed at its top or bottom ("1", "Page 2", "2 of 3") is page furniture, not
   // content: drop one copy per page when it sits in that page's first or last two lines.
   if(Array.isArray(pages)&&pages.length){
     const drop=[];
     pages.forEach((page,i)=>{
+      if(pageNumDropped.has(i))return;
       const num=Number(page&&page.pageNum)||i+1;
       const lines=String(page&&page.text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
       const edge=lines.slice(0,2).concat(lines.slice(-2));
@@ -320,25 +342,32 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     const normalize=text=>String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').toLowerCase().replace(/\s+/g,' ').trim();
     const sourceNormalized=normalize(sourceText),candidates=[];
     let previousOffset=0,tokenOffset=0;
-    for(const match of sourceNormalized.matchAll(/(\()?(-?\d+)[.)]\s+/g)){ // "1. ", "1) " and the parenthesized "(1) " of UDHR-style clauses
+    // A lone letter is a candidate too ("b. "): it is credited only to an item of a lettered list whose own text follows it (agenda, 2026-10-27).
+    for(const match of sourceNormalized.matchAll(/(\()?(-?\d+|[a-z])[.)]\s+/g)){ // "1. ", "1) " and the parenthesized "(1) " of UDHR-style clauses
       if(match.index&& !/\s/.test(sourceNormalized[match.index-1]))continue;
       tokenOffset+=tokens(sourceNormalized.slice(previousOffset,match.index)).length;previousOffset=match.index;
       candidates.push({label:match[2],at:tokenOffset,count:tokens(match[2]).length,bodyAt:match.index+match[0].length,used:false});
     }
     const validInteger=value=>/^[+-]?\d+$/.test(String(value).trim())&&Number(value)>=-2147483648&&Number(value)<=2147483647;
-    const decimalStyles=node=>{
+    // The marker an item draws: 'decimal', 'lower-alpha' or 'upper-alpha' ('' = unknown, no credit). The nearest
+    // list-style-type wins, an element's own style before its type attribute; counters and images opt out.
+    const KINDS={decimal:'decimal','lower-alpha':'lower-alpha','lower-latin':'lower-alpha','upper-alpha':'upper-alpha','upper-latin':'upper-alpha'},TYPES={'1':'decimal',a:'lower-alpha',A:'upper-alpha'};
+    const markerStyle=node=>{
+      let kind=null;
       for(let current=node;current;current=current.parentElement){
-        const css=current.getAttribute('style')||'',type=current.style.listStyleType;
-        if(['hidden','collapse'].includes(current.style.visibility))return false;
-        if(type&&type!=='decimal')return false;
-        if(/\b(?:counter-reset|counter-set|counter-increment|list-style-image)\s*:/i.test(css))return false;
+        const css=current.getAttribute('style')||'';let type=current.style.listStyleType;
+        if(['hidden','collapse'].includes(current.style.visibility))return '';
+        if(/\b(?:counter-reset|counter-set|counter-increment|list-style-image)\s*:/i.test(css))return '';
         const shorthand=css.match(/(?:^|;)\s*list-style\s*:\s*([^;]+)/i);
-        if(shorthand&&shorthand[1].replace(/!important/gi,'').trim().split(/\s+/).some(value=>!['decimal','inside','outside'].includes(value.toLowerCase())))return false;
+        if(shorthand){const values=shorthand[1].replace(/!important/gi,'').trim().toLowerCase().split(/\s+/);if(values.some(value=>!KINDS[value]&&!['inside','outside'].includes(value)))return '';type=type||values.find(value=>KINDS[value])||'';}
+        if(kind===null&&type){if(!KINDS[type])return '';kind=KINDS[type];}
+        if(kind===null&&(current.tagName==='LI'||current.tagName==='OL')&&current.hasAttribute('type')){kind=TYPES[current.getAttribute('type')]||'';if(!kind)return '';}
       }
-      return !node.style.display||node.style.display==='list-item';
+      return !node.style.display||node.style.display==='list-item'?(kind||'decimal'):'';
     };
+    const markerLabel=(kind,ordinal)=>kind==='decimal'?String(ordinal):ordinal>=1&&ordinal<=26?String.fromCharCode(96+ordinal):'';
     for(const ol of doc.querySelectorAll('ol')){
-      if(blockedLists.has(ol)||(ol.hasAttribute('type')&&ol.getAttribute('type')!=='1'))continue;
+      if(blockedLists.has(ol)||(ol.hasAttribute('type')&&!TYPES[ol.getAttribute('type')]))continue;
       const items=[...ol.children].filter(node=>node.tagName==='LI');
       // Excluded direct items can change reversed/default/value-based counters.
       if(items.length!==(originalItems.get(ol)||[]).length)continue;
@@ -348,13 +377,14 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
       let ordinal=ol.hasAttribute('start')?ol.start:step<0?items.length:1;
       for(const item of items){
         if(item.hasAttribute('value'))ordinal=item.value;
-        const literal=new RegExp('^\\s*\\(?'+ordinal+'[.)]\\s+').test(item.textContent||'');
-        if((!item.hasAttribute('type')||item.getAttribute('type')==='1')&&decimalStyles(item)&&!literal){
+        const kind=markerStyle(item),label=kind?markerLabel(kind,ordinal):'';
+        const literal=!!label&&new RegExp('^\\s*\\(?'+label+'[.)]\\s+','i').test(item.textContent||'');
+        if(label&&!literal){
           // Anchor to this item's actual prose before its first nested list. This
           // also identifies flattened PDF markers without guessing from digits alone.
-          let ownText='',child;const walker=doc.createTreeWalker(item,5);while((child=walker.nextNode())){if(child.nodeType===1&&(child.tagName==='OL'||child.tagName==='UL'))break;if(child.nodeType===3)ownText+=child.textContent||'';}
+          let ownText='',child;const walker=doc.createTreeWalker(item,5);while((child=walker.nextNode())){if(child.nodeType===1&&(child.tagName==='OL'||child.tagName==='UL'))break;if(child.nodeType===1&&child.tagName==='BR')ownText+=' ';if(child.nodeType===3)ownText+=child.textContent||'';} // <br> is a word break (agenda: "2025.<br>Motion:")
           ownText=normalize(ownText);
-          const candidate=ownText&&candidates.find(value=>!value.used&&value.label===String(ordinal)&&sourceNormalized.slice(value.bodyAt).startsWith(ownText)&&(!sourceNormalized[value.bodyAt+ownText.length]||/\s/.test(sourceNormalized[value.bodyAt+ownText.length])));
+          const candidate=ownText&&candidates.find(value=>!value.used&&value.label===label&&sourceNormalized.slice(value.bodyAt).startsWith(ownText)&&(!sourceNormalized[value.bodyAt+ownText.length]||/\s/.test(sourceNormalized[value.bodyAt+ownText.length])));
           if(candidate){candidate.used=true;for(let offset=0;offset<candidate.count;offset++)sourceMarkerCredits.add(candidate.at+offset);}
         }
         ordinal=Math.min(2147483647,Math.max(-2147483648,ordinal+step));
@@ -363,7 +393,9 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   }
   doc.querySelectorAll('ol,ul').forEach(node=>node.insertBefore(doc.createTextNode(' '),node.firstChild));
   doc.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,td,th,caption,figcaption,div,section,br').forEach(node=>node.appendChild(doc.createTextNode(' ')));
-  const source=tokens(sourceText),output=tokens(doc.body.textContent),available=new Map();for(const token of output)available.set(token,(available.get(token)||0)+1);
+  // HTML whitespace is not a printed line end: "Nay-</em></p>\n<h2>Election" was joined as "nayelection" by the
+  // source's hyphen-wrap rule (agenda, 2026-10-27), so the output's whitespace is collapsed first.
+  const source=tokens(sourceText),output=tokens(String(doc.body.textContent||'').replace(/\s+/g,' ')),available=new Map();for(const token of output)available.set(token,(available.get(token)||0)+1);
   let missingTokens=0,missingPassageCount=0;const missingPassages=[];let sourceUnit=0;
   // The unmatched words themselves, so a person can search for them: token offsets meant nothing to a
   // teacher (SIE 515 syllabus: 4 "missing" tokens, all a raised "2nd"/"3rd", 2026-10-26). Up to 25 distinct.
