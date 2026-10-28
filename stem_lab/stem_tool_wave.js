@@ -2563,7 +2563,7 @@ const d = labToolData.wave;
                 : isDark
                   ? { surface: '#2b1633', border: '#e879f9' }
                   : { surface: '#fdf4ff', border: '#f5d0fe' };
-              return React.createElement("div", { className: "wave-myths-panel mb-3 rounded-xl border-2 border-fuchsia-200 bg-fuchsia-50/60 overflow-hidden", style: { backgroundColor: mythTheme.surface, borderColor: mythTheme.border } },
+              return React.createElement("div", { className: "wave-myths-panel mb-3 rounded-xl border-2 border-fuchsia-200 overflow-hidden", style: { backgroundColor: mythTheme.surface, borderColor: mythTheme.border } },
                 React.createElement("style", null, '.theme-dark .wave-myths-panel .text-fuchsia-900{color:#fae8ff!important}.theme-dark .wave-myths-panel .text-fuchsia-700{color:#f5d0fe!important}.theme-dark .wave-myths-panel>button:hover{background:#3f1d49!important}'),
                 React.createElement("button", {
                   onClick: function () { upd('mythsOpen', !mythsOpen); },

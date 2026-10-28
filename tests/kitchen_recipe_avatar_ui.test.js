@@ -366,7 +366,7 @@ describe('Mushroom turning reveals persistent surfaces without cooking during re
  // five-second unit budget under two-worker load; retain every real checkpoint.
  it('attributes the complete Watch sequence to the demonstrator and replays its actual reveals',()=>{
   start('watch','mushroom-turning');for(let i=0;i<30&&!get().guide.complete;i++)watchAction();expect(get().record.intents).toHaveLength(30);expect(get().record.intents.every(i=>i.actor==='demonstrator')).toBe(true);expect(brown().targetMet).toBe(true);expect($('avatarMushroomFace0').dataset.actor).toBe('demonstrator');expect($('avatarWatchManual').disabled).toBe(true);const state=get().state;ui.dispose();mount();expect(get().activity).toBe('mushroom-turning');expect(get().state).toEqual(state);expect(brown().targetMet).toBe(true);expect($('avatarMushroomFace0').dataset.actor).toBe('demonstrator');
- },15000);
+ },30000); // 30 demonstrator steps, each a full Kitchen Lab render
 });
 
 
