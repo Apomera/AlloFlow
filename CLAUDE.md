@@ -91,6 +91,10 @@ it.
   different program — this is how 39 SEL tools stayed unreachable while 190+
   tests passed.
 
+## Reference
+
+Product review backlog: see docs/review-backlog-2026-10-27.md. Items distinguish source observations, unverified runtime risks and design proposals; revalidate before implementation.
+
 ## AlloFlowANTI.txt is the source
 
 `build.js` transforms `AlloFlowANTI.txt` → `desktop/web-app/src/App.jsx`. Editing
