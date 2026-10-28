@@ -1,6 +1,6 @@
 {
-  "version": "1.11",
-  "canvas_url": "https://share.gemini.google/UTJhLsZ0QOx1",
-  "released": "2026-10-25T22:10:23.571Z",
-  "notes": "Fairer grading and safer answer keys: fill-in-the-blank answers your students saw as correct now go to you for review instead of being marked wrong, quiz answer keys stay off student devices until you release results, and math XP counts every problem. Better printouts for notes, activities and cloze worksheets, clearer AI estimates in Analysis and Alignment, student answer fields in discussion and jigsaw activities, and stronger security for how the app loads its tools."
+  "version": "1.12",
+  "canvas_url": "https://share.gemini.google/x0Cn2QMujxu6",
+  "released": "2026-10-28T20:38:26.000Z",
+  "notes": "Feedback you can trust: DBQ essay feedback now checks each piece of evidence against the actual documents and scores your rubric, Standards Alignment and Check Level read the whole text instead of only the beginning, and Timeline, glossary and mastery feedback no longer report a check as passed when it could not run. New table and chart buttons in Adapted Text and Analyze Source, charts with written descriptions and a data table for screen readers, AI-made tables with captions, adding or changing question types in Assess, and thousands of translation fixes."
 }
