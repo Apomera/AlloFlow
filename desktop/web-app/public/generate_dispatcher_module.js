@@ -5036,10 +5036,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               - DO NOT emit any "Sources", "References", "Bibliography", "Verified Sources", "Références", "Sources du texte", "Referencias", "Quellen", or equivalent section. The references list is appended automatically by the app — any references section you produce will be discarded and may cause duplicates.
               ${includeCharts ? `- DATA VISUALIZATION: Analyze the text for structured data.
               1. If quantitative comparisons exist, insert a Chart on its own line (NO line breaks inside brackets):
-                 [[CHART: { "type": "bar", "title": "Title", "data": [{"label": "A", "value": 10}, {"label": "B", "value": 20}] }]]
+                 [[CHART: { "type": "bar", "title": "Title", "data": [{"label": "A", "value": 10}, {"label": "B", "value": 20}], "description": "One or two sentences saying what the chart shows and its main pattern, e.g. which value is largest." }]]
               2. If a single percentage is highlighted, use a Donut Chart:
-                 [[CHART: { "type": "donut", "title": "Title", "percentage": 75, "label": "75%" }]]
-              3. If qualitative data exists, use a Markdown Table.
+                 [[CHART: { "type": "donut", "title": "Title", "percentage": 75, "label": "75%", "description": "One sentence saying what the percentage measures." }]]
+              Every chart needs a "description" written in the same language and reading level as the text, for readers who cannot see the chart.
+              3. If qualitative data exists, use a Markdown Table. Put a caption on the line directly above it, written as "Table: " followed by a short description of what the table shows (for example "Table: How the three states of matter compare"). Always write the prefix "Table: " in English, even when the text is in another language; write the caption itself in the language of the text.
               4. You may include both if appropriate.` : ''}
               ${studentInterests.length > 0 ? `- CRITICAL: Explain key concepts using analogies and examples related to: "${studentInterests.join(', ')}" to increase engagement and relevance.` : ''}
               ${standardsPromptString ? `- CRITICAL: Align the text complexity and skill focus to meet Target Standards: "${standardsPromptString}".` : ''}

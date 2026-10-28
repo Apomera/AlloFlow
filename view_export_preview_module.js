@@ -4320,7 +4320,8 @@ function _alloBlobToBase64(blob) {
 }
 function _alloQuizToFormItems(quizData) {
   const questions = Array.isArray(quizData && quizData.questions) ? quizData.questions : [];
-  const text = (v) => String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+  const md = typeof window !== "undefined" && window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
+  const text = (v) => String(md ? md.plain(v) : v == null ? "" : v).replace(/\s+/g, " ").trim();
   const items = [];
   questions.forEach((q) => {
     if (!q || typeof q !== "object") return;
@@ -9150,7 +9151,7 @@ ${pageCss}
               out.push("");
             } else if (ty === "quiz" && d && Array.isArray(d.questions)) {
               d.questions.forEach((q, i) => {
-                out.push("**Q" + (i + 1) + ". " + esc(q.question) + "**", "");
+                out.push("**Q" + (i + 1) + ".** " + esc(q.question), "");
                 (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + ". " + esc(o)));
                 out.push("");
               });

@@ -934,6 +934,42 @@ const AppStyles = ({ disableAnimations = false, baseFontSize = 16, lineHeight = 
         @media screen { .theme-dark .text-teal-900:not([data-stem-tool-surface] *)     { color: #5eead4 !important; } } /* Teal-300, completing */
         @media screen { .theme-dark .text-cyan-900:not([data-stem-tool-surface] *)     { color: #67e8f9 !important; } } /* Cyan-300, completing */
         @media screen { .theme-dark .text-rose-900:not([data-stem-tool-surface] *)     { color: #fda4af !important; } } /* Rose-300, completing */
+        /* -950 text on tinted cards (Teach Live, Class Mailbox) was near-black on the dark tint; light pills keep it. */
+        @media screen {
+          .theme-dark .text-amber-950:not([data-stem-tool-surface] *), .theme-dark .text-yellow-950:not([data-stem-tool-surface] *) { color: #fcd34d !important; }
+          .theme-dark .text-orange-950:not([data-stem-tool-surface] *) { color: #fdba74 !important; }
+          .theme-dark .text-red-950:not([data-stem-tool-surface] *) { color: #fca5a5 !important; }
+          .theme-dark .text-rose-950:not([data-stem-tool-surface] *) { color: #fda4af !important; }
+          .theme-dark .text-pink-950:not([data-stem-tool-surface] *) { color: #f9a8d4 !important; }
+          .theme-dark .text-fuchsia-950:not([data-stem-tool-surface] *) { color: #f0abfc !important; }
+          .theme-dark .text-purple-950:not([data-stem-tool-surface] *) { color: #d8b4fe !important; }
+          .theme-dark .text-violet-950:not([data-stem-tool-surface] *) { color: #c4b5fd !important; }
+          .theme-dark .text-indigo-950:not([data-stem-tool-surface] *) { color: #c7d2fe !important; }
+          .theme-dark .text-blue-950:not([data-stem-tool-surface] *) { color: #93c5fd !important; }
+          .theme-dark .text-sky-950:not([data-stem-tool-surface] *) { color: #7dd3fc !important; }
+          .theme-dark .text-cyan-950:not([data-stem-tool-surface] *) { color: #67e8f9 !important; }
+          .theme-dark .text-teal-950:not([data-stem-tool-surface] *) { color: #5eead4 !important; }
+          .theme-dark .text-emerald-950:not(.bg-emerald-200):not(.bg-emerald-300):not([data-stem-tool-surface] *) { color: #6ee7b7 !important; }
+          .theme-dark .text-green-950:not([data-stem-tool-surface] *) { color: #86efac !important; }
+        }
+        /* Translucent -50 tints (bg-indigo-50/60) turned grey over the dark page; give them the solid tint's dark value. */
+        @media screen {
+          .theme-dark [class*="bg-indigo-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(49, 46, 129, 0.4) !important; }
+          .theme-dark [class*="bg-blue-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(30, 58, 138, 0.4) !important; }
+          .theme-dark [class*="bg-sky-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(12, 74, 110, 0.4) !important; }
+          .theme-dark [class*="bg-cyan-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(22, 78, 99, 0.4) !important; }
+          .theme-dark [class*="bg-teal-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(19, 78, 74, 0.4) !important; }
+          .theme-dark [class*="bg-emerald-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(6, 78, 59, 0.4) !important; }
+          .theme-dark [class*="bg-green-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(20, 83, 45, 0.4) !important; }
+          .theme-dark [class*="bg-amber-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(120, 53, 15, 0.4) !important; }
+          .theme-dark [class*="bg-yellow-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(113, 63, 18, 0.4) !important; }
+          .theme-dark [class*="bg-orange-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(124, 45, 18, 0.4) !important; }
+          .theme-dark [class*="bg-red-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(127, 29, 29, 0.4) !important; }
+          .theme-dark [class*="bg-pink-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(131, 24, 67, 0.4) !important; }
+          .theme-dark [class*="bg-fuchsia-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(112, 26, 117, 0.4) !important; }
+          .theme-dark [class*="bg-purple-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(88, 28, 135, 0.4) !important; }
+          .theme-dark [class*="bg-violet-50/"]:not([data-stem-tool-surface] *) { background-color: rgba(76, 29, 149, 0.4) !important; }
+        }
         @media screen { .theme-dark { color-scheme: dark; } }
         @media screen { .theme-dark input:not([data-stem-tool-surface] *), .theme-dark textarea:not([data-stem-tool-surface] *), .theme-dark select:not([data-stem-tool-surface] *) {
             background-color: #0f172a !important;
@@ -961,6 +997,9 @@ const AppStyles = ({ disableAnimations = false, baseFontSize = 16, lineHeight = 
         @media screen { .theme-dark .prose code:not([data-stem-tool-surface] *) { color: #f1f5f9 !important; background-color: #334155 !important; } }
         @media screen { .theme-dark .prose a:not([data-stem-tool-surface] *) { color: #60a5fa !important; } }
         @media screen { .theme-contrast .prose a:not([data-stem-tool-surface] *) { color: #ffff00 !important; } }
+        @media screen { .theme-contrast a[href]:not([class*="bg-"]):not([data-stem-tool-surface] *) { color: #ffff00 !important; } }
+        /* The live lesson panel draws with inline light tints; flatten it to the contrast palette. */
+        @media screen { .theme-contrast [data-live-lesson-run], .theme-contrast [data-live-lesson-run] *:not(svg *) { background-color: #000000 !important; background-image: none !important; color: #ffff00 !important; border-color: #ffff00 !important; } }
         @media screen { .theme-contrast { background-color: #000000 !important; color: #ffff00 !important; } }
         @media screen { .theme-contrast .bg-white, .theme-contrast .bg-slate-50, .theme-contrast .bg-slate-100,
         .theme-contrast .bg-amber-50, .theme-contrast .bg-rose-50, .theme-contrast .bg-sky-50, .theme-contrast .bg-emerald-50 { background-color: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; } }

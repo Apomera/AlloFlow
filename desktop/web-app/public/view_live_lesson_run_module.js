@@ -1304,6 +1304,7 @@ function LiveLessonRunPanel(props) {
   return /* @__PURE__ */ React.createElement(
     "section",
     {
+      "data-live-lesson-run": "",
       "aria-label": preparationOnly ? "Prepare live run" : companionActive ? t("live_lesson.companion_title") || "Live moderation companion" : t("live_lesson.title") || "Lesson path",
       "data-live-companion-mode": companionActive ? "focused" : "off",
       style: {

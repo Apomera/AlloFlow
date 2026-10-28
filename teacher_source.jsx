@@ -3171,6 +3171,13 @@ function alloLiveSequenceIndices(puzzle) {
 function alloLiveFieldKey(value) { return encodeURIComponent(String(value)).replace(/\./g, '%2E'); }
 
 const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, setIsEscapeTimerRunning }) => {
+  // Quiz text uses the Assess view's light markdown when it is loaded; plain text otherwise.
+  const _quizLiveMd = () => {
+    const shared = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
+    if (shared) return shared;
+    const plain = text => text == null ? '' : String(text);
+    return { inline: plain, block: plain, plain };
+  };
   const escapeState = sessionData?.escapeRoomState || {};
   const timeRemaining = useLiveEscapeSeconds(escapeState);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -3613,7 +3620,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
               </button>
             </div>
             {renderTimeSupport()}
-            <h2 id="escape-room-puzzle-question" className="text-xl text-white font-bold mb-4">{currentPuzzle.question}</h2>
+            <h2 id="escape-room-puzzle-question" className="text-xl text-white font-bold mb-4">{_quizLiveMd().inline(currentPuzzle.question)}</h2>
             {syncError && <p role="alert" className="mb-3 rounded-lg bg-red-950 p-3 text-red-100">{syncError}</p>}
             <fieldset disabled={isSubmitting || isPaused} aria-busy={isSubmitting} className="min-w-0">
             <legend className="sr-only">{t('escape_room.submit_answer')}</legend>
@@ -3621,7 +3628,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
             {hintSupport.steps.length > 0 && <div className="mb-4">
               {hintSupport.level > 0 && <div role="status" data-live-puzzle-support-level={hintSupport.level} className="p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm">
                 <p>Support steps used: {hintSupport.level}. Support use is separate from whether the puzzle is solved.</p>
-                {hintSupport.steps.slice(0,hintSupport.level).map((step,index)=><p key={index} className="mt-2">{index+1}. {step}</p>)}
+                {hintSupport.steps.slice(0,hintSupport.level).map((step,index)=><p key={index} className="mt-2">{index+1}. {_quizLiveMd().inline(step)}</p>)}
               </div>}
               {hintSupport.level < hintSupport.steps.length && <button type="button"
                 onClick={async () => {
@@ -3657,7 +3664,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                     className="w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors motion-reduce:transition-none border-2 border-transparent hover:border-purple-400"
                   >
                     <span className="inline-block w-8 font-bold text-purple-400">{String.fromCharCode(65+idx)}.</span>
-                    {opt}
+                    {_quizLiveMd().inline(opt)}
                   </button>
                 ))}
               </div>
@@ -3690,7 +3697,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
               <div className="space-y-4">
                 {currentPuzzle.sentence && (
                   <div className="bg-slate-900 p-4 rounded-lg text-white text-center text-lg">
-                    {currentPuzzle.sentence.replace(/_+/g, userInput ? `[${userInput}]` : '______')}
+                    {_quizLiveMd().inline(currentPuzzle.sentence.replace(/_+/g, userInput ? `[${userInput}]` : '______'))}
                   </div>
                 )}
                 {currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? (
@@ -3768,13 +3775,13 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                   {sequenceOrder.length === 0
                     ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => (
                         <div key={idx} role="listitem" className="flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white">
-                          <span className="flex-1">{item}</span>
+                          <span className="flex-1">{_quizLiveMd().inline(item)}</span>
                         </div>
                       ))
                     : sequenceOrder.map((itemIndex, idx) => (
                         <div key={itemIndex} role="listitem" aria-label={`${t('escape_room.position') || 'Position'} ${idx + 1}: ${currentPuzzle.items[itemIndex]}`} className="flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white">
                           <span className="w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold" aria-hidden="true">{idx + 1}</span>
-                          <span className="flex-1 min-w-0 break-words">{currentPuzzle.items[itemIndex]}</span>
+                          <span className="flex-1 min-w-0 break-words">{_quizLiveMd().inline(currentPuzzle.items[itemIndex])}</span>
                           <div className="flex gap-1" role="group" aria-label={t('escape_room.reorder_buttons') || 'Reorder buttons'}>
                             <button type="button"
                               ref={node => { sequenceButtonsRef.current[itemIndex + ':-1'] = node; }}
@@ -3835,14 +3842,14 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                           onClick={() => selectMatchingItem('left',item)}
                           aria-pressed={isSelected}
                           disabled={isMatched}
-                          aria-label={isMatched ? `${item} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${item} - ${t('escape_room.selected') || 'selected'}` : item}
+                          aria-label={isMatched ? `${_quizLiveMd().plain(item)} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${_quizLiveMd().plain(item)} - ${t('escape_room.selected') || 'selected'}` : _quizLiveMd().plain(item)}
                           className={`w-full p-3 rounded-lg text-left font-medium transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-purple-400 ${
                             isMatched ? 'bg-green-700 text-white opacity-60' :
                             isSelected ? 'bg-purple-600 text-white ring-2 ring-purple-300' :
                             'bg-slate-700 text-white hover:bg-slate-600'
                           }`}
                         >
-                          {item}
+                          {_quizLiveMd().inline(item)}
                           {(isSelected || isMatched) && <span aria-hidden="true" className="ms-2">✓</span>}
                         </button>
                       );
@@ -3859,14 +3866,14 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                           onClick={() => selectMatchingItem('right',item)}
                           aria-pressed={isSelected}
                           disabled={isMatched}
-                          aria-label={isMatched ? `${item} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${item} - ${t('escape_room.selected') || 'selected'}` : item}
+                          aria-label={isMatched ? `${_quizLiveMd().plain(item)} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${_quizLiveMd().plain(item)} - ${t('escape_room.selected') || 'selected'}` : _quizLiveMd().plain(item)}
                           className={`w-full p-3 rounded-lg text-left font-medium transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-purple-400 ${
                             isMatched ? 'bg-green-700 text-white opacity-60' :
                             isSelected ? 'bg-purple-600 text-white ring-2 ring-purple-300' :
                             'bg-slate-700 text-white hover:bg-slate-600'
                           }`}
                         >
-                          {item}
+                          {_quizLiveMd().inline(item)}
                           {(isSelected || isMatched) && <span aria-hidden="true" className="ms-2">✓</span>}
                         </button>
                       );
@@ -3878,7 +3885,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                     <p className="text-xs text-slate-300 mb-2" aria-hidden="true">{t('escape_room.matched_pairs')}</p>
                     <div className="space-y-1">
                       {matchingPairs.map((pair, idx) => (
-                        <div key={pair.left} role="listitem" className="text-sm text-slate-100 flex items-center justify-between gap-2"><span>{pair.left} ↔ {pair.right}</span><button type="button" className="min-h-11 min-w-11 px-3 rounded bg-slate-700" aria-label={`${t('common.remove', { defaultValue: 'Remove' })}: ${pair.left} ↔ ${pair.right}`} onClick={() => removeMatchingPair(pair,idx)}>×</button></div>
+                        <div key={pair.left} role="listitem" className="text-sm text-slate-100 flex items-center justify-between gap-2"><span>{_quizLiveMd().inline(pair.left)} ↔ {_quizLiveMd().inline(pair.right)}</span><button type="button" className="min-h-11 min-w-11 px-3 rounded bg-slate-700" aria-label={`${t('common.remove', { defaultValue: 'Remove' })}: ${_quizLiveMd().plain(pair.left)} ↔ ${_quizLiveMd().plain(pair.right)}`} onClick={() => removeMatchingPair(pair,idx)}>×</button></div>
                       ))}
                     </div>
                   </div>
@@ -4239,6 +4246,13 @@ const EscapeRoomTeacherControls = React.memo(props => {
 
 // @section LIVE_QUIZ — Teacher live quiz broadcast controls
 const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [], callGemini, addToast }) => {
+  // Quiz text uses the Assess view's light markdown when it is loaded; plain text otherwise.
+  const _quizLiveMd = () => {
+    const shared = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
+    if (shared) return shared;
+    const plain = text => text == null ? '' : String(text);
+    return { inline: plain, block: plain, plain };
+  };
     const { t } = useContext(LanguageContext);
     const { quizState, roster } = sessionData;
     const { currentQuestionIndex, phase, responses, responseReceipts, mode, bossStats, teamScores, scoringPolicy } = quizState;
@@ -4635,8 +4649,8 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                     className="h-12 w-16 shrink-0 rounded border border-slate-200 bg-white object-contain"
                                 />
                             )}
-                            <span className={`truncate font-medium ${phase === 'revealed' && !liveQuestionSummary.unscored && stat.isCorrect ? 'text-green-900' : 'text-slate-600'}`} title={stat.text}>
-                                {stat.text}
+                            <span className={`truncate font-medium ${phase === 'revealed' && !liveQuestionSummary.unscored && stat.isCorrect ? 'text-green-900' : 'text-slate-600'}`} title={_quizLiveMd().plain(stat.text)}>
+                                {_quizLiveMd().inline(stat.text)}
                             </span>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
@@ -5382,7 +5396,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                  className="mb-4 max-h-56 w-full rounded-xl border border-slate-200 bg-slate-50 object-contain shadow-sm"
                              />
                          )}
-                         <h2 className="text-2xl font-bold text-slate-800 leading-tight">{question?.question || question?.contextSentence || 'Live response item'}</h2>
+                         <h2 className="text-2xl font-bold text-slate-800 leading-tight">{_quizLiveMd().inline(question?.question || question?.contextSentence || 'Live response item')}</h2>
                          {mode !== 'live-pulse' && !liveQuestionSummary.gameScorable && (
                            <div role="status" className="mt-3 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900">
                              {liveQuestionSummary.unscored
@@ -5413,7 +5427,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                          )}
                                          <p className="text-xs font-semibold text-slate-700">
                                              <span className="mr-1 font-black text-indigo-700">{String.fromCharCode(65 + optionIndex)}.</span>
-                                             {option}
+                                             {_quizLiveMd().inline(option)}
                                          </p>
                                      </div>
                                  ))}
@@ -5523,7 +5537,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                          >
                                              <option value="">— pick option —</option>
                                              {(question?.options || []).map((opt, oi) => (
-                                                 <option key={oi} value={opt}>{String.fromCharCode(65 + oi)}: {opt}</option>
+                                                 <option key={oi} value={opt}>{String.fromCharCode(65 + oi)}: {_quizLiveMd().plain(opt)}</option>
                                              ))}
                                          </select>
                                          <span className="text-slate-600">→ assign to</span>
@@ -5772,7 +5786,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                      {(phase === 'revealed' || bossBattleEnded) && !liveQuestionSummary.unscored && liveAnswerGuide && (
                          <div className="mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10">
                              <span className="block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1">{t('quiz.correct_answer_label')}</span>
-                             <span className="text-lg font-bold">{liveAnswerGuide}</span>
+                             <span className="text-lg font-bold">{_quizLiveMd().inline(liveAnswerGuide)}</span>
                          </div>
                      )}
                 </div>
@@ -7511,6 +7525,13 @@ const LearnerProgressView = React.memo(({
 });
 // @section TEACHER_DASHBOARD — Main teacher dashboard
 const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
+  // Quiz text uses the Assess view's light markdown when it is loaded; plain text otherwise.
+  const _quizLiveMd = () => {
+    const shared = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
+    if (shared) return shared;
+    const plain = text => text == null ? '' : String(text);
+    return { inline: plain, block: plain, plain };
+  };
   const { t } = useContext(LanguageContext);
   const modalRef = useRef(null);
   useFocusTrap(modalRef, true, onClose);
@@ -8094,6 +8115,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const date = new Date().toLocaleDateString();
+      const escReport = (value) => String(_quizLiveMd().plain(value)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       const reportHtml = `
         <div style="font-family: Helvetica, sans-serif; padding: 40px; color: #333;">
             <h1 style="color: #4f46e5; border-bottom: 2px solid #ddd; padding-bottom: 10px;">${t('dashboard.report.title')}</h1>
@@ -8118,7 +8140,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                     ${analytics.misconceptions.map((m, i) => `
                         <li style="margin-bottom: 15px; padding: 15px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px;">
                             <div style="font-weight: bold; color: #991b1b; margin-bottom: 5px;">${t('dashboard.report.question_focus')}:</div>
-                            <div style="font-style: italic; color: #333; margin-bottom: 10px;">"${m.question}"</div>
+                            <div style="font-style: italic; color: #333; margin-bottom: 10px;">"${escReport(m.question)}"</div>
                             <div style="font-size: 12px; font-weight: bold; color: #ef4444;">${t('dashboard.report.students_missed', { count: m.count })}</div>
                         </li>
                     `).join('')}
@@ -8639,7 +8661,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                               <Upload size={48} className="text-slate-600 group-hover:text-indigo-500" />
                          </div>
                          <h3 className="text-2xl font-black text-slate-600 group-hover:text-indigo-700">{t('dashboard.drop_files')}</h3>
-                         <p className="text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors motion-reduce:transition-none">{t('dashboard.batch_supported')}</p>
+                         <p className="text-sm font-bold text-slate-700 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors motion-reduce:transition-none">{t('dashboard.batch_supported')}</p>
                          <input aria-label={t('common.upload_json_file')}
                             type="file"
                             multiple
@@ -8868,7 +8890,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                             <span>Question {i+1}</span>
                                                             <span className="bg-white px-2 rounded text-red-600 border border-red-200">{m.count} {t('dashboard.insights.misses')}</span>
                                                         </div>
-                                                        <p className="text-slate-600 italic line-clamp-2">"{m.question}"</p>
+                                                        <p className="text-slate-600 italic line-clamp-2">"{_quizLiveMd().inline(m.question)}"</p>
                                                     </li>
                                                 ))}
                                             </ul>

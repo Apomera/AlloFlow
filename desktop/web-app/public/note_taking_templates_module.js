@@ -242,14 +242,24 @@ function _checkTemplateReadyForFeedback(templateType, data) {
   }
   return { ok: true, reason: "" };
 }
+const _NOTES_SOURCE_CHAR_BUDGET = 5e4;
 function _buildNotesFeedbackPrompt(templateType, data, sourceText) {
   const meta = _NOTE_RUBRICS[templateType] || _NOTE_RUBRICS["cornell-notes"];
-  const sourceBlock = sourceText ? `
-SOURCE TEXT (what the student was reading / studying):
+  const source = sourceText ? String(sourceText) : "";
+  const sourceCut = source.length > _NOTES_SOURCE_CHAR_BUDGET;
+  const sourceBlock = !source ? "" : !sourceCut ? `
+SOURCE TEXT (the complete text the student was reading / studying):
 """
-${(sourceText || "").slice(0, 3e3)}
+${source}
 """
-` : "";
+` : `
+SOURCE TEXT (only the first ${_NOTES_SOURCE_CHAR_BUDGET} of ${source.length} characters of what the student was reading / studying; the rest was left out):
+"""
+${source.slice(0, _NOTES_SOURCE_CHAR_BUDGET)}
+"""
+If the student quotes or refers to something you cannot find above, it may be in the part that was left out. Do not say it is missing from the text: set "found" to null and say you could only check the first part of the text.
+`;
+  const foundSpec = !source ? "null (no source text provided)" : sourceCut ? "true, false or null (was the student work substantively connected to the source text? null if what they quoted or referred to could be in the part of the source that was left out)" : "true or false (was the student work substantively connected to the source text? If they quoted, was the quote actually present?)";
   const templateLabel = {
     "cornell-notes": "Cornell Notes",
     "lab-report": "Lab Report",
@@ -283,7 +293,7 @@ Return ONLY JSON:
   "strength": "1-2 sentences naming a specific strong choice the student made, with a brief quote from their work in single quotes. Strengths-first; effort counts as a strength if the work is rough.",
   "growthNudge": "1-2 sentences with ONE concrete next-step suggestion. No list. Frame as 'next time, try ___' or 'one thing that could push this further: ___'.",
   "sourceAlignment": {
-    "found": ${sourceText ? "true or false (was the student work substantively connected to the source text? If they quoted, was the quote actually present?)" : "null (no source text provided)"},
+    "found": ${foundSpec},
     "message": "If you found a soft alignment issue, frame as 'I couldn't find this exact line in the text \u2014 did you paraphrase?' Never 'incorrect'. Empty string if no issue."
   },
   "rubric": {

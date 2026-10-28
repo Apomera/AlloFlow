@@ -13158,7 +13158,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       ? { committed: true, findings: [].concat(
                           ((pdfFixResult.axeAudit && pdfFixResult.axeAudit.incomplete) || []).map(_rfMapC('axe', 'incomplete')),
                           ((_rfEaAudit && _rfEaAudit.potentialFindings) || []).map(_rfMapC('equalAccess', 'potential')),
-                          ((_rfEaAudit && _rfEaAudit.manualFindings) || []).map(_rfMapC('equalAccess', 'manual'))) }
+                          ((_rfEaAudit && _rfEaAudit.manualFindings) || []).map(_rfMapC('equalAccess', 'manual')),
+                          // (2026-10-27) Reminders the AI review settled left the checker's counts (option B) but stay a
+                          // person's quick check; their triage verdict shows the AI's reason, as in the report.
+                          ((_rfEaAudit && _rfEaAudit.acknowledgedByAiReview) || []).map((f) => _rfMapC('equalAccess', (f && f.bucket === 'manual') ? 'manual' : 'potential')(f))) }
                       : (_reviewFindingsLive ? { committed: false, findings: _reviewFindingsLive.findings, passNumber: _reviewFindingsLive.passNumber } : null);
                     // Stylesheet-wide Equal Access prompts (2026-10-16): asked of EVERY document with CSS.
                     // The pipeline answers the high-contrast one with a stylesheet check; a person can
@@ -13217,10 +13220,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _rfEngineLabel = { axe: 'axe-core', equalAccess: 'Equal Access' };
                     const _triage = pdfFixResult && pdfFixResult.reviewTriage;
                     const _triageFor = (f) => (_triage && Array.isArray(_triage.dispositions)) ? _triage.dispositions.find((d) => d && d.key === _rfKey(f)) : null;
-                    const _triageLabel = (d) => !d ? '' : d.action === 'not-an-issue' ? ('AI judged this not an issue: ' + (d.reason || 'no reason given'))
-                      : d.action === 'needs-person' ? ('AI says a person must decide' + (d.reason ? ': ' + d.reason : ''))
-                      : d.applied ? ('AI applied a fix; the checker still flags it' + (d.reason ? ': ' + d.reason : ''))
-                      : ('AI suggested a fix that did not pass the safety gate' + (d.skipReason ? ' (' + d.skipReason + ')' : '') + (d.reason ? ': ' + d.reason : ''));
+                    // (2026-10-27) The queue's own words come from pdf_audit.review_queue keys (translated in all packs);
+                    // the AI's reason and engine ids stay as given. {name} placeholders are filled here.
+                    const _rqFill = (s, vars) => Object.keys(vars || {}).reduce((acc, k) => acc.split('{' + k + '}').join(String(vars[k])), String(s));
+                    const _triageLabel = (d) => !d ? '' : d.action === 'not-an-issue' ? ((t('pdf_audit.review_queue.ai_not_issue') || 'AI judged this not an issue') + ': ' + (d.reason || t('pdf_audit.review_queue.ai_no_reason') || 'no reason given'))
+                      : d.action === 'needs-person' ? ((t('pdf_audit.review_queue.ai_needs_person') || 'AI says a person must decide') + (d.reason ? ': ' + d.reason : ''))
+                      : d.applied ? ((t('pdf_audit.review_queue.ai_fix_still_flagged') || 'AI applied a fix; the checker still flags it') + (d.reason ? ': ' + d.reason : ''))
+                      : ((t('pdf_audit.review_queue.ai_fix_gated') || 'AI suggested a fix that did not pass the safety gate') + (d.skipReason ? ' (' + d.skipReason + ')' : '') + (d.reason ? ': ' + d.reason : ''));
                     const _canTriage = typeof (_docPipeline && _docPipeline.resolveReviewFindings) === 'function';
                     const _reviewToWorkbench = (f) => {
                       try { setExpertCommandInput('Review and fix if needed (' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + (_rfBucketLabel[f.bucket] || f.bucket) + ', ' + (f.id || '') + ((f.wcagCriteria || []).length ? ', WCAG ' + f.wcagCriteria.join(', ') : '') + '): ' + (f.description || '')); } catch (_) {}
@@ -13240,11 +13246,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       if (pdfFixResult) {
                         if (!token || token.documentEpoch !== pdfDocumentEpoch || token.html !== pdfFixResult.accessibleHtml
                             || !_commitAsyncHtmlIfCurrent(token, prev => _viewWithReviewAttestations(prev, change(prev.reviewedFindings), _docPipeline))) {
-                          addToast('The document changed before this review was recorded. Check the current findings and try again.', 'info');
+                          addToast(t('pdf_audit.review_queue.toast_changed') || 'The document changed before this review was recorded. Check the current findings and try again.', 'info');
                           return;
                         }
                       } else if (token?.html != null) {
-                        addToast('A result became available. Check its current findings before recording this review.', 'info');
+                        addToast(t('pdf_audit.review_queue.toast_result_available') || 'A result became available. Check its current findings before recording this review.', 'info');
                         return;
                       }
                       const index = _rfOpen.findIndex(f => _rfKey(f) === key);
@@ -13262,25 +13268,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <h4 className="text-sm font-black text-amber-900 flex-1">{t('pdf_audit.review_queue.heading') || 'Needs your judgment'}</h4>
                           <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{_rfSource.committed ? (t('pdf_audit.review_queue.current') || 'current result') : ((t('pdf_audit.review_queue.as_of') || 'as of pass') + ' ' + _rfSource.passNumber)}</span>
                           {_canTriage && _rfOpen.length > 0 && !_remediationInFlight && (
-                            <button type="button" onClick={() => _runReviewTriage(_rfOpen)} disabled={_triageBusy} className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60" title="Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you.">{_triageBusy ? 'Asking AI…' : 'Ask AI to resolve'}</button>
+                            <button type="button" onClick={() => _runReviewTriage(_rfOpen)} disabled={_triageBusy} className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60" title={t('pdf_audit.review_queue.triage_title') || 'Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you.'}>{_triageBusy ? (t('pdf_audit.review_queue.triage_busy') || 'Asking AI…') : (t('pdf_audit.review_queue.triage_button') || 'Ask AI to resolve')}</button>
                           )}
                         </div>
-                        <p data-review-status tabIndex={-1} role="status" aria-live="polite" aria-atomic="true" className="text-xs font-semibold">{_rfOpen.length} pending · {_rfDone} reviewed</p>
+                        <p data-review-status tabIndex={-1} role="status" aria-live="polite" aria-atomic="true" className="text-xs font-semibold">{_rqFill(t('pdf_audit.review_queue.status_counts') || '{pending} pending · {reviewed} reviewed', { pending: _rfOpen.length, reviewed: _rfDone })}</p>
                         <p className="text-[11px] text-amber-900">{_remediationInFlight
                           ? (t('pdf_audit.review_queue.explainer') || 'The automated engines flagged these but cannot decide them — semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own.')
                           : (t('pdf_audit.review_queue.explainer_settled') || 'The automated engines flagged these but cannot decide them — semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself.')}</p>
-                        <p className="text-xs">Marking reviewed records your judgment. It does not repair the document, clear checker findings or change verification.</p>
-                        {_rfSessionOnly > 0 && <p className="text-xs">{_rfSessionOnly} review{_rfSessionOnly === 1 ? ' is' : 's are'} kept only in this workspace from a live pass; these marks are not yet recorded on the saved result.</p>}
+                        <p className="text-xs">{t('pdf_audit.review_queue.marking_note') || 'Marking reviewed records your judgment. It does not repair the document, clear checker findings or change verification.'}</p>
+                        {_rfSessionOnly > 0 && <p className="text-xs">{_rfSessionOnly === 1
+                          ? (t('pdf_audit.review_queue.session_only_one') || 'One review is kept only in this workspace from a live pass; it is not yet recorded on the saved result.')
+                          : _rqFill(t('pdf_audit.review_queue.session_only_many') || '{count} reviews are kept only in this workspace from a live pass; these marks are not yet recorded on the saved result.', { count: _rfSessionOnly })}</p>}
                         {_triage && (
                           <p className="text-[11px] text-amber-900" role="status">{_triage.skipped === 'over-cap'
-                            ? ('The automatic AI pass was skipped: ' + (_triage.found || '') + ' findings exceed its cap of ' + (_triage.cap || 10) + '. "Ask AI to resolve" runs it on the first ' + (_triage.cap || 10) + '.')
+                            ? _rqFill(t('pdf_audit.review_queue.triage_over_cap') || 'The automatic AI pass was skipped: {found} findings exceed its cap of {cap}. "Ask AI to resolve" runs it on the first {cap}.', { found: _triage.found || '', cap: _triage.cap || 10 })
                             : (_triage.skipped
-                              ? ('The AI pass could not run (' + _triage.skipped + ').')
-                              : ('AI attempted ' + _triage.attempted + (_triage.applied ? (', applied ' + _triage.applied + ' fix' + (_triage.applied === 1 ? '' : 'es')) : ', applied no fixes')
-                                + (Number.isFinite(_triage.resolved) ? ('; ' + _triage.resolved + ' no longer flagged after re-check') : '') + '; ' + _rfOpen.length + ' need your judgment.'))}</p>
+                              ? _rqFill(t('pdf_audit.review_queue.triage_failed') || 'The AI pass could not run ({reason}).', { reason: _triage.skipped })
+                              : Number.isFinite(_triage.resolved)
+                                ? _rqFill(t('pdf_audit.review_queue.triage_summary_resolved') || 'AI review: {attempted} looked at, fixes applied: {applied}, no longer flagged after the re-check: {resolved}. Still need your judgment: {open}.', { attempted: _triage.attempted, applied: _triage.applied || 0, resolved: _triage.resolved, open: _rfOpen.length })
+                                : _rqFill(t('pdf_audit.review_queue.triage_summary') || 'AI review: {attempted} looked at, fixes applied: {applied}. Still need your judgment: {open}.', { attempted: _triage.attempted, applied: _triage.applied || 0, open: _rfOpen.length }))}</p>
                         )}
                         {_rfOpen.length === 0 ? (
-                          <p data-review-completion tabIndex={-1} className="text-xs font-semibold">All current findings marked reviewed. These are recorded judgments; verification and any confirmed failures remain unchanged.</p>
+                          <p data-review-completion tabIndex={-1} className="text-xs font-semibold">{t('pdf_audit.review_queue.all_marked') || 'All current findings marked reviewed. These are recorded judgments; verification and any confirmed failures remain unchanged.'}</p>
                         ) : (
                           <ul className="pdf-workspace-review-list space-y-1.5 list-none">
                             {_rfOpen.map((f) => (
@@ -13312,8 +13321,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   {_rfIsSheet(f) && _rfCanConfirmSheet && (
                                     <button type="button" onClick={() => _confirmStylesheet(f.id, true)} data-review-action="confirm-stylesheet" data-review-key={_rfKey(f)} className="px-1.5 py-0.5 rounded bg-emerald-800 text-white hover:bg-emerald-900 font-bold transition-colors" title={t('pdf_audit.sheet_review.confirm_title') || 'I checked this myself. Recorded for this exact document and counted toward verification; any change to the document asks again.'} aria-label={(t('pdf_audit.sheet_review.confirm_aria') || 'Confirm for this document:') + ' ' + f.id}>{t('pdf_audit.sheet_review.confirm') || 'Confirm for this document'}</button>
                                   )}
-                                  <button type="button" onClick={() => _reviewToWorkbench(f)} data-review-action="workbench" data-review-key={_rfKey(f)} aria-label={'Open Workbench for ' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + f.id} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.wb_title') || 'Send to the Expert Workbench — prefills a targeted command you review and run'}>Workbench</button>
-                                  <button type="button" onClick={event => _setReviewAttestation(event, _rfKey(f), true)} data-review-action="mark" data-review-key={_rfKey(f)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-800 hover:text-white font-bold transition-colors" title={pdfFixResult ? (t('pdf_audit.review_queue.done_title') || 'Mark as reviewed — I checked this myself. Recorded in the audit report as a human attestation.') : 'Mark as reviewed in this workspace. No saved result is available yet.'} aria-label={'Mark reviewed: ' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + f.id}>Mark reviewed</button>
+                                  <button type="button" onClick={() => _reviewToWorkbench(f)} data-review-action="workbench" data-review-key={_rfKey(f)} aria-label={_rqFill(t('pdf_audit.review_queue.workbench_aria') || 'Open Workbench for {engine} {id}', { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id })} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.wb_title') || 'Send to the Expert Workbench — prefills a targeted command you review and run'}>{t('pdf_audit.review_queue.workbench') || 'Workbench'}</button>
+                                  <button type="button" onClick={event => _setReviewAttestation(event, _rfKey(f), true)} data-review-action="mark" data-review-key={_rfKey(f)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-800 hover:text-white font-bold transition-colors" title={pdfFixResult ? (t('pdf_audit.review_queue.done_title') || 'Mark as reviewed — I checked this myself. Recorded in the audit report as a human attestation.') : (t('pdf_audit.review_queue.mark_title_unsaved') || 'Mark as reviewed in this workspace. No saved result is available yet.')} aria-label={_rqFill(t('pdf_audit.review_queue.mark_aria') || 'Mark reviewed: {engine} {id}', { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id })}>{t('pdf_audit.review_queue.done_aria') || 'Mark reviewed'}</button>
                                 </div>
                               </li>
                             ))}
@@ -13334,15 +13343,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                         )}
                         {_rfDone > 0 && <details className="pdf-workspace-reviewed">
-                          <summary className="cursor-pointer text-xs font-semibold">Reviewed findings ({_rfDone})</summary>
-                          <p className="text-xs mt-2">Undo a mark to return that finding to the pending list. This does not change the document or verification.</p>
+                          <summary className="cursor-pointer text-xs font-semibold">{_rqFill(t('pdf_audit.review_queue.reviewed_summary') || 'Reviewed findings ({count})', { count: _rfDone })}</summary>
+                          <p className="text-xs mt-2">{t('pdf_audit.review_queue.undo_note') || 'Undo a mark to return that finding to the pending list. This does not change the document or verification.'}</p>
                           <ul className="pdf-workspace-review-list mt-2 space-y-1.5 list-none">{_rfReviewed.map(f => (
                             <li key={_rfKey(f)} className="pdf-workspace-review-row flex items-start gap-2 rounded-lg border border-slate-300 p-2 text-xs">
                               <div className="flex-1 min-w-0"><strong>{(_rfEngineLabel[f.engine] || f.engine) + ' · ' + f.id}</strong>{f.description && <p>{f.description}</p>}</div>
-                              <div className="pdf-workspace-review-actions"><button type="button" data-review-action="undo" data-review-key={_rfKey(f)} onClick={event => _setReviewAttestation(event, _rfKey(f), false)} aria-label={'Undo reviewed mark: ' + (_rfEngineLabel[f.engine] || f.engine) + ' ' + f.id} className="rounded border px-2 py-1">Undo</button></div>
+                              <div className="pdf-workspace-review-actions"><button type="button" data-review-action="undo" data-review-key={_rfKey(f)} onClick={event => _setReviewAttestation(event, _rfKey(f), false)} aria-label={_rqFill(t('pdf_audit.review_queue.undo_aria') || 'Undo reviewed mark: {engine} {id}', { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id })} className="rounded border px-2 py-1">{t('pdf_audit.sheet_review.undo') || 'Undo'}</button></div>
                             </li>
                           ))}</ul>
-                          <button type="button" data-review-action="reset" onClick={event => _setReviewAttestation(event, null, false)} className="mt-2 rounded border px-2 py-1 text-xs">Reset all reviewed marks</button>
+                          <button type="button" data-review-action="reset" onClick={event => _setReviewAttestation(event, null, false)} className="mt-2 rounded border px-2 py-1 text-xs">{t('pdf_audit.review_queue.reset_all') || 'Reset all reviewed marks'}</button>
                         </details>}
                       </div>
                     );

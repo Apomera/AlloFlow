@@ -3,6 +3,8 @@ import * as engine from './lesson_board_engine.js';
 import { Amounts } from './lesson_board_play_extras.jsx';
 import { tr } from './lesson_board_strings.js';
 const React = window.React;
+// AI text uses the Assess view's light markdown when it is loaded; plain text otherwise.
+const lbMd = () => window.AlloModules?.QuizView?.markdown || { inline: v => v == null ? '' : String(v), block: v => v == null || v === '' ? null : React.createElement('p', null, String(v)), plain: v => v == null ? '' : String(v) };
 const { useState, useEffect, useRef } = React;
 // Same icosahedron geometry as Adventure mode's d20 ([rotateY, rotateX, flip]),
 // drawn inside the board because that overlay sits below this dialog's layer.
@@ -23,7 +25,7 @@ export function D20({ value, animate, dim = false }) {
   return <span className="lb-d20" aria-hidden="true" data-still={!animate} data-dim={dim} data-d20={value}><span className="lb-d20-scale"><span className="lb-d20-body" style={{ transform }}>{FACES.map(([y, x, z], index) => <span key={index} className="lb-d20-face" data-top={index + 1 === value} style={{ transform: `rotateY(${y}deg) rotateX(${x}deg) translateZ(151px)${z ? ' rotateZ(180deg)' : ''}` }}>{index + 1}</span>)}</span></span></span>;
 }
 export function DiscoveryCard({ card, fresh = false, t }) {
-  return <article className="lb-discovery-card" data-discovery-card={card.id} data-fresh={fresh}><p className="lb-eyebrow">{tr(t, 'discovery_card', 'Discovery card')}</p><h5>{card.title}</h5><p>{card.text}</p><blockquote>{card.sourceQuote}</blockquote></article>;
+  return <article className="lb-discovery-card" data-discovery-card={card.id} data-fresh={fresh}><p className="lb-eyebrow">{tr(t, 'discovery_card', 'Discovery card')}</p><h5>{card.title}</h5><p>{lbMd().inline(card.text)}</p><blockquote>{lbMd().inline(card.sourceQuote)}</blockquote></article>;
 }
 // Rolls play once per page visit; later renders show the settled result.
 const played = new Set();

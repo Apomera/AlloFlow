@@ -466,7 +466,7 @@ function SiAssessmentReport(p) {
         return h(
           "li",
           { key: "q-" + item.number, value: item.number, "data-assessment-item": item.verdict, style: { marginBottom: 6, fontSize: "0.82rem", color: "#1e293b" } },
-          h("div", { style: { fontWeight: 600 } }, item.question || tr("Question {n}", { n: item.number })),
+          h("div", { style: { fontWeight: 600 } }, item.question ? window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown ? window.AlloModules.QuizView.markdown.inline(item.question) : item.question : tr("Question {n}", { n: item.number })),
           h(
             "div",
             { style: { display: "flex", flexWrap: "wrap", gap: 6, alignItems: "baseline", marginTop: 2 } },
@@ -3923,7 +3923,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                               /* @__PURE__ */ React.createElement(
                                 "div",
                                 { style: { flex: 1, minWidth: 0 } },
-                                /* @__PURE__ */ React.createElement("div", { style: { color: "#0f172a", fontWeight: 700, lineHeight: 1.35 } }, assessmentReport ? tr("Quiz responses") : entry.question),
+                                /* @__PURE__ */ React.createElement("div", { style: { color: "#0f172a", fontWeight: 700, lineHeight: 1.35 } }, assessmentReport ? tr("Quiz responses") : window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown ? window.AlloModules.QuizView.markdown.inline(entry.question) : entry.question),
                                 entry.partLabel && /* @__PURE__ */ React.createElement(
                                   "div",
                                   { style: { color: "#475569", fontSize: "0.74rem", fontWeight: 600, marginTop: 2 } },

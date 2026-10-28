@@ -195,6 +195,9 @@ const fillLiveCopy = (text, params) => {
   Object.keys(params || {}).forEach((name) => { out = out.split('{' + name + '}').join(String(params[name])); });
   return out;
 };
+// Quiz text uses the Assess view's light markdown (**bold**, *italic*, lists); plain text until that module loads.
+const LIVE_QUIZ_PLAIN_MD = { inline: v => v == null ? '' : String(v), block: v => v == null ? '' : String(v), plain: v => v == null ? '' : String(v) };
+const liveQuizMd = () => window.AlloModules?.QuizView?.markdown || LIVE_QUIZ_PLAIN_MD;
 const LiveAdvancedQuizResponse = React.memo(({
   question,
   questionType,
@@ -402,7 +405,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                               onClick={() => toggle(index)}
                               className={`${sharedButtonClass} ${active ? 'border-yellow-300 bg-yellow-300 text-indigo-950 ring-4 ring-yellow-200/30' : 'border-white/30 bg-white text-slate-900 hover:border-indigo-300'}`}
                           >
-                              <span aria-hidden="true" className="mr-2">{active ? '✓' : '□'}</span>{option}
+                              <span aria-hidden="true" className="mr-2">{active ? '✓' : '□'}</span>{liveQuizMd().inline(option)}
                           </button>
                       );
                   })}
@@ -446,7 +449,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                       onClick={() => patchDraft({ [field]: index })}
                       className={`${sharedButtonClass} ${selectedIndex === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`}
                   >
-                      {String.fromCharCode(65 + index)}. {option}
+                      {String.fromCharCode(65 + index)}. {liveQuizMd().inline(option)}
                   </button>
               ))}
           </div>
@@ -458,7 +461,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                   {renderChoiceGrid(answerOptions, draft.answerIdx, 'answerIdx', true)}
               </fieldset>
               <fieldset>
-                  <legend className="mb-2 text-sm font-black text-white">{fillLiveCopy(t('quiz.live_student.part2', { prompt: boundedLiveQuizText(question?.evidencePrompt || (t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.'), 500) }) || 'Part 2 — {prompt}', { prompt: boundedLiveQuizText(question?.evidencePrompt || (t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.'), 500) })}</legend>
+                  <legend className="mb-2 text-sm font-black text-white">{fillLiveCopy(t('quiz.live_student.part2', { prompt: boundedLiveQuizText(liveQuizMd().plain(question?.evidencePrompt) || (t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.'), 500) }) || 'Part 2 — {prompt}', { prompt: boundedLiveQuizText(liveQuizMd().plain(question?.evidencePrompt) || (t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.'), 500) })}</legend>
                   {renderChoiceGrid(evidenceOptions, draft.evidenceIdx, 'evidenceIdx')}
               </fieldset>
               <button type="button" onClick={submitAnswerEvidence} disabled={isDisabled || !Number.isInteger(draft.answerIdx) || !Number.isInteger(draft.evidenceIdx)} className={submitButtonClass}>
@@ -545,7 +548,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                               onClick={() => chooseMisplaced(index)}
                               className={`${sharedButtonClass} w-full ${draft.clickedIdx === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`}
                           >
-                              {index + 1}. {item}
+                              {index + 1}. {liveQuizMd().inline(item)}
                           </button>
                       </li>
                   ))}
@@ -567,9 +570,9 @@ const LiveAdvancedQuizResponse = React.memo(({
                           {orderAnswer.map((canonicalIndex, position) => (
                               <li key={canonicalIndex} className="flex items-center gap-2 rounded-2xl border border-white/30 bg-white px-3 py-2 text-slate-900">
                                   <span className="w-6 text-xs font-black">{position + 1}.</span>
-                                  <span className="min-w-0 flex-1 text-sm font-bold">{items[canonicalIndex]}</span>
-                                  <button type="button" disabled={isDisabled || position === 0} aria-label={fillLiveCopy(t('quiz.live_student.move_up', { item: items[canonicalIndex] }) || 'Move up: {item}', { item: items[canonicalIndex] })} onClick={() => moveItem(position, -1)} className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40">▲</button>
-                                  <button type="button" disabled={isDisabled || position === orderAnswer.length - 1} aria-label={fillLiveCopy(t('quiz.live_student.move_down', { item: items[canonicalIndex] }) || 'Move down: {item}', { item: items[canonicalIndex] })} onClick={() => moveItem(position, 1)} className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40">▼</button>
+                                  <span className="min-w-0 flex-1 text-sm font-bold">{liveQuizMd().inline(items[canonicalIndex])}</span>
+                                  <button type="button" disabled={isDisabled || position === 0} aria-label={fillLiveCopy(t('quiz.live_student.move_up', { item: liveQuizMd().plain(items[canonicalIndex]) }) || 'Move up: {item}', { item: liveQuizMd().plain(items[canonicalIndex]) })} onClick={() => moveItem(position, -1)} className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40">▲</button>
+                                  <button type="button" disabled={isDisabled || position === orderAnswer.length - 1} aria-label={fillLiveCopy(t('quiz.live_student.move_down', { item: liveQuizMd().plain(items[canonicalIndex]) }) || 'Move down: {item}', { item: liveQuizMd().plain(items[canonicalIndex]) })} onClick={() => moveItem(position, 1)} className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40">▼</button>
                               </li>
                           ))}
                       </ol>
@@ -632,7 +635,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                           onClick={() => choosePair(index)}
                           className={`${sharedButtonClass} grid w-full grid-cols-2 gap-4 ${draft.clickedPairIdx === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`}
                       >
-                          <span>{pair.left}</span><span>↔ {pair.right}</span>
+                          <span>{liveQuizMd().inline(pair.left)}</span><span>↔ {liveQuizMd().inline(pair.right)}</span>
                       </button>
                   ))}
               </div>
@@ -1106,7 +1109,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                              </div>
                          )}
                          {bossGmEventText && <p role="status" aria-live="polite" className="mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100">🎲 {t('concept_quest.boss_teacher_gm', { event: bossGmEventText })}</p>}
-                         {isRevealed && bossStats.roundFeedback && <details className="mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"><summary className="cursor-pointer font-bold">{bossStats.roundFeedback.scoringPaused ? (t('quiz.live_student.battle_scoring_paused') || 'Battle scoring paused') : t('concept_quest.boss_round_recap', { accuracy: bossStats.roundFeedback.accuracy })}</summary>{bossStats.roundFeedback.explanation ? <p className="mt-1">{bossStats.roundFeedback.explanation}</p> : <p className="mt-1">{t('concept_quest.boss_discuss_evidence')}</p>}</details>}
+                         {isRevealed && bossStats.roundFeedback && <details className="mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"><summary className="cursor-pointer font-bold">{bossStats.roundFeedback.scoringPaused ? (t('quiz.live_student.battle_scoring_paused') || 'Battle scoring paused') : t('concept_quest.boss_round_recap', { accuracy: bossStats.roundFeedback.accuracy })}</summary>{bossStats.roundFeedback.explanation ? <div className="mt-1">{liveQuizMd().block(bossStats.roundFeedback.explanation)}</div> : <p className="mt-1">{t('concept_quest.boss_discuss_evidence')}</p>}</details>}
                      </div>
                 </div>
             )}
@@ -1123,11 +1126,11 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                     />
                 )}
                 <h3 id="student-quiz-question" aria-live="polite" aria-atomic="true" className="text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm" data-help-key="quiz_student_question">
-                    {currentQuestion ? currentQuestion.question : t('quiz.loading_question')}
+                    {currentQuestion ? liveQuizMd().inline(currentQuestion.question) : t('quiz.loading_question')}
                 </h3>
                 {currentQuestion && showTranslated && currentQuestion.question_en && (
                     <p className="mt-3 text-base md:text-lg text-white/70 italic">
-                        {currentQuestion.question_en}
+                        {liveQuizMd().inline(currentQuestion.question_en)}
                     </p>
                 )}
             </div>
@@ -1223,7 +1226,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                             data-autofocus={idx === 0 && !isDisabled ? 'true' : undefined}
                             onClick={() => submitQuizResponse(idx)}
                             disabled={isDisabled}
-                            aria-label={String(option) + (showTranslated && currentQuestion?.options_en?.[idx] ? '. ' + currentQuestion.options_en[idx] : '')}
+                            aria-label={liveQuizMd().plain(option) + (showTranslated && currentQuestion?.options_en?.[idx] ? '. ' + liveQuizMd().plain(currentQuestion.options_en[idx]) : '')}
                             aria-pressed={isSelected}
                             className={`
                                 relative group overflow-hidden p-6 rounded-2xl font-bold text-lg md:text-xl transition-all transform duration-300 shadow-xl border-b-4 active:border-b-0 active:translate-y-1
@@ -1250,10 +1253,10 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                     {letter}
                                 </div>
                                 <div className="flex flex-col items-start gap-1 text-left leading-tight">
-                                    <span>{option}</span>
+                                    <span>{liveQuizMd().inline(option)}</span>
                                     {showTranslated && currentQuestion?.options_en?.[idx] && (
                                         <span className="text-xs opacity-60 font-normal italic">
-                                            {currentQuestion.options_en[idx]}
+                                            {liveQuizMd().inline(currentQuestion.options_en[idx])}
                                         </span>
                                     )}
                                 </div>
@@ -1390,8 +1393,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                 )}
                 {isRevealed && !isUnscoredLiveQuestion && <section aria-label={(t('quiz.live_student.answer_review') || 'Answer review')} data-quiz-answer-review="true" className="w-full max-w-2xl rounded-xl border border-indigo-300 bg-indigo-950 p-4 text-left text-indigo-100">
                     <h3 className="font-bold text-white">{(t('quiz.live_student.review_answer') || 'Review the answer')}</h3>
-                    <p className="mt-2 text-sm">{window.AlloModules?.QuizLiveAggregators?.describePresentationCorrectAnswer?.(currentQuestion || {}) || (t('quiz.live_student.discuss_with_teacher') || 'Discuss the response with your teacher.')}</p>
-                    {(currentQuestion?.explanation || currentQuestion?.rationale) && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{currentQuestion.explanation || currentQuestion.rationale}</p>}
+                    <p className="mt-2 text-sm">{liveQuizMd().inline(window.AlloModules?.QuizLiveAggregators?.describePresentationCorrectAnswer?.(currentQuestion || {})) || (t('quiz.live_student.discuss_with_teacher') || 'Discuss the response with your teacher.')}</p>
+                    {(currentQuestion?.explanation || currentQuestion?.rationale) && <div className="mt-2 text-sm leading-relaxed">{liveQuizMd().block(currentQuestion.explanation || currentQuestion.rationale)}</div>}
                 </section>}
                 {isRevealed && hasAnswered && deliveryStatus !== 'receipt' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && liveExplanation && (
                              <div className="bg-white/95 backdrop-blur-xl text-slate-800 p-6 rounded-3xl border border-white/20 shadow-2xl w-full max-w-2xl text-left relative overflow-hidden" data-quiz-explanation="true">
@@ -1399,18 +1402,18 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
                                      <Sparkles size={14} className="fill-yellow-400 text-yellow-500"/> {(t('quiz.live_student.explanation') || 'Explanation')}
                                  </h4>
-                                 {/* XSS guard: factCheck is AI-generated; escape <,>,& BEFORE the markdown-to-HTML replacements so injected tags can't echo through. */}
-                                 <div
+                                 {/* Shared light markdown when loaded. XSS guard on the fallback: factCheck is AI-generated; escape <,>,& BEFORE the bold replacement so injected tags can't echo through. */}
+                                 {window.AlloModules?.QuizView?.markdown ? <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed">{liveQuizMd().block(liveExplanation)}</div> : <div
                                     className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap"
                                     dangerouslySetInnerHTML={{ __html: liveExplanation
                                         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                                         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                                         .replace(/\n/g, '<br/>') }}
-                                 />
+                                 />}
                                  {showTranslated && currentQuestion.factCheck_en && (
                                      <div className="mt-3 pt-3 border-t border-slate-200">
                                          <p className="text-xs text-slate-600 italic whitespace-pre-wrap">
-                                             {currentQuestion.factCheck_en}
+                                             {liveQuizMd().inline(currentQuestion.factCheck_en)}
                                          </p>
                                      </div>
                                  )}

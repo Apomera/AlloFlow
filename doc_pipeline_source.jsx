@@ -312,7 +312,7 @@ function _alloCollectReviewFindings(axeAudit, eaAudit) {
         description: String(f.description || f.help || ''),
         nodes: Number.isFinite(Number(f.nodes)) ? Number(f.nodes) : (Array.isArray(f.nodes) ? f.nodes.length : 0),
         wcagCriteria: Array.isArray(f.wcagCriteria) ? f.wcagCriteria.slice(0, 6) : [],
-        details: Array.isArray(f.details) ? f.details.slice(0, 5).map(function (d) {
+        details: Array.isArray(f.details) ? f.details.slice(0, 12).map(function (d) {
           return d && typeof d === 'object' ? { snippet: String(d.snippet || '').slice(0, 500), message: String(d.message || '').slice(0, 300), path: d.path && typeof d.path === 'object' ? { dom: String(d.path.dom || ''), aria: String(d.path.aria || '') } : null } : null;
         }).filter(Boolean) : [],
       });
@@ -367,7 +367,8 @@ function _alloParseTriageReply(text) {
     if (!ACTIONS[action]) return null;
     return {
       key: it.key.slice(0, 200), action: action,
-      reason: String(it.reason || '').replace(/\s+/g, ' ').trim().slice(0, 300),
+      // (2026-10-27) a reason covering several elements runs long; 300 cut "...the full ax" mid-word (budget2)
+      reason: (function (r) { return r.length > 600 ? r.slice(0, 600).replace(/\s+\S*$/, '') + '…' : r; })(String(it.reason || '').replace(/\s+/g, ' ').trim()),
       replacement: action === 'fix' && typeof it.replacement === 'string' ? it.replacement : null,
     };
   }).filter(Boolean);
@@ -457,13 +458,39 @@ function _alloOcrWordsScriptMismatch(words, pageText) {
 // "Accessible Document — <file>" placeholder. The fix-stage preflight replaces that placeholder AFTER
 // the first audit, so the loop re-sent the stale complaint and paid for 5 "UNCHANGED" answers (USCIS
 // civics, 2026-10-26). Keyed by ruleId and the document's own structure, never by the issue's prose.
+// (2026-10-27) Not when the finding quotes the CURRENT title: that is a complaint about this title, not a
+// stale one (agenda2: the h1 "Maine School Administrative District No. 35" named the district, not the
+// agenda, and the AI's finding was dropped as settled).
 function _alloTitleIssueSettled(issue, html) {
   if (String((issue && issue.ruleId) || '').toLowerCase().trim() !== 'document-title') return false;
   var plain = function (s) { return String(s || '').replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim(); };
   var t = /<title\b(?:[^>"']|"[^"]*"|'[^']*')*>([\s\S]*?)<\/title\s*>/i.exec(String(html || ''));
   var h = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(String(html || ''));
   var title = t ? plain(t[1]) : '';
-  return !!(title && h && !/^Accessible Document — /.test(title) && title === plain(h[1]));
+  if (!title || !h || /^Accessible Document — /.test(title) || (title !== plain(h[1]) && title !== plain(_alloTitleFromHeading(html)))) return false;
+  var cited = plain(String((issue && (issue.location || issue.evidence)) || '').replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
+  return !(cited && cited.toLowerCase().indexOf(title.toLowerCase()) !== -1);
+}
+
+// The page title from the printed heading: the h1, plus a subtitle line printed right under it when that
+// line is a short label (no sentence punctuation, not a URL or address). agenda: "Maine School
+// Administrative District No. 35" + "Board of Directors – Regular Meeting Agenda"; a form whose next line is
+// a sentence keeps its h1 alone. Returns HTML-safe text, or '' when there is no plain-text h1.
+function _alloTitleFromHeading(html) {
+  var s = String(html || '');
+  var h = /<h1\b[^>]*>([^<]+)<\/h1>/i.exec(s);
+  if (!h) return '';
+  var dec = function (x) { return String(x || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim(); };
+  var esc = function (x) { return x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+  var head = dec(h[1]);
+  if (!head) return '';
+  var next = /^\s*<p\b[^>]*>((?:(?!<\/?(?:p|br)\b)[\s\S])*?)<\/p>/i.exec(s.slice(h.index + h[0].length));
+  var sub = next ? dec(next[1]) : '';
+  var low = function (x) { return x.toLowerCase(); };
+  var ok = sub && sub.length >= 4 && sub.length <= 70 && sub.split(' ').length >= 2 && /\p{L}/u.test(sub)
+    && !/[.:;,!?]$/.test(sub) && !/^(?:https?:|www\.)|@/i.test(sub)
+    && low(head).indexOf(low(sub)) === -1 && low(sub).indexOf(low(head)) === -1;
+  return esc(ok ? head + ' – ' + sub : head);
 }
 
 function _alloExecutableActiveContentFindings(result) {
@@ -1056,7 +1083,9 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
       if (jsTree && typeof jsTree.get !== 'function') {
         unexaminedStructures++;
         counts.javascript++;
-      } else if (jsTree) {
+      } else if (jsTree && (jsTree.get(nm('Kids')) || jsTree.get(nm('Names')))) {
+        // (2026-10-27) An EMPTY tree (no /Names, no /Kids: child-find intake form's "<< >>") holds no script and
+        // is readable, so it counts 0; anything with entries is examined (or fails closed) as before.
         if (jsTree.get(nm('Kids'))) unexaminedStructures++;
         var jsNames = _resolve(jsTree.get(nm('Names')));
         if (jsNames && typeof jsNames.size !== 'function') unexaminedStructures++;
@@ -1868,6 +1897,233 @@ var _alloJoinChunkSplitParagraphs = function (chunkBlockArrays) {
     joined++;
   }
   return joined;
+};
+
+// Tagged-PDF linking (2026-10-27, complaint): a short leaf repeated in the document ("Address", "City" in
+// every contact block of a form) has no unique match anywhere, but between its nearest LINKED neighbours
+// in reading order (block indexes lo < k < hi) it may have exactly one. Returns { start, end } for the ONE
+// run of up to 3 adjacent free blocks inside (lo, hi) whose keys join to tKey, or null (none, or several).
+// stripFirst (list items): the first block may carry the list marker the builder moves into /Lbl.
+var _alloBetweenNeighboursRun = function (blocks, isFree, tKey, lo, hi, stripFirst) {
+  if (!tKey || !(hi - lo > 1)) return null;
+  var hit = null;
+  for (var s = Math.max(0, lo + 1); s < Math.min(hi, blocks.length); s++) {
+    if (!isFree(s)) continue;
+    var keyRun = '';
+    for (var e = s; e < Math.min(hi, blocks.length) && e - s < 3; e++) {
+      if (!isFree(e)) break;
+      keyRun += (stripFirst && e === s && blocks[e].keyNoMarker != null) ? blocks[e].keyNoMarker : blocks[e].key;
+      if (keyRun === tKey) { if (hit) return null; hit = { start: s, end: e }; break; }
+      if (keyRun.length >= tKey.length) break;
+    }
+  }
+  return hit;
+};
+
+// Tagged-PDF linking (2026-10-27, child-find): a run of up to maxLen ADJACENT free blocks (no skipping, in
+// page order, starting after `after`) whose keys join exactly to tKey; the first block may drop its list marker
+// (stripFirst). Returns the block indexes or null. Unlike the interleaved matcher it never gathers scattered
+// fragments, which on a tax form of short line labels took text other labels needed (irs1040).
+var _alloAdjacentExactRun = function (blocks, isFree, tKey, stripFirst, after, maxLen) {
+  if (!tKey) return null;
+  for (var s = Math.max(0, after + 1); s < blocks.length; s++) {
+    if (!isFree(s)) continue;
+    var keyRun = '', idxs = [];
+    for (var e = s; e < blocks.length && e - s < (maxLen || 6); e++) {
+      if (!isFree(e)) break;
+      var k = (stripFirst && e === s && blocks[e].keyNoMarker != null && !tKey.startsWith(blocks[e].key)) ? blocks[e].keyNoMarker : blocks[e].key;
+      if (!k || !tKey.startsWith(k, keyRun.length)) break;
+      keyRun += k; idxs.push(e);
+      if (keyRun === tKey) return idxs;
+    }
+  }
+  return null;
+};
+
+// Tagged-PDF links (2026-10-27): where a link annotation belongs in the tag tree. Every /Link sat at the
+// end of /Document holding only its annotation (osep3: 25 links), so a screen reader met each one after the
+// whole letter and keyboard Tab order (the pages' /Tabs /S follow the structure) jumped to the end. Finds the
+// link's printed words (key lk) among the linked leaves' blocks on its page; returns { leaf, first, last, own }
+// (block indexes in that leaf's /K order; own = the words are exactly those whole blocks, so they move into
+// the /Link) or null. used: ids already taken, so the n-th link with the same words takes the n-th copy.
+// leaves: [{ blocks: [{ page, key }] }] in reading order.
+var _alloLinkHostPlan = function (leaves, pageKey, lk, used) {
+  if (!lk || lk.length < 3) return null;
+  for (var li = 0; li < leaves.length; li++) {
+    var bl = leaves[li].blocks, segs = [], cur = null;
+    for (var bi = 0; bi < bl.length; bi++) {
+      if (bl[bi].page !== pageKey) { cur = null; continue; }
+      if (!cur) { cur = { start: bi, text: '', offs: [] }; segs.push(cur); }
+      cur.offs.push(cur.text.length);
+      cur.text += bl[bi].key;
+    }
+    for (var si = 0; si < segs.length; si++) {
+      var sg = segs[si], from = 0, at;
+      while ((at = sg.text.indexOf(lk, from)) !== -1) {
+        var id = li + ':' + (sg.start + '') + ':' + at;
+        from = at + 1;
+        if (used.has(id)) continue;
+        var first = -1, last = -1;
+        for (var j = 0; j < sg.offs.length; j++) {
+          var s = sg.offs[j], e = j + 1 < sg.offs.length ? sg.offs[j + 1] : sg.text.length;
+          if (e > at && s < at + lk.length) { if (first < 0) first = j; last = j; }
+        }
+        var end = last + 1 < sg.offs.length ? sg.offs[last + 1] : sg.text.length;
+        used.add(id);
+        return { leaf: li, first: sg.start + first, last: sg.start + last, own: sg.offs[first] === at && end === at + lk.length };
+      }
+    }
+  }
+  return null;
+};
+
+// Tagged-PDF linking (2026-10-27, complaint form): RANK-ORDER matching for repeated short labels. Earlier
+// passes link a repeated label ("City" in each of 4 contact blocks) to whichever copy they reach first, often
+// a later block's, which leaves the right copy unclaimed and the next "City" with nothing. Per label (key
+// <= maxKey chars, longest labels first), when its leaves and the printed copies are equal in number, the
+// k-th leaf in reading order takes the k-th copy in page order (a run of up to 3 adjacent blocks; list items
+// may skip their marker). A copy may be taken back from a leaf of the same label, or from a SHORTER repeated
+// label not yet settled ("Child's Name*" takes its "name" block from the "Name" group). Planned on copies:
+// returns the new run per leaf ({start,end} | null) only when fewer leaves end unlinked and every block
+// taken from a leaf is linked again; otherwise null (nothing changes).
+// leaves: [{ key, role, linkable, run }]; blocks: [{ key, keyNoMarker, free }].
+var _alloOrderedRepeatsPlan = function (leaves, blocks, maxKey) {
+  maxKey = maxKey || 30;
+  var n = blocks.length, i, k;
+  var link = leaves.map(function (l) { return l.run ? { start: l.run.start, end: l.run.end } : null; });
+  var shortKey = function (j) { var key = leaves[j].key; return !!key && key.length <= maxKey; };
+  var owner = []; for (k = 0; k < n; k++) owner.push(-1);
+  leaves.forEach(function (l, j) { if (l.run && shortKey(j) && l.run.end - l.run.start <= 2) for (var x = l.run.start; x <= l.run.end; x++) owner[x] = j; });
+  var origOwner = owner.slice();
+  var groups = new Map();
+  leaves.forEach(function (l, j) { if (!l.linkable || !shortKey(j)) return; if (!groups.has(l.key)) groups.set(l.key, []); groups.get(l.key).push(j); });
+  var keys = Array.from(groups.keys()).sort(function (a, b) { return b.length - a.length; });
+  var settled = new Set(), changed = false;
+  var release = function (j) { var r = link[j]; if (!r) return; for (var x = r.start; x <= r.end; x++) if (owner[x] === j) owner[x] = -1; link[j] = null; };
+  keys.forEach(function (K) {
+    var G = groups.get(K);
+    if (!G.some(function (j) { return !link[j]; })) { settled.add(K); return; }
+    var mayTake = function (x) {
+      var o = owner[x];
+      if (o < 0) return !!blocks[x].free || origOwner[x] >= 0; // a copy freed earlier in this plan is takeable too
+      var ok = leaves[o].key;
+      return ok === K || (!settled.has(ok) && ok.length < K.length && (groups.get(ok) || []).length >= 2);
+    };
+    var strip = G.some(function (j) { return leaves[j].role === 'LBody'; });
+    var runs = [];
+    for (var s = 0; s < n; s++) {
+      if (!mayTake(s)) continue;
+      var keyRun = '';
+      for (var e = s; e < n && e - s < 3; e++) {
+        if (!mayTake(e)) break;
+        keyRun += (strip && e === s && blocks[e].keyNoMarker != null && !K.startsWith(blocks[e].key)) ? blocks[e].keyNoMarker : blocks[e].key;
+        if (keyRun === K) { runs.push({ start: s, end: e }); s = e; break; }
+        if (keyRun.length >= K.length) break;
+      }
+    }
+    settled.add(K);
+    if (runs.length !== G.length) return;
+    G.forEach(function (j, idx) {
+      var r = runs[idx];
+      if (link[j] && link[j].start === r.start && link[j].end === r.end) return;
+      release(j);
+      for (var x = r.start; x <= r.end; x++) if (owner[x] >= 0 && owner[x] !== j) release(owner[x]);
+      for (x = r.start; x <= r.end; x++) owner[x] = j;
+      link[j] = { start: r.start, end: r.end };
+      changed = true;
+    });
+  });
+  if (!changed) return null;
+  for (k = 0; k < n; k++) if (origOwner[k] >= 0 && owner[k] < 0) return null; // a block taken from a leaf left unlinked
+  var unlinked = function (runsArr) { var c = 0; for (i = 0; i < leaves.length; i++) if (leaves[i].linkable && !runsArr[i]) c++; return c; };
+  return unlinked(link) < unlinked(leaves.map(function (l) { return l.run || null; })) ? link : null;
+};
+
+// Tagged-PDF linking (2026-10-27): the unclaimed blocks that rebuild a leaf's key EXACTLY in page order,
+// starting where a block begins the key and skipping blocks that do not continue it (another text drawn
+// in between: a footnote crossing the same page turn). A block ending "letter-" may drop that hyphen.
+// At most 120 skipped blocks and 2 page turns. blocks: [{ key, pageRef, keyNoMarker }]; isFree(k); returns
+// indexes or null. stripFirst (list items): the FIRST block may also start without its "1." / bullet marker,
+// which the builder moves into /Lbl (agenda 2026-10-27: 40 list items orphaned).
+var _alloInterleavedExactRun = function (blocks, isFree, tKey, stripFirst) {
+  var take = function (bk, pos) {
+    if (tKey.startsWith(bk, pos)) return bk.length;
+    return (/\p{L}-$/u.test(bk) && tKey.startsWith(bk.slice(0, -1), pos)) ? bk.length - 1 : 0;
+  };
+  for (var s = 0; s < blocks.length; s++) {
+    if (!isFree(s) || !blocks[s].key) continue;
+    var pos = take(blocks[s].key, 0) || (stripFirst && blocks[s].keyNoMarker ? take(blocks[s].keyNoMarker, 0) : 0);
+    if (!pos) continue;
+    var idxs = [s], skipped = 0, turns = 0;
+    for (var e = s + 1; e < blocks.length && pos < tKey.length && skipped <= 120 && turns <= 2; e++) {
+      if (blocks[e].pageRef !== blocks[e - 1].pageRef) turns++;
+      if (!isFree(e) || !blocks[e].key) continue;
+      var n = take(blocks[e].key, pos);
+      if (n) { idxs.push(e); pos += n; } else skipped++;
+    }
+    if (pos === tKey.length && turns <= 2) return idxs;
+  }
+  return null;
+};
+
+// Vector figures in the tagged PDF (2026-10-27, osep: the Department seal is a Form XObject of paths).
+// A form qualifies when its decoded content draws at least a little and shows no text (all text sits in
+// BT..ET; a stray match only skips the form) and it nests no other form.
+var _alloFormLooksLikeFigure = function (content, nestsForm) {
+  var s = String(content || '');
+  return !nestsForm && s.length >= 200 && !/(?:^|[^\/\w])BT(?!\w)/.test(s);
+};
+// Pair the HTML's figures with marked draws, in order, only on an EXACT count: images alone first (the
+// rule before vector figures existed), else images plus the drawings drawn on one page only (a drawing on
+// 2+ pages is letterhead or background). Returns { pairs (or null), decorative: unpaired drawings }.
+var _alloPairFigureDraws = function (figureCount, draws) {
+  var pagesOf = {}, timesOf = {};
+  draws.forEach(function (b) {
+    if (b.form) { (pagesOf[b.xref] = pagesOf[b.xref] || {})[String(b.pageRef)] = 1; }
+    if (b.xref) timesOf[b.xref] = (timesOf[b.xref] || 0) + 1;
+  });
+  var bitmaps = draws.filter(function (b) { return !b.form; });
+  var withForms = draws.filter(function (b) { return !b.form || Object.keys(pagesOf[b.xref]).length < 2; });
+  // Last resort (2026-10-27, notifications: 1 signature among 19 draws): only the draws drawn ONCE in the
+  // whole document; an image or drawing repeated anywhere is decoration (bullets, logos, rules).
+  var once = withForms.filter(function (b) { return !b.xref || timesOf[b.xref] === 1; });
+  var pairs = !figureCount ? null
+    : figureCount === bitmaps.length ? bitmaps
+    : (figureCount === withForms.length && withForms.length > bitmaps.length) ? withForms
+    : (figureCount === once.length && once.length < withForms.length) ? once : null;
+  return { pairs: pairs, bitmaps: bitmaps.length, withForms: withForms.length,
+    mode: !pairs ? null : pairs === bitmaps ? 'images' : pairs === withForms ? 'with-drawings' : 'drawn-once',
+    // unpaired drawings; in drawn-once mode also the repeated images (other unpaired images keep today's handling)
+    decorative: draws.filter(function (b) { return !(pairs && pairs.indexOf(b) !== -1) && (b.form || (pairs === once && once !== withForms && b.xref && timesOf[b.xref] > 1)); }) };
+};
+
+// (2026-10-27) Missing numbers that mostly form one evenly spaced series (budget2: 13, 13.5, 11.5, 9.5 ... in
+// steps of 0.5) are typical of chart axis labels a chart description summarises. Returns a sentence to APPEND
+// to the numbers warning (the warning and its review stay), or '' when there is no such series. Steps are tried
+// smallest first (the gaps between consecutive missing values); a series needs at least 5 values on the grid
+// from the lowest value, at least 60% of the missing values, and at least 30% of its grid points present (so a
+// tiny step cannot "fit" scattered numbers).
+var _alloAxisSeriesHint = function (lostVals) {
+  var nums = (lostVals || []).map(function (v) { return parseFloat(String(v).replace(/[$,%\s]/g, '')); }).filter(function (n) { return isFinite(n); });
+  var uniq = nums.filter(function (n, i) { return nums.indexOf(n) === i; }).sort(function (a, b) { return a - b; });
+  if (uniq.length < 5) return '';
+  var steps = [];
+  for (var i = 1; i < uniq.length; i++) { var d = Math.round((uniq[i] - uniq[i - 1]) * 1000) / 1000; if (d > 0 && steps.indexOf(d) === -1) steps.push(d); }
+  steps.sort(function (a, b) { return a - b; });
+  var lo = uniq[0];
+  for (var si = 0; si < steps.length && si < 10; si++) {
+    var step = steps[si];
+    var onGrid = uniq.filter(function (n) { var k = (n - lo) / step; return Math.abs(k - Math.round(k)) < 1e-6; });
+    // the largest cluster of grid values (a gap of more than 10 steps ends one): an outlier such as $1,000
+    // can sit on a 0.5 grid without belonging to the series
+    var best = [], cur = [];
+    onGrid.forEach(function (n) { if (cur.length && n - cur[cur.length - 1] > 10 * step + 1e-9) cur = []; cur.push(n); if (cur.length > best.length) best = cur.slice(); });
+    if (best.length < 5 || best.length < 0.6 * uniq.length) continue;
+    var sLo = best[0], hi = best[best.length - 1];
+    if (best.length < 0.3 * (Math.round((hi - sLo) / step) + 1)) continue;
+    return ' ' + best.length + ' of them form one evenly spaced series (' + sLo + ' to ' + hi + ' in steps of ' + step + '), which is typical of chart axis labels that a chart description summarises; check that the rest are intact.';
+  }
+  return '';
 };
 
 var _alloEnsureSingleH1 = function (html) {
@@ -3409,6 +3665,38 @@ var _alloPageTextUnreadable = function (s) {
 };
 // Returns source numeric tokens whose count DROPPED in the output (a value not preserved). Added/extra
 // output numbers (alt text, "Table 1") are intentionally NOT flagged — only LOST source values matter.
+// The numbers a plain numbered list draws, as text to add to the output side (agenda3, 2026-10-27: items
+// 10-28 read as 17 "lost" values). Number N counts only when the source prints "N. " or "N) " followed by
+// that item's own opening words, so a changed value elsewhere is never covered by it.
+var _alloListMarkerNumbers = function (srcText, html) {
+  if (typeof DOMParser === 'undefined' || !/<ol\b/i.test(String(html || ''))) return '';
+  var norm = function (s) { return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase(); };
+  var src = ' ' + norm(srcText) + ' ', out = [], doc;
+  try { doc = new DOMParser().parseFromString(String(html), 'text/html'); } catch (_) { return ''; }
+  Array.prototype.forEach.call(doc.querySelectorAll('ol'), function (ol) {
+    var lst = (ol.style && ol.style.listStyleType) || '';
+    if ((ol.getAttribute('type') || '1') !== '1' || (lst && lst !== 'decimal')) return;
+    var items = Array.prototype.filter.call(ol.children, function (x) { return x.tagName === 'LI'; });
+    var step = ol.hasAttribute('reversed') ? -1 : 1;
+    var n = ol.hasAttribute('start') ? parseInt(ol.getAttribute('start'), 10) : (step < 0 ? items.length : 1);
+    if (!isFinite(n)) return;
+    items.forEach(function (li) {
+      if (li.hasAttribute('value') && isFinite(parseInt(li.getAttribute('value'), 10))) n = parseInt(li.getAttribute('value'), 10);
+      var own = '';
+      for (var c = li.firstChild; c; c = c.nextSibling) {
+        if (c.nodeType === 1 && /^(OL|UL)$/.test(c.tagName)) break;
+        own += c.nodeType === 1 && c.tagName === 'BR' ? ' ' : (c.textContent || '');
+      }
+      own = norm(own);
+      if (own.length > 40) own = own.slice(0, 40).replace(/\s\S*$/, '');
+      // An item that prints its own number already carries it: its text then starts "N. ", which the source never repeats.
+      if (own.length >= 3 && (src.indexOf(' ' + n + '. ' + own) !== -1 || src.indexOf(' ' + n + ') ' + own) !== -1)) out.push(String(n));
+      n += step;
+    });
+  });
+  return out.join(' ');
+};
+
 var _numericFidelityLosses = function (srcText, outText) {
   var src = _extractNumericTokens(srcText), out = _extractNumericTokens(outText), lost = [];
   src.forEach(function (cnt, val) { if ((out.get(val) || 0) < cnt) lost.push(val); });
@@ -6782,6 +7070,8 @@ function _stripExecutableScripts(html, opts) {
   html = html.replace(/<div data-alloflow-image-toolbar="pdf-img-[1-9]\d*"[^>]*>\s*<\/div>/g, '');
   // The structure pass's empty, hidden chunk boundary markers mean nothing to a reader (syllabus_sie, 2026-10-26).
   html = html.replace(/<div\b[^>]*\sdata-chunk-(?:start|end)="\d+"[^>]*>\s*<\/div>\n?/g, '');
+  // ...and the crop editor's per-figure crop data (budget2: 7 figures still carried it, 2026-10-27).
+  html = html.replace(/\sdata-crop="[^"<>]*"/g, '');
   // ...and the base stylesheet's rules for those editor controls style nothing there.
   html = html.split('[data-alloflow-image-replace]:has(input:focus-visible) { outline: 2px solid #ffffff; outline-offset: 2px; box-shadow: 0 0 0 4px #000000; }\n').join('')
     .split(' label input[type="file"] { display: none !important; } label:has(input[type="file"]) { display: none !important; } button[onclick*="pdfCropImage"] { display: none !important; }').join('');
@@ -7022,7 +7312,10 @@ function _alloDistributionVerdict(r, opts) {
       'content-fidelity': 'content fidelity needs a human check (possible loss or changed values)',
       'both': 'accessibility barriers and content fidelity both need human review'
     }[_expertReason];
-    review.push(_reasonText || String(_expertReason || 'this run was flagged for expert review'));
+    // (2026-10-27) The generic content-fidelity line only when no specific line below says what to check:
+    // child-find's only concern was reading order, and "possible loss or changed values" claimed a loss.
+    var _specificFidelity = !!(kinds.sourceReadingOrder || kinds.numeric || kinds.refusal || kinds.tables || (cov != null && cov < 90));
+    if (!(_expertReason === 'content-fidelity' && _specificFidelity)) review.push(_reasonText || String(_expertReason || 'this run was flagged for expert review'));
   }
   // L5 (audit 2026-07-26): integrityCoverage is a CHARACTER-COUNT ratio. It says nothing about
   // order, and no reading-order check runs against the source — so "preserved in reading order"
@@ -7046,7 +7339,19 @@ function _alloDistributionVerdict(r, opts) {
   // caution tier — distributable, but know these
   if (score == null) cautions.push('no final verified score is available for this pass');
   if (r._aiVerificationIncomplete) cautions.push('the AI verification could not fully complete (service throttling) — the score leans on the automated checkers');
-  if (score != null && score < target) cautions.push('the score (' + score + ') is below your target of ' + target + (_checkersClean ? ' — automated checks are clean; the remaining gap is AI-rubric judgment' : ''));
+  // (2026-10-27, budget2: 94 < 95 only because of 3 Equal Access reminders the AI review judged fine) Say so.
+  // The score is NOT raised: an AI opinion does not remove a content-specific checker finding (only the
+  // content-blind style_color_misuse is settled that way, Aaron's option B); the caution names the cause.
+  var _eaGap = '';
+  try {
+    var _ea2 = r.secondEngineAudit, _disp = (r.reviewTriage && Array.isArray(r.reviewTriage.dispositions)) ? r.reviewTriage.dispositions : [];
+    var _remIds = _ea2 ? [].concat(_ea2.potentialFindings || [], _ea2.manualFindings || []).map(function (f) { return f && f.id; }).filter(Boolean) : [];
+    if (_ea2 && typeof _ea2.score === 'number' && score != null && _ea2.score <= score && !(_ea2.failViolations > 0) && _remIds.length
+      && _remIds.every(function (id) { return _disp.some(function (d) { return d && d.action === 'not-an-issue' && typeof d.key === 'string' && d.key.split('|').pop() === id; }); })) {
+      _eaGap = ' — what keeps it there is ' + _remIds.length + ' Equal Access reminder' + (_remIds.length === 1 ? '' : 's') + ' the AI review judged not an issue; ' + (_remIds.length === 1 ? 'it stays a quick check' : 'they stay quick checks') + ' for a person';
+    }
+  } catch (_) { _eaGap = ''; }
+  if (score != null && score < target) cautions.push('the score (' + score + ') is below your target of ' + target + (_eaGap || (_checkersClean ? ' — automated checks are clean; the remaining gap is AI-rubric judgment' : '')));
   if (vio != null && vio > 0) cautions.push(vio + ' automated (axe) violation' + (vio === 1 ? '' : 's') + ' remain' + (vio === 1 ? 's' : ''));
   if (eaFails != null && eaFails > 0) cautions.push('the second checker (Equal Access) still reports ' + eaFails + ' rule failure' + (eaFails === 1 ? '' : 's'));
   if (kinds.placement) cautions.push('some source content is present but out of reading order (gathered in the "Preserved source content" box)');
@@ -9902,8 +10207,14 @@ var createDocPipeline = function(deps) {
       }
       // (2026-10-26) The other flagged elements go along (syllabus_sie: "3 elements", only 'Course Syllabus'
       // shown, its verdict recorded for all three), and the disposition records how many were shown.
-      var also = (f.details || []).filter(function (d, di) { return di !== shownIdx && d && typeof d === 'object'; }).slice(0, 4)
-        .map(function (d) { return { note: String(d.message || '').slice(0, 300), element: String(d.snippet || '').slice(0, 300) }; });
+      // An engine snippet is often just the opening tag ('<p class="ds3">', osep2), so the located
+      // element's own markup is sent when the path resolves.
+      var also = (f.details || []).filter(function (d, di) { return di !== shownIdx && d && typeof d === 'object'; }).slice(0, 11)
+        .map(function (d) {
+          var node = d.path ? locate(d.path.dom) : null;
+          var markup = (node && node.nodeType === 1 && node.outerHTML) ? String(node.outerHTML) : String(d.snippet || '');
+          return { note: String(d.message || '').slice(0, 300), element: markup.slice(0, 300) };
+        });
       items.push({ key: key, finding: f, outer: outer, detail: (f.details || [])[shownIdx] || {}, also: also });
     });
     if (!items.length) { out.attempted = 0; return out; }
@@ -11698,10 +12009,10 @@ var createDocPipeline = function(deps) {
       // (pageEdge, ocrDupeCollapse, folioLeak, OCR-accuracy, altQuality…) can't be re-derived from
       // (sourceText, html) and are the caller's to carry forward.
       try {
-        const lostVals = _numericFidelityLosses(sourceText, htmlToPlainText(_stripSinks(html)));
+        const lostVals = _numericFidelityLosses(sourceText, htmlToPlainText(_stripSinks(html)) + ' ' + _alloListMarkerNumbers(sourceText, _stripSinks(html)));
         if (lostVals.length) {
           const vsample = lostVals.slice(0, 8).join(', ') + (lostVals.length > 8 ? ', …' : '');
-          out.numericWarn = lostVals.length + ' source numeric value(s) not found unchanged in the output (' + vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.';
+          out.numericWarn = lostVals.length + ' source numeric value(s) not found unchanged in the output (' + vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.' + _alloAxisSeriesHint(lostVals);
         }
       } catch (_) {}
       // M12: the re-fix lane must measure links against the SAME baseline the primary pass used.
@@ -12809,21 +13120,31 @@ var createDocPipeline = function(deps) {
     // than that cap (a genuinely huge table — rare; a mid-table split beats a 5× chunk that blows the budget).
     var CONTAINER = /^(?:table|ul|ol|figure|dl)$/i;
     var tagRe = /<(\/?)([a-zA-Z][\w-]*)\b[^>]*>/g;
-    var safe = [], depth = 0, m;
+    // (2026-10-27) blockSafe: just after a CLOSING block tag (the audit splitter's _AUDIT_BLOCK_CLOSE set, kept
+    // local: harnesses load this function alone). Any depth-0 tag end also counted, so a fragment could end
+    // after "<p>" or "</strong>" mid-sentence (civics fix pass).
+    var BLOCK = /^(?:p|div|section|article|aside|header|footer|nav|main|h[1-6]|ul|ol|dl|li|table|figure|figcaption|blockquote|pre|details|form|fieldset|script|style)$/i;
+    var safe = [], blockSafe = [], depth = 0, m;
     while ((m = tagRe.exec(html))) {
       if (CONTAINER.test(m[2])) { if (m[1] === '/') { if (depth > 0) depth--; } else { depth++; } }
-      if (depth === 0) safe.push(m.index + m[0].length);   // safe to END a chunk right after this top-level tag
+      if (depth === 0) {
+        safe.push(m.index + m[0].length);   // safe to END a chunk right after this top-level tag
+        if (m[1] === '/' && BLOCK.test(m[2])) blockSafe.push(m.index + m[0].length);
+      }
     }
-    var chunks = [], i = 0, sp = 0;
+    var chunks = [], i = 0, sp = 0, bp = 0;
     while (i < html.length) {
       if (html.length - i <= size) { chunks.push(html.slice(i)); break; }
       var target = i + size;
       while (sp < safe.length && safe[sp] <= i) sp++;        // drop safe points already consumed (amortized O(n))
-      var lastBefore = -1, firstAfter = -1, q = sp;
+      while (bp < blockSafe.length && blockSafe[bp] <= i) bp++;
+      var lastBefore = -1, firstAfter = -1, lastBlock = -1, q = sp, qb = bp;
       while (q < safe.length && safe[q] <= target) { lastBefore = safe[q]; q++; }
       if (q < safe.length) firstAfter = safe[q];
+      while (qb < blockSafe.length && blockSafe[qb] <= target) { lastBlock = blockSafe[qb]; qb++; }
       var cut;
-      if (lastBefore > i + size * 0.5) cut = lastBefore;                          // ideal: safe boundary, latter half
+      if (lastBlock > i + size * 0.5) cut = lastBlock;                            // best: a whole block, latter half
+      else if (lastBefore > i + size * 0.5) cut = lastBefore;                     // ideal: safe boundary, latter half
       else if (firstAfter !== -1 && firstAfter <= i + size * 2) cut = firstAfter; // grow to finish a container whole
       else if (lastBefore > i) cut = lastBefore;                                  // a safe-but-early boundary beats an unsafe cut
       else { var lc = html.lastIndexOf('>', target); cut = (lc > i) ? lc + 1 : target; } // last resort: accept the cut
@@ -16543,6 +16864,7 @@ var createDocPipeline = function(deps) {
       let _csRepairedPages = 0;
       let _csRepairedSpaces = 0;
       let _ligFixed = 0; // lam-alef ligatures put back in logical order (_alloRepairRtlLigatures)
+      let _overlayDupDropped = 0; // artifact copies of text the page already prints as content (overlays)
       // M12 (audit 2026-07-26): the lost-hyperlink fidelity net counted markdown `[text](url)` in
       // the source, which this extractor NEVER produces — it joins raw pdf.js text items. So the
       // net read 0 source links on every born-digital PDF and could not fire, no matter how many
@@ -16597,7 +16919,44 @@ var createDocPipeline = function(deps) {
               if (Array.isArray(_a.rect) && _a.rect.length === 4) _pageLinkAnnots.push({ url: _u, rect: _a.rect });
             }
           } catch (_) { /* annotations are a bonus signal — never fail a page over them */ }
-          const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
+          // (2026-10-27) Read with marked content so text the SOURCE marks as an artifact is known. An artifact
+          // copy of text the page already prints as content is an overlay (child-find: its contact box is drawn
+          // twice at the same spot, once tagged and once as an /Artifact text box): read once, not twice, or
+          // the copy shows up as "missing" words and glues lines ("InformationP"). Artifact text found nowhere
+          // else on the page is kept; any trouble falls back to the plain read.
+          let tc;
+          try {
+            const _tcm = await _withTimeout(page.getTextContent({ includeMarkedContent: true }), 30000, 'getTextContent (text layer) p' + p);
+            // Not content: inside an /Artifact, or (on a page whose text is tagged) outside any marked content at all,
+            // which a reader of the source's tags never reaches (child-find's overlay box is unmarked).
+            const _its = [], _art = [], _stk = [], _unmarked = [];
+            let _anyTagged = false;
+            for (const it of (_tcm.items || [])) {
+              if (it && (it.type === 'beginMarkedContent' || it.type === 'beginMarkedContentProps')) { _stk.push(it.tag === 'Artifact'); if (it.tag !== 'Artifact') _anyTagged = true; continue; }
+              if (it && it.type === 'endMarkedContent') { _stk.pop(); continue; }
+              if (it && typeof it.str === 'string') { _its.push(it); _art.push(_stk.some(Boolean)); _unmarked.push(_stk.length === 0); }
+            }
+            if (_anyTagged) for (let i = 0; i < _its.length; i++) if (_unmarked[i]) _art[i] = true;
+            tc = Object.assign({}, _tcm, { items: _its });
+            if (_art.some(Boolean) && _art.some((a) => !a)) {
+              // An overlay sits where its twin is (child-find: 3 pt apart). Same text, or one a prefix of the other
+              // within 80% of its length ("...Informatio" + "n"), and within 6 pt on both axes. A running header
+              // whose words also occur in the body (osep: "Dear Colleague") is elsewhere on the page and stays.
+              const _k = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
+              const _xy = (it) => { const t = it.transform || [1, 0, 0, 1, 0, 0]; return [t[4], t[5]]; };
+              const _content = _its.map((it, i) => (!_art[i] ? { k: _k(it.str), xy: _xy(it) } : null)).filter(Boolean);
+              const _twin = (a, b) => a === b || (a.length >= 3 && b.length >= 3 && (a.startsWith(b) || b.startsWith(a)) && Math.min(a.length, b.length) >= 0.8 * Math.max(a.length, b.length));
+              const _keep = _its.filter((it, i) => {
+                if (!_art[i]) return true;
+                const k = _k(it.str), xy = _xy(it);
+                if (k.length < 3) return true;
+                return !_content.some((c) => Math.abs(c.xy[0] - xy[0]) <= 6 && Math.abs(c.xy[1] - xy[1]) <= 6 && _twin(c.k, k));
+              });
+              if (_keep.length < _its.length) { _overlayDupDropped += _its.length - _keep.length; tc.items = _keep; }
+            }
+          } catch (_) {
+            tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
+          }
           // Lam-alef order repair (2026-10-17): pdf.js reverses the two letters of a ligature glyph, so
           // ~10% of the words in a real Arabic school letter came out wrong (some as other real words).
           if ((tc.items || []).some((it) => _ALLO_ALEF_LAM.test((it && it.str) || ''))) {
@@ -16736,6 +17095,7 @@ var createDocPipeline = function(deps) {
       if (_srcLinkAnnotations > 0) { try { warnLog('[PDF Det] ' + _srcLinkAnnotations + ' distinct link destination(s) in the source (' + _srcLinkAnnotTotal + ' link annotation(s)) — the output is expected to carry them'); } catch (_) {} }
       if (_csRepairedPages > 0) { try { warnLog('[PDF Det] content-stream spacing repair: removed ' + _csRepairedSpaces + ' spurious space(s) across ' + _csRepairedPages + ' page(s) — characters untouched'); } catch (_) {} }
       if (_ligFixed > 0) { try { warnLog('[PDF Det] Arabic ligature order repaired: ' + _ligFixed + ' lam-alef ligature(s) put back in reading order'); } catch (_) {} }
+      if (_overlayDupDropped > 0) { try { warnLog('[PDF Det] read once: ' + _overlayDupDropped + ' text item(s) the source marks as page decoration that repeat text the page already prints (an overlay copy)'); } catch (_) {} }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
       // Denominator fix: average against pages that ACTUALLY produced text. A
       // 20-page doc where 1 page failed and 19 produced text shouldn't get
@@ -17464,6 +17824,10 @@ var createDocPipeline = function(deps) {
     for (let i = 0; i < streamBytes.length; i++) s += String.fromCharCode(streamBytes[i]);
     const masked = _stage4_maskStrings(s);
     const fine = !!(opts && opts.fine);
+    // opts.splitFont (2026-10-27): a change of font NAME between show operators on one line starts a new
+    // segment, so a bold run-in heading ("Integrated Pest Management M.S.A.D. #49 has...") is its own block
+    // (notifications: 4 headings orphaned). createTaggedPdf turns it off for right-to-left documents.
+    const splitFont = fine && !!(opts && opts.splitFont);
     const segments = [];
     const re = /\bBT\b([\s\S]*?)\bET\b/g;
     let m;
@@ -17493,16 +17857,21 @@ var createDocPipeline = function(deps) {
       let group = null;
       let newLinePending = false;
       let lastTmY = null;
+      let lastName = null, curFont = null, fontChangePending = false;
+      // A TJ whose array STARTS with a gap of >= 400/1000 em (a cell after _stage4_splitTJGaps) is a new block.
+      let arrAt = -1, arrLead = null;
       const closeGroup = () => { if (group) { segments.push({ btStart: group.start, etEnd: group.end, x, y }); group = null; } };
       while (i < bodyEnd) {
         const ch = masked[i];
-        if (/\s/.test(ch) || ch === '[' || ch === ']' || ch === '{' || ch === '}' || ch === '(' || ch === ')') { i++; continue; }
+        if (ch === '[') { arrAt = i; arrLead = null; i++; continue; }
+        if (/\s/.test(ch) || ch === ']' || ch === '{' || ch === '}' || ch === '(' || ch === ')') { i++; continue; }
         if (ch === '<' || ch === '>') { i++; continue; }
-        if (ch === '/') { i++; while (i < bodyEnd && !/[\s\/\[\]<>(){}%]/.test(masked[i])) i++; continue; }
+        if (ch === '/') { const nameStart = i; i++; while (i < bodyEnd && !/[\s\/\[\]<>(){}%]/.test(masked[i])) i++; lastName = masked.slice(nameStart, i); continue; }
         if (/[-+.\d]/.test(ch)) {
           const numStart = i; i++;
           while (i < bodyEnd && /[-+.\deE]/.test(masked[i])) i++;
           nums.push(parseFloat(masked.slice(numStart, i)));
+          if (arrAt >= 0 && arrLead === null) arrLead = s.slice(arrAt + 1, numStart).trim() === '' ? parseFloat(masked.slice(numStart, i)) : NaN;
           continue;
         }
         const opStart = i;
@@ -17511,7 +17880,9 @@ var createDocPipeline = function(deps) {
         if (i === opStart) { i++; continue; }
         const op = masked.slice(opStart, i);
         if (op === 'Tj' || op === 'TJ' || op === "'" || op === '"') {
-          if (!group || newLinePending || op === "'" || op === '"') {
+          const gapLead = splitFont && op === 'TJ' && arrAt >= 0 && Number.isFinite(arrLead) && arrLead <= -400;
+          arrAt = -1; arrLead = null;
+          if (!group || newLinePending || fontChangePending || gapLead || op === "'" || op === '"') {
             closeGroup();
             let segStart = prevOpEnd;
             // Skip whitespace in the ORIGINAL text: in `masked` a string operand such as "( )" is
@@ -17522,6 +17893,10 @@ var createDocPipeline = function(deps) {
             group.end = i;
           }
           newLinePending = false;
+          fontChangePending = false;
+        } else if (op === 'Tf') {
+          if (splitFont && group && curFont !== null && lastName !== curFont) fontChangePending = true;
+          curFont = lastName;
         } else if (op === 'Td' || op === 'TD') {
           if (nums.length >= 2 && Math.abs(nums[nums.length - 1]) > 1e-9) newLinePending = true;
         } else if (op === 'T*') {
@@ -17539,6 +17914,48 @@ var createDocPipeline = function(deps) {
       closeGroup();
     }
     return segments;
+  };
+
+  // _stage4_splitTJGaps (2026-10-27) — a spreadsheet often draws a whole table ROW as ONE TJ array, cells
+  // separated by large negative adjustments (mdoe expenditures: "[<..> -8605 <..> -8605 ...] TJ", 14 cells),
+  // so the row was one block and no cell could link (3,457 cells orphaned). Each adjustment of at least
+  // `minGap` thousandths of an em that sits between two string elements starts a new TJ: "[a -8605 b] TJ"
+  // becomes "[a] TJ\n[-8605 b] TJ". Consecutive TJ operators continue from the current text position, so
+  // the page draws exactly as before. Strings are masked, so brackets inside them are never touched.
+  const _stage4_splitTJGaps = (bytes, minGap) => {
+    let s = '';
+    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    const masked = _stage4_maskStrings(s);
+    const cuts = [];
+    const re = /\[([^\[\]]*)\]\s*TJ\b/g;
+    let m;
+    while ((m = re.exec(masked)) !== null) {
+      // The masked text finds the array (strings, brackets inside them included, are blanked there); its
+      // elements are read from the ORIGINAL bytes: literal strings depth- and escape-aware, hex strings to '>'.
+      const base = m.index + 1, body = s.slice(base, base + m[1].length);
+      const elems = []; // [{ kind: 'str' | 'num', at, value }]
+      for (let i = 0; i < body.length;) {
+        const ch = body[i];
+        if (ch === '(') {
+          let depth = 1, j = i + 1;
+          while (j < body.length && depth > 0) { if (body[j] === '\\') { j += 2; continue; } if (body[j] === '(') depth++; else if (body[j] === ')') depth--; j++; }
+          elems.push({ kind: 'str', at: i }); i = j; continue;
+        }
+        if (ch === '<') { const close = body.indexOf('>', i + 1); elems.push({ kind: 'str', at: i }); i = close < 0 ? body.length : close + 1; continue; }
+        const nm = /^[-+]?(?:\d+\.?\d*|\.\d+)/.exec(body.slice(i));
+        if (nm) { elems.push({ kind: 'num', at: i, value: parseFloat(nm[0]) }); i += nm[0].length; continue; }
+        i++;
+      }
+      for (let k = 1; k < elems.length - 1; k++) {
+        const e = elems[k];
+        if (e.kind === 'num' && e.value <= -minGap && elems.slice(0, k).some((x) => x.kind === 'str') && elems.slice(k + 1).some((x) => x.kind === 'str')) cuts.push(base + e.at);
+      }
+    }
+    if (!cuts.length) return bytes;
+    let out = '', at = 0;
+    for (const c of cuts) { out += s.slice(at, c) + '] TJ\n['; at = c; }
+    out += s.slice(at);
+    return Uint8Array.from(out, (c) => c.charCodeAt(0) & 0xff);
   };
 
   // _stage4_rewriteStream — splice /<role> <</MCID i>> BDC before each BT and
@@ -17736,7 +18153,7 @@ var createDocPipeline = function(deps) {
     height: it.height || 0,
     hasEOL: !!it.hasEOL,
   });
-  const _stage4_probeSegmentTexts = async (srcBytes) => {
+  const _stage4_probeSegmentTexts = async (srcBytes, probeOpts) => {
     const { PDFDocument, PDFName, PDFNumber } = window.PDFLib;
     const probe = await PDFDocument.load(srcBytes, { updateMetadata: false });
     const ctx = probe.context;
@@ -17747,7 +18164,9 @@ var createDocPipeline = function(deps) {
         if (!info || !info.bytes.length) return;
         let bytes = info.bytes;
         if (info.filter === 'FlateDecode') bytes = _stage4_inflate(bytes);
-        const segs = _stage4_parseBTSegments(bytes, { fine: true });
+        // Same table-cell split as _stage4_tryWrapPage, so both see the same segments.
+        if (probeOpts && probeOpts.splitFont) bytes = _stage4_splitTJGaps(bytes, 400);
+        const segs = _stage4_parseBTSegments(bytes, { fine: true, splitFont: !!(probeOpts && probeOpts.splitFont) });
         if (!segs.length) return;
         const wraps = segs.map((_, i) => ({ bdc: '/' + _STAGE4_PROBE_TAG + ' <</MCID ' + i + '>> BDC\n', emc: '\nEMC\n' }));
         const out = _stage4_rewriteStream(bytes, segs, wraps);
@@ -17856,7 +18275,16 @@ var createDocPipeline = function(deps) {
     for (const items of pagesItems) {
       if (!Array.isArray(items)) continue;
       const seenThisPage = new Set();
+      // (2026-10-27) Running headers and footers sit at the page's top or bottom edge. A page drawn one
+      // WORD per text object (msad35 agenda: 656 on page 1) has "of", "and", "to" on every page, and
+      // counting them anywhere made those words artifacts, so no agenda item could ever link. Only items
+      // in the top/bottom 10% of the page's text extent count; a page without positions keeps the old rule.
+      const ys = items.map((it) => (it && Number.isFinite(it.y)) ? it.y : null).filter((v) => v !== null);
+      const yMin = ys.length ? Math.min.apply(null, ys) : 0, yMax = ys.length ? Math.max.apply(null, ys) : 0;
+      const band = (yMax - yMin) * 0.1;
+      const inBand = (it) => !(yMax > yMin) || !(it && Number.isFinite(it.y)) || it.y <= yMin + band || it.y >= yMax - band;
       for (const it of items) {
+        if (!inBand(it)) continue;
         const norm = _stage6b_normalizeArtifactText(it && it.str);
         if (!norm || norm.length < 2) continue;
         if (seenThisPage.has(norm)) continue;
@@ -17949,7 +18377,7 @@ var createDocPipeline = function(deps) {
     out += s.slice(at);
     return Uint8Array.from(out, (c) => c.charCodeAt(0) & 0xff);
   };
-  const _stage4_tryWrapPage = async (page, pi, pdfjsDoc, outlineItems, context, libs, structRootRef, artifactHashSet, segmentProbe) => {
+  const _stage4_tryWrapPage = async (page, pi, pdfjsDoc, outlineItems, context, libs, structRootRef, artifactHashSet, segmentProbe, s4opts) => {
     const { PDFName, PDFString, PDFNumber } = libs;
     // Unicode-safe text strings (2026-06-11): PDFString.of writes
     // PDFDocEncoding which mangles non-Latin; PDFHexString.fromText writes
@@ -17962,6 +18390,9 @@ var createDocPipeline = function(deps) {
     if (streamInfo.filter === 'FlateDecode') {
       bytes = _stage4_inflate(bytes);
     }
+    // Table rows drawn as one TJ get one TJ per cell (identical drawing; see _stage4_splitTJGaps). Only where
+    // fine segments are used (the probe ran) and for left-to-right documents, like the font split.
+    if (s4opts && s4opts.splitFont && segmentProbe instanceof Map && segmentProbe.get(pi)) bytes = _stage4_splitTJGaps(bytes, 400);
     // A tagged source's own MCIDs collide with ours: blank them (equal length, offsets unchanged),
     // and keep text inside the source's /Artifact sequences artifact (2026-10-18).
     let _srcMarks = null;
@@ -17974,7 +18405,7 @@ var createDocPipeline = function(deps) {
     const _inSrcArtifact = (seg) => !!(_srcMarks && seg && _srcMarks.artifactSpans.some(([a, b]) => seg.btStart >= a && seg.etEnd <= b));
     const probeGroups = segmentProbe instanceof Map ? segmentProbe.get(pi) : null;
     // Fine (per show-operator) segments where the probe measured this page; BT objects otherwise.
-    let segments = _stage4_parseBTSegments(bytes, { fine: !!probeGroups });
+    let segments = _stage4_parseBTSegments(bytes, { fine: !!probeGroups, splitFont: !!(s4opts && s4opts.splitFont) });
     const useProbe = !!(probeGroups && probeGroups.length === segments.length);
     if (probeGroups && !useProbe) segments = _stage4_parseBTSegments(bytes); // counts disagree: old behaviour, whole BT objects
     if (segments.length === 0) throw new Error('no BT segments');
@@ -18002,7 +18433,11 @@ var createDocPipeline = function(deps) {
       // Symbolic runs (Wingdings bullets etc.) are decorative marks — wrap
       // as /Artifact: correct PDF semantics, and they leave leaf matching
       // by construction (artifact blocks carry no MCID/ActualText).
-      const isArtifact = (item && item.symbolic) || (hasArtifacts && norm && artifactHashSet.has(norm)) || _inSrcArtifact(segments[i]);
+      const _keptHere = !!(s4opts && s4opts.keepFirstArtifacts && norm && s4opts.keepFirstArtifacts.get(norm) === pi); // a repeated table header on its first page
+      // (2026-10-27, osep3: 740 of 839 P elements held only a space) A probed segment that draws nothing but
+      // whitespace carries no text for assistive technology: artifact, not an empty P in the reading order.
+      const _blankSeg = useProbe && !String((item && item.str) || '').trim();
+      const isArtifact = (item && item.symbolic) || _blankSeg || (hasArtifacts && norm && artifactHashSet.has(norm) && !_keptHere) || _inSrcArtifact(segments[i]);
       if (isArtifact) {
         wraps.push({ bdc: '/Artifact BMC\n', emc: '\nEMC\n' });
         blockInfo.push({ isArtifact: true });
@@ -18037,25 +18472,57 @@ var createDocPipeline = function(deps) {
       let xo = (resDict && typeof resDict.get === 'function') ? resDict.get(PDFName.of('XObject')) : null;
       try { xo = context.lookup(xo) || xo; } catch (_) {}
       const imgNames = [];
+      // (2026-10-27) A VECTOR drawing is a Form XObject (osep: the Department seal, 222 KB of paths), not an
+      // /Image, so its Figure leaf stayed orphaned and the PDF was withheld. A form with no text and no
+      // nested form is marked like an image, flagged `form`; Stage 4b pairs it only when the image-only
+      // count does not match, never a form drawn on 2+ pages, and an unpaired one becomes NonStruct
+      // (decoration), never a placeholder "image". A draw inside the source's /Artifact stays artifact.
+      const formRefs = new Map(), imgRefs = new Map(), furnitureForms = new Set();
+      const _figureLikeForm = (xobj) => {
+        const fdict = xobj && xobj.dict;
+        if (!fdict || typeof fdict.get !== 'function' || !xobj.contents) return false;
+        const filt = String(fdict.get(PDFName.of('Filter')) || '');
+        if (filt && filt !== '/FlateDecode') return false;
+        let fres = fdict.get(PDFName.of('Resources'));
+        try { fres = context.lookup(fres) || fres; } catch (_) {}
+        let fxo = (fres && typeof fres.get === 'function') ? fres.get(PDFName.of('XObject')) : null;
+        try { fxo = context.lookup(fxo) || fxo; } catch (_) {}
+        if (fxo && typeof fxo.entries === 'function') {
+          for (const [, r] of fxo.entries()) { const o = context.lookup(r); if (o && o.dict && String(o.dict.get(PDFName.of('Subtype'))) === '/Form') return false; }
+        }
+        const fb = filt ? _stage4_inflate(xobj.contents) : xobj.contents;
+        return _alloFormLooksLikeFigure(new TextDecoder('latin1').decode(fb), false);
+      };
       if (xo && typeof xo.entries === 'function') {
         for (const [xn, xref] of xo.entries()) {
           try {
             const xobj = context.lookup(xref);
             const sub = xobj && (xobj.dict && typeof xobj.dict.get === 'function' ? xobj.dict.get(PDFName.of('Subtype')) : (typeof xobj.get === 'function' ? xobj.get(PDFName.of('Subtype')) : null));
-            if (String(sub) === '/Image') imgNames.push(String(xn).replace(/^\//, ''));
+            if (String(sub) === '/Image') { const inm = String(xn).replace(/^\//, ''); imgNames.push(inm); imgRefs.set(inm, String(xref)); }
+            else if (String(sub) === '/Form' && s4opts && s4opts.repeatedTextForms && s4opts.repeatedTextForms.has(String(xref))) { const fn = String(xn).replace(/^\//, ''); imgNames.push(fn); furnitureForms.add(fn); }
+            else if (String(sub) === '/Form' && _figureLikeForm(xobj)) { const fn = String(xn).replace(/^\//, ''); imgNames.push(fn); formRefs.set(fn, String(xref)); }
           } catch (_) {}
         }
       }
       if (imgNames.length > 0) {
         const s0 = new TextDecoder('latin1').decode(newBytes);
+        // (2026-10-27) Images too: a picture the SOURCE marks as page decoration (complaint form: the letterhead
+        // logo inside /Artifact /Pagination) wrapped as tagged /Figure was "tagged content inside an artifact"
+        // (veraPDF 7.1-2). It stays the source's artifact; its place in draw order is kept for figure pairing.
+        const _artSpans = _stage4_scanMarks(s0).artifactSpans;
         const escaped = imgNames.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
         const re = new RegExp('/(' + escaped.join('|') + ')\\s+Do(?![0-9A-Za-z])', 'g');
-        let imgMcid = contentMcid;
-        const s1 = s0.replace(re, (m) => {
-          imageBlockInfo.push({ mcid: imgMcid });
+        let imgMcid = contentMcid, furnitureWrapped = 0;
+        const s1 = s0.replace(re, (m, name, at) => {
+          const inArtifact = _artSpans.some(([a, b]) => at >= a && at < b);
+          if (furnitureForms.has(name)) { if (inArtifact) return m; furnitureWrapped++; return '/Artifact BMC\n' + m + '\nEMC'; }
+          const isForm = formRefs.has(name);
+          if (isForm && inArtifact) return m;
+          if (inArtifact) { imageBlockInfo.push({ artifact: true, xref: imgRefs.get(name) || '' }); return m; }
+          imageBlockInfo.push(isForm ? { mcid: imgMcid, form: true, xref: formRefs.get(name) } : { mcid: imgMcid, xref: imgRefs.get(name) || '' });
           return '/Figure <</MCID ' + (imgMcid++) + '>> BDC\n' + m + '\nEMC';
         });
-        if (imageBlockInfo.length > 0) newBytes = Uint8Array.from(s1, (c) => c.charCodeAt(0) & 0xff);
+        if (imageBlockInfo.length > 0 || furnitureWrapped > 0) newBytes = Uint8Array.from(s1, (c) => c.charCodeAt(0) & 0xff);
       }
     } catch (imgErr) { imageBlockInfo.length = 0; /* image marking is additive — never fail the page over it */ }
     try { newBytes = _stage4_artifactUnmarkedPaths(newBytes); } catch (_) { /* additive: never fail the page */ }
@@ -18094,6 +18561,7 @@ var createDocPipeline = function(deps) {
     // the real alt text).
     const imageBlocks = [];
     for (const info of imageBlockInfo) {
+      if (info.artifact) { imageBlocks.push({ artifact: true, xref: info.xref }); continue; } // the source's own artifact: no element
       const mcr = context.obj({ Type: PDFName.of('MCR'), Pg: page.ref, MCID: PDFNumber.of(info.mcid) });
       const ref = context.register(context.obj({
         Type: PDFName.of('StructElem'),
@@ -18104,7 +18572,7 @@ var createDocPipeline = function(deps) {
         K: context.obj([mcr]),
       }));
       blockElemRefs.push(ref);
-      imageBlocks.push({ ref, mcid: info.mcid });
+      imageBlocks.push(info.form ? { ref, mcid: info.mcid, form: true, xref: info.xref } : { ref, mcid: info.mcid, xref: info.xref || '' });
     }
     context.assign(pageSectRef, context.obj({
       Type: PDFName.of('StructElem'),
@@ -18114,7 +18582,7 @@ var createDocPipeline = function(deps) {
       K: context.obj(blockElemRefs),
     }));
     const parentArrayRef = context.register(context.obj(blockElemRefs.slice()));
-    return { pageSectRef, blockElemRefs, parentArrayRef, mcidCount: contentMcid + imageBlocks.length, imageBlocks };
+    return { pageSectRef, blockElemRefs, parentArrayRef, mcidCount: contentMcid + imageBlocks.filter((b) => !b.artifact).length, imageBlocks };
   };
 
   // Lazy-load Tesseract.js from CDN. Zero cost until first call (scanned-PDF path only).
@@ -24644,7 +25112,7 @@ HTML section ${chunkNum}/${chunks.length}:
       det.setAttribute('class', 'allo-chart-data');
       det.setAttribute('data-allo-generated', 'vision');
       const cols = (parsed.chartData && Array.isArray(parsed.chartData.columns)) ? parsed.chartData.columns.slice(0, 8) : [];
-      const rows = (parsed.chartData && Array.isArray(parsed.chartData.rows)) ? parsed.chartData.rows.slice(0, 8) : [];
+      const rows = (parsed.chartData && Array.isArray(parsed.chartData.rows)) ? parsed.chartData.rows.slice(0, 16) : []; // 8 cut a 12-slice pie (budget2, 2026-10-27)
       const esc2 = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       // A data table needs a caption (the pipeline's own audit rubric deducts without one); name
       // the chart it was read from so the table is meaningful when reached out of context.
@@ -24652,13 +25120,23 @@ HTML section ${chunkNum}/${chunks.length}:
       // A long alt is cut at its first sentence end or last word within 160 characters, never mid-word (budget, 2026-10-26).
       const _capShort = _capAlt.length <= 160 ? _capAlt
         : (_capAlt.slice(0, 160).match(/^[\s\S]{40,}?[.!?](?=\s)/) || [_capAlt.slice(0, 160).replace(/[\s,;:]+\S*$/, '') + '…'])[0];
-      const _chartCaption = 'Chart data, AI-estimated' + (_capAlt ? ': ' + _capShort : '');
+      // (2026-10-27, budget2: a screen reader heard each chart's values three times: alt, summary, caption)
+      // The caption NAMES the chart (the alt up to its colon, "Line chart of annual enrollment, FY08 to
+      // FY25"), and a summary that repeats the alt is left out: every number in it is in the alt and at least
+      // half its words are (a summary that adds a number or new words stays).
+      const _capName = (/^([^:]{10,120}):/.exec(_capAlt) || [])[1];
+      const _chartCaption = 'Chart data, AI-estimated' + (_capAlt ? ': ' + (_capName || _capShort) : '');
+      const _sumText = parsed.chartSummary ? String(parsed.chartSummary).slice(0, 1200) : '';
+      const _numsOf = (s) => (String(s).match(/\d[\d,.]*\d|\d/g) || []).map((n) => n.replace(/,/g, ''));
+      const _altNums = _numsOf(_capAlt);
+      const _sumRepeats = !!(_sumText && _capAlt && _numsOf(_sumText).every((n) => _altNums.indexOf(n) !== -1) && _alloTextOverlap(_sumText, _capAlt) >= 0.5);
       det.innerHTML = '<summary>Chart description (AI-generated)</summary>'
-        + (parsed.chartSummary ? '<p>' + esc2(String(parsed.chartSummary).slice(0, 1200)) + '</p>' : '')
+        + (_sumText && !_sumRepeats ? '<p>' + esc2(_sumText) + '</p>' : '')
         + (rows.length ? ('<table><caption>' + esc2(_chartCaption) + '</caption><thead><tr>' + cols.map((c) => '<th scope="col">' + esc2(c) + '</th>').join('') + '</tr></thead><tbody>'
           + rows.map((r) => '<tr>' + (Array.isArray(r) ? r : [r]).slice(0, 8).map((c) => '<td>' + esc2(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>') : '')
         + '<p><em>Values are AI-estimated from the image — verify against the source data before relying on them.</em></p>';
-      if (im.parentNode) im.parentNode.insertBefore(det, im.nextSibling);
+      // Nothing beyond the alt to add (no data rows, summary repeats the alt): no panel at all.
+      if (im.parentNode && (rows.length || (_sumText && !_sumRepeats))) im.parentNode.insertBefore(det, im.nextSibling);
     }
     return true;
   };
@@ -24753,7 +25231,7 @@ HTML section ${chunkNum}/${chunks.length}:
             'You are describing ONE image extracted from an educational document, for accessibility. Return ONLY JSON, no prose:\n'
             + '{"kind":"photo|chart|diagram|equation|map|decorative|image-of-text","alt":"one factual sentence","latex":"(equations only)","chartSummary":"(charts only: the trend in 1-2 sentences)","chartData":{"columns":["..."],"rows":[["..."]]},"extractedText":"(image-of-text only: the complete text content, verbatim)"}\n'
             + 'Rules: for an EQUATION, alt must be the SPOKEN form (e.g. "x equals negative b plus or minus the square root of b squared minus 4 a c, all over 2 a") and latex the LaTeX. '
-            + 'For a CHART, give chartSummary and AT MOST 8 rows of APPROXIMATE values actually visible in the image. '
+            + 'For a CHART, give chartSummary and AT MOST 16 rows (one per slice, bar or point) of APPROXIMATE values actually visible in the image. '
             + (_docLang && !/^en(-|$)/i.test(_docLang) ? 'LANGUAGE: write "alt", "chartSummary" and "extractedText" in the document language (' + _docLang + '); keep the JSON keys and the "kind" value in English. ' : '')
             + 'If the image is primarily TEXT rendered as a picture (a scanned paragraph, a screenshot of writing, a text box saved as an image) → kind "image-of-text" with extractedText = the complete verbatim text. '
             + 'NEVER invent data you cannot see. Purely ornamental → kind "decorative" with alt "". Unsure of kind → "photo".'
@@ -32625,8 +33103,8 @@ ${hasCropData ? `<button data-alloflow-crop-control="${imgId}" onclick="window._
       const _safeDocumentTitleHtml = _alloEscapePromptDisplayText((_fileName || 'document').replace(/\.(?:pdf|docx|pptx|png|jpe?g|webp)$/i, ''));
       // (2026-10-26) The printed h1 names the page from the start (same rule as the step-4 title preflight),
       // so the first AI audit no longer reports the placeholder title; no plain-text h1 keeps the placeholder.
-      const _wrapH1 = String(bodyContent || '').match(/<h1[^>]*>([^<]+)<\/h1>/i);
-      const _wrapTitleHtml = (_wrapH1 && _wrapH1[1].replace(/\s+/g, ' ').trim()) || ('Accessible Document — ' + _safeDocumentTitleHtml);
+      // (2026-10-27) Plus a subtitle line printed under it (_alloTitleFromHeading): agenda2's h1 named the district only.
+      const _wrapTitleHtml = _alloTitleFromHeading(bodyContent) || ('Accessible Document — ' + _safeDocumentTitleHtml);
       let accessibleHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33138,8 +33616,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // h1 to name the page (every UDHR run shipped it until the AI audit happened to flag it, 2026-10-26).
         const _placeholderTitle = !!(_existingTitle && /^\s*Accessible Document — /.test(_existingTitle[1]) && /<h1[^>]*>[^<]*\S[^<]*<\/h1>/i.test(accessibleHtml));
         if (!_existingTitle || !_existingTitle[1].trim() || _placeholderTitle) {
-          const titleMatch = accessibleHtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-          const titleText = titleMatch ? titleMatch[1].trim() : (_fileName || 'Accessible Document').replace(/\.(?:pdf|docx|pptx|png|jpe?g|webp)$/i, '');
+          const titleText = _alloTitleFromHeading(accessibleHtml) || (_fileName || 'Accessible Document').replace(/\.(?:pdf|docx|pptx|png|jpe?g|webp)$/i, '');
           if (_existingTitle) {
             accessibleHtml = accessibleHtml.replace(_titlePattern, () => '<title>' + titleText + '</title>');
           } else {
@@ -34229,10 +34706,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // output) so a changed score/date/% surfaces with the specific values. Runs on the FINAL assembled
         // output → covers BOTH the transform and fix paths. WARN (not block) — formatting can move tokens.
         try {
-          const _lostVals = _numericFidelityLosses(_srcRaw, htmlToPlainText(_finalForIntegrity));
+          const _lostVals = _numericFidelityLosses(_srcRaw, htmlToPlainText(_finalForIntegrity) + ' ' + _alloListMarkerNumbers(_srcRaw, _finalForIntegrity));
           if (_lostVals.length) {
             const _vsample = _lostVals.slice(0, 8).join(', ') + (_lostVals.length > 8 ? ', …' : '');
-            const _valWarn = _lostVals.length + ' source numeric value(s) not found unchanged in the output (' + _vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.';
+            const _valWarn = _lostVals.length + ' source numeric value(s) not found unchanged in the output (' + _vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.' + _alloAxisSeriesHint(_lostVals);
             integrityWarning = integrityWarning ? (integrityWarning + ' ' + _valWarn) : _valWarn;
             _numericLossWarn = _valWarn; // also surface in the persistent fidelity panel + fidelityLimited (below)
             if (!_silentMode) addToast('⚠ ' + _valWarn, 'warning');
@@ -37002,6 +37479,18 @@ tr { page-break-inside: avoid; }
       const _cellContainerKeys = new Set();
       const _nearestContainerKey = (el) => { let p = el.parentNode; while (p && p !== body) { const k = _containerKeyByEl.get(p); if (k) return k; p = p.parentNode; } return 0; };
       const walker = htmlDoc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT, null);
+      let _aiSupplementSkipped = 0;
+      // A <br> is a word break in the spoken /ActualText ("...20202-2600www.ed.gov" glued two lines, osep3).
+      // (2026-10-27) A list item's own text stops at its nested lists, which are leaves of their own: agenda4's
+      // "Assignment of Board Standing Committees 2025-2026:" carried its four sub-items' text and never linked.
+      const _leafText = (el) => {
+        const nested = !!(el && el.querySelector && /^li$/i.test(el.tagName || '') && el.querySelector('ul, ol'));
+        if (!el || !el.querySelector || (!nested && !el.querySelector('br'))) return (el && el.textContent) || '';
+        const c = el.cloneNode(true);
+        if (nested) c.querySelectorAll('ul, ol').forEach((n) => n.remove());
+        c.querySelectorAll('br').forEach((b) => b.replaceWith(htmlDoc.createTextNode(' ')));
+        return c.textContent || '';
+      };
       while (walker.nextNode()) {
         const el = walker.currentNode;
         const tag = (el.tagName || '').toLowerCase();
@@ -37012,6 +37501,13 @@ tr { page-break-inside: avoid; }
         if (tag === 'li' && el.closest && (el.closest('.allo-footnotes') || el.closest('.allo-references'))) pdfRole = 'Note';
         if (!pdfRole) continue;
         if (tag === 'thead' || tag === 'tbody' || tag === 'tfoot') continue;
+        // (2026-10-27) The AI-made chart data and image transcripts are not printed in this PDF (the chart
+        // or picture is, as a Figure with its alt); their cells could never link and held the PDF back
+        // (budget: ~140 cells). They stay in the HTML export.
+        if (el.closest && el.closest('details.allo-chart-data, details.allo-imagetext')) {
+          if (++_aiSupplementSkipped === 1) { try { warnLog('[createTaggedPdf] AI-made chart data / image transcripts are not printed in the source: left out of the tagged PDF (kept in the HTML)'); } catch (_) {} }
+          continue;
+        }
         // <figure> wrapping an <img> would produce TWO Figure leaves for one
         // image (both tags map to Figure) — skip the wrapper; the img itself
         // (and its alt) is the leaf. A <figure> WITHOUT an img (e.g. a styled
@@ -37089,8 +37585,8 @@ tr { page-break-inside: avoid; }
           // from the spoken/ActualText so a screen reader reads the note, not "left
           // arrow hook". The <a> itself is already skipped as a leaf (see above).
           text: (pdfRole === 'Note' && el.querySelector && el.querySelector('.allo-fn-back'))
-            ? (el.textContent || '').replace(/\s*↩\s*$/u, '').trim()
-            : (el.textContent || '').trim(),
+            ? _leafText(el).replace(/\s*↩\s*$/u, '').trim()
+            : _leafText(el).trim(),
           alt: tag === 'img' ? (el.getAttribute('alt') || '') : null,
           isDecorative: tag === 'img' && (el.getAttribute('role') === 'presentation' || el.getAttribute('aria-hidden') === 'true'),
           level: HEADING_LEVEL[tag] || 0,
@@ -37730,8 +38226,12 @@ tr { page-break-inside: avoid; }
     // headers / footers / legal boilerplate). Populated once after the
     // pdf.js load; passed to every per-page Stage 4 call.
     let artifactHashSet = new Set();
+    const _keepFirstArtifacts = new Map(); // repeated TH text -> its first page index (kept as content there)
     const _unreadableTagPages = new Set(); // page indexes whose text layer is unmapped glyph codes
     let stage4SegmentProbe = null;
+    // Run-in headings get their own block where a line changes font (see _stage4_parseBTSegments), except
+    // in right-to-left documents, whose glyph-by-glyph lines must stay one section for pdf.js to reorder.
+    const _splitFont = !/^(ar|he|iw|fa|ur|ps|yi|dv|sd|ug|ckb|syr)(-|$)/i.test(lang);
     if (!isScanned) {
       try {
         await ensurePdfJsLoaded();
@@ -37742,7 +38242,7 @@ tr { page-break-inside: avoid; }
           // Exact per-segment text (2026-10-16, see _stage4_probeSegmentTexts). Fail-soft: null keeps
           // the old pairing everywhere.
           try {
-            stage4SegmentProbe = await _stage4_probeSegmentTexts(_srcBytes.slice());
+            stage4SegmentProbe = await _stage4_probeSegmentTexts(_srcBytes.slice(), { splitFont: _splitFont });
             if (stage4SegmentProbe) warnLog('[Stage4-Probe] exact segment text for ' + stage4SegmentProbe.size + ' page(s)');
           } catch (probeErr) {
             stage4SegmentProbe = null;
@@ -37761,6 +38261,22 @@ tr { page-break-inside: avoid; }
               if (_alloPageTextUnreadable(allPagesItems[_pi].map((it) => (it && it.str) || '').join(' ')).unreadable) _unreadableTagPages.add(_pi);
             }
             artifactHashSet = _stage6b_detectArtifactHashes(allPagesItems);
+            // (2026-10-27) A table header row repeated on every page is page furniture on the REPEATS only: on
+            // its first page it is the header the HTML table's TH cells link to (expenditures: the 14-cell header
+            // row was dropped as "unprinted", so the tagged table had no headers). Repeated text that is a TH's
+            // text, or a whole-word part of one (a stacked 2-line header), stays content on its first page.
+            try {
+              // Data cells too, by EXACT text only (a "STATE TOTAL" row repeated under the header on every page).
+              const _thTexts = _unifiableLeafRefs.filter((lf) => lf && lf.role === 'TH').map((lf) => _stage6b_normalizeArtifactText(lf.text)).filter(Boolean);
+              const _tdTexts = new Set(_unifiableLeafRefs.filter((lf) => lf && lf.role === 'TD').map((lf) => _stage6b_normalizeArtifactText(lf.text)).filter(Boolean));
+              if ((_thTexts.length || _tdTexts.size) && artifactHashSet.size) {
+                const _partOfTh = (n) => _tdTexts.has(n) || _thTexts.some((t) => t === n || (' ' + t + ' ').indexOf(' ' + n + ' ') !== -1);
+                allPagesItems.forEach((items, p) => (items || []).forEach((it) => {
+                  const n = _stage6b_normalizeArtifactText(it && it.str);
+                  if (n && artifactHashSet.has(n) && !_keepFirstArtifacts.has(n) && _partOfTh(n)) _keepFirstArtifacts.set(n, p);
+                }));
+              }
+            } catch (_) { _keepFirstArtifacts.clear(); }
           } catch(_) { artifactHashSet = new Set(); }
         }
       } catch(s4prepErr) {
@@ -37795,6 +38311,37 @@ tr { page-break-inside: avoid; }
     let _stage4BlockCount = 0;
     // Per-page Stage-4 results retained for the Stage-4b per-leaf re-point pass.
     const _stage4PageResults = [];
+    // Linked leaves and their page blocks, recorded at the end of Stage 4b for Stage 3b's link nesting,
+    // with Stage 4b's comparison key so link words and blocks fold the same way.
+    const _alloLinkedLeafBlocks = [];
+    let _alloStage4bKey = null;
+    // (2026-10-27) A Form XObject that draws TEXT on 2+ pages is a running header/footer (civics: one on all
+    // 11 pages). Stage 4 tags page-level text only, so its text was neither tagged nor artifact (veraPDF
+    // 7.1-3); Stage 4c now wraps those draws as /Artifact. A text form drawn on ONE page is left as before.
+    const _repeatedTextForms = new Set();
+    try {
+      const _tfPages = new Map();
+      pages.forEach((pg, pgi) => {
+        let res = pg.node.get(PDFName.of('Resources')); try { res = context.lookup(res) || res; } catch (_) {}
+        let xo = (res && typeof res.get === 'function') ? res.get(PDFName.of('XObject')) : null; try { xo = context.lookup(xo) || xo; } catch (_) {}
+        if (!xo || typeof xo.entries !== 'function') return;
+        for (const [, xr] of xo.entries()) {
+          try {
+            const xobj = context.lookup(xr);
+            if (!xobj || !xobj.dict || String(xobj.dict.get(PDFName.of('Subtype'))) !== '/Form' || !xobj.contents) continue;
+            const filt = String(xobj.dict.get(PDFName.of('Filter')) || '');
+            if (filt && filt !== '/FlateDecode') continue;
+            const fs = new TextDecoder('latin1').decode(filt ? _stage4_inflate(xobj.contents) : xobj.contents);
+            if (!/(?:^|[^\/\w])BT(?!\w)/.test(fs)) continue;
+            const k = String(xr);
+            if (!_tfPages.has(k)) _tfPages.set(k, new Set());
+            _tfPages.get(k).add(pgi);
+          } catch (_) {}
+        }
+      });
+      for (const [k, s] of _tfPages) if (s.size >= 2) _repeatedTextForms.add(k);
+      if (_repeatedTextForms.size) { try { warnLog('[Stage4c] ' + _repeatedTextForms.size + ' text-drawing form(s) repeated on 2+ pages marked as page furniture (/Artifact)'); } catch (_) {} }
+    } catch (_) { _repeatedTextForms.clear(); }
     for (let pi = 0; pi < pages.length; pi++) {
       const page = pages[pi];
       // PDF/UA-1 §7.18 — /Tabs=/S forces tab order to follow the structure
@@ -38209,7 +38756,8 @@ tr { page-break-inside: avoid; }
         try {
           const s4 = await _stage4_tryWrapPage(
             page, pi, pdfjsDocForTagging, stage4OutlineItems,
-            context, { PDFName, PDFString, PDFNumber, PDFHexString }, structRootRef, artifactHashSet, stage4SegmentProbe
+            context, { PDFName, PDFString, PDFNumber, PDFHexString }, structRootRef, artifactHashSet, stage4SegmentProbe,
+            { repeatedTextForms: _repeatedTextForms, splitFont: _splitFont, keepFirstArtifacts: _keepFirstArtifacts }
           );
           if (s4 && s4.pageSectRef) {
             pageElemRefs.push(s4.pageSectRef);
@@ -38540,6 +39088,44 @@ tr { page-break-inside: avoid; }
             cursor = found.end + 1;
           } catch (_) { /* leave this leaf ActualText-only */ }
         }
+        // ── Interleaved exact pass (2026-10-27) ── A paragraph and a footnote that BOTH cross a page turn
+        // are drawn inside each other (osep: body lines, footnote 10's first lines, page 5 body, footnote
+        // 10's rest), so neither forms a consecutive run and the near-match bar refused both: 6 body
+        // paragraphs orphaned, the tagged PDF withheld. An unlinked paragraph/heading/quote/caption/note/list item
+        // (key >= 12 chars) takes the unclaimed blocks that rebuild its key EXACTLY in page order, starting
+        // where a block begins the key and skipping blocks that do not continue it (at most 120 skipped,
+        // at most 2 page turns). Runs before the near-match pass, so exact evidence claims blocks first.
+        // List items run LATER (after the unique pass), on leftovers only: form labels like "5b" let an
+        // early list-item pass assemble lines from scattered fragments that near-match needed (irs1040).
+        let _ilLinked = 0;
+        const _ilPass = (IL_ROLES, label) => { let linkedHere = 0; try {
+          const _ilFree = (k) => !consumed.has(String(blockStream[k].bRef));
+          for (let round = 0; round < 3; round++) {
+            let got = 0;
+            for (const lf of leafSeq) {
+              if (lf._linkedRun || !IL_ROLES[lf.role]) continue;
+              const tKey = _key(_norm(lf.text));
+              if (tKey.length < 12) continue;
+              const done = _alloInterleavedExactRun(blockStream, _ilFree, tKey, lf.role === 'LBody');
+              if (!done) continue;
+              try {
+                const run = done.map((k) => blockStream[k]);
+                const leafDict = context.lookup(lf.ref);
+                leafDict.set(PDFName.of('K'), context.obj(run.map((b) => context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) }))));
+                leafDict.set(PDFName.of('Pg'), run[0].pageRef);
+                for (const b of run) {
+                  if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} }
+                  consumed.add(String(b.bRef));
+                }
+                lf._linkedRun = { start: done[0], end: done[done.length - 1] };
+                _perLeafLinked++; _ilLinked++; linkedHere++; got++;
+              } catch (_) { /* this leaf stays ActualText-only */ }
+            }
+            if (!got) break;
+          }
+          if (linkedHere) { try { warnLog('[Stage4b-Interleaved] linked ' + linkedHere + ' ' + label + ' whose exact text is drawn interleaved with other text (a paragraph and a footnote crossing the same page turn)'); } catch (_) {} }
+        } catch (ilErr) { try { warnLog('[Stage4b-Interleaved] non-fatal: ' + (ilErr && ilErr.message)); } catch (_) {} } };
+        _ilPass({ H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, BlockQuote: 1, Caption: 1, Note: 1 }, 'leaf/leaves');
         // ── Near-match pass (2026-10-16) ── A paragraph the AI lightly reworded (or one whose
         // mixed-direction line extracts in a different order) has no exact run, so its page text
         // stayed in the page Sect and a screen reader heard the paragraph TWICE: the leaf's
@@ -38548,7 +39134,7 @@ tr { page-break-inside: avoid; }
         // words agree closely (Dice >= 0.85), the numbers are IDENTICAL, and the lengths are
         // comparable. A changed number never links: that leaf stays orphaned and the document
         // keeps going to review. The leaf's ActualText (the HTML text) is then read once.
-        let _nearLinked = 0;
+        let _nearLinked = 0, _nearExact = 0;
         try {
           const _words = (s) => (_norm(String(s || '').normalize('NFKC')).match(/[\p{L}\p{N}]+/gu) || [])
             .map((w) => w.replace(_LAM_ALEF_RUN, (m) => m.split('').sort().join('')));
@@ -38579,6 +39165,29 @@ tr { page-break-inside: avoid; }
               if (!LINKABLE[lf.role]) continue;
               const lw = _words(lf.text);
               if (lw.length < 4) continue;
+              // (2026-10-27) Exact evidence first: a leaf whose exact text is printed in ADJACENT free blocks (from
+              // where the search may start) takes those, not a reworded match. child-find: the label "Mailing
+              // address is the same address as the Child", printed "mail" + "ing address ...", word-matched
+              // "ing address ..." + the separate "Mailing Address" label below it and orphaned that label.
+              // Adjacent only: gathering scattered fragments took a line label's text on irs1040 (5 -> 6).
+              const _exKey = _key(_norm(lf.text));
+              const _exact = _exKey.length >= 12 ? _alloAdjacentExactRun(blockStream, (k) => !consumed.has(String(blockStream[k].bRef)), _exKey, lf.role === 'LBody', globalRound ? -1 : prevEnd, 6) : null;
+              if (_exact) {
+                try {
+                  const run = _exact.map((k) => blockStream[k]);
+                  const leafDict = context.lookup(lf.ref);
+                  leafDict.set(PDFName.of('K'), context.obj(run.map((b) => context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) }))));
+                  leafDict.set(PDFName.of('Pg'), run[0].pageRef);
+                  for (const b of run) {
+                    if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} }
+                    consumed.add(String(b.bRef));
+                  }
+                  lf._linkedRun = { start: _exact[0], end: _exact[_exact.length - 1] };
+                  prevEnd = Math.max(prevEnd, lf._linkedRun.end);
+                  _perLeafLinked++; _nearExact++; linkedThisRound++;
+                } catch (_) { /* this leaf stays ActualText-only */ }
+                continue;
+              }
               // Bounded by COUNT of free blocks, not by the next linked leaf: footnotes the HTML puts
               // after a paragraph are drawn between its halves, so the next leaf's run can start
               // inside this leaf's span. Starts stay within the first 80 free blocks (locality).
@@ -38623,6 +39232,7 @@ tr { page-break-inside: avoid; }
             }
           }
           if (_nearLinked) { try { warnLog('[Stage4b-NearMatch] linked ' + _nearLinked + ' reworded leaf/leaves (word agreement >= 0.85, identical numbers) so their page text is not read a second time'); } catch (_) {} }
+          if (_nearExact) { try { warnLog('[Stage4b-NearMatch] linked ' + _nearExact + ' leaf/leaves to their EXACT printed text found during the reworded pass'); } catch (_) {} }
         } catch (nearErr) { try { warnLog('[Stage4b-NearMatch] non-fatal: ' + (nearErr && nearErr.message)); } catch (_) {} }
         // ── Unique exact fallback (2026-10-17) ── A short leaf ("Sincerely,") that the order-bound
         // scan missed may take unclaimed page text anywhere, but only when exactly ONE unclaimed
@@ -38640,7 +39250,8 @@ tr { page-break-inside: avoid; }
               for (let e = s; e < blockStream.length && e - s < 3; e++) {
                 if (consumed.has(String(blockStream[e].bRef))) break;
                 keyRun += (lf.role === 'LBody' && e === s) ? blockStream[e].keyNoMarker : blockStream[e].key;
-                if (keyRun === tKey) { hits.push({ start: s, end: e }); break; }
+                // A heading printed with a run-in colon ("Lecture Plan:") whose HTML drops it (syllabus_bio, 2026-10-27).
+                if (keyRun === tKey || (/^H[1-6]$/.test(lf.role) && keyRun === tKey + ':')) { hits.push({ start: s, end: e }); break; }
                 if (keyRun.length >= tKey.length) break;
               }
             }
@@ -38659,6 +39270,9 @@ tr { page-break-inside: avoid; }
           }
           if (_uniqueLinked) { try { warnLog('[Stage4b-Unique] linked ' + _uniqueLinked + ' short leaf/leaves to their only exact match in the unclaimed page text'); } catch (_) {} }
         } catch (uqErr) { try { warnLog('[Stage4b-Unique] non-fatal: ' + (uqErr && uqErr.message)); } catch (_) {} }
+        // leftovers only (see the interleaved pass above); header cells too: a stacked two-line column header
+        // ("Special Education" / "Instruction") is printed interleaved with its neighbours' lines (expenditures)
+        _ilPass({ LBody: 1, TH: 1 }, 'list item(s) / header cell(s)');
         // ── Row-anchored cell matching (2026-10-18, IRS 1040) ── An unlinked TH/TD may take unclaimed
         // blocks lying between its matched neighbours in OTHER rows of the table (<= 40 blocks apart):
         // a line label printed split ("1" + "a") or twice (left and right), a sub-line letter alone
@@ -38759,6 +39373,87 @@ tr { page-break-inside: avoid; }
           }
           if (_raLinked) { try { warnLog('[Stage4b-RowAnchor] linked ' + _raLinked + ' cell(s) inside the gap between matched neighbours (' + _raLetter + ' by sub-line letter only)'); } catch (_) {} }
         } catch (raErr) { try { warnLog('[Stage4b-RowAnchor] non-fatal: ' + (raErr && raErr.message)); } catch (_) {} }
+        // ── Ordered repeats (2026-10-27, complaint form) ── Repeated short labels re-paired in reading order
+        // (_alloOrderedRepeatsPlan); applied only when fewer leaves end unlinked and no taken block is left over.
+        try {
+          const _orLeaves = leafSeq.map((lf) => ({ key: _key(_norm(lf.text)), role: lf.role, linkable: !!LINKABLE[lf.role], run: lf._linkedRun || null }));
+          const _orPlan = _alloOrderedRepeatsPlan(_orLeaves, blockStream.map((b) => ({ key: b.key, keyNoMarker: b.keyNoMarker, free: !consumed.has(String(b.bRef)) })), 30);
+          if (_orPlan) {
+            let _orMoved = 0, _orNew = 0, _orLost = 0;
+            leafSeq.forEach((lf, i) => {
+              const was = lf._linkedRun || null, now = _orPlan[i];
+              if (!now) {
+                // its copy went to the leaf it belongs to; this leaf had no other copy (still counted fewer orphans overall)
+                if (was) { try { context.lookup(lf.ref).delete(PDFName.of('K')); } catch (_) {} lf._linkedRun = null; _perLeafLinked--; _orLost++; }
+                return;
+              }
+              if (was && was.start === now.start && was.end === now.end) return;
+              const run = blockStream.slice(now.start, now.end + 1);
+              const leafDict = context.lookup(lf.ref);
+              leafDict.set(PDFName.of('K'), context.obj(run.map((b) => context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) }))));
+              leafDict.set(PDFName.of('Pg'), run[0].pageRef);
+              for (const b of run) {
+                if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} }
+                consumed.add(String(b.bRef));
+              }
+              lf._linkedRun = { start: now.start, end: now.end };
+              if (was) _orMoved++; else { _orNew++; _perLeafLinked++; }
+            });
+            if (_orMoved || _orNew) { try { warnLog('[Stage4b-OrderedRepeats] linked ' + _orNew + ' repeated short label(s) by reading order (' + _orMoved + ' re-paired from a later copy of the same text' + (_orLost ? ', ' + _orLost + ' left without a copy' : '') + ')'); } catch (_) {} }
+          }
+        } catch (orErr) { try { warnLog('[Stage4b-OrderedRepeats] non-fatal: ' + (orErr && orErr.message)); } catch (_) {} }
+        // ── Between linked neighbours (2026-10-27, complaint form) ── A short label repeated in every block of
+        // a form ("Name", "Address", "City", "Home Phone") has no unique match anywhere, so 13 list items stayed
+        // orphaned and held the tagged PDF back. Inside the gap between its nearest linked neighbours in reading
+        // order it may have exactly one exact match (_alloBetweenNeighboursRun); rounds repeat as gaps shrink.
+        // An earlier pass can link a repeated label to a LATER copy, so the neighbours are the nearest pair (up to
+        // 6 linked leaves each way) whose runs are in page order; gaps wider than 400 blocks are skipped.
+        try {
+          let _bnLinked = 0;
+          const _bnFree = (k) => !consumed.has(String(blockStream[k].bRef));
+          for (let round = 0; round < 4; round++) {
+            let got = 0;
+            for (let li = 0; li < leafSeq.length; li++) {
+              const lf = leafSeq[li];
+              if (lf._linkedRun || !LINKABLE[lf.role]) continue;
+              const tKey = _key(_norm(lf.text));
+              if (!tKey) continue;
+              const before = [], after = [];
+              for (let j = li - 1; j >= 0 && before.length < 6; j--) if (leafSeq[j]._linkedRun) before.push(leafSeq[j]._linkedRun.end);
+              for (let j = li + 1; j < leafSeq.length && after.length < 6; j++) if (leafSeq[j]._linkedRun) after.push(leafSeq[j]._linkedRun.start);
+              if (!before.length) before.push(-1);
+              if (!after.length) after.push(blockStream.length);
+              let lo = null, hi = null;
+              for (let d = 0; d < before.length + after.length - 1 && lo === null; d++) {
+                for (let a = 0; a <= d && lo === null; a++) {
+                  const b = d - a;
+                  if (a < before.length && b < after.length && before[a] < after[b]) { lo = before[a]; hi = after[b]; }
+                }
+              }
+              if (lo === null || hi - lo > 400) continue;
+              // A sub-line label prints only its letter: "35b Routing number" is drawn "b" + "Routing number", the
+              // "35" once for the whole group beside 35a (irs1040). Its key without the line number may match too.
+              const _subLine = /^\d{1,3}[a-z][a-z]{3,}/.test(tKey) ? tKey.replace(/^\d{1,3}/, '') : null;
+              const hit = _alloBetweenNeighboursRun(blockStream, _bnFree, tKey, lo, hi, lf.role === 'LBody')
+                || (_subLine ? _alloBetweenNeighboursRun(blockStream, _bnFree, _subLine, lo, hi, false) : null);
+              if (!hit) continue;
+              try {
+                const run = blockStream.slice(hit.start, hit.end + 1);
+                const leafDict = context.lookup(lf.ref);
+                leafDict.set(PDFName.of('K'), context.obj(run.map((b) => context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) }))));
+                leafDict.set(PDFName.of('Pg'), run[0].pageRef);
+                for (const b of run) {
+                  if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} }
+                  consumed.add(String(b.bRef));
+                }
+                lf._linkedRun = hit;
+                _perLeafLinked++; _bnLinked++; got++;
+              } catch (_) { /* this leaf stays ActualText-only */ }
+            }
+            if (!got) break;
+          }
+          if (_bnLinked) { try { warnLog('[Stage4b-Between] linked ' + _bnLinked + ' repeated short leaf/leaves to the one exact match between their linked neighbours'); } catch (_) {} }
+        } catch (bnErr) { try { warnLog('[Stage4b-Between] non-fatal: ' + (bnErr && bnErr.message)); } catch (_) {} }
         // ── Option B: off-page leaves (2026-10-17) ── A leaf still unlinked whose words are NOT on
         // the page (a title or note the AI wrote) is dropped from this PDF's tag tree; it stays in the
         // HTML export. Not on the page = its folded text is not in the page text, fewer than half its
@@ -38790,6 +39485,17 @@ tr { page-break-inside: avoid; }
           };
           const free = [];
           for (let k = 0; k < blockStream.length; k++) if (!consumed.has(String(blockStream[k].bRef))) free.push(k);
+          // the same stretch measure over UNCLAIMED blocks only (consecutive free blocks join)
+          const freeWords = [].concat.apply([], free.map((k) => bw[k]));
+          const longestRunFree = (lw) => {
+            let best = 0;
+            for (let i = 0; i < lw.length; i++) for (let p = 0; p < freeWords.length; p++) {
+              if (freeWords[p] !== lw[i]) continue;
+              let k = 0; while (i + k < lw.length && p + k < freeWords.length && freeWords[p + k] === lw[i + k]) k++;
+              if (k > best) best = k;
+            }
+            return best;
+          };
           const bestFreeDice = (lw) => {
             let best = 0;
             for (let si = 0; si < free.length && si < 1500; si++) {
@@ -38854,7 +39560,12 @@ tr { page-break-inside: avoid; }
             if (!repeat) {
               if (tKey && pageKeyAll.includes(tKey)) continue;
               // a short leaf (up to 3 words, e.g. a 2-word title) must appear WHOLE, in order
-              if (lw.length === 1 ? uni.has(lw[0]) : longestRun(lw) >= (lw.length <= 3 ? lw.length : Math.ceil(lw.length / 2))) continue;
+              const need = lw.length <= 3 ? lw.length : Math.ceil(lw.length / 2);
+              // (2026-10-27) Words printed NOWHERE in the taggable text mean the rest only counts in UNCLAIMED
+              // text: child-find's footer "Child Find Intake Form (ver. 06/2016)" sits in the source's /Artifact,
+              // and its first 4 words matched the linked title block, so it stayed an orphan.
+              const missing = lw.some((x) => !uni.has(x));
+              if (lw.length === 1 ? uni.has(lw[0]) : (missing ? longestRunFree(lw) : longestRun(lw)) >= need) continue;
             }
             // matches page text nobody claimed: keep it for review. A repeat of a linked heading is kept
             // only for an unclaimed EXACT printed copy (loose header fragments do not count).
@@ -38881,6 +39592,8 @@ tr { page-break-inside: avoid; }
             if (pkArr && typeof pkArr.size === 'function') {
               for (let i = pkArr.size() - 1; i >= 0; i--) if (String(pkArr.get(i)) === String(lf.ref)) { pkArr.remove(i); removed = true; }
             } else if (pk && String(pk) === String(lf.ref)) { parent.delete(PDFName.of('K')); removed = true; }
+            // (2026-10-27) A top-level leaf is attached later from structElemRefs, which would put it back.
+            for (let i = structElemRefs.length - 1; i >= 0; i--) if (String(structElemRefs[i]) === String(lf.ref)) { structElemRefs.splice(i, 1); removed = true; }
             if (removed) { lf._offPage = true; _offPagePruned++; if (samples.length < 4) samples.push(lf.role + (repeat ? ' (repeat)' : '') + ' "' + String(lf.text).slice(0, 50) + '"'); }
           }
           // A dropped heading must not leave its sub-headings skipping a level (veraPDF 7.4.2-1 on IRS
@@ -38888,16 +39601,21 @@ tr { page-break-inside: avoid; }
           // below the previous, and the first is H1. Only when a heading was dropped; the HTML is untouched.
           if (candidates.some((c) => c.lf._offPage && isHeading(c.lf.role))) {
             let prevLevel = 0, releveled = 0;
+            // (2026-10-27, osep3) First shift EVERY remaining heading up so the shallowest is H1: dropping the
+            // unprinted H1 left H2 sections whose first one alone became H1, so sections II-V read as subsections
+            // of section I. Then no heading may skip a level, as before.
+            const _remainingLevels = _unifiableLeafRefs.filter((lf) => !lf._offPage && isHeading(lf.role)).map((lf) => Number(lf.role.slice(1)));
+            const _shiftUp = _remainingLevels.length ? Math.min.apply(null, _remainingLevels) - 1 : 0;
             for (const lf of _unifiableLeafRefs) {
               if (lf._offPage || !isHeading(lf.role)) continue;
-              const level = Number(lf.role.slice(1));
+              const level = Number(lf.role.slice(1)) - _shiftUp;
               const want = Math.min(level, prevLevel + 1);
-              if (want !== level) {
+              if (want !== Number(lf.role.slice(1))) {
                 try { context.lookup(lf.ref).set(PDFName.of('S'), PDFName.of('H' + want)); lf.role = 'H' + want; releveled++; } catch (_) {}
               }
               prevLevel = want;
             }
-            if (releveled) { try { warnLog('[Stage4b-OffPage] re-levelled ' + releveled + ' heading(s) so none skips a level after the drop'); } catch (_) {} }
+            if (releveled) { try { warnLog('[Stage4b-OffPage] re-levelled ' + releveled + ' heading(s)' + (_shiftUp ? ' (all moved up ' + _shiftUp + ' level(s) so the shallowest is H1)' : '') + ' so none skips a level after the drop'); } catch (_) {} }
           }
           // ── Option B for TABLES (2026-10-18, Aaron) ── A cell cannot simply leave the tree (the grid
           // would shift), so: (1) a header row NONE of whose headers is printed (the AI's "Line |
@@ -39016,7 +39734,8 @@ tr { page-break-inside: avoid; }
           _offPageCellsBlanked = _cellsBlanked; _offPageHeaderRowsDropped = _hdrRowsDropped;
           if (_offPageTablesDropped) { try { warnLog('[Stage4b-OffPageCells] ' + _offPageTablesDropped + ' table(s) with no printed cell left the tagged PDF (kept in the HTML export)'); } catch (_) {} }
           if (_cellsBlanked || _hdrRowsDropped) { try { warnLog('[Stage4b-OffPageCells] ' + _hdrRowsDropped + ' unprinted header row(s) (' + _hdrCellsDropped + ' cells) left the tables; ' + _cellsBlanked + ' cell(s) not on the page kept as EMPTY cells, e.g. ' + _blankS.join('; ')); } catch (_) {} }
-          if (_offPagePruned) { try { warnLog('[Stage4b-OffPage] ' + _offPagePruned + ' leaf/leaves not on the page left out of the tagged PDF (kept in the HTML export), e.g. ' + samples.join('; ')); } catch (_) {} }
+          // (2026-10-27) "not on the page" was untrue for text the SOURCE marks as page decoration (osep: its footer).
+          if (_offPagePruned) { try { warnLog('[Stage4b-OffPage] ' + _offPagePruned + ' leaf/leaves not found in the page\'s taggable text (not printed, or marked as page decoration by the source) left out of the tagged PDF (kept in the HTML export), e.g. ' + samples.join('; ')); } catch (_) {} }
         } catch (offErr) { try { warnLog('[Stage4b-OffPage] non-fatal: ' + (offErr && offErr.message)); } catch (_) {} }
         // ── Figure linkage (Stage 4c match): order-based, gated on EXACT
         // count equality. Figures have no text to match against, so the only
@@ -39027,17 +39746,32 @@ tr { page-break-inside: avoid; }
         // a withheld declaration.
         try {
           const figureLeaves = _unifiableLeafRefs.filter((lf) => lf.role === 'Figure' || lf.role === 'Formula');
-          const imageStream = [];
+          const imageStream = [], withArtifacts = [];
           for (const pr of _stage4PageResults) {
             let pArr = null;
             try { pArr = context.lookup(pr.parentArrayRef); } catch (_) {}
-            for (const ib of (pr.imageBlocks || [])) imageStream.push({ ref: ib.ref, mcid: ib.mcid, pageRef: pr.pageRef, parentArr: pArr });
+            for (const ib of (pr.imageBlocks || [])) {
+              if (ib.artifact) { withArtifacts.push({ artifact: true }); continue; }
+              const d = { ref: ib.ref, mcid: ib.mcid, pageRef: pr.pageRef, parentArr: pArr, form: !!ib.form, xref: ib.xref || '' };
+              imageStream.push(d);
+              if (!d.form) withArtifacts.push(d);
+            }
           }
-          if (figureLeaves.length > 0 && figureLeaves.length === imageStream.length) {
+          // (2026-10-27) Vector drawings (Stage 4c `form` blocks) join only when the image-only count fails,
+          // never one drawn on 2+ pages (letterhead, background); the image-only rule is unchanged.
+          const _pf = _alloPairFigureDraws(figureLeaves.length, imageStream);
+          const _pairs = _pf.pairs;
+          // An unpaired drawing is decoration (NonStruct, empty Alt), as decorative images are (Stage 3 E-lite).
+          for (const b of _pf.decorative) {
+            try { const fd = context.lookup(b.ref); fd.set(PDFName.of('S'), PDFName.of('NonStruct')); fd.set(PDFName.of('Alt'), PDFString.of('')); } catch (_) {}
+          }
+          if (_pf.mode === 'with-drawings') { try { warnLog('[Stage4c-Figures] ' + (_pairs.length - _pf.bitmaps) + ' vector drawing(s) paired with figure(s) (images alone: ' + _pf.bitmaps + ' for ' + figureLeaves.length + ' figure(s))'); } catch (_) {} }
+          if (_pf.mode === 'drawn-once') { try { warnLog('[Stage4c-Figures] paired ' + figureLeaves.length + ' figure(s) with the ' + _pairs.length + ' draw(s) drawn only once (' + (imageStream.length - _pairs.length) + ' repeated draw(s) treated as decoration)'); } catch (_) {} }
+          if (_pairs) {
             for (let fi = 0; fi < figureLeaves.length; fi++) {
               try {
                 const lf = figureLeaves[fi];
-                const b = imageStream[fi];
+                const b = _pairs[fi];
                 const leafDict = context.lookup(lf.ref);
                 leafDict.set(PDFName.of('K'), context.obj([context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) })]));
                 leafDict.set(PDFName.of('Pg'), b.pageRef);
@@ -39047,8 +39781,35 @@ tr { page-break-inside: avoid; }
               } catch (_) { /* this figure stays Alt-only */ }
             }
             try { warnLog('[Stage4c-Figures] linked ' + figureLeaves.length + ' figure(s) to marked image draws (count-exact order match)'); } catch (_) {}
+          } else if (figureLeaves.length > 0 && withArtifacts.some((d) => d.artifact) && figureLeaves.length === withArtifacts.length) {
+            // (2026-10-27) Counting the pictures the SOURCE marks as decoration too, the figures match one to one in
+            // draw order: a figure paired with such a picture leaves this PDF's tag tree (kept in the HTML, as
+            // off-page text is); the others link to their draws as above.
+            let _figDropped = 0, _figLinked = 0;
+            for (let fi = 0; fi < figureLeaves.length; fi++) {
+              const lf = figureLeaves[fi], b = withArtifacts[fi];
+              try {
+                const leafDict = context.lookup(lf.ref);
+                if (b.artifact) {
+                  const parent = context.lookup(leafDict.get(PDFName.of('P')));
+                  const pk = parent && parent.get ? parent.get(PDFName.of('K')) : null;
+                  let pkArr = null; try { pkArr = context.lookup(pk) || pk; } catch (_) { pkArr = pk; }
+                  if (pkArr && typeof pkArr.size === 'function') { for (let i = pkArr.size() - 1; i >= 0; i--) if (String(pkArr.get(i)) === String(lf.ref)) pkArr.remove(i); }
+                  else if (pk && String(pk) === String(lf.ref)) parent.delete(PDFName.of('K'));
+                  for (let i = structElemRefs.length - 1; i >= 0; i--) if (String(structElemRefs[i]) === String(lf.ref)) structElemRefs.splice(i, 1); // top level: attached later from this list
+                  lf._offPage = true; _figDropped++;
+                  continue;
+                }
+                leafDict.set(PDFName.of('K'), context.obj([context.obj({ Type: PDFName.of('MCR'), Pg: b.pageRef, MCID: PDFNumber.of(b.mcid) })]));
+                leafDict.set(PDFName.of('Pg'), b.pageRef);
+                if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, lf.ref); } catch (_) {} }
+                consumed.add(String(b.ref));
+                _perLeafLinked++; _figLinked++;
+              } catch (_) { /* this figure stays Alt-only */ }
+            }
+            try { warnLog('[Stage4c-Figures] linked ' + _figLinked + ' figure(s) in draw order; ' + _figDropped + ' figure(s) whose picture the source marks as page decoration left out of the tagged PDF (kept in the HTML export)'); } catch (_) {}
           } else if (figureLeaves.length > 0 && imageStream.length > 0) {
-            try { warnLog('[Stage4c-Figures] count mismatch (HTML figures: ' + figureLeaves.length + ', marked image draws: ' + imageStream.length + ') — figures stay Alt-only and the PDF/UA declaration may be withheld (honest fallback; order matching would risk wrong alt attribution).'); } catch (_) {}
+            try { warnLog('[Stage4c-Figures] count mismatch (HTML figures: ' + figureLeaves.length + ', marked image draws: ' + _pf.bitmaps + (_pf.withForms > _pf.bitmaps ? ', with vector drawings: ' + _pf.withForms : '') + ') — figures stay Alt-only and the PDF/UA declaration may be withheld (honest fallback; order matching would risk wrong alt attribution).'); } catch (_) {}
           }
         } catch (figErr) { try { warnLog('[Stage4c-Figures] non-fatal: ' + (figErr && figErr.message)); } catch (_) {} }
         // Drop consumed flat block elems from their page Sects (they're now
@@ -39066,6 +39827,25 @@ tr { page-break-inside: avoid; }
           }
         }
         if (_perLeafLinked) { try { warnLog('[Stage4b-PerLeaf] linked ' + _perLeafLinked + ' semantic leaves to ' + consumed.size + ' Stage-4 block(s) via run-concatenation re-pointing'); } catch (_) {} }
+        // For Stage 3b: each linked leaf's blocks in its /K order, so a link annotation can be nested in the
+        // element that prints its words.
+        try {
+          _alloStage4bKey = _key;
+          const _byMcr = new Map(blockStream.map((b) => [String(b.pageRef) + ':' + b.mcid, b]));
+          for (const lf of leafSeq) {
+            if (!lf._linkedRun) continue;
+            const kArr = context.lookup(context.lookup(lf.ref).get(PDFName.of('K')));
+            const kids = kArr && typeof kArr.asArray === 'function' ? kArr.asArray() : [];
+            const blocks = [];
+            kids.forEach((kid, ki) => {
+              const d = context.lookup(kid) || kid;
+              if (!d || typeof d.get !== 'function') return;
+              const b = _byMcr.get(String(d.get(PDFName.of('Pg'))) + ':' + Number(String(d.get(PDFName.of('MCID')))));
+              if (b) blocks.push({ page: String(b.pageRef), key: b.key, mcid: b.mcid, parentArr: b.parentArr, kid: ki });
+            });
+            if (blocks.length) _alloLinkedLeafBlocks.push({ ref: lf.ref, blocks });
+          }
+        } catch (_) {}
       } catch (plErr) { try { warnLog('[createTaggedPdf] Stage 4b per-leaf unification failed (non-fatal): ' + (plErr && plErr.message)); } catch (_) {} }
     }
     // ── Stage 3: AcroForm field tagging ──
@@ -39370,6 +40150,8 @@ tr { page-break-inside: avoid; }
           }
           return _lnkClean(words.join(' ')).replace(/[.,;:!?]+$/, '');
         };
+        // (2026-10-27) Links nested in the element that prints their words (_alloLinkHostPlan), applied after the loop.
+        const _lnkHostUsed = new Set(), _lnkPlaced = [];
         for (let pi = 0; pi < pages.length; pi++) {
           const page = pages[pi];
           // /Annots may be an INDIRECT array (ed-parent-guide, irs-f1040): resolve it.
@@ -39416,16 +40198,128 @@ tr { page-break-inside: avoid; }
               K: context.obj([objrDict]),
             });
             const linkElemRef = context.register(linkElemDict);
-            linkAnnotElemRefs.push(linkElemRef);
+            let _host = null;
+            if (_alloStage4bKey && _alloLinkedLeafBlocks.length) {
+              const _under = await _lnkUnderRect(pi, rect);
+              for (const t of [_under, srcContents, desc]) {
+                const lk = t ? _alloStage4bKey(t) : '';
+                if (lk.length >= 3 && (_host = _alloLinkHostPlan(_alloLinkedLeafBlocks, String(page.ref), lk, _lnkHostUsed))) break;
+              }
+            }
+            if (_host) _lnkPlaced.push({ host: _host, linkElemRef, linkElemDict, objrDict });
+            else linkAnnotElemRefs.push(linkElemRef);
             try { annotDict.set(PDFName.of('StructParent'), PDFNumber.of(key)); } catch (_) {}
             parentTreeNums.push(PDFNumber.of(key));
             parentTreeNums.push(linkElemRef);
             _linkAnnotsTagged++;
           }
         }
+        // Nest each placed link: its own whole blocks move inside it (P > [text, Link{MCR, OBJR}, text]); words
+        // sharing a block put the Link right after that block. Per leaf, from the last position back, so earlier
+        // /K indexes stay valid. A placement that cannot be applied leaves its Link at the document level.
+        let _lnkNested = 0, _lnkWithText = 0;
+        const _lnkByLeaf = new Map();
+        for (const p of _lnkPlaced) { if (!_lnkByLeaf.has(p.host.leaf)) _lnkByLeaf.set(p.host.leaf, []); _lnkByLeaf.get(p.host.leaf).push(p); }
+        for (const [li, list] of _lnkByLeaf) {
+          const rec = _alloLinkedLeafBlocks[li];
+          let kids = null, leafDict = null;
+          try { leafDict = context.lookup(rec.ref); const kArr = context.lookup(leafDict.get(PDFName.of('K'))); kids = kArr && typeof kArr.asArray === 'function' ? kArr.asArray().slice() : null; } catch (_) {}
+          if (!kids) { for (const p of list) linkAnnotElemRefs.push(p.linkElemRef); continue; }
+          list.sort((a, b) => b.host.first - a.host.first || b.host.last - a.host.last);
+          let floor = Infinity; // own ranges must not overlap a range already moved
+          for (const p of list) {
+            const ks = rec.blocks[p.host.first].kid, ke = rec.blocks[p.host.last].kid;
+            if (p.host.own && ke < floor) {
+              const moved = kids.slice(ks, ke + 1);
+              kids.splice(ks, ke - ks + 1, p.linkElemRef);
+              p.linkElemDict.set(PDFName.of('K'), context.obj(moved.concat([p.objrDict])));
+              for (let bi = p.host.first; bi <= p.host.last; bi++) {
+                const b = rec.blocks[bi];
+                if (b.parentArr && typeof b.parentArr.set === 'function') { try { b.parentArr.set(b.mcid, p.linkElemRef); } catch (_) {} }
+              }
+              floor = ks;
+              _lnkWithText++;
+            } else {
+              kids.splice(Math.min(ke, floor - 1) + 1, 0, p.linkElemRef);
+            }
+            p.linkElemDict.set(PDFName.of('P'), rec.ref);
+            _lnkNested++;
+          }
+          leafDict.set(PDFName.of('K'), context.obj(kids));
+        }
+        if (_lnkNested) { try { warnLog('[Stage3b-LinkAnnots] nested ' + _lnkNested + ' link(s) in the element that prints their words (' + _lnkWithText + ' holding their own text); ' + (_linkAnnotsTagged - _lnkNested) + ' left at document level'); } catch (_) {} }
         if (_linkAnnotsTagged) { try { warnLog('[Stage3b-LinkAnnots] tagged ' + _linkAnnotsTagged + ' link annotation(s) into the structure tree'); } catch (_) {} }
       }
     } catch (linkErr) { try { warnLog('[createTaggedPdf] Link-annotation tagging failed (non-fatal): ' + (linkErr && linkErr.message)); } catch (_) {} }
+    // Field appearances in an EMBEDDED font (2026-10-18; moved before Stage 7 on 2026-10-27 so fonts the redraw
+    // replaces are not counted as unrepairable, which vetoed the PDF/UA claim on child-find). After getForm(), pdf-lib's save() redraws the
+    // appearance of any widget that needs one in non-embedded Helvetica (veraPDF 7.21.4.1 on IRS 1040).
+    // Skipping the redraw is worse: the source's own check-box appearances use ZapfDingbats, also not
+    // embedded and with no Unicode map (7.21.4.1 + 7.21.7). So redraw them here with the embedded Noto
+    // Sans the OCR layer uses; with no font available, pdf-lib's default redraw runs as before.
+    let _fieldAppearancesDrawn = false;
+    if (_acroFormForSave) {
+      try {
+        const _fieldFont = await _getUnicodeFont('latinext');
+        if (_fieldFont) {
+          // (2026-10-27) pdf-lib redraws only fields with no appearance (or marked dirty). A field whose OWN
+          // appearance draws with a font that has no embedded program (child-find: Helvetica with custom
+          // /Differences, which Stage 7 cannot safely substitute) failed 7.21.4.1: mark it dirty so it is
+          // redrawn in the embedded font too. Fields already drawn with embedded fonts are left as they are.
+          let _redrawn = 0;
+          try {
+            const _lk2 = (o) => { try { return context.lookup(o) || o; } catch (_) { return o; } };
+            const _unembedded = (res) => {
+              const fonts = _lk2(res && res.get ? res.get(PDFName.of('Font')) : null);
+              if (!fonts || typeof fonts.entries !== 'function') return false;
+              for (const [, f] of fonts.entries()) {
+                const fd = _lk2(f);
+                if (!fd || typeof fd.get !== 'function') continue;
+                const st = String(fd.get(PDFName.of('Subtype')) || '');
+                if (st === '/Type3' || st === '/Type0') continue; // Type0 descendants are checked by Stage 7 / veraPDF separately
+                const desc = _lk2(fd.get(PDFName.of('FontDescriptor')));
+                if (!desc || typeof desc.get !== 'function' || (!desc.get(PDFName.of('FontFile')) && !desc.get(PDFName.of('FontFile2')) && !desc.get(PDFName.of('FontFile3')))) return true;
+              }
+              return false;
+            };
+            for (const field of _acroFormForSave.getFields()) {
+              let bad = false;
+              for (const w of field.acroField.getWidgets()) {
+                const ap = _lk2(w.dict.get(PDFName.of('AP')));
+                if (!ap || typeof ap.get !== 'function') continue;
+                for (const which of ['N', 'R', 'D']) {
+                  const v = _lk2(ap.get(PDFName.of(which)));
+                  const streams = !v ? [] : (v.dict && typeof v.dict.get === 'function') ? [v] : (typeof v.entries === 'function' ? Array.from(v.entries()).map(([, s]) => _lk2(s)) : []);
+                  if (streams.some((s) => s && s.dict && _unembedded(_lk2(s.dict.get(PDFName.of('Resources')))))) bad = true;
+                }
+              }
+              if (bad) { try { _acroFormForSave.markFieldAsDirty(field.ref); _redrawn++; } catch (_) {} }
+            }
+          } catch (_) {}
+          _acroFormForSave.updateFieldAppearances(_fieldFont); _fieldAppearancesDrawn = true;
+          if (_redrawn) { try { warnLog('[createTaggedPdf] redrew ' + _redrawn + ' form field appearance(s) that used a font with no embedded program, in the embedded font (PDF/UA 7.21.4.1)'); } catch (_) {} }
+        }
+      } catch (fieldErr) { try { warnLog('[createTaggedPdf] field appearances with an embedded font failed (non-fatal): ' + (fieldErr && fieldErr.message)); } catch (_) {} }
+    }
+    // ── Stage 6c: incomplete /CIDSet (2026-10-27) ── A Word-made subset CID font (complaint form: MS-Gothic,
+    // SegoeUISymbol) carries a /CIDSet that misses glyphs in its program: veraPDF 7.21.4.2 held the tagged PDF.
+    // /CIDSet is optional (ISO 32000-1 Table 124) and PDF/UA only checks it when present; only PDF/A-1 requires
+    // it, which this PDF does not claim. Removed from embedded CID fonts' descriptors; nothing is redrawn.
+    let _cidSetsDropped = 0;
+    try {
+      for (const [, obj] of context.enumerateIndirectObjects()) {
+        if (!obj || typeof obj.get !== 'function') continue;
+        const sub = String(obj.get(PDFName.of('Subtype')) || '');
+        if (String(obj.get(PDFName.of('Type')) || '') !== '/Font' || (sub !== '/CIDFontType0' && sub !== '/CIDFontType2')) continue;
+        let fd = obj.get(PDFName.of('FontDescriptor'));
+        try { fd = context.lookup(fd) || fd; } catch (_) {}
+        if (!fd || typeof fd.get !== 'function' || !fd.get(PDFName.of('CIDSet'))) continue;
+        if (!fd.get(PDFName.of('FontFile')) && !fd.get(PDFName.of('FontFile2')) && !fd.get(PDFName.of('FontFile3'))) continue;
+        fd.delete(PDFName.of('CIDSet'));
+        _cidSetsDropped++;
+      }
+      if (_cidSetsDropped) { try { warnLog('[Stage6c-CIDSet] removed ' + _cidSetsDropped + ' optional /CIDSet entr' + (_cidSetsDropped === 1 ? 'y' : 'ies') + ' from embedded CID fonts (PDF/UA 7.21.4.2 checks them only when present)'); } catch (_) {} }
+    } catch (cidErr) { try { warnLog('[Stage6c-CIDSet] non-fatal: ' + (cidErr && cidErr.message)); } catch (_) {} }
     // ── Stage 7: font-embedding repair (ISO 14289-1 §7.21.4.1) ──
     // veraPDF ground truth (2026-06-09) showed non-embedded source fonts as
     // the ONLY inherited failure class on otherwise-clean output. PDF/UA
@@ -39494,21 +40388,40 @@ tr { page-break-inside: avoid; }
       // Collect candidate font dicts across all pages (dedup by ref/object id).
       const _seenFonts = new Set();
       const _candidates = [];
-      for (const page of pages) {
-        let res = page.node.get(PDFName.of('Resources'));
-        try { res = context.lookup(res) || res; } catch (_) {}
-        if (!res || typeof res.get !== 'function') continue;
-        let fonts = res.get(PDFName.of('Font'));
-        try { fonts = context.lookup(fonts) || fonts; } catch (_) {}
-        if (!fonts || typeof fonts.entries !== 'function') continue;
+      const _lk = (o) => { try { return context.lookup(o) || o; } catch (_) { return o; } };
+      const _addFontsFrom = (res) => {
+        res = _lk(res);
+        if (!res || typeof res.get !== 'function') return;
+        const fonts = _lk(res.get(PDFName.of('Font')));
+        if (!fonts || typeof fonts.entries !== 'function') return;
         for (const [, fRefOrDict] of fonts.entries()) {
           const fKey = (fRefOrDict && typeof fRefOrDict.objectNumber === 'number') ? ('r' + fRefOrDict.objectNumber) : ('d' + String(fRefOrDict).slice(0, 60));
           if (_seenFonts.has(fKey)) continue;
           _seenFonts.add(fKey);
-          let fDict = fRefOrDict;
-          try { fDict = context.lookup(fRefOrDict) || fRefOrDict; } catch (_) {}
+          const fDict = _lk(fRefOrDict);
           if (fDict && typeof fDict.get === 'function') _candidates.push(fDict);
         }
+      };
+      for (const page of pages) _addFontsFrom(page.node.get(PDFName.of('Resources')));
+      // (2026-10-27) Annotation appearances draw with their own fonts (veraPDF 7.21.4.1 counts every font used
+      // for rendering): the same repair covers them. Form fields drawn with an unembedded font were redrawn in
+      // the embedded font just above, so what is left here is other annotations. The form's default resources
+      // (/DR) draw nothing themselves and are not collected (they held child-find's old Helvetica/ZapfDingbats).
+      for (const page of pages) {
+        try {
+          const annots = _lk(page.node.get(PDFName.of('Annots')));
+          if (!annots || typeof annots.size !== 'function') continue;
+          for (let a = 0; a < annots.size(); a++) {
+            const ap = _lk((_lk(annots.get(a)) || {}).get ? _lk(annots.get(a)).get(PDFName.of('AP')) : null);
+            if (!ap || typeof ap.get !== 'function') continue;
+            for (const which of ['N', 'R', 'D']) {
+              const v = _lk(ap.get(PDFName.of(which)));
+              if (!v) continue;
+              const streams = (v.dict && typeof v.dict.get === 'function') ? [v] : (typeof v.entries === 'function' ? Array.from(v.entries()).map(([, s]) => _lk(s)) : []);
+              for (const s of streams) if (s && s.dict && typeof s.dict.get === 'function') _addFontsFrom(s.dict.get(PDFName.of('Resources')));
+            }
+          }
+        } catch (_) {}
       }
       const _byteCache = _stage7FontByteCache; // cross-call cache (batch tags N files per session)
       for (const fDict of _candidates) {
@@ -40418,18 +41331,6 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         }
       }
     } catch (_) {}
-    // Field appearances in an EMBEDDED font (2026-10-18). After getForm(), pdf-lib's save() redraws the
-    // appearance of any widget that needs one in non-embedded Helvetica (veraPDF 7.21.4.1 on IRS 1040).
-    // Skipping the redraw is worse: the source's own check-box appearances use ZapfDingbats, also not
-    // embedded and with no Unicode map (7.21.4.1 + 7.21.7). So redraw them here with the embedded Noto
-    // Sans the OCR layer uses; with no font available, pdf-lib's default redraw runs as before.
-    let _fieldAppearancesDrawn = false;
-    if (_acroFormForSave) {
-      try {
-        const _fieldFont = await _getUnicodeFont('latinext');
-        if (_fieldFont) { _acroFormForSave.updateFieldAppearances(_fieldFont); _fieldAppearancesDrawn = true; }
-      } catch (fieldErr) { try { warnLog('[createTaggedPdf] field appearances with an embedded font failed (non-fatal): ' + (fieldErr && fieldErr.message)); } catch (_) {} }
-    }
     const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false, updateFieldAppearances: !_fieldAppearancesDrawn });
     // ── Round-trip self-check (Tier A) ──
     // _pdfUa1Checks above walk the IN-MEMORY structures (before save). This RE-PARSES
@@ -45386,6 +46287,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'quiz') {
+        // AI quiz text: escaped like _escTxt, with the Assess view's light markdown as <strong>/<em>/<code>.
+        const _quizMd = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
+        const _escQuiz = (value) => {
+          if (!_quizMd || typeof _quizMd.segments !== 'function') return _escTxt(value);
+          return _quizMd.segments(value == null ? '' : value).map((seg) => {
+            let html = _escTxt(seg.text);
+            if (seg.code) html = `<code>${html}</code>`;
+            if (seg.italic) html = `<em>${html}</em>`;
+            if (seg.bold) html = `<strong>${html}</strong>`;
+            return html;
+          }).join('');
+        };
+        const _plainQuiz = (value) => (_quizMd ? _quizMd.plain(value) : value);
           const quizQuestions = Array.isArray(item.data?.questions) ? item.data.questions : [];
           const quizId = String(item.id || 'quiz');
           // Graded or teacher-release quiz: the student copy carries no key and no self-check
@@ -45411,7 +46325,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           })();
           const reflectionInputHtml = (text, reflectionIndex = 0) => isWorksheet
               ? ruledLines(4)
-              : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${_escTxt(quizId + ':reflection:' + reflectionIndex)}" aria-label="${_escTxt(text)}" placeholder="${_escTxt(t('common.type_answer_here'))}"></textarea>`;
+              : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${_escTxt(quizId + ':reflection:' + reflectionIndex)}" aria-label="${_escTxt(_plainQuiz(text))}" placeholder="${_escTxt(t('common.type_answer_here'))}"></textarea>`;
           const reflectionHtml = Array.isArray(item.data.reflections)
               ? item.data.reflections.map((r, reflectionIndex) => {
                   const text = typeof r === 'string' ? r : (r && (r.text || r.prompt || r.question || r.q || r.label || r.title) || '');
@@ -45419,14 +46333,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const textEn = r && typeof r === 'object' && r.text_en ? r.text_en : null;
                   return `
                       <div class="reflection-block">
-                          <p><strong>${_escTxt(text)}</strong>${textEn ? `<br><span${quizTranslationAttrs} style="font-weight:normal; font-style:italic; color:#666">(${_escTxt(textEn)})</span>` : ''}</p>
+                          <p><strong>${_escQuiz(text)}</strong>${textEn ? `<br><span${quizTranslationAttrs} style="font-weight:normal; font-style:italic; color:#666">(${_escQuiz(textEn)})</span>` : ''}</p>
                           ${reflectionInputHtml(text, reflectionIndex)}
                       </div>
                   `;
                 }).join('')
               : String(item.data.reflection || '').trim() ? `
                   <div class="reflection-block">
-                      <p><strong>${_escTxt(item.data.reflection || '')}</strong></p>
+                      <p><strong>${_escQuiz(item.data.reflection || '')}</strong></p>
                       ${reflectionInputHtml(item.data.reflection || 'Reflection response', 0)}
                   </div>
               ` : '';
@@ -45494,9 +46408,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           const responseDescription = descriptionIds ? ` aria-describedby="${descriptionIds}"` : '';
                           const labeledResponseAttrs = labelId => ` aria-labelledby="${labelId} ${questionId}"${responseDescription}`;
                           const questionGroupAttrs = ` role="group" aria-labelledby="${questionId}"${responseDescription}`;
-                          const stem = `<p><strong id="${questionId}">${i+1}. ${_escTxt(q.question)}</strong>${q.question_en ? `<br><span id="${controlIdBase}_translation"${quizTranslationAttrs} style="font-weight:normal; font-style:italic; color:#666">(${_escTxt(q.question_en)})</span>` : ''}</p>${criteriaHtml}${policyDirections ? `<p id="${controlIdBase}_directions" data-assessment-policy-directions>${_escTxt(policyDirections)}</p>` : ''}`;
+                          const stem = `<p><strong id="${questionId}">${i+1}. ${_escQuiz(q.question)}</strong>${q.question_en ? `<br><span id="${controlIdBase}_translation"${quizTranslationAttrs} style="font-weight:normal; font-style:italic; color:#666">(${_escQuiz(q.question_en)})</span>` : ''}</p>${criteriaHtml}${policyDirections ? `<p id="${controlIdBase}_directions" data-assessment-policy-directions>${_escTxt(policyDirections)}</p>` : ''}`;
                           const reasoningPrompt = q.requireReasoning || q.explanationPrompt ? String(q.explanationPrompt || 'Explain why your answer fits.') : '';
-                          const reasoningLabel = `${_escTxt(reasoningPrompt)} <span>(${q.requireReasoning ? 'required' : 'optional'}; reviewed separately from the choice score)</span>`;
+                          const reasoningLabel = `${_escQuiz(reasoningPrompt)} <span>(${q.requireReasoning ? 'required' : 'optional'}; reviewed separately from the choice score)</span>`;
                           const reasoningHtml = reasoningPrompt ? `<div data-assessment-reasoning>${isWorksheet ? `<p class="alloflow-response-label">${reasoningLabel}</p>${ruledLines(3)}` : `<label id="${controlIdBase}_reasoning_label" for="${controlIdBase}_reasoning" class="alloflow-response-label">${reasoningLabel}</label><textarea id="${controlIdBase}_reasoning" class="interactive-textarea alloflow-response-input" data-allo-response-key="${responseKeyAttr}:reasoning"${labeledResponseAttrs(controlIdBase + '_reasoning_label')} rows="3"${q.requireReasoning ? ' required' : ''} style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}</div>` : '';
                           if (itemType === 'multi-select') {
                               const options = Array.isArray(q.options) ? q.options : [];
@@ -45512,7 +46426,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                                   ${isWorksheet
                                                       ? fillableSquare()
                                                       : `<input type="checkbox" name="${controlIdBase}_multi" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:multi">`}
-                                                  <span>${_escTxt(opt)}</span>
+                                                  <span>${_escQuiz(opt)}</span>
                                               </label>
                                           `).join('')}
                                       </div>
@@ -45529,7 +46443,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                           ? `<span style="font-weight:700;">${_qL('output.quiz_answer', 'Answer')}:</span> ${fillableBlank(260)}`
                                           : `<label id="${controlIdBase}_fill_label" for="${controlIdBase}_fill" class="alloflow-response-label">${_qL('output.quiz_answer', 'Answer')}</label><input id="${controlIdBase}_fill" type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${responseKeyAttr}:fill" aria-labelledby="${controlIdBase}_fill_label ${questionId}"${responseDescription} placeholder="${_qL('placeholders.missing_word', 'Type the missing word…')}" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>`}
                                   </div>
-                                  ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escTxt(q.expectedFill)}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.map(_escTxt).join(', ') + ')</span>' : ''}</p>` : ''}
+                                  ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escQuiz(q.expectedFill)}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.map(_escTxt).join(', ') + ')</span>' : ''}</p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'short-answer') {
@@ -45539,7 +46453,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   ${isWorksheet
                                       ? ruledLines(3)
                                       : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${responseKeyAttr}:short" aria-labelledby="${questionId}"${responseDescription} placeholder="${_qL('export.quiz_short_placeholder', 'Type your 1-2 sentence response…')}" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
-                                  ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${_escTxt(q.expectedAnswer)}</span></p>` : ''}
+                                  ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${_escQuiz(q.expectedAnswer)}</span></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'self-explanation') {
@@ -45549,7 +46463,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   ${isWorksheet
                                       ? ruledLines(5)
                                       : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${responseKeyAttr}:explanation" aria-labelledby="${questionId}"${responseDescription} placeholder="${_qL('export.quiz_explain_placeholder', 'Explain in your own words (3-5 sentences)…')}" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
-                                  ${isTeacher && q.rubric ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">Rubric: <span style="font-weight:normal;font-style:italic">${_escTxt(q.rubric)}</span></p>` : ''}
+                                  ${isTeacher && q.rubric ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">Rubric: <span style="font-weight:normal;font-style:italic">${_escQuiz(q.rubric)}</span></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'sequence-sense') {
@@ -45582,7 +46496,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   ${stem}
                                   <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">${shortSequence ? _qL('export.quiz_sequence_compact_intro', 'Arrange the sequence and identify the ordering principle.') : _qL('export.quiz_sequence_intro', 'Below is a sequence — verify and explain.')}</p>
                                   <ol style="margin:0.5rem 0 0.75rem 1.5rem;">
-                                      ${presentedOrder.map(canonIdx => `<li style="padding:4px 0;">${_escTxt(items[canonIdx] || '')}</li>`).join('')}
+                                      ${presentedOrder.map(canonIdx => `<li style="padding:4px 0;">${_escQuiz(items[canonIdx] || '')}</li>`).join('')}
                                   </ol>
                                   ${shortSequence ? '' : `<fieldset class="alloflow-response-group">
                                       <legend>${_qL('export.quiz_sequence_correct', '1. Is this order correct?')}</legend>
@@ -45603,9 +46517,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   <div style="margin:0.5rem 0;">
                                       ${isWorksheet
                                           ? `<strong style="font-size:0.9rem;">${shortSequence ? _qL('export.quiz_sequence_compact_principle', '2. Ordering principle:') : _qL('export.quiz_sequence_principle_print', '3. Ordering principle:')}</strong> <span style="color:#475569;">${principleOpts.map(_escTxt).join(' / ')}</span> ${fillableBlank(150)}`
-                                          : `<label id="${controlIdBase}_sequence_principle_label" for="${controlIdBase}_sequence_principle" class="alloflow-response-label">${shortSequence ? _qL('export.quiz_sequence_compact_principle', '2. Ordering principle:') : _qL('export.quiz_sequence_principle', "3. What's the ordering principle?")}</label><select id="${controlIdBase}_sequence_principle" class="alloflow-response-select" data-allo-response-key="${responseKeyAttr}:sequence-principle"${labeledResponseAttrs(controlIdBase + '_sequence_principle_label')}><option value="">${_qL('export.quiz_choose_principle', 'Choose a principle')}</option>${principleOpts.map((opt, optIdx) => `<option value="${optIdx}">${_escTxt(opt)}</option>`).join('')}</select>`}
+                                          : `<label id="${controlIdBase}_sequence_principle_label" for="${controlIdBase}_sequence_principle" class="alloflow-response-label">${shortSequence ? _qL('export.quiz_sequence_compact_principle', '2. Ordering principle:') : _qL('export.quiz_sequence_principle', "3. What's the ordering principle?")}</label><select id="${controlIdBase}_sequence_principle" class="alloflow-response-select" data-allo-response-key="${responseKeyAttr}:sequence-principle"${labeledResponseAttrs(controlIdBase + '_sequence_principle_label')}><option value="">${_qL('export.quiz_choose_principle', 'Choose a principle')}</option>${principleOpts.map((opt, optIdx) => `<option value="${optIdx}">${_escQuiz(opt)}</option>`).join('')}</select>`}
                                   </div>
-                                  ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${shortSequence ? '' : misplacedKey + ' · '}correct order: ${correctOrderNumbers} · principle: <em>${_escTxt(q.orderingPrinciple || '')}</em></p>` : ''}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${shortSequence ? '' : misplacedKey + ' · '}correct order: ${correctOrderNumbers} · principle: <em>${_escQuiz(q.orderingPrinciple || '')}</em></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'relation-mismatch') {
@@ -45618,15 +46532,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   <table style="width:100%;border-collapse:collapse;margin:0.5rem 0;">
                                       <caption style="text-align:left;font-weight:700;margin-bottom:4px;">${_qL('export.quiz_pairs_to_review', 'Pairs to review')}</caption>
                                       <thead><tr><th scope="col">${_qL('export.quiz_pair_item', 'Item')}</th><th scope="col">${_qL('export.quiz_current_partner', 'Current partner')}</th></tr></thead>
-                                      <tbody>${pairs.map((pair, idx) => `<tr><td style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;font-weight:600;">${idx+1}. ${_escTxt(pair.left || '')}</td><td style="padding:6px 8px;border:1px solid #cbd5e1;">↔ ${_escTxt(pair.right || '')}</td></tr>`).join('')}</tbody>
+                                      <tbody>${pairs.map((pair, idx) => `<tr><td style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;font-weight:600;">${idx+1}. ${_escQuiz(pair.left || '')}</td><td style="padding:6px 8px;border:1px solid #cbd5e1;">↔ ${_escQuiz(pair.right || '')}</td></tr>`).join('')}</tbody>
                                   </table>
                                   <fieldset class="alloflow-response-group">
                                       <legend>${_qL('export.quiz_wrong_pair', 'Wrong pair')}</legend>
                                       ${pairs.map((pair, pairIdx) => `<label class="alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_wrong_pair" value="${pairIdx}" data-allo-response-key="${responseKeyAttr}:wrong-pair">`}${_qL('export.quiz_pair_number', 'Pair #{n}', pairIdx + 1)}</label>`).join('')}
                                   </fieldset>
-                                  ${candidates.length > 0 ? `<fieldset class="alloflow-response-group"><legend>${_qL('export.quiz_correct_partner', 'Correct partner')}</legend>${candidates.map((candidate, candidateIdx) => `<label class="alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_partner" value="${candidateIdx}" data-allo-response-key="${responseKeyAttr}:partner">`}${_escTxt(candidate)}</label>`).join('')}</fieldset>` : ''}
+                                  ${candidates.length > 0 ? `<fieldset class="alloflow-response-group"><legend>${_qL('export.quiz_correct_partner', 'Correct partner')}</legend>${candidates.map((candidate, candidateIdx) => `<label class="alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_partner" value="${candidateIdx}" data-allo-response-key="${responseKeyAttr}:partner">`}${_escQuiz(candidate)}</label>`).join('')}</fieldset>` : ''}
                                   ${reasoningHtml}
-                                  ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: pair #${(Number.isInteger(q.wrongPairIndex) ? q.wrongPairIndex : 0) + 1} is wrong · correct partner: <em>${_escTxt(q.correctPartnerForWrong || '')}</em></p>` : ''}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: pair #${(Number.isInteger(q.wrongPairIndex) ? q.wrongPairIndex : 0) + 1} is wrong · correct partner: <em>${_escQuiz(q.correctPartnerForWrong || '')}</em></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'answer-evidence') {
@@ -45637,14 +46551,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   ${stem}
                                   <fieldset class="alloflow-response-group">
                                       <legend>${_qL('export.quiz_choose_answer', 'Choose an answer')}</legend>
-                                      ${answerOptions.map((opt, optIdx) => `<label class="mcq-label alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_answer" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:answer">`}<span>${_escTxt(opt)}</span></label>`).join('')}
+                                      ${answerOptions.map((opt, optIdx) => `<label class="mcq-label alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_answer" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:answer">`}<span>${_escQuiz(opt)}</span></label>`).join('')}
                                   </fieldset>
                                   <fieldset class="alloflow-response-group">
-                                      <legend>${q.evidencePrompt ? _escTxt(q.evidencePrompt) : _qL('export.quiz_choose_evidence', 'Choose the best supporting evidence')}</legend>
-                                      ${evidenceOptions.map((opt, optIdx) => `<label class="mcq-label alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_evidence" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:evidence">`}<span>${_escTxt(opt)}</span></label>`).join('')}
+                                      <legend>${q.evidencePrompt ? _escQuiz(q.evidencePrompt) : _qL('export.quiz_choose_evidence', 'Choose the best supporting evidence')}</legend>
+                                      ${evidenceOptions.map((opt, optIdx) => `<label class="mcq-label alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_evidence" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:evidence">`}<span>${_escQuiz(opt)}</span></label>`).join('')}
                                   </fieldset>
                                   ${reasoningHtml}
-                                  ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escTxt(q.correctAnswer ?? '')} · evidence: ${_escTxt(q.correctEvidence ?? '')}</p>` : ''}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escQuiz(q.correctAnswer ?? '')} · evidence: ${_escQuiz(q.correctEvidence ?? '')}</p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'numeric-response') {
@@ -45677,12 +46591,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                               ? fillableCircle()
                                               : `<input type="radio" name="${controlIdBase}_mcq" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:mcq">`}
                                           ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${_escTxt(q.optionImageUrls[optIdx])}" alt="${_escTxt(typeof q.optionImageAltTexts?.[optIdx] === 'string' ? q.optionImageAltTexts[optIdx] : opt)}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
-                                          <span>${_escTxt(opt)} ${q.options_en && q.options_en[optIdx] ? `<span${quizTranslationAttrs} style="color:#888; font-size:0.9em;">(${_escTxt(q.options_en[optIdx])})</span>` : ''}</span>
+                                          <span>${_escQuiz(opt)} ${q.options_en && q.options_en[optIdx] ? `<span${quizTranslationAttrs} style="color:#888; font-size:0.9em;">(${_escQuiz(q.options_en[optIdx])})</span>` : ''}</span>
                                       </label>
                                   `).join('')}
                               </div>
                               ${feedbackId ? `<p id="${feedbackId}" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : ''}
-                              ${isTeacher ? `<p class="answer-key" style="color: #15803d; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${_escTxt(q.correctAnswer ?? '')}</p>` : ''}
+                              ${isTeacher ? `<p class="answer-key" style="color: #15803d; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${_escQuiz(q.correctAnswer ?? '')}</p>` : ''}
                               ${isTeacher && q.factCheck ? `<div style="background:#fffbeb; padding:10px; border:1px solid #fcd34d; border-radius:4px; font-size:0.9em; margin-top:10px; white-space: pre-line; color:#92400e;"><strong>AI Verification:</strong><br/>${parseMarkdownToHTML(q.factCheck)}</div>` : ''}
                           </div>
                       `;

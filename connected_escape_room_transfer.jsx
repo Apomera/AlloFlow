@@ -5,6 +5,8 @@ const tr = (t, key, fallback, params = {}) => {
   const full = 'connected_escape.' + key, value = typeof t === 'function' ? t(full, params) : '';
   return Object.entries(params).reduce((s, [k, v]) => s.replaceAll('{' + k + '}', String(v)), typeof value === 'string' && value && value !== full ? value : fallback);
 };
+// AI text uses the Assess view's light markdown when it is loaded; plain text otherwise.
+const cerMd = () => (window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown) || { inline: v => v == null ? '' : String(v), block: v => v == null ? '' : String(v), plain: v => v == null ? '' : String(v) };
 export function RoomTransfer({ room, source, language, disabled, unsaved, onOpen, onReading, t }) {
   const [candidate, setCandidate] = useState(null), [error, setError] = useState(''), [notice, setNotice] = useState('');
   const request = useRef(0), inputRef = useRef(null), summaryRef = useRef(null), urls = useRef(new Map());
@@ -38,7 +40,7 @@ export function RoomTransfer({ room, source, language, disabled, unsaved, onOpen
     <p className={notice ? 'cer-muted' : 'sr-only'} role="status" aria-live="polite">{notice}</p>
     {error && <p className="cer-alert cer-error" role="alert">{error}</p>}
     {candidate && <section className="cer-panel" data-room-file-preview aria-label={tr(t, 'file_preview', 'Room file preview')}>
-      <h3>{candidate.room.title}</h3><p>{tr(t, 'file_summary', '{language} · {objects} objects · {areas} areas', { language: candidate.language, objects: candidate.room.nodes.length, areas: candidate.room.areas.length })}</p>
+      <h3>{cerMd().inline(candidate.room.title)}</h3><p>{tr(t, 'file_summary', '{language} · {objects} objects · {areas} areas', { language: candidate.language, objects: candidate.room.nodes.length, areas: candidate.room.areas.length })}</p>
       <details><summary>{tr(t, 'file_source', 'Lesson excerpt in the file')}</summary><p tabIndex={0} style={{ whiteSpace: 'pre-wrap', maxHeight: 220, overflowY: 'auto' }}>{candidate.source}</p></details>
       {compatible === 'compatible' ? <p>{unsaved ? tr(t, 'file_replace_warning', 'Opening this file replaces your unsaved preview. Save or download that preview first if you want to keep it.') : tr(t, 'file_ready', 'This file matches the current lesson and language. It is ready to open for review, solo play, or a live session.')}</p> : <p className="cer-alert" role="alert">{compatible === 'language' ? tr(t, 'file_language_mismatch', 'The room language differs from the current lesson language. Switch to {language}, then choose the file again.', { language: candidate.language }) : tr(t, 'file_lesson_mismatch', 'This file belongs to a different lesson excerpt. Open the matching lesson first, then choose this file again.')}</p>}
       <div className="cer-row"><button type="button" data-open-imported disabled={disabled || compatible !== 'compatible'} onClick={() => { if (onOpen(candidate.room)) { setCandidate(null); setNotice(tr(t, 'file_opened', 'Imported room opened. Review its clues, then save it or start playing.')); summaryRef.current?.focus(); } }}>{unsaved ? tr(t, 'replace_imported', 'Replace preview with imported room') : tr(t, 'open_imported', 'Open imported room')}</button><button type="button" disabled={disabled} onClick={() => { setCandidate(null); setNotice(''); inputRef.current?.focus(); }}>{tr(t, 'cancel', 'Cancel')}</button></div>

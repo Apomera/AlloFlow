@@ -197,6 +197,38 @@ function _quizPlain(text) {
   });
   return value;
 }
+// Flat styled runs for exporters (PowerPoint text runs): [{ text, bold, italic, code }]; newlines stay in text.
+function _quizSegments(text, style, out) {
+  out = out || [];
+  style = style || {};
+  var rest = String(text == null ? '' : text);
+  while (rest) {
+    var best = null;
+    _QUIZ_MD_RULES.forEach(function (rule) {
+      var m = rule.re.exec(rest);
+      if (m && (!best || m.index < best.m.index)) best = {
+        m: m,
+        rule: rule
+      };
+    });
+    if (!best) {
+      out.push(Object.assign({
+        text: rest
+      }, style));
+      break;
+    }
+    if (best.m.index) out.push(Object.assign({
+      text: rest.slice(0, best.m.index)
+    }, style));
+    var next = Object.assign({}, style);
+    next[best.rule.tag === 'strong' ? 'bold' : best.rule.tag === 'em' ? 'italic' : 'code'] = true;
+    if (best.rule.nest) _quizSegments(best.m[1], next, out);else out.push(Object.assign({
+      text: best.m[1]
+    }, next));
+    rest = rest.slice(best.m.index + best.m[0].length);
+  }
+  return out;
+}
 
 // i18n accessor for module-level code (2026-06-11): components/handlers below call t('key')
 // without binding it (only some do `var t = props.t`), so a free t() throws ReferenceError
@@ -208,7 +240,8 @@ var t = function () {
       return window.__alloT.apply(null, arguments);
     } catch (e) {}
   }
-  return arguments.length > 1 ? arguments[1] : arguments[0];
+  // A second argument is a fallback string or a params object; never return the object.
+  return typeof arguments[1] === 'string' ? arguments[1] : arguments[0];
 };
 // Single source of truth for "did the student pick the right option?", owned by
 // the host (AlloFlowANTI.txt, next to fisherYatesShuffle) and reached the same
@@ -7044,11 +7077,25 @@ function _quizHasChoiceItems(types) {
 }
 // Types a teacher can add or convert to, in menu order (each has a schema and an editor).
 var _QUIZ_AUTHOR_TYPES = [['mcq', 'Multiple Choice'], ['multi-select', 'Multi-Select'], ['fill-blank', 'Fill-in-the-Blank'], ['short-answer', 'Brief Written Response'], ['self-explanation', 'Explain Your Reasoning'], ['numeric-response', 'Numeric Response'], ['answer-evidence', 'Answer + Evidence'], ['sequence-sense', 'Sequence Sense'], ['relation-mismatch', 'Relation Mismatch']];
+// Display names come from the generation picker's translated labels; the English in the table is the fallback.
 function _quizAuthorTypeLabel(type) {
+  var key = type || 'mcq';
+  var named = {
+    'mcq': t('quiz.format_mcq_label'),
+    'multi-select': t('quiz.format_multi_select_label'),
+    'fill-blank': t('quiz.format_fill_blank_label'),
+    'short-answer': t('quiz.format_short_answer_label'),
+    'self-explanation': t('quiz.format_self_explanation_label'),
+    'numeric-response': t('quiz.format_numeric_response_label'),
+    'answer-evidence': t('quiz.format_answer_evidence_label'),
+    'sequence-sense': t('quiz.format_sequence_sense_label'),
+    'relation-mismatch': t('quiz.format_relation_mismatch_label')
+  }[key];
+  if (named && named.indexOf('quiz.') !== 0) return named;
   var match = _QUIZ_AUTHOR_TYPES.filter(function (entry) {
-    return entry[0] === (type || 'mcq');
+    return entry[0] === key;
   })[0];
-  return match ? match[1] : String(type || 'mcq');
+  return match ? match[1] : String(key);
 }
 // An empty item of each type, shaped for its editor; the quality review lists what is still missing.
 function _quizBlankItem(type) {
@@ -7865,17 +7912,17 @@ function AssessmentEmptyAddPanel(p) {
   if (typeof a.onAddItem !== 'function') return null;
   return /*#__PURE__*/React.createElement("div", {
     role: "group",
-    "aria-label": "Add the first item",
+    "aria-label": t('quiz.authoring.empty_label'),
     "data-assess-empty-add": true,
     className: "rounded-xl border-2 border-dashed border-indigo-300 bg-indigo-50/60 p-4 space-y-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-bold text-slate-800"
-  }, "This assessment has no items. Add one to continue."), /*#__PURE__*/React.createElement("div", {
+  }, t('quiz.authoring.empty_title')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-end gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700",
     htmlFor: "assess-empty-add-type"
-  }, "Item type", /*#__PURE__*/React.createElement("select", {
+  }, t('quiz.authoring.item_type'), /*#__PURE__*/React.createElement("select", {
     id: "assess-empty-add-type",
     value: typeState[0],
     onChange: function (event) {
@@ -7886,7 +7933,7 @@ function AssessmentEmptyAddPanel(p) {
     return /*#__PURE__*/React.createElement("option", {
       key: entry[0],
       value: entry[0]
-    }, entry[1]);
+    }, _quizAuthorTypeLabel(entry[0]));
   }))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: busy,
@@ -7894,13 +7941,13 @@ function AssessmentEmptyAddPanel(p) {
       a.onAddItem(-1, typeState[0], 'ai');
     },
     className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40"
-  }, busy ? 'Writing item…' : 'Write it for me'), /*#__PURE__*/React.createElement("button", {
+  }, busy ? t('quiz.authoring.writing') : t('quiz.authoring.write_for_me')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       a.onAddItem(-1, typeState[0], 'blank');
     },
     className: "px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold"
-  }, "Start blank")));
+  }, t('quiz.authoring.start_blank'))));
 }
 // The edit bar's add/retype handlers and per-item state from the view's `authoring` bundle.
 function _quizAuthoringActionProps(authoring, questionIdx) {
@@ -7933,7 +7980,7 @@ function AssessmentItemActions(p) {
     return /*#__PURE__*/React.createElement("option", {
       key: entry[0],
       value: entry[0]
-    }, entry[1]);
+    }, _quizAuthorTypeLabel(entry[0]));
   });
   return /*#__PURE__*/React.createElement("div", {
     className: "ml-9 mb-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2 space-y-2"
@@ -7946,38 +7993,38 @@ function AssessmentItemActions(p) {
       action(p.questionIdx, 'move', -1);
     },
     className: smallButton
-  }, "Move up"), /*#__PURE__*/React.createElement("button", {
+  }, t('common.move_up')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: structureDisabled || p.questionIdx >= p.totalQuestions - 1,
     onClick: function () {
       action(p.questionIdx, 'move', 1);
     },
     className: smallButton
-  }, "Move down"), /*#__PURE__*/React.createElement("button", {
+  }, t('common.move_down')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: structureDisabled,
     onClick: function () {
       action(p.questionIdx, 'duplicate');
     },
     className: smallButton
-  }, "Duplicate"), /*#__PURE__*/React.createElement("button", {
+  }, t('common.duplicate')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: disabled || p.regenerating,
     onClick: function () {
       if (typeof p.onRegenerate === 'function') p.onRegenerate(p.questionIdx, q);
     },
     className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40"
-  }, p.regenerating ? 'Regenerating…' : 'Regenerate item'), !deleteConfirmOpen ? /*#__PURE__*/React.createElement("button", {
+  }, p.regenerating ? t('quiz.authoring.regenerating') : t('quiz.authoring.regenerate')), !deleteConfirmOpen ? /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: structureDisabled,
     onClick: function () {
       setDeleteConfirmOpen(true);
     },
     className: "ml-auto px-2 py-1 rounded bg-white border border-rose-300 text-rose-700 text-xs font-semibold disabled:opacity-30"
-  }, "Delete") : /*#__PURE__*/React.createElement("span", {
+  }, t('common.delete')) : /*#__PURE__*/React.createElement("span", {
     className: "ml-auto inline-flex items-center gap-1",
     role: "group",
-    "aria-label": "Confirm question deletion"
+    "aria-label": t('quiz.authoring.confirm_delete_label')
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     autoFocus: true,
@@ -7986,19 +8033,19 @@ function AssessmentItemActions(p) {
       action(p.questionIdx, 'delete');
     },
     className: "px-2 py-1 rounded bg-rose-700 text-white text-xs font-semibold"
-  }, "Confirm delete"), /*#__PURE__*/React.createElement("button", {
+  }, t('quiz.authoring.confirm_delete')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       setDeleteConfirmOpen(false);
     },
     className: "px-2 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold"
-  }, "Cancel"))), /*#__PURE__*/React.createElement("div", {
+  }, t('common.cancel')))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-end gap-2 flex-wrap",
     "data-assess-type-tools": true
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700",
     htmlFor: idBase + '-type'
-  }, "Change type", /*#__PURE__*/React.createElement("select", {
+  }, t('quiz.authoring.change_type'), /*#__PURE__*/React.createElement("select", {
     id: idBase + '-type',
     "data-assess-change-type": true,
     value: targetType,
@@ -8016,13 +8063,18 @@ function AssessmentItemActions(p) {
       convertConfirmState[1](true);
     },
     className: smallButton
-  }, p.regenerating ? 'Rewriting…' : 'Rewrite as ' + _quizAuthorTypeLabel(targetType)) : /*#__PURE__*/React.createElement("span", {
+  }, p.regenerating ? t('quiz.authoring.rewriting') : t('quiz.authoring.rewrite_as', {
+    type: _quizAuthorTypeLabel(targetType)
+  })) : /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1 flex-wrap",
     role: "group",
-    "aria-label": "Confirm type change"
+    "aria-label": t('quiz.authoring.confirm_rewrite_label')
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-700"
-  }, 'Replace question ' + (p.questionIdx + 1) + ' with an AI rewrite as ' + _quizAuthorTypeLabel(targetType) + '?'), /*#__PURE__*/React.createElement("button", {
+  }, t('quiz.authoring.confirm_rewrite', {
+    n: p.questionIdx + 1,
+    type: _quizAuthorTypeLabel(targetType)
+  })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     autoFocus: true,
     "data-assess-convert-confirm": true,
@@ -8031,13 +8083,13 @@ function AssessmentItemActions(p) {
       p.onChangeType(p.questionIdx, q, targetType);
     },
     className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold"
-  }, "Rewrite"), /*#__PURE__*/React.createElement("button", {
+  }, t('quiz.authoring.rewrite')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       convertConfirmState[1](false);
     },
     className: smallButton
-  }, "Cancel")), /*#__PURE__*/React.createElement("button", {
+  }, t('common.cancel'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-assess-add-toggle": true,
     "aria-expanded": addOpenState[0],
@@ -8047,10 +8099,12 @@ function AssessmentItemActions(p) {
       addOpenState[1](!addOpenState[0]);
     },
     className: smallButton + ' ml-auto'
-  }, "+ Add item below")), addOpenState[0] && /*#__PURE__*/React.createElement("div", {
+  }, t('quiz.authoring.add_below'))), addOpenState[0] && /*#__PURE__*/React.createElement("div", {
     id: idBase + '-add',
     role: "group",
-    "aria-label": 'Add an item after question ' + (p.questionIdx + 1),
+    "aria-label": t('quiz.authoring.add_after_label', {
+      n: p.questionIdx + 1
+    }),
     className: "rounded-md border border-indigo-200 bg-white p-2 space-y-2",
     "data-assess-add-panel": true
   }, /*#__PURE__*/React.createElement("div", {
@@ -8058,7 +8112,7 @@ function AssessmentItemActions(p) {
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700",
     htmlFor: idBase + '-add-type'
-  }, "New item type", /*#__PURE__*/React.createElement("select", {
+  }, t('quiz.authoring.new_item_type'), /*#__PURE__*/React.createElement("select", {
     id: idBase + '-add-type',
     "data-assess-add-type": true,
     value: addTypeState[0],
@@ -8074,7 +8128,7 @@ function AssessmentItemActions(p) {
       p.onAddItem(p.questionIdx, addTypeState[0], 'ai');
     },
     className: "px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40"
-  }, p.adding ? 'Writing item…' : 'Write it for me'), /*#__PURE__*/React.createElement("button", {
+  }, p.adding ? t('quiz.authoring.writing') : t('quiz.authoring.write_for_me')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-assess-add-blank": true,
     onClick: function () {
@@ -8082,19 +8136,19 @@ function AssessmentItemActions(p) {
       p.onAddItem(p.questionIdx, addTypeState[0], 'blank');
     },
     className: smallButton
-  }, "Start blank"), /*#__PURE__*/React.createElement("button", {
+  }, t('quiz.authoring.start_blank')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       addOpenState[1](false);
     },
     className: smallButton
-  }, "Cancel")), /*#__PURE__*/React.createElement("p", {
+  }, t('common.cancel'))), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600"
-  }, "\"Write it for me\" drafts a new item from the source text on an idea the other items do not cover. \"Start blank\" adds an empty item to fill in; the quality review lists anything still missing.")), q.type === 'mcq' && Array.isArray(q.options) && /*#__PURE__*/React.createElement("div", {
+  }, t('quiz.authoring.add_help'))), q.type === 'mcq' && Array.isArray(q.options) && /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700"
-  }, "Correct answer", /*#__PURE__*/React.createElement("select", {
+  }, t('quiz.authoring.correct_answer'), /*#__PURE__*/React.createElement("select", {
     value: q.correctAnswer || '',
     onChange: function (event) {
       action(p.questionIdx, 'patch', {
@@ -8104,14 +8158,16 @@ function AssessmentItemActions(p) {
     className: "block w-full mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "Choose answer…"), q.options.map(function (option, index) {
+  }, t('quiz.authoring.choose_answer')), q.options.map(function (option, index) {
     return /*#__PURE__*/React.createElement("option", {
       key: index,
       value: option
-    }, option || 'Option ' + (index + 1));
+    }, option ? _quizPlain(option) : t('quiz.authoring.option_n', {
+      n: index + 1
+    }));
   }))), /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700"
-  }, "Concept label", /*#__PURE__*/React.createElement("input", {
+  }, t('quiz.authoring.concept_label'), /*#__PURE__*/React.createElement("input", {
     value: q.conceptLabel || '',
     onChange: function (event) {
       action(p.questionIdx, 'patch', {
@@ -10943,7 +10999,10 @@ function QuizViewContent(props) {
       props.handleQuizQuestionAction(afterIdx, 'insert', {
         question: _quizBlankItem(type)
       });
-      if (typeof props.addToast === 'function') props.addToast('Blank ' + label + ' item added as question ' + placed + '. Fill it in before sharing.', 'success');
+      if (typeof props.addToast === 'function') props.addToast(t('quiz.authoring.toast_blank_added', {
+        type: label,
+        n: placed
+      }), 'success');
       focusAssessmentItem(afterIdx + 1);
       return;
     }
@@ -10970,7 +11029,7 @@ function QuizViewContent(props) {
       if (!item || typeof item !== 'object' || Array.isArray(item)) throw new Error('The AI did not return a valid item.');
       var currentProps = authoringRequests.currentProps(request);
       if (!currentProps || typeof currentProps.handleQuizQuestionAction !== 'function') {
-        if (typeof props.addToast === 'function') props.addToast('The item was not added because the assessment changed while it was being written. Try again.', 'info');
+        if (typeof props.addToast === 'function') props.addToast(t('quiz.authoring.toast_add_stale'), 'info');
         return;
       }
       item.type = type;
@@ -10979,10 +11038,13 @@ function QuizViewContent(props) {
       currentProps.handleQuizQuestionAction(afterIdx, 'insert', {
         question: item
       });
-      if (typeof currentProps.addToast === 'function') currentProps.addToast(label + ' item added as question ' + placed + '. Review it before sharing.', 'success');
+      if (typeof currentProps.addToast === 'function') currentProps.addToast(t('quiz.authoring.toast_added', {
+        type: label,
+        n: placed
+      }), 'success');
       focusAssessmentItem(afterIdx + 1);
     } catch (error) {
-      if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Adding the item failed.', 'error');
+      if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : t('quiz.authoring.toast_add_failed'), 'error');
     } finally {
       if (authoringRequests.end(request)) setAddingAfter(function (previous) {
         var next = Object.assign({}, previous);
@@ -11031,9 +11093,14 @@ function QuizViewContent(props) {
       });
       // A functional host update is queued, not confirmed yet. Its visible
       // replacement provides feedback without announcing a rejected commit.
-      if (result !== false && result?.status !== 'queued' && typeof currentProps.addToast === 'function') currentProps.addToast('Question ' + (questionIdx + 1) + (converting ? ' rewritten as ' + _quizAuthorTypeLabel(type) : ' regenerated') + '. Review it before sharing.', 'success');
+      if (result !== false && result?.status !== 'queued' && typeof currentProps.addToast === 'function') currentProps.addToast(converting ? t('quiz.authoring.toast_rewritten', {
+        n: questionIdx + 1,
+        type: _quizAuthorTypeLabel(type)
+      }) : t('quiz.authoring.toast_regenerated', {
+        n: questionIdx + 1
+      }), 'success');
     } catch (error) {
-      if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Question regeneration failed.', 'error');
+      if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : t('quiz.authoring.toast_regenerate_failed'), 'error');
     } finally {
       if (!authoringRequests.end(request)) return;
       setRegeneratingQuestions(function (previous) {
@@ -14872,10 +14939,10 @@ function QuizViewContent(props) {
     className: "bg-indigo-800/50 p-6 rounded-xl border border-indigo-700"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-2xl font-medium leading-relaxed"
-  }, typeof ref === 'string' ? ref : ref.text), ref?.text_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
+  }, _quizRich(typeof ref === 'string' ? ref : ref.text)), ref?.text_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
     as: "p",
     className: "text-lg text-indigo-200 italic mt-4"
-  }, ref.text_en)))))) : /*#__PURE__*/React.createElement("div", {
+  }, _quizRich(ref.text_en))))))) : /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, isEditingQuiz && !(generatedContent?.data?.questions || []).length && /*#__PURE__*/React.createElement(AssessmentEmptyAddPanel, {
     authoring: assessmentAuthoring
@@ -15275,7 +15342,10 @@ QuizView.voiceBoundary = Object.freeze({
 QuizView.markdown = Object.freeze({
   inline: _quizRich,
   block: _quizRichBlock,
-  plain: _quizPlain
+  plain: _quizPlain,
+  segments: function (text) {
+    return _quizSegments(text);
+  }
 });
 QuizView.keyQuality = Object.freeze({
   readFactCheck: _quizReadFactCheck,

@@ -5,6 +5,8 @@ import { Activity, tr } from './lesson_board_ui.jsx';
 import { validateBoard } from './lesson_board_engine.js';
 import { isSpatialChallenge, challengeTargetField, challengeAnswerField } from './lesson_board_challenges.js';
 const React = window.React;
+// AI text uses the Assess view's light markdown when it is loaded; plain text otherwise.
+const lbMd = () => window.AlloModules?.QuizView?.markdown || { inline: v => v == null ? '' : String(v), block: v => v == null || v === '' ? null : React.createElement('p', null, String(v)), plain: v => v == null ? '' : String(v) };
 
 export function BoardAuthoring({ board, source, disabled, onChange, t }) {
   const errors = validateBoard(board, source);
@@ -35,6 +37,6 @@ export function BoardAuthoring({ board, source, disabled, onChange, t }) {
     </details>)}
     {Array.isArray(board.discoveries) && board.discoveries.length > 0 && <details data-edit-cards><summary>{tr(t, 'edit_cards', 'Discovery cards ({count})', { count: board.discoveries.length })}</summary><p>{tr(t, 'edit_cards_help', 'Learners reveal these on lucky rolls. Each card needs an exact lesson excerpt.')}</p>{board.discoveries.map((card, index) => <fieldset key={card.id} data-edit-card={card.id} disabled={disabled}><legend>{tr(t, 'card_number', 'Card {number}', { number: index + 1 })}</legend>{textField(tr(t, 'card_title', 'Card title'), card.title, 60, value => editCard(card.id, { title: value }), { 'data-edit-card-title': true })}{textField(tr(t, 'card_text', 'Card text'), card.text, 240, value => editCard(card.id, { text: value }))}{textField(tr(t, 'source_excerpt', 'Exact lesson excerpt'), card.sourceQuote, 300, value => editCard(card.id, { sourceQuote: value }))}<button type="button" data-remove-card={card.id} onClick={() => removeCard(card.id)}>{tr(t, 'remove_card', 'Remove this card')}</button></fieldset>)}</details>}
     <ContractEditor board={board} onChange={onChange} disabled={disabled} t={t}/>
-    {board.projects.map(project => <details key={project.id}><summary>{project.name}</summary><p>{project.description}</p><p>{project.cost.map((value, index) => value + ' ' + board.resources[index]).join(' · ')}</p><p>{project.effect.kind === 'yield' ? tr(t, 'yield_effect', 'Future successful locations earn +1 {resource}.', { resource: board.resources[project.effect.resource] }) : tr(t, 'path_effect', 'Opens a direct path to {location}.', { location: board.locations.find(node => node.id === project.effect.targetId)?.name })}</p></details>)}
+    {board.projects.map(project => <details key={project.id}><summary>{project.name}</summary><p>{lbMd().inline(project.description)}</p><p>{project.cost.map((value, index) => value + ' ' + board.resources[index]).join(' · ')}</p><p>{project.effect.kind === 'yield' ? tr(t, 'yield_effect', 'Future successful locations earn +1 {resource}.', { resource: board.resources[project.effect.resource] }) : tr(t, 'path_effect', 'Opens a direct path to {location}.', { location: board.locations.find(node => node.id === project.effect.targetId)?.name })}</p></details>)}
   </details>;
 }

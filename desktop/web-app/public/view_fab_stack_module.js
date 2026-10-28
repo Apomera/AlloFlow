@@ -269,6 +269,12 @@ function FabStack(props) {
           }
         }
 
+        .theme-dark .alloflow-student-tools-panel { background: rgba(15, 23, 42, 0.97); border-color: #475569; }
+        .theme-dark .alloflow-student-tools-section + .alloflow-student-tools-section { border-top-color: #334155; }
+        .theme-dark .alloflow-student-tool-icon { background: rgba(30, 41, 59, 0.7); }
+        .theme-contrast .alloflow-student-tools-panel { background: #000000; border: 2px solid #ffff00; }
+        .theme-contrast .alloflow-student-tools-section + .alloflow-student-tools-section { border-top-color: #ffff00; }
+        .theme-contrast .alloflow-student-tool-icon { background: #000000; box-shadow: inset 0 0 0 1px #ffff00; }
         @media (forced-colors: active) {
           .alloflow-student-tools-panel,
           .alloflow-student-tools-section,

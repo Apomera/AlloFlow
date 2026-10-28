@@ -190,6 +190,13 @@ const fillLiveCopy = (text, params) => {
   });
   return out;
 };
+// Quiz text uses the Assess view's light markdown (**bold**, *italic*, lists); plain text until that module loads.
+const LIVE_QUIZ_PLAIN_MD = {
+  inline: v => v == null ? '' : String(v),
+  block: v => v == null ? '' : String(v),
+  plain: v => v == null ? '' : String(v)
+};
+const liveQuizMd = () => window.AlloModules?.QuizView?.markdown || LIVE_QUIZ_PLAIN_MD;
 const LiveAdvancedQuizResponse = React.memo(({
   question,
   questionType,
@@ -433,7 +440,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       }, /*#__PURE__*/React.createElement("span", {
         "aria-hidden": "true",
         className: "mr-2"
-      }, active ? '✓' : '□'), option);
+      }, active ? '✓' : '□'), liveQuizMd().inline(option));
     })), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: submitMultiSelect,
@@ -482,7 +489,7 @@ const LiveAdvancedQuizResponse = React.memo(({
         [field]: index
       }),
       className: `${sharedButtonClass} ${selectedIndex === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`
-    }, String.fromCharCode(65 + index), ". ", option)));
+    }, String.fromCharCode(65 + index), ". ", liveQuizMd().inline(option))));
     return /*#__PURE__*/React.createElement("div", {
       className: "mt-8 w-full max-w-4xl space-y-5 rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl",
       "data-live-response-type": questionType
@@ -491,9 +498,9 @@ const LiveAdvancedQuizResponse = React.memo(({
     }, t('quiz.live_student.part1') || 'Part 1 — Choose the best answer'), renderChoiceGrid(answerOptions, draft.answerIdx, 'answerIdx', true)), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
       className: "mb-2 text-sm font-black text-white"
     }, fillLiveCopy(t('quiz.live_student.part2', {
-      prompt: boundedLiveQuizText(question?.evidencePrompt || t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.', 500)
+      prompt: boundedLiveQuizText(liveQuizMd().plain(question?.evidencePrompt) || t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.', 500)
     }) || 'Part 2 — {prompt}', {
-      prompt: boundedLiveQuizText(question?.evidencePrompt || t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.', 500)
+      prompt: boundedLiveQuizText(liveQuizMd().plain(question?.evidencePrompt) || t('quiz.live_student.default_evidence_prompt') || 'Choose the best supporting evidence.', 500)
     })), renderChoiceGrid(evidenceOptions, draft.evidenceIdx, 'evidenceIdx')), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: submitAnswerEvidence,
@@ -594,7 +601,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       "aria-pressed": draft.clickedIdx === index,
       onClick: () => chooseMisplaced(index),
       className: `${sharedButtonClass} w-full ${draft.clickedIdx === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`
-    }, index + 1, ". ", item)))), draft.sequenceStep === 1 && /*#__PURE__*/React.createElement("fieldset", {
+    }, index + 1, ". ", liveQuizMd().inline(item))))), draft.sequenceStep === 1 && /*#__PURE__*/React.createElement("fieldset", {
       className: "mt-4"
     }, /*#__PURE__*/React.createElement("legend", {
       className: "mb-2 text-sm font-black text-white"
@@ -628,13 +635,13 @@ const LiveAdvancedQuizResponse = React.memo(({
       className: "w-6 text-xs font-black"
     }, position + 1, "."), /*#__PURE__*/React.createElement("span", {
       className: "min-w-0 flex-1 text-sm font-bold"
-    }, items[canonicalIndex]), /*#__PURE__*/React.createElement("button", {
+    }, liveQuizMd().inline(items[canonicalIndex])), /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: isDisabled || position === 0,
       "aria-label": fillLiveCopy(t('quiz.live_student.move_up', {
-        item: items[canonicalIndex]
+        item: liveQuizMd().plain(items[canonicalIndex])
       }) || 'Move up: {item}', {
-        item: items[canonicalIndex]
+        item: liveQuizMd().plain(items[canonicalIndex])
       }),
       onClick: () => moveItem(position, -1),
       className: "rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40"
@@ -642,9 +649,9 @@ const LiveAdvancedQuizResponse = React.memo(({
       type: "button",
       disabled: isDisabled || position === orderAnswer.length - 1,
       "aria-label": fillLiveCopy(t('quiz.live_student.move_down', {
-        item: items[canonicalIndex]
+        item: liveQuizMd().plain(items[canonicalIndex])
       }) || 'Move down: {item}', {
-        item: items[canonicalIndex]
+        item: liveQuizMd().plain(items[canonicalIndex])
       }),
       onClick: () => moveItem(position, 1),
       className: "rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40"
@@ -715,7 +722,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       disabled: isDisabled || draft.relationStep !== 1,
       onClick: () => choosePair(index),
       className: `${sharedButtonClass} grid w-full grid-cols-2 gap-4 ${draft.clickedPairIdx === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`
-    }, /*#__PURE__*/React.createElement("span", null, pair.left), /*#__PURE__*/React.createElement("span", null, "↔ ", pair.right)))), draft.relationStep === 1 && /*#__PURE__*/React.createElement("p", {
+    }, /*#__PURE__*/React.createElement("span", null, liveQuizMd().inline(pair.left)), /*#__PURE__*/React.createElement("span", null, "↔ ", liveQuizMd().inline(pair.right))))), draft.relationStep === 1 && /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-sm font-bold text-white"
     }, t('quiz.live_student.choose_mismatch') || 'Choose the pair that does not belong.'), draft.relationStep === 2 && /*#__PURE__*/React.createElement("div", {
       className: "mt-4"
@@ -1291,9 +1298,9 @@ const StudentQuizOverlay = React.memo(({
     className: "cursor-pointer font-bold"
   }, bossStats.roundFeedback.scoringPaused ? t('quiz.live_student.battle_scoring_paused') || 'Battle scoring paused' : t('concept_quest.boss_round_recap', {
     accuracy: bossStats.roundFeedback.accuracy
-  })), bossStats.roundFeedback.explanation ? /*#__PURE__*/React.createElement("p", {
+  })), bossStats.roundFeedback.explanation ? /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
-  }, bossStats.roundFeedback.explanation) : /*#__PURE__*/React.createElement("p", {
+  }, liveQuizMd().block(bossStats.roundFeedback.explanation)) : /*#__PURE__*/React.createElement("p", {
     className: "mt-1"
   }, t('concept_quest.boss_discuss_evidence'))))), /*#__PURE__*/React.createElement("div", {
     className: "shrink-0 bg-white/10 backdrop-blur-md p-5 md:p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
@@ -1313,9 +1320,9 @@ const StudentQuizOverlay = React.memo(({
     "aria-atomic": "true",
     className: "text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm",
     "data-help-key": "quiz_student_question"
-  }, currentQuestion ? currentQuestion.question : t('quiz.loading_question')), currentQuestion && showTranslated && currentQuestion.question_en && /*#__PURE__*/React.createElement("p", {
+  }, currentQuestion ? liveQuizMd().inline(currentQuestion.question) : t('quiz.loading_question')), currentQuestion && showTranslated && currentQuestion.question_en && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 text-base md:text-lg text-white/70 italic"
-  }, currentQuestion.question_en)), isAdvancedLiveQuestion ? /*#__PURE__*/React.createElement(LiveAdvancedQuizResponse, {
+  }, liveQuizMd().inline(currentQuestion.question_en))), isAdvancedLiveQuestion ? /*#__PURE__*/React.createElement(LiveAdvancedQuizResponse, {
     question: currentQuestion,
     questionType: questionType,
     questionIndex: receiptQuestionIndex,
@@ -1395,7 +1402,7 @@ const StudentQuizOverlay = React.memo(({
       "data-autofocus": idx === 0 && !isDisabled ? 'true' : undefined,
       onClick: () => submitQuizResponse(idx),
       disabled: isDisabled,
-      "aria-label": String(option) + (showTranslated && currentQuestion?.options_en?.[idx] ? '. ' + currentQuestion.options_en[idx] : ''),
+      "aria-label": liveQuizMd().plain(option) + (showTranslated && currentQuestion?.options_en?.[idx] ? '. ' + liveQuizMd().plain(currentQuestion.options_en[idx]) : ''),
       "aria-pressed": isSelected,
       className: `
                                 relative group overflow-hidden p-6 rounded-2xl font-bold text-lg md:text-xl transition-all transform duration-300 shadow-xl border-b-4 active:border-b-0 active:translate-y-1
@@ -1421,9 +1428,9 @@ const StudentQuizOverlay = React.memo(({
                                 `
     }, letter), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col items-start gap-1 text-left leading-tight"
-    }, /*#__PURE__*/React.createElement("span", null, option), showTranslated && currentQuestion?.options_en?.[idx] && /*#__PURE__*/React.createElement("span", {
+    }, /*#__PURE__*/React.createElement("span", null, liveQuizMd().inline(option)), showTranslated && currentQuestion?.options_en?.[idx] && /*#__PURE__*/React.createElement("span", {
       className: "text-xs opacity-60 font-normal italic"
-    }, currentQuestion.options_en[idx]))), isSelected && !isRevealed && /*#__PURE__*/React.createElement("div", {
+    }, liveQuizMd().inline(currentQuestion.options_en[idx])))), isSelected && !isRevealed && /*#__PURE__*/React.createElement("div", {
       className: "absolute top-2 right-2 text-indigo-900 animate-in zoom-in duration-300"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 24,
@@ -1529,9 +1536,9 @@ const StudentQuizOverlay = React.memo(({
     className: "font-bold text-white"
   }, t('quiz.live_student.review_answer') || 'Review the answer'), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm"
-  }, window.AlloModules?.QuizLiveAggregators?.describePresentationCorrectAnswer?.(currentQuestion || {}) || t('quiz.live_student.discuss_with_teacher') || 'Discuss the response with your teacher.'), (currentQuestion?.explanation || currentQuestion?.rationale) && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 whitespace-pre-wrap text-sm leading-relaxed"
-  }, currentQuestion.explanation || currentQuestion.rationale)), isRevealed && hasAnswered && deliveryStatus !== 'receipt' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && liveExplanation && /*#__PURE__*/React.createElement("div", {
+  }, liveQuizMd().inline(window.AlloModules?.QuizLiveAggregators?.describePresentationCorrectAnswer?.(currentQuestion || {})) || t('quiz.live_student.discuss_with_teacher') || 'Discuss the response with your teacher.'), (currentQuestion?.explanation || currentQuestion?.rationale) && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 text-sm leading-relaxed"
+  }, liveQuizMd().block(currentQuestion.explanation || currentQuestion.rationale))), isRevealed && hasAnswered && deliveryStatus !== 'receipt' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && liveExplanation && /*#__PURE__*/React.createElement("div", {
     className: "bg-white/95 backdrop-blur-xl text-slate-800 p-6 rounded-3xl border border-white/20 shadow-2xl w-full max-w-2xl text-left relative overflow-hidden",
     "data-quiz-explanation": "true"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1541,7 +1548,9 @@ const StudentQuizOverlay = React.memo(({
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
     className: "fill-yellow-400 text-yellow-500"
-  }), " ", t('quiz.live_student.explanation') || 'Explanation'), /*#__PURE__*/React.createElement("div", {
+  }), " ", t('quiz.live_student.explanation') || 'Explanation'), window.AlloModules?.QuizView?.markdown ? /*#__PURE__*/React.createElement("div", {
+    className: "prose prose-sm max-w-none text-slate-700 leading-relaxed"
+  }, liveQuizMd().block(liveExplanation)) : /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap",
     dangerouslySetInnerHTML: {
       __html: liveExplanation.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>')
@@ -1550,7 +1559,7 @@ const StudentQuizOverlay = React.memo(({
     className: "mt-3 pt-3 border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 italic whitespace-pre-wrap"
-  }, currentQuestion.factCheck_en))))));
+  }, liveQuizMd().inline(currentQuestion.factCheck_en)))))));
 });
 const TeacherGate = React.memo(({
   isOpen,

@@ -27,6 +27,13 @@
   var useRef = React.useRef;
   var useMemo = React.useMemo;
   var h = React.createElement;
+  // Puzzle text uses the Assess view's light markdown (**bold**, *italic*) when loaded; plain text otherwise.
+  var _erMd = function () {
+    var shared = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
+    if (shared) return shared;
+    var plain = function (text) { return text == null ? '' : String(text); };
+    return { inline: plain, block: plain, plain: plain };
+  };
 
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
@@ -2161,7 +2168,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         h('div', { key: 'type-hint-row', className: 'flex flex-wrap items-center justify-between gap-2 mb-2' }, typeHintRow)
       );
       questionChildren.push(
-        h('p', { key: 'question-text', className: 'text-lg text-white font-medium' }, puzzle.question)
+        h('p', { key: 'question-text', className: 'text-lg text-white font-medium' }, _erMd().inline(puzzle.question))
       );
       // Show revealed hint
       if (escapeHintLevel(escapeRoomState,puzzle) > 0) {
@@ -2196,7 +2203,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               },
                 h('span', { className: 'inline-block w-8 font-bold text-purple-400', 'aria-hidden': 'true' }, String.fromCharCode(65+idx) + '.'),
                 h('span', { className: 'sr-only' }, (t('escape_room.option') || 'Option') + ' ' + String.fromCharCode(65+idx) + ': '),
-                opt
+                _erMd().inline(opt)
               );
             })
           )
@@ -2282,7 +2289,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             ),
             h(GripVertical, { size: 20, className: 'text-slate-300', 'aria-hidden': 'true' }),
             h('span', { className: 'inline-flex w-6 h-6 bg-purple-600 text-white text-sm font-bold rounded-full items-center justify-center', 'aria-hidden': 'true' }, displayIdx + 1),
-            h('span', { className: 'flex-grow min-w-0 break-words' }, puzzle.items[itemIdx])
+            h('span', { className: 'flex-grow min-w-0 break-words' }, _erMd().inline(puzzle.items[itemIdx]))
           );
         });
 
@@ -2411,7 +2418,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                   className: 'w-full p-3 rounded-xl text-white text-sm font-medium transition-all border-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800 ' +
                     (isSel ? 'bg-purple-600 border-purple-400' : 'bg-slate-700 border-slate-600 hover:border-purple-400')
                 },
-                  item,
+                  _erMd().inline(item),
                   isSel ? h('span', { className: 'sr-only' }, ' - ' + (t('escape_room.selected') || 'selected')) : null
                 );
               })
@@ -2434,7 +2441,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                   className: 'w-full p-3 rounded-xl text-white text-sm font-medium transition-all border-2 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800 ' +
                     (isSel ? 'bg-purple-600 border-purple-400' : 'bg-slate-700 border-slate-600 hover:border-purple-400')
                 },
-                  item,
+                  _erMd().inline(item),
                   isSel ? h('span', { className: 'sr-only' }, ' - ' + (t('escape_room.selected') || 'selected')) : null
                 );
               })
@@ -2508,7 +2515,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               className: 'bg-slate-900 p-4 rounded-xl text-white text-center text-lg',
               'aria-label': t('escape_room.sentence_with_blank') || 'Sentence with blank',
               id: 'fillin-sentence'
-            }, puzzle.sentence.replace(/_{3,}/, function() { return escapeRoomState.textInput ? '[' + escapeRoomState.textInput + ']' : '______'; }))
+            }, _erMd().inline(puzzle.sentence.replace(/_{3,}/, function() { return escapeRoomState.textInput ? '[' + escapeRoomState.textInput + ']' : '______'; })))
           );
         }
         if (puzzle.wordbank && puzzle.wordbank.length > 0) {
@@ -2654,7 +2661,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           ),
           h('div', { className: 'bg-slate-900 p-6 rounded-xl mb-6 border-2 border-yellow-500/30' },
             h('p', { id: 'final-door-question', className: 'text-lg text-white font-medium text-center' },
-              fdp.sentence || fdp.question
+              _erMd().inline(fdp.sentence || fdp.question)
             )
           ),
           h('div', { className: 'space-y-4' },

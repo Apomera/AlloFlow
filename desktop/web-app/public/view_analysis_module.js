@@ -939,7 +939,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   }))), isTeacherMode && isEditingAnalysis ? /*#__PURE__*/React.createElement("div", {
     className: "w-full bg-white border border-indigo-200 rounded-lg overflow-hidden shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"
+    className: "flex flex-wrap items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.bold') || 'Bold',
@@ -1003,7 +1003,16 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     title: t('formatting.numlist') || 'Numbered List'
   }, /*#__PURE__*/React.createElement(ListOrdered, {
     size: 16
-  }))), /*#__PURE__*/React.createElement("textarea", {
+  })), (() => {
+    const TableChartTools = window.AlloModules && window.AlloModules.ViewRenderers && window.AlloModules.ViewRenderers.TableChartTools;
+    return TableChartTools ? /*#__PURE__*/React.createElement(TableChartTools, {
+      t: t,
+      textareaRef: analysisEditorRef,
+      getText: () => generatedContent?.data.originalText,
+      onChange: handleAnalysisTextChange,
+      tone: "indigo"
+    }) : null;
+  })()), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('common.edit_source_text') || 'Edit source text',
     "data-allo-textundo": "analysis",
     ref: analysisEditorRef,

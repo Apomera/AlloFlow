@@ -95,7 +95,12 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
         return "text-sm font-bold text-indigo-800 mt-3 mb-1 uppercase tracking-wide";
     }
   };
-  const flushTable = (keyPrefix) => {
+  const tableCaptionOf = (line) => {
+    const m = String(line || "").trim().match(/^Table:\s+(.+)$/i);
+    return m ? m[1].trim() : "";
+  };
+  let pendingTableCaption = "";
+  const flushTable = (keyPrefix, caption) => {
     if (tableBuffer.length === 0) return null;
     const headers = [];
     const rows = [];
@@ -112,7 +117,8 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
         rows.push(cells);
       }
     });
-    return /* @__PURE__ */ React.createElement("div", { key: `${keyPrefix}-table`, className: "overflow-x-auto my-4 border rounded-lg border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-sm text-left text-slate-600" }, /* @__PURE__ */ React.createElement("thead", { className: "text-xs text-slate-700 uppercase bg-slate-50" }, /* @__PURE__ */ React.createElement("tr", null, headers.map((h, i) => /* @__PURE__ */ React.createElement("th", { key: i, className: "px-6 py-3 border-b border-slate-200 font-bold" }, h)))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((row, rI) => /* @__PURE__ */ React.createElement("tr", { key: rI, className: "bg-white border-b border-slate-100 hover:bg-slate-50 last:border-none" }, row.map((cell, cI) => /* @__PURE__ */ React.createElement("td", { key: cI, className: "px-6 py-4 align-top" }, formatInlineText(cell, enableGlossary, isDarkBg))))))));
+    const hasRowHeaders = headers.length > 1 && headers[0] === "" && rows.length > 0;
+    return /* @__PURE__ */ React.createElement("div", { key: `${keyPrefix}-table`, className: "overflow-x-auto my-4 border rounded-lg border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-sm text-left text-slate-600" }, caption ? /* @__PURE__ */ React.createElement("caption", { className: "px-6 py-2 text-left text-sm font-bold text-slate-800 bg-white" }, formatInlineText(caption, enableGlossary, isDarkBg)) : null, /* @__PURE__ */ React.createElement("thead", { className: "text-xs text-slate-700 uppercase bg-slate-50" }, /* @__PURE__ */ React.createElement("tr", null, headers.map((h, i) => hasRowHeaders && i === 0 ? /* @__PURE__ */ React.createElement("td", { key: i, className: "px-6 py-3 border-b border-slate-200" }) : /* @__PURE__ */ React.createElement("th", { key: i, scope: "col", className: "px-6 py-3 border-b border-slate-200 font-bold" }, h)))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((row, rI) => /* @__PURE__ */ React.createElement("tr", { key: rI, className: "bg-white border-b border-slate-100 hover:bg-slate-50 last:border-none" }, row.map((cell, cI) => hasRowHeaders && cI === 0 ? /* @__PURE__ */ React.createElement("th", { key: cI, scope: "row", className: "px-6 py-4 align-top font-bold text-slate-700" }, formatInlineText(cell, enableGlossary, isDarkBg)) : /* @__PURE__ */ React.createElement("td", { key: cI, className: "px-6 py-4 align-top" }, formatInlineText(cell, enableGlossary, isDarkBg))))))));
   };
   for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
     const line = lines[lineIdx];
@@ -120,13 +126,17 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
     if (chartMatch) {
       try {
         const chartData = JSON.parse(chartMatch[1]);
+        const chartDescription = typeof chartData.description === "string" ? chartData.description.trim() : "";
+        const chartCaption = chartDescription ? /* @__PURE__ */ React.createElement("figcaption", { "data-chart-description": true, className: "mt-3 text-sm text-slate-700 text-left leading-relaxed" }, chartDescription) : null;
+        const chartTable = (rows) => /* @__PURE__ */ React.createElement("details", { "data-chart-data": true, className: "mt-2 w-full text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-semibold text-indigo-800" }, _tcText(t, "table_chart.show_data", "Show the data as a table")), /* @__PURE__ */ React.createElement("table", { className: "mt-2 w-full text-left border border-slate-200" }, /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-50" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1" }, _tcText(t, "table_chart.data_label", "Label")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1" }, _tcText(t, "table_chart.data_value", "Value")))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((row, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: "border-t border-slate-100" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "px-2 py-1 font-normal" }, String(row.label == null ? "" : row.label)), /* @__PURE__ */ React.createElement("td", { className: "px-2 py-1" }, String(row.value == null ? "" : row.value)))))));
         if (chartData.type === "bar") {
+          const barRows = Array.isArray(chartData.data) ? chartData.data.filter((row) => row && typeof row === "object") : [];
           elements.push(
-            /* @__PURE__ */ React.createElement("div", { key: `chart-${lineIdx}`, className: "my-6 p-4 border border-slate-400 rounded-xl bg-white shadow-sm max-w-md mx-auto" }, chartData.title && /* @__PURE__ */ React.createElement("h4", { className: "text-center font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider" }, chartData.title), /* @__PURE__ */ React.createElement(SimpleBarChart, { data: chartData.data, color: "indigo" }))
+            /* @__PURE__ */ React.createElement("figure", { key: `chart-${lineIdx}`, "data-chart": "bar", className: "my-6 p-4 border border-slate-400 rounded-xl bg-white shadow-sm max-w-md mx-auto" }, chartData.title && /* @__PURE__ */ React.createElement("h4", { className: "text-center font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider" }, chartData.title), /* @__PURE__ */ React.createElement(SimpleBarChart, { data: chartData.data, color: "indigo" }), barRows.length > 0 && chartTable(barRows), chartCaption)
           );
         } else if (chartData.type === "donut") {
           elements.push(
-            /* @__PURE__ */ React.createElement("div", { key: `chart-${lineIdx}`, className: "my-6 p-4 border border-slate-400 rounded-xl bg-white shadow-sm max-w-xs mx-auto flex flex-col items-center" }, chartData.title && /* @__PURE__ */ React.createElement("h4", { className: "text-center font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider" }, chartData.title), /* @__PURE__ */ React.createElement(SimpleDonutChart, { percentage: chartData.percentage, label: chartData.label, color: "indigo" }))
+            /* @__PURE__ */ React.createElement("figure", { key: `chart-${lineIdx}`, "data-chart": "donut", className: "my-6 p-4 border border-slate-400 rounded-xl bg-white shadow-sm max-w-xs mx-auto flex flex-col items-center" }, chartData.title && /* @__PURE__ */ React.createElement("h4", { className: "text-center font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider" }, chartData.title), /* @__PURE__ */ React.createElement(SimpleDonutChart, { percentage: chartData.percentage, label: chartData.label, color: "indigo" }), chartCaption)
           );
         }
         continue;
@@ -139,9 +149,16 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
       tableBuffer.push(line);
       continue;
     } else if (inTable) {
-      elements.push(flushTable(lineIdx));
+      const captionAfter = pendingTableCaption ? "" : tableCaptionOf(line);
+      elements.push(flushTable(lineIdx, pendingTableCaption || captionAfter));
       tableBuffer = [];
       inTable = false;
+      pendingTableCaption = "";
+      if (captionAfter) continue;
+    }
+    if (tableCaptionOf(line) && String(lines[lineIdx + 1] || "").trim().startsWith("|")) {
+      pendingTableCaption = tableCaptionOf(line);
+      continue;
     }
     if (line.trim() === "") {
       elements.push(/* @__PURE__ */ React.createElement("div", { key: lineIdx, className: "h-2" }));
@@ -191,7 +208,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
     );
   }
   if (inTable) {
-    elements.push(flushTable("end"));
+    elements.push(flushTable("end", pendingTableCaption));
   }
   return elements;
 };
@@ -7185,8 +7202,253 @@ const renderInteractiveMap = (deps) => {
     isChallengeActive && challengeFeedback && challengeFeedback.score === 100 && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none flex items-center justify-center z-50" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null))
   ));
 };
+function _tcText(t, key, fallback, vars) {
+  let value = "";
+  try {
+    value = typeof t === "function" ? t(key) : "";
+  } catch (_) {
+  }
+  let text = typeof value === "string" && value.trim() && value !== key ? value : fallback;
+  Object.keys(vars || {}).forEach((name) => {
+    text = text.split("{" + name + "}").join(String(vars[name]));
+  });
+  return text;
+}
+const _tcCell = (value) => String(value == null ? "" : value).replace(/\|/g, "/").replace(/\s*\n\s*/g, " ").trim();
+const _tcClamp = (value, low, high, fallback) => {
+  const n = Math.round(Number(value));
+  return Number.isFinite(n) ? Math.min(high, Math.max(low, n)) : fallback;
+};
+const _tcRow = (cells) => "| " + cells.map((cell) => _tcCell(cell) || " ").join(" | ") + " |";
+function buildMarkdownTable(options, labels) {
+  const columns = _tcClamp(options.columns, 1, 8, 3), rows = _tcClamp(options.rows, 1, 30, 3);
+  const rowHeaders = !!options.rowHeaders && columns > 1;
+  const header = Array.from({ length: columns }, (_, i) => rowHeaders && i === 0 ? "" : labels.column(i + 1));
+  const lines = [];
+  const caption = _tcCell(options.caption);
+  if (caption) lines.push("Table: " + caption);
+  lines.push(_tcRow(header), "|" + header.map(() => "---").join("|") + "|");
+  for (let r = 0; r < rows; r++) lines.push(_tcRow(Array.from({ length: columns }, (_, i) => rowHeaders && i === 0 ? labels.row(r + 1) : "")));
+  return lines.join("\n");
+}
+function _tcLineBounds(text, position) {
+  const start = position > 0 ? text.lastIndexOf("\n", position - 1) + 1 : 0;
+  const end = text.indexOf("\n", position);
+  return { start, end: end < 0 ? text.length : end };
+}
+function findTableAt(text, position) {
+  const lines = text.split("\n");
+  let offset = 0, index = 0;
+  for (; index < lines.length; index++) {
+    if (position <= offset + lines[index].length) break;
+    offset += lines[index].length + 1;
+  }
+  if (index >= lines.length) return null;
+  const isRow = (i) => i >= 0 && i < lines.length && lines[i].trim().startsWith("|");
+  let first = index;
+  if (!isRow(first) && /^Table:\s+/i.test(lines[first].trim()) && isRow(first + 1)) first += 1;
+  if (!isRow(first)) return null;
+  while (isRow(first - 1)) first--;
+  let last = first;
+  while (isRow(last + 1)) last++;
+  const captionLine = first > 0 && /^Table:\s+(.+)$/i.test(lines[first - 1].trim()) ? first - 1 : -1;
+  const startLine = captionLine >= 0 ? captionLine : first;
+  const start = lines.slice(0, startLine).reduce((sum, line) => sum + line.length + 1, 0);
+  const end = start + lines.slice(startLine, last + 1).join("\n").length;
+  const caption = captionLine >= 0 ? lines[captionLine].trim().replace(/^Table:\s+/i, "") : "";
+  return { start, end, caption, rows: lines.slice(first, last + 1) };
+}
+const _tcSplitRow = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+function editMarkdownTable(table, change, labels) {
+  const rows = table.rows.map(_tcSplitRow);
+  const width = Math.max(...rows.map((cells) => cells.length));
+  const isSeparator = (cells) => cells.every((cell) => /^[-:\s]+$/.test(cell) && cell.includes("-"));
+  let out = rows.map((cells) => cells.concat(Array(width - cells.length).fill(isSeparator(cells) ? "---" : "")));
+  if (change.addColumn) out = out.map((cells, i) => cells.concat(isSeparator(cells) ? "---" : i === 0 ? labels.column(width + 1) : ""));
+  if (change.addRow) out.push(Array(out[0].length).fill(""));
+  const caption = _tcCell(change.caption != null ? change.caption : table.caption);
+  const lines = out.map((cells) => isSeparator(cells) ? "|" + cells.map(() => "---").join("|") + "|" : _tcRow(cells));
+  return (caption ? "Table: " + caption + "\n" : "") + lines.join("\n");
+}
+function parseChartLine(line) {
+  const match = String(line || "").trim().match(/^\[\[CHART:\s*({.*})\]\]$/);
+  if (!match) return null;
+  try {
+    const data = JSON.parse(match[1]);
+    return data && (data.type === "bar" || data.type === "donut") ? data : null;
+  } catch (_) {
+    return null;
+  }
+}
+function parseChartRows(text) {
+  const data = [], bad = [];
+  String(text || "").split("\n").map((line) => line.trim()).filter(Boolean).forEach((line) => {
+    const match = line.match(/^(.+?)\s*[:,]\s*(-?\d+(?:\.\d+)?)\s*%?$/);
+    if (match && match[1].trim()) data.push({ label: match[1].trim(), value: Number(match[2]) });
+    else bad.push(line);
+  });
+  return { data, bad };
+}
+function buildChartLine(chart) {
+  const out = { type: chart.type, title: String(chart.title || "").trim() };
+  if (chart.type === "bar") out.data = chart.data;
+  else {
+    out.percentage = chart.percentage;
+    out.label = String(chart.label || "").trim() || chart.percentage + "%";
+  }
+  out.description = String(chart.description || "").replace(/\s*\n\s*/g, " ").trim();
+  return "[[CHART: " + JSON.stringify(out) + "]]";
+}
+function insertMarkdownBlock(text, start, end, block) {
+  const before = text.slice(0, start), after = text.slice(end);
+  const lead = !before || before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+  const trail = !after ? "" : after.startsWith("\n\n") ? "" : after.startsWith("\n") ? "\n" : "\n\n";
+  const head = before + lead + block;
+  return { text: head + trail + after, caret: head.length };
+}
+function TableChartTools(props) {
+  const t = props.t;
+  const tx = (key, fallback, vars) => _tcText(t, key, fallback, vars);
+  const labels = { column: (n) => tx("table_chart.column_n", "Column {n}", { n }), row: (n) => tx("table_chart.row_n", "Row {n}", { n }) };
+  const [panel, setPanel] = React.useState(null);
+  const [form, setForm] = React.useState({});
+  const [error, setError] = React.useState("");
+  const [status, setStatus] = React.useState("");
+  const idRef = React.useRef("allo-tc-" + Math.random().toString(36).slice(2, 9));
+  const tableButtonRef = React.useRef(null), chartButtonRef = React.useRef(null), firstFieldRef = React.useRef(null);
+  const id = (suffix) => idRef.current + "-" + suffix;
+  const readEditor = () => {
+    const text = String((typeof props.getText === "function" ? props.getText() : "") || "");
+    const el = props.textareaRef && props.textareaRef.current;
+    const caret = el && typeof el.selectionStart === "number" ? Math.min(el.selectionStart, text.length) : text.length;
+    const caretEnd = el && typeof el.selectionEnd === "number" ? Math.min(el.selectionEnd, text.length) : caret;
+    return { text, caret, caretEnd, el };
+  };
+  React.useEffect(() => {
+    if (panel && firstFieldRef.current) firstFieldRef.current.focus();
+  }, [panel]);
+  if (typeof props.onChange !== "function") return null;
+  const set = (patch) => setForm((previous) => ({ ...previous, ...patch }));
+  const close = () => {
+    const back = panel === "chart" ? chartButtonRef.current : tableButtonRef.current;
+    setPanel(null);
+    setError("");
+    if (back) back.focus();
+  };
+  const open = (kind) => {
+    setError("");
+    setStatus("");
+    if (panel === kind) {
+      setPanel(null);
+      return;
+    }
+    const { text, caret } = readEditor();
+    if (kind === "table") {
+      const table = findTableAt(text, caret);
+      setForm(table ? { mode: "edit", caption: table.caption } : { mode: "new", caption: "", columns: 3, rows: 3, rowHeaders: false });
+    } else {
+      const bounds = _tcLineBounds(text, caret);
+      const chart = parseChartLine(text.slice(bounds.start, bounds.end));
+      setForm(chart ? { mode: "edit", type: chart.type, title: chart.title || "", description: chart.description || "", rowsText: chart.type === "bar" && Array.isArray(chart.data) ? chart.data.map((row) => row.label + ": " + row.value).join("\n") : "", percentage: chart.type === "donut" ? String(chart.percentage == null ? "" : chart.percentage) : "", label: chart.type === "donut" ? chart.label || "" : "" } : { mode: "new", type: "bar", title: "", description: "", rowsText: "", percentage: "", label: "" });
+    }
+    setPanel(kind);
+  };
+  const commit = (next, message) => {
+    props.onChange(next.text);
+    setPanel(null);
+    setError("");
+    setStatus(message);
+    const el = props.textareaRef && props.textareaRef.current;
+    const place = () => {
+      try {
+        if (el) {
+          el.focus();
+          el.setSelectionRange(next.caret, next.caret);
+        }
+      } catch (_) {
+      }
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(place);
+    else setTimeout(place, 0);
+  };
+  const applyTable = (change) => {
+    const { text, caret, caretEnd } = readEditor();
+    const table = findTableAt(text, caret);
+    if (change) {
+      if (!table) {
+        setError(tx("table_chart.no_table_here", "Put the cursor inside the table in the editor, then try again."));
+        return;
+      }
+      const block = editMarkdownTable(table, change, labels);
+      commit({ text: text.slice(0, table.start) + block + text.slice(table.end), caret: table.start + block.length }, change.addRow ? tx("table_chart.row_added", "Row added.") : change.addColumn ? tx("table_chart.column_added", "Column added.") : tx("table_chart.caption_saved", "Caption saved."));
+      return;
+    }
+    if (!_tcCell(form.caption)) {
+      setError(tx("table_chart.caption_required", "Add a caption that says what the table shows."));
+      return;
+    }
+    commit(insertMarkdownBlock(text, caretEnd, caretEnd, buildMarkdownTable(form, labels)), tx("table_chart.table_inserted", "Table inserted. Replace the placeholder cells with your content."));
+  };
+  const applyChart = () => {
+    const description = String(form.description || "").trim();
+    let chart;
+    if (form.type === "bar") {
+      const parsed = parseChartRows(form.rowsText);
+      if (parsed.bad.length) {
+        setError(tx("table_chart.bad_rows", 'These lines need a label and a number, like "Apples: 12": {lines}', { lines: parsed.bad.join("; ") }));
+        return;
+      }
+      if (!parsed.data.length) {
+        setError(tx("table_chart.need_rows", 'Add at least one line of data, like "Apples: 12".'));
+        return;
+      }
+      chart = { type: "bar", title: form.title, data: parsed.data, description };
+    } else {
+      const percentage = Number(form.percentage);
+      if (String(form.percentage).trim() === "" || !Number.isFinite(percentage) || percentage < 0 || percentage > 100) {
+        setError(tx("table_chart.bad_percentage", "Enter a percentage from 0 to 100."));
+        return;
+      }
+      chart = { type: "donut", title: form.title, percentage, label: form.label, description };
+    }
+    if (!description) {
+      setError(tx("table_chart.description_required", "Add a description that says what the chart shows, for readers who cannot see it."));
+      return;
+    }
+    const { text, caret, caretEnd } = readEditor();
+    const line = buildChartLine(chart);
+    const bounds = _tcLineBounds(text, caret);
+    if (form.mode === "edit" && parseChartLine(text.slice(bounds.start, bounds.end))) {
+      commit({ text: text.slice(0, bounds.start) + line + text.slice(bounds.end), caret: bounds.start + line.length }, tx("table_chart.chart_updated", "Chart updated."));
+    } else {
+      commit(insertMarkdownBlock(text, caretEnd, caretEnd, line), tx("table_chart.chart_inserted", "Chart inserted."));
+    }
+  };
+  const tone = props.tone === "indigo" ? "indigo" : "orange";
+  const toolButton = "px-2 py-1 rounded text-xs font-bold transition-colors " + (tone === "indigo" ? "text-indigo-800 hover:bg-indigo-200" : "text-orange-800 hover:bg-orange-200");
+  const field = "block w-full mt-1 text-sm border border-slate-300 rounded p-1.5 bg-white text-slate-800";
+  const smallLabel = "block text-xs font-semibold text-slate-700";
+  const primary = "px-3 py-1.5 rounded bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold";
+  const secondary = "px-3 py-1.5 rounded bg-white border border-slate-300 text-slate-700 text-xs font-bold";
+  const onPanelKey = (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+    }
+  };
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 mx-1 " + (tone === "indigo" ? "bg-indigo-200" : "bg-orange-200") }), /* @__PURE__ */ React.createElement("button", { type: "button", ref: tableButtonRef, "data-tc-open": "table", "aria-expanded": panel === "table", "aria-controls": id("panel"), onClick: () => open("table"), className: toolButton }, tx("table_chart.table_button", "Table")), /* @__PURE__ */ React.createElement("button", { type: "button", ref: chartButtonRef, "data-tc-open": "chart", "aria-expanded": panel === "chart", "aria-controls": id("panel"), onClick: () => open("chart"), className: toolButton }, tx("table_chart.chart_button", "Chart")), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "sr-only", "data-tc-status": true }, status), panel && /* @__PURE__ */ React.createElement("div", { id: id("panel"), role: "group", "aria-labelledby": id("heading"), onKeyDown: onPanelKey, "data-tc-panel": panel, className: "basis-full w-full mt-2 rounded-lg border border-slate-300 bg-white p-3 space-y-2 text-slate-800" }, /* @__PURE__ */ React.createElement("h5", { id: id("heading"), className: "text-sm font-bold" }, panel === "table" ? form.mode === "edit" ? tx("table_chart.edit_table_heading", "Edit this table") : tx("table_chart.insert_table_heading", "Insert a table") : form.mode === "edit" ? tx("table_chart.edit_chart_heading", "Edit this chart") : tx("table_chart.insert_chart_heading", "Insert a chart")), panel === "table" && form.mode === "new" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: smallLabel, htmlFor: id("caption") }, tx("table_chart.caption", "Caption"), /* @__PURE__ */ React.createElement("span", { id: id("caption-hint"), className: "block font-normal text-slate-600" }, tx("table_chart.caption_hint", "Shown above the table and read by screen readers. Say what the table shows."))), /* @__PURE__ */ React.createElement("input", { ref: firstFieldRef, id: id("caption"), "aria-describedby": id("caption-hint"), value: form.caption, onChange: (e) => set({ caption: e.target.value }), className: field }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.columns", "Columns"), /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "8", value: form.columns, onChange: (e) => set({ columns: e.target.value }), className: field + " w-20" })), /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.rows", "Rows"), /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "30", value: form.rows, onChange: (e) => set({ rows: e.target.value }), className: field + " w-20" }))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!form.rowHeaders, onChange: (e) => set({ rowHeaders: e.target.checked }) }), tx("table_chart.row_headers", "The first column labels each row")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-insert-table": true, onClick: () => applyTable(null), className: primary }, tx("table_chart.insert_table", "Insert table")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: close, className: secondary }, tx("common.cancel", "Cancel")))), panel === "table" && form.mode === "edit" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: smallLabel, htmlFor: id("caption") }, tx("table_chart.caption", "Caption")), /* @__PURE__ */ React.createElement("input", { ref: firstFieldRef, id: id("caption"), value: form.caption, onChange: (e) => set({ caption: e.target.value }), className: field }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-save-caption": true, onClick: () => applyTable({ caption: form.caption }), className: primary }, tx("table_chart.save_caption", "Save caption")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-add-row": true, onClick: () => applyTable({ addRow: true }), className: secondary }, tx("table_chart.add_row", "Add a row")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-add-column": true, onClick: () => applyTable({ addColumn: true }), className: secondary }, tx("table_chart.add_column", "Add a column")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: close, className: secondary }, tx("common.cancel", "Cancel")))), panel === "chart" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.chart_type", "Chart type"), /* @__PURE__ */ React.createElement("select", { ref: firstFieldRef, value: form.type, onChange: (e) => set({ type: e.target.value }), className: field }, /* @__PURE__ */ React.createElement("option", { value: "bar" }, tx("table_chart.type_bar", "Bar chart (compare values)")), /* @__PURE__ */ React.createElement("option", { value: "donut" }, tx("table_chart.type_donut", "Percentage (one value out of 100)")))), /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.chart_title", "Title"), /* @__PURE__ */ React.createElement("input", { value: form.title, onChange: (e) => set({ title: e.target.value }), className: field })), form.type === "bar" ? /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.data_rows", "Data, one per line as Label: value"), /* @__PURE__ */ React.createElement("textarea", { "data-tc-rows": true, rows: 4, value: form.rowsText, onChange: (e) => set({ rowsText: e.target.value }), placeholder: "Apples: 12\nPears: 7", className: field + " font-mono" })) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.percentage", "Percentage"), /* @__PURE__ */ React.createElement("input", { "data-tc-percentage": true, type: "number", min: "0", max: "100", value: form.percentage, onChange: (e) => set({ percentage: e.target.value }), className: field + " w-24" })), /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.center_label", "Center label (optional)"), /* @__PURE__ */ React.createElement("input", { value: form.label, onChange: (e) => set({ label: e.target.value }), className: field }))), /* @__PURE__ */ React.createElement("label", { className: smallLabel, htmlFor: id("description") }, tx("table_chart.description", "Description"), /* @__PURE__ */ React.createElement("span", { id: id("description-hint"), className: "block font-normal text-slate-600" }, tx("table_chart.description_hint", "Shown under the chart. Say what it shows and the main pattern, for readers who cannot see it."))), /* @__PURE__ */ React.createElement("textarea", { "data-tc-description": true, id: id("description"), "aria-describedby": id("description-hint"), rows: 3, value: form.description, onChange: (e) => set({ description: e.target.value }), className: field }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-apply-chart": true, onClick: applyChart, className: primary }, form.mode === "edit" ? tx("table_chart.update_chart", "Update chart") : tx("table_chart.insert_chart", "Insert chart")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: close, className: secondary }, tx("common.cancel", "Cancel")))), error && /* @__PURE__ */ React.createElement("p", { role: "alert", "data-tc-error": true, className: "text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded p-2" }, error)));
+}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.ViewRenderers = {
+  TableChartTools,
+  buildMarkdownTable,
+  findTableAt,
+  editMarkdownTable,
+  parseChartLine,
+  parseChartRows,
+  buildChartLine,
+  insertMarkdownBlock,
   normalizeVisualOrganizerData,
   organizerReviewText,
   OrganizerReviewPanel,

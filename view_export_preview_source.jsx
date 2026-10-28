@@ -4280,7 +4280,9 @@ function _alloBlobToBase64(blob) {
 // so the teacher still gets the question, just without auto-grading.
 function _alloQuizToFormItems(quizData) {
   const questions = Array.isArray(quizData && quizData.questions) ? quizData.questions : [];
-  const text = (v) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
+  // Forms takes plain text: the Assess view's light markdown keeps its words, loses its markers.
+  const md = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
+  const text = (v) => String(md ? md.plain(v) : (v == null ? '' : v)).replace(/\s+/g, ' ').trim();
   const items = [];
   questions.forEach((q) => {
     if (!q || typeof q !== 'object') return;
@@ -9077,7 +9079,7 @@ function ExportPreviewView(props) {
                                   out.push('');
                                 }
                                 else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
-                                  d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '. ' + esc(q.question) + '**', '');
+                                  d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '.** ' + esc(q.question), '');
                                     (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o))); out.push(''); });
                                   // Answer-key gating (export-format review #13, 2026-07-01): this export
                                   // travels — students, shared drives, NotebookLM — and it EMBEDDED the

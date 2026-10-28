@@ -946,17 +946,30 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
   if (!AD || typeof AD.getCached !== 'function') return null;
   var entry = AD.getCached(item.term);
   if (!entry) return null;
-  var sense = typeof AD.pickSense === 'function' ? AD.pickSense(entry, item.def || '') : null;
-  var verifiedDef = sense ? sense.definition : '';
-  if (!verifiedDef && Array.isArray(entry.meanings)) {
+  // A sense counts as the lesson's only when it overlaps the lesson definition (not just
+  // the word itself) and beats every other sense. Otherwise the first sense is shown,
+  // labelled as not matched, so a different meaning never reads as the lesson's.
+  var lessonDef = String(item.def || '').trim();
+  var sense = null;
+  if (lessonDef) {
+    sense = typeof AD.matchPassageSense === 'function' ? AD.matchPassageSense(entry, lessonDef) : typeof AD.pickSense === 'function' ? AD.pickSense(entry, lessonDef) : null;
+    if (sense && typeof sense.score === 'number' && sense.score <= 0) sense = null;
+  }
+  var senseMatched = !!(sense && sense.definition);
+  if (!senseMatched && Array.isArray(entry.meanings)) {
     entry.meanings.some(function (m) {
       if (m && Array.isArray(m.definitions) && m.definitions[0] && m.definitions[0].definition) {
-        verifiedDef = m.definitions[0].definition;
+        sense = {
+          partOfSpeech: m.partOfSpeech || '',
+          definition: m.definitions[0].definition,
+          example: m.definitions[0].example || ''
+        };
         return true;
       }
       return false;
     });
   }
+  var verifiedDef = sense ? sense.definition : '';
   var pos = sense ? sense.partOfSpeech : '';
   var example = sense ? sense.example : '';
   var syns = Array.isArray(entry.synonyms) ? entry.synonyms.slice(0, 4) : [];
@@ -977,6 +990,11 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
   }, pos ? React.createElement('span', {
     className: 'font-semibold text-white mr-1'
   }, pos) : null, verifiedDef));
+  if (verifiedDef && !senseMatched) body.push(React.createElement('p', {
+    key: 'unmatched',
+    'data-dict-sense-unmatched': 'true',
+    className: 'text-xs text-blue-50 leading-relaxed'
+  }, dictText(t, 'glossary.dictionary_unmatched_note', "This is the dictionary's first meaning. It was not matched to this lesson's definition, so it may be a different sense of the word.")));
   if (example) body.push(React.createElement('p', {
     key: 'ex',
     className: 'text-xs text-blue-50 leading-relaxed italic'
@@ -1031,7 +1049,7 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
     onKeyDown: stopCardControlEvent
   }, React.createElement('summary', {
     className: 'text-xs font-bold text-white uppercase cursor-pointer select-none tracking-wide'
-  }, dictText(t, 'glossary.verified_dictionary', 'Verified dictionary')), React.createElement('div', {
+  }, senseMatched || !verifiedDef ? dictText(t, 'glossary.verified_dictionary', 'Verified dictionary') : dictText(t, 'glossary.dictionary_unmatched', 'Dictionary meaning (not matched to this lesson)')), React.createElement('div', {
     className: 'mt-2 space-y-1.5'
   }, body));
 }

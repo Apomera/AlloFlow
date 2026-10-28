@@ -3,6 +3,8 @@ import * as engine from './lesson_board_engine.js';
 import {destinationJourney} from './lesson_board_journey.js';
 import { tr, signedAmount } from './lesson_board_strings.js';
 const React=window.React;
+// AI text uses the Assess view's light markdown when it is loaded; plain text otherwise.
+const lbMd = () => window.AlloModules?.QuizView?.markdown || { inline: v => v == null ? '' : String(v), block: v => v == null || v === '' ? null : React.createElement('p', null, String(v)), plain: v => v == null ? '' : String(v) };
 
 // A suggestion selects a legal next stop; it never moves or solves a space.
 export function nextContractStep(board,run,contract){
@@ -64,7 +66,7 @@ export function ContractHand({board,run,trackedId,onTrack,onInspect,t}){
   return <details className="lb-contract-hand" data-contract-hand><ContractStyles/><summary><span>{tr(t,'contracts_title','Expedition contracts')}</span><small>{tr(t,'contracts_count','{done}/{total} complete',{done:contracts.filter(c=>c.complete).length,total:contracts.length})}</small></summary>
     <p className="lb-muted">{tr(t,'contracts_help','Choose which route to work on first. Explore each marked space to collect its bonus supplies once. Contracts are optional; tracking one marks its destinations on your map.')}</p>
     <div className="lb-contract-cards">{contracts.map(contract=>{const next=nextContractStep(board,run,contract);return <article className="lb-contract-card" data-contract={contract.id} data-tracked={trackedId===contract.id} data-complete={contract.complete} key={contract.id}>
-      <h4>{contract.complete?'✓ ':''}{contract.title}</h4><p>{contract.description}</p>
+      <h4>{contract.complete?'✓ ':''}{contract.title}</h4><p>{lbMd().inline(contract.description)}</p>
       <ul>{contract.locations.map(id=><li key={id}><span className="lb-contract-check" aria-hidden="true">{progress.visited.includes(id)?'✓':'○'}</span><span>{board.locations.find(node=>node.id===id)?.name}<span className="lb-visually-hidden"> · {progress.visited.includes(id)?tr(t,'explored','Explored'):tr(t,'not_yet','Still to explore')}</span></span></li>)}</ul>
       <p className="lb-contract-prize">{contract.complete?tr(t,'contract_collected','Bonus collected: {reward}',{reward:prize(board,contract.reward)}):tr(t,'contract_bonus','Bonus: {reward}',{reward:prize(board,contract.reward)})}</p>
       {!contract.complete&&!progress.complete&&<><button type="button" data-track-contract={contract.id} aria-pressed={trackedId===contract.id} onClick={()=>onTrack(trackedId===contract.id?'':contract.id)}>{trackedId===contract.id?tr(t,'contract_untrack','Stop tracking'):tr(t,'contract_track','Track this route')}</button>{trackedId===contract.id&&next&&<button type="button" data-contract-next={contract.id} onClick={()=>onInspect(next.id)}>{tr(t,'contract_next_step','Show next step: {name}',{name:board.locations.find(node=>node.id===next.id)?.name})}</button>}</>}

@@ -194,6 +194,27 @@ const createExport = (deps) => {
         const cp = char.codePointAt(0);
         return cp === 0x9 || cp === 0xA || cp === 0xD || (cp >= 0x20 && cp <= 0xD7FF) || (cp >= 0xE000 && cp <= 0xFFFD) || (cp >= 0x10000 && cp <= 0x10FFFF);
     }).join(''));
+    // Assessment text can carry light markdown (**bold**, *italic*); plain-text formats keep the words only.
+    const _exportQuizMd = () => (window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown) || null;
+    const _exportQuizPlain = (value) => { const md = _exportQuizMd(); return md ? md.plain(value) : String(value == null ? '' : value); };
+    // Every string in an item except ids, types and image data, so options and keys still match afterwards.
+    const _exportQuizPlainItem = (value, key) => {
+        if (typeof value === 'string') return /url|image|^id$|^type$/i.test(key || '') ? value : _exportQuizPlain(value);
+        if (Array.isArray(value)) return value.map((entry) => _exportQuizPlainItem(entry, key));
+        if (!value || typeof value !== 'object') return value;
+        const out = {};
+        Object.keys(value).forEach((name) => { out[name] = _exportQuizPlainItem(value[name], name); });
+        return out;
+    };
+    // PowerPoint text runs: markdown bold/italic/code as run styling; plain text when the formatter is absent.
+    const _pptxQuizRuns = (value, base, emphasisColor) => {
+        const md = _exportQuizMd();
+        if (!md || typeof md.segments !== 'function') return String(value == null ? '' : value);
+        return md.segments(value).map((seg) => ({ text: seg.text, options: { ...base,
+            bold: !!(base.bold || seg.bold), italic: !!seg.italic,
+            ...(seg.bold && base.bold && emphasisColor ? { color: emphasisColor } : {}),
+            ...(seg.code ? { fontFace: 'Courier New' } : {}) } }));
+    };
     const _h5pAccessibleText = (value) => String(value == null ? '' : value)
         .replace(/<[^>]*>/g, ' ')
         .replace(/&nbsp;|&#160;/gi, ' ')
@@ -917,6 +938,7 @@ const createExport = (deps) => {
 
     const _qtiQuestionItemXml = (q, index, scoringPolicy) => {
         if (!q || typeof q !== 'object') return null;
+        q = _exportQuizPlainItem(q);
         if (!String(q.question || '').trim()) return null;
         const type = q.type || 'mcq';
         const partialCredit = !scoringPolicy || scoringPolicy.partialCredit !== false;
@@ -1147,7 +1169,7 @@ const createExport = (deps) => {
             return false;
         }
 
-        const plain = (value) => String(value == null ? '' : value).trim();
+        const plain = (value) => (type === 'quiz' ? _exportQuizPlain(value) : String(value == null ? '' : value)).trim();
         const richText = (value) => `<p>${_escapeExportText(plain(value))}</p>`;
         const language = String(_exportLanguage() || 'und').toLowerCase().split(/[-_]/)[0];
         const h5pLanguage = /^[a-z]{2}$/.test(language) ? language : 'und';
@@ -2012,11 +2034,11 @@ const createExport = (deps) => {
                     questions.forEach((q, i) => {
                         const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
                         addSlideTitle(slide, t('export.slides_question_title', { number: i + 1 }));
-                        slide.addText(q.question, {
+                        slide.addText(_pptxQuizRuns(q.question, { fontSize: 18, bold: true, color: darkText }, themeColor), {
                             x: 0.5, y: 1.0, w: 9, h: 1.2,
-                            fontSize: 18, bold: true, color: darkText, valign: 'top', fit: 'shrink', margin: 0.04,
+                            fontSize: 18, color: darkText, valign: 'top', fit: 'shrink', margin: 0.04,
                         });
-                        q.options.forEach((opt, idx) => {
+                        (Array.isArray(q.options) ? q.options : []).forEach((opt, idx) => {
                             const yPos = 2.3 + (idx * 0.7);
                             slide.addShape(pptx.ShapeType.rect, {
                                 x: 1.0, y: yPos, w: 8, h: 0.55,
@@ -2032,12 +2054,12 @@ const createExport = (deps) => {
                                 x: 1.1, y: yPos + 0.1, w: 0.35, h: 0.35,
                                 fontSize: 12, bold: true, color: themeColor, align: 'center', valign: 'middle',
                             });
-                            slide.addText(opt, {
+                            slide.addText(_pptxQuizRuns(opt, { fontSize: 14, color: darkText }), {
                                 x: 1.6, y: yPos, w: 7.2, h: 0.55,
                                 fontSize: 14, color: darkText, valign: 'middle', fit: 'shrink', margin: 0.03
                             });
                         });
-                        slide.addNotes(`${t('export.ppt_correct_note')}: ${q.correctAnswer}\n\n${q.factCheck || ''}`);
+                        slide.addNotes(`${t('export.ppt_correct_note')}: ${_exportQuizPlain(q.correctAnswer)}\n\n${cleanTextForPptx(q.factCheck)}`);
                     });
                     const ANSWERS_PER_SLIDE = 6;
                     for (let ak = 0; ak < questions.length; ak += ANSWERS_PER_SLIDE) {
@@ -2049,7 +2071,7 @@ const createExport = (deps) => {
                             const qNum = ak + idx + 1;
                             const correctLetter = q.options ? String.fromCharCode(65 + q.options.indexOf(q.correctAnswer)) : '?';
                             akRichText.push({
-                                text: `Q${qNum}: ${correctLetter}) ${q.correctAnswer || ''}`,
+                                text: `Q${qNum}: ${correctLetter}) ${_exportQuizPlain(q.correctAnswer || '')}`,
                                 options: { fontSize: 13, bold: true, color: "16A34A", breakLine: true, bullet: false }
                             });
                             if (q.factCheck) {

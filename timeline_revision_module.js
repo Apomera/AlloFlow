@@ -499,24 +499,42 @@ var createTimelineRevision = function(deps) {
       if (!isCurrent()) return;
       var parsed = JSON.parse(cleanJson(result));
       if (!Array.isArray(parsed)) throw new Error('Invalid verification response');
+      // Only a well-formed verdict counts: an in-range integer index seen once, with real booleans.
+      // Items without one are left unchecked, never presumed accurate.
       var verdictByIndex = {};
+      var seenIndex = {};
       parsed.forEach(function(v) {
-        if (typeof v.index === 'number') verdictByIndex[v.index] = {
-          factual: v.isFactuallyAccurate !== false,
-          position: v.isPositionCorrect !== false,
+        if (!v || typeof v !== 'object') return;
+        var i = v.index;
+        if (typeof i !== 'number' || i !== Math.floor(i) || i < 0 || i >= items.length) return;
+        if (seenIndex[i]) { verdictByIndex[i] = null; return; }
+        seenIndex[i] = true;
+        if (typeof v.isFactuallyAccurate !== 'boolean' || typeof v.isPositionCorrect !== 'boolean') return;
+        verdictByIndex[i] = {
+          factual: v.isFactuallyAccurate,
+          position: v.isPositionCorrect,
           concern: String(v.concern || '').substring(0, 200),
           rationale: String(v.rationale || '').substring(0, 400)
         };
       });
+      var verdicts = items.map(function(it, i) { return verdictByIndex[i] || null; });
+      var checked = verdicts.filter(Boolean).length;
+      if (checked === 0) throw new Error('Verification response covered no items');
       var newItems = items.map(function(it, i) {
-        var v = verdictByIndex[i];
-        if (!v) return it;
-        return Object.assign({}, it, { verification: v });
+        var v = verdicts[i];
+        if (v) return Object.assign({}, it, { verification: v });
+        if (!it || !it.verification) return it;
+        var copy = Object.assign({}, it);
+        delete copy.verification;
+        return copy;
       });
       var newData = Array.isArray(data) ? newItems : Object.assign({}, data, { items: newItems });
       updateTimelineResource(ctx, data, function () { return newData; }, isCurrent);
-      var concerns = parsed.filter(function(v) { return v.isFactuallyAccurate === false || v.isPositionCorrect === false; }).length;
-      if (concerns === 0) {
+      var concerns = verdicts.filter(function(v) { return v && (v.factual === false || v.position === false); }).length;
+      if (checked < items.length) {
+        var partialMsg = t && t('timeline.validation.verified_incomplete', { checked: checked, total: items.length, count: concerns });
+        addToast(partialMsg || ('Checked ' + checked + ' of ' + items.length + ' items (' + concerns + ' flagged). The rest are marked not checked. Press Verify accuracy to try again.'), 'warning');
+      } else if (concerns === 0) {
         addToast((t && t('timeline.validation.verified_clean')) || 'Verified: all items look accurate.', 'success');
       } else {
         addToast((t && t('timeline.validation.verified_concerns', { count: concerns })) || ('Verified: ' + concerns + ' item(s) flagged. Review badges for details.'), 'warning');

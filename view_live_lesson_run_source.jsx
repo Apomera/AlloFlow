@@ -1717,6 +1717,7 @@ function LiveLessonRunPanel(props) {
 
   return (
     <section
+      data-live-lesson-run=""
       aria-label={preparationOnly
         ? 'Prepare live run'
         : companionActive

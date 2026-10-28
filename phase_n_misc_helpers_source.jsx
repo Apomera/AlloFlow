@@ -188,22 +188,35 @@ const handleMasteryGrading = async (text, rubric, topic, draftCount = 1, deps) =
       if (gateResult.isRelevant === false) {
            throw new Error(gateResult.reason || t('process.gate_failure'));
       }
+      // The host passes { draftCount, previousDraft }; an older host passes the attempt number alone.
+      const attempt = draftCount && typeof draftCount === 'object' ? draftCount : { draftCount };
+      const attemptNumber = Number(attempt.draftCount) || 1;
+      const previousDraft = typeof attempt.previousDraft === 'string' && attempt.previousDraft.trim() && attempt.previousDraft !== text ? attempt.previousDraft : '';
+      const previousBlock = previousDraft ? `
+        Previous Draft (the student's last graded attempt, for comparison only):
+        """
+        ${previousDraft}
+        """,` : '';
+      const improvementTask = previousDraft
+        ? '5. Compare with the Previous Draft. Name a specific change that improved the work, or say plainly that nothing important changed. Never claim an improvement you cannot see between the two drafts.'
+        : '5. There is no earlier draft to compare with, so do not describe the work as improved or revised.';
       const gradingPrompt = `
-        You are an expert teacher grading a student submission (Attempt #${draftCount}).
+        You are an expert teacher grading a student submission (Attempt #${attemptNumber}).
         Topic: "${topic}",
         Rubric / Criteria:
         """
         ${rubric}
-        """,
+        """,${previousBlock}
         Student Submission:
         """
         ${text}
         """,
         Task:
-        1. Evaluate the submission strictly against the Rubric criteria.
+        1. Evaluate the submission strictly against the Rubric criteria. Score the Student Submission on its own merits.
         2. Assign a Raw Score (0-100) based on the overall quality.
         3. Provide a breakdown for each criterion.
         4. Provide specific feedback explaining the score.
+        ${improvementTask}
         Return ONLY JSON:
         {
           "rawScore": number,
@@ -223,7 +236,12 @@ const handleMasteryGrading = async (text, rubric, topic, draftCount = 1, deps) =
       } catch (e) {
           throw new Error(t('process.grading_error'));
       }
-      const aiScore = gradingData.rawScore || 0;
+      // A missing, non-numeric or out-of-range score is a grading error, never a 0 or a pass.
+      const rawScore = gradingData && typeof gradingData === 'object' ? gradingData.rawScore : undefined;
+      if (typeof rawScore !== 'number' || !Number.isFinite(rawScore) || rawScore < 0 || rawScore > 100) {
+          throw new Error(t('process.grading_error'));
+      }
+      const aiScore = rawScore;
       let finalScore = aiScore;
       let status = 'revision';
       if (aiScore > 85) {
@@ -238,7 +256,7 @@ const handleMasteryGrading = async (text, rubric, topic, draftCount = 1, deps) =
           score: finalScore,
           rawScore: aiScore,
           gradingDetails: gradingData,
-          draftCount: draftCount
+          draftCount: attemptNumber
       };
 };
 
@@ -408,6 +426,11 @@ const handleCheckLevel = async (deps) => {
         const standardsContextLine = standardsForPrompt
             ? `Instructional Standards Context: ${standardsForPrompt}\nUse this only when considering qualitative knowledge and language demands; do not treat standards alignment as a readability formula.`
             : '';
+        // The whole text is judged when it fits; a longer one is judged on its opening, and the prompt and report say so.
+        const levelText = textToCheck.slice(0, 50000);
+        const levelTextNote = levelText.length < textToCheck.length
+            ? `Note: only the first ${levelText.length} of ${textToCheck.length} characters of the text are shown. Judge the level of this opening section.`
+            : '';
         const prompt1 = `
             You are a literacy expert. Analyze the text below to determine its text complexity.
             Target Level: ${targetGrade}
@@ -423,13 +446,15 @@ const handleCheckLevel = async (deps) => {
                 "alignment": "Aligned" or "Too Complex" or "Too Simple",
                 "feedback": "Brief explanation...",
             }
-            Text: "${textToCheck.substring(0, 3000)}"
+            ${levelTextNote}
+            Text: "${levelText}"
         `;
         const result1 = await callGemini(prompt1, true);
         const analysis1 = JSON.parse(cleanJson(result1));
         const prompt2 = `
             You are a senior curriculum verifier. Review the following text and the initial complexity analysis.
-            Text: "${textToCheck.substring(0, 3000)}"
+            ${levelTextNote}
+            Text: "${levelText}"
             Initial Estimate: ${analysis1.estimatedLevel}
             Target Level: ${targetGrade}
             Text Language: ${artifactLanguage}
@@ -520,6 +545,8 @@ const handleCheckLevel = async (deps) => {
             language: artifactLanguage,
             standards: standardsForPrompt,
             contentFingerprint,
+            checkedChars: levelText.length,
+            totalChars: textToCheck.length,
             measurementStatus: localStats ? 'measured' : 'not-evaluated',
             ...(localStats ? { localStats } : {})
         };

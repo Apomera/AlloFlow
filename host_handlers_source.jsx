@@ -10925,7 +10925,9 @@ const submitGradingSession = async () => {
     try {
         const topic = __d.sourceTopic || "Current Topic";
         const rubric = resource?.data?.rubric || "Standard grading criteria for clarity, accuracy, and depth.";
-        const result = await __d.handleMasteryGrading(draftText, rubric, topic, submittedDraft);
+        // A revision is graded beside the draft it revises, so "improved" can be checked.
+        const previousDraft = session.status === 'revision' ? String(session.previousDraft || '') : '';
+        const result = await __d.handleMasteryGrading(draftText, rubric, topic, { draftCount: submittedDraft, previousDraft });
         const mastered = result.status === 'mastery';
         let xpAwarded = null;
         if (mastered && resourceId != null) {

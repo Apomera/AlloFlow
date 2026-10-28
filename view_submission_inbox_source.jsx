@@ -439,7 +439,7 @@ function SiAssessmentReport(p) {
       report.items.map(function (item) {
         var style = SI_ASSESSMENT_VERDICT_STYLE[item.verdict] || SI_ASSESSMENT_VERDICT_STYLE.review;
         return h('li', { key: 'q-' + item.number, value: item.number, 'data-assessment-item': item.verdict, style: { marginBottom: 6, fontSize: '0.82rem', color: '#1e293b' } },
-          h('div', { style: { fontWeight: 600 } }, item.question || tr('Question {n}', { n: item.number })),
+          h('div', { style: { fontWeight: 600 } }, item.question ? (window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown ? window.AlloModules.QuizView.markdown.inline(item.question) : item.question) : tr('Question {n}', { n: item.number })),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'baseline', marginTop: 2 } },
             h('span', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, item.hasResponse ? item.response : tr('No answer submitted')),
             h('span', { style: { padding: '1px 7px', borderRadius: 999, background: style.bg, color: style.color, border: '1px solid ' + style.border, fontWeight: 700, fontSize: '0.7rem' } }, tr(style.label))
@@ -3751,7 +3751,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 return /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: isAnchored ? '#fef3c7' : (g ? 'white' : 'transparent'), border: isAnchored ? '1.5px solid #f59e0b' : (g ? '1px solid #e2e8f0' : 'none') } },
                                   /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.85rem', marginBottom: g || isAnchored ? 4 : 0 } },
                                     /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
-                                      /*#__PURE__*/React.createElement('div', { style: { color: '#0f172a', fontWeight: 700, lineHeight: 1.35 } }, assessmentReport ? tr('Quiz responses') : entry.question),
+                                      /*#__PURE__*/React.createElement('div', { style: { color: '#0f172a', fontWeight: 700, lineHeight: 1.35 } }, assessmentReport ? tr('Quiz responses') : (window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown ? window.AlloModules.QuizView.markdown.inline(entry.question) : entry.question)),
                                       entry.partLabel && /*#__PURE__*/React.createElement('div', { style: { color: '#475569', fontSize: '0.74rem', fontWeight: 600, marginTop: 2 } },
                                         entry.partLabel + (entry.responseType ? ' · ' + entry.responseType.replace(/-/g, ' ') : '')
                                       ),

@@ -2,6 +2,8 @@ import { useBoardEscape } from './lesson_board_accessibility.js';
 import { tr } from './lesson_board_strings.js';
 import { boardFileCompatibility, downloadBoardFile, readBoardFile } from './lesson_board_transfer.js';
 const React = window.React;
+// AI text uses the Assess view's light markdown when it is loaded; plain text otherwise.
+const lbMd = () => window.AlloModules?.QuizView?.markdown || { inline: v => v == null ? '' : String(v), block: v => v == null || v === '' ? null : React.createElement('p', null, String(v)), plain: v => v == null ? '' : String(v) };
 const { useState, useEffect, useRef } = React;
 const fileError = (error, t) => ({
   'board-file-format': tr(t, 'file_format', 'Choose a supported AlloFlow lesson board file (.alloboard.json).'),
@@ -36,7 +38,7 @@ export function BoardTransfer({ board, support, source, language, disabled, onIm
     <label>{tr(t, 'import_board', 'Choose a board file')}<input ref={input} data-import-board type="file" accept=".alloboard.json,application/json" disabled={disabled} onChange={event => choose(event.target.files?.[0])}/></label>
     {reading && <p role="status">{tr(t, 'reading_file', 'Checking the board file…')}</p>}{error && <p role="alert">{error}</p>}
     {pack && <section ref={group} className="lb-notice" data-board-file-review aria-label={tr(t, 'file_review', 'Review imported board')}>
-      <h3 ref={review} tabIndex={-1}>{pack.board.title}</h3><p>{pack.board.mission}</p><p>{tr(t, 'file_summary', '{locations} locations · {language}', { locations: pack.board.locations.length, language: pack.language })}</p>
+      <h3 ref={review} tabIndex={-1}>{pack.board.title}</h3><div>{lbMd().block(pack.board.mission)}</div><p>{tr(t, 'file_summary', '{locations} locations · {language}', { locations: pack.board.locations.length, language: pack.language })}</p>
       <p>{compatible ? tr(t, 'file_matches', 'The lesson source and language match this setup.') : tr(t, 'file_different', 'This file uses a different lesson or language. Opening it uses the included lesson in this board setup; the main lesson stays unchanged.')}</p>
       <details><summary>{tr(t, 'included_source', 'Included lesson source')}</summary><blockquote>{pack.source}</blockquote></details>
       <p>{tr(t, 'file_replace_notice', 'Opening replaces the current board preview and its unsaved edits. Your saved library copies stay available. It does not launch a live session.')}</p>
