@@ -244,6 +244,20 @@ describe('desktop app-build deployment guard', () => {
     })).toThrow(/does not precache .*main\.1234abcd\.js/);
   });
 
+  it('resolves cache-busting queries in precache paths to the file they name', () => {
+    const fixture = makeValidFixture();
+    const worker = (extra) => [
+      "const CACHE_NAME = 'alloflow-v123456789';",
+      'const PRECACHE_PATHS = ' + JSON.stringify(['./index.html', './alloflow_desktop_bridge.js', './static/js/main.1234abcd.js', './static/css/main.5678cdef.css', extra]) + ';',
+      'const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();',
+      "const SHELL_URL = scopedUrl('./index.html');",
+    ].join('\n');
+    write(fixture.root, 'desktop/app-build/sw.js', worker('./alloflow_desktop_bridge.js?v=119c4026'));
+    expect(() => validateDesktopAppBuild({ repoRoot: fixture.root, appBuildDir: fixture.appBuild })).not.toThrow();
+    write(fixture.root, 'desktop/app-build/sw.js', worker('./missing_module.js?autoload'));
+    expect(() => validateDesktopAppBuild({ repoRoot: fixture.root, appBuildDir: fixture.appBuild })).toThrow(/precaches a missing file: \.\/missing_module\.js\?autoload/);
+  });
+
   it('rejects a hosted Firebase project compiled into the desktop main bundle', () => {
     const fixture = makeValidFixture();
     const unsafeEnv = {

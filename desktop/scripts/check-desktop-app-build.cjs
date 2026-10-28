@@ -119,7 +119,8 @@ function validateModuleContracts({ repoRoot, appBuildDir, contracts = MODULE_CON
 }
 
 function normalizeBuildReference(reference) {
-  const raw = String(reference || '').replace(/\\/g, '/');
+  // A cache-busting query names the same file (postbuild's assetBytes agrees).
+  const raw = String(reference || '').split(/[?#]/, 1)[0].replace(/\\/g, '/');
   const withoutPrefix = raw.replace(/^\.\//, '').replace(/^\//, '');
   const normalized = path.posix.normalize(withoutPrefix);
   if (!normalized || normalized === '.' || normalized === '..' || normalized.startsWith('../')) {
