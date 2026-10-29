@@ -16837,7 +16837,7 @@ window.StemLab = window.StemLab || {
               'aria-valuenow': provenCount, 'aria-label': __alloT('stem.machinelab.bench_progress_aria', 'Simple-machine benches proven'),
               style: { height: 8, overflow: 'hidden', borderRadius: 999, background: T.bg, border: '1px solid ' + T.border }
             }, h('div', { style: { width: (100 * provenCount / 6) + '%', height: '100%', background: T.accent } })),
-            h('div', { key: 'sub', style: { marginTop: 5, fontSize: 10, color: T.dim, textAlign: 'right' } },
+            h('div', { key: 'sub', style: { marginTop: 5, fontSize: 10, color: T.muted, textAlign: 'right' } },
               firedCount + ' / 3 ' + __alloT('stem.machinelab.machines_fired', 'machines fired'))
           ])
         ]),

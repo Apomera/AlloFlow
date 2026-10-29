@@ -8,6 +8,15 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// WCAG 1.4.3 high contrast: host buttons go black with green ink; drop the gradient painted over that black
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-semiconductor-hc-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-semiconductor-hc-css';
+  st.textContent = ".theme-contrast [data-stem-tool-shell=\"semiconductor\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+  document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════════════════
 // stem_tool_semiconductor.js — Semiconductor Lab Plugin v3.0
 // Interactive semiconductor physics: band gaps, doping,
@@ -1689,7 +1698,7 @@ window.StemLab = window.StemLab || {
       function statBadge(label, value, color, key) {
         return h('div', { key: key != null ? key : label, className: 'semi-stat-card flex flex-col items-center justify-center px-2 py-1 rounded-lg bg-slate-800/80 border border-slate-600' },
           h('span', { className: 'text-[0.6875rem] text-slate-300 uppercase tracking-wider font-semibold' }, label),
-          h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-400') }, value)
+          h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-300') }, value)
         );
       }
 
@@ -4218,7 +4227,7 @@ window.StemLab = window.StemLab || {
         var misses = d.challengeMisses || 0;
 
         var tierNames = ['Cadet', 'Technician', 'Engineer', 'Specialist', 'Master', 'Grandmaster'];
-        var tierColors = ['text-slate-200', 'text-blue-400', 'text-cyan-400', 'text-purple-400', 'text-amber-400', 'text-red-400'];
+        var tierColors = ['text-slate-200', 'text-blue-400', 'text-cyan-300', 'text-purple-400', 'text-amber-300', 'text-red-400'];
         var tierName = tierNames[Math.min(tier, tierNames.length - 1)];
         var tierColor = tierColors[Math.min(tier, tierColors.length - 1)];
 
@@ -4246,7 +4255,7 @@ window.StemLab = window.StemLab || {
             ),
             // Tier progress bar
             h('div', { className: 'w-48 mx-auto mb-4' },
-              h('div', { className: 'text-[0.6875rem] text-slate-400 mb-1' }, t('stem.semiconductor.progress_to_next_rank', 'Progress to next rank')),
+              h('div', { className: 'text-[0.6875rem] text-slate-300 mb-1' }, t('stem.semiconductor.progress_to_next_rank', 'Progress to next rank')),
               h('div', { className: 'h-2 bg-slate-800 rounded-full overflow-hidden' },
                 h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all', style: { width: Math.min(100, (score % 5) * 20) + '%' } })
               )
@@ -4598,7 +4607,7 @@ window.StemLab = window.StemLab || {
           TOPICS.map(function(item, topicIndex) {
             var topicId = 'semiconductor-learn-topic-' + topicIndex;
             return h('details', { className: 'group', key: item.title, open: topicIndex === 0 },
-              h('summary', { className: 'cursor-pointer text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors list-none flex items-center gap-1', 'aria-controls': topicId },
+              h('summary', { className: 'cursor-pointer text-xs font-semibold text-cyan-300 hover:text-cyan-200 transition-colors list-none flex items-center gap-1', 'aria-controls': topicId },
                 h('span', { className: 'text-[0.6875rem] text-slate-400 group-open:rotate-90 transition-transform', 'aria-hidden': 'true' }, '\u25B6'),
                 item.title
               ),
@@ -4690,7 +4699,7 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
         h('div', { style: { flex: 1, minWidth: 220 } },
-          h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+          h('h3', { style: { color: 'rgb(' + [16, 8, 0].map(function (s) { return Math.round((parseInt(meta.accent.slice(1), 16) >> s & 255) * 0.55 + 115); }).join(',') + ')', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
           h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } }, meta.hint)
         )
       );

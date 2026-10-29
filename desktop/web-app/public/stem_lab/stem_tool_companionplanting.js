@@ -4,7 +4,7 @@
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-companionplanting-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-companionplanting-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"companionPlanting\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(238, 242, 255)\"],[style*=\"background-color: rgb(238, 242, 255)\"],[style*=\"background: rgb(240, 253, 250)\"],[style*=\"background-color: rgb(240, 253, 250)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(247, 254, 231)\"],[style*=\"gradient(\"][style*=\"rgb(255, 255, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] [style]:is([style^=\"color: rgb(133, 77, 14)\"],[style*=\"; color: rgb(133, 77, 14)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(29, 78, 216)\"],[style*=\"; color: rgb(29, 78, 216)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(154, 52, 18)\"],[style*=\"; color: rgb(154, 52, 18)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(79, 70, 229)\"],[style*=\"; color: rgb(79, 70, 229)\"],[style^=\"color: rgb(15, 118, 110)\"],[style*=\"; color: rgb(15, 118, 110)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(194, 65, 12)\"],[style*=\"; color: rgb(194, 65, 12)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(133, 77, 14)\"],[style*=\"; color: rgb(133, 77, 14)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(29, 78, 216)\"],[style*=\"; color: rgb(29, 78, 216)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(154, 52, 18)\"],[style*=\"; color: rgb(154, 52, 18)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(79, 70, 229)\"],[style*=\"; color: rgb(79, 70, 229)\"],[style^=\"color: rgb(15, 118, 110)\"],[style*=\"; color: rgb(15, 118, 110)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(194, 65, 12)\"],[style*=\"; color: rgb(194, 65, 12)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(238, 242, 255)\"],[style*=\"background-color: rgb(238, 242, 255)\"],[style*=\"background: rgb(240, 253, 250)\"],[style*=\"background-color: rgb(240, 253, 250)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"companionPlanting\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(238, 242, 255)\"],[style*=\"background-color: rgb(238, 242, 255)\"],[style*=\"background: rgb(240, 253, 250)\"],[style*=\"background-color: rgb(240, 253, 250)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(247, 254, 231)\"],[style*=\"gradient(\"][style*=\"rgb(255, 255, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] [style]:is([style^=\"color: rgb(133, 77, 14)\"],[style*=\"; color: rgb(133, 77, 14)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(29, 78, 216)\"],[style*=\"; color: rgb(29, 78, 216)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(154, 52, 18)\"],[style*=\"; color: rgb(154, 52, 18)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(79, 70, 229)\"],[style*=\"; color: rgb(79, 70, 229)\"],[style^=\"color: rgb(15, 118, 110)\"],[style*=\"; color: rgb(15, 118, 110)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(194, 65, 12)\"],[style*=\"; color: rgb(194, 65, 12)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(133, 77, 14)\"],[style*=\"; color: rgb(133, 77, 14)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(29, 78, 216)\"],[style*=\"; color: rgb(29, 78, 216)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(154, 52, 18)\"],[style*=\"; color: rgb(154, 52, 18)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(79, 70, 229)\"],[style*=\"; color: rgb(79, 70, 229)\"],[style^=\"color: rgb(15, 118, 110)\"],[style*=\"; color: rgb(15, 118, 110)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(194, 65, 12)\"],[style*=\"; color: rgb(194, 65, 12)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(238, 242, 255)\"],[style*=\"background-color: rgb(238, 242, 255)\"],[style*=\"background: rgb(240, 253, 250)\"],[style*=\"background-color: rgb(240, 253, 250)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"companionPlanting\"] :is(.from-red-50.to-orange-50,.from-emerald-700.to-green-700){background-image:none!important;background-color:#000!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -11781,7 +11781,7 @@ var d = (labToolData.companionPlanting) || {};
                   React.createElement("div", { className: "mb-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-lime-200" }, "Interactive ecology mission"),
                   React.createElement("div", { className: "flex items-end justify-between gap-3" }, React.createElement("h4", { className: "text-xl font-black" }, phase === 'plant' ? "Build the living system" : phase === 'grow' ? "Steward the ecosystem" : "Gather evidence & harvest"), React.createElement("span", { className: "text-xs font-black text-lime-200" }, gardenProgress + "%")),
                   React.createElement("div", { className: "mt-3 h-2 overflow-hidden rounded-full bg-black/25", role: "progressbar", "aria-label": __alloT('stem.companionplanting.a11y_season_mission_progress', 'Season mission progress'), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": gardenProgress }, React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-lime-300 to-emerald-300 transition-all", style: { width: gardenProgress + "%" } })),
-                  React.createElement("div", { className: "mt-3 flex items-center gap-2" }, missionSteps.map(function(step,index){ return React.createElement("div", { key: step.label, className: "flex min-w-0 flex-1 items-center gap-1.5 text-[0.625rem] font-bold " + (step.active ? "text-white" : step.complete ? "text-lime-200" : "text-emerald-200/60") }, React.createElement("span", { className: "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border " + (step.complete ? "border-lime-300 bg-lime-300 text-emerald-950" : step.active ? "border-white bg-white/15" : "border-white/20"), "aria-hidden": true }, step.complete ? "\u2713" : index + 1), React.createElement("span", { className: "truncate" }, step.label)); }))
+                  React.createElement("div", { className: "mt-3 flex items-center gap-2" }, missionSteps.map(function(step,index){ return React.createElement("div", { key: step.label, className: "flex min-w-0 flex-1 items-center gap-1.5 text-[0.625rem] font-bold " + (step.active ? "text-white" : step.complete ? "text-lime-200" : "text-emerald-200/80") }, React.createElement("span", { className: "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border " + (step.complete ? "border-lime-300 bg-lime-300 text-emerald-950" : step.active ? "border-white bg-white/15" : "border-white/20"), "aria-hidden": true }, step.complete ? "\u2713" : index + 1), React.createElement("span", { className: "truncate" }, step.label)); }))
                 ),
                 React.createElement("div", { className: "relative rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm md:min-w-[230px]" }, React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-wider text-emerald-200" }, "Recommended next"), React.createElement("div", { className: "mt-1 text-sm font-black" }, nextGardenMove), React.createElement("div", { className: "mt-1 text-[0.6875rem] text-emerald-100" }, seasonName + " | Day " + dayInSeason + " of 30"))
               )
@@ -11904,7 +11904,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "min-w-0" },
                   React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
                     React.createElement("span", { className: "h-2.5 w-2.5 rounded-full", style: { background: activeWorkspace.accent } }),
-                    React.createElement("span", { className: "text-[0.6875rem] font-black uppercase text-slate-500" }, "Active Workspace")
+                    React.createElement("span", { className: "text-[0.6875rem] font-black uppercase text-slate-600" }, "Active Workspace")
                   ),
                   React.createElement("h4", { className: "mt-1 text-lg font-black text-slate-900" }, activeWorkspace.label),
                   React.createElement("p", { className: "mt-1 max-w-3xl text-sm leading-relaxed text-slate-600" }, activeWorkspace.intent),
@@ -12068,7 +12068,7 @@ var d = (labToolData.companionPlanting) || {};
 
                       React.createElement("span", { className: "text-[0.6875rem] font-bold text-emerald-700" }, __alloT('stem.companionplanting.overall_soil_health', "Overall Soil Health")),
 
-                      React.createElement("span", { className: "text-sm font-bold " + (soilHealth > 70 ? 'text-emerald-700' : soilHealth > 40 ? 'text-amber-600' : 'text-red-600') }, soilHealth + '%')
+                      React.createElement("span", { className: "text-sm font-bold " + (soilHealth > 70 ? 'text-emerald-700' : soilHealth > 40 ? 'text-amber-800' : 'text-red-700') }, soilHealth + '%')
 
                     )
 
@@ -12827,7 +12827,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, __alloT('stem.companionplanting.sustainable_farming_industrial_vs_rege', "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative")),
                 React.createElement("button", { onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
-                  className: "transition-colors text-[0.6875rem] text-green-600 hover:text-green-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-green-700 hover:text-green-800 font-bold"
                 }, d.showFarmCompare ? 'Hide' : 'Compare \u2192')
               ),
               d.showFarmCompare && React.createElement("div", null,
@@ -12981,7 +12981,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, __alloT('stem.companionplanting.water_footprint_of_food', "\uD83D\uDCA7 Water Footprint of Food")),
                 React.createElement("button", { onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
-                  className: "transition-colors text-[0.6875rem] text-cyan-600 hover:text-cyan-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-cyan-700 hover:text-cyan-800 font-bold"
                 }, d.showWaterFoot ? 'Hide' : 'View \u2192')
               ),
               d.showWaterFoot && React.createElement("div", null,
@@ -13040,7 +13040,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, __alloT('stem.companionplanting.regenerative_practices', "\uD83C\uDF31 Regenerative Practices")),
                 React.createElement("button", { onClick: function() { upd('showRegen', !d.showRegen); },
-                  className: "transition-colors text-[0.6875rem] text-emerald-600 hover:text-emerald-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-emerald-700 hover:text-emerald-800 font-bold"
                 }, d.showRegen ? 'Hide' : 'Learn \u2192')
               ),
               d.showRegen && React.createElement("div", { className: "space-y-1.5 max-h-56 overflow-y-auto" },
@@ -13074,7 +13074,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
                 gardenStreak > 0 ? React.createElement("span", { className: "px-3 py-0.5 rounded-full text-[0.6875rem] font-bold " + (gardenStreak >= 5 ? 'bg-amber-700 text-white animate-pulse' : gardenStreak >= 3 ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600') },
                   '\uD83D\uDD25 ' + gardenStreak + ' streak!') : null,
-                React.createElement("span", { className: "text-[0.6875rem] text-slate-200" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
+                React.createElement("span", { className: "text-[0.6875rem] text-slate-600" }, 'Score: ' + gardenScenarioScore + '/' + gardenScenarioTotal + ' | Best: ' + gardenBestStreak)
               ),
               (function() {
                 var sc = GARDEN_SCENARIOS[gardenScenarioIdx];
@@ -13143,12 +13143,12 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center gap-2" },
                 React.createElement("span", { className: "text-xl" }, '\uD83E\uDD14'),
                 React.createElement("div", { className: "flex-1" },
-                  React.createElement("div", { className: "text-[0.6875rem] font-bold text-indigo-500 uppercase tracking-wider" }, __alloT('stem.companionplanting.did_you_know', 'Did You Know?')),
+                  React.createElement("div", { className: "text-[0.6875rem] font-bold text-indigo-700 uppercase tracking-wider" }, __alloT('stem.companionplanting.did_you_know', 'Did You Know?')),
                   React.createElement("div", { className: "text-[0.6875rem] text-indigo-800 leading-relaxed" }, GARDEN_FACTS[factIdx % GARDEN_FACTS.length])
                 ),
                 React.createElement("button", { "aria-label": __alloT('stem.companionplanting.next', "Next"),
                   onClick: function() { upd('factIdx', (factIdx + 1) % GARDEN_FACTS.length); },
-                  className: "transition-colors text-[0.6875rem] text-indigo-500 hover:text-indigo-700 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-indigo-700 hover:text-indigo-800 font-bold"
                 }, __alloT('stem.companionplanting.next_2', 'Next \u2192'))
               )
             ),
@@ -13160,7 +13160,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, __alloT('stem.companionplanting.quick_reference_cards', "\uD83D\uDCCB Quick Reference Cards")),
                 React.createElement("button", { onClick: function() { upd('showGardenRef', !d.showGardenRef); },
-                  className: "transition-colors text-[0.6875rem] text-teal-600 hover:text-teal-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-teal-700 hover:text-teal-800 font-bold"
                 }, d.showGardenRef ? 'Hide' : 'View \u2192')
               ),
               d.showGardenRef && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
@@ -13226,7 +13226,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.companionplanting.composting_guide', "\u267B\uFE0F Composting Guide")),
                 React.createElement("button", { "aria-label": __alloT('stem.companionplanting.greens_nitrogen', "GREENS (Nitrogen)"),
                   onClick: function() { upd('showCompost', !d.showCompost); },
-                  className: "transition-colors text-[0.6875rem] text-amber-600 hover:text-amber-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-amber-800 hover:text-amber-900 font-bold"
                 }, d.showCompost ? 'Hide' : 'Learn \u2192')
               ),
               d.showCompost && React.createElement("div", null,
@@ -13262,7 +13262,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, __alloT('stem.companionplanting.seasonal_planting_calendar', "\uD83D\uDCC5 Seasonal Planting Calendar")),
                 React.createElement("button", { onClick: function() { upd('showCalendar', !d.showCalendar); },
-                  className: "transition-colors text-[0.6875rem] text-emerald-600 hover:text-emerald-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-emerald-700 hover:text-emerald-800 font-bold"
                 }, d.showCalendar ? 'Hide' : 'Plan \u2192')
               ),
               d.showCalendar && React.createElement("div", { className: "space-y-1.5" },
@@ -13346,7 +13346,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\uD83C\uDF31 Companion Planting Guide (" + COMPANION_PAIRS.length + " pairs)"),
                 React.createElement("button", { onClick: function() { upd('showPairs', !d.showPairs); },
-                  className: "transition-colors text-[0.6875rem] text-green-600 hover:text-green-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-green-700 hover:text-green-800 font-bold"
                 }, d.showPairs ? 'Hide' : 'Explore \u2192')
               ),
               d.showPairs && React.createElement("div", null,
@@ -13422,7 +13422,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.companionplanting.soil_types_guide', "\uD83E\uDEA8 Soil Types Guide")),
                 React.createElement("button", { onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
-                  className: "transition-colors text-[0.6875rem] text-amber-600 hover:text-amber-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-amber-800 hover:text-amber-900 font-bold"
                 }, d.showSoilTypes ? 'Hide' : 'Explore \u2192')
               ),
               d.showSoilTypes && React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
@@ -13454,7 +13454,7 @@ var d = (labToolData.companionPlanting) || {};
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-red-800" }, __alloT('stem.companionplanting.garden_pests_allies', "\uD83D\uDC1E Garden Pests & Allies")),
                 React.createElement("button", { onClick: function() { upd('showPests', !d.showPests); },
-                  className: "transition-colors text-[0.6875rem] text-red-600 hover:text-red-800 font-bold"
+                  className: "transition-colors text-[0.6875rem] text-red-700 hover:text-red-800 font-bold"
                 }, d.showPests ? 'Hide' : 'Identify \u2192')
               ),
               d.showPests && React.createElement("div", null,

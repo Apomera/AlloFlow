@@ -980,11 +980,11 @@ window.StemLab = window.StemLab || {
         // ── Topic-accent hero band per tab ──
         (function() {
           var TAB_META = {
-            chart: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDCCA', title: t('stem.dataplot.chart_pick_the_right_visualization', 'Chart \u2014 pick the right visualization'), hint: t('stem.dataplot.scatter_for_relationships_line_for_tim', 'Scatter for relationships, line for time, bar for categories, histogram for distribution shape, box plot for spread + outliers, ogive for cumulative. Choosing the wrong chart type usually misleads more than it informs.') },
-            stats: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: t('stem.dataplot.statistics_center_spread_shape', 'Statistics \u2014 center, spread, shape'),  hint: t('stem.dataplot.mean_vs_median_median_wins_for_skewed_', 'Mean vs median (median wins for skewed data), standard deviation vs IQR (IQR wins for non-normal), correlation vs causation (low correlation does NOT prove no causal link).') },
-            quiz:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAF', title: t('stem.dataplot.quiz_practice_apply', 'Quiz \u2014 practice + apply'),           hint: t('stem.dataplot.ap_stats_data_literacy_items_each_ques', 'AP Stats / data-literacy items. Each question links back to the active dataset so you can verify visually before answering.') },
-            tools: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEE0\uFE0F', title: t('stem.dataplot.tools_load_clean_export', 'Tools \u2014 load + clean + export'),  hint: t('stem.dataplot.paste_from_google_sheets_generate_samp', 'Paste from Google Sheets, generate sample data, export as PNG/CSV. Most students underestimate how much real-world data analysis is data CLEANING (~70% of total time).') },
-            inquiry: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD2C', title: t('stem.dataplot.inquiry_when_samples_mislead', 'Inquiry \u2014 when samples mislead'), hint: t('stem.dataplot.set_a_true_population_r_then_watch_how', 'Set a true population r, then watch how sample size, noise, and outliers distort the observed r. No score, no reveal \u2014 form a hypothesis and explore.') }
+            chart: { accent: '#0d9488', ink: '#0f766e', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDCCA', title: t('stem.dataplot.chart_pick_the_right_visualization', 'Chart \u2014 pick the right visualization'), hint: t('stem.dataplot.scatter_for_relationships_line_for_tim', 'Scatter for relationships, line for time, bar for categories, histogram for distribution shape, box plot for spread + outliers, ogive for cumulative. Choosing the wrong chart type usually misleads more than it informs.') },
+            stats: { accent: '#0ea5e9', ink: '#0369a1', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: t('stem.dataplot.statistics_center_spread_shape', 'Statistics \u2014 center, spread, shape'),  hint: t('stem.dataplot.mean_vs_median_median_wins_for_skewed_', 'Mean vs median (median wins for skewed data), standard deviation vs IQR (IQR wins for non-normal), correlation vs causation (low correlation does NOT prove no causal link).') },
+            quiz:  { accent: '#a855f7', ink: '#7e22ce', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAF', title: t('stem.dataplot.quiz_practice_apply', 'Quiz \u2014 practice + apply'),           hint: t('stem.dataplot.ap_stats_data_literacy_items_each_ques', 'AP Stats / data-literacy items. Each question links back to the active dataset so you can verify visually before answering.') },
+            tools: { accent: '#f59e0b', ink: '#92400e', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEE0\uFE0F', title: t('stem.dataplot.tools_load_clean_export', 'Tools \u2014 load + clean + export'),  hint: t('stem.dataplot.paste_from_google_sheets_generate_samp', 'Paste from Google Sheets, generate sample data, export as PNG/CSV. Most students underestimate how much real-world data analysis is data CLEANING (~70% of total time).') },
+            inquiry: { accent: '#8b5cf6', ink: '#6d28d9', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD2C', title: t('stem.dataplot.inquiry_when_samples_mislead', 'Inquiry \u2014 when samples mislead'), hint: t('stem.dataplot.set_a_true_population_r_then_watch_how', 'Set a true population r, then watch how sample size, noise, and outliers distort the observed r. No score, no reveal \u2014 form a hypothesis and explore.') }
           };
           var meta = TAB_META[activeTab] || TAB_META.chart;
           return h('div', {
@@ -1000,8 +1000,9 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              // Darker title ink + fixed hint ink: the band stays light in dark theme (light tool card).
+              h('h3', { style: { color: meta.ink, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),

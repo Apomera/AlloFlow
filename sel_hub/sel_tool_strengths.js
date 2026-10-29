@@ -1346,9 +1346,9 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 10, color: 'rgba(253,230,138,0.92)' } }, band === 'elementary' ? 'Elementary' : band === 'middle' ? 'Middle School' : 'High School')
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('span', { style: { background: 'rgba(245,158,11,0.2)', color: _strFg('#fde68a'), padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\u2B50 ' + selectedStrengths.length + ' strengths'),
+              h('span', { style: { background: 'rgba(245,158,11,0.2)', color: _strFg('#fef3c7'), padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\u2B50 ' + selectedStrengths.length + ' strengths'),
               h('button', { 'aria-label': 'Show strengths badges', 'aria-expanded': showBadges, onClick: function() { upd({ showBadges: !showBadges }); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#ede9fe'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + badgeCount),
-              h('button', { 'aria-label': 'Export strengths profile', onClick: exportProfile, style: { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#6ee7b7'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCE4 Export')
+              h('button', { 'aria-label': 'Export strengths profile', onClick: exportProfile, style: { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 8, padding: '3px 8px', color: _strFg('#a7f3d0'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCE4 Export')
             )
           ),
 

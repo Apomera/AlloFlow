@@ -8016,7 +8016,7 @@
               onKeyDown: function(e) { opTabKeyDown(e, function(value) { upd('diffMode', value); }); },
               style: {
                 padding: '4px 10px',
-                background: sel ? 'linear-gradient(135deg,#0284c7,#0369a1)' : 'rgba(56,189,248,0.10)',
+                background: sel ? 'linear-gradient(135deg,#0369a1,#075985)' : 'rgba(56,189,248,0.10)',
                 color: sel ? '#fff' : 'var(--op-accent-text, #7dd3fc)',
                 border: '1px solid ' + (sel ? '#0369a1' : 'rgba(56,189,248,0.40)'),
                 borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700
@@ -11763,7 +11763,7 @@
               title: tab.desc,
               style: {
                 padding: '8px 12px',
-                background: sel ? 'linear-gradient(135deg,#0284c7,#0369a1)' : 'rgba(56,189,248,0.10)',
+                background: sel ? 'linear-gradient(135deg,#0369a1,#075985)' : 'rgba(56,189,248,0.10)',
                 color: sel ? '#fff' : 'var(--op-accent-text, #7dd3fc)',
                 border: '1px solid ' + (sel ? '#0369a1' : 'rgba(56,189,248,0.40)'),
                 borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, minHeight: 36

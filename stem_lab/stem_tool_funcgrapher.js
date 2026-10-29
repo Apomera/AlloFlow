@@ -93,6 +93,14 @@ window.StemLab = window.StemLab || {
 
 
   // ═══ 📈 Function Grapher ═══
+  // WCAG 1.4.3 high contrast: flatten the gradient Snapshot button under HC green ink.
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-funcgrapher-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-funcgrapher-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"funcGrapher\"] .from-indigo-600.to-purple-600{background-image:none!important;background-color:#000!important}";
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('funcGrapher', {
     icon: '📈',
     label: 'Function Grapher',

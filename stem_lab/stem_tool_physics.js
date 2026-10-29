@@ -7154,7 +7154,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               );
             })(),
 
-            React.createElement("button", { "aria-label": __alloT('stem.physics.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 ' + __alloT('stem.physics.toast_snapshot_saved', 'Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.physics.snapshot', 'Snapshot')),
+            React.createElement("button", { "aria-label": __alloT('stem.physics.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 ' + __alloT('stem.physics.toast_snapshot_saved', 'Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-700 to-purple-700 rounded-full hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.physics.snapshot', 'Snapshot')),
 
             // === H7b'' inquiry widget: gravity-angle explorer ===
             (function() {

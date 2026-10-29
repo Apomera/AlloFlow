@@ -8,6 +8,15 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// WCAG 1.4.3 high contrast: host buttons go black with green ink; drop the gradient painted over that black
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-coding-hc-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-coding-hc-css';
+  st.textContent = ".theme-contrast [data-stem-tool-shell=\"codingPlayground\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+  document.head.appendChild(st);
+})();
+
   // Blockly is intentionally a separate local bundle. Capture this tool's URL
   // while the plugin script is evaluating so CDN and offline desktop paths work.
   var _codingToolScriptUrl = (function() {
@@ -2526,7 +2535,7 @@
 
             // ── Tutorial overlay ──
             !tutorialDismissed && blocks.length === 0 && !running && React.createElement("div", {
-              className: "col-span-2 bg-gradient-to-r from-indigo-900/90 to-purple-900/90 backdrop-blur-sm rounded-xl p-4 border border-indigo-400/40 shadow-2xl z-10"
+              className: "col-span-2 bg-gradient-to-r from-indigo-900 to-purple-900 backdrop-blur-sm rounded-xl p-4 border border-indigo-400/40 shadow-2xl z-10"
             },
               React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
                 React.createElement("span", { className: "text-3xl" }, "🎓"),
@@ -2541,7 +2550,7 @@
                         React.createElement("span", { className: "text-lg font-bold text-indigo-300 mt-0.5" }, (si + 1) + '.'),
                         React.createElement("div", null,
                           React.createElement("span", { className: "text-xs font-bold text-indigo-200" }, step.title),
-                          React.createElement("p", { className: "text-[0.6875rem] text-indigo-300/70 leading-snug mt-0.5" }, step.text)
+                          React.createElement("p", { className: "text-[0.6875rem] text-indigo-200 leading-snug mt-0.5" }, step.text)
                         )
                       );
                     })
@@ -2693,13 +2702,13 @@
 
             // ── Header bar ──
             React.createElement("div", {
-              className: "coding-header col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
+              className: "coding-header col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-700 to-purple-700 rounded-xl shadow-lg"
             },
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': t('stem.coding.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
               React.createElement("span", { className: "text-2xl" }, playgroundMode === 'robot' ? "\uD83E\uDD16" : "\uD83D\uDDA5\uFE0F"),
               React.createElement("div", { className: "flex-1" },
                 React.createElement("h2", { className: "text-white font-bold text-lg" }, t('stem.coding.coding_playground', "Coding Playground")),
-                React.createElement("p", { className: "text-indigo-200 text-xs" },
+                React.createElement("p", { className: "text-indigo-100 text-xs" },
                   playgroundMode === 'robot' ? (robotChallengeIdx >= 0 ? '\uD83C\uDFAF ' + ROBOT_CHALLENGES[robotChallengeIdx].title + ' — ' + ROBOT_CHALLENGES[robotChallengeIdx].desc : 'Program a robot to navigate mazes, collect gems, and solve puzzles!') :
                   (challengeIdx >= 0 ? '\uD83C\uDFAF ' + CHALLENGES[challengeIdx].title + ' — ' + CHALLENGES[challengeIdx].desc :
                     'Build programs with blocks or code. The turtle draws your creation!')
@@ -2712,7 +2721,7 @@
                     key: tab.key,
                     onClick: function() { upd('playgroundMode', tab.key); },
                     className: "px-3 py-1.5 text-xs font-bold transition-all " +
-                      (playgroundMode === tab.key ? "bg-white text-indigo-700" : "bg-white/10 text-white/70 hover:bg-white/20")
+                      (playgroundMode === tab.key ? "bg-white text-indigo-700" : "bg-white/10 text-white hover:bg-white/20")
                   }, tab.icon + " " + tab.label);
                 })
               ),
@@ -2873,7 +2882,7 @@
               tutorialDismissed && React.createElement("button", { "aria-label": t('stem.coding.reopen_coding_tutorial', "Reopen coding tutorial"),
                 onClick: function () { upd('tutorialDismissed', false); },
                 title: t('stem.coding.show_tutorial', 'Show tutorial'),
-                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white hover:bg-white/20 hover:text-white transition-all"
               }, "❓")
             ),
 
@@ -2899,7 +2908,7 @@
                 React.createElement('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -3544,7 +3553,7 @@
                 )
               ),
               // ── Achievement Badges Gallery ──
-              React.createElement("div", { className: "bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-xl p-3 border border-amber-600/30" },
+              React.createElement("div", { className: "bg-slate-900 bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-xl p-3 border border-amber-600/30" },
                 React.createElement("h4", { className: "text-xs font-bold text-amber-300 mb-2 flex items-center gap-1" },
                   React.createElement("span", null, "🏆"), " Badges (" + earnedBadges.length + "/" + BADGES.length + ")"
                 ),
@@ -3628,7 +3637,7 @@
               ),
 
               // CS concepts panel
-              React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-xl p-3 border border-indigo-700/30" },
+              React.createElement("div", { className: "bg-slate-900 bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-xl p-3 border border-indigo-700/30" },
                 React.createElement("h4", { className: "text-xs font-bold text-indigo-300 mb-1" }, t('stem.coding.cs_concepts', "🔬 CS Concepts")),
                 React.createElement("p", { className: "text-[0.6875rem] text-indigo-200/70 leading-relaxed" },
                   challengeIdx >= 0 ? '📖 This challenge teaches: ' + CHALLENGES[challengeIdx].concept + '. ' + CHALLENGES[challengeIdx].desc :

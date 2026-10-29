@@ -413,7 +413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             subtitle: t('stem.bikelab.side_view_ride_with_visible_force_vect', 'Side-view ride with visible force vectors'),
             desc: t('stem.bikelab.pedal_through_flat_hilly_and_off_road_', 'Pedal through flat, hilly, and off-road terrain. Toggle force arrows for pedal force, gravity, drag, rolling resistance, and normal force. Watch kinetic and potential energy swap as you climb and descend.'),
             bullets: ['Newton\'s 2nd law in real time', 'Vector decomposition on slopes', 'Energy conservation (KE ↔ PE)', 'Drag scales with v²'],
-            color: 'from-cyan-500 to-blue-600',
+            color: 'from-cyan-700 to-blue-700',
             ring: 'ring-cyan-500/40'
           },
           {
@@ -421,7 +421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             subtitle: t('stem.bikelab.chainring_cassette_mechanical_advantag', 'Chainring × cassette → mechanical advantage'),
             desc: t('stem.bikelab.pick_any_chainring_and_cog_combo_see_t', 'Pick any chainring and cog combo. See the gear ratio, mechanical advantage, and cadence-to-speed curve. Run the climb simulator to prove why low gears win on hills — same rider power, different torque at the wheel.'),
             bullets: ['Gear ratio = chainring ÷ cog', 'Development = ratio × wheel circumference', 'Torque vs. speed tradeoff', 'Find cross-chain & dead gears'],
-            color: 'from-violet-500 to-purple-600',
+            color: 'from-violet-600 to-purple-700',
             ring: 'ring-violet-500/40'
           },
           {
@@ -429,7 +429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             subtitle: t('stem.bikelab.hands_on_procedural_practice', 'Hands-on procedural practice'),
             desc: t('stem.bikelab.seven_step_by_step_procedures_with_dra', 'Seven step-by-step procedures with drag-and-drop tool placement, step verification, and read-aloud instructions: patch a tube, brakes, chain, derailleur, pedal swap, wheel true, headset adjust. Builds real mechanical literacy.'),
             bullets: ['Patch a flat tube · Adjust rim brakes', 'Clean & lube chain · Index derailleur', 'Swap pedals · True a wobbly wheel', 'Headset adjust · TTS narration'],
-            color: 'from-amber-500 to-orange-600',
+            color: 'from-amber-700 to-orange-700',
             ring: 'ring-amber-500/40'
           },
           {
@@ -437,7 +437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             subtitle: t('stem.bikelab.applied_physics_commute_demo', 'Applied-physics commute demo'),
             desc: t('stem.bikelab.a_scripted_600_m_commute_to_school_fla', 'A scripted 600 m commute to school: flat block → stop sign → Oak Hill (7% grade) → descent → wet patch → school. Apply Sandbox + Gearing + Braking concepts in one scored run.'),
             bullets: ['Keyboard controls: ↑/↓ gears, Space brakes', 'Three scored events + coach feedback', 'Tracks personal best time', 'Reuses live bike physics engine'],
-            color: 'from-green-500 to-emerald-600',
+            color: 'from-green-700 to-emerald-700',
             ring: 'ring-green-500/40'
           }
         ];
@@ -446,49 +446,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             id: 'fit', title: t('stem.bikelab.bike_fit_calculator', 'Bike Fit Calculator'), icon: '📏',
             subtitle: t('stem.bikelab.saddle_height_reach_bar_drop', 'Saddle height, reach, bar drop'),
             desc: t('stem.bikelab.enter_rider_height_inseam_pick_bike_ty', 'Enter rider height & inseam; pick bike type. Get evidence-based fit numbers (LeMond formula, KOPS setback).'),
-            color: 'from-emerald-500 to-teal-600',
+            color: 'from-emerald-700 to-teal-700',
             ring: 'ring-emerald-500/40'
           },
           {
             id: 'braking', title: t('stem.bikelab.braking_physics', 'Braking Physics'), icon: '🛑',
             subtitle: t('stem.bikelab.stopping_distance_weight_transfer', 'Stopping distance & weight transfer'),
             desc: t('stem.bikelab.dry_wet_gravel_ice_surfaces_front_both', 'Dry/wet/gravel/ice surfaces × front/both/rear brake choice. Solves d = v²/(2a) with endo-limit gating.'),
-            color: 'from-rose-500 to-red-600',
+            color: 'from-rose-700 to-red-700',
             ring: 'ring-rose-500/40'
           },
           {
             id: 'safety', title: t('stem.bikelab.hand_signals_safety', 'Hand Signals & Safety'), icon: '🛡️',
             subtitle: t('stem.bikelab.6_question_road_safety_quiz', '6-question road safety quiz'),
             desc: t('stem.bikelab.svg_illustrated_quiz_turn_signals_lane', 'SVG-illustrated quiz: turn signals, lane position, stop signs, helmet fit. Instant feedback with explanations.'),
-            color: 'from-sky-500 to-indigo-600',
+            color: 'from-sky-700 to-indigo-700',
             ring: 'ring-sky-500/40'
           },
           {
             id: 'parts', title: t('stem.bikelab.bike_parts_inspector', 'Bike Parts Inspector'), icon: '🔍',
             subtitle: t('stem.bikelab.19_parts_on_a_clickable_bike', '19 parts on a clickable bike'),
             desc: t('stem.bikelab.svg_bike_diagram_with_clickable_hotspo', 'SVG bike diagram with clickable hotspots. Each part shows its function, common failure modes, and a deep-link to the related repair job.'),
-            color: 'from-slate-500 to-slate-700',
+            color: 'from-slate-600 to-slate-800',
             ring: 'ring-slate-500/40'
           },
           {
             id: 'helmetFit', title: t('stem.bikelab.helmet_fit_checker', 'Helmet Fit Checker'), icon: '⛑️',
             subtitle: t('stem.bikelab.position_angle_chin_strap', 'Position, angle, chin strap'),
             desc: t('stem.bikelab.adjust_helmet_height_side_strap_angle_', 'Adjust helmet height, side-strap angle, and chin-strap snugness on a live diagram. Get instant fit feedback against the 2V1 rule (2 fingers above eyebrows, V under ears, 1 finger chin slack).'),
-            color: 'from-pink-500 to-rose-600',
+            color: 'from-pink-700 to-rose-700',
             ring: 'ring-pink-500/40'
           },
           {
             id: 'winterBike', title: t('stem.bikelab.maine_winter_biking', 'Maine Winter Biking'), icon: '❄️',
             subtitle: t('stem.bikelab.fat_bikes_ice_salt_layering', 'Fat bikes, ice, salt, layering'),
             desc: t('stem.bikelab.maine_specific_guide_fat_bike_physics_', 'Maine-specific guide: fat bike physics, studded tires, freeze-thaw road conditions, salt corrosion care, and layering for sub-freezing rides. Includes a winterization checklist.'),
-            color: 'from-sky-500 to-blue-700',
+            color: 'from-sky-700 to-blue-800',
             ring: 'ring-sky-500/40'
           },
           {
             id: 'signalDrill', title: t('stem.bikelab.signal_reaction_drill', 'Signal Reaction Drill'), icon: '✋',
             subtitle: t('stem.bikelab.match_the_signal_under_time_pressure', 'Match the signal under time pressure'),
             desc: t('stem.bikelab.a_traffic_situation_flashes_you_press_', 'A traffic-situation flashes; you press the matching hand signal as fast as possible. Tracks reaction time across 10 rounds, with a personal-best leaderboard.'),
-            color: 'from-yellow-500 to-amber-600',
+            color: 'from-yellow-700 to-amber-700',
             ring: 'ring-yellow-500/40'
           }
         ];
@@ -513,10 +513,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
-                h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, isBig ? 'Core' : 'Mini')
+                h('span', { className: 'bg-black/25 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, isBig ? 'Core' : 'Mini')
               ),
               h('h2', { className: isBig ? 'text-2xl font-black' : 'text-xl font-black' }, c.title),
-              h('p', { className: 'text-sm opacity-90 font-medium' }, c.subtitle)
+              h('p', { className: 'text-sm font-medium' }, c.subtitle)
             ),
             h('div', { className: 'p-5' },
               h('p', { className: 'text-sm text-slate-700 leading-relaxed ' + (isBig ? 'mb-3' : '') }, c.desc),

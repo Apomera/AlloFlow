@@ -4900,6 +4900,7 @@ function buildWorld(T,kit) {
     .bf-pilot{position:absolute;right:14px;bottom:14px;z-index:4;width:120px;display:grid;justify-items:center;gap:5px;color:#203b30;user-select:none}
     .bf-pilot-label,.bf-pilot-hint{font:700 10px/1.35 system-ui,sans-serif;padding:3px 7px;border-radius:8px;background:#fffcf3f5;box-shadow:0 1px 5px #203b3020;text-align:center}
     .bf-pilot-hint{font-size:9px;font-weight:600}
+    .theme-contrast .bf-pilot-label,.theme-contrast .bf-pilot-hint{background:#000;border:1px solid #ffff00;box-shadow:none}
     .bfl .bf-flight-pad{position:relative;width:108px;height:108px;min-height:108px;padding:0;border-radius:50%;border:1px solid #70836b;color:#294a36;background:radial-gradient(circle at 45% 35%,#fffff8f5,#e3e9d8f5);box-shadow:inset 0 0 0 8px #f9fbef85,inset 0 0 0 9px #a9b79a70,0 3px 12px #18362635;touch-action:none;user-select:none;cursor:grab}
     .bfl .bf-flight-pad[data-active="true"]{cursor:grabbing;border-color:#245c43;box-shadow:inset 0 0 0 9px #dce8c080,0 0 0 3px #fffcf380,0 3px 12px #18362635}
     .bf-stick-axis{position:absolute;inset:17px;border-radius:50%;background:linear-gradient(90deg,transparent calc(50% - .5px),#9dad8a65 50%,transparent calc(50% + .5px)),linear-gradient(transparent calc(50% - .5px),#9dad8a65 50%,transparent calc(50% + .5px));pointer-events:none}

@@ -638,6 +638,10 @@
         pose.effort*=1-smooth(afterContact/.08);
       }
       var grooming=autonomous?preenAmount(bird.free):0;
+      if(autonomous&&(bird.free.kind==='freeze'||bird.free.kind==='mob')) {
+        var still=smooth(t/.25);
+        pose.lookYaw*=1-still;pose.lookPitch+=(-.24-pose.lookPitch)*still;
+      }
       pose.preen=grooming;pose.preenSide=autonomous?bird.free.preenSide:1;
       var singing=0;
       if(bird.song) {
@@ -809,7 +813,7 @@
       bird.free = {seed:0,elapsed:0,duration:0,kind:'rest',course:[],cooldown:0,
         actionCount:0,alarmed:false,heading:0,index:index,alertness:0,watchYaw:0,
         observerX:0,observerZ:0,hasObserver:false,escapeArmed:true,quietTime:0,beatOffset:0,flightSample:{},
-        preenAfter:0,preenSide:1,preenExit:-1,preenExitWeight:0};
+        preenAfter:0,preenSide:1,preenExit:-1,preenExitWeight:0,freezeAfter:0,alarm:null};
       if(bird.id==='northernCardinal')bird.free.attention={seed:0,slot:-1,yaw:.08,pitch:0};
     });
     // Feeding study (opt-in). Relative preferences over this clearing's foods,
@@ -824,8 +828,35 @@
     };
     // Blue jays displace smaller birds; the grouse is too large to be moved off.
     function displacedByJay(bird){return bird.id!=='blueJay'&&bird.id!=='grouse';}
-    var feeding=null,wet=false;
+    var feeding=null,wet=false,predator=null,perchedHawk=null;
+    // Birds that gang up on a perched hawk; the others keep their distance.
+    var MOBBERS=['blueJay','chickadee','tuftedTitmouse','robin'];
     function setWeather(value){wet=value==='rain';}
+    // The engine reports the hawk while it is airborne in free roam, else null.
+    // A perched report ({flying:false}) only counts once the hawk has just
+    // landed, so the hawk already sitting there on arrival is not mobbed.
+    function setPredator(value){
+      if(!(value&&Number.isFinite(value.x)&&Number.isFinite(value.y)&&Number.isFinite(value.z))){predator=null;perchedHawk=null;return;}
+      if(value.flying!==false){predator={x:value.x,y:value.y,z:value.z};perchedHawk=null;return;}
+      if(predator)perchedHawk={x:value.x,y:value.y,z:value.z,since:freeTime};
+      predator=null;
+    }
+    function mobbers(){return residents.filter(function(bird){return mode==='free'&&bird.free&&bird.free.kind==='mob';}).length;}
+    function planMobbing(bird,state,observer){
+      if(!perchedHawk||MOBBERS.indexOf(bird.id)<0||freeTime-perchedHawk.since>12||state.mobbedAt===perchedHawk.since)return false;
+      var toX=perchedHawk.x-bird.originX,toZ=perchedHawk.z-bird.originZ,range=Math.hypot(toX,toZ);
+      if(range>7)return false;
+      if(range<2.2){state.mobbedAt=perchedHawk.since;beginMob(state);return true;}
+      // Fly in when it is worth it, else walk; a blocked route is retried at the next decision.
+      var stop=(range-1.8)/range,dx=toX*stop,dz=toZ*stop,kinds=range-1.8>.6?['flight','ground']:['ground'];
+      for(var k=0;k<kinds.length;k++) {
+        if(!isSafeRoute(bird,bird.originX+dx,bird.originZ+dz,kinds[k]==='flight',0,observer?observer.position:null,false))continue;
+        state.mobbedAt=perchedHawk.since;state.kind=kinds[k];state.mobApproach=true;commitMove(bird,state,dx,dz,kinds[k],false,observer);return true;
+      }
+      return false;
+    }
+    // Scold from close range: loud, broadband calls that are easy to locate.
+    function beginMob(state){state.mobApproach=false;state.kind='mob';state.elapsed=0;state.duration=4.5;state.alarm={at:freeTime,danger:.15,mob:true};if(feeding){state.food=null;state.target=null;}}
     function jayFeedingAt(source){
       return residents.some(function(other){return other.id==='blueJay'&&other.free.kind==='forage'&&other.free.food===source;});
     }
@@ -1037,6 +1068,8 @@
         bird.baseYaw=state.heading;
       }
       state.course.length=0;state.elapsed=0;state.actionCount++;
+      if(state.mobApproach&&!escape){beginMob(state);return;}
+      state.mobApproach=false;
       var choice=randomChoice(state),flyChance=bird.id==='grouse'?.12:bird.id==='blueJay'?.32:.25;
       // In steady rain birds sit tight: fewer flights, more rest and preening,
       // while robins keep working the ground. The same draws are reweighted,
@@ -1054,6 +1087,7 @@
       state.kind=kind;state.alarmed=!!escape;
       state.preenExit=-1;state.preenExitWeight=0;
       if(feeding){state.food=null;state.target=null;}
+      if(perchedHawk&&!escape&&kind!=='preen'&&planMobbing(bird,state,observer))return;
       if(feeding&&!escape&&kind!=='preen'&&kind!=='rest'&&planFeeding(bird,state,observer))return;
       if(kind==='preen') {
         state.preenSide=randomChoice(state)<.5?-1:1;
@@ -1095,7 +1129,7 @@
         state.elapsed=0;state.kind=index%2?'forage':'rest';state.duration=3.1+randomChoice(state)*2;
         state.course.length=0;state.cooldown=0;state.actionCount=0;state.alarmed=false;
         state.alertness=0;state.watchYaw=0;state.hasObserver=false;state.escapeArmed=true;state.quietTime=0;state.beatOffset=0;
-        state.preenAfter=5+index*1.1;state.preenSide=1;state.preenExit=-1;state.preenExitWeight=0;
+        state.preenAfter=5+index*1.1;state.preenSide=1;state.preenExit=-1;state.preenExitWeight=0;state.freezeAfter=0;state.alarm=null;
         state.food=null;state.target=null;state.avoid=null;state.displaced=-1;
       });
       if(feeding)feeding.sources.forEach(function(source){source.amount=1;});
@@ -1118,6 +1152,18 @@
       residents.forEach(function(bird) {
         var state=bird.free;state.cooldown=Math.max(0,state.cooldown-dt);
         var near=observerResponse(bird,observer,dt);
+        // A hawk crossing low over the clearing: small birds freeze where they
+        // stand and watch the sky rather than flush. Closer passes hold them
+        // longer and raise a stronger alarm. No random draw is spent here.
+        if(predator&&state.kind!=='freeze'&&state.kind!=='preen'&&!state.course.length&&freeTime>=state.freezeAfter) {
+          var hawkRange=Math.hypot(bird.originX-predator.x,bird.originZ-predator.z),hawkHeight=predator.y-height(bird.originX,bird.originZ);
+          if(hawkRange<9&&hawkHeight<10) {
+            var danger=clamp(1-hawkRange/9);
+            state.kind='freeze';state.elapsed=0;state.duration=2.6+danger*2;state.freezeAfter=freeTime+state.duration+5;
+            state.alarm={at:freeTime,danger:danger};
+            if(feeding){state.food=null;state.target=null;}
+          }
+        }
         if(state.kind==='preen'&&state.preenExit<0&&state.alertness>.30) {
           state.preenExitWeight=preenAmount(state);state.preenExit=state.elapsed;
         }
@@ -1244,7 +1290,10 @@
           else if(state.cooldown>0)bird.behavior='Settling after disturbance';
           else if(state.kind==='forage')bird.behavior='Searching for food';
           else if(wet&&state.kind==='rest')bird.behavior='Sitting tight in the rain';
+          else if(state.kind==='freeze')bird.behavior='Freezing as the hawk passes';
+          else if(state.kind==='mob')bird.behavior='Mobbing the perched hawk';
         }
+        if(state.mobApproach&&course)bird.behavior='Moving in to mob the hawk';
         if(feeding&&!state.alarmed) {
           if(state.displaced>=0&&freeTime-state.displaced<2.5)bird.behavior='Displaced by a blue jay';
           else if(course&&state.target)bird.behavior=(course.kind==='flight'?'Flying to ':'Moving to ')+state.target.place;
@@ -1257,7 +1306,8 @@
       return birds.concat(sharedBirds).map(function (bird) { return { id: bird.id, name: bird.name, scientificName: bird.scientificName,
         behavior: bird.behavior, position: bird.root.position.toArray(), altitude: bird.altitude, heading:bird.root.rotation.y,
         alertness:mode==='free'?bird.free.alertness:0,recovering:mode==='free'&&bird.free.cooldown>0,
-        food:mode==='free'&&feeding&&bird.free.food&&bird.free.kind==='forage'&&!bird.free.course.length?{kind:bird.free.food.kind,source:bird.free.food.id,label:bird.free.food.eat}:undefined }; });
+        food:mode==='free'&&feeding&&bird.free.food&&bird.free.kind==='forage'&&!bird.free.course.length?{kind:bird.free.food.kind,source:bird.free.food.id,label:bird.free.food.eat}:undefined,
+        alarm:mode==='free'&&(bird.free.kind==='freeze'||bird.free.kind==='mob')&&bird.free.alarm?{at:bird.free.alarm.at,danger:bird.free.alarm.danger,mob:!!bird.free.alarm.mob}:undefined }; });
     }
     function getFocus(id, out) {
       for (var i = 0; i < birds.length; i++) if (birds[i].id === id) {
@@ -1298,7 +1348,7 @@
       return spots;
     }
     return { root: root, update: update, setMode: setMode, snapshot: snapshot, getFocus: getFocus, isShared: isShared, setExtraContactShadow: setExtraContactShadow,
-      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, setWeather: setWeather, guidedForageSpots: guidedForageSpots, dispose: dispose };
+      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, setWeather: setWeather, setPredator: setPredator, mobbers: mobbers, guidedForageSpots: guidedForageSpots, dispose: dispose };
   }
   global.BirdLab3DWildlife = { create: create };
 }(window));

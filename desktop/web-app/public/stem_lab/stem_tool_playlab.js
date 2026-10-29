@@ -74,7 +74,7 @@ window.StemLab = window.StemLab || {
     var st = document.createElement('style');
     st.id = 'allo-playlab-field-polish-css';
     st.textContent = [
-      '.playlab-gameplan-card{margin-bottom:14px;padding:14px;border:1px solid rgba(56,189,248,.35);border-radius:16px;background:linear-gradient(135deg,rgba(15,23,42,.96),rgba(12,74,110,.42));box-shadow:0 18px 42px rgba(2,6,23,.28)}',
+      '.playlab-gameplan-card{margin-bottom:14px;padding:14px;border:1px solid rgba(56,189,248,.35);border-radius:16px;background:linear-gradient(135deg,#0f172a,#0e2c47);box-shadow:0 18px 42px rgba(2,6,23,.28)}',
       '.playlab-gameplan-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}',
       '.playlab-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}',
       '.playlab-gameplan-title{margin:2px 0 0;font-size:18px;font-weight:900;color:#f8fafc;line-height:1.2}',
@@ -106,6 +106,7 @@ window.StemLab = window.StemLab || {
       '.playlab-run-rack{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
       '.playlab-run-button{padding:11px 18px;min-height:42px;border-radius:999px;cursor:pointer;border:1px solid #86efac;background:linear-gradient(135deg,#86efac,#22c55e);color:#052e16;font-size:14px;font-weight:900;box-shadow:0 10px 22px rgba(16,185,129,.22)}',
       '.playlab-run-button:disabled{cursor:wait;background:#334155;color:#e2e8f0;box-shadow:none;border-color:#94a3b8}',
+      '.theme-contrast [data-stem-tool-shell="playlab"] .playlab-run-button:not(:disabled){background:#000!important}',
       '.playlab-last-result{font-size:12px;color:#cbd5e1;font-style:italic}',
       '.playlab-toggle-rack{margin-top:9px;display:flex;gap:8px;font-size:12px;color:#f8fafc;flex-wrap:wrap;align-items:center;padding:9px 10px;border:1px solid #64748b;border-radius:12px;background:rgba(15,23,42,.78)}',
       '.playlab-toggle-rack label{cursor:pointer;display:inline-flex;align-items:center;gap:6px}',
@@ -3880,7 +3881,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0 } }, '🏅'),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
-                h('strong', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, __alloT('stem.playlab.play_catalog', 'Play Catalog')),
+                h('strong', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #fef3c7)' } }, __alloT('stem.playlab.play_catalog', 'Play Catalog')),
                 h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, got + ' / ' + sportTotal + (isSoccer ? ' concepts run with xG ≥ 0.20' : ' plays completed')),
                 h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                   got === 0
@@ -3983,7 +3984,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),

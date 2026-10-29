@@ -19150,6 +19150,7 @@ test('no a11y violations', async () => {
                 tickBuild();
                 return (out || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
               }, function(err) {
+                // pii-safe: app section label such as Home or Quiz
                 console.warn('[applab section-builder] failed for section "' + sec.name + '":', err);
                 tickBuild();
                 secLogs[si].children.push({ agent: 'Builder', icon: '⚠️', result: 'Build failed — section omitted' });
@@ -19178,10 +19179,12 @@ test('no a11y violations', async () => {
                     var open = sr.indexOf('['), close = sr.lastIndexOf(']');
                     if (open >= 0 && close > open) sr = sr.substring(open, close + 1);
                     var parsed = [];
+                    // pii-safe: app section label such as Home or Quiz
                     try { parsed = JSON.parse(sr); } catch(e2) { console.warn('[applab section-reviewer] parse failed for section "' + sec.name + '":', e2); }
                     return Array.isArray(parsed) ? parsed : [];
                   }, function(e3) {
                     tickReview();
+                    // pii-safe: app section label such as Home or Quiz
                     console.warn('[applab section-reviewer] AI call failed for section "' + sec.name + '"; skipping review:', e3);
                     return [];
                   });
@@ -19220,6 +19223,7 @@ test('no a11y violations', async () => {
                       secLogs[si].children.push({ agent: 'Fixer', icon: '⚠️', result: 'Reply looked truncated — kept the original section' });
                       return secHtml;
                     }, function(e4) {
+                      // pii-safe: app section label such as Home or Quiz
                       console.warn('[applab section-fixer] AI call failed for section "' + sec.name + '"; keeping unfixed section:', e4);
                       secLogs[si].children.push({ agent: 'Fixer', icon: '⚠️', result: 'Fix call failed — kept the original section' });
                       return secHtml;

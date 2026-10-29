@@ -1,0 +1,216 @@
+{
+  "date": "2026-10-29",
+  "source": {
+    "path": "stem_lab/stem_tool_rocks.js",
+    "sha256": "c4256bc813be81e3a5bcd4f736fbb2fb7701fdb817c3b8afd6826ded73e8a02a",
+    "servedMirror": "desktop/web-app/public/stem_lab/stem_tool_rocks.js",
+    "mirrorMatches": true
+  },
+  "runtime": {
+    "browser": "148.0.7778.96",
+    "axe": "4.12.1",
+    "cssFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\app\\static\\css\\main.4053a7e9.css",
+    "cssHash": "c62d226d134e65b8e481d85297db1712d4751dd0f5a5c5aeddc219d29459cfda"
+  },
+  "changes": [
+    "Filtered specimen Previous/Next navigation with destination names, position, endpoints, excluded-selection recovery and heading focus",
+    "Notebook journal search, bookmark/question filters, sorted illustrated disclosure cards and full exports regardless of filters",
+    "Adaptive Workbench guide badges preserve every caption under enlarged text and spacing"
+  ],
+  "tests": {
+    "path": "tmp/rocks-enhancement-6/final-tests.json",
+    "passing": 1003,
+    "failed": 0,
+    "total": 1003,
+    "files": 42,
+    "provenance": {
+      "kind": "aggregate of four nonoverlapping complete Vitest batches and one isolated file rerun",
+      "reports": [
+        "tmp/rocks-enhancement-6/batch-1.json",
+        "tmp/rocks-enhancement-6/batch-2.json",
+        "tmp/rocks-enhancement-6/batch-3.json",
+        "tmp/rocks-enhancement-6/batch-4.json"
+      ],
+      "isolation": "Batch 1, focused feature checks and canvas rerun use default isolation. Batches 2–4 reuse the environment within each batch (--no-isolate) because environment initialization was taking about 25 seconds per file. Assertions and timeouts are unchanged.",
+      "retryPath": "tmp/rocks-enhancement-6/canvas-retry.json",
+      "retryExplanation": "Initial canvas-persistence test exceeded the unchanged 5000 ms limit; the complete file passed on an isolated rerun. The original failure report is preserved.",
+      "selectedFiles": [
+        "tests/rock_cycle_canvas_keyboard.test.js",
+        "tests/rock_cycle_contrast.test.js",
+        "tests/rock_cycle_diagram_interaction.test.js",
+        "tests/rock_cycle_path_detective.test.js",
+        "tests/rock_cycle_processes.test.js",
+        "tests/rock_cycle_quiz_and_i18n.test.js",
+        "tests/rock_cycle_scene_journey.test.js",
+        "tests/rock_cycle_scene_visuals.test.js",
+        "tests/rock_cycle_transformation_machine.test.js",
+        "tests/rocks_canvas_loop.test.js",
+        "tests/rocks_canvas_persistence.test.js",
+        "tests/rocks_catalogue.test.js",
+        "tests/rocks_clarity_pass.test.js",
+        "tests/rocks_comparison.test.js",
+        "tests/rocks_cooling_simulator.test.js",
+        "tests/rocks_crystal_lab_3d.test.js",
+        "tests/rocks_density_accessibility.test.js",
+        "tests/rocks_density_lab.test.js",
+        "tests/rocks_env_life.test.js",
+        "tests/rocks_field_cases.test.js",
+        "tests/rocks_formation_breakage_links.test.js",
+        "tests/rocks_i18n_contract.test.js",
+        "tests/rocks_inquiry_form_controls_a11y.test.js",
+        "tests/rocks_journey_squeeze.test.js",
+        "tests/rocks_key_collection.test.js",
+        "tests/rocks_keyboard_feedback.test.js",
+        "tests/rocks_landscape_scene.test.js",
+        "tests/rocks_lens_nonclastic.test.js",
+        "tests/rocks_mineral_test_bench.test.js",
+        "tests/rocks_notebook.test.js",
+        "tests/rocks_notebook_codec.test.js",
+        "tests/rocks_quiz_practice.test.js",
+        "tests/rocks_specimen_id_visuals.test.js",
+        "tests/rocks_specimen_journal.test.js",
+        "tests/rocks_specimen_navigation.test.js",
+        "tests/rocks_thin_section.test.js",
+        "tests/rocks_visual_pass.test.js",
+        "tests/rocks_wcag.test.js",
+        "tests/rocks_weathering_hunt.test.js",
+        "tests/rocks_workbench_archive.test.js",
+        "tests/rocks_workbench_history.test.js",
+        "tests/rocks_workbench_observation_first.test.js"
+      ]
+    },
+    "focusedPath": "tmp/rocks-enhancement-6/targeted-tests.json"
+  },
+  "translations": {
+    "newKeys": 16,
+    "totalRockKeys": 3119,
+    "mirrorsMatch": true
+  },
+  "summary": {
+    "layoutChecks": 99,
+    "distinctLayoutStates": 25,
+    "workflowChecks": 20,
+    "workflowFailures": 0,
+    "coreRuleViolationNodes": 0,
+    "experimentalLabelReviewNodes": 477,
+    "unresolvedLabelReviewNodes": 0,
+    "clippedElements": 0,
+    "overflow": [],
+    "browserErrors": 0
+  },
+  "reports": [
+    {
+      "name": "first-matrix",
+      "path": "tmp/rocks-enhancement-6/first-matrix/report.json",
+      "sourceHash": "c4256bc813be81e3a5bcd4f736fbb2fb7701fdb817c3b8afd6826ded73e8a02a",
+      "summary": {
+        "states": 21,
+        "matrixChecks": 63,
+        "flowChecks": 0,
+        "flowFailures": 0,
+        "axeViolationNodes": 335,
+        "coreRuleViolationNodes": 0,
+        "experimentalLabelReviewNodes": 335,
+        "symbolPunctuationOnlyNodes": 335,
+        "unresolvedLabelReviewNodes": 0,
+        "strict": false,
+        "overflow": [],
+        "errors": 0
+      },
+      "environmentChecks": [],
+      "environmentFailures": []
+    },
+    {
+      "name": "new-states",
+      "path": "tmp/rocks-enhancement-6/new-states/report.json",
+      "sourceHash": "c4256bc813be81e3a5bcd4f736fbb2fb7701fdb817c3b8afd6826ded73e8a02a",
+      "summary": {
+        "states": 6,
+        "matrixChecks": 36,
+        "flowChecks": 0,
+        "flowFailures": 0,
+        "axeViolationNodes": 41,
+        "coreRuleViolationNodes": 0,
+        "experimentalLabelReviewNodes": 41,
+        "symbolPunctuationOnlyNodes": 41,
+        "unresolvedLabelReviewNodes": 0,
+        "strict": false,
+        "overflow": [],
+        "errors": 0
+      },
+      "environmentChecks": [],
+      "environmentFailures": []
+    },
+    {
+      "name": "final-flows",
+      "path": "tmp/rocks-enhancement-6/final-flows/report.json",
+      "sourceHash": "c4256bc813be81e3a5bcd4f736fbb2fb7701fdb817c3b8afd6826ded73e8a02a",
+      "summary": {
+        "states": 44,
+        "matrixChecks": 0,
+        "flowChecks": 20,
+        "flowFailures": 0,
+        "axeViolationNodes": 101,
+        "coreRuleViolationNodes": 0,
+        "experimentalLabelReviewNodes": 101,
+        "symbolPunctuationOnlyNodes": 101,
+        "unresolvedLabelReviewNodes": 0,
+        "strict": false,
+        "overflow": [],
+        "errors": 0
+      },
+      "environmentChecks": [
+        "Density instrument, plot, and trial table scroll by keyboard at 320px",
+        "forced-colors all 11 modes at 320px"
+      ],
+      "environmentFailures": [
+        {
+          "name": "reduced-motion all 11 modes at 320px",
+          "error": "page.waitForFunction: Timeout 8000ms exceeded."
+        }
+      ]
+    }
+  ],
+  "environmentVerification": {
+    "path": "tmp/rocks-enhancement-6/final-environments-sequential/report.json",
+    "sourceHash": "c4256bc813be81e3a5bcd4f736fbb2fb7701fdb817c3b8afd6826ded73e8a02a",
+    "timeoutMs": 8000,
+    "checks": [
+      "Density instrument, plot, and trial table scroll by keyboard at 320px",
+      "forced-colors all 11 modes at 320px",
+      "reduced-motion all 11 modes at 320px"
+    ],
+    "failures": [],
+    "modeSnapshots": 22,
+    "previousAttempts": [
+      "tmp/rocks-enhancement-6/final-flows/report.json",
+      "tmp/rocks-enhancement-6/final-environments/report.json"
+    ],
+    "explanation": "Earlier attempts timed out during harness initialization while test processes ran concurrently. The final sequential run passed with the same 8000 ms limit and unchanged assertions. Earlier reports are retained."
+  },
+  "executionNotes": "An initial test-selection regex selected no files, broadening the Vitest invocation; it was stopped without using its results. A corrected 42-file invocation did not finish or emit a report and was stopped. The final verification uses four nonoverlapping complete batches of the same 42 Rocks/Rock Cycle files, with explicit file-count/unique-coverage guards, forward-slash paths and per-file progress. No assertions or test limits were changed.",
+  "review": {
+    "labels": "Raw experimental Label in Name findings remain recorded. All preserve meaningful visible wording after punctuation/symbol/case normalization. The new navigator has a line break before its destination and a colon in its accessible name.",
+    "workbenchGuide": "The guide was explicitly expanded in six presentation variants. All seven formerly clipped badges now fit without clipping.",
+    "visualReview": [
+      "Journal cards at 320px, desktop, doubled HTML text and forced colors",
+      "Specimen navigation at 320px, doubled HTML text and forced colors",
+      "Expanded Workbench guide at 320px, doubled HTML text and increased text spacing"
+    ],
+    "screenshots": [
+      "tmp/rocks-enhancement-6/new-states/desktop-journal-browser-filtered.png",
+      "tmp/rocks-enhancement-6/new-states/baseline-journal-browser-filtered.png",
+      "tmp/rocks-enhancement-6/new-states/text-workbench-guide-open.png",
+      "tmp/rocks-enhancement-6/new-states/spacing-workbench-guide-open.png",
+      "tmp/rocks-enhancement-6/new-states/forced-colors-detail-navigation-rocks.png"
+    ]
+  },
+  "limitations": [
+    "Isolated React tool with real compiled CSS. No full application host, third-party AI, loaded 3D viewer, or real assistive technology validation.",
+    "Axe reports cannot establish WCAG conformance. SVG contrast, reading order, meaningful labels, status announcements, focus obscuration, and target-spacing exceptions need human review.",
+    "Label in Name is an experimental axe rule and may flag decorative icons or supplemental card descriptions. Preserve and review its findings; do not silently suppress them.",
+    "Text resizing doubles computed HTML text sizes; it is not native browser text-only zoom. SVG labels are additionally checked visually, not enlarged by this simulation.",
+    "Finite entry animations are finished and infinite animations paused before axe and screenshots to avoid transient-opacity contrast artifacts.",
+    "Small target measurements are review candidates. Label wrappers, spacing, inline text and equivalent-control exceptions must be assessed before calling them WCAG failures."
+  ]
+}

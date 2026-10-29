@@ -104,6 +104,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     minimumLeftSubdivisions: minimumLeftRiemannSubdivisions
   });
 
+  // WCAG 1.4.3 high contrast: flatten the gradient Snapshot button under HC green ink.
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-calculus-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-calculus-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"calculus\"] .from-indigo-600.to-purple-600{background-image:none!important;background-color:#000!important}";
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('calculus', {
     icon: '\u222B',
     label: 'Calculus',
@@ -2168,11 +2176,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // ── Topic-accent hero band per tab ──
           (function() {
             var TAB_META = {
-              integral:   { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u222B', title: 'Integral \u2014 signed area',         hint: 'Riemann sums (left, right, midpoint, trapezoid, Simpson) approximate the integral. As n \u2192 \u221E, the limit is the signed integral. For smooth curves, Simpson\'s rule often converges fastest here and integrates every polynomial through degree 3 exactly when n is even.' },
-              derivative: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Derivative \u2014 slope at a point',     hint: 'lim(h\u21920) [f(x+h)\u2212f(x)]/h. Slope of the tangent line. Explore how a secant slope approaches the tangent slope, then connect the graph to the power rule.' },
-              visualize:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAC', title: 'Visualize \u2014 see the math move',     hint: 'Watch a Riemann sum refine to the exact integral as n grows. Watch a tangent line slide along a curve. Pause and compare the graph, quantities, and equations as the model changes.' },
-              challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',       hint: 'AP Calc AB / BC items with step-by-step feedback. Common traps: sign errors in chain rule, forgetting the +C in indefinite integrals, mixing up [f(x)]\u00b2 vs f(x\u00b2).' },
-              discover:   { accent: '#15803d', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Discover \u2014 the big ideas',           hint: 'Fundamental Theorem of Calculus: integration and differentiation are inverse operations. The single most beautiful result in mathematics. Newton + Leibniz, independently, ~1670s.' },
+              integral:   { accent: '#b91c1c', soft: 'rgba(220,38,38,0.10)',  icon: '\u222B', title: 'Integral \u2014 signed area',         hint: 'Riemann sums (left, right, midpoint, trapezoid, Simpson) approximate the integral. As n \u2192 \u221E, the limit is the signed integral. For smooth curves, Simpson\'s rule often converges fastest here and integrates every polynomial through degree 3 exactly when n is even.' },
+              derivative: { accent: '#0369a1', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Derivative \u2014 slope at a point',     hint: 'lim(h\u21920) [f(x+h)\u2212f(x)]/h. Slope of the tangent line. Explore how a secant slope approaches the tangent slope, then connect the graph to the power rule.' },
+              visualize:  { accent: '#7e22ce', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAC', title: 'Visualize \u2014 see the math move',     hint: 'Watch a Riemann sum refine to the exact integral as n grows. Watch a tangent line slide along a curve. Pause and compare the graph, quantities, and equations as the model changes.' },
+              challenge:  { accent: '#92400e', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',       hint: 'AP Calc AB / BC items with step-by-step feedback. Common traps: sign errors in chain rule, forgetting the +C in indefinite integrals, mixing up [f(x)]\u00b2 vs f(x\u00b2).' },
+              discover:   { accent: '#166534', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Discover \u2014 the big ideas',           hint: 'Fundamental Theorem of Calculus: integration and differentiation are inverse operations. The single most beautiful result in mathematics. Newton + Leibniz, independently, ~1670s.' },
               derivHunt:  { accent: '#6d28d9', soft: 'rgba(109,40,217,0.10)', icon: '\u2753', title: 'Inquiry \u2014 derivative behavior', hint: 'Vary one coefficient or the x-point at a time, log what you observe, and build a rule for when a quadratic increases, decreases, or reaches an extremum.' }
             };
             var meta = TAB_META[tab] || TAB_META.integral;
@@ -2191,7 +2199,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
           })(),

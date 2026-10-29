@@ -25642,6 +25642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         '.aq-lab-shell a{color:#7dd3fc;}' +
         '.aq-skip-link{position:absolute;left:12px;top:8px;z-index:20;padding:9px 12px;border-radius:8px;background:#fbbf24;color:#2a1900!important;font-weight:900;transform:translateY(-180%);transition:transform .15s ease;}' +
         '.aq-skip-link:focus{transform:translateY(0);}' +
+        '.theme-contrast [data-stem-tool-shell="aquacultureLab"] .aq-skip-link{background:#000!important;border:2px solid #ffff00;}' +
         '.aq-topic-content{scroll-margin-top:12px;}' +
         '.aq-topic-content:focus{outline:3px solid #fbbf24;outline-offset:4px;}' +
         '.aq-lab-shell summary,.aq-lab-shell button{touch-action:manipulation;}' +

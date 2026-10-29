@@ -18712,8 +18712,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
             gap: 8
           }
         },
-          h('span', { style: { fontSize: 12, fontWeight: 900, color: INK(color) } }, label),
-          h('span', { style: { fontSize: 11, color: P.textMuted, lineHeight: 1.45 } }, detail)
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: isHere ? P.text : INK(color) } }, label),
+          h('span', { style: { fontSize: 11, color: isHere ? P.text2 : P.textMuted, lineHeight: 1.45 } }, detail)
         );
       }
 

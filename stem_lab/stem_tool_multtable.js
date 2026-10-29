@@ -52,6 +52,8 @@ window.StemLab = window.StemLab || {
       '.allo-mt-bg-practice { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(236,72,153,0.10) 0%, rgba(236,72,153,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
       '.allo-mt-bg-visual   { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10)  0%, rgba(217,119,6,0.04)  35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
       '.allo-mt-bg-patterns { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(99,102,241,0.10)  0%, rgba(99,102,241,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      // WCAG 1.4.3 high contrast: text panels/buttons drop their light or mid-tone gradients.
+      '.theme-contrast [data-stem-tool-shell="multtable"] :is(.allo-mt-bg-practice, .allo-mt-bg-visual, .allo-mt-bg-patterns, .from-amber-50, .from-purple-50, .from-pink-600.to-rose-600, .from-amber-700.to-orange-700) { background-image: none !important; background-color: #000 !important; }',
       '@media (prefers-reduced-motion: reduce) { .allo-mt-dot, .allo-mt-pattern-cell { animation: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
@@ -904,7 +906,7 @@ window.StemLab = window.StemLab || {
 
           // Quick presets focusing on hard facts (the "tricky middle" of the table)
           h('div', { className: 'flex flex-wrap items-center gap-1.5' },
-            h('span', { className: 'text-[0.6875rem] font-bold text-amber-700 self-center mr-1' }, t('stem.multtable.tricky_facts_to_visualize', 'Tricky facts to visualize:')),
+            h('span', { className: 'text-[0.6875rem] font-bold text-amber-800 self-center mr-1' }, t('stem.multtable.tricky_facts_to_visualize', 'Tricky facts to visualize:')),
             [[6,7],[6,8],[6,9],[7,7],[7,8],[7,9],[8,8],[8,9],[9,9],[11,12],[12,12]].map(function(pair) {
               return h('button', { key: 'vp-' + pair[0] + '-' + pair[1],
                 onClick: function() { extUpd({ visualA: pair[0], visualB: pair[1] }); },

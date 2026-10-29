@@ -20,6 +20,15 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // WCAG 1.4.3 high contrast: host buttons go black with green ink; drop the gradient painted over that black
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-wave-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-wave-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"wave\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-wave')) return;
@@ -1952,7 +1961,7 @@ const d = labToolData.wave;
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -2113,7 +2122,7 @@ const d = labToolData.wave;
                   React.createElement("div", { className: "text-[0.625rem] font-black uppercase tracking-[0.18em] text-slate-500" }, __alloT('stem.wave.live_measurements_label', 'Live measurements')),
                   React.createElement("div", { className: "mt-0.5 text-xs font-black text-slate-900" }, waveViewMeta.label + " • " + waveViewMeta.chip)
                 ),
-                React.createElement("span", { className: "rounded-full border px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide", style: { borderColor: waveViewMeta.accent + '66', background: waveViewMeta.accent + '15', color: waveViewMeta.accent } }, d.paused ? __alloT('stem.wave.live_paused', 'Paused') : __alloT('stem.wave.live_running', 'Running'))
+                React.createElement("span", { className: "rounded-full border px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide", style: { borderColor: waveViewMeta.accent + '66', background: waveViewMeta.accent + '15', color: isDark ? waveViewMeta.accent : 'rgb(' + [16, 8, 0].map(function (sh) { return Math.round((parseInt(waveViewMeta.accent.slice(1), 16) >> sh & 255) * 0.5); }).join(',') + ')' } }, d.paused ? __alloT('stem.wave.live_paused', 'Paused') : __alloT('stem.wave.live_running', 'Running'))
               ),
               React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" }, [
                 [__alloT('stem.wave.live_waveform', 'Waveform'), activeWaveType, 'text-cyan-700'],

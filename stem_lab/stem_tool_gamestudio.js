@@ -35,6 +35,14 @@ window.StemLab = window.StemLab || {
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
     document.head.appendChild(st);
   })();
+  // WCAG 1.4.3 high contrast: the pale rose header goes black
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-gamestudio-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-gamestudio-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"gameStudio\"] [style*=\"gradient(\"][style*=\"rgb(255, 241, 242)\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
+    document.head.appendChild(st);
+  })();
 
 
   // ── Audio (auto-injected) ──
@@ -808,10 +816,10 @@ window.StemLab = window.StemLab || {
               h('span', { style: { fontSize: '28px' } }, '\uD83C\uDFAE'),
               h('div', { className: 'flex-1' },
                 h('h2', { className: 'text-lg font-black text-rose-900' }, __alloT('stem.gamestudio.game_design_studio', 'Game Design Studio')),
-                h('p', { className: 'text-xs text-rose-600' }, __alloT('stem.gamestudio.build_playable_2d_games_learn_game_des', 'Build playable 2D games \u2022 Learn game design \u2022 Earn XP'))
+                h('p', { className: 'text-xs text-rose-800' }, __alloT('stem.gamestudio.build_playable_2d_games_learn_game_des', 'Build playable 2D games \u2022 Learn game design \u2022 Earn XP'))
               ),
               h('div', { className: 'text-right' },
-                h('div', { className: 'text-[0.6875rem] font-bold text-rose-400' }, __alloT('stem.gamestudio.tiles_placed', 'TILES PLACED')),
+                h('div', { className: 'text-[0.6875rem] font-bold text-rose-700' }, __alloT('stem.gamestudio.tiles_placed', 'TILES PLACED')),
                 h('div', { className: 'text-lg font-black text-rose-700' }, Object.keys(tiles).length)
               )
             )

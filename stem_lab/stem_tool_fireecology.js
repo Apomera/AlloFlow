@@ -2375,7 +2375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('h3', null, t('stem.fireecology.choose_learning_route', 'Choose a learning route')),
                 h('p', null, t('stem.fireecology.route_help', 'Move from knowledge to investigation, then apply what you discover.'))
               ),
-              h('span', { className: 'fireecology-route-step' }, t('stem.fireecology.activity_progress', 'Activity') + ' ' + (activeIndex + 1) + ' / ' + TABS.length)
+              h('span', { className: 'fireecology-route-step', style: { color: tint('#fb923c') } }, t('stem.fireecology.activity_progress', 'Activity') + ' ' + (activeIndex + 1) + ' / ' + TABS.length)
             ),
             h('div', { className: 'fireecology-route-groups', role: 'tablist' },
               ROUTE_GROUPS.map(function(group) {
@@ -3215,10 +3215,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 background: 'linear-gradient(135deg, rgba(251,146,60,0.14) 0%, rgba(251,146,60,0.04) 100%)',
                 borderRadius: 12, padding: '10px 14px', marginBottom: 16,
                 borderLeft: '3px solid #fb923c',
-                color: '#fed7aa', fontSize: 13, lineHeight: 1.55
+                color: tint('#fed7aa'), fontSize: 13, lineHeight: 1.55
               }
             },
-              h('strong', { style: { color: '#fb923c' } }, 'Goal: '),
+              h('strong', { style: { color: tint('#fb923c') } }, 'Goal: '),
               t('stem.fireecology.sim_goal_v2', 'keep biodiversity above 70 and fuel load below 30 across 50+ modeled years without triggering a catastrophic wildfire. Return intervals in this activity are scenario-specific learning choices—not recommendations. Real stewardship decisions depend on place, governance, season, objectives, weather, and practitioner knowledge.')
             ),
 
@@ -3567,25 +3567,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 background: 'linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(251,191,36,0.04) 100%)',
                 borderRadius: 12, padding: '10px 14px', marginBottom: 16,
                 borderLeft: '3px solid #fbbf24',
-                color: '#fde68a', fontSize: 13, lineHeight: 1.55
+                color: tint('#fde68a'), fontSize: 13, lineHeight: 1.55
               }
             },
               h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Classroom task: '),
               t('stem.fireecology.land_all_four_sliders_inside_their_ide', 'compare how four inputs affect this classroom score. A high score is not authorization or evidence that a real burn is safe.'),
-              d.burnRevealed ? h('div', { style: { marginTop: 6, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 }, 'data-fe-burn-ranges': 'revealed' },
+              d.burnRevealed ? h('div', { style: { marginTop: 6, fontSize: 12.5, color: tint('#fef3c7'), lineHeight: 1.55 }, 'data-fe-burn-ranges': 'revealed' },
                 h('div', null, 'Ideal Temperature: 50 to 70 ' + '\u00B0F'),
                 h('div', null, t('stem.fireecology.ideal_humidity_30_to_55_percent', 'Ideal Humidity: 30 to 55 percent')),
                 h('div', null, t('stem.fireecology.ideal_wind_3_to_12_mph', 'Ideal Wind: 3 to 12 mph')),
                 h('div', null, t('stem.fireecology.ideal_fuel_moisture_12_to_25_percent', 'Ideal Fuel Moisture: 12 to 25 percent'))
-              ) : h('div', { style: { marginTop: 6, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 }, 'data-fe-burn-ranges': 'hidden' },
+              ) : h('div', { style: { marginTop: 6, fontSize: 12.5, color: tint('#fef3c7'), lineHeight: 1.55 }, 'data-fe-burn-ranges': 'hidden' },
                 'The ideal ranges are hidden until your first evaluation. Set the four conditions from what you know about safe burning, predict the verdict, then evaluate.'),
               // Prediction first: the evaluation is only a lesson if there was a guess to compare it to.
               h('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }, role: 'group', 'aria-label': __alloT('stem.fireecology.a11y_predict_the_verdict_before_evaluating', 'Predict the verdict before evaluating') },
-                h('span', { style: { fontSize: 12, color: '#fde68a', fontWeight: 700 } }, 'My prediction:'),
+                h('span', { style: { fontSize: 12, color: tint('#fde68a'), fontWeight: 700 } }, 'My prediction:'),
                 ['GO', 'CAUTION', 'NO-GO'].map(function (pv) {
                   var on = d.burnPrediction === pv;
                   return h('button', { key: pv, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'data-fe-burn-predict': pv, onClick: function () { upd('burnPrediction', pv); },
-                    style: { minHeight: 44, minWidth: 72, padding: '8px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 800, cursor: 'pointer', border: '1px solid ' + (on ? '#fbbf24' : 'rgba(251,191,36,0.4)'), background: on ? '#fbbf24' : 'transparent', color: on ? '#1c1917' : '#fde68a' } }, pv);
+                    style: { minHeight: 44, minWidth: 72, padding: '8px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 800, cursor: 'pointer', border: '1px solid ' + (on ? '#fbbf24' : 'rgba(251,191,36,0.4)'), background: on ? '#fbbf24' : 'transparent', color: on ? '#1c1917' : tint('#fde68a') } }, pv);
                 })
               )
             ),
@@ -3886,14 +3886,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 background: 'linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(16,185,129,0.04) 100%)',
                 borderRadius: 12, padding: '10px 14px', marginBottom: 14,
                 borderLeft: '3px solid #10b981',
-                color: '#a7f3d0', fontSize: 13, lineHeight: 1.55
+                color: tint('#a7f3d0'), fontSize: 13, lineHeight: 1.55
               },
               open: quizTotal === 0
             },
               h('summary', {
-                style: { fontWeight: 700, color: '#10b981', cursor: 'pointer', fontSize: 14, minHeight: 24, padding: '10px 2px' }
+                style: { fontWeight: 700, color: tint('#10b981'), cursor: 'pointer', fontSize: 14, minHeight: 24, padding: '10px 2px' }
               }, t('stem.fireecology.what_this_quiz_covers', '📜 What this quiz covers')),
-              h('div', { style: { marginTop: 8, color: '#d1fae5' } },
+              h('div', { style: { marginTop: 8, color: tint('#d1fae5') } },
                 h('div', null, t('stem.fireecology.32_multi_choice_items_across_six_theme', '32 multi-choice items across six themes:')),
                 h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
                   h('li', null, t('stem.fireecology.indigenous_fire_stewardship_timelines_', 'Indigenous fire stewardship (timelines, nations, practices)')),
@@ -5824,7 +5824,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                   h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, '🧩'),
                   h('div', null,
-                    h('h3', { className: 'fireecology-mosaic-heading', tabIndex: -1, 'data-mosaic-heading': 'setup', style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, t('stem.fireecology.wabanaki_cultural_mosaic', 'Wabanaki Cultural Mosaic')),
+                    h('h3', { className: 'fireecology-mosaic-heading', tabIndex: -1, 'data-mosaic-heading': 'setup', style: { margin: 0, color: (ctx.isDark || ctx.isContrast) ? T_GREEN_HI : '#166534', fontSize: 22 } }, t('stem.fireecology.wabanaki_cultural_mosaic', 'Wabanaki Cultural Mosaic')),
                     h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, t('stem.fireecology.steward_a_real_maine_territory_across_', 'Steward a real Maine territory across 8 years.'))
                   )
                 ),
@@ -5842,7 +5842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     'aria-label': t('stem.fireecology.open_wabanaki_vocabulary_glossary', 'Open Wabanaki vocabulary glossary'),
                     style: {
                       background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7',
-                      color: tint('#e9d5ff'), cursor: 'pointer',
+                      color: (ctx.isDark || ctx.isContrast) ? tint('#e9d5ff') : '#581c87', cursor: 'pointer',
                       borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12
                     }
                   }, t('stem.fireecology.wabanaki_vocabulary', '📖 Wabanaki vocabulary'))

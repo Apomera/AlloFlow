@@ -13183,7 +13183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF15'),
               h('h4', { className: 'text-lg font-black tracking-wide' }, t('stem.moonmission.mission_briefing_2', 'MISSION BRIEFING')),
-              h('p', { className: 'text-xs text-slate-400' }, t('stem.moonmission.apollo_style_lunar_landing_mission', 'Apollo-style lunar landing mission'))
+              h('p', { className: 'text-xs text-slate-300' }, t('stem.moonmission.apollo_style_lunar_landing_mission', 'Apollo-style lunar landing mission'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 mb-3 border border-white/10' },
               h('p', { className: 'text-[0.6875rem] text-slate-200 font-bold mb-1' },
@@ -13400,7 +13400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border border-white/10 text-center' },
                     h('div', { className: 'text-lg mb-0.5' }, i === 0 ? '\uD83E\uDDD1\u200D\uD83D\uDE80' : i === 1 ? '\uD83D\uDC68\u200D\uD83D\uDE80' : '\uD83D\uDC69\u200D\uD83D\uDE80'),
                     h('p', { className: 'text-[0.6875rem] font-bold text-indigo-300' }, crew.role),
-                    h('p', { className: 'text-[0.6875rem] text-slate-400' }, crew.name),
+                    h('p', { className: 'text-[0.6875rem] text-slate-300' }, crew.name),
                     h('p', { className: 'text-[0.6875rem] text-slate-200 mt-1' }, crew.tasks)
                   );
                 })
@@ -13423,7 +13423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   },
                     h('div', { className: 'text-lg', 'aria-hidden': 'true' }, diff.icon),
                     h('p', { className: 'text-[0.6875rem] font-bold ' + (isSelected ? 'text-indigo-300' : 'text-slate-300') }, diff.label),
-                    h('p', { className: 'text-[0.6875rem] text-slate-400' }, diff.desc)
+                    h('p', { className: 'text-[0.6875rem] text-slate-300' }, diff.desc)
                   );
                 })
               )
@@ -13505,7 +13505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               addXP(10);
               if (addToast) addToast('\uD83D\uDE80 Mission authorized! Difficulty: ' + DIFFICULTIES[difficulty].label, 'success');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg transition-all hover:scale-[1.01]'
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-800 hover:to-purple-800 shadow-lg transition-all hover:scale-[1.01]'
           }, t('stem.moonmission.begin_mission_proceed_to_launch', '\uD83D\uDE80 Begin Mission \u2014 Proceed to Launch'))
         ),
 

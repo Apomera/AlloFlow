@@ -3683,22 +3683,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
               [
-                { icon: '\u27A1\uFE0F\uD83E\uDD97', label: t('stem.echolocation.approaching', 'Approaching'),  color: '#60a5fa', explain: 'Waves get COMPRESSED in front of the moth. Listener hears HIGHER frequency. Blue shift.' },
-                { icon: '\uD83E\uDD97\u27A1\uFE0F', label: t('stem.echolocation.receding', 'Receding'),     color: '#f87171', explain: 'Waves get STRETCHED behind the moth. Listener hears LOWER frequency. Red shift.' },
+                { icon: '\u27A1\uFE0F\uD83E\uDD97', label: t('stem.echolocation.approaching', 'Approaching'),  color: '#60a5fa', ink: isDark ? '#60a5fa' : '#1d4ed8', explain: 'Waves get COMPRESSED in front of the moth. Listener hears HIGHER frequency. Blue shift.' },
+                { icon: '\uD83E\uDD97\u27A1\uFE0F', label: t('stem.echolocation.receding', 'Receding'),     color: '#f87171', ink: isDark ? '#f87171' : '#b91c1c', explain: 'Waves get STRETCHED behind the moth. Listener hears LOWER frequency. Red shift.' },
                 { icon: '\uD83E\uDD97\u23F8',  label: t('stem.echolocation.stationary', 'Stationary'),   color: 'var(--allo-stem-text-soft, #94a3b8)', explain: 'No relative motion. Frequency unchanged. The reference case.' }
               ].map(function(c, i) {
                 return h('div', { key: i,
                   className: 'rounded-lg p-2 border-2',
                   style: {
                     borderColor: c.color + '88',
-                    background: isDark
+                    background: isContrast ? '#000000' : isDark
                       ? 'linear-gradient(135deg,' + c.color + '22 0%,rgba(15,23,42,0.5) 100%)'
                       : 'linear-gradient(135deg,' + c.color + '1a 0%,rgba(255,255,255,0.6) 100%)'
                   }
                 },
                   h('div', { className: 'flex items-center gap-1 mb-1' },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, c.icon),
-                    h('span', { className: 'text-[0.6875rem] font-black', style: { color: c.color } }, c.label)
+                    h('span', { className: 'text-[0.6875rem] font-black', style: { color: c.ink || c.color } }, c.label)
                   ),
                   h('p', { className: 'text-[0.625rem] leading-tight ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, c.explain)
                 );
@@ -5320,13 +5320,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         // ── Topic-accent hero band per tab ──
         (function() {
           var TAB_META = {
-            sonar:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83E\uDD87', title: t('stem.echolocation.sonar_vision_hearing_as_imaging', 'Sonar Vision \u2014 hearing as imaging'),                  hint: t('stem.echolocation.bats_emit_ultrasonic_clicks_20_120_khz', 'Bats emit ultrasonic clicks (20\u2013120 kHz, above human hearing) and read echo delay + frequency shift to build a 3D scene at 100+ targets per second. Donald Griffin coined \u201Cecholocation\u201D in 1944.') },
-            cave3d:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDD26', title: t('stem.echolocation.3d_cave_map_by_sound', '3D Cave \u2014 map by sound'),                            hint: t('stem.echolocation.each_click_bounces_off_cave_walls_diff', 'Each click bounces off cave walls; differential delay between ear canals plus interaural intensity differences locate a surface to ~1 cm. The bat\u2019s brain solves this geometry in real time on a peanut-sized chip.') },
-            waves:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF0A', title: t('stem.echolocation.sound_waves_wavelength_meets_target_si', 'Sound Waves \u2014 wavelength meets target size'),         hint: t('stem.echolocation.c_f_at_60_khz_in_air_5_7_mm_fine_enoug', '\u03BB = c / f. At 60 kHz in air, \u03BB \u2248 5.7 mm \u2014 fine enough to resolve a moth\u2019s wing. Lower frequencies travel further but resolve coarser; higher = sharper but absorbed quickly. Trade-off baked in.') },
-            doppler:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',   icon: '\uD83D\uDEA8', title: t('stem.echolocation.doppler_effect_the_moving_prey_signatu', 'Doppler Effect \u2014 the moving-prey signature'),         hint: t('stem.echolocation.moths_fluttering_toward_the_bat_compre', 'Moths fluttering toward the bat compress echo frequency; moving away stretches it. Horseshoe bats compensate by lowering their call to KEEP echoes in their auditory sweet spot \u2014 a biological phase-locked loop.') },
-            biology:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83E\uDDA0', title: t('stem.echolocation.bat_biology_the_auditory_specialist', 'Bat Biology \u2014 the auditory specialist'),              hint: t('stem.echolocation.larynx_fires_clicks_outer_ear_pinnae_s', 'Larynx fires clicks; outer ear pinnae shape reception; massive auditory cortex parses returns. Bats hear over 8 octaves where humans manage ~10. Tongue-clicking humans (Daniel Kish) use the same trick crudely.') },
-            ecology:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: t('stem.echolocation.acoustic_ecology_a_soundscape_we_can_t', 'Acoustic Ecology \u2014 a soundscape we can\u2019t hear'),  hint: t('stem.echolocation.tropical_rainforests_are_loud_in_the_u', 'Tropical rainforests are loud in the ultrasonic. White-nose syndrome has killed 6+ million North American bats since 2006; insect populations downstream are visibly affected. A frequency band we never knew about.') },
-            sweepHunt: { accent: '#22d3ee', soft: 'rgba(34,211,238,0.10)', icon: '🎯', title: t('stem.echolocation.sweep_discovery_tune_the_chirp', 'Sweep Discovery — tune the chirp'), hint: t('stem.echolocation.adjust_call_frequency_duration_and_ban', 'Adjust call frequency, duration, and bandwidth and watch how detection range trades off against resolution. An open exploration — no score, no single right answer.') }
+            sonar:    { accent: '#6366f1', ink: isDark ? '#a5b4fc' : '#4338ca', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83E\uDD87', title: t('stem.echolocation.sonar_vision_hearing_as_imaging', 'Sonar Vision \u2014 hearing as imaging'),                  hint: t('stem.echolocation.bats_emit_ultrasonic_clicks_20_120_khz', 'Bats emit ultrasonic clicks (20\u2013120 kHz, above human hearing) and read echo delay + frequency shift to build a 3D scene at 100+ targets per second. Donald Griffin coined \u201Cecholocation\u201D in 1944.') },
+            cave3d:   { accent: '#0891b2', ink: isDark ? '#22d3ee' : '#155e75', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDD26', title: t('stem.echolocation.3d_cave_map_by_sound', '3D Cave \u2014 map by sound'),                            hint: t('stem.echolocation.each_click_bounces_off_cave_walls_diff', 'Each click bounces off cave walls; differential delay between ear canals plus interaural intensity differences locate a surface to ~1 cm. The bat\u2019s brain solves this geometry in real time on a peanut-sized chip.') },
+            waves:    { accent: '#0ea5e9', ink: isDark ? '#0ea5e9' : '#0369a1', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF0A', title: t('stem.echolocation.sound_waves_wavelength_meets_target_si', 'Sound Waves \u2014 wavelength meets target size'),         hint: t('stem.echolocation.c_f_at_60_khz_in_air_5_7_mm_fine_enoug', '\u03BB = c / f. At 60 kHz in air, \u03BB \u2248 5.7 mm \u2014 fine enough to resolve a moth\u2019s wing. Lower frequencies travel further but resolve coarser; higher = sharper but absorbed quickly. Trade-off baked in.') },
+            doppler:  { accent: '#ea580c', ink: isDark ? '#ea580c' : '#9a3412', soft: 'rgba(234,88,12,0.10)',   icon: '\uD83D\uDEA8', title: t('stem.echolocation.doppler_effect_the_moving_prey_signatu', 'Doppler Effect \u2014 the moving-prey signature'),         hint: t('stem.echolocation.moths_fluttering_toward_the_bat_compre', 'Moths fluttering toward the bat compress echo frequency; moving away stretches it. Horseshoe bats compensate by lowering their call to KEEP echoes in their auditory sweet spot \u2014 a biological phase-locked loop.') },
+            biology:  { accent: '#9333ea', ink: isDark ? '#d8b4fe' : '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83E\uDDA0', title: t('stem.echolocation.bat_biology_the_auditory_specialist', 'Bat Biology \u2014 the auditory specialist'),              hint: t('stem.echolocation.larynx_fires_clicks_outer_ear_pinnae_s', 'Larynx fires clicks; outer ear pinnae shape reception; massive auditory cortex parses returns. Bats hear over 8 octaves where humans manage ~10. Tongue-clicking humans (Daniel Kish) use the same trick crudely.') },
+            ecology:  { accent: '#16a34a', ink: isDark ? '#16a34a' : '#166534', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: t('stem.echolocation.acoustic_ecology_a_soundscape_we_can_t', 'Acoustic Ecology \u2014 a soundscape we can\u2019t hear'),  hint: t('stem.echolocation.tropical_rainforests_are_loud_in_the_u', 'Tropical rainforests are loud in the ultrasonic. White-nose syndrome has killed 6+ million North American bats since 2006; insect populations downstream are visibly affected. A frequency band we never knew about.') },
+            sweepHunt: { accent: '#22d3ee', ink: isDark ? '#22d3ee' : '#155e75', soft: 'rgba(34,211,238,0.10)', icon: '🎯', title: t('stem.echolocation.sweep_discovery_tune_the_chirp', 'Sweep Discovery — tune the chirp'), hint: t('stem.echolocation.adjust_call_frequency_duration_and_ban', 'Adjust call frequency, duration, and bandwidth and watch how detection range trades off against resolution. An open exploration — no score, no single right answer.') }
           };
           var meta = TAB_META[tab] || TAB_META.sonar;
           return h('div', { role: 'tabpanel', id: 'echolocation-panel-' + tab,
@@ -5343,7 +5343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('h3', { style: { color: meta.ink, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '3px 0 0', color: (isDark ? '#cbd5e1' : '#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );

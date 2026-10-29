@@ -13954,7 +13954,7 @@ var d = labToolData.plateTectonics || {};
           var isContrast = !!(props && props.isContrast);
           var isDark = !!(props && props.darkMode) || isContrast;
           var palette = (props && props.palette) || { bg: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), text: isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#0f172a'), border: isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1') };
-          var _gRed = isDark ? 'linear-gradient(135deg, #991b1b, #7f1d1d, #450a0a)' : 'linear-gradient(135deg, #dc2626, #ef4444, #f87171)';
+          var _gRed = isDark ? 'linear-gradient(135deg, #991b1b, #7f1d1d, #450a0a)' : 'linear-gradient(135deg, #b91c1c, #dc2626, #ef4444)';
           var _gCard = isDark ? 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, var(--allo-stem-deeper, #0f172a) 100%)' : 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
 
           // ── Grade band (for the Myths panel) ──

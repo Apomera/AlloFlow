@@ -371,13 +371,13 @@
   // A retained state keeps each departure, glide and arrival continuous.
   function createFreeHawk(perches,footOffset) {
     var seed=724193,age=0,elapsed=0,current=0,next=0,duration=1,wait=9,stage='perched',gaze=0,gazeAge=0,heading=0,curve=0;
-    var vigilance=0,cooldown=0,escapeFlight=false,observerX=0,observerZ=0,hasObserver=false,watchYaw=0,watchPitch=0;
+    var vigilance=0,cooldown=0,escapeFlight=false,observerX=0,observerZ=0,hasObserver=false,watchYaw=0,watchPitch=0,harassed=0;
     var state={time:0,phase:'perched',label:'Perched · watching the woodland',position:[0,0,0],velocity:[0,0,0],yaw:0,pitch:0,bank:0,
       wind:[.14,0,.055],airspeed:0,wingbeat:0,wingPhase:0,alertness:0,recovering:false,
       pose:{flapAmplitude:0,fold:1,bank:0,pitch:0,tailFan:.14,feet:1,headYaw:0,gazePitch:0,alula:0,crouch:0,touchdown:0,brake:0,grip:1,airLift:0,airRoll:0,wingSweep:0,wingSupport:0,rollControl:0,breath:.5}};
     function random(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;}
     function reset(){seed=724193;age=0;elapsed=0;current=0;next=0;stage='perched';wait=8+random()*7;heading=0;curve=0;gaze=(random()-.5)*.65;gazeAge=1.7+random()*3.3;
-      vigilance=0;cooldown=0;escapeFlight=false;observerX=observerZ=watchYaw=watchPitch=0;hasObserver=false;
+      vigilance=0;cooldown=0;escapeFlight=false;observerX=observerZ=watchYaw=watchPitch=0;hasObserver=false;harassed=0;
       state.yaw=0;state.wingPhase=0;state.pose.headYaw=0;state.pose.gazePitch=0;return update(0,null,true);}
     function outwardRoute(start,finish,bend,observer) {
       var dx=finish.x-start.x,dz=finish.z-start.z,length=Math.max(.001,Math.hypot(dx,dz));
@@ -446,8 +446,9 @@
       }
       if(dt>0&&gazeAge<=0){gaze=(random()-.5)*.65;gazeAge=1.7+random()*3.3;}
       var alarmed=validObserver&&vigilance>.58;
-      if(dt>0&&perches.length>1&&stage==='perched'&&age>(alarmed&&cooldown===0?Math.min(wait,3.8):wait)) {
-        if(!alarmed&&random()<.27){age=0;wait=5+random()*9;}
+      var mobbed=harassed>=2;
+      if(dt>0&&perches.length>1&&stage==='perched'&&age>(alarmed&&cooldown===0?Math.min(wait,3.8):mobbed?Math.min(wait,2.5):wait)) {
+        if(!alarmed&&!mobbed&&random()<.27){age=0;wait=5+random()*9;}
         else if(chooseLookout(start,position,alarmed)) {finish=perches[next];stage='preparing';age=0;heading=Math.atan2(-(finish.x-start.x),-(finish.z-start.z));duration=clamp(start.distanceTo(finish)/3.2,3.8,7.2);}
         else {age=0;wait=2.0;}
       }
@@ -513,10 +514,12 @@
       state.alertness=vigilance;state.recovering=cooldown>0;
       state.phase=stage==='flight'?(age/duration<.22?'takeoff':age/duration>.75?'landing':'gliding'):stage;
       state.label=stage==='flight'?(state.phase==='takeoff'?'Leaving a lookout · powered climb':state.phase==='landing'?'Approaching a new lookout':p.flapAmplitude<.01?'Gliding between lookouts · small wing and tail corrections':'Crossing the clearing · adjusting the wings'):
-        stage==='preparing'?'Preparing to move to another lookout':stage==='settling'?'Settling onto the lookout':vigilance>.35||noticed?'Alert · watching the nearby observer':cooldown>0?'Perched · settling after disturbance':'Perched · scanning for movement';
+        stage==='preparing'?'Preparing to move to another lookout':stage==='settling'?'Settling onto the lookout':vigilance>.35||noticed?'Alert · watching the nearby observer':harassed>=2&&stage==='perched'?'Perched · mobbed by small birds':cooldown>0?'Perched · settling after disturbance':'Perched · scanning for movement';
       return state;
     }
-    reset();return {update:update,reset:reset,state:state};
+    // Small birds mobbing this lookout (counted by the woodland each frame).
+    function harass(count){harassed=Number(count)||0;}
+    reset();return {update:update,reset:reset,state:state,harass:harass};
   }
 
   // Binocular identification is a view-dependent observation, not a world radar.
@@ -1690,7 +1693,10 @@
       // all work without an independent timer. Reduced motion stays still.
       var weatherTime=options.reducedMotion?0:time;
       sky.material.uniforms.cloudOffset.value.set((weatherTime*.00045)%1,(weatherTime*.00019)%1);
+      // The hawk in the air over the woodland is what small birds react to.
+      if(wildlife.setPredator)wildlife.setPredator(mode==='free'?{x:poseState.position[0],y:poseState.position[1],z:poseState.position[2],flying:['takeoff','gliding','landing'].indexOf(poseState.phase)>=0}:null);
       wildlife.update(time,dt,mode==='free'?observer:null);
+      if(freeHawk&&wildlife.mobbers)freeHawk.harass(mode==='free'?wildlife.mobbers():0);
       if(feedingStudy&&habitat.setFoodLevels&&wildlife.foodLevels)habitat.setFoodLevels(wildlife.foodLevels());
       if(mammals)mammals.update(time,dt,mode==='free'?observer:null);
       if(wildlife.setExtraContactShadow){var squirrel=mammals&&mode==='free'?mammals.snapshot()[0]:null;wildlife.setExtraContactShadow(squirrel&&squirrel.visible?{x:squirrel.position[0],z:squirrel.position[2],heading:squirrel.heading,halfWidth:.08,halfLength:.17}:null);}

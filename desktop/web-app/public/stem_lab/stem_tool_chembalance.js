@@ -4898,7 +4898,8 @@
               return h('section', {
                 'data-chembalance-command': 'true',
                 className: 'mb-3 rounded-2xl border border-lime-300 bg-white p-4 shadow-sm',
-                style: { background: 'linear-gradient(135deg, #f7fee7 0%, #ecfeff 52%, #fff7ed 100%)' }
+                // High contrast paints .bg-white black; the inline light gradient would sit over it.
+                style: { background: ctx.isContrast ? '#000000' : 'linear-gradient(135deg, #f7fee7 0%, #ecfeff 52%, #fff7ed 100%)' }
               },
                 h('div', { className: 'grid md:grid-cols-2 gap-4 items-stretch' },
                   h('div', null,

@@ -1,0 +1,264 @@
+{
+  "date": "2026-10-29",
+  "source": {
+    "path": "stem_lab/stem_tool_rocks.js",
+    "sha256": "72786b32927a53cce6bc31bf8c8b92125f6174b63ba741c03c2b6ecfc7df208a",
+    "servedMirror": "desktop/web-app/public/stem_lab/stem_tool_rocks.js",
+    "mirrorMatches": true
+  },
+  "runtime": {
+    "browser": "148.0.7778.96",
+    "axe": "4.12.1",
+    "compiledCss": "app/static/css/main.4053a7e9.css",
+    "compiledCssSha256": "c62d226d134e65b8e481d85297db1712d4751dd0f5a5c5aeddc219d29459cfda"
+  },
+  "command": "node dev-tools/rocks_accessibility_qa.cjs --output=tmp/rocks-enhancement-4/final-72786-full",
+  "report": "tmp/rocks-enhancement-4/final-72786-full/report.json",
+  "coverage": {
+    "modes": 11,
+    "representativeStates": 31,
+    "matrixChecks": 124,
+    "variants": [
+      "320px reflow",
+      "1280px desktop",
+      "200% computed HTML text at 1280px",
+      "WCAG text spacing at 320px"
+    ],
+    "functionalWorkflows": 14,
+    "environmentChecks": [
+      "Density instrument, plot, and trial table scroll by keyboard at 320px",
+      "forced-colors all 11 modes at 320px",
+      "reduced-motion all 11 modes at 320px"
+    ],
+    "environmentModeSnapshots": 22,
+    "axeSnapshots": 44
+  },
+  "results": {
+    "sourceUnchanged": true,
+    "coreRuleViolationNodes": 0,
+    "documentOverflows": 0,
+    "browserErrors": 0,
+    "functionalFailures": 0,
+    "environmentFailures": 0,
+    "rawExperimentalLabelNodes": 380,
+    "reviewedLabelNodes": 380,
+    "remainingMeaningfulLabelMismatches": 0
+  },
+  "labelReview": {
+    "source": "https://www.w3.org/WAI/WCAG22/Understanding/label-in-name.html",
+    "decision": "All retained cases include the visible meaningful wording in the accessible name. Differences are spacing, punctuation, case, or decorative characters. Mathematical operators were retained during normalization. No meaningful subtitle, badge, property value, or state was dismissed merely because it was secondary.",
+    "method": "Reviewed all distinct visible/name patterns and examples after fixing actual omissions. Raw findings remain in the full report; the experimental rule is not disabled. Counts are occurrences across states, not unique controls.",
+    "uniqueVisibleNamePairs": 119,
+    "groups": {
+      "Rock gallery cards": {
+        "occurrences": 96,
+        "examples": [
+          {
+            "state": "rocks",
+            "target": "#rk-rock-tile-granite",
+            "visibleText": "Granite\nCoarse-grained",
+            "accessibleName": "Granite Coarse-grained. Igneous rock — coarse interlocking crystals you can see without a lens",
+            "normalizedVisible": "granitecoarsegrained",
+            "normalizedName": "granitecoarsegrainedigneousrockcoarseinterlockingcrystalsyoucanseewithoutalens"
+          },
+          {
+            "state": "rocks",
+            "target": "#rk-rock-tile-basalt",
+            "visibleText": "Basalt\nFine-grained",
+            "accessibleName": "Basalt Fine-grained. Igneous rock — grains too fine to tell apart by eye",
+            "normalizedVisible": "basaltfinegrained",
+            "normalizedName": "basaltfinegrainedigneousrockgrainstoofinetotellapartbyeye"
+          }
+        ]
+      },
+      "Mineral gallery cards": {
+        "occurrences": 138,
+        "examples": [
+          {
+            "state": "minerals",
+            "target": "#rk-mineral-tile-quartz",
+            "visibleText": "Quartz\nVitreous\nH 7",
+            "accessibleName": "Quartz Vitreous H 7. Hexagonal crystal, Vitreous lustre, hardness 7",
+            "normalizedVisible": "quartzvitreoush7",
+            "normalizedName": "quartzvitreoush7hexagonalcrystalvitreouslustrehardness7"
+          },
+          {
+            "state": "minerals",
+            "target": "#rk-mineral-tile-feldspar",
+            "visibleText": "Feldspar\nVitreous\nH 6",
+            "accessibleName": "Feldspar Vitreous H 6. Monoclinic crystal, Vitreous lustre, hardness 6",
+            "normalizedVisible": "feldsparvitreoush6",
+            "normalizedName": "feldsparvitreoush6monocliniccrystalvitreouslustrehardness6"
+          }
+        ]
+      },
+      "Quiz answer controls": {
+        "occurrences": 12,
+        "examples": [
+          {
+            "state": "quiz",
+            "target": ".hover\\:scale-\\[1\\.02\\].hover\\:border-amber-400.transition-all:nth-child(1)",
+            "visibleText": "1\nBreccia is metamorphic and conglomerate is sedimentary",
+            "accessibleName": "Answer 1: Breccia is metamorphic and conglomerate is sedimentary",
+            "normalizedVisible": "1brecciaismetamorphicandconglomerateissedimentary",
+            "normalizedName": "answer1brecciaismetamorphicandconglomerateissedimentary"
+          },
+          {
+            "state": "quiz",
+            "target": ".hover\\:scale-\\[1\\.02\\].hover\\:border-amber-400.transition-all:nth-child(2)",
+            "visibleText": "2\nThe fragments in breccia still have sharp corners",
+            "accessibleName": "Answer 2: The fragments in breccia still have sharp corners",
+            "normalizedVisible": "2thefragmentsinbrecciastillhavesharpcorners",
+            "normalizedName": "answer2thefragmentsinbrecciastillhavesharpcorners"
+          }
+        ]
+      },
+      "Igneous current-specimen badge": {
+        "occurrences": 2,
+        "examples": [
+          {
+            "state": "rock-detail",
+            "target": "button[data-rk-ign-cell=\"intrusive-felsic\"]",
+            "visibleText": "Granite\nTHIS ROCK",
+            "accessibleName": "Granite This rock: Felsic, cooled slowly, underground",
+            "normalizedVisible": "granitethisrock",
+            "normalizedName": "granitethisrockfelsiccooledslowlyunderground"
+          }
+        ]
+      },
+      "Mystery texture cards": {
+        "occurrences": 24,
+        "examples": [
+          {
+            "state": "mystery-active",
+            "target": "button[data-rk-mystery-tile=\"granite\"]",
+            "visibleText": "Granite\nCoarse-grained",
+            "accessibleName": "Granite Coarse-grained. Guess Granite — coarse interlocking crystals you can see without a lens",
+            "normalizedVisible": "granitecoarsegrained",
+            "normalizedName": "granitecoarsegrainedguessgranitecoarseinterlockingcrystalsyoucanseewithoutalens"
+          },
+          {
+            "state": "mystery-active",
+            "target": "button[data-rk-mystery-tile=\"basalt\"]",
+            "visibleText": "Basalt\nFine-grained",
+            "accessibleName": "Basalt Fine-grained. Guess Basalt — grains too fine to tell apart by eye",
+            "normalizedVisible": "basaltfinegrained",
+            "normalizedName": "basaltfinegrainedguessbasaltgrainstoofinetotellapartbyeye"
+          }
+        ]
+      },
+      "Workbench controls and evidence": {
+        "occurrences": 108,
+        "examples": [
+          {
+            "state": "workbench-active",
+            "target": "button[data-wb-prediction-outcome=\"glassy\"]",
+            "visibleText": "Glassy (vitreous)\nWould leave 6 candidates",
+            "accessibleName": "Predict Glassy (vitreous). Would leave 6 candidates.",
+            "normalizedVisible": "glassyvitreouswouldleave6candidates",
+            "normalizedName": "predictglassyvitreouswouldleave6candidates"
+          },
+          {
+            "state": "workbench-active",
+            "target": "button[data-wb-prediction-outcome=\"metallic\"]",
+            "visibleText": "Metallic\nWould leave 4 candidates",
+            "accessibleName": "Predict Metallic. Would leave 4 candidates.",
+            "normalizedVisible": "metallicwouldleave4candidates",
+            "normalizedName": "predictmetallicwouldleave4candidates"
+          }
+        ]
+      }
+    },
+    "guard": "Default runner exits nonzero for core violations, unmatched label strings, workflow/environment failures, overflow, runtime errors, or source drift. --strict additionally fails on every raw experimental label finding."
+  },
+  "targetSizeReview": {
+    "source": "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html",
+    "viewportCssPixels": 320,
+    "transformationSelector": {
+      "decision": "Equivalent control resolves the narrow SVG path targets under SC 2.5.8.",
+      "width": 262,
+      "height": 44,
+      "options": 6,
+      "keyboard": "Home and ArrowDown selected all six transformations and their corresponding examples; Home cleared the selection.",
+      "beforeFix": {
+        "lowerArrowBoundingBoxes": "117.27 × 6.24 CSS pixels",
+        "centerSeparation": 6.72,
+        "problem": "The 24px spacing circles overlapped."
+      }
+    },
+    "compareCheckbox": {
+      "inputSize": [
+        13,
+        13
+      ],
+      "associatedClickableLabelSize": [
+        158.98,
+        44
+      ],
+      "decision": "The associated label activates the same input and provides a full-size pointer target."
+    },
+    "fieldEvidenceCheckboxes": {
+      "inputSize": [
+        20,
+        20
+      ],
+      "associatedClickableLabelSize": [
+        220,
+        44
+      ],
+      "nearestOtherUndersizedTargetCenter": 44,
+      "decision": "The full clickable labels meet minimum target size."
+    },
+    "weatheringRanges": {
+      "inputSize": [
+        254,
+        16
+      ],
+      "nearestOtherUndersizedTargetCenter": 83,
+      "minimumCenterToOtherTargetEdge": 42.84,
+      "decision": "Spacing exception: 24px diameter circles are separated from other targets."
+    },
+    "weatheringCheckbox": {
+      "inputSize": [
+        15.44,
+        16
+      ],
+      "associatedClickableLabelSize": [
+        228,
+        36
+      ],
+      "decision": "The clickable label supplies a full-size target."
+    },
+    "densityReferenceLinks": {
+      "firstLinkSize": [
+        203.77,
+        15
+      ],
+      "nearestOtherTargetEdgeFromFirstLinkCenter": 15.25,
+      "context": "Both links appear in one paragraph separated by non-target text.",
+      "decision": "Inline exception applies; the measured 12px radius spacing circle also clears the neighboring link."
+    },
+    "measurementArtifact": "tmp/rocks-enhancement-4/target-final/measurements.json",
+    "qualification": "These are explicit checks of representative small targets, not a claim that every WCAG criterion or every possible host state was evaluated."
+  },
+  "textClippingReview": {
+    "countOfDistinctDecorativeTiles": 7,
+    "selector": "[data-wb-guide-graphic]",
+    "decision": "Fixed-size icon tiles clip redundant cue words under 200% text; the density cue also clips under text-spacing override. These spans are aria-hidden and repeat the full instrument names and explanations outside the tiles. No unique instruction or control is lost. The raw clipping observations are retained in the matrix report."
+  },
+  "visualReview": {
+    "forcedColors": "Selected navigation and family controls retain system-color outlines. Density instrument readings and graph marks remain distinguishable.",
+    "reducedMotion": "All 11 modes had zero running CSS animations in reduced-motion snapshots.",
+    "phoneScrolling": "Instrument, plot, and trial-table regions at 320px accept focus and scroll with ArrowRight."
+  },
+  "limitations": [
+    "Isolated React tool with real compiled CSS. No full application host, third-party AI, loaded 3D viewer, or real assistive technology validation.",
+    "Axe reports cannot establish WCAG conformance. SVG contrast, reading order, meaningful labels, status announcements, focus obscuration, and target-spacing exceptions need human review.",
+    "Label in Name is an experimental axe rule and may flag decorative icons or supplemental card descriptions. Preserve and review its findings; do not silently suppress them.",
+    "Text resizing doubles computed HTML text sizes; it is not native browser text-only zoom. SVG labels are additionally checked visually, not enlarged by this simulation.",
+    "Finite entry animations are finished and infinite animations paused before axe and screenshots to avoid transient-opacity contrast artifacts.",
+    "Small target measurements are review candidates. Label wrappers, spacing, inline text and equivalent-control exceptions must be assessed before calling them WCAG failures.",
+    "No real screen-reader or voice-control session was performed. Full host navigation, third-party services and loaded 3D behavior remain outside this harness.",
+    "These results support an accessibility review; they are not a WCAG conformance certification."
+  ]
+}

@@ -4815,6 +4815,7 @@ function CircuitActiveLessonLab(props) {
     [data-circuit-builder-root] .circuit-start-body>.circuit-action-row{margin:18px 0}
     [data-circuit-builder-root] .circuit-start-guide [data-circuit-start-experiment]{background:linear-gradient(135deg,#c5f5e6,#a5e6d4);border-color:#b4efdc;color:#12382f;box-shadow:0 5px 18px #70dab912}
     [data-circuit-builder-root] .circuit-start-guide [data-circuit-start-experiment]:hover:not(:disabled){background:#d4faee;border-color:#d4faee;color:#12382f}
+    .theme-contrast [data-circuit-builder-root] .circuit-start-guide [data-circuit-start-experiment],.theme-contrast [data-stem-tool-shell="circuit"] button[class*="bg-gradient-to-"]{background:#000!important}
     [data-circuit-builder-root] .circuit-start-steps{gap:10px;margin:20px 0}
     [data-circuit-builder-root] .circuit-start-steps li{padding:13px;border:0;border-radius:10px;background:#16313b;box-shadow:inset 0 1px #ffffff05}
     [data-circuit-builder-root] .circuit-start-steps strong{font-size:13px;color:var(--circuit-mint)}
@@ -7749,7 +7750,7 @@ function CircuitActiveLessonLab(props) {
                 className: 'px-3 py-1.5 bg-red-950/30 hover:bg-red-500/30 text-red-400 font-bold rounded-lg text-xs border border-red-500/30 hover:border-red-400 transition-all active:scale-[0.97]'
               }, '\uD83D\uDDD1 ' + __alloT('stem.circuit.comp_clear', 'Clear'), h('small', null, "Remove all parts · undoable")),
 
-              components.length > 0 && h('span', { className: 'self-center text-xs text-slate-400 ml-auto font-mono' }, components.length + ' / 8 parts' + (components.length >= 8 ? ' · bench full' : ''))
+              components.length > 0 && h('span', { className: 'self-center text-xs text-slate-300 ml-auto font-mono' }, components.length + ' / 8 parts' + (components.length >= 8 ? ' · bench full' : ''))
             )); };
           var renderSchematic = function() { return h('div', { className: 'circuit-schematic relative', hidden: d.benchView === '3d', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.circuit.schematic_scroll_region', 'Circuit schematic'), style:{maxWidth:'100%',overflowX:'auto'} },
               h('p', {className:'circuit-help'}, 'Schematic: scroll sideways on small screens. Exact measurements are available in Inspect part.' + (components.length > 1 ? ' ' + __alloT('stem.circuit.schematic_drag_hint', 'Drag a part along the wire to move it, or click one to inspect it; readings do not change with position.') : '')),
@@ -8438,7 +8439,7 @@ function CircuitActiveLessonLab(props) {
                 onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
                 className: 'p-1.5 hover:bg-slate-800 rounded-lg transition-all active:scale-[0.97]',
                 'aria-label': __alloT('stem.circuit.back_to_tools', 'Back to tools')
-              }, h(ArrowLeft, { size: 18, className: 'text-slate-400' })),
+              }, h(ArrowLeft, { size: 18, className: 'text-slate-300' })),
 
               h('h3', { className: 'text-lg font-bold text-white tracking-tight' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder')),
 
@@ -8449,13 +8450,13 @@ function CircuitActiveLessonLab(props) {
               // Badge toggle
               h('button', { 'aria-label': __alloT('stem.circuit.badges', 'Badges'),
                 onClick: function() { upd('showBadges', !showBadges); },
-                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
+                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
               }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges')),
 
               // AI toggle
               h('button', { 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'),
                 onClick: function() { upd('showAI', !showAI); },
-                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
+                className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
               }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_tutor', 'AI Tutor')),
 
               // Mode buttons
@@ -8463,7 +8464,7 @@ function CircuitActiveLessonLab(props) {
                 ['series', 'parallel'].map(function(m) {
                   return h('button', { key: m, 'aria-pressed': mode === m,
                     onClick: function() { upd('mode', m); },
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'transition-colors bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200 active:scale-[0.97]')
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-500 text-slate-950 shadow-md shadow-yellow-500/25' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-slate-200 active:scale-[0.97]')
                   }, m);
                 })
               )
@@ -8541,7 +8542,7 @@ function CircuitActiveLessonLab(props) {
                       },
                       className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono bg-slate-900 border-slate-500 text-slate-100 focus:ring-1 focus:ring-yellow-500 focus:outline-none'
                     }),
-                    (comp.type === 'resistor' || comp.type === 'bulb') && h('span', { className: 'text-xs text-slate-400' }, '\u03A9'),
+                    (comp.type === 'resistor' || comp.type === 'bulb') && h('span', { className: 'text-xs text-slate-300' }, '\u03A9'),
 
                     // Capacitor value input (in uF)
                     comp.type === 'capacitor' && h('input', {
@@ -8572,7 +8573,7 @@ function CircuitActiveLessonLab(props) {
                       },
                       className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono bg-slate-900 border-slate-500 text-slate-100 focus:ring-1 focus:ring-yellow-500 focus:outline-none'
                     }),
-                    comp.type === 'capacitor' && h('span', { className: 'text-xs text-slate-400' }, '\u00B5F'),
+                    comp.type === 'capacitor' && h('span', { className: 'text-xs text-slate-300' }, '\u00B5F'),
 
                     // Switch toggle button
                     comp.type === 'switch' && h('span', { className: 'circuit-component-setting-label' }, compLabel),
@@ -8660,11 +8661,11 @@ function CircuitActiveLessonLab(props) {
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-[0.625rem]' },
                 h('div', { className: 'border-l-2 border-cyan-500 pl-2' },
                   h('strong', { className: 'block text-cyan-300' }, __alloT('stem.circuit.ammeter_rule', 'Ammeter rule')),
-                  h('span', { className: 'text-slate-400' }, __alloT('stem.circuit.ammeter_rule_desc', 'Series connection; very low internal resistance.'))
+                  h('span', { className: 'text-slate-300' }, __alloT('stem.circuit.ammeter_rule_desc', 'Series connection; very low internal resistance.'))
                 ),
                 h('div', { className: 'border-l-2 border-yellow-500 pl-2' },
                   h('strong', { className: 'block text-yellow-300' }, __alloT('stem.circuit.voltmeter_rule', 'Voltmeter rule')),
-                  h('span', { className: 'text-slate-400' }, __alloT('stem.circuit.voltmeter_rule_desc', 'Parallel connection; very high internal resistance.'))
+                  h('span', { className: 'text-slate-300' }, __alloT('stem.circuit.voltmeter_rule_desc', 'Parallel connection; very high internal resistance.'))
                 )
               )
             ),
@@ -8681,7 +8682,7 @@ function CircuitActiveLessonLab(props) {
               var sy = function(i) { return pt + (1 - i / Imax) * (H - pt - pb); };
               return h('div', { className: 'mt-3 bg-slate-900/40 border border-blue-500/20 rounded-xl p-3' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-blue-400 uppercase tracking-wider mb-1' }, "⚡ " + __alloT('stem.circuit.response_curve_title', 'Circuit response: current vs voltage')),
-                h('p', { className: 'text-[0.625rem] text-slate-400 mb-2' }, (solved.hasLED ? __alloT('stem.circuit.led_curve_desc', 'LED turn-on creates a bend. This curve uses the same LED model as your live measurements.') : __alloT('stem.circuit.ohm_iv_desc', 'For a fixed resistance, current rises in a straight line with voltage (slope = 1/R). Steeper = lower resistance.'))),
+                h('p', { className: 'text-[0.625rem] text-slate-300 mb-2' }, (solved.hasLED ? __alloT('stem.circuit.led_curve_desc', 'LED turn-on creates a bend. This curve uses the same LED model as your live measurements.') : __alloT('stem.circuit.ohm_iv_desc', 'For a fixed resistance, current rises in a straight line with voltage (slope = 1/R). Steeper = lower resistance.'))),
                 h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': (solved.hasLED ? 'Current versus voltage includes an LED turn-on threshold; at ' : 'Current versus voltage is a straight line through the origin; at ') + voltage + ' volts the current is ' + current.toFixed(3) + ' amps.' },
                   h('line', { x1: pl, y1: pt, x2: pl, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
                   h('line', { x1: pl, y1: H - pb, x2: W - pr, y2: H - pb, stroke: '#334155', strokeWidth: 1 }),
@@ -8699,7 +8700,7 @@ function CircuitActiveLessonLab(props) {
             // Per-component analysis table
             // ══════════════════════════════════════
             components.length > 0 && !noLoadPath && h('div', { className: 'mt-3 bg-slate-900/40 border border-cyan-500/20 rounded-xl p-3 backdrop-blur-md' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-cyan-400 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 ' + __alloT('stem.circuit.mental_model_checks', 'Mental-model checks')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-cyan-300 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 ' + __alloT('stem.circuit.mental_model_checks', 'Mental-model checks')),
               h('ul', { className: 'space-y-1 text-[0.6875rem] text-slate-300 leading-snug list-disc list-inside marker:text-cyan-500' },
                 h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_electrons_bold', 'Electrons crawl; the signal races. ')), __alloT('stem.circuit.mmc_electrons_body', 'The glowing dots move fast for visibility, but real electrons drift at only about 0.1 mm/s. The electric field that pushes them travels near light speed, so every bulb lights essentially the instant you connect the battery.')),
                 mode === 'series'
@@ -8726,14 +8727,14 @@ function CircuitActiveLessonLab(props) {
 
                   return h('div', { key: comp.id, className: 'flex flex-wrap items-center gap-2 text-xs bg-slate-950/40 rounded-lg px-3 py-2 border border-slate-800/60' },
                     h('span', { className: 'font-bold text-yellow-500 w-16' }, typeIcon + (i + 1)),
-                    h('span', { className: 'text-slate-400 w-20 font-mono' }, rDisplay),
+                    h('span', { className: 'text-slate-300 w-20 font-mono' }, rDisplay),
 
                     comp.type === 'ammeter'
-                      ? h('span', { className: 'text-cyan-400 w-40 font-mono font-bold' }, isIdealParallelBranch ? '\u26A0 ' + __alloT('stem.circuit.connect_ammeters_series', 'connect ammeters in series') : '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
+                      ? h('span', { className: 'text-cyan-300 w-40 font-mono font-bold' }, isIdealParallelBranch ? '\u26A0 ' + __alloT('stem.circuit.connect_ammeters_series', 'connect ammeters in series') : '\u27A1 ' + compI.toFixed(3) + 'A (reads current)')
                       : comp.type === 'voltmeter'
                       ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, mode === 'series' ? '\u26A0 ' + __alloT('stem.circuit.connect_voltmeters_parallel', 'connect voltmeters in parallel') : '\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
                       : isIdealParallelBranch ? h('span', { className: 'text-red-400 w-40 font-mono font-bold' }, '\u26A0 ' + __alloT('stem.circuit.short_branch', 'short branch (~0 \u03A9)')) : h(React.Fragment, null,
-                          h('span', { className: 'text-cyan-400 w-20 font-mono' }, circuitVoltageText(compV, 2)),
+                          h('span', { className: 'text-cyan-300 w-20 font-mono' }, circuitVoltageText(compV, 2)),
                           h('span', { className: 'text-emerald-400 w-20 font-mono' }, compI.toFixed(3) + 'A'),
                           h('span', { className: 'text-rose-400 w-20 font-mono font-bold' }, compP.toFixed(2) + 'W')
                         ),
@@ -8747,7 +8748,7 @@ function CircuitActiveLessonLab(props) {
               ),
 
               // Formula reminder
-              h('div', { className: 'mt-3 flex items-center gap-2 text-[0.625rem] text-slate-400 font-medium' },
+              h('div', { className: 'mt-3 flex items-center gap-2 text-[0.625rem] text-slate-300 font-medium' },
                 h('span', null, '\u2696 V = IR'),
                 h('span', null, '\u2022'),
                 h('span', null, 'P = IV'),
@@ -8782,7 +8783,7 @@ function CircuitActiveLessonLab(props) {
                 : __alloT('stem.circuit.eq_appliance', 'a household appliance');
               return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-rose-500/25 rounded-xl p-4 backdrop-blur-md' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-rose-400 uppercase tracking-wider mb-1' }, '🔥 ' + __alloT('stem.circuit.energy_budget_title', 'Energy budget — where the power goes')),
-                h('p', { className: 'text-[0.6875rem] text-slate-400 mb-2 leading-snug' },
+                h('p', { className: 'text-[0.6875rem] text-slate-300 mb-2 leading-snug' },
                   __alloT('stem.circuit.energy_budget_intro', 'The battery pours out '), h('b', { className: 'text-rose-300' }, 'P = V×I = ' + power.toFixed(2) + ' W'),
                   ' (like ' + eq + '). Every load turns its share into heat or light — and the shares must add back up to the total. Energy is transferred to light and heat; charge is conserved.'),
                 // Segmented power bar
@@ -8792,7 +8793,7 @@ function CircuitActiveLessonLab(props) {
                       var pct = s.p / totP * 100;
                       return h('div', { key: i, style: { width: pct + '%', background: s.col + '33', borderRight: i < segs.length - 1 ? '1px solid rgba(15,23,42,0.6)' : 'none' }, className: 'flex flex-col items-center justify-center overflow-hidden' },
                         pct > 12 && h('span', { className: 'text-[0.625rem] font-black leading-none', style: { color: s.col } }, s.p.toFixed(2) + 'W'),
-                        pct > 20 && h('span', { className: 'text-[0.5rem] text-slate-400 leading-none mt-0.5 truncate px-1', style: { maxWidth: '100%' } }, s.name)
+                        pct > 20 && h('span', { className: 'text-[0.5rem] text-slate-300 leading-none mt-0.5 truncate px-1', style: { maxWidth: '100%' } }, s.name)
                       );
                     })
                 ),
@@ -8827,8 +8828,8 @@ function CircuitActiveLessonLab(props) {
                 );
               }
               return h('div', { className: 'circuit-card mt-4 bg-gradient-to-br from-slate-900 to-blue-950/40 border border-cyan-500/25 rounded-xl p-4 backdrop-blur-md' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-cyan-400 uppercase tracking-wider mb-1' }, '🐌⚡ ' + __alloT('stem.circuit.paradox_title', 'The paradox: electrons crawl, the signal races')),
-                h('p', { className: 'text-[0.6875rem] text-slate-400 mb-2 leading-snug' }, __alloT('stem.circuit.paradox_body', 'The schematic dots show conventional current, opposite to electron drift. Their speed is exaggerated; real electrons barely creep. So why does the bulb light instantly? Because flipping the switch launches an electric field down the wire at nearly light speed, nudging every electron at once.')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-cyan-300 uppercase tracking-wider mb-1' }, '🐌⚡ ' + __alloT('stem.circuit.paradox_title', 'The paradox: electrons crawl, the signal races')),
+                h('p', { className: 'text-[0.6875rem] text-slate-300 mb-2 leading-snug' }, __alloT('stem.circuit.paradox_body', 'The schematic dots show conventional current, opposite to electron drift. Their speed is exaggerated; real electrons barely creep. So why does the bulb light instantly? Because flipping the switch launches an electric field down the wire at nearly light speed, nudging every electron at once.')),
                 h('svg', { viewBox: '0 0 360 120', width: '100%', role: 'img', 'aria-label': __alloT('stem.circuit.aria_paradox_svg', 'Two wires. In the top wire the electric field pulse races across almost instantly. In the bottom wire individual electrons drift very slowly.') },
                   lane(32, '⚡ ' + __alloT('stem.circuit.lane_field_label', 'Electric field / signal'), '≈ 200,000 km/s'),
                   // fast signal pulse
@@ -8874,7 +8875,7 @@ function CircuitActiveLessonLab(props) {
               ];
               return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-amber-500/25 rounded-xl p-4 backdrop-blur-md' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-amber-400 uppercase tracking-wider mb-1' }, '📏 How big is ' + current.toFixed(3) + ' A, really?'),
-                h('p', { className: 'text-[0.6875rem] text-slate-400 mb-3 leading-snug' }, 'Current spans an enormous range — this ladder is logarithmic (each step is 10× bigger). Your circuit sits here compared with things you know.'),
+                h('p', { className: 'text-[0.6875rem] text-slate-300 mb-3 leading-snug' }, 'Current spans an enormous range — this ladder is logarithmic (each step is 10× bigger). Your circuit sits here compared with things you know.'),
                 h('svg', { viewBox: '0 0 360 78', width: '100%', role: 'img', 'aria-label': __alloFill(__alloT('stem.circuit.a11y_logarithmic_current_ladder_from_a_microamp_to_1', 'Logarithmic current ladder from a microamp to 100 kiloamps. Your circuit draws {value1} amps, between {value2} and larger loads.'), { value1: current.toFixed(3), value2: (function(){ var below=marks[0].label; marks.forEach(function(m){ if (m.a <= current) below = m.label; }); return below; })() })},
                   h('defs', null,
                     h('linearGradient', { id: 'circAmpGrad', x1: 0, y1: 0, x2: 1, y2: 0 },
@@ -8914,7 +8915,7 @@ function CircuitActiveLessonLab(props) {
                   var compR = getCompR(comp);
                   var compV = reading(comp).voltage;
                   if (comp.type === 'ammeter' || comp.type === 'voltmeter') return null;
-                  return h('div', { key: comp.id, className: 'flex items-center gap-2 text-xs font-mono text-slate-400' },
+                  return h('div', { key: comp.id, className: 'flex items-center gap-2 text-xs font-mono text-slate-300' },
                     h('span', null, 'V' + (i + 1) + (comp.type === 'led' ? ' = Vf + I × r = ' + circuitForwardVoltage(comp) + ' + ' : ' = I × R = ') + current.toFixed(3) + ' × ' + compR.toFixed(1) + ' = ' + circuitVoltageText(compV, 2))
                   );
                 }),
@@ -8958,7 +8959,7 @@ function CircuitActiveLessonLab(props) {
                 className: 'flex items-center gap-2 w-full text-left'
               },
                 h('p', { className: 'text-[0.6875rem] font-bold text-slate-300 uppercase tracking-wider' }, '\uD83D\uDCCB ' + __alloT('stem.circuit.circuit_presets', 'Circuit Presets')),
-                h('span', { className: 'ml-auto text-slate-400 text-xs' }, showPresets ? '\u25B2' : '\u25BC')
+                h('span', { className: 'ml-auto text-slate-300 text-xs' }, showPresets ? '\u25B2' : '\u25BC')
               ),
               showPresets && h('div', { className: 'flex flex-wrap gap-2 mt-3' },
                 CIRCUIT_PRESETS.map(function(preset) {
@@ -8969,7 +8970,7 @@ function CircuitActiveLessonLab(props) {
                     title: __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc)
                   },
                     h('span', { className: 'font-bold text-slate-200 block' }, preset.label),
-                    h('span', { className: 'text-[0.625rem] text-slate-400 mt-0.5 block' }, __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc))
+                    h('span', { className: 'text-[0.625rem] text-slate-300 mt-0.5 block' }, __alloT('stem.circuit.' + (preset.id) + '_desc', preset.desc))
                   );
                 })
               )
@@ -9112,12 +9113,12 @@ function CircuitActiveLessonLab(props) {
                 // KCL
                 h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
                   h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.kcl_title', 'Kirchhoff\'s Current Law (KCL)')),
-                  h('p', { className: 'text-xs text-slate-400' }, __alloT('stem.circuit.kcl_desc', 'The total current entering a junction equals the total current leaving that junction.')),
+                  h('p', { className: 'text-xs text-slate-300' }, __alloT('stem.circuit.kcl_desc', 'The total current entering a junction equals the total current leaving that junction.')),
                   h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 I_in = \u2211 I_out'),
                   mode === 'parallel' && components.length > 0 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
                     h('p', { className: 'text-[0.625rem] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
-                    h('p', { className: 'text-[0.625rem] text-slate-400 font-mono' }, 'Total current from source: ' + current.toFixed(3) + 'A'),
-                    h('p', { className: 'text-[0.625rem] text-slate-400 font-mono mt-0.5' }, 'Branch currents: ' + components.map(function(c, i) {
+                    h('p', { className: 'text-[0.625rem] text-slate-300 font-mono' }, 'Total current from source: ' + current.toFixed(3) + 'A'),
+                    h('p', { className: 'text-[0.625rem] text-slate-300 font-mono mt-0.5' }, 'Branch currents: ' + components.map(function(c, i) {
                       var cR = getCompR(c);
                       var cI = reading(c).current;
                       return 'I' + (i + 1) + '=' + cI.toFixed(3) + 'A';
@@ -9133,7 +9134,7 @@ function CircuitActiveLessonLab(props) {
                 // KVL
                 h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
                   h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.kvl_law_title', 'Kirchhoff\'s Voltage Law (KVL)')),
-                  h('p', { className: 'text-xs text-slate-400' }, __alloT('stem.circuit.kvl_law_desc', 'The sum of all voltage drops around any closed loop equals the source voltage (EMF).')),
+                  h('p', { className: 'text-xs text-slate-300' }, __alloT('stem.circuit.kvl_law_desc', 'The sum of all voltage drops around any closed loop equals the source voltage (EMF).')),
                   h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 V_drops = V_source'),
                   mode === 'series' && components.length > 0 && current > 0.001 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
                     h('p', { className: 'text-[0.625rem] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
@@ -9141,7 +9142,7 @@ function CircuitActiveLessonLab(props) {
                       if (c.type === 'ammeter' || c.type === 'voltmeter') return null;
                       var cR = getCompR(c);
                       var cV = reading(c).voltage;
-                      return h('p', { key: c.id, className: 'text-[0.625rem] text-slate-400 font-mono' }, 'V' + (i + 1) + ' = ' + (c.type === 'led' ? circuitForwardVoltage(c) + ' + ' : '') + current.toFixed(3) + ' × ' + cR.toFixed(1) + ' = ' + circuitVoltageText(cV, 2));
+                      return h('p', { key: c.id, className: 'text-[0.625rem] text-slate-300 font-mono' }, 'V' + (i + 1) + ' = ' + (c.type === 'led' ? circuitForwardVoltage(c) + ' + ' : '') + current.toFixed(3) + ' × ' + cR.toFixed(1) + ' = ' + circuitVoltageText(cV, 2));
                     }),
                     (function() {
                       var vSum = 0;
@@ -9156,7 +9157,7 @@ function CircuitActiveLessonLab(props) {
                 // Additional formulas for g912
                 band === 'g912' && h('div', { className: 'bg-slate-950/40 rounded-lg p-3 border border-violet-900/40' },
                   h('p', { className: 'text-xs font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.key_relationships', 'Key Relationships')),
-                  h('div', { className: 'grid grid-cols-2 gap-2 text-[0.625rem] text-slate-400 font-mono' },
+                  h('div', { className: 'grid grid-cols-2 gap-2 text-[0.625rem] text-slate-300 font-mono' },
                     h('p', null, 'V = IR (Ohm\'s Law)'),
                     h('p', null, 'P = IV = I\u00B2R = V\u00B2/R'),
                     h('p', null, 'R_series = R1 + R2 + ...'),
@@ -9355,7 +9356,7 @@ function CircuitActiveLessonLab(props) {
                     return h('button', { key: type,
                       onClick: function() { upd('_selectedComp', active ? null : type); },
                       className: 'px-2.5 py-1 rounded-lg text-[0.625rem] font-bold transition-all border ' +
-                        (active ? 'text-slate-950 font-extrabold shadow-sm' : 'transition-colors bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-300'),
+                        (active ? 'text-slate-950 font-extrabold shadow-sm' : 'transition-colors bg-slate-950/60 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-slate-300'),
                       style: active ? { background: info.color, borderColor: info.color } : {}
                     }, info.icon + ' ' + info.name);
                   })
@@ -9368,7 +9369,7 @@ function CircuitActiveLessonLab(props) {
                   ),
                   h('p', { className: 'text-xs text-slate-300 leading-relaxed mb-3' }, physics.how),
                   h('div', { className: 'bg-cyan-950/20 rounded-lg p-2.5 border border-cyan-900/30' },
-                    h('span', { className: 'text-[0.625rem] font-bold text-cyan-400' }, '\uD83D\uDCA1 ' + __alloT('stem.circuit.analogy_label', 'Analogy: ')),
+                    h('span', { className: 'text-[0.625rem] font-bold text-cyan-300' }, '\uD83D\uDCA1 ' + __alloT('stem.circuit.analogy_label', 'Analogy: ')),
                     h('span', { className: 'text-[0.625rem] text-cyan-300 leading-normal' }, physics.analogy)
                   ),
                   typeof callTTS === 'function' ? h('button', { 'aria-label': __alloT('stem.circuit.aria_read_aloud', 'Read aloud'),
@@ -9383,7 +9384,7 @@ function CircuitActiveLessonLab(props) {
             // Real-World Circuit Applications
             // ══════════════════════════════════════
             h('div', { className: 'mt-4 bg-slate-900/40 border border-slate-800 p-4 rounded-xl backdrop-blur-md' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-cyan-400 uppercase tracking-wider mb-2' }, '\uD83C\uDF0D ' + __alloT('stem.circuit.real_world_circuits_title', 'Real-World Circuits')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-cyan-300 uppercase tracking-wider mb-2' }, '\uD83C\uDF0D ' + __alloT('stem.circuit.real_world_circuits_title', 'Real-World Circuits')),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                 [
                   { emoji: '\uD83D\uDD26', name: __alloT('stem.circuit.app_flashlight_name', 'Flashlight'), circuit: __alloT('stem.circuit.circuit_type_series', 'Series'), desc: __alloT('stem.circuit.app_flashlight_desc', 'Battery + switch + bulb in series. Switch breaks circuit to turn off.'), comps: __alloT('stem.circuit.app_flashlight_comps', 'Switch, Bulb') },
@@ -9403,11 +9404,11 @@ function CircuitActiveLessonLab(props) {
                       h('span', { className: 'text-base' }, app.emoji),
                       h('div', null,
                         h('span', { className: 'text-xs font-bold text-slate-200 block' }, app.name),
-                        h('span', { className: 'text-[0.625rem] text-cyan-400 font-bold uppercase tracking-wider' }, app.circuit)
+                        h('span', { className: 'text-[0.625rem] text-cyan-300 font-bold uppercase tracking-wider' }, app.circuit)
                       )
                     ),
                     expanded ? h('div', { className: 'animate-in fade-in duration-200 motion-reduce:animate-none mt-1' },
-                      h('p', { className: 'text-[0.625rem] text-slate-400 leading-normal mb-1.5' }, app.desc),
+                      h('p', { className: 'text-[0.625rem] text-slate-300 leading-normal mb-1.5' }, app.desc),
                       h('span', { className: 'text-[0.625rem] text-slate-300 font-bold block' }, '\uD83D\uDD27 ' + __alloT('stem.circuit.key_parts_label', 'Key parts: ') + app.comps)
                     ) : null
                   );
@@ -9452,7 +9453,7 @@ function CircuitActiveLessonLab(props) {
             ),
 
             // Footer
-            h('p', { className: 'text-[0.625rem] text-center text-slate-400 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder') + ' \u2022 ' + __alloT('stem.circuit.footer_ohm', 'Ohm\'s Law: V = IR') + ' \u2022 ' + __alloT('stem.circuit.footer_power', 'Power: P = IV')),
+            h('p', { className: 'text-[0.625rem] text-center text-slate-300 mt-4 mb-2 font-mono font-bold' }, '\uD83D\uDD0C ' + __alloT('stem.circuit.circuit_builder', 'Circuit Builder') + ' \u2022 ' + __alloT('stem.circuit.footer_ohm', 'Ohm\'s Law: V = IR') + ' \u2022 ' + __alloT('stem.circuit.footer_power', 'Power: P = IV')),
             confirmationAction && h(CircuitConfirmationDialog, {
               React: React,
               t: cktT,

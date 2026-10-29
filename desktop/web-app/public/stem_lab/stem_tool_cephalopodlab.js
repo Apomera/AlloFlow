@@ -1234,7 +1234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: { flex: 1, minWidth: 240 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, __alloT('stem.cephalopodlab.cephalopod_lab', 'Cephalopod Lab')),
-                h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
+                h('div', { style: { fontSize: 10, fontWeight: 700, color: '#c4b5fd', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   TAB_GROUPS.length + ' areas · ' + TAB_SECTION_COUNT + ' sections')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
@@ -1310,7 +1310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             style: {
               padding: '7px 13px',
               background: on ? g.color + '1f' : 'transparent',
-              color: on ? g.color : '#94a3b8',
+              color: on ? '#f1f5f9' : '#94a3b8',
               border: '1px solid ' + (on ? g.color + '66' : 'rgba(99,102,241,0.18)'),
               borderRadius: 9999,
               fontSize: 11.5, fontWeight: 800, cursor: 'pointer',
@@ -22925,7 +22925,7 @@ function createCLHuntFish(T,index){
                       borderLeft: '3px solid ' + eraE.color,
                       borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
                     h('div', { style: { fontWeight: 800, color: active ? '#fde68a' : '#e2e8f0' } }, eraE.name),
-                    h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
+                    h('div', { style: { fontSize: 9, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
                       eraE.startMya + '–' + eraE.endMya + ' MYA'));
                 })))
           ) : null,
@@ -24531,7 +24531,7 @@ function createCLHuntFish(T,index){
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, r.emoji),
                       h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, r.name)),
-                    h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.range));
+                    h('div', { style: { fontSize: 9, color: '#cbd5e1' } }, r.range));
                 }))),
 
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + sel.color }) },

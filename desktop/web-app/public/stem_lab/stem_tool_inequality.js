@@ -177,6 +177,14 @@ window.StemLab = window.StemLab || {
     { id: 'quizChamp',    icon: '\uD83C\uDFC6', label: 'Quiz Champ',       desc: 'Get 20 total quiz answers correct' }
   ];
 
+  // WCAG 1.4.3 high contrast: flatten the gradient Snapshot button under HC green ink.
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-inequality-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-inequality-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"inequality\"] .from-indigo-600.to-purple-600{background-image:none!important;background-color:#000!important}";
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('inequality', {
     icon: '\u2265', label: 'Inequality Grapher',
     desc: 'Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.',
@@ -840,8 +848,8 @@ window.StemLab = window.StemLab || {
         // ── Topic-accent hero band per mode ──
         (function() {
           var MODE_META = {
-            '1d': { accent: '#c026d3', soft: 'rgba(192,38,211,0.10)', icon: '\uD83D\uDCCF', title: __alloT('stem.inequality.hero_1d_title', 'Number Line \u2014 1D inequalities'),                  hint: __alloT('stem.inequality.hero_1d_hint', 'Open circle for < and >, closed for \u2264 and \u2265. Compound inequalities (-2 < x \u2264 5) shade the band BETWEEN the two endpoints. Common Core 6.EE.8, 7.EE.4.') },
-            '2d': { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDCC8', title: __alloT('stem.inequality.hero_2d_title', '2D Graph \u2014 inequality regions'),                hint: __alloT('stem.inequality.hero_2d_hint', 'Solid line for \u2264/\u2265, dashed for </>. Test point (0,0) tells you which side to shade. Multiple constraints overlap into a feasible region \u2014 the foundation of linear programming.') }
+            '1d': { accent: '#a21caf', soft: 'rgba(192,38,211,0.10)', icon: '\uD83D\uDCCF', title: __alloT('stem.inequality.hero_1d_title', 'Number Line \u2014 1D inequalities'),                  hint: __alloT('stem.inequality.hero_1d_hint', 'Open circle for < and >, closed for \u2264 and \u2265. Compound inequalities (-2 < x \u2264 5) shade the band BETWEEN the two endpoints. Common Core 6.EE.8, 7.EE.4.') },
+            '2d': { accent: '#7e22ce', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDCC8', title: __alloT('stem.inequality.hero_2d_title', '2D Graph \u2014 inequality regions'),                hint: __alloT('stem.inequality.hero_2d_hint', 'Solid line for \u2264/\u2265, dashed for </>. Test point (0,0) tells you which side to shade. Multiple constraints overlap into a feasible region \u2014 the foundation of linear programming.') }
           };
           var meta = MODE_META[graphMode] || MODE_META['1d'];
           return h('div', {
@@ -860,7 +868,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),

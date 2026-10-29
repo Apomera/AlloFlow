@@ -2065,7 +2065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             // Hero top
             h('div', { style: {
               padding: '20px 24px 16px',
-              background: 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, #312e81 50%, #581c87 100%)',
+              background: 'linear-gradient(135deg, #1e293b 0%, #312e81 50%, #581c87 100%)',
               color: '#fff', position: 'relative', overflow: 'hidden'
             } },
               h('div', { 'aria-hidden': 'true', style: {
@@ -2431,7 +2431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             padding: '22px 24px',
             marginBottom: '18px',
             borderRadius: '16px',
-            background: 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, #312e81 45%, #581c87 100%)',
+            background: 'linear-gradient(135deg, #1e293b 0%, #312e81 45%, #581c87 100%)',
             color: '#fff',
             overflow: 'hidden',
             boxShadow: '0 10px 30px -10px rgba(30, 41, 59, .4)'

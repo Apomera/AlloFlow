@@ -601,7 +601,7 @@ window.StemLab = window.StemLab || {
               ' = ',
               h('span', { className: 'text-2xl text-violet-900' }, leftProduct + rightProduct)
             ),
-            h('p', { className: 'text-xs text-violet-500 mt-2 italic' },
+            h('p', { className: 'text-xs text-violet-700 mt-2 italic' },
               t('stem.areamodel.distributive_property_a_b_c_a_b_a_c', '\uD83D\uDCA1 Distributive Property: a \u00d7 (b + c) = a\u00d7b + a\u00d7c'))
           )
         );
@@ -721,7 +721,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-slate-600' }, '='),
               h('span', { className: 'text-2xl text-indigo-900 bg-indigo-100 px-3 py-0.5 rounded-lg border border-indigo-300 shadow-sm' }, total)
             ),
-            h('p', { className: 'text-xs text-indigo-500 mt-2 italic' },
+            h('p', { className: 'text-xs text-indigo-700 mt-2 italic' },
               t('stem.areamodel.break_multi_digit_numbers_into_tens_an', '\uD83D\uDCA1 Break multi-digit numbers into tens and ones, multiply each pair, then add!'))
           )
         );
@@ -1004,10 +1004,10 @@ window.StemLab = window.StemLab || {
 
         (function() {
           var MODE_META = {
-            basic:        { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: t('stem.areamodel.basic_grid_multiplication_as_area', 'Basic Grid \u2014 multiplication as area'),                hint: t('stem.areamodel.a_b_is_the_area_of_an_a_by_b_rectangle', 'a \u00d7 b is the area of an a-by-b rectangle. This is THE bridge from skip-counting to multiplication. Common Core 3.MD.7: relate area to multiplication and addition.') },
+            basic:        { accent: '#92400e', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: t('stem.areamodel.basic_grid_multiplication_as_area', 'Basic Grid \u2014 multiplication as area'),                hint: t('stem.areamodel.a_b_is_the_area_of_an_a_by_b_rectangle', 'a \u00d7 b is the area of an a-by-b rectangle. This is THE bridge from skip-counting to multiplication. Common Core 3.MD.7: relate area to multiplication and addition.') },
             distributive: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2702',         title: t('stem.areamodel.distributive_split_the_rectangle_keep_', 'Distributive \u2014 split the rectangle, keep the area'), hint: t('stem.areamodel.a_b_c_ab_ac_cut_a_4_7_grid_into_a_4_5_', 'a(b+c) = ab + ac. Cut a 4\u00d77 grid into a 4\u00d75 + 4\u00d72; same total. The distributive property is the algebraic backbone of every later expansion. Common Core 3.OA.5.') },
-            multidigit:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCA', title: t('stem.areamodel.partial_products_live', 'Partial products — split each factor by place value'),       hint: t('stem.areamodel.partial_products_guidance', 'Split both factors into tens and ones. Multiply each pair of parts, then add the partial products. The total matches the whole rectangle.') },
-            word:         { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDCDD', title: t('stem.areamodel.word_problems_multiplication_in_the_wo', 'Word Problems \u2014 multiplication in the world'),   hint: t('stem.areamodel.a_garden_with_4_rows_of_6_plants_a_the', 'A garden with 4 rows of 6 plants. A theater with 8 rows of 12 seats. Every multiplication fact lives inside a real-world rectangle. Common Core 3.OA.3, 4.OA.2.') }
+            multidigit:   { accent: '#155e75', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCA', title: t('stem.areamodel.partial_products_live', 'Partial products — split each factor by place value'),       hint: t('stem.areamodel.partial_products_guidance', 'Split both factors into tens and ones. Multiply each pair of parts, then add the partial products. The total matches the whole rectangle.') },
+            word:         { accent: '#065f46', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDCDD', title: t('stem.areamodel.word_problems_multiplication_in_the_wo', 'Word Problems \u2014 multiplication in the world'),   hint: t('stem.areamodel.a_garden_with_4_rows_of_6_plants_a_the', 'A garden with 4 rows of 6 plants. A theater with 8 rows of 12 seats. Every multiplication fact lives inside a real-world rectangle. Common Core 3.OA.3, 4.OA.2.') }
           };
           var meta = MODE_META[viewMode] || MODE_META.basic;
               var startInstructions = {"basic":"Change Rows and Columns to resize the array. Select a square to highlight part of it.","distributive":"Adjust the factors and split to see how two smaller products make the total.","word":"Choose a word problem, use the model, then enter and check your answer.","multidigit":"Set the factors, then connect each smaller rectangle to its partial product."};
@@ -1028,7 +1028,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'mt-2 text-sm leading-relaxed' }, t('stem.areamodel.start_' + viewMode, startInstructions[viewMode] || startInstructions.basic)),
               h('details', { className: 'math-learning-note' },
                 h('summary', null, t('stem.areamodel.about_model', 'About this activity')),
-                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
+                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
             )
           );
         })(),

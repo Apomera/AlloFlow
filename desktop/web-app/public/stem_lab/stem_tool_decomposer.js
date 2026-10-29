@@ -1665,6 +1665,7 @@
             '.theme-contrast [data-decomposer-goals] summary:focus-visible{outline-color:#ff0}' +
             '@media(forced-colors:active){[data-decomposer-goals],.theme-contrast [data-decomposer-goals],[data-decomposer-goals] summary,.theme-contrast [data-decomposer-goals] summary{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}[data-decomposer-goals] summary:focus-visible{outline-color:Highlight}}' +
             '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(div,section,span,p,h3,h4,h5,dt,dd,label,button,input,select,textarea){line-height:1.5}' +
+            '.theme-contrast [data-decomposer-snapshot]{background:#000!important}' +
             '@media(forced-colors:active){[data-decomposer-snapshot]{background:ButtonFace!important;color:ButtonText!important;border:1px solid ButtonText!important}}' +
             '.decomposer-scene-dismiss{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:44px;min-height:44px;padding:8px;border:1px solid currentColor;border-radius:8px;background:#fff;color:#334155;cursor:pointer}' +
             '.decomposer-scene-dismiss:focus-visible,[data-decomposer-object]:focus-visible{outline:3px solid #92400e;outline-offset:3px}' +
@@ -2070,7 +2071,7 @@
                   h('span', { className: 'text-[0.6875rem] font-bold text-violet-600 uppercase tracking-wider' }, '\uD83D\uDCA1 Did You Know?'),
                   h('button', { 'aria-label': __alloT('stem.decomposer.a11y_next', 'Next'),
                     onClick: function() { upd('_factIdx', factIdx + 1); },
-                    className: 'transition-colors text-[0.6875rem] text-violet-500 hover:text-violet-700 font-bold'
+                    className: 'transition-colors text-[0.6875rem] text-violet-700 hover:text-violet-900 font-bold'
                   }, 'Next \u2192')
                 ),
                 h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, facts[fi]),
@@ -2854,7 +2855,7 @@
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantB),
                   h('button', { 'data-decomposer-remove': 'b', 'aria-label': __alloT('stem.decomposer.remove_material_b', 'Remove Material B: {material}').replace('{material}', reactantB), onClick: function() { updMulti({ reactantB: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantB; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
-                ) : h('p', { className: 'text-xs text-rose-400 text-center py-4' }, 'Select below \u2193')
+                ) : h('p', { className: 'text-xs text-rose-700 text-center py-4' }, 'Select below \u2193')
               )
             ),
 
@@ -2977,7 +2978,7 @@
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('span', { className: 'text-[0.6875rem] font-bold text-blue-600' }, '\u2744\uFE0F Cold'),
                 h('span', { className: 'text-xs font-bold text-slate-700' }, simulationTemperature + '\u00B0C'),
-                h('span', { className: 'text-[0.6875rem] font-bold text-red-600' }, '\uD83D\uDD25 Hot')
+                h('span', { className: 'text-[0.6875rem] font-bold text-red-700' }, '\uD83D\uDD25 Hot')
               ),
               h('input', {
                 type: 'range', 'aria-label': __alloT('stem.decomposer.temperature', 'Temperature'), min: -200, max: 500, step: 5,

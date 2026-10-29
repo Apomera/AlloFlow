@@ -5,10 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kitchen Lab · 3D Skills Studio</title>
   <link rel="stylesheet" href="kitchen_studio.css">
+  <link rel="stylesheet" href="kitchen_studio_touch.css">
+  <link rel="stylesheet" href="kitchen_chemistry.css">
+  <script defer src="kitchen_chemistry_content.js"></script>
+  <script defer src="kitchen_chemistry.js"></script>
   <script defer src="../../vendor/three-r128/three.min.js"></script>
   <script defer src="../../vendor/three-r128/OrbitControls.js"></script>
   <script defer src="kitchen_studio_engine.js"></script>
   <script defer src="kitchen_studio_service.js"></script>
+  <script defer src="kitchen_studio_gestures.js"></script>
+  <script defer src="kitchen_studio_storage.js"></script>
+  <script defer src="kitchen_studio_platter.js"></script>
+  <script defer src="kitchen_studio_placement.js"></script>
+  <script defer src="kitchen_studio_touch.js"></script>
   <script defer src="kitchen_studio.js"></script>
 </head>
 <body>
@@ -33,10 +42,21 @@
           <div class="scene-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h2 id="kitchenHeading" tabindex="-1">The practice kitchen</h2></div><button id="viewToggle" type="button" aria-pressed="false">Use text view</button></div>
           <div id="replayBanner" class="replay-banner" hidden><span>REPLAY · <strong id="replaySceneStep"></strong></span><div class="replay-scene-controls"><button id="replayScenePrevious" type="button" aria-label="Previous replay action">Previous</button><button id="replaySceneNext" type="button" aria-label="Next replay action">Next</button><button id="returnLatest" type="button">Return to latest</button></div></div><div class="scene-viewport"><div id="stationLens" class="station-lens" aria-hidden="true"><span id="lensTitle"></span><strong id="lensValue"></strong><span id="lensDetail"></span></div>
           <div id="scene" role="img" aria-label="Interactive 3D kitchen with sink, cutting board, hob, oven, measuring jug, and refrigerator. Equivalent controls follow below."></div>
+          <div id="studioPlacementHint" class="studio-placement-hint" hidden aria-hidden="true"><strong id="studioPlacementTitle"></strong><span id="studioPlacementDetail"></span></div>
           <div id="fallback" hidden><h3>Your kitchen, in words</h3><p>The sink and prep board are on the left. The hob and oven are in the center. The measuring jug and refrigerator are on the right. Every station and action is available in the controls below.</p></div>
           </div>
-          <div class="scene-toolbar"><span id="sceneStatus">Drag to orbit · Scroll to zoom · Select a station</span><div class="camera-buttons"><button id="focusView" type="button" aria-pressed="false">Focus station</button><button id="rotateLeft" type="button" aria-label="Rotate view left">↶</button><button id="rotateRight" type="button" aria-label="Rotate view right">↷</button><button id="resetView" type="button">Reset view</button></div></div>
+          <section id="studioTouch" class="studio-touch" aria-label="Hands-on kitchen controls" hidden>
+            <div class="studio-touch-heading"><strong>Try it with your hands</strong><button id="studioInteractionMode" type="button" aria-pressed="true">Hands on</button></div>
+            <div id="studioToolFinder" class="studio-tool-finder" role="group" aria-label="Find a tool in the 3D view"></div>
+            <p id="studioTouchHint">Tap the soap or the clean board. Drag empty space to look around.</p>
+            <label id="studioCutChoice" hidden>Knife cut <select id="studioCutSize"><option value="dice">Small dice</option><option value="largeDice">Large dice</option></select></label>
+            <progress id="studioTouchProgress" max="1" value="0" aria-label="Current gesture progress" hidden></progress>
+            <p id="studioTouchStatus" role="status" aria-live="polite" aria-atomic="true">Choose a station, then touch a tool. You can also use the action buttons.</p>
+            <a href="#actions">Use the action buttons</a>
+          </section>
+          <div class="scene-toolbar"><span id="sceneStatus">Drag empty space to orbit · Scroll to zoom · Tap a station</span><div class="camera-buttons"><button id="focusView" type="button" aria-pressed="false">Focus station</button><button id="rotateLeft" type="button" aria-label="Rotate view left">↶</button><button id="rotateRight" type="button" aria-label="Rotate view right">↷</button><button id="resetView" type="button">Reset view</button></div></div>
           <p id="sceneDescription" class="observation"></p>
+          <a href="#kitchenChemistry" class="chem-launch" data-open-chemistry>Why does this happen? · Explore the chemistry</a>
         </div>
         <nav id="stations" class="stations" aria-label="Choose a skill station"></nav>
 
@@ -68,6 +88,7 @@
       </section>
         <section class="progress-card"><div class="row"><h2>Your evidence</h2><span id="progressCount">0 of 6 stations</span></div><progress id="progress" max="6" value="0" aria-label="Stations with submitted evidence"></progress><p id="masteryCount" class="mastery-count"></p><div id="nextPracticeCard" class="next-practice"><p class="eyebrow">A NEXT STEP FOR YOU</p><p id="nextPracticeReason"></p><button id="nextPractice" type="button"></button></div><p id="storageStatus">Progress stays in this browser. Export a copy to share with your teacher.</p><div class="row"><button id="export" type="button">Download evidence</button><button id="exportReadable" type="button">Download readable report</button><button id="reviewToggle" type="button" aria-expanded="false" aria-controls="portfolio">Review attempts</button></div><div id="portfolio" hidden></div></section>
     </section>
+    <section id="kitchenChemistry" data-kitchen-chemistry aria-label="Kitchen chemistry explanations"></section>
     <footer><p>This simplified simulation practices decisions and explanations. Knife control, handwashing technique, and real cooking performance need observation in a supervised kitchen. Simulated cooking steps do not predict real cooking times.</p><p>Food safety: <a href="https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/safe-temperature-chart" target="_blank" rel="noopener">USDA temperature guidance</a> · <a href="https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/leftovers-and-food-safety" target="_blank" rel="noopener">Leftovers and food safety</a></p></footer>
   </main>
 </body>

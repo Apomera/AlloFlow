@@ -2647,7 +2647,8 @@
             }
           },
             h('span', { 'aria-hidden': 'true', className: 'absolute top-0 left-0 leading-none',
-              style: { padding: '1px 2px' } }, use.code),
+              // Solid fill behind the code so the pattern stripes never run under it.
+              style: { padding: '1px 2px', backgroundColor: parcelFill } }, use.code),
             plan.greenInfra[id]
               ? h('span', { 'aria-hidden': 'true', className: 'absolute top-0 right-0 text-[0.5rem] leading-none',
                   style: { color: '#bbf7d0', padding: '1px 2px' } }, '●')

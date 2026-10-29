@@ -3590,7 +3590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   h('li', null, h('strong', null, t('stem.spaceexplorer.power_allocation', 'Power allocation')), t('stem.spaceexplorer.life_science_shields_comms_lets_you_bi', ' (Life / Science / Shields / Comms) lets you bias resource drain each turn. Pre-launch decision.'))
                 )
               ),
-              h('div', { className: 'text-[0.625rem] italic text-slate-400 pt-1 border-t border-purple-800/30' },
+              h('div', { className: 'text-[0.625rem] italic text-slate-300 pt-1 border-t border-purple-800/30' },
                 t('stem.spaceexplorer.tip_harder_destinations_give_more_scie', 'Tip: harder destinations give more science. Mars + Moon are the safest starting points. Wins, best %, and total science track per destination below each tile.'))
             )
           ),

@@ -192,21 +192,21 @@
       '  outline: 3px solid #fbbf24 !important; outline-offset: 3px !important;',
       '}',
       '#cyber-defense-region {',
-      '  --cyberd-accent: #818cf8; --cyberd-accent-rgb: 129,140,248;',
+      '  --cyberd-accent: #818cf8; --cyberd-accent-rgb: 129,140,248; --cyberd-ink: #a5b4fc;',
       '  position: relative; isolation: isolate; overflow: hidden;',
       '  border: 1px solid rgba(129,140,248,0.22);',
       '  box-shadow: 0 28px 70px rgba(2,6,23,0.38), 0 0 0 1px rgba(255,255,255,0.025) inset !important;',
       '}',
-      '#cyber-defense-region[data-cyber-mode="phish"] { --cyberd-accent: #fb7185; --cyberd-accent-rgb: 251,113,133; }',
-      '#cyber-defense-region[data-cyber-mode="password"] { --cyberd-accent: #34d399; --cyberd-accent-rgb: 52,211,153; }',
-      '#cyber-defense-region[data-cyber-mode="cipher"] { --cyberd-accent: #fbbf24; --cyberd-accent-rgb: 251,191,36; }',
-      '#cyber-defense-region[data-cyber-mode="network"] { --cyberd-accent: #38bdf8; --cyberd-accent-rgb: 56,189,248; }',
-      '#cyber-defense-region[data-cyber-mode="social"] { --cyberd-accent: #e879f9; --cyberd-accent-rgb: 232,121,249; }',
-      '#cyber-defense-region[data-cyber-mode="warroom"] { --cyberd-accent: #f87171; --cyberd-accent-rgb: 248,113,113; }',
-      '#cyber-defense-region[data-cyber-mode="defenseHunt"] { --cyberd-accent: #2dd4bf; --cyberd-accent-rgb: 45,212,191; }',
+      '#cyber-defense-region[data-cyber-mode="phish"] { --cyberd-accent: #fb7185; --cyberd-accent-rgb: 251,113,133; --cyberd-ink: #fda4af; }',
+      '#cyber-defense-region[data-cyber-mode="password"] { --cyberd-accent: #34d399; --cyberd-accent-rgb: 52,211,153; --cyberd-ink: #6ee7b7; }',
+      '#cyber-defense-region[data-cyber-mode="cipher"] { --cyberd-accent: #fbbf24; --cyberd-accent-rgb: 251,191,36; --cyberd-ink: #fcd34d; }',
+      '#cyber-defense-region[data-cyber-mode="network"] { --cyberd-accent: #38bdf8; --cyberd-accent-rgb: 56,189,248; --cyberd-ink: #7dd3fc; }',
+      '#cyber-defense-region[data-cyber-mode="social"] { --cyberd-accent: #e879f9; --cyberd-accent-rgb: 232,121,249; --cyberd-ink: #f0abfc; }',
+      '#cyber-defense-region[data-cyber-mode="warroom"] { --cyberd-accent: #f87171; --cyberd-accent-rgb: 248,113,113; --cyberd-ink: #fca5a5; }',
+      '#cyber-defense-region[data-cyber-mode="defenseHunt"] { --cyberd-accent: #2dd4bf; --cyberd-accent-rgb: 45,212,191; --cyberd-ink: #5eead4; }',
       '#cyber-defense-region::before {',
       '  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;',
-      '  background: radial-gradient(circle at 12% 0%, rgba(var(--cyberd-accent-rgb),0.14), transparent 28%), radial-gradient(circle at 88% 18%, rgba(168,85,247,0.09), transparent 26%), linear-gradient(rgba(148,163,184,0.022) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.022) 1px, transparent 1px);',
+      '  background: radial-gradient(circle at 12% 0%, rgba(var(--cyberd-accent-rgb),0.07), transparent 28%), radial-gradient(circle at 88% 18%, rgba(168,85,247,0.045), transparent 26%), linear-gradient(rgba(148,163,184,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.015) 1px, transparent 1px);',
       '  background-size: auto, auto, 32px 32px, 32px 32px;',
       '}',
       '.cyberd-shell-header {',
@@ -252,7 +252,7 @@
       '  display: flex; align-items: center; gap: 10px; min-height: 31px; padding: 6px 24px;',
       '  background: rgba(2,6,23,0.22); border-bottom: 1px solid rgba(148,163,184,0.08);',
       '}',
-      '.cyberd-readiness__label { color: #94a3b8; font-size: 9px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }',
+      '.cyberd-readiness__label { color: #cbd5e1; font-size: 9px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }',
       '.cyberd-readiness__count { color: #cbd5e1; font-size: 10px; font-weight: 800; white-space: nowrap; }',
       '.cyberd-readiness__track { display: flex; align-items: center; gap: 5px; flex: 1; }',
       '.cyberd-readiness-step { flex: 1; height: 4px; max-width: 96px; border-radius: 99px; background: rgba(148,163,184,0.18); }',
@@ -273,33 +273,33 @@
       '  background: linear-gradient(105deg, rgba(var(--cyberd-accent-rgb),0.12), rgba(99,102,241,0.045) 62%, rgba(15,23,42,0.38));',
       '  box-shadow: 0 12px 28px rgba(2,6,23,0.14);',
       '}',
-      '.cyberd-learning-brief__eyebrow { color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 3px; }',
+      '.cyberd-learning-brief__eyebrow { color: var(--cyberd-ink); font-size: 9px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 3px; }',
       '.cyberd-learning-brief__title { color: #f8fafc; font-size: 14px; line-height: 1.25; font-weight: 900; }',
       '.cyberd-learning-brief__body { color: #cbd5e1; font-size: 11px; line-height: 1.5; margin-top: 3px; max-width: 760px; }',
       '.cyberd-learning-brief__start { display: flex; align-items: flex-start; gap: 7px; margin-top: 8px; color: #dbeafe; font-size: 10.5px; line-height: 1.45; }',
-      '.cyberd-learning-brief__start-label { flex: 0 0 auto; padding: 3px 6px; border-radius: 5px; background: rgba(var(--cyberd-accent-rgb),0.16); color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.cyberd-learning-brief__start-label { flex: 0 0 auto; padding: 3px 6px; border-radius: 5px; background: rgba(var(--cyberd-accent-rgb),0.16); color: var(--cyberd-ink); font-size: 9px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
       '#cyber-defense-region[data-cyber-mode="phish"] .cyberd-learning-brief__start-label { color: #fda4af; }',
       '.cyberd-learning-brief__meta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 330px; }',
       '.cyberd-learning-brief__chip { padding: 5px 8px; border-radius: 7px; border: 1px solid rgba(148,163,184,0.18); background: rgba(2,6,23,0.26); color: #cbd5e1; font-size: 10px; font-weight: 700; white-space: nowrap; }',
-      '.cyberd-learning-brief__chip strong { color: var(--cyberd-accent); font-weight: 900; }',
+      '.cyberd-learning-brief__chip strong { color: var(--cyberd-ink); font-weight: 900; }',
       '.cyberd-learning-brief__flow { grid-column: 1 / -1; margin-top: 2px; padding: 10px 11px 11px; border: 1px solid rgba(148,163,184,0.16); border-radius: 10px; background: rgba(2,6,23,0.24); }',
       '.cyberd-learning-brief__flow-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }',
       '.cyberd-learning-brief__flow-eyebrow { color: #c4b5fd; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }',
-      '.cyberd-learning-brief__flow-caption { color: #94a3b8; font-size: 9.5px; line-height: 1.35; text-align: right; }',
+      '.cyberd-learning-brief__flow-caption { color: #cbd5e1; font-size: 9.5px; line-height: 1.35; text-align: right; }',
       '.cyberd-learning-brief__flow-grid { display: grid; grid-template-columns: minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr); align-items: stretch; gap: 7px; }',
       '.cyberd-learning-brief__flow-step { min-width: 0; padding: 8px 9px; border: 1px solid rgba(var(--cyberd-accent-rgb),0.25); border-radius: 9px; background: linear-gradient(145deg, rgba(var(--cyberd-accent-rgb),0.11), rgba(15,23,42,0.42)); box-shadow: 0 7px 16px rgba(2,6,23,0.12); }',
       '.cyberd-learning-brief__flow-step[data-step="decision"] { border-color: rgba(168,85,247,0.3); background: linear-gradient(145deg, rgba(168,85,247,0.14), rgba(15,23,42,0.42)); }',
       '.cyberd-learning-brief__flow-step[data-step="action"] { border-color: rgba(52,211,153,0.28); background: linear-gradient(145deg, rgba(16,185,129,0.12), rgba(15,23,42,0.42)); }',
-      '.cyberd-learning-brief__flow-index { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: rgba(var(--cyberd-accent-rgb),0.18); color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.04em; }',
+      '.cyberd-learning-brief__flow-index { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: rgba(var(--cyberd-accent-rgb),0.18); color: var(--cyberd-ink); font-size: 9px; font-weight: 900; letter-spacing: 0.04em; }',
       '.cyberd-learning-brief__flow-step[data-step="decision"] .cyberd-learning-brief__flow-index { background: rgba(168,85,247,0.2); color: #c4b5fd; }',
       '.cyberd-learning-brief__flow-step[data-step="action"] .cyberd-learning-brief__flow-index { background: rgba(16,185,129,0.2); color: #6ee7b7; }',
       '.cyberd-learning-brief__flow-label { margin-top: 6px; color: #f8fafc; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }',
       '.cyberd-learning-brief__flow-value { margin-top: 3px; color: #dbeafe; font-size: 10.5px; line-height: 1.4; font-weight: 800; }',
-      '.cyberd-learning-brief__flow-hint { margin-top: 5px; color: #94a3b8; font-size: 9px; line-height: 1.35; }',
+      '.cyberd-learning-brief__flow-hint { margin-top: 5px; color: #cbd5e1; font-size: 9px; line-height: 1.35; }',
       '.cyberd-learning-brief__flow-connector { display: grid; place-items: center; color: var(--cyberd-accent); font-size: 16px; font-weight: 900; opacity: 0.8; }',
-      '.cyberd-learning-brief__flow-note { margin-top: 7px; color: #94a3b8; font-size: 9.5px; line-height: 1.4; }',
+      '.cyberd-learning-brief__flow-note { margin-top: 7px; color: #cbd5e1; font-size: 9.5px; line-height: 1.4; }',
       '.cyberd-learning-brief__decision { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 7px; margin-top: 1px; padding: 8px 9px; border-radius: 8px; border: 1px solid rgba(var(--cyberd-accent-rgb),0.22); background: rgba(var(--cyberd-accent-rgb),0.07); color: #dbeafe; font-size: 10.5px; line-height: 1.45; }',
-      '.cyberd-learning-brief__decision-label { flex: 0 0 auto; color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }',
+      '.cyberd-learning-brief__decision-label { flex: 0 0 auto; color: var(--cyberd-ink); font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }',
       '.cyberd-reflection-card {',
       '  max-width: 960px; margin: 20px auto 0; padding: 14px 15px;',
       '  border: 1px solid rgba(52,211,153,0.28); border-radius: 13px;',
@@ -3220,7 +3220,8 @@
             // rule keeps high-contrast yellow from being flattened by the first.
             el('style', null,
               '#cyber-defense-region{--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-canvas:#0f172a;}' +
-              '.theme-contrast #cyber-defense-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-canvas:#000000;}'),
+              '.theme-contrast #cyber-defense-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-canvas:#000000;}' +
+              '.theme-contrast #cyber-defense-region .cyberd-xp{background:#000!important;border:1px solid #ffff00;box-shadow:none!important;}'),
             // Header
             el('div', { className: 'cyberd-shell-header', style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
               el('button', { onClick: function() { if (cyberTab === 'password') { _cyberPasswordSample = ''; upd({ pwInput: '', pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); } ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '8px 12px', minWidth: 44, minHeight: 44, cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
@@ -3238,7 +3239,7 @@
                     return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null, cluesFound: [], showHeaders: false, aiGeneratedEmail: null, triageTimeLeft: 15, triageActive: phishMode === 'triage' && cyberTab === 'phish' }); }, 'aria-pressed': difficulty === dl,
                       style: { padding: '4px 10px', minHeight: 30, borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
                   })),
-                el('div', { 'aria-label': ctx.getXP('cyberDefense') + ' Cyber Defense experience points', style: { marginLeft: cyberTab === 'phish' ? 4 : 'auto', padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b', boxShadow: '0 0 14px rgba(245,158,11,0.4)', whiteSpace: 'nowrap' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
+                el('div', { 'aria-label': ctx.getXP('cyberDefense') + ' Cyber Defense experience points', className: 'cyberd-xp', style: { marginLeft: cyberTab === 'phish' ? 4 : 'auto', padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b', boxShadow: '0 0 14px rgba(245,158,11,0.4)', whiteSpace: 'nowrap' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
               ),
             ),
 
@@ -3389,7 +3390,7 @@
                               minHeight: 36,
                               cursor: 'pointer',
                               fontSize: 10,
-                              color: showHeaders ? '#a5b4fc' : '#94a3b8',
+                              color: showHeaders ? '#c7d2fe' : '#cbd5e1',
                               fontWeight: 700,
                               display: 'flex',
                               alignItems: 'center',
@@ -3495,7 +3496,7 @@
                         style: { marginLeft: 6, minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite', verticalAlign: 'middle' } },
                         '\uD83D\uDD0D');
                     }),
-                    activeEmail.link && el('div', { style: { marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', fontFamily: 'monospace', fontSize: 11, color: '#818cf8', wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: 6 } },
+                    activeEmail.link && el('div', { style: { marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', fontFamily: 'monospace', fontSize: 11, color: '#a5b4fc', wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: 6 } },
                       '\uD83D\uDD17 ' + activeEmail.link,
                       // Link clue button
                       phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
@@ -3595,7 +3596,7 @@
                       '\uD83D\uDCCB Evidence collected: ' + cluesFound.length + '/' + (activeEmail.clues || []).length + ' clues'),
                     // Next case button
                     el('button', { onClick: advanceCase,
-                      style: { marginTop: 14, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
+                      style: { marginTop: 14, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
                       '\uD83D\uDD75\uFE0F Next Case \u2192')
                   )
                 )
@@ -3727,7 +3728,7 @@
                   ),
                   // Tips
                   el('div', { style: { marginTop: 16, padding: 16, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
-                    el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Password Tips'),
+                    el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Password Tips'),
                     ['Prefer a long passphrase or a password-manager-generated password; aim for at least 15 characters when the password is used alone',
                      'Use a unique password for every account so one breach cannot unlock another',
                      'Do not rely on predictable substitutions such as Password1!; forced symbol and number rules are not a substitute for length',
@@ -3755,8 +3756,8 @@
                 // Encode/Decode toggle
                 el('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 16 } },
                   el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.operation', 'Operation'), style: { display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' } },
-                    el('button', { onClick: function() { upd('cipherEncode', true); }, 'aria-pressed': cipherEncode, style: { padding: '8px 18px', border: 'none', background: cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
-                    el('button', { onClick: function() { upd('cipherEncode', false); }, 'aria-pressed': !cipherEncode, style: { padding: '8px 18px', border: 'none', background: !cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
+                    el('button', { onClick: function() { upd('cipherEncode', true); }, 'aria-pressed': cipherEncode, style: { padding: '8px 18px', border: 'none', background: cipherEncode ? '#4f46e5' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
+                    el('button', { onClick: function() { upd('cipherEncode', false); }, 'aria-pressed': !cipherEncode, style: { padding: '8px 18px', border: 'none', background: !cipherEncode ? '#4f46e5' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
                   )
                 ),
                 // Caesar shift control
@@ -3777,7 +3778,7 @@
                       return el('div', { key: li, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 22 } },
                         el('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace' } }, letter),
                         el('span', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u2193'),
-                        el('span', { style: { fontSize: 10, fontWeight: 900, color: '#818cf8', fontFamily: 'monospace' } }, mapped)
+                        el('span', { style: { fontSize: 10, fontWeight: 900, color: '#a5b4fc', fontFamily: 'monospace' } }, mapped)
                       );
                     })
                   )
@@ -3797,7 +3798,7 @@
                 ),
                 // Explanation
                 el('div', { style: { marginBottom: 20, padding: 14, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
-                  el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 6 } },
+                  el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, marginBottom: 6 } },
                     cipherMode === 'caesar' ? '\uD83D\uDD04 How Caesar Cipher Works' : cipherMode === 'atbash' ? '\uD83D\uDD00 How Atbash Cipher Works' : '\u2295 How XOR Cipher Works'),
                   el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.6 } },
                     cipherMode === 'caesar' ? 'Each letter is shifted forward in the alphabet by the shift amount. Julius Caesar used a shift of 3 to encrypt military messages. With 26 possible shifts, this is one of the simplest ciphers to break \u2014 but a great introduction to cryptography!' :
@@ -3843,7 +3844,7 @@
                   el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
                     el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2705 ' + netScore + ' correct'),
                     el('button', { onClick: function() { var pkts = generateNetRound(); upd({ netPackets: pkts, netFlagged: [], netShowAnswer: false, netRound: netRound + 1 }); },
-                      style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                      style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       netPackets.length === 0 ? '\uD83D\uDCE1 Start Capture' : '\uD83D\uDD04 New Capture')
                   )
                 ),
@@ -3908,7 +3909,7 @@
                       if (announceToSR) announceToSR('Analysis complete. ' + correct + ' of ' + netPackets.length + ' classifications correct. Review false alerts and missed threats below.');
                       upd({ netShowAnswer: true, netScore: netScore + correct });
                     },
-                    style: { padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
+                    style: { padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
                     '\uD83D\uDD0D Submit Analysis (' + netFlagged.length + ' flagged)')
                 ),
                 netShowAnswer && (function() {
@@ -3924,7 +3925,7 @@
                     el('span', { style: { padding: '4px 8px', borderRadius: 6, background: 'rgba(34,197,94,0.1)', color: '#86efac', fontSize: 11, fontWeight: 800 } }, correct + '/' + netPackets.length + ' correct'),
                     el('span', { style: { padding: '4px 8px', borderRadius: 6, background: 'rgba(245,158,11,0.1)', color: '#fde68a', fontSize: 11, fontWeight: 800 } }, falseAlerts + ' false alert' + (falseAlerts === 1 ? '' : 's')),
                     el('span', { style: { padding: '4px 8px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', color: '#fca5a5', fontSize: 11, fontWeight: 800 } }, missed + ' missed threat' + (missed === 1 ? '' : 's'))),
-                  el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Network Security Tips'),
+                  el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Network Security Tips'),
                   ['HTTPS protects data in transit, but a malicious site can also use HTTPS',
                    'Ports are clues, not verdicts; correlate the process, destination, volume, timing, and baseline',
                    'DNS tunneling hides data inside DNS queries to bypass firewalls',
@@ -4000,7 +4001,7 @@
                     el('div', { style: { color: '#fcd34d', fontSize: 12, lineHeight: 1.6 } }, activeSeScenario.lesson)
                   ),
                   el('button', { onClick: function() { upd({ seQuizAnswer: null, seQuizIdx: seQuizIdx + 1 }); },
-                    style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
+                    style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
                     '\uD83C\uDFAD Next Scenario \u2192')
                 ),
                 // AI Threat Briefing
@@ -4270,7 +4271,7 @@
                   el('div', { style: { textAlign: 'center' } },
                     el('button', { onClick: function() { upd('warRoomWelcomeSeen', true); sfxCyberdClick(); },
                       'aria-label': t('stem.cyberdefense.dismiss_welcome_and_continue', 'Dismiss welcome and continue'),
-                      style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                      style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #9333ea)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       'Let\'s Begin \u2192')
                   )
                 ),
@@ -4993,7 +4994,7 @@
                   el('div', { style: { padding: 10, borderRadius: 8, background: warRoomStoryMode ? 'rgba(34,197,94,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomStoryMode ? 'rgba(34,197,94,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 } },
                     el('button', { onClick: function() { upd('warRoomStoryMode', !warRoomStoryMode); sfxCyberdClick(); },
                       role: 'switch', 'aria-checked': warRoomStoryMode, 'aria-label': t('stem.cyberdefense.toggle_story_mode', 'Toggle Story Mode'),
-                      style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomStoryMode ? '#22c55e' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
+                      style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomStoryMode ? '#15803d' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
                       warRoomStoryMode ? 'ON' : 'OFF'),
                     el('div', { style: { flex: 1 } },
                       el('div', { style: { fontSize: 12, fontWeight: 800, color: warRoomStoryMode ? '#86efac' : '#cbd5e1' } }, '\uD83C\uDFAC Story Mode \u2014 Guided Coaching'),
@@ -5148,7 +5149,7 @@
                     ),
                     el('button', { onClick: function() { startCampaign(todaysChallenge.difficulty, todaysChallenge.theme, todaysChallenge.id); },
                       'aria-label': t('stem.cyberdefense.start_today_s_challenge', 'Start today\'s challenge'),
-                      style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: todayCompletion ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'linear-gradient(135deg, #f59e0b, #f43f5e)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                      style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: todayCompletion ? 'linear-gradient(135deg, #2563eb, #4f46e5)' : 'linear-gradient(135deg, #b45309, #be123c)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       todayCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
                   ),
                   // Weekly Challenge banner
@@ -5163,7 +5164,7 @@
                     ),
                     el('button', { onClick: function() { startCampaign(thisWeeksChallenge.difficulty, thisWeeksChallenge.theme, thisWeeksChallenge.id); },
                       'aria-label': t('stem.cyberdefense.start_this_week_s_challenge', 'Start this week\'s challenge'),
-                      style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: weekCompletion ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'linear-gradient(135deg, #a855f7, #ec4899)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                      style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: weekCompletion ? 'linear-gradient(135deg, #2563eb, #4f46e5)' : 'linear-gradient(135deg, #9333ea, #be185d)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       weekCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
                   ),
                   // Theme picker
@@ -5219,8 +5220,8 @@
                     el('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
                       [
                         { id: 'rookie',       label: t('stem.cyberdefense.rookie', 'Rookie'),        sub: 'Clear IOCs \u2022 18 budget', color: '#22c55e', help: 'Best for first-timers. Every alert is real \u2014 no noise. Generous 18-budget lets you play 2 defenses per round comfortably.' },
-                        { id: 'analyst',      label: t('stem.cyberdefense.analyst', 'Analyst'),       sub: 'Some noise \u2022 14 budget', color: '#3b82f6', help: 'Mid-tier challenge. Alerts include one noise signal per round. Tighter 14-budget forces you to prioritize.' },
-                        { id: 'threatHunter', label: t('stem.cyberdefense.threat_hunter', 'Threat Hunter'), sub: 'Adaptive red team \u2022 10 budget \u2022 90s/round', color: '#f43f5e', help: 'Expert mode. 90-second clock per round auto-resolves when time expires. Red team adapts to your successes. Only 10 starting budget.' }
+                        { id: 'analyst',      label: t('stem.cyberdefense.analyst', 'Analyst'),       sub: 'Some noise \u2022 14 budget', color: '#60a5fa', help: 'Mid-tier challenge. Alerts include one noise signal per round. Tighter 14-budget forces you to prioritize.' },
+                        { id: 'threatHunter', label: t('stem.cyberdefense.threat_hunter', 'Threat Hunter'), sub: 'Adaptive red team \u2022 10 budget \u2022 90s/round', color: '#fb7185', help: 'Expert mode. 90-second clock per round auto-resolves when time expires. Red team adapts to your successes. Only 10 starting budget.' }
                       ].map(function(tier) {
                         return el('button', { key: tier.id, onClick: function() { startCampaign(tier.id, warRoomCampaignTheme); },
                           'aria-label': 'Start ' + tier.label + ' campaign against ' + campaignThemes[warRoomCampaignTheme].label + '. ' + tier.help,
@@ -5367,7 +5368,7 @@
                         var prog = !earned ? achievementProgress(a.id) : null;
                         var pct = prog && prog.goal > 0 ? Math.min(100, Math.round((prog.cur / prog.goal) * 100)) : 0;
                         return el('div', { key: a.id, title: a.desc,
-                          style: { padding: 8, borderRadius: 8, background: earned ? 'rgba(245,158,11,0.08)' : 'rgba(15,23,42,0.6)', border: '1px solid ' + (earned ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.15)'), opacity: earned ? 1 : 0.65 } },
+                          style: { padding: 8, borderRadius: 8, background: earned ? 'rgba(245,158,11,0.08)' : 'rgba(15,23,42,0.6)', border: '1px solid ' + (earned ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.15)'), opacity: earned ? 1 : 0.85 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 } },
                             el('span', { style: { fontSize: 15, filter: earned ? 'none' : 'grayscale(1)' } }, a.icon),
                             el('span', { style: { fontSize: 11, fontWeight: 800, color: earned ? '#fde68a' : '#94a3b8', flex: 1 } }, a.label)
@@ -5783,7 +5784,7 @@
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDCDD Transcript'),
                     el('button', { onClick: function() { warTtsStop(); upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
-                      style: { flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                      style: { flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                       '\u2694\uFE0F New Campaign')
                   )
                 );
@@ -6297,7 +6298,7 @@
                 else state = 'lost';
                 var sm = {
                   mitigated: { label: t('stem.cyberdefense.mitigated', '🛡️ Mitigated'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.cyberdefense.attack_blocked_before_damage_strong_de', 'Attack blocked before damage. Strong defense.') },
-                  detected:  { label: t('stem.cyberdefense.detected_alert_raised', '🟡 Detected (alert raised)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.cyberdefense.attack_visible_containment_depends_on_', 'Attack visible. Containment depends on response speed.') },
+                  detected:  { label: t('stem.cyberdefense.detected_alert_raised', '🟡 Detected (alert raised)'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.cyberdefense.attack_visible_containment_depends_on_', 'Attack visible. Containment depends on response speed.') },
                   succeeded: { label: t('stem.cyberdefense.attack_succeeded_2', '🔴 Attack succeeded'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.cyberdefense.initial_breach_containment_slow', 'Initial breach. Containment slow.') },
                   lost:      { label: t('stem.cyberdefense.compromise_data_lost', '⚫ Compromise (data lost)'), color: '#1e293b', bg: '#f1f5f9', border: '#475569', desc: t('stem.cyberdefense.defenses_insufficient_major_incident', 'Defenses insufficient. Major incident.') }
                 }[state];

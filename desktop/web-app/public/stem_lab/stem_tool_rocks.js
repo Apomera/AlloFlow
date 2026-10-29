@@ -13,6 +13,210 @@
 // Extracted from stem_tool_science.js for modular loading
 // =================================================================
 (function () {
+  // Scoped presentation: no dependency on the host's generated utility bundle.
+  var RK_PRESENTATION_CSS = `
+    .rk-explorer { color:#1e293b; min-width:0; }
+    :where(.rk-explorer) button { min-height:32px; min-width:24px; }
+    .rk-explorer .rk-shell-header { gap:10px; margin-bottom:14px; }
+    .rk-explorer .rk-brand { display:flex; align-items:center; gap:10px; font-size:20px; font-weight:800; letter-spacing:-.025em; }
+    .rk-explorer .rk-brand-mark { display:grid; place-items:center; flex:none; width:44px; height:44px; border-radius:14px; background:#f5efe5; color:#78350f; border:1px solid #e7d6bd; }
+    .rk-explorer .rk-mode-nav { display:flex; flex-wrap:wrap; width:100%; padding:7px; gap:4px; border:1px solid #cbd5e1; border-radius:15px; background:#f8fafc; }
+    .rk-explorer .rk-mode-button { display:flex; flex:1 0 auto; flex-direction:column; justify-content:center; align-items:center; gap:5px; min-width:78px; max-width:100%; min-height:60px; padding:8px 6px; border:1px solid transparent; border-radius:10px; background:transparent; color:#475569; font-size:12px; line-height:1.3; overflow-wrap:anywhere; transition:background-color .15s,border-color .15s,box-shadow .15s; }
+    .rk-explorer .rk-mode-button svg { flex:none; }
+    .rk-explorer .rk-mode-button[aria-pressed=true] { color:#fff; background:#78350f; border-color:#78350f; box-shadow:0 2px 5px #78350f26; }
+    .rk-explorer .rk-mode-button:hover:not([aria-pressed=true]) { color:#0f172a; background:#e2e8f0; border-color:#94a3b8; }
+    .rk-explorer .rk-progress { background:#fff; overflow:visible; }
+    .rk-explorer .rk-disclosure-summary { display:flex; flex-wrap:wrap; align-items:center; gap:10px; min-height:48px; padding:10px 14px; cursor:pointer; list-style:none; color:#334155; }
+    .rk-explorer .rk-disclosure-summary::-webkit-details-marker { display:none; }
+    .rk-explorer .rk-disclosure-summary::after { content:''; width:8px; height:8px; border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(45deg); margin:0 3px 4px 6px; flex:none; }
+    .rk-explorer details[open]>.rk-disclosure-summary::after { transform:rotate(225deg); margin-bottom:-3px; }
+    .rk-explorer .rk-progress-name { font-size:12px; font-weight:800; }
+    .rk-explorer .rk-progress-counts { gap:14px; flex-wrap:wrap; }
+    .rk-explorer .rk-progress-counts>div>span:first-child { display:none; }
+    .rk-explorer .rk-progress-track { width:120px; height:5px; margin-left:auto; background:#e2e8f0; }
+    .rk-explorer .rk-progress-track>div { height:5px; box-shadow:none!important; background:#92400e; }
+    .rk-explorer .rk-progress-body { padding:0 14px 14px; border-top:1px solid #e2e8f0; }
+    .rk-explorer .rk-progress-body button { min-height:36px; }
+    .rk-explorer .rk-mode-hero { position:relative; display:flex; align-items:center; gap:14px; margin:0 0 18px; padding:18px; border:1px solid #e2e8f0; border-left:4px solid var(--rk-accent); border-radius:14px; background:linear-gradient(110deg,var(--rk-soft),#fff 85%); }
+    .rk-explorer .rk-hero-symbol { display:grid; place-items:center; width:46px; height:46px; flex:none; color:var(--rk-accent); background:#fff; border:1px solid #cbd5e1; border-radius:13px; }
+    .rk-explorer .rk-hero-copy { min-width:0; flex:1; }
+    .rk-explorer .rk-hero-copy h3 { color:var(--rk-accent); font-size:19px; font-weight:800; line-height:1.3; margin:0; letter-spacing:-.02em; }
+    .rk-explorer .rk-hero-copy p { color:#475569; font-size:13px; line-height:1.6; margin:5px 0 0; max-width:84ch; }
+    .rk-explorer .rk-family-filters { display:flex; flex-wrap:wrap; gap:8px; }
+    .rk-explorer .rk-family-filters button { min-height:44px; border:1px solid #cbd5e1; }
+    .rk-explorer .rk-cabinet { border:1px solid #d6c8b5; border-radius:14px; background:#fbf8f3; margin-bottom:16px; }
+    .rk-explorer .rk-cabinet-body { padding:2px 14px 14px; }
+    .rk-explorer .rk-specimen-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(142px,1fr)); gap:12px; margin-bottom:18px; }
+    .rk-explorer .rk-specimen-grid>button { display:flex; flex-direction:column; align-items:stretch; min-width:0; padding:10px; border-radius:16px; transform:none; transition:box-shadow .15s,border-color .15s; }
+    .rk-explorer .rk-specimen-grid>button:hover { transform:none; box-shadow:0 5px 16px #0f172a14; border-color:#64748b; }
+    .rk-explorer .rk-specimen-grid>button[aria-pressed=true] { outline:2px solid #334155; outline-offset:2px; }
+    .rk-explorer .rk-specimen-grid>button>div { display:grid; place-items:center; height:112px; flex:none; margin-bottom:9px; border-bottom:1px solid #e2e8f0; }
+    .rk-explorer .rk-specimen-grid>button>div svg { width:92px; height:92px; }
+    .rk-explorer .rk-specimen-grid>button>span:not([data-rk-grid-got]):not([data-rk-mineral-h]) { font-size:14px; line-height:1.35; overflow-wrap:anywhere; }
+    .rk-explorer .rk-specimen-grid>button>span:last-child { font-size:12px!important; font-weight:500; margin-top:4px; }
+    .rk-explorer [data-rk-hero],.rk-explorer [data-rk-mineral-hero] { box-shadow:inset 0 0 0 5px #ffffffa8,0 8px 20px #0f172a0d; }
+    .rk-explorer .rk-detail-card { border-radius:18px; padding:20px; box-shadow:0 8px 28px #0f172a08; }
+    .rk-explorer .rk-detail-nav { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid #cbd5e1; }
+    .rk-explorer .rk-detail-nav button { min-height:44px; max-width:100%; padding:10px 12px; border:1px solid #64748b; border-radius:10px; background:#fff; color:#334155; font-size:13px; line-height:1.5; font-weight:700; overflow-wrap:anywhere; }
+    .rk-explorer .rk-detail-nav button:hover:not(:disabled) { background:#f1f5f9; border-color:#334155; }
+    .rk-explorer .rk-detail-nav button:disabled { color:#64748b; background:#f1f5f9; border-style:dashed; cursor:default; }
+    .rk-explorer .rk-detail-position { flex:1 1 180px; margin:0; color:#475569; font-size:13px; line-height:1.6; }
+    .rk-explorer .rk-detail-steps { display:flex; flex-wrap:wrap; gap:8px; flex:1 1 300px; min-width:0; }
+    .rk-explorer .rk-detail-steps button { flex:1 1 120px; text-align:left; }
+    .rk-explorer .rk-detail-steps button span { display:block; font-weight:500; }
+    .rk-explorer [data-wb-guide-graphic] { width:56px; min-height:56px; height:auto; padding:7px 4px; overflow-wrap:anywhere; text-align:center; }
+    .rk-explorer [data-wb-guide-graphic]>span { max-width:100%; }
+    .rk-explorer .rk-detail-card>h4,.rk-explorer [data-rk-rock-card] h4 { font-size:23px; font-weight:800; line-height:1.25; }
+    .rk-explorer [data-rk-rock-card]>div:last-child>p { font-size:14px; line-height:1.7; }
+    .rk-explorer [data-rk-mineral-props]>div { padding:12px; border-radius:12px; }
+    .rk-explorer .rk-scroll-hint { display:flex; align-items:center; gap:6px; color:#5b21b6; font-size:12px; font-weight:700; margin:8px 0 0; }
+    .rk-explorer .rk-comparison-stage { position:relative; display:grid; place-items:center; min-height:210px; padding:24px; margin-top:14px; border:1px solid #e2e8f0; border-radius:14px; background:radial-gradient(ellipse at center,#fff 15%,#f1f5f9 80%); }
+    .rk-explorer .rk-comparison-stage::before { content:''; position:absolute; inset:15px; border:1px solid #cbd5e1; border-radius:50%; width:175px; height:175px; margin:auto; }
+    .rk-explorer .rk-comparison-stage svg { width:160px; height:160px; position:relative; }
+    .rk-explorer .rk-specimen-number { display:inline-grid; place-items:center; width:26px; height:26px; border-radius:8px; margin-right:8px; background:#f1f5f9; color:#334155; font-size:12px; font-variant-numeric:tabular-nums; }
+    .rk-explorer [data-rk-compare-specimen] { box-shadow:0 4px 14px #0f172a08; }
+    .rk-explorer [data-rk-compare-row]:nth-child(even) { background:#f8fafc; }
+    .rk-explorer :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline:3px solid #1d4ed8!important; outline-offset:3px; }
+    .rk-explorer .rk-landscape-instructions { line-height:1.6; }
+    .rk-explorer .rk-catalogue-controls { padding:16px; margin-bottom:14px; border:1px solid #cbd5e1; border-radius:14px; background:#f8fafc; }
+    .rk-explorer .rk-catalogue-fields { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+    .rk-explorer .rk-catalogue-fields>div { flex:1 1 200px; min-width:0; }
+    .rk-explorer .rk-catalogue-controls label { display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+    .rk-explorer .rk-catalogue-controls :is(input,select,button) { min-height:44px; border:1px solid #64748b; border-radius:9px; padding:8px 10px; background:#fff; color:#1e293b; font-size:14px; }
+    .rk-explorer .rk-catalogue-controls :is(input,select) { width:100%; }
+    .rk-explorer .rk-catalogue-controls button { font-weight:700; }
+    .rk-explorer .rk-catalogue-controls button:disabled { color:#64748b; background:#e2e8f0; cursor:default; }
+    .rk-explorer .rk-catalogue-controls .rk-saved-filter { display:flex; align-items:center; gap:9px; min-height:44px; margin:8px 0; cursor:pointer; }
+    .rk-explorer .rk-catalogue-controls .rk-saved-filter input { width:20px; min-height:20px; height:20px; flex:none; accent-color:#115e59; }
+    .rk-explorer .rk-study-card { margin:16px 0; padding:15px; border:1px solid #94b9ac; border-radius:14px; background:#f3f8f5; color:#173d32; }
+    .rk-explorer .rk-study-header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; }
+    .rk-explorer .rk-study-card h5 { margin:0; font-size:16px; line-height:1.4; font-weight:800; }
+    .rk-explorer .rk-study-card button { min-height:44px; padding:8px 12px; border:1px solid #64748b; border-radius:9px; background:#fff; color:#173d32; font-size:13px; font-weight:700; }
+    .rk-explorer .rk-study-card button[aria-pressed=true] { background:#115e59; color:#fff; border-color:#115e59; }
+    .rk-explorer .rk-study-card p { margin:8px 0; font-size:13px; line-height:1.6; }
+    .rk-explorer .rk-study-card summary { min-height:44px; padding:12px 0; cursor:pointer; font-size:14px; font-weight:700; }
+    .rk-explorer .rk-study-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:14px; margin:8px 0 12px; }
+    .rk-explorer .rk-study-fields>div { min-width:0; }
+    .rk-explorer .rk-study-fields label { display:block; font-size:14px; font-weight:700; margin-bottom:6px; }
+    .rk-explorer .rk-study-fields textarea { box-sizing:border-box; width:100%; min-height:110px; resize:vertical; padding:10px; border:1px solid #64748b; border-radius:9px; background:#fff; color:#0f172a; font-size:14px; line-height:1.6; }
+    .rk-explorer .rk-study-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
+    .rk-explorer .rk-skip-link { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+    .rk-explorer .rk-skip-link:focus { position:relative; display:inline-flex; align-items:center; width:auto; height:auto; min-height:44px; overflow:visible; clip-path:none; padding:8px 12px; margin:4px 0 12px; background:#fff; color:#1e40af; text-decoration:underline; font-weight:700; }
+    @media (max-width:600px) {
+      .rk-explorer .rk-brand { font-size:17px; gap:7px; }
+      .rk-explorer .rk-brand-mark { display:none; }
+      .rk-explorer .rk-mode-nav { gap:3px; padding:5px; }
+      .rk-explorer .rk-mode-button { flex-direction:column; gap:4px; min-height:58px; padding:6px 3px; font-size:11px; }
+      .rk-explorer .rk-mode-hero { padding:13px; gap:10px; margin-bottom:14px; align-items:flex-start; }
+      .rk-explorer .rk-hero-symbol { width:34px; height:34px; border-radius:10px; }
+      .rk-explorer .rk-hero-symbol svg { width:22px; height:22px; }
+      .rk-explorer .rk-hero-copy h3 { font-size:17px; }
+      .rk-explorer .rk-hero-copy p { font-size:12px; line-height:1.55; }
+      .rk-explorer .rk-progress-track { display:none; }
+      .rk-explorer .rk-disclosure-summary { padding:10px; gap:8px; }
+      .rk-explorer .rk-progress-name { flex:1; }
+      .rk-explorer .rk-progress-counts { gap:8px; }
+      .rk-explorer .rk-progress-counts>div>span { font-size:12px; }
+      .rk-explorer .rk-specimen-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .rk-explorer .rk-detail-card { padding:14px; }
+      .rk-explorer [data-rocks-header-action=geology-3d] { font-size:11px; padding:6px; }
+    }
+    @media (prefers-reduced-motion:reduce) { .rk-explorer * { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
+    @media (forced-colors:active) {
+      .rk-explorer .rk-mode-button[aria-pressed=true],.rk-explorer .rk-specimen-grid>button[aria-pressed=true],.rk-explorer .rk-family-filters button[aria-pressed=true] { border:2px solid Highlight; outline:2px solid Highlight; }
+      .rk-explorer .rk-progress-track>div { background:Highlight; forced-color-adjust:none; }
+      .rk-explorer .rk-mode-hero,.rk-explorer .rk-cabinet,.rk-explorer .rk-mode-nav,.rk-explorer .rk-brand-mark { border-color:CanvasText; }
+      .rk-explorer .rk-study-card { border-color:CanvasText; }
+      .rk-explorer .rk-study-card button[aria-pressed=true] { border:2px solid Highlight; outline:2px solid Highlight; }
+      .rk-explorer :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline-color:Highlight!important; }
+    }
+  `;
+  function rkActivityIcon(h, mode, size) {
+    var paths = {
+      landscape: 'M2 19 8 7l4 7 3-5 7 10H2ZM6 11l2 2 2-2M13 12l2 2 2-2',
+      rocks: 'm3 8 6-5 9 2 4 9-7 7-10-3L3 8Zm0 0 8 2 7-5M11 10l4 11M11 10l11 4',
+      minerals: 'm12 2 7 4 2 9-9 7-9-7 2-9 7-4Zm0 0v20M5 6l7 4 7-4M3 15l9-5 9 5',
+      compare: 'M3 5h7v14H3zM14 5h7v14h-7zM6 9h1M17 9h1M6 13h1M17 13h1',
+      fieldwork: 'M5 3h13v18H5zM3 7h4M3 12h4M3 17h4M10 7h5M10 11h5M10 15h3',
+      mystery: 'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14Zm5 12 6 6M8 8a2 2 0 0 1 4 0c0 2-2 1-2 3M10 14h.01',
+      workbench: 'm10 3 5 3-4 7-5-3 4-7ZM8 12l-1 2M14 10c7 4 3 9-1 9H5M11 19v2M4 21h16M3 16h7',
+      densityLab: 'M3 18h8l-1-4H4l-1 4Zm4-4V9M3 21h8M15 3h6M16 3v17h4V3M16 8h2M16 12h2M16 16h2',
+      quiz: 'M5 4h14v18H5zM9 2h6v4H9zM8 11l2 2 5-5M8 17h8',
+      weathHunt: 'M3 5h7M2 9h10M5 13h6M14 4l6 3-1 5-6-2 1-6ZM12 15l3-2 6 4-3 4-7-2 1-4Z',
+      notebook: 'M12 5c-3-3-7-3-10-1v16c3-2 7-2 10 1 3-3 7-3 10-1V4c-3-2-7-2-10 1Zm0 0v16M5 8h3M16 8h3'
+    };
+    return h('svg', { width:size, height:size, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:1.65, strokeLinecap:'round', strokeLinejoin:'round', 'aria-hidden':true, focusable:'false' }, h('path', { d:paths[mode] || paths.rocks }));
+  }
+  // Search stays local and uses the same translated evidence as the cards.
+  function rkCatalogueText(value) {
+    return String(value == null ? '' : value).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[₀-₉]/g, function (c) { return String(c.charCodeAt(0) - 0x2080); }).toLowerCase();
+  }
+  function rkCatalogueFilter(items, query, sort, describe) {
+    var words = rkCatalogueText(typeof query === 'string' ? query.slice(0, 160) : '').trim().split(/\s+/).filter(Boolean);
+    var matches = items.filter(function (item) {
+      var haystack = rkCatalogueText(describe(item));
+      return words.every(function (word) { return haystack.indexOf(word) !== -1; });
+    });
+    if (['name', 'hardness', 'density'].indexOf(sort) !== -1) matches.sort(function (a, b) {
+      return (sort !== 'name' ? Number(a[sort]) - Number(b[sort]) : 0) || a.label.localeCompare(b.label);
+    });
+    return matches;
+  }
+  function rkCatalogueControls(h, o) {
+    var T = o.T, id = 'rk-catalogue-' + o.kind;
+    return h('section', { className:'rk-catalogue-controls', 'aria-labelledby':id + '-title', 'data-rk-catalogue-controls':o.kind },
+      h('h4', { id:id + '-title', style:{ fontSize:16,fontWeight:800,margin:'0 0 12px' } }, o.kind === 'rocks' ? T('stem.rocks.catalogue_rocks_title','Find a rock') : T('stem.rocks.catalogue_minerals_title','Find a mineral')),
+      h('div', { className:'rk-catalogue-fields' },
+        h('div', null, h('label', { htmlFor:id + '-search' }, T('stem.rocks.catalogue_search','Search specimens')),
+          h('input', { id:id + '-search', type:'search', value:o.query, maxLength:160, 'data-rk-catalogue-search':o.kind, 'aria-describedby':id + '-help',
+            onChange:function (e) { o.change({ query:e.target.value.slice(0,160) }); },
+            onKeyDown:function (e) { if (e.key === 'Escape' && o.query) { e.preventDefault(); o.change({ query:'' }); } } })),
+        h('div', null, h('label', { htmlFor:id + '-sort' }, T('stem.rocks.catalogue_sort','Sort specimens')),
+          h('select', { id:id + '-sort', value:o.sort, 'data-rk-catalogue-sort':o.kind, onChange:function (e) { o.change({ sort:e.target.value }); } },
+            h('option',{ value:'catalogue' },T('stem.rocks.catalogue_order','Catalogue order')),
+            h('option',{ value:'name' },T('stem.rocks.catalogue_name_order','Name, A to Z')),
+            o.kind === 'minerals' ? h('option',{ value:'hardness' },T('stem.rocks.catalogue_hardness_order','Hardness, low to high')) : null,
+            o.kind === 'minerals' ? h('option',{ value:'density' },T('stem.rocks.catalogue_density_order','Density, low to high')) : null)),
+        h('button', { type:'button', 'data-rk-catalogue-reset':o.kind, onClick:function () { o.reset(); }, disabled:!o.filtered }, T('stem.rocks.catalogue_reset','Reset filters'))),
+      h('p',{ id:id + '-help',style:{fontSize:12,lineHeight:1.6,margin:'8px 0',color:'#475569'} },T('stem.rocks.catalogue_help','Search by name, texture, property, or use. Separate words narrow the results.') + ' ' + T('stem.rocks.catalogue_personal_search_help','Your own notes and questions are searchable, too.')),
+      h('label',{ className:'rk-saved-filter',htmlFor:id + '-saved' },
+        h('input',{ id:id + '-saved',type:'checkbox',checked:o.savedOnly,'data-rk-catalogue-saved':o.kind,onChange:function (e) { o.change({savedOnly:e.target.checked}); } }),
+        T('stem.rocks.catalogue_saved_only','My saved specimens') + ' (' + o.savedCount + ')'),
+      o.savedOnly ? h('p',{style:{fontSize:12,lineHeight:1.6,color:'#475569'}},T('stem.rocks.catalogue_saved_help','Saved specimens have a bookmark, a note, or a question. Open any specimen to start your journal.')) : null,
+      h('p',{ role:'status','aria-live':'polite','aria-atomic':true,'data-rk-catalogue-count':o.kind,style:{fontSize:13,fontWeight:700,margin:'8px 0'} },
+        T('stem.rocks.catalogue_showing','Showing') + ' ' + o.count + ' / ' + o.total + ' ' + T('stem.rocks.catalogue_specimens','specimens')),
+      o.count === 0 ? h('p',{style:{fontSize:13,lineHeight:1.6,margin:'8px 0',color:'#78350f'},'data-rk-catalogue-empty':o.kind},T('stem.rocks.catalogue_empty','No specimens match these filters. Try fewer words or reset the filters.')) : null,
+      o.selected ? h('button',{ type:'button','data-rk-catalogue-selected':o.kind,onClick:o.openSelected },T('stem.rocks.catalogue_view_selected','View selected specimen') + ': ' + o.selected.label) : null);
+  }
+  function rkStudyRecord(records, key) {
+    var record = records && typeof records === 'object' && !Array.isArray(records) && Object.prototype.hasOwnProperty.call(records,key) ? records[key] : null;
+    if (!record || typeof record !== 'object' || Array.isArray(record)) record = {};
+    return { note:typeof record.note === 'string' ? record.note.slice(0,3000) : '',question:typeof record.question === 'string' ? record.question.slice(0,1000) : '',bookmarked:record.bookmarked === true };
+  }
+  function rkStudyHasWork(record) { return !!(record.bookmarked || record.note.trim() || record.question.trim()); }
+  function rkRenderSpecimenStudy(h, o) {
+    var T=o.T, record=o.record, prefix='rk-study-' + o.key.replace(':','-'), saved=rkStudyHasWork(record);
+    var field=function (kind,limit,rows,label) {
+      return h('div',{key:kind},h('label',{htmlFor:prefix + '-' + kind},label),
+        h('textarea',{id:prefix + '-' + kind,value:record[kind],maxLength:limit,rows:rows,'aria-describedby':prefix + '-' + kind + '-count',
+          ['data-rk-study-' + kind]:o.key,onChange:function(e){var patch={};patch[kind]=e.target.value.slice(0,limit);o.change(patch);}}),
+        h('p',{id:prefix + '-' + kind + '-count',style:{fontSize:12,color:'#475569'}},record[kind].length + ' / ' + limit + ' ' + T('stem.rocks.study_characters','characters')));
+    };
+    return h('section',{key:o.key,className:'rk-study-card','data-rk-specimen-study':o.key,'aria-labelledby':'rk-specimen-study-title'},
+      h('div',{className:'rk-study-header'},
+        h('h5',{id:'rk-specimen-study-title',tabIndex:-1},T('stem.rocks.study_title','My specimen notes') + ': ' + o.label),
+        h('button',{type:'button','data-rk-study-bookmark':o.key,'aria-pressed':record.bookmarked,'aria-label':T('stem.rocks.study_bookmark','Bookmark') + ' ' + o.label,onClick:function(){o.change(function(current){return {bookmarked:!current.bookmarked};});}},
+          h('span',{'aria-hidden':true},record.bookmarked ? '✓ ' : '+ '),T('stem.rocks.study_bookmark','Bookmark'))),
+      h('p',null,T('stem.rocks.study_boundary','Record your own observations and questions. These notes are not checked identifications.')),
+      h('details',{'data-rk-study-editor':o.key},
+        h('summary',null,T('stem.rocks.study_edit','Write notes and a question')),
+        h('div',{className:'rk-study-fields'},field('note',3000,4,T('stem.rocks.study_note','What I notice')),field('question',1000,4,T('stem.rocks.study_question','What I want to investigate'))),
+        h('p',null,T('stem.rocks.study_portable','Notes update as you type. Save a notebook file to take your writing and bookmarks with you.'))),
+      h('div',{className:'rk-study-footer'},
+        h('p',{role:'status','aria-live':'polite','aria-atomic':true,'data-rk-study-status':o.key},saved ? T('stem.rocks.study_saved','Saved in this notebook.') : T('stem.rocks.study_empty','No notes or bookmark for this specimen yet.')),
+        h('button',{type:'button','data-rk-study-notebook':o.key,onClick:o.openNotebook},T('stem.rocks.study_open_notebook','Open my notebook'))));
+  }
   // Audio system
   var _rockAC = null;
   function getRockAC() { if (!_rockAC) { try { _rockAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_rockAC && _rockAC.state === 'suspended') { try { _rockAC.resume(); } catch(e) {} } return _rockAC; }
@@ -286,7 +490,7 @@
 
     { id: 'limestone', type: 'sedimentary', labelKey: 'stem.rocks.limestone', hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO\u2083). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
 
-    { id: 'siltstone', type: 'sedimentary', labelKey: 'stem.rocks.siltstone', hardness: 4, texture: 'clastic-fine', grainColors: ['#a8a29e', '#c4bdb4', '#8a8279', '#d6cfc6'], desc: 'The grain size between sandstone and shale. Silt grains are too small to pick out by eye but big enough to feel gritty between your teeth, and unlike shale it does not split into sheets. Grain size is the entire classification here: sand you can see, silt you can feel, clay you can only smear.', uses: 'Brick and tile clay, construction aggregate' },
+    { id: 'siltstone', type: 'sedimentary', labelKey: 'stem.rocks.siltstone', hardness: 4, texture: 'clastic-fine', grainColors: ['#a8a29e', '#c4bdb4', '#8a8279', '#d6cfc6'], desc: 'The grain size between sandstone and shale. Silt grains are smaller than sand and larger than clay. They are difficult to distinguish by eye; unlike shale, siltstone usually does not split into thin sheets. Use grain size, a hand lens, and the way the rock breaks to compare it with sandstone and shale.', uses: 'Brick and tile clay, construction aggregate' },
 
     { id: 'shale', type: 'sedimentary', labelKey: 'stem.rocks.shale', hardness: 3, texture: 'fine-layered', grainColors: ['#94a3b8', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
 
@@ -4675,6 +4879,1194 @@
     if (RK_SPECIMEN_VIEWER) RK_SPECIMEN_VIEWER.attach(node || null);
   }
 
+  // Authored field cases connect observations, identification and formation.
+  // Case records store learner work only; model answers remain in this table.
+  var RK_FIELD_CASES = [
+    {
+      id: 'deep-cooling', title: 'The exposed mountain core', setting: 'An eroded mountain exposes a massive rock body. Which rock is it, and what does its texture tell you about cooling?',
+      candidates: ['basalt', 'granite', 'gabbro', 'rhyolite'], answer: 'granite', required: ['grains', 'minerals'],
+      clues: [
+        { id: 'grains', title: 'Inspect the grain boundaries', text: 'Interlocking crystals are several millimeters across. There is no fine-grained groundmass.' },
+        { id: 'minerals', title: 'Identify the major minerals', text: 'The sample contains abundant quartz and pale or pink feldspar, with scattered dark mica flakes.' },
+        { id: 'outcrop', title: 'Read the outcrop notes', text: 'The body cuts across older surrounding layers. No separate lava flows are recorded here.' },
+        { id: 'color', title: 'Describe the overall color', text: 'The surface looks mostly light, with dark speckles. A weathered face has a rusty stain.' }
+      ],
+      explanation: 'Granite fits both the coarse interlocking texture and the quartz-rich mineral mixture. Large crystals had time to grow as magma cooled underground.',
+      alternatives: 'Gabbro can also be coarse, so crystal size alone is insufficient. Basalt and rhyolite usually have a fine groundmass. The mineral mixture separates granite from the other coarse candidate.',
+      limit: 'Texture is evidence for cooling history, not a stopwatch: it cannot give an exact cooling time or depth.',
+      sourceLabel: 'National Park Service: how rocks are classified', source: 'https://www.nps.gov/subjects/geology/how-rocks-are-classified.htm'
+    },
+    {
+      id: 'rounded-river', title: 'Pebbles inside a cliff', setting: 'A cliff contains rock fragments inside a finer matrix. Identify the rock and decide what the fragments can tell you about transport.',
+      candidates: ['sandstone', 'breccia', 'tuff', 'conglom'], answer: 'conglom', required: ['size', 'shape'],
+      clues: [
+        { id: 'size', title: 'Measure the larger fragments', text: 'Many fragments are 8 to 25 mm across, held together by finer grains and cement.' },
+        { id: 'shape', title: 'Trace the fragment outlines', text: 'Most of the larger fragments have rounded edges rather than sharp, broken corners.' },
+        { id: 'mix', title: 'Inspect the fragment mixture', text: 'Different colors and internal textures occur in different pebbles. This is not one set of interlocking crystals.' },
+        { id: 'layers', title: 'Read the bedding notes', text: 'Pebble-rich beds alternate with sand-rich beds in the exposure.' }
+      ],
+      explanation: 'Conglomerate contains gravel-sized, mostly rounded fragments cemented into rock. Pebble size and roundness together distinguish this sample from the alternatives.',
+      alternatives: 'Breccia has angular coarse fragments. Sandstone is dominated by sand-sized grains. Tuff is consolidated volcanic ash; color variation alone would not identify it.',
+      limit: 'Rounding suggests abrasion before burial. It does not identify one river, prove a precise travel distance, or rule out a beach setting.',
+      sourceLabel: 'USGS: conglomerate definition', source: 'https://apps.usgs.gov/thesaurus/term-simple.php?code=2.1.5&thcode=4'
+    },
+    {
+      id: 'carbonate-contact', title: 'A white rock beside an intrusion', setting: 'A pale rock occurs near an old igneous intrusion. Is it a sedimentary rock, or has its original texture changed?',
+      candidates: ['quartzite', 'limestone', 'marble', 'granite'], answer: 'marble', required: ['texture', 'acid'],
+      clues: [
+        { id: 'texture', title: 'Look closely at the surface', text: 'The rock has a sugary mosaic of interlocking crystals. No recognizable shell outlines remain in this sample.' },
+        { id: 'acid', title: 'Read the laboratory acid result', text: 'A fresh surface reacts vigorously with dilute hydrochloric acid, consistent with abundant calcite. This is a supplied lab result, not an instruction to handle acid.' },
+        { id: 'contact', title: 'Read the geological map', text: 'The pale rock grades into fossil-bearing limestone farther from the intrusion.' },
+        { id: 'color', title: 'Compare the color', text: 'Both the unknown sample and nearby limestone are white to light gray.' }
+      ],
+      explanation: 'The calcite-rich composition and recrystallized texture support marble. The contact with limestone is consistent with heating that changed the rock while it remained solid.',
+      alternatives: 'Both limestone and calcite marble can fizz, so that test does not separate them by itself. Quartzite may look sugary too, but its quartz does not give this vigorous acid reaction.',
+      limit: 'Not every marble is white, and not every marble has the same acid response. This case describes a calcite-rich sample with supporting field context.',
+      sourceLabel: 'USGS: recognizing limestone and marble', source: 'https://pubs.usgs.gov/gip/acidrain/4.html'
+    },
+    {
+      id: 'resistant-ridge', title: 'The resistant ridge', setting: 'A pale rock forms a ridge above softer surrounding rocks. Use composition and fracture evidence to distinguish similar-looking samples.',
+      candidates: ['marble', 'sandstone', 'gneiss', 'quartzite'], answer: 'quartzite', required: ['fracture', 'mineral'],
+      clues: [
+        { id: 'fracture', title: 'Inspect a prepared broken surface', text: 'The break passes through the quartz grains. The grains do not fall out as separate sand particles.' },
+        { id: 'mineral', title: 'Read the mineral examination', text: 'The sample is overwhelmingly quartz. A thin section shows recrystallized grain boundaries.' },
+        { id: 'acid', title: 'Read the laboratory acid result', text: 'No visible reaction was recorded on the fresh surface with dilute hydrochloric acid.' },
+        { id: 'map', title: 'Read the geological setting', text: 'The mapped unit began as quartz-rich sandstone and was later affected by regional metamorphism.' }
+      ],
+      explanation: 'Quartzite fits the tightly joined quartz grains, fracture through grains, and evidence of recrystallization. In this setting it records metamorphism of quartz-rich sandstone.',
+      alternatives: 'Sandstone commonly breaks around grains, while this sample breaks through them. Marble is carbonate-rich. Gneiss has distinct mineral banding, which this sample lacks.',
+      limit: 'Very strongly cemented sedimentary rocks can also fracture through grains. The thin section and mapped history strengthen the metamorphic interpretation here.',
+      sourceLabel: 'Maryland Archaeological Conservation Lab: quartzite', source: 'https://apps.jefpat.maryland.gov/diagnostic/ProjectilePoints/Quartzite.aspx'
+    },
+    {
+      id: 'roofing-sheets', title: 'The old roofing quarry', setting: 'A quarry supplied thin roofing sheets. What distinguishes the material from an ordinary layered mudrock?',
+      candidates: ['shale', 'slate', 'schist', 'phyllite'], answer: 'slate', required: ['grain', 'cleavage'],
+      clues: [
+        { id: 'grain', title: 'Inspect grain size and sheen', text: 'Individual mineral grains are too small to distinguish with a hand lens. The surface is dull rather than silky or glittery.' },
+        { id: 'cleavage', title: 'Compare splitting and bedding', text: 'The rock splits into flat, smooth sheets along closely spaced planes that cut across faint original sedimentary layers.' },
+        { id: 'history', title: 'Read the quarry notes', text: 'The region contains low-grade metamorphic rocks derived from fine-grained sediment.' },
+        { id: 'color', title: 'Observe the color range', text: 'Different pieces range from gray to greenish gray. Color is not uniform across the quarry.' }
+      ],
+      explanation: 'Slate has very fine grains and a strong planar cleavage that permits thin sheets. Cleavage crossing the original bedding records a new fabric formed during metamorphism.',
+      alternatives: 'Shale splits along sedimentary layering. Phyllite commonly has a silky sheen; schist has larger visible aligned mineral flakes. A flat piece alone is not enough to choose among them.',
+      limit: 'The bedding relationship is evidence in this exposure, not a rule that cleavage must always cross bedding at a large angle.',
+      sourceLabel: 'British Geological Survey: slate classification', source: 'https://webapps.bgs.ac.uk/bgsrcs/rcs_details.cfm?code=SLTE'
+    },
+    {
+      id: 'floating-stone', title: 'A stone washed ashore', setting: 'A surprisingly light stone washes onto a beach after volcanic activity offshore. Identify the material using more than its location.',
+      candidates: ['tuff', 'basalt', 'pumice', 'obsidian'], answer: 'pumice', required: ['walls', 'water'],
+      clues: [
+        { id: 'walls', title: 'Examine the pore walls', text: 'Numerous closely spaced gas-bubble cavities have very thin, glassy walls. The whole piece has a frothy structure.' },
+        { id: 'water', title: 'Read the water observation', text: 'This dry sample initially floats. It contains enough trapped gas space to have a bulk density below that of water.' },
+        { id: 'fragments', title: 'Look for an ash matrix', text: 'The sample is one frothy piece, not a bed of ash and separate fragments cemented together.' },
+        { id: 'setting', title: 'Read the field location', text: 'The stone was found on a beach. Its present position does not establish where it erupted.' }
+      ],
+      explanation: 'Pumice fits the frothy glass walls and the observed low bulk density. Expanding gas created bubbles in the melt before it solidified during eruption.',
+      alternatives: 'Obsidian is dense volcanic glass without this abundant foam structure. Tuff is consolidated volcanic ash. Basalt can have bubbles, so seeing holes alone is insufficient.',
+      limit: 'Some pumice becomes waterlogged and sinks. Floating is a useful observation for this sample, not a requirement for every piece of pumice.',
+      sourceLabel: 'USGS Volcano Hazards Program: pumice', source: 'https://volcanoes.usgs.gov/volcanic_ash/glossary/pumice.html'
+    }
+  ];
+
+  // Context sketches orient the investigation without displaying a labeled
+  // answer specimen. The same information is available in the SVG description.
+  function rkFieldContextScene(h, c, T) {
+    var ink = '#334155', rock = '#a8a29e', pale = '#e7e5e4';
+    var descriptions = {
+      'deep-cooling': 'A mountain has an exposed rock face beneath its weathered summit.',
+      'rounded-river': 'A cliff exposes several sedimentary beds. The study site is marked within the exposure.',
+      'carbonate-contact': 'A dark igneous intrusion cuts through lighter surrounding layers. The study site is beside the contact.',
+      'resistant-ridge': 'A steep ridge stands above neighboring lower ground. A study site is marked on the ridge.',
+      'roofing-sheets': 'An old quarry has stepped rock faces beside a small building with a sheeted roof.',
+      'floating-stone': 'Waves wash onto a beach, with a volcanic island offshore. No sample is drawn.'
+    };
+    var description = T('stem.rocks.field_' + c.id + '_scene', descriptions[c.id]);
+    var shapes = [h('rect', { key: 'sky', x: 0, y: 0, width: 480, height: 180, fill: '#e0f2fe' }), h('rect', { key: 'land', x: 0, y: 135, width: 480, height: 45, fill: '#d6d3d1' })];
+    var polygon = function (key, points, fill) { return h('polygon', { key: key, points: points, fill: fill, stroke: ink, strokeWidth: 2, strokeLinejoin: 'round' }); };
+    var line = function (key, x1, y1, x2, y2, stroke) { return h('line', { key: key, x1: x1, y1: y1, x2: x2, y2: y2, stroke: stroke || ink, strokeWidth: 2 }); };
+    var site = function (x, y) { return h('g', { key: 'site' }, h('circle', { cx: x, cy: y, r: 10, fill: '#fff', stroke: '#92400e', strokeWidth: 3 }), h('path', { d: 'M' + (x - 4) + ' ' + y + 'h8M' + x + ' ' + (y - 4) + 'v8', stroke: '#92400e', strokeWidth: 2 })); };
+    if (c.id === 'deep-cooling') {
+      shapes.push(polygon('back', '20,145 142,47 224,145', '#78716c'), polygon('mountain', '110,149 269,20 440,149', '#a8a29e'), polygon('face', '178,132 263,58 350,133 306,156 211,156', pale));
+      shapes.push(line('joint1', 219,106,238,149), line('joint2', 277,80,302,139), site(268,124));
+    } else if (c.id === 'rounded-river') {
+      shapes.push(polygon('cliff', '35,47 408,47 444,153 35,153', pale));
+      shapes.push(polygon('bed', '35,76 418,76 428,108 35,108', '#d6b98c'), line('bed1',35,126,435,126), line('bed2',35,61,412,61));
+      shapes.push(site(309,115));
+    } else if (c.id === 'carbonate-contact') {
+      shapes.push(polygon('layers', '25,45 455,45 455,156 25,156', '#e7e5e4'));
+      [65,87,111,137].forEach(function (y) { shapes.push(line('layer' + y,25,y,455,y)); });
+      shapes.push(polygon('intrusion', '185,158 182,112 201,87 212,59 240,43 270,51 280,88 301,117 304,158', '#57534e'), site(319,105));
+    } else if (c.id === 'resistant-ridge') {
+      shapes.push(polygon('ground', '0,140 80,107 135,123 230,31 271,45 337,125 401,110 480,142 480,180 0,180', rock));
+      shapes.push(polygon('ridge', '171,139 230,31 271,45 296,146', '#fafaf9'), line('dip',49,135,146,159), line('dip2',332,151,438,129), site(244,91));
+    } else if (c.id === 'roofing-sheets') {
+      shapes.push(polygon('quarry', '15,55 194,55 194,82 238,82 238,111 282,111 282,154 15,154', rock));
+      [76,99,123,144].forEach(function (y) { shapes.push(line('seam' + y,22,y,170,y)); });
+      shapes.push(h('rect', { key: 'building', x: 332, y: 108, width: 108, height: 48, fill: '#fef3c7', stroke: ink, strokeWidth: 2 }), polygon('roof', '319,108 363,78 452,108', '#475569'));
+      [350,368,386,404].forEach(function (x) { shapes.push(line('roofline' + x,x,92,x+12,105,'#f8fafc')); });
+      shapes.push(site(131,111));
+    } else {
+      shapes.push(h('rect', { key: 'sea', x: 0, y: 92, width: 480, height: 88, fill: '#7dd3fc' }), polygon('island', '36,94 103,46 122,48 184,94', '#78716c'));
+      shapes.push(polygon('beach', '480,98 421,114 395,137 344,156 305,180 480,180', '#fde68a'));
+      [111,132,153].forEach(function (y, i) { shapes.push(h('path', { key: 'wave' + i, d: 'M20 ' + y + 'q25 -8 50 0t50 0t50 0t50 0t50 0t50 0', fill: 'none', stroke: '#0369a1', strokeWidth: 2 })); });
+      shapes.push(site(414,149));
+    }
+    return h('figure', { style: { margin: '0 0 16px' }, 'data-rk-field-scene': true },
+      h('svg', { viewBox: '0 0 480 180', width: '100%', role: 'img', 'aria-label': description, style: { display: 'block', border: '1px solid #94a3b8', borderRadius: 10, maxHeight: 220 } }, shapes),
+      h('figcaption', { style: { marginTop: 5, fontSize: 11, lineHeight: 1.5, color: '#475569' } }, T('stem.rocks.field_scene_caption', 'Setting sketch, not to scale. The ring marks the study site; collect observations below to examine the sample.')));
+  }
+
+  function rkRenderFieldCases(h, opts) {
+    var state = opts.state && typeof opts.state === 'object' ? opts.state : {};
+    var T = opts.T;
+    var tr = function (id, text) { return T('stem.rocks.field_' + id, text); };
+    var cases = RK_FIELD_CASES;
+    var current = cases.find(function (c) { return c.id === state.activeId; }) || cases[0];
+    var caseText = function (c, field) { return tr(c.id + '_' + field, c[field]); };
+    var clueText = function (c, clue, field) { return tr(c.id + '_' + clue.id + '_' + field, clue[field]); };
+    var records = state.records && typeof state.records === 'object' ? state.records : {};
+    var entry = records[current.id] && typeof records[current.id] === 'object' ? records[current.id] : {};
+    var validIds = current.clues.map(function (clue) { return clue.id; });
+    var validList = function (list, allowed) { return Array.isArray(list) ? list.filter(function (id, i) { return allowed.indexOf(id) >= 0 && list.indexOf(id) === i; }) : []; };
+    var observed = validList(entry.observed, validIds);
+    var cited = validList(entry.cited, observed);
+    var claim = current.candidates.indexOf(entry.claim) >= 0 ? entry.claim : '';
+    var reasoning = typeof entry.reasoning === 'string' ? entry.reasoning.slice(0, 6000) : '';
+    var attempts = Array.isArray(entry.attempts) ? entry.attempts.filter(function (a) { return a && typeof a === 'object'; }).slice(-30) : [];
+    var solved = entry.solved === true;
+    var feedback = typeof entry.feedback === 'string' ? entry.feedback : '';
+    var rockFor = function (id) { return opts.rocks.find(function (r) { return r.id === id; }); };
+    var rockName = function (id) { var rock = typeof id === 'string' ? rockFor(id) : null; return rock ? rock.label : tr('none_yet', 'None yet.'); };
+    var say = function (text) { if (typeof opts.announce === 'function') opts.announce(text); };
+    var save = function (patch) {
+      var next = Object.assign({}, records);
+      next[current.id] = Object.assign({}, entry, patch);
+      opts.setState({ records: next });
+    };
+    var collect = function (id) {
+      if (observed.indexOf(id) >= 0) return;
+      save({ observed: observed.concat(id), feedback: '' });
+      var clue = current.clues.find(function (c) { return c.id === id; });
+      say(clueText(current, clue, 'text'));
+    };
+    var toggleCitation = function (id) {
+      save({ cited: cited.indexOf(id) >= 0 ? cited.filter(function (x) { return x !== id; }) : cited.concat(id), feedback: '' });
+    };
+    var ready = observed.length >= 2 && cited.length >= 2 && !!claim && reasoning.trim().length > 0;
+    var feedbackText = function (result) {
+      if (result === 'needs-evidence') return tr('needs_evidence', 'Choose at least two collected observations, select a rock, and explain the connection before checking.');
+      if (result === 'revise-claim') return tr('revise_claim', 'Reconsider your rock choice. Compare the grain structure and composition with the alternatives, then revise your claim. Your observations and earlier attempt are kept.');
+      if (result === 'revise-evidence') return tr('revise_evidence', 'Your rock choice fits, but your selected evidence does not yet include the two most diagnostic observations. Collect or revisit the tests and choose evidence that distinguishes the closest look-alike.');
+      if (result === 'supported') return tr('supported', 'Your identification and selected evidence fit this case. Compare your explanation with the geologist’s interpretation below. The written reasoning is for your own or your teacher’s review.');
+      return '';
+    };
+    var check = function () {
+      if (!ready) { save({ feedback: 'needs-evidence' }); say(feedbackText('needs-evidence')); return; }
+      var result = claim !== current.answer ? 'revise-claim' : current.required.every(function (id) { return cited.indexOf(id) >= 0; }) ? 'supported' : 'revise-evidence';
+      var attempt = { claim: claim, cited: cited.slice(), observed: observed.slice(), reasoning: reasoning, result: result };
+      var last = attempts[attempts.length - 1];
+      var sameIds = function (a, b) { return Array.isArray(a) && a.slice().sort().join('|') === b.slice().sort().join('|'); };
+      var duplicate = last && last.claim === claim && last.reasoning === reasoning && last.result === result && sameIds(last.cited, cited) && sameIds(last.observed, observed);
+      save({ attempts: duplicate ? attempts : attempts.concat(attempt).slice(-30), feedback: result, solved: solved || result === 'supported' });
+      say(feedbackText(result));
+    };
+    var completeCount = cases.filter(function (c) { return records[c.id] && records[c.id].solved === true; }).length;
+    var notebook = function () {
+      var lines = [tr('notebook_title', 'Rocks & Minerals field notebook'), tr('model_note', 'These are authored classroom cases. Observations describe the supplied sample, not every example of the same rock.'), ''];
+      cases.forEach(function (c, index) {
+        var row = records[c.id] || {};
+        var seen = validList(row.observed, c.clues.map(function (clue) { return clue.id; }));
+        var selected = validList(row.cited, seen);
+        var history = Array.isArray(row.attempts) ? row.attempts.filter(function (a) { return a && typeof a === 'object'; }).slice(-30) : [];
+        lines.push((index + 1) + '. ' + caseText(c, 'title'));
+        lines.push(caseText(c, 'setting'));
+        lines.push(tr('observations', 'Collected observations') + ':');
+        if (!seen.length) lines.push(tr('none_yet', 'None yet.'));
+        c.clues.filter(function (clue) { return seen.indexOf(clue.id) >= 0; }).forEach(function (clue) { lines.push('- ' + clueText(c, clue, 'title') + ': ' + clueText(c, clue, 'text') + (selected.indexOf(clue.id) >= 0 ? ' [' + tr('cited', 'cited') + ']' : '')); });
+        lines.push(tr('claim', 'My identification') + ': ' + (c.candidates.indexOf(row.claim) >= 0 ? rockName(row.claim) : tr('none_yet', 'None yet.')));
+        lines.push(tr('reasoning', 'My reasoning') + ': ' + (typeof row.reasoning === 'string' ? row.reasoning : ''));
+        history.forEach(function (a, i) {
+          var evidence = validList(a.cited, c.clues.map(function (clue) { return clue.id; }));
+          lines.push(tr('attempt', 'Attempt') + ' ' + (i + 1) + ': ' + (c.candidates.indexOf(a.claim) >= 0 ? rockName(a.claim) : '') + ' — ' + feedbackText(a.result));
+          lines.push(tr('selected_evidence', 'Selected evidence') + ': ' + evidence.map(function (id) { return clueText(c, c.clues.find(function (clue) { return clue.id === id; }), 'title'); }).join('; '));
+          lines.push(tr('reasoning', 'My reasoning') + ': ' + (typeof a.reasoning === 'string' ? a.reasoning : ''));
+        });
+        if (row.solved === true) {
+          lines.push(tr('interpretation', 'Geologist’s interpretation') + ': ' + caseText(c, 'explanation'));
+          lines.push(tr('limits', 'What this evidence cannot tell us') + ': ' + caseText(c, 'limit'));
+          lines.push(caseText(c, 'sourceLabel') + ': ' + c.source);
+        }
+        lines.push('');
+      });
+      return lines.join('\n');
+    };
+    var exportNotebook = function (action) {
+      var text = notebook();
+      opts.setState({ notebookText: text, exportStatus: 'ready' });
+      if (action === 'copy') {
+        if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          try {
+            Promise.resolve(navigator.clipboard.writeText(text)).then(function () { opts.setState({ exportStatus: 'copied' }); say(tr('copied', 'Field notebook copied.')); }, function () { opts.setState({ exportStatus: 'manual' }); say(tr('manual', 'Automatic copying is unavailable. Select the notebook text below and copy it.')); });
+          } catch (e) { opts.setState({ exportStatus: 'manual' }); }
+        } else { opts.setState({ exportStatus: 'manual' }); }
+        return;
+      }
+      var url = null;
+      try {
+        if (typeof URL.createObjectURL !== 'function') throw new Error('Object URLs unavailable');
+        url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+        var link = document.createElement('a');
+        link.href = url; link.download = 'rocks-minerals-field-notebook.txt';
+        document.body.appendChild(link);
+        try { link.click(); } finally { link.remove(); }
+        opts.setState({ exportStatus: 'downloaded' });
+        say(tr('downloaded', 'Notebook download requested. The text is also available below.'));
+      } catch (e) { opts.setState({ exportStatus: 'manual' }); say(tr('manual', 'Automatic copying is unavailable. Select the notebook text below and copy it.')); }
+      finally { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+    };
+    var buttonClass = 'min-h-[44px] px-3 py-2 rounded-lg border text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-800';
+    var cardStyle = { background: '#fff', color: '#1e293b', border: '1px solid #cbd5e1', borderRadius: 14, padding: 16, minWidth: 0 };
+    var progress = tr('progress', 'Cases supported') + ': ' + completeCount + ' / ' + cases.length;
+    return h('section', { 'data-rk-fieldwork': true, 'aria-labelledby': 'rk-field-title', style: { background: '#f8fafc', color: '#1e293b', border: '1px solid #cbd5e1', borderRadius: 18, padding: 16 } },
+      h('div', { style: { display: 'flex', alignItems: 'start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 } },
+        h('div', { style: { flex: '1 1 260px' } },
+          h('p', { style: { margin: '0 0 4px', color: '#92400e', fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase' } }, tr('eyebrow', 'Observe · compare · explain')),
+          h('h3', { id: 'rk-field-title', style: { margin: '0 0 6px', fontSize: 22, fontWeight: 800 } }, tr('title', 'Geologist’s field cases')),
+          h('p', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, maxWidth: 650 } }, tr('intro', 'Build a rock identification from evidence. Collect observations, choose the strongest clues, and explain how they support your claim. You can revise your work and keep a revision trail.'))),
+        h('div', { style: { padding: '10px 14px', borderRadius: 12, background: '#fef3c7', border: '1px solid #d97706', color: '#78350f', fontWeight: 800, fontSize: 13 }, 'data-rk-field-progress': completeCount }, progress)),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 8, margin: '16px 0' }, role: 'group', 'aria-label': tr('case_picker', 'Choose a field case') },
+        cases.map(function (c, index) {
+          var active = c.id === current.id;
+          var done = records[c.id] && records[c.id].solved === true;
+          return h('button', { key: c.id, type: 'button', 'data-rk-field-case': c.id, 'aria-pressed': active, onClick: function () { opts.setState({ activeId: c.id }); }, className: buttonClass, style: { textAlign: 'left', background: active ? '#92400e' : '#fff', color: active ? '#fff' : '#334155', borderColor: active ? '#78350f' : '#94a3b8' } },
+            h('span', { style: { display: 'block', fontSize: 11, marginBottom: 3 } }, tr('case', 'Case') + ' ' + (index + 1) + (done ? ' · ' + tr('supported_short', 'Supported') : '')),
+            caseText(c, 'title'));
+        })),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,320px),1fr))', alignItems: 'start', gap: 16 } },
+        h('div', { style: cardStyle },
+          h('h4', { style: { margin: '0 0 8px', fontSize: 18, fontWeight: 800 }, 'data-rk-field-current': current.id }, caseText(current, 'title')),
+          h('p', { style: { margin: '0 0 16px', fontSize: 14, lineHeight: 1.6 } }, caseText(current, 'setting')),
+          rkFieldContextScene(h, current, T),
+          h('h5', { style: { margin: '0 0 8px', fontSize: 14, fontWeight: 800 } }, '1. ' + tr('collect', 'Collect your observations')),
+          current.clues.map(function (clue, index) {
+            var seen = observed.indexOf(clue.id) >= 0;
+            return h('div', { key: current.id + clue.id, style: { marginTop: 8, padding: 12, background: seen ? '#ecfdf5' : '#f8fafc', border: '1px solid ' + (seen ? '#6ee7b7' : '#cbd5e1'), borderRadius: 10 } },
+              h('button', { type: 'button', 'data-rk-field-observe': clue.id, disabled: seen, 'aria-expanded': seen, 'aria-controls': 'rk-field-clue-' + clue.id, onClick: function () { collect(clue.id); }, className: buttonClass, style: { width: '100%', textAlign: 'left', background: '#fff', color: '#1e293b', borderColor: '#94a3b8', cursor: seen ? 'default' : 'pointer' } },
+                (seen ? '✓ ' : (index + 1) + '. ') + clueText(current, clue, 'title')),
+              seen ? h('p', { id: 'rk-field-clue-' + clue.id, style: { margin: '10px 0 0', color: '#064e3b', fontSize: 13, lineHeight: 1.6 }, 'data-rk-field-observation': clue.id }, clueText(current, clue, 'text')) : h('span', { id: 'rk-field-clue-' + clue.id, hidden: true }));
+          })),
+        h('div', { style: cardStyle },
+          h('h5', { style: { margin: '0 0 12px', fontSize: 14, fontWeight: 800 } }, '2. ' + tr('build_claim', 'Build a supported claim')),
+          h('label', { htmlFor: 'rk-field-claim', style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 5 } }, tr('claim', 'My identification')),
+          h('select', { id: 'rk-field-claim', value: claim, 'data-rk-field-claim': true, onChange: function (event) { save({ claim: event.target.value, feedback: '' }); }, style: { width: '100%', minHeight: 44, padding: 8, border: '1px solid #64748b', borderRadius: 8, background: '#fff', color: '#1e293b', fontSize: 14 } },
+            h('option', { value: '' }, tr('choose_rock', 'Choose a rock')),
+            current.candidates.map(function (id) { return h('option', { key: id, value: id }, rockName(id)); })),
+          claim && rockFor(claim) ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, margin: '12px 0', padding: 10, borderRadius: 10, background: '#f8fafc' } },
+            h('span', { 'aria-hidden': true, style: { flexShrink: 0 } }, opts.rockPic(rockFor(claim), 64)),
+            h('p', { style: { fontSize: 12, margin: 0, lineHeight: 1.5 } }, tr('reference_pic', 'Reference illustration for your choice. It is not a photograph of the unknown sample.'))) : null,
+          h('fieldset', { style: { border: 0, padding: 0, margin: '16px 0' } },
+            h('legend', { style: { fontSize: 13, fontWeight: 800, marginBottom: 8 } }, tr('cite_two', 'Select at least two observations as evidence')),
+            observed.length ? current.clues.filter(function (clue) { return observed.indexOf(clue.id) >= 0; }).map(function (clue) {
+              return h('label', { key: clue.id, style: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, cursor: 'pointer', fontSize: 13 } },
+                h('input', { type: 'checkbox', checked: cited.indexOf(clue.id) >= 0, 'data-rk-field-cite': clue.id, onChange: function () { toggleCitation(clue.id); }, style: { width: 20, height: 20, flexShrink: 0, accentColor: '#92400e' } }), clueText(current, clue, 'title'));
+            }) : h('p', { style: { fontSize: 13, color: '#475569', lineHeight: 1.5 } }, tr('collect_first', 'Collect observations in step 1. Each one can then be selected here.'))),
+          h('label', { htmlFor: 'rk-field-reasoning', style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 5 } }, tr('reasoning', 'My reasoning')),
+          h('p', { id: 'rk-field-reasoning-help', style: { margin: '0 0 8px', fontSize: 12, color: '#475569', lineHeight: 1.5 } }, tr('reasoning_hint', 'I think the sample is ___ because ___. This differs from ___ because ___. What does that suggest about how it formed?')),
+          h('textarea', { id: 'rk-field-reasoning', 'data-rk-field-reasoning': true, 'aria-describedby': 'rk-field-reasoning-help', value: reasoning, maxLength: 6000, onChange: function (event) { save({ reasoning: event.target.value.slice(0, 6000), feedback: '' }); }, rows: 4, style: { width: '100%', boxSizing: 'border-box', padding: 10, border: '1px solid #64748b', borderRadius: 8, resize: 'vertical', background: '#fff', color: '#1e293b', fontSize: 14, lineHeight: 1.6 } }),
+          h('button', { type: 'button', 'data-rk-field-check': true, onClick: check, className: buttonClass, style: { marginTop: 12, background: '#92400e', borderColor: '#78350f', color: '#fff' }, 'aria-describedby': 'rk-field-check-help' }, tr('check', 'Check claim and evidence')),
+          h('p', { id: 'rk-field-check-help', style: { margin: '8px 0 0', fontSize: 12, color: '#475569', lineHeight: 1.5 } }, tr('check_hint', 'The check compares your rock choice and selected observations. Your explanation stays in the notebook for discussion.')),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { marginTop: feedback ? 12 : 0 }, 'data-rk-field-feedback': feedback }, feedback ? h('p', { style: { margin: 0, padding: 12, fontSize: 13, lineHeight: 1.6, borderRadius: 10, color: feedback === 'supported' ? '#064e3b' : '#78350f', background: feedback === 'supported' ? '#d1fae5' : '#fef3c7', border: '1px solid ' + (feedback === 'supported' ? '#059669' : '#d97706') } }, feedbackText(feedback)) : null),
+          attempts.length ? h('details', { style: { marginTop: 14 } },
+            h('summary', { style: { minHeight: 44, fontWeight: 800, cursor: 'pointer', fontSize: 13 } }, tr('attempts', 'My earlier attempts') + ' (' + attempts.length + ')'),
+            h('p', { style: { fontSize: 12, lineHeight: 1.5, color: '#475569' } }, tr('attempt_limit', 'The notebook keeps the latest 30 distinct attempts for each case.')),
+            h('ol', { style: { paddingLeft: 22, fontSize: 13, lineHeight: 1.6 } }, attempts.map(function (a, i) { return h('li', { key: i, style: { marginBottom: 12 } },
+              h('strong', null, rockName(a.claim)), h('p', { style: { margin: '3px 0' } }, typeof a.reasoning === 'string' ? a.reasoning : ''), h('p', { style: { margin: '3px 0', color: '#475569' } }, feedbackText(a.result))); }))) : null)),
+      solved ? h('section', { 'data-rk-field-debrief': current.id, 'aria-labelledby': 'rk-field-debrief-title', style: { marginTop: 16, padding: 18, border: '1px solid #059669', background: '#ecfdf5', color: '#064e3b', borderRadius: 14 } },
+        h('h4', { id: 'rk-field-debrief-title', style: { margin: '0 0 10px', fontSize: 17, fontWeight: 800 } }, '3. ' + tr('interpretation', 'Geologist’s interpretation')),
+        h('p', { style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.7 } }, caseText(current, 'explanation')),
+        h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7 } }, h('strong', null, tr('alternatives', 'Compare the alternatives') + ': '), caseText(current, 'alternatives')),
+        h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7 } }, h('strong', null, tr('limits', 'What this evidence cannot tell us') + ': '), caseText(current, 'limit')),
+        h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' } },
+          h('button', { type: 'button', className: buttonClass, onClick: function () { opts.openRock(current.answer); }, 'data-rk-field-open-rock': true, style: { color: '#064e3b', background: '#fff', borderColor: '#059669' } }, tr('open_specimen', 'Explore this specimen')),
+          h('a', { href: current.source, target: '_blank', rel: 'noopener noreferrer', style: { color: '#064e3b', textDecoration: 'underline', fontSize: 13, padding: '12px 0' } }, caseText(current, 'sourceLabel') + ' (' + tr('new_tab', 'opens in new tab') + ')'))) : null,
+      h('section', { 'aria-labelledby': 'rk-field-notebook-title', style: { marginTop: 16, padding: 16, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 14 } },
+        h('h4', { id: 'rk-field-notebook-title', style: { margin: '0 0 8px', fontSize: 16, fontWeight: 800 } }, tr('notebook', 'Keep your field notebook')),
+        h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.6 } }, tr('notebook_hint', 'Save observations, claims, reasoning, and revision history from all six cases. Unfinished cases keep their answers hidden.')),
+        h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+          h('button', { type: 'button', className: buttonClass, 'data-rk-field-download': true, onClick: function () { exportNotebook('download'); }, style: { background: '#1e293b', color: '#fff', borderColor: '#0f172a' } }, tr('download', 'Download notebook')),
+          h('button', { type: 'button', className: buttonClass, 'data-rk-field-copy': true, onClick: function () { exportNotebook('copy'); }, style: { background: '#fff', color: '#1e293b', borderColor: '#64748b' } }, tr('copy', 'Copy notebook'))),
+        state.exportStatus ? h('p', { role: 'status', style: { fontSize: 13, lineHeight: 1.5, margin: '10px 0' } }, state.exportStatus === 'copied' ? tr('copied', 'Field notebook copied.') : state.exportStatus === 'downloaded' ? tr('downloaded', 'Notebook download requested. The text is also available below.') : state.exportStatus === 'manual' ? tr('manual', 'Automatic copying is unavailable. Select the notebook text below and copy it.') : tr('ready', 'Notebook text is ready below.')) : null,
+        typeof state.notebookText === 'string' && state.notebookText ? h('div', { style: { marginTop: 12 } },
+          h('label', { htmlFor: 'rk-field-notebook-text', style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 } }, tr('notebook_text', 'Exported notebook text')),
+          h('textarea', { id: 'rk-field-notebook-text', 'data-rk-field-notebook-text': true, readOnly: true, value: state.notebookText, rows: 8, onFocus: function (event) { event.target.select(); }, style: { width: '100%', boxSizing: 'border-box', minHeight: 160, padding: 10, border: '1px solid #64748b', borderRadius: 8, color: '#1e293b', background: '#f8fafc', fontFamily: 'inherit', fontSize: 13, lineHeight: 1.6 } }),
+          h('p', { style: { margin: '5px 0 0', fontSize: 12, color: '#475569' } }, tr('snapshot', 'This is an export snapshot. Download or copy again after changing your work.'))) : null),
+      h('p', { style: { margin: '12px 0 0', fontSize: 12, lineHeight: 1.6, color: '#475569' } }, tr('model_note', 'These are authored classroom cases. Observations describe the supplied sample, not every example of the same rock.')));
+  }
+
+
+  // A reference workspace that keeps the same specimen facts as the galleries.
+  // All learner work stays in the host's serializable tool state.
+  function rkRenderComparison(h, o) {
+    var T = o.T, s = o.state || {};
+    var mineral = s.kind === 'minerals';
+    var pool = mineral ? o.minerals : o.rocks;
+    var byId = function (id) { return pool.find(function (r) { return r.id === id; }); };
+    var left = byId(s.left) || byId(mineral ? 'quartz' : 'granite') || pool[0];
+    var right = byId(s.right) || byId(mineral ? 'calcite' : 'basalt') || pool[1];
+    if (right.id === left.id) right = pool.find(function (r) { return r.id !== left.id; });
+    var pairKey = (mineral ? 'minerals:' : 'rocks:') + [left.id, right.id].sort().join(':');
+    var notes = s.notes && typeof s.notes === 'object' ? s.notes : {};
+    var note = typeof notes[pairKey] === 'string' ? notes[pairKey] : '';
+    var field = { width: '100%', minWidth: 0, minHeight: 44, padding: '9px 11px', border: '1px solid #64748b', borderRadius: 8, color: '#0f172a', background: '#ffffff', fontSize: 14 };
+    var button = { minHeight: 44, padding: '8px 12px', border: '1px solid #64748b', borderRadius: 9, color: '#1e293b', background: '#ffffff', fontWeight: 700, fontSize: 13 };
+    var panel = { padding: 16, border: '1px solid #cbd5e1', borderRadius: 14, background: '#ffffff', color: '#0f172a', minWidth: 0 };
+    var grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: 12 };
+    var label = function (key, fallback) { return T('stem.rocks.compare_' + key, fallback); };
+    var changePair = function (a, b) { o.setState({ left: a, right: b, exportText: '', message: '' }); };
+    var choose = function (side, id) {
+      if (!byId(id)) return;
+      var a = left.id, b = right.id;
+      if (side === 'left') { if (id === b) b = a; a = id; }
+      else { if (id === a) a = b; b = id; }
+      changePair(a, b);
+    };
+    var normalize = function (v) { return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
+    var query = normalize(s.query).trim();
+    var matches = pool.filter(function (r) {
+      return normalize([r.label, r.desc, r.uses, mineral ? r.formula + ' ' + o.luster(r) + ' ' + o.streak(r) : o.types[r.type].label + ' ' + o.texture(r.texture, r.id)].join(' ')).indexOf(query) !== -1;
+    });
+    var presets = mineral ? [['quartz', 'calcite'], ['pyrite', 'magnetite'], ['hematite', 'galena'], ['fluorite', 'apatite'], ['diamond', 'graphite'], ['mica', 'biotite']] : [['granite', 'basalt'], ['conglom', 'breccia'], ['limestone', 'marble'], ['sandstone', 'quartzite'], ['shale', 'slate'], ['pumice', 'obsidian']];
+    var rows = [];
+    var add = function (id, name, fn) { rows.push({ id: id, name: name, a: String(fn(left)), b: String(fn(right)) }); };
+    if (mineral) {
+      add('formula', label('formula', 'Chemical formula'), function (r) { return r.formula; });
+      add('hardness', label('hardness', 'Mohs hardness (modeled)'), function (r) { return r.hardness; });
+      add('luster', label('luster', 'Luster'), o.luster);
+      add('streak', label('streak', 'Streak on the modeled plate'), function (r) { return rkStreakPlateTooHard(r) ? label('plate_too_hard', 'Harder than the plate: no reliable powder streak') : o.streak(r); });
+      add('cleavage', label('cleavage', 'Visible cleavage'), function (r) { var k = rkCleavageKind(r); return T('stem.rocks.brk_kind_' + k, RK_CLEAVAGE_KINDS[k].name); });
+      add('density', label('density', 'Representative density (g/cm³)'), function (r) { return r.density; });
+      add('crystal', label('crystal', 'Crystal system'), function (r) { return o.crystal(r.crystal); });
+      add('occurrence', label('occurrence', 'Where it occurs'), function (r) { return r.occurrence; });
+    } else {
+      add('family', label('family', 'Rock family'), function (r) { return o.types[r.type].label; });
+      add('texture', label('texture', 'Texture'), function (r) { return o.texture(r.texture, r.id); });
+      add('observe', label('observe', 'Look closely'), function (r) { return o.gloss(r.texture, r.id); });
+      add('formation', label('formation', 'Formation story'), function (r) { return o.from(r.id); });
+      add('evidence', label('evidence', 'Diagnostic clue'), function (r) { return o.clue(r.id); });
+    }
+    add('uses', label('uses', 'Everyday uses'), function (r) { return r.uses; });
+    var different = rows.filter(function (r) { return r.a !== r.b; });
+    var displayRows = s.differencesOnly ? different : rows;
+    var distinction = mineral ? '' : o.lookAlike(left.id, right.id);
+    var say = function (text) { o.setState({ message: text }); if (typeof o.announce === 'function') o.announce(text); };
+    var report = function () {
+      return [label('report_title', 'Rocks & Minerals comparison notebook'), left.label + ' / ' + right.label, '', label('reference_facts', 'Reference facts (not observations from an unknown specimen)')].concat(rows.map(function (r) { return r.name + '\n  ' + left.label + ': ' + r.a + '\n  ' + right.label + ': ' + r.b; }), ['', label('my_explanation', 'My explanation'), note || label('no_note', 'No explanation recorded yet.'), '', label('limits', 'Illustrations are models, not photographs. Natural specimens vary. Use several properties together to identify a sample.')]).join('\n');
+    };
+    var save = function () {
+      var text = report();
+      var url = null, a = null;
+      try {
+        url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+        a = document.createElement('a'); a.href = url; a.download = 'rocks-comparison-' + left.id + '-' + right.id + '.txt';
+        document.body.appendChild(a); a.click();
+        say(label('download_ready', 'Comparison notebook download requested.'));
+      } catch (e) { o.setState({ exportText: text, message: label('download_fallback', 'Download is unavailable. Select and copy the notebook text below.') }); }
+      finally { if (a && a.parentNode) a.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+    };
+    return h('section', { 'data-rk-compare': mineral ? 'minerals' : 'rocks', 'aria-labelledby': 'rk-compare-title', style: { color: '#0f172a', display: 'grid', gap: 14 } },
+      h('div', { style: Object.assign({}, panel, { background: '#f0fdfa', borderColor: '#0f766e' }) },
+        h('p', { style: { fontSize: 11, letterSpacing: '.14em', fontWeight: 800, color: '#115e59', margin: '0 0 5px' } }, label('eyebrow', 'THE COMPARISON DESK')),
+        h('h4', { id: 'rk-compare-title', style: { fontSize: 23, fontWeight: 800, margin: '0 0 6px' } }, label('title', 'What tells these specimens apart?')),
+        h('p', { style: { fontSize: 14, margin: 0 } }, label('intro', 'Put two specimens beside each other. Compare their properties, find the useful differences, and explain which evidence you would trust.')),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } }, ['rocks', 'minerals'].map(function (kind) {
+          var active = kind === (mineral ? 'minerals' : 'rocks');
+          return h('button', { key: kind, type: 'button', 'data-rk-compare-kind': kind, 'aria-pressed': active, style: Object.assign({}, button, active ? { background: '#115e59', color: '#ffffff' } : {}), onClick: function () {
+            if (!active) o.setState({ kind: kind, left: kind === 'rocks' ? 'granite' : 'quartz', right: kind === 'rocks' ? 'basalt' : 'calcite', query: '', exportText: '', message: '' });
+          } }, kind === 'rocks' ? label('rocks', 'Compare rocks') : label('minerals', 'Compare minerals'));
+        })),
+        h('p', { style: { fontSize: 12, margin: '12px 0 0', color: '#334155' } }, mineral ? label('mineral_limit', 'Minerals have characteristic compositions and crystal structures. Hardness and density here are representative values; the Mohs scale ranks scratch resistance and is not a linear scale.') : label('rock_limit', 'A rock is an aggregate of minerals or mineral matter. Compare textures and formation clues; a mixed rock does not have one universal Mohs hardness.'))),
+      h('div', { style: panel },
+        h('p', { style: { fontSize: 13, fontWeight: 800, margin: '0 0 8px' } }, label('presets', 'Start with a useful pair')),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, presets.map(function (pair) {
+          var a = byId(pair[0]), b = byId(pair[1]); if (!a || !b) return null;
+          return h('button', { key: pair.join(':'), type: 'button', 'data-rk-compare-preset': pair.join(':'), 'aria-pressed': left.id === a.id && right.id === b.id, style: button, onClick: function () { changePair(a.id, b.id); } }, a.label + ' / ' + b.label);
+        }))),
+      h('div', { style: grid }, [left, right].map(function (r, i) {
+        var side = i === 0 ? 'left' : 'right';
+        return h('article', { key: side, 'data-rk-compare-specimen': side, style: Object.assign({}, panel, { borderTop: '4px solid ' + (i === 0 ? '#0f766e' : '#7c3aed') }) },
+          h('label', { htmlFor: 'rk-compare-' + side, style: { display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 8 } }, h('span', { className:'rk-specimen-number', 'aria-hidden':true }, i === 0 ? '01' : '02'), i === 0 ? label('left', 'First specimen') : label('right', 'Second specimen')),
+          h('select', { id: 'rk-compare-' + side, value: r.id, 'data-rk-compare-select': side, style: field, onChange: function (e) { choose(side, e.target.value); } }, pool.map(function (v) { return h('option', { key: v.id, value: v.id }, v.label); })),
+          h('div', { 'aria-hidden': true, className: 'rk-comparison-stage' }, mineral ? rkMineralSwatch(h, r, 128) : rkRockSwatch(h, r, 128)),
+          h('p', { style: { fontSize:11, color:'#475569', margin:'6px 0 0', textAlign:'center' } }, label('illustration_scale', 'Illustrated specimen · not to scale')),
+          h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '10px 0' } }, mineral ? o.luster(r) + ' · ' + (o.habit(r) || o.crystal(r.crystal)) : o.gloss(r.texture, r.id)),
+          h('button', { type: 'button', style: button, 'data-rk-compare-open': r.id, onClick: function () { o.open(r.id, mineral); } }, label('open', 'Explore specimen') + ': ' + r.label));
+      })),
+      h('div', { style: panel },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
+          h('h4', { style: { fontSize: 17, fontWeight: 800, margin: 0 } }, label('property_title', 'Compare the evidence')),
+          h('label', { style: { minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700 } },
+            h('input', { type: 'checkbox', checked: !!s.differencesOnly, 'data-rk-compare-differences': true, onChange: function (e) { o.setState({ differencesOnly: e.target.checked }); } }), label('only_differences', 'Show differences only'))),
+        h('p', { 'role': 'status', style: { fontSize: 12, color: '#475569', marginBottom: 10 } }, different.length + ' / ' + rows.length + ' ' + label('different_count', 'reference properties differ. Not every difference is diagnostic.')),
+        displayRows.map(function (r) { return h('div', { key: r.id, 'data-rk-compare-row': r.id, style: { borderTop: '1px solid #cbd5e1', padding: '12px 0' } },
+          h('h5', { style: { fontWeight: 800, fontSize: 13, margin: '0 0 8px' } }, r.name + (r.a === r.b ? ' · ' + label('shared', 'shared') : '')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 } }, [r.a, r.b].map(function (v, i) { return h('div', { key: i, style: { fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere' } },
+            h('span', { style: { display: 'block', fontSize: 11, fontWeight: 800, color: i === 0 ? '#115e59' : '#6d28d9' } }, i === 0 ? left.label : right.label), v); })));
+        }),
+        distinction ? h('p', { 'data-rk-compare-diagnostic': true, style: { background: '#fffbeb', borderLeft: '4px solid #b45309', padding: 12, fontSize: 14, lineHeight: 1.6 } }, distinction) : null,
+        mineral ? h('div', { style: { background: '#f0fdfa', padding: 12, borderRadius: 10 } },
+          h('label', { htmlFor: 'rk-compare-reference', style: { display: 'block', fontWeight: 800, fontSize: 13, marginBottom: 5 } }, label('scratch_reference', 'Predict a scratch test with the same reference')),
+          h('select', { id: 'rk-compare-reference', value: [2.5, 3.5, 5.5, 6.5, 9].indexOf(Number(s.reference)) >= 0 ? Number(s.reference) : 5.5, style: field, onChange: function (e) { o.setState({ reference: Number(e.target.value) }); } },
+            [[2.5, label('ref_finger', 'Fingernail')], [3.5, label('ref_copper', 'Copper reference')], [5.5, label('ref_glass', 'Glass reference')], [6.5, label('ref_plate', 'Streak plate')], [9, label('ref_corundum', 'Corundum')]].map(function (v) { return h('option', { key: v[0], value: v[0] }, v[1] + ' · ' + v[0]); })),
+          h('ul', { style: { margin: '10px 0 0', paddingLeft: 18, fontSize: 13 }, 'aria-live': 'polite' }, [left, right].map(function (r) {
+            var ref = [2.5, 3.5, 5.5, 6.5, 9].indexOf(Number(s.reference)) >= 0 ? Number(s.reference) : 5.5;
+            var result = rkScratchOutcome(ref, r.hardness);
+            return h('li', { key: r.id, 'data-rk-compare-scratch': r.id + ':' + result }, r.label + ': ' + (result === 'scratched' ? label('scratched', 'the reference scratches the specimen') : result === 'borderline' ? label('borderline', 'equal modeled hardness; retest with another reference') : label('not_scratched', 'the reference does not scratch the specimen')));
+          }))) : null),
+      h('div', { style: panel },
+        h('label', { htmlFor: 'rk-compare-note', style: { display: 'block', fontSize: 16, fontWeight: 800, marginBottom: 5 } }, label('my_explanation', 'My explanation')),
+        h('p', { id: 'rk-compare-prompt', style: { fontSize: 13, marginBottom: 10 } }, label('note_prompt', 'Which property best separates this pair? Name one property they share, then explain which observation or test you would use next. Your notes stay with this pair while you explore.')),
+        h('textarea', { id: 'rk-compare-note', 'aria-describedby': 'rk-compare-prompt', value: note, rows: 4, maxLength: 6000, style: field, onChange: function (e) { var next = Object.assign({}, notes); next[pairKey] = e.target.value; o.setState({ notes: next, exportText: '', message: '' }); } }),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
+          h('button', { type: 'button', style: button, onClick: save, 'data-rk-compare-download': true }, label('download', 'Download comparison')),
+          h('button', { type: 'button', style: button, onClick: function () { o.setState({ exportText: report(), message: label('select_copy', 'Select the notebook text to copy it.') }); }, 'data-rk-compare-show-report': true }, label('show_report', 'Show notebook text'))),
+        h('p', { role: 'status', style: { fontSize: 13 } }, s.message || ''),
+        s.exportText ? h('textarea', { readOnly: true, rows: 9, value: s.exportText, 'aria-label': label('report_label', 'Comparison notebook text'), style: field, onFocus: function (e) { e.target.select(); } }) : null),
+      h('details', { style: panel, open: !!query },
+        h('summary', { style: { cursor: 'pointer', fontWeight: 800, minHeight: 32 } }, label('search_title', 'Find another specimen')),
+        h('label', { htmlFor: 'rk-compare-search', style: { display: 'block', fontSize: 13, margin: '8px 0 5px' } }, label('search', 'Search names, properties, or uses')),
+        h('input', { id: 'rk-compare-search', type: 'search', value: s.query || '', style: field, onChange: function (e) { o.setState({ query: e.target.value }); } }),
+        h('p', { role: 'status', 'data-rk-compare-results': matches.length, style: { fontSize: 13, margin: '10px 0' } }, matches.length + ' / ' + pool.length + ' ' + label('matches', 'specimens match')),
+        matches.length ? h('div', { style: grid }, matches.map(function (r) { return h('div', { key: r.id, style: { border: '1px solid #cbd5e1', padding: 10, borderRadius: 8 } },
+          h('p', { style: { fontWeight: 800, margin: '0 0 8px' } }, r.label),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, ['left', 'right'].map(function (side) { return h('button', { key: side, type: 'button', style: button, 'aria-label': (side === 'left' ? label('place_left', 'Use as first specimen') : label('place_right', 'Use as second specimen')) + ': ' + r.label, onClick: function () { choose(side, r.id); } }, side === 'left' ? label('place_left', 'Use as first specimen') : label('place_right', 'Use as second specimen')); }))); })) : h('p', null, label('empty', 'No specimens match. Try a name such as quartz, a property such as metallic, or a use such as glass.'))),
+      h('p', { style: { fontSize: 12, color: '#334155', background: '#f8fafc', padding: 12, borderRadius: 9 } }, label('limits', 'Illustrations are models, not photographs. Natural specimens vary. Use several properties together to identify a sample.'), ' ',
+        h('a', { href: 'https://www.nps.gov/subjects/geology/minerals.htm', target: '_blank', rel: 'noopener noreferrer', style: { color: '#115e59', textDecoration: 'underline' } }, label('source', 'Mineral properties: National Park Service'))));
+  }
+
+
+  // BEGIN ROCKS NOTEBOOK CODEC
+  // Versioned learner-work transfer. Reconstruct accepted fields instead of
+  // merging parsed JSON into tool state. Invalid work is rejected, never clipped.
+  var RK_NOTEBOOK_MAX_BYTES = 1024 * 1024;
+
+  function rkNotebookByteLength(text) {
+    var bytes = 0;
+    for (var i = 0; i < text.length; i++) {
+      var code = text.charCodeAt(i);
+      if (code < 0x80) bytes++;
+      else if (code < 0x800) bytes += 2;
+      else if (code >= 0xd800 && code <= 0xdbff && i + 1 < text.length && text.charCodeAt(i + 1) >= 0xdc00 && text.charCodeAt(i + 1) <= 0xdfff) { bytes += 4; i++; }
+      else bytes += 3;
+    }
+    return bytes;
+  }
+
+  function rkNotebookCleanData(data, config) {
+    var fail = function (path, problem) { throw new Error('Notebook: ' + path + ' ' + problem + '.'); };
+    var own = function (object, key) { return Object.prototype.hasOwnProperty.call(object, key); };
+    var object = function (value, path, allowed) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) fail(path, 'must be an object');
+      var proto = Object.getPrototypeOf(value);
+      if (proto !== Object.prototype && proto !== null) fail(path, 'must contain plain data');
+      Object.keys(value).forEach(function (key) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') fail(path, 'contains a forbidden property');
+        if (allowed && allowed.indexOf(key) < 0) fail(path + '.' + key, 'is not a supported field');
+        var descriptor = Object.getOwnPropertyDescriptor(value, key);
+        if (!descriptor || descriptor.get || descriptor.set) fail(path + '.' + key, 'must contain a stored value');
+      });
+      return value;
+    };
+    var optional = function (value, fallback) { return value === undefined ? fallback : value; };
+    var string = function (value, path, max) { if (typeof value !== 'string') fail(path, 'must be text'); if (value.length > max) fail(path, 'exceeds ' + max + ' characters'); return value; };
+    var bool = function (value, path) { if (typeof value !== 'boolean') fail(path, 'must be true or false'); return value; };
+    var enumeration = function (value, choices, path) { if (typeof value !== 'string' || choices.indexOf(value) < 0) fail(path, 'has an unsupported value'); return value; };
+    var number = function (value, min, max, path, step) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max || (step && value % step !== 0)) fail(path, 'must be a number from ' + min + ' to ' + max + (step ? ' in steps of ' + step : ''));
+      return value;
+    };
+    var array = function (value, path, max) {
+      if (!Array.isArray(value)) fail(path, 'must be a list');
+      if (value.length > max) fail(path, 'exceeds ' + max + ' entries');
+      Object.keys(value).forEach(function (key) { if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= value.length) fail(path, 'contains an unsupported list property'); });
+      for (var i = 0; i < value.length; i++) { var descriptor = Object.getOwnPropertyDescriptor(value, String(i)); if (!descriptor || descriptor.get || descriptor.set) fail(path + '[' + i + ']', 'must contain a stored value'); }
+      return value;
+    };
+    var list = function (value, choices, path) {
+      var result = [];
+      array(value, path, choices.length).forEach(function (item, i) {
+        enumeration(item, choices, path + '[' + i + ']');
+        if (result.indexOf(item) >= 0) fail(path, 'contains a duplicate value');
+        result.push(item);
+      });
+      return result;
+    };
+    if (!config || typeof config !== 'object') fail('configuration', 'is incomplete');
+    var rockIds = config.rockIds, mineralIds = config.mineralIds, cases = config.cases;
+    if (!Array.isArray(rockIds) || !Array.isArray(mineralIds) || !Array.isArray(cases)) fail('configuration', 'is incomplete');
+    var caseIds = cases.map(function (item) { return item.id; });
+    data = object(data, 'data', ['compare', 'fieldCases', 'archive', 'densityLab', 'specimenNotes']);
+
+    var comparison = object(optional(data.compare, {}), 'compare', ['notes', 'kind', 'left', 'right']);
+    var noteMap = object(optional(comparison.notes, {}), 'compare.notes');
+    var notes = {};
+    Object.keys(noteMap).forEach(function (key) {
+      var parts = key.split(':');
+      var ids = parts[0] === 'rocks' ? rockIds : parts[0] === 'minerals' ? mineralIds : [];
+      if (parts.length !== 3 || ids.indexOf(parts[1]) < 0 || ids.indexOf(parts[2]) < 0 || parts[1] === parts[2] || parts.slice(1).sort().join(':') !== parts.slice(1).join(':')) fail('compare.notes.' + key, 'is not a supported specimen pair');
+      notes[key] = string(noteMap[key], 'compare.notes.' + key, 6000);
+    });
+    var compare = { notes: notes };
+    if (comparison.kind !== undefined || comparison.left !== undefined || comparison.right !== undefined) {
+      compare.kind = enumeration(optional(comparison.kind, 'rocks'), ['rocks', 'minerals'], 'compare.kind');
+      var pairIds = compare.kind === 'rocks' ? rockIds : mineralIds;
+      if (comparison.left !== undefined) compare.left = enumeration(comparison.left, pairIds, 'compare.left');
+      if (comparison.right !== undefined) compare.right = enumeration(comparison.right, pairIds, 'compare.right');
+    }
+
+    var field = object(optional(data.fieldCases, {}), 'fieldCases', ['activeId', 'records']);
+    var recordMap = object(optional(field.records, {}), 'fieldCases.records');
+    var records = {};
+    var feedbacks = ['', 'needs-evidence', 'revise-claim', 'revise-evidence', 'supported'];
+    var cleanCaseWork = function (work, c, path, attempt) {
+      object(work, path, attempt ? ['observed', 'cited', 'claim', 'reasoning', 'result'] : ['observed', 'cited', 'claim', 'reasoning', 'attempts', 'feedback', 'solved']);
+      var clues = c.clues.map(function (clue) { return clue.id; });
+      var observed = list(optional(work.observed, []), clues, path + '.observed');
+      var cited = list(optional(work.cited, []), observed, path + '.cited');
+      var claim = enumeration(optional(work.claim, ''), [''].concat(c.candidates), path + '.claim');
+      var result = { observed: observed, cited: cited, claim: claim, reasoning: string(optional(work.reasoning, ''), path + '.reasoning', 6000) };
+      if (attempt) result.result = enumeration(work.result, feedbacks.slice(2), path + '.result');
+      else {
+        result.solved = bool(optional(work.solved, false), path + '.solved');
+        result.feedback = enumeration(optional(work.feedback, ''), feedbacks, path + '.feedback');
+        result.attempts = array(optional(work.attempts, []), path + '.attempts', 30).map(function (row, i) { return cleanCaseWork(row, c, path + '.attempts[' + i + ']', true); });
+      }
+      return result;
+    };
+    Object.keys(recordMap).forEach(function (id) {
+      if (caseIds.indexOf(id) < 0) fail('fieldCases.records.' + id, 'is not a known field case');
+      records[id] = cleanCaseWork(recordMap[id], cases[caseIds.indexOf(id)], 'fieldCases.records.' + id, false);
+    });
+    var fieldCases = { records: records };
+    if (field.activeId !== undefined) fieldCases.activeId = enumeration(field.activeId, caseIds, 'fieldCases.activeId');
+
+    var archiveIds = [];
+    var archive = array(optional(data.archive, []), 'archive', 30).map(function (entry, i) {
+      var path = 'archive[' + i + ']';
+      object(entry, path, ['id', 'specimenId', 'specimenLabel', 'pool', 'observations', 'evidence', 'claimEvidence', 'reasoning', 'confidence', 'report', 'reflection']);
+      var id = string(entry.id, path + '.id', 40);
+      if (!/^investigation-[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id.slice(14))) || Number(id.slice(14)) >= Number.MAX_SAFE_INTEGER) fail(path + '.id', 'is not a valid investigation identifier');
+      if (archiveIds.indexOf(id) >= 0) fail(path + '.id', 'duplicates another investigation');
+      archiveIds.push(id);
+      var specimenId = enumeration(entry.specimenId, mineralIds, path + '.specimenId');
+      return {
+        id: id, specimenId: specimenId, specimenLabel: string(optional(entry.specimenLabel, specimenId), path + '.specimenLabel', 200),
+        pool: enumeration(optional(entry.pool, 'standard'), ['standard', 'challenge'], path + '.pool'),
+        observations: array(optional(entry.observations, []), path + '.observations', 120).map(function (row, j) {
+          var p = path + '.observations[' + j + ']'; object(row, p, ['tool', 'ref', 'choice', 'label']);
+          return { tool: string(optional(row.tool, ''), p + '.tool', 60), ref: string(optional(row.ref, ''), p + '.ref', 60), choice: string(optional(row.choice, ''), p + '.choice', 100), label: string(optional(row.label, ''), p + '.label', 500) };
+        }),
+        evidence: array(optional(entry.evidence, []), path + '.evidence', 30).map(function (row, j) {
+          var p = path + '.evidence[' + j + ']'; object(row, p, ['key', 'text']);
+          return { key: string(row.key, p + '.key', 100), text: string(row.text, p + '.text', 1000) };
+        }),
+        claimEvidence: array(optional(entry.claimEvidence, []), path + '.claimEvidence', 12).map(function (key, j) { return string(key, path + '.claimEvidence[' + j + ']', 100); }),
+        reasoning: string(optional(entry.reasoning, ''), path + '.reasoning', 5000),
+        confidence: enumeration(optional(entry.confidence, ''), ['', 'unsure', 'somewhat', 'very'], path + '.confidence'),
+        report: string(entry.report, path + '.report', 60000), reflection: string(optional(entry.reflection, ''), path + '.reflection', 2000)
+      };
+    });
+
+    var clean = { compare: compare, fieldCases: fieldCases, archive: archive };
+    if (data.specimenNotes !== undefined) {
+      var specimenMap = object(data.specimenNotes, 'specimenNotes');
+      if (Object.keys(specimenMap).length > rockIds.length + mineralIds.length) fail('specimenNotes', 'exceeds the number of known specimens');
+      clean.specimenNotes = {};
+      Object.keys(specimenMap).forEach(function (key) {
+        var parts = key.split(':');
+        var ids = parts[0] === 'rocks' ? rockIds : parts[0] === 'minerals' ? mineralIds : [];
+        if (parts.length !== 2 || ids.indexOf(parts[1]) < 0) fail('specimenNotes.' + key, 'is not a known catalogue specimen');
+        var path = 'specimenNotes.' + key;
+        var row = object(specimenMap[key], path, ['note', 'question', 'bookmarked']);
+        var entry = { note: string(optional(row.note, ''), path + '.note', 3000), question: string(optional(row.question, ''), path + '.question', 1000), bookmarked: bool(optional(row.bookmarked, false), path + '.bookmarked') };
+        if (entry.note.trim() || entry.question.trim() || entry.bookmarked) clean.specimenNotes[key] = entry;
+      });
+    }
+    if (data.densityLab !== undefined) {
+      var densityIds = ['quartz', 'feldspar', 'calcite', 'pyrite', 'magnetite', 'galena', 'garnet'].filter(function (id) { return mineralIds.indexOf(id) >= 0; });
+      var unitIds = ['g/cm3', 'g/mL', 'kg/m3'];
+      var densityKeys = ['mineralId', 'volume', 'initialWater', 'measured', 'estimate', 'units', 'prediction', 'explanation', 'trials'];
+      var density = object(data.densityLab, 'densityLab', densityKeys);
+      var cleanDensity = function (row, path, trial) {
+        object(row, path, trial ? ['mineralId', 'volume', 'initialWater', 'finalWater', 'mass', 'density', 'estimate', 'units', 'prediction', 'explanation'] : densityKeys);
+        var result = {
+          mineralId: enumeration(trial ? row.mineralId : optional(row.mineralId, 'quartz'), densityIds, path + '.mineralId'),
+          volume: number(trial ? row.volume : optional(row.volume, 10), 5, 30, path + '.volume', 5),
+          initialWater: number(trial ? row.initialWater : optional(row.initialWater, 30), 10, 50, path + '.initialWater', 5),
+          estimate: string(optional(row.estimate, ''), path + '.estimate', 32),
+          units: enumeration(optional(row.units, 'g/cm3'), unitIds, path + '.units'),
+          prediction: string(optional(row.prediction, ''), path + '.prediction', 2000),
+          explanation: string(optional(row.explanation, ''), path + '.explanation', 4000)
+        };
+        if (trial) {
+          result.finalWater = number(row.finalWater, 0, 100, path + '.finalWater');
+          result.mass = number(row.mass, 0, 500, path + '.mass');
+          result.density = number(row.density, 0, 10, path + '.density');
+          if (result.mass <= 0 || result.density <= 0) fail(path, 'must have positive mass and density');
+          if (result.finalWater !== result.initialWater + result.volume) fail(path + '.finalWater', 'does not match the initial water plus specimen volume');
+          if (Math.abs(result.density - result.mass / result.volume) >= 0.001) fail(path + '.density', 'does not match mass divided by displaced volume');
+        }
+        return result;
+      };
+      clean.densityLab = cleanDensity(density, 'densityLab', false);
+      var measured = object(optional(density.measured, {}), 'densityLab.measured', ['mass', 'before', 'after']);
+      clean.densityLab.measured = { mass: bool(optional(measured.mass, false), 'densityLab.measured.mass'), before: bool(optional(measured.before, false), 'densityLab.measured.before'), after: bool(optional(measured.after, false), 'densityLab.measured.after') };
+      clean.densityLab.trials = array(optional(density.trials, []), 'densityLab.trials', 30).map(function (trial, i) { return cleanDensity(trial, 'densityLab.trials[' + i + ']', true); });
+    }
+    return clean;
+  }
+
+  function rkNotebookSnapshot(toolData, config) {
+    var pick = function (value, keys) {
+      if (value === undefined) return {};
+      if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Notebook: saved work must be an object.');
+      var out = {};
+      Object.keys(value).forEach(function (key) { if (key === '__proto__' || key === 'constructor' || key === 'prototype') throw new Error('Notebook: saved work contains a forbidden property.'); });
+      keys.forEach(function (key) { if (Object.prototype.hasOwnProperty.call(value, key)) { var descriptor = Object.getOwnPropertyDescriptor(value, key); if (descriptor.get || descriptor.set) throw new Error('Notebook: saved work must contain stored values.'); if (value[key] !== undefined) out[key] = value[key]; } });
+      return out;
+    };
+    if (!toolData || typeof toolData !== 'object' || Array.isArray(toolData)) throw new Error('Notebook: tool data must be an object.');
+    var journal = pick(toolData, ['specimenNotes']).specimenNotes;
+    var data = {
+      compare: pick(toolData.compare, ['notes', 'kind', 'left', 'right']),
+      fieldCases: pick(toolData.fieldCases, ['activeId', 'records']),
+      archive: toolData.wb && toolData.wb.archive !== undefined ? toolData.wb.archive : [],
+      specimenNotes: journal === undefined ? {} : journal
+    };
+    if (toolData.densityLab !== undefined) data.densityLab = pick(toolData.densityLab, ['mineralId', 'volume', 'initialWater', 'measured', 'estimate', 'units', 'prediction', 'explanation', 'trials']);
+    return rkNotebookCleanData(data, config);
+  }
+
+  function rkNotebookEncode(toolData, config) {
+    var envelope = { format: 'alloflow-rocks-notebook', version: 2, createdAt: new Date().toISOString(), data: rkNotebookSnapshot(toolData, config) };
+    var text = JSON.stringify(envelope, null, 2);
+    if (rkNotebookByteLength(text) > RK_NOTEBOOK_MAX_BYTES) throw new Error('Notebook: saved work exceeds the 1 MB file limit. Download individual reports instead.');
+    return text;
+  }
+
+  function rkNotebookDecode(text, config) {
+    if (typeof text !== 'string') throw new Error('Notebook: file contents must be text.');
+    if (rkNotebookByteLength(text) > RK_NOTEBOOK_MAX_BYTES) throw new Error('Notebook: file exceeds the 1 MB limit.');
+    var envelope;
+    try {
+      envelope = JSON.parse(text, function (key, value) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') throw new Error('Forbidden property');
+        return value;
+      });
+    } catch (e) { throw new Error('Notebook: file is not valid notebook JSON or contains a forbidden property.'); }
+    if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) throw new Error('Notebook: file must contain a notebook object.');
+    if (envelope.format !== 'alloflow-rocks-notebook') throw new Error('Notebook: this file is not an AlloFlow rocks notebook.');
+    if (envelope.version !== 1 && envelope.version !== 2) throw new Error('Notebook: this notebook version is not supported.');
+    if (Object.keys(envelope).some(function (key) { return ['format', 'version', 'createdAt', 'data'].indexOf(key) < 0; })) throw new Error('Notebook: file contains unsupported top-level fields.');
+    if (typeof envelope.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(envelope.createdAt) || !Number.isFinite(Date.parse(envelope.createdAt)) || new Date(envelope.createdAt).toISOString() !== envelope.createdAt) throw new Error('Notebook: creation time must be a valid ISO date.');
+    var hasJournal = envelope.data && Object.prototype.hasOwnProperty.call(envelope.data, 'specimenNotes');
+    if (envelope.version === 1 && hasJournal) throw new Error('Notebook: version 1 does not support specimen notes.');
+    if (envelope.version === 2 && !hasJournal) throw new Error('Notebook: version 2 must include specimen notes.');
+    return rkNotebookCleanData(envelope.data, config);
+  }
+  // END ROCKS NOTEBOOK CODEC
+
+
+  // A single review surface for the learner's written work. Backup payloads
+  // contain only validated learning records, never the host or active timers.
+  var rkNotebookReadSequence = 0;
+  function rkRenderNotebook(h, o) {
+    var d = o.data || {}, ui = o.state || {}, T = o.T;
+    var tr = function (key, fallback) { return T('stem.rocks.notebook_' + key, fallback); };
+    var panel = { background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 14, padding: 16, minWidth: 0 };
+    var button = { background: '#ffffff', color: '#1e3a8a', border: '1px solid #64748b', borderRadius: 8, minHeight: 44, padding: '9px 12px', fontSize: 13, fontWeight: 700 };
+    var input = { width: '100%', minWidth: 0, boxSizing: 'border-box', padding: 10, border: '1px solid #64748b', borderRadius: 8, background: '#ffffff', color: '#0f172a', fontSize: 13 };
+    var grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', alignItems: 'start', gap: 12 };
+    var data, dataError = false;
+    try { data = rkNotebookSnapshot(d, o.config); }
+    catch (e) { dataError = true; data = { compare: { notes: {} }, fieldCases: { records: {} }, archive: [], densityLab: { trials: [] }, specimenNotes: {} }; }
+    var name = function (id) { var item = o.rocks.concat(o.minerals).find(function (r) { return r.id === id; }); return item ? item.label : ''; };
+    var notes = Object.entries(data.compare.notes).filter(function (entry) { return entry[1].trim(); });
+    var journal = Object.entries(data.specimenNotes || {});
+    var specimen = function (key) { var parts = key.split(':'); return (parts[0] === 'rocks' ? o.rocks : o.minerals).find(function (r) { return r.id === parts[1]; }); };
+    var specimenName = function (key) { var item = specimen(key); return item ? item.label : ''; };
+    var journalQuery = typeof ui.journalQuery === 'string' ? ui.journalQuery.slice(0, 160) : '';
+    var journalFilter = ['all', 'bookmarked', 'questions'].indexOf(ui.journalFilter) >= 0 ? ui.journalFilter : 'all';
+    var journalTerms = rkCatalogueText(journalQuery).trim().split(/\s+/).filter(Boolean);
+    // These are view preferences only. Reports and portable files continue to
+    // use the complete journal, regardless of which entries are visible here.
+    var visibleJournal = journal.filter(function (entry) {
+      if (journalFilter === 'bookmarked' && !entry[1].bookmarked) return false;
+      if (journalFilter === 'questions' && !entry[1].question.trim()) return false;
+      var searchable = rkCatalogueText([specimenName(entry[0]), entry[1].note, entry[1].question].join(' '));
+      return journalTerms.every(function (term) { return searchable.indexOf(term) >= 0; });
+    }).sort(function (a, b) {
+      var left = rkCatalogueText(specimenName(a[0])), right = rkCatalogueText(specimenName(b[0]));
+      return left < right ? -1 : left > right ? 1 : a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0;
+    });
+    var records = data.fieldCases.records;
+    var archive = data.archive;
+    var trials = data.densityLab && Array.isArray(data.densityLab.trials) ? data.densityLab.trials : [];
+    var casesStarted = o.config.cases.filter(function (c) { var r = records[c.id]; return r && (r.observed.length || r.claim || r.reasoning); });
+    var complete = o.config.cases.filter(function (c) { return records[c.id] && records[c.id].solved; }).length;
+    var say = function (message) { o.setState({ message: message }); if (typeof o.announce === 'function') o.announce(message); };
+    var caseTitle = function (c) { return T('stem.rocks.field_' + c.id + '_title', c.title); };
+    var clueTitle = function (c, id) { var clue = c.clues.find(function (x) { return x.id === id; }); return clue ? T('stem.rocks.field_' + c.id + '_' + id + '_title', clue.title) : ''; };
+    var report = function () {
+      var lines = [tr('title', 'My geology notebook'), tr('report_boundary', 'Learner notes and modeled investigations. Written explanations are for discussion, not automatically graded.'), '', tr('journal', 'Specimen study journal')];
+      if (!journal.length) lines.push(tr('empty_journal', 'Bookmark a catalogue specimen or write a note or question on its detail card to keep it here.'));
+      journal.forEach(function (entry) {
+        lines.push(specimenName(entry[0]) + ' · ' + (entry[0].split(':')[0] === 'rocks' ? tr('rock', 'Rock') : tr('mineral', 'Mineral')));
+        if (entry[1].bookmarked) lines.push(tr('bookmarked', 'Bookmarked'));
+        if (entry[1].note) lines.push(tr('study_note', 'My study note') + ': ' + entry[1].note);
+        if (entry[1].question) lines.push(tr('study_question', 'My question') + ': ' + entry[1].question);
+        lines.push('');
+      });
+      lines.push(tr('comparisons', 'Comparison notes'));
+      if (!notes.length) lines.push(tr('empty_notes', 'No comparison explanations yet.'));
+      notes.forEach(function (entry) { var pair = entry[0].split(':'); lines.push(name(pair[1]) + ' / ' + name(pair[2]), entry[1], ''); });
+      lines.push(tr('cases', 'Field investigations'));
+      o.config.cases.forEach(function (c) {
+        var r = records[c.id]; if (!r) return;
+        lines.push(caseTitle(c));
+        c.clues.filter(function (clue) { return r.observed.indexOf(clue.id) >= 0; }).forEach(function (clue) { lines.push('- ' + clueTitle(c, clue.id) + ': ' + T('stem.rocks.field_' + c.id + '_' + clue.id + '_text', clue.text)); });
+        lines.push(tr('claim', 'Claim') + ': ' + name(r.claim), tr('cited', 'Selected evidence') + ': ' + r.cited.map(function (id) { return clueTitle(c, id); }).join('; '), tr('reasoning', 'Reasoning') + ': ' + r.reasoning);
+        r.attempts.forEach(function (a, i) { lines.push(tr('attempt', 'Attempt') + ' ' + (i + 1) + ': ' + name(a.claim), a.cited.map(function (id) { return clueTitle(c, id); }).join('; '), a.reasoning); });
+        if (r.solved) lines.push(tr('interpretation', 'Reference interpretation') + ': ' + T('stem.rocks.field_' + c.id + '_explanation', c.explanation));
+        lines.push('');
+      });
+      lines.push(tr('density', 'Density experiments'));
+      trials.forEach(function (trial, i) { lines.push(tr('trial', 'Trial') + ' ' + (i + 1) + ': ' + name(trial.mineralId),
+        tr('mass', 'Mass') + ': ' + trial.mass + ' g',
+        tr('water_before', 'Water before') + ': ' + trial.initialWater + ' mL',
+        tr('water_after', 'Water after') + ': ' + trial.finalWater + ' mL',
+        tr('displaced_volume', 'Displaced volume') + ': ' + trial.volume + ' cm³',
+        tr('calculated_density', 'Density from measurements') + ': ' + trial.density + ' g/cm³',
+        tr('entered_density', 'My calculation') + ': ' + trial.estimate + ' ' + (trial.units === 'kg/m3' ? 'kg/m³' : trial.units === 'g/mL' ? 'g/mL' : 'g/cm³'),
+        tr('prediction', 'My prediction') + ': ' + trial.prediction, tr('explanation', 'My explanation') + ': ' + trial.explanation, ''); });
+      if (data.densityLab) {
+        lines.push(tr('density_draft', 'Current density investigation draft') + ': ' + name(data.densityLab.mineralId),
+          tr('prediction', 'My prediction') + ': ' + data.densityLab.prediction,
+          tr('entered_density', 'My calculation') + ': ' + data.densityLab.estimate + ' ' + (data.densityLab.units === 'kg/m3' ? 'kg/m³' : data.densityLab.units === 'g/mL' ? 'g/mL' : 'g/cm³'),
+          tr('explanation', 'My explanation') + ': ' + data.densityLab.explanation);
+      }
+      lines.push('', tr('mineral_reports', 'Completed mineral investigations'));
+      archive.forEach(function (entry) { lines.push(entry.report, tr('reflection', 'Reflection') + ': ' + entry.reflection, ''); });
+      return lines.join('\n');
+    };
+    var download = function (text, filename, mime) {
+      var url, link;
+      try {
+        url = URL.createObjectURL(new Blob([text], { type: mime })); link = document.createElement('a');
+        link.href = url; link.download = filename; document.body.appendChild(link); link.click();
+        say(tr('downloaded', 'Notebook download requested.'));
+      } catch (e) { o.setState({ exportText: text, message: tr('manual', 'Download unavailable. Select and copy the text below, or save it to a file.') }); }
+      finally { if (link && link.parentNode) link.remove(); if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+    };
+    var prepareImport = function (text) {
+      try { var restored = rkNotebookDecode(text, o.config); o.setState({ pending: restored, reading: false, importError: false, message: tr('review_import', 'File checked. Review the saved work below before replacing your notebook.') }); }
+      catch (e) { o.setState({ pending: null, reading: false, importError: true, message: tr('invalid_import', 'This file is not a supported geology notebook, contains invalid records, or is too large. Your current work has not changed.') }); }
+    };
+    var readFile = function (event) {
+      var file = event.target.files && event.target.files[0]; event.target.value = ''; if (!file) return;
+      var seq = ++rkNotebookReadSequence;
+      if (file.size > 1048576) { o.setState({ pending: null, reading: false, importError: true, message: tr('file_too_large', 'Choose a geology notebook smaller than 1 MB. Your current work has not changed.') }); return; }
+      o.setState({ reading: true, pending: null, importError: false, message: tr('reading', 'Reading the saved notebook…') });
+      var success = function (text) { if (seq === rkNotebookReadSequence) prepareImport(text); };
+      var fail = function () { if (seq === rkNotebookReadSequence) o.setState({ pending: null, reading: false, importError: true, message: tr('read_failed', 'The file could not be read. Your current work has not changed.') }); };
+      try {
+        if (typeof file.text === 'function') Promise.resolve(file.text()).then(success, fail);
+        else { var reader = new FileReader(); reader.onload = function () { success(reader.result); }; reader.onerror = fail; reader.readAsText(file); }
+      } catch (e) { fail(); }
+    };
+    var pending = null;
+    if (ui.pending) { try { pending = rkNotebookCleanData(ui.pending, o.config); } catch (e) { pending = null; } }
+    return h('section', { 'data-rk-notebook': true, 'aria-labelledby': 'rk-notebook-title', style: { display: 'grid', gap: 14, color: '#0f172a' } },
+      h('style', null, '[data-rk-notebook] .rk-nb-journal-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;padding:14px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;min-width:0}' +
+        '[data-rk-notebook] .rk-nb-journal-field{flex:1 1 210px;min-width:0}[data-rk-notebook] .rk-nb-journal-field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}' +
+        '[data-rk-notebook] .rk-nb-journal-controls :is(input,select){width:100%;min-width:0;min-height:44px;box-sizing:border-box;padding:9px 10px;border:1px solid #64748b;border-radius:8px;background:#fff;color:#0f172a;font-size:14px}' +
+        '[data-rk-notebook] .rk-nb-journal-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;align-items:start}' +
+        '[data-rk-notebook] .rk-nb-journal-entry{min-width:0;border:1px solid #cbd5e1;border-radius:12px;background:#fff;box-shadow:0 2px 5px #0f172a06}[data-rk-notebook] .rk-nb-journal-entry[open]{border-color:#0e7490}' +
+        '[data-rk-notebook] .rk-nb-journal-entry summary{display:list-item;padding:12px;min-height:44px;box-sizing:border-box;cursor:pointer;border-radius:11px;line-height:1.5}[data-rk-notebook] .rk-nb-journal-entry summary::marker{color:#0e7490}' +
+        '[data-rk-notebook] .rk-nb-journal-summary{display:inline-flex;align-items:center;gap:10px;width:calc(100% - 1.5rem);vertical-align:middle;min-width:0}[data-rk-notebook] .rk-nb-journal-swatch{display:inline-flex;align-items:center;justify-content:center;flex:0 0 48px;width:48px;height:48px;border-radius:10px;background:#f1f5f9;overflow:hidden}' +
+        '[data-rk-notebook] .rk-nb-journal-name{display:block;font-size:16px;font-weight:800;overflow-wrap:anywhere}[data-rk-notebook] .rk-nb-journal-tags{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:12px;color:#475569;margin-top:3px}[data-rk-notebook] .rk-nb-journal-bookmark{font-weight:700;color:#0e7490}' +
+        '[data-rk-notebook] .rk-nb-journal-body{padding:0 14px 14px;min-width:0}[data-rk-notebook] .rk-nb-journal-body p{font-size:14px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 14px}' +
+        '[data-rk-notebook] .rk-nb-journal-controls :is(input,select,button):focus-visible,[data-rk-notebook] .rk-nb-journal-entry :is(summary,button):focus-visible{outline:3px solid #0e7490;outline-offset:3px}' +
+        '@media(forced-colors:active){[data-rk-notebook] :is(.rk-nb-journal-controls,.rk-nb-journal-entry,.rk-nb-journal-swatch){background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none}[data-rk-notebook] :is(.rk-nb-journal-tags,.rk-nb-journal-bookmark){color:CanvasText}[data-rk-notebook] .rk-nb-journal-entry summary::marker{color:CanvasText}[data-rk-notebook] .rk-nb-journal-controls :is(input,select,button):focus-visible,[data-rk-notebook] .rk-nb-journal-entry :is(summary,button):focus-visible{outline-color:Highlight}}'),
+      h('header', { style: Object.assign({}, panel, { background: '#eff6ff', borderColor: '#1d4ed8' }) },
+        h('p', { style: { color: '#1e40af', fontSize: 11, fontWeight: 800, letterSpacing: '.12em', margin: '0 0 5px' } }, tr('eyebrow', 'YOUR EVIDENCE, IN ONE PLACE')),
+        h('h3', { id: 'rk-notebook-title', style: { fontSize: 24, fontWeight: 800, margin: '0 0 8px' } }, tr('title', 'My geology notebook')),
+        h('p', { style: { fontSize: 14, lineHeight: 1.6, margin: 0 } }, tr('intro_journal', 'Review your specimen notes, comparisons, field observations, measurements, and completed mineral reports. Resume your study or save a notebook file to continue on another device.')),
+        h('div', { style: Object.assign({}, grid, { marginTop: 14 }) }, [[journal.length, tr('journal_entries', 'Specimens in my journal')], [notes.length, tr('comparisons', 'Comparison notes')], [complete + ' / ' + o.config.cases.length, tr('supported_cases', 'Field cases supported')], [trials.length, tr('density_trials', 'Recorded density trials')], [archive.length, tr('mineral_reports', 'Completed mineral investigations')]].map(function (item, i) { return h('div', { key: i, style: { background: '#ffffff', border: '1px solid #93c5fd', padding: 12, borderRadius: 10 } }, h('strong', { style: { display: 'block', fontSize: 24, color: '#1e3a8a' } }, item[0]), h('span', { style: { fontSize: 12 } }, item[1])); }))),
+      dataError ? h('p', { role: 'alert', style: panel }, tr('damaged', 'Some saved records could not be read. Open the original activities to review your work. You can still open a valid notebook file below.')) : null,
+      h('section', { style: panel, 'aria-labelledby': 'rk-nb-journal' },
+        h('h4', { id: 'rk-nb-journal', style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('journal', 'Specimen study journal')),
+        h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, journal.length ? tr('journal_help', 'Your notes and questions are saved with each catalogue specimen. Reopen a specimen to revise your thinking.') : tr('empty_journal', 'Bookmark a catalogue specimen or write a note or question on its detail card to keep it here.')),
+        h('div', { className: 'rk-nb-journal-controls' },
+          h('div', { className: 'rk-nb-journal-field' },
+            h('label', { htmlFor: 'rk-nb-journal-search' }, tr('journal_search', 'Search my specimen journal')),
+            h('input', { id: 'rk-nb-journal-search', type: 'search', maxLength: 160, value: journalQuery, 'data-rk-nb-journal-search': true, 'aria-describedby': 'rk-nb-journal-search-help', 'aria-controls': 'rk-nb-journal-results', onChange: function (e) { o.setState({ journalQuery: e.target.value.slice(0, 160) }); } })),
+          h('div', { className: 'rk-nb-journal-field' },
+            h('label', { htmlFor: 'rk-nb-journal-filter' }, tr('journal_filter', 'Show entries')),
+            h('select', { id: 'rk-nb-journal-filter', value: journalFilter, 'data-rk-nb-journal-filter': true, 'aria-controls': 'rk-nb-journal-results', onChange: function (e) { o.setState({ journalFilter: ['all', 'bookmarked', 'questions'].indexOf(e.target.value) >= 0 ? e.target.value : 'all' }); } },
+              h('option', { value: 'all' }, tr('journal_filter_all', 'All saved')),
+              h('option', { value: 'bookmarked' }, tr('journal_filter_bookmarked', 'Bookmarked')),
+              h('option', { value: 'questions' }, tr('journal_filter_questions', 'Has questions')))),
+          h('button', { type: 'button', style: button, 'data-rk-nb-journal-reset': true, disabled: !journalQuery && journalFilter === 'all', onClick: function (e) { o.setState({ journalQuery: '', journalFilter: 'all' }); var controls = e && e.currentTarget && e.currentTarget.closest('.rk-nb-journal-controls'); var search = controls && controls.querySelector('input'); if (search) search.focus(); } }, tr('journal_reset', 'Reset journal filters'))),
+        h('p', { id: 'rk-nb-journal-search-help', style: { fontSize: 12, lineHeight: 1.6, color: '#475569', margin: '10px 0 6px' } }, tr('journal_search_help', 'Search specimen names, your notes, or your questions. Separate words narrow the results. Entries are sorted by name. Exports include your entire journal.')),
+        h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-rk-nb-journal-count': true, style: { fontSize: 13, fontWeight: 700, margin: '8px 0 12px' } }, tr('journal_showing', 'Showing') + ' ' + visibleJournal.length + ' / ' + journal.length + ' ' + tr('journal_result_entries', 'saved specimens')),
+        journal.length && !visibleJournal.length ? h('p', { 'data-rk-nb-journal-empty': true, style: { padding: 14, fontSize: 14, lineHeight: 1.6, border: '1px dashed #64748b', borderRadius: 10, background: '#f8fafc' } }, tr('journal_no_matches', 'No saved specimens match these filters. Try fewer words, choose All saved, or reset the journal filters. Your notes and bookmarks are unchanged.')) : null,
+        h('div', { id: 'rk-nb-journal-results', className: 'rk-nb-journal-results' }, visibleJournal.map(function (entry) { var parts = entry[0].split(':'), item = specimen(entry[0]), picture = parts[0] === 'rocks' ? o.rockPic : o.mineralPic; return h('details', { key: entry[0], 'data-rk-nb-specimen': entry[0], className: 'rk-nb-journal-entry' },
+          h('summary', null, h('span', { className: 'rk-nb-journal-summary' },
+            item && typeof picture === 'function' ? h('span', { className: 'rk-nb-journal-swatch', 'aria-hidden': true }, picture(item, 48)) : null,
+            h('span', { style: { minWidth: 0 } }, h('span', { className: 'rk-nb-journal-name' }, specimenName(entry[0])),
+              h('span', { className: 'rk-nb-journal-tags' }, h('span', null, parts[0] === 'rocks' ? tr('rock', 'Rock') : tr('mineral', 'Mineral')), entry[1].bookmarked ? h('span', { className: 'rk-nb-journal-bookmark' }, tr('bookmarked', 'Bookmarked')) : null)))),
+          h('div', { className: 'rk-nb-journal-body' },
+            entry[1].note ? h('p', null, h('strong', null, tr('study_note', 'My study note') + ': '), entry[1].note) : null,
+            entry[1].question ? h('p', null, h('strong', null, tr('study_question', 'My question') + ': '), entry[1].question) : null,
+            h('button', { type: 'button', 'data-rk-nb-resume-specimen': entry[0], style: button, 'aria-label': tr('resume_specimen', 'Continue studying') + ': ' + specimenName(entry[0]), onClick: function () { o.openSpecimen(parts[0], parts[1]); } }, tr('resume_specimen', 'Continue studying')))); })),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
+          h('button', { type: 'button', 'data-rk-nb-open': 'rocks', style: button, onClick: function () { o.resume('rocks'); } }, tr('browse_rocks', 'Browse rocks')),
+          h('button', { type: 'button', 'data-rk-nb-open': 'minerals', style: button, onClick: function () { o.resume('minerals'); } }, tr('browse_minerals', 'Browse minerals')))),
+      h('div', { style: grid },
+        h('section', { style: panel, 'aria-labelledby': 'rk-nb-comparisons' },
+          h('h4', { id: 'rk-nb-comparisons', style: { fontSize: 18, fontWeight: 800, margin: '0 0 12px' } }, tr('comparisons', 'Comparison notes')),
+          notes.length ? notes.map(function (entry) { var pair = entry[0].split(':'); return h('article', { key: entry[0], style: { borderTop: '1px solid #cbd5e1', padding: '12px 0' } },
+            h('h5', { style: { fontWeight: 800, margin: '0 0 5px' } }, name(pair[1]) + ' / ' + name(pair[2])),
+            h('p', { style: { fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, entry[1]),
+            h('button', { type: 'button', 'data-rk-nb-resume-pair': entry[0], style: button, onClick: function () { o.resume('compare', { kind: pair[0], left: pair[1], right: pair[2] }); } }, tr('resume_pair', 'Continue this comparison'))); }) : h('p', { style: { fontSize: 13 } }, tr('empty_notes', 'No comparison explanations yet.')),
+          h('button', { type: 'button', 'data-rk-nb-open': 'compare', style: button, onClick: function () { o.resume('compare'); } }, tr('start_comparing', 'Compare two specimens'))),
+        h('section', { style: panel, 'aria-labelledby': 'rk-nb-field' },
+          h('h4', { id: 'rk-nb-field', style: { fontSize: 18, fontWeight: 800, margin: '0 0 12px' } }, tr('cases', 'Field investigations')),
+          o.config.cases.map(function (c) { var r = records[c.id]; return h('article', { key: c.id, style: { borderTop: '1px solid #cbd5e1', padding: '12px 0' } },
+            h('h5', { style: { fontWeight: 800, margin: '0 0 5px' } }, caseTitle(c)),
+            h('p', { style: { fontSize: 13, marginBottom: 8 } }, r && r.solved ? tr('supported', 'Identification supported; review your explanation.') : r && (r.observed.length || r.reasoning || r.claim) ? r.observed.length + ' / ' + c.clues.length + ' ' + tr('observations', 'observations collected') : tr('not_started', 'Not started yet')),
+            h('button', { type: 'button', style: button, 'data-rk-nb-resume-case': c.id, onClick: function () { o.resume('fieldwork', { activeId: c.id }); } }, r ? tr('resume_case', 'Resume this case') : tr('start_case', 'Start this case'))); }))),
+      h('div', { style: grid },
+        h('section', { style: panel },
+          h('h4', { style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('density', 'Density experiments')),
+          h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, trials.length ? trials.length + ' ' + tr('trials_ready', 'trials recorded. Revisit the measurements and compare sample sizes.') : tr('empty_density', 'Measure mass and displaced water, calculate density, and test whether a larger sample is denser.')),
+          data.densityLab && data.densityLab.explanation ? h('p', { style: { fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, data.densityLab.explanation) : null,
+          h('button', { type: 'button', 'data-rk-nb-open': 'densityLab', style: button, onClick: function () { o.resume('densityLab'); } }, tr('open_density', 'Open density lab'))),
+        h('section', { style: panel },
+          h('h4', { style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('mineral_reports', 'Completed mineral investigations')),
+          !archive.length ? h('p', { style: { fontSize: 13 } }, tr('empty_minerals', 'Identify an unknown in the workbench to save its observations and reasoning here.')) : archive.slice().reverse().map(function (entry) { return h('details', { key: entry.id, 'data-rk-nb-report': entry.id, style: { borderTop: '1px solid #cbd5e1', padding: '10px 0' } },
+            h('summary', { style: { fontWeight: 700, minHeight: 44, cursor: 'pointer' } }, name(entry.specimenId) + ' · ' + entry.id.replace('investigation-', '#')),
+            h('pre', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontFamily: 'inherit', fontSize: 13, lineHeight: 1.6 } }, entry.report),
+            entry.reflection ? h('p', { style: { fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, tr('reflection', 'Reflection') + ': ' + entry.reflection) : null); }),
+          h('button', { type: 'button', 'data-rk-nb-open': 'workbench', style: button, onClick: function () { o.resume('workbench'); } }, tr('open_workbench', 'Open mineral workbench')))),
+      h('section', { style: panel, 'aria-labelledby': 'rk-nb-save-title' },
+        h('h4', { id: 'rk-nb-save-title', style: { fontSize: 18, fontWeight: 800, margin: '0 0 8px' } }, tr('save_title', 'Keep and share your work')),
+        h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, tr('save_help_journal', 'Save a notebook file to reopen your specimen journal, comparisons, field cases, density trials, and completed reports. Download a readable report for discussion. An unfinished mineral workbench sample stays in the current session and is not included in the file.')),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, margin: '12px 0' } },
+          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-save': true, style: Object.assign({}, button, { background: '#1e40af', color: '#ffffff' }), onClick: function () { try { download(rkNotebookEncode(d, o.config), 'my-geology-notebook.json', 'application/json;charset=utf-8'); } catch (e) { say(tr('save_failed', 'The notebook could not be saved. Review your records in the original activities.')); } } }, tr('save', 'Save notebook file')),
+          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-report-download': true, style: button, onClick: function () { download(report(), 'my-geology-report.txt', 'text/plain;charset=utf-8'); } }, tr('download_report', 'Download readable report')),
+          h('button', { type: 'button', disabled: dataError, 'data-rk-nb-show-text': true, style: button, onClick: function () { o.setState({ exportText: report() }); } }, tr('show_text', 'Show report text'))),
+        h('label', { htmlFor: 'rk-nb-file', style: { fontSize: 14, fontWeight: 700, display: 'block', marginBottom: 6 } }, tr('open_file', 'Open a saved notebook')),
+        h('input', { id: 'rk-nb-file', type: 'file', accept: '.json,application/json', disabled: !!ui.reading, onChange: readFile, style: input, 'aria-describedby': 'rk-nb-file-help' }),
+        h('p', { id: 'rk-nb-file-help', style: { fontSize: 12, color: '#475569' } }, tr('file_help', 'Choose a notebook saved by this tool (up to 1 MB). You will review it before it replaces any saved work.')),
+        h('p', { role: ui.importError ? 'alert' : 'status', 'data-rk-nb-status': true, style: { fontSize: 13, lineHeight: 1.6, color: ui.importError ? '#991b1b' : '#1e3a8a' } }, ui.message || ''),
+        pending ? h('div', { 'data-rk-nb-import-preview': true, style: { background: '#fffbeb', color: '#78350f', border: '1px solid #b45309', borderRadius: 10, padding: 14 } },
+          h('h5', { style: { fontWeight: 800, margin: '0 0 8px' } }, tr('import_title', 'Review the notebook to open')),
+          h('p', { style: { fontSize: 13 } }, Object.keys(pending.compare.notes).length + ' ' + tr('comparisons', 'Comparison notes') + ' · ' + Object.keys(pending.fieldCases.records).length + ' ' + tr('cases', 'Field investigations') + ' · ' + pending.archive.length + ' ' + tr('mineral_reports', 'Completed mineral investigations') + ' · ' + ((pending.densityLab && pending.densityLab.trials) || []).length + ' ' + tr('density_trials', 'Recorded density trials')),
+          h('p', { 'data-rk-nb-import-journal': true, style: { fontSize: 13 } }, pending.specimenNotes !== undefined ? Object.keys(pending.specimenNotes).length + ' ' + tr('journal_entries', 'Specimens in my journal') : tr('legacy_journal', 'This older notebook has no specimen journal. Your current specimen notes and bookmarks will be kept.')),
+          h('p', { style: { fontSize: 13, lineHeight: 1.6 } }, pending.specimenNotes !== undefined ? tr('replace_warning_journal', 'Opening this file replaces your specimen journal, comparisons, field cases, density trials, and completed reports, including empty sections. Save your current notebook first if you want to keep it. Your active mineral sample and other tool progress stay in this session.') : tr('replace_warning', 'Opening this file replaces those four notebook sections. Save your current notebook first if you want to keep it. Your active mineral sample and other tool progress stay in this session.')),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+            h('button', { type: 'button', 'data-rk-nb-confirm-import': true, style: Object.assign({}, button, { background: '#92400e', color: '#ffffff' }), onClick: function () { rkNotebookReadSequence++; o.restore(pending); } }, tr('replace', 'Replace notebook with this file')),
+            h('button', { type: 'button', 'data-rk-nb-cancel-import': true, style: button, onClick: function () { rkNotebookReadSequence++; o.setState({ pending: null, message: tr('cancelled', 'Opening cancelled. Your notebook is unchanged.') }); setTimeout(function () { var input = document.getElementById('rk-nb-file'); if (input) input.focus(); }, 0); } }, tr('cancel', 'Keep current notebook')))) : null,
+        ui.exportText ? h('div', { style: { marginTop: 14 } },
+          h('label', { htmlFor: 'rk-nb-text', style: { display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6 } }, tr('text_label', 'Notebook export text')),
+          h('textarea', { id: 'rk-nb-text', readOnly: true, rows: 10, value: ui.exportText, onFocus: function (e) { e.target.select(); }, style: input }),
+          h('p', { style: { fontSize: 12, color: '#475569' } }, tr('snapshot', 'This is a snapshot. Generate it again after editing your work.'))) : null));
+  }
+
+
+  // Density investigation uses the catalogue's representative values, rounded
+  // instrument readings, and frozen trial records. No randomness or AI.
+  function rkRenderDensityLab(h, opts) {
+    var s = opts.state && typeof opts.state === 'object' ? opts.state : {};
+    var tr = function (key, text) { return opts.T('stem.rocks.density_' + key, text); };
+    var pool = ['quartz', 'feldspar', 'calcite', 'pyrite', 'magnetite', 'galena', 'garnet'];
+    var minerals = opts.minerals.filter(function (m) { return pool.indexOf(m.id) >= 0 && Number.isFinite(m.density) && m.density > 0; });
+    var mineral = minerals.find(function (m) { return m.id === s.mineralId; }) || minerals[0];
+    if (!mineral) return h('p', null, tr('unavailable', 'Mineral reference data is unavailable.'));
+    var clampStep = function (value, lo, hi, fallback) { return Number.isFinite(Number(value)) && value !== null && value !== '' ? Math.max(lo, Math.min(hi, Math.round(Number(value) / 5) * 5)) : fallback; };
+    var volume = clampStep(s.volume, 5, 30, 10);
+    var before = clampStep(s.initialWater, 10, 50, 30);
+    var after = before + volume;
+    var mass = Math.round(mineral.density * volume * 10 + 1e-8) / 10;
+    var ratio = mass / volume;
+    var measured = s.measured && typeof s.measured === 'object' ? s.measured : {};
+    var hasMass = measured.mass === true, hasBefore = measured.before === true, hasAfter = hasBefore && measured.after === true;
+    var ready = hasMass && hasBefore && hasAfter;
+    var boundedText = function (value, limit) { return typeof value === 'string' ? value.slice(0, limit) : ''; };
+    var estimate = boundedText(s.estimate, 32);
+    var units = ['g/cm3', 'g/mL', 'kg/m3'].indexOf(s.units) >= 0 ? s.units : 'g/cm3';
+    var unitLabel = function (unit) { return unit === 'kg/m3' ? 'kg/m³' : unit === 'g/mL' ? 'g/mL' : 'g/cm³'; };
+    var prediction = boundedText(s.prediction, 2000), explanation = boundedText(s.explanation, 4000);
+    var trials = Array.isArray(s.trials) ? s.trials.filter(function (row) {
+      return row && minerals.some(function (m) { return m.id === row.mineralId; }) && Number.isFinite(row.mass) && row.mass > 0 && row.mass <= 500 && Number.isFinite(row.volume) && row.volume >= 5 && row.volume <= 30 && Number.isFinite(row.initialWater) && row.initialWater >= 10 && row.initialWater <= 50 && Number.isFinite(row.finalWater) && Math.abs(row.finalWater - row.initialWater - row.volume) < .001 && Number.isFinite(row.density) && Math.abs(row.density - row.mass / row.volume) < .001;
+    }).slice(-30) : [];
+    var mineralName = function (id) { var m = minerals.find(function (item) { return item.id === id; }); return m ? m.label : id; };
+    var say = function (text) { if (typeof opts.announce === 'function') opts.announce(text); else opts.setState({ announcement: text }); };
+    // Only move focus for an action in this mounted investigation, and do not
+    // steal it if the learner has moved elsewhere before React commits.
+    var focusAfter = function (event, selector) {
+      var trigger = event && event.currentTarget;
+      var root = trigger && typeof trigger.closest === 'function' ? trigger.closest('[data-rk-density-lab]') : null;
+      if (!root || typeof document === 'undefined') return;
+      var origin = document.activeElement;
+      setTimeout(function () {
+        if (!root.isConnected || (document.activeElement !== origin && document.activeElement !== document.body)) return;
+        var target = root.querySelector(selector);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    };
+    var resetReadings = function (patch) { opts.setState(Object.assign({ measured: {}, estimate: '', feedback: '', recorded: '' }, patch)); };
+    var measure = function (kind) {
+      if (kind === 'after' && !hasBefore) return;
+      var next = Object.assign({}, measured); next[kind] = true;
+      opts.setState({ measured: next, feedback: '' });
+      say(kind === 'mass' ? tr('mass', 'Dry specimen mass') + ': ' + mass.toFixed(1) + ' g' : (kind === 'before' ? tr('before', 'Initial water level') + ': ' + before.toFixed(1) : tr('after', 'Water level with specimen') + ': ' + after.toFixed(1)) + ' mL');
+    };
+    var numeric = estimate.trim().replace(',', '.');
+    var number = /^\d+(?:\.\d*)?$|^\.\d+$/.test(numeric) ? Number(numeric) : NaN;
+    var normalized = units === 'kg/m3' ? number / 1000 : number;
+    // Answers are calculated from displayed readings, not an invisible exact
+    // mass. Half a hundredth permits rounding to two decimal places in g/cm³.
+    var close = function (a, b) { return Number.isFinite(a) && Math.abs(a - b) <= .00500001; };
+    var correct = ready && number > 0 && close(normalized, ratio);
+    var feedback = boundedText(s.feedback, 40);
+    var answerError = ['invalid', 'final-volume', 'inverse', 'mass', 'units', 'retry'].indexOf(feedback) >= 0;
+    var answerDescription = 'rk-density-rounding' + (answerError ? ' rk-density-feedback' : '');
+    var message = function (code) {
+      if (code === 'measure') return tr('need_readings', 'First weigh the dry specimen, read the initial water level, then immerse the specimen and read the final level.');
+      if (code === 'invalid') return tr('need_number', 'Enter a positive number and select its density unit. A decimal point or decimal comma is accepted.');
+      if (code === 'final-volume') return tr('subtract_first', 'Use the rise in water level, not the final reading: final minus initial gives the specimen’s volume. Then divide mass by that volume.');
+      if (code === 'inverse') return tr('inverse', 'That resembles volume divided by mass. Density is mass divided by volume, with grams on top and cubic centimeters below.');
+      if (code === 'mass') return tr('mass_feedback', 'That is the mass reading. Mass tells how much material is present; divide it by the displaced volume to find mass per unit volume.');
+      if (code === 'units') return tr('unit_feedback', 'Check the unit conversion. 1 g/cm³ equals 1 g/mL and equals 1,000 kg/m³.');
+      if (code === 'retry') return tr('retry', 'Recheck the subtraction and division using the displayed readings. Give density to two decimal places in g/cm³ or g/mL, or convert that value to kg/m³.');
+      if (code === 'correct') return tr('correct', 'Your calculation matches the displayed readings. Changing the size of this mineral changes mass and volume together, so their ratio stays approximately the same.');
+      if (code === 'recorded') return tr('recorded', 'Trial recorded. Change specimen size or mineral, or repeat the measurement, to investigate the pattern.');
+      return '';
+    };
+    var check = function (event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var result = !ready ? 'measure' : !Number.isFinite(number) || number <= 0 ? 'invalid' : correct ? 'correct' : close(normalized, mass / after) ? 'final-volume' : close(normalized, volume / mass) ? 'inverse' : close(normalized, mass) ? 'mass' : (units === 'kg/m3' && close(number, ratio)) || (units !== 'kg/m3' && close(number / 1000, ratio)) ? 'units' : 'retry';
+      opts.setState({ feedback: result });
+      if (result === 'measure') focusAfter(event, '[data-rk-density-measure="' + (!hasMass ? 'mass' : !hasBefore ? 'before' : 'after') + '"]');
+      else if (result === 'units') focusAfter(event, '[data-rk-density-units]');
+      else if (result !== 'correct') focusAfter(event, '[data-rk-density-estimate]');
+      // The local status region announces the result. On success, retain focus
+      // on Check so the next tab reaches the explanation and Record controls.
+    };
+    var trial = { mineralId: mineral.id, volume: volume, initialWater: before, finalWater: after, mass: mass, density: ratio, estimate: estimate, units: units, prediction: prediction, explanation: explanation };
+    var fingerprint = JSON.stringify(trial);
+    var recorded = s.recorded === fingerprint;
+    var record = function (event) {
+      if (!correct || (feedback !== 'correct' && feedback !== 'recorded')) { check(event); return; }
+      if (recorded) return;
+      opts.setState({ trials: trials.concat(trial).slice(-30), recorded: fingerprint, feedback: 'recorded' });
+      focusAfter(event, '[data-rk-density-trial="' + Math.min(30, trials.length + 1) + '"] summary');
+    };
+    var sameMineral = trials.filter(function (row) { return row.mineralId === mineral.id; });
+    var sizePair = null;
+    sameMineral.some(function (a, i) { return sameMineral.slice(i + 1).some(function (b) { if (a.volume !== b.volume) { sizePair = a.volume < b.volume ? [a, b] : [b, a]; return true; } return false; }); });
+    var equalPair = null;
+    trials.some(function (a, i) { return trials.slice(i + 1).some(function (b) { if (a.mineralId !== b.mineralId && a.volume === b.volume) { equalPair = [a, b].sort(function (x, y) { return x.mass - y.mass; }); return true; } return false; }); });
+    var notebook = function () {
+      var lines = [tr('notebook_title', 'Rocks & Minerals density investigation'), tr('formula', 'Density = dry specimen mass ÷ (final water level − initial water level). 1 mL = 1 cm³.'), ''];
+      trials.forEach(function (row, index) {
+        lines.push(tr('trial', 'Trial') + ' ' + (index + 1) + ': ' + mineralName(row.mineralId));
+        lines.push(tr('mass', 'Dry specimen mass') + ': ' + row.mass.toFixed(1) + ' g');
+        lines.push(tr('water_readings', 'Water readings') + ': ' + row.initialWater.toFixed(1) + ' → ' + row.finalWater.toFixed(1) + ' mL');
+        lines.push(tr('displacement', 'Displaced volume') + ': ' + row.volume.toFixed(1) + ' cm³');
+        lines.push(tr('density', 'Calculated density') + ': ' + row.density.toFixed(2) + ' g/cm³');
+        lines.push(tr('my_answer', 'My answer') + ': ' + boundedText(row.estimate, 32) + ' ' + unitLabel(row.units));
+        lines.push(tr('prediction', 'My prediction') + ': ' + boundedText(row.prediction, 2000));
+        lines.push(tr('explanation', 'My explanation') + ': ' + boundedText(row.explanation, 4000), '');
+      });
+      lines.push(tr('draft', 'Current trial draft') + ': ' + mineral.label);
+      lines.push(tr('mass', 'Dry specimen mass') + ': ' + (hasMass ? mass.toFixed(1) + ' g' : tr('not_measured', 'Not measured')));
+      lines.push(tr('before', 'Initial water level') + ': ' + (hasBefore ? before.toFixed(1) + ' mL' : tr('not_measured', 'Not measured')));
+      lines.push(tr('after', 'Water level with specimen') + ': ' + (hasAfter ? after.toFixed(1) + ' mL' : tr('not_measured', 'Not measured')));
+      lines.push(tr('my_answer', 'My answer') + ': ' + estimate + ' ' + unitLabel(units));
+      lines.push(tr('prediction', 'My prediction') + ': ' + prediction, tr('explanation', 'My explanation') + ': ' + explanation);
+      lines.push('', tr('model', 'Idealized virtual samples: fixed mineral composition, no pores, no trapped bubbles, complete submersion, and no reaction with water. Real specimens and instruments vary. The balance rounds to 0.1 g; water readings round to 0.1 mL.'));
+      lines.push('https://www.usgs.gov/water-science-school/science/water-density', 'https://www.handbookofmineralogy.org/');
+      return lines.join('\n');
+    };
+    var exportText = function (copy) {
+      var text = notebook(); opts.setState({ exportText: text, exportStatus: 'ready' });
+      var fallback = function () { opts.setState({ exportStatus: 'manual' }); say(tr('manual', 'Select the notebook text below to copy it manually.')); };
+      if (copy) {
+        try { if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') { fallback(); return; } Promise.resolve(navigator.clipboard.writeText(text)).then(function () { opts.setState({ exportStatus: 'copied' }); say(tr('copied', 'Density notebook copied.')); }, fallback); } catch (e) { fallback(); }
+      } else {
+        var url;
+        try { url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' })); var link = document.createElement('a'); link.href = url; link.download = 'mineral-density-investigation.txt'; document.body.appendChild(link); try { link.click(); } finally { link.remove(); } opts.setState({ exportStatus: 'downloaded' }); say(tr('downloaded', 'Download requested. The notebook text is also available below.')); } catch (e) { fallback(); }
+        finally { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+      }
+    };
+    var ink = '#18343b', muted = '#496068', blue = '#0e6572';
+    var card = { background: '#fff', color: ink, border: '1px solid #c5d4d3', borderRadius: 18, padding: 22, minWidth: 0, boxShadow: '0 3px 12px rgba(24,52,59,.035)' };
+    var inputStyle = { width: '100%', minHeight: 46, padding: '10px 12px', boxSizing: 'border-box', background: '#fff', color: ink, border: '1px solid #7b9398', borderRadius: 10, fontSize: 15, lineHeight: 1.5 };
+    var labelStyle = { display: 'block', fontSize: 13, fontWeight: 750, letterSpacing: '.01em', margin: '18px 0 8px' };
+    var textStyle = { fontSize: 13, lineHeight: 1.75, margin: '10px 0', color: muted };
+    var btn = function (label, onClick, attrs, primary) {
+      var disabled = attrs && attrs.disabled;
+      var baseStyle = { minHeight: 46, padding: '10px 16px', borderRadius: 10, border: '1px solid ' + (primary && !disabled ? '#0c5662' : '#8aa0a2'), fontSize: 13, fontWeight: 750, lineHeight: 1.5, background: disabled ? '#eef2ef' : primary ? blue : '#fff', color: disabled ? '#536567' : primary ? '#fff' : ink, cursor: disabled ? 'default' : 'pointer' };
+      return h('button', Object.assign({ type: 'button', onClick: onClick, className: 'rk-density-button' }, attrs || {}, { style:Object.assign({}, baseStyle, attrs && attrs.style || {}) }), label);
+    };
+    var heading = function (text, id) { return h('h4', { id: id, className: 'rk-density-step-heading', style: { display: 'flex', gap: 12, alignItems: 'center', margin: '0 0 20px', fontSize: 17, fontWeight: 800, letterSpacing: '-.015em', lineHeight: 1.4 } },
+      h('span', { 'aria-hidden': true, style: { display: 'inline-grid', placeItems: 'center', width: 32, height: 32, flexShrink: 0, borderRadius: 10, background: '#e3f1ef', border: '1px solid #b4d6d1', color: '#155b60', fontSize: 14, fontWeight: 850, fontVariantNumeric: 'tabular-nums' } }, text.slice(0,1)),
+      h('span', null, text.slice(3))); };
+    var figure = function () {
+      var waterY = function (v) { return 237 - v * 1.8; };
+      var currentWater = hasAfter ? after : before;
+      var y = waterY(currentWater);
+      var specimenSize = 48 * Math.cbrt(volume / 10);
+      var label = tr('instrument_aria', 'Virtual balance and 100 mL graduated cylinder.') + ' ' + (hasMass ? mass.toFixed(1) + ' g. ' : tr('balance_unread', 'Balance not read yet. ')) + (hasBefore ? tr('before', 'Initial water level') + ': ' + before.toFixed(1) + ' mL. ' : '') + (hasAfter ? tr('after', 'Water level with specimen') + ': ' + after.toFixed(1) + ' mL.' : '');
+      return h('div', { tabIndex:0, role:'region', 'aria-label':tr('instrument_aria', 'Virtual balance and 100 mL graduated cylinder.'), 'data-rk-density-instrument-scroll':true, style:{ overflowX:'auto', borderRadius:14 } },
+      h('svg', { viewBox: '0 0 480 300', width: '100%', role: 'img', 'aria-label': label, 'data-rk-density-instruments': true, style: { display: 'block', minWidth:480, background: '#f5f8f5', borderRadius: 14, border: '1px solid #c9d9d5' } },
+        h('path', { d: 'M18 35H462M18 75H462M18 115H462M18 155H462M18 195H462M18 235H462M40 20V254M80 20V254M120 20V254M160 20V254M200 20V254M240 20V254M280 20V254M320 20V254M360 20V254M400 20V254M440 20V254', fill: 'none', stroke: '#e5ece7', strokeWidth: 1, 'aria-hidden': true }),
+        h('ellipse', { cx: 129, cy: 257, rx: 111, ry: 6, fill: '#d5e0da', 'aria-hidden': true }),
+        h('ellipse', { cx: 354, cy: 255, rx: 63, ry: 6, fill: '#d5e0da', 'aria-hidden': true }),
+        h('line', { x1: 16, x2: 464, y1: 260, y2: 260, stroke: '#7b9394', strokeWidth: 1.5 }),
+        h('rect', { x: 24, y: 188, width: 208, height: 66, rx: 13, fill: '#dce7e5', stroke: '#49636a', strokeWidth: 2 }),
+        h('path', { d: 'M37 190H219Q230 190 230 201H26Q26 190 37 190Z', fill: '#f9fcfa', stroke: 'none' }),
+        h('rect', { x: 42, y: 250, width: 26, height: 7, rx: 2, fill: '#49636a' }),
+        h('rect', { x: 187, y: 250, width: 26, height: 7, rx: 2, fill: '#49636a' }),
+        h('rect', { x: 67, y: 167, width: 125, height: 13, rx: 5, fill: '#f8fafc', stroke: '#49636a', strokeWidth: 2 }),
+        h('line', { x1: 74, x2: 184, y1: 172, y2: 172, stroke: '#b2c5c4', strokeWidth: 1 }),
+        h('rect', { x: 114, y: 179, width: 30, height: 9, fill: '#49636a' }),
+        hasMass ? h('g', { transform: 'translate(' + (130 - specimenSize / 2) + ' ' + (165 - specimenSize) + ') scale(' + (specimenSize / 50) + ')', 'aria-hidden': true },
+          h('polygon', { points: '4,41 0,17 18,2 40,7 50,32 37,49 15,48', fill: mineral.color, stroke: '#0f172a', strokeWidth: 2 }),
+          h('path', { d: 'M0 17L24 23L40 7M24 23L37 49', fill: 'none', stroke: '#334155', strokeWidth: 2 })) : null,
+        h('rect', { x: 48, y: 203, width: 160, height: 35, rx: 6, fill: '#173941', stroke: '#102e35', strokeWidth: 1 }),
+        h('text', { x: 128, y: 227, textAnchor: 'middle', fontSize: 22, fill: '#f0fdfa', fontFamily: 'ui-monospace,monospace', letterSpacing: 1 }, hasMass ? mass.toFixed(1) + ' g' : '— g'),
+        h('rect', { x: 297, y: 248, width: 114, height: 7, rx: 3, fill: '#dce7e5', stroke: '#49636a', strokeWidth: 1.5 }),
+        h('path', { d: 'M312 42V238Q312 248 322 248H386Q396 248 396 238V42', fill: '#fff', stroke: '#49636a', strokeWidth: 2.5 }),
+        h('path', { className: 'rk-density-waterbody', d: 'M314 ' + y + 'Q354 ' + (y + 6) + ' 394 ' + y + 'V238Q394 246 386 246H322Q314 246 314 238Z', fill: '#80ced1' }),
+        h('path', { d: 'M314 ' + y + 'Q354 ' + (y + 6) + ' 394 ' + y, fill: 'none', stroke: '#176b78', strokeWidth: 2 }),
+        h('path', { d: 'M320 48V238', fill: 'none', stroke: '#fff', strokeWidth: 3, opacity: .7, 'aria-hidden': true }),
+        hasAfter ? h('polygon', { points: '331,232 327,225 341,' + (230 - volume * .45) + ' 365,' + (232 - volume * .45) + ' 378,231 368,241 340,240', fill: mineral.color, stroke: '#0f172a', strokeWidth: 2 }) : null,
+        hasAfter ? h('line', { x1: 298, x2: 407, y1: waterY(before), y2: waterY(before), stroke: '#92400e', strokeWidth: 2, strokeDasharray: '5 4' }) : null,
+        Array.from({ length: 11 }, function (_, i) { var v = i * 10; return h('g', { key: v }, h('line', { x1: 314, x2: 328, y1: waterY(v), y2: waterY(v), stroke: '#334155', strokeWidth: 1.5 }), h('text', { x: 407, y: waterY(v) + 4, fontSize: 12, fill: ink, fontFamily: 'ui-monospace,monospace' }, String(v))); }),
+        h('text', { x: 430, y: 38, fontSize: 12, fill: ink, textAnchor: 'middle' }, 'mL'),
+        h('text', { x: 128, y: 282, fontSize: 12, fill: ink, textAnchor: 'middle' }, tr('balance_caption', 'Dry mass · 0.1 g display')),
+        h('text', { x: 354, y: 282, fontSize: 12, fill: ink, textAnchor: 'middle' }, tr('cylinder_caption', 'Volume · 0.1 mL readout'))));
+    };
+    var diagram = function () {
+      var points = trials.slice(-12);
+      if (points.length < 2) return null;
+      return h('figure', { className: 'rk-density-chart', style: { margin: '20px 0' } },
+        h('div', { tabIndex: 0, role: 'region', 'aria-label': tr('compare', 'Compare your trials'), style: { overflowX: 'auto', borderRadius: 14 } }, h('svg', { viewBox: '0 0 480 245', role: 'img', 'aria-label': tr('plot_aria', 'Mass versus displaced volume for the latest 12 trials. Trial numbers match the table. Steeper mass per volume indicates greater density.'), width: '100%', style: { display: 'block', minWidth: 420, maxWidth: 800, background: '#f8faf7', border: '1px solid #c5d4d3', borderRadius: 14 }, 'data-rk-density-plot': true },
+          [0,50,100,150,200,250].map(function (v) { return h('g', { key: 'y' + v }, h('line', { x1: 52, x2: 448, y1: 204 - v * .65, y2: 204 - v * .65, stroke: '#cbd5e1' }), h('text', { x: 42, y: 208 - v * .65, textAnchor: 'end', fill: muted, fontSize: 11 }, String(v))); }),
+          [0,5,10,15,20,25,30].map(function (v) { return h('g', { key: 'x' + v }, h('line', { x1: 52 + v * 13, x2: 52 + v * 13, y1: 36, y2: 204, stroke: '#e2e8f0' }), h('text', { x: 52 + v * 13, y: 221, textAnchor: 'middle', fill: muted, fontSize: 11 }, String(v))); }),
+          h('path', { d: 'M52 36V204H448', fill: 'none', stroke: '#334155', strokeWidth: 2 }),
+          h('text', { x: 54, y: 20, fill: ink, fontSize: 12 }, tr('mass_axis', 'Mass (g)')),
+          h('text', { x: 258, y: 240, fill: ink, fontSize: 12, textAnchor: 'middle' }, tr('volume_axis', 'Displaced volume (cm³)')),
+          points.map(function (row, index) { return h('g', { key: index }, h('circle', { cx: 52 + row.volume * 13, cy: 204 - row.mass * .65, r: 6, fill: blue, stroke: '#fff', strokeWidth: 2 }), h('text', { x: 52 + row.volume * 13 + (row.volume === 30 ? -10 : 10), y: 204 - row.mass * .65 - 8, textAnchor: row.volume === 30 ? 'end' : 'start', fontSize: 12, fontWeight: 750, fill: ink }, String(trials.length - points.length + index + 1))); }))),
+        h('figcaption', { style: textStyle }, tr('plot_caption', 'The latest 12 trials are plotted; repeated identical readings overlap. Use the table for every measurement.')));
+    };
+    return h('section', { 'data-rk-density-lab': true, 'aria-labelledby': 'rk-density-title', style: { padding: 24, background: '#f5f6f0', color: ink, border: '1px solid #c5d4cf', borderRadius: 22, lineHeight: 1.6 } },
+      h('style', null, [
+        '[data-rk-density-lab],[data-rk-density-lab] *{box-sizing:border-box}',
+        '[data-rk-density-lab] .rk-density-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
+        '[data-rk-density-lab] [aria-invalid="true"]{border:2px solid #9f361f!important}',
+        '[data-rk-density-lab] :is(h3,h4,p,dt,dd,button,label,summary){overflow-wrap:anywhere}',
+        '[data-rk-density-lab] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible{outline:3px solid #0e6572!important;outline-offset:4px!important}',
+        '[data-rk-density-lab] .rk-density-button:not(:disabled):hover{box-shadow:0 2px 7px rgba(24,52,59,.12);border-color:#0e6572!important}',
+        '[data-rk-density-lab] .rk-density-measure-actions button{text-align:left;display:flex;align-items:center;gap:12px;position:relative}',
+        '[data-rk-density-lab] .rk-density-measure-actions button::before{display:inline-grid;place-items:center;width:27px;min-width:27px;height:27px;border:1px solid currentColor;border-radius:50%;font-size:11px;font-weight:800}',
+        '[data-rk-density-lab] [data-rk-density-measure="mass"]::before{content:"1"}',
+        '[data-rk-density-lab] [data-rk-density-measure="before"]::before{content:"2"}',
+        '[data-rk-density-lab] [data-rk-density-measure="after"]::before{content:"3"}',
+        '[data-rk-density-lab] .rk-density-measure-actions button[aria-pressed="true"]{background:#edf6f0!important;border-color:#74a69a!important;color:#245b51!important}',
+        '[data-rk-density-lab] [data-rk-density-trials]{font-variant-numeric:tabular-nums}',
+        '[data-rk-density-lab] [data-rk-density-trials] tbody tr:nth-child(even){background:#f6f8f4}',
+        '[data-rk-density-lab] [data-rk-density-trials] :is(th,td){padding:12px!important;vertical-align:top}',
+        '[data-rk-density-lab] [data-rk-density-trials] tbody td:nth-child(7){font-weight:800;color:#155b60;background:#edf6f0;white-space:nowrap}',
+        '[data-rk-density-lab] [data-rk-density-trials] tbody td:nth-child(n+3):nth-child(-n+6){white-space:nowrap}',
+        '[data-rk-density-lab] [data-rk-density-trials] summary{display:list-item;padding-top:4px}',
+        '[data-rk-density-lab] .rk-density-table-scroll:focus-visible{outline-offset:-3px!important}',
+        '@media(forced-colors:active){[data-rk-density-lab] form{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}[data-rk-density-lab] [aria-invalid="true"]{border-color:CanvasText!important}}',
+        '@media(max-width:600px){[data-rk-density-lab]{padding:12px!important;border-radius:16px!important}[data-rk-density-lab] .rk-density-card{padding:15px!important;border-radius:13px!important}[data-rk-density-lab] .rk-density-heading-mark{display:none!important}[data-rk-density-lab] #rk-density-title{font-size:22px!important}[data-rk-density-lab] .rk-density-step-heading{font-size:16px!important;gap:9px!important}[data-rk-density-lab] .rk-density-readout-value{font-size:17px!important}[data-rk-density-lab] .rk-density-actions{gap:8px!important}[data-rk-density-lab] .rk-density-actions button{flex:1 1 150px}}',
+        '@media(forced-colors:active){[data-rk-density-lab],[data-rk-density-lab] :is(section,div,header,h3,h4,p,span,dl,dt,dd,th,td,details,summary,button,input,select,textarea,figure,svg){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}[data-rk-density-lab] :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible{outline-color:Highlight!important}[data-rk-density-lab] button:disabled{color:GrayText!important;border-color:GrayText!important}[data-rk-density-lab] button[aria-pressed="true"]{color:Highlight!important;border:2px solid Highlight!important}[data-rk-density-lab] svg text{fill:CanvasText!important}[data-rk-density-lab] svg [fill]:not([fill="none"]):not(text){fill:Canvas!important}[data-rk-density-lab] svg [stroke]:not([stroke="none"]){stroke:CanvasText!important}[data-rk-density-lab] svg .rk-density-waterbody{fill:Highlight!important;fill-opacity:.3}[data-rk-density-lab] [data-rk-density-plot] circle{fill:CanvasText!important;stroke:Canvas!important}[data-rk-density-lab] a{color:LinkText!important}}'
+      ].join('')),
+      h('header', { style: { display: 'flex', alignItems: 'center', gap: 18, padding: '2px 2px 8px' } },
+        h('div', { className: 'rk-density-heading-mark', 'aria-hidden': true, style: { display: 'grid', placeItems: 'center', width: 68, height: 68, flexShrink: 0, borderRadius: 18, background: '#e3efeb', border: '1px solid #b7d2c9', color: '#155b60', fontFamily: 'Georgia,serif', fontSize: 43, fontStyle: 'italic' } }, 'ρ'),
+        h('div', { style: { minWidth: 0 } }, h('h3', { id: 'rk-density-title', style: { margin: '0 0 6px', fontSize: 27, fontWeight: 850, lineHeight: 1.25, letterSpacing: '-.035em' } }, tr('title', 'Mineral density investigation')),
+          h('p', { style: Object.assign({}, textStyle, { maxWidth: 780, fontSize: 14, margin: 0 }) }, tr('intro', 'Does a bigger specimen have a greater density? Measure mass and water displacement, calculate the ratio, and compare trials while changing one variable at a time.')))),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,320px),1fr))', alignItems: 'start', gap: 18, marginTop: 20 } },
+        h('div', { className: 'rk-density-card', style: card }, heading('1. ' + tr('prepare', 'Prepare and predict')),
+          h('label', { htmlFor: 'rk-density-mineral', style: labelStyle }, tr('mineral', 'Mineral specimen')),
+          h('select', { id: 'rk-density-mineral', 'data-rk-density-mineral': true, value: mineral.id, 'aria-describedby': 'rk-density-settings-help', onChange: function (e) { if (pool.indexOf(e.target.value) >= 0) resetReadings({ mineralId: e.target.value }); }, style: inputStyle }, minerals.map(function (m) { return h('option', { key: m.id, value: m.id }, m.label); })),
+          h('div', { style: { display: 'flex', gap: 15, alignItems: 'center', marginTop: 14, background: '#f6f8f3', border: '1px solid #dbe3d8', padding: 13, borderRadius: 12 } }, h('span', { 'aria-hidden': true, style: { flexShrink: 0, filter: 'drop-shadow(0 3px 2px rgba(24,52,59,.12))' } }, opts.mineralPic(mineral, 70)), h('p', { style: Object.assign({}, textStyle, { margin: 0, fontSize: 12 }) }, mineral.id === 'garnet' ? tr('garnet_note', 'This reference represents an iron-rich garnet. Garnet is a group whose density changes with composition.') : mineral.id === 'feldspar' ? tr('feldspar_note', 'This feldspar reference represents orthoclase. Other feldspars can have different densities.') : tr('specimen_note', 'A virtual, uniform specimen. Change size without changing its composition.'))),
+          h('label', { htmlFor: 'rk-density-size', style: labelStyle }, tr('size', 'Specimen size setting') + ': ' + (volume / 5) + ' / 6'),
+          h('input', { id: 'rk-density-size', 'data-rk-density-size': true, type: 'range', min: 1, max: 6, step: 1, value: volume / 5, 'aria-describedby': 'rk-density-settings-help', 'aria-valuetext': tr('size_setting', 'Size setting') + ' ' + (volume / 5) + ' / 6', onChange: function (e) { resetReadings({ volume: clampStep(Number(e.target.value) * 5, 5, 30, 10) }); }, style: { width: '100%', minHeight: 44, accentColor: blue } }),
+          h('label', { htmlFor: 'rk-density-water', style: labelStyle }, tr('water_setting', 'Starting water setting') + ': ' + before.toFixed(1) + ' mL'),
+          h('input', { id: 'rk-density-water', 'data-rk-density-water': true, type: 'range', min: 10, max: 50, step: 5, value: before, 'aria-valuetext': before.toFixed(1) + ' mL', 'aria-describedby': 'rk-density-settings-help', onChange: function (e) { resetReadings({ initialWater: clampStep(e.target.value, 10, 50, 30) }); }, style: { width: '100%', minHeight: 44, accentColor: blue } }),
+          h('p', { id: 'rk-density-settings-help', style: textStyle }, tr('settings_note', 'Changing the mineral, size, or starting water clears the current readings and calculation. Recorded trials remain in your table.')),
+          h('label', { htmlFor: 'rk-density-prediction', style: labelStyle }, tr('prediction', 'My prediction')),
+          h('textarea', { id: 'rk-density-prediction', 'data-rk-density-prediction': true, value: prediction, maxLength: 2000, rows: 3, onChange: function (e) { opts.setState({ prediction: e.target.value.slice(0,2000) }); }, 'aria-describedby': 'rk-density-prediction-help', style: Object.assign({}, inputStyle, { resize: 'vertical' }) }),
+          h('p', { id: 'rk-density-prediction-help', style: textStyle }, tr('prediction_hint', 'If I change ___ and keep ___ the same, I predict mass will ___ and density will ___ because ___.'))),
+        h('div', { className: 'rk-density-card', style: card }, heading('2. ' + tr('measure', 'Measure mass and volume')),
+          h('p', { style:Object.assign({}, textStyle, { fontSize:12 }) }, tr('instruments_scroll', 'On smaller screens, scroll sideways across the diagram to inspect both instruments.')),
+          figure(),
+          h('div', { className: 'rk-density-measure-actions', role: 'group', 'aria-label': tr('measure', 'Measure mass and volume'), style: { display: 'grid', gap: 8, marginTop: 16 } },
+            btn((hasMass ? '✓ ' : '') + tr('weigh', 'Weigh dry specimen'), function () { measure('mass'); }, { 'data-rk-density-measure': 'mass', 'aria-pressed': hasMass, 'aria-describedby': 'rk-density-reading-mass' + (feedback === 'measure' ? ' rk-density-feedback' : '') }),
+            btn((hasBefore ? '✓ ' : '') + tr('read_before', 'Read initial water level'), function () { measure('before'); }, { 'data-rk-density-measure': 'before', 'aria-pressed': hasBefore, 'aria-describedby': 'rk-density-reading-before' + (feedback === 'measure' ? ' rk-density-feedback' : '') }),
+            btn((hasAfter ? '✓ ' : '') + tr('read_after', 'Immerse specimen and read final level'), function () { measure('after'); }, { 'data-rk-density-measure': 'after', disabled: !hasBefore, 'aria-pressed': hasAfter, 'aria-describedby': 'rk-density-reading-after' + (feedback === 'measure' ? ' rk-density-feedback' : ''), style: { background: hasBefore ? '#fff' : '#e2e8f0', color: '#334155', borderColor: '#64748b' } })),
+          h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,115px),1fr))', gap: 8, margin: '18px 0' }, 'data-rk-density-readings': true },
+            [[tr('mass', 'Dry specimen mass'), hasMass ? mass.toFixed(1) + ' g' : '—'], [tr('before', 'Initial water level'), hasBefore ? before.toFixed(1) + ' mL' : '—'], [tr('after', 'Water level with specimen'), hasAfter ? after.toFixed(1) + ' mL' : '—']].map(function (row, index) { return h('div', { key: index, style: { padding: '12px 10px', border: '1px solid #c8dcda', borderRadius: 10, background: '#f2f8f5' } }, h('dt', { style: { fontSize: 11, lineHeight: 1.5, color: muted, marginBottom: 6 } }, row[0]), h('dd', { id: 'rk-density-reading-' + ['mass','before','after'][index], className: 'rk-density-readout-value', style: { margin: 0, fontSize: 20, fontWeight: 800, color: '#155b60', lineHeight: 1.3, fontVariantNumeric: 'tabular-nums', letterSpacing: '-.025em' } }, row[1] === '—' ? h('span', null, h('span', { 'aria-hidden': true }, '—'), h('span', { className: 'rk-density-sr-only' }, tr('not_measured', 'Not measured'))) : row[1])); })),
+          h('p', { style: textStyle }, tr('read_note', 'Read the bottom of the water meniscus at eye level. The sketch has 10 mL guide marks; the virtual readout supplies tenths of a milliliter. The dashed line marks the initial level after immersion.')))),
+      h('form', { className: 'rk-density-card', onSubmit: check, noValidate: true, 'aria-labelledby': 'rk-density-calculate-heading', style: Object.assign({}, card, { marginTop: 18 }) }, heading('3. ' + tr('calculate', 'Calculate and explain'), 'rk-density-calculate-heading'),
+        h('p', { style: { background: '#edf6f0', color: '#155b60', border: '1px solid #c4ded1', borderLeft: '4px solid #328779', borderRadius: 10, padding: '15px 18px', fontSize: 15, fontWeight: 750, lineHeight: 1.8 } }, tr('formula', 'Density = dry specimen mass ÷ (final water level − initial water level). 1 mL = 1 cm³.')),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,210px),1fr))', gap: 12, maxWidth: 650 } },
+          h('div', null, h('label', { htmlFor: 'rk-density-estimate', style: labelStyle }, tr('my_answer', 'My answer')), h('input', { id: 'rk-density-estimate', 'data-rk-density-estimate': true, inputMode: 'decimal', type: 'text', maxLength: 32, value: estimate, 'aria-invalid': answerError || undefined, 'aria-errormessage': answerError ? 'rk-density-feedback' : undefined, onChange: function (e) { opts.setState({ estimate: e.target.value.slice(0,32), feedback: '' }); }, 'aria-describedby': answerDescription, style: inputStyle })),
+          h('div', null, h('label', { htmlFor: 'rk-density-units', style: labelStyle }, tr('units', 'Density units')), h('select', { id: 'rk-density-units', 'data-rk-density-units': true, value: units, 'aria-invalid': feedback === 'units' || undefined, 'aria-errormessage': feedback === 'units' ? 'rk-density-feedback' : undefined, 'aria-describedby': 'rk-density-rounding' + (feedback === 'units' ? ' rk-density-feedback' : ''), onChange: function (e) { opts.setState({ units: e.target.value, feedback: '' }); }, style: inputStyle }, ['g/cm3','g/mL','kg/m3'].map(function (u) { return h('option', { key: u, value: u }, unitLabel(u)); })))),
+        h('p', { id: 'rk-density-rounding', style: textStyle }, tr('rounding', 'Use the displayed measurements. Round density to two decimals in g/cm³ or g/mL, or convert to kg/m³. 1 g/cm³ = 1,000 kg/m³.')),
+        btn(tr('check', 'Check calculation'), check, { 'data-rk-density-check': true, type: 'submit' }, true),
+        h('div', { id: 'rk-density-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-rk-density-feedback': feedback }, feedback ? h('p', { style: { padding: 12, borderRadius: 10, fontSize: 13, lineHeight: 1.6, background: correct && (feedback === 'correct' || feedback === 'recorded') ? '#dcfce7' : '#fef3c7', color: correct && (feedback === 'correct' || feedback === 'recorded') ? '#14532d' : '#78350f' } }, message(feedback)) : null),
+        correct && (feedback === 'correct' || feedback === 'recorded') ? h('p', { style: { fontWeight: 800, color: '#0c4a6e', fontSize: 15, lineHeight: 1.6 }, 'data-rk-density-solution': true }, mass.toFixed(1) + ' g ÷ (' + after.toFixed(1) + ' − ' + before.toFixed(1) + ') cm³ = ' + ratio.toFixed(2) + ' g/cm³') : null,
+        h('label', { htmlFor: 'rk-density-explanation', style: labelStyle }, tr('explanation', 'My explanation')),
+        h('textarea', { id: 'rk-density-explanation', 'data-rk-density-explanation': true, value: explanation, maxLength: 4000, rows: 3, onChange: function (e) { opts.setState({ explanation: e.target.value.slice(0,4000) }); }, 'aria-describedby': 'rk-density-explanation-help', style: Object.assign({}, inputStyle, { resize: 'vertical' }) }),
+        h('p', { id: 'rk-density-explanation-help', style: textStyle }, tr('explanation_hint', 'What do these readings suggest about mass, volume, and density? Your writing is preserved for discussion; only the numerical calculation is checked.')),
+        h('div', { className: 'rk-density-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 10, paddingTop: 8 } }, btn(tr('record', 'Record trial'), record, { 'data-rk-density-record': true, disabled: !correct || recorded || (feedback !== 'correct' && feedback !== 'recorded') }, true), btn(tr('repeat', 'Repeat measurements'), function (event) { resetReadings({}); say(tr('repeat_notice', 'Measurements reset. Recorded trials are unchanged. Start with the dry specimen mass.')); focusAfter(event, '[data-rk-density-measure="mass"]'); }, { 'data-rk-density-repeat': true }))),
+      h('section', { className: 'rk-density-card', style: Object.assign({}, card, { marginTop: 18 }) }, heading('4. ' + tr('compare', 'Compare your trials')),
+        h('p', { style: textStyle }, tr('trial_hint', 'First compare the same mineral at two sizes. Then compare two minerals at the same volume. The notebook keeps your latest 30 trials; each row preserves the readings and writing from that moment.')),
+        sizePair ? h('p', { 'data-rk-density-size-comparison': true, style: { background: '#e0f2fe', color: '#0c4a6e', padding: 12, borderRadius: 10, fontSize: 13, lineHeight: 1.7 } }, mineral.label + ': ' + sizePair[0].volume.toFixed(1) + ' → ' + sizePair[1].volume.toFixed(1) + ' cm³; ' + sizePair[0].mass.toFixed(1) + ' → ' + sizePair[1].mass.toFixed(1) + ' g. ' + tr('same_density', 'The mass and volume increase together. Their density ratios are') + ' ' + sizePair[0].density.toFixed(2) + ' / ' + sizePair[1].density.toFixed(2) + ' g/cm³. ' + tr('round_note', 'Small differences can come from rounding the balance reading.')) : h('p', { style: textStyle }, tr('need_size_pair', 'Record this mineral at two different sizes to compare its mass and density.')),
+        equalPair ? h('p', { 'data-rk-density-mineral-comparison': true, style: textStyle }, tr('equal_volume', 'At the same volume') + ' (' + equalPair[0].volume.toFixed(1) + ' cm³), ' + mineralName(equalPair[0].mineralId) + ': ' + equalPair[0].mass.toFixed(1) + ' g; ' + mineralName(equalPair[1].mineralId) + ': ' + equalPair[1].mass.toFixed(1) + ' g. ' + tr('equal_volume_rule', 'The specimen with more mass per equal volume has the greater density.')) : null,
+        diagram(),
+        trials.length ? h('div', { className: 'rk-density-table-scroll', style: { overflowX: 'auto', border: '1px solid #c5d4d3', borderRadius: 12, margin: '20px 0' }, tabIndex: 0, role: 'region', 'aria-label': tr('trial_table_region', 'Density trial table; scroll horizontally if needed') }, h('table', { style: { borderCollapse: 'collapse', width: '100%', fontSize: 12, textAlign: 'left' }, 'data-rk-density-trials': trials.length },
+          h('caption', { style: { textAlign: 'left', fontWeight: 800, fontSize: 13, padding: '13px 14px', background: '#f8faf6' } }, tr('trial_table', 'Recorded density trials')),
+          h('thead', null, h('tr', null, [tr('trial', 'Trial'),tr('mineral','Mineral specimen'),tr('table_mass','Mass (g)'),tr('table_before','Before (mL)'),tr('table_after','After (mL)'),tr('table_volume','Volume (cm³)'),tr('table_density','Density (g/cm³)'),tr('notes','Notes')].map(function (label,i) { return h('th', { key:i, scope:'col', style:{ padding:8, background:'#eaf0ea', borderBottom:'1px solid #8ba2a0', color:'#294e55', fontSize:11, lineHeight:1.6 } },label); }))),
+          h('tbody', null, trials.map(function (row,i) { return h('tr',{ key:JSON.stringify(row) + ':' + i, 'data-rk-density-trial':i+1 },
+            h('th',{scope:'row',style:{padding:8,borderBottom:'1px solid #cbd5e1'}},i+1),
+            [mineralName(row.mineralId),row.mass.toFixed(1),row.initialWater.toFixed(1),row.finalWater.toFixed(1),row.volume.toFixed(1),row.density.toFixed(2)].map(function(v,j){return h('td',{key:j,style:{padding:8,borderBottom:'1px solid #cbd5e1'}},v);}),
+            h('td',{style:{padding:8,borderBottom:'1px solid #cbd5e1',minWidth:150}},h('details',null,h('summary',{'aria-label': tr('view_notes','View notes') + ': ' + tr('trial','Trial') + ' ' + (i + 1) + ', ' + mineralName(row.mineralId),style:{cursor:'pointer',minHeight:44}},tr('view_notes','View notes')),h('p',null,tr('prediction','My prediction')+': '+boundedText(row.prediction,2000)),h('p',null,tr('explanation','My explanation')+': '+boundedText(row.explanation,4000))))); })))) : h('div',{style:{padding:'22px 18px',margin:'18px 0',border:'1px dashed #8ba2a0',borderRadius:12,background:'#f8faf6',display:'flex',gap:16,alignItems:'center'}},
+              h('svg',{viewBox:'0 0 48 48',width:48,height:48,'aria-hidden':true,focusable:false,style:{flexShrink:0}},h('path',{d:'M7 6V40H43',fill:'none',stroke:'#7b9398',strokeWidth:2}),h('path',{d:'M14 32L25 25L37 13',fill:'none',stroke:'#0e6572',strokeWidth:2,strokeDasharray:'3 3'}),[ [14,32],[25,25],[37,13] ].map(function(p,i){return h('circle',{key:i,cx:p[0],cy:p[1],r:3,fill:'#0e6572'});})),
+              h('p',{style:Object.assign({},textStyle,{margin:0,maxWidth:540})},tr('empty','No recorded trials yet. Complete a calculation and record it above.'))),
+        h('div',{className:'rk-density-actions',style:{display:'flex',flexWrap:'wrap',gap:10,marginTop:16}},btn(tr('download','Download investigation'),function(){exportText(false);},{'data-rk-density-download':true}),btn(tr('copy','Copy investigation'),function(){exportText(true);},{'data-rk-density-copy':true})),
+        s.exportStatus ? h('p',{role:'status',style:textStyle},s.exportStatus === 'copied' ? tr('copied','Density notebook copied.') : s.exportStatus === 'downloaded' ? tr('downloaded','Download requested. The notebook text is also available below.') : tr('manual','Select the notebook text below to copy it manually.')) : null,
+        typeof s.exportText === 'string' && s.exportText ? h('div',null,h('label',{htmlFor:'rk-density-export',style:labelStyle},tr('export_text','Exported investigation text')),h('textarea',{id:'rk-density-export','data-rk-density-export':true,value:s.exportText,readOnly:true,rows:7,onFocus:function(e){e.target.select();},style:inputStyle}),h('p',{style:textStyle},tr('snapshot_note','This text is an export snapshot. Export again after making changes.'))) : null),
+      h('details', { className: 'rk-density-card', style: Object.assign({}, card, { marginTop: 18, background: '#fafbf8' }) }, h('summary', { style: { minHeight:44,fontWeight:800,cursor:'pointer',fontSize:14,paddingTop:9 } }, tr('limits', 'How this model works and where it stops')),
+        h('p',{style:textStyle},tr('model','Idealized virtual samples: fixed mineral composition, no pores, no trapped bubbles, complete submersion, and no reaction with water. Real specimens and instruments vary. The balance rounds to 0.1 g; water readings round to 0.1 mL.')),
+        h('p',{style:textStyle},tr('precision','Two decimal places are used for calculation practice, not a claim of laboratory accuracy. Real displacement measurements require uncertainty estimates. Similar densities alone cannot reliably identify minerals such as quartz, calcite, and feldspar.')),
+        h('p',{style:textStyle},tr('safety','This is a virtual experiment. Water displacement is unsuitable for specimens that dissolve, absorb water, or react; halite and gypsum are not included. Galena contains lead, and some sulfides can weather: use a teacher-approved method for real specimens.')),
+        h('p',{style:textStyle},tr('sg','Density has units of mass per volume. Specific gravity is a unitless ratio to a reference density; it is not the same quantity.')),
+        h('p',{style:textStyle},h('a',{href:'https://www.usgs.gov/water-science-school/science/water-density',target:'_blank',rel:'noopener noreferrer',style:{color:blue,textDecoration:'underline'}},tr('source_density','USGS: density and water')+' ('+tr('new_tab','new tab')+')'),' · ',h('a',{href:'https://www.handbookofmineralogy.org/',target:'_blank',rel:'noopener noreferrer',style:{color:blue,textDecoration:'underline'}},tr('source_minerals','Handbook of Mineralogy: mineral reference values')+' ('+tr('new_tab','new tab')+')')),
+        btn(tr('open_mineral','Open this mineral’s reference card'),function(){opts.openMineral(mineral.id);},{'data-rk-density-open-mineral':true})),
+      typeof opts.announce !== 'function' ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, className: 'rk-density-sr-only', 'data-rk-density-announcement': true }, boundedText(s.announcement, 1000)) : null);
+  }
+
+
   window.StemLab.registerTool('rocks', {
     icon: '\uD83E\uDEA8',
     label: 'Rocks & Minerals Explorer',
@@ -5058,7 +6450,7 @@ const d = labToolData.rocks || {};
 
             { id: 'hematite', label: t('stem.rocks.hematite'), hardness: 5.5, density: 5.26, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'Mars looks red because its surface materials contain oxidized iron minerals. Hematite occurs on Mars, but newer evidence suggests ferrihydrite may also be an important source of the planet\u2019s red dust. Hematite was also used as a pigment by prehistoric humans.', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
 
-            { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, density: 4.32, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', habit: 'dodecahedral', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
+            { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, density: 4.32, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', habit: 'dodecahedral', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnet composition, considered with the surrounding minerals, helps geologists reconstruct metamorphic temperature and pressure. Crystal size alone is not a thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
 
             { id: 'olivine', label: t('stem.rocks.olivine'), hardness: 6.5, density: 3.32, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine is a dominant mineral in much of Earth\'s upper mantle, but bridgmanite deeper in the mantle is Earth\'s most abundant mineral overall. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
 
@@ -5074,7 +6466,7 @@ const d = labToolData.rocks || {};
 
             { id: 'corundum', label: t('stem.rocks.corundum'), hardness: 9, density: 4.0, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', habit: 'barrel', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering. It grows as six-sided crystals shaped like barrels.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities, where 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
 
-            { id: 'topaz', label: t('stem.rocks.topaz'), hardness: 8, density: 3.53, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', habit: 'striated', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The 6.2 kg (31,000-carat) El-Dorado Topaz from Brazil is one of the world\'s largest faceted topazes; it was cut from a much heavier rough crystal. Imperial topaz (a rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
+            { id: 'topaz', label: t('stem.rocks.topaz'), hardness: 8, density: 3.53, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', habit: 'striated', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is irradiated and usually heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The 6.2 kg (31,000-carat) El-Dorado Topaz from Brazil is one of the world\'s largest faceted topazes; it was cut from a much heavier rough crystal. Imperial topaz (a rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
 
           ].map(function (m) {
             // Same gap the specimen card had: `label` was translated and every
@@ -5130,7 +6522,7 @@ const d = labToolData.rocks || {};
               ]
             },
             {
-              q: __alloT('stem.rocks.q_gritty_but_not_splitting', 'A fine-grained rock feels gritty between your teeth but will not split into sheets. What is it?'),
+              q: __alloT('stem.rocks.q_gritty_but_not_splitting', 'A fine-grained sedimentary rock has grains smaller than sand but larger than clay and does not split into thin sheets. What is it?'),
               a: t('stem.rocks.siltstone'),
               options: [t('stem.rocks.siltstone'), t('stem.rocks.shale'), t('stem.rocks.sandstone'), t('stem.rocks.chalk')],
               concept: 'Sedimentary',
@@ -5624,10 +7016,17 @@ const d = labToolData.rocks || {};
           const rkRevealSoon = function (selector) {
             try {
               setTimeout(function () {
+                try {
                 var el = document.querySelector(selector);
                 if (!el) return;
+                // A specimen picture may be decorative; land on its card heading.
+                if (el.closest('[aria-hidden="true"]')) el = el.closest('.rk-detail-card') || el.parentElement;
+                var focusTarget = el.matches('button,input,select,textarea,a,h1,h2,h3,h4,h5,h6') ? el : el.querySelector('h2,h3,h4,h5') || el;
+                if (!focusTarget.matches('button,input,select,textarea,a')) focusTarget.setAttribute('tabindex', '-1');
+                focusTarget.focus({ preventScroll:true });
                 var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 el.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+                } catch (e) {}
               }, 80);
             } catch (e) {}
           };
@@ -5661,6 +7060,71 @@ const d = labToolData.rocks || {};
           };
 
           const selMineral = d.selectedMineral ? MINERALS.find(m => m.id === d.selectedMineral) : null;
+          const rkStudyPanel = function (kind, specimen) {
+            var key=kind + ':' + specimen.id;
+            return rkRenderSpecimenStudy(h,{key:key,label:specimen.label,T:__alloT,record:rkStudyRecord(d.specimenNotes,key),
+              change:function(patch){setLabToolData(function(prev){
+                var r=prev && prev.rocks || {}, records=Object.assign({},r.specimenNotes && typeof r.specimenNotes === 'object' && !Array.isArray(r.specimenNotes) ? r.specimenNotes : {});
+                var current=rkStudyRecord(records,key), next=Object.assign({},current,typeof patch === 'function' ? patch(current) : patch);
+                if (rkStudyHasWork(next)) records[key]=next; else delete records[key];
+                return Object.assign({},prev,{rocks:Object.assign({},r,{specimenNotes:records})});
+              });},
+              openNotebook:function(){upd('mode','notebook');rkRevealSoon('#rk-notebook-title');}
+            });
+          };
+          const rkOpenComparison = function (kind,left,right) {
+            var pool=kind === 'rocks' ? ROCKS : MINERALS;
+            if(left === right || !pool.some(function(r){return r.id === left;}) || !pool.some(function(r){return r.id === right;})) return;
+            setLabToolData(function(prev){var r=prev && prev.rocks || {};return Object.assign({},prev,{rocks:Object.assign({},r,{mode:'compare',compare:Object.assign({},r.compare || {},{kind:kind,left:left,right:right,query:'',exportText:'',message:''})})});});
+            rkRevealSoon('#rk-compare-title');
+          };
+          const rkCatalogue = function (kind) {
+            var all = kind === 'rocks' ? ROCKS : MINERALS;
+            var stored = d.catalogue && typeof d.catalogue === 'object' && d.catalogue[kind] || {};
+            var query = typeof stored.query === 'string' ? stored.query.slice(0,160) : '';
+            var sorts = kind === 'rocks' ? ['catalogue','name'] : ['catalogue','name','hardness','density'];
+            var sort = sorts.indexOf(stored.sort) !== -1 ? stored.sort : 'catalogue';
+            var family = kind === 'rocks' && ROCK_TYPES[d.selectedType] ? d.selectedType : null;
+            var savedOnly=stored.savedOnly === true, savedCount=all.filter(function(r){return rkStudyHasWork(rkStudyRecord(d.specimenNotes,kind + ':' + r.id));}).length;
+            var matches = rkCatalogueFilter(all.filter(function (r) { return (!family || r.type === family) && (!savedOnly || rkStudyHasWork(rkStudyRecord(d.specimenNotes,kind + ':' + r.id))); }),query,sort,function (r) {
+              var record=rkStudyRecord(d.specimenNotes,kind + ':' + r.id);
+              return [r.label,r.desc,r.uses,r.occurrence,record.note,record.question,kind === 'rocks' ? ROCK_TYPES[r.type].label + ' ' + rkTextureName(r.texture,r.id) : r.formula + ' ' + rkLusterText(r) + ' ' + rkStreakText(r) + ' ' + rkCrystalName(r.crystal)].join(' ');
+            });
+            var change = function (patch, resetFamily) {
+              setLabToolData(function (prev) {
+                var rockState = Object.assign({},prev && prev.rocks || {}), catalogue = Object.assign({},rockState.catalogue || {});
+                catalogue[kind] = Object.assign({},catalogue[kind] || {},patch); rockState.catalogue = catalogue;
+                if (resetFamily && kind === 'rocks') rockState.selectedType = null;
+                return Object.assign({},prev,{rocks:rockState});
+              });
+            };
+            return { matches:matches, controls:rkCatalogueControls(h,{
+              T:__alloT,kind:kind,query:query,sort:sort,count:matches.length,total:all.length,savedOnly:savedOnly,savedCount:savedCount,filtered:!!query || sort !== 'catalogue' || !!family || savedOnly,
+              selected:kind === 'rocks' ? selRock : selMineral,change:change,
+              reset:function () { change({query:'',sort:'catalogue',savedOnly:false},true); rkRevealSoon('#rk-catalogue-' + kind + '-search'); },
+              openSelected:function () { rkRevealSoon(kind === 'rocks' ? '[data-rk-rock-card]' : '[data-rk-mineral-hero]'); }
+            }) };
+          };
+          const rkRockCatalogue = rkCatalogue('rocks'), rkMineralCatalogue = rkCatalogue('minerals');
+          const rkDetailNavigation = function (kind, specimen, catalogue) {
+            var matches=catalogue.matches, index=matches.findIndex(function(item){return item.id === specimen.id;});
+            var open=function(item){
+              if(!item) return;
+              updMulti(kind === 'rocks' ? {selectedRock:item.id,selectedMineral:null} : {selectedMineral:item.id,selectedRock:null});
+              rkRevealSoon('#rk-specimen-title');
+            };
+            var step=function(direction,item){
+              var label=direction === 'previous' ? __alloT('stem.rocks.detail_previous','Previous specimen') : __alloT('stem.rocks.detail_next','Next specimen');
+              return h('button',{type:'button',disabled:!item,'data-rk-detail-step':direction,'aria-label':label + (item ? ': ' + item.label : ''),onClick:function(){open(item);}},
+                label,item && h('span',null,item.label));
+            };
+            return h('nav',{className:'rk-detail-nav','data-rk-detail-nav':kind,'aria-label':__alloT('stem.rocks.detail_navigation','Specimen navigation')},
+              h('button',{type:'button','data-rk-back-to-catalogue':kind,onClick:function(){rkRevealSoon(index >= 0 ? '#rk-' + (kind === 'rocks' ? 'rock' : 'mineral') + '-tile-' + specimen.id : '#rk-catalogue-' + kind + '-search');}},'← ' + __alloT('stem.rocks.back_to_catalogue','Back to specimens')),
+              h('p',{className:'rk-detail-position','data-rk-detail-position':kind},index >= 0 ? __alloT('stem.rocks.detail_position','Specimen {position} of {total} in current results').replace('{position}',String(index + 1)).replace('{total}',String(matches.length)) : __alloT('stem.rocks.detail_outside','Outside current filters')),
+              h('div',{className:'rk-detail-steps'},step('previous',index > 0 ? matches[index - 1] : null),step('next',index >= 0 ? matches[index + 1] : null)),
+              index < 0 && matches.length > 0 && h('button',{type:'button','data-rk-detail-first':kind,onClick:function(){open(matches[0]);}},__alloT('stem.rocks.detail_first_match','First matching specimen') + ': ' + matches[0].label)
+            );
+          };
           // Lab results (fizz, streak, scratch) belong to the specimen they were
           // run on. They were stored once and never cleared, so quartz's "White"
           // streak stayed on screen under pyrite while the plate drew pyrite's,
@@ -5685,8 +7149,76 @@ const d = labToolData.rocks || {};
           };
           const rkQuizNext = function () {
             var at = d.quizIdx || 0;
-            if (at + 1 >= QUIZ_BANK.length) { updMulti({ quizDone: true, quizFeedback: null }); return; }
+            if (at + 1 >= QUIZ_BANK.length) { updMulti({ quizDone: true, quizFeedback: null }); rkRevealSoon('#rk-quiz-results-title'); return; }
             updMulti({ quizIdx: at + 1, quizFeedback: null });
+            rkRevealSoon('#rk-quiz-question');
+          };
+
+          // Practice is a separate pass through missed questions. Reconstruct
+          // saved answers from bank indices, never from saved feedback or scores.
+          const rkQuizPracticeRead = function (state) {
+            var raw = state && state.quizPractice;
+            if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !Array.isArray(raw.queue)) return null;
+            var log = state.quizLog && typeof state.quizLog === 'object' && !Array.isArray(state.quizLog) ? state.quizLog : {};
+            var queue = [], seen = {};
+            raw.queue.slice(0, QUIZ_BANK.length).forEach(function (k) {
+              if (Number.isInteger(k) && k >= 0 && k < QUIZ_BANK.length && Object.prototype.hasOwnProperty.call(log, k) && log[k] === 0 && !seen[k]) { queue.push(k); seen[k] = true; }
+            });
+            if (!queue.length) return null;
+            var saved = raw.answers && typeof raw.answers === 'object' && !Array.isArray(raw.answers) ? raw.answers : {}, answers = {}, answered = 0;
+            // A gap ends the completed prefix: corrupt future answers cannot
+            // skip a question or silently count toward the practice result.
+            for (var j = 0; j < queue.length; j++) {
+              var id = queue[j], answer = saved[id];
+              if (!Object.prototype.hasOwnProperty.call(saved, id) || !Number.isInteger(answer) || answer < 0 || answer >= QUIZ_BANK[id].options.length) break;
+              answers[id] = answer;
+              answered++;
+            }
+            var latest = Math.min(answered, queue.length - 1);
+            var index = Number.isInteger(raw.index) && raw.index >= 0 && raw.index <= latest ? raw.index : latest;
+            var q = QUIZ_BANK[queue[index]], selected = answers[queue[index]], done = raw.done === true && answered === queue.length;
+            return { queue: queue, index: index, answers: answers,
+              feedback: !done && Number.isInteger(selected) ? { chosenIdx: selected, correct: q.options[selected] === q.a } : null,
+              done: done, active: raw.active === true };
+          };
+          const rkQuizPractice = rkQuizPracticeRead(d);
+          const rkQuizPracticeActive = mode === 'quiz' && !!d.quizDone && rkQuizPractice && rkQuizPractice.active;
+          const rkQuizPracticeChange = function (change) {
+            setLabToolData(function (prev) {
+              var state = prev && prev.rocks || {}, current = rkQuizPracticeRead(state);
+              var next = change(current, state);
+              return next ? Object.assign({}, prev, { rocks: Object.assign({}, state, { quizPractice: next }) }) : prev;
+            });
+          };
+          const rkQuizPracticeStart = function (indices) {
+            rkQuizPracticeChange(function (current, state) {
+              return rkQuizPracticeRead(Object.assign({}, state, { quizPractice: { queue: indices, index: 0, answers: {}, done: false, active: true } }));
+            });
+            rkRevealSoon('#rk-quiz-practice-question');
+          };
+          const rkQuizPracticeAnswer = function (choice) {
+            if (!rkQuizPracticeActive || rkQuizPractice.done || rkQuizPractice.feedback) return;
+            var expected = rkQuizPractice.queue[rkQuizPractice.index];
+            rkQuizPracticeChange(function (current) {
+              if (!current || !current.active || current.done || current.feedback || current.queue[current.index] !== expected) return null;
+              var q = QUIZ_BANK[expected];
+              if (!Number.isInteger(choice) || choice < 0 || choice >= q.options.length) return null;
+              var answers = Object.assign({}, current.answers); answers[expected] = choice;
+              return Object.assign({}, current, { answers: answers, feedback: { chosenIdx: choice, correct: q.options[choice] === q.a } });
+            });
+          };
+          const rkQuizPracticeNext = function () {
+            if (!rkQuizPracticeActive || rkQuizPractice.done || !rkQuizPractice.feedback) return;
+            var expected = rkQuizPractice.queue[rkQuizPractice.index], last = rkQuizPractice.index + 1 >= rkQuizPractice.queue.length;
+            rkQuizPracticeChange(function (current) {
+              if (!current || !current.active || current.done || !current.feedback || current.queue[current.index] !== expected) return null;
+              return Object.assign({}, current, last ? { done: true, feedback: null } : { index: current.index + 1, feedback: null });
+            });
+            rkRevealSoon(last ? '#rk-quiz-practice-results-title' : '#rk-quiz-practice-question');
+          };
+          const rkQuizPracticeReturn = function () {
+            rkQuizPracticeChange(function (current) { return current ? Object.assign({}, current, { active: false }) : null; });
+            rkRevealSoon('#rk-quiz-results-title');
           };
 
 
@@ -6732,43 +8264,46 @@ const d = labToolData.rocks || {};
           // scene sat small in a lot of whitespace and the cycle labels had to
           // crowd. Siblings (angles, calculus, birdlab, arithmetic) already use
           // 5xl/6xl, so this stays in-house.
-          return React.createElement("div", { ref: rocksRootCleanupRef, className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { ref: rocksRootCleanupRef, className: "rk-explorer max-w-6xl mx-auto animate-in fade-in duration-200", "data-rk-explorer": true },
+            React.createElement('style', null, RK_PRESENTATION_CSS),
+            React.createElement('a', { className:'rk-skip-link', href:'#' + ({ compare:'rk-compare-title',fieldwork:'rk-field-title',densityLab:'rk-density-title',notebook:'rk-notebook-title' }[mode] || 'rk-activity-title'),
+              onClick:function (e) { e.preventDefault(); rkRevealSoon(e.currentTarget.getAttribute('href')); } }, __alloT('stem.rocks.skip_to_activity','Skip to current activity')),
 
             // Header
 
-            React.createElement("div", { className: "flex flex-wrap items-center gap-2 sm:gap-3 mb-3", "data-rocks-header": "responsive" },
+            React.createElement("div", { className: "rk-shell-header flex flex-wrap items-center gap-2 sm:gap-3 mb-3", "data-rocks-header": "responsive" },
 
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors grid h-11 w-11 shrink-0 place-items-center hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools'), "data-rocks-header-action": "back" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "min-w-0 flex-1 text-lg font-bold text-slate-800 tracking-tight leading-tight" + onHostInk }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rocks_minerals_explorer', "Rocks & Minerals Explorer")),
+              React.createElement("h3", { className: "rk-brand min-w-0 flex-1 text-lg font-bold text-slate-800 tracking-tight leading-tight" + onHostInk },
+                React.createElement('span', { className: 'rk-brand-mark', 'aria-hidden': true }, rkActivityIcon(h, 'rocks', 28)),
+                __alloT('stem.rocks.rocks_minerals_explorer', "Rocks & Minerals Explorer")),
 
-              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] min-h-[44px] text-[0.6875rem] font-bold px-2.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100", "data-rocks-header-action": "geology-3d" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.explore_in_3d', 'Explore in 3D') + '. ' + __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] min-h-[44px] text-[0.6875rem] font-bold px-2.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100", "data-rocks-header-action": "geology-3d" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
 
-              // flex-wrap: six mode tabs on one non-wrapping row measured 441px,
-              // so on a 390px phone the whole tool scrolled sideways and the last
-              // tabs sat off-screen. The header is the one row a student cannot
-              // work around, so it wraps rather than overflowing.
-              React.createElement("div", { className: "order-3 flex w-full flex-wrap gap-1 sm:order-none sm:w-auto sm:ml-auto", "data-rocks-mode-nav": "responsive" },
+              // Always give navigation its own row; allow labels to wrap on small screens.
+              React.createElement("nav", { className: "rk-mode-nav order-3 flex w-full flex-wrap gap-1", "data-rocks-mode-nav": "responsive", 'aria-label': __alloT('stem.rocks.activity_navigation', 'Rocks and minerals activities') },
 
-                ['landscape', 'rocks', 'minerals', 'mystery', 'workbench', 'quiz', 'weathHunt'].map(function (m) {
+                ['landscape', 'rocks', 'minerals', 'compare', 'fieldwork', 'mystery', 'workbench', 'densityLab', 'quiz', 'weathHunt', 'notebook'].map(function (m) {
 
-                  const modeLabel = m === 'landscape' ? __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? __alloT('stem.rocks.mystery_rock', 'Mystery Rock') : m === 'workbench' ? __alloT('stem.rocks.mode_workbench', 'Workbench') : m === 'weathHunt' ? __alloT('stem.rocks.weathering_lab', 'Weathering Lab') : __alloT('stem.rocks.mode_quiz', 'Quiz');
+                  const modeLabel = m === 'notebook' ? __alloT('stem.rocks.mode_notebook', 'Notebook') : m === 'densityLab' ? __alloT('stem.rocks.mode_density_lab', 'Density lab') : m === 'compare' ? __alloT('stem.rocks.mode_compare', 'Compare') : m === 'fieldwork' ? __alloT('stem.rocks.mode_fieldwork', 'Field cases') : m === 'landscape' ? __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? __alloT('stem.rocks.mystery_rock', 'Mystery Rock') : m === 'workbench' ? __alloT('stem.rocks.mode_workbench', 'Workbench') : m === 'weathHunt' ? __alloT('stem.rocks.weathering_lab', 'Weathering Lab') : __alloT('stem.rocks.mode_quiz', 'Quiz');
 
                   return React.createElement("button", { "aria-label": __alloT('stem.rocks.switch_to_prefix', "Switch to ") + modeLabel + __alloT('stem.rocks.mode_suffix', " mode"),
 
-                    key: m, onClick: function () {
+                    key: m, 'aria-pressed': mode === m, 'data-rocks-mode': m, onClick: function () {
 
                       upd("mode", m);
 
-                      if (m === 'quiz') { updMulti({ quizIdx: 0, quizScore: 0, quizFeedback: null, quizLog: null, quizDone: null }); }
+                      // Returning to the quiz resumes the current round.
 
                       if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + modeLabel + ' mode.', repeat: modeLabel + ' mode.', terse: m + '.' }, { debounce: 500 }); }
 
-                    }, className: "min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
+                    }, className: "rk-mode-button min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold " + (mode === m ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
 
                   },
 
-                    m === 'landscape' ? '🗺️ ' + __alloT('stem.rocks.mode_landscape', 'Landscape') : m === 'rocks' ? '🪨 ' + __alloT('stem.rocks.mode_rocks', 'Rocks') : m === 'minerals' ? '💎 ' + __alloT('stem.rocks.mode_minerals', 'Minerals') : m === 'mystery' ? '🔍 ' + __alloT('stem.rocks.mystery', 'Mystery') : m === 'workbench' ? '🔬 ' + __alloT('stem.rocks.mode_workbench', 'Workbench') : m === 'weathHunt' ? '⛏️ ' + __alloT('stem.rocks.weathering', 'Weathering') : '🧠 ' + __alloT('stem.rocks.mode_quiz', 'Quiz'));
+                    rkActivityIcon(h, m, 18), React.createElement('span', null,
+                      m === 'mystery' ? __alloT('stem.rocks.mystery', 'Mystery') : m === 'weathHunt' ? __alloT('stem.rocks.weathering', 'Weathering') : modeLabel));
 
                 })
 
@@ -6777,11 +8312,12 @@ const d = labToolData.rocks || {};
             ),
 
             // Challenges Progress Card
-            React.createElement("div", {
-              className: "mb-3 rounded-xl p-4 border bg-gradient-to-r from-amber-50 to-orange-50 border-orange-200",
-              style: { boxShadow: "0 2px 8px rgba(180,83,9,0.06)" }
+            React.createElement("details", {
+              className: "rk-progress mb-3 rounded-xl border border-slate-200", "data-rk-progress-panel": true
             },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+              React.createElement('summary', { className: 'rk-disclosure-summary' },
+              React.createElement('span', { className: 'rk-progress-name' }, __alloT('stem.rocks.research_progress', 'Research progress')),
+              React.createElement("div", { className: "rk-progress-counts flex items-center justify-between" },
                 React.createElement("div", { className: "flex items-center gap-2" },
                   React.createElement("span", { style: { fontSize: "18px" } }, "⭐"),
                   React.createElement("span", { className: "text-sm font-bold text-amber-800" }, (d.researchPoints || 0) + " RP")
@@ -6790,12 +8326,13 @@ const d = labToolData.rocks || {};
                   className: "text-[0.6875rem] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700"
                 }, (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length + "/" + ROCKS_CHALLENGES.length + " " + __alloT('stem.rocks.challenges', "challenges"))
               ),
-              React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
+              React.createElement("div", { className: "rk-progress-track w-full rounded-full h-2.5 bg-orange-100", 'aria-hidden': true },
                 React.createElement("div", {
                   className: "bg-gradient-to-r from-amber-500 to-orange-500 h-2.5 rounded-full transition-all duration-500",
                   style: { width: Math.min(100, ((Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length / ROCKS_CHALLENGES.length) * 100) + "%", boxShadow: "0 0 8px rgba(245,158,11,0.4)" }
                 })
-              ),
+              )),
+              React.createElement('div', { className: 'rk-progress-body' },
               // Named chips, not bare emoji: the six icons at 25% opacity carried
               // their names only in a hover title, which no keyboard, touch or
               // screen-reader user could reach, so the goals were invisible.
@@ -6824,9 +8361,8 @@ const d = labToolData.rocks || {};
                   var here = ch.go !== 'rockCycle' && mode === ch.go;
                   var goThere = function () {
                     if (ch.go === 'rockCycle') { if (typeof setStemLabTool === 'function') setStemLabTool('rockCycle'); return; }
-                    // Same as the Quiz tab button: a fresh round.
-                    if (ch.go === 'quiz') updMulti({ mode: 'quiz', quizIdx: 0, quizScore: 0, quizFeedback: null, quizLog: null, quizDone: null });
-                    else updMulti({ mode: ch.go });
+                    // Opening an activity preserves its current investigation.
+                    updMulti({ mode: ch.go });
                     sfxRockClick();
                   };
                   return React.createElement("li", { key: ch.id, "data-rk-challenge-row": ch.id + ':' + (done ? 'done' : n + '/' + ch.target), className: "rounded-lg border bg-white p-2 " + (done ? "border-amber-500" : "border-orange-200") },
@@ -6843,13 +8379,19 @@ const d = labToolData.rocks || {};
                       className: "mt-1.5 min-h-[28px] rounded-full border border-orange-300 bg-white px-2.5 py-0.5 text-[0.6875rem] font-bold text-orange-900 hover:border-orange-600" },
                       ch.go === 'rockCycle' ? '\u2197 ' + __alloT('stem.rocks.ch_open_cycle', 'Open the Rock Cycle tool') : '\u2192 ' + __alloT('stem.rocks.ch_take_me', 'Take me there')),
                     !done && here && React.createElement("p", { className: "mt-1 text-[0.6875rem] font-bold text-emerald-800", "data-rk-challenge-here": true }, __alloT('stem.rocks.ch_you_are_here', 'You are on this tab now.')));
-                }))
+                })))
             ),
 
             // ── Topic-accent hero band per mode ──
             (function() {
+              // These workspaces already provide their own named introduction.
+              if (['compare', 'fieldwork', 'densityLab', 'notebook'].indexOf(mode) !== -1) return null;
               var MODE_META = {
-                landscape: { accent: '#15803d', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: __alloT('stem.rocks.hero_landscape_title', 'Landscape, the geology you can SEE'),           hint: __alloT('stem.rocks.hero_landscape_hint', 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Big Island of Hawaiʻi is under a million years old; the oldest volcanoes in its chain are about 80 million years old and now sit underwater.') },
+                notebook: { accent: '#1e40af', soft: '#eff6ff', icon: '📖', title: __alloT('stem.rocks.hero_notebook_title', 'Notebook, review and continue your investigations'), hint: __alloT('stem.rocks.hero_notebook_hint', 'Bring your observations and explanations together. Save a portable notebook or a readable report.') },
+                densityLab: { accent: '#0e7490', soft: '#ecfeff', icon: '⚖️', title: __alloT('stem.rocks.hero_density_title', 'Density lab, measure before you conclude'), hint: __alloT('stem.rocks.hero_density_hint', 'Weigh specimens, measure displaced water, and test how changing sample size affects mass and density.') },
+                compare: { accent: '#115e59', soft: '#f0fdfa', icon: '⚖️', title: __alloT('stem.rocks.hero_compare_title', 'Compare specimens, explain the difference'), hint: __alloT('stem.rocks.hero_compare_hint', 'Study two specimens together, choose useful evidence, and keep your explanation in a comparison notebook.') },
+                fieldwork: { accent: '#1e40af', soft: '#eff6ff', icon: '📓', title: __alloT('stem.rocks.hero_fieldwork_title', 'Field cases, build an evidence-based identification'), hint: __alloT('stem.rocks.hero_fieldwork_hint', 'Investigate an outcrop, collect observations, and defend a claim. Each case keeps your evidence and revisions.') },
+                landscape: { accent: '#166534', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: __alloT('stem.rocks.hero_landscape_title', 'Landscape, the geology you can SEE'),           hint: __alloT('stem.rocks.hero_landscape_hint', 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Big Island of Hawaiʻi is under a million years old; the oldest volcanoes in its chain are about 80 million years old and now sit underwater.') },
                 rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: __alloT('stem.rocks.hero_rocks_title', 'Rocks: igneous, sedimentary, metamorphic'),     hint: __alloT('stem.rocks.hero_rocks_hint', 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.') },
                 minerals:  { accent: '#0e7490', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: __alloT('stem.rocks.hero_minerals_title', 'Minerals, the building blocks of rocks'),         hint: __alloT('stem.rocks.hero_minerals_hint', 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.') },
                 mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: __alloT('stem.rocks.hero_mystery_title', 'Mystery Rock, detective ID'),                  hint: __alloT('stem.rocks.hero_mystery_hint', 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. A fizz picks out the carbonate rocks (limestone, chalk, travertine, marble) but cannot tell them apart; texture and hardness do that.') },
@@ -6861,20 +8403,18 @@ const d = labToolData.rocks || {};
                 weathHunt: { accent: '#7c2d12', soft: 'rgba(124,45,18,0.10)',  icon: '⛏️', title: __alloT('stem.rocks.hero_weath_title', 'Weathering, how rock comes apart'),          hint: __alloT('stem.rocks.hero_weath_hint', 'Physical weathering breaks rock without changing it — ice wedging prises blocks apart and leaves ANGULAR debris. Chemical weathering dissolves minerals instead, rounding and pitting the surface. Climate decides which one wins.') }
               };
               var meta = MODE_META[mode] || MODE_META.landscape;
+              var shortHints = {
+                landscape: __alloT('stem.rocks.visual_landscape_hint', 'Explore the cross-section. Follow a rock through the cycle, or choose a region to discover its rocks.'),
+                rocks: __alloT('stem.rocks.visual_rocks_hint', 'Read the textures. Explore the specimens and discover how they formed.'),
+                minerals: __alloT('stem.rocks.visual_minerals_hint', 'Look beyond color. Compare crystal shapes, hardness, streak, and the minerals that make up rocks.')
+              };
               return React.createElement('div', {
-                style: {
-                  margin: '0 0 12px',
-                  padding: '12px 14px',
-                  borderRadius: 12,
-                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-                  border: '1px solid ' + meta.accent + '55',
-                  borderLeft: '4px solid ' + meta.accent,
-                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
-                }
+                className: 'rk-mode-hero', 'data-rk-mode-hero': mode,
+                style: { '--rk-accent': meta.accent, '--rk-soft': meta.soft }
               },
-                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
-                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                React.createElement('div', { className:'rk-hero-symbol', 'aria-hidden': 'true' }, rkActivityIcon(h, mode, 28)),
+                React.createElement('div', { className: 'rk-hero-copy' },
+                  React.createElement('h3', { id:'rk-activity-title',tabIndex:-1 }, mode === 'landscape' ? __alloT('stem.rocks.visual_landscape_title', 'Read the landscape') : meta.title),
                 // text-slate-600, NOT the themed --allo-stem-text-soft token. In
                 // dark theme the STEM host wraps every tool in a white card but leaves
                 // the themed tokens resolving dark, so this hint rendered #94a3b8 at
@@ -6882,12 +8422,70 @@ const d = labToolData.rocks || {};
                 // tool paints no themed ground anywhere, so its substrate is white in
                 // BOTH themes and its ink is a fixed dark utility like every other
                 // colour in the file.
-                  React.createElement('p', { className: 'text-slate-700', style: { margin: '3px 0 0', fontSize: 12.5, lineHeight: 1.5 } }, meta.hint)
+                  React.createElement('p', null, shortHints[mode] || meta.hint)
                 )
               );
             })(),
 
 
+
+            mode === 'notebook' && (function () {
+              var config = { rockIds: ROCKS.map(function (r) { return r.id; }), mineralIds: MINERALS.map(function (m) { return m.id; }), cases: RK_FIELD_CASES };
+              var focusNotebook = function () { setTimeout(function () { var el = document.getElementById('rk-nb-file'); if (el) el.focus(); }, 0); };
+              return rkRenderNotebook(h, {
+                data: d, state: d.notebookUi, T: __alloT, config: config, rocks: ROCKS, minerals: MINERALS, announce: announceToSR,
+                rockPic:function(item,size){return rkRockSwatch(h,item,size);}, mineralPic:function(item,size){return rkMineralSwatch(h,item,size);},
+                setState: function (patch) { setLabToolData(function (prev) { var r = (prev && prev.rocks) || {}; return Object.assign({}, prev, { rocks: Object.assign({}, r, { notebookUi: Object.assign({}, r.notebookUi || {}, patch) }) }); }); },
+                openSpecimen: function (kind, id) {
+                  var specimens = kind === 'rocks' ? ROCKS : kind === 'minerals' ? MINERALS : [];
+                  if (!specimens.some(function (item) { return item.id === id; })) return;
+                  setLabToolData(function (prev) {
+                    var r = (prev && prev.rocks) || {};
+                    return Object.assign({}, prev, { rocks: Object.assign({}, r, { mode: kind, selectedRock: kind === 'rocks' ? id : null, selectedMineral: kind === 'minerals' ? id : null }) });
+                  });
+                  rkRevealSoon('#rk-specimen-study-title');
+                },
+                resume: function (mode, patch) { setLabToolData(function (prev) { var r = (prev && prev.rocks) || {}, next = Object.assign({}, r, { mode: mode }); var key = mode === 'fieldwork' ? 'fieldCases' : mode; if (patch) next[key] = Object.assign({}, r[key] || {}, patch); return Object.assign({}, prev, { rocks: next }); }); rkRevealSoon('#' + ({compare:'rk-compare-title',fieldwork:'rk-field-title',densityLab:'rk-density-title'}[mode] || 'rk-activity-title')); },
+                restore: function (pending) {
+                  try {
+                    var imported = rkNotebookCleanData(pending, config);
+                    setLabToolData(function (prev) {
+                      var r = (prev && prev.rocks) || {}, wb = r.wb || {};
+                      var serial = imported.archive.reduce(function (max, entry) { return Math.max(max, Number(entry.id.slice(14)) || 0); }, Number.isSafeInteger(wb.archiveSerial) ? wb.archiveSerial : 0);
+                      var next = Object.assign({}, r, { compare: imported.compare, fieldCases: imported.fieldCases, densityLab: imported.densityLab || {}, wb: Object.assign({}, wb, { archive: imported.archive, archiveSerial: serial }), notebookUi: { pending: null, reading: false, importError: false, message: __alloT('stem.rocks.notebook_restored', 'Saved notebook opened.') } });
+                      // A version 1 backup predates the journal. Its absent
+                      // section must not erase notes written in this session.
+                      if (imported.specimenNotes !== undefined) next.specimenNotes = imported.specimenNotes;
+                      return Object.assign({}, prev, { rocks: next });
+                    });
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.notebook_restored', 'Saved notebook opened.'));
+                    focusNotebook();
+                  } catch (e) { upd('notebookUi', { importError: true, message: __alloT('stem.rocks.notebook_invalid_import', 'This file is not a supported geology notebook, contains invalid records, or is too large. Your current work has not changed.') }); focusNotebook(); }
+                }
+              });
+            })(),
+
+            mode === 'densityLab' && rkRenderDensityLab(h, {
+              state: d.densityLab, T: __alloT, minerals: MINERALS, mineralPic: function (m, size) { return rkMineralSwatch(h, m, size); }, announce: announceToSR,
+              setState: function (patch) { setLabToolData(function (prev) { var r = (prev && prev.rocks) || {}; return Object.assign({}, prev, { rocks: Object.assign({}, r, { densityLab: Object.assign({}, r.densityLab || {}, patch) }) }); }); },
+              openMineral: function (id) { updMulti({ mode: 'minerals', selectedMineral: id, selectedRock: null }); rkRevealSoon('[data-rk-mineral-hero]'); }
+            }),
+
+            mode === 'fieldwork' && rkRenderFieldCases(h, {
+              state: d.fieldCases, T: __alloT, rocks: ROCKS, textureName: rkTextureName,
+              rockPic: function (r, size) { return rkRockSwatch(h, r, size); }, announce: announceToSR,
+              setState: function (patch) { setLabToolData(function (prev) { var r = (prev && prev.rocks) || {}; return Object.assign({}, prev, { rocks: Object.assign({}, r, { fieldCases: Object.assign({}, r.fieldCases || {}, patch) }) }); }); },
+              openRock: function (id) { updMulti({ mode: 'rocks', selectedRock: id, selectedMineral: null, selectedType: null }); rkRevealSoon('[data-rk-rock-card]'); }
+            }),
+
+            mode === 'compare' && rkRenderComparison(h, {
+              state: d.compare, T: __alloT, rocks: ROCKS, minerals: MINERALS, types: ROCK_TYPES,
+              texture: rkTextureName, gloss: rkGloss, from: rkLinkFrom, clue: rkLinkClue, lookAlike: rkLookAlike,
+              luster: rkLusterText, streak: rkStreakText, habit: rkHabitText, crystal: rkCrystalName,
+              announce: announceToSR,
+              setState: function (patch) { setLabToolData(function (prev) { var r = (prev && prev.rocks) || {}; return Object.assign({}, prev, { rocks: Object.assign({}, r, { compare: Object.assign({}, r.compare || {}, patch) }) }); }); },
+              open: function (id, mineral) { updMulti({ mode: mineral ? 'minerals' : 'rocks', selectedRock: mineral ? null : id, selectedMineral: mineral ? id : null, selectedType: null }); rkRevealSoon(mineral ? '[data-rk-mineral-hero]' : '[data-rk-rock-card]'); }
+            }),
 
             // ── Landscape mode ──
 
@@ -6911,7 +8509,7 @@ const d = labToolData.rocks || {};
                 }, d.motionOff ? '\u25b6 ' + __alloT('stem.rocks.motion_resume', 'Resume motion') : '\u23f8 ' + __alloT('stem.rocks.motion_pause', 'Pause motion')),
                 React.createElement("span", { className: "text-[10.5px] text-slate-600" + onHostInk }, d.tourOn ? __alloT('stem.rocks.tour_hint_on', 'Watch the tracer; each stage is announced. Reduced motion shows one still frame per stage.') : __alloT('stem.rocks.tour_hint_off', 'A guided trip through all five stages, one rock at a time. You can also click any process label on the picture to start there.'))
               ),
-              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" + onHostInk }, __alloT('stem.rocks.landscape_click_zones_hint', "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain.") + ' ' + __alloT('stem.rocks.ls_not_to_scale', 'Vertical scale is exaggerated: the cross-section is schematic, not to scale.')),
+              React.createElement("p", { className: "rk-landscape-instructions text-xs text-slate-600 mb-2 italic" + onHostInk }, __alloT('stem.rocks.landscape_click_zones_hint', "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain.") + ' ' + __alloT('stem.rocks.ls_not_to_scale', 'Vertical scale is exaggerated: the cross-section is schematic, not to scale.')),
 
               // Height follows width on narrow screens so the scene keeps its shape
               // (a fixed 520px at phone width squeezed it and collided the labels).
@@ -7004,6 +8602,19 @@ const d = labToolData.rocks || {};
                 return React.createElement("div", { className: "mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3", "data-rk-cycle-net": "1" },
                   React.createElement("p", { className: "font-black text-sm text-amber-900" }, "🔄 " + __alloT('stem.rocks.cyc_title', "The rock cycle: any rock can become any other")),
                   React.createElement("p", { className: "text-xs text-slate-700 leading-snug mt-0.5 mb-2" }, __alloT('stem.rocks.cyc_body', "It is a network, not a one-way loop. What happens next depends on where a rock ends up: at the surface, deep in a mountain belt, or deep enough to melt. Pick a family to see its rocks.")),
+                  // The paired SVG paths are necessarily narrow at phone widths.
+                  // This native control offers the same six actions at a full target size.
+                  React.createElement("label", { htmlFor: "rk-cycle-transformation", className: "block text-xs font-bold text-slate-800 mb-1" }, __alloT('stem.rocks.cyc_choose_transformation', "Explore a transformation")),
+                  React.createElement("select", {
+                    id: "rk-cycle-transformation", "data-rk-cycle-select": true, value: pick || '',
+                    onChange: function (event) { updMulti({ cycArrow: event.target.value || null, cycEx: 0 }); sfxRockClick(); },
+                    style: { width: '100%', maxWidth: 440, minHeight: 44, padding: '10px 12px', marginBottom: 12, border: '1px solid #64748b', borderRadius: 8, background: '#ffffff', color: '#1e293b', fontSize: 14, lineHeight: 1.5 }
+                  },
+                    React.createElement("option", { value: '' }, __alloT('stem.rocks.cyc_choose_placeholder', "Choose a transformation")),
+                    FAM.reduce(function (options, from) {
+                      FAM.forEach(function (to) { if (from !== to) options.push(React.createElement("option", { key: from + '-' + to, value: from + '-' + to }, ROCK_TYPES[from].label + ' ' + __alloT('stem.rocks.cyc_to_word', 'to') + ' ' + ROCK_TYPES[to].label)); });
+                      return options;
+                    }, [])),
                   React.createElement("div", { className: "flex flex-wrap gap-3 items-center" },
                     React.createElement("div", { style: { flex: '1 1 300px', maxWidth: 440 } },
                       h('svg', { viewBox: '0 0 420 240', width: '100%', role: 'group', 'aria-label': __alloT('stem.rocks.cyc_svg_aria', 'Igneous, metamorphic and sedimentary rock, with arrows both ways between every pair.'), style: { display: 'block' } },
@@ -7163,19 +8774,21 @@ const d = labToolData.rocks || {};
 
             mode === 'rocks' && React.createElement("div", null,
 
+              rkRockCatalogue.controls,
+
               // Type filter
 
-              React.createElement("div", { className: "flex gap-2 mb-3" },
+              React.createElement("div", { className: "rk-family-filters flex flex-wrap gap-2 mb-3", 'aria-label': __alloT('stem.rocks.rock_family_filter', 'Filter rocks by family'), role:'group' },
 
                 ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function (t) {
 
-                  return React.createElement("button", { key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
+                  return React.createElement("button", { key: t, 'aria-pressed': (d.selectedType || null) === (t === 'all' ? null : t), onClick: function () { upd("selectedType", t === 'all' ? null : t); },
 
                     className: "px-3 py-1 rounded-full text-xs font-bold transition-all " +
 
                       ((d.selectedType || null) === (t === 'all' ? null : t) ? 'text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]'),
 
-                    style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#78716c' : ROCK_TYPES[t]?.color || '#78716c' } : {}
+                    style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#475569' : ROCK_TYPES[t]?.ink || '#475569' } : {}
 
                   }, t === 'all' ? '📋 ' + __alloT('stem.rocks.filter_all', 'All') : (ROCK_TYPES[t]?.icon || '') + ' ' + ROCK_TYPES[t]?.label);
 
@@ -7190,11 +8803,12 @@ const d = labToolData.rocks || {};
               (function () {
                 var have = ROCKS.filter(function (r) { return rkCollection[r.id]; }).length;
                 var VIA = { drill: __alloT('stem.rocks.cab_via_drill', 'Visual ID drill'), key: __alloT('stem.rocks.cab_via_key', 'identification key'), mystery: __alloT('stem.rocks.mystery_rock', 'Mystery Rock') };
-                return React.createElement("section", { className: "mb-3 rounded-xl border-2 p-3", style: { borderColor: '#92400e', background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)' }, "aria-labelledby": "rk-cabinet-title", "data-rk-cabinet": have },
-                  React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-1" },
-                    React.createElement("span", { "aria-hidden": true }, "🗄️"),
+                return React.createElement("details", { className: "rk-cabinet", "aria-labelledby": "rk-cabinet-title", "data-rk-cabinet": have },
+                  React.createElement("summary", { className: "rk-disclosure-summary" },
+                    rkActivityIcon(h, 'rocks', 18),
                     React.createElement("h4", { id: "rk-cabinet-title", className: "font-black text-sm text-amber-900" }, __alloT('stem.rocks.cab_title', "Your rock collection")),
                     React.createElement("span", { className: "ml-auto text-[0.6875rem] font-black text-amber-900" }, have + ' / ' + ROCKS.length)),
+                  React.createElement('div', { className: 'rk-cabinet-body' },
                   React.createElement("p", { className: "text-[0.6875rem] text-amber-900 mb-2 leading-snug" },
                     __alloT('stem.rocks.cab_hint', "A rock joins your collection when you identify it: in the Visual ID drill, with the identification key, or in Mystery Rock.")),
                   ['igneous', 'sedimentary', 'metamorphic'].map(function (fam) {
@@ -7222,23 +8836,23 @@ const d = labToolData.rocks || {};
                                                                 className: "flex items-center justify-center rounded-md border border-amber-200", style: { width: 58, height: 50, background: 'rgba(255,255,255,0.45)' }
                               }, rkRockSilhouette(React.createElement, r, 32));
                         })));
-                  }));
+                  })));
               })(),
               // Rock grid
 
-              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-3" },
+              React.createElement("div", { className: "rk-specimen-grid grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-3", 'data-rk-rock-grid': true },
 
-                ROCKS.filter(function (r) { return !d.selectedType || r.type === d.selectedType; }).map(function (rock) {
+                rkRockCatalogue.matches.map(function (rock) {
 
                   const rt = ROCK_TYPES[rock.type];
 
                                     var tileOn = d.selectedRock === rock.id, tileGot = !!rkCollection[rock.id];
-                  return React.createElement("button", { key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
+                  return React.createElement("button", { key: rock.id, id:'rk-rock-tile-' + rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); if (d.selectedRock !== rock.id) rkRevealSoon('[data-rk-rock-card]'); },
 
                     // The tile used to be the rock-TYPE emoji, so all 20 rocks
                     // showed one of three pictures. The swatch draws this
                     // specimen's actual texture and grain colours instead.
-                    "aria-label": rock.label + ', ' + rt.label + ' rock — ' + rkGloss(rock.texture, rock.id) + (tileGot ? '. ' + __alloT('stem.rocks.grid_collected', 'In your collection.') : ''),
+                    "aria-label": rock.label + ' ' + rkTextureName(rock.texture,rock.id) + '. ' + rt.label + ' rock — ' + rkGloss(rock.texture, rock.id) + (tileGot ? '. ' + __alloT('stem.rocks.grid_collected', 'In your collection.') : ''),
                     "aria-pressed": tileOn, "data-rk-grid-tile": rock.id,
 
                     className: "relative p-2 rounded-xl text-center border-2 transition-all hover:scale-105 " + (tileOn ? 'shadow-lg' : 'border-slate-200'),
@@ -7258,7 +8872,8 @@ const d = labToolData.rocks || {};
               ),
 
               // ── The selected rock, right under the grid it was picked from ──
-              selRock && React.createElement("div", { className: "bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: ROCK_TYPES[selRock.type].color } },
+              selRock && React.createElement("div", { className: "rk-detail-card bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: ROCK_TYPES[selRock.type].color } },
+                rkDetailNavigation('rocks',selRock,rkRockCatalogue),
 
                                 React.createElement("div", { className: "flex flex-wrap gap-4", "data-rk-rock-card": selRock.id },
 
@@ -7280,7 +8895,7 @@ const d = labToolData.rocks || {};
 
                   React.createElement("div", { className: "flex-1", style: { minWidth: 200 } },
 
-                    React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
+                    React.createElement("h4", { id:'rk-specimen-title',tabIndex:-1,className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
 
                     React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[0.6875rem] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].label + " Rock"),
 
@@ -7341,6 +8956,7 @@ const d = labToolData.rocks || {};
 
                 ),
 
+                rkStudyPanel('rocks',selRock),
                 rkSecAnchor('links'),
                 // ── Where it comes from, where it goes ──
                 // Each chip is a real catalogue rock and opens its card, so the
@@ -7410,7 +9026,8 @@ const d = labToolData.rocks || {};
                             },
                             className: "text-[0.6875rem] font-black text-amber-900 underline decoration-amber-400 hover:text-amber-700"
                           }, selRock.label + ' ' + __alloT('stem.rocks.rlink_vs', 'vs') + ' ' + other.label),
-                          React.createElement("p", { className: "text-[0.6875rem] text-slate-700 leading-snug mt-0.5" }, rkLookAlike(selRock.id, row[0]))
+                          React.createElement("p", { className: "text-[0.6875rem] text-slate-700 leading-snug mt-0.5" }, rkLookAlike(selRock.id, row[0])),
+                          React.createElement("button",{type:'button','data-rk-look-compare':'rocks:' + selRock.id + ':' + other.id,'aria-label':__alloT('stem.rocks.look_compare','Compare these specimens') + ': ' + selRock.label + ' / ' + other.label,onClick:function(){rkOpenComparison('rocks',selRock.id,other.id);},className:'mt-2 min-h-[44px] rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-800'},__alloT('stem.rocks.look_compare','Compare these specimens'))
                         )
                       );
                     })
@@ -8034,7 +9651,7 @@ const d = labToolData.rocks || {};
                     var bg = mark === 'answer' ? '#ecfdf5' : mark === 'wrong' ? '#fff1f2' : isBuilt ? '#fff7ed' : '#ffffff';
                     return React.createElement("button", {
                       key: row + col, type: "button", "data-rk-ign-cell": row + '-' + col, "data-rk-ign-rock": reveal ? r.id : undefined, "data-rk-ign-mark": mark || undefined,
-                      "aria-label": (reveal ? r.label + ': ' : '') + where, "aria-pressed": tab === 'build' ? !!isBuilt : undefined,
+                      "aria-label": (reveal ? r.label + (isSel && tab === 'build' ? ' ' + __alloT('stem.rocks.ign_this_rock', 'This rock') : '') + ': ' : '') + where, "aria-pressed": tab === 'build' ? !!isBuilt : undefined,
                       disabled: tab === 'sort' && (!gCur || !!gPick) ? true : undefined,
                       onClick: function () {
                         if (tab === 'sort') { placeAt(row, col); return; }
@@ -8952,6 +10569,8 @@ const d = labToolData.rocks || {};
 
               return React.createElement("div", { className: "space-y-3" },
 
+                rkMineralCatalogue.controls,
+
                 React.createElement("section", { className: "rounded-xl border border-violet-200 bg-violet-50 p-2.5", "data-mohs-scale": "index-minerals", "aria-labelledby": "mohs-scale-title" },
                   React.createElement("p", { id: "mohs-scale-title", className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.mohs_scale_title', 'The Mohs scale, mineral by mineral')),
                   React.createElement("p", { className: "text-[10.5px] text-violet-900 mt-0.5 leading-snug" }, __alloT('stem.rocks.mohs_scale_body', 'Every step of the scale is a real mineral, from talc at 1 to diamond at 10, and all ten are in this catalogue. Open a step to see what defines it. The steps are a ranking, not a measurement: diamond is far harder than corundum, not one step harder.')),
@@ -8959,7 +10578,8 @@ const d = labToolData.rocks || {};
                   // step as tall as its number, and the everyday references sit
                   // between the steps they separate. A tool scratches everything
                   // to its left, which is how the scale is actually used.
-                  React.createElement("div", { className: "mt-2 overflow-x-auto", "data-rk-mohs-ladder": "1" },
+                  React.createElement('p', { className:'rk-scroll-hint' }, __alloT('stem.rocks.mohs_scroll_hint', 'Scroll across the scale to explore all 10 minerals.')),
+                  React.createElement("div", { className: "mt-2 overflow-x-auto", "data-rk-mohs-ladder": "1", tabIndex:0, role:'region', 'aria-label':__alloT('stem.rocks.mohs_scroll_region', 'Scrollable Mohs scale') },
                     React.createElement("div", { className: "relative", style: { minWidth: 560 } },
                       React.createElement("ol", { className: "grid gap-1", style: { gridTemplateColumns: 'repeat(10, minmax(0, 1fr))', alignItems: 'end' }, "aria-label": __alloT('stem.rocks.mohs_scale_aria', 'Mohs index minerals from 1 to 10') },
                         RK_MOHS_INDEX.map(function (step) {
@@ -8995,16 +10615,16 @@ const d = labToolData.rocks || {};
                 ),
 
                 // Mineral grid
-                React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-3", "data-mineral-grid": "catalogue" },
-                                    MINERALS.map(function (mineral) {
+                React.createElement("div", { className: "rk-specimen-grid grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-3", "data-mineral-grid": "catalogue" },
+                                    rkMineralCatalogue.matches.map(function (mineral) {
                     var mOn = d.selectedMineral === mineral.id;
                     var mTint = /^#[0-9a-fA-F]{6}$/.test(mineral.color || '') ? mineral.color : '#cbd5e1';
-                    return React.createElement("button", { key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
+                    return React.createElement("button", { key: mineral.id, id:'rk-mineral-tile-' + mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); if (d.selectedMineral !== mineral.id) rkRevealSoon('[data-rk-mineral-hero]'); },
                       // Was a flat colour dot, which showed nothing about the two
                       // properties a mineral key actually leads with. The swatch
                       // draws the crystal habit as the outline and the lustre as
                       // the shading, and the label says so for screen readers.
-                      "aria-label": mineral.label + ' — ' + rkCrystalName(mineral.crystal) + __alloT('stem.rocks.mgrid_aria_crystal', ' crystal, ') + rkLusterText(mineral) + __alloT('stem.rocks.mgrid_aria_luster', ' lustre, hardness ') + mineral.hardness,
+                      "aria-label": mineral.label + ' ' + rkLusterText(mineral) + ' H ' + mineral.hardness + '. ' + rkCrystalName(mineral.crystal) + __alloT('stem.rocks.mgrid_aria_crystal', ' crystal, ') + rkLusterText(mineral) + __alloT('stem.rocks.mgrid_aria_luster', ' lustre, hardness ') + mineral.hardness,
                                             "aria-pressed": mOn, "data-rk-mineral-tile": mineral.id,
                       // The mineral's own colour along the top, its hardness in
                       // the corner and its lustre under the name: the three
@@ -9012,17 +10632,19 @@ const d = labToolData.rocks || {};
                       className: "relative p-2 rounded-xl text-center border-2 transition-all hover:scale-105 " + (mOn ? 'shadow-lg' : 'border-slate-200'),
                       style: Object.assign({ background: '#ffffff', borderTopWidth: 5, borderTopColor: mTint }, mOn ? { borderColor: '#8b5cf6', boxShadow: '0 0 0 3px rgba(139,92,246,0.25)' } : {})
                     },
-                      React.createElement("span", { "aria-hidden": true, "data-rk-mineral-h": mineral.hardness, className: "absolute top-1 left-1 rounded-md text-white font-black", style: { fontSize: 10, lineHeight: '14px', padding: '0 5px', background: '#334155' } }, 'H ' + mineral.hardness),
                       React.createElement("div", { className: "flex justify-center mb-1 rounded-lg py-1", style: { background: 'radial-gradient(circle at 50% 45%, ' + mTint + '33 0%, rgba(255,255,255,0) 70%)' } }, rkMineralSwatch(React.createElement, mineral, 60)),
                       React.createElement("span", { className: "block text-xs font-black leading-tight", style: { color: mOn ? '#6d28d9' : '#0f172a', background: '#ffffff' } }, mineral.label),
-                      React.createElement("span", { className: "block text-[0.625rem] font-bold text-slate-600 leading-tight mt-0.5" }, rkLusterText(mineral)));
+                      React.createElement("span", { className: "block text-[0.625rem] font-bold text-slate-600 leading-tight mt-0.5" }, rkLusterText(mineral)),
+                      React.createElement("span", { "aria-hidden": true, "data-rk-mineral-h": mineral.hardness, className: "absolute top-1 left-1 rounded-md text-white font-black", style: { fontSize: 10, lineHeight: '14px', padding: '0 5px', background: '#334155' } }, 'H ' + mineral.hardness));
                   })
                 ),
 
                 // Selected mineral detail
-                selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in space-y-3" },
+                selMineral && React.createElement("div", { className: "rk-detail-card bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in space-y-3" },
 
-                React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
+                rkDetailNavigation('minerals',selMineral,rkMineralCatalogue),
+
+                React.createElement("h4", { id:'rk-specimen-title',tabIndex:-1,className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
 
                 React.createElement("p", { className: "text-xs text-slate-600 font-mono mb-1" }, __alloT('stem.rocks.formula_label', "Formula: ") + selMineral.formula),
 
@@ -9092,6 +10714,7 @@ const d = labToolData.rocks || {};
 
                 ),
 
+                rkStudyPanel('minerals',selMineral),
                 // ── How it breaks: cleavage and fracture ──
                 // The planes of weakness on the left, the pieces they cut on the
                 // right, and the count in the badge. Reads RK_CLEAVAGE only.
@@ -9161,6 +10784,7 @@ const d = labToolData.rocks || {};
                           className: "inline-flex items-center gap-1 rounded-full border pl-0.5 pr-2 py-0.5 text-[0.6875rem] font-bold " + (on ? "bg-sky-900 border-sky-950 text-white" : "bg-white border-sky-300 text-sky-900 hover:border-sky-700") },
                           React.createElement("span", { "aria-hidden": true }, rkMineralSwatch(React.createElement, om, 20)), om.label);
                       })),
+                    React.createElement("button",{type:'button','data-rk-look-compare':'minerals:' + a.id + ':' + b.id,'aria-label':__alloT('stem.rocks.look_compare','Compare these specimens') + ': ' + a.label + ' / ' + b.label,onClick:function(){rkOpenComparison('minerals',a.id,b.id);},className:'mb-2 min-h-[44px] rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-800'},__alloT('stem.rocks.look_compare','Compare these specimens')),
                     React.createElement("div", { className: "rounded-lg border border-sky-200 bg-white p-2.5", "data-rk-min-look-pair": a.id + ':' + b.id + ':' + splitCount },
                       React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
                         React.createElement("span", { className: "inline-flex items-center gap-1.5" },
@@ -9176,7 +10800,7 @@ const d = labToolData.rocks || {};
                       React.createElement("p", { className: "text-xs font-bold text-slate-900 leading-snug mt-2" },
                         React.createElement("span", { className: "text-sky-900" }, __alloT('stem.rocks.ml_quick', 'The quick test:') + ' '),
                         __alloT('stem.rocks.minlook_' + cur.key, cur.text)),
-                      React.createElement("div", { className: "overflow-x-auto mt-2" },
+                      React.createElement("div", { className: "overflow-x-auto mt-2", tabIndex:0, role:'region', 'aria-label':__alloT('stem.rocks.mineral_evidence_scroll_region', 'Scrollable mineral evidence comparison') },
                         React.createElement("table", { className: "w-full text-[0.6875rem] border-collapse", "data-rk-min-look-table": true },
                           React.createElement("thead", null,
                             React.createElement("tr", { className: "text-left text-slate-700" },
@@ -9346,10 +10970,10 @@ const d = labToolData.rocks || {};
                         // The old condition was `animProgress === 0`, so once a run
                         // finished at 100 the button disappeared and the only way to
                         // retest was to re-pick a tool. Show it whenever idle.
-                        (animProgress === 0 || animProgress >= 100) && React.createElement("button", {
-                          onClick: runTest,
-                          className: "px-3 py-1 bg-violet-700 hover:bg-violet-800 text-white rounded-lg text-[0.625rem] font-bold transition-colors shadow-sm active:scale-[0.97] shrink-0"
-                        }, (animProgress >= 100 ? "↻ " + __alloT('stem.rocks.run_scratch_again', "Test again") : "⚡ " + __alloT('stem.rocks.run_scratch_test', "Run Scratch Test")))
+                        React.createElement("button", { 'data-rk-mineral-test':'scratch','aria-disabled':animProgress > 0 && animProgress < 100,
+                          onClick: function () { if (!(animProgress > 0 && animProgress < 100)) runTest(); },
+                          className: "min-h-[44px] px-3 py-1 bg-violet-700 hover:bg-violet-800 text-white rounded-lg text-[0.625rem] font-bold transition-colors shadow-sm active:scale-[0.97] shrink-0"
+                        }, animProgress > 0 && animProgress < 100 ? __alloT('stem.rocks.test_running','Testing…') : (animProgress >= 100 ? "↻ " + __alloT('stem.rocks.run_scratch_again', "Test again") : "⚡ " + __alloT('stem.rocks.run_scratch_test', "Run Scratch Test")))
                       ),
                       // Watch the tool travel, see whether it cuts a groove or just
                       // smears itself off, and read both hardnesses on one Mohs
@@ -9363,8 +10987,8 @@ const d = labToolData.rocks || {};
                           style: { width: animProgress + '%' }
                         })
                       ),
-                      rkLabFresh && d.scratchResult && React.createElement("p", { className: "text-xs font-bold text-slate-800 leading-relaxed animate-in fade-in" },
-                        d.scratchResult
+                      React.createElement("p", { role:'status','aria-live':'polite','aria-atomic':true,'data-rk-mineral-result':'scratch',className: "text-xs font-bold text-slate-800 leading-relaxed" },
+                        rkLabFresh && d.scratchResult || ''
                       ),
 
                       // The tool measures hardness here and explains WHY that
@@ -9538,8 +11162,9 @@ const d = labToolData.rocks || {};
                   ),
                   React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
                     React.createElement("button", {
-                      disabled: d.streakAnimActive,
+                      'data-rk-mineral-test':'streak','aria-disabled':!!d.streakAnimActive,
                       onClick: function() {
+                        if (d.streakAnimActive) return;
                         updMulti(Object.assign(rkLabReset(), { streakAnimActive: true, streakResult: null }));
                         sfxRockCrack();
                         setTimeout(function() {
@@ -9551,7 +11176,7 @@ const d = labToolData.rocks || {};
                       },
                       className: "px-3 py-1.5 bg-violet-700 hover:bg-violet-800 text-white font-bold rounded-lg text-xs transition-colors shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.streakAnimActive ? "✏️ " + __alloT('stem.rocks.scratching_plate', "Scratching plate...") : "🍽️ " + __alloT('stem.rocks.perform_streak_test', "Perform Streak Test")),
-                    rkLabFresh && d.streakResult && React.createElement("span", { className: "text-xs font-bold text-slate-800 animate-in fade-in" }, d.streakResult),
+                    React.createElement("span", { role:'status','aria-live':'polite','aria-atomic':true,'data-rk-mineral-result':'streak',className: "text-xs font-bold text-slate-800" }, rkLabFresh && d.streakResult || ''),
                     rkLabFresh && d.streakResult && selMineral.streak && !rkStreakPlateTooHard(selMineral) && !selMineral.streak.includes('None') &&
                       React.createElement("p", { className: "text-[0.6875rem] text-slate-700 basis-full leading-snug" },
                         __alloT('stem.rocks.streak_vs_colour', "Compare the two chips: the powder colour is the reliable identifier, because a mineral's outward colour can vary with impurities while its streak does not."))
@@ -9577,8 +11202,9 @@ const d = labToolData.rocks || {};
                       ),
                       React.createElement("div", { className: "flex items-center gap-3" },
                         React.createElement("button", {
-                          disabled: d.fizzAnimActive,
+                          'data-rk-mineral-test':'acid','aria-disabled':!!d.fizzAnimActive,
                           onClick: function() {
+                            if (d.fizzAnimActive) return;
                             updMulti(Object.assign(rkLabReset(), { fizzAnimActive: true, fizzResult: null }));
                             sfxRockMelt();
                             var bubbleSoundCount = 0;
@@ -9610,8 +11236,8 @@ const d = labToolData.rocks || {};
                       )
                     );
                   })(),
-                  rkLabFresh && d.fizzResult && React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-2 leading-relaxed animate-in fade-in" },
-                    d.fizzResult
+                  React.createElement("p", { role:'status','aria-live':'polite','aria-atomic':true,'data-rk-mineral-result':'acid',className: "text-xs font-bold text-slate-700 mt-2 leading-relaxed" },
+                    rkLabFresh && d.fizzResult || ''
                   )
                 ),
 
@@ -9785,6 +11411,23 @@ const d = labToolData.rocks || {};
               const mystIsWrong = function (id) { return mystWrong.indexOf(id) !== -1; };
               const mystIsOut = function (id) { return mystIsWrong(id) || mystOut.indexOf(id) !== -1; };
               const mystLeft = ROCKS.filter(function (r) { return !mystIsOut(r.id); }).length;
+              // A guess can remove or disable its own control. Keep the next
+              // keyboard stop at the revealed clue/result, within this mounted
+              // challenge only; an old AI response must not focus a later view.
+              function mysteryPanel(event) {
+                return event && event.currentTarget && event.currentTarget.closest
+                  ? event.currentTarget.closest('[data-rk-mystery-panel]')
+                  : document.querySelector('[data-rk-mystery-panel]');
+              }
+              function focusMystery(selector, panel) {
+                setTimeout(function () {
+                  if (!panel || !panel.isConnected) return;
+                  var target = panel.querySelector(selector);
+                  if (!target) return;
+                  target.focus({ preventScroll: true });
+                  if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+                }, 0);
+              }
               function mystSetOut(next) { upd("mystery", Object.assign({}, myst, { out: next })); }
               function mystToggle(id) {
                 mystSetOut(mystOut.indexOf(id) !== -1 ? mystOut.filter(function (x) { return x !== id; }) : mystOut.concat([id]));
@@ -9800,9 +11443,10 @@ const d = labToolData.rocks || {};
 
 
 
-              function startMystery() {
+              function startMystery(event, useFieldNotes) {
+                var panel = mysteryPanel(event);
 
-                if (typeof callGemini !== 'function') {
+                if (typeof callGemini !== 'function' || useFieldNotes === true) {
 
                   // No AI is the DEFAULT for a student on a deep link, and it is
                   // how a classroom runs with AI switched off, so this used to be
@@ -9814,6 +11458,7 @@ const d = labToolData.rocks || {};
                   var pickOff = pool[Math.floor(Math.random() * pool.length)];
                   if (!pickOff) {
                     upd("mystery", { error: __alloT('stem.rocks.ai_tutor_unavailable', 'AI tutor is not available. Check back when online.') });
+                    focusMystery('[data-rk-mystery-error]', panel);
                     return;
                   }
                   var offClues = [
@@ -9822,6 +11467,7 @@ const d = labToolData.rocks || {};
                     rkLinkClue(pickOff.id)
                   ];
                   upd("mystery", { rockId: pickOff.id, clues: offClues, cluesShown: 1, revealed: false, solved: false, loading: false, lastGuess: null, error: null, offline: true });
+                  focusMystery('[data-rk-mystery-clue="0"]', panel);
                   sfxRockClick();
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.sr_mystery_ready', 'Mystery rock ready. First clue revealed.') + ' ' + offClues[0]);
                   return;
@@ -9833,6 +11479,7 @@ const d = labToolData.rocks || {};
                 const typeLabels = { igneous: 'igneous', sedimentary: 'sedimentary', metamorphic: 'metamorphic' };
 
                 upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: true, lastGuess: null, error: null });
+                focusMystery('[data-rk-mystery-loading]', panel);
 
                 const prompt = 'You are giving rock identification clues to a ' + (gradeLevel || '5th Grade') + ' student. The mystery rock is ' + pick.label + ' (' + typeLabels[pick.type] + '). '
 
@@ -9852,13 +11499,17 @@ const d = labToolData.rocks || {};
 
                   const safeClues = parts.length >= 1 ? parts.slice(0, 3) : [__alloT('stem.rocks.ai_no_clues', 'The AI returned no clues. Try again.')];
 
+                  var focusStillHere = panel && panel.isConnected && (panel.contains(document.activeElement) || document.activeElement === document.body);
                   upd("mystery", { rockId: pick.id, clues: safeClues, cluesShown: 1, revealed: false, solved: false, loading: false, lastGuess: null, error: null });
+                  if (focusStillHere) focusMystery('[data-rk-mystery-clue="0"]', panel);
 
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.sr_mystery_ready', 'Mystery rock ready. First clue revealed.'));
 
                 }).catch(function () {
 
-                  upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: false, lastGuess: null, error: __alloT('stem.rocks.could_not_reach_ai', 'Could not reach AI tutor. Try again in a moment.') });
+                  var focusStillHere = panel && panel.isConnected && (panel.contains(document.activeElement) || document.activeElement === document.body);
+                  upd("mystery", { rockId: null, clues: [], cluesShown: 0, revealed: false, solved: false, loading: false, lastGuess: null, error: __alloT('stem.rocks.could_not_reach_ai', 'Could not reach AI tutor. Try again in a moment.') });
+                  if (focusStillHere) focusMystery('[data-rk-mystery-error]', panel);
 
                 });
 
@@ -9866,11 +11517,12 @@ const d = labToolData.rocks || {};
 
 
 
-              function revealNextClue() {
+              function revealNextClue(event) {
 
                 if (cluesShown < clues.length) {
 
                   upd("mystery", Object.assign({}, myst, { cluesShown: cluesShown + 1 }));
+                  focusMystery('[data-rk-mystery-clue="' + cluesShown + '"]', mysteryPanel(event));
 
                   sfxRockClick();
 
@@ -9882,7 +11534,7 @@ const d = labToolData.rocks || {};
 
 
 
-              function guess(rockId) {
+              function guess(rockId, event) {
 
                 if (!mysteryRock || myst.solved || myst.revealed || mystIsWrong(rockId)) return;
 
@@ -9894,6 +11546,7 @@ const d = labToolData.rocks || {};
 
                                     upd("mystery", Object.assign({}, myst, { solved: true, lastGuess: rockId }));
                   rkCollect(myst.rockId, 'mystery');
+                  focusMystery('[data-rk-mystery-result-title]', mysteryPanel(event));
 
                   if (typeof awardStemXP === 'function') awardStemXP(15, 'Mystery rock solved!');
 
@@ -9906,6 +11559,7 @@ const d = labToolData.rocks || {};
                   rockTone(200, 0.1, 'sawtooth', 0.05);
 
                   upd("mystery", Object.assign({}, myst, { lastGuess: rockId, wrong: mystWrong.concat([rockId]), cluesShown: Math.min(cluesShown + 1, clues.length) }));
+                  focusMystery(clues.length ? '[data-rk-mystery-clue="' + Math.min(cluesShown, clues.length - 1) + '"]' : '[data-rk-mystery-clues-title]', mysteryPanel(event));
 
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.sr_mystery_wrong', 'Not quite. Next clue revealed.'));
 
@@ -9915,11 +11569,12 @@ const d = labToolData.rocks || {};
 
 
 
-              function giveUp() {
+              function giveUp(event) {
 
                 if (!mysteryRock) return;
 
                 upd("mystery", Object.assign({}, myst, { revealed: true, cluesShown: clues.length }));
+                focusMystery('[data-rk-mystery-result-title]', mysteryPanel(event));
 
                 if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.sr_mystery_reveal', 'Answer revealed: ') + mysteryRock.label + '.');
 
@@ -9927,7 +11582,7 @@ const d = labToolData.rocks || {};
 
 
 
-              return React.createElement("div", { className: "mt-2", role: "region", "aria-label": __alloT('stem.rocks.mystery_rock_challenge_aria', "Mystery Rock challenge") },
+              return React.createElement("div", { className: "mt-2", role: "region", 'data-rk-mystery-panel': true, "aria-label": __alloT('stem.rocks.mystery_rock_challenge_aria', "Mystery Rock challenge") },
 
                 React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-300 p-4 mb-3" },
 
@@ -9948,7 +11603,7 @@ const d = labToolData.rocks || {};
 
                 ),
 
-                !myst.rockId && !myst.loading && React.createElement("div", { className: "flex flex-col items-center gap-2 p-6 bg-white rounded-xl border-2 border-dashed border-amber-300" },
+                (!myst.rockId || myst.error) && !myst.loading && React.createElement("div", { className: "flex flex-col items-center gap-2 p-6 bg-white rounded-xl border-2 border-dashed border-amber-300" },
 
                   React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.rocks.ready_to_test', "Ready to test your rock knowledge?")),
 
@@ -9956,29 +11611,34 @@ const d = labToolData.rocks || {};
 
                     onClick: startMystery,
 
-                    "aria-label": __alloT('stem.rocks.start_mystery_aria', "Start Mystery Rock challenge"),
+                    "aria-label": __alloT('stem.rocks.start_challenge', "Start Challenge") + '. ' + __alloT('stem.rocks.start_mystery_aria', "Start Mystery Rock challenge"),
 
                     className: "px-5 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold text-sm rounded-full shadow-md hover:shadow-lg hover:from-amber-700 hover:to-orange-700"
 
                   }, "🎲 " + __alloT('stem.rocks.start_challenge', "Start Challenge")),
 
-                  myst.error && React.createElement("p", { className: "text-[0.6875rem] text-red-700 mt-1", role: "alert" }, myst.error)
+                  myst.error && React.createElement("p", { className: "text-[0.6875rem] text-red-700 mt-1", role: "alert", tabIndex: -1, 'data-rk-mystery-error': true }, myst.error),
+                  myst.error && typeof callGemini === 'function' && React.createElement('button', {
+                    type: 'button', 'data-rk-mystery-local': true,
+                    onClick: function (event) { startMystery(event, true); },
+                    className: 'min-h-[44px] rounded-lg border border-amber-700 bg-white px-3 py-2 text-sm font-bold text-amber-900 hover:bg-amber-50'
+                  }, __alloT('stem.rocks.mystery_try_field_notes', 'Use field-note clues'))
 
                 ),
 
-                myst.loading && React.createElement("div", { className: "p-4 bg-white rounded-xl border border-amber-200 text-center text-xs text-slate-600", role: "status", "aria-live": "polite" },
+                myst.loading && React.createElement("div", { className: "p-4 bg-white rounded-xl border border-amber-200 text-center text-xs text-slate-600", role: "status", "aria-live": "polite", tabIndex: -1, 'data-rk-mystery-loading': true },
 
                   "🧠 " + __alloT('stem.rocks.ai_thinking_clues', "AI tutor is thinking up clues...")),
 
-                myst.rockId && !myst.loading && React.createElement("div", null,
+                myst.rockId && !myst.loading && !myst.error && React.createElement("div", null,
 
                   React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-3 mb-3" },
 
-                    React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-800 mb-2" }, __alloT('stem.rocks.clues_label', "Clues") + " (" + cluesShown + "/" + clues.length + ")" + (myst.offline ? ' · ' + __alloT('stem.rocks.offline_badge', 'from the field notes, no AI') : '')),
+                    React.createElement("h5", { className: "text-[0.6875rem] font-bold text-amber-800 mb-2", tabIndex: -1, 'data-rk-mystery-clues-title': true }, __alloT('stem.rocks.clues_label', "Clues") + " (" + cluesShown + "/" + clues.length + ")" + (myst.offline ? ' · ' + __alloT('stem.rocks.offline_badge', 'from the field notes, no AI') : '')),
 
                     clues.slice(0, cluesShown).map(function (c, i) {
 
-                      return React.createElement("div", { key: i, className: "flex gap-2 mb-1.5 text-xs text-slate-700 leading-relaxed" },
+                      return React.createElement("div", { key: i, className: "flex gap-2 mb-1.5 text-xs text-slate-700 leading-relaxed", tabIndex: -1, 'data-rk-mystery-clue': i },
 
                         React.createElement("span", { className: "font-bold text-amber-800 shrink-0" }, __alloT('stem.rocks.clue_label', "Clue ") + (i + 1) + ":"),
 
@@ -10015,7 +11675,7 @@ const d = labToolData.rocks || {};
 
                       React.createElement("div", { className: "flex-1 min-w-0" },
 
-                        React.createElement("p", { className: "text-sm font-bold " + (myst.solved ? "text-green-800" : "text-slate-800") },
+                        React.createElement("h5", { className: "text-sm font-bold " + (myst.solved ? "text-green-800" : "text-slate-800"), tabIndex: -1, 'data-rk-mystery-result-title': true },
 
                           (myst.solved ? "✅ " + __alloT('stem.rocks.correct_it_was', "Correct! It was ") : "📖 " + __alloT('stem.rocks.the_answer_was', "The answer was ")) + ROCK_TYPES[mysteryRock.type].icon + " " + mysteryRock.label),
 
@@ -10032,7 +11692,7 @@ const d = labToolData.rocks || {};
 
                       onClick: startMystery,
 
-                      "aria-label": __alloT('stem.rocks.start_new_mystery_aria', "Start a new Mystery Rock challenge"),
+                      "aria-label": __alloT('stem.rocks.new_mystery', "New Mystery") + '. ' + __alloT('stem.rocks.start_new_mystery_aria', "Start a new Mystery Rock challenge"),
 
                       className: "transition-colors mt-2 px-3 py-1 text-[0.6875rem] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 active:scale-[0.97]"
 
@@ -10075,7 +11735,7 @@ const d = labToolData.rocks || {};
                             return React.createElement("div", { key: rock.id, className: "relative" },
                               React.createElement("button", {
                               key: rock.id,
-                              onClick: function () { guess(rock.id); },
+                              onClick: function (event) { guess(rock.id, event); },
                               disabled: wasWrong ? true : undefined,
                               "data-rk-mystery-state": wasWrong ? 'wrong' : crossed ? 'out' : 'in',
                               // This is an IDENTIFICATION game, so the option tiles
@@ -10083,7 +11743,7 @@ const d = labToolData.rocks || {};
                               // be the rock-type emoji — every igneous option looked
                               // the same, which made the picture useless and left the
                               // clue text doing all the work.
-                              "aria-label": wasWrong ? rock.label + ': ' + __alloT('stem.rocks.myst_already_wrong', 'already guessed, not it') : __alloT('stem.rocks.guess_label', "Guess ") + rock.label + ' — ' + rkGloss(rock.texture, rock.id) + (crossed ? '. ' + __alloT('stem.rocks.myst_crossed_note', 'You crossed this one out.') : ''),
+                              "aria-label": rock.label + ' ' + rkTextureName(rock.texture, rock.id) + '. ' + (wasWrong ? __alloT('stem.rocks.myst_already_wrong', 'already guessed, not it') : __alloT('stem.rocks.guess_label', "Guess ") + rock.label + ' — ' + rkGloss(rock.texture, rock.id) + (crossed ? '. ' + __alloT('stem.rocks.myst_crossed_note', 'You crossed this one out.') : '')),
                                                         // Same tile as the Rocks grid, so the catalogue looks the
                               // same wherever a student meets it.
                               "data-rk-mystery-tile": rock.id,
@@ -10110,7 +11770,7 @@ const d = labToolData.rocks || {};
 
                       onClick: giveUp,
 
-                      "aria-label": __alloT('stem.rocks.give_up_aria', "Give up and reveal the answer"),
+                      "aria-label": __alloT('stem.rocks.give_up_show_answer', "Give up · show answer") + '. ' + __alloT('stem.rocks.give_up_aria', "Give up and reveal the answer"),
 
                       className: "transition-colors px-3 py-1 text-[0.6875rem] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 active:scale-[0.97]"
 
@@ -10253,7 +11913,7 @@ const d = labToolData.rocks || {};
                   lens: false, formObs: null, streakObs: null, densityObs: null, pending: null, history: [], guessedWrong: [], selectedId: null, lastRejectedId: null, reviewId: null, candidateView: null, solvedId: null, anim: null,
                   toolsExpanded: false, candidatesExpanded: false,
                   claimEvidence: [], claimReasoning: null, claimConfidence: null, predictionTool: null, predictionValue: null,
-                  solved: (wb.solved || 0), attempts: (wb.attempts || 0)
+                  solved: (wb.solved || 0), attempts: (wb.attempts || 0), copyFallbackText: null
                 });
                 wbFocusAfterUpdate('[data-wb-tool="lens"]');
                 wbSay(__alloT('stem.rocks.wb_new_specimen_sr', 'A new unknown specimen is on the bench. Choose an instrument to begin testing.'));
@@ -11048,7 +12708,7 @@ const d = labToolData.rocks || {};
                       var chosen = wbPredictionTool === wbNext.tool && wbPredictionValue === group.id;
                       return React.createElement("button", {
                         key: group.id, type: "button", "aria-pressed": chosen, "data-wb-prediction-outcome": group.id, "data-wb-prediction-branch-size": group.remainingCount,
-                        "aria-label": __alloT('stem.rocks.wb_predict_aria_start', 'Predict ') + group.label + '. ' + __alloT('stem.rocks.wb_predict_aria_mid', 'This branch would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '.',
+                        "aria-label": __alloT('stem.rocks.wb_predict_aria_start', 'Predict ') + group.label + '. ' + __alloT('stem.rocks.wb_branch_would_leave', 'Would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '.',
                         onClick: function () { updWb({ predictionTool: wbNext.tool, predictionValue: group.id }); wbSay(__alloT('stem.rocks.wb_prediction_saved_sr', 'Prediction saved: ') + group.label + '. ' + __alloT('stem.rocks.wb_predict_aria_mid', 'This branch would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '. ' + __alloT('stem.rocks.wb_prediction_saved_sr2', 'Run the recommended test and compare the observation.')); },
                         className: "rounded-xl border px-3 py-2.5 min-h-[48px] text-left text-[10.5px] font-black transition-all " + (chosen ? "bg-violet-100 border-violet-500 text-violet-900 ring-2 ring-violet-200" : "bg-white border-slate-300 text-slate-800 hover:border-violet-400 hover:bg-violet-50")
                       },
@@ -11207,7 +12867,7 @@ const d = labToolData.rocks || {};
               ];
               var wbRenderPropertyGuideGraphic = function (item) {
                 return React.createElement("span", {
-                  className: "w-12 h-12 rounded-xl border flex flex-col items-center justify-center shrink-0 relative overflow-hidden " + (item.provisional ? "bg-amber-50 border-amber-300" : item.done ? "bg-emerald-50 border-emerald-300" : "bg-slate-50 border-slate-300"),
+                  className: "rounded-xl border flex flex-col items-center justify-center shrink-0 relative " + (item.provisional ? "bg-amber-50 border-amber-300" : item.done ? "bg-emerald-50 border-emerald-300" : "bg-slate-50 border-slate-300"),
                   "aria-hidden": "true", "data-wb-guide-graphic": item.id
                 },
                   React.createElement("span", { className: "text-xl leading-none" }, item.icon),
@@ -11452,6 +13112,8 @@ const d = labToolData.rocks || {};
               };
               var wbRun = function (kind, ms, finish, runState) {
                 if (wbBusy || wbPendingTool) return;
+                var runTrigger = typeof document !== 'undefined' ? document.activeElement : null;
+                var runRoot = runTrigger && runTrigger.closest ? runTrigger.closest('[data-rocks-workbench="mineral-identification"]') : null;
                 sfxRockClick();
                 // Keep the initiating control mounted through the async result
                 // so keyboard and screen-reader focus cannot fall back to body.
@@ -11460,6 +13122,13 @@ const d = labToolData.rocks || {};
                 updWb(Object.assign({ anim: kind, toolsExpanded: true, claimConfidence: null }, runState || {}));
                 setTimeout(function () {
                   try { finish(); } finally { updWb({ anim: null, activeScratchRef: null }); }
+                  // The observation appears before the tray. Advance only if the
+                  // learner is still on the initiating control in this instance.
+                  setTimeout(function () {
+                    if (!runRoot || !runRoot.isConnected || document.activeElement !== runTrigger) return;
+                    var observation = runRoot.querySelector('[data-wb-observe-choice]');
+                    if (observation) observation.focus();
+                  }, 0);
                 }, ms);
               };
               var wbClearEvidence = function () {
@@ -11467,7 +13136,7 @@ const d = labToolData.rocks || {};
                   scratch: {}, streakDone: false, fizz: null, magnet: null, density: false,
                   lens: false, formObs: null, streakObs: null, densityObs: null, pending: null, history: [], guessedWrong: [], selectedId: null, lastRejectedId: null, reviewId: null, candidateView: null, solvedId: null, anim: null,
                   toolsExpanded: false, candidatesExpanded: false,
-                  claimEvidence: [], claimReasoning: null, claimConfidence: null, predictionTool: null, predictionValue: null, activeScratchRef: null
+                  claimEvidence: [], claimReasoning: null, claimConfidence: null, predictionTool: null, predictionValue: null, activeScratchRef: null, copyFallbackText: null
                 }, '[data-wb-tool="lens"]');
                 wbSay(__alloT('stem.rocks.wb_evidence_cleared_sr', 'Observations cleared. The same specimen remains on the bench.'));
               };
@@ -11479,13 +13148,42 @@ const d = labToolData.rocks || {};
                 }, '[data-wb-tool="steel_nail"]');
                 wbSay(__alloT('stem.rocks.wb_hardness_cleared_sr', 'Conflicting hardness trials cleared. The other observations are preserved; bracket hardness again.'));
               };
+              var wbSubmissionStarted = false;
               var wbSubmitClaim = function () {
-                if (wbBusy || !wbSelected || !wbCerReady || !sp) return;
+                if (wbSubmissionStarted || wb.solvedId || wbBusy || !wbSelected || !wbCerReady || !sp) return;
                 var claimId = wbSelected.id;
                 if (claimId === sp.id) {
+                  wbSubmissionStarted = true;
                   sfxRockCorrect();
                   var wbCaseNext = (wb.collected || []).indexOf(claimId) !== -1 ? (wb.collected || []) : (wb.collected || []).concat([claimId]);
-                  wbUpdateAndFocus({ solvedId: claimId, selectedId: claimId, lastRejectedId: null, reviewId: null, collected: wbCaseNext, solved: (wb.solved || 0) + 1, attempts: (wb.attempts || 0) + 1 }, '[data-wb-next-specimen]');
+                  // Archive the learner's evidence before a new specimen clears it.
+                  // Store only data, never the predicate functions in wbEvidence.
+                  var completedReport = wbNotebookText() + '\n' + __alloT('stem.rocks.wb_nb_identified', 'Identified: ') + wbSelected.label + '\n' + __alloT('stem.rocks.wb_archive_confidence', 'Confidence at submission: ') + wbConfidenceLabel;
+                  var completedEntry = {
+                    specimenId: claimId, specimenLabel: wbSelected.label, pool: wb.pool === 'challenge' ? 'challenge' : 'standard',
+                    observations: (Array.isArray(wb.history) ? wb.history : []).slice(-120).filter(function (row) { return row && typeof row === 'object'; }).map(function (row) { return { tool: String(row.tool || '').slice(0, 60), ref: String(row.ref || '').slice(0, 60), choice: String(row.choice || '').slice(0, 100), label: String(row.label || '').slice(0, 500) }; }),
+                    evidence: wbEvidence.map(function (row) { return { key: row.k, text: row.text }; }),
+                    claimEvidence: wbClaimEvidence.slice(), reasoning: wbReasoningSentence, confidence: wbClaimConfidence,
+                    report: completedReport.slice(0, 60000), reflection: ''
+                  };
+                  setLabToolData(function (prev) {
+                    var pr = (prev && prev.rocks) || {}, current = pr.wb || {};
+                    // Replayed/stale submit handlers cannot award or archive twice.
+                    if (current.solvedId || current.spId !== claimId) return prev;
+                    var serial = Number.isSafeInteger(current.archiveSerial) && current.archiveSerial >= 0 ? current.archiveSerial + 1 : 1;
+                    var archive = wbReadArchive(current.archive);
+                    while (archive.some(function (entry) { return entry.id === 'investigation-' + serial; })) serial++;
+                    var entry = Object.assign({}, completedEntry, { id: 'investigation-' + serial });
+                    var collected = Array.isArray(current.collected) ? current.collected : [];
+                    var next = Object.assign({}, current, {
+                      solvedId: claimId, selectedId: claimId, lastRejectedId: null, reviewId: null,
+                      collected: collected.indexOf(claimId) === -1 ? collected.concat([claimId]) : collected,
+                      solved: (Number(current.solved) || 0) + 1, attempts: (Number(current.attempts) || 0) + 1,
+                      archiveSerial: serial, archive: archive.concat([entry]).slice(-30)
+                    });
+                    return Object.assign({}, prev, { rocks: Object.assign({}, pr, { wb: next }) });
+                  });
+                  wbFocusAfterUpdate('[data-wb-next-specimen]');
                   setTimeout(function () { try { checkRocksChallenges({ ...d, wb: { ...wb, solvedId: claimId, solved: (wb.solved || 0) + 1 } }); } catch (e) {} }, 60);
                   wbSay(__alloT('stem.rocks.wb_sr_solved', 'Correct. The specimen is ') + wbSelected.label + '. ' + wbCaseNext.filter(function (id) { return wbPoolFor().indexOf(id) !== -1; }).length + ' / ' + wbPoolFor().length + ' ' + __alloT('stem.rocks.wb_case_named', 'named') + '.');
                   try { if (typeof stemCelebrate === 'function') stemCelebrate(); } catch (e) {}
@@ -11830,14 +13528,93 @@ const d = labToolData.rocks || {};
                 if (wb.solvedId) lines.push(__alloT('stem.rocks.wb_nb_identified', 'Identified: ') + (wbMineral(wb.solvedId) || {}).label);
                 return lines.join('\n');
               };
-              var wbCopyNotebook = function () {
+              var wbCopyNotebook = async function () {
                 var txt = wbNotebookText(), ok = false;
-                try { if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) { (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(txt); ok = true; } } catch (e) {}
+                try {
+                  if (window.StemLab && typeof window.StemLab.writeClipboard === 'function') {
+                    ok = (await window.StemLab.writeClipboard(txt)) !== false;
+                  } else if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(txt); ok = true;
+                  }
+                } catch (e) { ok = false; }
                 if (!ok) {
-                  try { var ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('aria-hidden', 'true'); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = !!document.execCommand('copy'); document.body.removeChild(ta); } catch (e) { ok = false; }
+                  var ta = null, priorFocus = document.activeElement;
+                  try { ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('aria-label', __alloT('stem.rocks.wb_copy_buffer', 'Notebook copy buffer')); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = typeof document.execCommand === 'function' && !!document.execCommand('copy'); } catch (e) { ok = false; }
+                  finally { if (ta && ta.parentNode) ta.parentNode.removeChild(ta); if (priorFocus && typeof priorFocus.focus === 'function') { try { priorFocus.focus({ preventScroll: true }); } catch (e) {} } }
                 }
+                updWb({ copyFallbackText: ok ? null : txt });
+                if (!ok) wbFocusAfterUpdate('[data-wb-manual-copy]');
                 if (typeof addToast === 'function') { try { addToast(ok ? __alloT('stem.rocks.wb_nb_copied', 'Notebook copied to the clipboard.') : __alloT('stem.rocks.wb_nb_copy_failed', 'Could not copy. Select the notebook text and copy it by hand.'), ok ? 'success' : 'error'); } catch (e) {} }
                 wbSay(ok ? __alloT('stem.rocks.wb_nb_copied', 'Notebook copied to the clipboard.') : __alloT('stem.rocks.wb_nb_copy_failed', 'Could not copy. Select the notebook text and copy it by hand.'));
+              };
+              // Old or imported tool state may contain incomplete records. Bound
+              // the report history and validate before it reaches any controls.
+              var wbReadArchive = function (value) {
+                var seen = {};
+                return (Array.isArray(value) ? value : []).slice(-30).filter(function (entry) {
+                  if (!entry || typeof entry !== 'object' || !/^investigation-\d+$/.test(entry.id || '') || seen[entry.id] || !wbMineral(entry.specimenId) || typeof entry.report !== 'string') return false;
+                  seen[entry.id] = true;
+                  return true;
+                }).map(function (entry) {
+                  return {
+                    id: entry.id, specimenId: entry.specimenId,
+                    specimenLabel: typeof entry.specimenLabel === 'string' ? entry.specimenLabel.slice(0, 200) : wbMineral(entry.specimenId).label,
+                    pool: entry.pool === 'challenge' ? 'challenge' : 'standard',
+                    observations: (Array.isArray(entry.observations) ? entry.observations : []).slice(-120).filter(function (row) { return row && typeof row === 'object'; }).map(function (row) { return { tool: String(row.tool || '').slice(0, 60), ref: String(row.ref || '').slice(0, 60), choice: String(row.choice || '').slice(0, 100), label: String(row.label || '').slice(0, 500) }; }),
+                    evidence: (Array.isArray(entry.evidence) ? entry.evidence : []).slice(0, 30).filter(function (row) { return row && typeof row.key === 'string' && typeof row.text === 'string'; }).map(function (row) { return { key: row.key.slice(0, 100), text: row.text.slice(0, 1000) }; }),
+                    claimEvidence: (Array.isArray(entry.claimEvidence) ? entry.claimEvidence : []).filter(function (key) { return typeof key === 'string'; }).slice(0, 12),
+                    reasoning: typeof entry.reasoning === 'string' ? entry.reasoning.slice(0, 5000) : '',
+                    confidence: typeof entry.confidence === 'string' ? entry.confidence.slice(0, 40) : '',
+                    report: entry.report.slice(0, 60000), reflection: typeof entry.reflection === 'string' ? entry.reflection.slice(0, 2000) : ''
+                  };
+                });
+              };
+              var wbArchive = wbReadArchive(wb.archive);
+              var wbArchivedReport = function (entry) {
+                return entry.report + '\n\n' + __alloT('stem.rocks.wb_archive_reflection', 'My reflection') + ':\n' + (entry.reflection || __alloT('stem.rocks.wb_archive_no_reflection', 'No reflection recorded.'));
+              };
+              var wbDownloadReport = function (txt, filename) {
+                var url = null, anchor = null;
+                try {
+                  url = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+                  anchor = document.createElement('a'); anchor.href = url; anchor.download = filename;
+                  document.body.appendChild(anchor); anchor.click();
+                  wbSay(__alloT('stem.rocks.wb_archive_downloaded', 'Report download started.'));
+                } catch (e) {
+                  updWb({ copyFallbackText: txt });
+                  wbFocusAfterUpdate('[data-wb-manual-copy]');
+                  wbSay(__alloT('stem.rocks.wb_archive_download_failed', 'Download unavailable. Your report is ready in the text box for manual copying.'));
+                } finally {
+                  if (anchor && anchor.parentNode) anchor.parentNode.removeChild(anchor);
+                  if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+                }
+              };
+              var wbRenderArchive = function () {
+                return React.createElement(React.Fragment, null,
+                  typeof wb.copyFallbackText === 'string' && wb.copyFallbackText ? React.createElement('section', { className: 'rounded-xl border border-amber-400 bg-amber-50 p-3' },
+                    React.createElement('label', { htmlFor: 'wb-manual-copy', className: 'block text-sm font-bold text-amber-900' }, __alloT('stem.rocks.wb_manual_copy_label', 'Select and copy your report')),
+                    React.createElement('textarea', { id: 'wb-manual-copy', 'data-wb-manual-copy': true, readOnly: true, value: wb.copyFallbackText, rows: 8, className: 'mt-2 w-full rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-900', onFocus: function (event) { event.target.select(); } })
+                  ) : null,
+                  React.createElement('section', { className: 'rounded-2xl border border-sky-300 bg-sky-50 p-3 sm:p-4', 'aria-labelledby': 'wb-archive-title', 'data-wb-archive-count': wbArchive.length },
+                    React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
+                      React.createElement('h4', { id: 'wb-archive-title', className: 'text-base font-black text-sky-900' }, __alloT('stem.rocks.wb_archive_title', 'Investigation portfolio') + ' · ' + wbArchive.length),
+                      wbArchive.length ? React.createElement('button', { type: 'button', 'data-wb-download-archive': true, className: 'min-h-[44px] rounded-lg bg-sky-800 px-3 py-2 text-sm font-bold text-white hover:bg-sky-900', onClick: function () { wbDownloadReport(wbArchive.map(wbArchivedReport).join('\n\n==============================\n\n'), 'mineral-investigation-portfolio.txt'); } }, __alloT('stem.rocks.wb_archive_download_all', 'Download portfolio')) : null
+                    ),
+                    React.createElement('p', { className: 'mt-1 text-sm text-sky-900' }, wbArchive.length ? __alloT('stem.rocks.wb_archive_help', 'Your 30 most recent completed investigations stay here when you start a new specimen. Open a report to review your evidence and add a reflection.') : __alloT('stem.rocks.wb_archive_empty', 'Complete an evidence-based identification to save its observations, reasoning and confidence here.')),
+                    wbArchive.slice().reverse().map(function (entry) {
+                      return React.createElement('details', { key: entry.id, className: 'mt-3 rounded-xl border border-sky-200 bg-white p-3', 'data-wb-archive-entry': entry.id },
+                        React.createElement('summary', { className: 'min-h-[44px] cursor-pointer font-bold text-sky-900' }, entry.specimenLabel + ' · ' + entry.evidence.length + ' ' + __alloT('stem.rocks.wb_archive_observations', 'observations') + ' · ' + entry.id.replace('investigation-', '#')),
+                        React.createElement('pre', { className: 'whitespace-pre-wrap break-words text-xs text-slate-800', style: { overflowWrap: 'anywhere', fontFamily: 'inherit' } }, entry.report),
+                        React.createElement('label', { htmlFor: 'wb-reflection-' + entry.id, className: 'block mt-3 text-sm font-bold text-slate-900' }, __alloT('stem.rocks.wb_archive_reflection_prompt', 'What evidence changed your thinking? What would you test next time?')),
+                        React.createElement('textarea', { id: 'wb-reflection-' + entry.id, 'data-wb-archive-reflection': entry.id, value: entry.reflection, maxLength: 2000, rows: 3, className: 'mt-1 w-full rounded-lg border border-slate-400 bg-white p-2 text-sm text-slate-900', onChange: function (event) {
+                          var reflection = event.target.value.slice(0, 2000);
+                          setLabToolData(function (prev) { var pr = (prev && prev.rocks) || {}, current = pr.wb || {}; return Object.assign({}, prev, { rocks: Object.assign({}, pr, { wb: Object.assign({}, current, { archive: wbReadArchive(current.archive).map(function (row) { return row.id === entry.id ? Object.assign({}, row, { reflection: reflection }) : row; }) }) }) }); });
+                        } }),
+                        React.createElement('button', { type: 'button', 'data-wb-download-report': entry.id, className: 'mt-2 min-h-[44px] rounded-lg border border-sky-600 bg-white px-3 py-2 text-sm font-bold text-sky-900 hover:bg-sky-50', onClick: function () { wbDownloadReport(wbArchivedReport(entry), entry.id + '-' + entry.specimenId + '.txt'); } }, __alloT('stem.rocks.wb_archive_download_one', 'Download this report'))
+                      );
+                    })
+                  )
+                );
               };
               var wbRenderObservationCard = function () {
                 if (!wbPendingTool || !sp) return null;
@@ -11955,7 +13732,7 @@ const d = labToolData.rocks || {};
                 return React.createElement("button", {
                   key: opts.key, type: "button", "aria-disabled": unavailable,
                   onClick: function (e) { if (unavailable) { if (e && e.preventDefault) e.preventDefault(); return; } opts.onClick(); },
-                  "aria-label": (wbNext.tool === opts.key && !opts.done ? __alloT('stem.rocks.wb_recommended_aria', 'Recommended next test. ') : '') + opts.aria, title: opts.aria,
+                  "aria-label": opts.label + (opts.meta ? '. ' + opts.meta : '') + (opts.result ? '. ' + opts.result : '') + '. ' + (wbNext.tool === opts.key && !opts.done ? __alloT('stem.rocks.wb_recommended_aria', 'Recommended next test. ') : '') + opts.aria, title: opts.aria,
                   "data-wb-tool": opts.key,
                   className: "px-2.5 py-2.5 rounded-xl text-left border transition-all min-h-[52px] flex flex-col justify-center " + (opts.done ? doneTone + " cursor-default" : wbBusy ? "bg-white border-slate-300 text-slate-700 cursor-wait opacity-65" : (wbNext.tool === opts.key ? "bg-amber-50 border-amber-400 text-slate-800 ring-2 ring-amber-200 hover:bg-amber-100 rk-wb-nudge" : "bg-white border-slate-300 text-slate-800 hover:border-amber-400 hover:-translate-y-0.5 hover:shadow-md"))
                 },
@@ -12098,7 +13875,7 @@ const d = labToolData.rocks || {};
                       React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-[0.12em] text-slate-600" }, __alloT('stem.rocks.wb_investigation_path', 'Investigation path')),
                       React.createElement("p", { className: "text-[0.6875rem] text-slate-700 mt-0.5" }, wbGuided ? __alloT('stem.rocks.wb_guided_help', 'Guided focus keeps the current scientific task open and quiets later steps.') : __alloT('stem.rocks.wb_full_help', 'Full workbench keeps every investigation area available.'))
                     ),
-                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.rocks.wb_guided_toggle_aria', 'Guided focus'), "aria-pressed": wbGuided, "data-wb-guided-toggle": wbGuided ? 'active' : 'full', className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ guided: !wbGuided, toolsExpanded: false, candidatesExpanded: false }); } }, wbGuided ? __alloT('stem.rocks.wb_show_full', 'Show full workbench') : __alloT('stem.rocks.wb_use_guided', 'Use guided focus'))
+                  React.createElement("button", { type: "button", "data-wb-guided-toggle": wbGuided ? 'active' : 'full', className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-amber-400 hover:bg-amber-50", onClick: function () { updWb({ guided: !wbGuided, toolsExpanded: false, candidatesExpanded: false }); } }, wbGuided ? __alloT('stem.rocks.wb_show_full', 'Show full workbench') : __alloT('stem.rocks.wb_use_guided', 'Use guided focus'))
                   ),
                   React.createElement("ol", { className: "grid grid-cols-3 gap-2", "aria-label": __alloT('stem.rocks.wb_progress_aria', 'Mineral investigation progress') },
                     wbSteps.map(function (step, i) {
@@ -12234,9 +14011,9 @@ const d = labToolData.rocks || {};
                         React.createElement("button", { type: "button", className: "mt-3 rounded-lg border border-amber-300 bg-white/80 px-2.5 py-1.5 min-h-[40px] text-[0.625rem] font-black text-amber-900 hover:bg-white", "data-wb-pool-toggle": (wb.pool || 'standard'), "aria-pressed": (wb.pool || 'standard') === 'challenge', onClick: function () { var next = (wb.pool || 'standard') === 'challenge' ? 'standard' : 'challenge'; updWb({ pool: next }); wbSay((next === 'challenge' ? __alloT('stem.rocks.wb_pool_next_challenge_sr', 'Challenge set selected for the next unknown: ') : __alloT('stem.rocks.wb_pool_next_standard_sr', 'Standard set selected for the next unknown: ')) + (next === 'challenge' ? WB_POOL_CHALLENGE.length : WB_POOL.length) + ' ' + __alloT('stem.rocks.wb_pool_candidates_sr', 'candidates.')); } }, ((wb.pool || 'standard') === 'challenge' ? '★ ' + __alloT('stem.rocks.wb_pool_on', 'Challenge set on') : '☆ ' + __alloT('stem.rocks.wb_pool_off', 'Challenge set off')) + ' · ' + __alloT('stem.rocks.wb_pool_next', 'applies to the next unknown')),
                         React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-3 italic" }, __alloT('stem.rocks.wb_reasoning_prompt', 'Reasoning check: why did the most diagnostic observation separate more candidates than surface color would?')),
                         React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3" },
-                          React.createElement("button", { type: "button", disabled: wbBusy || wbEvidence.length === 0, className: "rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: wbClearEvidence, "aria-label": __alloT('stem.rocks.wb_clear_aria', 'Clear observations and retest the same specimen') }, __alloT('stem.rocks.wb_clear', '↺ Clear evidence')),
-                          React.createElement("button", { type: "button", disabled: wbBusy, className: "rounded-lg border border-slate-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-slate-800 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: function () { wbDraw(); }, "aria-label": __alloT('stem.rocks.wb_swap_aria', 'Put away this specimen and draw a different unknown from the ' + ((wb.pool || 'standard') === 'challenge' ? 'challenge' : 'standard') + ' set') }, __alloT('stem.rocks.wb_swap', '🔄 New unknown')),
-                          React.createElement("button", { type: "button", disabled: wbBusy, className: "col-span-2 rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", "data-wb-copy-notebook": "true", onClick: wbCopyNotebook, "aria-label": __alloT('stem.rocks.wb_nb_copy_aria', 'Copy the field notebook as plain text for a lab report') }, '📋 ' + __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report'))
+                          React.createElement("button", { type: "button", disabled: wbBusy || wbEvidence.length === 0, className: "rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: wbClearEvidence, "aria-label": __alloT('stem.rocks.wb_clear', '↺ Clear evidence') + '. ' + __alloT('stem.rocks.wb_clear_aria', 'Clear observations and retest the same specimen') }, __alloT('stem.rocks.wb_clear', '↺ Clear evidence')),
+                          React.createElement("button", { type: "button", disabled: wbBusy, className: "rounded-lg border border-slate-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-slate-800 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: function () { wbDraw(); }, "aria-label": __alloT('stem.rocks.wb_swap', '🔄 New unknown') + '. ' + __alloT('stem.rocks.wb_swap_aria', 'Put away this specimen and draw a different unknown from the ' + ((wb.pool || 'standard') === 'challenge' ? 'challenge' : 'standard') + ' set') }, __alloT('stem.rocks.wb_swap', '🔄 New unknown')),
+                          React.createElement("button", { type: "button", disabled: wbBusy, className: "col-span-2 rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[0.625rem] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", "data-wb-copy-notebook": "true", onClick: wbCopyNotebook, "aria-label": __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report') + '. ' + __alloT('stem.rocks.wb_nb_copy_aria', 'Copy the field notebook as plain text for a lab report') }, '📋 ' + __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report'))
                         )
                       )
                     )
@@ -12309,7 +14086,7 @@ const d = labToolData.rocks || {};
                           )
                         ),
                         React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 shrink-0" },
-                          wbDebriefRival ? React.createElement("button", { className: "w-full sm:w-auto px-4 py-2.5 rounded-xl border-2 border-emerald-700 bg-white hover:bg-emerald-100 text-emerald-900 font-black min-h-[44px]", onClick: function () { wbDraw(wbDebriefRival.id); }, "data-wb-next-lookalike": wbDebriefRival.id, "aria-label": __alloT('stem.rocks.wb_next_lookalike_aria', 'Next: its closest look-alike, ') + wbDebriefRival.label }, '🕵️ ' + __alloT('stem.rocks.wb_next_lookalike', 'Try its look-alike: ') + wbDebriefRival.label) : null,
+                          wbDebriefRival ? React.createElement("button", { className: "w-full sm:w-auto px-4 py-2.5 rounded-xl border-2 border-emerald-700 bg-white hover:bg-emerald-100 text-emerald-900 font-black min-h-[44px]", onClick: function () { wbDraw(wbDebriefRival.id); }, "data-wb-next-lookalike": wbDebriefRival.id, "aria-label": __alloT('stem.rocks.wb_next_lookalike', 'Try its look-alike: ') + wbDebriefRival.label }, '🕵️ ' + __alloT('stem.rocks.wb_next_lookalike', 'Try its look-alike: ') + wbDebriefRival.label) : null,
                           React.createElement("button", { className: "w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black min-h-[44px]", onClick: function () { wbDraw(); }, "data-wb-next-specimen": "true" }, __alloT('stem.rocks.wb_next', '🔄 Next specimen'))
                         )
                       ),
@@ -12366,10 +14143,13 @@ const d = labToolData.rocks || {};
                         if (wb.fizz) facts.push({ k: 'a', text: WB_CARBONATES.indexOf(m.id) !== -1 ? __alloT('stem.rocks.wb_fact_fizz', 'Acid: fizzes') : __alloT('stem.rocks.wb_fact_nofizz', 'Acid: no fizz') });
                         if (wb.magnet) facts.push({ k: 'm', text: WB_MAGNETIC.indexOf(m.id) !== -1 ? __alloT('stem.rocks.wb_fact_pull', 'Magnet: pull') : __alloT('stem.rocks.wb_fact_nopull', 'Magnet: none') });
                         if (wb.densityObs && m.density) facts.push({ k: 'd', text: __alloT('stem.rocks.wb_fact_density', 'Density: ') + m.density.toFixed(2) });
+                        var cardStatus = out ? (reviewing ? __alloT('stem.rocks.wb_reviewing_card', 'Reviewing all measured evidence') : __alloT('stem.rocks.wb_eliminated_by', 'Review why set aside · ') + mismatch) : wrong ? (reviewing ? __alloT('stem.rocks.wb_reviewing_unresolved_card', 'Reviewing unresolved evidence') : __alloT('stem.rocks.wb_claim_rejected', 'Review rejected claim evidence')) : selected ? __alloT('stem.rocks.wb_selected', 'Selected for claim') : __alloT('stem.rocks.wb_still_possible', 'Still supported');
+                        var cardFacts = facts.length ? facts.slice(0, 3).map(function (fact) { return fact.text; }).join('. ') : __alloT('stem.rocks.wb_no_measured_facts', 'Run a test to compare properties');
                         return React.createElement("button", {
                           key: id, type: "button", "aria-disabled": wbBusy ? true : undefined, "aria-pressed": (out || wrong) ? undefined : selected, "aria-expanded": (out || wrong) ? reviewing : undefined, "aria-controls": reviewing ? "wb-setaside-inspector" : undefined, "data-wb-candidate": id, "data-wb-candidate-state": out ? 'eliminated' : (wrong ? 'rejected' : (selected ? 'selected' : 'viable')), "data-wb-reviewing": reviewing ? 'true' : 'false',
                           className: "rounded-xl border min-w-0 min-h-[94px] p-2.5 text-left transition-all flex gap-2.5 items-start overflow-hidden " + (wbBusy ? "cursor-wait opacity-65 transform-none " : "") + (out ? (reviewing ? "bg-slate-50 border-slate-600 text-slate-900 ring-2 ring-slate-300 shadow-md" : "bg-slate-100 border-slate-300 text-slate-700 hover:border-slate-500 hover:bg-slate-50") : wrong ? (reviewing ? "bg-rose-50 border-rose-600 text-rose-900 ring-2 ring-rose-200 shadow-md" : "bg-rose-50 border-rose-300 text-rose-900 hover:border-rose-500") : selected ? "bg-violet-50 border-violet-500 text-violet-900 ring-2 ring-violet-200 shadow-md" : "bg-white border-slate-300 text-slate-900 hover:border-violet-500 hover:-translate-y-0.5 hover:shadow-md"),
-                          "aria-label": (out ? __alloT('stem.rocks.wb_out_aria', 'Review why this candidate was set aside: ') : wrong ? __alloT('stem.rocks.wb_rejected_aria', 'Review unresolved evidence for the rejected claim: ') : selected ? __alloT('stem.rocks.wb_selected_aria', 'Selected for your claim: ') : __alloT('stem.rocks.wb_select_aria', 'Select as a possible claim: ')) + m.label + (mismatch ? '. ' + __alloT('stem.rocks.wb_mismatch_aria', 'Does not match the ') + mismatch + __alloT('stem.rocks.wb_mismatch_aria_end', ' observation.') : ''),
+                          "aria-label": m.label + '. ' + cardStatus + '. ' + cardFacts,
+                          title: (out ? __alloT('stem.rocks.wb_out_aria', 'Review why this candidate was set aside: ') : wrong ? __alloT('stem.rocks.wb_rejected_aria', 'Review unresolved evidence for the rejected claim: ') : selected ? __alloT('stem.rocks.wb_selected_aria', 'Selected for your claim: ') : __alloT('stem.rocks.wb_select_aria', 'Select as a possible claim: ')) + m.label + (mismatch ? '. ' + __alloT('stem.rocks.wb_mismatch_aria', 'Does not match the ') + mismatch + __alloT('stem.rocks.wb_mismatch_aria_end', ' observation.') : ''),
                           onClick: function () {
                             if (wbBusy) return;
                             if (out || wrong) {
@@ -12427,18 +14207,77 @@ const d = labToolData.rocks || {};
                     ),
                     React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-violet-400 hover:bg-violet-50", onClick: function () { wbUpdateAndFocus({ candidatesExpanded: true }, '[data-wb-candidate-filter="' + wbCandidateView + '"]'); }, "aria-expanded": false, "aria-controls": "wb-candidates-panel", "data-wb-preview-candidates": "true" }, __alloT('stem.rocks.wb_preview_candidates', 'Preview candidates'))
                   )
-                )
+                ),
+                wbRenderArchive()
               );
             })(),
 
             // ── Quiz mode ──
 
-            quizQ && !d.quizDone && React.createElement("div", {
+            rkQuizPracticeActive && (function () {
+              var practice = rkQuizPractice, q = QUIZ_BANK[practice.queue[practice.index]], feedback = practice.feedback;
+              var right = practice.queue.filter(function (id) { return Number.isInteger(practice.answers[id]) && QUIZ_BANK[id].options[practice.answers[id]] === QUIZ_BANK[id].a; }).length;
+              var remaining = practice.queue.filter(function (id) { return Number.isInteger(practice.answers[id]) && QUIZ_BANK[id].options[practice.answers[id]] !== QUIZ_BANK[id].a; });
+              var buttonClass = 'min-h-[44px] px-4 py-2 rounded-lg text-xs font-black bg-amber-700 text-white hover:bg-amber-800';
+              var back = React.createElement('button', { type: 'button', 'data-rk-practice-return': true, className: 'min-h-[44px] px-3 py-2 rounded-lg border border-amber-700 text-xs font-bold text-amber-900 bg-white hover:bg-amber-100', onClick: rkQuizPracticeReturn }, __alloT('stem.rocks.quiz_practice_return', 'Return to round results'));
+              if (practice.done) return React.createElement('section', { className: 'mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4', 'aria-labelledby': 'rk-quiz-practice-results-title', 'data-rk-practice-done': right + '/' + practice.queue.length },
+                React.createElement('h4', { id: 'rk-quiz-practice-results-title', tabIndex: -1, className: 'text-base font-black text-amber-900' }, __alloT('stem.rocks.quiz_practice_complete', 'Practice complete') + ': ' + right + ' / ' + practice.queue.length),
+                React.createElement('p', { className: 'text-sm text-slate-700 mt-2' }, remaining.length ? __alloT('stem.rocks.quiz_practice_remaining', 'Questions to practise again: ') + remaining.length : __alloT('stem.rocks.quiz_practice_all_correct', 'You answered every question in this practice correctly.')),
+                React.createElement('p', { className: 'text-xs text-slate-700 mt-2' }, __alloT('stem.rocks.quiz_practice_separate', 'Practice keeps your original round results unchanged and does not award points.')),
+                React.createElement('div', { className: 'mt-4 flex flex-wrap gap-2' },
+                  remaining.length > 0 && React.createElement('button', { type: 'button', 'data-rk-practice-retry': true, className: buttonClass, onClick: function () { rkQuizPracticeStart(remaining); } }, __alloT('stem.rocks.quiz_practice_retry', 'Practise remaining questions') + ' (' + remaining.length + ')'),
+                  back));
+              return React.createElement('section', {
+                className: 'mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 outline-none focus:ring-2 focus:ring-amber-600',
+                role: 'region', tabIndex: 0, 'aria-labelledby': 'rk-quiz-practice-title', 'aria-describedby': 'rk-quiz-practice-help', 'data-rk-practice': practice.queue[practice.index],
+                onKeyDown: function (event) {
+                  if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing)) return;
+                  var k = event.key, choice = Number(k) - 1;
+                  if (/^[1-9]$/.test(k) && q.options[choice] !== undefined && !feedback) { event.preventDefault(); rkQuizPracticeAnswer(choice); }
+                  else if ((k === 'n' || k === 'N' || k === 'Enter') && feedback) { event.preventDefault(); rkQuizPracticeNext(); }
+                }
+              },
+                React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                  React.createElement('h4', { id: 'rk-quiz-practice-title', className: 'text-base font-black text-amber-900' }, __alloT('stem.rocks.quiz_practice_title', 'Missed-question practice')),
+                  React.createElement('p', { className: 'text-xs font-bold text-amber-900', 'data-rk-practice-progress': practice.index + 1 }, __alloT('stem.rocks.question_label', 'Question ') + (practice.index + 1) + ' / ' + practice.queue.length)),
+                React.createElement('p', { id: 'rk-quiz-practice-help', className: 'text-xs text-slate-700 mb-3' }, __alloT('stem.rocks.quiz_practice_keyboard', 'Use the answer buttons, or focus this practice area and press 1–4 to answer and N for next.')),
+                Array.isArray(q.show) && React.createElement('div', { className: 'flex flex-wrap gap-2 mb-3' }, q.show.map(function (id) {
+                  var sp = rkQuizSpecimen(id);
+                  return sp ? React.createElement('figure', { key: id, className: 'm-0 flex flex-col items-center rounded-xl border-2 border-amber-200 bg-white p-2' },
+                    React.createElement('span', { 'aria-hidden': true }, sp.pic(76)), React.createElement('figcaption', { className: 'text-xs font-bold text-slate-800' }, sp.label)) : null;
+                })),
+                React.createElement('h5', { id: 'rk-quiz-practice-question', tabIndex: -1, className: 'text-sm font-bold text-slate-800 mb-3' }, q.q),
+                React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, q.options.map(function (option, choice) {
+                  var chosen = feedback && feedback.chosenIdx === choice, correct = feedback && option === q.a;
+                  return React.createElement('button', { key: option, type: 'button', 'data-rk-practice-answer': choice, 'aria-disabled': !!feedback,
+                    'aria-label': __alloT('stem.rocks.answer_label', 'Answer ') + (choice + 1) + ': ' + option + (chosen ? '. ' + __alloT('stem.rocks.quiz_your_answer', 'Your answer') : '') + (correct ? '. ' + __alloT('stem.rocks.quiz_correct_answer', 'Correct answer') : ''),
+                    onClick: function () { rkQuizPracticeAnswer(choice); },
+                    className: 'min-h-[44px] min-w-0 px-3 py-2 text-left text-xs font-bold rounded-lg border-2 flex items-center gap-2 ' + (correct ? 'border-green-600 bg-green-50 text-green-800' : chosen ? 'border-red-600 bg-red-50 text-red-800' : 'border-amber-700 bg-white text-slate-800 hover:border-amber-800')
+                  }, React.createElement('span', { 'aria-hidden': true, className: 'shrink-0 font-black' }, (choice + 1) + '.'),
+                    (function () { var sp = rkQuizSpecimenByLabel(option); return sp ? React.createElement('span', { 'aria-hidden': true, className: 'shrink-0' }, sp.pic(38)) : null; })(),
+                    React.createElement('span', { className: 'min-w-0 break-words' }, option,
+                      chosen && React.createElement('span', { className: 'block mt-1' }, __alloT('stem.rocks.quiz_your_answer', 'Your answer')),
+                      correct && React.createElement('span', { className: 'block mt-1' }, __alloT('stem.rocks.quiz_correct_answer', 'Correct answer'))));
+                })),
+                React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-rk-practice-feedback': true }, feedback && React.createElement('div', { className: 'mt-3 rounded-lg border p-3 ' + (feedback.correct ? 'bg-green-50 border-green-600 text-green-800' : 'bg-red-50 border-red-600 text-red-800') },
+                  React.createElement('p', { className: 'text-sm font-black' }, feedback.correct ? __alloT('stem.rocks.correct_exclaim', 'Correct!') : __alloT('stem.rocks.incorrect', 'Incorrect.')),
+                  React.createElement('p', { className: 'mt-1 text-xs text-slate-800' }, q.wrongFeedback && q.wrongFeedback[feedback.chosenIdx] || __alloT('stem.rocks.quiz_answer_was', 'Answer: ') + q.a))),
+                feedback && q.concept && ROCKS_VOCAB[q.concept] && React.createElement('div', { className: 'mt-3 rounded-lg border border-amber-300 bg-white p-3' },
+                  React.createElement('p', { className: 'text-xs font-bold text-amber-900' }, __alloT('stem.rocks.concept_focus_label', 'Concept Focus: ') + rkVocabTerm(__alloT, q.concept)),
+                  React.createElement('p', { className: 'text-xs text-slate-700 mt-1' }, rkVocabDef(__alloT, q.concept))),
+                React.createElement('p', { className: 'text-xs text-slate-700 mt-3' }, __alloT('stem.rocks.quiz_practice_separate', 'Practice keeps your original round results unchanged and does not award points.')),
+                React.createElement('div', { className: 'mt-4 flex flex-wrap items-center justify-between gap-2' }, back,
+                  feedback && React.createElement('button', { type: 'button', 'data-rk-practice-next': true, className: buttonClass, onClick: rkQuizPracticeNext }, practice.index + 1 >= practice.queue.length ? __alloT('stem.rocks.quiz_practice_see_results', 'See practice results') : __alloT('stem.rocks.next_question', 'Next Question'))));
+            })(),
+
+            quizQ && !d.quizDone && !rkQuizPracticeActive && React.createElement("div", {
               className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-600",
               role: "region", "aria-label": __alloT('stem.rocks.quiz_region_aria', "Rock identification quiz. Press 1 through 4 to answer, or N for next."),
               tabIndex: 0,
               ref: function (el) { if (el && !el._rkQuizFocused) { el._rkQuizFocused = true; try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } },
               onKeyDown: function (e) {
+                // Shortcuts belong to the focused region, never its controls.
+                if (e.target !== e.currentTarget || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing)) return;
                 const k = e.key;
                 if (k >= '1' && k <= '9') {
                   const idx = parseInt(k, 10) - 1;
@@ -12495,12 +14334,12 @@ const d = labToolData.rocks || {};
                     React.createElement("span", { "aria-hidden": true }, sp.pic(76)),
                     React.createElement("figcaption", { className: "text-[0.6875rem] font-black text-slate-800 mt-0.5" }, sp.label));
                 })),
-              React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
+              React.createElement("h4", { id:'rk-quiz-question',tabIndex:-1,className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 quizQ.options.map(function (opt, i) {
                   const shortcut = (i + 1).toString();
                   const isChosen = d.quizFeedback && d.quizFeedback.chosenIdx === i;
-                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.answer_label', "Answer ") + shortcut + ": " + opt,
+                  return React.createElement("button", { "aria-label": __alloT('stem.rocks.answer_label', "Answer ") + shortcut + ": " + opt + (isChosen ? '. ' + __alloT('stem.rocks.quiz_your_answer','Your answer') : '') + (d.quizFeedback && opt === quizQ.a ? '. ' + __alloT('stem.rocks.quiz_correct_answer','Correct answer') : ''), 'aria-disabled':!!d.quizFeedback,
                     key: opt, onClick: function () {
                       if (d.quizFeedback) return;
                       const correct = opt === quizQ.a;
@@ -12526,14 +14365,17 @@ const d = labToolData.rocks || {};
                   },
                     React.createElement("span", { className: "inline-flex items-center justify-center w-5 h-5 rounded text-[0.625rem] font-bold bg-amber-100 text-amber-800 shrink-0", "aria-hidden": "true" }, shortcut),
                     (function () { var op = rkQuizSpecimenByLabel(opt); return op ? React.createElement("span", { "aria-hidden": true, className: "shrink-0", "data-rk-quiz-pic": op.id }, op.pic(38)) : null; })(),
-                    React.createElement("span", null, opt));
+                    React.createElement("span", null, opt,
+                      isChosen ? React.createElement('span',{style:{display:'block',fontSize:11,marginTop:4}},__alloT('stem.rocks.quiz_your_answer','Your answer')) : null,
+                      d.quizFeedback && opt === quizQ.a ? React.createElement('span',{style:{display:'block',fontSize:11,marginTop:4}},__alloT('stem.rocks.quiz_correct_answer','Correct answer')) : null));
                 })
               ),
-              d.quizFeedback && React.createElement("div", { className: "mt-3 space-y-2" },
-                React.createElement("div", { className: "p-3 rounded-lg text-sm " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200") },
+              React.createElement('div',{role:'status','aria-live':'polite','aria-atomic':true,'data-rk-quiz-feedback':true},
+                d.quizFeedback ? React.createElement("div", { className: "mt-3 p-3 rounded-lg text-sm " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200") },
                   React.createElement("p", { className: "font-black" }, d.quizFeedback.msg),
                   React.createElement("p", { className: "text-xs mt-1 leading-relaxed text-slate-700" }, d.quizFeedback.explanation)
-                ),
+                ) : null),
+              d.quizFeedback && React.createElement("div", { className: "mt-3 space-y-2" },
                 quizQ.concept && ROCKS_VOCAB[quizQ.concept] && (function() {
                   var concept = quizQ.concept;
                   var definition = rkVocabDef(__alloT, concept);
@@ -12543,8 +14385,9 @@ const d = labToolData.rocks || {};
                       React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "🔍 " + __alloT('stem.rocks.concept_focus_label', "Concept Focus: ") + rkVocabTerm(__alloT, concept)),
                       React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-0.5 leading-relaxed" }, definition)
                     ),
-                    !studied && React.createElement("button", {
+                    React.createElement("button", { 'data-rk-quiz-study':true,'aria-disabled':studied,
                       onClick: function() {
+                        if (studied) return;
                         var list = d.vocabLookedUp || [];
                         var newList = list.concat([concept]);
                         updMulti({ vocabLookedUp: newList });
@@ -12555,11 +14398,11 @@ const d = labToolData.rocks || {};
                         setTimeout(function() { checkRocksChallenges(nextState); }, 50);
                       },
                       className: "px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded-lg text-[0.625rem] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
-                    }, "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
+                    }, studied ? '✓ ' + __alloT('stem.rocks.quiz_term_studied','Term studied') : "📖 " + __alloT('stem.rocks.study_term', "Study Term (+5 RP)"))
                   );
                 })(),
                 React.createElement("div", { className: "flex justify-end" },
-                  React.createElement("button", { "aria-label": __alloT('stem.rocks.next_question_aria', "Next question (shortcut: N)"),
+                  React.createElement("button", {
                     onClick: function () {
                       rkQuizNext();
                     }, className: "px-4 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-all active:scale-[0.97]"
@@ -12569,7 +14412,7 @@ const d = labToolData.rocks || {};
             ),
 
             // ── The round's results: by topic, weakest first, and what to revisit ──
-            mode === 'quiz' && d.quizDone && (function () {
+            mode === 'quiz' && d.quizDone && !rkQuizPracticeActive && (function () {
               var done = Object.keys(rkQuizLog).filter(function (k) { return QUIZ_BANK[k]; });
               var rightN = done.filter(function (k) { return rkQuizLog[k] === 1; }).length;
               var topics = {};
@@ -12583,8 +14426,15 @@ const d = labToolData.rocks || {};
               var missed = done.filter(function (k) { return rkQuizLog[k] === 0; });
               var weakest = order.length && topics[order[0]].r < topics[order[0]].n ? order[0] : null;
               return React.createElement("div", { className: "mt-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4", "data-rk-quiz-done": rightN + '/' + done.length, role: "region", "aria-label": __alloT('stem.rocks.quiz_done_title', "Round complete") },
-                React.createElement("p", { className: "text-base font-black text-amber-900" }, '🏁 ' + __alloT('stem.rocks.quiz_done_title', "Round complete") + ': ' + rightN + ' / ' + QUIZ_BANK.length),
+                React.createElement("h4", { id:'rk-quiz-results-title',tabIndex:-1,className: "text-base font-black text-amber-900" }, '🏁 ' + __alloT('stem.rocks.quiz_done_title', "Round complete") + ': ' + rightN + ' / ' + QUIZ_BANK.length),
                 React.createElement("p", { className: "text-xs text-slate-700 mt-0.5" }, __alloT('stem.rocks.quiz_done_note', "Each question counts your first answer. The ones you missed are listed below with the right answer.")),
+                React.createElement('div', { className: 'mt-3 flex flex-wrap gap-2', 'data-rk-practice-actions': true },
+                  rkQuizPractice && React.createElement('button', { type: 'button', 'data-rk-practice-resume': true, className: 'min-h-[44px] px-3 py-2 rounded-lg border border-amber-700 bg-white text-xs font-bold text-amber-900 hover:bg-amber-100', onClick: function () {
+                    rkQuizPracticeChange(function (current) { return current ? Object.assign({}, current, { active: true }) : null; });
+                    rkRevealSoon(rkQuizPractice.done ? '#rk-quiz-practice-results-title' : '#rk-quiz-practice-question');
+                  } }, rkQuizPractice.done ? __alloT('stem.rocks.quiz_practice_review', 'Review practice results') : __alloT('stem.rocks.quiz_practice_resume', 'Resume practice')),
+                  missed.length > 0 && React.createElement('button', { type: 'button', 'data-rk-practice-start': 'all', className: 'min-h-[44px] px-3 py-2 rounded-lg bg-amber-700 text-xs font-bold text-white hover:bg-amber-800', onClick: function () { rkQuizPracticeStart(missed.map(Number)); } }, __alloT('stem.rocks.quiz_practice_missed', 'Practise all missed questions') + ' (' + missed.length + ')'),
+                  weakest !== null && React.createElement('button', { type: 'button', 'data-rk-practice-start': 'topic', className: 'min-h-[44px] px-3 py-2 rounded-lg border border-amber-700 bg-white text-xs font-bold text-amber-900 hover:bg-amber-100', onClick: function () { rkQuizPracticeStart(missed.filter(function (k) { return (QUIZ_BANK[k].concept || '') === weakest; }).map(Number)); } }, __alloT('stem.rocks.quiz_practice_topic', 'Practise weakest topic') + (weakest ? ': ' + rkVocabTerm(__alloT, weakest) : ''))),
                 React.createElement("p", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-amber-900 mt-3 mb-1" }, __alloT('stem.rocks.quiz_by_topic', "By topic, weakest first")),
                 React.createElement("ul", { className: "space-y-1" },
                   order.map(function (c) {
@@ -12608,7 +14458,7 @@ const d = labToolData.rocks || {};
                           '→ ' + __alloT('stem.rocks.quiz_answer_was', "Answer: ") + qq.a));
                     }))),
                 React.createElement("button", { type: "button", "data-rk-quiz-again": "1",
-                  onClick: function () { updMulti({ quizIdx: 0, quizScore: 0, quizFeedback: null, quizLog: null, quizDone: null }); sfxRockClick(); },
+                  onClick: function () { updMulti({ quizIdx: 0, quizScore: 0, quizFeedback: null, quizLog: null, quizDone: null, quizPractice: null }); sfxRockClick(); rkRevealSoon('#rk-quiz-question'); },
                   className: "mt-3 px-4 py-1.5 rounded-lg text-xs font-black bg-amber-700 text-white hover:bg-amber-800" }, '↻ ' + __alloT('stem.rocks.quiz_new_round', "Start a new round")));
             })(),
 
@@ -12870,7 +14720,7 @@ const d = labToolData.rocks || {};
                     );
                   })()
                 ),
-                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('div', { role:'status','aria-live':'polite','aria-atomic':true,'data-wx-live-result':true,className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc),
                   WX_NOTES[wxRock][state] ? h('div', { className: 'text-[0.6875rem] font-bold text-slate-800 mt-1.5', 'data-wx-rock-note': wxRock + '-' + state }, WX_NOTES[wxRock][state]) : null
@@ -12909,8 +14759,8 @@ const d = labToolData.rocks || {};
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: wxLog.concat([{ t: swing, rm: rainMm, p: rainPH, rk: wxRock, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
-                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainMm: 1200, rainfall: null, pH: 5.6, rock: 'granite', log: [], modelOn: false, hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
+                  h('button', { 'data-wx-log-action':true,onClick: function() { setIQ({ log: wxLog.concat([{ t: swing, rm: rainMm, p: rainPH, rk: wxRock, st: state }]).slice(-8) }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.wx_trial_saved','Trial saved.') + ' ' + sm.label + '. ' + Math.min(8,wxLog.length + 1) + ' ' + __alloT('stem.rocks.weath_log_title','Logged trials')); }, className: 'px-2 py-1 min-h-[44px] rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
+                  h('button', { onClick: function() { setIQ({ tempSwing: 20, rainMm: 1200, rainfall: null, pH: 5.6, rock: 'granite', log: [], modelOn: false, hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.wx_reset_notice','Weathering settings, trials, and explanations reset.')); }, className: 'px-2 py-1 min-h-[44px] rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
                 ),
                 // The Log button has always written iq.log — and nothing has ever
                 // rendered it. Clicking it stored a trial and showed the student
@@ -12929,8 +14779,8 @@ const d = labToolData.rocks || {};
                       (wxLog.length >= 8 ? ' · ' + __alloT('stem.rocks.weath_log_capped', 'showing the last 8') : '')),
                     h('button', {
                       type: 'button',
-                      onClick: function() { setIQ({ log: [] }); },
-                      className: 'text-[0.625rem] font-bold text-slate-700 underline hover:text-slate-900'
+                      onClick: function() { setIQ({ log: [] }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.rocks.wx_log_cleared','Logged trials cleared. Your settings and explanations are unchanged.')); rkRevealSoon('[data-wx-log-action]'); },
+                      className: 'min-h-[44px] px-2 text-[0.625rem] font-bold text-slate-700 underline hover:text-slate-900'
                     }, __alloT('stem.rocks.weath_log_clear', 'Clear'))
                   ),
                   h('ul', { className: 'space-y-1' }, wxLog.map(function(entry, li) {
@@ -12991,7 +14841,7 @@ const d = labToolData.rocks || {};
 
                   addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
 
-                }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 rounded-full hover:from-amber-700 hover:to-orange-700 shadow-md hover:shadow-lg transition-all"
+                }, className: "ml-auto px-4 py-2 text-xs font-bold text-white " + (isContrast ? "bg-black border-2 border-white" : "bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700") + " rounded-full shadow-md hover:shadow-lg transition-all"
 
               }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
 

@@ -388,6 +388,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
     document.head.appendChild(st);
   })();
 
+  // WCAG 1.4.3 high contrast: host buttons go black with green ink; drop the gradient painted over that black
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-solarsystem-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-solarsystem-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"solarSystem\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-solarsystem')) return;
@@ -11774,7 +11783,7 @@ const d = labToolData.solarSystem || {};
                         [0, 1, 2].slice(0, spotlightMoonCount).map(function(moonIndex) {
                           return React.createElement("span", { key: "spotlight-moon-" + moonIndex, className: "solar-spotlight-moon solar-spotlight-moon--" + moonIndex });
                         }),
-                        React.createElement("span", { className: "solar-world-spotlight-watermark" }, spotlightPlanet.name),
+                        React.createElement("span", { className: "solar-world-spotlight-watermark", "aria-hidden": "true" }, spotlightPlanet.name),
                         React.createElement("div", { className: "solar-world-spotlight-caption" },
                           React.createElement("span", null, __alloT('stem.solarsystem.illustrative_spotlight_note', "Illustrative portrait \u00b7 not to scale")),
                           React.createElement("span", null, spotlightPlanet.moons ? spotlightPlanet.moons + " " + __alloT('stem.solarsystem.moons_lowercase', "moons") : __alloT('stem.solarsystem.no_moons', "No moons"))
@@ -11891,7 +11900,7 @@ const d = labToolData.solarSystem || {};
                             var recommended = !!nextInvestigation && item.card.id === nextInvestigation.card.id;
                             return React.createElement("li", { key: 'journey-' + item.card.id, "aria-current": recommended ? 'step' : undefined, "aria-label": item.card.title + ': ' + item.progress.label + (recommended ? '. Recommended next.' : ''), className: "min-w-0 text-center" },
                               React.createElement("span", { "data-investigation-constellation-id": item.card.id, "data-complete": item.complete, "data-current": current, "data-recommended": recommended, "aria-hidden": "true", className: "solar-evidence-node mx-auto grid h-8 w-8 place-items-center rounded-full border text-sm " + (item.complete ? 'border-emerald-300/60 bg-emerald-400/20 text-emerald-100' : ((current || recommended) ? 'border-cyan-300/60 bg-cyan-400/15 text-cyan-100' : 'border-slate-600 bg-slate-900/80 text-slate-400')) }, item.card.icon, item.complete ? React.createElement("span", { className: "solar-evidence-check" }, '\u2713') : null),
-                              React.createElement("span", { className: "mt-1 block truncate text-[0.625rem] font-black " + (item.complete ? 'text-emerald-200' : ((current || recommended) ? 'text-cyan-200' : 'text-slate-400')) }, item.card.id === 'compare' ? __alloT('stem.solarsystem.compare_short', 'Compare') : item.card.id === 'seasons' ? __alloT('stem.solarsystem.seasons_short', 'Seasons') : item.card.id === 'signal' ? __alloT('stem.solarsystem.signal_short', 'Signal') : item.card.id === 'gravity' ? __alloT('stem.solarsystem.gravity_short', 'Gravity') : __alloT('stem.solarsystem.moon_short', 'Moon')),
+                              React.createElement("span", { className: "mt-1 block truncate text-[0.625rem] font-black " + (item.complete ? 'text-emerald-200' : ((current || recommended) ? 'text-cyan-200' : 'text-slate-300')) }, item.card.id === 'compare' ? __alloT('stem.solarsystem.compare_short', 'Compare') : item.card.id === 'seasons' ? __alloT('stem.solarsystem.seasons_short', 'Seasons') : item.card.id === 'signal' ? __alloT('stem.solarsystem.signal_short', 'Signal') : item.card.id === 'gravity' ? __alloT('stem.solarsystem.gravity_short', 'Gravity') : __alloT('stem.solarsystem.moon_short', 'Moon')),
                               React.createElement("span", { className: "sr-only" }, item.progress.label)
                             );
                           })),
@@ -18763,7 +18772,7 @@ const d = labToolData.solarSystem || {};
 
             // â"€â"€ Scale Explanation Collapsible â"€â"€
 
-            !d.orreryMode && !droneImmersive && React.createElement("details", { className: "mt-2 rounded-xl border overflow-hidden " + (isDark ? 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-700/40' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200') },
+            !d.orreryMode && !droneImmersive && React.createElement("details", { className: "mt-2 rounded-xl border overflow-hidden " + (isDark ? 'bg-slate-900 bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-700/40' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200') },
 
               React.createElement("summary", { className: "px-3 py-1.5 text-[0.6875rem] font-bold cursor-pointer select-none transition-colors " + (isDark ? 'text-amber-300 hover:bg-amber-900/30' : 'text-amber-700 hover:bg-amber-100/50') }, __alloT('stem.solarsystem.why_aren_t_the_sizes_truly_to_scale', "\uD83D\uDD2D Why aren't the sizes truly to scale?")),
 
@@ -18793,9 +18802,9 @@ const d = labToolData.solarSystem || {};
 
                       React.createElement("div", { className: "font-bold" }, item.body),
 
-                      React.createElement("div", { className: "text-amber-600" }, item.real),
+                      React.createElement("div", { className: "text-amber-700" }, item.real),
 
-                      React.createElement("div", { className: "text-amber-500 italic" }, item.scale)
+                      React.createElement("div", { className: "text-amber-700 italic" }, item.scale)
 
                     );
 
@@ -18803,7 +18812,7 @@ const d = labToolData.solarSystem || {};
 
                 ),
 
-                React.createElement("p", { className: "italic text-amber-600" }, __alloT('stem.solarsystem.the_solar_system_is_99_86_empty_space_', "\uD83D\uDCA1 The Sun holds 99.86% of the solar system\u2019s mass, and the space between the planets is almost completely empty! Our model compresses distances so you can explore everything in one view."))
+                React.createElement("p", { className: "italic text-amber-700" }, __alloT('stem.solarsystem.the_solar_system_is_99_86_empty_space_', "\uD83D\uDCA1 The Sun holds 99.86% of the solar system\u2019s mass, and the space between the planets is almost completely empty! Our model compresses distances so you can explore everything in one view."))
 
               )
 

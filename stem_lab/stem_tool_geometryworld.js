@@ -922,6 +922,10 @@
     '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-notebook-record-scope,.gw-retrieval-hint){font-size:16px!important;line-height:1.6}@media(max-width:600px){.gw-root .gw-notebook-quantities .gw-notebook-surface-unavailable{grid-column:1 / -1}.gw-root .gw-notebook-quantities dd.gw-notebook-surface-unavailable{font-weight:400}}',
     '@media(forced-colors:active){#geoworld-fs-workspace.gw-root .gw-history-panel .gw-retrieval-button:disabled{color:GrayText!important;border-color:GrayText!important;background:Canvas!important}.gw-root .gw-retrieval-hint{border-color:CanvasText!important}.gw-root .gw-notebook-record-scope input{accent-color:auto}}'
   ].join('\n');
+  GW_CLARITY_CSS += [
+    '.gw-root .gw-comparison-controls{display:grid;gap:10px;min-width:0}.gw-root .gw-comparison-controls label{display:grid;gap:4px;min-width:0;color:#d9e5e3;font-size:13px;line-height:1.5}.gw-root .gw-comparison-controls select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:8px;border:1px solid #718984;border-radius:6px;background:#303b3c;color:#f4f7f6;font:inherit}.gw-root .gw-comparison-reset{box-sizing:border-box;min-height:44px;padding:8px 12px;border:1px solid #718984;border-radius:6px;background:#303b3c;color:#f4f7f6;font:inherit;line-height:1.5;cursor:pointer}.gw-root .gw-comparison-reset:disabled{color:#c6d3d2;border-style:dashed;background:transparent;cursor:default}',
+    '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-comparison-controls :is(label,select,button){font-size:16px!important;line-height:1.6}.theme-contrast .gw-root .gw-comparison-controls :is(select,button),[data-stem-theme="contrast"] .gw-root .gw-comparison-controls :is(select,button){background:#000!important;color:#fff!important;border-color:#ff0!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root .gw-history-panel .gw-comparison-reset:disabled{color:GrayText!important;border-color:GrayText!important}}'
+  ].join('\n');
   function renderWorkspaceAction(el, icon, label, count) {
     return el('span',{className:'gw-utility-content'},renderWorkspaceIcon(el,icon),el('span',{className:'gw-utility-label'},label),typeof count==='number' && el('span',{className:'gw-utility-count','aria-hidden':'true'},count));
   }
@@ -2015,7 +2019,7 @@
     if (!previous || !latest || previous.isComplete === false || latest.isComplete === false) return null;
     var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
     var latestVolume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
-    if (!Number.isFinite(previousVolume) || !Number.isFinite(latestVolume)) return null;
+    if (!Number.isFinite(previousVolume) || previousVolume < 0 || !Number.isFinite(latestVolume) || latestVolume < 0) return null;
     var previousSurface = Number.isFinite(previous.surfaceArea) && previous.surfaceArea >= 0 && previous.surfaceAreaExact !== false ? previous.surfaceArea : null;
     var latestSurface = Number.isFinite(latest.surfaceArea) && latest.surfaceArea >= 0 && latest.surfaceAreaExact !== false ? latest.surfaceArea : null;
     var surfaceComparable = previousSurface !== null && latestSurface !== null;
@@ -2041,13 +2045,13 @@
     return formatVolume(value) + ' ' + (qualifier ? qualifier + ' ' : '') + unit + (Math.abs(value - 1) < 0.000001 ? '' : 's');
   }
 
-  function formatMeasurementChange(value, kind) {
+  function formatMeasurementChange(value, kind, subject) {
     var surface = kind === 'surface';
     if (!Number.isFinite(value)) return surface ? 'Exact surface area unavailable for one or both measurements.' : 'Occupied volume change unavailable.';
     var magnitude = Math.abs(value);
     if (magnitude < 0.000001) return surface ? 'No change (same exposed surface area)' : 'No change (same occupied volume)';
     var unit = surface ? 'square unit' : 'cubic unit';
-    return 'Latest has ' + formatVolume(magnitude) + (value > 0 ? ' more ' : ' fewer ') + unit + (Math.abs(magnitude - 1) < 0.000001 ? '' : 's');
+    return (subject || 'Latest') + ' has ' + formatVolume(magnitude) + (value > 0 ? ' more ' : ' fewer ') + unit + (Math.abs(magnitude - 1) < 0.000001 ? '' : 's');
   }
 
   function renderCoordinateReadout(el, position, kind) {
@@ -8441,6 +8445,7 @@
         try { parsed = parseGeometryLessonJson(raw); problems = check ? check(parsed) : []; }
         catch (error) { problems = ['Invalid JSON: ' + error.message]; }
         if (!problems.length) return parsed;
+        // pii-safe: validator messages written by the tool, not user text
         if (repairs <= 0) throw new Error('The lesson still needs repair: ' + problems.slice(0, 3).join(' '));
         repairs--;
         nextPrompt = prompt + '\nREPAIR REQUIRED. Return the complete corrected JSON. Keep every required activity and mathematical target.\nIssues:\n- ' + problems.join('\n- ')
@@ -9076,7 +9081,12 @@
       var notebookRecordsState = React.useState(false);
       var showAllNotebookRecords = notebookRecordsState[0];
       var setShowAllNotebookRecords = notebookRecordsState[1];
-      React.useEffect(function() { setNotebookView('records'); setShowAllNotebookRecords(false); }, [activeLesson]);
+      // Keep the learner's chosen objects, not indices or timestamps: retained
+      // history shifts as scans are added, and two scans can share a timestamp.
+      var comparisonSelectionState = React.useState(null);
+      var comparisonSelection = comparisonSelectionState[0];
+      var setComparisonSelection = comparisonSelectionState[1];
+      React.useEffect(function() { setNotebookView('records'); setShowAllNotebookRecords(false); setComparisonSelection(null); }, [activeLesson]);
       React.useEffect(function() {
         if (hudPanel !== 'history') return;
         var timer = setTimeout(function() {
@@ -9095,7 +9105,36 @@
       var completedMeasurements = completeMeasurementRecords(measureHistory);
       var predictionScaffold = determinePredictionScaffold(measureHistory);
       var latestCompleteMeasurement = completedMeasurements.length ? completedMeasurements[completedMeasurements.length - 1] : null;
-      var measurementComparison = completedMeasurements.length >= 2 ? compareMeasurementRecords(completedMeasurements[completedMeasurements.length - 2], completedMeasurements[completedMeasurements.length - 1]) : null;
+      var comparisonRecords = measureHistory.map(function(record, index) { return { record: record, index: index }; }).filter(function(entry) {
+        return compareMeasurementRecords(entry.record, entry.record) !== null;
+      });
+      var comparisonHasChoice = !!(comparisonSelection && comparisonSelection.lesson === activeLesson && comparisonSelection.previous);
+      var comparisonPrevious = comparisonHasChoice ? comparisonRecords.find(function(entry) { return entry.record === comparisonSelection.previous; }) : null;
+      var comparisonLatest = comparisonHasChoice ? comparisonRecords.find(function(entry) { return entry.record === comparisonSelection.latest; }) : null;
+      var comparisonPinned = !!(comparisonPrevious && comparisonLatest && comparisonPrevious.record !== comparisonLatest.record);
+      var comparisonExpired = comparisonHasChoice && !comparisonPinned;
+      if (!comparisonPinned) {
+        comparisonPrevious = comparisonRecords[comparisonRecords.length - 2] || null;
+        comparisonLatest = comparisonRecords[comparisonRecords.length - 1] || null;
+      }
+      React.useEffect(function() {
+        if (comparisonExpired) setComparisonSelection({ lesson: activeLesson, notice: true });
+      }, [comparisonExpired, activeLesson]);
+      var comparisonResetNotice = comparisonExpired || !!(comparisonSelection && comparisonSelection.lesson === activeLesson && comparisonSelection.notice);
+      var measurementComparison = comparisonPrevious && comparisonLatest ? compareMeasurementRecords(comparisonPrevious.record, comparisonLatest.record) : null;
+      var comparisonPreviousLabel = comparisonPinned ? 'Record ' + (comparisonPrevious.index + 1) : 'Previous';
+      var comparisonLatestLabel = comparisonPinned ? 'Record ' + (comparisonLatest.index + 1) : 'Latest';
+      var comparisonPrompt = measurementComparison && (measurementComparison.sameVolume ? measurementComparison.surfaceAreaDifference !== null && measurementComparison.surfaceAreaDifference !== 0 ? 'The occupied volume stayed the same. Which shared or exposed faces explain the surface-area difference?' : 'How could rearranging the same occupied units change the exposed faces?' : 'What changed in the occupied space? Which layers, gaps, or pieces explain the difference?');
+      function chooseComparisonRecord(side, value) {
+        var chosen = comparisonRecords.find(function(entry) { return entry.index === Number(value); });
+        if (!chosen || !comparisonPrevious || !comparisonLatest) return;
+        var previous = comparisonPrevious.record, latest = comparisonLatest.record;
+        // Selecting the other side swaps the pair, making reverse comparisons
+        // possible without ever comparing a scan with itself.
+        if (side === 'previous') { if (chosen.record === latest) latest = previous; previous = chosen.record; }
+        else { if (chosen.record === previous) previous = latest; latest = chosen.record; }
+        setComparisonSelection({ lesson: activeLesson, previous: previous, latest: latest });
+      }
       var actionFeedback = d.actionFeedback || ''; // brief action text
       // Pointer-lock state for the on-screen hint. Runtime only: it is React
       // state fed by the pointerlockchange handler through the engine bridge, never
@@ -15702,11 +15741,38 @@
       var reflectionMeasurementData = reflectionMeasurement && reflectionMeasurement.data ? reflectionMeasurement.data : reflectionMeasurement;
       var reflectionVolume = reflectionMeasurementData && reflectionMeasurementData.isComplete !== false && Number.isFinite(reflectionMeasurementData.occupiedVolume) ? reflectionMeasurementData.occupiedVolume : null;
       var reflectionSupport = geometryReflectionSupportModel(currentLesson, activeLesson, reflectionMeasurement, predictionResult, predictionRevisionResult);
+      var reflectionNotebook = reflectionNotebookRef.current;
+      var reflectionComparison = showReflection && reflectionNotebook && reflectionNotebook.lesson === activeLesson && reflectionNotebook.history === measureHistory ? reflectionNotebook.comparison : null;
+      if (reflectionComparison) {
+        reflectionVolume = null;
+        reflectionSupport = {
+          concept: 'measurement_comparison', evidence: true,
+          prompt: reflectionComparison.prompt,
+          starter: 'I compared Record ' + reflectionComparison.previous.recordNumber + ' with Record ' + reflectionComparison.latest.recordNumber + '. I noticed ___ because ___.',
+          questions: ['Which layers, gaps, or pieces explain the occupied volumes?', 'Which shared or exposed faces explain the surface areas?', 'What would you change while keeping the occupied volume the same?']
+        };
+      }
       function openGeometryReflection() {
         if (reflectionAutoTimerRef.current) clearTimeout(reflectionAutoTimerRef.current);
         reflectionAutoTimerRef.current = null;
         reflectionOpenerRef.current = document.activeElement;
-        reflectionNotebookRef.current = hudPanel === 'history' ? { lesson: activeLesson, view: notebookView, stamp: latestMeasurementStamp, count: measureHistory.length } : null;
+        reflectionNotebookRef.current = hudPanel === 'history' ? { lesson: activeLesson, view: notebookView, stamp: latestMeasurementStamp, count: measureHistory.length, history: measureHistory } : null;
+        if (reflectionNotebookRef.current && notebookView === 'compare' && measurementComparison && comparisonPrevious && comparisonLatest) {
+          // Capture the selected evidence before closing the notebook. This is a
+          // scalar snapshot, so later selections cannot rewrite this reflection.
+          var comparisonSnapshot = {
+            previous: { recordNumber: comparisonPrevious.index + 1, occupiedVolume: measurementComparison.previousVolume, surfaceArea: measurementComparison.previousSurfaceArea },
+            latest: { recordNumber: comparisonLatest.index + 1, occupiedVolume: measurementComparison.latestVolume, surfaceArea: measurementComparison.latestSurfaceArea },
+            volumeDifference: measurementComparison.volumeDifference,
+            surfaceAreaDifference: measurementComparison.surfaceAreaDifference
+          };
+          comparisonSnapshot.prompt = 'Record ' + comparisonSnapshot.previous.recordNumber + ' has ' + formatMeasurementQuantity(comparisonSnapshot.previous.occupiedVolume, 'volume') + ' of occupied volume. Record ' + comparisonSnapshot.latest.recordNumber + ' has ' + formatMeasurementQuantity(comparisonSnapshot.latest.occupiedVolume, 'volume') + ' of occupied volume. ';
+          comparisonSnapshot.prompt += comparisonSnapshot.surfaceAreaDifference === null
+            ? 'Exact exposed surface area is unavailable for one or both records. '
+            : 'Their exposed surfaces are ' + formatMeasurementQuantity(comparisonSnapshot.previous.surfaceArea, 'surface') + ' and ' + formatMeasurementQuantity(comparisonSnapshot.latest.surfaceArea, 'surface') + ', respectively. ';
+          comparisonSnapshot.prompt += comparisonPrompt;
+          reflectionNotebookRef.current.comparison = comparisonSnapshot;
+        }
         setSceneMapOpen(false);
         upd({ showReflection: true, objectivesOpen: false, showPredictionPanel: false, showGameSettings: false, hudPanel: '' });
       }
@@ -15715,7 +15781,7 @@
         reflectionAutoTimerRef.current = null;
         var notebook = reflectionNotebookRef.current;
         reflectionNotebookRef.current = null;
-        var restoreNotebook = notebook && notebook.lesson === activeLesson && notebook.stamp === latestMeasurementStamp && notebook.count === measureHistory.length && measureHistory.length > 0 && worldActive && !showGeometryHome;
+        var restoreNotebook = notebook && notebook.lesson === activeLesson && notebook.history === measureHistory && notebook.stamp === latestMeasurementStamp && notebook.count === measureHistory.length && measureHistory.length > 0 && worldActive && !showGeometryHome;
         if (restoreNotebook) { setNotebookView(notebook.view); upd({ showReflection: false, hudPanel: 'history' }); }
         else upd('showReflection', false);
         setTimeout(function() {
@@ -17882,22 +17948,38 @@
             }))
           ),
           el('div', { role: 'tabpanel', id: 'gw-notebook-view-compare', 'aria-labelledby': 'gw-notebook-tab-compare', hidden: notebookView !== 'compare', tabIndex: 0 },
+            comparisonResetNotice && el('p', { className: 'gw-notebook-caption', role: 'status' }, 'A selected measurement is no longer available.' + (measurementComparison ? ' Showing the latest available pair.' : ' Take two complete measurements to compare again.')),
             measurementComparison ? el('div', { className: 'gw-history-comparison', 'data-geometry-measurement-comparison': 'true' },
-              el('h3', null, 'Latest two complete measurements'),
-              el('dl', { className: 'gw-notebook-quantities' },
-                el('dt', null, 'Previous occupied volume'), el('dd', null, formatMeasurementQuantity(measurementComparison.previousVolume, 'volume')),
-                el('dt', null, 'Latest occupied volume'), el('dd', null, formatMeasurementQuantity(measurementComparison.latestVolume, 'volume')),
-                el('dt', null, 'Occupied volume change'), el('dd', { 'data-geometry-quantity-change': 'volume' }, formatMeasurementChange(measurementComparison.volumeDifference, 'volume')),
-                measurementComparison.surfaceAreaDifference !== null && el(React.Fragment, null,
-                  el('dt', null, 'Previous exposed surface'), el('dd', null, formatMeasurementQuantity(measurementComparison.previousSurfaceArea, 'surface')),
-                  el('dt', null, 'Latest exposed surface'), el('dd', null, formatMeasurementQuantity(measurementComparison.latestSurfaceArea, 'surface'))),
-                el('dt', null, 'Exposed surface area change'), el('dd', { 'data-geometry-quantity-change': 'surface' }, formatMeasurementChange(measurementComparison.surfaceAreaDifference, 'surface'))
+              el('h3', null, comparisonPinned ? 'Selected measurements' : 'Latest two complete measurements'),
+              el('div', { className: 'gw-comparison-controls' },
+                [{ key: 'previous', id: 'baseline', label: 'Starting measurement', entry: comparisonPrevious }, { key: 'latest', id: 'result', label: 'Comparison measurement', entry: comparisonLatest }].map(function(side) {
+                  return el('label', { key: side.key, htmlFor: 'gw-compare-' + side.id }, side.label,
+                    el('select', { id: 'gw-compare-' + side.id, className: 'gw-focusable', value: side.entry.index, 'aria-describedby': 'gw-comparison-source',
+                      onChange: function(ev) { chooseComparisonRecord(side.key, ev.target.value); } },
+                      comparisonRecords.map(function(entry) {
+                        var description = measurementNotebookEntry(entry.record);
+                        return el('option', { key: entry.index, value: entry.index }, 'Record ' + (entry.index + 1) + ' \u00b7 ' + description.volumeQuantity);
+                      })
+                    ));
+                }),
+                el('button', { type: 'button', className: 'gw-focusable gw-comparison-reset', 'data-geometry-comparison-reset': 'true', disabled: !comparisonPinned,
+                  onClick: function() { setComparisonSelection(null); } }, 'Use latest two measurements')
               ),
-              measurementComparison.moreSurfaceEfficient && el('p', { className: 'gw-notebook-insight' }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' measurement has ' + formatMeasurementQuantity(Math.abs(measurementComparison.surfaceAreaDifference), 'surface', 'fewer') + ' of exposed surface for the same occupied volume.'),
+              el('p', { id: 'gw-comparison-source', className: 'gw-notebook-caption', 'data-geometry-comparison-source': 'true', role: 'status' }, 'Comparing Record ' + (comparisonPrevious.index + 1) + ' with Record ' + (comparisonLatest.index + 1) + '. Changes show Record ' + (comparisonLatest.index + 1) + ' relative to Record ' + (comparisonPrevious.index + 1) + '.'),
+              el('dl', { className: 'gw-notebook-quantities' },
+                el('dt', null, comparisonPreviousLabel + ' occupied volume'), el('dd', null, formatMeasurementQuantity(measurementComparison.previousVolume, 'volume')),
+                el('dt', null, comparisonLatestLabel + ' occupied volume'), el('dd', null, formatMeasurementQuantity(measurementComparison.latestVolume, 'volume')),
+                el('dt', null, 'Occupied volume change'), el('dd', { 'data-geometry-quantity-change': 'volume' }, formatMeasurementChange(measurementComparison.volumeDifference, 'volume', comparisonLatestLabel)),
+                measurementComparison.surfaceAreaDifference !== null && el(React.Fragment, null,
+                  el('dt', null, comparisonPreviousLabel + ' exposed surface'), el('dd', null, formatMeasurementQuantity(measurementComparison.previousSurfaceArea, 'surface')),
+                  el('dt', null, comparisonLatestLabel + ' exposed surface'), el('dd', null, formatMeasurementQuantity(measurementComparison.latestSurfaceArea, 'surface'))),
+                el('dt', null, 'Exposed surface area change'), el('dd', { 'data-geometry-quantity-change': 'surface' }, formatMeasurementChange(measurementComparison.surfaceAreaDifference, 'surface', comparisonLatestLabel))
+              ),
+              measurementComparison.moreSurfaceEfficient && el('p', { className: 'gw-notebook-insight' }, (measurementComparison.moreSurfaceEfficient === 'latest' ? comparisonLatestLabel : comparisonPreviousLabel) + (comparisonPinned ? ' has ' : ' measurement has ') + formatMeasurementQuantity(Math.abs(measurementComparison.surfaceAreaDifference), 'surface', 'fewer') + ' of exposed surface for the same occupied volume.'),
               measurementComparison.surfaceAreaDifference === null && el('p', { className: 'gw-notebook-caption' }, 'Exact exposed surface areas are needed to compare covering.'),
-              el('p', { className: 'gw-notebook-question' }, measurementComparison.sameVolume ? measurementComparison.surfaceAreaDifference !== null && measurementComparison.surfaceAreaDifference !== 0 ? 'The occupied volume stayed the same. Which shared or exposed faces explain the surface-area difference?' : 'How could rearranging the same occupied units change the exposed faces?' : 'What changed in the occupied space? Which layers, gaps, or pieces explain the difference?'),
+              el('p', { className: 'gw-notebook-question' }, comparisonPrompt),
               el('button', { type: 'button', className: 'gw-reflect-trigger gw-focusable', 'data-geometry-reflect-trigger': 'notebook', onClick: openGeometryReflection }, 'Reflect on the comparison')
-            ) : el('p', { className: 'gw-notebook-empty' }, 'Two complete measurements are needed for a comparison.')
+            ) : el('p', { className: 'gw-notebook-empty' }, 'Two complete measurements with valid occupied volumes are needed for a comparison.')
           ),
           el('div', { role: 'tabpanel', id: 'gw-notebook-view-practice', 'aria-labelledby': 'gw-notebook-tab-practice', hidden: notebookView !== 'practice', tabIndex: 0 },
           activeRetrievalCheckpoint ? el('div', { className: 'gw-retrieval-card', 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept, 'data-geometry-practice-state': retrievalComplete ? 'complete' : activeRetrievalResult ? 'retry' : 'ready' },
@@ -18158,7 +18240,7 @@
               onClick: function() {
                 closeGeometryReflection();
                 var eng = window[engineKey];
-                if (eng && eng.logEvent) eng.logEvent('reflection', { text: reflectionText.trim(), lesson: currentLesson.title, concept: reflectionSupport.concept, measuredVolume: reflectionVolume, prediction: predictionResult ? predictionResult.prediction : null, revisedPrediction: predictionRevisionResult ? predictionRevisionResult.prediction : null, strategy: predictionResult ? predictionResult.strategy : '', misconception: predictionResult ? predictionResult.diagnosisCode : '' });
+                if (eng && eng.logEvent) eng.logEvent('reflection', Object.assign({ text: reflectionText.trim(), lesson: currentLesson.title, concept: reflectionSupport.concept, measuredVolume: reflectionVolume, prediction: !reflectionComparison && predictionResult ? predictionResult.prediction : null, revisedPrediction: !reflectionComparison && predictionRevisionResult ? predictionRevisionResult.prediction : null, strategy: !reflectionComparison && predictionResult ? predictionResult.strategy : '', misconception: !reflectionComparison && predictionResult ? predictionResult.diagnosisCode : '' }, reflectionComparison ? { comparison: reflectionComparison } : {}));
               },
             }, 'Save & Continue'),
             // Secondary "later" — dismisses without firing the save event

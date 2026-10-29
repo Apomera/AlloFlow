@@ -1,0 +1,231 @@
+{
+  "date": "2026-10-29",
+  "source": {
+    "path": "stem_lab/stem_tool_rocks.js",
+    "sha256": "fa5004efae2919a938d8c109dc94a69fcac20630981ca7ac526fec6f045b43a5",
+    "servedMirror": "desktop/web-app/public/stem_lab/stem_tool_rocks.js",
+    "mirrorMatches": true
+  },
+  "runtime": {
+    "browser": "148.0.7778.96",
+    "axe": "4.12.1",
+    "cssFile": "app/static/css/main.4053a7e9.css",
+    "cssHash": "c62d226d134e65b8e481d85297db1712d4751dd0f5a5c5aeddc219d29459cfda"
+  },
+  "changes": [
+    "Personal specimen notes, investigation questions, bookmarks, and saved-specimen search/filtering",
+    "Journal review, readable reports, v2 notebook transfer, and preservation of existing journal when restoring v1 files",
+    "Direct look-alike pair handoff to Comparison, preserving saved work",
+    "Targeted practice for missed questions and weakest topic, preserving original first-try results and points",
+    "Native IME composition guard in quiz and practice",
+    "Stronger practice answer boundaries, measured in the actual compiled presentation"
+  ],
+  "tests": {
+    "uniquePassing": 983,
+    "files": 41,
+    "fullRun": "tmp/rocks-enhancement-5/final-tests.json",
+    "fullPassed": 982,
+    "fullFailed": 1,
+    "explanation": "The sole full-run failure was an obsolete hardcoded count of vocabulary rendering sites. The test now covers the new translated practice sites and passed on rerun. No runtime defect was masked.",
+    "finalTargetedRun": "tmp/rocks-enhancement-5/final-targeted-tests.json",
+    "finalTargetedPassed": 41,
+    "finalTargetedFailed": 0
+  },
+  "reports": [
+    {
+      "scope": "fullMatrix",
+      "path": "tmp/rocks-enhancement-5/final-full/report.json",
+      "sourceHash": "1277f1e811f5b71daf4b7c5710b278ad2b0bca9e438e656fee1a6e00685afaaf",
+      "summary": {
+        "states": 38,
+        "matrixChecks": 152,
+        "flowChecks": 18,
+        "flowFailures": 0,
+        "axeViolationNodes": 442,
+        "coreRuleViolationNodes": 0,
+        "experimentalLabelReviewNodes": 442,
+        "symbolPunctuationOnlyNodes": 442,
+        "unresolvedLabelReviewNodes": 0,
+        "strict": false,
+        "overflow": [],
+        "errors": 0
+      },
+      "environmentChecks": [
+        "Density instrument, plot, and trial table scroll by keyboard at 320px",
+        "forced-colors all 11 modes at 320px",
+        "reduced-motion all 11 modes at 320px"
+      ],
+      "environmentFailures": []
+    },
+    {
+      "scope": "newEnvironmentStates",
+      "path": "tmp/rocks-enhancement-5/new-environments/report.json",
+      "sourceHash": "1277f1e811f5b71daf4b7c5710b278ad2b0bca9e438e656fee1a6e00685afaaf",
+      "summary": {
+        "states": 7,
+        "matrixChecks": 14,
+        "flowChecks": 0,
+        "flowFailures": 0,
+        "axeViolationNodes": 0,
+        "coreRuleViolationNodes": 0,
+        "experimentalLabelReviewNodes": 0,
+        "symbolPunctuationOnlyNodes": 0,
+        "unresolvedLabelReviewNodes": 0,
+        "strict": false,
+        "overflow": [],
+        "errors": 0
+      },
+      "environmentChecks": [],
+      "environmentFailures": []
+    },
+    {
+      "scope": "finalPractice",
+      "path": "tmp/rocks-enhancement-5/final-practice/report.json",
+      "sourceHash": "fa5004efae2919a938d8c109dc94a69fcac20630981ca7ac526fec6f045b43a5",
+      "summary": {
+        "states": 3,
+        "matrixChecks": 18,
+        "flowChecks": 1,
+        "flowFailures": 0,
+        "axeViolationNodes": 12,
+        "coreRuleViolationNodes": 0,
+        "experimentalLabelReviewNodes": 12,
+        "symbolPunctuationOnlyNodes": 12,
+        "unresolvedLabelReviewNodes": 0,
+        "strict": false,
+        "overflow": [],
+        "errors": 0
+      },
+      "environmentChecks": [
+        "Density instrument, plot, and trial table scroll by keyboard at 320px",
+        "forced-colors all 11 modes at 320px",
+        "reduced-motion all 11 modes at 320px"
+      ],
+      "environmentFailures": []
+    },
+    {
+      "scope": "finalBoundaryContrast",
+      "path": "tmp/rocks-enhancement-5/final-contrast/report.json",
+      "sourceHash": "fa5004efae2919a938d8c109dc94a69fcac20630981ca7ac526fec6f045b43a5",
+      "summary": {
+        "states": 38,
+        "matrixChecks": 0,
+        "flowChecks": 1,
+        "flowFailures": 0,
+        "axeViolationNodes": 4,
+        "coreRuleViolationNodes": 0,
+        "experimentalLabelReviewNodes": 4,
+        "symbolPunctuationOnlyNodes": 4,
+        "unresolvedLabelReviewNodes": 0,
+        "strict": false,
+        "overflow": [],
+        "errors": 0
+      },
+      "environmentChecks": [],
+      "environmentFailures": []
+    }
+  ],
+  "finalDelta": {
+    "baseHash": "1277f1e811f5b71daf4b7c5710b278ad2b0bca9e438e656fee1a6e00685afaaf",
+    "finalHash": "fa5004efae2919a938d8c109dc94a69fcac20630981ca7ac526fec6f045b43a5",
+    "change": "Only the default/hover practice answer border colors changed after the complete matrix. All three practice states were rerun at phone, desktop, doubled text, custom spacing, forced colors, and reduced motion. The full practice workflow and actual boundary-contrast measurement passed on the final source."
+  },
+  "nonTextContrast": {
+    "reference": "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html",
+    "decision": "Darker answer borders improve the visual separation of choices. This is a deliberate usability improvement; the earlier border was not treated as a conclusively established WCAG failure because the labels already identify controls.",
+    "measurements": [
+      {
+        "border": "rgb(180, 83, 9)",
+        "inside": "rgb(255, 255, 255)",
+        "outside": "rgb(255, 251, 235)",
+        "insideRatio": 5.02163257594014,
+        "outsideRatio": 4.842409024801452
+      },
+      {
+        "border": "rgb(180, 83, 9)",
+        "inside": "rgb(255, 255, 255)",
+        "outside": "rgb(255, 251, 235)",
+        "insideRatio": 5.02163257594014,
+        "outsideRatio": 4.842409024801452
+      },
+      {
+        "border": "rgb(180, 83, 9)",
+        "inside": "rgb(255, 255, 255)",
+        "outside": "rgb(255, 251, 235)",
+        "insideRatio": 5.02163257594014,
+        "outsideRatio": 4.842409024801452
+      },
+      {
+        "border": "rgb(180, 83, 9)",
+        "inside": "rgb(255, 255, 255)",
+        "outside": "rgb(255, 251, 235)",
+        "insideRatio": 5.02163257594014,
+        "outsideRatio": 4.842409024801452
+      }
+    ]
+  },
+  "labelReview": {
+    "rawFindings": 442,
+    "unmatchedMeaningfulStrings": 0,
+    "decision": "Every retained experimental finding contains the visible words and numbers in order after symbol/punctuation/case normalization. Raw findings remain in the reports; no experimental rule was disabled. Existing reviewed patterns are documented in rocks-minerals-accessibility-evidence.json."
+  },
+  "visualReview": {
+    "screenshots": [
+      "tmp/rocks-enhancement-5/final-full/baseline-journal-rock-editor.png",
+      "tmp/rocks-enhancement-5/final-full/baseline-journal-notebook.png",
+      "tmp/rocks-enhancement-5/final-practice/baseline-practice-feedback.png"
+    ],
+    "newPanels": "The phone journal editor, notebook journal, and practice answer/feedback panels were inspected. Visible labels, writing, feedback, and controls remain readable.",
+    "clipping": [
+      {
+        "variant": "text",
+        "state": "workbench-active",
+        "count": 7
+      },
+      {
+        "variant": "text",
+        "state": "workbench-pending",
+        "count": 7
+      },
+      {
+        "variant": "text",
+        "state": "workbench-claim",
+        "count": 7
+      },
+      {
+        "variant": "text",
+        "state": "workbench-solved",
+        "count": 7
+      },
+      {
+        "variant": "spacing",
+        "state": "workbench-active",
+        "count": 1
+      },
+      {
+        "variant": "spacing",
+        "state": "workbench-pending",
+        "count": 1
+      },
+      {
+        "variant": "spacing",
+        "state": "workbench-claim",
+        "count": 1
+      },
+      {
+        "variant": "spacing",
+        "state": "workbench-solved",
+        "count": 1
+      }
+    ],
+    "clippingDecision": "Existing redundant decorative Workbench badges clip at doubled HTML text; the decorative MASS ÷ VOL badge also clips with text-spacing overrides. Their complete instrument labels remain visible outside the badges; new journal and practice panels have no recorded clipping."
+  },
+  "limitations": [
+    "Isolated React tool with real compiled CSS. No full application host, third-party AI, loaded 3D viewer, or real assistive technology validation.",
+    "Axe reports cannot establish WCAG conformance. SVG contrast, reading order, meaningful labels, status announcements, focus obscuration, and target-spacing exceptions need human review.",
+    "Label in Name is an experimental axe rule and may flag decorative icons or supplemental card descriptions. Preserve and review its findings; do not silently suppress them.",
+    "Text resizing doubles computed HTML text sizes; it is not native browser text-only zoom. SVG labels are additionally checked visually, not enlarged by this simulation.",
+    "Finite entry animations are finished and infinite animations paused before axe and screenshots to avoid transient-opacity contrast artifacts.",
+    "Small target measurements are review candidates. Label wrappers, spacing, inline text and equivalent-control exceptions must be assessed before calling them WCAG failures."
+  ]
+}

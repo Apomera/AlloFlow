@@ -2557,6 +2557,8 @@ window.StemLab = window.StemLab || {
             inquiry:       { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\uD83D\uDD2C', title: __alloT('stem.epidemic.inquiry_when_does_an_outbreak_become_o', 'Inquiry \u2014 when does an outbreak become observable?'), hint: __alloT('stem.epidemic.three_sliders_contact_frequency_interv', 'Three sliders: contact frequency, intervention adoption, pathogen transmissibility. Discrete regime: contained / emerging / pandemic. No score, no reveal \u2014 just sweep and observe.') }
           };
           var meta = TAB_META[tab] || TAB_META.sir;
+          // The host card is white in light AND dark, so titles take the accent at 55% (>=4.8:1).
+          var heroInk = 'rgb(' + [1, 3, 5].map(function(i) { return Math.round(parseInt(meta.accent.substr(i, 2), 16) * 0.55); }).join(',') + ')';
           return h('div', {
             role: 'tabpanel', id: 'stem-epidemic-panel-' + tab,
             'aria-labelledby': 'stem-epidemic-tab-' + tab, tabIndex: 0,
@@ -2571,8 +2573,8 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -2614,7 +2616,7 @@ window.StemLab = window.StemLab || {
             role: 'note',
             style: {
               padding: '10px 14px', borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
+              backgroundImage: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)', // not background:, which the HC block inks black
               borderTop: '1px solid rgba(14,165,233,0.5)', borderRight: '1px solid rgba(14,165,233,0.5)', borderBottom: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
               color: '#0c4a6e', fontSize: 13, lineHeight: 1.55
             }
@@ -3520,11 +3522,11 @@ window.StemLab = window.StemLab || {
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                   h('span', { style: { fontSize: 36 } }, '🏥'),
                   h('div', null,
-                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, __alloT('stem.epidemic.outbreak_response_26_week_pho_campaign_2', 'Outbreak Response: 26-week PHO campaign')),
-                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, 'You are the County Public Health Officer.')
+                    h('h3', { style: { margin: 0, color: '#14532d', fontSize: 22 } }, __alloT('stem.epidemic.outbreak_response_26_week_pho_campaign_2', 'Outbreak Response: 26-week PHO campaign')),
+                    h('div', { style: { fontSize: 13, color: '#334155', marginTop: 2 } }, 'You are the County Public Health Officer.')
                   )
                 ),
-                h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
+                h('p', { style: { margin: '8px 0 0', color: '#1e293b', fontSize: 14, lineHeight: 1.6 } },
                   __alloT('stem.epidemic.a_novel_respiratory_pathogen_is_circul', 'A novel respiratory pathogen is circulating in your county. You have 26 weeks of decisions. Four demographic groups respond differently. Feedback rules tie '),
                   h('strong', null, __alloT('stem.epidemic.infection_hospital_strain_public_trust', 'infection, hospital strain, public trust, and vaccine uptake')),
                   __alloT('stem.epidemic.together_this_is_pandemic_response_as_', ' together. This is pandemic response as decision-making under uncertainty, not as a formula.')
@@ -4473,7 +4475,7 @@ window.StemLab = window.StemLab || {
             role: 'note',
             style: {
               padding: '10px 14px', borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(251,191,36,0.04) 100%)',
+              backgroundImage: 'linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(251,191,36,0.04) 100%)', // see the SIR goal note
               borderTop: '1px solid rgba(251,191,36,0.6)', borderRight: '1px solid rgba(251,191,36,0.6)', borderBottom: '1px solid rgba(251,191,36,0.6)', borderLeft: '3px solid #fbbf24',
               color: '#78350f', fontSize: 13, lineHeight: 1.55
             }

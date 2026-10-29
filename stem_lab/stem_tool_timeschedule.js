@@ -1187,7 +1187,7 @@
               [[score.correct || 0, t('stem.timeschedule.correct_4', "Correct")], [d.bestStreak || 0, t('stem.timeschedule.best_streak', "Best streak")],
                 [Object.keys(d.modesUsed || {}).length, t('stem.timeschedule.modes_tried', "Modes tried")]].map(function (x) {
                 return h('div', { key: x[1],
-                  className: 'rounded-xl bg-white/10 border border-white/20 px-3 py-2' },
+                  className: 'rounded-xl bg-black/15 border border-white/20 px-3 py-2' },
                   h('div', { className: 'text-lg font-black' }, x[0]),
                   h('div', { className: 'text-[0.625rem] uppercase tracking-wide text-white font-semibold' }, x[1]));
               })))),

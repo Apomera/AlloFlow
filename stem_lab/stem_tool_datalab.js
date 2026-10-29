@@ -25,6 +25,14 @@
 (function () {
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  // WCAG 1.4.3 high contrast: the forced green button ink sits on the indigo/sky gradient at 4.3:1
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-datalab-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-datalab-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"dataLab\"] button:is([class*=\"bg-gradient-to-\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
+    document.head.appendChild(st);
+  })();
 
   var DATA_LAB_CDN_URL = 'https://alloflow-cdn.pages.dev/data_lab/data_lab.html?v=1';
   function companionUrl(path, cdnUrl) {

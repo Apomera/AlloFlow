@@ -1,0 +1,22 @@
+{
+  "checked": "2026-10-29",
+  "scope": "Keep a learner's place during a species observation visit and make essential 3D inspection controls easier to reach.",
+  "changes": [
+    "Observe on the reef captures a temporary guide route. An explicit return to the same species restores the search, feeding-role selection, open search ideas, reading section, captured profile sequence, and exact search excerpt or reef-connection return action.",
+    "The route stays in memory for the current tool instance. It is consumed once, discarded by ordinary section navigation or closing the observation card, and never written into saved learning records. Field notes and current saved filters remain authoritative.",
+    "The guide and optional specimen still unmount during the observation visit; no hidden renderer is retained. Practice profiles continue to preserve their unfinished round by omitting the observation detour.",
+    "3D zoom, framing, fit and reset controls sit directly below the model, followed by turn and move controls. Existing controls, labels, gestures and framing behavior are retained. Model buttons have a minimum height of 44 pixels."
+  ],
+  "evidence": "Uses existing species models and sourced field-guide content. No species counts or biological claims changed.",
+  "verification": {
+    "focusedTestCount": 96,
+    "browserCheckCount": 13,
+    "mobileLayout": "At 324px and 390px widths, the primary controls begin 12px below the canvas, have 44px minimum button height, and end about 420px below the viewport top when the canvas is aligned to the top. Before this change, zoom began 428px and 517px below the canvas.",
+    "focusedTests": "Observation return and stale-route handling; edited-note filtering and focus fallback; renderer disposal; search reading; connection gallery; observation and practice continuity; 3D inspection, framing, help and accessibility behavior.",
+    "browserReports": [
+      "reports/coralreef-observation-return-2026-10-29/verification.json",
+      "reports/coralreef-specimen-controls-2026-10-29/after-verification.json"
+    ],
+    "deployment": "Local source and desktop mirror. No public deployment."
+  }
+}

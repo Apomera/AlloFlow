@@ -13563,7 +13563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             return h('div', { className: 'rh-hub-card rh-hub-challenge bg-gradient-to-br from-purple-900/40 to-fuchsia-900/40 border border-purple-700/40 rounded-xl p-4' },
               h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
                 h('div', { className: 'text-sm font-bold text-purple-300' }, __alloT('stem.raptorhunt.challenge_of_the_day', '🎲 Challenge of the Day')),
-                h('div', { className: 'text-[10px] text-slate-400 font-mono' }, now.toLocaleDateString())
+                h('div', { className: 'text-[10px] text-slate-300 font-mono' }, now.toLocaleDateString())
               ),
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-4xl flex-shrink-0' }, todayChallenge.icon),
@@ -13585,7 +13585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                           return Object.assign({}, cur, { activeSection: todayChallenge.jumpTo, visited: visited });
                         });
                       },
-                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-700 hover:to-fuchsia-700',
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-700 to-fuchsia-700 text-white hover:from-purple-800 hover:to-fuchsia-800',
                       'aria-label': __alloT('stem.raptorhunt.jump_to_relevant_section', 'Jump to relevant section')
                     }, __alloT('stem.raptorhunt.study_the_topic', '↗ Study the topic'))
                   ),
@@ -13607,7 +13607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   )
                 )
               ),
-              h('div', { className: 'text-[10px] text-slate-500 italic mt-2 text-right' }, __alloT('stem.raptorhunt.new_challenge_tomorrow', 'New challenge tomorrow.'))
+              h('div', { className: 'text-[10px] text-slate-300 italic mt-2 text-right' }, __alloT('stem.raptorhunt.new_challenge_tomorrow', 'New challenge tomorrow.'))
             );
           })(),
 
@@ -13747,7 +13747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   return h('div', { key: gi },
                     h('div', { className: 'flex items-center justify-between text-[10px] mb-1' },
                       h('span', { className: 'text-indigo-300 font-bold' }, g.label),
-                      h('span', { className: 'text-slate-400 font-mono' }, groupVisited + '/' + g.sectionIds.length)
+                      h('span', { className: 'text-slate-300 font-mono' }, groupVisited + '/' + g.sectionIds.length)
                     ),
                     h('div', { className: 'flex gap-1 flex-wrap' },
                       g.sectionIds.map(function(sid) {
@@ -13766,7 +13766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                           'aria-label': 'Go to ' + sec.label + (seen ? ' (visited)' : ' (not yet visited)'),
                           className: 'flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ' + (seen
                             ? 'transition-colors bg-emerald-900/40 text-emerald-200 border border-emerald-700/50 hover:bg-emerald-800/50 active:scale-[0.97]'
-                            : 'transition-colors bg-slate-800/60 text-slate-400 border border-slate-700 hover:bg-slate-700/60 hover:text-slate-200 active:scale-[0.97]')
+                            : 'transition-colors bg-slate-800/60 text-slate-300 border border-slate-700 hover:bg-slate-700/60 hover:text-slate-200 active:scale-[0.97]')
                         },
                           h('span', null, seen ? '✓' : '○'),
                           h('span', null, sec.icon),
@@ -41377,7 +41377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-700/50 rounded-xl p-4' },
             h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
               h('div', { className: 'text-base font-bold text-amber-300' }, '🗓 What\'s happening THIS MONTH — ' + thisMonth.name),
-              h('div', { className: 'text-[10px] text-slate-400 font-mono' }, now.toLocaleDateString())
+              h('div', { className: 'text-[10px] text-slate-300 font-mono' }, now.toLocaleDateString())
             ),
             h('div', { className: 'text-sm text-amber-100/90 leading-relaxed mb-2' },
               h('span', { className: 'font-bold' }, 'Focus: '), thisMonth.focus

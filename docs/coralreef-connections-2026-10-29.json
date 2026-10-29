@@ -1,0 +1,29 @@
+{
+  "checked": "2026-10-29",
+  "scope": "A visual field-guide explorer for five existing sourced reef relationships; eight animal-group explanations in profiles and supported comparisons; improved low-detail feather-duster worm and visible rock attachment; observation focus continuity.",
+  "learning": {
+    "connections": "Paired portraits link to either profile or comparison. The exact pair's existing source and directional explanation appear in comparison. Captive-observation and genus-level qualifications remain. Returning restores the originating control and preserves filters, bookmarks, field notes and discovery records.",
+    "animalGroups": ["goldmouth_sea_squirt", "feather_duster_worm", "christmas_tree_worm", "bennetts_feather_star", "barrel_sponge", "orange_cup_coral", "magnificent_anemone", "giant_clam"],
+    "sources": [
+      "https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-chordata",
+      "https://collections.museumsvictoria.com.au/species/8516",
+      "https://oceanservice.noaa.gov/facts/xmas-tree.html",
+      "https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-echinodermata",
+      "https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-porifera",
+      "https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-cnidaria",
+      "https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-mollusca"
+    ],
+    "limits": "Animal-group notes explain body plans, not definitive field identification. The relationship gallery is a small curated selection, not a complete food web. No new species or encounter counts were added in this revision."
+  },
+  "visuals": {
+    "featherDusterLow": "48 banded feather vanes retain the silhouette in smoother detail. The model has 2976 triangles and two draws; the existing high-detail crown remains unchanged. Tube albedo is lighter without adding emission.",
+    "attachment": "Both filter feeders select exposed rock. Placement checks actual rock and floor triangles, avoids buried shoulders, seats the base 2 mm into the surface, and aligns to the rock face."
+  },
+  "verification": {
+    "focusedTests": "Gallery/profile/comparison navigation, sourced animal groups, accessibility themes, i18n, deferred-focus ownership, geometry/texture disposal, supported material families and multi-seed exposed-rock attachment pass.",
+    "browser": "Seven desktop/phone guide checks and eighteen real-WebGL dive checks pass. All thirteen added-species observation flows, including varicose phyllidia, complete. No browser, shader or network errors.",
+    "priorTimeouts": "The material-family test now caches identical model requests without reducing its assertions and passes. The broad thirteen-species browser flow passes at low detail. The original high-detail SwiftShader run is not a hardware performance benchmark.",
+    "reports": ["reports/coralreef-connections-2026-10-29/guide-verification.json", "reports/coralreef-connections-2026-10-29/dive/report.json"],
+    "deployment": "Local source, desktop mirrors and portrait assets synchronized; no public deployment."
+  }
+}

@@ -22702,7 +22702,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: '#0f172a', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  // Fixed ink: the host card is white in dark theme too, where the token is #94a3b8.
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),

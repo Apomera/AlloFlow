@@ -1,0 +1,18 @@
+{
+  "checked": "2026-10-29",
+  "scope": "Make existing species knowledge discoverable and link each matching excerpt to its profile section; preserve unfinished identification practice.",
+  "changes": [
+    "Description search includes existing deeper facts, animal-group explanations, and named reciprocal reef connections. Names mode retains its previous behavior. Citation titles, URLs and unrelated metadata are not indexed.",
+    "At most two exact matching excerpts appear with their section labels. Read matching section focuses the relevant heading or definition term. Back restores the exact excerpt button, query, filters and original reading selection, including two excerpts from the same section.",
+    "Optional search ideas populate localized queries and switch to description mode while retaining active filters and keyboard focus in the search input.",
+    "Role-filter diet excerpts retain their reading action without repeating the diet text.",
+    "Profiles opened inside identification practice omit the two reef-observation detours that could discard an unfinished local round. Normal species profiles retain observation controls. Practice feedback, selected collection and return focus are preserved."
+  ],
+  "evidence": "Uses the existing displayed and sourced profile, animal-group and reef-connection content. No new biological claims, species or population counts were introduced.",
+  "verification": {
+    "focusedTests": "Description search and malformed-context handling; exact-section reading and return focus; repeated-section excerpts; role filters; search announcements; i18n; practice observation isolation; existing pair-practice and observation workflows.",
+    "browser": "Desktop and dark phone checks cover search ideas, fact/body-plan/connection queries, exact section focus and return, duplicate connection excerpts, diet evidence, minimum 44px reading controls, no horizontal overflow, and unchanged Names behavior.",
+    "report": "reports/coralreef-search-reading-2026-10-29/verification.json",
+    "deployment": "Local source and desktop mirror synchronized. No public deployment."
+  }
+}

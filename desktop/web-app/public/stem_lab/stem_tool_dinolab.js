@@ -13388,6 +13388,32 @@ var CLASSIFY_CASES = [
     return { field3dShowSkeleton: mode === 'bone', field3dShowBody: mode === 'life', field3dBodyOpacity: mode === 'life' ? 100 : 28 };
   }
 
+  function dinoPartVisibilityFor(dn, part, showSkeleton, showBody, opacity) {
+    if (!dn || !part || dn.group === 'other') return null;
+    var opaque = Number(opacity) >= 98;
+    if (part.requiresTranslucentBody && (!showBody || opaque)) return {
+      kind: 'tissue', title: 'Inferred tissues are hidden', action: 'Reveal inferred tissues',
+      message: 'These inferred tissue shapes belong to the Body outline layer. Reveal them with a translucent body; their shapes are reconstructions, not preserved organs.',
+      patch: { field3dShowBody: true, field3dBodyOpacity: 45 }
+    };
+    if (part.layer === 'skeleton' && (!showSkeleton || showBody && opaque)) return {
+      kind: 'bone', title: showSkeleton ? 'Bone view is covered' : 'Bone layer is hidden', action: 'Show bone structure',
+      message: showSkeleton ? 'The opaque life surface covers internal bones. Inspect the fossil layer to see this structure.' : 'This structure is in the fossil layer, which is currently off.',
+      patch: dinoPartInspectionLayers('bone')
+    };
+    if (part.layer === 'surface' && !showBody) return {
+      kind: 'life', title: 'Life surface is hidden', action: 'Show life surface',
+      message: 'This feature belongs to the life surface, which is currently off. Its covering includes reconstructed soft tissue.',
+      patch: dinoPartInspectionLayers('life')
+    };
+    if (!showSkeleton && !showBody) return {
+      kind: 'model', title: 'Model layers are hidden', action: 'Show life surface',
+      message: 'Both model layers are off. Reveal the life surface to locate this landmark.',
+      patch: dinoPartInspectionLayers('life')
+    };
+    return null;
+  }
+
   // Two projections test an interpretation of one visible landmark. Choosing a
   // view never scores an observation or establishes a fossil fact.
   function dinoPartViewpointTaskFor(dn, part) {
@@ -13623,6 +13649,58 @@ var CLASSIFY_CASES = [
   // Each record uses the existing guide contract plus layer/section/characteristics.
   // `layer` means where the landmark can be inspected, not fossil certainty.
   // Features must match the current mesh-generation branches and active covering.
+  // Anatomical vocabulary describes the highlighted structure or region, not
+  // necessarily a single bone. Keep the familiar label as the primary name.
+  // Terminology: https://ucmp.berkeley.edu/diapsids/dinomm.html
+  // Beak covering: https://pubmed.ncbi.nlm.nih.gov/24297877/
+  // Ungual bones versus sheaths: https://pmc.ncbi.nlm.nih.gov/articles/PMC4024305/
+  var DINO_ANATOMICAL_TERMS = {
+    head: 'Cephalic region', tail: 'Caudal region', trunk: 'Trunk region',
+    hand: 'Manus', foot: 'Pes', neck: 'Cervical region',
+    forelimb: 'Brachium · humerus region', knee: 'Femorotibial joint',
+    ankle: 'Tarsal region', thigh: 'Femoral region', skull: 'Cranial skeleton',
+    snout: 'Rostrum', jaw: 'Upper jaws and mandible', eyes: 'Ocular structures',
+    nostrils: 'External nares', beak: 'Rhamphotheca', teeth: 'Dentition',
+    back: 'Dorsal trunk region', belly: 'Ventral abdominal region',
+    spine: 'Vertebral column', ribcage: 'Costal skeleton · ribs', pelvis: 'Pelvic girdle',
+    skin: 'Integument', lungs: 'Pulmonary tissue · inferred',
+    airsacs: 'Pulmonary air sacs · inferred', muscles: 'Skeletal musculature · inferred',
+    shoulder: 'Pectoral girdle and shoulder joint', elbow: 'Humerus–radius–ulna articulation',
+    forearm: 'Antebrachium · radius and ulna region', wrist: 'Carpal region',
+    fingers: 'Manual digits', hip: 'Coxofemoral joint', hindlimb: 'Pelvic limb',
+    shin: 'Crus · tibia and fibula region', toes: 'Pedal digits',
+    claws: 'Ungual bones and keratin sheaths', frill: 'Parietosquamosal frill',
+    horns: 'Cranial horn cores and covering', 'nasal-rugosities': 'Nasal rugosities',
+    crest: 'Bony cranial crest', brow: 'Supraorbital ornamentation',
+    dome: 'Frontoparietal skull roof', plates: 'Plate-shaped osteoderms',
+    spikes: 'Spine-shaped osteoderms', sail: 'Elongated neural spines and covering',
+    armor: 'Dermal armor · osteoderms', tailclub: 'Caudal vertebral handle and osteoderm knob',
+    thumbspike: 'Modified manual digit I', wing: 'Forelimb plumage',
+    feathers: 'Plumage and integumentary filaments', hindwings: 'Hind-limb pennaceous feathers',
+    tailfeathers: 'Caudal plumage', feathercrest: 'Cranial plumage',
+    bristles: 'Caudal integumentary bristles'
+  };
+  function dinoAnatomicalTermFor(partId, species) {
+    // Shared-rig outgroup proxies are not validated anatomical landmarks.
+    if (!species || species.group === 'other') return '';
+    if (species.id === 'allosaurus' && partId === 'brow') return 'Lacrimal processes';
+    if (species.id === 'carnotaurus' && partId === 'horns') return 'Frontal horn cores and covering';
+    if (species.id === 'huayangosaurus' && partId === 'beak') return 'Lower rhamphotheca';
+    return Object.prototype.hasOwnProperty.call(DINO_ANATOMICAL_TERMS, partId) ? DINO_ANATOMICAL_TERMS[partId] : '';
+  }
+
+  function dinoFilterBodyParts(parts, query, section) {
+    function normalize(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    }
+    var words = normalize(query).split(/\s+/).filter(Boolean);
+    return parts.filter(function (part) {
+      if (section && section !== 'all' && (part.section || 'Body parts') !== section) return false;
+      var names = normalize(part.label + ' ' + (part.anatomicalTerm || ''));
+      return words.every(function (word) { return names.indexOf(word) >= 0; });
+    });
+  }
+
   function dinoDetailedBodyPartDefinitions(dn, quadruped, activeHypothesis) {
     dn = dn || {};
     var profile = skeletalAnatomyProfileFor(dn);
@@ -13656,6 +13734,7 @@ var CLASSIFY_CASES = [
       var outgroupRoles = { head: 'An animal\'s head carries feeding and sensory structures.', tail: 'Tails can have roles in movement, balance, or signaling; the role depends on the animal.', trunk: 'The trunk links the limbs and surrounds the main body organs.', hand: 'This marks the end of a front-limb shape.', foot: 'This marks the end of a hind-limb shape.', neck: 'A neck joins the head to the trunk.', forelimb: 'A front limb connects near the front of the trunk; its role varies among animals.', knee: 'This marks the upper bend in the placeholder hind limb.', ankle: 'This marks the lower bend in the placeholder hind limb.', thigh: 'This marks the upper segment of the placeholder hind limb.' };
       return parts.map(function (part) {
         part.label = outgroupNames[part.id];
+        part.anatomicalTerm = '';
         part.purpose = outgroupRoles[part.id];
         part.look = 'Find this large shape on the scale model. It is a location guide only.';
         part.characteristics = part.detail = 'A simplified shared-rig shape represents this region; its proportions and construction are not a validated reconstruction of ' + (dn.common || 'this comparison animal') + '.';
@@ -13982,7 +14061,10 @@ var CLASSIFY_CASES = [
       characteristics:'Paired frontal-bone projections are blunt, ovoid in section and directed outward; they are distinct from a median horn.',
       detail:'The life covering surrounds the same paired frontal horn cores.',
       evidence:'The holotype supports the bony projections. A modest cornified extension is inferred; its length, living color and function remain uncertain.',source:'carnotaurusSkull'});
-    return parts;
+    return parts.map(function (part) {
+      part.anatomicalTerm = dinoAnatomicalTermFor(part.id, dn);
+      return part;
+    });
   }
 
   // Seeded shuffling keeps each quest reproducible without changing the guide data.
@@ -15841,13 +15923,22 @@ var CLASSIFY_CASES = [
     return summary;
   }
 
-  function dinoSkinCoordinates(THREE, geometry, matrix, tailRegion) {
+  function dinoSkinCoordinates(THREE, geometry, matrix, tailRegion, localHostNormal) {
     var positions = geometry.attributes.dinoCoatRoot || geometry.attributes.position, normals = geometry.attributes.dinoCoatNormal || geometry.attributes.normal;
     var skinPositions = [], skinNormals = [], regionCoordinates = [], p = new THREE.Vector3(), n = new THREE.Vector3();
     var normalMatrix = new THREE.Matrix3().getNormalMatrix(matrix);
+    // Raised feature scales borrow their supporting skin's pigment direction.
+    // Their actual geometry normals still describe the scale's relief to lights.
+    var hostNormal = null;
+    if (Array.isArray(localHostNormal) && localHostNormal.length === 3 && localHostNormal.every(function (value) { return typeof value === 'number' && isFinite(value); })) {
+      hostNormal = new THREE.Vector3().fromArray(localHostNormal);
+      if (hostNormal.lengthSq() > 0.000000000001) hostNormal.applyMatrix3(normalMatrix).normalize();
+      else hostNormal = null;
+    }
     for (var i = 0; i < positions.count; i++) {
       p.fromBufferAttribute(positions, i).applyMatrix4(matrix);
-      n.fromBufferAttribute(normals, i).applyMatrix3(normalMatrix).normalize();
+      if (hostNormal) n.copy(hostNormal);
+      else n.fromBufferAttribute(normals, i).applyMatrix3(normalMatrix).normalize();
       skinPositions.push(p.x, p.y, p.z); skinNormals.push(n.x, n.y, n.z);
       // Tail loft UVs run along its curve, so bands wrap the tail and move with it.
       regionCoordinates.push(tailRegion && geometry.attributes.uv ? geometry.attributes.uv.getX(i) : 0, tailRegion ? 1 : 0);
@@ -15927,6 +16018,23 @@ var CLASSIFY_CASES = [
     var illustratedPigment = profile.pattern === 'subtle' && !profile.directEvidence && !material.userData.dinoContourCoat &&
       !!(material.map && material.map.userData && material.map.userData.dinoMicrotexture === 'fine-scales');
     material.userData.dinoIllustratedPigment = illustratedPigment;
+    var illustratedTints = null;
+    if (illustratedPigment) {
+      // These are display palettes, not recovered pigmentation. Work in linear
+      // color and preserve the underlying atlas and each material's own tint.
+      var baseTint = new THREE.Color(profile.base).convertSRGBToLinear();
+      function relativeTint(color) {
+        return new THREE.Vector3(
+          Math.max(0.15, Math.min(3, color.r / Math.max(baseTint.r, 0.001))),
+          Math.max(0.15, Math.min(3, color.g / Math.max(baseTint.g, 0.001))),
+          Math.max(0.15, Math.min(3, color.b / Math.max(baseTint.b, 0.001))));
+      }
+      illustratedTints = {
+        back: relativeTint(new THREE.Color(profile.dark).convertSRGBToLinear()),
+        flank: relativeTint(new THREE.Color(profile.accent).convertSRGBToLinear()),
+        underside: relativeTint(baseTint.clone().lerp(new THREE.Color('#e0cfad').convertSRGBToLinear(), 0.42))
+      };
+    }
     function tintVector(overlay) {
       var values = (overlay.match(/[\d.]+/g) || []).map(Number);
       var tint = new THREE.Color(values[0] / 255, values[1] / 255, values[2] / 255).convertSRGBToLinear();
@@ -15937,9 +16045,14 @@ var CLASSIFY_CASES = [
       shader.uniforms.dinoSkinScale = { value: 1 / Math.max(0.01, size) };
       var tailIvory = new THREE.Color('#f2ead8').convertSRGBToLinear();
       shader.uniforms.dinoTailBandTint = { value: new THREE.Vector4(tailIvory.r, tailIvory.g, tailIvory.b, profile.pattern === 'ginger-banded' ? 0.90 : 0) };
-      shader.uniforms.dinoShadeStrength = { value: pigmentProfile ? 0 : shadeStrength };
+      shader.uniforms.dinoShadeStrength = { value: pigmentProfile || illustratedPigment ? 0 : shadeStrength };
       shader.uniforms.dinoDorsalTint = { value: tintVector(profile.dorsalOverlay) };
       shader.uniforms.dinoUndersideTint = { value: tintVector(profile.undersideOverlay) };
+      if (illustratedTints) {
+        shader.uniforms.dinoIllustratedBackTint = { value: illustratedTints.back.clone() };
+        shader.uniforms.dinoIllustratedFlankTint = { value: illustratedTints.flank.clone() };
+        shader.uniforms.dinoIllustratedUndersideTint = { value: illustratedTints.underside.clone() };
+      }
       shader.vertexShader = 'attribute vec3 dinoSkinPosition;\nattribute vec3 dinoSkinNormal;\nattribute vec2 dinoSkinRegion;\nvarying vec2 vDinoSkinRegion;\nvarying vec3 vDinoSkinPosition;\nvarying vec3 vDinoSkinNormal;\n' + shader.vertexShader;
       shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvDinoSkinPosition = dinoSkinPosition;\nvDinoSkinNormal = dinoSkinNormal;\nvDinoSkinRegion = dinoSkinRegion;');
       var skinSampling = [
@@ -15956,6 +16069,9 @@ var CLASSIFY_CASES = [
         '}'
       ].join('\n');
       if (illustratedPigment) skinSampling += [
+        '\nuniform vec3 dinoIllustratedBackTint;',
+        'uniform vec3 dinoIllustratedFlankTint;',
+        'uniform vec3 dinoIllustratedUndersideTint;',
         '\nfloat dinoPigmentCloud(vec3 p) {',
         '  p *= dinoSkinScale;',
         '  float warp = sin(dot(p, vec3(2.1, 3.4, 2.7)));',
@@ -15980,7 +16096,14 @@ var CLASSIFY_CASES = [
       if (illustratedPigment) shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
         '#include <color_fragment>',
         // Stored specimen coordinates keep patches continuous across meshes and attached during motion.
-        'diffuseColor.rgb *= vec3(1.0) + vec3(0.32, 0.27, 0.22) * dinoPigmentCloud(vDinoSkinPosition);'
+        'float dinoPigmentVariation = dinoPigmentCloud(vDinoSkinPosition);',
+        'float dinoBackZone = smoothstep(-0.08, 0.72, skinUp + 0.16 * dinoPigmentVariation);',
+        'float dinoBellyZone = smoothstep(0.08, 0.85, -skinUp - 0.10 * dinoPigmentVariation);',
+        'float dinoFlankZone = (1.0 - dinoBackZone) * (1.0 - dinoBellyZone);',
+        'diffuseColor.rgb *= mix(vec3(1.0), dinoIllustratedBackTint, dinoBackZone * 0.65);',
+        'diffuseColor.rgb *= mix(vec3(1.0), dinoIllustratedUndersideTint, dinoBellyZone * 0.62);',
+        'diffuseColor.rgb *= mix(vec3(1.0), dinoIllustratedFlankTint, dinoFlankZone * 0.10);',
+        'diffuseColor.rgb *= vec3(1.0) + vec3(0.32, 0.27, 0.22) * dinoPigmentVariation;'
       ].join('\n'));
       // Screen derivatives reuse one height sample per projection instead of resampling neighboring pixels.
       var bumpChunk = THREE.ShaderChunk.bumpmap_pars_fragment.replace(
@@ -15991,7 +16114,7 @@ var CLASSIFY_CASES = [
       shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>',
         THREE.ShaderChunk.roughnessmap_fragment.replace('texture2D( roughnessMap, vUv )', 'dinoSampleSkin( roughnessMap, vDinoSkinPosition )'));
     };
-    material.customProgramCacheKey = function () { return illustratedPigment ? 'dinolab-specimen-skin-mottling-v1' : 'dinolab-specimen-skin-v2'; };
+    material.customProgramCacheKey = function () { return illustratedPigment ? 'dinolab-specimen-skin-zones-v1' : 'dinolab-specimen-skin-v2'; };
     return material;
   }
 
@@ -16288,10 +16411,100 @@ var CLASSIFY_CASES = [
     return material;
   }
 
-  function dinoStudioLightProfile(mode) {
-    if (mode === 'detail') return { id: 'detail', label: 'Surface detail', sceneLabel: 'Surface detail', description: 'Lower side lighting reveals surface relief and overlapping forms.', ambient: 0.16, hemisphere: 0.42, key: 1.45, keyPosition: [-10, 4, 12], fill: 0.22, fillPosition: [10, 7, 8], rim: 0.55, rimPosition: [2, 8, -12] };
-    if (mode === 'rim') return { id: 'rim', label: 'Rim light', sceneLabel: 'Rim light', description: 'Stronger rear lighting separates the silhouette, crests and feathers.', ambient: 0.18, hemisphere: 0.48, key: 0.78, keyPosition: [-8, 12, 10], fill: 0.28, fillPosition: [10, 6, 8], rim: 1.85, rimPosition: [2, 8, -12] };
-    return { id: 'balanced', label: 'Balanced', sceneLabel: 'Neutral studio', description: 'Even studio lighting gives an overall view of the reconstruction.', ambient: 0.30, hemisphere: 0.65, key: 1.25, keyPosition: [-8, 12, 10], fill: 0.50, fillPosition: [10, 6, 8], rim: 0.95, rimPosition: [2, 8, -12] };
+  // The r128 PCFSoft kernel ignores light.shadow.radius. Give only the studio
+  // floor a wider, deterministic filter; model surfaces keep the native kernel.
+  // Sixteen fixed disk taps match the native PCFSoft texture-read budget.
+  function dinoStudioFloorShadow(THREE, material) {
+    var chunk = THREE && THREE.ShaderChunk && THREE.ShaderChunk.shadowmap_pars_fragment;
+    var start = '#elif defined( SHADOWMAP_TYPE_PCF_SOFT )';
+    var end = '#elif defined( SHADOWMAP_TYPE_VSM )';
+    if (!material || typeof chunk !== 'string' || chunk.indexOf(start) < 0 || chunk.indexOf(end, chunk.indexOf(start)) < 0) return material;
+    if (material.userData && material.userData.dinoStudioFloorShadow) return material;
+    var taps = [
+      [-0.94201624, -0.39906216], [0.94558609, -0.76890725],
+      [-0.09418410, -0.92938870], [0.34495938, 0.29387760],
+      [-0.91588581, 0.45771432], [-0.81544232, -0.87912464],
+      [-0.38277543, 0.27676845], [0.97484398, 0.75648379],
+      [0.44323325, -0.97511554], [0.53742981, -0.47373420],
+      [-0.26496911, -0.41893023], [0.79197514, 0.19090188],
+      [-0.24188840, 0.99706507], [-0.81409955, 0.91437590],
+      [0.19984126, 0.78641367], [0.14383161, -0.14100790]
+    ];
+    // Normalize this fixed Poisson pattern into the unit disk.
+    var soft = [start,
+      'vec2 dinoFloorShadowRadius = 4.0 * (shadowMapSize / 1024.0);',
+      'vec2 dinoFloorShadowStep = dinoFloorShadowRadius / shadowMapSize;',
+      'shadow = ('];
+    taps.forEach(function (tap, index) {
+      soft.push('texture2DCompare( shadowMap, shadowCoord.xy + vec2( ' + (tap[0] / 1.25).toFixed(8) + ', ' + (tap[1] / 1.25).toFixed(8) + ' ) * dinoFloorShadowStep, shadowCoord.z )' + (index < taps.length - 1 ? ' +' : ''));
+    });
+    soft.push(') * (1.0 / 16.0);');
+    var shadowChunk = chunk.slice(0, chunk.indexOf(start)) + soft.join('\n') + '\n\t\t' + chunk.slice(chunk.indexOf(end, chunk.indexOf(start)));
+    var previousCompile = material.onBeforeCompile;
+    var previousKey = material.customProgramCacheKey;
+    material.onBeforeCompile = function (shader, renderer) {
+      if (typeof previousCompile === 'function') previousCompile.call(this, shader, renderer);
+      shader.fragmentShader = shader.fragmentShader.replace('#include <shadowmap_pars_fragment>', shadowChunk);
+    };
+    material.customProgramCacheKey = function () {
+      return (typeof previousKey === 'function' ? previousKey.call(this) : '') + '|dinolab-studio-floor-shadow-v1';
+    };
+    if (!material.userData) material.userData = {};
+    material.userData.dinoStudioFloorShadow = true;
+    material.needsUpdate = true;
+    return material;
+  }
+
+  // A matte floor fades continuously into the studio background. World-space
+  // coordinates keep this light pool anchored when orbiting or inspecting a part;
+  // there is no finite horizon or screen-space seam to move through the animal.
+  function dinoStudioFloorSurface(THREE, material, length, height) {
+    if (!material || (material.userData && material.userData.dinoStudioFloorSurface)) return material;
+    var span = Math.max(0.5, Number(length) || 0, Number(height) || 0);
+    if (!isFinite(span)) span = 1;
+    span = Math.min(span, 1000000);
+    material.map = null;
+    material.color.set('#182835').convertSRGBToLinear();
+    material.fog = false;
+    material.transparent = true;
+    material.depthWrite = false;
+    material.dithering = true;
+    var previousCompile = material.onBeforeCompile;
+    var previousKey = material.customProgramCacheKey;
+    material.onBeforeCompile = function (shader, renderer) {
+      if (typeof previousCompile === 'function') previousCompile.call(this, shader, renderer);
+      shader.uniforms.dinoStudioFloorSpan = { value: span };
+      shader.vertexShader = 'varying vec2 vDinoStudioFloorXZ;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+        '#include <begin_vertex>\nvDinoStudioFloorXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
+      shader.fragmentShader = 'varying vec2 vDinoStudioFloorXZ;\nuniform float dinoStudioFloorSpan;\n' + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace('#include <dithering_fragment>',
+        'vec2 dinoStudioFloorUV = vDinoStudioFloorXZ / dinoStudioFloorSpan;\n' +
+        'gl_FragColor.a *= exp(-dot(dinoStudioFloorUV, dinoStudioFloorUV) * 0.6);\n#include <dithering_fragment>');
+    };
+    material.customProgramCacheKey = function () {
+      return (typeof previousKey === 'function' ? previousKey.call(this) : '') + '|dinolab-studio-floor-surface-v1';
+    };
+    material.userData.dinoStudioFloorSurface = { span: span };
+    material.needsUpdate = true;
+    return material;
+  }
+
+  function dinoStudioLightProfile(mode, boneOnly) {
+    var profile;
+    if (mode === 'detail') profile = { id: 'detail', label: 'Surface detail', sceneLabel: 'Surface detail', description: 'Lower side lighting reveals surface relief and overlapping forms.', ambient: 0.16, hemisphere: 0.42, key: 1.45, keyPosition: [-10, 4, 12], fill: 0.22, fillPosition: [10, 7, 8], rim: 0.55, rimPosition: [2, 8, -12] };
+    else if (mode === 'rim') profile = { id: 'rim', label: 'Rim light', sceneLabel: 'Rim light', description: 'Stronger rear lighting separates the silhouette, crests and feathers.', ambient: 0.18, hemisphere: 0.48, key: 0.78, keyPosition: [-8, 12, 10], fill: 0.28, fillPosition: [10, 6, 8], rim: 1.85, rimPosition: [2, 8, -12] };
+    else profile = { id: 'balanced', label: 'Balanced', sceneLabel: 'Neutral studio', description: 'Even studio lighting gives an overall view of the reconstruction.', ambient: 0.30, hemisphere: 0.65, key: 1.25, keyPosition: [-8, 12, 10], fill: 0.50, fillPosition: [10, 6, 8], rim: 0.95, rimPosition: [2, 8, -12] };
+    if (boneOnly === true) {
+      // Pale bone needs less broad illumination to retain curved surfaces and
+      // overlap shadows. Keep the display palette and each preset's direction.
+      profile.ambient *= 0.36;
+      profile.hemisphere *= 0.55;
+      profile.fill *= 0.50;
+      profile.key *= 0.88;
+      profile.rim *= 0.80;
+    }
+    return profile;
   }
 
   // Count only active visible time; a stalled frame cannot cause a large pose jump.
@@ -19378,18 +19591,33 @@ var CLASSIFY_CASES = [
         var canvasRef = React.useRef(null);
         var labelModeRef = React.useRef(props.labelMode || 'key');
         labelModeRef.current = props.labelMode || 'key';
+        var focusSelectedLabelRef = React.useRef(props.focusSelectedLabel === true);
+        focusSelectedLabelRef.current = props.focusSelectedLabel === true;
         var bodyLabelOverlayRef = React.useRef(null);
         // DINO_ANATOMY_EXPLORER_V2
         var anatomyGuideRef = React.useRef(null);
+        var bodyPartDirectoryRef = React.useRef(null);
         var bodyPartVisibilityRef = React.useRef(null);
         var bodyPartState = React.useState({ speciesId: props.species.id, id: '' });
         var bodyPartSelection = bodyPartState[0], setBodyPartSelection = bodyPartState[1];
         var selectedBodyPartId = bodyPartSelection.speciesId === props.species.id ? bodyPartSelection.id : '';
+        var partSearchRef = React.useRef(null);
+        var partSearchState = React.useState({ speciesId: props.species.id, query: '', section: 'all' });
+        var partSearchChoice = partSearchState[0], setPartSearchChoice = partSearchState[1];
+        var partSearch = partSearchChoice.speciesId === props.species.id ? partSearchChoice : { query: '', section: 'all' };
+        function updatePartSearch(query, section) {
+          setPartSearchChoice({ speciesId: props.species.id, query: query, section: section });
+        }
+        function clearPartSearch() {
+          updatePartSearch('', 'all');
+          if (partSearchRef.current) partSearchRef.current.focus();
+        }
         var selectedBodyPartRef = React.useRef('');
         selectedBodyPartRef.current = selectedBodyPartId;
         React.useEffect(function () {
           selectedBodyPartRef.current = '';
           setBodyPartSelection({ speciesId: props.species.id, id: '' });
+          setPartSearchChoice({ speciesId: props.species.id, query: '', section: 'all' });
         }, [props.species.id]);
         var statusRef = React.useRef(null);
         var cameraReadoutRef = React.useRef(null);
@@ -19397,6 +19625,11 @@ var CLASSIFY_CASES = [
         var cameraRef = React.useRef(null);
         var rendererRef = React.useRef(null);
         var cameraControlRef = React.useRef(null);
+        var partContextFrameRef = React.useRef(null), partContextPresetRef = React.useRef(null);
+        var partContextState = React.useState(false), partContextActive = partContextState[0], setPartContextActive = partContextState[1];
+        function clearPartContextView() {
+          partContextFrameRef.current = null; partContextPresetRef.current = null; setPartContextActive(false);
+        }
         var partInspectionFrameRef = React.useRef(null);
         var supportingRelationRef = React.useRef(null);
         var supportingRelationState = React.useState(null), supportingRelationChoice = supportingRelationState[0], setSupportingRelationChoice = supportingRelationState[1];
@@ -19459,7 +19692,13 @@ var CLASSIFY_CASES = [
         var hypothesisSet = reconstructionHypothesesFor(props.species, skeletalProfile, props.reconstructionMode);
         var surfaceHypothesis = hypothesisSet.active;
         var bodyPartDefinitions = dinoDetailedBodyPartDefinitions(props.species, skeletalProfile.weightBearingForelimbs, surfaceHypothesis);
+        var showScientificNames = props.scientificNames === true;
+        var hasAnatomicalTerms = bodyPartDefinitions.some(function (part) { return !!part.anatomicalTerm; });
+        function bodyPartAccessibleName(part) {
+          return part.label + (showScientificNames && part.anatomicalTerm ? ' — ' + part.anatomicalTerm : '');
+        }
         var selectedBodyPart = bodyPartDefinitions.find(function (part) { return part.id === selectedBodyPartId; });
+        var selectedPartVisibility = dinoPartVisibilityFor(props.species, selectedBodyPart, props.showSkeleton, props.showBody, bodyOpacity);
         var supportingRelations = dinoSupportingRelationsFor(props.species, bodyPartDefinitions);
         var activeSupportingRelation = supportingRelationChoice && supportingRelationChoice.speciesId === props.species.id && supportingRelationChoice.mode === surfaceHypothesis.id
           ? supportingRelations.find(function (relation) { return relation.id === supportingRelationChoice.id; }) : null;
@@ -19498,6 +19737,10 @@ var CLASSIFY_CASES = [
         var integumentEvidence = integumentEvidenceFor(props.species);
         var studyViewState = React.useState({ speciesId: props.species.id, region: 'full' }), studyView = studyViewState[0], setStudyView = studyViewState[1];
         var activeStudy = studyView.speciesId === props.species.id ? studyView.region : 'full';
+        React.useEffect(function () { clearPartContextView(); }, [props.species.id, selectedBodyPartId, props.reconstructionMode, props.stage, props.showSkeleton, props.showBody, props.shapeStudy ? props.shapeStudy.key : null, activeSupportingRelation ? activeSupportingRelation.id : null]);
+        React.useEffect(function () {
+          if (partContextActive && activeStudy !== 'full') clearPartContextView();
+        }, [activeStudy, partContextActive]);
         React.useEffect(function () {
           var relation = supportingRelationRef.current;
           if (relation && relation.region !== activeStudy) {
@@ -19814,7 +20057,7 @@ var CLASSIFY_CASES = [
             var habitat = habitatProfileFor(dn);
             var studio = props.stage !== 'habitat';
             if (studio) Object.assign(habitat, {
-              skyTop: '#101c2d', skyMid: '#233749', skyHorizon: '#31485a', skyGround: '#233441', clear: '#1b2b3b',
+              skyTop: '#101c2d', skyMid: '#354b60', skyHorizon: '#4a6273', skyGround: '#334858', clear: '#1b2b3b',
               sunGlow: 'rgba(0,0,0,0)', cloud: 'rgba(0,0,0,0)', fog: '#263b4b', fogNear: 4, fogFar: 12,
               ambient: '#e6eef7', ambientIntensity: 0.30, hemiSky: '#d7e9ff', hemiGround: '#3b3540', hemiIntensity: 0.65,
               sun: '#ffefd9', sunIntensity: 1.25, sunPosition: [-8, 12, 10],
@@ -19826,7 +20069,7 @@ var CLASSIFY_CASES = [
             if (surfaceHypothesis.paletteMode === 'classic') fieldPalette = { skin: '#69704b', dark: '#343922', accent: '#8d8454' };
             else if (surfaceHypothesis.paletteMode === 'avian') fieldPalette = { skin: '#6b625b', dark: '#342f35', accent: '#9f7968' };
             else if (surfaceHypothesis.paletteMode === 'neutral') fieldPalette = { skin: '#77766f', dark: '#41413d', accent: '#98968d' };
-            var integument = integumentProfileFor(dn, fieldPalette, surfaceHypothesis.id);
+            var integument = integumentProfileFor(dn, fieldPalette, surfaceHypothesis.paletteMode);
             fieldPalette = { skin: integument.base, dark: integument.dark, accent: integument.accent };
             var bodyColor = integument.base;
 
@@ -19940,7 +20183,7 @@ var CLASSIFY_CASES = [
             groundCanvas.height = 512;
             var groundContext = groundCanvas.getContext('2d');
             var groundTexture = null;
-            if (groundContext) {
+            if (groundContext && !studio) {
               groundContext.fillStyle = habitat.ground;
               groundContext.fillRect(0, 0, 512, 512);
               var terrainRng = mulberry32(String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 31) + char.charCodeAt(0)) >>> 0; }, 2166136261));
@@ -19980,6 +20223,10 @@ var CLASSIFY_CASES = [
               groundGeometry.computeVertexNormals();
             }
             var groundMaterial = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.groundTint, map: groundTexture, roughness: 0.98, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: habitat.groundTint, map: groundTexture, shininess: 2 });
+            if (studio) {
+              dinoStudioFloorShadow(THREE, groundMaterial);
+              dinoStudioFloorSurface(THREE, groundMaterial, len, ht);
+            }
             var ground = new THREE.Mesh(
               groundGeometry,
               groundMaterial
@@ -19989,6 +20236,9 @@ var CLASSIFY_CASES = [
             scene.add(ground);
             ground.name = 'dinolab-habitat-ground';
             ground.userData.dinoEnvironment = studio ? 'studio-floor' : 'specimen-clearing';
+            // Draw the faded floor before translucent life surfaces and contact
+            // stamps, while opaque specimen depth continues to occlude it.
+            if (studio) ground.renderOrder = -1;
             var habitatPlants = [], waterScenery = null;
             if (!studio) {
               var landscape = dinoHabitatLandscape(THREE, habitat, len, groundWidth, groundDepth, String(dn.id).split('').reduce(function (seed, char) { return ((seed * 31) + char.charCodeAt(0)) >>> 0; }, 97));
@@ -22547,6 +22797,9 @@ if (/Ceratops/i.test(cladeName)) {
               scale.quaternion.setFromUnitVectors(vec(0, 0, 1), anchor.normal);
               scale.userData.dinoFeature = 'surface-scale';
               bindSurfaceDetail(scale, surface, anchor);
+              scale.updateMatrixWorld(true);
+              scale.userData.dinoSkinHostNormal = anchor.normal.clone().applyMatrix3(
+                new THREE.Matrix3().getNormalMatrix(scale.matrixWorld).invert()).normalize().toArray();
             }
             function addFacialStrip(points, width, relief, side, material, feature, options) {
               var geometry = dinoFacialStripGeometry(THREE, headShell, points, Object.assign({}, options, { width: width, relief: relief, side: side }));
@@ -23202,7 +23455,8 @@ if (/Ceratops/i.test(cladeName)) {
               if (!part.isMesh || part.userData.dinoContour || !part.geometry) return;
               part.userData.dinoAnatomy = true;
               if (part.material && part.material.userData.dinoSkinMapping) {
-                dinoSkinCoordinates(THREE, part.geometry, part.matrixWorld, part.userData.dinoRegion === 'tail');
+                dinoSkinCoordinates(THREE, part.geometry, part.matrixWorld, part.userData.dinoRegion === 'tail',
+                  part.material.userData.dinoIllustratedPigment ? part.userData.dinoSkinHostNormal : null);
                 part.receiveShadow = true;
               }
               // Inter-bone shadows clarify fossil anatomy; translucent skin still casts an opaque shadow.
@@ -23765,7 +24019,7 @@ if (/Ceratops/i.test(cladeName)) {
             sun.userData.dinoShadowFit = dinoFitShadow(THREE, sun, shadowBounds, studio ? 0 : -0.25, ht);
             if (studio) {
               activeLightingControl = function (mode, announce) {
-                var lightProfile = dinoStudioLightProfile(mode);
+                var lightProfile = dinoStudioLightProfile(mode, props.showSkeleton && !props.showBody);
                 ambientLight.intensity = lightProfile.ambient; hemisphereLight.intensity = lightProfile.hemisphere;
                 sun.intensity = lightProfile.key; fill.intensity = lightProfile.fill; rim.intensity = lightProfile.rim;
                 // Reset the direction before fitting: the previous fit moved the light target.
@@ -23931,6 +24185,36 @@ if (/Ceratops/i.test(cladeName)) {
             };
             activeCameraControl.preserveInspectionFrame = function () {
               if (currentCameraFrame && selectedBodyPartRef.current) partInspectionFrameRef.current = currentCameraFrame;
+            };
+            activeCameraControl.showPartContext = function () {
+              if (!selectedBodyPartRef.current || supportingRelationRef.current || shapeStudyRef.current || ['head', 'body', 'tail'].indexOf(cameraStudy) < 0) return false;
+              updateCameraView(false);
+              partContextFrameRef.current = {
+                owner: activeCameraControl, part: selectedBodyPartRef.current,
+                yaw: yaw, pitch: pitch, zoom: zoom, study: cameraStudy,
+                target: cameraTarget.clone(), evidence: cameraTargetIsEvidence, framing: yawRef.current.framing,
+                inspection: { context: currentCameraFrame.context, part: currentCameraFrame.part, study: currentCameraFrame.study, half: currentCameraFrame.half.clone(), target: currentCameraFrame.target.clone() }
+              };
+              partInspectionFrameRef.current = null;
+              cameraStudy = 'full'; cameraTargetIsEvidence = false; cameraTarget = modelCenter.clone(); zoom = 1;
+              yawRef.current.study = 'full'; yawRef.current.framing = 'full';
+              setStudyView({ speciesId: props.species.id, region: 'full' });
+              pauseAutoRotate(30000); updateCameraView();
+              setStatus('Whole animal context. Your selected landmark and detail view are kept. Choose Return to detail to restore your previous view.');
+              return true;
+            };
+            activeCameraControl.restorePartDetail = function () {
+              var saved = partContextFrameRef.current;
+              if (!saved || saved.owner !== activeCameraControl || saved.part !== selectedBodyPartRef.current || supportingRelationRef.current || shapeStudyRef.current) return false;
+              yaw = saved.yaw; pitch = saved.pitch; zoom = saved.zoom; cameraStudy = saved.study;
+              cameraTarget = saved.target.clone(); cameraTargetIsEvidence = saved.evidence;
+              partInspectionFrameRef.current = saved.inspection;
+              yawRef.current.study = cameraStudy; yawRef.current.framing = saved.framing;
+              partContextFrameRef.current = null;
+              setStudyView({ speciesId: props.species.id, region: cameraStudy });
+              pauseAutoRotate(30000); updateCameraView();
+              setStatus('Detail view restored. Your previous viewing angle, zoom, and selected landmark are retained.');
+              return true;
             };
             activeCameraControl.captureShapeView = function () {
               var study = shapeStudyRef.current;
@@ -24171,8 +24455,10 @@ if (/Ceratops/i.test(cladeName)) {
               var pairVisible = relation && relation.region === cameraStudy;
               var shapeLensIds = dinoShapeStudyLandmarkIds(shapeStudyRef.current, bodyPartDefinitions);
               var shapeLensVisible = shapeLensIds.length > 0 && cameraStudy === 'full';
+              // Supporting traces and shape investigations need all their endpoints.
+              var isolateSelectedLabel = focusSelectedLabelRef.current && !!selectedBodyPartRef.current && !pairVisible && !shapeLensVisible;
               model.userData.dinoSupportingTrace = pairVisible ? { id: relation.id, ids: relation.ids.slice(), region: relation.region, selectedPart: selectedBodyPartRef.current } : null;
-              var context = metricKey + '|' + height + '|' + cameraStudy + '|' + selectedBodyPartRef.current + '|' + (pairVisible ? relation.id : '') + '|' + shapeLensIds.join(',');
+              var context = metricKey + '|' + height + '|' + cameraStudy + '|' + selectedBodyPartRef.current + '|' + (pairVisible ? relation.id : '') + '|' + shapeLensIds.join(',') + '|' + isolateSelectedLabel;
               if (context !== bodyLabelContext) { previousBodyLabels = []; bodyLabelContext = context; }
               model.updateMatrixWorld(true); camera.updateMatrixWorld(true);
               bodyPartAnchors.forEach(function (anchor) {
@@ -24197,6 +24483,9 @@ if (/Ceratops/i.test(cladeName)) {
               // Selected views place their lower readouts below the canvas.
               var bottom = selectedBodyPartRef.current ? 18 : (width < 560 ? 132 : 88);
               var layouts = dinoBodyLabelLayout(points, width, height, top, bottom, selectedBodyPartRef.current, previousBodyLabels, pairVisible ? relation.ids : (shapeLensVisible ? shapeLensIds : (cameraStudy === 'full' ? dinoInitialBodyLabelPriority(points) : null)), pairVisible ? relation.ids : (shapeLensVisible ? shapeLensIds : null));
+              // Hidden labels still contribute anatomical anchors to the collision
+              // search, keeping a focused callout clear of nearby body regions.
+              if (isolateSelectedLabel) layouts = layouts.filter(function (item) { return item.id === selectedBodyPartRef.current; });
               previousBodyLabels = layouts; latestShapeViewLabels = layouts.map(function (item) { return item.id; });
               if (model.userData.dinoShapeComparison) model.userData.dinoShapeComparison.visibleLandmarks = shapeLensVisible ? layouts.map(function (item) { return item.id; }) : [];
               var selectedLayout = layouts.some(function (item) { return item.selected; });
@@ -24213,16 +24502,23 @@ if (/Ceratops/i.test(cladeName)) {
                 node.style.background = item.selected ? '#115e59' : '#0f172a';
                 node.style.borderColor = item.selected ? '#ffffff' : '#5eead4';
                 node.style.boxShadow = item.selected ? '0 0 0 2px #115e59, 0 3px 10px #00000066' : 'none';
-                var line = group.firstChild, dot = group.lastChild, ring = group.querySelector('[data-dino-part-ring]');
+                var line = group.querySelector('[data-dino-part-leader]'), outline = group.querySelector('[data-dino-part-leader-outline]');
+                var dot = group.querySelector('[data-dino-part-dot]'), ring = group.querySelector('[data-dino-part-ring]'), ringOutline = group.querySelector('[data-dino-part-ring-outline]');
                 line.setAttribute('stroke', item.selected ? '#ffffff' : '#99f6e4');
                 line.setAttribute('stroke-width', item.selected ? 2.5 : 1.5);
+                outline.setAttribute('stroke-width', item.selected ? 5 : 4);
                 if (ring) {
                   ring.style.display = item.selected || pairVisible || shapeLensVisible ? 'block' : 'none';
                   ring.setAttribute('cx', item.anchorX); ring.setAttribute('cy', item.anchorY);
                   ring.setAttribute('stroke', item.selected ? '#ffffff' : '#fbbf24');
                   ring.setAttribute('stroke-dasharray', item.selected || (!pairVisible && !shapeLensVisible) ? '' : '3 2');
+                  ringOutline.style.display = ring.style.display;
+                  ringOutline.setAttribute('cx', item.anchorX); ringOutline.setAttribute('cy', item.anchorY);
+                  ringOutline.setAttribute('stroke-dasharray', ring.getAttribute('stroke-dasharray'));
                 }
-                line.setAttribute('x1', item.anchorX); line.setAttribute('y1', item.anchorY); line.setAttribute('x2', item.lineX); line.setAttribute('y2', item.lineY);
+                [outline, line].forEach(function (stroke) {
+                  stroke.setAttribute('x1', item.anchorX); stroke.setAttribute('y1', item.anchorY); stroke.setAttribute('x2', item.lineX); stroke.setAttribute('y2', item.lineY);
+                });
                 dot.setAttribute('cx', item.anchorX); dot.setAttribute('cy', item.anchorY);
               });
             }
@@ -24548,6 +24844,7 @@ if (/Ceratops/i.test(cladeName)) {
             if (resizeObserver) { try { resizeObserver.disconnect(); } catch (e) {} }
             if (intersectionObserver) { try { intersectionObserver.disconnect(); } catch (e) {} }
             if (cameraControlRef.current === activeCameraControl) cameraControlRef.current = null;
+            if (partContextFrameRef.current && partContextFrameRef.current.owner === activeCameraControl) clearPartContextView();
             if (lightingControlRef.current === activeLightingControl) lightingControlRef.current = null;
             if (renderRequestRef.current === activeRenderControl) renderRequestRef.current = null;
             if (visualMaterialsRef.current === activeMaterialSet) visualMaterialsRef.current = null;
@@ -24604,16 +24901,55 @@ if (/Ceratops/i.test(cladeName)) {
           setAnatomyQuiz({ speciesId: props.species.id, open: true, deck: dinoAnatomyQuizDeck(skeletalProfile.weightBearingForelimbs, Date.now() + quizRunRef.current), index: 0, answers: [], hint: false, finished: false, review: '' });
           selectBodyPart(''); applyCameraPreset('reset');
         }
+        function focusBodyPartGuide() {
+          var guide = anatomyGuideRef.current;
+          if (!guide) return;
+          var controls = guide.closest('details.dinolab-3d-controls-disclosure');
+          if (controls) controls.open = true;
+          guide.focus({ preventScroll: true });
+          guide.scrollIntoView({ block: 'start' });
+        }
+        function focusBodyPartModel() {
+          var canvas = canvasRef.current;
+          if (!canvas) return;
+          canvas.focus({ preventScroll: true });
+          canvas.scrollIntoView({ block: 'center' });
+        }
+        function togglePartContextView() {
+          var control = cameraControlRef.current;
+          if (!control) return;
+          if (partContextActive) {
+            var preset = partContextPresetRef.current;
+            if (!control.restorePartDetail || !control.restorePartDetail()) { clearPartContextView(); return; }
+            partContextPresetRef.current = null; setPartContextActive(false); setCameraPreset(preset);
+          } else {
+            if (!control.showPartContext || !control.showPartContext()) return;
+            partContextPresetRef.current = cameraPreset; setPartContextActive(true); setCameraPreset(null);
+          }
+          focusBodyPartModel();
+        }
+        function focusBodyPartDirectory(restoreSelection) {
+          var directory = bodyPartDirectoryRef.current;
+          if (!directory) return;
+          directory.open = true;
+          var choice = restoreSelection && selectedBodyPartRef.current
+            ? directory.querySelector('[data-dino-part-choice="' + selectedBodyPartRef.current + '"]') : null;
+          var target = choice || partSearchRef.current;
+          if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: choice ? 'center' : 'start' }); }
+        }
+        function revealSelectedBodyPart() {
+          var visibility = dinoPartVisibilityFor(props.species, selectedBodyPart, props.showSkeleton, props.showBody, bodyOpacity);
+          if (!visibility || !props.onPartReveal) return;
+          if (cameraControlRef.current && cameraControlRef.current.preserveInspectionFrame) cameraControlRef.current.preserveInspectionFrame();
+          props.onPartReveal(visibility.patch, selectedBodyPart.label, visibility.kind);
+          window.requestAnimationFrame(focusBodyPartModel);
+        }
         function renderBodyPartGuide(part, selectedGuide) {
           var source = DINO_ANATOMY_SOURCES[part.source] || DINO_ANATOMY_SOURCES.bones;
           var inspection = selectedGuide && props.onPartLayerInspect ? dinoPartInspectionFor(props.species, part) : null;
           var inspectedLayer = props.showSkeleton && !props.showBody ? 'bone' : (!props.showSkeleton && props.showBody && bodyOpacity >= 98 ? 'life' : '');
-          var layerHelp = part.requiresTranslucentBody && props.showBody && props.bodyOpacity >= 98
-            ? 'These inferred tissue shapes are inside the body. Reduce Body outline opacity to inspect them beneath the life surface.'
-            : part.layer === 'skeleton' && !props.showSkeleton
-            ? 'This structure is shown in the fossil layer. Choose Full model or Fossil anchors to inspect its bones.'
-            : part.layer === 'surface' && !props.showBody
-              ? 'This feature is shown in the life surface. Choose Life view or Full model to inspect it.' : '';
+          var visibility = dinoPartVisibilityFor(props.species, part, props.showSkeleton, props.showBody, bodyOpacity);
+          var layerHelp = visibility ? visibility.message : '';
           return el('section', { ref: selectedGuide ? anatomyGuideRef : null,
             id: selectedGuide ? 'dinolab-selected-part-guide' : undefined,
             className: 'dinolab-part-guide', role: 'region', 'aria-label': part.label + ' anatomy description',
@@ -24621,6 +24957,18 @@ if (/Ceratops/i.test(cladeName)) {
             style: { marginTop: 10, padding: '12px 14px', borderRadius: 9, border: '1px solid ' + T.border,
               background: T.panel, fontSize: 12.5, lineHeight: 1.6, color: T.text } },
             el('h3', { style: { margin: '0 0 8px', fontSize: 17, color: T.text } }, part.label),
+            part.anatomicalTerm ? el('dl', { className: 'dinolab-anatomical-term', style: { margin: '0 0 12px', padding: '9px 12px', borderLeft: '3px solid #14b8a6', borderRadius: '0 7px 7px 0', background: T.deeper } },
+              el('dt', { style: { color: T.soft, fontSize: 10.5, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase' } }, __alloT('stem.dinolab.anatomical_term', 'Anatomical term')),
+              el('dd', { style: { margin: '2px 0 0', color: T.text, fontSize: 15, fontWeight: 700, overflowWrap: 'anywhere' } }, part.anatomicalTerm)) : null,
+            selectedGuide ? el('div', { className: 'dinolab-part-guide-navigation', role: 'group', 'aria-label': 'Navigate from this body part', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+              el('button', { type: 'button', onClick: focusBodyPartModel, 'aria-controls': 'dinolab-3d-canvas-' + props.species.id, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #0f766e', background: '#0f766e', color: '#fff', font: 'inherit', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'View on model'),
+              el('button', { type: 'button', onClick: function () { focusBodyPartDirectory(true); }, 'aria-controls': 'dinolab-body-part-key', style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, font: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Back to body-part key')) : null,
+            layerHelp ? el('p', { className: 'dinolab-part-layer-help', style: { margin: '0 0 10px', color: T.soft } }, layerHelp) : null,
+            el('dl', { className: 'dinolab-part-facts', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 8, margin: '0 0 14px' } }, [['What it does', part.purpose], ['Characteristics', part.characteristics || part.detail], ['Look for', part.look], ['Fossils and inference', part.evidence]].map(function (row) {
+              return el('div', { key: row[0], style: { minWidth: 0, padding: '11px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper } },
+                el('dt', { style: { fontWeight: 800, fontSize: 11.5, color: T.soft, marginBottom: 4 } }, row[0]),
+                el('dd', { style: { margin: 0, color: T.text, overflowWrap: 'anywhere' } }, row[1]));
+            })),
             inspection ? el('div', { className: 'dinolab-part-inspection', style: { padding: '10px 12px', marginBottom: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper } },
               el('p', { style: { margin: '0 0 8px', fontWeight: 800 } }, 'Compare at this landmark'),
               el('p', { style: { margin: '0 0 9px', color: T.soft } }, inspection.question),
@@ -24639,14 +24987,6 @@ if (/Ceratops/i.test(cladeName)) {
             selectedGuide ? renderPartViewpointTask(part) : null,
             selectedGuide ? renderSupportingRelation(part) : null,
             inspection ? renderPartComparison(part) : null,
-            layerHelp ? el('p', { className: 'dinolab-part-layer-help', style: { margin: '0 0 8px', color: T.soft } }, layerHelp) : null,
-            part.requiresTranslucentBody && props.showBody && props.bodyOpacity >= 98 && props.onBodyOpacityChange
-              ? el('button', { type: 'button', onClick: function () { props.onBodyOpacityChange(45); window.requestAnimationFrame(function () { if (anatomyGuideRef.current) anatomyGuideRef.current.focus({ preventScroll: true }); }); },
-                style: { minHeight: 44, padding: '8px 12px', margin: '0 0 8px', borderRadius: 8, border: '1px solid #0f766e', background: '#0f766e', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Reveal inferred tissues') : null,
-            el('dl', { style: { margin: 0 } }, [['What it does', part.purpose], ['Characteristics', part.characteristics || part.detail], ['Look for', part.look], ['Fossils and inference', part.evidence]].map(function (row) {
-              return el(React.Fragment, { key: row[0] }, el('dt', { style: { fontWeight: 800, marginTop: 8 } }, row[0]),
-                el('dd', { style: { margin: '2px 0 0', color: T.soft } }, row[1]));
-            })),
             el('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Read more: ' + source.title + ' (opens in a new tab)',
               style: { display: 'inline-block', minHeight: 44, padding: '10px 0', boxSizing: 'border-box', color: T.text, textDecoration: 'underline' } }, 'Read more: ' + source.title));
         }
@@ -24759,29 +25099,65 @@ if (/Ceratops/i.test(cladeName)) {
             el('p', { id: 'dinolab-part-comparison-status', role: 'status', 'aria-live': 'polite', style: { color: T.soft, margin: '8px 0 0', fontSize: 12 } }, recorded ? 'Your comparison is recorded. Writing is not automatically assessed.' : (entry.record ? 'You have an unrecorded revision. Your last recorded comparison is kept.' : 'Draft · record after describing both layers.')));
         }
         function renderBodyPartDirectory() {
-          var sections = [];
+          var sectionNames = [];
           bodyPartDefinitions.forEach(function (part) {
+            var name = part.section || 'Body parts';
+            if (sectionNames.indexOf(name) < 0) sectionNames.push(name);
+          });
+          var section = sectionNames.indexOf(partSearch.section) >= 0 ? partSearch.section : 'all';
+          var searchedParts = dinoFilterBodyParts(bodyPartDefinitions, partSearch.query, 'all');
+          var matches = dinoFilterBodyParts(searchedParts, '', section), sections = [];
+          var searching = !!partSearch.query.trim();
+          matches.forEach(function (part) {
             var name = part.section || 'Body parts';
             var group = sections.find(function (item) { return item.name === name; });
             if (!group) { group = { name: name, parts: [] }; sections.push(group); }
             group.parts.push(part);
           });
-          return el('details', { className: 'dinolab-body-part-key', style: { marginTop: 8, color: T.text, fontSize: 12.5, lineHeight: 1.5 } },
-            el('summary', { style: { cursor: 'pointer', fontWeight: 800, minHeight: 44, padding: '10px 0', boxSizing: 'border-box' } },
+          return el('details', { ref: bodyPartDirectoryRef, id: 'dinolab-body-part-key', className: 'dinolab-body-part-key', style: { marginTop: 12, padding: '0 14px 4px', border: '1px solid ' + T.border, borderRadius: 12, background: T.panel, color: T.text, fontSize: 12.5, lineHeight: 1.5, maxWidth: 960, boxSizing: 'border-box' } },
+            el('summary', { style: { cursor: 'pointer', fontWeight: 800, minHeight: 48, padding: '13px 0', boxSizing: 'border-box' } },
               __alloT('stem.dinolab.body_part_key', 'Body-part key'), ' · ', bodyPartDefinitions.length, ' parts to explore'),
             el('p', { style: { color: T.soft, margin: '0 0 10px' } }, 'Tap any part to read what it does and see its marker on the model. Every applicable part is listed here; only clear, readable callouts appear on the model.'),
+            el('label', { htmlFor: 'dinolab-part-search', style: { display: 'block', marginBottom: 5, fontSize: 12, fontWeight: 800 } }, __alloT('stem.dinolab.search_body_parts', 'Search body parts')),
+            el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              el('input', { ref: partSearchRef, id: 'dinolab-part-search', type: 'search', value: partSearch.query, maxLength: 100,
+                placeholder: 'Try hand, manus, or frill', 'aria-describedby': 'dinolab-part-search-help', 'aria-controls': 'dinolab-part-search-results',
+                onChange: function (event) { updatePartSearch(event.target.value, section); },
+                onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); updatePartSearch('', section); } },
+                style: { flex: '1 1 220px', minWidth: 0, width: '100%', minHeight: 44, border: '1px solid ' + T.border, borderRadius: 8, padding: '10px 12px', background: T.deep, color: T.text, font: 'inherit', boxSizing: 'border-box' } }),
+              searching || section !== 'all' ? el('button', { type: 'button', onClick: clearPartSearch, style: { minHeight: 44, border: '1px solid ' + T.border, borderRadius: 8, padding: '8px 12px', background: T.deeper, color: T.text, font: 'inherit', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.dinolab.clear_part_search', 'Clear search')) : null),
+            el('p', { id: 'dinolab-part-search-help', style: { margin: '6px 0 10px', color: T.soft, fontSize: 11.5 } }, 'Search familiar or anatomical names. Layer tags describe the model view; evidence is explained in each part’s guide.'),
+            el('div', { role: 'group', 'aria-label': 'Body-part categories', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } }, ['all'].concat(sectionNames).map(function (name) {
+              var active = section === name, count = name === 'all' ? searchedParts.length : searchedParts.filter(function (part) { return (part.section || 'Body parts') === name; }).length;
+              return el('button', { key: name, type: 'button', 'aria-pressed': active, 'aria-controls': 'dinolab-part-search-results',
+                onClick: function () { updatePartSearch(partSearch.query, name); },
+                style: { minHeight: 44, maxWidth: '100%', padding: '7px 10px', borderRadius: 8, border: '1px solid ' + (active ? '#0f766e' : T.border), background: active ? '#0f766e' : T.deeper, color: active ? '#fff' : T.text, font: 'inherit', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' } }, name === 'all' ? 'All parts' : name,
+                el('span', { 'aria-hidden': 'true', style: { marginLeft: 7, fontWeight: 500 } }, count));
+            })),
+            el('p', { id: 'dinolab-part-search-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '8px 0 12px', color: T.soft, fontSize: 12 } }, matches.length + ' of ' + bodyPartDefinitions.length + ' parts' + (section === 'all' ? '' : ' · ' + section)),
+            el('div', { id: 'dinolab-part-search-results' },
+            matches.length === 0 ? el('div', { className: 'dinolab-part-search-empty', style: { padding: '20px 14px', marginBottom: 12, border: '1px dashed ' + T.border, borderRadius: 9, background: T.deeper } },
+              el('p', { style: { margin: '0 0 5px', fontWeight: 800 } }, 'No matching body parts'),
+              el('p', { style: { margin: 0, color: T.soft } }, 'Try a shorter name, choose another category, or clear your search.')) : null,
             sections.map(function (group) { return el('section', { key: group.name, className: 'dinolab-anatomy-section', 'aria-label': group.name,
-              style: { marginBottom: 12 } },
-              el('h4', { style: { margin: '8px 0 6px', color: T.soft, fontSize: 12, fontWeight: 900 } }, group.name),
-              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, group.parts.map(function (part) {
+              style: { marginBottom: 18 } },
+              el('h4', { style: { margin: '12px 0 8px', color: T.soft, fontSize: 11, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' } }, group.name),
+              el('div', { className: 'dinolab-part-card-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))', gap: 8 } }, group.parts.map(function (part) {
                 var active = selectedBodyPartId === part.id;
-                return el('button', { key: part.id, type: 'button', 'data-dino-part-choice': part.id,
-                  'aria-label': 'Learn about ' + part.label, 'aria-controls': 'dinolab-anatomy-browser', 'aria-pressed': active,
+                var term = (showScientificNames || searching) && part.anatomicalTerm;
+                var layer = props.species.group === 'other' ? 'Scale proxy' : part.inferredProxy ? 'Inferred tissue' : part.layer === 'skeleton' ? 'Bone layer' : part.layer === 'surface' ? 'Life surface' : 'Both layers';
+                return el('button', { key: part.id, type: 'button', className: 'dinolab-part-card', 'data-dino-part-choice': part.id,
+                  'aria-label': 'Learn about ' + part.label + (term ? ' — ' + term : ''), 'aria-describedby': 'dinolab-part-layer-' + part.id, 'aria-controls': 'dinolab-anatomy-browser', 'aria-pressed': active,
                   onClick: function () { selectBodyPart(part.id, true); },
-                  style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#0f766e' : T.border),
-                    background: active ? '#0f766e' : T.deeper, color: active ? '#fff' : T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, part.label);
+                  style: { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 6, minHeight: 82, minWidth: 0, padding: '12px 13px', borderRadius: 9, border: '1px solid ' + (active ? '#0f766e' : T.border),
+                    boxShadow: active ? 'inset 0 0 0 1px #5eead4' : 'none', background: active ? '#0f766e' : T.deeper, color: active ? '#fff' : T.text, fontFamily: 'inherit', fontSize: 13, fontWeight: 800, lineHeight: 1.4, cursor: 'pointer', maxWidth: '100%', overflowWrap: 'anywhere', textAlign: 'left' } },
+                  el('span', null, part.label),
+                  term ? el('span', { 'data-dino-anatomical-name': part.id, style: { display: 'block', color: active ? '#ccfbf1' : T.soft, fontSize: 12, lineHeight: 1.4, fontWeight: 500 } }, term) : null,
+                  el('span', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginTop: 'auto', paddingTop: 5, fontSize: 10.5, fontWeight: 600, color: active ? '#ccfbf1' : T.soft } },
+                    el('span', { id: 'dinolab-part-layer-' + part.id, className: 'dinolab-part-layer-tag', style: { border: '1px solid ' + (active ? '#5eead4' : T.border), borderRadius: 5, padding: '2px 6px' } }, layer),
+                    el('span', { 'aria-hidden': 'true' }, active ? '✓ Selected' : 'Explore →')));
               })));
-            }));
+            })));
         }
         function renderAnatomyQuest() {
           var buttonStyle = { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.panel, color: T.text, fontSize: 13, fontWeight: 800, cursor: 'pointer' };
@@ -24839,14 +25215,7 @@ if (/Ceratops/i.test(cladeName)) {
           yawRef.current.study = part.region;
           setStudyView({ speciesId: props.species.id, region: part.region });
           if (cameraControlRef.current) cameraControlRef.current(0, 0.16, 1, part.label + ' selected. The double-ring marker follows this landmark.', part.region);
-          if (focusGuide) window.requestAnimationFrame(function () {
-            var guide = anatomyGuideRef.current;
-            if (guide) {
-              var controls = guide.closest('details.dinolab-3d-controls-disclosure');
-              if (controls) controls.open = true;
-              guide.focus({ preventScroll: true }); guide.scrollIntoView({ block: 'nearest' });
-            }
-          });
+          if (focusGuide) window.requestAnimationFrame(focusBodyPartGuide);
         }
         function applyStudyView(region) { notifyOrientationInteraction();
           if (props.shapeStudy && props.onShapeStudyExit) props.onShapeStudyExit();
@@ -24987,13 +25356,15 @@ var evidenceRoute = [
           el('div', { ref: bodyLabelOverlayRef, className: 'dinolab-body-label-overlay', role: 'group', 'aria-label': __alloT("stem.dinolab.a11y_model_body_part_labels", "Model body-part labels"), style: { display: 'none', position: 'absolute', inset: 0, pointerEvents: 'none' } },
             el('svg', { width: '100%', height: '100%', 'aria-hidden': 'true', focusable: 'false', style: { position: 'absolute', inset: 0, overflow: 'hidden' } }, bodyPartDefinitions.map(function (part) {
               return el('g', { key: part.id, 'data-dino-part-line': part.id, style: { display: 'none' } },
-                el('line', { stroke: '#99f6e4', strokeWidth: 1.5 }),
-                el('circle', { 'data-dino-part-ring': part.id, r: 9, fill: 'none', stroke: '#ffffff', strokeWidth: 3, style: { display: 'none', filter: 'drop-shadow(0 1px 2px #0f172a)' } }),
-                el('circle', { r: 3, fill: '#0f172a', stroke: '#99f6e4', strokeWidth: 1.5 }));
+                el('line', { 'data-dino-part-leader-outline': part.id, stroke: '#0f172a', strokeWidth: 4, strokeLinecap: 'round' }),
+                el('line', { 'data-dino-part-leader': part.id, stroke: '#99f6e4', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                el('circle', { 'data-dino-part-ring-outline': part.id, r: 9, fill: 'none', stroke: '#0f172a', strokeWidth: 6, style: { display: 'none' } }),
+                el('circle', { 'data-dino-part-ring': part.id, r: 9, fill: 'none', stroke: '#ffffff', strokeWidth: 3, style: { display: 'none' } }),
+                el('circle', { 'data-dino-part-dot': part.id, r: 3, fill: '#0f172a', stroke: '#99f6e4', strokeWidth: 1.5 }));
             })),
             bodyPartDefinitions.map(function (part) { return el('button', {
               key: part.id, type: 'button', 'data-dino-part-label': part.id, 'data-dino-shape-landmark': shapeStudyLandmarks.indexOf(part.id) >= 0 ? 'true' : undefined,
-              'aria-label': (activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0 ? (activeSupportingRelation.ids.indexOf(part.id) ? 'Endpoint B: ' : 'Endpoint A: ') : '') + 'Describe ' + part.label, 'aria-controls': 'dinolab-anatomy-browser',
+              'aria-label': (activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0 ? (activeSupportingRelation.ids.indexOf(part.id) ? 'Endpoint B: ' : 'Endpoint A: ') : '') + 'Describe ' + bodyPartAccessibleName(part), 'aria-controls': 'dinolab-anatomy-browser',
               'aria-pressed': selectedBodyPartId === part.id,
               onClick: function (event) { event.stopPropagation(); if (activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0) selectSupportingEndpoint(part.id); else selectBodyPart(part.id, true); },
               style: { display: 'none', position: 'absolute', pointerEvents: 'auto', left: 0, top: 0,
@@ -25001,15 +25372,17 @@ var evidenceRoute = [
                 border: '1px solid #5eead4', borderRadius: 7, background: '#0f172a', color: '#f0fdfa',
                 textAlign: 'center', fontFamily: 'inherit', fontSize: 12, fontWeight: 800, lineHeight: '18px',
                 whiteSpace: 'normal', overflowWrap: 'anywhere', cursor: 'pointer' }
-              }, (activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0 ? (activeSupportingRelation.ids.indexOf(part.id) ? 'B · ' : 'A · ') : '') + __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label)); })
+              }, selectedBodyPartId === part.id ? el('span', { 'data-dino-part-selected-check': part.id, 'aria-hidden': 'true' }, '✓ ') : null,
+              (activeSupportingRelation && activeSupportingRelation.ids.indexOf(part.id) >= 0 ? (activeSupportingRelation.ids.indexOf(part.id) ? 'B · ' : 'A · ') : '') + __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label),
+              showScientificNames && part.anatomicalTerm ? el('span', { 'data-dino-anatomical-name': part.id, style: { display: 'block', marginTop: 2, color: '#99f6e4', fontSize: 11, fontWeight: 500, lineHeight: '15px' } }, part.anatomicalTerm) : null); })
           ),
           el('div', { className: 'dinolab-3d-readouts', style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip((lambeosaurBodyReadout ? 'Catalog estimates · ' : '') + 'Length ' + fmtLength(props.species.lengthM) + ' | Height ' + fmtLength(props.species.heightM) + ' | Mass ' + fmtWeight(props.species.weightKg), 'rgba(56,189,248,0.62)'),
             props.showBody ? readoutChip(surfaceHypothesis.id === 'classic' ? 'Historical comparison' : (Number(props.bodyOpacity) >= 98 ? 'Life reconstruction · ' : 'Surface · ') + surfaceHypothesis.shortLabel, surfaceHypothesis.id === 'classic' ? 'rgba(245,158,11,0.85)' : 'rgba(94,234,212,0.68)') : null,
             readoutChip('Scene ' + (props.stage === 'habitat' ? habitat.shortLabel : selectedStudioLight.sceneLabel), 'rgba(20,184,166,0.65)'),
             readoutChip(lambeosaurBodyReadout ? 'Pose · reconstructed support' : 'Pose ' + posture.shortLabel, 'rgba(245,158,11,0.62)'),
-            readoutChip('Colour ' + (integumentEvidence.direct ? 'from fossil pigment' : 'illustrated'),
-              integumentEvidence.direct ? 'rgba(232,121,249,0.72)' : 'rgba(148,163,184,0.55)'),
+            readoutChip('Colour ' + (integumentEvidence.direct && surfaceHypothesis.paletteMode !== 'neutral' && surfaceHypothesis.paletteMode !== 'classic' ? 'from fossil pigment' : 'illustrated'),
+              integumentEvidence.direct && surfaceHypothesis.paletteMode !== 'neutral' && surfaceHypothesis.paletteMode !== 'classic' ? 'rgba(232,121,249,0.72)' : 'rgba(148,163,184,0.55)'),
             lambeosaurBodyReadout ? readoutChip('Fossils · mixed evidence', 'rgba(245,158,11,0.62)') : readoutChip('Fossils ' + (reconstructionProfile.coverage === 'strong' ? 'abundant'
               : (reconstructionProfile.coverage === 'limited' ? 'sparse' : 'partial')),
               reconstructionProfile.coverage === 'strong' ? 'rgba(34,197,94,0.70)'
@@ -25144,6 +25517,29 @@ var evidenceRoute = [
           el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view'), style: { position: externalViewReadouts ? 'static' : 'absolute', right: externalViewReadouts ? 0 : 10, bottom: externalViewReadouts ? 0 : 56, margin: externalViewReadouts ? '8px 10px 0' : 0, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
           el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: externalViewReadouts ? 'static' : 'absolute', left: externalViewReadouts ? 0 : 10, bottom: externalViewReadouts ? 0 : 10, right: externalViewReadouts ? 0 : 10, margin: externalViewReadouts ? '8px 10px 10px' : 0, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         ),
+          props.labelMode === 'anatomy' && selectedBodyPart ? el('section', { className: 'dinolab-selected-part-summary', 'aria-label': 'Selected body part', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 10, padding: '12px 14px', border: '1px solid ' + T.border, borderLeft: '3px solid #14b8a6', borderRadius: 10, background: T.panel, color: T.text } },
+            el('div', { style: { flex: '1 1 180px', minWidth: 0 } },
+              el('div', { style: { fontSize: 10.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 3 } }, 'Selected landmark'),
+              el('div', { style: { fontSize: 16, fontWeight: 800, lineHeight: 1.4, overflowWrap: 'anywhere' } }, selectedBodyPart.label),
+              selectedBodyPart.anatomicalTerm ? el('div', { style: { marginTop: 2, fontSize: 12, lineHeight: 1.4, color: T.soft, overflowWrap: 'anywhere' } }, selectedBodyPart.anatomicalTerm) : null),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+              !props.shapeStudy && !activeSupportingRelation ? el('button', { type: 'button', 'data-dino-part-context-toggle': 'true', 'aria-pressed': partContextActive, 'aria-controls': 'dinolab-3d-canvas-' + props.species.id,
+                disabled: !partContextActive && ['head', 'body', 'tail'].indexOf(activeStudy) < 0, onClick: togglePartContextView,
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: partContextActive ? '#0f766e' : T.deeper, color: partContextActive ? '#fff' : T.text, font: 'inherit', fontSize: 12, fontWeight: 700, cursor: !partContextActive && ['head', 'body', 'tail'].indexOf(activeStudy) < 0 ? 'default' : 'pointer', opacity: !partContextActive && ['head', 'body', 'tail'].indexOf(activeStudy) < 0 ? 0.55 : 1 } }, partContextActive ? 'Return to detail' : 'See whole animal') : null,
+              el('button', { type: 'button', onClick: focusBodyPartGuide, 'aria-controls': 'dinolab-selected-part-guide', style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #0f766e', background: '#0f766e', color: '#fff', font: 'inherit', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Read part guide'),
+              el('button', { type: 'button', onClick: function () { focusBodyPartDirectory(false); }, 'aria-controls': 'dinolab-body-part-key', style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, font: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Browse body parts')),
+            selectedPartVisibility ? el('div', { className: 'dinolab-part-visibility-notice', role: 'note', 'aria-label': 'Selected part visibility', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, flex: '1 1 100%', padding: '10px 12px', border: '1px solid ' + T.border, borderLeft: '3px solid #d97706', borderRadius: 8, background: T.deeper } },
+              el('div', { style: { flex: '1 1 230px', minWidth: 0 } },
+                el('strong', { style: { display: 'block', fontSize: 12, marginBottom: 3 } }, selectedPartVisibility.title),
+                el('p', { id: 'dinolab-part-visibility-help', style: { margin: 0, color: T.soft, fontSize: 12, lineHeight: 1.5 } }, selectedPartVisibility.message)),
+              props.onPartReveal ? el('button', { type: 'button', 'data-dino-part-reveal': selectedPartVisibility.kind, 'aria-controls': 'dinolab-3d-canvas-' + props.species.id, 'aria-describedby': 'dinolab-part-visibility-help', onClick: revealSelectedBodyPart,
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #0f766e', background: '#0f766e', color: '#fff', font: 'inherit', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, selectedPartVisibility.action) : null) : null,
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, flex: '1 1 100%', borderTop: '1px solid ' + T.border, paddingTop: 6 } },
+              el('label', { htmlFor: 'dinolab-focus-selected-label', style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, fontSize: 12, fontWeight: 800, cursor: 'pointer' } },
+                el('input', { id: 'dinolab-focus-selected-label', type: 'checkbox', checked: props.focusSelectedLabel === true, 'aria-describedby': 'dinolab-focus-selected-label-help',
+                  onChange: function (event) { if (props.onFocusSelectedLabelChange) props.onFocusSelectedLabelChange(event.target.checked); },
+                  style: { width: 18, height: 18, margin: 0, flexShrink: 0, accentColor: '#0f766e' } }), 'Focus selected label'),
+              el('p', { id: 'dinolab-focus-selected-label-help', style: { margin: 0, flex: '1 1 220px', fontSize: 11.5, lineHeight: 1.5, color: T.soft } }, 'Hide nearby labels to inspect this part. Supporting traces and shape studies keep their comparison landmarks.'))) : null,
           el('div', { className: 'dinolab-study-controls', role: 'group', 'aria-label': __alloT('stem.dinolab.study_details', 'Study details'), style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 7, marginTop: 10, maxWidth: 560 } },
             el('span', { style: { color: T.soft, fontSize: 12, fontWeight: 800, gridColumn: '1 / -1' } }, __alloT('stem.dinolab.study_details', 'Study details')),
             ['full', 'head', 'body', 'tail'].map(function (region) {
@@ -25184,11 +25580,18 @@ var evidenceRoute = [
             el('button', { type: 'button', 'aria-pressed': props.labelMode === 'anatomy' ? 'true' : 'false', onClick: function () { notifyOrientationInteraction(); if (props.onLabelModeChange) props.onLabelModeChange(props.labelMode === 'anatomy' ? 'key' : 'anatomy'); },
               style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: props.labelMode === 'anatomy' ? '#0f766e' : T.deeper, color: props.labelMode === 'anatomy' ? '#ffffff' : T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.body_part_labels', 'Body-part labels')),
             props.labelMode === 'anatomy' ? el('div', { className: 'dinolab-part-locator', id: 'dinolab-anatomy-browser', style: { marginTop: 10, padding: 12, borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, maxWidth: 620 } },
+              hasAnatomicalTerms ? el('div', { className: 'dinolab-anatomical-name-controls', style: { marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
+                el('label', { htmlFor: 'dinolab-scientific-names', style: { display: 'flex', alignItems: 'center', gap: 9, minHeight: 44, color: T.text, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                  el('input', { id: 'dinolab-scientific-names', type: 'checkbox', checked: showScientificNames, 'aria-describedby': 'dinolab-scientific-names-help',
+                    onChange: function (event) { if (props.onScientificNamesChange) props.onScientificNamesChange(event.target.checked); },
+                    style: { width: 18, height: 18, margin: 0, flexShrink: 0, accentColor: '#0f766e' } }),
+                  __alloT('stem.dinolab.show_scientific_names', 'Show scientific names')),
+                el('p', { id: 'dinolab-scientific-names-help', style: { margin: '0 0 2px', color: T.soft, fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.dinolab.scientific_names_help', 'Add anatomical terms beside familiar names on the model and in the body-part key. Every detail card includes the anatomical term.'))) : null,
               el('label', { htmlFor: 'dinolab-part-picker', style: { display: 'block', color: T.text, fontSize: 12, fontWeight: 800, marginBottom: 6 } }, __alloT('stem.dinolab.locate_body_part', 'Explore a body part')),
               el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 el('select', { id: 'dinolab-part-picker', value: selectedBodyPartId, onChange: function (event) { selectBodyPart(event.target.value); }, 'aria-describedby': 'dinolab-part-explanation', style: { minHeight: 44, minWidth: 0, flex: '1 1 180px', padding: '8px 10px', borderRadius: 7, border: '1px solid ' + T.border, background: T.deep, color: T.text, fontSize: 13 } },
                   el('option', { value: '' }, __alloT('stem.dinolab.all_body_parts', 'All parts')),
-                  bodyPartDefinitions.map(function (part) { return el('option', { key: part.id, value: part.id }, __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label)); })),
+                  bodyPartDefinitions.map(function (part) { return el('option', { key: part.id, value: part.id }, __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label) + (showScientificNames && part.anatomicalTerm ? ' — ' + part.anatomicalTerm : '')); })),
                 selectedBodyPart ? el('button', { type: 'button', onClick: function () { selectBodyPart(selectedBodyPartId); if (canvasRef.current) canvasRef.current.scrollIntoView({ block: 'center' }); }, style: { minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid ' + T.border, background: '#0f766e', color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.show_body_part', 'Show part')) : null),
               el('div', { id: 'dinolab-part-explanation', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8, fontSize: 12, lineHeight: 1.55, color: T.text } },
                 selectedBodyPart ? el('strong', null, selectedBodyPart.label + '. ') : null,
@@ -26145,6 +26548,10 @@ var evidenceRoute = [
                   if (result.added) upd('compareInquiry', result.state);
                   return result.reason;
                 }, onShapeStudyLensChange: function (lens) { if (shapeStudy && shapeStudy.family.id === 'lambeosaurs' && ['limbs', 'allocation'].indexOf(lens) >= 0) upd({ field3dShapeStudy: Object.assign({}, d.field3dShapeStudy, { lens: lens }), field3dLabelMode: 'anatomy' }); }, onShapeStudySideChange: function (side) { if (shapeStudy && (side === 'a' || side === 'b')) navigateShapeStudy({ family: shapeStudy.family.id, b: shapeStudy.b.id, active: side }); }, stage: shapeStudy ? 'studio' : (d.field3dStage || 'studio'), labelMode: d.field3dLabelMode || 'key', onLabelModeChange: function (mode) { upd('field3dLabelMode', mode); }, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); },
+                scientificNames: d.field3dScientificNames === true,
+                onScientificNamesChange: function (enabled) { upd('field3dScientificNames', enabled === true); },
+                focusSelectedLabel: d.field3dFocusSelectedLabel === true,
+                onFocusSelectedLabelChange: function (enabled) { upd('field3dFocusSelectedLabel', enabled === true); },
                 partComparisons: d.field3dPartComparisons,
                 onPartComparisonChange: function (partId, patch, record) {
                   var next = dinoPartComparisonUpdate(d.field3dPartComparisons, dn, partId, activeHypothesis.id, patch, record);
@@ -26158,8 +26565,12 @@ var evidenceRoute = [
                   upd(patch);
                   announceToSR((mode === 'bone' ? 'Bone structure' : 'Life surface') + ' at ' + label + '. ' + observation);
                 },
+                onPartReveal: function (patch, label, kind) {
+                  upd(patch);
+                  announceToSR(label + '. ' + (kind === 'tissue' ? 'Inferred tissue shapes revealed through a translucent body. These shapes are reconstructions.' : kind === 'bone' ? 'Bone structure shown.' : 'Life surface shown.') + ' Your selected landmark and viewing direction are retained.');
+                },
                 autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: shapeStudy ? false : workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: shapeStudy ? {} : scanLogged, loggedAnchorKey: shapeStudy ? '' : scanLoggedKey, loggedCount: shapeStudy ? 0 : scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: shapeStudy ? 0 : scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: shapeStudy ? {} : assemblyPlaced, assemblyPlacedKey: shapeStudy ? '' : assemblyPlacedKey, assemblyPlacedCount: shapeStudy ? 0 : assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: shapeStudy ? false : assemblyUnlocked, claimEvidenceFocus: !shapeStudy && claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: !shapeStudy && claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: !shapeStudy && claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: !shapeStudy && claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: shapeStudy ? null : claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
-              el('div', { key: 'evidenceContext', hidden: !!shapeStudy, className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_evidence_context', 'Reconstruction evidence context'), style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)' } },
+              el('div', { key: 'evidenceContext', hidden: !!shapeStudy, className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_evidence_context', 'Reconstruction evidence context'), style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.94), rgba(13,58,60,0.94))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)', '--allo-stem-text': '#f1f5f9', '--allo-stem-text-soft': '#cbd5e1' } }, // dark in every theme, so pin light inks
                 el('div', { key: 'contextHeader', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
                   el('div', { style: { color: T.text, fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Evidence context'),
                   el('div', { style: { color: T.soft, fontSize: 11.5, lineHeight: 1.35 } }, claimEvidenceTrailLabel ? 'Linked trail: ' + claimEvidenceTrailLabel : 'Keep observations separate from inference as you explore')

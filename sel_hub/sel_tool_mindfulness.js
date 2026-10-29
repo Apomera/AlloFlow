@@ -22251,8 +22251,8 @@ var VISUAL_ANCHORS = [
             gap: 8
           }
         },
-          h('span', { style: { fontSize: 12, fontWeight: 900, color: _minFg(color) } }, label),
-          h('span', { style: { fontSize: 11, color: _minFg('#94a3b8'), lineHeight: 1.45 } }, detail)
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: _minFg(isHere ? '#e2e8f0' : color) } }, label),
+          h('span', { style: { fontSize: 11, color: _minFg(isHere ? '#cbd5e1' : '#94a3b8'), lineHeight: 1.45 } }, detail)
         );
       }
 

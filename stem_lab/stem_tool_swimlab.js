@@ -83,7 +83,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       '.swimlab-menu-shell *{box-sizing:border-box;}',
       '.swimlab-command{padding:20px;border:1px solid rgba(56,189,248,.42);border-radius:20px;background:radial-gradient(circle at 90% 10%,rgba(14,165,233,.24),transparent 34%),linear-gradient(135deg,rgba(7,89,133,.72),rgba(2,6,23,.98) 66%);box-shadow:0 18px 44px rgba(2,6,23,.28);}',
       '.swimlab-command-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
-      '.swimlab-eyebrow{margin:0 0 7px;color:#7dd3fc;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
+      '.swimlab-eyebrow{margin:0 0 7px;color:#bae6fd;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
       '.swimlab-title{margin:0;color:#f8fafc;font-size:clamp(22px,3vw,31px);line-height:1.12;}',
       '.swimlab-subtitle{max-width:720px;margin:8px 0 0;color:#dbeafe;font-size:13px;line-height:1.55;}',
       '.swimlab-status{flex:0 0 auto;padding:8px 11px;border:1px solid rgba(125,211,252,.34);border-radius:999rem;background:rgba(2,6,23,.62);color:#bae6fd;font-size:10px;font-weight:800;white-space:nowrap;}',
@@ -115,7 +115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       '@media(max-width:820px){.swimlab-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.swimlab-essential-grid,.swimlab-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media(max-width:560px){.swimlab-menu-shell{padding:0;}.swimlab-command{padding:14px;border-radius:16px;}.swimlab-command-top{flex-direction:column;}.swimlab-status{white-space:normal;}.swimlab-essential-grid,.swimlab-catalog-grid{grid-template-columns:1fr;}.swimlab-primary{width:100%;}.swimlab-actions{align-items:stretch;}.swimlab-action-note{width:100%;}.swimlab-menu-tile{min-height:100px;}}',
       '@media(prefers-reduced-motion:reduce){.swimlab-primary,.swimlab-menu-tile{transition:none;}.swimlab-primary:hover,.swimlab-menu-tile:hover{transform:none;}}',
-      '.theme-contrast .swimlab-command,.theme-contrast .swimlab-section,.theme-contrast .swimlab-catalog,.theme-contrast .swimlab-badges{box-shadow:none;border-width:2px;}'
+      '.theme-contrast .swimlab-command,.theme-contrast .swimlab-section,.theme-contrast .swimlab-catalog,.theme-contrast .swimlab-badges{box-shadow:none;border-width:2px;}.theme-contrast .swimlab-primary{background:#000;}'
     ].join('\n');
     if (document.head) document.head.appendChild(swimReadinessStyle);
   }

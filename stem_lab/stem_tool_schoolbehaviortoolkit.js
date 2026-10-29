@@ -813,7 +813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             }
           },
             h('div', { 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: 1, marginBottom: 2 } }, p.icon),
-            h('div', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9, opacity: 0.8 } }, 'P' + p.phase),
+            h('div', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 9 } }, 'P' + p.phase),
             h('div', { style: { lineHeight: 1.2, marginTop: 2 } }, p.name)
           );
         })
@@ -1070,7 +1070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             }
           },
             h('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4, lineHeight: 1 } }, f.icon),
-            h('div', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10, opacity: 0.7 } }, f.code),
+            h('div', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 10 } }, f.code),
             h('div', { style: { marginTop: 2 } }, f.label),
             showAsCorrect ? h('div', { style: { fontSize: 10, marginTop: 4 } }, '✓') : null,
             showAsWrong ? h('div', { style: { fontSize: 10, marginTop: 4 } }, '✗') : null
@@ -1661,7 +1661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   circularBadge(rb.icon, rb.color, 36),
                   h('div', null,
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: rb.color, lineHeight: 1.2 } }, rb['function']),
-                    h('div', { style: { fontSize: 9, color: rb.color + 'cc', fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '0.04em', marginTop: 1 } }, 'function: ' + rb.functionAbbrev)
+                    h('div', { style: { fontSize: 9, color: rb.color, fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '0.04em', marginTop: 1 } }, 'function: ' + rb.functionAbbrev)
                   )
                 ),
                 h('div', null,
@@ -2042,11 +2042,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     });
                     if (addToast) addToast('🎉 ' + rew.name, 'success');
                   },
-                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', minHeight: 44, borderRadius: 9, cursor: 'pointer', textAlign: 'left', opacity: afford ? 1 : 0.55, background: afford ? 'rgba(251,191,36,0.10)' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (afford ? 'rgba(251,191,36,0.35)' : 'rgba(100,116,139,0.3)'), color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', minHeight: 44, borderRadius: 9, cursor: 'pointer', textAlign: 'left', opacity: afford ? 1 : 0.75, background: afford ? 'rgba(251,191,36,0.10)' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (afford ? 'rgba(251,191,36,0.35)' : 'rgba(100,116,139,0.3)'), color: 'var(--allo-stem-text, #e2e8f0)' } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 17 } }, rew.icon),
                   h('span', null,
                     h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 700 } }, rew.name),
-                    h('span', { style: { display: 'block', fontSize: 10.5, color: afford ? '#fbbf24' : 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, rew.cost + ' 🪙')));
+                    h('span', { style: { display: 'block', fontSize: 10.5, color: afford ? '#fbbf24' : '#cbd5e1', fontWeight: 700 } }, rew.cost + ' 🪙')));
               })
             ),
 

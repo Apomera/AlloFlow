@@ -8779,6 +8779,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               resoHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '🎙️', title: t('stem.singing.resonance_lab_discover_your_vocal_tone', 'Resonance Lab — discover your vocal tone'), hint: t('stem.singing.two_sliders_throat_openness_and_soft_p', 'Two sliders — throat openness and soft palate lift — combine into four tone qualities (rich, bright, warm, nasal). No score, no reveal: experiment, log, and explain what you find.') }
             };
             var meta = TAB_META[activeTab] || TAB_META.pitch;
+            // Accent at 55% (light) or 45% toward white (dark) clears 4.5:1 on the tint.
+            var heroInk = 'rgb(' + [1, 3, 5].map(function(i) { var c = parseInt(meta.accent.substr(i, 2), 16); return Math.round(isDark ? c + (255 - c) * 0.45 : c * 0.55); }).join(',') + ')';
             return h('div', {
               className: 'mt-2',
               style: {
@@ -8792,7 +8794,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             },
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                 h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );

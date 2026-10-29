@@ -3010,7 +3010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           type: 'button',
           'aria-label': __alloT('stem.universe.a11y_dismiss_tutorial_and_start_exploring', 'Dismiss tutorial and start exploring'),
           onClick: function() { dismissHandlerRef.current(); },
-          className: 'mt-4 min-h-11 w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-lg transition-colors hover:from-violet-600 hover:to-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2'
+          className: 'mt-4 min-h-11 w-full rounded-xl bg-gradient-to-r from-violet-700 to-indigo-700 px-4 py-2 text-sm font-bold text-white shadow-lg transition-colors hover:from-violet-700 hover:to-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2'
         }, '\uD83C\uDF20 Start Exploring!')
       )
     );

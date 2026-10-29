@@ -41,6 +41,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     mst.id = 'allo-music-theme-css';
     mst.textContent = "/* Music Synthesizer dark theme. Scoped to the tool and to the dark attribute,\n   so light mode is byte-for-byte unaffected. Generated from the class tokens\n   actually present in this file (158 rules); saturated button shades are\n   intentionally untouched. */\n.allo-music-tool[data-allo-theme=\"dark\"] { background-color: #0f172a !important; border-radius: 12px; }\n.allo-music-tool[data-allo-theme=\"dark\"] select { color: #e2e8f0 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-amber-100 { background-color: #78350f !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-amber-100\\/50 { background-color: #78350f !important; --tw-bg-opacity: 1 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-amber-200 { background-color: #92400e !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-amber-50 { background-color: #451a03 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-blue-100 { background-color: #1e3a8a !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-blue-50 { background-color: #172554 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-emerald-100 { background-color: #064e3b !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-emerald-50 { background-color: #022c22 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-green-100 { background-color: #14532d !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-green-50 { background-color: #052e16 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-indigo-100 { background-color: #312e81 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-indigo-100\\/50 { background-color: #312e81 !important; --tw-bg-opacity: 1 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-indigo-200 { background-color: #3730a3 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-orange-50 { background-color: #431407 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-purple-100 { background-color: #581c87 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-purple-200\\/50 { background-color: #6b21a8 !important; --tw-bg-opacity: 1 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-purple-50 { background-color: #3b0764 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-purple-50\\/80 { background-color: #3b0764 !important; --tw-bg-opacity: 1 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-red-100 { background-color: #7f1d1d !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-red-50 { background-color: #450a0a !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-rose-100 { background-color: #881337 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-rose-200 { background-color: #9f1239 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-slate-100 { background-color: #334155 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-slate-200 { background-color: #475569 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-slate-50 { background-color: #1e293b !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-violet-100 { background-color: #4c1d95 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-white { background-color: #1e293b !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-white\\/60 { background-color: #1e293b !important; --tw-bg-opacity: 1 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .bg-white\\/80 { background-color: #1e293b !important; --tw-bg-opacity: 1 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-amber-100 { border-color: #92400e !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-amber-200 { border-color: #92400e !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-amber-300 { border-color: #b45309 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-amber-400 { border-color: #b45309 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-blue-100 { border-color: #1e40af !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-blue-200 { border-color: #1e40af !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-cyan-300 { border-color: #0e7490 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-emerald-100 { border-color: #065f46 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-emerald-200 { border-color: #065f46 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-emerald-300 { border-color: #047857 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-green-200 { border-color: #166534 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-green-400 { border-color: #15803d !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-indigo-200 { border-color: #3730a3 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-indigo-300 { border-color: #4338ca !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-indigo-400 { border-color: #4338ca !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-purple-100 { border-color: #6b21a8 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-purple-200 { border-color: #6b21a8 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-purple-300 { border-color: #7e22ce !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-purple-400 { border-color: #7e22ce !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-red-200 { border-color: #991b1b !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-red-400 { border-color: #b91c1c !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-rose-100 { border-color: #9f1239 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-rose-200 { border-color: #9f1239 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-rose-300 { border-color: #be123c !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-slate-100 { border-color: #334155 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-slate-200 { border-color: #334155 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-slate-300 { border-color: #334155 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-slate-400 { border-color: #334155 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-teal-200 { border-color: #115e59 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-teal-300 { border-color: #0f766e !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .border-violet-200 { border-color: #5b21b6 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-amber-100 { background-image: none !important; background-color: #78350f !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-amber-50 { background-image: none !important; background-color: #451a03 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-emerald-50 { background-image: none !important; background-color: #022c22 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-indigo-50 { background-image: none !important; background-color: #1e1b4b !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-purple-50 { background-image: none !important; background-color: #3b0764 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-rose-50 { background-image: none !important; background-color: #4c0519 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-slate-50 { background-image: none !important; background-color: #020617 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-teal-50 { background-image: none !important; background-color: #042f2e !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .from-violet-50 { background-image: none !important; background-color: #2e1065 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-amber-100:hover { background-color: #78350f !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-amber-200:hover { background-color: #92400e !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-amber-50:hover { background-color: #451a03 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-blue-200:hover { background-color: #1e40af !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-blue-50:hover { background-color: #172554 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-emerald-200:hover { background-color: #065f46 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-indigo-200:hover { background-color: #3730a3 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-indigo-50:hover { background-color: #1e1b4b !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-orange-100:hover { background-color: #7c2d12 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-purple-100:hover { background-color: #581c87 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-purple-200:hover { background-color: #6b21a8 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-purple-50:hover { background-color: #3b0764 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-red-100:hover { background-color: #7f1d1d !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-red-200:hover { background-color: #991b1b !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-red-50:hover { background-color: #450a0a !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-rose-200:hover { background-color: #9f1239 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-rose-50:hover { background-color: #4c0519 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-slate-100:hover { background-color: #334155 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-slate-200:hover { background-color: #475569 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:bg-violet-200:hover { background-color: #5b21b6 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:border-amber-300:hover { border-color: #b45309 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:border-amber-400:hover { border-color: #b45309 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:border-emerald-400:hover { border-color: #047857 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:border-purple-200:hover { border-color: #6b21a8 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:border-purple-400:hover { border-color: #7e22ce !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:border-rose-300:hover { border-color: #be123c !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:border-rose-400:hover { border-color: #be123c !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:from-purple-100:hover { background-image: none !important; background-color: #581c87 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:text-amber-800:hover { color: #fde68a !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:text-purple-600:hover { color: #d8b4fe !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:text-red-600:hover { color: #fca5a5 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:text-red-700:hover { color: #fca5a5 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:text-slate-700:hover { color: #e2e8f0 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:text-violet-600:hover { color: #c4b5fd !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .hover\\:to-pink-100:hover { background-image: none !important; background-color: #831843 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-amber-500 { color: #fcd34d !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-amber-600 { color: #fcd34d !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-amber-700 { color: #fcd34d !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-amber-800 { color: #fde68a !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-amber-900 { color: #fde68a !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-blue-500 { color: #93c5fd !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-blue-700 { color: #93c5fd !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-emerald-600 { color: #6ee7b7 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-emerald-700 { color: #6ee7b7 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-emerald-800 { color: #a7f3d0 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-gray-800 { color: #e5e7eb !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-green-600 { color: #86efac !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-green-700 { color: #86efac !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-indigo-500 { color: #a5b4fc !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-indigo-600 { color: #a5b4fc !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-indigo-700 { color: #a5b4fc !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-indigo-800 { color: #c7d2fe !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-indigo-900 { color: #c7d2fe !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-orange-500 { color: #fdba74 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-orange-700 { color: #fdba74 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-purple-500 { color: #d8b4fe !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-purple-600 { color: #d8b4fe !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-purple-700 { color: #d8b4fe !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-purple-800 { color: #e9d5ff !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-red-500 { color: #fca5a5 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-red-700 { color: #fca5a5 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-red-800 { color: #fecaca !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-rose-500 { color: #fda4af !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-rose-600 { color: #fda4af !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-rose-700 { color: #fda4af !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-rose-800 { color: #fecdd3 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-rose-900 { color: #fecdd3 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-slate-500 { color: #94a3b8 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-slate-600 { color: #cbd5e1 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-slate-700 { color: #e2e8f0 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-slate-800 { color: #e2e8f0 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-teal-700 { color: #5eead4 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-violet-500 { color: #c4b5fd !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-violet-600 { color: #c4b5fd !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-violet-700 { color: #c4b5fd !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .text-violet-800 { color: #ddd6fe !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-blue-50 { background-image: none !important; background-color: #172554 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-cyan-50 { background-image: none !important; background-color: #083344 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-fuchsia-50 { background-image: none !important; background-color: #4a044e !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-gray-50 { background-image: none !important; background-color: #030712 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-indigo-50 { background-image: none !important; background-color: #1e1b4b !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-orange-50 { background-image: none !important; background-color: #431407 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-pink-50 { background-image: none !important; background-color: #500724 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-purple-50 { background-image: none !important; background-color: #3b0764 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-rose-50 { background-image: none !important; background-color: #4c0519 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-teal-50 { background-image: none !important; background-color: #042f2e !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .to-yellow-50 { background-image: none !important; background-color: #422006 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .via-orange-50 { background-image: none !important; background-color: #431407 !important; }\n.allo-music-tool[data-allo-theme=\"dark\"] .via-pink-50 { background-image: none !important; background-color: #500724 !important; }";
     document.head.appendChild(mst);
+    // WCAG 1.4.3 high contrast: the host paints buttons black with green ink, but a gradient image stays on top
+    var hc = document.createElement('style');
+    hc.id = 'allo-music-hc-css';
+    hc.textContent = '.theme-contrast [data-stem-tool-shell="musicSynth"] button[class*="bg-gradient"]{background-image:none!important}' +
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] :is(.from-amber-300.to-amber-400,.bg-amber-500.scale-y-105):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}';
+    document.head.appendChild(hc);
   })();
 
   // ── Accessibility live region (WCAG 4.1.3) ──
@@ -2986,7 +2992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             // ── Header ──
             React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
               React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': __alloT('stem.music.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
-              React.createElement("h3", { className: "text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500" }, __alloT('stem.music.music_synthesizer', "\uD83C\uDFB9 Music Synthesizer")),
+              React.createElement("h3", { className: "text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r " + (isDark ? "from-purple-400 to-pink-400" : "from-purple-700 to-pink-700") }, __alloT('stem.music.music_synthesizer', "\uD83C\uDFB9 Music Synthesizer")),
               React.createElement("span", { className: "px-2 py-0.5 bg-purple-100 text-purple-700 text-[0.6875rem] font-bold rounded-full" },
                 synthEngine === 'supersaw' ? '\u26A1 SUPERSAW' : synthEngine === 'fm' ? '\uD83C\uDF1F FM' : synthEngine === 'sub' ? '\uD83C\uDF0A SUB' : synthEngine === 'pad' ? '\u2601\uFE0F PAD' : synthEngine === 'plucked' ? '\uD83C\uDFB8 PLUCKED' : '\u223F ' + (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine').toUpperCase()
               ),
@@ -3042,7 +3048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
             // ── EDM Preset Bar ──
             React.createElement("div", { className: "flex gap-1 mb-3 overflow-x-auto pb-1 bg-gradient-to-r from-slate-900 to-purple-900 rounded-xl p-2 border border-purple-500/30" },
-              React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-700 uppercase tracking-wider self-center px-1 shrink-0" }, "PRESETS"),
+              React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-200 uppercase tracking-wider self-center px-1 shrink-0" }, "PRESETS"),
               EDM_PRESETS.map(function(preset) {
                 var isActive = d.activePreset === preset.name;
                 return React.createElement("button", { key: preset.id, title: preset.desc,
@@ -3052,11 +3058,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               }),
               // Engine selector
               React.createElement("div", { className: "shrink-0 ml-auto flex gap-1 items-center border-l border-purple-500/30 pl-2" },
-                React.createElement("span", { className: "text-[0.6875rem] text-purple-700 font-bold" }, "ENGINE:"),
+                React.createElement("span", { className: "text-[0.6875rem] text-purple-200 font-bold" }, "ENGINE:"),
                 [{ id: 'standard', label: __alloT('stem.music.wave', '\u223F Wave') }, { id: 'supersaw', label: __alloT('stem.music.super', '\u26A1 Super') }, { id: 'fm', label: __alloT('stem.music.fm', '\uD83C\uDF1F FM') }, { id: 'sub', label: __alloT('stem.music.sub', '\uD83C\uDF0A Sub') }, { id: 'pad', label: __alloT('stem.music.pad', '\u2601 Pad') }, { id: 'plucked', label: __alloT('stem.music.pluck_2', '\uD83C\uDFB8 Pluck') }].map(function(eng) {
                   return React.createElement("button", { key: eng.id,
                     onClick: function() { upd('synthEngine', eng.id); upd('activePreset', null); },
-                    className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold transition-all " + ((['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard') === eng.id ? 'bg-purple-600 text-white' : 'text-purple-700 hover:text-white hover:bg-purple-500/30')
+                    className: "px-1.5 py-0.5 rounded text-[0.6875rem] font-bold transition-all " + ((['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard') === eng.id ? 'bg-purple-600 text-white' : 'text-purple-200 hover:text-white hover:bg-purple-500/30')
                   }, eng.label);
                 })
               )
@@ -3113,7 +3119,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               },
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
-                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  // accent mixed 45% toward black (light) or white (dark): 4.5:1+ on the tint
+                  React.createElement('h3', { style: { color: 'rgb(' + [16, 8, 0].map(function (s) { var v = parseInt(meta.accent.slice(1), 16) >> s & 255; return Math.round(isDark ? v * 0.55 + 115 : v * 0.55); }).join(',') + ')', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                   React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
@@ -3288,7 +3295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("span", { className: "text-lg" }, "\uD83C\uDFB8"),
                   React.createElement("div", null,
                     React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.music.strum_chord_pad', "Strum & Chord Pad")),
-                    React.createElement("p", { className: "text-[0.6875rem] text-amber-600" }, __alloT('stem.music.full_chord_grid_strum_plate_and_voice_', "Full chord grid, strum plate, and voice presets"))
+                    React.createElement("p", { className: "text-[0.6875rem] text-amber-700" }, __alloT('stem.music.full_chord_grid_strum_plate_and_voice_', "Full chord grid, strum plate, and voice presets"))
                   )
                 ),
                 React.createElement("button", { onClick: function() { upd('synthTab', 'harmonypad'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all shadow-sm" }, __alloT('stem.music.open_harmonypad', "\uD83C\uDF1F Open HarmonyPad \u2192"))
@@ -3296,7 +3303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               false && React.createElement("div", { className: "REMOVED" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.music.strum_harp', "\uD83C\uDFB8 Strum Harp")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-amber-600" }, __alloT('stem.music.drag_across_strings_to_strum', "Drag across strings to strum!"))
+                  React.createElement("span", { className: "text-[0.6875rem] text-amber-700" }, __alloT('stem.music.drag_across_strings_to_strum', "Drag across strings to strum!"))
                 ),
                 React.createElement("div", { className: "flex justify-center gap-1", style: { height: '100px' } },
                   (function () {
@@ -3327,7 +3334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         className: "flex flex-col items-center justify-between cursor-pointer select-none group",
                         style: { width: '24px' }
                       },
-                        React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-600" }, noteN),
+                        React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-700" }, noteN),
                         React.createElement("div", {
                           className: "flex-1 w-[3px] rounded-full transition-all duration-150 " + (stringActive ? 'bg-amber-400 shadow-lg shadow-amber-400/50 scale-x-150' : 'bg-amber-300 group-hover:bg-amber-400'),
                           style: stringActive ? { animation: 'pulse 0.15s ease-in-out 3' } : {}
@@ -3752,7 +3759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             synthTab === 'play' && React.createElement("div", { className: "bg-gradient-to-br from-rose-50 via-pink-50 to-fuchsia-50 rounded-xl border border-rose-200 p-3 mb-3" },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-xs font-bold text-rose-800" }, __alloT('stem.music.live_mic_effects_lab', "\uD83C\uDFA4 Live Mic Effects Lab")),
-                React.createElement("span", { className: "text-[0.6875rem] text-rose-500" }, __alloT('stem.music.sing_speak_or_play_an_instrument_hear_', "Sing, speak, or play an instrument \u2014 hear effects in real-time!")),
+                React.createElement("span", { className: "text-[0.6875rem] text-rose-700" }, __alloT('stem.music.sing_speak_or_play_an_instrument_hear_', "Sing, speak, or play an instrument \u2014 hear effects in real-time!")),
                 React.createElement("button", {
                   onClick: function() {
                     if (d.micActive) {
@@ -3923,8 +3930,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
               // Mic inactive — educational preview
               !d.micActive && React.createElement("div", { className: "text-center py-3" },
-                React.createElement("p", { className: "text-[0.6875rem] text-rose-400 mb-2" }, __alloT('stem.music.connect_your_microphone_to_run_your_vo', "Connect your microphone to run your voice or instrument through the effects chain in real-time.")),
-                React.createElement("p", { className: "text-[0.6875rem] text-rose-300 italic" }, __alloT('stem.music.see_your_voice_as_a_waveform_frequency', "See your voice as a waveform + frequency spectrum. Hear how filter, delay, reverb, distortion, and chorus physically change sound waves."))
+                React.createElement("p", { className: "text-[0.6875rem] text-rose-700 mb-2" }, __alloT('stem.music.connect_your_microphone_to_run_your_vo', "Connect your microphone to run your voice or instrument through the effects chain in real-time.")),
+                React.createElement("p", { className: "text-[0.6875rem] text-rose-700 italic" }, __alloT('stem.music.see_your_voice_as_a_waveform_frequency', "See your voice as a waveform + frequency spectrum. Hear how filter, delay, reverb, distortion, and chorus physically change sound waves."))
               )
             ),
 
@@ -3932,7 +3939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             synthTab === 'play' && React.createElement("div", { className: "bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 rounded-xl border border-indigo-500/30 p-3 mb-3" },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, __alloT('stem.music.xy_performance_pad', "\uD83C\uDFAF XY Performance Pad")),
-                React.createElement("span", { className: "text-[0.6875rem] text-indigo-400" }, __alloT('stem.music.touch_drag_x_pitch_y_filter_effect', "Touch & drag \u2014 X = pitch, Y = filter/effect")),
+                React.createElement("span", { className: "text-[0.6875rem] text-indigo-200" }, __alloT('stem.music.touch_drag_x_pitch_y_filter_effect', "Touch & drag \u2014 X = pitch, Y = filter/effect")),
                 React.createElement(stableType('Tip', Tip), { id: 'xypad', title: __alloT('stem.music.xy_pad_performance', 'XY Pad Performance'), text: __alloT('stem.music.the_xy_pad_maps_your_finger_mouse_posi', 'The XY pad maps your finger/mouse position to musical parameters in real-time. The X axis controls pitch (left = low, right = high). The Y axis controls the filter cutoff frequency (top = bright, bottom = dark). This is similar to instruments like the Korg Kaoss Pad, which revolutionized live electronic music performance by turning 2D gestures into sound.') })
               ),
               React.createElement("div", {
@@ -3999,18 +4006,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               ),
               // XY Mode selector
               React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 items-center" },
-                React.createElement("span", { className: "text-[0.6875rem] font-bold text-indigo-400" }, "Y-Axis:"),
+                React.createElement("span", { className: "text-[0.6875rem] font-bold text-indigo-200" }, "Y-Axis:"),
                 ['filter', 'volume', 'vibrato', 'reverb'].map(function(mode) {
                   return React.createElement("button", { key: mode,
                     onClick: function() { upd('xyMode', mode); },
-                    className: "px-2 py-0.5 rounded text-[0.6875rem] font-bold capitalize transition-all " + ((d.xyMode || 'filter') === mode ? 'bg-indigo-600 text-white' : 'bg-white/10 text-indigo-300 hover:bg-white/20')
+                    className: "px-2 py-0.5 rounded text-[0.6875rem] font-bold capitalize transition-all " + ((d.xyMode || 'filter') === mode ? 'bg-indigo-600 text-white' : 'bg-white/10 text-indigo-200 hover:bg-white/20')
                   }, mode);
                 }),
-                React.createElement("span", { className: "text-[0.6875rem] font-bold text-indigo-400 ml-auto" }, "Scale:"),
+                React.createElement("span", { className: "text-[0.6875rem] font-bold text-indigo-200 ml-auto" }, "Scale:"),
                 React.createElement("select", { value: d.xyScale || 'chromatic',
                   'aria-label': __alloT('stem.music.scale', "Scale"),
                   onChange: function(e) { upd('xyScale', e.target.value); },
-                  className: "px-2 py-0.5 rounded text-[0.6875rem] font-bold bg-white/10 text-indigo-300 border border-indigo-500/30"
+                  className: "px-2 py-0.5 rounded text-[0.6875rem] font-bold bg-white/10 text-indigo-200 border border-indigo-500/30"
                 },
                   React.createElement("option", { value: 'chromatic' }, __alloT('stem.music.chromatic', "Chromatic")),
                   React.createElement("option", { value: 'major' }, __alloT('stem.music.major_2', "Major")),
@@ -4290,7 +4297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
               // ── Header + Kit Selector ──
               React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
-                React.createElement("span", { className: "text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600" }, __alloT('stem.music.production_studio_2', "\uD83E\uDD41 Production Studio")),
+                React.createElement("span", { className: "text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r " + (isDark ? "from-pink-400 to-purple-400" : "from-pink-700 to-purple-700") }, __alloT('stem.music.production_studio_2', "\uD83E\uDD41 Production Studio")),
                 d.samplesLoading && React.createElement("span", { className: "text-[0.6875rem] text-amber-700 animate-pulse font-bold" }, __alloT('stem.music.loading_samples', "\u23F3 Loading samples...")),
                 d.activeKit && React.createElement("span", { className: "text-[0.6875rem] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold" }, "\u2705 " + (SAMPLE_KITS[d.activeKit] || {}).name),
                 React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
@@ -4674,8 +4681,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.music.musical_notation', "\uD83C\uDFBC Musical Notation")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-amber-600" }, __alloT('stem.music.click_notes_to_hear_them', "Click notes to hear them!")),
-                  !melodySeqBP.some(function(n) { return n > 0; }) && React.createElement("span", { className: "text-[0.6875rem] text-amber-400 italic ml-auto" }, __alloT('stem.music.add_melody_notes_in_the_grid_above', "Add melody notes in the grid above \u2191"))
+                  React.createElement("span", { className: "text-[0.6875rem] text-amber-700" }, __alloT('stem.music.click_notes_to_hear_them', "Click notes to hear them!")),
+                  !melodySeqBP.some(function(n) { return n > 0; }) && React.createElement("span", { className: "text-[0.6875rem] text-amber-700 italic ml-auto" }, __alloT('stem.music.add_melody_notes_in_the_grid_above', "Add melody notes in the grid above \u2191"))
                 ),
                 // Staff notation: proper note placement on treble clef lines/spaces
                 (function() {
@@ -4787,7 +4794,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         note.flag && React.createElement("path", { d: "M17,8 C22,12 22,18 17,20", stroke: '#8b7355', strokeWidth: 1.5, fill: 'none' })
                       ),
                       React.createElement("div", { className: "text-[0.6875rem] font-bold text-amber-800" }, note.name),
-                      React.createElement("div", { className: "text-[0.6875rem] text-amber-600" }, note.beats),
+                      React.createElement("div", { className: "text-[0.6875rem] text-amber-700" }, note.beats),
                       React.createElement("div", { className: "text-[0.6875rem] text-amber-700 italic mt-0.5" }, note.desc)
                     );
                   })
@@ -4823,14 +4830,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     },
                     className: "px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-rose-700 text-white hover:bg-rose-600 transition-all"
                   }, __alloT('stem.music.load_to_grid_2', "\u25B6 Load to Grid"))
-                ) : React.createElement("p", { className: "text-[0.6875rem] text-rose-400 italic" }, __alloT('stem.music.click_challenge_me_to_practice_rhythm_', "Click \"Challenge me!\" to practice rhythm patterns"))
+                ) : React.createElement("p", { className: "text-[0.6875rem] text-rose-700 italic" }, __alloT('stem.music.click_challenge_me_to_practice_rhythm_', "Click \"Challenge me!\" to practice rhythm patterns"))
               ),
 
               // ── User Sample Upload ──
               React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, __alloT('stem.music.your_samples', "\uD83D\uDCC2 Your Samples")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-indigo-400" }, __alloT('stem.music.upload_wav_mp3_ogg_max_4', "Upload .wav/.mp3/.ogg \u2022 Max 4")),
+                  React.createElement("span", { className: "text-[0.6875rem] text-indigo-600" }, __alloT('stem.music.upload_wav_mp3_ogg_max_4', "Upload .wav/.mp3/.ogg \u2022 Max 4")),
                   React.createElement("label", { className: "ml-auto px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700 transition-all shadow-sm" },
                     __alloT('stem.music.upload', "\u2B06 Upload"),
                     React.createElement("input", { type: "file", accept: ".wav,.mp3,.ogg,audio/*", className: "hidden",
@@ -4864,14 +4871,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         );
                       })
                     )
-                  : React.createElement("p", { className: "text-[0.6875rem] text-indigo-400 italic" }, __alloT('stem.music.upload_wav_mp3_files_for_custom_pads_s', "Upload WAV/MP3 files for custom pads. Samples clear on page refresh."))
+                  : React.createElement("p", { className: "text-[0.6875rem] text-indigo-600 italic" }, __alloT('stem.music.upload_wav_mp3_files_for_custom_pads_s', "Upload WAV/MP3 files for custom pads. Samples clear on page refresh."))
               ),
 
               // ── Song Arrangement ──
               React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
                   React.createElement("span", { className: "text-xs font-bold text-violet-700" }, __alloT('stem.music.song_arrangement', "\uD83C\uDFB6 Song Arrangement")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-violet-500" }, __alloT('stem.music.chain_patterns_into_a_full_song', "Chain patterns into a full song")),
+                  React.createElement("span", { className: "text-[0.6875rem] text-violet-600" }, __alloT('stem.music.chain_patterns_into_a_full_song', "Chain patterns into a full song")),
                   React.createElement("button", { "aria-label": __alloT('stem.music.add_current_pattern_as_a_section', "Add current pattern as a section"),
                     onClick: function () {
                       var sections = d.songSections || [];
@@ -4958,8 +4965,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     }, __alloT('stem.music.clear_2', "\uD83D\uDDD1 Clear"))
                   )
                 ) : React.createElement("div", { className: "text-center py-3" },
-                  React.createElement("p", { className: "text-[0.6875rem] text-violet-400 italic mb-2" }, __alloT('stem.music.create_a_drum_pattern_in_the_grid_abov', "Create a drum pattern in the grid above, then click \"+ Add Current as Section\" to start building a song.")),
-                  React.createElement("p", { className: "text-[0.6875rem] text-violet-400" }, __alloT('stem.music.sections_intro_verse_chorus_bridge_cho', "Sections: Intro \u2192 Verse \u2192 Chorus \u2192 Bridge \u2192 Chorus \u2192 Outro"))
+                  React.createElement("p", { className: "text-[0.6875rem] text-violet-600 italic mb-2" }, __alloT('stem.music.create_a_drum_pattern_in_the_grid_abov', "Create a drum pattern in the grid above, then click \"+ Add Current as Section\" to start building a song.")),
+                  React.createElement("p", { className: "text-[0.6875rem] text-violet-600" }, __alloT('stem.music.sections_intro_verse_chorus_bridge_cho', "Sections: Intro \u2192 Verse \u2192 Chorus \u2192 Bridge \u2192 Chorus \u2192 Outro"))
                 )
               ),
 
@@ -4990,7 +4997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 ),
                 (function () {
                   var saved = JSON.parse(localStorage.getItem('alloflow_beats') || '[]');
-                  if (saved.length === 0) return React.createElement("p", { className: "text-[0.6875rem] text-emerald-400 italic" }, __alloT('stem.music.no_saved_beats_yet_create_a_pattern_an', "No saved beats yet. Create a pattern and click Save!"));
+                  if (saved.length === 0) return React.createElement("p", { className: "text-[0.6875rem] text-emerald-700 italic" }, __alloT('stem.music.no_saved_beats_yet_create_a_pattern_an', "No saved beats yet. Create a pattern and click Save!"));
                   return React.createElement("div", { className: "flex flex-col gap-1 max-h-28 overflow-y-auto" },
                     saved.map(function (comp, ci) {
                       return React.createElement("div", { key: ci, className: "flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-emerald-100" },
@@ -5027,7 +5034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-rose-50 rounded-xl border border-amber-200 p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.music.harmonypad', "\uD83C\uDF1F HarmonyPad")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-amber-600" }, __alloT('stem.music.pure_sine_triangle_blend', "Pure sine+triangle blend"))
+                  React.createElement("span", { className: "text-[0.6875rem] text-amber-700" }, __alloT('stem.music.pure_sine_triangle_blend', "Pure sine+triangle blend"))
                 ),
                 React.createElement("p", { className: "text-[0.6875rem] text-amber-700 mb-3 leading-relaxed" }, __alloT('stem.music.harmonypad_creates_warm_pure_tones_by_', "HarmonyPad creates warm, pure tones by blending sine and triangle waves. Choose a voice, pick a chord from the grid below, then strum the plate!")),
 
@@ -5052,7 +5059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("div", { className: "grid grid-cols-7 gap-1" },
                     // Header row
                     ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(function (root) {
-                      return React.createElement("div", { key: 'h_' + root, className: "text-center text-[0.6875rem] font-bold text-amber-600 py-0.5" }, root);
+                      return React.createElement("div", { key: 'h_' + root, className: "text-center text-[0.6875rem] font-bold text-amber-700 py-0.5" }, root);
                     })
                   ),
                   // Chord type rows
@@ -5136,7 +5143,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                           className: "flex-1 rounded-lg cursor-pointer transition-all select-none " + (isPlaying ? 'bg-amber-500 shadow-lg scale-y-105' : 'bg-gradient-to-b from-amber-300 to-amber-400 hover:from-amber-400 hover:to-amber-500'),
                           style: { height: '80px', minWidth: '14px' }
                         },
-                          React.createElement("div", { className: "text-center pt-1 text-[0.6875rem] font-bold " + (isPlaying ? 'text-white' : 'text-amber-800') }, s.note + s.oct),
+                          // fixed amber-950 ink (no class, so the dark remap cannot lighten it on the amber key)
+                          React.createElement("div", { className: "text-center pt-1 text-[0.6875rem] font-bold", style: { color: '#451a03' } }, s.note + s.oct),
                           React.createElement("div", { className: "w-px mx-auto h-10 " + (isPlaying ? 'bg-white' : 'bg-amber-600 opacity-40') })
                         );
                       });
@@ -5161,7 +5169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 rounded-xl border border-amber-200 p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-amber-800" }, __alloT('stem.music.instrument_explorer', "\uD83C\uDFBB Instrument Explorer")),
-                  React.createElement("span", { className: "text-[0.6875rem] text-amber-600" }, __alloT('stem.music.hear_see_the_waveform_and_learn_the_st', "Hear, see the waveform, and learn the story of each instrument")),
+                  React.createElement("span", { className: "text-[0.6875rem] text-amber-700" }, __alloT('stem.music.hear_see_the_waveform_and_learn_the_st', "Hear, see the waveform, and learn the story of each instrument")),
                   React.createElement("button", { onClick: function() { upd('showInstruments', !d.showInstruments); },
                     className: "ml-auto px-2 py-1 rounded text-[0.6875rem] font-bold " + (d.showInstruments ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200') + " transition-all"
                   }, d.showInstruments ? '\u25BC Hide' : '\u25B6 Explore')
@@ -5516,8 +5524,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       className: "flex-1 py-3 rounded-xl border text-center hover:shadow-md transition-all group cursor-pointer " + (isHarmActive ? 'bg-gradient-to-b from-indigo-600 to-purple-600 border-indigo-400 text-white shadow-md' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-200')
                     },
                       React.createElement("span", { className: "text-lg font-bold block group-hover:scale-110 transition-transform " + (isHarmActive ? 'text-white' : 'text-indigo-600') }, h.n),
-                      React.createElement("span", { className: "text-[0.6875rem] block " + (isHarmActive ? 'text-indigo-200' : 'text-indigo-400') }, h.ratio),
-                      React.createElement("span", { className: "text-[0.6875rem] block " + (isHarmActive ? 'text-indigo-200' : 'text-slate-200') }, h.interval)
+                      React.createElement("span", { className: "text-[0.6875rem] block " + (isHarmActive ? 'text-white' : 'text-indigo-600') }, h.ratio),
+                      React.createElement("span", { className: "text-[0.6875rem] block " + (isHarmActive ? 'text-white' : 'text-slate-600') }, h.interval)
                     );
                   })
                 ),
@@ -5713,7 +5721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-1" },
                     React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-700 w-24" }, p.label),
                     React.createElement("input", { type: "range", 'aria-label': p.label, 'aria-valuetext': (String(d[p.k] != null ? d[p.k] : (p.k === 'ksBrightness' ? 0.8 : 0.996))), min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500" }),
-                    React.createElement("span", { className: "text-[0.6875rem] text-amber-600 w-14 text-right font-mono" }, (d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996)).toFixed(p.k === 'ksDamping' ? 4 : 2))
+                    React.createElement("span", { className: "text-[0.6875rem] text-amber-700 w-14 text-right font-mono" }, (d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996)).toFixed(p.k === 'ksDamping' ? 4 : 2))
                   );
                 }),
                 React.createElement("button", {

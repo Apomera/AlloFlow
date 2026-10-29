@@ -4,7 +4,7 @@
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-dissection-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-dissection-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"dissection\"] :is(.diss-skip-link,.diss-skip-return,.diss-save-status,.diss-save-status[data-state=\"warning\"],.diss-save-status[data-state=\"error\"],.diss-reset-confirm,.diss-reset-confirm button,.diss-reference-context,.diss-comparison,.diss-comparison-card,.diss-comparison-card[data-current=\"true\"],.diss-pump-diagram,.diss-diagram-open,.diss-diagram-open:hover,.diss-diagram-reader,.diss-diagram-reader__header,.diss-diagram-reader button,.diss-diagram-reader__viewport,.diss-comparison-visual-key,.diss-comparison-focus,.diss-comparison-focus select,.diss-comparison-prompt,.diss-study-links button,.diss-study-links button:hover,.diss-observation-review,.diss-observation-search input,.diss-observation-review button,.diss-observation-export,.diss-observation-export textarea,.diss-observation-review__item,.diss-observation-record-status,.diss-observation-record-status[data-observation-complete=\"true\"],[data-high-contrast=\"true\"] .diss-observation-record-status,.diss-observation-reader,.diss-observation-reader__header,.diss-observation-reader__entry,.diss-note-handoff,.diss-directory-filters button,.diss-directory-filters button[aria-pressed=\"true\"],.diss-search-reset,.diss-other-layers li,.diss-other-layers li button,.diss-mission-shortcuts button,.diss-mission-shortcuts button:last-child,.diss-directory-empty,.diss-directory-browser .diss-directory-status,[data-dissection-root] .diss-directory-browser .diss-directory-item,.diss-directory-item__state,.diss-directory-item__state[data-tone=\"hidden\"],.diss-directory-item__state[data-tone=\"prior\"],.diss-directory-browser .diss-directory-item[data-directory-action=\"recover\"],[data-dissection-root][data-high-contrast] .diss-toolbar,[data-dissection-root][data-high-contrast] .diss-zoom-bar,[data-dissection-root][data-high-contrast] :is(.diss-directory-browser, .diss-directory-browser .diss-directory-item),[data-dissection-root][data-high-contrast] .diss-biology-fact__nav button,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-biology-fact),.diss-directory-browser .diss-directory-item:hover,.diss-directory-browser .diss-directory-empty__actions button,[data-dissection-root][data-high-contrast=\"true\"] .diss-directory-browser :is(.diss-directory-item, .diss-directory-item__state, .diss-directory-status, .diss-directory-empty__actions button),.diss-workflow__number,.diss-workspace-mode__choices,.diss-workspace-mode__choices button,.diss-mode-rail,.diss-mode-rail .diss-route-button,.diss-mode-rail .diss-route-button[data-active=\"true\"],.diss-mode-rail .diss-route-button:disabled,.diss-objectives.diss-disclosure,.diss-objective-item,.diss-objective-item[data-objective-status=\"demonstrated\"],.diss-objective-item__status,.diss-objective-item[data-objective-status=\"developing\"] .diss-objective-item__status,.diss-objective-item[data-objective-status=\"demonstrated\"] .diss-objective-item__status,.diss-objective-item__meter,.diss-objective-item .diss-objective-item__next,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-objectives, .diss-objective-item, .diss-objective-item__status, .diss-objective-item__meter, .diss-objective-item__next),.diss-picker,.diss-layer-stepper,.diss-specimen-tab,.diss-layer-button,.diss-layer-button[data-state=\"current\"],.diss-layer-button[data-state=\"revealed\"],.diss-layer-button[data-state=\"locked\"],.diss-layer-index,.diss-layer-button:hover:not(:disabled),[data-dissection-root][data-high-contrast=\"true\"] .diss-layer-button,.diss-toolbar,.diss-quiz-option:hover:not(:disabled),[data-dissection-root] .diss-toolbar > button,#diss-lab-tools,#diss-study-tools,[data-dissection-root] :is(#diss-lab-tools, #diss-study-tools) button,[data-dissection-root] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) > button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) > button:hover:not(:disabled),[data-dissection-root] :is(#diss-lab-tools, #diss-study-tools) > button:disabled,[data-dissection-root] #diss-lab-tools > #diss-reset-specimen,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) button,#diss-lab-tools .diss-lab-tool-group,[data-dissection-root] #diss-lab-tools button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] #diss-lab-tools button:hover:not(:disabled),[data-dissection-root] #diss-lab-tools button:disabled,#diss-lab-tools .diss-lab-reset-boundary,[data-dissection-root] #diss-lab-tools #diss-reset-specimen,[data-dissection-root][data-high-contrast=\"true\"] #diss-lab-tools :is(.diss-lab-tool-group, .diss-lab-reset-boundary),#diss-study-tools .diss-study-tool-group,#diss-study-tools .diss-study-activity,[data-dissection-root] #diss-study-tools button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] #diss-study-tools button:hover:not(:disabled),[data-dissection-root] #diss-study-tools button:disabled,#diss-study-tools .diss-study-readiness,#diss-study-tools .diss-study-time,[data-dissection-root][data-high-contrast=\"true\"] #diss-study-tools :is(.diss-study-tool-group, .diss-study-activity, .diss-study-readiness, .diss-study-time),#diss-view-tools.diss-view-controls,.diss-view-group,[data-dissection-root] .diss-view-control-grid button,.diss-view-control-grid button[aria-pressed=\"true\"],.diss-view-control-grid button:hover:not(:disabled),.diss-view-control-grid button:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-view-control-grid button,#diss-view-tools .diss-view-subgroup,[data-dissection-root][data-high-contrast=\"true\"] #diss-view-tools :is(.diss-view-subgroup, .diss-view-subgroup__title, .diss-view-help),.diss-light-intensity,.diss-light-intensity[data-tone=\"glare\"],.diss-light-intensity[data-tone=\"dim\"],.diss-next-action,.diss-next-action[data-tone=\"ready\"],.diss-next-action[data-tone=\"caution\"],.diss-next-action[data-tone=\"assessment\"],.diss-next-action__step,.diss-next-action__meta > span,.diss-next-action__secondary,.diss-next-action__primary:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-next-action,[data-dissection-root][data-high-contrast=\"true\"] .diss-next-action :is(button, .diss-next-action__step, .diss-next-action__meta > span),.diss-technique-roadmap,.diss-technique-roadmap__sequence,.diss-technique-roadmap__step,.diss-technique-roadmap__step[aria-current=\"step\"],.diss-technique-roadmap__step[data-step-state=\"verified\"],.diss-technique-roadmap__step[data-step-state=\"reflect\"],[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-technique-roadmap, .diss-technique-roadmap__sequence, .diss-technique-roadmap__step),.diss-learning-check__phase,.diss-learning-check__phase[data-state=\"current\"],.diss-learning-check[data-phase=\"reflect\"] .diss-learning-check__phase[data-state=\"current\"],.diss-learning-check__phase[data-state=\"complete\"],.diss-learning-check__option,.diss-learning-check__option:hover,.diss-learning-check__option[data-result=\"incorrect\"],.diss-learning-check__option[data-result=\"correct\"],.diss-learning-check__feedback,.diss-learning-check__perform,.diss-learning-check__perform[data-confirmed-plan=\"true\"],.diss-pointer-guide,.diss-pointer-guide[data-tone=\"ready\"],.diss-pointer-guide[data-tone=\"caution\"],.diss-pointer-guide[data-tone=\"blocked\"],.diss-pointer-guide[data-tone=\"assessment\"],.diss-pointer-guide__cursor,.diss-point-mode__status,[data-dissection-root] .diss-point-mode__actions button,[data-dissection-root] .diss-point-mode__actions button:hover:not(:disabled),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-pointer-guide, .diss-point-mode__status, .diss-point-mode__actions button),.diss-workflow li[data-state=\"current\"],.diss-stage,.diss-stage__status,.diss-stage__handoff,.diss-stage__handoff[data-tone=\"ready\"],.diss-stage__handoff[data-tone=\"complete\"],.diss-stage__handoff[data-tone=\"caution\"],.diss-stage__handoff[data-tone=\"restricted\"],.diss-stage__telemetry-metric,.diss-stage__telemetry-metric[data-risk=\"true\"],.diss-stage__telemetry-prepare:disabled,.diss-field-monitor,.diss-field-monitor__summary span,.diss-field-monitor__body > .diss-stage__telemetry-detail,.diss-field-readiness,.diss-field-readiness[data-tone=\"ready\"],.diss-field-readiness[data-tone=\"caution\"],.diss-field-readiness[data-tone=\"restricted\"],.diss-field-readiness__check,.diss-field-readiness__check[data-ready=\"true\"],.diss-field-readiness__check[data-ready=\"false\"],.diss-field-readiness__action:hover,.diss-stage__telemetry-replay:hover,.diss-stage__telemetry-delta,.diss-stage__telemetry-delta[data-direction=\"improve\"],.diss-stage__telemetry-delta[data-direction=\"caution\"],.diss-capture-options,.diss-capture-options select,[data-dissection-root][data-high-contrast=\"true\"] .diss-capture-options,.diss-replay-specimen,.diss-replay-jump,.diss-replay-jump:hover,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-replay-specimen, .diss-replay-jump),.diss-canvas-frame,[data-dissection-root][data-high-contrast=\"true\"] .diss-canvas-frame,.diss-evidence summary,.diss-evidence__capacity,.diss-evidence__capacity[data-full=\"true\"],.diss-evidence__manage > button,.diss-evidence__confirm button,.diss-evidence__confirm,.diss-evidence__item,.diss-evidence__selection,.diss-evidence__item .diss-evidence__confirm-copy,.diss-evidence__actions button,.diss-evidence__actions button[aria-pressed=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-split-reference,.diss-evidence__item,.diss-evidence__capacity,.diss-evidence__confirm,.diss-evidence__confirm-copy,.diss-evidence__selection),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-evidence,.diss-split-reference) :is(button,summary),.diss-canvas-frame:fullscreen .diss-fullscreen-dock button,.diss-canvas-frame:fullscreen .diss-fullscreen-dock select,.diss-canvas-frame[data-allo-fullscreen-active=\"true\"] .diss-fullscreen-dock button,.diss-canvas-frame[data-allo-fullscreen-active=\"true\"] .diss-fullscreen-dock select,.diss-stage__gesture,.diss-stage__gesture[data-tone=\"caution\"],.diss-stage__gesture[data-tone=\"restricted\"],.diss-stage__live[data-tool-status=\"true\"],.diss-shortcuts,.diss-shortcuts__grid span,.diss-shortcuts kbd,.diss-protocol div,.diss-protocol div[data-aligned=\"false\"],.diss-procedure__mode,.diss-instrument,.diss-instrument[data-next=\"true\"]:not([aria-checked=\"true\"]),.diss-instrument[data-readiness=\"waiting\"]:not([aria-checked=\"true\"]),.diss-instrument[data-readiness=\"complete\"]:not([aria-checked=\"true\"]),.diss-instrument:disabled,.diss-active-tool,.diss-active-tool__icon,.diss-active-tool__badge,.diss-active-tool[data-readiness=\"ready\"] .diss-active-tool__badge,.diss-active-tool[data-readiness=\"complete\"] .diss-active-tool__badge,.diss-readiness,.diss-readiness[data-tone=\"ready\"],.diss-readiness[data-tone=\"complete\"],.diss-readiness[data-tone=\"caution\"],.diss-readiness[data-tone=\"restricted\"],.diss-readiness__meter,.diss-readiness__check,.diss-procedure__step,.diss-procedure__step[data-complete=\"true\"],.diss-procedure__step[data-current=\"true\"],.diss-procedure__controls button,[data-dissection-root][data-high-contrast=\"true\"] .diss-equivalent-action :is(p, button),.diss-calibration__status b,.diss-calibration[data-tone=\"adjust\"] .diss-calibration__status b,.diss-calibration[data-tone=\"caution\"] .diss-calibration__status b,[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__guidance,[data-dissection-root] #diss-calibration-panel.diss-calibration button,[data-dissection-root] #diss-calibration-panel.diss-calibration button[aria-disabled=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] #diss-calibration-panel.diss-calibration,[data-dissection-root][data-high-contrast=\"true\"] #diss-calibration-panel.diss-calibration :is(div, details, strong, b, p, span, label, output, button, summary),.diss-procedure__feedback,.diss-procedure__feedback[data-tone=\"caution\"],.diss-procedure__feedback[data-tone=\"working\"],.diss-procedure__metric,.diss-procedure__timeline > span,.diss-procedure__timeline > span[data-tone=\"success\"],.diss-procedure__timeline > span[data-tone=\"caution\"],.diss-procedure__timeline > button,.diss-procedure__timeline > button[data-tone=\"success\"],.diss-procedure__timeline > button[data-tone=\"caution\"],.diss-procedure__timeline > button[data-selected=\"true\"],.diss-replay-review,.diss-replay-review select,.diss-replay-response,.diss-replay-response__metric,.diss-replay-response__metric[data-direction=\"improve\"],.diss-replay-response__metric[data-direction=\"caution\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-response,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-response__metric,.diss-replay-details,.diss-replay-review button,.diss-replay-review button:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review,.diss-advanced-card,[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter,[data-dissection-root][data-high-contrast=\"true\"] .diss-tissue-monitor,[data-dissection-root][data-high-contrast=\"true\"] .diss-tissue-monitor :is(div, strong, b, p, span),.diss-tissue-consequence,.diss-field-quality__metrics span,[data-dissection-root] #diss-observation-field .diss-observation-meter,[data-dissection-root] #diss-observation-field .diss-field-quality__metrics > div,[data-dissection-root] #diss-observation-field button,[data-dissection-root][data-high-contrast=\"true\"] #diss-observation-field,[data-dissection-root][data-high-contrast=\"true\"] #diss-observation-field :is(div, details, strong, p, span, dt, dd, summary, button),[data-dissection-root] #diss-exposure-readings .diss-exposure__meter,[data-dissection-root] #diss-exposure-guidance,[data-dissection-root] #diss-exposure-readings .diss-exposure__readings > div,[data-dissection-root] #diss-exposure-review-protocol,[data-dissection-root][data-high-contrast=\"true\"] #diss-exposure-readings,[data-dissection-root][data-high-contrast=\"true\"] #diss-exposure-readings :is(strong, b, p, dt, dd, summary, button, .diss-exposure__readings > div),[data-dissection-root] #diss-material-readings,[data-dissection-root] #diss-material-readings .diss-material__meter,[data-dissection-root] #diss-material-guidance,[data-dissection-root] #diss-material-readings .diss-material__readings > div,[data-dissection-root] #diss-material-review-calibration,[data-dissection-root][data-high-contrast=\"true\"] #diss-material-readings,[data-dissection-root][data-high-contrast=\"true\"] #diss-material-readings :is(strong, b, p, dt, dd, summary, button, .diss-material__readings > div),[data-dissection-root] .diss-optics,[data-dissection-root] #diss-optical-inspection .diss-optics__readings > div,[data-dissection-root] #diss-optics-suggestion,[data-dissection-root] #diss-optical-inspection .diss-optics__lighting,[data-dissection-root] #diss-optics-review-light,[data-dissection-root][data-high-contrast=\"true\"] #diss-optical-inspection,[data-dissection-root][data-high-contrast=\"true\"] #diss-optical-inspection :is(div, details, p, span, dt, dd, strong, b, button, summary),[data-dissection-root] .diss-optics[data-tone=\"usable\"],[data-dissection-root] .diss-optics[data-tone=\"soft\"],[data-dissection-root] .diss-optics[data-tone=\"unresolved\"],[data-dissection-root] .diss-optics__scope,[data-dissection-root] .diss-optics__setting,[data-dissection-root] .diss-optics__controls button,[data-dissection-root] .diss-optics__controls button[aria-pressed=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-optics,[data-dissection-root][data-high-contrast=\"true\"] .diss-optics :is(.diss-optics__scope, .diss-optics__setting, button),.diss-advanced-card button,[data-dissection-root] .diss-adaptive-coaching,[data-dissection-root] .diss-adaptive-coaching button,[data-dissection-root][data-high-contrast=\"true\"] .diss-adaptive-coaching,[data-dissection-root][data-high-contrast=\"true\"] .diss-adaptive-coaching :is(h4, p, button),.diss-scenario-console__state,.diss-scenario-console__progress,.diss-scenario-console__controls select,.diss-scenario-console__controls button,[data-dissection-root] .diss-scenario-console,[data-dissection-root] .diss-scenario-console__playback,[data-dissection-root] .diss-scenario-console__timer,[data-dissection-root] .diss-scenario-console__restart-review,[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console,[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console :is(h4, h5, p, label, select, button, .diss-scenario-console__state, .diss-scenario-console__timer, .diss-scenario-console__restart-review),[data-dissection-root] #diss-attempt-comparison,[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__context,[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__metric,[data-dissection-root] #diss-attempt-comparison button,[data-dissection-root][data-high-contrast=\"true\"] #diss-attempt-comparison,[data-dissection-root][data-high-contrast=\"true\"] #diss-attempt-comparison :is(section, p, b, span, button, label, output),.diss-attempt-comparison__metric,.diss-attempt-comparison__scrub button,.diss-attempt-comparison__scrub button:hover,.diss-debrief,[data-dissection-root] #diss-scenario-thresholds,[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__current,[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__control,[data-dissection-root] #diss-scenario-thresholds select,[data-dissection-root][data-high-contrast=\"true\"] #diss-scenario-thresholds,[data-dissection-root][data-high-contrast=\"true\"] #diss-scenario-thresholds :is(div, p, span, select, summary),.diss-zoom-bar,[data-dissection-root] .diss-zoom-bar,[data-dissection-root] .diss-zoom-bar button,[data-dissection-root] .diss-zoom-bar button:hover,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-stage__status, .diss-stage__handoff, .diss-zoom-bar),[data-dissection-root][data-high-contrast=\"true\"] .diss-zoom-bar button,.diss-marker-guide,.diss-system-key,.diss-system-key__list li,[data-dissection-root][data-high-contrast=\"true\"] .diss-system-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-system-key__list li,.diss-depth-symbol,[data-dissection-root][data-high-contrast=\"true\"] .diss-depth-key,.diss-overlay-actions,.diss-overlay-actions > summary,.diss-overlay-actions button,.diss-overlay-actions button[aria-pressed=\"true\"],.diss-overlay-actions button:disabled,.diss-system-playback,.diss-living-function,.diss-living-function__badge,.diss-living-function[data-active=\"true\"] .diss-living-function__badge,.diss-living-function[data-motion=\"static\"] .diss-living-function__badge,.diss-living-function[data-motion=\"paused\"] .diss-living-function__badge,[data-dissection-root][data-high-contrast=\"true\"] .diss-overlay-actions :is(button,summary),[data-dissection-root][data-high-contrast=\"true\"] .diss-overlay-actions button[aria-pressed=\"true\"],.diss-observe-first,.diss-selection-reference,.diss-selection-summary,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-selection-reference,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-clinical-reference,[data-dissection-root]:not([data-high-contrast=\"true\"]) [data-dissection-evidence],.diss-evidence-note,.diss-evidence-coach,.diss-evidence-starters button,.diss-evidence-starters button:hover,.diss-evidence-field-status,[data-high-contrast=\"true\"] .diss-evidence-field-status,.diss-confidence-scale__option,.diss-confidence-scale__option:hover,.diss-draft-status li,.diss-draft-review__number,.diss-countercheck,.diss-countercheck button,.diss-countercheck button:hover,.diss-evidence-form .diss-confidence-scale__option:hover,.diss-evidence-form .diss-confidence-scale__option[data-selected=\"true\"],.diss-evidence-form .diss-draft-review__steps li,[data-dissection-root][data-high-contrast=\"true\"] .diss-evidence-form :is(.diss-confidence-scale__option, .diss-draft-status li, .diss-draft-review__steps li),[data-dissection-root] .diss-study-actions button,.diss-study-actions__number,.diss-study-actions button[data-study-action=\"inspect\"],.diss-study-actions button:hover,[data-dissection-root] .diss-study-return-note,.diss-study-return-note:hover,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-study-actions button, .diss-study-actions__number, .diss-study-return-note),.diss-science-scope,.diss-recall__counter,.diss-recall__stats > div,.diss-recall__body,.diss-recall__summary,.diss-recall textarea,.diss-recall button,.diss-recall button:hover:not(:disabled),.diss-recall .diss-flashcard,.diss-recall__answer .diss-recall__check,.diss-spatial-guide,.diss-spatial-guide button,.diss-spatial-guide button[aria-pressed=\"true\"],.diss-spatial-guide button:hover:not(:disabled),.diss-spatial-guide figure,.diss-spatial-guide__layer,[data-high-contrast=\"true\"] .diss-spatial-guide,[data-high-contrast=\"true\"] .diss-spatial-guide :is(figure, .diss-spatial-guide__layer),.diss-eye-study,.diss-eye-study button,.diss-eye-study button:hover:not(:disabled),.diss-eye-study button[aria-pressed=\"true\"],.diss-eye-study__reference,.diss-eye-study__prompt,.diss-eye-study__handoff,.diss-instrument-preparation,.diss-instrument-preparation .diss-instrument[aria-checked=\"true\"],.diss-tool-marker,.diss-preparation-actions button,[data-dissection-root][data-high-contrast=\"true\"] .diss-instrument-preparation,[data-dissection-root][data-high-contrast=\"true\"] .diss-instrument-preparation :is(.diss-instrument, .diss-tool-marker, .diss-active-tool, .diss-active-tool__badge, .diss-preparation-actions button, .diss-readiness, .diss-calibration, .diss-calibration output, .diss-calibration__status b),.diss-learning-check .diss-learning-check__number,.diss-learning-check .diss-learning-check__feedback[data-result=\"incorrect\"],.diss-learning-check .diss-learning-check__feedback[data-result=\"correct\"],.diss-learning-check .diss-learning-check__action,.diss-learning-check .diss-learning-check__action:hover,[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check,[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check :is(.diss-learning-check__phase, .diss-learning-check__option, .diss-learning-check__number, .diss-learning-check__marker, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action),.diss-reflection-evidence,.diss-reflection-evidence__metric,.diss-reflection-evidence__track,[data-high-contrast=\"true\"] .diss-reflection-evidence,[data-high-contrast=\"true\"] .diss-reflection-evidence__metric,.diss-investigation-progress,.diss-layer-records li,.diss-record-return,[data-high-contrast=\"true\"] :is(.diss-investigation-progress, .diss-layer-records li, .diss-record-return),.diss-directory-browser .diss-directory-context,.diss-directory-context[data-tone=\"caution\"],.diss-directory-context[data-tone=\"prior\"],.diss-directory-browser .diss-directory-context__record-status,[data-high-contrast=\"true\"] .diss-directory-browser .diss-directory-context,[data-high-contrast=\"true\"] .diss-directory-context button,.diss-record-handoff__status,.diss-record-handoff__status[data-record-complete=\"true\"],.diss-record-handoff__next,.diss-note-handoff button.diss-record-handoff__secondary,[data-high-contrast=\"true\"] .diss-note-handoff :is(.diss-record-handoff__status, .diss-record-handoff__next),.diss-debrief.diss-layer-review,.diss-layer-review__state,.diss-layer-review__card,.diss-layer-review__next,.diss-layer-review__delta[data-direction=\"improve\"],.diss-layer-review__delta[data-direction=\"caution\"],.diss-layer-review .diss-layer-review__action,.diss-layer-review .diss-layer-review__action:hover,.diss-layer-review .diss-procedure__timeline-entry,.diss-layer-review .diss-procedure__timeline-entry[data-tone],.diss-layer-review .diss-procedure__timeline-entry[data-tone][data-selected=\"true\"],.diss-layer-review__cautions,[data-high-contrast=\"true\"] .diss-layer-review,[data-high-contrast=\"true\"] .diss-layer-review :is(.diss-layer-review__card, .diss-layer-review__delta, .diss-procedure__timeline-entry, .diss-layer-review__action),[data-high-contrast=\"true\"] .diss-layer-review .diss-procedure__timeline-entry[data-tone][data-selected=\"true\"],.diss-layer-review__input-badge,.diss-layer-review__input-badge[data-input-kind=\"supported\"],.diss-layer-review__delta[data-available=\"false\"],[data-high-contrast=\"true\"] .diss-layer-review__input-badge,[data-dissection-root][data-high-contrast=\"true\"] .diss-stage__telemetry-prepare,[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric,[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric[data-risk=\"true\"],[data-dissection-root] .diss-field-meter,[data-dissection-root][data-high-contrast=\"true\"] #diss-field-tissue,[data-dissection-root][data-high-contrast=\"true\"] #diss-field-tissue :is(div, details, p, span, strong, b, summary, button),[data-dissection-root] .diss-field-readiness .diss-field-readiness__action,[data-dissection-root][data-high-contrast=\"true\"] .diss-field-readiness,[data-dissection-root][data-high-contrast=\"true\"] .diss-field-readiness :is(div, li, strong, p, span, button),[data-dissection-root] .diss-protocol > div,[data-dissection-root] .diss-protocol > div[data-aligned=\"false\"],[data-dissection-root] .diss-protocol__views > span,[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-protocol :is(div, dt, dd, p, span, strong, li, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-mission,[data-dissection-root][data-high-contrast=\"true\"] .diss-mission :is(li, .diss-workflow__number, .diss-stat, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-mode-rail,[data-dissection-root][data-high-contrast=\"true\"] .diss-workspace-mode__choices,[data-dissection-root][data-high-contrast=\"true\"] .diss-mode-rail button):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] [style]:is([style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(132, 204, 22)\"],[style*=\"background-color: rgb(132, 204, 22)\"],[style*=\"background: rgb(220, 239, 242)\"],[style*=\"background-color: rgb(220, 239, 242)\"],[style*=\"background: rgb(245, 229, 206)\"],[style*=\"background-color: rgb(245, 229, 206)\"],[style*=\"background: rgb(237, 247, 245)\"],[style*=\"background-color: rgb(237, 247, 245)\"],[style*=\"background: rgb(226, 241, 242)\"],[style*=\"background-color: rgb(226, 241, 242)\"],[style*=\"background: rgb(238, 240, 246)\"],[style*=\"background-color: rgb(238, 240, 246)\"],[style*=\"background: rgb(74, 222, 128)\"],[style*=\"background-color: rgb(74, 222, 128)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] :is([data-dissection-root][data-high-contrast] .diss-biology-fact,.diss-primary-action,.diss-learning-check,.diss-learning-check[data-phase=\"reflect\"],.diss-learning-check[data-phase=\"perform\"],.diss-stage__telemetry,.diss-stage__telemetry[data-tone=\"caution\"],.diss-stage__telemetry[data-tone=\"danger\"],.diss-procedure,.diss-calibration,.diss-calibration[data-tone=\"adjust\"],.diss-calibration[data-tone=\"caution\"],.diss-tissue-monitor[data-tone=\"stable\"],.diss-tissue-monitor[data-tone=\"caution\"],.diss-tissue-monitor[data-tone=\"danger\"],.diss-field-quality,.diss-field-quality[data-tone=\"developing\"],.diss-field-quality[data-tone=\"restricted\"],.diss-scenario-console,.diss-attempt-comparison,.diss-depth-key,.diss-recall):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] :is([data-dissection-root],.diss-skip-link,.diss-skip-return,.diss-save-status,.diss-save-status[data-state=\"warning\"],.diss-save-status[data-state=\"error\"],.diss-reset-confirm,.diss-reset-confirm button,.diss-reference-context,.diss-reference-context a,.diss-reference-label,.diss-comparison,.diss-pump-diagram,.diss-pump-diagram figcaption,.diss-diagram-open,.diss-diagram-reader,.diss-diagram-reader__header span,.diss-diagram-reader button,.diss-diagram-reader button:disabled,.diss-diagram-reader .diss-diagram-reader__hint,.diss-diagram-reader .diss-diagram-reader__scope,.diss-diagram-fallback,.diss-comparison-visual-key,.diss-comparison-sources,.diss-comparison-sources a,.diss-comparison-focus select,.diss-gas-profile dt,.diss-gas-profile dd,.diss-comparison-prompt,.diss-study-links button,.diss-observation-review,.diss-observation-search input,.diss-observation-note-match,.diss-observation-review button,.diss-observation-export textarea,.diss-observation-record-status,.diss-observation-record-status[data-observation-complete=\"true\"],[data-high-contrast=\"true\"] .diss-observation-record-status,.diss-observation-review__note,.diss-observation-reader,.diss-observation-reader button:disabled,.diss-note-handoff,.diss-directory-progress,.diss-structure-list .text-green-500,.diss-directory-filters button,.diss-directory-filters button[aria-pressed=\"true\"],.diss-search-reset,.diss-other-layers,.diss-other-layers li strong,.diss-other-layers li button,.diss-mission-shortcuts button,.diss-mission-shortcuts button:last-child,[data-dissection-root] .diss-selection-reference .text-amber-600,.diss-directory-status,.diss-directory-empty,.diss-directory-search-label,.diss-directory-browser .diss-directory-keyboard-help,.diss-directory-browser .diss-directory-status,[data-dissection-root] .diss-directory-browser .diss-directory-item,.diss-directory-browser .diss-directory-item .diss-directory-progress,.diss-directory-item__action,[data-high-contrast=\"true\"] .diss-directory-item__action,.diss-directory-item__state,.diss-directory-item__state[data-tone=\"hidden\"],.diss-directory-item__state[data-tone=\"prior\"],[data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title),[data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span),[data-dissection-root][data-high-contrast] .diss-biology-fact__nav button,[data-dissection-root][data-high-contrast=\"true\"] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title),[data-dissection-root][data-high-contrast=\"true\"] .diss-biology-fact :is(summary, p, span),.diss-directory-browser .diss-directory-empty__actions button,[data-dissection-root][data-high-contrast=\"true\"] .diss-directory-browser :is(.diss-directory-item, .diss-directory-item__state, .diss-directory-status, .diss-directory-empty__actions button),.diss-pan-controls span,.diss-workflow__number,.diss-primary-action,.diss-workspace-mode__choices button,.diss-mode-rail .diss-route-button,.diss-mode-rail .diss-route-button[data-active=\"true\"],.diss-mode-rail .diss-route-button:disabled,.diss-objectives.diss-disclosure > summary,.diss-objectives > summary span,.diss-objective-item__head h4,.diss-objective-item__status,.diss-objective-item[data-objective-status=\"developing\"] .diss-objective-item__status,.diss-objective-item[data-objective-status=\"demonstrated\"] .diss-objective-item__status,.diss-objective-item__progress,.diss-objective-item__percent,.diss-objective-item p,.diss-objective-item .diss-objective-item__next,[data-dissection-root][data-high-contrast=\"true\"] .diss-objectives :is(summary, strong, span, h4, p),.diss-section-heading h3,.diss-section-heading p,.diss-specimen-scroll-help,.diss-specimen-tab,.diss-layer-button,.diss-layer-button[data-state=\"current\"],.diss-layer-button[data-state=\"revealed\"],.diss-layer-button[data-state=\"locked\"],.diss-layer-index,.diss-layer-state,.diss-layer-button[data-state=\"current\"] .diss-layer-state,.diss-layer-button[data-state=\"revealed\"] .diss-layer-state,.diss-layer-detail,.diss-layer-stepper .diss-layer-summary,.diss-layer-help,[data-dissection-root][data-high-contrast=\"true\"] .diss-layer-button,[data-dissection-root][data-high-contrast=\"true\"] .diss-layer-stepper :is(.diss-layer-index, .diss-layer-name, .diss-layer-state, .diss-layer-detail, .diss-layer-summary, .diss-layer-help),.diss-toolbar__label,[data-dissection-root] .diss-toolbar__label,[data-dissection-root] .diss-toolbar > button,[data-dissection-root] :is(#diss-lab-tools, #diss-study-tools) button,[data-dissection-root] #diss-study-tools > button,[data-dissection-root] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) > button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] :is(#diss-lab-tools, #diss-study-tools) > button:disabled,[data-dissection-root] #diss-lab-tools > #diss-reset-specimen,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) button,#diss-lab-tools .diss-lab-tool-heading,#diss-lab-tools .diss-lab-tool-note,[data-dissection-root] #diss-lab-tools button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] #diss-lab-tools button:disabled,[data-dissection-root] #diss-lab-tools #diss-reset-specimen,[data-dissection-root][data-high-contrast=\"true\"] #diss-lab-tools :is(.diss-lab-tool-heading, .diss-lab-tool-note),#diss-study-tools .diss-study-tool-heading,#diss-study-tools .diss-study-tool-intro,#diss-study-tools .diss-study-activity p,[data-dissection-root] #diss-study-tools button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] #diss-study-tools button:disabled,#diss-study-tools .diss-study-readiness,#diss-study-tools .diss-study-time,[data-dissection-root][data-high-contrast=\"true\"] #diss-study-tools :is(.diss-study-tool-group, .diss-study-activity, .diss-study-readiness, .diss-study-time),[data-dissection-root][data-high-contrast=\"true\"] #diss-study-tools :is(.diss-study-tool-heading, .diss-study-tool-intro, .diss-study-activity p),.diss-view-group__title,[data-dissection-root] .diss-view-control-grid button,.diss-view-control-grid button[aria-pressed=\"true\"],.diss-view-control-grid button:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-view-control-grid button,#diss-view-tools .diss-view-subgroup__title,#diss-view-tools .diss-view-help,[data-dissection-root][data-high-contrast=\"true\"] #diss-view-tools :is(.diss-view-subgroup, .diss-view-subgroup__title, .diss-view-help),.diss-light-intensity,.diss-light-intensity[data-tone=\"glare\"],.diss-light-intensity[data-tone=\"dim\"],.diss-next-action,.diss-next-action[data-tone=\"ready\"],.diss-next-action[data-tone=\"caution\"],.diss-next-action[data-tone=\"assessment\"],.diss-next-action__secondary,.diss-next-action__primary:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-next-action,[data-dissection-root][data-high-contrast=\"true\"] .diss-next-action :is(button, .diss-next-action__step, .diss-next-action__meta > span),.diss-technique-roadmap,.diss-technique-roadmap__step,.diss-technique-roadmap__step[aria-current=\"step\"],.diss-technique-roadmap__step[data-step-state=\"verified\"],.diss-technique-roadmap__step[data-step-state=\"reflect\"],[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-technique-roadmap, .diss-technique-roadmap__sequence, .diss-technique-roadmap__step),.diss-learning-check,.diss-learning-check[data-phase=\"reflect\"],.diss-learning-check[data-phase=\"perform\"],.diss-learning-check__phase,.diss-learning-check__phase[data-state=\"current\"],.diss-learning-check[data-phase=\"reflect\"] .diss-learning-check__phase[data-state=\"current\"],.diss-learning-check__phase[data-state=\"complete\"],.diss-learning-check__option,.diss-learning-check__option[data-result=\"incorrect\"],.diss-learning-check__option[data-result=\"correct\"],.diss-learning-check__perform,.diss-pointer-guide,.diss-pointer-guide[data-tone=\"ready\"],.diss-pointer-guide[data-tone=\"caution\"],.diss-pointer-guide[data-tone=\"blocked\"],.diss-pointer-guide[data-tone=\"assessment\"],[data-dissection-root] .diss-point-mode__actions button,[data-dissection-root] .diss-point-mode__actions button:disabled,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-pointer-guide, .diss-point-mode__status, .diss-point-mode__actions button),.diss-workflow li[data-state=\"current\"],.diss-stage__eyebrow,.diss-stage__title,.diss-stage__status,.diss-stage__handoff,.diss-stage__handoff[data-tone=\"ready\"],.diss-stage__handoff[data-tone=\"complete\"],.diss-stage__handoff[data-tone=\"caution\"],.diss-stage__handoff[data-tone=\"restricted\"],.diss-stage__telemetry,.diss-stage__telemetry[data-tone=\"caution\"],.diss-stage__telemetry[data-tone=\"danger\"],.diss-stage__telemetry-metric[data-risk=\"true\"],.diss-stage__telemetry-prepare:disabled,.diss-field-monitor,.diss-field-monitor__summary strong,.diss-field-monitor__summary span,.diss-field-monitor__summary small,.diss-field-readiness,.diss-field-readiness[data-tone=\"ready\"],.diss-field-readiness[data-tone=\"caution\"],.diss-field-readiness[data-tone=\"restricted\"],.diss-field-readiness__check,.diss-field-readiness__check[data-ready=\"true\"],.diss-field-readiness__check[data-ready=\"false\"],.diss-stage__telemetry-delta[data-direction=\"improve\"],.diss-stage__telemetry-delta[data-direction=\"caution\"],.diss-capture-options,.diss-capture-options select,[data-dissection-root][data-high-contrast=\"true\"] .diss-capture-options,.diss-replay-specimen,.diss-replay-jump,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-replay-specimen, .diss-replay-jump),.diss-evidence summary,.diss-evidence__capacity,.diss-evidence__capacity[data-full=\"true\"],.diss-evidence__manage > button,.diss-evidence__confirm button,.diss-evidence__confirm p,.diss-evidence__identity,.diss-evidence__selection,.diss-evidence__item > strong,.diss-evidence__metadata p,.diss-evidence__metadata time,.diss-evidence__item .diss-evidence__confirm-copy,.diss-evidence__actions button,.diss-evidence__actions button[aria-pressed=\"true\"],.diss-evidence__actions button[data-danger=\"true\"],.diss-evidence__empty,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-evidence,.diss-split-reference) :is(p,time,h3,strong,span),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-split-reference,.diss-evidence__item,.diss-evidence__capacity,.diss-evidence__confirm,.diss-evidence__confirm-copy,.diss-evidence__selection),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-evidence,.diss-split-reference) :is(button,summary),.diss-canvas-frame:fullscreen .diss-fullscreen-dock button,.diss-canvas-frame:fullscreen .diss-fullscreen-dock select,.diss-canvas-frame[data-allo-fullscreen-active=\"true\"] .diss-fullscreen-dock button,.diss-canvas-frame[data-allo-fullscreen-active=\"true\"] .diss-fullscreen-dock select,.diss-stage__live,.diss-stage__gesture,.diss-stage__gesture[data-tone=\"caution\"],.diss-stage__gesture[data-tone=\"restricted\"],.diss-stage__live[data-tool-status=\"true\"],.diss-shortcuts,.diss-shortcuts summary,.diss-shortcuts kbd,.diss-procedure__summary,.diss-procedure__summary span,.diss-procedure__header h4,.diss-procedure__header p,.diss-protocol dt,.diss-protocol dd,.diss-procedure__mode button,.diss-instrument,.diss-instrument[data-readiness=\"waiting\"]:not([aria-checked=\"true\"]),.diss-instrument[data-readiness=\"complete\"]:not([aria-checked=\"true\"]),.diss-instrument:disabled,.diss-instrument:disabled .diss-instrument__state,.diss-instrument__hint,.diss-instrument:disabled .diss-instrument__hint,.diss-instrument[data-readiness=\"ready\"] .diss-instrument__state,.diss-instrument[data-readiness=\"complete\"] .diss-instrument__state,.diss-active-tool,.diss-active-tool__icon,.diss-active-tool strong,.diss-active-tool span,.diss-active-tool__badge,.diss-active-tool[data-readiness=\"ready\"] .diss-active-tool__badge,.diss-active-tool[data-readiness=\"complete\"] .diss-active-tool__badge,.diss-readiness,.diss-readiness[data-tone=\"ready\"],.diss-readiness[data-tone=\"complete\"],.diss-readiness[data-tone=\"caution\"],.diss-readiness[data-tone=\"restricted\"],.diss-procedure__step,.diss-procedure__step[data-complete=\"true\"],.diss-procedure__step[data-current=\"true\"],.diss-procedure__controls button,.diss-equivalent-action__hint,[data-dissection-root][data-high-contrast=\"true\"] .diss-equivalent-action :is(p, button),.diss-calibration__title strong,.diss-calibration__title span,.diss-calibration__status,.diss-calibration__status b,.diss-calibration[data-tone=\"adjust\"] .diss-calibration__status b,.diss-calibration[data-tone=\"caution\"] .diss-calibration__status b,[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__guidance,[data-dissection-root] #diss-calibration-panel.diss-calibration button,[data-dissection-root] #diss-calibration-panel.diss-calibration button[aria-disabled=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] #diss-calibration-panel.diss-calibration,[data-dissection-root][data-high-contrast=\"true\"] #diss-calibration-panel.diss-calibration :is(div, details, strong, b, p, span, label, output, button, summary),.diss-procedure__feedback,.diss-procedure__feedback[data-tone=\"caution\"],.diss-procedure__feedback[data-tone=\"working\"],.diss-procedure__notice,.diss-procedure__metric span,.diss-procedure__metric strong,.diss-procedure__timeline > span,.diss-procedure__timeline > span[data-tone=\"success\"],.diss-procedure__timeline > span[data-tone=\"caution\"],.diss-procedure__timeline > button,.diss-procedure__timeline > button[data-tone=\"success\"],.diss-procedure__timeline > button[data-tone=\"caution\"],.diss-procedure__timeline > button[data-selected=\"true\"],.diss-replay-review,.diss-replay-review select,.diss-replay-response,.diss-replay-response__metric[data-direction=\"improve\"],.diss-replay-response__metric[data-direction=\"caution\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-response,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-response__metric,.diss-replay-details,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-details,.diss-replay-review button,.diss-replay-review button:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review button,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review select,#diss-replay-evidence-help,[data-dissection-root][data-high-contrast=\"true\"] #diss-replay-evidence-help,.diss-advanced-card,.diss-advanced-card strong,.diss-tissue-meter span,[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter > span,[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter b,[data-dissection-root][data-high-contrast=\"true\"] .diss-tissue-monitor,[data-dissection-root][data-high-contrast=\"true\"] .diss-tissue-monitor :is(div, strong, b, p, span),.diss-tissue-consequence,.diss-field-quality__metrics span,[data-dissection-root] #diss-observation-field,[data-dissection-root] #diss-observation-field button,[data-dissection-root][data-high-contrast=\"true\"] #diss-observation-field,[data-dissection-root][data-high-contrast=\"true\"] #diss-observation-field :is(div, details, strong, p, span, dt, dd, summary, button),[data-dissection-root] #diss-exposure-review-protocol,[data-dissection-root][data-high-contrast=\"true\"] #diss-exposure-readings,[data-dissection-root][data-high-contrast=\"true\"] #diss-exposure-readings :is(strong, b, p, dt, dd, summary, button, .diss-exposure__readings > div),[data-dissection-root] #diss-material-readings,[data-dissection-root] #diss-material-review-calibration,[data-dissection-root][data-high-contrast=\"true\"] #diss-material-readings,[data-dissection-root][data-high-contrast=\"true\"] #diss-material-readings :is(strong, b, p, dt, dd, summary, button, .diss-material__readings > div),[data-dissection-root] .diss-optics,[data-dissection-root] #diss-optical-inspection dt,[data-dissection-root] #diss-optical-inspection dd,[data-dissection-root] #diss-optics-review-light,[data-dissection-root][data-high-contrast=\"true\"] #diss-optical-inspection,[data-dissection-root][data-high-contrast=\"true\"] #diss-optical-inspection :is(div, details, p, span, dt, dd, strong, b, button, summary),[data-dissection-root] .diss-optics strong,[data-dissection-root] .diss-optics p,[data-dissection-root] .diss-optics__meter b,[data-dissection-root] .diss-optics__setting > strong,[data-dissection-root] .diss-optics__controls button,[data-dissection-root] .diss-optics__controls button[aria-pressed=\"true\"],[data-dissection-root] .diss-optics__plane-key,[data-dissection-root] .diss-optics__plane-key > strong,[data-dissection-root][data-high-contrast=\"true\"] .diss-optics,[data-dissection-root][data-high-contrast=\"true\"] .diss-optics :is(.diss-optics__scope, .diss-optics__setting, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-optics :is(strong, p, b, .diss-optics__plane-key),[data-dissection-root][data-high-contrast=\"true\"] .diss-optics__plane-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-optics__plane-key > strong,.diss-advanced-card button,[data-dissection-root] .diss-adaptive-coaching,[data-dissection-root] .diss-adaptive-coaching h4,[data-dissection-root] .diss-adaptive-coaching .diss-adaptive-coaching__eyebrow,[data-dissection-root] .diss-adaptive-coaching button,[data-dissection-root][data-high-contrast=\"true\"] .diss-adaptive-coaching,[data-dissection-root][data-high-contrast=\"true\"] .diss-adaptive-coaching :is(h4, p, button),.diss-scenario-console,.diss-scenario-console__header strong,.diss-scenario-console__state,.diss-scenario-console__state[data-state=\"complete\"],.diss-scenario-console__state[data-state=\"expired\"],.diss-scenario-console__detail,.diss-scenario-console__controls label,.diss-scenario-console__controls select,.diss-scenario-console__controls button,[data-dissection-root] .diss-scenario-console,[data-dissection-root] .diss-scenario-console :is(h4, h5),[data-dissection-root] .diss-scenario-console :is(.diss-scenario-console__purpose, .diss-scenario-console__objective, .diss-scenario-console__help, .diss-scenario-console__detail),[data-dissection-root] .diss-scenario-console__playback,[data-dissection-root] .diss-scenario-console__timer,[data-dissection-root] .diss-scenario-console__timer[data-state=\"expired\"],[data-dissection-root] .diss-scenario-console__restart-review,[data-dissection-root] .diss-scenario-console__restart-review :is(h5, p),[data-dissection-root] .diss-scenario-console__restart-review button[data-confirm=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console,[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console :is(h4, h5, p, label, select, button, .diss-scenario-console__state, .diss-scenario-console__timer, .diss-scenario-console__restart-review),[data-dissection-root] #diss-attempt-comparison,[data-dissection-root] #diss-attempt-comparison [data-tone=\"improved\"] .diss-attempt-comparison__change,[data-dissection-root] #diss-attempt-comparison [data-tone=\"declined\"] .diss-attempt-comparison__change,[data-dissection-root] #diss-attempt-comparison button,[data-dissection-root] #diss-attempt-comparison button:disabled,[data-dissection-root][data-high-contrast=\"true\"] #diss-attempt-comparison,[data-dissection-root][data-high-contrast=\"true\"] #diss-attempt-comparison :is(section, p, b, span, button, label, output),.diss-attempt-comparison__metric span,.diss-attempt-comparison__metric strong,.diss-attempt-comparison__legend,.diss-attempt-comparison__scrub,.diss-attempt-comparison__scrub output,.diss-attempt-comparison__scrub button,.diss-debrief,.diss-debrief strong,.diss-instructor summary,[data-dissection-root] #diss-scenario-thresholds,[data-dissection-root] #diss-scenario-thresholds [data-applies=\"true\"] .diss-thresholds__scope,[data-dissection-root] #diss-scenario-thresholds select,[data-dissection-root][data-high-contrast=\"true\"] #diss-scenario-thresholds,[data-dissection-root][data-high-contrast=\"true\"] #diss-scenario-thresholds :is(div, p, span, select, summary),[data-dissection-root] .diss-camera-controls__heading,[data-dissection-root] .diss-zoom-bar button,[data-dissection-root] .diss-camera-controls__zoom,[data-dissection-root] .diss-pan-controls span,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-stage__status, .diss-stage__handoff, .diss-zoom-bar),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-stage__eyebrow, .diss-stage__title, .diss-camera-controls__heading, .diss-camera-controls__zoom, .diss-pan-controls span),[data-dissection-root][data-high-contrast=\"true\"] .diss-zoom-bar button,.diss-marker-guide,.diss-system-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-system-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-system-key__list li,.diss-depth-key,.diss-depth-key__title,.diss-depth-key__count,[data-dissection-root][data-high-contrast=\"true\"] .diss-depth-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-depth-key__title,[data-dissection-root][data-high-contrast=\"true\"] .diss-depth-key__count,.diss-overlay-actions,.diss-overlay-actions > summary,.diss-overlay-help,.diss-playback-help,.diss-overlay-options__title,.diss-overlay-actions button,.diss-overlay-actions button[aria-pressed=\"true\"],.diss-overlay-actions button:disabled,.diss-system-playback__status strong,.diss-living-function__copy strong,.diss-system-playback__status span,.diss-living-function__copy span,.diss-living-function__badge,.diss-living-function[data-active=\"true\"] .diss-living-function__badge,.diss-living-function[data-motion=\"static\"] .diss-living-function__badge,.diss-living-function[data-motion=\"paused\"] .diss-living-function__badge,[data-dissection-root][data-high-contrast=\"true\"] .diss-overlay-actions :is(button,summary),[data-dissection-root][data-high-contrast=\"true\"] .diss-overlay-actions button[aria-pressed=\"true\"],.diss-selection-position,.diss-observe-first strong,.diss-observe-first p,.diss-selection-reference.diss-disclosure > summary,.diss-selection-reference__intro,.diss-selection-reference__layer,.diss-selection-summary__label,.diss-selection-summary p,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-selection-summary__label,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-selection-summary p,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-clinical-reference :is(span,p),.diss-evidence-note,.diss-evidence-coach__head,.diss-evidence-starters button,.diss-confidence-scale__label,.diss-confidence-cue,.diss-confidence-cue strong,.diss-evidence-field-header label,.diss-evidence-field-status,[data-high-contrast=\"true\"] .diss-evidence-field-status,.diss-confidence-scale__option,.diss-evidence-coach__note,.diss-draft-status li,.diss-draft-review,.diss-draft-review__number,.diss-draft-review__steps strong,.diss-draft-review__steps p,.diss-countercheck,.diss-countercheck.diss-disclosure > summary,.diss-countercheck p,.diss-countercheck button,.diss-countercheck__status,.diss-evidence-form > label,.diss-evidence-form > p,.diss-evidence-form .diss-evidence-note,.diss-evidence-form .diss-confidence-scale__label,.diss-evidence-form .diss-confidence-scale__option,.diss-evidence-form .diss-confidence-scale__option[data-selected=\"true\"],.diss-evidence-form .diss-evidence-coach__head,.diss-evidence-form .diss-draft-status li,[data-dissection-root][data-high-contrast=\"true\"] .diss-evidence-form :is(.diss-confidence-scale__option, .diss-draft-status li, .diss-draft-review__steps li),[data-dissection-root] .diss-study-actions button,.diss-study-actions__number,.diss-study-actions__cue,[data-dissection-root] .diss-study-return-note,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-study-actions button, .diss-study-actions__number, .diss-study-return-note),[data-dissection-root][data-high-contrast=\"true\"] .diss-study-actions__cue,.diss-science-scope,.diss-recall,.diss-recall__header p,.diss-recall__scope,.diss-recall__stats dt,.diss-recall__stats dd,.diss-recall h4,.diss-recall__body > p,.diss-recall__summary > p,.diss-recall label,.diss-recall textarea,.diss-recall button,.diss-recall button:disabled,.diss-recall__answer p,.diss-spatial-guide,.diss-spatial-guide > summary span,.diss-spatial-guide p,.diss-spatial-guide__title,.diss-spatial-guide button,.diss-spatial-guide button:disabled,.diss-spatial-guide figcaption,[data-high-contrast=\"true\"] .diss-spatial-guide,[data-high-contrast=\"true\"] .diss-spatial-guide :is(figure, .diss-spatial-guide__layer),.diss-eye-study,.diss-eye-study p,.diss-eye-study button,.diss-eye-study button:disabled,.diss-eye-study__swatch,.diss-eye-study__transcript a,.diss-eye-study__handoff > strong,.diss-instrument-preparation > h4,.diss-instrument-keyboard-help,.diss-instrument-preparation .diss-instrument,.diss-instrument-preparation .diss-instrument[aria-checked=\"true\"],.diss-tool-marker,.diss-instrument-preparation .diss-instrument__hint,.diss-instrument-preparation .diss-instrument[aria-checked=\"true\"] .diss-instrument__state,.diss-instrument-preparation .diss-instrument[aria-checked=\"true\"] .diss-instrument__hint,.diss-instrument-preparation .diss-instrument:disabled .diss-instrument__hint,.diss-preparation-actions button,[data-dissection-root][data-high-contrast=\"true\"] .diss-instrument-preparation :is(.diss-instrument, .diss-tool-marker, .diss-active-tool, .diss-active-tool__badge, .diss-preparation-actions button, .diss-readiness, .diss-calibration, .diss-calibration output, .diss-calibration__status b),[data-dissection-root][data-high-contrast=\"true\"] .diss-instrument-preparation :is(strong, span, p),.diss-learning-check .diss-learning-check__number,.diss-learning-check .diss-learning-check__keyboard-help,.diss-learning-check .diss-learning-check__feedback[data-result=\"incorrect\"],.diss-learning-check .diss-learning-check__feedback[data-result=\"correct\"],.diss-learning-check .diss-learning-check__action,[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check,[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check :is(.diss-learning-check__phase, .diss-learning-check__option, .diss-learning-check__number, .diss-learning-check__marker, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action),[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check .diss-learning-check__keyboard-help,.diss-reflection-evidence,[data-high-contrast=\"true\"] .diss-reflection-evidence,[data-high-contrast=\"true\"] .diss-reflection-evidence__metric,.diss-record-return,[data-high-contrast=\"true\"] :is(.diss-investigation-progress, .diss-layer-records li, .diss-record-return),.diss-directory-browser .diss-directory-context,.diss-directory-context[data-tone=\"caution\"],.diss-directory-context[data-tone=\"prior\"],[data-high-contrast=\"true\"] .diss-directory-browser .diss-directory-context,[data-high-contrast=\"true\"] .diss-directory-context button,.diss-record-handoff__status,.diss-record-handoff__status[data-record-complete=\"true\"],.diss-record-handoff__next,.diss-note-handoff button.diss-record-handoff__secondary,[data-high-contrast=\"true\"] .diss-note-handoff :is(.diss-record-handoff__status, .diss-record-handoff__next),.diss-debrief.diss-layer-review,.diss-layer-review h3,.diss-layer-review h4,.diss-layer-review__eyebrow,.diss-layer-review__note,.diss-layer-review__selection,.diss-layer-review__delta[data-direction=\"improve\"],.diss-layer-review__delta[data-direction=\"caution\"],.diss-layer-review .diss-layer-review__action,.diss-layer-review .diss-procedure__timeline-entry,.diss-layer-review .diss-procedure__timeline-entry[data-tone],.diss-layer-review .diss-procedure__timeline-entry[data-tone][data-selected=\"true\"],.diss-layer-review__cautions,[data-high-contrast=\"true\"] .diss-layer-review,[data-high-contrast=\"true\"] .diss-layer-review :is(.diss-layer-review__card, .diss-layer-review__delta, .diss-procedure__timeline-entry, .diss-layer-review__action),[data-high-contrast=\"true\"] .diss-layer-review .diss-procedure__timeline-entry[data-tone][data-selected=\"true\"],.diss-layer-review__input-badge[data-input-kind=\"supported\"],.diss-layer-review__delta[data-available=\"false\"],.diss-layer-review__metric-help dt,.diss-layer-review__metric-help dd,.diss-layer-review .diss-layer-review__history-input,[data-high-contrast=\"true\"] .diss-layer-review__input-badge,[data-dissection-root][data-high-contrast=\"true\"] .diss-stage__telemetry-prepare,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-procedure__summary, .diss-procedure__summary span, #diss-procedure-title),[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric,[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric[data-risk=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] #diss-field-tissue,[data-dissection-root][data-high-contrast=\"true\"] #diss-field-tissue :is(div, details, p, span, strong, b, summary, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-field-readiness,[data-dissection-root][data-high-contrast=\"true\"] .diss-field-readiness :is(div, li, strong, p, span, button),[data-dissection-root] .diss-protocol,[data-dissection-root] .diss-protocol dt,[data-dissection-root] .diss-protocol dd,[data-dissection-root] .diss-protocol__state,[data-dissection-root] .diss-protocol > div[data-aligned=\"false\"] .diss-protocol__state,[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-protocol :is(div, dt, dd, p, span, strong, li, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-mission,[data-dissection-root][data-high-contrast=\"true\"] .diss-mission :is(p, h2, li, span, button, summary),[data-dissection-root][data-high-contrast=\"true\"] .diss-mode-rail button){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] [style]:is([style^=\"color: rgb(185, 74, 80)\"],[style*=\"; color: rgb(185, 74, 80)\"],[style^=\"color: rgb(166, 62, 72)\"],[style*=\"; color: rgb(166, 62, 72)\"],[style^=\"color: rgb(117, 64, 77)\"],[style*=\"; color: rgb(117, 64, 77)\"],[style^=\"color: rgb(109, 57, 72)\"],[style*=\"; color: rgb(109, 57, 72)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(225, 29, 72)\"],[style*=\"; color: rgb(225, 29, 72)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(143, 89, 96)\"],[style*=\"; color: rgb(143, 89, 96)\"],[style^=\"color: rgb(83, 100, 68)\"],[style*=\"; color: rgb(83, 100, 68)\"],[style^=\"color: rgba(184, 70, 54, 0.98)\"],[style*=\"; color: rgba(184, 70, 54, 0.98)\"],[style^=\"color: rgba(132, 48, 39, 0.99)\"],[style*=\"; color: rgba(132, 48, 39, 0.99)\"],[style^=\"color: rgba(74, 31, 30, 0.99)\"],[style*=\"; color: rgba(74, 31, 30, 0.99)\"],[style^=\"color: rgb(168, 63, 63)\"],[style*=\"; color: rgb(168, 63, 63)\"],[style^=\"color: rgb(118, 47, 54)\"],[style*=\"; color: rgb(118, 47, 54)\"],[style^=\"color: rgb(76, 34, 48)\"],[style*=\"; color: rgb(76, 34, 48)\"],[style^=\"color: rgb(143, 57, 64)\"],[style*=\"; color: rgb(143, 57, 64)\"],[style^=\"color: rgb(116, 52, 60)\"],[style*=\"; color: rgb(116, 52, 60)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(185, 74, 80)\"],[style*=\"; color: rgb(185, 74, 80)\"],[style^=\"color: rgb(166, 62, 72)\"],[style*=\"; color: rgb(166, 62, 72)\"],[style^=\"color: rgb(117, 64, 77)\"],[style*=\"; color: rgb(117, 64, 77)\"],[style^=\"color: rgb(109, 57, 72)\"],[style*=\"; color: rgb(109, 57, 72)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(225, 29, 72)\"],[style*=\"; color: rgb(225, 29, 72)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(143, 89, 96)\"],[style*=\"; color: rgb(143, 89, 96)\"],[style^=\"color: rgb(83, 100, 68)\"],[style*=\"; color: rgb(83, 100, 68)\"],[style^=\"color: rgba(184, 70, 54, 0.98)\"],[style*=\"; color: rgba(184, 70, 54, 0.98)\"],[style^=\"color: rgba(132, 48, 39, 0.99)\"],[style*=\"; color: rgba(132, 48, 39, 0.99)\"],[style^=\"color: rgba(74, 31, 30, 0.99)\"],[style*=\"; color: rgba(74, 31, 30, 0.99)\"],[style^=\"color: rgb(168, 63, 63)\"],[style*=\"; color: rgb(168, 63, 63)\"],[style^=\"color: rgb(118, 47, 54)\"],[style*=\"; color: rgb(118, 47, 54)\"],[style^=\"color: rgb(76, 34, 48)\"],[style*=\"; color: rgb(76, 34, 48)\"],[style^=\"color: rgb(143, 57, 64)\"],[style*=\"; color: rgb(143, 57, 64)\"],[style^=\"color: rgb(116, 52, 60)\"],[style*=\"; color: rgb(116, 52, 60)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(132, 204, 22)\"],[style*=\"background-color: rgb(132, 204, 22)\"],[style*=\"background: rgb(220, 239, 242)\"],[style*=\"background-color: rgb(220, 239, 242)\"],[style*=\"background: rgb(245, 229, 206)\"],[style*=\"background-color: rgb(245, 229, 206)\"],[style*=\"background: rgb(237, 247, 245)\"],[style*=\"background-color: rgb(237, 247, 245)\"],[style*=\"background: rgb(226, 241, 242)\"],[style*=\"background-color: rgb(226, 241, 242)\"],[style*=\"background: rgb(238, 240, 246)\"],[style*=\"background-color: rgb(238, 240, 246)\"],[style*=\"background: rgb(74, 222, 128)\"],[style*=\"background-color: rgb(74, 222, 128)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(236, 72, 153)\"],[style*=\"background-color: rgb(236, 72, 153)\"],[style*=\"background: rgb(248, 113, 113)\"],[style*=\"background-color: rgb(248, 113, 113)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"dissection\"] button[class*=\"bg-gradient-to-\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] :is(.diss-skip-link,.diss-skip-return,.diss-save-status,.diss-save-status[data-state=\"warning\"],.diss-save-status[data-state=\"error\"],.diss-reset-confirm,.diss-reset-confirm button,.diss-reference-context,.diss-comparison,.diss-comparison-card,.diss-comparison-card[data-current=\"true\"],.diss-pump-diagram,.diss-diagram-open,.diss-diagram-open:hover,.diss-diagram-reader,.diss-diagram-reader__header,.diss-diagram-reader button,.diss-diagram-reader__viewport,.diss-comparison-visual-key,.diss-comparison-focus,.diss-comparison-focus select,.diss-comparison-prompt,.diss-study-links button,.diss-study-links button:hover,.diss-observation-review,.diss-observation-search input,.diss-observation-review button,.diss-observation-export,.diss-observation-export textarea,.diss-observation-review__item,.diss-observation-record-status,.diss-observation-record-status[data-observation-complete=\"true\"],[data-high-contrast=\"true\"] .diss-observation-record-status,.diss-observation-reader,.diss-observation-reader__header,.diss-observation-reader__entry,.diss-note-handoff,.diss-directory-filters button,.diss-directory-filters button[aria-pressed=\"true\"],.diss-search-reset,.diss-other-layers li,.diss-other-layers li button,.diss-mission-shortcuts button,.diss-mission-shortcuts button:last-child,.diss-directory-empty,.diss-directory-browser .diss-directory-status,[data-dissection-root] .diss-directory-browser .diss-directory-item,.diss-directory-item__state,.diss-directory-item__state[data-tone=\"hidden\"],.diss-directory-item__state[data-tone=\"prior\"],.diss-directory-browser .diss-directory-item[data-directory-action=\"recover\"],[data-dissection-root][data-high-contrast] .diss-toolbar,[data-dissection-root][data-high-contrast] .diss-zoom-bar,[data-dissection-root][data-high-contrast] :is(.diss-directory-browser, .diss-directory-browser .diss-directory-item),[data-dissection-root][data-high-contrast] .diss-biology-fact__nav button,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-biology-fact),.diss-directory-browser .diss-directory-item:hover,.diss-directory-browser .diss-directory-empty__actions button,[data-dissection-root][data-high-contrast=\"true\"] .diss-directory-browser :is(.diss-directory-item, .diss-directory-item__state, .diss-directory-status, .diss-directory-empty__actions button),.diss-workflow__number,.diss-workspace-mode__choices,.diss-workspace-mode__choices button,.diss-mode-rail,.diss-mode-rail .diss-route-button,.diss-mode-rail .diss-route-button[data-active=\"true\"],.diss-mode-rail .diss-route-button:disabled,.diss-objectives.diss-disclosure,.diss-objective-item,.diss-objective-item[data-objective-status=\"demonstrated\"],.diss-objective-item__status,.diss-objective-item[data-objective-status=\"developing\"] .diss-objective-item__status,.diss-objective-item[data-objective-status=\"demonstrated\"] .diss-objective-item__status,.diss-objective-item__meter,.diss-objective-item .diss-objective-item__next,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-objectives, .diss-objective-item, .diss-objective-item__status, .diss-objective-item__meter, .diss-objective-item__next),.diss-picker,.diss-layer-stepper,.diss-specimen-tab,.diss-layer-button,.diss-layer-button[data-state=\"current\"],.diss-layer-button[data-state=\"revealed\"],.diss-layer-button[data-state=\"locked\"],.diss-layer-index,.diss-layer-button:hover:not(:disabled),[data-dissection-root][data-high-contrast=\"true\"] .diss-layer-button,.diss-toolbar,.diss-quiz-option:hover:not(:disabled),[data-dissection-root] .diss-toolbar > button,#diss-lab-tools,#diss-study-tools,[data-dissection-root] :is(#diss-lab-tools, #diss-study-tools) button,[data-dissection-root] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) > button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) > button:hover:not(:disabled),[data-dissection-root] :is(#diss-lab-tools, #diss-study-tools) > button:disabled,[data-dissection-root] #diss-lab-tools > #diss-reset-specimen,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) button,#diss-lab-tools .diss-lab-tool-group,[data-dissection-root] #diss-lab-tools button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] #diss-lab-tools button:hover:not(:disabled),[data-dissection-root] #diss-lab-tools button:disabled,#diss-lab-tools .diss-lab-reset-boundary,[data-dissection-root] #diss-lab-tools #diss-reset-specimen,[data-dissection-root][data-high-contrast=\"true\"] #diss-lab-tools :is(.diss-lab-tool-group, .diss-lab-reset-boundary),#diss-study-tools .diss-study-tool-group,#diss-study-tools .diss-study-activity,[data-dissection-root] #diss-study-tools button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] #diss-study-tools button:hover:not(:disabled),[data-dissection-root] #diss-study-tools button:disabled,#diss-study-tools .diss-study-readiness,#diss-study-tools .diss-study-time,[data-dissection-root][data-high-contrast=\"true\"] #diss-study-tools :is(.diss-study-tool-group, .diss-study-activity, .diss-study-readiness, .diss-study-time),#diss-view-tools.diss-view-controls,.diss-view-group,[data-dissection-root] .diss-view-control-grid button,.diss-view-control-grid button[aria-pressed=\"true\"],.diss-view-control-grid button:hover:not(:disabled),.diss-view-control-grid button:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-view-control-grid button,#diss-view-tools .diss-view-subgroup,[data-dissection-root][data-high-contrast=\"true\"] #diss-view-tools :is(.diss-view-subgroup, .diss-view-subgroup__title, .diss-view-help),.diss-light-intensity,.diss-light-intensity[data-tone=\"glare\"],.diss-light-intensity[data-tone=\"dim\"],.diss-next-action,.diss-next-action[data-tone=\"ready\"],.diss-next-action[data-tone=\"caution\"],.diss-next-action[data-tone=\"assessment\"],.diss-next-action__step,.diss-next-action__meta > span,.diss-next-action__secondary,.diss-next-action__primary:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-next-action,[data-dissection-root][data-high-contrast=\"true\"] .diss-next-action :is(button, .diss-next-action__step, .diss-next-action__meta > span),.diss-technique-roadmap,.diss-technique-roadmap__sequence,.diss-technique-roadmap__step,.diss-technique-roadmap__step[aria-current=\"step\"],.diss-technique-roadmap__step[data-step-state=\"verified\"],.diss-technique-roadmap__step[data-step-state=\"reflect\"],[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-technique-roadmap, .diss-technique-roadmap__sequence, .diss-technique-roadmap__step),.diss-learning-check__phase,.diss-learning-check__phase[data-state=\"current\"],.diss-learning-check[data-phase=\"reflect\"] .diss-learning-check__phase[data-state=\"current\"],.diss-learning-check__phase[data-state=\"complete\"],.diss-learning-check__option,.diss-learning-check__option:hover,.diss-learning-check__option[data-result=\"incorrect\"],.diss-learning-check__option[data-result=\"correct\"],.diss-learning-check__feedback,.diss-learning-check__perform,.diss-learning-check__perform[data-confirmed-plan=\"true\"],.diss-pointer-guide,.diss-pointer-guide[data-tone=\"ready\"],.diss-pointer-guide[data-tone=\"caution\"],.diss-pointer-guide[data-tone=\"blocked\"],.diss-pointer-guide[data-tone=\"assessment\"],.diss-pointer-guide__cursor,.diss-point-mode__status,[data-dissection-root] .diss-point-mode__actions button,[data-dissection-root] .diss-point-mode__actions button:hover:not(:disabled),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-pointer-guide, .diss-point-mode__status, .diss-point-mode__actions button),.diss-workflow li[data-state=\"current\"],.diss-stage,.diss-stage__status,.diss-stage__handoff,.diss-stage__handoff[data-tone=\"ready\"],.diss-stage__handoff[data-tone=\"complete\"],.diss-stage__handoff[data-tone=\"caution\"],.diss-stage__handoff[data-tone=\"restricted\"],.diss-stage__telemetry-metric,.diss-stage__telemetry-metric[data-risk=\"true\"],.diss-stage__telemetry-prepare:disabled,.diss-field-monitor,.diss-field-monitor__summary span,.diss-field-monitor__body > .diss-stage__telemetry-detail,.diss-field-readiness,.diss-field-readiness[data-tone=\"ready\"],.diss-field-readiness[data-tone=\"caution\"],.diss-field-readiness[data-tone=\"restricted\"],.diss-field-readiness__check,.diss-field-readiness__check[data-ready=\"true\"],.diss-field-readiness__check[data-ready=\"false\"],.diss-field-readiness__action:hover,.diss-stage__telemetry-replay:hover,.diss-stage__telemetry-delta,.diss-stage__telemetry-delta[data-direction=\"improve\"],.diss-stage__telemetry-delta[data-direction=\"caution\"],.diss-capture-options,.diss-capture-options select,[data-dissection-root][data-high-contrast=\"true\"] .diss-capture-options,.diss-replay-specimen,.diss-replay-jump,.diss-replay-jump:hover,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-replay-specimen, .diss-replay-jump),.diss-canvas-frame,[data-dissection-root][data-high-contrast=\"true\"] .diss-canvas-frame,.diss-evidence summary,.diss-evidence__capacity,.diss-evidence__capacity[data-full=\"true\"],.diss-evidence__manage > button,.diss-evidence__confirm button,.diss-evidence__confirm,.diss-evidence__item,.diss-evidence__selection,.diss-evidence__item .diss-evidence__confirm-copy,.diss-evidence__actions button,.diss-evidence__actions button[aria-pressed=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-split-reference,.diss-evidence__item,.diss-evidence__capacity,.diss-evidence__confirm,.diss-evidence__confirm-copy,.diss-evidence__selection),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-evidence,.diss-split-reference) :is(button,summary),.diss-canvas-frame:fullscreen .diss-fullscreen-dock button,.diss-canvas-frame:fullscreen .diss-fullscreen-dock select,.diss-canvas-frame[data-allo-fullscreen-active=\"true\"] .diss-fullscreen-dock button,.diss-canvas-frame[data-allo-fullscreen-active=\"true\"] .diss-fullscreen-dock select,.diss-stage__gesture,.diss-stage__gesture[data-tone=\"caution\"],.diss-stage__gesture[data-tone=\"restricted\"],.diss-stage__live[data-tool-status=\"true\"],.diss-shortcuts,.diss-shortcuts__grid span,.diss-shortcuts kbd,.diss-protocol div,.diss-protocol div[data-aligned=\"false\"],.diss-procedure__mode,.diss-instrument,.diss-instrument[data-next=\"true\"]:not([aria-checked=\"true\"]),.diss-instrument[data-readiness=\"waiting\"]:not([aria-checked=\"true\"]),.diss-instrument[data-readiness=\"complete\"]:not([aria-checked=\"true\"]),.diss-instrument:disabled,.diss-active-tool,.diss-active-tool__icon,.diss-active-tool__badge,.diss-active-tool[data-readiness=\"ready\"] .diss-active-tool__badge,.diss-active-tool[data-readiness=\"complete\"] .diss-active-tool__badge,.diss-readiness,.diss-readiness[data-tone=\"ready\"],.diss-readiness[data-tone=\"complete\"],.diss-readiness[data-tone=\"caution\"],.diss-readiness[data-tone=\"restricted\"],.diss-readiness__meter,.diss-readiness__check,.diss-procedure__step,.diss-procedure__step[data-complete=\"true\"],.diss-procedure__step[data-current=\"true\"],.diss-procedure__controls button,[data-dissection-root][data-high-contrast=\"true\"] .diss-equivalent-action :is(p, button),.diss-calibration__status b,.diss-calibration[data-tone=\"adjust\"] .diss-calibration__status b,.diss-calibration[data-tone=\"caution\"] .diss-calibration__status b,[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__guidance,[data-dissection-root] #diss-calibration-panel.diss-calibration button,[data-dissection-root] #diss-calibration-panel.diss-calibration button[aria-disabled=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] #diss-calibration-panel.diss-calibration,[data-dissection-root][data-high-contrast=\"true\"] #diss-calibration-panel.diss-calibration :is(div, details, strong, b, p, span, label, output, button, summary),.diss-procedure__feedback,.diss-procedure__feedback[data-tone=\"caution\"],.diss-procedure__feedback[data-tone=\"working\"],.diss-procedure__metric,.diss-procedure__timeline > span,.diss-procedure__timeline > span[data-tone=\"success\"],.diss-procedure__timeline > span[data-tone=\"caution\"],.diss-procedure__timeline > button,.diss-procedure__timeline > button[data-tone=\"success\"],.diss-procedure__timeline > button[data-tone=\"caution\"],.diss-procedure__timeline > button[data-selected=\"true\"],.diss-replay-review,.diss-replay-review select,.diss-replay-response,.diss-replay-response__metric,.diss-replay-response__metric[data-direction=\"improve\"],.diss-replay-response__metric[data-direction=\"caution\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-response,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-response__metric,.diss-replay-details,.diss-replay-review button,.diss-replay-review button:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review,.diss-advanced-card,[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter,[data-dissection-root][data-high-contrast=\"true\"] .diss-tissue-monitor,[data-dissection-root][data-high-contrast=\"true\"] .diss-tissue-monitor :is(div, strong, b, p, span),.diss-tissue-consequence,.diss-field-quality__metrics span,[data-dissection-root] #diss-observation-field .diss-observation-meter,[data-dissection-root] #diss-observation-field .diss-field-quality__metrics > div,[data-dissection-root] #diss-observation-field button,[data-dissection-root][data-high-contrast=\"true\"] #diss-observation-field,[data-dissection-root][data-high-contrast=\"true\"] #diss-observation-field :is(div, details, strong, p, span, dt, dd, summary, button),[data-dissection-root] #diss-exposure-readings .diss-exposure__meter,[data-dissection-root] #diss-exposure-guidance,[data-dissection-root] #diss-exposure-readings .diss-exposure__readings > div,[data-dissection-root] #diss-exposure-review-protocol,[data-dissection-root][data-high-contrast=\"true\"] #diss-exposure-readings,[data-dissection-root][data-high-contrast=\"true\"] #diss-exposure-readings :is(strong, b, p, dt, dd, summary, button, .diss-exposure__readings > div),[data-dissection-root] #diss-material-readings,[data-dissection-root] #diss-material-readings .diss-material__meter,[data-dissection-root] #diss-material-guidance,[data-dissection-root] #diss-material-readings .diss-material__readings > div,[data-dissection-root] #diss-material-review-calibration,[data-dissection-root][data-high-contrast=\"true\"] #diss-material-readings,[data-dissection-root][data-high-contrast=\"true\"] #diss-material-readings :is(strong, b, p, dt, dd, summary, button, .diss-material__readings > div),[data-dissection-root] .diss-optics,[data-dissection-root] #diss-optical-inspection .diss-optics__readings > div,[data-dissection-root] #diss-optics-suggestion,[data-dissection-root] #diss-optical-inspection .diss-optics__lighting,[data-dissection-root] #diss-optics-review-light,[data-dissection-root][data-high-contrast=\"true\"] #diss-optical-inspection,[data-dissection-root][data-high-contrast=\"true\"] #diss-optical-inspection :is(div, details, p, span, dt, dd, strong, b, button, summary),[data-dissection-root] .diss-optics[data-tone=\"usable\"],[data-dissection-root] .diss-optics[data-tone=\"soft\"],[data-dissection-root] .diss-optics[data-tone=\"unresolved\"],[data-dissection-root] .diss-optics__scope,[data-dissection-root] .diss-optics__setting,[data-dissection-root] .diss-optics__controls button,[data-dissection-root] .diss-optics__controls button[aria-pressed=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-optics,[data-dissection-root][data-high-contrast=\"true\"] .diss-optics :is(.diss-optics__scope, .diss-optics__setting, button),.diss-advanced-card button,[data-dissection-root] .diss-adaptive-coaching,[data-dissection-root] .diss-adaptive-coaching button,[data-dissection-root][data-high-contrast=\"true\"] .diss-adaptive-coaching,[data-dissection-root][data-high-contrast=\"true\"] .diss-adaptive-coaching :is(h4, p, button),.diss-scenario-console__state,.diss-scenario-console__progress,.diss-scenario-console__controls select,.diss-scenario-console__controls button,[data-dissection-root] .diss-scenario-console,[data-dissection-root] .diss-scenario-console__playback,[data-dissection-root] .diss-scenario-console__timer,[data-dissection-root] .diss-scenario-console__restart-review,[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console,[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console :is(h4, h5, p, label, select, button, .diss-scenario-console__state, .diss-scenario-console__timer, .diss-scenario-console__restart-review),[data-dissection-root] #diss-attempt-comparison,[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__context,[data-dissection-root] #diss-attempt-comparison .diss-attempt-comparison__metric,[data-dissection-root] #diss-attempt-comparison button,[data-dissection-root][data-high-contrast=\"true\"] #diss-attempt-comparison,[data-dissection-root][data-high-contrast=\"true\"] #diss-attempt-comparison :is(section, p, b, span, button, label, output),.diss-attempt-comparison__metric,.diss-attempt-comparison__scrub button,.diss-attempt-comparison__scrub button:hover,.diss-debrief,[data-dissection-root] #diss-scenario-thresholds,[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__current,[data-dissection-root] #diss-scenario-thresholds .diss-thresholds__control,[data-dissection-root] #diss-scenario-thresholds select,[data-dissection-root][data-high-contrast=\"true\"] #diss-scenario-thresholds,[data-dissection-root][data-high-contrast=\"true\"] #diss-scenario-thresholds :is(div, p, span, select, summary),.diss-zoom-bar,[data-dissection-root] .diss-zoom-bar,[data-dissection-root] .diss-zoom-bar button,[data-dissection-root] .diss-zoom-bar button:hover,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-stage__status, .diss-stage__handoff, .diss-zoom-bar),[data-dissection-root][data-high-contrast=\"true\"] .diss-zoom-bar button,.diss-marker-guide,.diss-system-key,.diss-system-key__list li,[data-dissection-root][data-high-contrast=\"true\"] .diss-system-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-system-key__list li,.diss-depth-symbol,[data-dissection-root][data-high-contrast=\"true\"] .diss-depth-key,.diss-overlay-actions,.diss-overlay-actions > summary,.diss-overlay-actions button,.diss-overlay-actions button[aria-pressed=\"true\"],.diss-overlay-actions button:disabled,.diss-system-playback,.diss-living-function,.diss-living-function__badge,.diss-living-function[data-active=\"true\"] .diss-living-function__badge,.diss-living-function[data-motion=\"static\"] .diss-living-function__badge,.diss-living-function[data-motion=\"paused\"] .diss-living-function__badge,[data-dissection-root][data-high-contrast=\"true\"] .diss-overlay-actions :is(button,summary),[data-dissection-root][data-high-contrast=\"true\"] .diss-overlay-actions button[aria-pressed=\"true\"],.diss-observe-first,.diss-selection-reference,.diss-selection-summary,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-selection-reference,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-clinical-reference,[data-dissection-root]:not([data-high-contrast=\"true\"]) [data-dissection-evidence],.diss-evidence-note,.diss-evidence-coach,.diss-evidence-starters button,.diss-evidence-starters button:hover,.diss-evidence-field-status,[data-high-contrast=\"true\"] .diss-evidence-field-status,.diss-confidence-scale__option,.diss-confidence-scale__option:hover,.diss-draft-status li,.diss-draft-review__number,.diss-countercheck,.diss-countercheck button,.diss-countercheck button:hover,.diss-evidence-form .diss-confidence-scale__option:hover,.diss-evidence-form .diss-confidence-scale__option[data-selected=\"true\"],.diss-evidence-form .diss-draft-review__steps li,[data-dissection-root][data-high-contrast=\"true\"] .diss-evidence-form :is(.diss-confidence-scale__option, .diss-draft-status li, .diss-draft-review__steps li),[data-dissection-root] .diss-study-actions button,.diss-study-actions__number,.diss-study-actions button[data-study-action=\"inspect\"],.diss-study-actions button:hover,[data-dissection-root] .diss-study-return-note,.diss-study-return-note:hover,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-study-actions button, .diss-study-actions__number, .diss-study-return-note),.diss-science-scope,.diss-recall__counter,.diss-recall__stats > div,.diss-recall__body,.diss-recall__summary,.diss-recall textarea,.diss-recall button,.diss-recall button:hover:not(:disabled),.diss-recall .diss-flashcard,.diss-recall__answer .diss-recall__check,.diss-spatial-guide,.diss-spatial-guide button,.diss-spatial-guide button[aria-pressed=\"true\"],.diss-spatial-guide button:hover:not(:disabled),.diss-spatial-guide figure,.diss-spatial-guide__layer,[data-high-contrast=\"true\"] .diss-spatial-guide,[data-high-contrast=\"true\"] .diss-spatial-guide :is(figure, .diss-spatial-guide__layer),.diss-eye-study,.diss-eye-study button,.diss-eye-study button:hover:not(:disabled),.diss-eye-study button[aria-pressed=\"true\"],.diss-eye-study__reference,.diss-eye-study__prompt,.diss-eye-study__handoff,.diss-instrument-preparation,.diss-instrument-preparation .diss-instrument[aria-checked=\"true\"],.diss-tool-marker,.diss-preparation-actions button,[data-dissection-root][data-high-contrast=\"true\"] .diss-instrument-preparation,[data-dissection-root][data-high-contrast=\"true\"] .diss-instrument-preparation :is(.diss-instrument, .diss-tool-marker, .diss-active-tool, .diss-active-tool__badge, .diss-preparation-actions button, .diss-readiness, .diss-calibration, .diss-calibration output, .diss-calibration__status b),.diss-learning-check .diss-learning-check__number,.diss-learning-check .diss-learning-check__feedback[data-result=\"incorrect\"],.diss-learning-check .diss-learning-check__feedback[data-result=\"correct\"],.diss-learning-check .diss-learning-check__action,.diss-learning-check .diss-learning-check__action:hover,[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check,[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check :is(.diss-learning-check__phase, .diss-learning-check__option, .diss-learning-check__number, .diss-learning-check__marker, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action),.diss-reflection-evidence,.diss-reflection-evidence__metric,.diss-reflection-evidence__track,[data-high-contrast=\"true\"] .diss-reflection-evidence,[data-high-contrast=\"true\"] .diss-reflection-evidence__metric,.diss-investigation-progress,.diss-layer-records li,.diss-record-return,[data-high-contrast=\"true\"] :is(.diss-investigation-progress, .diss-layer-records li, .diss-record-return),.diss-directory-browser .diss-directory-context,.diss-directory-context[data-tone=\"caution\"],.diss-directory-context[data-tone=\"prior\"],.diss-directory-browser .diss-directory-context__record-status,[data-high-contrast=\"true\"] .diss-directory-browser .diss-directory-context,[data-high-contrast=\"true\"] .diss-directory-context button,.diss-record-handoff__status,.diss-record-handoff__status[data-record-complete=\"true\"],.diss-record-handoff__next,.diss-note-handoff button.diss-record-handoff__secondary,[data-high-contrast=\"true\"] .diss-note-handoff :is(.diss-record-handoff__status, .diss-record-handoff__next),.diss-debrief.diss-layer-review,.diss-layer-review__state,.diss-layer-review__card,.diss-layer-review__next,.diss-layer-review__delta[data-direction=\"improve\"],.diss-layer-review__delta[data-direction=\"caution\"],.diss-layer-review .diss-layer-review__action,.diss-layer-review .diss-layer-review__action:hover,.diss-layer-review .diss-procedure__timeline-entry,.diss-layer-review .diss-procedure__timeline-entry[data-tone],.diss-layer-review .diss-procedure__timeline-entry[data-tone][data-selected=\"true\"],.diss-layer-review__cautions,[data-high-contrast=\"true\"] .diss-layer-review,[data-high-contrast=\"true\"] .diss-layer-review :is(.diss-layer-review__card, .diss-layer-review__delta, .diss-procedure__timeline-entry, .diss-layer-review__action),[data-high-contrast=\"true\"] .diss-layer-review .diss-procedure__timeline-entry[data-tone][data-selected=\"true\"],.diss-layer-review__input-badge,.diss-layer-review__input-badge[data-input-kind=\"supported\"],.diss-layer-review__delta[data-available=\"false\"],[data-high-contrast=\"true\"] .diss-layer-review__input-badge,[data-dissection-root][data-high-contrast=\"true\"] .diss-stage__telemetry-prepare,[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric,[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric[data-risk=\"true\"],[data-dissection-root] .diss-field-meter,[data-dissection-root][data-high-contrast=\"true\"] #diss-field-tissue,[data-dissection-root][data-high-contrast=\"true\"] #diss-field-tissue :is(div, details, p, span, strong, b, summary, button),[data-dissection-root] .diss-field-readiness .diss-field-readiness__action,[data-dissection-root][data-high-contrast=\"true\"] .diss-field-readiness,[data-dissection-root][data-high-contrast=\"true\"] .diss-field-readiness :is(div, li, strong, p, span, button),[data-dissection-root] .diss-protocol > div,[data-dissection-root] .diss-protocol > div[data-aligned=\"false\"],[data-dissection-root] .diss-protocol__views > span,[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-protocol :is(div, dt, dd, p, span, strong, li, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-mission,[data-dissection-root][data-high-contrast=\"true\"] .diss-mission :is(li, .diss-workflow__number, .diss-stat, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-mode-rail,[data-dissection-root][data-high-contrast=\"true\"] .diss-workspace-mode__choices,[data-dissection-root][data-high-contrast=\"true\"] .diss-mode-rail button):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] [style]:is([style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(132, 204, 22)\"],[style*=\"background-color: rgb(132, 204, 22)\"],[style*=\"background: rgb(220, 239, 242)\"],[style*=\"background-color: rgb(220, 239, 242)\"],[style*=\"background: rgb(245, 229, 206)\"],[style*=\"background-color: rgb(245, 229, 206)\"],[style*=\"background: rgb(237, 247, 245)\"],[style*=\"background-color: rgb(237, 247, 245)\"],[style*=\"background: rgb(226, 241, 242)\"],[style*=\"background-color: rgb(226, 241, 242)\"],[style*=\"background: rgb(238, 240, 246)\"],[style*=\"background-color: rgb(238, 240, 246)\"],[style*=\"background: rgb(74, 222, 128)\"],[style*=\"background-color: rgb(74, 222, 128)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] :is([data-dissection-root][data-high-contrast] .diss-biology-fact,.diss-primary-action,.diss-learning-check,.diss-learning-check[data-phase=\"reflect\"],.diss-learning-check[data-phase=\"perform\"],.diss-stage__telemetry,.diss-stage__telemetry[data-tone=\"caution\"],.diss-stage__telemetry[data-tone=\"danger\"],.diss-procedure,.diss-calibration,.diss-calibration[data-tone=\"adjust\"],.diss-calibration[data-tone=\"caution\"],.diss-tissue-monitor[data-tone=\"stable\"],.diss-tissue-monitor[data-tone=\"caution\"],.diss-tissue-monitor[data-tone=\"danger\"],.diss-field-quality,.diss-field-quality[data-tone=\"developing\"],.diss-field-quality[data-tone=\"restricted\"],.diss-scenario-console,.diss-attempt-comparison,.diss-depth-key,.diss-recall):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] :is([data-dissection-root],.diss-skip-link,.diss-skip-return,.diss-save-status,.diss-save-status[data-state=\"warning\"],.diss-save-status[data-state=\"error\"],.diss-reset-confirm,.diss-reset-confirm button,.diss-reference-context,.diss-reference-context a,.diss-reference-label,.diss-comparison,.diss-pump-diagram,.diss-pump-diagram figcaption,.diss-diagram-open,.diss-diagram-reader,.diss-diagram-reader__header span,.diss-diagram-reader button,.diss-diagram-reader button:disabled,.diss-diagram-reader .diss-diagram-reader__hint,.diss-diagram-reader .diss-diagram-reader__scope,.diss-diagram-fallback,.diss-comparison-visual-key,.diss-comparison-sources,.diss-comparison-sources a,.diss-comparison-focus select,.diss-gas-profile dt,.diss-gas-profile dd,.diss-comparison-prompt,.diss-study-links button,.diss-observation-review,.diss-observation-search input,.diss-observation-note-match,.diss-observation-review button,.diss-observation-export textarea,.diss-observation-record-status,.diss-observation-record-status[data-observation-complete=\"true\"],[data-high-contrast=\"true\"] .diss-observation-record-status,.diss-observation-review__note,.diss-observation-reader,.diss-observation-reader button:disabled,.diss-note-handoff,.diss-directory-progress,.diss-structure-list .text-green-500,.diss-directory-filters button,.diss-directory-filters button[aria-pressed=\"true\"],.diss-search-reset,.diss-other-layers,.diss-other-layers li strong,.diss-other-layers li button,.diss-mission-shortcuts button,.diss-mission-shortcuts button:last-child,[data-dissection-root] .diss-selection-reference .text-amber-600,.diss-directory-status,.diss-directory-empty,.diss-directory-search-label,.diss-directory-browser .diss-directory-keyboard-help,.diss-directory-browser .diss-directory-status,[data-dissection-root] .diss-directory-browser .diss-directory-item,.diss-directory-browser .diss-directory-item .diss-directory-progress,.diss-directory-item__action,[data-high-contrast=\"true\"] .diss-directory-item__action,.diss-directory-item__state,.diss-directory-item__state[data-tone=\"hidden\"],.diss-directory-item__state[data-tone=\"prior\"],[data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title),[data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span),[data-dissection-root][data-high-contrast] .diss-biology-fact__nav button,[data-dissection-root][data-high-contrast=\"true\"] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title),[data-dissection-root][data-high-contrast=\"true\"] .diss-biology-fact :is(summary, p, span),.diss-directory-browser .diss-directory-empty__actions button,[data-dissection-root][data-high-contrast=\"true\"] .diss-directory-browser :is(.diss-directory-item, .diss-directory-item__state, .diss-directory-status, .diss-directory-empty__actions button),.diss-pan-controls span,.diss-workflow__number,.diss-primary-action,.diss-workspace-mode__choices button,.diss-mode-rail .diss-route-button,.diss-mode-rail .diss-route-button[data-active=\"true\"],.diss-mode-rail .diss-route-button:disabled,.diss-objectives.diss-disclosure > summary,.diss-objectives > summary span,.diss-objective-item__head h4,.diss-objective-item__status,.diss-objective-item[data-objective-status=\"developing\"] .diss-objective-item__status,.diss-objective-item[data-objective-status=\"demonstrated\"] .diss-objective-item__status,.diss-objective-item__progress,.diss-objective-item__percent,.diss-objective-item p,.diss-objective-item .diss-objective-item__next,[data-dissection-root][data-high-contrast=\"true\"] .diss-objectives :is(summary, strong, span, h4, p),.diss-section-heading h3,.diss-section-heading p,.diss-specimen-scroll-help,.diss-specimen-tab,.diss-layer-button,.diss-layer-button[data-state=\"current\"],.diss-layer-button[data-state=\"revealed\"],.diss-layer-button[data-state=\"locked\"],.diss-layer-index,.diss-layer-state,.diss-layer-button[data-state=\"current\"] .diss-layer-state,.diss-layer-button[data-state=\"revealed\"] .diss-layer-state,.diss-layer-detail,.diss-layer-stepper .diss-layer-summary,.diss-layer-help,[data-dissection-root][data-high-contrast=\"true\"] .diss-layer-button,[data-dissection-root][data-high-contrast=\"true\"] .diss-layer-stepper :is(.diss-layer-index, .diss-layer-name, .diss-layer-state, .diss-layer-detail, .diss-layer-summary, .diss-layer-help),.diss-toolbar__label,[data-dissection-root] .diss-toolbar__label,[data-dissection-root] .diss-toolbar > button,[data-dissection-root] :is(#diss-lab-tools, #diss-study-tools) button,[data-dissection-root] #diss-study-tools > button,[data-dissection-root] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) > button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] :is(#diss-lab-tools, #diss-study-tools) > button:disabled,[data-dissection-root] #diss-lab-tools > #diss-reset-specimen,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-toolbar, #diss-lab-tools, #diss-study-tools) button,#diss-lab-tools .diss-lab-tool-heading,#diss-lab-tools .diss-lab-tool-note,[data-dissection-root] #diss-lab-tools button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] #diss-lab-tools button:disabled,[data-dissection-root] #diss-lab-tools #diss-reset-specimen,[data-dissection-root][data-high-contrast=\"true\"] #diss-lab-tools :is(.diss-lab-tool-heading, .diss-lab-tool-note),#diss-study-tools .diss-study-tool-heading,#diss-study-tools .diss-study-tool-intro,#diss-study-tools .diss-study-activity p,[data-dissection-root] #diss-study-tools button:is([aria-pressed=\"true\"], [aria-expanded=\"true\"]),[data-dissection-root] #diss-study-tools button:disabled,#diss-study-tools .diss-study-readiness,#diss-study-tools .diss-study-time,[data-dissection-root][data-high-contrast=\"true\"] #diss-study-tools :is(.diss-study-tool-group, .diss-study-activity, .diss-study-readiness, .diss-study-time),[data-dissection-root][data-high-contrast=\"true\"] #diss-study-tools :is(.diss-study-tool-heading, .diss-study-tool-intro, .diss-study-activity p),.diss-view-group__title,[data-dissection-root] .diss-view-control-grid button,.diss-view-control-grid button[aria-pressed=\"true\"],.diss-view-control-grid button:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-view-control-grid button,#diss-view-tools .diss-view-subgroup__title,#diss-view-tools .diss-view-help,[data-dissection-root][data-high-contrast=\"true\"] #diss-view-tools :is(.diss-view-subgroup, .diss-view-subgroup__title, .diss-view-help),.diss-light-intensity,.diss-light-intensity[data-tone=\"glare\"],.diss-light-intensity[data-tone=\"dim\"],.diss-next-action,.diss-next-action[data-tone=\"ready\"],.diss-next-action[data-tone=\"caution\"],.diss-next-action[data-tone=\"assessment\"],.diss-next-action__secondary,.diss-next-action__primary:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-next-action,[data-dissection-root][data-high-contrast=\"true\"] .diss-next-action :is(button, .diss-next-action__step, .diss-next-action__meta > span),.diss-technique-roadmap,.diss-technique-roadmap__step,.diss-technique-roadmap__step[aria-current=\"step\"],.diss-technique-roadmap__step[data-step-state=\"verified\"],.diss-technique-roadmap__step[data-step-state=\"reflect\"],[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-technique-roadmap, .diss-technique-roadmap__sequence, .diss-technique-roadmap__step),.diss-learning-check,.diss-learning-check[data-phase=\"reflect\"],.diss-learning-check[data-phase=\"perform\"],.diss-learning-check__phase,.diss-learning-check__phase[data-state=\"current\"],.diss-learning-check[data-phase=\"reflect\"] .diss-learning-check__phase[data-state=\"current\"],.diss-learning-check__phase[data-state=\"complete\"],.diss-learning-check__option,.diss-learning-check__option[data-result=\"incorrect\"],.diss-learning-check__option[data-result=\"correct\"],.diss-learning-check__perform,.diss-pointer-guide,.diss-pointer-guide[data-tone=\"ready\"],.diss-pointer-guide[data-tone=\"caution\"],.diss-pointer-guide[data-tone=\"blocked\"],.diss-pointer-guide[data-tone=\"assessment\"],[data-dissection-root] .diss-point-mode__actions button,[data-dissection-root] .diss-point-mode__actions button:disabled,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-pointer-guide, .diss-point-mode__status, .diss-point-mode__actions button),.diss-workflow li[data-state=\"current\"],.diss-stage__eyebrow,.diss-stage__title,.diss-stage__status,.diss-stage__handoff,.diss-stage__handoff[data-tone=\"ready\"],.diss-stage__handoff[data-tone=\"complete\"],.diss-stage__handoff[data-tone=\"caution\"],.diss-stage__handoff[data-tone=\"restricted\"],.diss-stage__telemetry,.diss-stage__telemetry[data-tone=\"caution\"],.diss-stage__telemetry[data-tone=\"danger\"],.diss-stage__telemetry-metric[data-risk=\"true\"],.diss-stage__telemetry-prepare:disabled,.diss-field-monitor,.diss-field-monitor__summary strong,.diss-field-monitor__summary span,.diss-field-monitor__summary small,.diss-field-readiness,.diss-field-readiness[data-tone=\"ready\"],.diss-field-readiness[data-tone=\"caution\"],.diss-field-readiness[data-tone=\"restricted\"],.diss-field-readiness__check,.diss-field-readiness__check[data-ready=\"true\"],.diss-field-readiness__check[data-ready=\"false\"],.diss-stage__telemetry-delta[data-direction=\"improve\"],.diss-stage__telemetry-delta[data-direction=\"caution\"],.diss-capture-options,.diss-capture-options select,[data-dissection-root][data-high-contrast=\"true\"] .diss-capture-options,.diss-replay-specimen,.diss-replay-jump,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-replay-specimen, .diss-replay-jump),.diss-evidence summary,.diss-evidence__capacity,.diss-evidence__capacity[data-full=\"true\"],.diss-evidence__manage > button,.diss-evidence__confirm button,.diss-evidence__confirm p,.diss-evidence__identity,.diss-evidence__selection,.diss-evidence__item > strong,.diss-evidence__metadata p,.diss-evidence__metadata time,.diss-evidence__item .diss-evidence__confirm-copy,.diss-evidence__actions button,.diss-evidence__actions button[aria-pressed=\"true\"],.diss-evidence__actions button[data-danger=\"true\"],.diss-evidence__empty,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-evidence,.diss-split-reference) :is(p,time,h3,strong,span),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-split-reference,.diss-evidence__item,.diss-evidence__capacity,.diss-evidence__confirm,.diss-evidence__confirm-copy,.diss-evidence__selection),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-evidence,.diss-split-reference) :is(button,summary),.diss-canvas-frame:fullscreen .diss-fullscreen-dock button,.diss-canvas-frame:fullscreen .diss-fullscreen-dock select,.diss-canvas-frame[data-allo-fullscreen-active=\"true\"] .diss-fullscreen-dock button,.diss-canvas-frame[data-allo-fullscreen-active=\"true\"] .diss-fullscreen-dock select,.diss-stage__live,.diss-stage__gesture,.diss-stage__gesture[data-tone=\"caution\"],.diss-stage__gesture[data-tone=\"restricted\"],.diss-stage__live[data-tool-status=\"true\"],.diss-shortcuts,.diss-shortcuts summary,.diss-shortcuts kbd,.diss-procedure__summary,.diss-procedure__summary span,.diss-procedure__header h4,.diss-procedure__header p,.diss-protocol dt,.diss-protocol dd,.diss-procedure__mode button,.diss-instrument,.diss-instrument[data-readiness=\"waiting\"]:not([aria-checked=\"true\"]),.diss-instrument[data-readiness=\"complete\"]:not([aria-checked=\"true\"]),.diss-instrument:disabled,.diss-instrument:disabled .diss-instrument__state,.diss-instrument__hint,.diss-instrument:disabled .diss-instrument__hint,.diss-instrument[data-readiness=\"ready\"] .diss-instrument__state,.diss-instrument[data-readiness=\"complete\"] .diss-instrument__state,.diss-active-tool,.diss-active-tool__icon,.diss-active-tool strong,.diss-active-tool span,.diss-active-tool__badge,.diss-active-tool[data-readiness=\"ready\"] .diss-active-tool__badge,.diss-active-tool[data-readiness=\"complete\"] .diss-active-tool__badge,.diss-readiness,.diss-readiness[data-tone=\"ready\"],.diss-readiness[data-tone=\"complete\"],.diss-readiness[data-tone=\"caution\"],.diss-readiness[data-tone=\"restricted\"],.diss-procedure__step,.diss-procedure__step[data-complete=\"true\"],.diss-procedure__step[data-current=\"true\"],.diss-procedure__controls button,.diss-equivalent-action__hint,[data-dissection-root][data-high-contrast=\"true\"] .diss-equivalent-action :is(p, button),.diss-calibration__title strong,.diss-calibration__title span,.diss-calibration__status,.diss-calibration__status b,.diss-calibration[data-tone=\"adjust\"] .diss-calibration__status b,.diss-calibration[data-tone=\"caution\"] .diss-calibration__status b,[data-dissection-root] #diss-calibration-panel.diss-calibration .diss-calibration__guidance,[data-dissection-root] #diss-calibration-panel.diss-calibration button,[data-dissection-root] #diss-calibration-panel.diss-calibration button[aria-disabled=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] #diss-calibration-panel.diss-calibration,[data-dissection-root][data-high-contrast=\"true\"] #diss-calibration-panel.diss-calibration :is(div, details, strong, b, p, span, label, output, button, summary),.diss-procedure__feedback,.diss-procedure__feedback[data-tone=\"caution\"],.diss-procedure__feedback[data-tone=\"working\"],.diss-procedure__notice,.diss-procedure__metric span,.diss-procedure__metric strong,.diss-procedure__timeline > span,.diss-procedure__timeline > span[data-tone=\"success\"],.diss-procedure__timeline > span[data-tone=\"caution\"],.diss-procedure__timeline > button,.diss-procedure__timeline > button[data-tone=\"success\"],.diss-procedure__timeline > button[data-tone=\"caution\"],.diss-procedure__timeline > button[data-selected=\"true\"],.diss-replay-review,.diss-replay-review select,.diss-replay-response,.diss-replay-response__metric[data-direction=\"improve\"],.diss-replay-response__metric[data-direction=\"caution\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-response,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-response__metric,.diss-replay-details,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-details,.diss-replay-review button,.diss-replay-review button:disabled,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review button,[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review select,#diss-replay-evidence-help,[data-dissection-root][data-high-contrast=\"true\"] #diss-replay-evidence-help,.diss-advanced-card,.diss-advanced-card strong,.diss-tissue-meter span,[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter > span,[data-dissection-root] .diss-tissue-monitor .diss-tissue-meter b,[data-dissection-root][data-high-contrast=\"true\"] .diss-tissue-monitor,[data-dissection-root][data-high-contrast=\"true\"] .diss-tissue-monitor :is(div, strong, b, p, span),.diss-tissue-consequence,.diss-field-quality__metrics span,[data-dissection-root] #diss-observation-field,[data-dissection-root] #diss-observation-field button,[data-dissection-root][data-high-contrast=\"true\"] #diss-observation-field,[data-dissection-root][data-high-contrast=\"true\"] #diss-observation-field :is(div, details, strong, p, span, dt, dd, summary, button),[data-dissection-root] #diss-exposure-review-protocol,[data-dissection-root][data-high-contrast=\"true\"] #diss-exposure-readings,[data-dissection-root][data-high-contrast=\"true\"] #diss-exposure-readings :is(strong, b, p, dt, dd, summary, button, .diss-exposure__readings > div),[data-dissection-root] #diss-material-readings,[data-dissection-root] #diss-material-review-calibration,[data-dissection-root][data-high-contrast=\"true\"] #diss-material-readings,[data-dissection-root][data-high-contrast=\"true\"] #diss-material-readings :is(strong, b, p, dt, dd, summary, button, .diss-material__readings > div),[data-dissection-root] .diss-optics,[data-dissection-root] #diss-optical-inspection dt,[data-dissection-root] #diss-optical-inspection dd,[data-dissection-root] #diss-optics-review-light,[data-dissection-root][data-high-contrast=\"true\"] #diss-optical-inspection,[data-dissection-root][data-high-contrast=\"true\"] #diss-optical-inspection :is(div, details, p, span, dt, dd, strong, b, button, summary),[data-dissection-root] .diss-optics strong,[data-dissection-root] .diss-optics p,[data-dissection-root] .diss-optics__meter b,[data-dissection-root] .diss-optics__setting > strong,[data-dissection-root] .diss-optics__controls button,[data-dissection-root] .diss-optics__controls button[aria-pressed=\"true\"],[data-dissection-root] .diss-optics__plane-key,[data-dissection-root] .diss-optics__plane-key > strong,[data-dissection-root][data-high-contrast=\"true\"] .diss-optics,[data-dissection-root][data-high-contrast=\"true\"] .diss-optics :is(.diss-optics__scope, .diss-optics__setting, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-optics :is(strong, p, b, .diss-optics__plane-key),[data-dissection-root][data-high-contrast=\"true\"] .diss-optics__plane-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-optics__plane-key > strong,.diss-advanced-card button,[data-dissection-root] .diss-adaptive-coaching,[data-dissection-root] .diss-adaptive-coaching h4,[data-dissection-root] .diss-adaptive-coaching .diss-adaptive-coaching__eyebrow,[data-dissection-root] .diss-adaptive-coaching button,[data-dissection-root][data-high-contrast=\"true\"] .diss-adaptive-coaching,[data-dissection-root][data-high-contrast=\"true\"] .diss-adaptive-coaching :is(h4, p, button),.diss-scenario-console,.diss-scenario-console__header strong,.diss-scenario-console__state,.diss-scenario-console__state[data-state=\"complete\"],.diss-scenario-console__state[data-state=\"expired\"],.diss-scenario-console__detail,.diss-scenario-console__controls label,.diss-scenario-console__controls select,.diss-scenario-console__controls button,[data-dissection-root] .diss-scenario-console,[data-dissection-root] .diss-scenario-console :is(h4, h5),[data-dissection-root] .diss-scenario-console :is(.diss-scenario-console__purpose, .diss-scenario-console__objective, .diss-scenario-console__help, .diss-scenario-console__detail),[data-dissection-root] .diss-scenario-console__playback,[data-dissection-root] .diss-scenario-console__timer,[data-dissection-root] .diss-scenario-console__timer[data-state=\"expired\"],[data-dissection-root] .diss-scenario-console__restart-review,[data-dissection-root] .diss-scenario-console__restart-review :is(h5, p),[data-dissection-root] .diss-scenario-console__restart-review button[data-confirm=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console,[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console :is(h4, h5, p, label, select, button, .diss-scenario-console__state, .diss-scenario-console__timer, .diss-scenario-console__restart-review),[data-dissection-root] #diss-attempt-comparison,[data-dissection-root] #diss-attempt-comparison [data-tone=\"improved\"] .diss-attempt-comparison__change,[data-dissection-root] #diss-attempt-comparison [data-tone=\"declined\"] .diss-attempt-comparison__change,[data-dissection-root] #diss-attempt-comparison button,[data-dissection-root] #diss-attempt-comparison button:disabled,[data-dissection-root][data-high-contrast=\"true\"] #diss-attempt-comparison,[data-dissection-root][data-high-contrast=\"true\"] #diss-attempt-comparison :is(section, p, b, span, button, label, output),.diss-attempt-comparison__metric span,.diss-attempt-comparison__metric strong,.diss-attempt-comparison__legend,.diss-attempt-comparison__scrub,.diss-attempt-comparison__scrub output,.diss-attempt-comparison__scrub button,.diss-debrief,.diss-debrief strong,.diss-instructor summary,[data-dissection-root] #diss-scenario-thresholds,[data-dissection-root] #diss-scenario-thresholds [data-applies=\"true\"] .diss-thresholds__scope,[data-dissection-root] #diss-scenario-thresholds select,[data-dissection-root][data-high-contrast=\"true\"] #diss-scenario-thresholds,[data-dissection-root][data-high-contrast=\"true\"] #diss-scenario-thresholds :is(div, p, span, select, summary),[data-dissection-root] .diss-camera-controls__heading,[data-dissection-root] .diss-zoom-bar button,[data-dissection-root] .diss-camera-controls__zoom,[data-dissection-root] .diss-pan-controls span,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-stage__status, .diss-stage__handoff, .diss-zoom-bar),[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-stage__eyebrow, .diss-stage__title, .diss-camera-controls__heading, .diss-camera-controls__zoom, .diss-pan-controls span),[data-dissection-root][data-high-contrast=\"true\"] .diss-zoom-bar button,.diss-marker-guide,.diss-system-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-system-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-system-key__list li,.diss-depth-key,.diss-depth-key__title,.diss-depth-key__count,[data-dissection-root][data-high-contrast=\"true\"] .diss-depth-key,[data-dissection-root][data-high-contrast=\"true\"] .diss-depth-key__title,[data-dissection-root][data-high-contrast=\"true\"] .diss-depth-key__count,.diss-overlay-actions,.diss-overlay-actions > summary,.diss-overlay-help,.diss-playback-help,.diss-overlay-options__title,.diss-overlay-actions button,.diss-overlay-actions button[aria-pressed=\"true\"],.diss-overlay-actions button:disabled,.diss-system-playback__status strong,.diss-living-function__copy strong,.diss-system-playback__status span,.diss-living-function__copy span,.diss-living-function__badge,.diss-living-function[data-active=\"true\"] .diss-living-function__badge,.diss-living-function[data-motion=\"static\"] .diss-living-function__badge,.diss-living-function[data-motion=\"paused\"] .diss-living-function__badge,[data-dissection-root][data-high-contrast=\"true\"] .diss-overlay-actions :is(button,summary),[data-dissection-root][data-high-contrast=\"true\"] .diss-overlay-actions button[aria-pressed=\"true\"],.diss-selection-position,.diss-observe-first strong,.diss-observe-first p,.diss-selection-reference.diss-disclosure > summary,.diss-selection-reference__intro,.diss-selection-reference__layer,.diss-selection-summary__label,.diss-selection-summary p,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-selection-summary__label,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-selection-summary p,[data-dissection-root]:not([data-high-contrast=\"true\"]) .diss-clinical-reference :is(span,p),.diss-evidence-note,.diss-evidence-coach__head,.diss-evidence-starters button,.diss-confidence-scale__label,.diss-confidence-cue,.diss-confidence-cue strong,.diss-evidence-field-header label,.diss-evidence-field-status,[data-high-contrast=\"true\"] .diss-evidence-field-status,.diss-confidence-scale__option,.diss-evidence-coach__note,.diss-draft-status li,.diss-draft-review,.diss-draft-review__number,.diss-draft-review__steps strong,.diss-draft-review__steps p,.diss-countercheck,.diss-countercheck.diss-disclosure > summary,.diss-countercheck p,.diss-countercheck button,.diss-countercheck__status,.diss-evidence-form > label,.diss-evidence-form > p,.diss-evidence-form .diss-evidence-note,.diss-evidence-form .diss-confidence-scale__label,.diss-evidence-form .diss-confidence-scale__option,.diss-evidence-form .diss-confidence-scale__option[data-selected=\"true\"],.diss-evidence-form .diss-evidence-coach__head,.diss-evidence-form .diss-draft-status li,[data-dissection-root][data-high-contrast=\"true\"] .diss-evidence-form :is(.diss-confidence-scale__option, .diss-draft-status li, .diss-draft-review__steps li),[data-dissection-root] .diss-study-actions button,.diss-study-actions__number,.diss-study-actions__cue,[data-dissection-root] .diss-study-return-note,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-study-actions button, .diss-study-actions__number, .diss-study-return-note),[data-dissection-root][data-high-contrast=\"true\"] .diss-study-actions__cue,.diss-science-scope,.diss-recall,.diss-recall__header p,.diss-recall__scope,.diss-recall__stats dt,.diss-recall__stats dd,.diss-recall h4,.diss-recall__body > p,.diss-recall__summary > p,.diss-recall label,.diss-recall textarea,.diss-recall button,.diss-recall button:disabled,.diss-recall__answer p,.diss-spatial-guide,.diss-spatial-guide > summary span,.diss-spatial-guide p,.diss-spatial-guide__title,.diss-spatial-guide button,.diss-spatial-guide button:disabled,.diss-spatial-guide figcaption,[data-high-contrast=\"true\"] .diss-spatial-guide,[data-high-contrast=\"true\"] .diss-spatial-guide :is(figure, .diss-spatial-guide__layer),.diss-eye-study,.diss-eye-study p,.diss-eye-study button,.diss-eye-study button:disabled,.diss-eye-study__swatch,.diss-eye-study__transcript a,.diss-eye-study__handoff > strong,.diss-instrument-preparation > h4,.diss-instrument-keyboard-help,.diss-instrument-preparation .diss-instrument,.diss-instrument-preparation .diss-instrument[aria-checked=\"true\"],.diss-tool-marker,.diss-instrument-preparation .diss-instrument__hint,.diss-instrument-preparation .diss-instrument[aria-checked=\"true\"] .diss-instrument__state,.diss-instrument-preparation .diss-instrument[aria-checked=\"true\"] .diss-instrument__hint,.diss-instrument-preparation .diss-instrument:disabled .diss-instrument__hint,.diss-preparation-actions button,[data-dissection-root][data-high-contrast=\"true\"] .diss-instrument-preparation :is(.diss-instrument, .diss-tool-marker, .diss-active-tool, .diss-active-tool__badge, .diss-preparation-actions button, .diss-readiness, .diss-calibration, .diss-calibration output, .diss-calibration__status b),[data-dissection-root][data-high-contrast=\"true\"] .diss-instrument-preparation :is(strong, span, p),.diss-learning-check .diss-learning-check__number,.diss-learning-check .diss-learning-check__keyboard-help,.diss-learning-check .diss-learning-check__feedback[data-result=\"incorrect\"],.diss-learning-check .diss-learning-check__feedback[data-result=\"correct\"],.diss-learning-check .diss-learning-check__action,[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check,[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check :is(.diss-learning-check__phase, .diss-learning-check__option, .diss-learning-check__number, .diss-learning-check__marker, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action),[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check .diss-learning-check__keyboard-help,.diss-reflection-evidence,[data-high-contrast=\"true\"] .diss-reflection-evidence,[data-high-contrast=\"true\"] .diss-reflection-evidence__metric,.diss-record-return,[data-high-contrast=\"true\"] :is(.diss-investigation-progress, .diss-layer-records li, .diss-record-return),.diss-directory-browser .diss-directory-context,.diss-directory-context[data-tone=\"caution\"],.diss-directory-context[data-tone=\"prior\"],[data-high-contrast=\"true\"] .diss-directory-browser .diss-directory-context,[data-high-contrast=\"true\"] .diss-directory-context button,.diss-record-handoff__status,.diss-record-handoff__status[data-record-complete=\"true\"],.diss-record-handoff__next,.diss-note-handoff button.diss-record-handoff__secondary,[data-high-contrast=\"true\"] .diss-note-handoff :is(.diss-record-handoff__status, .diss-record-handoff__next),.diss-debrief.diss-layer-review,.diss-layer-review h3,.diss-layer-review h4,.diss-layer-review__eyebrow,.diss-layer-review__note,.diss-layer-review__selection,.diss-layer-review__delta[data-direction=\"improve\"],.diss-layer-review__delta[data-direction=\"caution\"],.diss-layer-review .diss-layer-review__action,.diss-layer-review .diss-procedure__timeline-entry,.diss-layer-review .diss-procedure__timeline-entry[data-tone],.diss-layer-review .diss-procedure__timeline-entry[data-tone][data-selected=\"true\"],.diss-layer-review__cautions,[data-high-contrast=\"true\"] .diss-layer-review,[data-high-contrast=\"true\"] .diss-layer-review :is(.diss-layer-review__card, .diss-layer-review__delta, .diss-procedure__timeline-entry, .diss-layer-review__action),[data-high-contrast=\"true\"] .diss-layer-review .diss-procedure__timeline-entry[data-tone][data-selected=\"true\"],.diss-layer-review__input-badge[data-input-kind=\"supported\"],.diss-layer-review__delta[data-available=\"false\"],.diss-layer-review__metric-help dt,.diss-layer-review__metric-help dd,.diss-layer-review .diss-layer-review__history-input,[data-high-contrast=\"true\"] .diss-layer-review__input-badge,[data-dissection-root][data-high-contrast=\"true\"] .diss-stage__telemetry-prepare,[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-procedure__summary, .diss-procedure__summary span, #diss-procedure-title),[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric,[data-dissection-root] #diss-field-tissue .diss-stage__telemetry-metric[data-risk=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] #diss-field-tissue,[data-dissection-root][data-high-contrast=\"true\"] #diss-field-tissue :is(div, details, p, span, strong, b, summary, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-field-readiness,[data-dissection-root][data-high-contrast=\"true\"] .diss-field-readiness :is(div, li, strong, p, span, button),[data-dissection-root] .diss-protocol,[data-dissection-root] .diss-protocol dt,[data-dissection-root] .diss-protocol dd,[data-dissection-root] .diss-protocol__state,[data-dissection-root] .diss-protocol > div[data-aligned=\"false\"] .diss-protocol__state,[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled=\"true\"],[data-dissection-root][data-high-contrast=\"true\"] .diss-protocol :is(div, dt, dd, p, span, strong, li, button),[data-dissection-root][data-high-contrast=\"true\"] .diss-mission,[data-dissection-root][data-high-contrast=\"true\"] .diss-mission :is(p, h2, li, span, button, summary),[data-dissection-root][data-high-contrast=\"true\"] .diss-mode-rail button){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] [style]:is([style^=\"color: rgb(185, 74, 80)\"],[style*=\"; color: rgb(185, 74, 80)\"],[style^=\"color: rgb(166, 62, 72)\"],[style*=\"; color: rgb(166, 62, 72)\"],[style^=\"color: rgb(117, 64, 77)\"],[style*=\"; color: rgb(117, 64, 77)\"],[style^=\"color: rgb(109, 57, 72)\"],[style*=\"; color: rgb(109, 57, 72)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(225, 29, 72)\"],[style*=\"; color: rgb(225, 29, 72)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(143, 89, 96)\"],[style*=\"; color: rgb(143, 89, 96)\"],[style^=\"color: rgb(83, 100, 68)\"],[style*=\"; color: rgb(83, 100, 68)\"],[style^=\"color: rgba(184, 70, 54, 0.98)\"],[style*=\"; color: rgba(184, 70, 54, 0.98)\"],[style^=\"color: rgba(132, 48, 39, 0.99)\"],[style*=\"; color: rgba(132, 48, 39, 0.99)\"],[style^=\"color: rgba(74, 31, 30, 0.99)\"],[style*=\"; color: rgba(74, 31, 30, 0.99)\"],[style^=\"color: rgb(168, 63, 63)\"],[style*=\"; color: rgb(168, 63, 63)\"],[style^=\"color: rgb(118, 47, 54)\"],[style*=\"; color: rgb(118, 47, 54)\"],[style^=\"color: rgb(76, 34, 48)\"],[style*=\"; color: rgb(76, 34, 48)\"],[style^=\"color: rgb(143, 57, 64)\"],[style*=\"; color: rgb(143, 57, 64)\"],[style^=\"color: rgb(116, 52, 60)\"],[style*=\"; color: rgb(116, 52, 60)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(185, 74, 80)\"],[style*=\"; color: rgb(185, 74, 80)\"],[style^=\"color: rgb(166, 62, 72)\"],[style*=\"; color: rgb(166, 62, 72)\"],[style^=\"color: rgb(117, 64, 77)\"],[style*=\"; color: rgb(117, 64, 77)\"],[style^=\"color: rgb(109, 57, 72)\"],[style*=\"; color: rgb(109, 57, 72)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(225, 29, 72)\"],[style*=\"; color: rgb(225, 29, 72)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(143, 89, 96)\"],[style*=\"; color: rgb(143, 89, 96)\"],[style^=\"color: rgb(83, 100, 68)\"],[style*=\"; color: rgb(83, 100, 68)\"],[style^=\"color: rgba(184, 70, 54, 0.98)\"],[style*=\"; color: rgba(184, 70, 54, 0.98)\"],[style^=\"color: rgba(132, 48, 39, 0.99)\"],[style*=\"; color: rgba(132, 48, 39, 0.99)\"],[style^=\"color: rgba(74, 31, 30, 0.99)\"],[style*=\"; color: rgba(74, 31, 30, 0.99)\"],[style^=\"color: rgb(168, 63, 63)\"],[style*=\"; color: rgb(168, 63, 63)\"],[style^=\"color: rgb(118, 47, 54)\"],[style*=\"; color: rgb(118, 47, 54)\"],[style^=\"color: rgb(76, 34, 48)\"],[style*=\"; color: rgb(76, 34, 48)\"],[style^=\"color: rgb(143, 57, 64)\"],[style*=\"; color: rgb(143, 57, 64)\"],[style^=\"color: rgb(116, 52, 60)\"],[style*=\"; color: rgb(116, 52, 60)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(132, 204, 22)\"],[style*=\"background-color: rgb(132, 204, 22)\"],[style*=\"background: rgb(220, 239, 242)\"],[style*=\"background-color: rgb(220, 239, 242)\"],[style*=\"background: rgb(245, 229, 206)\"],[style*=\"background-color: rgb(245, 229, 206)\"],[style*=\"background: rgb(237, 247, 245)\"],[style*=\"background-color: rgb(237, 247, 245)\"],[style*=\"background: rgb(226, 241, 242)\"],[style*=\"background-color: rgb(226, 241, 242)\"],[style*=\"background: rgb(238, 240, 246)\"],[style*=\"background-color: rgb(238, 240, 246)\"],[style*=\"background: rgb(74, 222, 128)\"],[style*=\"background-color: rgb(74, 222, 128)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(236, 72, 153)\"],[style*=\"background-color: rgb(236, 72, 153)\"],[style*=\"background: rgb(248, 113, 113)\"],[style*=\"background-color: rgb(248, 113, 113)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dissection\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -175,7 +175,19 @@
 .diss-observation-export textarea { display: block; width: 100%; min-height: 14rem; resize: vertical; padding: .65rem; border: 1px solid #719b99; border-radius: .45rem; color: #183f43; background: #f8fbfc; font: inherit; line-height: 1.55; }
 .diss-observation-export__actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
 .diss-observation-export__actions button { flex: 1 1 8rem; }
+.diss-report-export { width: 100%; min-width: 0; }
+.diss-report-export p { font-size: .875rem; line-height: 1.55; }
+.diss-report-recovery { padding: .6rem .8rem; border: 1px solid #164e52; border-radius: .55rem; background: #fff; color: #164e52; font-weight: 750; }
+[data-high-contrast="true"] .diss-report-export, [data-high-contrast="true"] .diss-report-export textarea, [data-high-contrast="true"] .diss-report-recovery { background: #fff; color: #000; border-color: #000; }
+@media (forced-colors: active) { .diss-report-export, .diss-report-export textarea, .diss-report-recovery { background: Canvas; color: CanvasText; border-color: CanvasText; } }
 .diss-observation-review__list { display: grid; gap: .6rem; padding: 0; margin: .5rem 0 0; list-style: none; }
+.diss-check-result { padding: .9rem; border: 2px solid #378578; border-radius: .8rem; background: #effbf7; color: #183f43; font-size: .875rem; line-height: 1.55; }
+.diss-check-result h4 { margin: 0 0 .5rem; font-size: 1rem; font-weight: 850; }
+.diss-check-result p { margin: .5rem 0; }
+.diss-check-result__actions { display: grid; gap: .5rem; margin-top: .7rem; }
+.diss-check-result button { padding: .6rem .7rem; border: 1px solid #39776b; border-radius: .5rem; background: #fff; color: #174c43; text-align: left; font-weight: 750; overflow-wrap: anywhere; }
+[data-high-contrast="true"] .diss-check-result, [data-high-contrast="true"] .diss-check-result button { background: #fff; color: #000; border-color: #000; }
+@media (forced-colors: active) { .diss-check-result, .diss-check-result button { background: Canvas; color: CanvasText; border-color: CanvasText; } }
 .diss-observation-review__item { min-width: 0; padding: .7rem; border: 1px solid #b7d0cd; background: #fff; border-radius: .6rem; overflow-wrap: anywhere; }
 .diss-observation-review button { min-height: 48px; font-size: .875rem; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
 .diss-observation-review button:focus-visible { outline: 3px solid #1766d2; outline-offset: 3px; }
@@ -336,8 +348,8 @@
   border: 1px solid rgba(125, 211, 252, .35);
   border-radius: 1.25rem;
   background:
-    radial-gradient(circle at 90% 0%, rgba(45, 212, 191, .26), transparent 38%),
-    linear-gradient(135deg, #10233f 0%, #123d6c 58%, #0b6967 100%);
+    radial-gradient(circle at 90% 0%, rgba(45, 212, 191, .16), transparent 38%),
+    linear-gradient(135deg, #10233f 0%, #123d6c 58%, #085451 100%);
   box-shadow: 0 18px 45px rgba(15, 23, 42, .16);
   color: #fff;
 }
@@ -465,6 +477,8 @@
 .diss-objective-item__meter span { display: block; height: 100%; border-radius: inherit; background: #0f766e; }
 .diss-objective-item p { margin: .6rem 0 0; color: #405b53; font-size: .875rem; line-height: 1.55; overflow-wrap: anywhere; }
 .diss-objective-item .diss-objective-item__next { padding: .5rem .6rem; border-left: 3px solid #819e93; border-radius: .3rem; background: #eef5f1; color: #254b40; }
+.diss-objective-item__action { margin-top: .35rem; max-width: 100%; padding: .6rem .8rem; border: 1px solid #417765; border-radius: .55rem; background: #fff; color: #164b3a; font-weight: 800; text-align: left; overflow-wrap: anywhere; }
+.diss-objective-item__action:disabled { cursor: default; opacity: .7; }
 [data-dissection-root][data-text-size="large"] .diss-objectives :is(summary, strong, span, h4, p) { font-size: 1rem !important; }
 [data-dissection-root][data-high-contrast="true"] .diss-objectives :is(summary, strong, span, h4, p) { color: #000; }
 [data-dissection-root][data-high-contrast="true"] :is(.diss-objectives, .diss-objective-item, .diss-objective-item__status, .diss-objective-item__meter, .diss-objective-item__next) { border-color: #111827; background: #fff; }
@@ -1074,18 +1088,18 @@
 .diss-canvas:fullscreen { width: auto !important; height: min(96vh, 1100px) !important; height: min(96dvh, 1100px) !important; max-width: 96vw !important; margin: auto; border-radius: 0 !important; background: #0f172a !important; object-fit: contain; }
 .diss-fullscreen-dock { display: none; }
 .diss-canvas-frame:fullscreen, .diss-canvas-frame[data-allo-fullscreen-active="true"] { display: grid; width: 100vw; width: 100dvw; height: 100vh; height: 100dvh; grid-template-rows: auto minmax(0, 1fr); gap: .5rem; padding: max(.65rem, env(safe-area-inset-top)) max(.65rem, env(safe-area-inset-right)) max(.65rem, env(safe-area-inset-bottom)) max(.65rem, env(safe-area-inset-left)); border: 0; border-radius: 0; background: #07111f; }
-.diss-canvas-frame:fullscreen .diss-fullscreen-dock, .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: .4rem; padding: .5rem; border: 1px solid #71849c; border-radius: .7rem; background: #10233f; color: #fff; }
+.diss-canvas-frame:fullscreen .diss-fullscreen-dock, .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock { display: grid; min-width: 0; min-height: 0; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); align-items: start; gap: .4rem; padding: .5rem; border: 1px solid #71849c; border-radius: .7rem; background: #10233f; color: #fff; }
+.diss-fullscreen-dock__controls { display: flex; min-width: 0; min-height: 0; max-height: 100%; flex-wrap: wrap; align-items: center; align-content: flex-start; gap: .4rem; padding: .35rem; overflow-y: auto; overscroll-behavior: contain; scroll-padding-block: .4rem; }
 .diss-canvas-frame:fullscreen .diss-fullscreen-dock button, .diss-canvas-frame:fullscreen .diss-fullscreen-dock select, .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock button, .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock select { min-height: 2.5rem !important; padding: .42rem .58rem; border: 1px solid #9fb3ca; border-radius: .5rem; background: #fff; color: #174d86; font-size: .7rem; font-weight: 850; }
 .diss-canvas-frame:fullscreen .diss-fullscreen-dock label, .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock label { display: inline-flex; min-height: 2.5rem; align-items: center; gap: .4rem; padding: .35rem .5rem; border: 1px solid #71849c; border-radius: .5rem; background: #172f51; color: #fff; font-size: .7rem; font-weight: 800; }
 .diss-canvas-frame:fullscreen .diss-fullscreen-dock input[type="range"], .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock input[type="range"] { width: min(19vw, 9rem); accent-color: #5eead4; }
-.diss-canvas-frame:fullscreen .diss-fullscreen-dock__exit, .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock__exit { border-color: #fecaca !important; background: #991b1b !important; color: #fff !important; }
+.diss-canvas-frame:fullscreen .diss-fullscreen-dock__exit, .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock__exit { min-height: 2.75rem !important; align-self: start; border-color: #fecaca !important; background: #991b1b !important; color: #fff !important; }
 .diss-fullscreen-dock__handoff { margin-left: auto; padding: .38rem .5rem; border: 1px solid #5eead4; border-radius: .5rem; background: #0f3f46; color: #ccfbf1; font-size: .68rem; font-weight: 850; }
 .diss-canvas-frame:fullscreen .diss-canvas, .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-canvas { width: auto !important; max-width: 100% !important; height: 100% !important; min-height: 0; object-fit: contain; }
 .diss-canvas-frame:fullscreen .diss-fullscreen-dock,
 .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock {
   max-height: min(34vh, 18rem);
-  overflow-y: auto;
-  align-content: flex-start;
+  overflow: visible;
 }
 @media (max-width: 640px) {
   .diss-canvas-frame:fullscreen,
@@ -1099,7 +1113,10 @@
     gap: .3rem;
     padding: .4rem;
     max-height: 36vh;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
+  .diss-fullscreen-dock__controls { gap: .3rem; }
   .diss-canvas-frame:fullscreen .diss-fullscreen-dock button,
   .diss-canvas-frame:fullscreen .diss-fullscreen-dock select,
   .diss-canvas-frame[data-allo-fullscreen-active="true"] .diss-fullscreen-dock button,
@@ -2693,7 +2710,11 @@
   var _disAC = null;
   var _disSaveQueue = Object.create(null);
   var _disSaveAccess = Object.create(null);
+  var _disLoadQueue = Object.create(null);
   var _disScenarioRestartReviews = Object.create(null);
+  var _disAttemptRestartReviews = Object.create(null);
+  var _disGuidedSubmissions = Object.create(null);
+  var _disAssessmentSubmissions = Object.create(null);
   var _disSaveOwnerCounter = 0;
   var _disSaveOwnerBySetter = typeof WeakMap === 'function' ? new WeakMap() : null;
   var _disSaveStatus = {
@@ -2714,6 +2735,63 @@
   }
   function dissectionSaveSlot(key, owner) {
     return String(owner || 'default') + '::' + String(key || '');
+  }
+  function dissectionGuidedSubmissionFor(owner, state) {
+    var scope = JSON.stringify([state.specimen || 'frog', state.activeLayer || 'skin', !!state.guidedMode,
+      !!state.quizMode, !!state.practicalMode, Number(state.guidedStep) || 0, state.guidedObservationPending || null,
+      state.guidedTargetIds || [], !!state._guidedCheckOnly, state._guidedCheckOrigin || null]);
+    var submission = _disGuidedSubmissions[owner];
+    if (!submission || submission.scope !== scope) {
+      submission = { scope: scope, accepted: false };
+      _disGuidedSubmissions[owner] = submission;
+    }
+    return submission;
+  }
+  function dissectionAssessmentSubmissionFor(owner, state, questionId) {
+    var retry = state.quizRetry;
+    var scope = JSON.stringify([state.specimen || 'frog', state.activeLayer || 'skin', state.quizSeed || 'default',
+      !!state.quizMode, !!state.quizReviewMode, !!state.practicalMode, Number(state.practicalEndsAt) || 0,
+      Number(state.quizIdx) || 0, questionId || null, !!state.quizComplete, !!state.quizFeedback,
+      retry ? [retry.questionId, Number(retry.attempts) || 0] : null]);
+    var submission = _disAssessmentSubmissions[owner];
+    if (!submission || submission.scope !== scope) {
+      submission = { scope: scope, accepted: false };
+      _disAssessmentSubmissions[owner] = submission;
+    }
+    return submission;
+  }
+  function dissectionCompletedSupportCount(data) {
+    if (!data || !Number(data.assessmentCompletedAt)) return null;
+    var count = data.assessmentRecordedSupportedCount;
+    var total = Number(data.assessmentRecordedTotal == null ? data.quizFirstAttemptTotal : data.assessmentRecordedTotal);
+    // Older saves have only a mutable live-session count. It cannot establish
+    // how much support was used in the previously completed assessment.
+    return Number.isInteger(count) && count >= 0 && Number.isFinite(total) && count <= total ? count : null;
+  }
+  function cancelDissectionLoad(owner) {
+    var slot = owner || 'default';
+    var pending = _disLoadQueue[slot];
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    delete _disLoadQueue[slot];
+  }
+  function scheduleDissectionLoad(owner, specimenKey, retry, callback) {
+    var slot = owner || 'default';
+    var pending = _disLoadQueue[slot];
+    // Parent renders can repeat before hydration runs. Keep one request, using
+    // the latest render's callback, rather than loading over newly restored work.
+    if (pending && pending.specimen === specimenKey && pending.retry === retry) {
+      pending.callback = callback;
+      return;
+    }
+    cancelDissectionLoad(slot);
+    pending = { specimen: specimenKey, retry: retry, callback: callback, timer: null };
+    pending.timer = setTimeout(function () {
+      if (_disLoadQueue[slot] !== pending) return;
+      delete _disLoadQueue[slot];
+      pending.callback();
+    }, 0);
+    _disLoadQueue[slot] = pending;
   }
   function clearDissectionCanvasTimer(canvas, name) {
     if (!canvas || !name || !canvas._dissTimers) return;
@@ -2758,9 +2836,67 @@
     var match = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.exec(image);
     return match && match[0] === image ? match[1].toLowerCase() : null;
   }
+  function dissectionEvidenceIdentityToken(value) {
+    if (typeof value !== 'string' && (typeof value !== 'number' || !isFinite(value))) return '';
+    return String(value).trim().replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
+  }
+  function normalizeDissectionEvidenceIdentities(frames) {
+    if (!Array.isArray(frames)) return [];
+    var reserved = Object.create(null), used = Object.create(null);
+    frames.forEach(function (entry) {
+      var token = dissectionEvidenceIdentityToken(entry && entry.id);
+      if (token) reserved[token] = true;
+    });
+    return frames.map(function (entry, index) {
+      var token = dissectionEvidenceIdentityToken(entry && entry.id);
+      if (token && !used[token]) { used[token] = true; return entry; }
+      // Repair identity only. Preserve every frame and its metadata, reserve
+      // existing IDs first, and avoid collisions in actual DOM/focus targets.
+      var base = 'recovered-frame-' + (index + 1), repaired = base, suffix = 1;
+      while (reserved[repaired] || used[repaired]) repaired = base + '-' + (++suffix);
+      used[repaired] = true;
+      return Object.assign({}, entry, { id: repaired });
+    });
+  }
+  function normalizeDissectionEvidenceReferenceId(frames, referenceId) {
+    if (!dissectionEvidenceIdentityToken(referenceId)) return null;
+    var retained = Array.isArray(frames) ? frames.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }) : [];
+    var index = retained.findIndex(function (entry) { return entry.id === referenceId; });
+    // A selected repaired identity may already be held in host state while its
+    // original frames await the next save; retain that resolved selection too.
+    return index < 0 ? referenceId : normalizeDissectionEvidenceIdentities(retained)[index].id;
+  }
 
   function isPlainDissectionRecord(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+  function isValidDissectionAnnotation(ann) {
+    if (!isPlainDissectionRecord(ann)) return false;
+    function coordinate(value) {
+      return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 1;
+    }
+    if (!coordinate(ann.x) || !coordinate(ann.y)) return false;
+    // Older marks may omit type or use "line". Their numeric geometry is
+    // compatible; a connected segment still needs both preceding coordinates.
+    if (ann.prevX === undefined && ann.prevY === undefined) return true;
+    return coordinate(ann.prevX) && coordinate(ann.prevY);
+  }
+  function drawDissectionAnnotations(ctx, annotations, W, H) {
+    if (!Array.isArray(annotations)) return;
+    ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    var brokenLine = false;
+    annotations.forEach(function (ann) {
+      // Host-restored in-memory state can bypass localStorage validation.
+      // Skip unsafe marks and break the stroke instead of joining across them.
+      if (!isValidDissectionAnnotation(ann)) { brokenLine = true; return; }
+      if (!brokenLine && ann.prevX !== undefined) {
+        ctx.beginPath(); ctx.moveTo(ann.prevX * W, ann.prevY * H);
+        ctx.lineTo(ann.x * W, ann.y * H); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.arc(ann.x * W, ann.y * H, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#ec4899'; ctx.fill();
+      brokenLine = false;
+    });
   }
   function dissectionEvidenceNote(notes, key) {
     var value = notes && notes[key];
@@ -3035,7 +3171,7 @@
       var arrayField = arrayFields[arrayIndex];
       if (data[arrayField] != null && !Array.isArray(data[arrayField])) return { ok: false, kind: 'unsafe-shape', field: arrayField, raw: raw };
     }
-    if (Array.isArray(data.annotations) && data.annotations.some(function (annotation) { return !isPlainDissectionRecord(annotation); })) {
+    if (Array.isArray(data.annotations) && data.annotations.some(function (annotation) { return !isValidDissectionAnnotation(annotation); })) {
       return { ok: false, kind: 'unsafe-shape', field: 'annotations', raw: raw };
     }
     if (Array.isArray(data.visualEvidence) && data.visualEvidence.some(function (entry) { return !isPlainDissectionRecord(entry) || (entry.image && !dissectionEvidenceImageFormat(entry.image)); })) {
@@ -3318,6 +3454,10 @@
         }
       }
       delete _disScenarioRestartReviews[saveOwner];
+      delete _disAttemptRestartReviews[saveOwner];
+      delete _disGuidedSubmissions[saveOwner];
+      delete _disAssessmentSubmissions[saveOwner];
+      cancelDissectionLoad(saveOwner);
       Object.keys(_disSaveQueue).forEach(function (slot) {
         var pending = _disSaveQueue[slot];
         if (!pending || pending.owner !== saveOwner) return;
@@ -3723,8 +3863,9 @@
     var index = props.entries.findIndex(function (entry) { return entry.organ.id === selectedId; });
     if (index < 0) index = 0;
     var entry = props.entries[index];
-    function finish(reviewId) {
-      returnActionRef.current = { reviewId: reviewId || null };
+    function finish(reviewId, verifyId) {
+      if ((reviewId && props.reviewUnavailable) || (verifyId && props.checkUnavailable)) return;
+      returnActionRef.current = { reviewId: reviewId || null, verifyId: verifyId || null };
       setOpen(false);
     }
     React.useEffect(function () {
@@ -3732,7 +3873,8 @@
         // Wait until React removes the modal: the rest of the lab is inert before this commit.
         var action = returnActionRef.current;
         returnActionRef.current = null;
-        if (action && action.reviewId) props.onReview(action.reviewId);
+        if (action && action.verifyId && props.onVerify) props.onVerify(action.verifyId);
+        else if (action && action.reviewId) props.onReview(action.reviewId);
         else if (action && triggerRef.current && triggerRef.current.isConnected) triggerRef.current.focus({ preventScroll: true });
         return;
       }
@@ -3782,6 +3924,7 @@
             h('button', { type: 'button', disabled: index === props.entries.length - 1, onClick: function () { move(1); } }, t('stem.dissection.observation_reader_next', 'Next observation')),
             h('button', { type: 'button', 'aria-pressed': large, onClick: function () { setLarge(!large); } }, t('stem.dissection.observation_reader_large', 'Larger text'))
           ),
+          props.reviewUnavailable && h('p', { role: 'status', 'data-observation-reader-busy': true }, t('stem.dissection.observation_reveal_wait', 'Layer reveal in progress. You can keep reading saved notes; wait for the reveal to finish before opening a record.')),
           h('section', { className: 'diss-observation-reader__entry', 'data-large-text': large, 'data-observation-reader-entry': entry.organ.id },
             h('h4', { ref: headingRef, tabIndex: -1 }, entry.organ.name),
             h('p', null, t('stem.dissection.observation_reader_layer', 'Layer: {layer}').replace('{layer}', entry.layer.name)),
@@ -3789,12 +3932,14 @@
               ? t('stem.dissection.observation_reader_confidence', 'Self-reported confidence: {rating} of 3').replace('{rating}', entry.confidence)
               : t('stem.dissection.observation_reader_no_confidence', 'Confidence not recorded')),
             h('p', { className: 'diss-observation-record-status', 'data-observation-reader-status': true, 'data-observation-complete': !entry.needsRecord }, entry.recordStatus),
+            h('p', { 'data-observation-reader-verification': true }, entry.verificationLabel),
             h('h5', null, t('stem.dissection.observation_reader_note', 'Your recorded note')),
             h('div', { className: 'diss-observation-reader__note', tabIndex: 0, role: 'region', 'aria-label': t('stem.dissection.observation_reader_note', 'Your recorded note'), dir: 'auto' },
               entry.note.trim() ? entry.note : t('stem.dissection.observation_reader_no_note', 'No evidence note recorded.')),
             h('div', { className: 'diss-observation-reader__handoff' }, entry.available
-              ? h('button', { type: 'button', 'data-observation-reader-edit': entry.organ.id, onClick: function () { finish(entry.organ.id); } }, entry.recordTask ? entry.recordTask.label : t('stem.dissection.observation_reader_edit', 'Return to edit this note'))
-              : h('p', { 'data-observation-reader-locked': true }, t('stem.dissection.observation_reader_locked', 'This layer is locked. You can read your saved note here; complete the layer preparation before editing it.')))
+              ? h('button', { type: 'button', 'data-observation-reader-edit': entry.organ.id, disabled: !!props.reviewUnavailable, onClick: function () { finish(entry.organ.id); } }, entry.recordTask ? entry.recordTask.label : t('stem.dissection.observation_reader_edit', 'Return to edit this note'))
+              : h('p', { 'data-observation-reader-locked': true }, t('stem.dissection.observation_reader_locked', 'This layer is locked. You can read your saved note here; complete the layer preparation before editing it.')),
+              entry.available && !entry.verified && props.onVerify && h('button', { type: 'button', disabled: !!props.checkUnavailable, onClick: function () { finish(null, entry.organ.id); } }, t('stem.dissection.observation_start_check', 'Check this identification')))
           ),
           h('p', { className: 'diss-observation-reader__hint' }, t('stem.dissection.observation_reader_hint', 'These are your recorded observations. Confidence is self-reported, and this view does not check identification accuracy. Escape returns to the review list.'))
         )
@@ -3978,6 +4123,7 @@
       // ── Tool body (dissection) ──
       return (function() {
 var d = labToolData.dissection || {};
+          var guidedSubmission = dissectionGuidedSubmissionFor(dissectionSaveOwner, d);
 
           // ── Specimen-specific trivia for "Did You Know?" panel ──
           var SPECIMEN_TRIVIA = {
@@ -5163,6 +5309,7 @@ var d = labToolData.dissection || {};
           if (!spec) { specimen = 'frog'; spec = SPECIMENS['frog']; }
 
           var activeLayer = d.activeLayer || (spec.layers[0] || {}).id || 'skin';
+          var layerRevealPending = !!(d._incisionAnim && d._incisionAnim.active);
 
           var revealedLayers = d.revealedLayers || {};
 
@@ -5195,9 +5342,18 @@ var d = labToolData.dissection || {};
           var flashcardAgainIds = organs.filter(function (org) { return flashcardRatings[org.id] === 'again'; }).map(function (org) { return org.id; });
           var flashcardUnratedIds = organs.filter(function (org) { return !flashcardRatings[org.id]; }).map(function (org) { return org.id; });
           var flashcardRecalledCount = organs.length - flashcardAgainIds.length - flashcardUnratedIds.length;
+          var flashcardReturn = d._flashcardReturn && d._flashcardReturn.scope === flashcardScope &&
+            d._flashcardReturn.practice && d._flashcardReturn.practice.scope === flashcardScope ? d._flashcardReturn : null;
+          var pausedFlashcardOrgan = flashcardReturn ? organs.find(function (organ) { return organ.id === flashcardReturn.organId; }) : null;
+          var flashcardHandoffBlocked = !!(d.quizMode || d.practicalMode || (d._incisionAnim && d._incisionAnim.active) ||
+            (d._layerTransition && d._layerTransition.active) || (d._layerBrowseTransition && d._layerBrowseTransition.active));
+          function flashcardPracticeSnapshot() {
+            return { scope: flashcardScope, index: flashcardIndex, revealed: flashcardRevealed,
+              complete: flashcardComplete, ratings: Object.assign({}, flashcardRatings), drafts: Object.assign({}, flashcardDrafts),
+              reviewIds: flashcardReviewIds ? flashcardReviewIds.slice() : null };
+          }
           function updateFlashcardPractice(patch) {
-            upd('_flashcardPractice', Object.assign({ scope: flashcardScope, index: flashcardIndex, revealed: flashcardRevealed,
-              complete: flashcardComplete, ratings: flashcardRatings, drafts: flashcardDrafts, reviewIds: flashcardReviewIds }, patch));
+            upd('_flashcardPractice', Object.assign(flashcardPracticeSnapshot(), patch));
           }
           function moveFlashcard(nextIndex) {
             var complete = nextIndex >= flashcardDeck.length;
@@ -5215,14 +5371,49 @@ var d = labToolData.dissection || {};
             if (typeof announceToSR === 'function') announceToSR(flashcardCurrent.name + (rating === 'again' ? ' added to review.' : ' self-rated as recalled.') + (complete ? ' Round complete.' : ' Next card.'));
           }
           function startFlashcardRound(ids) {
+            upd('_flashcardReturn', null);
             updateFlashcardPractice({ reviewIds: ids, index: 0, revealed: false, complete: false });
             focusDissectionTarget('diss-flashcard-prompt');
           }
           function openFlashcardPractice() {
             closeTimedPractical();
+            upd('_flashcardReturn', null);
             updMany({ eyeStudyMode: false, guidedMode: false, quizMode: false, compareMode: false, flashcardMode: true,
               selectedOrgan: null, hoveredOrgan: null, flashcardIdx: 0, flashcardFlipped: false, _flashcardPractice: null });
             focusDissectionTarget('diss-flashcard-prompt');
+          }
+          function pauseFlashcardsForSpecimen(toRecord) {
+            if (flashcardHandoffBlocked || !d.flashcardMode || !flashcardCurrent) return false;
+            if (toRecord && !structureEvidenceData(flashcardCurrent).inspected) return false;
+            cancelActiveCanvasGesture('Gesture canceled before checking a flashcard against the specimen; no action was recorded.');
+            var snapshot = flashcardPracticeSnapshot();
+            updMany({ flashcardMode: false, _flashcardPractice: snapshot,
+              _flashcardReturn: { scope: flashcardScope, organId: flashcardCurrent.id, practice: snapshot },
+              eyeStudyMode: false, compareMode: false, guidedMode: false, guidedObservationPending: null,
+              guidedObservationFeedback: null, selectedOrgan: null, hoveredOrgan: null, toolbarStudyOpen: false,
+              organSearch: '', directoryFilter: 'all' });
+            if (toRecord) {
+              reviewObservation(flashcardCurrent.id);
+            } else {
+              upd('organSearch', flashcardCurrent.name);
+              focusDissectionTarget('diss-organ-search', 'Flashcards paused at ' + flashcardCurrent.name + '. Find the structure in the directory and inspect it when visible. Your recall draft is kept for Resume flashcards; no observation was recorded.');
+            }
+            return true;
+          }
+          function resumeFlashcardPractice() {
+            if (flashcardHandoffBlocked || !flashcardReturn || !pausedFlashcardOrgan) return false;
+            cancelActiveCanvasGesture('Gesture canceled before resuming flashcards; no action was recorded.');
+            updMany({ _flashcardPractice: flashcardReturn.practice, _flashcardReturn: null, flashcardMode: true,
+              eyeStudyMode: false, compareMode: false, guidedMode: false, guidedObservationPending: null,
+              guidedObservationFeedback: null, selectedOrgan: null, hoveredOrgan: null, toolbarStudyOpen: true });
+            focusDissectionTarget('diss-flashcard-prompt', 'Flashcards resumed at ' + pausedFlashcardOrgan.name + '. Your draft, self-rating, and place in the round are unchanged.');
+            return true;
+          }
+          function endFlashcardPractice() {
+            if (d.quizMode || d.practicalMode) return false;
+            updMany({ flashcardMode: false, _flashcardPractice: null, _flashcardReturn: null });
+            focusDissectionTarget('diss-canvas', 'Flashcard practice ended. Temporary recall drafts and self-ratings were cleared; recorded observations are unchanged.');
+            return true;
           }
 
           // Search describes references; discovery never reveals a layer or awards observation.
@@ -5476,9 +5667,10 @@ var d = labToolData.dissection || {};
           var relationshipMotion = workspaceSettings.relationshipMotion;
           var focusMode = workspaceSettings.focusMode;
           var parallaxDepth = workspaceSettings.parallaxDepth;
+          // Limit new captures, never truncate an existing notebook on load or save.
           var evidenceFrameLimit = 6;
           var evidenceCaptureContents = d.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen';
-          var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-evidenceFrameLimit) : [];
+          var visualEvidence = normalizeDissectionEvidenceIdentities(Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }) : []);
           var splitComparison = workspaceSettings.splitComparison;
           var lightDirection = workspaceSettings.lightDirection;
           var variationSeed = Number(d.variationSeed) || 1;
@@ -9587,6 +9779,9 @@ var d = labToolData.dissection || {};
             return true;
           }
           function recordGuidedObservationChoice(choiceId) {
+            // Claim this checkpoint before queuing state updates: repeated clicks
+            // can otherwise reuse a render's uncommitted evidence and award twice.
+            if (_disGuidedSubmissions[dissectionSaveOwner] !== guidedSubmission || guidedSubmission.accepted || !d.guidedMode || d.quizMode || d.practicalMode) return false;
             var pendingId = d.guidedObservationPending;
             var pendingOrgan = pendingId ? organs.find(function (organ) { return organ.id === pendingId; }) : null;
             if (!pendingOrgan || !currentGuided || pendingOrgan.id !== currentGuided.organId) {
@@ -9599,19 +9794,36 @@ var d = labToolData.dissection || {};
               setProcedureFeedback('Observation does not yet support the identification. Compare the visible structure with the choices and try again.', 'caution');
               return false;
             }
+            guidedSubmission.accepted = true;
             var verified = Object.assign({}, d.verifiedIdentifications || {});
-            verified[specimen + '|' + pendingOrgan.id] = { status: 'verified', guided: true, at: Date.now(), layer: activeLayer };
+            var verificationKey = specimen + '|' + pendingOrgan.id;
+            var firstVerification = !verified[verificationKey] || verified[verificationKey].status !== 'verified';
+            if (firstVerification) verified[verificationKey] = { status: 'verified', guided: true, at: Date.now(), layer: activeLayer };
             var nextGuidedStep = guidedStep + 1;
             var guidedFinished = nextGuidedStep >= guidedSteps.length;
-            updMany({ verifiedIdentifications: verified, guidedObservationPending: null, guidedObservationFeedback: { correct: true, choiceId: choiceId, message: 'Observation verified. The identification is supported by specimen evidence.' }, selectedOrgan: pendingOrgan.id, guidedStep: nextGuidedStep, guidedMode: guidedFinished ? false : true, guidedComplete: guidedFinished ? true : !!d.guidedComplete, guidedTargetIds: guidedFinished ? [] : guidedTargetIds });
-            awardStemXP('dissection', 2, 'Verified ' + pendingOrgan.name + ' with specimen evidence');
+            var focusedCheck = !!d._guidedCheckOnly;
+            var firstGuidedCompletion = guidedFinished && !focusedCheck && !d.guidedComplete;
+            var observationCheckFinished = guidedFinished && focusedCheck && d._guidedCheckOrigin === 'observations';
+            var observationMessage = firstVerification
+              ? 'Observation verified. The identification is supported by specimen evidence.'
+              : 'Practice confirmed. This identification was already verified; the original evidence is retained and no additional XP is awarded for this check.';
+            if (observationCheckFinished) upd('_guidedCheckResult', { specimen: specimen, organId: pendingOrgan.id });
+            updMany({ verifiedIdentifications: verified, guidedObservationPending: null, guidedObservationFeedback: { correct: true, choiceId: choiceId, message: observationMessage }, selectedOrgan: pendingOrgan.id, guidedStep: nextGuidedStep, guidedMode: guidedFinished ? false : true, guidedComplete: guidedFinished && !focusedCheck ? true : !!d.guidedComplete, guidedTargetIds: guidedFinished ? [] : guidedTargetIds, _guidedCheckOnly: guidedFinished ? false : focusedCheck });
+            if (firstVerification) awardStemXP('dissection', 2, 'Verified ' + pendingOrgan.name + ' with specimen evidence');
             sfxDisProbe();
-            if (addToast) addToast('\u2713 Observation verified for ' + pendingOrgan.name, 'success');
-            if (guidedFinished) {
+            if (addToast) addToast(firstVerification ? '\u2713 Observation verified for ' + pendingOrgan.name : 'Practice confirmed for ' + pendingOrgan.name + '; original verification retained.', 'success');
+            if (firstGuidedCompletion) {
               awardStemXP('dissection', 10, 'Completed evidence-based guided investigation');
               if (addToast) addToast('Guided investigation complete!', 'success');
             }
-            setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0);
+            var completionMessage = focusedCheck ? 'Focused identification check complete.' : firstGuidedCompletion
+              ? 'Guided investigation complete.' : 'Guided practice round complete. Previous completion retained; no additional completion XP.';
+            var verificationMessage = (firstVerification ? pendingOrgan.name + ' identification verified with specimen evidence.' : pendingOrgan.name + ': ' + observationMessage) + ' ' + (observationCheckFinished
+              ? 'Review the check summary to finish your record or check another observation.'
+              : guidedFinished ? completionMessage
+              : 'Next: find ' + guidedSteps[nextGuidedStep].name + '.');
+            setProcedureFeedback(verificationMessage, 'success');
+            setTimeout(function () { focusDissectionTarget(observationCheckFinished ? 'diss-check-result-title' : 'diss-canvas'); }, 0);
             return true;
           }
           function procedureToolReadinessData(toolId, state) {
@@ -10593,15 +10805,54 @@ var d = labToolData.dissection || {};
             }
             scheduleDissectionCanvasTimer(compareCanvas, 'compareReplay', advanceComparisonReplay, 125);
           }
-          function saveTechniqueAttempt() {
-            stopTechniqueCompareReplay();
-            if (procedureStepIndex(currentProcedure) === 0) {
-              setProcedureFeedback('Complete at least one technique step before saving an attempt.', 'caution');
-              return;
+          function procedureAttemptSignature(state) {
+            var content = Object.assign({}, state);
+            delete content.lastSavedAttemptId;
+            try {
+              return JSON.stringify(content, function (key, value) {
+                if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+                var sorted = Object.create(null);
+                Object.keys(value).sort().forEach(function (name) { sorted[name] = value[name]; });
+                return sorted;
+              });
+            } catch (error) { return ''; }
+          }
+          function currentTechniqueAttemptIsSaved() {
+            var signature = procedureAttemptSignature(currentProcedure);
+            return !!signature && (((d.attemptArchive || {})[activeLayer]) || []).some(function (entry) {
+              return entry.id === currentProcedure.lastSavedAttemptId && typeof entry.procedureSignature === 'string' && entry.procedureSignature === signature;
+            });
+          }
+          function techniqueAttemptHasWork() {
+            return !!(currentProcedure.inspected || currentProcedure.incisionStarted || currentProcedure.incisionExtended || currentProcedure.retracted || currentProcedure.probed || currentProcedure.surfaceCleared || currentProcedure.fieldWicked || currentProcedure.errors ||
+              (currentProcedure.history || []).length || (currentProcedure.actionLog || []).length || (currentProcedure.cautionLog || []).length || (currentProcedure.pins || []).length || Object.keys(currentProcedure.learningChecks || {}).length);
+          }
+          function techniqueAttemptChangeAllowed(data) {
+            data = data || d;
+            var mode = data.workspaceMode === 'advanced' || data.workspaceMode === 'essentials' ? data.workspaceMode : workspaceMode;
+            var canvas = queryDissectionNode('[data-diss-canvas]');
+            return mode === 'advanced' && !data.quizMode && !data.practicalMode && !data.guidedMode &&
+              ![data._incisionAnim, data._layerTransition, data._layerBrowseTransition, data._viewTransition].some(function (transition) { return transition && transition.active; }) &&
+              !canvasHasActiveDirectGesture(canvas) && !(canvas && canvas._cameraTransition);
+          }
+          function techniqueAttemptRestartScope(data) {
+            data = data || d;
+            return procedureScenarioRestartScope(data) + '|' + JSON.stringify(data.attemptArchive || {});
+          }
+          function currentTechniqueAttemptRestartReview() {
+            var review = _disAttemptRestartReviews[dissectionSaveOwner];
+            if (review && (!techniqueAttemptChangeAllowed(d) || review.scope !== techniqueAttemptRestartScope(d))) {
+              delete _disAttemptRestartReviews[dissectionSaveOwner]; review = null;
             }
+            return review || null;
+          }
+          function buildTechniqueAttemptSnapshot() {
             var snapshot = procedureMetricSnapshot(currentProcedure);
             snapshot.id = Date.now();
-            snapshot.savedAt = snapshot.id;
+            var existing = (((d.attemptArchive || {})[activeLayer]) || []);
+            while (existing.some(function (entry) { return String(entry.id) === String(snapshot.id); })) snapshot.id += 1;
+            snapshot.savedAt = Date.now();
+            snapshot.procedureSignature = procedureAttemptSignature(currentProcedure);
             snapshot.layer = activeLayer;
             snapshot.view = d.anatomicalView || anatomicalView;
             snapshot.condition = specimenCondition;
@@ -10617,6 +10868,20 @@ var d = labToolData.dissection || {};
               return { message: entry.message, protocolDeviation: !!entry.protocolDeviation, point: entry.point || null, at: entry.at };
             });
             snapshot.history = (currentProcedure.history || []).slice();
+            return snapshot;
+          }
+          function saveTechniqueAttempt() {
+            if (!techniqueAttemptChangeAllowed(d)) return false;
+            if (procedureStepIndex(currentProcedure) === 0) {
+              setProcedureFeedback('Complete at least one technique step before saving an attempt.', 'caution');
+              return false;
+            }
+            if (currentTechniqueAttemptIsSaved()) {
+              setProcedureFeedback('This technique attempt is already saved. No duplicate baseline was added.', 'working');
+              return true;
+            }
+            stopTechniqueCompareReplay();
+            var snapshot = buildTechniqueAttemptSnapshot();
             var archive = Object.assign({}, d.attemptArchive || {});
             var entries = (archive[activeLayer] || []).slice();
             entries.push(snapshot);
@@ -10631,29 +10896,65 @@ var d = labToolData.dissection || {};
               compareReplayPlaying: false,
               procedureFeedback: { message: 'Attempt saved with a technique score of ' + snapshot.score + '/100. Start a new attempt to practice against this baseline.', tone: 'success', at: Date.now() }
             });
+            return true;
           }
           function startNewTechniqueAttempt() {
+            if (!techniqueAttemptChangeAllowed(d)) return;
             if (!(((d.attemptArchive || {})[activeLayer]) || []).length) {
               setProcedureFeedback('Save the current attempt before starting a new comparison.', 'caution');
               return;
             }
+            if (techniqueAttemptHasWork() && !currentTechniqueAttemptIsSaved()) {
+              _disAttemptRestartReviews[dissectionSaveOwner] = { scope: techniqueAttemptRestartScope(d) };
+              updMany({});
+              focusDissectionTarget('diss-attempt-restart-cancel');
+              return;
+            }
+            completeTechniqueAttemptRestart(false, null);
+          }
+          function cancelTechniqueAttemptRestart(review) {
+            if (!review || _disAttemptRestartReviews[dissectionSaveOwner] !== review) return;
+            delete _disAttemptRestartReviews[dissectionSaveOwner];
+            updMany({});
+            focusDissectionTarget('diss-new-attempt');
+          }
+          function confirmTechniqueAttemptRestart(review, saveCurrent) {
+            if (!review || _disAttemptRestartReviews[dissectionSaveOwner] !== review) return;
+            var canvas = queryDissectionNode('[data-diss-canvas]');
+            var latest = canvas && canvas._drawD ? canvas._drawD : d;
+            if (!techniqueAttemptChangeAllowed(latest) || review.scope !== techniqueAttemptRestartScope(d) || review.scope !== techniqueAttemptRestartScope(latest)) {
+              cancelTechniqueAttemptRestart(review); return;
+            }
+            completeTechniqueAttemptRestart(saveCurrent, review);
+          }
+          function completeTechniqueAttemptRestart(saveCurrent, review) {
+            if (!techniqueAttemptChangeAllowed(d)) return;
+            if (saveCurrent && procedureStepIndex(currentProcedure) === 0) {
+              setProcedureFeedback('Complete at least one technique step before saving. Cancel to continue, or explicitly discard this unfinished attempt.', 'caution'); return;
+            }
+            var expectedScope = review ? review.scope : techniqueAttemptRestartScope(d);
+            var snapshot = saveCurrent ? buildTechniqueAttemptSnapshot() : null;
+            delete _disAttemptRestartReviews[dissectionSaveOwner];
             stopTechniqueCompareReplay();
             stopProcedureReplay(false, true);
-            var map = Object.assign({}, d.procedureByLayer || {});
-            map[activeLayer] = {
-              inspected: false, incisionStarted: false, incisionExtended: false,
-              retracted: false, pins: [], probed: false, errors: 0, history: [], actionLog: [], cautionLog: [], learningChecks: {},
-              tissueState: defaultTissueState()
-            };
-            updMany({
-              procedureByLayer: map,
-              activeInstrument: 'probe',
-              incisionDepth: 'shallow',
-              compareTechniqueAttempts: true,
-              compareReplayProgress: 0,
-              compareReplayPlaying: false,
-              procedureFeedback: { message: 'New attempt started. The pink dashed path shows the saved baseline for this layer.', tone: 'success', at: Date.now() }
+            updMany(function (current) {
+              if (!techniqueAttemptChangeAllowed(current) || techniqueAttemptRestartScope(current) !== expectedScope) return {};
+              var map = Object.assign({}, current.procedureByLayer || {});
+              map[activeLayer] = {
+                inspected: false, incisionStarted: false, incisionExtended: false,
+                retracted: false, pins: [], probed: false, errors: 0, history: [], actionLog: [], cautionLog: [], learningChecks: {},
+                tissueState: defaultTissueState()
+              };
+              var archive = Object.assign({}, current.attemptArchive || {});
+              if (snapshot) archive[activeLayer] = (archive[activeLayer] || []).concat([snapshot]).slice(-6);
+              return {
+                procedureByLayer: map, attemptArchive: archive,
+                activeInstrument: 'probe', incisionDepth: 'shallow', compareTechniqueAttempts: true,
+                compareReplayProgress: 0, compareReplayPlaying: false,
+                procedureFeedback: { message: (snapshot ? 'Current attempt saved. ' : '') + 'New attempt started. The pink dashed path shows the saved baseline for this layer.', tone: 'success', at: Date.now() }
+              };
             });
+            focusDissectionTarget('diss-new-attempt');
           }
           function adaptiveCoachingData() {
             var metrics = currentProcedure.extensionMetrics || currentProcedure.incisionMetrics;
@@ -10734,6 +11035,8 @@ var d = labToolData.dissection || {};
           }
 
           function setProcedureFeedback(message, tone) {
+            var feedbackRoot = currentDissectionRootNode();
+            if (feedbackRoot) feedbackRoot._alloDissectionCopyRequest = null;
             upd('procedureFeedback', { message: message, tone: tone || 'success', at: Date.now() });
             if (typeof announceToSR === 'function') announceToSR(message);
           }
@@ -10744,9 +11047,20 @@ var d = labToolData.dissection || {};
             return normalized === 3 ? __alloT('stem.dissection.confidence_confident', 'Confident') : '';
           }
           function copyDissectionText(text, successMessage, failureMessage) {
+            var copyRoot = currentDissectionRootNode();
+            var request = { specimen: specimen, owner: dissectionSaveOwner, layer: activeLayer,
+              route: studyRoute, feedback: d.procedureFeedback };
+            if (copyRoot) copyRoot._alloDissectionCopyRequest = request;
+            function reportCopyOutcome(message, tone) {
+              if (!copyRoot || !copyRoot.isConnected || copyRoot._alloDissectionCopyRequest !== request
+                || copyRoot.getAttribute('data-dissection-save-owner') !== request.owner
+                || copyRoot.getAttribute('data-dissection-save-key') !== 'dissection_progress_' + request.specimen) return;
+              copyRoot._alloDissectionCopyRequest = null;
+              if (addToast) addToast(message, tone === 'success' ? 'success' : 'error');
+              setProcedureFeedback(message, tone);
+            }
             function reportCopyFailure() {
-              if (addToast) addToast(failureMessage, 'error');
-              setProcedureFeedback(failureMessage, 'caution');
+              reportCopyOutcome(failureMessage, 'caution');
             }
             try {
               if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
@@ -10759,8 +11073,7 @@ var d = labToolData.dissection || {};
                 return false;
               }
               Promise.resolve(copyResult).then(function () {
-                if (addToast) addToast(successMessage, 'success');
-                setProcedureFeedback(successMessage, 'success');
+                reportCopyOutcome(successMessage, 'success');
               }, reportCopyFailure);
               return true;
             } catch (e) {
@@ -11081,7 +11394,27 @@ var d = labToolData.dissection || {};
               return { ok: true, organ: target, point: variedOrganPoint(target) };
             }
           }
+          function procedureUndoUnavailableReason(data) {
+            data = data || d;
+            if (data.quizMode || data.practicalMode) return 'Finish the assessment before undoing a technique action.';
+            var canvas = queryDissectionNode('[data-diss-canvas]');
+            if ([data._incisionAnim, data._layerTransition, data._layerBrowseTransition, data._viewTransition].some(function (transition) { return transition && transition.active; }) || (canvas && canvas._cameraTransition)) {
+              return 'Wait for the current layer or view transition to finish before using Undo.';
+            }
+            if (canvasHasActiveDirectGesture(canvas)) return 'Finish or cancel the current specimen gesture before using Undo.';
+            var state = (data.procedureByLayer || {})[data.activeLayer || activeLayer] || {};
+            return (state.history || []).length ? '' : 'Record a technique action before using Undo.';
+          }
           function undoProcedureAction() {
+            var undoCanvas = queryDissectionNode('[data-diss-canvas]');
+            var latest = undoCanvas && undoCanvas._drawD || d;
+            var scope = procedureScenarioRestartScope(d);
+            if (procedureScenarioRestartScope(latest) !== scope) return false;
+            var unavailable = procedureUndoUnavailableReason(latest);
+            if (unavailable) {
+              if (!latest.quizMode && !latest.practicalMode) setProcedureFeedback(unavailable, 'caution');
+              return false;
+            }
             var history = (currentProcedure.history || []).slice(), action = history.pop();
             if (!action) { setProcedureFeedback('There is no technique action to undo.'); return; }
             stopProcedureReplay(false, true);
@@ -11111,7 +11444,11 @@ var d = labToolData.dissection || {};
             var restoredScenarioStatus = procedureScenarioStatus(restoredProcedure);
             queueProcedureUndoTransition(action, currentProcedure, restoredProcedure);
             map[activeLayer] = restoredProcedure;
-            updMany({ procedureByLayer: map, scenarioCompletedAt: restoredScenarioStatus.complete ? (Number(d.scenarioCompletedAt) || Date.now()) : 0, procedureFeedback: { message: 'Undid ' + action + '. The visual field is returning to the previous tissue state; you can try that step again.', tone: 'success', at: Date.now() } });
+            updMany(function (current) {
+              if (procedureScenarioRestartScope(current) !== scope || procedureUndoUnavailableReason(current)) return {};
+              return { procedureByLayer: map, scenarioCompletedAt: restoredScenarioStatus.complete ? (Number(current.scenarioCompletedAt) || Date.now()) : 0, procedureFeedback: { message: 'Undid ' + action + '. The visual field is returning to the previous tissue state; you can try that step again.', tone: 'success', at: Date.now() } };
+            });
+            return true;
           }
           function nextProcedureInfo(state) {
             state = state || currentProcedure;
@@ -11956,17 +12293,32 @@ var d = labToolData.dissection || {};
           var quizReviewIds = rawQuizReviewIds.filter(function (id, index, ids) {
             return typeof id === 'string' && Object.prototype.hasOwnProperty.call(specimenQuizIds, id) && ids.indexOf(id) === index;
           });
+          var reviewResolution = d._quizReviewResolution;
+          var resolvedReviewIds = d.quizReviewMode && reviewResolution && reviewResolution.scope === quizSalt && Array.isArray(reviewResolution.ids)
+            ? reviewResolution.ids.filter(function (id, index, ids) {
+              return typeof id === 'string' && Object.prototype.hasOwnProperty.call(specimenQuizIds, id) && ids.indexOf(id) === index;
+            }) : [];
+          var reviewSession = d._quizReviewSession;
+          var reviewSessionIds = d.quizReviewMode && reviewSession && reviewSession.scope === quizSalt && Array.isArray(reviewSession.ids)
+            ? reviewSession.ids.filter(function (id, index, ids) {
+              return typeof id === 'string' && Object.prototype.hasOwnProperty.call(specimenQuizIds, id) && ids.indexOf(id) === index;
+            }).slice(0, 5) : null;
+          var activeReviewIds = reviewSessionIds || quizReviewIds;
           var activeQuizPool = d.practicalMode
             ? quizPool.filter(function (organ) { return practicalTargetIds.indexOf(organ.id) >= 0; })
-            : (d.quizReviewMode && quizReviewIds.length
-              ? specimenQuizPool.filter(function (organ) { return quizReviewIds.indexOf(organ.id) >= 0; })
+            : (d.quizReviewMode
+              ? specimenQuizPool.filter(function (organ) { return activeReviewIds.indexOf(organ.id) >= 0; })
               : encounteredQuizPool);
           var orderedQuizPool = dissStableOrder(activeQuizPool, quizSalt);
           var quizIndex = Number(d.quizIdx) || 0;
           var quizSessionLimit = Math.min(5, orderedQuizPool.length);
+          function currentReviewSessionSnapshot() {
+            return { scope: quizSalt, ids: orderedQuizPool.slice(0, quizSessionLimit).map(function (organ) { return organ.id; }) };
+          }
           var quizQ = d.quizMode && orderedQuizPool.length > 0
             ? (d.practicalMode ? orderedQuizPool[quizIndex % orderedQuizPool.length] : (!d.quizComplete && quizIndex < quizSessionLimit ? orderedQuizPool[quizIndex] : null))
             : null;
+          var assessmentSubmission = dissectionAssessmentSubmissionFor(dissectionSaveOwner, d, quizQ && quizQ.id);
           var hotspotQuizAvailable = !!quizQ && visibleQuizPool.some(function (organ) { return organ.id === quizQ.id; });
           var effectiveQuizAnswerMode = d.quizAnswerMode === 'hotspot' && hotspotQuizAvailable ? 'hotspot' : 'choices';
           var quizOptions = quizQ
@@ -12025,12 +12377,20 @@ var d = labToolData.dissection || {};
             setTimeout(focusAfterAssessmentUpdate, 0);
           }
 
+          function claimAssessmentResponse() {
+            if (!d.quizMode || !quizQ || d.quizFeedback || _disAssessmentSubmissions[dissectionSaveOwner] !== assessmentSubmission || assessmentSubmission.accepted) return false;
+            // Claim before React commits so only the first input from this
+            // displayed question/retry can change evidence or award credit.
+            assessmentSubmission.accepted = true;
+            return true;
+          }
           function submitQuizAnswer(answerId) {
             if (!quizQ || d.quizFeedback) return;
             if (d.practicalMode && (!Number(d.practicalEndsAt) || Date.now() >= Number(d.practicalEndsAt))) {
               setProcedureFeedback('The timed practical has ended; this response was not recorded.', 'caution');
               return;
             }
+            if (!claimAssessmentResponse()) return;
             var correct = answerId === quizQ.id;
             var retryState = d.quizRetry && d.quizRetry.questionId === quizQ.id ? d.quizRetry : null;
             var firstAttempt = !retryState;
@@ -12063,6 +12423,7 @@ var d = labToolData.dissection || {};
                 quizFirstAttemptScore: firstAttemptScore,
                 quizFirstAttemptTotal: firstAttemptTotal,
                 quizReviewQueue: reviewQueue,
+                _quizReviewSession: d.quizReviewMode ? currentReviewSessionSnapshot() : null,
                 assessmentEvidence: assessmentEvidence,
                 hoveredOrgan: null
               });
@@ -12071,6 +12432,13 @@ var d = labToolData.dissection || {};
             }
             var supported = !d.practicalMode && (!!retryState || !!d.quizReviewMode);
             if (supported && !d.quizReviewMode) supportedCount += 1;
+            var nextResolvedReviewIds = d.quizReviewMode ? resolvedReviewIds.slice() : [];
+            if (d.quizReviewMode && correct) {
+              if (nextResolvedReviewIds.indexOf(quizQ.id) < 0) nextResolvedReviewIds.push(quizQ.id);
+              // Resolution belongs to this response, even if the learner leaves
+              // before the batch ends. A frozen batch keeps the next item stable.
+              reviewQueue = reviewQueue.filter(function (id) { return id !== quizQ.id; });
+            }
             var nextScore = d.practicalMode || d.quizReviewMode ? (Number(d.quizScore) || 0) + (correct ? 1 : 0) : firstAttemptScore;
             var nextTotal = (d.quizTotal || 0) + 1;
             preserveAssessmentFocus('diss-quiz-panel', 'diss-quiz-continue');
@@ -12083,6 +12451,8 @@ var d = labToolData.dissection || {};
               quizSupportedCount: supportedCount,
               quizExplanation: d.practicalMode ? null : dissectionStructureCue(quizQ, 'explanation'),
               quizRetry: null,
+              _quizReviewResolution: d.quizReviewMode ? { scope: quizSalt, ids: nextResolvedReviewIds } : null,
+              _quizReviewSession: d.quizReviewMode ? currentReviewSessionSnapshot() : null,
               hoveredOrgan: null,
               quizReviewQueue: reviewQueue,
               assessmentEvidence: assessmentEvidence
@@ -12095,6 +12465,7 @@ var d = labToolData.dissection || {};
           }
           function revealQuizAnswer() {
             if (!quizQ || d.practicalMode || d.quizFeedback || !d.quizRetry) return false;
+            if (!claimAssessmentResponse()) return false;
             var reviewQueue = Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue.slice() : [];
             if (reviewQueue.indexOf(quizQ.id) < 0) reviewQueue.push(quizQ.id);
             preserveAssessmentFocus('diss-quiz-panel', 'diss-quiz-continue');
@@ -12104,6 +12475,8 @@ var d = labToolData.dissection || {};
               quizSupportedCount: (Number(d.quizSupportedCount) || 0) + (d.quizReviewMode ? 0 : 1),
               quizExplanation: dissectionStructureCue(quizQ, 'explanation'),
               quizRetry: null,
+              _quizReviewResolution: d.quizReviewMode ? { scope: quizSalt, ids: resolvedReviewIds.filter(function (id) { return id !== quizQ.id; }) } : null,
+              _quizReviewSession: d.quizReviewMode ? currentReviewSessionSnapshot() : null,
               quizReviewQueue: reviewQueue,
               hoveredOrgan: null
             });
@@ -12111,6 +12484,7 @@ var d = labToolData.dissection || {};
             return true;
           }
           function peelCurrentLayer() {
+            upd('_flashcardReturn', null);
             var fromLayerDef = spec.layers[currentLayerIdx] || spec.layers[0];
             var toLayerDef = spec.layers[currentLayerIdx + 1] || null;
             var peelingLayerId = activeLayer;
@@ -12451,7 +12825,7 @@ var d = labToolData.dissection || {};
               }
               var previousStage = null;
               try { previousStage = window.__alloDissectionFullscreenStage; } catch (e) {}
-              if (previousStage && previousStage.contains && previousStage.contains(canvas)) restoreDissectionFullscreenFocus(previousStage);
+              if (previousStage && !previousStage._dissFullscreenRelease && previousStage.contains && previousStage.contains(canvas)) restoreDissectionFullscreenFocus(previousStage);
             }
 
             canvas._dissCleanup = cleanupDissectionCanvas;
@@ -12762,7 +13136,7 @@ var d = labToolData.dissection || {};
               livingFunctionEnabled = !!d.livingFunctionEnabled;
               livingFunctionPaused = !!d.livingFunctionPaused;
               livingFunctionSpeed = ['slow', 'normal', 'fast'].indexOf(d.livingFunctionSpeed) >= 0 ? d.livingFunctionSpeed : 'normal';
-              visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-evidenceFrameLimit) : [];
+              visualEvidence = normalizeDissectionEvidenceIdentities(Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }) : []);
               splitComparison = !!d.splitComparison;
               procedureByLayer = d.procedureByLayer || {};
               var liveProcedureState = ((d.procedureByLayer || {})[activeLayer]) || {};
@@ -18637,27 +19011,7 @@ var d = labToolData.dissection || {};
 
               // Annotation drawing overlay
 
-              if (!d.quizMode && d.annotations && d.annotations.length > 0) {
-
-                ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 2; ctx.lineCap = 'round';
-
-                d.annotations.forEach(function (ann) {
-
-                  if (ann.prevX !== undefined) {
-
-                    ctx.beginPath(); ctx.moveTo(ann.prevX * W, ann.prevY * H);
-
-                    ctx.lineTo(ann.x * W, ann.y * H); ctx.stroke();
-
-                  }
-
-                  ctx.beginPath(); ctx.arc(ann.x * W, ann.y * H, 2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#ec4899'; ctx.fill();
-
-                });
-
-              }
+              if (!d.quizMode) drawDissectionAnnotations(ctx, d.annotations, W, H);
 
               // Clear annotations button hint
 
@@ -23265,6 +23619,7 @@ var d = labToolData.dissection || {};
           // its own layer, notes, assessment, and annotation state.
           var activeDissectionSaveKey = 'dissection_progress_' + specimen;
           var activeDissectionSaveAccess = currentDissectionSaveAccess(activeDissectionSaveKey, dissectionSaveOwner);
+          if (d._dissLoadedSpec === specimen) cancelDissectionLoad(dissectionSaveOwner);
           if (d._dissLoadedSpec === specimen && activeDissectionSaveAccess.state === 'unknown') {
             prepareDissectionSaveAccess(activeDissectionSaveKey, spec.name, dissectionSaveOwner);
             activeDissectionSaveAccess = currentDissectionSaveAccess(activeDissectionSaveKey, dissectionSaveOwner);
@@ -23283,6 +23638,7 @@ var d = labToolData.dissection || {};
               assessmentCompletedAt: Number(d.assessmentCompletedAt) || 0,
               assessmentRecordedScore: Number(d.assessmentRecordedScore) || 0,
               assessmentRecordedTotal: Number(d.assessmentRecordedTotal) || 0,
+              assessmentRecordedSupportedCount: dissectionCompletedSupportCount(d),
               assessmentEvidence: d.assessmentEvidence || {},
               quizReviewQueue: Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [],
               completedObjectives: d.completedObjectives || {},
@@ -23324,7 +23680,7 @@ var d = labToolData.dissection || {};
               evidenceCaptureContents: evidenceCaptureContents,
               visualEvidence: visualEvidence,
               splitComparison: splitComparison,
-              referenceEvidenceId: d.referenceEvidenceId || null,
+              referenceEvidenceId: normalizeDissectionEvidenceReferenceId(d.visualEvidence, d.referenceEvidenceId),
               lightDirection: lightDirection,
               variationSeed: variationSeed,
               tactileFeedback: d.tactileFeedback !== false,
@@ -23355,7 +23711,7 @@ var d = labToolData.dissection || {};
             var loadSpecimenKey = specimen;
             var loadSpecimenDef = spec;
             var loadIsProtectedRetry = !!d._dissSaveRetrying;
-            setTimeout(function () {
+            scheduleDissectionLoad(dissectionSaveOwner, loadSpecimenKey, loadIsProtectedRetry, function () {
               var loadSaveKey = 'dissection_progress_' + loadSpecimenKey;
               var loadInspection = prepareDissectionSaveAccess(loadSaveKey, loadSpecimenDef.name, dissectionSaveOwner);
               if (loadIsProtectedRetry && !loadInspection.ok) {
@@ -23396,6 +23752,7 @@ var d = labToolData.dissection || {};
                 assessmentCompletedAt: Number(data.assessmentCompletedAt) || 0,
                 assessmentRecordedScore: data.assessmentRecordedScore == null ? (Number(data.quizFirstAttemptScore) || 0) : (Number(data.assessmentRecordedScore) || 0),
                 assessmentRecordedTotal: data.assessmentRecordedTotal == null ? (Number(data.quizFirstAttemptTotal) || 0) : (Number(data.assessmentRecordedTotal) || 0),
+                assessmentRecordedSupportedCount: dissectionCompletedSupportCount(data),
                 assessmentEvidence: data.assessmentEvidence || {},
                 quizReviewQueue: Array.isArray(data.quizReviewQueue) ? data.quizReviewQueue : [],
                 completedObjectives: data.completedObjectives || {},
@@ -23408,6 +23765,7 @@ var d = labToolData.dissection || {};
                 rulerEnd: null,
                 dissInquiry: normalizeDissectionInquiry(data.dissInquiry),
                 activeLayer: savedLayer,
+                _flashcardReturn: null,
                 timeSpent: Number(data.timeSpent) || 0,
                 guidedComplete: !!data.guidedComplete,
                 procedureByLayer: normalizeSavedProcedureByLayer(data.procedureByLayer || {}, {
@@ -23443,9 +23801,9 @@ var d = labToolData.dissection || {};
                 focusMode: data.focusMode !== false,
                 parallaxDepth: data.parallaxDepth !== false,
                 evidenceCaptureContents: data.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen',
-                visualEvidence: Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-6) : [],
+                visualEvidence: normalizeDissectionEvidenceIdentities(Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }) : []),
                 splitComparison: !!data.splitComparison,
-                referenceEvidenceId: data.referenceEvidenceId || null,
+                referenceEvidenceId: normalizeDissectionEvidenceReferenceId(data.visualEvidence, data.referenceEvidenceId),
                 evidenceNotebookOpen: !!data.splitComparison,
                 evidenceReturnFocusId: null,
                 evidenceRemovePendingId: null,
@@ -23480,7 +23838,7 @@ var d = labToolData.dissection || {};
                 if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_protected_saved_progress_reloaded_safely_saving_h', 'Protected saved progress reloaded safely. Saving has resumed from that saved version.'));
                 focusResetControl('diss-reset-specimen');
               }
-            }, 0);
+            });
           }
           // Canvas navigation shares one constrained zoom model across keyboard, wheel, buttons, and drag panning.
           function clampCanvasPan(value, zoomLevel, logicalSize) {
@@ -23748,7 +24106,6 @@ var d = labToolData.dissection || {};
                 if (keyboardProbeResult && keyboardProbeResult.ok) queueProcedureInstrumentReplay('probe', { point: keyboardProbeResult.point || variedOrganPoint(keyboardSelected) });
               } else {
                 chooseOrganFromDirectory(keyboardSelected);
-                setProcedureFeedback('Inspected ' + keyboardSelected.name + '. Structure details and evidence notes are available beside the specimen.', 'success');
               }
             } else if (e.key === 'Escape') {
               e.preventDefault();
@@ -24304,6 +24661,8 @@ var d = labToolData.dissection || {};
           var scenarioRestartReview = currentProcedureScenarioRestartReview();
           var procedureDebrief = procedureDebriefData();
           var attemptEntries = (((d.attemptArchive || {})[activeLayer]) || []);
+          var procedureUndoReason = procedureUndoUnavailableReason(d);
+          var attemptRestartReview = currentTechniqueAttemptRestartReview();
           var techniqueComparison = techniqueComparisonData();
           var compareReplayProgress = Math.max(0, Math.min(1, d.compareReplayProgress == null ? 1 : Number(d.compareReplayProgress) || 0));
           var compareReplayPercent = Math.round(compareReplayProgress * 100);
@@ -24338,7 +24697,8 @@ var d = labToolData.dissection || {};
           var stageHandoffGlyph = currentToolReadiness.tone === 'ready' || currentToolReadiness.tone === 'complete' ? '\u2713' : (currentToolReadiness.tone === 'restricted' ? '\u00D7' : (currentToolReadiness.tone === 'caution' ? '!' : '\u2192'));
           var protectedLandmarks = procedureProtectedLandmarks();
           var protectedLandmarkNames = protectedLandmarks.map(function (structure) { return structure.name; });
-          var referenceEvidence = visualEvidence.find(function (entry) { return entry.id === d.referenceEvidenceId; }) || visualEvidence[visualEvidence.length - 1] || null;
+          var normalizedReferenceEvidenceId = normalizeDissectionEvidenceReferenceId(d.visualEvidence, d.referenceEvidenceId);
+          var referenceEvidence = visualEvidence.find(function (entry) { return entry.id === normalizedReferenceEvidenceId; }) || visualEvidence[visualEvidence.length - 1] || null;
           var evidenceNotebookOpen = !!d.evidenceNotebookOpen;
           var selectedRelationships = anatomicalRelationships();
           var visibleOrgansInView = organs.filter(function (org) { return structureExposureState(org, currentProcedure) === 'visible'; });
@@ -24355,12 +24715,21 @@ var d = labToolData.dissection || {};
               var note = dissectionEvidenceNote(d.organNotes, key);
               var confidence = Number((d.organConfidence || {})[key]);
               if (confidence !== 1 && confidence !== 2 && confidence !== 3) confidence = 0;
+              var guidedVerification = (d.verifiedIdentifications || {})[key];
+              var assessmentVerification = (d.assessmentEvidence || {})[key];
+              var guidedVerified = !!(guidedVerification && guidedVerification.status === 'verified');
+              var assessmentVerified = !!(assessmentVerification && assessmentVerification.correct === true);
+              var verificationLabel = guidedVerified
+                ? __alloT('stem.dissection.observation_guided_verified', 'Identification checked: Guided investigation')
+                : assessmentVerified ? __alloT('stem.dissection.observation_assessment_verified', 'Identification checked: first-attempt assessment')
+                : __alloT('stem.dissection.observation_not_verified', 'Identification needs a check');
               observationReviewEntries.push({ organ: org, layer: layer, available: layerIndex <= unlockedLayerIdx,
                 note: note, confidence: confidence, needsRecord: !note.trim() || !confidence,
+                verified: guidedVerified || assessmentVerified, verificationLabel: verificationLabel,
                 recordStatus: structureRecordStatus(org), recordTask: !note.trim() || !confidence ? structureRecordTask(org) : null });
             });
           });
-          var observationReviewFilter = ['all', 'unfinished', 'uncertain'].indexOf(d._observationReviewFilter) >= 0 ? d._observationReviewFilter : 'all';
+          var observationReviewFilter = ['all', 'unfinished', 'uncertain', 'unverified', 'verified'].indexOf(d._observationReviewFilter) >= 0 ? d._observationReviewFilter : 'all';
           var observationSearchValue = typeof d._observationReviewSearch === 'string' ? d._observationReviewSearch : '';
           var observationSearchTokens = normalizeDissectionSearch(observationSearchValue).split(/\s+/).filter(Boolean);
           var matchingObservationEntries = observationReviewEntries.filter(function (entry) {
@@ -24370,11 +24739,19 @@ var d = labToolData.dissection || {};
           var observationReviewChoices = [
             { id: 'all', label: 'All inspected', count: matchingObservationEntries.length },
             { id: 'unfinished', label: 'Finish records', count: matchingObservationEntries.filter(function (entry) { return entry.needsRecord; }).length },
-            { id: 'uncertain', label: 'Low confidence', count: matchingObservationEntries.filter(function (entry) { return entry.confidence === 1; }).length }
+            { id: 'uncertain', label: 'Low confidence', count: matchingObservationEntries.filter(function (entry) { return entry.confidence === 1; }).length },
+            { id: 'unverified', label: __alloT('stem.dissection.observation_needs_check', 'Needs a check'), count: matchingObservationEntries.filter(function (entry) { return !entry.verified; }).length },
+            { id: 'verified', label: __alloT('stem.dissection.observation_checked', 'Checked identifications'), count: matchingObservationEntries.filter(function (entry) { return entry.verified; }).length }
           ];
           var filteredObservationReview = matchingObservationEntries.filter(function (entry) {
-            return observationReviewFilter === 'all' || (observationReviewFilter === 'unfinished' ? entry.needsRecord : entry.confidence === 1);
+            return observationReviewFilter === 'all' || (observationReviewFilter === 'unfinished' ? entry.needsRecord
+              : observationReviewFilter === 'uncertain' ? entry.confidence === 1
+              : observationReviewFilter === 'unverified' ? !entry.verified : entry.verified);
           });
+          var completedObservationCheck = d._guidedCheckResult && d._guidedCheckResult.specimen === specimen
+            ? observationReviewEntries.find(function (entry) { return entry.organ.id === d._guidedCheckResult.organId && entry.verified; }) : null;
+          var pendingObservationChecks = observationReviewEntries.filter(function (entry) { return !entry.verified; });
+          var nextAvailableObservationCheck = pendingObservationChecks.find(function (entry) { return entry.available; }) || null;
           var remainingUnexplored = organs.find(function (org) { return !exploredOrgans[specimen + '|' + org.id]; }) || null;
           var nextUnexplored = visibleOrgansInView.find(function (org) { return !exploredOrgans[specimen + '|' + org.id]; }) || null;
           var visibilityTarget = currentGuidedOrgan && !currentGuidedVisible ? currentGuidedOrgan : remainingUnexplored;
@@ -24428,6 +24805,9 @@ var d = labToolData.dissection || {};
           var assessmentFirstAttemptTotal = Number(d.quizFirstAttemptTotal) || 0;
           var assessmentRecordedScore = d.assessmentCompletedAt ? (d.assessmentRecordedScore == null ? assessmentFirstAttemptScore : Number(d.assessmentRecordedScore) || 0) : 0;
           var assessmentRecordedTotal = d.assessmentCompletedAt ? (d.assessmentRecordedTotal == null ? assessmentFirstAttemptTotal : Number(d.assessmentRecordedTotal) || 0) : 0;
+          var assessmentRecordedSupportedCount = dissectionCompletedSupportCount(d);
+          var assessmentRecordedSupportLabel = assessmentRecordedSupportedCount === null ? 'Not recorded' : String(assessmentRecordedSupportedCount);
+          var assessmentSummarySupportedCount = d.quizReviewMode ? assessmentRecordedSupportedCount : (Number(d.quizSupportedCount) || 0);
           var assessmentCoveragePct = Math.min(100, Math.round(assessmentRecordedTotal / assessmentQuestionGoal * 100));
           var assessmentAccuracyPct = assessmentRecordedTotal ? Math.round(assessmentRecordedScore / assessmentRecordedTotal * 100) : 0;
           var assessmentUnderstandingPct = Math.min(assessmentCoveragePct, Math.min(100, Math.round(assessmentAccuracyPct / 80 * 100)));
@@ -24473,6 +24853,21 @@ var d = labToolData.dissection || {};
               var verification = (d.verifiedIdentifications || {})[key];
               return !(assessmentEvidence[key] && assessmentEvidence[key].correct) && !(verification && verification.status === 'verified');
             });
+            var nextTarget = mappingComplete ? (missingObserved[0] || missingRecorded[0] || missingUnderstood[0] || null) : null;
+            var nextTargetLayerIndex = nextTarget ? spec.layers.findIndex(function (layer) {
+              return (spec.organs[layer.id] || []).some(function (organ) { return organ.id === nextTarget.id; });
+            }) : -1;
+            var nextTargetLayer = spec.layers[nextTargetLayerIndex];
+            var nextTargetPhase = missingObserved.length ? 'observe' : (missingRecorded.length ? 'record' : 'verify');
+            var nextTargetAvailable = nextTargetLayerIndex >= 0 && nextTargetLayerIndex <= unlockedLayerIdx;
+            var nextTask = nextTarget && nextTargetLayer ? {
+              organId: nextTarget.id, name: nextTarget.name, layerId: nextTargetLayer.id, layerName: nextTargetLayer.name,
+              phase: nextTargetPhase, available: nextTargetAvailable,
+              label: !nextTargetAvailable ? 'Prepare to reach ' + nextTarget.name
+                : nextTargetPhase === 'observe' ? 'Find ' + nextTarget.name
+                : nextTargetPhase === 'record' ? structureRecordTask(nextTarget).label + ': ' + nextTarget.name
+                : 'Verify ' + nextTarget.name + ' in Guided investigation'
+            } : null;
             var nextEvidence = !mappingComplete
               ? 'Objective setup is incomplete, so this objective cannot yet be demonstrated. Your recorded evidence is preserved.'
               : (missingObserved.length
@@ -24491,9 +24886,48 @@ var d = labToolData.dissection || {};
               recordedCount: recordedCount,
               understoodCount: understoodCount,
               mappingComplete: mappingComplete,
-              nextEvidence: nextEvidence
+              nextEvidence: nextEvidence,
+              nextTask: nextTask
             };
           });
+          function continueObjectiveEvidence(objectiveIndex) {
+            if (d.quizMode || d.practicalMode || (d._incisionAnim && d._incisionAnim.active)) return false;
+            var model = objectiveEvidenceModels[objectiveIndex];
+            var task = model && model.mappingComplete && model.nextTask;
+            if (!task) return false;
+            cancelActiveCanvasGesture('Gesture canceled before following an objective; no action was recorded.');
+            clearAssessmentTeachingTimers();
+            updMany({ eyeStudyMode: false, flashcardMode: false, compareMode: false, guidedMode: false,
+              guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null,
+              selectedOrgan: null, hoveredOrgan: null, toolbarStudyOpen: false, toolbarViewOpen: false,
+              toolbarToolsOpen: false, organSearch: '', directoryFilter: 'all' });
+            if (!task.available) {
+              var preparationLayer = spec.layers[unlockedLayerIdx];
+              if (preparationLayer && preparationLayer.id !== activeLayer) selectLayer(preparationLayer.id);
+              var preparationMessage = task.name + ' is in the locked ' + task.layerName + ' layer. Complete the current layer preparation and evidence before revealing the next layer. Following an objective does not reveal or inspect structures.';
+              setProcedureFeedback(preparationMessage, 'working');
+              // The canvas remains a stable waypoint while the preparation checkpoint changes.
+              focusDissectionTarget('diss-canvas', preparationMessage);
+              return true;
+            }
+            if (task.phase === 'record') {
+              reviewObservation(task.organId);
+              return true;
+            }
+            if (task.layerId !== activeLayer) selectLayer(task.layerId);
+            if (task.phase === 'verify') {
+              updMany({ guidedMode: true, guidedStep: 0, guidedTargetIds: [task.organId], _guidedCheckOnly: true, _guidedCheckOrigin: 'objective', _guidedCheckResult: null, organSearch: '' });
+              var verificationMessage = 'Guided objective check: find ' + task.name + ' in ' + task.layerName + ', then choose the observation that supports its identification. Make the structure visible before checking it.';
+              setProcedureFeedback(verificationMessage, 'working');
+              focusDissectionTarget('diss-canvas', verificationMessage);
+            } else {
+              upd('organSearch', task.name);
+              var inspectionMessage = 'Find ' + task.name + ' in the ' + task.layerName + ' directory. Inspect the structure when it is visible; navigation alone does not record an observation.';
+              setProcedureFeedback(inspectionMessage, 'working');
+              focusDissectionTarget('diss-organ-search', inspectionMessage);
+            }
+            return true;
+          }
           var objectiveProgressPct = objectiveEvidenceModels.length
             ? Math.round(objectiveEvidenceModels.reduce(function (sum, objectiveModel) { return sum + objectiveModel.progress; }, 0) / objectiveEvidenceModels.length)
             : 0;
@@ -25346,7 +25780,7 @@ var d = labToolData.dissection || {};
             return token || fallback;
           }
           function evidenceDomToken(evidenceId) {
-            return evidenceFileToken(evidenceId, 'frame');
+            return dissectionEvidenceIdentityToken(evidenceId) || 'frame';
           }
           function focusEvidenceControl(controlId) {
             upd('evidenceNotebookOpen', true);
@@ -25370,7 +25804,9 @@ var d = labToolData.dissection || {};
           }
           function captureVisualEvidence() {
             if (visualEvidence.length >= evidenceFrameLimit) {
-              setProcedureFeedback('Evidence notebook is full. Download or remove a frame before capturing another; no saved frame was replaced.', 'caution');
+              setProcedureFeedback(visualEvidence.length > evidenceFrameLimit
+                ? 'All ' + visualEvidence.length + ' existing evidence frames were kept. Download important frames, then remove at least ' + (visualEvidence.length - evidenceFrameLimit + 1) + ' frames before capturing another; no saved frame was replaced.'
+                : 'Evidence notebook is full. Download or remove a frame before capturing another; no saved frame was replaced.', 'caution');
               if (addToast) addToast('Evidence notebook full — manage frames before capturing.', 'error');
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_evidence_notebook_full_no_frame_was_replaced_down', 'Evidence notebook full. No frame was replaced. Download or remove a frame before capturing another.'));
               focusEvidenceControl();
@@ -25500,9 +25936,10 @@ var d = labToolData.dissection || {};
             focusEvidenceControl('diss-evidence-remove-' + evidenceDomToken(evidenceId));
           }
           function confirmEvidenceRemoval(evidenceId) {
-            var evidence = visualEvidence.find(function (entry) { return entry.id === evidenceId; });
-            if (!evidence) { upd('evidenceRemovePendingId', null); return; }
-            var remainingEvidence = visualEvidence.filter(function (entry) { return entry.id !== evidenceId; });
+            var evidenceIndex = visualEvidence.findIndex(function (entry) { return entry.id === evidenceId; });
+            if (evidenceIndex < 0) { upd('evidenceRemovePendingId', null); return; }
+            var evidence = visualEvidence[evidenceIndex];
+            var remainingEvidence = visualEvidence.slice(0, evidenceIndex).concat(visualEvidence.slice(evidenceIndex + 1));
             var preferredReferenceId = referenceEvidence ? referenceEvidence.id : null;
             var nextReference = remainingEvidence.find(function (entry) { return entry.id === preferredReferenceId; }) || remainingEvidence[remainingEvidence.length - 1] || null;
             cancelDissectionSave('dissection_progress_' + specimen, dissectionSaveOwner);
@@ -25552,6 +25989,14 @@ var d = labToolData.dissection || {};
             // specimen's debounced save cannot supersede its latest evidence.
             var departureSaveKey = 'dissection_progress_' + specimen;
             var departureSaveAccess = currentDissectionSaveAccess(departureSaveKey, dissectionSaveOwner);
+            // A completed autosave leaves no queued write to recheck its saved
+            // bytes. Same-page writers do not send this page a storage event.
+            if (departureSaveAccess.state === 'writable' && !_disSaveQueue[dissectionSaveSlot(departureSaveKey, dissectionSaveOwner)]) {
+              var departureInspection = inspectDissectionStoredValue(departureSaveKey);
+              if (!departureInspection.ok) blockDissectionSave(departureSaveKey, departureInspection, spec.name, dissectionSaveOwner);
+              else if (departureInspection.raw !== departureSaveAccess.baselineRaw) blockDissectionSave(departureSaveKey, { kind: 'concurrent-change', raw: departureInspection.raw }, spec.name, dissectionSaveOwner);
+              departureSaveAccess = currentDissectionSaveAccess(departureSaveKey, dissectionSaveOwner);
+            }
             if (departureSaveAccess.state !== 'writable') {
               setProcedureFeedback('The current ' + spec.name + ' save is protected or unavailable, so the specimen was not changed. Reload the protected record, restore browser storage, or confirm a reset before switching specimens.', 'caution');
               focusResetControl('diss-protected-save-retry');
@@ -25563,8 +26008,10 @@ var d = labToolData.dissection || {};
               setProcedureFeedback('Could not save the latest ' + spec.name + ' work, so the specimen was not changed. Restore browser storage or copy your report, then try again.', 'caution');
               return false;
             }
+            updMany({ _flashcardReturn: null, assessmentRecordedSupportedCount: null });
             clearAllDissectionCanvasTimers(canvasRefNode);
             cancelActiveCanvasGesture('Specimen gesture canceled before changing specimens; no action was recorded.');
+            cancelDissectionLoad(dissectionSaveOwner);
             closeTimedPractical();
             updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, evidenceRemovePendingId: null, evidenceClearPending: false });
             var viewed = Object.assign({}, d.specimensViewed || {});
@@ -25603,6 +26050,7 @@ var d = labToolData.dissection || {};
             focusResetControl('diss-reset-confirm');
           }
           function retryProtectedDissectionSave() {
+            cancelDissectionLoad(dissectionSaveOwner);
             cancelDissectionSave(activeDissectionSaveKey, dissectionSaveOwner);
             updMany({
               _dissLoadedSpec: null,
@@ -25619,11 +26067,7 @@ var d = labToolData.dissection || {};
           }
           function confirmSpecimenReset() {
             var resetSaveKey = 'dissection_progress_' + specimen;
-            // A pending pre-reset snapshot must never recreate progress after
-            // the learner confirms deletion. The reset render may then queue a
-            // clean default snapshot for this specimen.
-            clearAllDissectionCanvasTimers(canvasRefNode);
-            cancelDissectionSave(resetSaveKey, dissectionSaveOwner);
+            // Keep the current work running if storage refuses the reset.
             try {
               localStorage.removeItem(resetSaveKey);
             } catch (e) {
@@ -25633,7 +26077,13 @@ var d = labToolData.dissection || {};
               focusResetControl('diss-reset-confirm');
               return;
             }
+            // Once deletion succeeds, pending callbacks must not recreate old
+            // progress. The reset render can then queue a clean snapshot.
+            clearAllDissectionCanvasTimers(canvasRefNode);
+            cancelDissectionSave(resetSaveKey, dissectionSaveOwner);
+            cancelDissectionLoad(dissectionSaveOwner);
             allowDissectionSave(resetSaveKey, null, spec.name, dissectionSaveOwner);
+            updMany({ _dissLoadedSpec: specimen, _dissSaveRetrying: false, _flashcardReturn: null, assessmentRecordedSupportedCount: null });
             closeTimedPractical();
             updMany({ _practicalCompletion: null, _comparisonFocus: null, _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, _flashcardPractice: null, flashcardMode: false, activeLayer: (spec.layers[0] || {}).id || 'skin', organSearch: '', directoryFilter: 'all', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, evidenceNotebookOpen: false, evidenceReturnFocusId: null, evidenceRemovePendingId: null, evidenceClearPending: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalEndsAt: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], evidenceRemovePendingId: null, evidenceClearPending: false, labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
@@ -25933,6 +26383,7 @@ var d = labToolData.dissection || {};
             try { exitControl.focus({ preventScroll: true }); } catch (e) { exitControl.focus(); }
           }
           function restoreDissectionFullscreenFocus(stage) {
+            if (stage && stage._dissFullscreenRelease) stage._dissFullscreenRelease();
             var returnTarget = stage && stage._dissFullscreenReturn;
             if (!returnTarget) {
               try { returnTarget = window.__alloDissectionFullscreenReturn; } catch (e) {}
@@ -25951,29 +26402,92 @@ var d = labToolData.dissection || {};
             setProcedureFeedback('Exited fullscreen specimen mode. Focus returned to the fullscreen control.');
           }
           function enterDissectionFullscreen(control) {
+            var stage = null;
             try {
               var root = control && control.closest ? control.closest('[data-dissection-root]') : null;
-              var stage = root && root.querySelector ? root.querySelector('[data-diss-fullscreen-stage]') : null;
+              stage = root && root.querySelector ? root.querySelector('[data-diss-fullscreen-stage]') : null;
               if (!stage || !window.__alloStemFS) throw new Error('Fullscreen unavailable');
+              if (stage._dissFullscreenRelease) return;
               var endedReplayReview = !!liveProcedureReplay();
               if (endedReplayReview) stopProcedureReplay(false, true);
               stage._dissFullscreenReturn = control;
               window.__alloDissectionFullscreenReturn = control;
               window.__alloDissectionFullscreenStage = stage;
               if (stage._dissFullscreenEscapeHandler && typeof document !== 'undefined') document.removeEventListener('keydown', stage._dissFullscreenEscapeHandler);
+              // Native requests and their CSS fallback can settle well after the
+              // click. Follow the actual transition instead of a single timer.
+              var entered = false, released = false, observer = null;
+              var fullscreenEvents = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'];
+              function syncFullscreen() {
+                if (released) return;
+                if (!stage.isConnected) { stage._dissFullscreenRelease(); return; }
+                var active = stage.__alloFsOn || activeDissectionFullscreenElement() === stage || stage.getAttribute('data-allo-fullscreen-active') === 'true';
+                if (active && !entered) {
+                  entered = true;
+                  focusDissectionFullscreenExit(stage);
+                  setProcedureFeedback('Fullscreen specimen mode opened with view and tool controls. Use Exit fullscreen or press Escape to return.' + (endedReplayReview ? ' Attempt review ended. Your recorded work is unchanged.' : ''));
+                } else if (!active && entered) restoreDissectionFullscreenFocus(stage);
+              }
+              stage._dissFullscreenRelease = function () {
+                if (released) return;
+                released = true;
+                if (observer) observer.disconnect();
+                fullscreenEvents.forEach(function (eventName) { document.removeEventListener(eventName, syncFullscreen); });
+                if (stage._dissFullscreenEscapeHandler) document.removeEventListener('keydown', stage._dissFullscreenEscapeHandler);
+                stage._dissFullscreenEscapeHandler = null;
+                stage._dissFullscreenRelease = null;
+                if (!stage.isConnected) {
+                  if (stage.__alloFsOn) {
+                    // The shared toggle exits any native fullscreen first.
+                    // Release only this stage's CSS lock when another owns it.
+                    if (!activeDissectionFullscreenElement() && window.__alloStemFS) window.__alloStemFS(stage);
+                    else if (typeof stage.__alloFsEsc === 'function') stage.__alloFsEsc({ key: 'Escape' });
+                  }
+                  if (window.__alloDissectionFullscreenStage === stage) window.__alloDissectionFullscreenStage = null;
+                  if (window.__alloDissectionFullscreenReturn === control) window.__alloDissectionFullscreenReturn = null;
+                  stage._dissFullscreenReturn = null;
+                }
+              };
+              if (typeof MutationObserver !== 'undefined') {
+                observer = new MutationObserver(syncFullscreen);
+                observer.observe(stage, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+              }
+              fullscreenEvents.forEach(function (eventName) { document.addEventListener(eventName, syncFullscreen); });
               stage._dissFullscreenEscapeHandler = function (event) {
-                if (!event || event.key !== 'Escape') return;
-                setTimeout(function () {
-                  if (!stage.__alloFsOn && activeDissectionFullscreenElement() !== stage) restoreDissectionFullscreenFocus(stage);
-                }, 0);
+                if (!event || released || !stage.contains(event.target)) return;
+                var active = stage.__alloFsOn || activeDissectionFullscreenElement() === stage || stage.getAttribute('data-allo-fullscreen-active') === 'true';
+                if (!active) return;
+                if (isDissectionPlainEscape(event)) {
+                  // Keep the browser's native exit and the shared document
+                  // fallback listener, but do not also clear the lab selection
+                  // or observation mode in the window-level Escape handler.
+                  event.stopPropagation();
+                  setTimeout(syncFullscreen, 0);
+                  return;
+                }
+                if (event.key !== 'Tab' || event.defaultPrevented || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
+                var controls = Array.prototype.slice.call(stage.querySelectorAll('button, input, select, textarea, a[href], [tabindex]')).filter(function (node) {
+                  if (node.disabled || node.tabIndex < 0 || node.closest('[hidden], [inert], [aria-hidden="true"]') || !node.getClientRects().length) return false;
+                  var visibility = window.getComputedStyle(node).visibility;
+                  return visibility !== 'hidden' && visibility !== 'collapse';
+                });
+                if (!controls.length) return;
+                var first = controls[0], last = controls[controls.length - 1];
+                var focused = document.activeElement;
+                if (event.shiftKey && (focused === first || controls.indexOf(focused) < 0)) {
+                  event.preventDefault(); event.stopPropagation(); last.focus();
+                } else if (!event.shiftKey && (focused === last || controls.indexOf(focused) < 0)) {
+                  event.preventDefault(); event.stopPropagation(); first.focus();
+                }
               };
               if (typeof document !== 'undefined') document.addEventListener('keydown', stage._dissFullscreenEscapeHandler);
               window.__alloStemFS(stage);
-              setTimeout(function () {
-                if (stage.__alloFsOn || activeDissectionFullscreenElement() === stage) focusDissectionFullscreenExit(stage);
-              }, 0);
-              setProcedureFeedback('Fullscreen specimen mode opened with view and tool controls. Use Exit fullscreen or press Escape to return.' + (endedReplayReview ? ' Attempt review ended. Your recorded work is unchanged.' : ''));
+              syncFullscreen();
             } catch (e) {
+              if (stage && stage._dissFullscreenRelease) stage._dissFullscreenRelease();
+              if (stage) stage._dissFullscreenReturn = null;
+              if (window.__alloDissectionFullscreenStage === stage) window.__alloDissectionFullscreenStage = null;
+              if (window.__alloDissectionFullscreenReturn === control) window.__alloDissectionFullscreenReturn = null;
               setProcedureFeedback('Fullscreen is unavailable in this view.', 'caution');
             }
           }
@@ -26109,6 +26623,10 @@ var d = labToolData.dissection || {};
           }
 
           function selectLayer(layerId) {
+            if (layerRevealPending) {
+              setProcedureFeedback('Layer reveal in progress. Wait for it to finish before changing layers.', 'working');
+              return false;
+            }
             if (d.quizMode) {
               setProcedureFeedback('Layer navigation is locked during an assessment so the current question stays stable.', 'caution');
               return;
@@ -26122,6 +26640,7 @@ var d = labToolData.dissection || {};
               if (typeof announceToSR === 'function') announceToSR('Already viewing ' + layer.name + ' layer, step ' + (layerIdx + 1) + ' of ' + spec.layers.length + '.');
               return;
             }
+            upd('_flashcardReturn', null);
             cancelActiveCanvasGesture('Specimen gesture canceled before changing layers; no action was recorded.');
             stopProcedureReplay(false, true);
             var layerMotionReduced = reducedMotionEnabled;
@@ -26221,14 +26740,45 @@ var d = labToolData.dissection || {};
             clearDissectionCanvasTimer(teachingCanvas, 'compareReplay');
           }
 
+          function assessmentEntryBlocked(activity) {
+            if (d._incisionAnim && d._incisionAnim.active) {
+              setProcedureFeedback('Finish the current layer transition before starting ' + (activity === 'practical' ? 'the timed practical.' : 'an assessment.'), 'caution');
+              return true;
+            }
+            if (d.practicalMode) {
+              setProcedureFeedback('End the timed practical before starting another assessment. Your current responses are unchanged.', 'caution');
+              return true;
+            }
+            return false;
+          }
+          function resetAssessmentTeachingState() {
+            cancelActiveCanvasGesture('Specimen gesture canceled before starting an assessment; no action was recorded.');
+            clearAssessmentTeachingTimers();
+            // Every assessment entry uses the same current specimen view without teaching overlays.
+            // Saved observations, procedure state, evidence frames, and assessment evidence are retained.
+            updMany({ eyeStudyMode: false, flashcardMode: false, compareMode: false, guidedMode: false,
+              _quizReviewResolution: null, _quizReviewSession: null,
+              guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null,
+              traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false,
+              traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false,
+              selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false,
+              rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null,
+              compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false,
+              inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null,
+              macroInset: false, _procedureDemo: null, _procedureReplay: null });
+          }
+
           function restartAssessmentSession(reviewOnly) {
+            if (assessmentEntryBlocked()) return false;
             var reviewIds = quizReviewIds.slice();
             if (reviewOnly && !reviewIds.length) {
               if (Array.isArray(d.quizReviewQueue) && d.quizReviewQueue.length) upd('quizReviewQueue', []);
               setProcedureFeedback('No missed structures are waiting for supported review.', 'working');
               return false;
             }
-            clearAssessmentTeachingTimers();
+            var nextQuizSeed = Date.now();
+            var nextReviewIds = reviewOnly ? dissStableOrder(specimenQuizPool.filter(function (organ) { return reviewIds.indexOf(organ.id) >= 0; }), specimen + '|assessment|' + nextQuizSeed).slice(0, 5).map(function (organ) { return organ.id; }) : null;
+            resetAssessmentTeachingState();
             preserveAssessmentFocus('diss-assessment-summary', 'diss-quiz-panel');
             preserveAssessmentFocus('diss-review-missed-structures', 'diss-quiz-panel');
             updMany({ eyeStudyMode: false, _practicalCompletion: null, flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null,
@@ -26239,21 +26789,19 @@ var d = labToolData.dissection || {};
               quizComplete: false, quizReviewMode: !!reviewOnly,
               assessmentCompletedAt: Number(d.assessmentCompletedAt) || 0,
               quizFeedback: null, quizExplanation: null, quizRetry: null,
-              quizReviewQueue: reviewIds, selectedOrgan: null, hoveredOrgan: null, quizSeed: Date.now(),
+              quizReviewQueue: reviewIds, selectedOrgan: null, hoveredOrgan: null, quizSeed: nextQuizSeed,
+              _quizReviewSession: reviewOnly ? { scope: specimen + '|assessment|' + nextQuizSeed, ids: nextReviewIds } : null,
               toolbarStudyOpen: false, toolbarViewOpen: false, toolbarToolsOpen: false });
             if (typeof announceToSR === 'function') announceToSR(reviewOnly ? 'Supported review started for missed structures.' : 'New practice assessment started with up to five encountered structures. First-attempt evidence has been reset for this set.');
             return true;
           }
           function setStudyRoute(route) {
-            if (route !== 'study') upd('eyeStudyMode', false);
-            if (route === 'quiz' && d._incisionAnim && d._incisionAnim.active) {
-              setProcedureFeedback('Finish the current layer transition before starting an assessment.', 'caution');
-              return;
-            }
+            if (route === 'quiz' && assessmentEntryBlocked()) return;
             if (d.practicalMode && route !== 'study') {
               setProcedureFeedback('The timed practical is still active. Open Study tools to exit it before changing learning routes.', 'caution');
               return;
             }
+            if (route !== 'study') upd('eyeStudyMode', false);
             var secondaryStudyOpen = !!(d.flashcardMode || d.compareMode || d.practicalMode);
             var routeIsClean = route === 'explore' ? !d.guidedMode && !d.quizMode && !secondaryStudyOpen && !d.toolbarStudyOpen : (route === 'guided' ? !!d.guidedMode && !d.quizMode && !d.toolbarStudyOpen : (route === 'quiz' ? !!d.quizMode && !d.guidedMode && !d.practicalMode && !d.toolbarStudyOpen : !!d.toolbarStudyOpen && !d.guidedMode && (d.practicalMode ? !!d.quizMode : !d.quizMode)));
             if (routeIsClean) return;
@@ -26271,18 +26819,135 @@ var d = labToolData.dissection || {};
                 setProcedureFeedback('Guided investigation is not ready yet. Complete the current reveal step or change view until at least one structure is visible.', 'caution');
                 return;
               }
-              updMany({ flashcardMode: false, compareMode: false, quizMode: false, guidedMode: true, guidedStep: 0, guidedTargetIds: guidedOrgans.map(function (org) { return org.id; }), guidedObservationPending: null, guidedObservationFeedback: null, toolbarStudyOpen: false });
+              updMany({ flashcardMode: false, compareMode: false, quizMode: false, guidedMode: true, _guidedCheckOnly: false, _guidedCheckResult: null, _guidedCheckOrigin: null, guidedStep: 0, guidedTargetIds: guidedOrgans.map(function (org) { return org.id; }), guidedObservationPending: null, guidedObservationFeedback: null, toolbarStudyOpen: false });
               if (typeof announceToSR === 'function') announceToSR('Guided investigation started. ' + firstGuided.prompt);
               clearAssessmentTeachingTimers();
             } else if (route === 'quiz') {
-              clearAssessmentTeachingTimers();
-              updMany({ _practicalCompletion: null, flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [], selectedOrgan: null, hoveredOrgan: null, quizSeed: Date.now(), quizAnswerMode: d.quizAnswerMode || 'choices', toolbarStudyOpen: false, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
-              updMany({ inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, macroInset: false, _procedureDemo: null, _procedureReplay: null });
+              resetAssessmentTeachingState();
+              updMany({ _practicalCompletion: null, quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0,
+                quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false,
+                quizReviewMode: false, quizFeedback: null, quizExplanation: null, quizRetry: null,
+                quizReviewQueue: Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [],
+                quizSeed: Date.now(), quizAnswerMode: d.quizAnswerMode || 'choices', toolbarStudyOpen: false });
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_practice_assessment_started_choose_multiple_choic', 'Practice assessment started. Choose multiple choice or answer directly on the specimen.'));
             } else {
               updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, quizMode: false, quizComplete: false, quizReviewMode: false, quizFeedback: null, toolbarStudyOpen: false });
               if (typeof announceToSR === 'function') announceToSR(advancedWorkspace ? 'Free explore mode active.' : 'Procedure practice mode active.');
             }
+          }
+
+          function buildDissectionLabReport() {
+            if (d.quizMode || d.practicalMode) return '';
+                  var report = 'Virtual Dissection Lab Report: ' + spec.name + '\n' + '\u2500'.repeat(36) + '\n';
+                  report += 'Specimen: ' + spec.name + '\nLayers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
+                  report += 'Structures viewed: ' + exploredCount + '/' + totalOrgansInSpecimen + '\nVerified identifications: ' + verifiedIdentificationCount + '\nCompleted first-attempt assessment: ' + assessmentRecordedScore + '/' + assessmentRecordedTotal + '; supported practice: ' + assessmentRecordedSupportLabel + '\n';
+                  report += 'Active investigation time: ' + (d.timeSpent || 0) + ' seconds\n';
+                  var techniqueLayers = spec.layers.map(function (layer) { return (d.procedureByLayer || {})[layer.id] || {}; });
+                  var completedTechniques = techniqueLayers.filter(function (state) { return procedureStepIndex(state) >= (procedureProtocol.order || []).length; }).length;
+                  var techniqueCautions = techniqueLayers.reduce(function (sum, state) { return sum + (Number(state.errors) || 0); }, 0);
+                  report += 'Technique sequences complete: ' + completedTechniques + '/' + spec.layers.length + '\n';
+                  report += 'Technique cautions reviewed: ' + techniqueCautions + '\n';
+                  report += 'Technique support: ' + (procedureMode === 'independent' ? 'Independent' : 'Guided') + '\n';
+                  report += 'Current layer technique score: ' + procedureTechniqueScore((d.procedureByLayer || {})[activeLayer] || {}) + '/100\n';
+                  var reportMetrics = currentProcedure.extensionMetrics || currentProcedure.incisionMetrics;
+                  report += 'Current tool control: ' + (reportMetrics ? (reportMetrics.control == null ? reportMetrics.smoothness : reportMetrics.control) + '%' : 'Not scored') + '\n';
+                  report += 'Observation field: ' + currentObservationField.label + ' (' + currentObservationField.quality + '/100); limiting factor: ' + currentObservationField.limiter + '\n';
+                  report += 'Optical inspection: ' + currentOpticalInspection.label + ' (' + currentOpticalInspection.quality + '/100); target: ' + currentOpticalInspection.targetName + '; focus ' + lensFocusDepth + ' (ideal ' + currentOpticalInspection.idealDepth + '); magnification ' + lensMagnification + 'x; illumination ' + lightIntensity + '% (' + currentIllumination.label + '); glare risk ' + currentIllumination.glareRisk + '%\n';
+                  report += 'Living function model: ' + (livingFunctionEnabled ? specimenLivingFunctionProfile().title + '; speed ' + livingFunctionSpeed + '; in-life physiology, not preserved specimen motion' : 'off') + '\n';
+                  report += 'Instrument calibration score: ' + (recordedCalibrationValues.length ? recordedCalibrationScore + '%' : 'Not scored') + '\n';
+                  report += 'Calibration settings: blade ' + toolCalibration.bladeAngle + '\u00B0; scissors aperture ' + toolCalibration.scissorsAperture + '%; forceps grip ' + toolCalibration.forcepsGrip + '%; pin angle ' + toolCalibration.pinAngle + '\u00B0; probe pressure ' + toolCalibration.probePressure + '%; saline dose ' + toolCalibration.salineDose + '\n';
+                  report += 'Technique input: ' + (currentProcedure.inputType || 'Not recorded') + '\n';
+                  if (currentProcedure.forcepsDragMetrics) report += 'Direct forceps lift: ' + currentProcedure.forcepsDragMetrics.liftPercent + '% lift; ' + currentProcedure.forcepsDragMetrics.control + '% control; ' + currentProcedure.forcepsDragMetrics.projectedTension + '% projected tension; ' + currentProcedure.forcepsDragMetrics.durationMs + ' ms; input ' + currentProcedure.forcepsDragMetrics.inputType + '\n';
+                  if (currentProcedure.pinDragMetrics) report += 'Direct pin placement: ' + currentProcedure.pinDragMetrics.insertionPercent + '% insertion; ' + currentProcedure.pinDragMetrics.alignment + '% alignment; ' + currentProcedure.pinDragMetrics.control + '% control; angle ' + currentProcedure.pinDragMetrics.angle + ' degrees; input ' + currentProcedure.pinDragMetrics.inputType + '\n';
+                  if (currentProcedure.probeDragMetrics) report += 'Direct probe palpation: ' + currentProcedure.probeDragMetrics.contactPercent + '% contact; ' + currentProcedure.probeDragMetrics.alignment + '% alignment; ' + currentProcedure.probeDragMetrics.control + '% control; resistance ' + currentProcedure.probeDragMetrics.resistance + '/100; deformation ' + currentProcedure.probeDragMetrics.deformation + '; input ' + currentProcedure.probeDragMetrics.inputType + '\n';
+                  if (currentProcedure.dropperDragMetrics) report += 'Direct dropper hydration: ' + currentProcedure.dropperDragMetrics.contactPercent + '% contact; ' + currentProcedure.dropperDragMetrics.flowAlignment + '% flow alignment; ' + currentProcedure.dropperDragMetrics.control + '% control; dose ' + currentProcedure.dropperDragMetrics.dose + '; pooling risk ' + currentProcedure.dropperDragMetrics.poolingRisk + '/100; input ' + currentProcedure.dropperDragMetrics.inputType + '\n';
+                  if (currentProcedure.wickDragMetrics) report += 'Direct wick recovery: ' + currentProcedure.wickDragMetrics.recoveryPercent + '% recovery; ' + currentProcedure.wickDragMetrics.edgeAlignment + '% edge alignment; ' + currentProcedure.wickDragMetrics.contactPercent + '% contact; ' + currentProcedure.wickDragMetrics.control + '% control; input ' + currentProcedure.wickDragMetrics.inputType + '\n';
+                  report += 'Saved attempts for current layer: ' + attemptEntries.length + '\n';
+                  if (techniqueComparison) report += 'Attempt score change: ' + techniqueComparisonMetricData({ kind: 'score', previous: techniqueComparison.previous.score, current: techniqueComparison.current.score }).changeText + '\n';
+                  report += 'Adaptive coaching: ' + adaptiveCoach.focus + ' — ' + adaptiveCoach.suggestion + '\n';
+                  report += 'Caution history: ' + ((currentProcedure.cautionLog || []).map(function (entry) { return entry.message; }).join(' | ') || 'None') + '\n';
+                      report += 'Tissue preservation: ' + currentTissueStatus.preservation + '/100; state: ' + currentTissueStatus.label + '; preparation: ' + currentTissueState.variantLabel + '\n';
+                      report += 'Tissue metrics: moisture ' + currentTissueState.moisture + '%, clarity ' + currentTissueState.clarity + '%, exposure ' + currentTissueState.exposure + '%, stability ' + currentTissueState.stability + '%, tension ' + currentTissueState.tension + '%, trauma ' + currentTissueState.trauma + '%, risk ' + currentTissueState.risk + '%\n';
+                      report += 'Hydration response: ' + specimenHydrationProfile().label + '; saline remaining: ' + currentTissueState.salineDrops + ' drop-equivalent(s); absorbent wicking: ' + ((currentProcedure.actionLog || []).filter(function (entry) { return entry.action === 'wick'; }).length ? 'recorded' : 'not used') + '\n';
+                      report += 'Tissue consequence history: ' + (tissueConsequences.map(function (entry) { return procedureActionLabel(entry.action) + ': ' + entry.message; }).join(' | ') || 'No tissue-changing actions recorded') + '\n';
+                  report += 'Technique timeline: ' + ((currentProcedure.actionLog || []).map(function (entry) { return entry.label || procedureActionLabel(entry.action); }).join(' > ') || 'Not started') + '\n';
+                  report += 'Specimen-specific procedure: ' + procedureProtocol.title + '; recommended view: ' + procedureProtocol.recommendedView + '; access route: ' + procedureProtocol.route + '; protected landmarks: ' + (protectedLandmarkNames.join(', ') || 'underlying anatomy') + '\n';
+                  report += 'Dynamic simulation: exposure ' + currentExposure.score + '/100 (' + currentExposure.label + '); decision quality ' + currentDecisionScore + '/100; material resistance ' + currentMaterialInteraction.resistance + '/100; protocol deviations ' + (currentProcedure.protocolDeviations || 0) + '\n';
+                  report += 'Active tool readiness: ' + currentToolReadiness.label + ' (' + currentToolReadiness.score + '/100); ' + currentToolReadiness.cue + '; checks: ' + currentToolReadiness.checks.map(function (check) { return check.label + ' ' + (check.ready ? 'ready' : 'needs attention'); }).join(', ') + '\n';
+                  report += 'Viewing settings: ' + visualRealism + '; view ' + anatomicalView + '; light ' + labLight + ' at ' + lightIntensity + '%; inspection lens ' + (inspectionLens ? 'on' : 'off') + '; evidence frames ' + visualEvidence.length + '\n';
+                  report += 'Specimen material model: ' + activeMaterialProfile.label + '; contact response: ' + activeMaterialProfile.response + '\n';
+                  report += 'Surface microdetail: ' + ((visualRealism === 'accessible' || !sceneDetail) ? 'suppressed for visual clarity' : activeMaterialProfile.pattern + '; directional light ' + lightDirection + '; condition ' + specimenCondition + '; moisture ' + currentTissueState.moisture + '%; roughness and sheen respond to tissue state') + '\n';
+                  report += 'Specimen variation: ' + variationSeed + '\n';
+                  report += 'Anatomical view: ' + anatomicalView + '; cross-section: ' + (crossSectionMode ? 'on' : 'off') + '; condition: ' + specimenCondition + '\n';
+                  report += 'Scenario: ' + scenarioDefinition.label + ' (' + scenarioDefinition.difficulty + '); status: ' + (scenarioStatus.complete ? 'complete' : (scenarioStatus.expired ? 'expired' : 'in progress')) + ' (' + scenarioStatus.progress + '%); ' + scenarioStatus.detail + '; elapsed ' + (d.scenarioStartedAt ? Math.max(0, Math.round(((Number(d.scenarioCompletedAt) || Date.now()) - Number(d.scenarioStartedAt)) / 1000)) : 0) + ' seconds\n';
+                  var reportInquiry = normalizeDissectionInquiry(d.dissInquiry);
+                  var reportInquiryMetrics = dissectionInquiryMetrics(reportInquiry);
+                  report += 'Inquiry model (pedagogical heuristic): ' + dissectionInquiryStateLabel(reportInquiryMetrics.state) + '; specimen size ' + reportInquiry.specimenSize + ' cm; depth ' + reportInquiry.layerDepth + '/5; care ' + reportInquiry.careLevel + '/10; time pressure ' + reportInquiry.timePress + '/10; damage index ' + reportInquiryMetrics.damage.toFixed(1) + '; insight score ' + reportInquiryMetrics.insight.toFixed(1) + '; logged approaches ' + reportInquiry.log.length + '\n';
+                  if (reportInquiry.hypothesis.trim()) report += 'Inquiry hypothesis: ' + reportInquiry.hypothesis.replace(/\s+/g, ' ').trim() + '\n';
+                  if (reportInquiry.explanation.trim()) report += 'Inquiry explanation: ' + reportInquiry.explanation.replace(/\s+/g, ' ').trim() + '\n';
+                  report += 'Instructor thresholds: score ' + instructorTarget + ', max cautions ' + instructorMaxCautions + ', required structures ' + instructorRequiredStructures + '\n';
+                  report += 'Curated relationship overlay: ' + (relationshipMode ? 'on' : 'off') + '; directly visible structures: ' + visibleOrgansInView.length + '/' + organs.length + '; rendering quality: ' + renderQuality + '\n';
+                  if (d.selectedOrgan && selectedRelationships.length) report += 'Selected structure relationships: ' + selectedRelationships.map(function (item) { return item.type + ': ' + item.relation + ' ' + item.organ.name; }).join('; ') + '\n';
+                  spec.layers.forEach(function (layer) {
+                    var examined = (spec.organs[layer.id] || []).filter(function (o) { var key = specimen + '|' + o.id; return !!(d.exploredOrgans || {})[key] || !!dissectionEvidenceNote(d.organNotes, key).trim() || !!(d.organConfidence || {})[key]; });
+                    if (!examined.length) return;
+                    report += '\n' + layer.name + '\n';
+                    examined.forEach(function (o) {
+                      var noteKey = specimen + '|' + o.id;
+                      report += '\u2022 ' + o.name + '\n';
+                      report += '  Observation: ' + ((d.exploredOrgans || {})[noteKey] ? 'Inspected in the virtual specimen' : 'Not yet inspected; saved record only') + '\n';
+                      report += '  Reference function (not student evidence): ' + o.fn + '\n';
+                      var confidenceRating = Number((d.organConfidence || {})[noteKey]) || 0;
+                      if (confidenceRating) {
+                        report += '  Confidence self-rating: ' + dissectionConfidenceLabel(confidenceRating) + ' (' + confidenceRating + ' of 3)\n';
+                      }
+                      if (!confidenceRating) report += '  Confidence self-rating: Not recorded\n';
+                      report += '  Evidence note: ' + (dissectionEvidenceNote(d.organNotes, noteKey).trim() ? dissectionEvidenceNote(d.organNotes, noteKey) : '[Not recorded]') + '\n';
+                    });
+                  });
+            report += '\nLearning objectives\n';
+            objectiveEvidenceModels.forEach(function (objective, index) {
+              report += (index + 1) + '. ' + objective.objective + '\n';
+              report += '  ' + objective.status + ': ' + objective.observedCount + '/' + objective.targetCount + ' observed; ' + objective.recordedCount + '/' + objective.targetCount + ' recorded; ' + objective.understoodCount + '/' + objective.targetCount + ' verified\n';
+              report += '  ' + objective.nextEvidence + '\n';
+            });
+            report += '\nScope: This report describes virtual practice. Reference functions and modeled scores are not student observations or clinical measurements. Confidence is self-reported.\n';
+            report += 'Evidence images are not embedded in this text report. Download frames from the evidence notebook separately. This report cannot restore a saved lab session.\n';
+            return report;
+          }
+          function copyLabReport() {
+            if (d.quizMode || d.practicalMode) return;
+            var report = buildDissectionLabReport();
+            copyDissectionText(report, 'Lab report copied to the clipboard.', 'The lab report could not be copied. Open Review and export lab report, then use Download report or Select report.');
+          }
+          function selectLabReport() {
+            if (d.quizMode || d.practicalMode) return;
+            var field = dissectionNodeById('diss-lab-report-preview');
+            if (!field) return;
+            field.focus(); field.select();
+            setProcedureFeedback('Report selected. Use your device copy command to copy the text.');
+          }
+          function downloadLabReport() {
+            if (d.quizMode || d.practicalMode) return;
+            var url = null, link = null;
+            try {
+              url = URL.createObjectURL(new Blob([buildDissectionLabReport()], { type: 'text/plain;charset=utf-8' }));
+              link = document.createElement('a');
+              link.href = url;
+              link.download = evidenceFileToken(specimen, 'specimen') + '_lab_report.txt';
+              document.body.appendChild(link); link.click();
+              setProcedureFeedback('Lab report download requested: ' + link.download + '.');
+            } catch (error) {
+              setProcedureFeedback('The report download could not start. Use Select report in the preview, then your device copy command.', 'caution');
+            } finally {
+              if (link && link.parentNode) link.parentNode.removeChild(link);
+              if (url) { var reportUrl = url; setTimeout(function () { URL.revokeObjectURL(reportUrl); }, 1000); }
+            }
+          }
+          function openLabReport() {
+            if (d.quizMode || d.practicalMode) return;
+            updMany({ workspaceMode: 'advanced', toolbarToolsOpen: true, _labReportPreviewOpen: true });
+            focusDissectionTarget('diss-lab-report-preview', 'Lab tools opened. Review the report for ' + spec.name + ', then download or select its text.');
           }
 
           function observationSummaryText() {
@@ -26294,6 +26959,7 @@ var d = labToolData.dissection || {};
             filteredObservationReview.forEach(function (entry, index) {
               lines.push((index + 1) + '. ' + entry.organ.name, 'Layer: ' + entry.layer.name,
                 'Confidence: ' + (entry.confidence ? dissectionConfidenceLabel(entry.confidence) + ' (' + entry.confidence + ' of 3)' : 'Not recorded'),
+                entry.verificationLabel,
                 'Documentation: ' + (!entry.note.trim() && !entry.confidence ? 'Evidence note and confidence missing' : !entry.note.trim() ? 'Evidence note missing' : !entry.confidence ? 'Confidence missing' : 'Note and confidence recorded'),
                 'Layer access: ' + (entry.available ? 'Available for review' : 'Currently locked; saved note only'),
                 'Student evidence note:', entry.note.trim() ? entry.note : '[No evidence note recorded]', '');
@@ -26336,6 +27002,10 @@ var d = labToolData.dissection || {};
           }
           function reviewObservation(organId) {
             if (d.quizMode || d.practicalMode) return;
+            if (layerRevealPending) {
+              setProcedureFeedback('Layer reveal in progress. You can keep reading saved notes; wait for the reveal to finish before opening a record.', 'working');
+              return false;
+            }
             var entry = observationReviewEntries.find(function (candidate) { return candidate.organ.id === organId; });
             if (!entry || !entry.available) return;
             cancelActiveCanvasGesture('Gesture canceled before reviewing an existing observation; no action was recorded.');
@@ -26345,6 +27015,20 @@ var d = labToolData.dissection || {};
             focusDissectionTarget(recordTask ? recordTask.target : 'diss-note-' + organId, recordTask
               ? recordTask.title + '. ' + recordTask.detail
               : 'Reviewing your existing note for ' + entry.organ.name + '. No new observation credit was added.');
+          }
+          function checkObservationIdentification(organId) {
+            if (d.quizMode || d.practicalMode || (d._incisionAnim && d._incisionAnim.active)) return false;
+            var entry = observationReviewEntries.find(function (candidate) { return candidate.organ.id === organId; });
+            if (!entry || !entry.available || entry.verified) return false;
+            cancelActiveCanvasGesture('Gesture canceled before starting an identification check; no action was recorded.');
+            clearAssessmentTeachingTimers();
+            if (entry.layer.id !== activeLayer) selectLayer(entry.layer.id);
+            updMany({ eyeStudyMode: false, flashcardMode: false, compareMode: false, guidedMode: true,
+              guidedStep: 0, guidedTargetIds: [entry.organ.id], _guidedCheckOnly: true, _guidedCheckOrigin: 'observations', _guidedCheckResult: null, guidedObservationPending: null, guidedObservationFeedback: null,
+              selectedOrgan: null, hoveredOrgan: null, organSearch: '', directoryFilter: 'all',
+              toolbarStudyOpen: false, toolbarToolsOpen: false, toolbarViewOpen: false });
+            focusDissectionTarget('diss-canvas', 'Guided identification check: find ' + entry.organ.name + ' in the ' + entry.layer.name + ' layer, then choose the observation that supports it. Make the structure visible before checking it. Your notes and confidence are unchanged.');
+            return true;
           }
           function eyeStudyTargets() {
             var targets = {};
@@ -26387,17 +27071,24 @@ var d = labToolData.dissection || {};
             }
             if (alreadyExplored) {
               upd('selectedOrgan', org.id);
-              setProcedureFeedback(exposureState === 'visible'
-                ? 'Reviewing your existing observation record for ' + org.name + '. ' + structureRecordStatus(org) + '.'
-                : 'Reviewing previously recorded evidence for ' + org.name + '. The structure is not currently visible, so no new viewing progress was added.', 'working');
             } else {
               updMany(function (current) { return Object.assign({ selectedOrgan: org.id }, structureInspectionPatch(org, current)); });
             }
             if (exposureState === 'visible' && guidedMode && currentGuided && org.id === currentGuided.organId) {
               beginGuidedObservation(org);
-            } else if (!preserveFocus) {
-              var recordTask = alreadyExplored && !structureEvidenceData(org).recorded ? structureRecordTask(org) : null;
-              focusDissectionTarget(recordTask ? recordTask.target : 'diss-selection-title');
+            } else {
+              // One outcome owns feedback for directory, keyboard and relation
+              // navigation, so a guided checkpoint is never overwritten by a
+              // generic inspection message from its caller.
+              setProcedureFeedback(alreadyExplored
+                ? (exposureState === 'visible'
+                  ? 'Reviewing your existing observation record for ' + org.name + '. ' + structureRecordStatus(org) + '.'
+                  : 'Reviewing previously recorded evidence for ' + org.name + '. The structure is not currently visible, so no new viewing progress was added.')
+                : 'Inspected ' + org.name + '. Structure details and evidence notes are available beside the specimen.', alreadyExplored ? 'working' : 'success');
+              if (!preserveFocus) {
+                var recordTask = alreadyExplored && !structureEvidenceData(org).recorded ? structureRecordTask(org) : null;
+                focusDissectionTarget(recordTask ? recordTask.target : 'diss-selection-title');
+              }
             }
 
 
@@ -26428,6 +27119,8 @@ var d = labToolData.dissection || {};
                 if (detachedRoot) detachedRoot._alloDissectionRefreshSaveAccess = null;
                 Promise.resolve().then(function () {
                   if (detachedRoot && !detachedRoot.isConnected) {
+                    var detachedFullscreenStage = detachedRoot.querySelector('[data-diss-fullscreen-stage]');
+                    if (detachedFullscreenStage && detachedFullscreenStage._dissFullscreenRelease) detachedFullscreenStage._dissFullscreenRelease();
                     var motionQuery = detachedRoot._alloDissectionMotionQuery;
                     var motionHandler = detachedRoot._alloDissectionMotionHandler;
                     if (motionQuery && motionHandler) {
@@ -26443,6 +27136,14 @@ var d = labToolData.dissection || {};
                 return;
               }
               dissectionRootRefNode = root;
+              // A clipboard permission prompt can outlive its original task.
+              // Keep routine renders, but retire outcomes after navigation or
+              // a newer action, including a specimen switch away and back.
+              var pendingCopy = root._alloDissectionCopyRequest;
+              if (pendingCopy && (pendingCopy.owner !== dissectionSaveOwner || pendingCopy.specimen !== specimen
+                || pendingCopy.layer !== activeLayer || pendingCopy.route !== studyRoute || pendingCopy.feedback !== d.procedureFeedback)) {
+                root._alloDissectionCopyRequest = null;
+              }
               // Refresh preference-dependent controls even when the canvas is offscreen or static.
               root._alloDissectionMotionRefresh = function () {
                 setLabToolData(function (previousToolData) { return Object.assign({}, previousToolData); });
@@ -26489,6 +27190,7 @@ var d = labToolData.dissection || {};
               React.createElement("span", { className: "diss-save-status__glyph", "data-dissection-save-glyph": true, "aria-hidden": "true" }, dissectionSaveStatus.state === 'error' ? '\u00D7' : (dissectionSaveStatus.state === 'warning' ? '!' : '\u2713')),
               React.createElement("span", { "data-dissection-save-message": true }, dissectionSaveStatus.message)
             ),
+            !d.quizMode && !d.practicalMode && (activeDissectionSaveIssue || dissectionSaveStatus.state === 'error' || dissectionSaveStatus.state === 'warning') && React.createElement('button', { type: 'button', className: 'diss-report-recovery', onClick: openLabReport }, __alloT('stem.dissection.export_session_report', 'Export current session report')),
             activeDissectionSaveIssue && React.createElement("section", {
               className: "rounded-xl border border-amber-400 bg-amber-50 p-3 text-amber-950",
               "data-dissection-protected-save": true,
@@ -26647,9 +27349,9 @@ var d = labToolData.dissection || {};
                 )
               ),
               React.createElement("div", { className: "diss-layer-list", onKeyDown: onLayerNavigationKeyDown,
-                tabIndex: d.quizMode ? 0 : undefined, role: d.quizMode ? "region" : undefined,
-                "aria-label": d.quizMode ? __alloT('stem.dissection.layer_access_region', 'Anatomical layer access') : undefined,
-                "aria-describedby": d.quizMode ? "diss-layer-help" : undefined
+                tabIndex: d.quizMode || layerRevealPending ? 0 : undefined, role: d.quizMode || layerRevealPending ? "region" : undefined,
+                "aria-label": d.quizMode || layerRevealPending ? __alloT('stem.dissection.layer_access_region', 'Anatomical layer access') : undefined,
+                "aria-describedby": d.quizMode || layerRevealPending ? "diss-layer-help" : undefined
               },
                 spec.layers.map(function (layer, layerIdx) {
                   var isCurrent = layer.id === activeLayer;
@@ -26657,13 +27359,13 @@ var d = labToolData.dissection || {};
                   var isUnlocked = layerIdx <= unlockedLayerIdx;
                   var state = isCurrent ? 'current' : (isDone ? 'revealed' : (isUnlocked ? 'available' : 'locked'));
                   var layerStatus = isCurrent ? __alloT('stem.dissection.layer_current', 'Current') : (isDone ? __alloT('stem.dissection.layer_revealed', 'Revealed') : (isUnlocked ? __alloT('stem.dissection.layer_available', 'Available') : __alloT('stem.dissection.layer_locked', 'Locked')));
-                  var layerDetail = d.quizMode ? __alloT('stem.dissection.layer_assessment_lock', 'Locked during assessment') : (isDone ? __alloT('stem.dissection.layer_can_revisit', 'Revisit structures') : (isCurrent ? __alloT('stem.dissection.layer_awaiting_reveal', 'Awaiting reveal') : (isUnlocked ? __alloT('stem.dissection.layer_select', 'Select to explore') : __alloT('stem.dissection.layer_prerequisite', 'Reveal {layer} first').replace('{layer}', spec.layers[Math.max(0, layerIdx - 1)].name))));
+                  var layerDetail = layerRevealPending ? __alloT('stem.dissection.layer_reveal_lock', 'Wait for the layer reveal to finish') : d.quizMode ? __alloT('stem.dissection.layer_assessment_lock', 'Locked during assessment') : (isDone ? __alloT('stem.dissection.layer_can_revisit', 'Revisit structures') : (isCurrent ? __alloT('stem.dissection.layer_awaiting_reveal', 'Awaiting reveal') : (isUnlocked ? __alloT('stem.dissection.layer_select', 'Select to explore') : __alloT('stem.dissection.layer_prerequisite', 'Reveal {layer} first').replace('{layer}', spec.layers[Math.max(0, layerIdx - 1)].name))));
                   return React.createElement("button", {
                     type: "button",
                     key: layer.id,
                     className: "diss-layer-button",
                     "data-state": state,
-                    disabled: !isUnlocked || !!d.quizMode,
+                    disabled: !isUnlocked || !!d.quizMode || layerRevealPending,
                     "aria-current": isCurrent ? "step" : undefined,
                     "aria-describedby": 'diss-layer-detail-' + layer.id,
                     "aria-label": 'Layer ' + (layerIdx + 1) + ': ' + layer.name + (d.quizMode ? ', locked during assessment' : isCurrent ? ', current' : isDone ? ', revealed' : isUnlocked ? ', available' : ', locked'),
@@ -26679,7 +27381,7 @@ var d = labToolData.dissection || {};
                 })
               ),
               React.createElement("p", { className: "diss-layer-help", id: "diss-layer-help" },
-                d.quizMode ? __alloT('stem.dissection.layer_assessment_help', 'Layer changes are locked during assessment.') : __alloT('stem.dissection.layer_keyboard_help', 'Use Left and Right to browse available layers; Enter selects.'),
+                layerRevealPending ? __alloT('stem.dissection.layer_reveal_help', 'Layer reveal in progress. Layer navigation will be available when it finishes.') : d.quizMode ? __alloT('stem.dissection.layer_assessment_help', 'Layer changes are locked during assessment.') : __alloT('stem.dissection.layer_keyboard_help', 'Use Left and Right to browse available layers; Enter selects.'),
                 React.createElement("span", { className: "diss-layer-scroll-help" }, ' ' + __alloT('stem.dissection.layer_scroll_help', 'Scroll to see all layers.'))
               )
             ),
@@ -26781,7 +27483,7 @@ var d = labToolData.dissection || {};
                 "aria-describedby": "diss-evidence-capacity",
                 "data-evidence-capture": true,
                 onClick: captureVisualEvidence,
-                title: visualEvidence.length >= evidenceFrameLimit ? 'Evidence notebook full — download or remove a frame first' : 'Capture evidence — Save a lightweight frame in the specimen notebook',
+                title: visualEvidence.length > evidenceFrameLimit ? 'Evidence notebook over capture capacity — download or remove frames to make room' : (visualEvidence.length >= evidenceFrameLimit ? 'Evidence notebook full — download or remove a frame first' : 'Capture evidence — Save a lightweight frame in the specimen notebook'),
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
               }, visualEvidence.length >= evidenceFrameLimit ? 'Evidence full · manage notebook' : 'Capture evidence'), React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_download_full_canvas_png', 'Download full canvas PNG'), "data-canvas-download": true,
                   onClick: function () {
@@ -26827,76 +27529,25 @@ var d = labToolData.dissection || {};
               React.createElement("section", { className: "diss-lab-tool-group", "data-lab-tools-group": "records", role: "group", "aria-labelledby": "diss-lab-records-heading" },
                 React.createElement("h4", { id: "diss-lab-records-heading", className: "diss-lab-tool-heading" }, 'Report and reset'),
                 React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_copy_accurate_lab_report_to_clipboard', 'Copy accurate lab report to clipboard'),
-                onClick: function () {
-                  var report = 'Virtual Dissection Lab Report: ' + spec.name + '\n' + '\u2500'.repeat(36) + '\n';
-                  report += 'Specimen: ' + spec.name + '\nLayers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
-                  report += 'Structures viewed: ' + exploredCount + '/' + totalOrgansInSpecimen + '\nVerified identifications: ' + verifiedIdentificationCount + '\nCompleted first-attempt assessment: ' + assessmentRecordedScore + '/' + assessmentRecordedTotal + '; supported practice: ' + (Number(d.quizSupportedCount) || 0) + '\n';
-                  report += 'Active investigation time: ' + (d.timeSpent || 0) + ' seconds\n';
-                  var techniqueLayers = spec.layers.map(function (layer) { return (d.procedureByLayer || {})[layer.id] || {}; });
-                  var completedTechniques = techniqueLayers.filter(function (state) { return procedureStepIndex(state) >= (procedureProtocol.order || []).length; }).length;
-                  var techniqueCautions = techniqueLayers.reduce(function (sum, state) { return sum + (Number(state.errors) || 0); }, 0);
-                  report += 'Technique sequences complete: ' + completedTechniques + '/' + spec.layers.length + '\n';
-                  report += 'Technique cautions reviewed: ' + techniqueCautions + '\n';
-                  report += 'Technique support: ' + (procedureMode === 'independent' ? 'Independent' : 'Guided') + '\n';
-                  report += 'Current layer technique score: ' + procedureTechniqueScore((d.procedureByLayer || {})[activeLayer] || {}) + '/100\n';
-                  var reportMetrics = currentProcedure.extensionMetrics || currentProcedure.incisionMetrics;
-                  report += 'Current tool control: ' + (reportMetrics ? (reportMetrics.control == null ? reportMetrics.smoothness : reportMetrics.control) + '%' : 'Not scored') + '\n';
-                  report += 'Observation field: ' + currentObservationField.label + ' (' + currentObservationField.quality + '/100); limiting factor: ' + currentObservationField.limiter + '\n';
-                  report += 'Optical inspection: ' + currentOpticalInspection.label + ' (' + currentOpticalInspection.quality + '/100); target: ' + currentOpticalInspection.targetName + '; focus ' + lensFocusDepth + ' (ideal ' + currentOpticalInspection.idealDepth + '); magnification ' + lensMagnification + 'x; illumination ' + lightIntensity + '% (' + currentIllumination.label + '); glare risk ' + currentIllumination.glareRisk + '%\n';
-                  report += 'Living function model: ' + (livingFunctionEnabled ? specimenLivingFunctionProfile().title + '; speed ' + livingFunctionSpeed + '; in-life physiology, not preserved specimen motion' : 'off') + '\n';
-                  report += 'Instrument calibration score: ' + (recordedCalibrationValues.length ? recordedCalibrationScore + '%' : 'Not scored') + '\n';
-                  report += 'Calibration settings: blade ' + toolCalibration.bladeAngle + '\u00B0; scissors aperture ' + toolCalibration.scissorsAperture + '%; forceps grip ' + toolCalibration.forcepsGrip + '%; pin angle ' + toolCalibration.pinAngle + '\u00B0; probe pressure ' + toolCalibration.probePressure + '%; saline dose ' + toolCalibration.salineDose + '\n';
-                  report += 'Technique input: ' + (currentProcedure.inputType || 'Not recorded') + '\n';
-                  if (currentProcedure.forcepsDragMetrics) report += 'Direct forceps lift: ' + currentProcedure.forcepsDragMetrics.liftPercent + '% lift; ' + currentProcedure.forcepsDragMetrics.control + '% control; ' + currentProcedure.forcepsDragMetrics.projectedTension + '% projected tension; ' + currentProcedure.forcepsDragMetrics.durationMs + ' ms; input ' + currentProcedure.forcepsDragMetrics.inputType + '\n';
-                  if (currentProcedure.pinDragMetrics) report += 'Direct pin placement: ' + currentProcedure.pinDragMetrics.insertionPercent + '% insertion; ' + currentProcedure.pinDragMetrics.alignment + '% alignment; ' + currentProcedure.pinDragMetrics.control + '% control; angle ' + currentProcedure.pinDragMetrics.angle + ' degrees; input ' + currentProcedure.pinDragMetrics.inputType + '\n';
-                  if (currentProcedure.probeDragMetrics) report += 'Direct probe palpation: ' + currentProcedure.probeDragMetrics.contactPercent + '% contact; ' + currentProcedure.probeDragMetrics.alignment + '% alignment; ' + currentProcedure.probeDragMetrics.control + '% control; resistance ' + currentProcedure.probeDragMetrics.resistance + '/100; deformation ' + currentProcedure.probeDragMetrics.deformation + '; input ' + currentProcedure.probeDragMetrics.inputType + '\n';
-                  if (currentProcedure.dropperDragMetrics) report += 'Direct dropper hydration: ' + currentProcedure.dropperDragMetrics.contactPercent + '% contact; ' + currentProcedure.dropperDragMetrics.flowAlignment + '% flow alignment; ' + currentProcedure.dropperDragMetrics.control + '% control; dose ' + currentProcedure.dropperDragMetrics.dose + '; pooling risk ' + currentProcedure.dropperDragMetrics.poolingRisk + '/100; input ' + currentProcedure.dropperDragMetrics.inputType + '\n';
-                  if (currentProcedure.wickDragMetrics) report += 'Direct wick recovery: ' + currentProcedure.wickDragMetrics.recoveryPercent + '% recovery; ' + currentProcedure.wickDragMetrics.edgeAlignment + '% edge alignment; ' + currentProcedure.wickDragMetrics.contactPercent + '% contact; ' + currentProcedure.wickDragMetrics.control + '% control; input ' + currentProcedure.wickDragMetrics.inputType + '\n';
-                  report += 'Saved attempts for current layer: ' + attemptEntries.length + '\n';
-                  if (techniqueComparison) report += 'Attempt score change: ' + techniqueComparisonMetricData({ kind: 'score', previous: techniqueComparison.previous.score, current: techniqueComparison.current.score }).changeText + '\n';
-                  report += 'Adaptive coaching: ' + adaptiveCoach.focus + ' — ' + adaptiveCoach.suggestion + '\n';
-                  report += 'Caution history: ' + ((currentProcedure.cautionLog || []).map(function (entry) { return entry.message; }).join(' | ') || 'None') + '\n';
-                      report += 'Tissue preservation: ' + currentTissueStatus.preservation + '/100; state: ' + currentTissueStatus.label + '; preparation: ' + currentTissueState.variantLabel + '\n';
-                      report += 'Tissue metrics: moisture ' + currentTissueState.moisture + '%, clarity ' + currentTissueState.clarity + '%, exposure ' + currentTissueState.exposure + '%, stability ' + currentTissueState.stability + '%, tension ' + currentTissueState.tension + '%, trauma ' + currentTissueState.trauma + '%, risk ' + currentTissueState.risk + '%\n';
-                      report += 'Hydration response: ' + specimenHydrationProfile().label + '; saline remaining: ' + currentTissueState.salineDrops + ' drop-equivalent(s); absorbent wicking: ' + ((currentProcedure.actionLog || []).filter(function (entry) { return entry.action === 'wick'; }).length ? 'recorded' : 'not used') + '\n';
-                      report += 'Tissue consequence history: ' + (tissueConsequences.map(function (entry) { return procedureActionLabel(entry.action) + ': ' + entry.message; }).join(' | ') || 'No tissue-changing actions recorded') + '\n';
-                  report += 'Technique timeline: ' + ((currentProcedure.actionLog || []).map(function (entry) { return entry.label || procedureActionLabel(entry.action); }).join(' > ') || 'Not started') + '\n';
-                  report += 'Specimen-specific procedure: ' + procedureProtocol.title + '; recommended view: ' + procedureProtocol.recommendedView + '; access route: ' + procedureProtocol.route + '; protected landmarks: ' + (protectedLandmarkNames.join(', ') || 'underlying anatomy') + '\n';
-                  report += 'Dynamic simulation: exposure ' + currentExposure.score + '/100 (' + currentExposure.label + '); decision quality ' + currentDecisionScore + '/100; material resistance ' + currentMaterialInteraction.resistance + '/100; protocol deviations ' + (currentProcedure.protocolDeviations || 0) + '\n';
-                  report += 'Active tool readiness: ' + currentToolReadiness.label + ' (' + currentToolReadiness.score + '/100); ' + currentToolReadiness.cue + '; checks: ' + currentToolReadiness.checks.map(function (check) { return check.label + ' ' + (check.ready ? 'ready' : 'needs attention'); }).join(', ') + '\n';
-                  report += 'Visual presentation: ' + visualRealism + '; lab light: ' + labLight + '; intensity: ' + lightIntensity + '%; light direction: ' + lightDirection + '; inspection lens: ' + (inspectionLens ? 'on' : 'off') + '; visual tools: ' + (instrumentVisuals ? 'on' : 'off') + '; access corridor: ' + (procedureMode === 'guided' && !currentProcedure.incisionStarted ? 'on' : 'off') + '; trajectory safety: ' + (instrumentVisuals ? 'on' : 'off') + '; instrument pitch: ' + (instrumentVisuals ? 'on' : 'off') + '; instrument lighting: ' + (instrumentVisuals ? 'light-aware elevation feedback on' : 'off') + '; instrument-tissue occlusion: foreground lip and paired depth notches encoded' + '; equivalent action replay: ' + (instrumentVisuals ? 'on' : 'off') + '; technique replay: pressure and alignment encoded' + '; forceps direct manipulation: press-drag-release lift, safe envelope, grip, slip, speed, control, and tension encoded' + '; pin stability preview: angle, depth, spacing, and tension encoded' + '; direct pin manipulation: press-drag-release insertion, angle, depth, spacing, alignment, and control encoded' + '; probe palpation preview: pressure, resistance, depth, and deformation encoded' + '; direct probe manipulation: press-drag-release trace, alignment, contact coverage, resistance, deformation, and control encoded' + '; direct dropper manipulation: press-drag-release hydration, dose, contact coverage, flow alignment, moisture, and pooling control encoded' + '; dropper spread forecast: dose, flow, saturation, and pooling encoded' + '; guided handoff cue: next instrument, anatomical target, and ' + (procedureProtocol.order || []).length + '-step progress encoded' + '; localized technique evidence: incision edge, grip, anchor, probe, and pooling consequences encoded' + '; localized action outcome: success or caution shape and changed tissue metric encoded' + '; tissue-state transitions: opening, retraction, stabilization, hydration, and risk interpolate spatially; Undo reverses opening, flap, pin, hydration, wick, and trace geometry; reduced motion snaps to final state' + '; macro view: ' + (macroInset ? 'on' : 'off') + '; scene detail: ' + (sceneDetail ? 'on' : 'off') + '; depth atlas: ' + (depthAtlasEnabled ? 'on' : 'off') + '; structure inspection: targets and depth labels retained; projected depth outlines in teaching modes and for covered anatomy; relationship pathways: type-specific line rhythms and marker shapes encoded' + '; anatomical orientation axis: circle marks ' + anatomicalOrientationData().start.toLowerCase() + ', diamond marks ' + anatomicalOrientationData().end.toLowerCase() + ', view ' + anatomicalOrientationData().view + ', target ' + anatomicalOrientationData().targetView + '; tissue relief: ' + (tissueReliefEnabled ? 'on' : 'off') + '; relationship motion: ' + (relationshipMotion ? 'on' : 'off') + '; focus isolation: ' + (focusMode ? 'on' : 'off') + '; spatial navigation transitions: orientation sweep, circle start, diamond target, and layer depth rings encoded; reduced motion switches instantly' + '; depth motion: ' + (parallaxDepth ? 'on' : 'off') + '; evidence frames: ' + visualEvidence.length + '; split comparison: ' + (splitComparison && referenceEvidence ? 'on' : 'off') + '; tactile feedback: ' + (d.tactileFeedback !== false ? 'on' : 'off') + '\n';
-                  report += 'Specimen material model: ' + activeMaterialProfile.label + '; contact response: ' + activeMaterialProfile.response + '\n';
-                  report += 'Surface microdetail: ' + ((visualRealism === 'accessible' || !sceneDetail) ? 'suppressed for visual clarity' : activeMaterialProfile.pattern + '; directional light ' + lightDirection + '; condition ' + specimenCondition + '; moisture ' + currentTissueState.moisture + '%; roughness and sheen respond to tissue state') + '\n';
-                  report += 'Specimen variation: ' + variationSeed + '\n';
-                  report += 'Anatomical view: ' + anatomicalView + '; cross-section: ' + (crossSectionMode ? 'on' : 'off') + '; condition: ' + specimenCondition + '\n';
-                  report += 'Scenario: ' + scenarioDefinition.label + ' (' + scenarioDefinition.difficulty + '); status: ' + (scenarioStatus.complete ? 'complete' : (scenarioStatus.expired ? 'expired' : 'in progress')) + ' (' + scenarioStatus.progress + '%); ' + scenarioStatus.detail + '; elapsed ' + (d.scenarioStartedAt ? Math.max(0, Math.round(((Number(d.scenarioCompletedAt) || Date.now()) - Number(d.scenarioStartedAt)) / 1000)) : 0) + ' seconds\n';
-                  var reportInquiry = normalizeDissectionInquiry(d.dissInquiry);
-                  var reportInquiryMetrics = dissectionInquiryMetrics(reportInquiry);
-                  report += 'Inquiry model (pedagogical heuristic): ' + dissectionInquiryStateLabel(reportInquiryMetrics.state) + '; specimen size ' + reportInquiry.specimenSize + ' cm; depth ' + reportInquiry.layerDepth + '/5; care ' + reportInquiry.careLevel + '/10; time pressure ' + reportInquiry.timePress + '/10; damage index ' + reportInquiryMetrics.damage.toFixed(1) + '; insight score ' + reportInquiryMetrics.insight.toFixed(1) + '; logged approaches ' + reportInquiry.log.length + '\n';
-                  if (reportInquiry.hypothesis.trim()) report += 'Inquiry hypothesis: ' + reportInquiry.hypothesis.replace(/\s+/g, ' ').trim() + '\n';
-                  if (reportInquiry.explanation.trim()) report += 'Inquiry explanation: ' + reportInquiry.explanation.replace(/\s+/g, ' ').trim() + '\n';
-                  report += 'Instructor thresholds: score ' + instructorTarget + ', max cautions ' + instructorMaxCautions + ', required structures ' + instructorRequiredStructures + '\n';
-                  report += 'Curated relationship overlay: ' + (relationshipMode ? 'on' : 'off') + '; directly visible structures: ' + visibleOrgansInView.length + '/' + organs.length + '; rendering quality: ' + renderQuality + '\n';
-                  if (d.selectedOrgan && selectedRelationships.length) report += 'Selected structure relationships: ' + selectedRelationships.map(function (item) { return item.type + ': ' + item.relation + ' ' + item.organ.name; }).join('; ') + '\n';
-                  spec.layers.forEach(function (layer) {
-                    var examined = (spec.organs[layer.id] || []).filter(function (o) { return !!(d.exploredOrgans || {})[specimen + '|' + o.id]; });
-                    if (!examined.length) return;
-                    report += '\n' + layer.name + '\n';
-                    examined.forEach(function (o) {
-                      var noteKey = specimen + '|' + o.id;
-                      report += '\u2022 ' + o.name + ': ' + o.fn + '\n';
-                      var confidenceRating = Number((d.organConfidence || {})[noteKey]) || 0;
-                      if (confidenceRating) {
-                        report += '  Confidence self-rating: ' + dissectionConfidenceLabel(confidenceRating) + ' (' + confidenceRating + ' of 3)\n';
-                      }
-                      if (dissectionEvidenceNote(d.organNotes, noteKey)) report += '  Evidence note: ' + dissectionEvidenceNote(d.organNotes, noteKey) + '\n';
-                    });
-                  });
-                  copyDissectionText(report, 'Lab report copied to the clipboard.', 'The lab report could not be copied in this view.');
+                disabled: !!(d.quizMode || d.practicalMode), onClick: function () {
+                  copyLabReport();
                 },
                 "aria-label": __alloT('stem.dissection.a11y_copy_lab_report_to_clipboard', 'Copy lab report to clipboard'),
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200"
               }, 'Copy lab report'),
+                !d.quizMode && !d.practicalMode && React.createElement('details', { className: 'diss-observation-export diss-report-export', open: !!d._labReportPreviewOpen,
+                  onToggle: function (event) { if (event.currentTarget.open !== !!d._labReportPreviewOpen) upd('_labReportPreviewOpen', event.currentTarget.open); } },
+                  React.createElement('summary', null, __alloT('stem.dissection.review_export_report', 'Review and export lab report')),
+                  d._labReportPreviewOpen && React.createElement(React.Fragment, null,
+                    React.createElement('p', { id: 'diss-lab-report-help' }, __alloT('stem.dissection.report_export_help', 'Includes progress, notes, confidence, technique, inquiry, and objective next steps for this specimen. The preview updates with your work. Images must be downloaded separately; this text report cannot restore a session.')),
+                    React.createElement('label', { htmlFor: 'diss-lab-report-preview' }, __alloT('stem.dissection.report_preview', 'Lab report preview')),
+                    React.createElement('textarea', { id: 'diss-lab-report-preview', readOnly: true, rows: 10, value: buildDissectionLabReport(), 'aria-describedby': 'diss-lab-report-help' }),
+                    React.createElement('div', { className: 'diss-observation-export__actions' },
+                      React.createElement('button', { type: 'button', onClick: downloadLabReport }, __alloT('stem.dissection.download_report', 'Download report')),
+                      React.createElement('button', { type: 'button', onClick: selectLabReport }, __alloT('stem.dissection.select_report', 'Select report'))
+                    )
+                  )
+                ),
                 React.createElement("div", { className: "diss-lab-reset-boundary" }, React.createElement("button", { id: "diss-reset-specimen", title: __alloT('stem.dissection.a11y_reset_progress_for_this_specimen', 'Reset progress for this specimen'), "aria-expanded": !!d.resetConfirmPending, "aria-controls": d.resetConfirmPending ? "diss-reset-confirmation" : undefined, onClick: requestSpecimenReset,
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-700 border border-red-300"
               }, '\u21BA Reset specimen'), d.resetConfirmPending && !activeDissectionSaveIssue && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
@@ -26939,23 +27590,23 @@ var d = labToolData.dissection || {};
                 React.createElement("p", { id: "diss-practical-readiness", className: "diss-study-readiness", role: "status", "aria-live": "polite", "aria-atomic": "true", "data-practical-ready": studyPracticalReady }, d.practicalMode ? 'The timed practical is active. End it to return to reference study.' : (d._incisionAnim && d._incisionAnim.active ? 'Finish the current layer transition before starting.' : (studyPracticalReady ? visibleQuizPool.length + ' visible structures available. Starts a new timed identification attempt.' : 'Needs at least two visible structures. Improve the field or change view.'))),
                 React.createElement("button", { "aria-label": d.practicalMode ? "End timed practical" : "Start 2-minute timed practical", "aria-describedby": "diss-practical-study-help diss-practical-readiness" + (d.practicalMode ? " diss-practical-time-status" : ""), "aria-pressed": !!d.practicalMode,
                 onClick: function () {
-                    if (d._incisionAnim && d._incisionAnim.active) {
-                      setProcedureFeedback('Finish the current layer transition before starting the timed practical.', 'caution');
-                      return;
-                    }
-                    clearAssessmentTeachingTimers();
                   if (!d.practicalMode) {
+                    if (assessmentEntryBlocked('practical')) return;
                     var practicalIds = visibleQuizPool.map(function (organ) { return organ.id; });
                     if (practicalIds.length < 2) {
                       setProcedureFeedback('Timed practical unavailable: at least two structures must be visible. Improve the field or change view first.', 'caution');
                       return;
                     }
+                    resetAssessmentTeachingState();
                     var previousLabelMode = d.labelMode || 'show';
                     var practicalEndsAt = Date.now() + 120000;
                     stopCanvasPracticalCountdown(canvasRefNode);
                     try { window.__alloDissectionPracticalScore = 0; } catch (e) {}
-                    updMany({ eyeStudyMode: false, _practicalCompletion: null, _prePracticalLabelMode: previousLabelMode, guidedMode: false, flashcardMode: false, compareMode: false, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, practicalMode: true, labelMode: 'hidden', quizMode: true, quizComplete: false, quizReviewMode: false, quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizRetry: null, practicalTimer: 120, practicalEndsAt: practicalEndsAt, practicalTargetIds: practicalIds, selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
-                    updMany({ inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, macroInset: false, _procedureDemo: null, _procedureReplay: null });
+                    updMany({ _practicalCompletion: null, _prePracticalLabelMode: previousLabelMode,
+                      practicalMode: true, labelMode: 'hidden', quizMode: true, quizComplete: false, quizReviewMode: false,
+                      quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0,
+                      quizFeedback: null, quizExplanation: null, quizRetry: null, practicalTimer: 120,
+                      practicalEndsAt: practicalEndsAt, practicalTargetIds: practicalIds });
                   } else closeTimedPractical();
                 },
                 title: 'Practical — timed identification with a specimen hotspot and accessible answer choices',
@@ -26967,6 +27618,19 @@ var d = labToolData.dissection || {};
 
             // Main: Canvas + sidebar
 
+            !d.flashcardMode && !d.quizMode && !d.practicalMode && pausedFlashcardOrgan && React.createElement("section", {
+              className: "diss-study-card diss-recall", "data-flashcard-resume": true, "aria-labelledby": "diss-flashcard-paused-title"
+            },
+              React.createElement("h3", { id: "diss-flashcard-paused-title" }, 'Flashcards paused · ' + pausedFlashcardOrgan.name),
+              React.createElement("p", null, 'Your recall draft, self-ratings, and place in this round are kept while you inspect this specimen layer. Recall text is separate from your observation notes.'),
+              React.createElement("p", { id: "diss-flashcard-paused-help", className: "diss-recall__scope" },
+                flashcardHandoffBlocked ? 'Finish the layer transition before resuming flashcards.' : 'Resume in this layer, or end practice. Changing layer or specimen, starting a new deck, or ending practice clears the paused round. Temporary drafts are not included in your saved lab record.'),
+              React.createElement("div", { className: "diss-recall__actions" },
+                React.createElement("button", { type: 'button', className: 'diss-recall__primary', 'data-flashcard-resume-action': true,
+                  disabled: flashcardHandoffBlocked, 'aria-describedby': 'diss-flashcard-paused-help', onClick: resumeFlashcardPractice }, 'Resume flashcards'),
+                React.createElement("button", { type: 'button', 'data-flashcard-end': true, onClick: endFlashcardPractice }, 'End flashcard practice')
+              )
+            ),
 
             React.createElement("div", { id: "diss-workspace", className: "diss-workspace", "data-dissection-workspace": true, role: "tabpanel", "aria-labelledby": "diss-specimen-tab-" + specimen },
 
@@ -27136,6 +27800,7 @@ var d = labToolData.dissection || {};
                     React.createElement("div", { className: "diss-canvas-frame", "data-diss-fullscreen-stage": true },
                       React.createElement("div", { id: "diss-fullscreen-dock", className: "diss-fullscreen-dock", role: "toolbar", "aria-label": __alloT('stem.dissection.a11y_fullscreen_specimen_view_and_tools', 'Fullscreen specimen view and tools') },
                       React.createElement("button", { type: "button", className: "diss-fullscreen-dock__exit", "data-diss-fullscreen-exit": true, "aria-label": __alloT('stem.dissection.a11y_exit_fullscreen_specimen_mode', 'Exit fullscreen specimen mode'), "aria-keyshortcuts": "Escape", title: __alloT('stem.dissection.exit_fullscreen_escape','Exit fullscreen (Escape)'), onClick: function (event) { exitDissectionFullscreen(event.currentTarget); } }, 'Exit fullscreen'),
+                      React.createElement("div", { className: "diss-fullscreen-dock__controls" },
                         React.createElement("button", { type: "button", disabled: !!d.quizMode, onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'fullscreen dock'); }, "aria-label": d.quizMode ? "Fullscreen anatomical view locked during assessment" : "Fullscreen anatomical view: cycle dorsal, ventral, lateral, and internal" }, 'View: ' + anatomicalView),
                         React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, "aria-label": __alloT('stem.dissection.a11y_fullscreen_illumination_color_cycle_neutral_war', 'Fullscreen illumination color: cycle neutral, warm, and cool') }, 'Light: ' + labLight),
                         React.createElement("label", null,
@@ -27159,6 +27824,7 @@ var d = labToolData.dissection || {};
                           "data-tone": stageHandoffTone,
                           "aria-label": "Fullscreen next action: " + stageHandoffLabel + ". " + stageHandoffDetail
                         }, 'Next: ' + stageHandoffLabel + ' \u00B7 ' + stageHandoffDetail)
+                      )
                       ),
                       React.createElement("span", { id: "diss-canvas-label", className: "diss-sr-only" },
                         d.quizMode
@@ -27519,9 +28185,11 @@ var d = labToolData.dissection || {};
                   var isOpen = !!event.currentTarget.open;
                   if (isOpen !== evidenceNotebookOpen) upd('evidenceNotebookOpen', isOpen);
                 } },
-                  React.createElement("summary", null, 'Evidence notebook · ' + visualEvidence.length + '/' + evidenceFrameLimit + ' frames'),
+                  React.createElement("summary", null, 'Evidence notebook · ' + (visualEvidence.length > evidenceFrameLimit ? visualEvidence.length + ' existing frames · capture limit ' + evidenceFrameLimit : visualEvidence.length + '/' + evidenceFrameLimit + ' frames')),
                   React.createElement("p", { id: "diss-evidence-capacity", className: "diss-evidence__capacity", "data-full": visualEvidence.length >= evidenceFrameLimit ? "true" : "false", role: "status", "aria-live": "polite" },
-                    visualEvidence.length >= evidenceFrameLimit
+                    visualEvidence.length > evidenceFrameLimit
+                      ? 'All ' + visualEvidence.length + ' existing frames remain available here. New captures require fewer than ' + evidenceFrameLimit + ' frames. Download important frames, then remove at least ' + (visualEvidence.length - evidenceFrameLimit + 1) + ' frames to make room for another capture.'
+                      : visualEvidence.length >= evidenceFrameLimit
                       ? 'Notebook full. Download or remove a frame before capturing another; no frame will be replaced automatically.'
                       : 'Frames use browser storage. Download important frames, and remove frames you no longer need if saving becomes limited.'
                   ),
@@ -28102,15 +28770,28 @@ var d = labToolData.dissection || {};
                       React.createElement("button", { id: "diss-replay-attempt", type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-controls": !d.quizMode && activeProcedureReplay && replayReviewVisible ? "diss-replay-review" : undefined, "aria-describedby": "diss-replay-evidence-help", "aria-label": __alloT('stem.dissection.a11y_replay_the_recorded_technique_attempt_on_the_sp', 'Replay the recorded technique attempt on the specimen') }, '\u21BB Replay attempt'),
                       React.createElement("button", { id: "diss-review-actions", type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: function () { startProcedureReplay(true); }, "aria-controls": !d.quizMode && activeProcedureReplay && replayReviewVisible ? "diss-replay-review" : undefined, "aria-describedby": "diss-replay-evidence-help" }, 'Review actions'),
                       React.createElement("p", { id: "diss-replay-evidence-help" }, 'Replay follows the saved action order. Missing stroke data uses an illustrative teaching path. Pressure and instrument settings appear only when recorded.'),
-                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: procedureStageIdx === 0, onClick: saveTechniqueAttempt, title: __alloT('stem.dissection.a11y_save_this_technique_attempt_as_a_comparison_bas', 'Save this technique attempt as a comparison baseline') }, '\u25A3 Save attempt'),
-                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, title: __alloT('stem.dissection.a11y_start_a_new_technique_attempt_for_this_layer', 'Start a new technique attempt for this layer') }, '\u21BB Start new attempt'),
+                      React.createElement("button", { id: "diss-save-attempt", type: "button", className: "diss-advanced-only", disabled: procedureStageIdx === 0 || !techniqueAttemptChangeAllowed(d), onClick: saveTechniqueAttempt, "aria-describedby": attemptEntries.length >= 6 ? "diss-attempt-archive-capacity" : undefined,
+                        title: attemptEntries.length >= 6 ? 'Save attempt and replace oldest' + (attemptEntries.length > 6 ? ' ' + (attemptEntries.length - 5) + ' saved attempts' : ' saved attempt') : __alloT('stem.dissection.a11y_save_this_technique_attempt_as_a_comparison_bas', 'Save this technique attempt as a comparison baseline')
+                      }, '\u25A3 ' + (attemptEntries.length >= 6 ? 'Save attempt and replace oldest' + (attemptEntries.length > 6 ? ' ' + (attemptEntries.length - 5) : '') : 'Save attempt')),
+                      attemptEntries.length >= 6 && React.createElement("p", { id: "diss-attempt-archive-capacity", className: "diss-advanced-only" }, 'The archive keeps six comparison attempts per layer. Saving a changed attempt will replace the oldest saved attempt' + (attemptEntries.length > 6 ? 's (' + (attemptEntries.length - 5) + ' total)' : '') + '. Saving an unchanged attempt keeps the archive as it is.'),
+                      React.createElement("button", { id: "diss-new-attempt", type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length || !techniqueAttemptChangeAllowed(d), onClick: startNewTechniqueAttempt, "aria-expanded": !!attemptRestartReview, "aria-controls": attemptRestartReview ? "diss-attempt-restart-review" : undefined, title: __alloT('stem.dissection.a11y_start_a_new_technique_attempt_for_this_layer', 'Start a new technique attempt for this layer') }, '\u21BB Start new attempt'),
+                      attemptRestartReview && React.createElement("div", { id: "diss-attempt-restart-review", className: "diss-reset-confirm diss-advanced-only", style: { gridTemplateColumns: 'minmax(0, 1fr)' }, role: "group", "aria-labelledby": "diss-attempt-restart-title", onKeyDown: function (event) {
+                        if (isDissectionPlainEscape(event)) { event.preventDefault(); event.stopPropagation(); cancelTechniqueAttemptRestart(attemptRestartReview); }
+                      } },
+                        React.createElement("p", { id: "diss-attempt-restart-title" }, 'This attempt has changes that are not in a saved baseline. Save the current technique before starting again, or explicitly discard it. Your structure notes and other layers will remain.'),
+                        attemptEntries.length >= 6 && React.createElement("p", null, 'The archive keeps six attempts per layer. Saving now will replace the oldest saved attempt' + (attemptEntries.length > 6 ? 's (' + (attemptEntries.length - 5) + ' total)' : '') + '. Cancel to keep the archive unchanged.'),
+                        React.createElement("button", { id: "diss-attempt-restart-save", type: "button", disabled: procedureStageIdx === 0, onClick: function () { confirmTechniqueAttemptRestart(attemptRestartReview, true); } }, attemptEntries.length >= 6 ? 'Save, replace oldest, and restart' : 'Save current and restart'),
+                        React.createElement("button", { id: "diss-attempt-restart-discard", type: "button", "data-confirm": "true", onClick: function () { confirmTechniqueAttemptRestart(attemptRestartReview, false); } }, 'Discard current and restart'),
+                        React.createElement("button", { id: "diss-attempt-restart-cancel", type: "button", onClick: function () { cancelTechniqueAttemptRestart(attemptRestartReview); } }, 'Cancel')
+                      ),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !techniqueComparison, "aria-pressed": !!d.compareTechniqueAttempts, onClick: function () { upd('compareTechniqueAttempts', !d.compareTechniqueAttempts); }, "aria-label": __alloT('stem.dissection.a11y_compare_the_current_technique_with_the_previous', 'Compare the current technique with the previous saved attempt') }, '\u21C4 Compare attempts'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": d.adaptiveGuidance !== false, onClick: function () { upd('adaptiveGuidance', d.adaptiveGuidance === false); } }, 'Adaptive coaching ' + (d.adaptiveGuidance === false ? 'off' : 'on')),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = dissectionNodeById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: physiologyMotionReduced ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
                       !d.quizMode && !d.practicalMode && React.createElement("button", { type: "button", "aria-controls": layerReviewAvailable() ? "diss-layer-review" : undefined, onClick: function () { updMany({ showProcedureDebrief: true, _layerReviewRequested: specimen + '|' + activeLayer }); focusDissectionTarget('diss-layer-review-title'); } }, 'Review layer'),
                       activeInstrument === 'dropper' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('dropper', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('dropper', { point: result.point || point }); } }, '\u25C9 Apply controlled drop'),
                       activeInstrument === 'wick' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = currentProcedure.dropperPoint || procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('wick', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('wick', { point: result.point || point }); }, "aria-label": __alloT('stem.dissection.a11y_wick_excess_saline_from_the_visible_pool_edge', 'Wick excess saline from the visible pool edge') }, '\u25A7 Wick excess saline'),
-                      React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction, "aria-label": __alloT('stem.dissection.a11y_undo_the_last_technique_action_and_visually_res', 'Undo the last technique action and visually restore the previous tissue state') }, '\u21A9 Undo last technique action')
+                      React.createElement("button", { id: "diss-undo-procedure", type: "button", disabled: !!procedureUndoReason, onClick: undoProcedureAction, "aria-describedby": procedureUndoReason ? "diss-undo-unavailable" : undefined, "aria-label": __alloT('stem.dissection.a11y_undo_the_last_technique_action_and_visually_res', 'Undo the last technique action and visually restore the previous tissue state') }, '\u21A9 Undo last technique action'),
+                      procedureUndoReason && React.createElement("p", { id: "diss-undo-unavailable", style: { flexBasis: '100%', margin: '4px 0 0', fontSize: '0.8rem' } }, procedureUndoReason)
                     ),
                     React.createElement("details", { id: "diss-scenario-thresholds", className: "diss-instructor" },
                       React.createElement("summary", { id: "diss-scenario-thresholds-summary" },
@@ -28234,7 +28915,7 @@ var d = labToolData.dissection || {};
               }),
 
               // Flashcard panel
-              d.flashcardMode && React.createElement("section", {
+              d.flashcardMode && !d.quizMode && !d.practicalMode && React.createElement("section", {
                 id: "diss-flashcard-panel", tabIndex: -1, className: "diss-study-card diss-recall",
                 "data-dissection-flashcards": true, "aria-labelledby": "diss-flashcard-title"
               },
@@ -28286,6 +28967,19 @@ var d = labToolData.dissection || {};
                   React.createElement("div", { className: "diss-recall__navigation" },
                     React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_previous_flashcard', 'Previous flashcard'), disabled: flashcardIndex === 0, onClick: function () { moveFlashcard(flashcardIndex - 1); } }, __alloT('stem.dissection.recall_previous', 'Previous')),
                     React.createElement("button", { type: "button", onClick: function () { moveFlashcard(flashcardIndex + 1); } }, flashcardIndex === flashcardDeck.length - 1 ? __alloT('stem.dissection.recall_finish', 'Finish round without rating') : __alloT('stem.dissection.recall_skip', 'Next without rating'))
+                  ),
+                  React.createElement("div", { className: "diss-recall__handoff" },
+                    React.createElement("p", { id: 'diss-flashcard-handoff-help' }, flashcardHandoffBlocked
+                      ? 'Finish the layer transition before checking this card against the specimen.'
+                      : 'Pause this card to check the specimen or your existing notes. Resume flashcards keeps your draft and place in the round; it does not copy recall text into your evidence.'),
+                    React.createElement("div", { className: 'diss-recall__actions' },
+                      React.createElement("button", { type: 'button', 'data-flashcard-handoff': 'find', disabled: flashcardHandoffBlocked,
+                        'aria-label': 'Find ' + flashcardCurrent.name + ' on specimen', 'aria-describedby': 'diss-flashcard-handoff-help',
+                        onClick: function () { pauseFlashcardsForSpecimen(false); } }, 'Find on specimen'),
+                      structureEvidenceData(flashcardCurrent).inspected && React.createElement("button", { type: 'button', 'data-flashcard-handoff': 'record', disabled: flashcardHandoffBlocked,
+                        'aria-label': 'Review my evidence for ' + flashcardCurrent.name, 'aria-describedby': 'diss-flashcard-handoff-help',
+                        onClick: function () { pauseFlashcardsForSpecimen(true); } }, 'Review my evidence')
+                    )
                   )
                 ),
                 flashcardComplete && React.createElement("div", { className: "diss-recall__summary" },
@@ -28297,7 +28991,7 @@ var d = labToolData.dissection || {};
                     organs.length > 0 && React.createElement("button", { type: "button", onClick: function () { startFlashcardRound(null); } }, __alloT('stem.dissection.recall_restart', 'Practice all cards'))
                   )
                 ),
-                React.createElement("button", { type: "button", className: "diss-recall__return", onClick: function () { updMany({ flashcardMode: false, _flashcardPractice: null }); focusDissectionTarget('diss-canvas'); } }, __alloT('stem.dissection.recall_return', 'Return to specimen'))
+                React.createElement("button", { type: "button", className: "diss-recall__return", onClick: endFlashcardPractice }, __alloT('stem.dissection.recall_end_return', 'End practice and return to specimen'))
               ),
               // Comparison panel
 
@@ -28368,11 +29062,33 @@ var d = labToolData.dissection || {};
               React.createElement("aside", { id: "diss-structure-directory", tabIndex: -1, className: "diss-sidebar space-y-3", "data-dissection-sidebar": true, "aria-label": __alloT('stem.dissection.a11y_structure_directory_and_lab_notes', 'Structure directory and lab notes') },
                 React.createElement("a", { href: "#diss-canvas", className: "diss-skip-return", onClick: function (event) { event.preventDefault(); focusDissectionTarget('diss-canvas', 'Interactive specimen focused.', event.currentTarget.closest('[data-dissection-root]')); } }, 'Return to interactive specimen'),
 
+                completedObservationCheck && !d.quizMode && !d.practicalMode && !d.guidedMode && !d.flashcardMode && !d.compareMode && !d.eyeStudyMode && React.createElement('section', {
+                  className: 'diss-check-result', 'data-observation-check-result': completedObservationCheck.organ.id, 'aria-labelledby': 'diss-check-result-title'
+                },
+                  React.createElement('h4', { id: 'diss-check-result-title', tabIndex: -1 }, __alloT('stem.dissection.check_result_title', 'Identification checked: {name}').replace('{name}', completedObservationCheck.organ.name)),
+                  React.createElement('p', null, __alloT('stem.dissection.check_result_scope', 'Your Guided response supports this identification. Your notes and confidence are separate parts of the evidence record.')),
+                  React.createElement('p', { 'data-check-result-record-status': true }, completedObservationCheck.recordStatus),
+                  React.createElement('p', { 'data-check-result-remaining': true }, nextAvailableObservationCheck
+                    ? __alloT('stem.dissection.check_result_remaining', '{count} inspected observations still need an identification check in this specimen.').replace('{count}', pendingObservationChecks.length)
+                    : pendingObservationChecks.length ? __alloT('stem.dissection.check_result_locked', '{count} unchecked observations remain in locked layers. Complete layer preparation to return to them.').replace('{count}', pendingObservationChecks.length)
+                    : __alloT('stem.dissection.check_result_all', 'All your currently inspected observations have an identification check. Other structures and learning objectives may still need work.')),
+                  React.createElement('div', { className: 'diss-check-result__actions' },
+                    completedObservationCheck.available && React.createElement('button', { type: 'button', disabled: layerRevealPending, onClick: function () { reviewObservation(completedObservationCheck.organ.id); } },
+                      (completedObservationCheck.recordTask ? completedObservationCheck.recordTask.label : __alloT('stem.dissection.check_result_review_record', 'Review evidence record')) + ': ' + completedObservationCheck.organ.name),
+                    nextAvailableObservationCheck && React.createElement('button', { type: 'button', 'data-check-result-next': true, disabled: !!(d._incisionAnim && d._incisionAnim.active),
+                      onClick: function () { checkObservationIdentification(nextAvailableObservationCheck.organ.id); }
+                    }, __alloT('stem.dissection.check_result_next', 'Check next observation: {name}').replace('{name}', nextAvailableObservationCheck.organ.name)),
+                    React.createElement('button', { type: 'button', onClick: openObservationReview }, __alloT('stem.dissection.check_result_return', 'Back to observation review')),
+                    React.createElement('button', { type: 'button', onClick: function () { upd('_guidedCheckResult', null); focusDissectionTarget('diss-canvas'); } }, __alloT('stem.dissection.check_result_dismiss', 'Dismiss check summary'))
+                  )
+                ),
+
                 !d.quizMode && !d.practicalMode && !d.flashcardMode && !d.compareMode && !d.eyeStudyMode && React.createElement('details', { id: 'diss-observation-review', className: 'diss-observation-review', 'data-observation-review': true },
                   React.createElement('summary', { id: 'diss-observation-review-title' }, 'Review observations · ' + observationReviewEntries.length + ' inspected'),
                   React.createElement('div', { className: 'diss-observation-review__body' },
                     React.createElement('p', null, 'Your inspected structures across all layers of ' + spec.name + '. Review what you observed, then decide what evidence would strengthen your identification.'),
-                    React.createElement('p', null, 'Finish records shows missing notes or confidence. Low confidence means 1 of 3. Identification checks assess understanding.'),
+                    React.createElement('p', null, __alloT('stem.dissection.observation_review_explanation', 'Finish records shows missing notes or confidence. Low confidence means 1 of 3. Checked identifications come from a successful Guided check or a first-attempt assessment answer; confidence alone does not count as a check.')),
+                    layerRevealPending && React.createElement('p', { role: 'status', 'data-observation-review-busy': true }, __alloT('stem.dissection.observation_reveal_wait', 'Layer reveal in progress. You can keep reading saved notes; wait for the reveal to finish before opening a record.')),
                     React.createElement('div', { className: 'diss-observation-search' },
                       React.createElement('label', { htmlFor: 'diss-observation-search' }, 'Search your observations'),
                       React.createElement('input', { id: 'diss-observation-search', type: 'search', value: observationSearchValue, placeholder: __alloT('stem.dissection.structure_layer_or_words_in_your_note','Structure, layer, or words in your note'),
@@ -28393,7 +29109,8 @@ var d = labToolData.dissection || {};
                     filteredObservationReview.length > 0 && React.createElement(DissectionObservationReader, { key: specimen, React: React, t: __alloT,
                       entries: filteredObservationReview, specimenName: spec.name, total: observationReviewEntries.length,
                       filterLabel: (observationReviewChoices.find(function (choice) { return choice.id === observationReviewFilter; }) || { label: observationReviewFilter }).label,
-                      search: observationSearchTokens.length ? observationSearchValue.trim() : '', onReview: reviewObservation }),
+                      search: observationSearchTokens.length ? observationSearchValue.trim() : '', onReview: reviewObservation,
+                      onVerify: checkObservationIdentification, checkUnavailable: layerRevealPending, reviewUnavailable: layerRevealPending }),
                     !filteredObservationReview.length && React.createElement('p', { 'data-observation-review-empty': true }, observationReviewEntries.length ? (observationSearchTokens.length ? 'No observations match this search and filter. Clear the search or choose another filter.' : 'No observations match this filter. Choose All inspected to review your other notes.') : 'Inspect a visible structure in the 2D specimen to begin your review list.'),
                     filteredObservationReview.length > 0 && React.createElement('details', { className: 'diss-observation-export', 'data-observation-export': true },
                       React.createElement('summary', null, 'Preview and export shown observations'),
@@ -28412,11 +29129,15 @@ var d = labToolData.dissection || {};
                         React.createElement('h4', null, entry.organ.name),
                         React.createElement('p', null, entry.layer.name + ' layer · ' + (entry.confidence ? 'Confidence ' + entry.confidence + ' of 3' : 'Confidence not recorded')),
                         React.createElement('p', { id: 'diss-observation-record-status-' + entry.organ.id, className: 'diss-observation-record-status', 'data-observation-complete': !entry.needsRecord }, entry.recordStatus),
+                        React.createElement('p', { 'data-observation-verification': entry.verified ? 'verified' : 'unverified' }, entry.verificationLabel),
                         observationSearchTokens.some(function (token) { return normalizeDissectionSearch(entry.note).indexOf(token) >= 0; }) && React.createElement('p', { className: 'diss-observation-note-match', 'data-observation-note-match': true }, 'Search words appear in your saved note.'),
                         entry.note.trim() && React.createElement('details', null, React.createElement('summary', null, 'Read saved note'), React.createElement('p', { className: 'diss-observation-review__note' }, entry.note)),
                         entry.confidence === 1 && React.createElement('p', null, 'What feature or relationship would help you check this identification?'),
-                        entry.available ? React.createElement('button', { type: 'button', 'data-observation-edit': entry.organ.id, 'aria-describedby': 'diss-observation-record-status-' + entry.organ.id, onClick: function () { reviewObservation(entry.organ.id); } }, (entry.recordTask ? entry.recordTask.label : 'Review note') + ': ' + entry.organ.name)
-                          : React.createElement('p', { 'data-observation-locked': true }, 'Layer locked. Complete its preparation before returning to this structure.' + (entry.note.trim() ? ' Your saved note remains available above.' : ''))
+                        entry.available ? React.createElement('button', { type: 'button', 'data-observation-edit': entry.organ.id, disabled: layerRevealPending, 'aria-describedby': 'diss-observation-record-status-' + entry.organ.id, onClick: function () { reviewObservation(entry.organ.id); } }, (entry.recordTask ? entry.recordTask.label : 'Review note') + ': ' + entry.organ.name)
+                          : React.createElement('p', { 'data-observation-locked': true }, 'Layer locked. Complete its preparation before returning to this structure.' + (entry.note.trim() ? ' Your saved note remains available above.' : '')),
+                        entry.available && !entry.verified && React.createElement('button', { type: 'button', 'data-observation-check': entry.organ.id,
+                          disabled: !!(d._incisionAnim && d._incisionAnim.active), onClick: function () { checkObservationIdentification(entry.organ.id); }
+                        }, __alloT('stem.dissection.observation_check_named', 'Check identification: {name}').replace('{name}', entry.organ.name))
                       ); })
                     )
                   )
@@ -28443,7 +29164,9 @@ var d = labToolData.dissection || {};
                         onClick: function () {
 
                           var previousOrgan = organs[selectedOrganIndex - 1];
-                          if (previousOrgan) chooseOrganFromDirectory(previousOrgan, true);
+                          // At the boundary this button becomes disabled. Hand
+                          // focus to the record instead of dropping it to body.
+                          if (previousOrgan) chooseOrganFromDirectory(previousOrgan, selectedOrganIndex > 1);
 
                         },
 
@@ -28456,7 +29179,7 @@ var d = labToolData.dissection || {};
                         onClick: function () {
 
                           var nextOrgan = organs[selectedOrganIndex + 1];
-                          if (nextOrgan) chooseOrganFromDirectory(nextOrgan, true);
+                          if (nextOrgan) chooseOrganFromDirectory(nextOrgan, selectedOrganIndex < organs.length - 2);
 
                         },
 
@@ -28951,6 +29674,7 @@ var d = labToolData.dissection || {};
                   ),
 
                   React.createElement("p", { id: assessmentPromptId, className: "text-xs text-amber-700 mb-2" }, quizPrompt),
+                  d.quizReviewMode && !d.practicalMode && React.createElement("p", { className: "text-xs text-amber-800 mb-2", "data-review-progress-help": true }, 'Correct answers leave the review queue immediately. Showing an answer keeps it queued. You can leave this set and return to the remaining structures later.'),
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": __alloT('stem.dissection.a11y_answer_method', 'Answer method') },
                     React.createElement("button", { type: "button", "aria-pressed": effectiveQuizAnswerMode === 'choices', onClick: function () { upd('quizAnswerMode', 'choices'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'choices' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, d.practicalMode ? 'Accessible choices' : 'Multiple choice'),
                     React.createElement("button", { type: "button", disabled: !hotspotQuizAvailable, title: hotspotQuizAvailable ? 'Answer directly on the visible specimen' : 'The current question is not visible on the specimen; use multiple choice', "aria-pressed": effectiveQuizAnswerMode === 'hotspot', onClick: function () { upd('quizAnswerMode', 'hotspot'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'hotspot' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, hotspotQuizAvailable ? 'Select on specimen' : 'Specimen answer unavailable')
@@ -29008,10 +29732,14 @@ var d = labToolData.dissection || {};
 
                     onClick: function () {
                       var sessionFinished = !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit;
-                      var completedReviewIds = d.quizReviewMode ? orderedQuizPool.slice(0, quizSessionLimit).map(function (organ) { return organ.id; }) : [];
+                      var completedReviewIds = d.quizReviewMode ? orderedQuizPool.slice(0, quizSessionLimit).map(function (organ) { return organ.id; }).filter(function (id) { return resolvedReviewIds.indexOf(id) >= 0; }) : [];
                       var remainingReviewIds = d.quizReviewMode ? quizReviewIds.filter(function (id) { return completedReviewIds.indexOf(id) < 0; }) : quizReviewIds;
                       preserveAssessmentFocus('diss-quiz-panel', sessionFinished ? 'diss-assessment-summary' : 'diss-quiz-panel');
-                      if (sessionFinished) updMany({ quizComplete: true, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null, quizReviewQueue: remainingReviewIds, assessmentCompletedAt: d.quizReviewMode ? (Number(d.assessmentCompletedAt) || 0) : Date.now(), assessmentRecordedScore: d.quizReviewMode ? assessmentRecordedScore : assessmentFirstAttemptScore, assessmentRecordedTotal: d.quizReviewMode ? assessmentRecordedTotal : assessmentFirstAttemptTotal });
+                      if (sessionFinished) updMany({ quizComplete: true, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null, quizReviewQueue: remainingReviewIds,
+                        assessmentCompletedAt: d.quizReviewMode ? (Number(d.assessmentCompletedAt) || 0) : Date.now(),
+                        assessmentRecordedScore: d.quizReviewMode ? assessmentRecordedScore : assessmentFirstAttemptScore,
+                        assessmentRecordedTotal: d.quizReviewMode ? assessmentRecordedTotal : assessmentFirstAttemptTotal,
+                        assessmentRecordedSupportedCount: d.quizReviewMode ? assessmentRecordedSupportedCount : (Number(d.quizSupportedCount) || 0) });
                       else updMany({ quizIdx: (d.quizIdx || 0) + 1, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null });
                     },
 
@@ -29031,7 +29759,11 @@ var d = labToolData.dissection || {};
                 d.quizMode && !d.practicalMode && d.quizComplete && React.createElement("section", { id: "diss-assessment-summary", tabIndex: -1, className: "rounded-xl border border-emerald-300 bg-gradient-to-br from-emerald-50 to-cyan-50 p-4", "data-dissection-assessment-summary": true, "aria-labelledby": "diss-assessment-summary-title" },
                   React.createElement("h3", { id: "diss-assessment-summary-title", className: "text-sm font-black text-emerald-900" }, d.quizReviewMode ? (quizReviewIds.length ? 'Supported review set complete' : 'Supported review complete') : 'Assessment complete'),
                   React.createElement("p", { className: "mt-1 text-xs font-bold text-emerald-800" }, 'First-attempt evidence: ' + (d.quizReviewMode ? assessmentRecordedScore : assessmentFirstAttemptScore) + '/' + (d.quizReviewMode ? assessmentRecordedTotal : assessmentFirstAttemptTotal) + ' · ' + assessmentAccuracyPct + '% accuracy'),
-                  React.createElement("p", { className: "mt-1 text-xs text-slate-700" }, (Number(d.quizSupportedCount) || 0) + ' question' + ((Number(d.quizSupportedCount) || 0) === 1 ? '' : 's') + ' completed with retry or answer support. Supported practice is reported separately from first-attempt mastery.'),
+                  React.createElement("p", { className: "mt-1 text-xs text-slate-700", "data-assessment-support-summary": true }, assessmentSummarySupportedCount === null
+                    ? 'Support use for the completed assessment was not recorded. Supported review does not change its first-attempt result.'
+                    : assessmentSummarySupportedCount + ' question' + (assessmentSummarySupportedCount === 1 ? '' : 's') + ' completed with retry or answer support. Supported practice is reported separately from first-attempt mastery.'),
+                  d.quizReviewMode && React.createElement("p", { className: "mt-2 text-xs text-slate-700", 'data-review-resolution-summary': true },
+                    'Correctly answered in this review set: ' + (Number(d.quizScore) || 0) + '/' + (Number(d.quizTotal) || 0) + '. Items completed only by showing the answer remain in review for another attempt.'),
                   quizReviewIds.length
                     ? React.createElement("p", { className: "mt-2 text-xs text-amber-900" }, 'Review next: ' + quizReviewIds.map(function (id) { var organ = specimenQuizPool.find(function (candidate) { return candidate.id === id; }); return organ ? organ.name : id; }).join(', ') + '.')
                     : React.createElement("p", { className: "mt-2 text-xs text-emerald-800" }, 'No missed structures are waiting for supported review.'),
@@ -29204,7 +29936,7 @@ var d = labToolData.dissection || {};
 
                         cert += 'Layers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
 
-                        cert += 'Completed first-attempt assessment: ' + assessmentRecordedScore + '/' + assessmentRecordedTotal + '; supported practice: ' + (Number(d.quizSupportedCount) || 0) + '\n';
+                        cert += 'Completed first-attempt assessment: ' + assessmentRecordedScore + '/' + assessmentRecordedTotal + '; supported practice: ' + assessmentRecordedSupportLabel + '\n';
 
                         cert += 'Date' + ': ' + new Date().toLocaleDateString() + '\n';
 
@@ -29323,7 +30055,12 @@ var d = labToolData.dissection || {};
                           React.createElement("span", { style: { width: objectiveModel.progress + '%' } })
                         ),
                         React.createElement("p", null, objectiveModel.observedCount + '/' + objectiveModel.targetCount + ' ' + objectiveTargetNoun + ' observed · ' + objectiveModel.recordedCount + '/' + objectiveModel.targetCount + ' ' + objectiveRecordNoun + ' · ' + objectiveModel.understoodCount + '/' + objectiveModel.targetCount + ' ' + objectiveTargetNoun + ' verified for understanding.'),
-                        React.createElement("p", { className: "diss-objective-item__next" }, objectiveModel.nextEvidence)
+                        React.createElement("p", { id: 'diss-objective-next-' + oi, className: "diss-objective-item__next" }, objectiveModel.nextEvidence),
+                        objectiveModel.nextTask && React.createElement("button", { type: 'button', className: 'diss-objective-item__action',
+                          'data-objective-action': oi, 'data-objective-phase': objectiveModel.nextTask.available ? objectiveModel.nextTask.phase : 'prepare',
+                          'aria-describedby': 'diss-objective-next-' + oi,
+                          disabled: !!(d.quizMode || d.practicalMode || (d._incisionAnim && d._incisionAnim.active)),
+                          onClick: function () { continueObjectiveEvidence(oi); } }, objectiveModel.nextTask.label)
                       );
 
                     })

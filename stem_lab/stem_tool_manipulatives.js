@@ -69,6 +69,14 @@ window.StemLab = window.StemLab || {
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
     document.head.appendChild(st);
   })();
+  // WCAG 1.4.3 high contrast: the forced green button ink sits on the -700 gradients at 3.7-4:1
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-manipulatives-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-manipulatives-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"base10\"] button:is([class*=\"bg-gradient-to-\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
+    document.head.appendChild(st);
+  })();
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -1446,6 +1454,8 @@ window.StemLab = window.StemLab || {
             teacher:       { accent: '#0f172a', soft: 'rgba(15,23,42,0.10)',   icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', title: __alloT('stem.manipulatives.teacher_dashboard_progress_planning', 'Teacher Dashboard \u2014 progress + planning'),          hint: __alloT('stem.manipulatives.per_student_progress_badges_earned_mod', 'Per-student progress (badges earned, modes visited, streak best, problems solved). Quick lesson-plan templates aligned to CCSS. Export progress as CSV/JSON.') }
           };
           var meta = MODE_META[manipMode] || MODE_META.blocks;
+          // the band is a light tint in every theme; mid accents read 2.5-4:1 as title ink, so the title takes a -700/-800 step
+          var ACCENT_INK = { '#a855f7': '#7e22ce', '#dc2626': '#b91c1c', '#0891b2': '#155e75', '#d97706': '#92400e', '#f97316': '#9a3412', '#16a34a': '#166534', '#0ea5e9': '#0369a1', '#ea580c': '#9a3412', '#0d9488': '#115e59', '#f59e0b': '#92400e', '#06b6d4': '#155e75', '#ec4899': '#be185d', '#84cc16': '#3f6212', '#22c55e': '#166534', '#f43f5e': '#be123c', '#64748b': '#475569' };
           return h('div', {
             style: {
               margin: '8px 0 0',
@@ -1459,10 +1469,10 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('h3', { style: { color: ACCENT_INK[meta.accent] || meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('details', { className: 'math-learning-note' },
                 h('summary', null, __alloT('stem.manipulatives.about_model', 'About this activity')),
-                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
+                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
             )
           );
         })()

@@ -5979,6 +5979,166 @@
     });
   }
 
+  // Polycarpa aurata: a solitary, attached tunicate. Its two orange siphons
+  // are hollow collars with recessed throats, not painted dots on a sponge.
+  // Body colours follow the white/purple/orange example illustrated by the
+  // University of Hawaii's Exploring Our Fluid Earth (Phylum Chordata).
+  function buildGoldmouthSeaSquirt(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(433), scale = .96 + .08 * rng(), phase = rng() * TAU;
+    var body = new Geo(), mouths = new Geo(), cream = hex(0xf0e3ce), purple = hex(0x69367b), lavender = hex(0xa17bba), orange = hex(0xf29a20), ink = hex(0x392315);
+    var rows = [[0,.014],[.008,.025],[.025,.034],[.049,.038],[.071,.034],[.090,.025],[.100,.017]], n = high ? 48 : 18, stacks=high?36:12;
+    function pigment(x,y,z) {
+      var cloud = noise3(x*84+phase,y*78,z*91), fine = noise3(x*237,y*201+phase,z*249), color = mixc(cream,lavender,smooth(.44,.66,cloud)*.46,[0,0,0]);
+      mixc(color,purple,smooth(.55,.70,cloud)*.91,color); mixc(color,orange,smooth(.65,.82,fine)*.44,color);
+      mulc(color,.89+.14*noise3(x*905,y*901,z*891)); return color;
+    }
+    function section(t){var at=t*(rows.length-1),i=Math.min(rows.length-2,Math.floor(at)),f=at-i,lo=rows[Math.max(0,i-1)],b=rows[i],d=rows[i+1],hi=rows[Math.min(rows.length-1,i+2)];return[catmull(lo[0],b[0],d[0],hi[0],f),catmull(lo[1],b[1],d[1],hi[1],f)];}
+    for (var row=0;row<=stacks;row++) for (var j=0;j<=n;j++) {
+      var a=j/n*TAU,sectionAt=section(row/stacks),y=sectionAt[0],r=sectionAt[1],lump=1+.055*Math.sin(a*3+y*39+phase)+.026*Math.sin(a*7-y*48)+.014*Math.sin(a*17+y*131+phase),cx=-.008*smooth(.04,.10,y);
+      var x=cx+Math.cos(a)*r*lump,z=Math.sin(a)*r*.81*lump;
+      body.v(x*scale,y*scale,z*scale,[1,1,1],j/n,row/stacks);
+      if(row&&j){var p=(row-1)*(n+1)+j-1,q=p+n+1;body.i.push(p,q,p+1,p+1,q,q+1);}
+    }
+    var bodyGeo=kit.geo(body,1);
+    var skin=kit.baked(c.key('tunicate-mottled-skin'),high?512:256,high?512:128,function(u,v,out){var a=u*TAU,s=section(v),x=-.008*smooth(.04,.10,s[0])+Math.cos(a)*s[1],z=Math.sin(a)*s[1]*.81;setc(out,pigment(x,s[0],z));},false,false);
+    var relief=kit.baked(c.key('tunicate-leathery-tunic'),high?256:128,high?256:128,function(u,v,out){var crease=Math.sin(u*TAU*26+noise2(u*31,v*17)*3+v*11);out[0]=out[1]=out[2]=.43+.12*noise2(u*203+phase,v*221)+.16*noise2(u*61,v*73)+.12*Math.pow(Math.max(0,crease),6);},true,false,true);
+    kit.mesh(bodyGeo,kit.std({vertexColors:true,map:skin,bumpMap:relief,bumpScale:.00075*scale,roughness:.83,side:T.DoubleSide}),'tunic',c.root);
+    var openings=[];
+    function siphon(name,center,axis,radius,height) {
+      var start=mouths.count(),up=new T.Vector3().fromArray(axis).normalize(),e=new T.Vector3(0,0,1),u=new T.Vector3().crossVectors(e,up).normalize();e.crossVectors(up,u).normalize();
+      // Outside wall, thick rounded golden lip, then an inward-facing throat.
+      var rings=high?[[0,1.16],[height*.28,1.10],[height*.58,1.04],[height*.87,1.02],[height,.98],[height+.0014,.91],[height+.001,.83],[height-.002,.72],[height-.009,.64],[height-.013,.62],[height-.016,0]]:[[0,1.16],[height*.66,1.02],[height,.98],[height+.001,.83],[height-.002,.72],[height-.013,.62],[height-.016,0]];
+      var segments=high?40:16;
+      for(var k=0;k<rings.length;k++)for(var s=0;s<=segments;s++){
+        var a=s/segments*TAU,ri=rings[k][1]*radius*(1+.070*Math.cos(a*4+phase)+.020*Math.sin(a*9+phase)),axial=rings[k][0];
+        axial+=.0013*Math.sin(a*4+.4+phase)*smooth(0,height,axial);
+        var inside=k>=(high?7:4),deep=k>=(high?8:5),outer=smooth(0,height,axial),skinColor=pigment(center[0]+u.x*ri*Math.cos(a),center[1]+up.y*axial,center[2]+e.z*ri*Math.sin(a));
+        var color=lin(mixc(skinColor,orange,inside?1:.1+.9*outer,[0,0,0]));
+        if(inside)color=lin(mixc(orange,ink,deep?.80:.25,[0,0,0]));
+        mouths.v((center[0]+up.x*axial+u.x*Math.cos(a)*ri+e.x*Math.sin(a)*ri)*scale,(center[1]+up.y*axial+u.y*Math.cos(a)*ri+e.y*Math.sin(a)*ri)*scale,(center[2]+up.z*axial+u.z*Math.cos(a)*ri+e.z*Math.sin(a)*ri)*scale,color,s/segments,k/6);
+        if(k&&s){var p=start+(k-1)*(segments+1)+s-1,q=p+segments+1;mouths.i.push(p,q,p+1,p+1,q,q+1);}
+      }
+      openings.push({name:name,first:start,count:mouths.count()-start,center:center.map(function(v){return v*scale;}),axis:up.toArray(),lipHeight:(height+.001)*scale,throatDepth:.017*scale,openingRadius:radius*.72*scale});
+    }
+    siphon('oral',[-.008,.096,0],[.04,.995,-.08],.016,.020);
+    siphon('atrial',[.021,.074,.007],[.81,.53,.24],.013,.023);
+    var mouthGeo=kit.geo(mouths,1); mouthGeo.userData.goldmouthSeaSquirt={siphons:openings,nominalHeightM:.12,appearance:'white-purple-orange-example',solitary:true};
+    kit.mesh(mouthGeo,kit.std({vertexColors:true,bumpMap:relief,bumpScale:.00030*scale,roughness:.74,side:T.DoubleSide}),'siphons',c.root);
+    mouthGeo.computeBoundingSphere();mouthGeo.boundingSphere.radius+=.001;
+    deform(c,mouthGeo,function(base,out,t){
+      openings.forEach(function(s,i){var pulse=.018*(Math.sin(t*.67+phase+i*.8)-Math.sin(phase+i*.8));for(var k=s.first;k<s.first+s.count;k++){
+        var p=k*3,x=base[p]-s.center[0],y=base[p+1]-s.center[1],z=base[p+2]-s.center[2],dot=x*s.axis[0]+y*s.axis[1]+z*s.axis[2],weight=smooth(0,s.lipHeight,dot);
+        out[p]=base[p]+(x-dot*s.axis[0])*pulse*weight;out[p+1]=base[p+1]+(y-dot*s.axis[1])*pulse*weight;out[p+2]=base[p+2]+(z-dot*s.axis[2])*pulse*weight;
+      }});
+    },true);
+  }
+
+  // Sabellastarte spectabilis: two inrolled, almost circular radiolar lobes,
+  // each radiole carrying paired fine pinnules (Tovar-Hernandez et al. 2020,
+  // Fig. 21). This is not Spirobranchus's conical spiral. Colour is illustrative.
+  function buildFeatherDusterWorm(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(439),scale=.96+.08*rng(),phase=rng()*TAU,tube=new Geo(),crown=new Geo();
+    var cream=hex(0xf1d8ae),brown=hex(0x4b2c34),violet=hex(0x71466b),tubeBase=hex(0x95826a),tubeDark=hex(0x4b4033),rad=.007,top=.044,n=high?24:12;
+    var profiles=[[0,1.24],[.014,1.06],[.031,1.03],[top,1.12],[top+.002,.86],[top-.007,.70],[top-.010,0]];
+    for(var row=0;row<profiles.length;row++)for(var j=0;j<=n;j++){
+      var a=j/n*TAU,y=profiles[row][0],r=profiles[row][1]*rad*(1+.055*Math.sin(a*5+phase)+.04*Math.sin(a*9-y*230));
+      var color=lin(mixc(tubeBase,tubeDark,row>4?.88:.15+.27*noise2(j*.71,row*1.3+phase),[0,0,0]));
+      tube.v(Math.cos(a)*r*scale,y*scale,Math.sin(a)*r*scale,color,j/n,y/top);
+      if(row&&j){var p=(row-1)*(n+1)+j-1,q=p+n+1;tube.i.push(p,q,p+1,p+1,q,q+1);}
+    }
+    // The tube's brown pigment is already in its vertices. Keep the sand map
+    // close to neutral so underwater absorption does not turn it into black.
+    var grain=kit.baked(c.key('worm-tube-sand-v2'),high?128:64,high?256:128,function(u,v,out){var n=noise2(u*211+phase,v*307);out[0]=out[1]=out[2]=.87+.13*n;},true,false);
+    var tubeRelief=kit.baked(c.key('worm-tube-fibres'),high?128:64,high?256:128,function(u,v,out){out[0]=out[1]=out[2]=.32+.30*noise2(u*211+phase,v*307)+.12*Math.sin(v*257+noise2(u*17,v*21));},true,false,true);
+    kit.mesh(kit.geo(tube,1),kit.std({vertexColors:true,map:grain,bumpMap:tubeRelief,bumpScale:.00038*scale,roughness:.94,side:T.DoubleSide}),'tube',c.root);
+    // High detail resolves individual curved pinnules. Low detail preserves
+    // the same full paired crown with bowed feather vanes and coverage-safe
+    // cutouts, using the sea fan's existing alpha-tested material family.
+    var lobes=[],radioles=[],perLobe=24,steps=high?7:4,pinnules=40,vaneSegments=8;
+    function featherColor(t,offset){var stripe=smooth(-.12,.12,Math.sin(t*TAU*3.6+offset)),color=mixc(cream,brown,stripe*.94,[0,0,0]);mixc(color,violet,stripe*.16,color);return lin(color);}
+    var featherMap=null;
+    if(!high){
+      var featherKey=c.key('worm-feather-vane-v1'),tw=128,th=512;
+      featherMap=kit.share(featherKey+'|coverage',function(){
+        var mips=bake(featherKey+'|mips',function(){return coverageMips(tw,th,paintData(tw,th,function(u,v,out){
+          var x=Math.abs(u*2-1),stripe=smooth(-.12,.12,Math.sin(v*TAU*3.6+.16*Math.sin(phase)));
+          mixc(cream,brown,stripe*.94,out);mixc(out,violet,stripe*.16,out);
+          // Closely spaced paired pinnules remain separate near the viewer;
+          // coverage-preserving mips retain their soft feather silhouette afar.
+          var comb=Math.abs(fract(v*pinnules-.18*x*x)-.5),width=.29-.07*x;
+          var vane=(1-smooth(width-.045,width+.045,comb))*(1-smooth(.94,1,x));
+          out[3]=Math.max(1-smooth(.018,.045,x),vane);
+        }),.42);});
+        var texture=new T.DataTexture(mips[0].data,tw,th,T.RGBAFormat);
+        texture.mipmaps=mips;texture.generateMipmaps=false;texture.encoding=T.sRGBEncoding;
+        texture.magFilter=T.LinearFilter;texture.minFilter=T.LinearMipmapLinearFilter;texture.anisotropy=4;texture.needsUpdate=true;
+        return texture;
+      });
+    }
+    [-1,1].forEach(function(side){
+      var lobeStart=crown.count();
+      for(var ray=0;ray<perLobe;ray++){
+        var a=lerp(-PI*.91,PI*.91,ray/(perLobe-1)),dx=side*Math.cos(a),dz=Math.sin(a),ex=-side*Math.sin(a),ez=Math.cos(a);
+        var reach=.047+.003*Math.sin(ray*2.1+phase),lift=.055+(ray%2?-.002:.002),rootX=side*(.003+.0014*Math.cos(a)),rootY=top-.001+.0014*Math.sin(a);
+        var offset=.16*Math.sin(ray*.43+phase),points=[];
+        function point(t){var flare=Math.pow(t,.87);return[rootX+side*.021*t+dx*reach*.80*flare,rootY+lift*(1.34*t-.34*t*t)+Math.cos(a)*reach*.42*flare,dz*reach*flare];}
+        for(var k=0;k<=steps;k++)points.push(point(k/steps));
+        var first=crown.count();
+        crown.tube(points,function(t){return .00031*(1-.82*t);},3,function(t){return featherColor(t,offset);});
+        var shaftCount=crown.count()-first;
+        if(!high){
+          // The central opaque stripe also paints the real three-sided shaft,
+          // keeping shaft and feather vanes in the same mapped crown draw.
+          for(var sv=0;sv<shaftCount;sv++){crown.t[(first+sv)*2]=.5;crown.t[(first+sv)*2+1]=Math.min(1,Math.floor(sv/3)/steps);}
+          var vaneStart=crown.count();
+          for(var rowV=0;rowV<=vaneSegments;rowV++){
+            var vt=.04+.92*rowV/vaneSegments,vp=point(vt),vn=point(vt+.002),vx=vn[0]-vp[0],vy=vn[1]-vp[1],vz=vn[2]-vp[2],vl=Math.hypot(vx,vy,vz);
+            vx/=vl;vy/=vl;vz/=vl;
+            var span=.0135*Math.pow(Math.sin(PI*vt),.64)*(1-.14*Math.abs(Math.sin(a)));
+            for(var across=-1;across<=1;across++){
+              var rake=.0048*Math.abs(across),cup=.0005*(1-Math.abs(across))*Math.sin(PI*vt);
+              crown.v(vp[0]+ex*across*span+vx*rake,vp[1]+vy*rake+cup,vp[2]+ez*across*span+vz*rake,[1,1,1],(across+1)/2,vt);
+              if(rowV&&across>-1){var vq=vaneStart+rowV*3+across+1,vb=vq-3;crown.i.push(vb-1,vb,vq-1,vb,vq,vq-1);}
+            }
+          }
+        }
+        for(var pin=0;high&&pin<pinnules;pin++){
+          var t=.065+.84*pin/(pinnules-1),p=point(t),length=.0135*Math.pow(Math.sin(PI*t),.64)*(1-.14*Math.abs(Math.sin(a))),width=high?.00037:.00042;
+          var next=point(t+.002),tx=next[0]-p[0],ty=next[1]-p[1],tz=next[2]-p[2],len=Math.hypot(tx,ty,tz);tx/=len;ty/=len;tz/=len;
+          [-1,1].forEach(function(edge){
+            var at=crown.count(),color=featherColor(t,offset),tip=[p[0]+ex*edge*length+tx*.0048,p[1]+ty*.0048,p[2]+ez*edge*length+tz*.0048];
+            crown.v(p[0]-tx*width,p[1]-ty*width,p[2]-tz*width,color,0,0);
+            crown.v(p[0]+tx*width,p[1]+ty*width,p[2]+tz*width,color,1,0);
+            var mid=[p[0]+ex*edge*length*.58+tx*.0031,p[1]+ty*.0031+.0006*Math.sin(a+pin*.27),p[2]+ez*edge*length*.58+tz*.0031],w=width*.78;
+            crown.v(mid[0]-tx*w,mid[1]-ty*w,mid[2]-tz*w,color,0,.58);
+            crown.v(mid[0]+tx*w,mid[1]+ty*w,mid[2]+tz*w,color,1,.58);
+            crown.v(tip[0],tip[1],tip[2],color,.5,1);
+            crown.i.push(at,at+1,at+2,at+1,at+3,at+2,at+2,at+3,at+4);
+          });
+        }
+        radioles.push({lobe:side,first:first,count:crown.count()-first,shaftCount:shaftCount,pinnulePairs:pinnules,root:[rootX*scale,rootY*scale,0],tip:point(1).map(function(v){return v*scale;})});
+      }
+      lobes.push({side:side,first:lobeStart,count:crown.count()-lobeStart,radioles:perLobe,arcRadians:PI*1.82});
+    });
+    scaleGeo(crown,scale);
+    var crownMaterial=high?kit.std({vertexColors:true,roughness:.69,side:T.DoubleSide}):kit.std({map:featherMap,alphaTest:.42,roughness:.69,side:T.DoubleSide});
+    var geometry=kit.geo(crown,1),mesh=kit.mesh(geometry,crownMaterial,'feeding-crown',c.root),rest=new Float32Array(geometry.attributes.position.array),forced=false,lastT=0,flow={};
+    geometry.userData.featherDusterWorm={lobes:lobes,radioles:radioles,pairedPinnules:true,spiral:false,nominalCrownSpanM:.16,hiddenBody:true,operculum:false,crownRepresentation:high?'individual-pinnules':'coverage-feather-vanes'};
+    geometry.computeBoundingSphere();geometry.boundingSphere.radius+=.006*scale;
+    function pose(t,motion){
+      var out=geometry.attributes.position.array,extent=forced?.018:1,anchor=top*scale;
+      currentAt(c.root,motion,t,phase,flow);
+      for(var k=0;k<rest.length;k+=3){var rise=Math.max(0,rest[k+1]-anchor),weight=Math.pow(rise/(.074*scale),2),sway=.0014*scale*weight*(Math.sin(t*.83+phase+rest[k]*17)-Math.sin(phase+rest[k]*17));
+        out[k]=rest[k]*extent+(c.rm?0:sway*(.7+flow.x*.3))*extent;
+        out[k+1]=anchor+(rest[k+1]-anchor)*extent;
+        out[k+2]=rest[k+2]*extent+(c.rm?0:sway*(.5+flow.z*.3))*extent;
+      }
+      mesh.visible=!forced;geometry.attributes.position.needsUpdate=true;geometry.computeVertexNormals();
+    }
+    c.anim(function(t,dt,motion){lastT=t;pose(t,motion);});
+    return {retract:function(on){forced=!!on;pose(c.rm?0:lastT,null);}};
+  }
+
   // ---- Registry -----------------------------------------------------------------------------
   function I(group, habit, lengthM, depth, school, origin) { return { group: group, habit: habit, lengthM: lengthM, depthM: depth, schoolSize: school, origin: origin }; }
   var INFO = {
@@ -6059,8 +6219,12 @@
     ,white_spotted_hermit_crab: I('invertebrate', 'bottom', 0.20, [0, 50], null, 'base')
     ,longfin_bannerfish: I('fish', 'pair', 0.15, [2, 75], null, 'centre')
     ,bigfin_reef_squid: I('invertebrate', 'hover', 0.40, [0, 100], null, 'centre')
+    ,goldmouth_sea_squirt: I('invertebrate', 'sessile', 0.12, [3, 20], null, 'base')
+    ,feather_duster_worm: I('invertebrate', 'sessile', 0.16, [3, 16], null, 'base')
   };
   var BUILDERS = {
+    goldmouth_sea_squirt: buildGoldmouthSeaSquirt,
+    feather_duster_worm: buildFeatherDusterWorm,
     longfin_bannerfish: buildLongfinBannerfish,
     bigfin_reef_squid: buildBigfinReefSquid,
     banded_sea_krait: buildBandedSeaKrait,
@@ -6127,6 +6291,8 @@
   // and look-at height (lookY) in model radii, for a 360 x 240 picture.
   function V(x, y, z, lookY) { return { dir: [x, y, z], lookY: lookY }; }
   var PORTRAIT = {
+    goldmouth_sea_squirt: V(2.0, 1.4, 2.7, 0.65),
+    feather_duster_worm: V(0.65, 1.4, 2.7, 0.65),
     longfin_bannerfish: V(0.25, 0.30, 2.7, 0.24),
     bigfin_reef_squid: V(1.2, 1.4, 2.7, 0),
     banded_sea_krait: V(0.45, 0.8, 2.7, 0),

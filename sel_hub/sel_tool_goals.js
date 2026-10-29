@@ -2015,9 +2015,9 @@ window.SelHub = window.SelHub || {
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: 'linear-gradient(135deg, #312e81, #4338ca)', borderBottom: '1px solid rgba(99,102,241,0.3)' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-              h('button', { 'aria-label': 'Back', onClick: function() { ctx.setSelHubTool && ctx.setSelHubTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '6px 12px', color: _goaFg('#c7d2fe'), cursor: 'pointer', fontSize: 12, fontWeight: 'bold' } }, '\u2190 Back'),
+              h('button', { 'aria-label': 'Back', onClick: function() { ctx.setSelHubTool && ctx.setSelHubTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '6px 12px', color: _goaFg('#e2e8f0'), cursor: 'pointer', fontSize: 12, fontWeight: 'bold' } }, '\u2190 Back'),
               h('div', { style: { fontWeight: 'bold', fontSize: 16, color: _goaFg('#c7d2fe') } }, '\uD83D\uDCCB Goal Setter'),
-              streak > 0 ? h('span', { style: { background: 'rgba(245,158,11,0.2)', color: _goaFg('#fbbf24'), padding: '2px 10px', borderRadius: 12, fontSize: 10, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\uD83D\uDD25 ' + streak + '-day streak') : null
+              streak > 0 ? h('span', { style: { background: 'rgba(245,158,11,0.2)', color: _goaFg('#fde68a'), padding: '2px 10px', borderRadius: 12, fontSize: 10, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\uD83D\uDD25 ' + streak + '-day streak') : null
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('span', { style: { background: 'rgba(99,102,241,0.2)', color: _goaFg('#c7d2fe'), padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold' } }, '\uD83C\uDFAF ' + activeGoals.length + ' active'),

@@ -4304,7 +4304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     'aria-label': units === 'C' ? __alloT('stem.kitchenlab.a11y_units_showing_c', 'Temperatures in Celsius. Switch to Fahrenheit') : __alloT('stem.kitchenlab.a11y_units_showing_f', 'Temperatures in Fahrenheit. Switch to Celsius'),
                     style: { marginLeft: 'auto', padding: '4px 10px', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', color: '#fde68a',
                       background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,146,60,0.4)', borderRadius: 9999, cursor: 'pointer', minHeight: 28 } },
-                  h('span', { style: { opacity: units === 'F' ? 1 : 0.45 } }, '°F'), h('span', { 'aria-hidden': 'true', style: { opacity: 0.5, margin: '0 4px' } }, '/'), h('span', { style: { opacity: units === 'C' ? 1 : 0.45 } }, '°C'))),
+                  h('span', { style: { opacity: units === 'F' ? 1 : 0.6 } }, '°F'), h('span', { 'aria-hidden': 'true', style: { opacity: 0.5, margin: '0 4px' } }, '/'), h('span', { style: { opacity: units === 'C' ? 1 : 0.6 } }, '°C'))),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
                 __alloT('stem.kitchenlab.cooking_life_skills_culinary_science_f', 'Cooking life skills + culinary science. Food safety, knife technique, heat methods, Maillard chemistry, recipes, glossary. Built for life skills classrooms + family + consumer science.')))));
       }
@@ -6129,10 +6129,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                         style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px',
                           background: a.unlocked ? 'rgba(15,23,42,0.7)' : 'rgba(15,23,42,0.4)',
                           border: '1px solid ' + (a.unlocked ? color + '60' : 'rgba(100,116,139,0.2)'),
-                          borderRadius: 6, opacity: a.unlocked ? 1 : 0.45 } },
+                          borderRadius: 6, opacity: a.unlocked ? 1 : 0.75 } },
                         h('div', { 'aria-hidden': 'true', style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, a.unlocked ? a.icon : '🔒'),
                         h('div', { style: { flex: 1, minWidth: 0 } },
-                          h('div', { style: { fontSize: 11, fontWeight: 700, color: a.unlocked ? '#fde68a' : '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, a.name)));
+                          h('div', { style: { fontSize: 11, fontWeight: 700, color: a.unlocked ? '#fde68a' : '#cbd5e1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, a.name)));
                     })));
               }));
           })(),

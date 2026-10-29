@@ -24,6 +24,15 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
+  // WCAG 1.4.3 high contrast: host buttons go black with green ink; drop the gradient painted over that black
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-circuitshelf-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-circuitshelf-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"circuitShelf\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+    document.head.appendChild(st);
+  })();
+
   var CIRCUIT_SHELF_CDN_URL = 'https://alloflow-cdn.pages.dev/circuit_shelf/circuit_shelf.html?v=1';
   function companionUrl(path, cdnUrl) {
     try {

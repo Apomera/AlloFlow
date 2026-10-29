@@ -17,6 +17,15 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var t = this._registry[id]; if (!t||!t.render) return null; try{return t.render(ctx);}catch(e){console.error('[StemLab] Error rendering '+id,e);return null;} }
 };
 
+// WCAG 1.4.3 high contrast: pale violet gradient cards go black
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-logiclab-hc-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-logiclab-hc-css';
+  st.textContent = ".theme-contrast [data-stem-tool-shell=\"logicLab\"] [style*=\"gradient(\"][style*=\"rgb(245, 243, 255)\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
+  document.head.appendChild(st);
+})();
+
 // STEM_GRADING_CORE_BEGIN v1 (copied verbatim into each tool that grades; tests/stem_grading_core.test.js keeps the copies identical)
 (function () {
   var MINUS = String.fromCharCode(0x2212);
@@ -896,7 +905,7 @@ window.StemLab = window.StemLab || {
 
           // ── gradient map ──
 
-          var _gViolet = 'linear-gradient(135deg, #7c3aed, #8b5cf6, #a78bfa)';
+          var _gViolet = 'linear-gradient(135deg, #5b21b6, #6d28d9, #7c3aed)';
 
           var _gCard = 'linear-gradient(135deg, #f5f3ff, #ede9fe, #f5f3ff)';
 
@@ -963,7 +972,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "lg:col-span-3 p-5 sm:p-6" },
                   React.createElement("div", { className: "flex flex-wrap items-start gap-3 justify-between" },
                     React.createElement("div", null,
-                      React.createElement("p", { className: "text-xs font-black uppercase tracking-wide text-violet-500" }, t('stem.logiclab.current_workspace', 'Current workspace')),
+                      React.createElement("p", { className: "text-xs font-black uppercase tracking-wide text-violet-700" }, t('stem.logiclab.current_workspace', 'Current workspace')),
                       React.createElement("h3", { className: "mt-1 text-xl sm:text-2xl font-black text-slate-950" }, t('stem.logiclab.reasoning_studio_title', 'Reasoning Studio')),
                       React.createElement("p", { className: "mt-2 max-w-xl text-sm leading-relaxed text-slate-700" }, t('stem.logiclab.reasoning_studio_hint', 'Move between truth tables, proof steps, logic gates, and probability without losing the thread of the argument.'))
                     ),
@@ -1077,7 +1086,7 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("h2", { className: "text-2xl font-black text-white tracking-tight" }, t('stem.logiclab.logic_lab', "Logic Lab")),
 
-                React.createElement("span", { className: "text-violet-200 text-sm font-bold ml-2" }, t('stem.logiclab.propositional_logic_reasoning', "Propositional Logic & Reasoning"))
+                React.createElement("span", { className: "text-violet-100 text-sm font-bold ml-2" }, t('stem.logiclab.propositional_logic_reasoning', "Propositional Logic & Reasoning"))
 
               ),
 
@@ -1113,10 +1122,10 @@ window.StemLab = window.StemLab || {
             (function() {
               var MODE_META = {
                 truth:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCCA', title: t('stem.logiclab.truth_tables_every_input_combination_e', 'Truth Tables \u2014 every input combination, every output'), hint: t('stem.logiclab.for_n_variables_the_table_has_2_rows_a', 'For n variables, the table has 2\u207F rows. AND, OR, NOT, XOR, IFF \u2014 each gate is just a column. Boolean algebra (Boole 1854) underlies every digital circuit, every search query, every conditional in code.') },
-                proof:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: t('stem.logiclab.proof_builder_derive_conclusions_step_', 'Proof Builder \u2014 derive conclusions step by step'),     hint: t('stem.logiclab.modus_ponens_modus_tollens_hypothetica', 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.') },
-                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: t('stem.logiclab.challenges_graded_tautology_contradict', 'Challenges \u2014 graded tautology + contradiction puzzles'), hint: t('stem.logiclab.tautology_always_true_contradiction_al', 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.') },
-                gates:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: t('stem.logiclab.logic_gates_transistors_all_the_way_do', 'Logic Gates \u2014 transistors all the way down'),         hint: t('stem.logiclab.nand_is_functionally_complete_you_can_', 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.') },
-                simLogic:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFB2', title: t('stem.logiclab.probability_logic_inference_under_unce', 'Probability Logic \u2014 inference under uncertainty'), hint: t('stem.logiclab.p_and_q_each_carry_a_probability_inste', 'P and Q each carry a probability instead of a hard true/false. For independent events, P(P\u2227Q) = P(P) \u00D7 P(Q). Watch how a confidence threshold turns soft probabilities into discrete inferences.') }
+                proof:      { accent: '#0e7490', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: t('stem.logiclab.proof_builder_derive_conclusions_step_', 'Proof Builder \u2014 derive conclusions step by step'),     hint: t('stem.logiclab.modus_ponens_modus_tollens_hypothetica', 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.') },
+                challenges: { accent: '#b45309', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: t('stem.logiclab.challenges_graded_tautology_contradict', 'Challenges \u2014 graded tautology + contradiction puzzles'), hint: t('stem.logiclab.tautology_always_true_contradiction_al', 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.') },
+                gates:      { accent: '#15803d', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: t('stem.logiclab.logic_gates_transistors_all_the_way_do', 'Logic Gates \u2014 transistors all the way down'),         hint: t('stem.logiclab.nand_is_functionally_complete_you_can_', 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.') },
+                simLogic:   { accent: '#be185d', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFB2', title: t('stem.logiclab.probability_logic_inference_under_unce', 'Probability Logic \u2014 inference under uncertainty'), hint: t('stem.logiclab.p_and_q_each_carry_a_probability_inste', 'P and Q each carry a probability instead of a hard true/false. For independent events, P(P\u2227Q) = P(P) \u00D7 P(Q). Watch how a confidence threshold turns soft probabilities into discrete inferences.') }
               };
               var meta = MODE_META[mode] || MODE_META.truth;
               return React.createElement('div', {
@@ -1133,7 +1142,7 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -1150,12 +1159,12 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-3" },
                   React.createElement("span", { style: { fontSize: '18px' } }, "\uD83E\uDDE9"),
                   React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, t('stem.logiclab.expression_builder', 'Expression builder')),
-                  React.createElement("span", { className: "text-xs text-violet-400 font-bold ml-auto" }, t('stem.logiclab.drag_tiles_or_click_to_add', "Drag tiles or click to add"))
+                  React.createElement("span", { className: "text-xs text-violet-700 font-bold ml-auto" }, t('stem.logiclab.drag_tiles_or_click_to_add', "Drag tiles or click to add"))
                 ),
 
                 // Symbol palette
                 React.createElement("div", { className: "mb-3 space-y-2" },
-                  React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, t('stem.logiclab.variables', "Variables")),
+                  React.createElement("div", { className: "text-xs font-black text-violet-700 uppercase tracking-wider" }, t('stem.logiclab.variables', "Variables")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['P','Q','R','S'].map(function(v) {
                       return React.createElement("button", { type: "button",
@@ -1168,7 +1177,7 @@ window.StemLab = window.StemLab || {
                       }, v);
                     })
                   ),
-                  React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, t('stem.logiclab.connectives', "Connectives")),
+                  React.createElement("div", { className: "text-xs font-black text-violet-700 uppercase tracking-wider" }, t('stem.logiclab.connectives', "Connectives")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['\u2227','\u2228','\u00AC','\u2192','\u2194','\u2295'].map(function(sym) {
                       return React.createElement("button", { type: "button",
@@ -1279,7 +1288,7 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("div", { className: "flex flex-wrap gap-1.5" },
 
-                  React.createElement("span", { className: "text-xs font-bold text-violet-500 mr-1 self-center" }, "Presets:"),
+                  React.createElement("span", { className: "text-xs font-bold text-violet-700 mr-1 self-center" }, "Presets:"),
 
                   PRESETS.map(function(p) {
 
@@ -1538,7 +1547,7 @@ window.StemLab = window.StemLab || {
 
                   }, t('stem.logiclab.ai_generate_proof_challenge_2', "\uD83E\uDD16 AI-Generate Proof Challenge")),
 
-                  aiLoading && React.createElement("span", { className: "text-xs text-violet-500 font-bold" }, "Generating..."),
+                  aiLoading && React.createElement("span", { className: "text-xs text-violet-700 font-bold" }, "Generating..."),
 
                   aiProof && React.createElement("button", { "aria-label": t('stem.logiclab.clear_ai', "Clear AI"),
 
@@ -1644,7 +1653,7 @@ window.StemLab = window.StemLab || {
 
                       },
 
-                        React.createElement("span", { className: "text-xs font-black text-violet-400 w-6" }, (si + 1) + "."),
+                        React.createElement("span", { className: "text-xs font-black text-violet-700 w-6" }, (si + 1) + "."),
 
                         React.createElement("code", { className: "font-mono font-bold text-violet-800 flex-1" }, step.result),
 
@@ -1891,7 +1900,7 @@ window.StemLab = window.StemLab || {
 
                 }),
 
-                userTopic && React.createElement("span", { className: "text-[0.6875rem] font-bold text-violet-500" }, t('stem.logiclab.ai_will_personalize', "AI will personalize \u2728"))
+                userTopic && React.createElement("span", { className: "text-[0.6875rem] font-bold text-violet-700" }, t('stem.logiclab.ai_will_personalize', "AI will personalize \u2728"))
 
               ),
 
@@ -1921,7 +1930,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.is_this_argument_valid', "Is this argument valid?")),
 
-                    React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-400" }, (challengeIdx + 1) + " / " + FALLACIES.length)
+                    React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-700" }, (challengeIdx + 1) + " / " + FALLACIES.length)
 
                   ),
 
@@ -2136,7 +2145,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.fill_the_result_column', "Fill the Result Column")),
 
-                    React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-400" }, ch.desc)
+                    React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-700" }, ch.desc)
 
                   ),
 
@@ -2389,7 +2398,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "flex items-center gap-2 mb-4" },
                   React.createElement("span", { style: { fontSize: '20px' } }, "\u26A1\uFE0F"),
                   React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.logic_gate_simulator', "Logic Gate Simulator")),
-                  React.createElement("span", { className: "text-xs text-violet-400 font-bold" }, t('stem.logiclab.toggle_inputs_to_see_the_output_live', "Toggle inputs to see the output live"))
+                  React.createElement("span", { className: "text-xs text-violet-700 font-bold" }, t('stem.logiclab.toggle_inputs_to_see_the_output_live', "Toggle inputs to see the output live"))
                 ),
                 // Binary-state legend — clarifies what the 1s and 0s on the wires mean
                 React.createElement("div", { className: "flex items-center gap-3 mb-4 text-[0.6875rem] font-bold" },
@@ -2641,7 +2650,7 @@ window.StemLab = window.StemLab || {
                         className: "flex items-center gap-2 p-2 bg-white rounded-lg border border-violet-100 cursor-pointer hover:border-violet-300 hover:shadow-sm transition-all",
                         onClick: function() { upd({ expression: law[1].split(' \u2261 ')[0].trim(), mode: 'truth' }); if(addToast) addToast('Loaded in Truth Tables!','info'); }
                       },
-                        React.createElement("span", { className: "text-[0.6875rem] font-black text-violet-500 w-28 shrink-0" }, law[0]),
+                        React.createElement("span", { className: "text-[0.6875rem] font-black text-violet-700 w-28 shrink-0" }, law[0]),
                         React.createElement("code", { className: "font-mono text-xs text-violet-800 font-bold" }, law[1]),
                         React.createElement("span", { className: "ml-auto text-violet-300 text-[0.6875rem]" }, "\u2192")
                       );

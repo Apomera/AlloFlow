@@ -859,7 +859,7 @@ window.StemLab = window.StemLab || {
                 !challenge
                   ? h('button', { 'aria-label': t('stem.numberline.generate_challenge', 'Generate Challenge'),
                       onClick: genChallenge,
-                      className: 'w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
+                      className: 'w-full py-2.5 ' + (ctx.isContrast ? 'bg-black border-2 border-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-600 hover:to-indigo-600') + ' text-white font-bold rounded-xl text-sm transition-all shadow-md'
                     }, t('stem.numberline.generate_challenge_2', '\uD83C\uDFB2 Generate Challenge'))
                   : h('div', { className: 'space-y-2' },
                       h('div', { className: 'flex items-center gap-2' },
@@ -2200,6 +2200,8 @@ window.StemLab = window.StemLab || {
                 magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: t('stem.numberline.compare_magnitude_discovery', 'Compare — magnitude discovery'), hint: t('stem.numberline.two_fractions_four_possible_relationsh', 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.') }
               };
               var meta = TAB_META[tab] || TAB_META.explore;
+              // White host card in light AND dark: accent at 55% clears 4.5:1 on its tint.
+              var heroInk = 'rgb(' + [1, 3, 5].map(function(i) { return Math.round(parseInt(meta.accent.substr(i, 2), 16) * 0.55); }).join(',') + ')';
               var startInstructions = {"explore":"Set the minimum and maximum, then enter a marker value and choose Add.","challenges":"Choose a challenge, enter your answer or place a marker, then check your work.","skipcount":"Choose a starting number and a step size, then use the playback controls to follow the jumps.","fracdec":"Enter a fraction or decimal to see where it belongs on the line.","magCompare":"Change the two fractions and compare their positions. Record what you notice."};
               return h('div', { role: 'tabpanel', id: 'numberline-panel-' + tab,
                 'aria-labelledby': 'numberline-tab-' + tab, tabIndex: 0,
@@ -2215,11 +2217,11 @@ window.StemLab = window.StemLab || {
               },
                 h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 h('div', { style: { flex: 1, minWidth: 220 } },
-                  h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                   h('p', { className: 'mt-2 text-sm leading-relaxed' }, t('stem.numberline.start_' + tab, startInstructions[tab] || startInstructions.explore)),
               h('details', { className: 'math-learning-note' },
                 h('summary', null, t('stem.numberline.about_model', 'About this activity')),
-                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
+                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
                 )
               );
             })(),

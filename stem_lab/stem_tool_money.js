@@ -80,6 +80,14 @@ window.StemLab = window.StemLab || {
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
     document.head.appendChild(st);
   })();
+  // WCAG 1.4.3 high contrast: coin/bill art keeps its metal, so its face ink stays black; gradient buttons go black.
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-money-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-money-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"moneyMath\"] button[class*=\"bg-gradient-to-\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"moneyMath\"] .allo-money-art :is(span,div){color:#000!important}";
+    document.head.appendChild(st);
+  })();
 
 
   // ── Audio (auto-injected) ──
@@ -496,10 +504,10 @@ window.StemLab = window.StemLab || {
             const USD_BILL_VISUALS = {
               1:   { portrait: __alloT('stem.money.george_washington', 'Washington'), tint: '#dfe9d8', accent: '#2f6b4f' },
               5:   { portrait: __alloT('stem.money.abraham_lincoln', 'Lincoln'), tint: '#e8e0ec', accent: '#665071' },
-              10:  { portrait: __alloT('stem.money.alexander_hamilton', 'Hamilton'), tint: '#f4dfba', accent: '#b35b19' },
-              20:  { portrait: __alloT('stem.money.andrew_jackson', 'Jackson'), tint: '#e2e7d2', accent: '#557c3e' },
+              10:  { portrait: __alloT('stem.money.alexander_hamilton', 'Hamilton'), tint: '#f4dfba', accent: '#8f4a14' },
+              20:  { portrait: __alloT('stem.money.andrew_jackson', 'Jackson'), tint: '#e2e7d2', accent: '#46672f' },
               50:  { portrait: __alloT('stem.money.ulysses_grant', 'Grant'), tint: '#dce8ef', accent: '#934a56' },
-              100: { portrait: __alloT('stem.money.benjamin_franklin', 'Franklin'), tint: '#d7e9ed', accent: '#16718a' }
+              100: { portrait: __alloT('stem.money.benjamin_franklin', 'Franklin'), tint: '#d7e9ed', accent: '#12657c' }
             };
             const renderBillVisual = function (bill, compact) {
               var width = compact ? 64 : 96;
@@ -515,7 +523,7 @@ window.StemLab = window.StemLab || {
               }
               var metaBill = USD_BILL_VISUALS[bill.value];
               var numeral = String(bill.value);
-              return React.createElement('div', { 'aria-hidden': true, style: {
+              return React.createElement('div', { 'aria-hidden': true, className: 'allo-money-art', style: {
                 width: width + 'px', height: height + 'px', borderRadius: compact ? 3 : 5, position: 'relative', overflow: 'hidden',
                 background: 'linear-gradient(110deg, ' + metaBill.tint + ' 0%, #f7f8ef 48%, ' + metaBill.tint + ' 100%)',
                 border: '1.5px solid ' + metaBill.accent, boxShadow: '0 2px 6px rgba(15,23,42,0.18), inset 0 0 0 2px rgba(255,255,255,0.55)',
@@ -544,19 +552,21 @@ window.StemLab = window.StemLab || {
               var size = metaCoin ? Math.round(metaCoin.diameter * (compact ? 1.35 : 1.75)) : Math.round(coin.size * (compact ? .9 : 1.15));
               var metal = metaCoin ? metaCoin.metal : coin.color;
               var rim = metaCoin ? metaCoin.rim : 'rgba(0,0,0,.28)';
+              // Face shading stops at 20% rim so the face numeral keeps 4.5:1; the rim itself is the edge ring.
+              var faceEdge = metaCoin ? '#' + [1, 3, 5].map(function (i) { var a = parseInt(metal.substr(i, 2), 16), b = parseInt(rim.substr(i, 2), 16); return ('0' + Math.round(a * .8 + b * .2).toString(16)).slice(-2); }).join('') : rim;
               var edgeBackground = metaCoin && metaCoin.edgeType === 'reeded' ? 'repeating-conic-gradient(' + rim + ' 0deg 3deg, #eef1f2 3deg 6deg)' : 'linear-gradient(135deg, rgba(255,255,255,.65), ' + rim + ')';
-              return React.createElement('div', { 'aria-hidden': true, style: {
+              return React.createElement('div', { 'aria-hidden': true, className: 'allo-money-art', style: {
                 width: size + 'px', height: size + 'px', borderRadius: '50%', padding: compact ? 2 : 3, boxSizing: 'border-box',
                 background: edgeBackground, border: metaCoin && metaCoin.edgeType === 'lettered' ? '2px dashed ' + rim : '1px solid ' + rim,
                 boxShadow: '0 3px 7px rgba(15,23,42,.24), inset 0 1px 1px rgba(255,255,255,.65)', position: 'relative', flexShrink: 0
               } },
                 React.createElement('div', { style: { width: '100%', height: '100%', borderRadius: '50%', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'radial-gradient(circle at 30% 24%, rgba(255,255,255,.85) 0%, rgba(255,255,255,.18) 28%, transparent 30%), radial-gradient(circle at 52% 55%, ' + metal + ', ' + rim + ')',
-                  border: '1px solid rgba(255,255,255,.45)', color: metaCoin && coin.value === .01 ? '#4b2518' : '#263238', textShadow: '0 1px 0 rgba(255,255,255,.55)'
+                  background: 'radial-gradient(circle at 30% 24%, rgba(255,255,255,.85) 0%, rgba(255,255,255,.18) 28%, transparent 30%), radial-gradient(circle at 52% 55%, ' + metal + ', ' + faceEdge + ')',
+                  border: '1px solid rgba(255,255,255,.45)', boxShadow: metaCoin ? 'inset 0 -2px 4px ' + rim + '99' : undefined, color: metaCoin && coin.value === .01 ? '#140a05' : '#111b21', textShadow: '0 1px 0 rgba(255,255,255,.55)'
                 } },
                   React.createElement('div', { style: { position: 'absolute', inset: compact ? 3 : 4, borderRadius: '50%', border: '1px solid rgba(40,50,55,.32)' } }),
                   React.createElement('span', { style: { fontSize: compact ? Math.max(8, size * .27) : Math.max(10, size * .25), lineHeight: 1, fontWeight: 900, zIndex: 1 } }, metaCoin ? metaCoin.face : coin.label),
-                  !compact && React.createElement('span', { style: { position: 'absolute', left: '50%', bottom: Math.max(3, size * .10), transform: 'translateX(-50%)', fontSize: Math.max(7, size * .12), fontWeight: 900, letterSpacing: '.05em', whiteSpace: 'nowrap', opacity: .76 } }, metaCoin ? (metaCoin.edgeType === 'reeded' ? 'REEDS' : metaCoin.edgeType === 'lettered' ? 'EDGE' : 'PLAIN') : '')
+                  !compact && React.createElement('span', { style: { position: 'absolute', left: '50%', bottom: Math.max(3, size * .10), transform: 'translateX(-50%)', fontSize: Math.max(7, size * .12), fontWeight: 900, letterSpacing: '.05em', whiteSpace: 'nowrap' } }, metaCoin ? (metaCoin.edgeType === 'reeded' ? 'REEDS' : metaCoin.edgeType === 'lettered' ? 'EDGE' : 'PLAIN') : '')
                 )
               );
             };
@@ -2890,7 +2900,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-3" },
                   React.createElement("div", null,
                     React.createElement("h2", { className: "text-xl font-black flex items-center gap-2" }, __alloT('stem.money.money_math', "\uD83D\uDCB5 Money Math")),
-                    React.createElement("p", { className: "text-emerald-100 text-xs mt-1" }, __alloT('stem.money.master_coins_bills_change_budgeting_cu', "Master coins, bills, change, budgeting & currency exchange"))
+                    React.createElement("p", { className: "text-emerald-50 text-xs mt-1" }, __alloT('stem.money.master_coins_bills_change_budgeting_cu', "Master coins, bills, change, budgeting & currency exchange"))
                   ),
                   React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
                     // Challenge Mode toggle
@@ -2899,12 +2909,12 @@ window.StemLab = window.StemLab || {
                       if (placed.length) markMoneyAnswerShown(coinCountItemId);
                       if (cart.length) markMoneyAnswerShown(groceryMathItemId);
                       upd('challengeMode', !d.challengeMode); upd('coinGuess', null); upd('coinGuessFb', null); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); },
-                      className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (d.challengeMode ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-200 shadow-lg' : 'bg-white/20 text-white border border-white/30 hover:bg-white/30')
+                      className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (d.challengeMode ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-200 shadow-lg' : 'bg-black/20 text-white border border-white/30 hover:bg-black/30')
                     }, d.challengeMode ? '\uD83C\uDFAF Challenge ON' : '\uD83C\uDFAF Challenge Mode'),
                     // Grade selector
                     React.createElement("select", { value: grade, onChange: function (e) { upd('grade', e.target.value); resetExchangeContext(); upd('storeItems', null); upd('cart', []); resetGroceryCheckout(); resetCashierContext(); },
                       'aria-label': __alloT('stem.money.grade_level', 'Grade level'),
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer"
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-black/20 text-white border border-white/30 backdrop-blur-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer"
                     }, Object.entries(GRADE_CONFIG).map(function (entry) {
                       return React.createElement("option", { key: entry[0], value: entry[0], style: { color: '#1e293b' } }, entry[1].label);
                     })),
@@ -2927,7 +2937,7 @@ window.StemLab = window.StemLab || {
                       upd('storeItems', null); resetGroceryCheckout(); resetCashierContext();
                     },
                       'aria-label': __alloT('stem.money.currency', 'Currency'),
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer"
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-black/20 text-white border border-white/30 backdrop-blur-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer"
                     }, Object.keys(CURRENCIES).map(function (code) {
                       return React.createElement("option", { key: code, value: code, style: { color: '#1e293b' } }, CURRENCIES[code].flag + ' ' + code + ' (' + CURRENCIES[code].symbol + ')');
                     }))
@@ -2958,16 +2968,16 @@ window.StemLab = window.StemLab || {
               // ── Topic-accent hero band per tab ──
               (function() {
                 var TAB_META = {
-                  coins:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83E\uDE99', title: __alloT('stem.money.coins_bills_2', 'Coins & bills'),          hint: __alloT('stem.money.build_a_counting_board_coin_face_value', 'Build a counting board. Coin face values are arbitrary \u2014 a quarter is worth 25\u00a2 because we agree it is, not because of the metal.') },
-                  change:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83D\uDCB5', title: __alloT('stem.money.making_change_2', 'Making change'),          hint: __alloT('stem.money.count_up_from_the_price_to_the_amount_', 'Count UP from the price to the amount paid \u2014 the way cashiers actually do it. Faster + more accurate than subtraction by hand.') },
-                  tips:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCB3', title: __alloT('stem.money.tips_discounts_2', 'Tips & discounts'),       hint: __alloT('stem.money.15_tip_10_move_decimal_half_of_that_20', '15% tip = 10% (move decimal) + half of that. 20% off = take the price, divide by 5, subtract. Mental-math shortcuts beat the calculator for sanity-checking.') },
-                  store:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDED2', title: __alloT('stem.money.grocery_store_2', 'Grocery store'),          hint: __alloT('stem.money.unit_price_cost_per_ounce_or_item_is_t', 'Unit price (cost per ounce or item) is the only honest comparison \u2014 package sizes are designed to defeat eyeball math.') },
-                  budget:   { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDCCA', title: __alloT('stem.money.budget_2', 'Budget'),                 hint: __alloT('stem.money.50_30_20_needs_wants_save_debt_most_pe', '50/30/20: needs / wants / save+debt. Most people misclassify recurring subscriptions as needs \u2014 if it auto-renews, it is a want until you opt back in.') },
-                  cents:    { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83E\uDE99', title: __alloT('stem.money.common_cents_2', 'Common cents'),           hint: __alloT('stem.money.quick_mental_shortcuts_25_4_1_10_5_1_1', 'Quick mental shortcuts: 25\u00a2 \u00d7 4 = $1, 10\u00a2 + 5\u00a2 + 1\u00a2 = 16\u00a2. Arithmetic with money is faster than the same arithmetic with abstract numbers because the unit is concrete.') },
-                  word:     { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '\uD83D\uDCDD', title: __alloT('stem.money.word_problems_2', 'Word problems'),          hint: __alloT('stem.money.translate_the_sentence_to_an_equation_', 'Translate the sentence to an equation BEFORE computing. "How much" = an unknown variable. "Total" = sum. "Each" or "per" = multiplication.') },
-                  exchange: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83C\uDF0D', title: __alloT('stem.money.currency_exchange_2', 'Currency exchange'),      hint: __alloT('stem.money.exchangelearn_focus_hint', 'Use the classroom rates to express the same value in different units. Divide to reach USD, then multiply to reach the destination currency.') },
-                  finance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDCB0', title: __alloT('stem.money.personal_finance_2', 'Personal finance'),       hint: __alloT('stem.money.compound_interest_100_at_7_30_yrs_760_', 'Compound interest: $100 at 7% \u00d7 30 yrs = $760. Pay credit-card statement balance in full each cycle = no interest. Carry a balance = APR roughly doubles your debt every 5 yrs.') },
-                  inquiry:  { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.money.compound_interest_inquiry', 'Compound Interest Inquiry'), hint: __alloT('stem.money.vary_the_principal_rate_and_time_and_w', 'Vary the principal, rate, and time and watch how compound growth pulls ahead of the contributions alone. An open exploration \u2014 no score, no single right answer.') }
+                  coins:    { accent: '#92400e', soft: 'rgba(217,119,6,0.10)', icon: '\uD83E\uDE99', title: __alloT('stem.money.coins_bills_2', 'Coins & bills'),          hint: __alloT('stem.money.build_a_counting_board_coin_face_value', 'Build a counting board. Coin face values are arbitrary \u2014 a quarter is worth 25\u00a2 because we agree it is, not because of the metal.') },
+                  change:   { accent: '#166534', soft: 'rgba(22,163,74,0.10)', icon: '\uD83D\uDCB5', title: __alloT('stem.money.making_change_2', 'Making change'),          hint: __alloT('stem.money.count_up_from_the_price_to_the_amount_', 'Count UP from the price to the amount paid \u2014 the way cashiers actually do it. Faster + more accurate than subtraction by hand.') },
+                  tips:     { accent: '#0369a1', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCB3', title: __alloT('stem.money.tips_discounts_2', 'Tips & discounts'),       hint: __alloT('stem.money.15_tip_10_move_decimal_half_of_that_20', '15% tip = 10% (move decimal) + half of that. 20% off = take the price, divide by 5, subtract. Mental-math shortcuts beat the calculator for sanity-checking.') },
+                  store:    { accent: '#7e22ce', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDED2', title: __alloT('stem.money.grocery_store_2', 'Grocery store'),          hint: __alloT('stem.money.unit_price_cost_per_ounce_or_item_is_t', 'Unit price (cost per ounce or item) is the only honest comparison \u2014 package sizes are designed to defeat eyeball math.') },
+                  budget:   { accent: '#065f46', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDCCA', title: __alloT('stem.money.budget_2', 'Budget'),                 hint: __alloT('stem.money.50_30_20_needs_wants_save_debt_most_pe', '50/30/20: needs / wants / save+debt. Most people misclassify recurring subscriptions as needs \u2014 if it auto-renews, it is a want until you opt back in.') },
+                  cents:    { accent: '#9a3412', soft: 'rgba(245,158,11,0.10)', icon: '\uD83E\uDE99', title: __alloT('stem.money.common_cents_2', 'Common cents'),           hint: __alloT('stem.money.quick_mental_shortcuts_25_4_1_10_5_1_1', 'Quick mental shortcuts: 25\u00a2 \u00d7 4 = $1, 10\u00a2 + 5\u00a2 + 1\u00a2 = 16\u00a2. Arithmetic with money is faster than the same arithmetic with abstract numbers because the unit is concrete.') },
+                  word:     { accent: '#1d4ed8', soft: 'rgba(59,130,246,0.10)', icon: '\uD83D\uDCDD', title: __alloT('stem.money.word_problems_2', 'Word problems'),          hint: __alloT('stem.money.translate_the_sentence_to_an_equation_', 'Translate the sentence to an equation BEFORE computing. "How much" = an unknown variable. "Total" = sum. "Each" or "per" = multiplication.') },
+                  exchange: { accent: '#6d28d9', soft: 'rgba(139,92,246,0.10)', icon: '\uD83C\uDF0D', title: __alloT('stem.money.currency_exchange_2', 'Currency exchange'),      hint: __alloT('stem.money.exchangelearn_focus_hint', 'Use the classroom rates to express the same value in different units. Divide to reach USD, then multiply to reach the destination currency.') },
+                  finance:  { accent: '#b91c1c', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDCB0', title: __alloT('stem.money.personal_finance_2', 'Personal finance'),       hint: __alloT('stem.money.compound_interest_100_at_7_30_yrs_760_', 'Compound interest: $100 at 7% \u00d7 30 yrs = $760. Pay credit-card statement balance in full each cycle = no interest. Carry a balance = APR roughly doubles your debt every 5 yrs.') },
+                  inquiry:  { accent: '#155e75', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.money.compound_interest_inquiry', 'Compound Interest Inquiry'), hint: __alloT('stem.money.vary_the_principal_rate_and_time_and_w', 'Vary the principal, rate, and time and watch how compound growth pulls ahead of the contributions alone. An open exploration \u2014 no score, no single right answer.') }
                 };
                 var meta = TAB_META[tab] || TAB_META.coins;
                 return React.createElement('div', {
@@ -2984,7 +2994,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                   React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                     React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                    React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                    React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                   )
                 );
               })(),
@@ -3007,7 +3017,7 @@ window.StemLab = window.StemLab || {
                       },
                         renderCoinVisual(coin, false),
                         React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-700" }, coin.name),
-                        currency === 'USD' && USD_COIN_VISUALS[String(coin.value)] && React.createElement('span', { className: 'text-[0.625rem] leading-tight text-amber-800/80 -mt-1' }, USD_COIN_VISUALS[String(coin.value)].edge)
+                        currency === 'USD' && USD_COIN_VISUALS[String(coin.value)] && React.createElement('span', { className: 'text-[0.625rem] leading-tight text-amber-800 -mt-1' }, USD_COIN_VISUALS[String(coin.value)].edge)
                       );
                     })
                   ),
@@ -3038,7 +3048,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "flex items-center gap-2" },
                       challengeMode
                         ? React.createElement("span", { className: "text-lg font-black text-amber-500" }, __alloT('stem.money.str', '\uD83C\uDFAF ?'))
-                        : React.createElement("span", { className: "text-lg font-black text-emerald-600" }, fmt(boardTotal)),
+                        : React.createElement("span", { className: "text-lg font-black text-emerald-700" }, fmt(boardTotal)),
                       placed.length > 1 && React.createElement('button', { type: 'button', onClick: function () {
                         upd('placed', placed.slice().sort(function (a, b) { return b.value - a.value || (isPlacedBill(a) === isPlacedBill(b) ? 0 : isPlacedBill(a) ? -1 : 1); }));
                       }, 'aria-label': __alloT('stem.money.organize_cash_aria', 'Organize cash from highest to lowest denomination'), className: 'px-2 py-1 rounded-md text-[0.625rem] font-bold text-slate-700 bg-slate-100 border border-slate-300 hover:bg-slate-200 transition-colors' }, __alloT('stem.money.organize_cash', '↕ Organize')),
@@ -4007,7 +4017,7 @@ window.StemLab = window.StemLab || {
               // ═══ WORD PROBLEMS TAB ═══
               tab === 'word' && React.createElement("div", moneyPanelProps("bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200"),
                 React.createElement("h3", { className: "text-base font-bold text-violet-800 mb-2" }, __alloT('stem.money.money_word_problems', "\uD83D\uDCDD Money Word Problems")),
-                React.createElement("p", { className: "text-xs text-violet-500 mb-4" }, "AI-generated problems at " + gc.label + " level using " + cur.flag + " " + cur.name),
+                React.createElement("p", { className: "text-xs text-violet-700 mb-4" }, "AI-generated problems at " + gc.label + " level using " + cur.flag + " " + cur.name),
                 !d.wpProblem && !d.wpLoading
                   ? React.createElement("div", { className: "text-center py-8" },
                       React.createElement("button", { "aria-label": __alloT('stem.money.generate_word_problem', "Generate Word Problem"), onClick: genWordProblem,
@@ -5156,7 +5166,7 @@ window.StemLab = window.StemLab || {
 
               // ── Educational Footer ──
               React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200 text-center" },
-                React.createElement("p", { className: "text-[0.6875rem] text-emerald-600" }, "\uD83C\uDF1F ", React.createElement("strong", null, __alloT('stem.money.financial_literacy', "Financial literacy")), __alloT('stem.money.is_one_of_the_most_important_life_skil', " is one of the most important life skills. Practice with real-world scenarios to build confidence with money!")),
+                React.createElement("p", { className: "text-[0.6875rem] text-emerald-700" }, "\uD83C\uDF1F ", React.createElement("strong", null, __alloT('stem.money.financial_literacy', "Financial literacy")), __alloT('stem.money.is_one_of_the_most_important_life_skil', " is one of the most important life skills. Practice with real-world scenarios to build confidence with money!")),
                 React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-1" }, __alloT('stem.money.exchange_rates_are_approximate_and_for', "Exchange activities use a fixed classroom model for reproducible practice, not live market quotes."))
               ),
 

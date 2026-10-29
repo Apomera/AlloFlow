@@ -2676,6 +2676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         if (qs.length > 0) addToast('\u2728 ' + s.name + ' rerolled (+' + qs.length + ' new)', 'success');
                       }).catch(function(err) {
                         // Clear in-flight so the spell can be rerolled again instead of getting stuck
+                        // pii-safe: spell name from the game catalog
                         console.warn('[AlloBotSage] Reroll failed for ' + s.name + ':', err);
                         var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
                         var freshFlight = Object.assign({}, freshD._aiInFlight || {});
@@ -3109,6 +3110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 }
               }).catch(function(err) {
                 // Background generation — student already has bank questions, so silent + log only
+                // pii-safe: spell name from the game catalog
                 console.warn('[AlloBotSage] Background AI generation failed for ' + s.name + ':', err);
                 var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
                 var freshFlight = Object.assign({}, freshD._aiInFlight || {});

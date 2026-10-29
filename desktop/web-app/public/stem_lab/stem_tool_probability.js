@@ -1796,7 +1796,7 @@ var d = (labToolData.probability) || {};
                   React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                     React.createElement("span", { style: { fontSize: 26 }, 'aria-hidden': 'true' }, currentRoute.icon),
                     React.createElement("div", null,
-                      React.createElement("div", { style: { color: currentRoute.color, fontSize: 12, fontWeight: 900 } }, currentRoute.label),
+                      React.createElement("div", { style: { color: isDark || isContrast ? '#f1f5f9' : currentRoute.color, fontSize: 12, fontWeight: 900 } }, currentRoute.label),
                       React.createElement("div", { style: { color: isDark || isContrast ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.35 } }, currentRoute.desc)
                     )
                   ),
@@ -1910,6 +1910,16 @@ var d = (labToolData.probability) || {};
                 birthday:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)',  icon: '\uD83C\uDF82', title: t('stem.probability.birthday_the_famous_paradox', 'Birthday \u2014 the famous paradox'),                  hint: t('stem.probability.in_a_room_of_23_the_probability_of_a_s', 'In a room of 23, the probability of a shared birthday is > 50%. By 70 it\u2019s > 99.9%. Counterintuitive because we count comparisons (23 choose 2 = 253), not people. The cleanest classroom counter to gut-feel probability.') }
               };
               var meta = MODE_META[d.mode] || MODE_META.coin;
+              // Title ink: the accent, shifted until it reads 4.6:1 on the band (WCAG 1.4.3):
+              // darker on the 10% tint over the slate page, lighter on the dark panel.
+              var heroInk = (function (hex, dark) {
+                var c = [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16); });
+                var L = function (p) { return p.reduce(function (s, v, i) { v /= 255; return s + [0.2126, 0.7152, 0.0722][i] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); }, 0); };
+                var bg = L(dark ? [30, 41, 59] : c.map(function (v, i) { return v * 0.1 + [226, 232, 240][i] * 0.9; }));
+                var ok = function () { var a = L(c); return (Math.max(a, bg) + 0.05) / (Math.min(a, bg) + 0.05) >= 4.6; };
+                for (var k = 0; k < 20 && !ok(); k++) c = c.map(function (v) { return dark ? v + (255 - v) * 0.15 : v * 0.9; });
+                return '#' + c.map(function (v) { return ('0' + Math.round(v).toString(16)).slice(-2); }).join('');
+              })(meta.accent, isDark || isContrast);
               return React.createElement('div', {
                 style: {
                   margin: '0 0 12px',
@@ -1923,7 +1933,7 @@ var d = (labToolData.probability) || {};
               },
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
-                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                   React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
                 )
               );
@@ -4461,8 +4471,8 @@ var d = (labToolData.probability) || {};
 
             })(),
 
-            React.createElement("button", { "aria-label": t('stem.probability.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, t('stem.probability.snapshot_2', "\uD83D\uDCF8 Snapshot")),
-            React.createElement("button", { "aria-label": t('stem.probability.export_csv', "Export CSV"), onClick: function() { try { var _r = (typeof d !== 'undefined' && d && d.results) ? d.results : []; if (!_r.length) return; var _counts = {}; _r.forEach(function(o){ var k = String(o); _counts[k] = (_counts[k]||0)+1; }); var _csv = 'outcome,count\n' + Object.keys(_counts).map(function(k){ return '\"' + k.replace(/\"/g,'') + '\",' + _counts[k]; }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'probability_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 CSV saved!', 'success'); } catch(e){} }, className: "mt-3 ml-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-700 to-teal-700 rounded-full hover:from-emerald-700 hover:to-teal-700 shadow-md" }, t('stem.probability.export_csv_2', "\uD83D\uDCE5 Export CSV")),
+            React.createElement("button", { "aria-label": t('stem.probability.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-700 to-purple-700 rounded-full hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all" }, t('stem.probability.snapshot_2', "\uD83D\uDCF8 Snapshot")),
+            React.createElement("button", { "aria-label": t('stem.probability.export_csv', "Export CSV"), onClick: function() { try { var _r = (typeof d !== 'undefined' && d && d.results) ? d.results : []; if (!_r.length) return; var _counts = {}; _r.forEach(function(o){ var k = String(o); _counts[k] = (_counts[k]||0)+1; }); var _csv = 'outcome,count\n' + Object.keys(_counts).map(function(k){ return '\"' + k.replace(/\"/g,'') + '\",' + _counts[k]; }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'probability_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 CSV saved!', 'success'); } catch(e){} }, className: "mt-3 ml-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-800 to-teal-800 rounded-full hover:from-emerald-800 hover:to-teal-800 shadow-md" }, t('stem.probability.export_csv_2', "\uD83D\uDCE5 Export CSV")),
 
             // ── AI Explain Results + TTS Narrate ──
             React.createElement("div", { className: "mt-4 pt-4", style: { borderTop: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.15)':'#ede9fe') } },

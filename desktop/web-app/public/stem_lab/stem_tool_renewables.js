@@ -9458,7 +9458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   { label: __alloT('stem.renewables.badges', 'Badges'), value: Object.keys(badges).length }
                 ].map(function(card) {
                   return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
-                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
+                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#cbd5e1', marginBottom: 4 } }, card.label),
                     h('div', { style: { fontSize: 15, fontWeight: 900, color: '#f8fafc' } }, card.value)
                   );
                 }),

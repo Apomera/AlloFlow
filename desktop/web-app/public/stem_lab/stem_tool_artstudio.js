@@ -15565,7 +15565,7 @@ const d = labToolData.artStudio || {};
 
                             } catch (parseErr) {
 
-                              console.warn('[AI Motion] Failed to parse Gemini storyboard JSON. Raw response:', rawResponse);
+                              console.warn('[AI Motion] Failed to parse Gemini storyboard JSON. Response length:', String(rawResponse || '').length);
 
                               throw new Error('Could not parse Gemini storyboard: ' + parseErr.message);
 
@@ -15573,7 +15573,7 @@ const d = labToolData.artStudio || {};
 
                             if (!Array.isArray(poses) || poses.length === 0) {
 
-                              console.warn('[AI Motion] Gemini storyboard not an array. Parsed value:', poses);
+                              console.warn('[AI Motion] Gemini storyboard not an array. Parsed type:', Array.isArray(poses) ? 'empty array' : typeof poses);
 
                               throw new Error('Gemini returned an empty or malformed storyboard (got ' + (Array.isArray(poses) ? 'empty array' : typeof poses) + ').');
 

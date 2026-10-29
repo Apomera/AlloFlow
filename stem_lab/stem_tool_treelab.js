@@ -4458,7 +4458,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-tab-label{font-size:13px;font-weight:850;line-height:1.15;}',
         '.allo-tree-tab-hint{font-size:9.5px;font-weight:650;line-height:1.2;opacity:.78;white-space:normal;overflow-wrap:anywhere;}',
         '.allo-tree-tab[aria-selected="true"]{box-shadow:0 8px 20px var(--accent-shadow);}',
-        '.allo-tree-tab[aria-selected="true"]:after{content:"";position:absolute;left:13px;right:13px;bottom:4px;height:3px;border-radius:99px;background:currentColor;opacity:.48;}',
+        '.allo-tree-tab[aria-selected="true"]:after{content:"";position:absolute;left:13px;right:13px;bottom:3px;height:3px;border-radius:99px;background:currentColor;opacity:.48;}',
+        '.allo-tree-tab[aria-selected="true"] .allo-tree-tab-hint{opacity:1;}',
         '.allo-tree-chapter{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;margin:-2px 0 16px;padding:12px 15px;border-radius:15px;background:var(--chapter-bg);border:1px solid var(--chapter-border);box-shadow:0 10px 28px var(--tree-shadow);}',
         '.allo-tree-chapter-number{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--tree-accent);color:var(--accent-ink);font-size:12px;font-weight:950;box-shadow:0 8px 18px var(--accent-shadow);}',
         '.allo-tree-chapter-title{margin:0;font-size:15px;font-weight:900;line-height:1.2;color:var(--tree-ink);}',
@@ -4562,7 +4563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-season-ledger-balance{grid-column:1/-1;padding:6px 7px;border-radius:8px;background:var(--flow-badge);font-size:10.5px;color:var(--tree-ink)}.allo-tree-season-ledger-reserve{grid-column:1/-1;padding-top:6px;border-top:1px dashed var(--chapter-border);font-size:10px;line-height:1.4;color:var(--tree-muted)}',
         '.allo-tree-season-ledger-annual{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(180px,.65fr);gap:8px;align-items:stretch;margin-top:9px;padding-top:9px;border-top:1px dashed var(--chapter-border)}',
         '.allo-tree-season-ledger-equation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:5px;align-items:stretch;padding:8px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--hero-chip)}.allo-tree-season-ledger-equation>span,.allo-tree-season-ledger-equation>strong{display:grid;place-content:center;min-width:0;padding:5px;border-radius:8px;background:var(--flow-badge);text-align:center}.allo-tree-season-ledger-equation b{display:block;font-size:9.5px;color:var(--tree-muted)}.allo-tree-season-ledger-equation strong{display:block;margin-top:2px;font-size:11px;color:var(--tree-ink)}.allo-tree-season-ledger-equation>i{align-self:center;font-size:15px;font-style:normal;font-weight:950;color:var(--season-ink)}',
-        '.allo-tree-season-ledger-fact{margin:0;padding:9px;border-left:4px solid var(--season-hue);border-radius:10px;background:var(--flow-badge);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-season-ledger-fact strong{color:var(--tree-ink)}',
+        '.allo-tree-season-ledger-fact{margin:0;padding:9px;border-left:4px solid var(--season-hue);border-radius:10px;background:var(--flow-badge);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}[data-tree-theme="dark"] .allo-tree-season-ledger-fact{color:#cbd5e1}.allo-tree-season-ledger-fact strong{color:var(--tree-ink)}',
         '.allo-tree-season-ledger-evidence{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin:8px 0 0;font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-season-ledger-evidence b{color:var(--season-ink)}.allo-tree-season-ledger.is-stopped{border-style:dashed}.allo-tree-season-ledger.is-stopped .allo-tree-season-ledger-evidence{padding:9px;border-radius:10px;background:var(--flow-badge);color:var(--tree-ink)}',
         '.allo-tree-autumn-lab{position:relative;z-index:1;overflow:hidden;margin-top:9px;padding:10px;border:1px solid var(--chapter-border);border-left:4px solid var(--season-hue);border-radius:14px;background:linear-gradient(135deg,var(--chapter-bg),var(--mission-bg));}',
         '.allo-tree-autumn-lab-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;align-items:center;margin-bottom:8px}.allo-tree-autumn-lab-mark{grid-row:1/3;display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--flow-badge);font-size:17px}.allo-tree-autumn-lab-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-autumn-lab-head span:last-child{font-size:10.5px;line-height:1.45;color:var(--tree-muted)}',
@@ -4785,6 +4786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-reaction-outputs{display:grid;grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;}',
         '.allo-tree-molecule{display:grid;align-content:center;justify-items:center;min-width:0;padding:10px 7px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);text-align:center;box-shadow:0 7px 16px var(--tree-shadow);}',
         '.allo-tree-molecule.is-limiting,.allo-tree-leaf-engine.is-limiting{border-color:var(--tree-accent-text)!important;box-shadow:inset 0 0 0 2px var(--hero-ring-soft),0 10px 24px var(--accent-shadow);}',
+        '[data-tree-theme="contrast"] :is(.allo-tree-chapter-number,.allo-tree-science-compass,.allo-tree-mission-step.is-done .allo-tree-mission-dot,.allo-tree-pace-badge,.allo-tree-leaf-orbit,.allo-tree-consequence-number,.allo-tree-quiz-story-number,.allo-tree-quiz-feedback-icon,.allo-tree-quiz-finale-mark,span[style*="background: rgb(255, 255, 0)"]){color:#000!important;}',
         '.allo-tree-pace-badge{display:inline-flex;margin-top:6px;padding:3px 6px;border-radius:999px;background:var(--tree-accent);color:var(--accent-ink);font-size:8.5px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;}',
         '.allo-tree-molecule-icon{display:grid;place-items:center;min-height:27px;font-size:23px;font-weight:950;color:var(--tree-accent-text);}',
         '.allo-tree-molecule-label{margin-top:4px;font-size:9px;font-weight:900;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;color:var(--tree-muted);}',
@@ -4997,7 +4999,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-quiz-story-copy>span{white-space:normal;overflow-wrap:anywhere;font-size:9.5px;color:var(--tree-muted);}',
         '.allo-tree-quiz-progress{display:grid;grid-template-columns:auto minmax(0,1fr);gap:13px;align-items:center;margin:12px 0 15px;padding:12px;border:1px solid var(--mission-border);border-radius:16px;background:var(--mission-bg);box-shadow:0 12px 28px var(--mission-shadow);}',
         '.allo-tree-quiz-progress-ring{position:relative;display:grid;place-items:center;align-content:center;width:88px;height:88px;border-radius:50%;background:conic-gradient(var(--tree-accent) var(--quiz-progress),var(--mission-step) 0);box-shadow:0 10px 23px var(--tree-shadow);}',
-        '.allo-tree-quiz-progress-ring:before{content:"";position:absolute;inset:7px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--hero-chip);}',
+        '.allo-tree-quiz-progress-ring:before{content:"";position:absolute;inset:7px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--ring-face);}',
+        '.allo-tree-quiz-progress-ring>strong,.allo-tree-quiz-progress-ring>span:last-child{background:var(--ring-face);}',
         '.allo-tree-quiz-progress-ring>*{position:relative;z-index:1;}',
         '.allo-tree-quiz-progress-leaf{font-size:20px;line-height:1;}',
         '.allo-tree-quiz-progress-ring strong{margin-top:2px;font-size:13px;line-height:1;color:var(--tree-ink);font-variant-numeric:tabular-nums;}',
@@ -8203,7 +8206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             className: 'allo-tree-clock',
             'data-tree-clock': key,
             'data-clock-state': state,
-            style: { '--clock-tone': tone(color) }
+            style: { '--clock-tone': tone(color === T.accent ? 'var(--tree-accent-text)' : color) }
           }, [
             h('span', { key: 'i', className: 'allo-tree-clock-icon', 'aria-hidden': 'true' }, icon),
             h('span', { key: 'h', className: 'allo-tree-clock-horizon' }, horizon),
@@ -10343,7 +10346,8 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
       var SEASON_INK = { '#22c55e': '#15803d', '#f59e0b': '#b45309', '#eab308': '#a16207',
         '#ea580c': '#c2410c', '#38bdf8': '#0369a1', '#15803d': '#15803d',
         '#ec4899': '#9d174d', '#8b5cf6': '#5b21b6' };
-      function inkTone(hex) { return isContrast ? T.accent : (isDark ? hex : (SEASON_INK[hex] || hex)); }
+      var SEASON_INK_DARK = { '#ea580c': '#fb923c', '#8b5cf6': '#a78bfa' };
+      function inkTone(hex) { return isContrast ? T.accent : (isDark ? (SEASON_INK_DARK[hex] || hex) : (SEASON_INK[hex] || hex)); }
 
       function allocSlider(k, labelTxt, hex) {
         var pct = Math.round(alloc[k] * 100);
@@ -13763,6 +13767,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           // a yellow fill sat on a white track).
           '--meter-track': isContrast ? '#000000' : (isDark ? '#0f172a' : '#e2e8f0'),
           '--accent-ink': T.onAccent,
+          '--ring-face': isContrast ? T.cardAlt : (isDark ? T.card : '#ffffff'),
           '--flow-badge': isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.08)' : 'rgba(5,150,105,.07)'),
           '--mission-border': isContrast ? T.border : (isDark ? '#2f6a5b' : '#86c9ae'),
           '--mission-bg': isContrast ? T.card : (isDark ? 'linear-gradient(145deg,#15322d,#172033)' : 'linear-gradient(145deg,#ecfdf5,#ffffff)'),

@@ -1,0 +1,24 @@
+.studio-touch{padding:14px 18px;background:#edf3e8;border-top:1px solid #bdcdb4;border-bottom:1px solid #bdcdb4;color:#233e2e}
+.studio-touch-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.studio-touch-heading strong{font-size:14px}
+.studio-touch-heading button{min-height:44px;flex-shrink:0;font-size:12px}
+.studio-touch-heading button[aria-pressed=true]{background:#245c42;color:#fff;border-color:#245c42}
+.studio-tool-finder{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.studio-tool-finder button{padding:7px 10px;min-height:44px;font-size:11px;background:#fffef9}
+.studio-tool-finder button:focus-visible{outline:3px solid #245c42;outline-offset:2px}
+.studio-touch p{font-size:12px;line-height:1.55;margin:8px 0}
+#studioTouchHint{font-weight:650}
+#studioTouchStatus{min-height:2.9em;color:#405747}
+.studio-touch a{display:inline-flex;align-items:center;min-height:44px;font-size:12px;font-weight:700;text-underline-offset:3px}
+.studio-touch label{display:flex;gap:10px;align-items:center;font-size:12px;font-weight:700;max-width:290px;margin:10px 0}
+.studio-touch select{min-height:44px;width:auto;flex:1}
+#studioTouchProgress{height:8px;margin:12px 0;accent-color:#245c42}
+#scene,#scene canvas{touch-action:none}
+#scene canvas[data-held]:not([data-held=""]){cursor:grabbing!important}
+.studio-placement-hint{position:absolute;top:12px;left:12px;right:12px;z-index:3;max-width:390px;margin:0 auto;padding:9px 12px;pointer-events:none;display:grid;gap:3px;border:1px solid #a18145;border-radius:9px;background:rgba(255,250,232,.97);color:#654719;box-shadow:0 3px 12px #243f2920;font:12px/1.4 system-ui,sans-serif}.studio-placement-hint strong{font-size:11px;font-weight:750}.studio-placement-hint[data-ready=true]{border-color:#547b60;background:rgba(246,252,239,.97);color:#254b34}
+@media(max-width:420px){.studio-placement-hint{top:8px;left:8px;right:8px;padding:7px 10px;font-size:11px}}
+@media(forced-colors:active){.studio-placement-hint,.studio-placement-hint[data-ready=true]{background:Canvas;color:CanvasText;border-color:CanvasText}}
+@media print{.studio-placement-hint{display:none}}
+@media(max-width:420px){.studio-touch{padding:12px}.studio-touch-heading{gap:8px}.studio-touch-heading strong{font-size:13px}}
+@media(forced-colors:active){.studio-touch{border:1px solid CanvasText}.studio-touch-heading button[aria-pressed=true]{outline:2px solid Highlight}}
+@media print{.studio-touch{display:none}}

@@ -277,6 +277,25 @@
     return envelope;
   }
 
+  function suggestedPrintScale(measurement, profile) {
+    // Use the same bed and planning margin as the displayed envelope. This is
+    // a conservative block-envelope suggestion, not a mesh or support check.
+    var envelope = defaultPrintEnvelope(measurement, profile, 1);
+    if (!envelope || measurement.isComplete === false) return null;
+    var bed = builderBedLimits(profile), margin = envelope.clearanceMm * 2;
+    var available = [bed.width - margin, bed.depth - margin, bed.height - margin];
+    if (available.some(function(value) { return value <= 0; })) return null;
+    var dimensions = [measurement.L, measurement.W, measurement.H];
+    var limit = Math.min.apply(Math, [1000].concat(available.map(function(value, index) {
+      // The visible envelope rounds physical dimensions to hundredths of a
+      // millimetre. Round available space down too so it never reports a tight
+      // fit immediately after applying this suggestion to a fractional profile.
+      return Math.floor(value * 100) / 100 / dimensions[index];
+    })));
+    var scale = Math.floor(limit * 100) / 100;
+    return scale >= 0.01 ? scale : null;
+  }
+
   function keyFor(pos) { return pos.x + ',' + pos.y + ',' + pos.z; }
   function measurementLayerFor(data) {
     if (data && data._measurementLayer) return data._measurementLayer;
@@ -657,14 +676,16 @@
   }
   var WORKSHOP_TOOLS=[
     {id:'palette',title:'Shapes & materials',group:'Build',description:'Choose a block, its material, and rotation.',keywords:'cube slab wedge quarter stone wood brick glass color colour paint hotbar Q R',selector:'.gwe-current-tools'},
+    {id:'construct',title:'Build by coordinates',group:'Build',description:'Build a block, line, floor, or wall using a keyboard-friendly form.',keywords:'keyboard accessible precise position coordinates create place no aiming dimensions length width height',selector:'.gwe-coordinate-builder'},
     {id:'draw',title:'Lines, floors & walls',group:'Build',description:'Place many blocks with a single drawing gesture.',keywords:'fast draw room wall height floor line',selector:'.gwe-drawing-tools'},
     {id:'starters',title:'Architectural starters',group:'Build',description:'Customize an arch, bridge, roof, pavilion, or other starter.',keywords:'kit staircase stairs bench garden building library house',selector:'.gwe-starter-library'},
     {id:'select',title:'Select blocks & camera',group:'Edit',description:'Select individual blocks, drag a selection, or orbit the camera.',keywords:'cursor mouse touch rectangle marquee orbit pan zoom move handles',selector:'.gwe-direct-controls'},
+    {id:'coordinates',title:'Select by coordinates',group:'Edit',description:'Choose an exact grid region, review matching blocks, then apply the selection.',keywords:'keyboard accessible range coordinates hidden layers all blocks material filter select precision',selector:'.gwe-coordinate-selection'},
     {id:'transform',title:'Move, copy & reshape',group:'Edit',description:'Move, repeat, align, or reshape a selected creation with a preview.',keywords:'repeat pattern array align alignment grid spacing duplicate rotate mirror recolor recolour material offset position',selector:'.gwe-creation-editor',selection:true},
     {id:'stamps',title:'Reusable building stamps',group:'Build',description:'Save a reusable part or place one from your collection.',keywords:'recipe window arch reusable library saved pattern',selector:'.gwe-stamp-library'},
     {id:'showcase',title:'Views & showcase',group:'Share',description:'Frame your selection or create a presentation image.',keywords:'camera photo picture screenshot png beautiful front side top',selector:'[aria-label="Inspect selected creation"]',selection:true},
     {id:'challenge',title:'Build challenges',group:'Build',description:'Build to a target volume, area, or shape and check it automatically.',keywords:'challenge task goal puzzle volume area surface prism cube staircase math practice',selector:'.gwe-challenge'},
-    {id:'send',title:'Send to Print Lab',group:'Print',description:'Open your creation in Print Lab to check its size, printability, and filament.',keywords:'3d printing printer stl print lab send export make hold',selector:'[data-gwe-send="print"]'},
+    {id:'send',title:'Prepare a 3D print',group:'Print',description:'Review your creation’s size, connections, and export options.',keywords:'3d printing printer stl print lab send export make hold',selector:'[data-gwe-prepare="print"]'},
     {id:'print',title:'Inspect & prepare a print',group:'Print',description:'Check separate pieces, printer fit, and connecting bases.',keywords:'3d printing stl print lab oversized support plate thickness margin',selector:'.gwe-print-guide-options',selection:true},
     {id:'scale',title:'Adjust print size',group:'Print',description:'Set millimeters per block for STL and Print Lab.',keywords:'scale bed dimensions width height depth size mm printer',selector:'.gwe-scale-editor',selection:true},
     {id:'save',title:'Save, open & duplicate projects',group:'Keep',description:'Name your project, save a variation, or open an editable file.',keywords:'json export import backup download autosave worlds copy recover',selector:'[aria-label="Keep your work"]'},
@@ -1060,8 +1081,21 @@
     if(!project)return {ok:false,reason:'This project is no longer saved. Refresh My Worlds to see your current projects.'};
     return newWorldVariation(shelf,project.world,project.garden,storage);
   }
-  function removeWorldProject(id,storage) {
-    var shelf=readWorldShelf(storage);return shelf.ok?writeWorldShelf(shelf.projects.filter(function(p){return p.id!==id;}),storage):shelf;
+  function downloadWorldProject(id,storage) {
+    var shelf=readWorldShelf(storage);if(!shelf.ok)return shelf;
+    var project=shelf.projects.find(function(p){return p.id===id;});
+    if(!project)return {ok:false,missing:true,projects:shelf.projects,reason:'This project is no longer saved. My Worlds has been refreshed.'};
+    if(!project.world.blocks.length)return {ok:false,refresh:true,projects:shelf.projects,reason:'This saved project is empty. Open it and add blocks before downloading.'};
+    try {downloadBlob(new Blob([JSON.stringify(project.world,null,2)],{type:'application/json'}),safeFilePart(project.world.title)+'.json');}
+    catch(_){return {ok:false,refresh:true,projects:shelf.projects,reason:'The saved project could not be downloaded. Try Download project JSON again; your saved blocks are unchanged.'};}
+    return {ok:true,project:project,projects:shelf.projects};
+  }
+  function removeWorldProject(id,storage,expectedVersion) {
+    var shelf=readWorldShelf(storage);if(!shelf.ok)return shelf;
+    var project=shelf.projects.find(function(p){return p.id===id;});
+    if(!project)return {ok:false,missing:true,projects:shelf.projects,reason:'This project is no longer saved. My Worlds has been refreshed.'};
+    if(expectedVersion!==undefined && project.version!==expectedVersion)return {ok:false,conflict:true,projects:shelf.projects,reason:'This project changed in another tab. Review the refreshed project, then choose Remove from shelf again if you still want to remove it.'};
+    return writeWorldShelf(shelf.projects.filter(function(p){return p.id!==id;}),storage);
   }
   function installWorldAutosave(engine,onSave,storage) {
     var lastPoll=0;
@@ -1084,6 +1118,65 @@
     if(blocks.length>MAX_BLOCKS)return {ok:false,reason:'Select at most '+MAX_BLOCKS+' blocks.'};
     engine._builderSelection=blocks.length?{blocks:blocks,exact:true}:null;
     return {ok:true,count:blocks.length};
+  }
+  function coordinateSelectionCells(engine) {
+    return Object.keys(engine && engine.blocks || {}).filter(function(key){
+      var mesh=engine.blocks[key],p=gridPosition(mesh);
+      return mesh && isStudentBlock(mesh.userData) && p && ['x','y','z'].every(function(axis){return Number.isSafeInteger(p[axis]);})
+        && Math.abs(p.x)<=EDITABLE_XZ_LIMIT && Math.abs(p.z)<=EDITABLE_XZ_LIMIT && p.y>=1 && p.y<=EDITABLE_Y_MAX && keyFor(p)===key;
+    }).sort().map(function(key){return gridPosition(engine.blocks[key]);});
+  }
+  function coordinateSelectionBounds(engine,selectionOnly) {
+    var selected=Object.create(null);
+    if(selectionOnly)(engine && engine._builderSelection && engine._builderSelection.blocks || []).forEach(function(p){if(p)selected[keyFor(p)]=true;});
+    var cells=coordinateSelectionCells(engine).filter(function(p){return !selectionOnly || selected[keyFor(p)];});
+    if(!cells.length)return null;
+    var from={x:Infinity,y:Infinity,z:Infinity},to={x:-Infinity,y:-Infinity,z:-Infinity};
+    cells.forEach(function(p){['x','y','z'].forEach(function(axis){from[axis]=Math.min(from[axis],p[axis]);to[axis]=Math.max(to[axis],p[axis]);});});
+    return {from:from,to:to};
+  }
+  function coordinateSelectionWorldSignature(engine) {
+    var keys=Object.keys(engine && engine.blocks || {}).filter(function(key){return isStudentBlock(engine.blocks[key] && engine.blocks[key].userData);});
+    return blockMeasurementSignature(engine,keys);
+  }
+  function coordinateSelectionSignature(engine) {
+    var selected=engine && engine._builderSelection,keys=(selected && selected.blocks || []).filter(Boolean).map(keyFor).sort();
+    return JSON.stringify([!!(selected && selected.exact),keys,blockMeasurementSignature(engine,keys)]);
+  }
+  function previewCoordinateSelection(engine,options) {
+    if(!engine || engine._destroyed || engine._showcase || engine._pendingWorldTransition || !engine._currentLesson || !engine._currentLesson.sandbox)return {ok:false,reason:'Open Free Build to select blocks by coordinates.',invalidFields:[]};
+    options=options || {};
+    var operation=options.operation===undefined?'replace':options.operation,material=options.material===undefined?'all':options.material;
+    var invalidFields=[],corners={from:{},to:{}};
+    ['from','to'].forEach(function(corner){['x','y','z'].forEach(function(axis){
+      var raw=options[corner] && options[corner][axis],number=(typeof raw==='number' || (typeof raw==='string' && raw.trim()!==''))?Number(raw):NaN;
+      var min=axis==='y'?1:-EDITABLE_XZ_LIMIT,max=axis==='y'?EDITABLE_Y_MAX:EDITABLE_XZ_LIMIT;
+      if(!Number.isSafeInteger(number) || number<min || number>max)invalidFields.push(corner+'.'+axis);
+      else corners[corner][axis]=number;
+    });});
+    if(['replace','add','remove'].indexOf(operation)===-1)invalidFields.push('operation');
+    if(material!=='all' && !BLOCK_TYPES.some(function(type){return type.id===material;}))invalidFields.push('material');
+    if(invalidFields.length)return {ok:false,reason:'Enter whole-number coordinates: X and Z from -'+EDITABLE_XZ_LIMIT+' to '+EDITABLE_XZ_LIMIT+', and Y from 1 to '+EDITABLE_Y_MAX+'. Choose a listed selection action and material.',invalidFields:invalidFields};
+    var bounds={min:{},max:{}};
+    ['x','y','z'].forEach(function(axis){bounds.min[axis]=Math.min(corners.from[axis],corners.to[axis]);bounds.max[axis]=Math.max(corners.from[axis],corners.to[axis]);});
+    var cells=coordinateSelectionCells(engine).filter(function(p){return ['x','y','z'].every(function(axis){return p[axis]>=bounds.min[axis] && p[axis]<=bounds.max[axis];}) && (material==='all' || engine.blocks[keyFor(p)].userData.blockType===material);});
+    if(!cells.length)return {ok:false,reason:'No student blocks match this range and material. Your selection is unchanged.',invalidFields:[]};
+    var resulting=Object.create(null);
+    if(operation!=='replace')(engine._builderSelection && engine._builderSelection.blocks || []).forEach(function(p){var mesh=p && engine.blocks[keyFor(p)];if(mesh && isStudentBlock(mesh.userData))resulting[keyFor(p)]=true;});
+    cells.forEach(function(p){if(operation==='remove')delete resulting[keyFor(p)];else resulting[keyFor(p)]=true;});
+    var resultingCount=Object.keys(resulting).length;
+    if(resultingCount>MAX_BLOCKS)return {ok:false,reason:'Select at most '+MAX_BLOCKS+' blocks. Narrow the range or remove blocks from the current selection.',invalidFields:[]};
+    return {ok:true,cells:cells,count:cells.length,resultingCount:resultingCount,bounds:bounds,operation:operation,material:material,engine:engine,lesson:engine._currentLesson,
+      worldSignature:coordinateSelectionWorldSignature(engine),selectionSignature:coordinateSelectionSignature(engine)};
+  }
+  function commitCoordinateSelection(engine,preview) {
+    if(!preview || !preview.ok || !engine || engine._destroyed || engine._showcase || engine._pendingWorldTransition || engine!==preview.engine || engine._currentLesson!==preview.lesson
+      || coordinateSelectionWorldSignature(engine)!==preview.worldSignature || coordinateSelectionSignature(engine)!==preview.selectionSignature)return {ok:false,reason:'The world or selection changed. Preview the coordinate selection again.'};
+    // Recompute from the reviewed range so mutable preview arrays cannot select
+    // protected or unrelated cells. This path only changes the exact selection.
+    var fresh=previewCoordinateSelection(engine,{from:preview.bounds && preview.bounds.min,to:preview.bounds && preview.bounds.max,operation:preview.operation,material:preview.material});
+    if(!fresh.ok || fresh.count!==preview.count || fresh.resultingCount!==preview.resultingCount || JSON.stringify(fresh.cells)!==JSON.stringify(preview.cells))return {ok:false,reason:'The selection preview changed. Preview the coordinate selection again.'};
+    return updateWorkshopSelection(engine,fresh.cells,fresh.operation);
   }
   function workshopScreenSelection(engine,rect,viewport,depth) {
     var THREE=window.THREE;if(!THREE || !engine || !engine.camera || !viewport.width || !viewport.height)return [];
@@ -1302,8 +1395,58 @@
     var result=engine.previewBuildBatch(plan.additions,plan.removals,{label:plan.label});
     return Object.assign({},result,{engine:engine,lesson:engine._currentLesson,sourceSignature:snapshot.signature,additions:plan.additions,removals:plan.removals,frameBlocks:plan.selection,label:plan.label,beforeSelection:copyLocal(engine._builderSelection),afterSelection:Object.assign({blocks:plan.selection || plan.additions.map(function(b){return {x:b.x,y:b.y,z:b.z};})},plan.selection || engine._builderSelection.exact?{exact:true}:{})});
   }
+  function coordinateBuildLayout(options) {
+    options=options || {};var invalidFields=[],reason='',origin={},dimensions={x:1,y:1,z:1};
+    function invalid(field,message){invalidFields.push(field);if(!reason)reason=message;}
+    function integer(raw,min,max,field,message){var value=(typeof raw==='number' || typeof raw==='string' && raw.trim()!=='')?Number(raw):NaN;if(!Number.isSafeInteger(value) || value<min || value>max){invalid(field,message);return min;}return value;}
+    var mode=options.mode===undefined?'block':options.mode,axis=options.axis===undefined?'x':options.axis;
+    if(['block','line','floor','wall'].indexOf(mode)===-1)invalid('mode','Choose a block, line, floor, or wall.');
+    ['x','y','z'].forEach(function(a){origin[a]=integer(options.origin && options.origin[a],a==='y'?1:-EDITABLE_XZ_LIMIT,a==='y'?EDITABLE_Y_MAX:EDITABLE_XZ_LIMIT,'origin.'+a,'Enter whole-number positions: X and Z from -64 to 64, and Y from 1 to 128.');});
+    var length=1,width=1,height=1;
+    if(mode!=='block')length=integer(options.length,1,32,'length','Enter a whole-number length from 1 to 32 cells.');
+    if(mode==='floor')width=integer(options.width,1,32,'width','Enter a whole-number depth from 1 to 32 cells.');
+    if(mode==='wall')height=integer(options.height,1,32,'height','Enter a whole-number height from 1 to 32 cells.');
+    if(mode==='line' && ['x','y','z'].indexOf(axis)===-1 || mode==='wall' && ['x','z'].indexOf(axis)===-1)invalid('axis','Choose one of the listed build directions.');
+    var type=options.type===undefined?'stone':options.type,shape=options.shape===undefined?'cube':options.shape,rotation=integer(options.rotation===undefined?0:options.rotation,0,3,'rotation','Choose a quarter-turn rotation from the list.');
+    if(!BLOCK_TYPES.some(function(t){return t.id===type;}))invalid('type','Choose a material from the list.');
+    if(!BLOCK_SHAPES.some(function(s){return s.id===shape;}))invalid('shape','Choose a shape from the list.');
+    if(invalidFields.length)return {ok:false,code:'fields',reason:reason,invalidFields:invalidFields};
+    if(mode==='line')dimensions[axis]=length;
+    if(mode==='floor'){dimensions.x=length;dimensions.z=width;}
+    if(mode==='wall'){dimensions[axis]=length;dimensions.y=height;}
+    ['x','y','z'].forEach(function(a){if(origin[a]+dimensions[a]-1>(a==='y'?EDITABLE_Y_MAX:EDITABLE_XZ_LIMIT))invalid('origin.'+a,'This placement extends beyond the world along '+a.toUpperCase()+'. Move its starting cell inward or reduce its dimensions.');});
+    if(invalidFields.length)return {ok:false,code:'out_of_bounds',reason:reason,invalidFields:invalidFields};
+    var additions=[];
+    for(var x=0;x<dimensions.x;x++)for(var y=0;y<dimensions.y;y++)for(var z=0;z<dimensions.z;z++)additions.push({x:origin.x+x,y:origin.y+y,z:origin.z+z,type:type,shape:shape,rotation:rotation});
+    return {ok:true,additions:additions,dimensions:dimensions,origin:origin,label:'Build '+mode+' · '+additions.length+' block'+(additions.length===1?'':'s')};
+  }
+  function positionCoordinateBuild(engine,options,face) {
+    if(!engine || engine._destroyed || engine._showcase || engine._pendingWorldTransition || !engine._currentLesson || !engine._currentLesson.sandbox)return {ok:false,reason:'Open Free Build before positioning blocks.',invalidFields:[]};
+    if(['x+','x-','y+','y-','z+','z-'].indexOf(face)===-1)return {ok:false,reason:'Choose a side of the selected blocks.',invalidFields:['attach-face']};
+    var snapshot=selectionEditSnapshot(engine);if(!snapshot.ok)return {ok:false,reason:snapshot.reason,invalidFields:[]};
+    // Positioning replaces the origin, so validate the recipe with a safe origin first.
+    var layout=coordinateBuildLayout(Object.assign({},options,{origin:{x:0,y:1,z:0}}));if(!layout.ok)return layout;
+    var min={x:Infinity,y:Infinity,z:Infinity},max={x:-Infinity,y:-Infinity,z:-Infinity};
+    snapshot.blocks.forEach(function(b){['x','y','z'].forEach(function(a){min[a]=Math.min(min[a],b[a]);max[a]=Math.max(max[a],b[a]);});});
+    var origin=Object.assign({},min),axis=face[0];origin[axis]=face[1]==='+'?max[axis]+1:min[axis]-layout.dimensions[axis];
+    var checked=coordinateBuildLayout(Object.assign({},options,{origin:origin}));
+    if(!checked.ok)return Object.assign({},checked,{reason:'There is not enough room on that side within the world limits. Choose another side or a smaller size.',invalidFields:['attach-face']});
+    return {ok:true,origin:origin,dimensions:layout.dimensions,invalidFields:[]};
+  }
+  function previewCoordinateBuild(engine,options) {
+    if(!engine || engine._destroyed || engine._showcase || engine._pendingWorldTransition || !engine._currentLesson || !engine._currentLesson.sandbox || typeof engine.previewBuildBatch!=='function')return {ok:false,reason:'Open Free Build before placing blocks by coordinates.',invalidFields:[]};
+    options=options || {};var selectionMode=options.selectionMode===undefined?'new':options.selectionMode;
+    if(['new','add'].indexOf(selectionMode)===-1)return {ok:false,reason:'Choose which blocks to select after placing.',invalidFields:['selectionMode']};
+    var layout=coordinateBuildLayout(options);if(!layout.ok)return layout;
+    var snapshot=selectionMode==='add'?selectionEditSnapshot(engine):null;
+    if(snapshot && !snapshot.ok)return {ok:false,reason:'Select the earlier blocks before adding to that selection, or choose Only new blocks.',invalidFields:['selectionMode']};
+    var selected=(snapshot?snapshot.blocks:[]).concat(layout.additions).map(function(b){return {x:b.x,y:b.y,z:b.z};}),seen=Object.create(null);
+    selected=selected.filter(function(b){var key=keyFor(b);if(seen[key])return false;seen[key]=true;return true;});
+    var result=engine.previewBuildBatch(layout.additions,[],{label:layout.label});
+    return Object.assign({},result,{kind:'coordinate-build',engine:engine,lesson:engine._currentLesson,sourceSignature:snapshot && snapshot.signature,selectionMode:selectionMode,additions:layout.additions,removals:[],label:layout.label,invalidFields:[],dimensions:layout.dimensions,beforeSelection:copyLocal(engine._builderSelection || null),afterSelection:{blocks:selected,exact:true}});
+  }
   function commitSelectionEdit(engine,plan) {
-    if(!plan || !plan.ok || plan.engine!==engine || engine._destroyed || engine._showcase || engine._currentLesson!==plan.lesson || typeof engine.commitBuildBatch!=='function')return {ok:false,reason:'Preview this change again before applying it.'};
+    if(!plan || !plan.ok || !engine || plan.engine!==engine || engine._destroyed || engine._showcase || engine._pendingWorldTransition || engine._currentLesson!==plan.lesson || typeof engine.commitBuildBatch!=='function')return {ok:false,reason:'Preview this change again before applying it.'};
     if(plan.sourceSignature){var current=selectionEditSnapshot(engine);if(!current.ok || current.signature!==plan.sourceSignature)return {ok:false,reason:'The selected creation changed after this preview. Preview it again.'};}
     return engine.commitBuildBatch(plan.additions,plan.removals,{label:plan.label,beforeSelection:plan.sourceSignature?plan.beforeSelection:copyLocal(engine._builderSelection || null),afterSelection:plan.afterSelection});
   }
@@ -2171,7 +2314,7 @@
       saved.composition={rect:rect,pixelRect:{left:(rect.left+1)*area.width/2,right:(rect.right+1)*area.width/2,top:(1-rect.top)*area.height/2,bottom:(1-rect.bottom)*area.height/2},canvasRect:area,fallback:composition.fallback,position:fit.position.clone(),target:fit.target.clone(),depthNear:fit.depthNear,depthFar:fit.depthFar,bounds:box.clone(),minCameraY:minCameraY,view:saved.view};
       return true;
     };
-    engine.endShowcase=function(){
+    engine.endShowcase=function(options){
       var previous=engine._showcase;if(!previous)return;
       if(previous.fitFrame!=null && window.cancelAnimationFrame)window.cancelAnimationFrame(previous.fitFrame);previous.fitFrame=null;
       disposeStudioLook();
@@ -2181,7 +2324,8 @@
       previous.hidden.forEach(function(entry){entry[0].visible=entry[1];});
       engine._showcase=null;engine.fitShowcase=null;engine.rotateShowcase=null;engine.endShowcase=null;engine.setShowcaseLook=null;engine.setShowcaseView=null;engine.disposeShowcaseLook=null;
       if(engine._builderSelectionFrame && engine._builderSelectionFrame.parent && !engine._destroyed)engine._builderSelectionFrame.visible=true;
-      patchGeometryState(ctx,{showcaseActive:false,sandboxDockCollapsed:previous.collapsed});focusWorldSurface(30);
+      patchGeometryState(ctx,{showcaseActive:false,sandboxDockCollapsed:previous.collapsed});
+      if(!options || options.restoreFocus!==false)focusWorldSurface(30);
     };
     engine.fitShowcase();
     patchGeometryState(ctx,{showcaseActive:true,showcaseLook:'meadow',showcaseView:'perspective',showcaseSaving:!!engine._showcaseExporting,sandboxDockCollapsed:true});
@@ -2283,6 +2427,7 @@
     var dockBody = typeof document !== 'undefined' && document.querySelector('.gwe-builder-body');
     if (dockBody) dockBody.scrollTop = 0;
     announce(ctx, 'Measured ' + selected.measurement.count + ' connected student block' + (selected.measurement.count === 1 ? '' : 's') + '.', 'success');
+    return selected;
   }
   // STL does not carry units. Convert a copy to millimetres, retaining face
   // normals, triangle attributes and the original block-unit handoff bytes.
@@ -2637,10 +2782,11 @@
     showcaseExportSize:showcaseExportSize, captureShowcaseImage:captureShowcaseImage, saveShowcaseImage:saveShowcaseImage,
     fitCreationCamera:fitCreationCamera, creationFocusRect:creationFocusRect, creationGeometryBounds:creationGeometryBounds, focusSelectedBuild:focusSelectedBuild,
     architecturalStarters:architecturalStarters, configureArchitecturalStarter:configureArchitecturalStarter, workshopDragOffset:workshopDragOffset, installWorkshopTransform:installWorkshopTransform,readWorldShelf:readWorldShelf,saveWorldDraft:saveWorldDraft,saveWorldCopy:saveWorldCopy,duplicateWorldProject:duplicateWorldProject,removeWorldProject:removeWorldProject,installWorldAutosave:installWorldAutosave,WORLD_SHELF_KEY:WORLD_SHELF_KEY,
-    updateWorkshopSelection:updateWorkshopSelection,workshopScreenSelection:workshopScreenSelection,installWorkshopPointer:installWorkshopPointer,previewPrintPreparation:previewPrintPreparation,activityMilestones:activityMilestones,createActivityMilestones:createActivityMilestones,disposeActivityMilestones:disposeActivityMilestones,
+    updateWorkshopSelection:updateWorkshopSelection,previewCoordinateSelection:previewCoordinateSelection,commitCoordinateSelection:commitCoordinateSelection,coordinateSelectionBounds:coordinateSelectionBounds,workshopScreenSelection:workshopScreenSelection,installWorkshopPointer:installWorkshopPointer,previewPrintPreparation:previewPrintPreparation,activityMilestones:activityMilestones,createActivityMilestones:createActivityMilestones,disposeActivityMilestones:disposeActivityMilestones,
     suggestCreationDuplicate:suggestCreationDuplicate,
+    downloadWorldProject:downloadWorldProject,
     selectionEditSnapshot:selectionEditSnapshot, transformCreationBlocks:transformCreationBlocks, previewSelectionEdit:previewSelectionEdit, commitSelectionEdit:commitSelectionEdit,
-    normalizeBuildStamp:normalizeBuildStamp, readBuildStamps:readBuildStamps, saveSelectionStamp:saveSelectionStamp, removeBuildStamp:removeBuildStamp, previewBuildStamp:previewBuildStamp, BUILD_STAMP_KEY:BUILD_STAMP_KEY,
+    normalizeBuildStamp:normalizeBuildStamp, readBuildStamps:readBuildStamps, saveSelectionStamp:saveSelectionStamp, removeBuildStamp:removeBuildStamp, previewBuildStamp:previewBuildStamp, previewCoordinateBuild:previewCoordinateBuild, positionCoordinateBuild:positionCoordinateBuild, BUILD_STAMP_KEY:BUILD_STAMP_KEY,
     selectedCreationPresetFocus:selectedCreationPresetFocus, selectedCreationCameraView:selectedCreationCameraView, selectedCreationView:selectedCreationView, orbitSelectedCreation:orbitSelectedCreation,
     createSelectionFrame:createSelectionFrame, selectionNeedsReview:selectionNeedsReview,
     setBuilderPrintScale:setBuilderPrintScale,
@@ -2665,6 +2811,7 @@
     HANDOFF_UNIT_MM: HANDOFF_UNIT_MM,
     FALLBACK_BED_MM: Object.assign({}, FALLBACK_BED_MM),
     builderBedLimits: builderBedLimits,
+    suggestedPrintScale: suggestedPrintScale,
     storedPrinterProfile: storedPrinterProfile,
     measurementIsStudentBuild: measurementIsStudentBuild,
     printVolumeSentence: printVolumeSentence,
@@ -2977,17 +3124,40 @@
 `
       ,GEOMETRY_ACTIVITY_GUIDE_CSS
       ,GEOMETRY_BUILDER_READABILITY_CSS
+      ,'.gwe-print-ready{scroll-margin-block:12px}.gwe-print-ready #gwe-print-title{margin:0;color:#f5f0e5;font-size:18px;line-height:1.3;letter-spacing:-.02em}.gwe-print-ready #gwe-print-title:focus{outline:3px solid #e8c884;outline-offset:4px;border-radius:3px}.gwe-print-intro,.gwe-print-next-step{margin:8px 0 12px;color:#d9e6dc;font-size:13px;line-height:1.6}.gwe-print-step{margin:16px 0 8px;padding-top:12px;border-top:1px solid #a1bea44f;color:#f5f0e5;font-size:14px;line-height:1.5}.gwe-print-profile-note{margin:8px 0;color:#c6d7cc;font-size:12px;line-height:1.6}.gwe-fit-scale{box-sizing:border-box;width:100%;min-height:44px;margin:8px 0;padding:10px;border:1px solid #d4e8ca;border-radius:8px;background:#d4e8ca;color:#112d2b;font:650 13px/1.4 inherit;cursor:pointer}.gwe-scale-pending{margin:10px 0;color:#e8d9b4;font-size:13px;line-height:1.6}.gwe-print-export-status{margin:10px 0 0;overflow-wrap:anywhere;color:#dcf1dc;font-size:13px;line-height:1.6}.gwe-print-export-status:empty{display:none}.gwe-print-export-status:not(:empty){padding:10px;border:1px solid #a1bea480;border-radius:8px;background:#d4e8ca0a}.gwe-print-export-status[role=alert]{color:#ffe0d4;border-color:#efb59f}.gwe-print-ready .gwe-connection-check{margin:0}.gwe-print-ready .gwe-print-export-actions{grid-template-columns:1fr}.gwe-print-ready .gwe-print-export-actions button{font-size:14px;min-height:48px}.gwe-print-ready :is(input,select,button,summary){scroll-margin-block:12px}.gwe-print-ready input:focus-visible,.gwe-print-ready select:focus-visible{outline:3px solid #e8c884;outline-offset:2px}'
+      ,'#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-print-ready :is(p,button,label,summary){font-size:16px;line-height:1.6}.theme-contrast .gwe-print-ready :is(h3,h4),[data-stem-theme=contrast] .gwe-print-ready :is(h3,h4){color:#fff}.theme-contrast .gwe-print-ready #gwe-print-title:focus,[data-stem-theme=contrast] .gwe-print-ready #gwe-print-title:focus{outline-color:#ff0}@media(forced-colors:active){.gwe-print-ready,.gwe-print-ready :is(h3,h4,p){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gwe-print-ready :is(button,input,select){background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.gwe-print-ready :focus{outline-color:Highlight!important}}'
+      ,'.gwe-fit-scale{font:inherit;font-size:13px;font-weight:650;line-height:1.4}.gwe-file-print-dimensions,.gwe-file-scale-pending{font-size:14px;line-height:1.6;overflow-wrap:anywhere}.gwe-file-scale-pending,.gwe-file-status[data-state="error"]{padding:10px;border:1px solid #e2a58f;border-radius:8px;background:#492f2b;color:#ffe5dc}.gwe-file-print-dimensions{font-weight:650}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-showcase-files :is(p,button,label,input,select,span){font-size:16px!important;line-height:1.6}.theme-contrast .gwe-showcase-files :is(.gwe-file-scale-pending,.gwe-file-status),[data-stem-theme=contrast] .gwe-showcase-files :is(.gwe-file-scale-pending,.gwe-file-status){background:#000;color:#fff;border-color:#ff0}@media(forced-colors:active){.gwe-showcase-files :is(.gwe-file-scale-pending,.gwe-file-status){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}'
     ].join('');
+    style.textContent += '.gwe-builder-dock[data-print-preparing="true"]>:is(.gwe-tool-finder-bar,.gwe-workflow,.gwe-builder-quick-actions){display:none}.gwe-builder-dock[data-print-preparing="true"] .gwe-builder-body{scroll-padding:12px}.gwe-builder-dock[data-print-preparing="true"] .gwe-collapse{min-width:60px;width:auto;padding-inline:10px;font-size:13px}@media(max-width:800px),(max-height:520px){#geoworld-fs-workspace .gwe-builder-dock[data-print-preparing="true"][data-collapsed="false"]{top:68px!important;bottom:8px!important;height:auto!important;max-height:calc(100% - 76px)!important}}';
+    style.textContent += '.gwe-builder-dock[data-coordinate-selecting="true"]>:is(.gwe-tool-finder-bar,.gwe-workflow,.gwe-builder-quick-actions){display:none}.gwe-builder-dock[data-coordinate-selecting="true"] .gwe-builder-body>:not(.gwe-direct-controls),.gwe-builder-dock[data-coordinate-selecting="true"] .gwe-direct-controls>:not(.gwe-coordinate-selection){display:none}.gwe-builder-dock[data-coordinate-selecting="true"] .gwe-direct-controls{border:0;margin:0;padding:0}.gwe-builder-dock[data-coordinate-selecting="true"] .gwe-builder-body{scroll-padding:12px}.gwe-builder-dock[data-coordinate-selecting="true"] .gwe-collapse{min-width:60px;width:auto;padding-inline:10px;font-size:13px}@media(max-width:800px),(max-height:520px){#geoworld-fs-workspace .gwe-builder-dock[data-coordinate-selecting="true"][data-collapsed="false"]{top:68px!important;bottom:8px!important;height:auto!important;max-height:calc(100% - 76px)!important}}@media(max-height:520px) and (min-width:521px){#geoworld-fs-workspace .gwe-builder-dock[data-coordinate-selecting="true"][data-collapsed="false"]{left:7px!important;right:7px!important;width:auto!important;max-width:none!important}.gwe-coordinate-selection-form{grid-template-columns:repeat(2,minmax(0,1fr))}.gwe-coordinate-selection-form>:not(fieldset){grid-column:1/-1}}';
+    style.textContent += '.gwe-coordinate-selection{min-width:0}.gwe-coordinate-selection-form{display:grid;gap:10px;margin-top:14px}.gwe-coordinate-corner{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;padding:10px;border:1px solid #718984;border-radius:8px;min-width:0}.gwe-coordinate-corner legend{padding:0 5px;color:#e0ece5;font-size:13px;font-weight:650}.gwe-coordinate-corner label{display:grid;gap:5px;min-width:0;font-size:13px;color:#d9e6dc}.gwe-coordinate-corner input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:8px;border:1px solid #718984;border-radius:6px;background:#253b35;color:#f5f0e5;font:inherit}.gwe-coordinate-selection :is(button,select){min-height:44px;width:100%;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere}.gwe-coordinate-status,.gwe-coordinate-review{font-size:13px;line-height:1.6;overflow-wrap:anywhere;color:#dcece0}.gwe-coordinate-status:empty{display:none}.gwe-coordinate-status[role=alert]{color:#ffe2d6;border-left:3px solid #efa88b;padding-left:10px}.gwe-coordinate-review{margin-top:10px;padding:12px;border:1px solid #96b8a0;border-radius:8px;background:#d4e8ca0a}.gwe-coordinate-review p{margin:0 0 10px}.gwe-coordinate-selection input:focus-visible,.gwe-coordinate-selection select:focus-visible{outline:3px solid #e8c884;outline-offset:2px}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-coordinate-selection :is(p,label,legend,input,select,button){font-size:16px;line-height:1.6}.theme-contrast .gwe-coordinate-selection :is(fieldset,legend,label,input,select,p),[data-stem-theme=contrast] .gwe-coordinate-selection :is(fieldset,legend,label,input,select,p){background:#000;color:#fff;border-color:#0ff}@media(forced-colors:active){.gwe-coordinate-selection :is(fieldset,legend,label,p,.gwe-coordinate-review){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gwe-coordinate-selection :is(input,select,button){background:Field!important;color:FieldText!important;border-color:FieldText!important}.gwe-coordinate-selection :focus-visible{outline-color:Highlight!important}}';
+    style.textContent += '.gwe-builder-dock[data-print-preparing="true"] .gwe-builder-body>:not(.gwe-print-ready):not(.gwe-edit-preview){display:none}.gwe-builder-dock[data-selection-choosing="true"]>:is(.gwe-tool-finder-bar,.gwe-workflow,.gwe-builder-quick-actions){display:none}.gwe-builder-dock[data-selection-choosing="true"] .gwe-builder-body>:not(.gwe-selection-chooser){display:none}.gwe-builder-dock[data-selection-choosing="true"] .gwe-collapse{min-width:60px;width:auto;padding-inline:10px;font-size:13px}.gwe-selection-chooser{min-width:0}.gwe-selection-chooser h3{margin:6px 0 10px;font-size:23px;line-height:1.25;color:#f5f0e5}.gwe-selection-chooser p{font-size:13px;line-height:1.6;color:#d9e6dc;margin:8px 0 14px}.gwe-selection-chooser .gwe-journey-kicker{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#bcd8ca;margin:0}.gwe-selection-choices{display:grid;gap:10px}.gwe-builder-dock .gwe-selection-choices button{display:block;box-sizing:border-box;min-height:76px;width:100%;padding:14px;text-align:left;white-space:normal;border-radius:10px;border:1px solid #73998a;background:#29423b;color:#f5f0e5;font:inherit;cursor:pointer}.gwe-selection-choices strong,.gwe-selection-choices span{display:block}.gwe-selection-choices strong{font-size:15px;line-height:1.4}.gwe-selection-choices span{margin-top:5px;font-size:12px;line-height:1.5;color:#d0e2d8}.gwe-selection-choices button:disabled{opacity:.6;cursor:default}.gwe-selection-chooser .gwe-selection-choice-error{color:#ffe2d6;border-left:3px solid #efa88b;padding-left:10px}.gwe-selection-chooser>button{width:100%;min-height:44px;margin-top:12px}.gwe-print-jumps{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}.gwe-print-jumps button{flex:1;min-width:84px;min-height:44px;font-size:12px;white-space:normal;padding:8px}.gwe-print-change-selection,.gwe-connection-options{width:100%;min-height:44px;margin:10px 0;font:inherit}.gwe-print-ready h4.gwe-print-ready-label{margin:0;font-size:14px}.gwe-selection-chooser :focus-visible,.gwe-selection-chooser h3:focus,.gwe-print-ready h4:focus,#gwe-selected-creation-title:focus{outline:3px solid #e8c884;outline-offset:3px}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-selection-chooser :is(p,button,strong,span){font-size:16px;line-height:1.6}.theme-contrast .gwe-selection-chooser :is(h3,p,strong,span),[data-stem-theme=contrast] .gwe-selection-chooser :is(h3,p,strong,span){color:#fff}.theme-contrast .gwe-selection-choices button,[data-stem-theme=contrast] .gwe-selection-choices button{background:#000;color:#fff;border-color:#0ff}@media(forced-colors:active){.gwe-selection-chooser :is(h3,p,strong,span){color:CanvasText!important}.gwe-selection-choices button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.gwe-selection-chooser :focus{outline-color:Highlight!important}}@media(max-width:800px),(max-height:520px){#geoworld-fs-workspace .gwe-builder-dock[data-selection-choosing="true"][data-collapsed="false"]{top:68px!important;bottom:8px!important;height:auto!important;max-height:calc(100% - 76px)!important}}@media(max-height:520px) and (min-width:521px){#geoworld-fs-workspace .gwe-builder-dock:is([data-selection-choosing="true"],[data-print-preparing="true"])[data-collapsed="false"]{left:7px!important;right:7px!important;width:auto!important;max-width:none!important}.gwe-selection-choices{grid-template-columns:repeat(3,minmax(0,1fr))}}';
+    style.textContent += '.gwe-builder-dock[data-coordinate-building="true"]>:is(.gwe-tool-finder-bar,.gwe-workflow,.gwe-builder-quick-actions){display:none}.gwe-builder-dock[data-coordinate-building="true"] .gwe-builder-body>:not(.gwe-coordinate-builder):not(.gwe-edit-preview){display:none}.gwe-builder-dock[data-coordinate-building="true"] .gwe-collapse{min-width:60px;width:auto;padding-inline:10px;font-size:13px}.gwe-coordinate-builder{min-width:0}.gwe-coordinate-builder>summary{font-size:17px}.gwe-coordinate-builder p{color:#d9e6dc;font-size:13px;line-height:1.6;margin:9px 0 14px}.gwe-coordinate-build-form{display:grid;gap:14px;min-width:0}.gwe-coordinate-build-form label{display:grid;gap:6px;min-width:0;font-size:13px;line-height:1.5;color:#dce9df}.gwe-coordinate-build-form :is(input,select){box-sizing:border-box;width:100%;min-width:0;min-height:44px;border:1px solid #8da99c;border-radius:7px;padding:8px;background:#253b35;color:#f5f0e5;font:inherit}.gwe-coordinate-build-form button{min-height:48px;font:inherit}.gwe-coordinate-build-form .gwe-build-axis-help{margin:-6px 0 0;font-size:12px}.gwe-build-dimensions,.gwe-build-recipe{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.gwe-build-dimensions label:first-child:last-child{grid-column:1/-1}.gwe-coordinate-build-form [role=alert]{margin:0;padding:10px;border-left:3px solid #efa88b;background:#613c2926;color:#ffe2d6}.gwe-coordinate-print-next{margin-bottom:8px;background:#d4e8ca;color:#173b35}.gwe-coordinate-builder :focus-visible,.gwe-coordinate-builder [role=alert]:focus{outline:3px solid #e8c884;outline-offset:3px}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-coordinate-builder :is(p,label,legend,input,select,button){font-size:16px;line-height:1.6}.theme-contrast .gwe-coordinate-builder :is(p,label,legend,input,select),[data-stem-theme=contrast] .gwe-coordinate-builder :is(p,label,legend,input,select){background:#000;color:#fff;border-color:#0ff}@media(forced-colors:active){.gwe-coordinate-builder :is(p,label,legend){color:CanvasText!important}.gwe-coordinate-builder :is(input,select,button){background:Field!important;color:FieldText!important;border-color:FieldText!important}.gwe-coordinate-builder :focus{outline-color:Highlight!important}}@media(max-width:800px),(max-height:520px){#geoworld-fs-workspace .gwe-builder-dock[data-coordinate-building="true"][data-collapsed="false"]{top:68px!important;bottom:8px!important;height:auto!important;max-height:calc(100% - 76px)!important}}@media(max-height:520px) and (min-width:521px){#geoworld-fs-workspace .gwe-builder-dock[data-coordinate-building="true"][data-collapsed="false"]{left:7px!important;right:7px!important;width:auto!important;max-width:none!important}.gwe-coordinate-build-form{grid-template-columns:repeat(2,minmax(0,1fr))}.gwe-coordinate-build-form>fieldset,.gwe-coordinate-build-form>p,.gwe-coordinate-build-form>button{grid-column:1/-1}.gwe-builder-dock[data-coordinate-building="true"] .gwe-builder-footer:has(.gwe-coordinate-print-next){display:flex;gap:8px}.gwe-builder-dock[data-coordinate-building="true"] .gwe-coordinate-print-next{margin:0}}';
+    style.textContent += '.gwe-builder-dock .gwe-preview-return{min-height:44px;width:100%;padding:10px;font:inherit;white-space:normal}.gwe-preview-return:focus-visible{outline:3px solid #e8c884;outline-offset:3px}@media(max-height:520px) and (min-width:521px){.gwe-builder-dock:is([data-coordinate-building=true],[data-print-preparing=true]) .gwe-preview-footer .gwe-preview-buttons{grid-template-columns:repeat(3,minmax(0,1fr))}.gwe-builder-dock:is([data-coordinate-building=true],[data-print-preparing=true]) .gwe-preview-footer .gwe-preview-buttons button:last-child{grid-column:auto}}';
+    style.textContent += '.gwe-build-context{margin:12px 0 18px;padding:12px;border:1px solid #779789;border-radius:10px;background:#ffffff06}.gwe-build-context p{margin:0 0 10px}.gwe-build-history{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.gwe-builder-dock .gwe-build-history button{min-height:44px;white-space:normal;font:inherit;padding:8px}.gwe-build-history [aria-disabled=true]{opacity:.55;cursor:default}.gwe-build-continue{min-width:0;margin:0;padding:12px;border:1px solid #779789;border-radius:10px}.gwe-build-continue legend{font-size:13px;font-weight:700;padding-inline:5px}.gwe-build-continue p{margin:4px 0 12px}.gwe-build-continue button{width:100%;margin-top:10px}.gwe-coordinate-build-form [data-gwe-position-status]{margin:12px 0 0;padding-left:10px;border-left:3px solid #b9dac9}.theme-contrast .gwe-build-context,.theme-contrast .gwe-build-continue,[data-stem-theme=contrast] .gwe-build-context,[data-stem-theme=contrast] .gwe-build-continue{background:#000;border-color:#fff}@media(forced-colors:active){.gwe-build-context,.gwe-build-continue{border-color:CanvasText}.gwe-build-history button{background:ButtonFace!important;color:ButtonText!important;border:1px solid ButtonText!important}.gwe-build-history [aria-disabled=true]{opacity:1;color:GrayText!important;border-color:GrayText!important}}';
     document.head.appendChild(style);
   }
 
   function trapDialogKeys(event, close) {
     if (event.key === 'Escape') { event.preventDefault(); close(); return; }
     if (event.key !== 'Tab') return;
-    var controls = Array.prototype.slice.call(event.currentTarget.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'));
-    if (!controls.length) return;
+    var dialog = event.currentTarget;
+    var controls = Array.prototype.slice.call(dialog.querySelectorAll('button,[href],input,select,textarea,summary,[tabindex],[contenteditable="true"]')).filter(function(control) {
+      if (control.tabIndex < 0 || control.matches(':disabled') || control.closest('[inert],[hidden],[aria-hidden="true"]')) return false;
+      for (var node = control; node && node !== dialog; node = node.parentElement) {
+        var style = window.getComputedStyle(node);
+        if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+        if (node.tagName === 'DETAILS' && !node.open) {
+          var summary = node.querySelector('summary');
+          if (!summary || !summary.contains(control)) return false;
+        }
+      }
+      return true;
+    });
+    if (!controls.length) { event.preventDefault(); dialog.focus(); return; }
     var first = controls[0], last = controls[controls.length - 1];
-    if (event.shiftKey && (document.activeElement === first || document.activeElement === event.currentTarget)) { event.preventDefault(); last.focus(); }
+    if (controls.indexOf(document.activeElement) === -1) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+    else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
 
@@ -3347,6 +3517,7 @@
       var editableRecoveryRef = React.useRef(null), editableOpenRef = React.useRef(null), showcaseFileChooseRef = React.useRef(null);
       var _showcaseFilesOpen = React.useState(false), showcaseFilesOpen = _showcaseFilesOpen[0], setShowcaseFilesOpen = _showcaseFilesOpen[1];
       var _showcaseFileNotice = React.useState(''), showcaseFileNotice = _showcaseFileNotice[0], setShowcaseFileNotice = _showcaseFileNotice[1];
+      var showcaseFileErrorState = React.useState(false), showcaseFileError = showcaseFileErrorState[0], setShowcaseFileError = showcaseFileErrorState[1];
       var _editablePreview = React.useState(null), editablePreview = _editablePreview[0], setEditablePreview = _editablePreview[1];
       var _editableError = React.useState(''), editableError = _editableError[0], setEditableError = _editableError[1];
       var _editableBusy = React.useState(false), editableBusy = _editableBusy[0], setEditableBusy = _editableBusy[1];
@@ -3557,6 +3728,79 @@
       var _selectionDepth=React.useState('visible'),selectionDepth=_selectionDepth[0],setSelectionDepth=_selectionDepth[1];
       var _pointerMode=React.useState('build'),pointerMode=_pointerMode[0],setPointerMode=_pointerMode[1];
       var _selectionOperation=React.useState('replace'),selectionOperation=_selectionOperation[0],setSelectionOperation=_selectionOperation[1];
+      var _coordinateActive=React.useState(false),coordinateActive=_coordinateActive[0],setCoordinateActive=_coordinateActive[1];
+      var _coordinateBuildActive=React.useState(false),coordinateBuildActive=_coordinateBuildActive[0],setCoordinateBuildActive=_coordinateBuildActive[1];
+      var _coordinateBuild=React.useState({mode:'block',origin:{x:'0',y:'1',z:'0'},axis:'x',length:'4',width:'4',height:'3',type:'stone',shape:'cube',rotation:'0',selectionMode:'new'}),coordinateBuild=_coordinateBuild[0],setCoordinateBuild=_coordinateBuild[1];
+      var _buildAttachFace=React.useState('y+'),buildAttachFace=_buildAttachFace[0],setBuildAttachFace=_buildAttachFace[1];
+      var _buildPositionNotice=React.useState(''),buildPositionNotice=_buildPositionNotice[0],setBuildPositionNotice=_buildPositionNotice[1];
+      var _buildInvalid=React.useState([]),buildInvalid=_buildInvalid[0],setBuildInvalid=_buildInvalid[1];
+      var _buildError=React.useState(''),buildError=_buildError[0],setBuildError=_buildError[1];
+      React.useEffect(function(){if(!isSandbox || !data.worldActive || homeOpen || data.showcaseActive || data.showSandboxLauncher || data.sandboxDockCollapsed)setCoordinateBuildActive(false);},[isSandbox,data.worldActive,homeOpen,data.showcaseActive,data.showSandboxLauncher,data.sandboxDockCollapsed]);
+      var _selectionChooser=React.useState(false),selectionChooserOpen=_selectionChooser[0],setSelectionChooserOpen=_selectionChooser[1];
+      var _selectionIntent=React.useState(''),selectionIntent=_selectionIntent[0],setSelectionIntent=_selectionIntent[1];
+      var _selectionChoiceError=React.useState(''),selectionChoiceError=_selectionChoiceError[0],setSelectionChoiceError=_selectionChoiceError[1];
+      React.useEffect(function(){if(!isSandbox || !data.worldActive || homeOpen || data.showcaseActive || data.showSandboxLauncher || data.sandboxDockCollapsed){setSelectionChooserOpen(false);setSelectionIntent('');}},[isSandbox,data.worldActive,homeOpen,data.showcaseActive,data.showSandboxLauncher,data.sandboxDockCollapsed]);
+      React.useEffect(function(){setCoordinateActive(false);},[data.activeLesson,homeOpen,data.showcaseActive,data.showSandboxLauncher,data.sandboxDockCollapsed]);
+      var _coordinateRange=React.useState({from:{x:'0',y:'1',z:'0'},to:{x:'0',y:'1',z:'0'}}),coordinateRange=_coordinateRange[0],setCoordinateRange=_coordinateRange[1];
+      var _coordinateMaterial=React.useState('all'),coordinateMaterial=_coordinateMaterial[0],setCoordinateMaterial=_coordinateMaterial[1];
+      var _coordinatePreview=React.useState(null),coordinatePreview=_coordinatePreview[0],setCoordinatePreview=_coordinatePreview[1];
+      var _coordinateNotice=React.useState(''),coordinateNotice=_coordinateNotice[0],setCoordinateNotice=_coordinateNotice[1];
+      var _coordinateInvalid=React.useState([]),coordinateInvalid=_coordinateInvalid[0],setCoordinateInvalid=_coordinateInvalid[1];
+      var _coordinateError=React.useState(false),coordinateError=_coordinateError[0],setCoordinateError=_coordinateError[1];
+      function clearCoordinateReview(){setCoordinatePreview(null);setCoordinateNotice('');setCoordinateInvalid([]);setCoordinateError(false);}
+      React.useEffect(function(){clearCoordinateReview();},[selectionOperation,data.activeLesson,window[ENGINE_KEY] && window[ENGINE_KEY]._currentLesson]);
+      function changeCoordinateField(side,axis,value){
+        setCoordinateRange(function(previous){var next=Object.assign({},previous);next[side]=Object.assign({},previous[side]);next[side][axis]=value;return next;});clearCoordinateReview();
+      }
+      function useCoordinateBounds(selectionOnly){
+        var bounds=coordinateSelectionBounds(window[ENGINE_KEY],selectionOnly);
+        clearCoordinateReview();
+        if(!bounds){setCoordinateError(true);setCoordinateNotice(selectionOnly?'Select your blocks first to use their bounds.':'Place your own blocks first, then choose their bounds.');return;}
+        var next={from:{},to:{}};['from','to'].forEach(function(side){['x','y','z'].forEach(function(axis){next[side][axis]=String(bounds[side][axis]);});});
+        setCoordinateRange(next);setCoordinateMaterial('all');
+        setCoordinateNotice('Bounds filled. Review the matching blocks before applying your selection.');
+      }
+      function reviewCoordinateSelection(event){
+        event.preventDefault();
+        var result=previewCoordinateSelection(window[ENGINE_KEY],{from:coordinateRange.from,to:coordinateRange.to,operation:selectionOperation,material:coordinateMaterial});
+        setCoordinateInvalid(result.invalidFields || []);setCoordinateError(!result.ok);setCoordinatePreview(result.ok?result:null);
+        setCoordinateNotice(result.ok?result.count+' matching block'+(result.count===1?'':'s')+'. After applying: '+result.resultingCount+' selected. Your blocks stay unchanged.':result.reason);
+        if(!result.ok && result.invalidFields && result.invalidFields.length)focusPrintElement('#gwe-select-'+result.invalidFields[0].replace('.','-'));
+      }
+      function applyCoordinateSelection(){
+        var live=window[ENGINE_KEY],result=commitCoordinateSelection(live,coordinatePreview);
+        setCoordinatePreview(null);setCoordinateError(!result.ok);
+        if(!result.ok){setCoordinateNotice(result.reason);focusPrintElement('#gwe-coordinate-review');return;}
+        changePointerMode('build');
+        var selected=selectionMeasurement(live);
+        patchGeometryState(ctx,{measureResult:selected?selected.measurement:null,builderPanel:'build',builderPrintCheck:null});
+        setCoordinateNotice(result.count?'Selected '+result.count+' block'+(result.count===1?'':'s')+'. The outline is ready for editing and printing.':'Selection cleared. Your blocks stay unchanged.');
+        if(result.count && selectionIntent==='print'){prepareSelectedPrint();return;}
+        focusPrintElement('#gwe-coordinate-review');
+      }
+      function closeCoordinateSelection(){setCoordinateActive(false);setSelectionIntent('');focusPrintElement('.gwe-coordinate-selection > summary');}
+      function renderCoordinateSelection(){
+        return h('details',{className:'gwe-details gwe-coordinate-selection',open:coordinateActive,onToggle:function(event){var open=event.currentTarget.open;setCoordinateActive(open);if(open){setPrintPreparationActive(false);focusPrintElement('.gwe-coordinate-selection > summary');}},onKeyDown:function(event){if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeCoordinateSelection();}}},h('summary',null,'Select by coordinates'),
+          h('p',{id:'gwe-coordinate-selection-help',className:'gwe-builder-note'},'Select whole grid cells, including hidden blocks. Both corners are included. X = across, Y = up, Z = depth.'),
+          h('div',{className:'gwe-builder-actions'},
+            h('button',{type:'button','data-gwe-selection-bounds':'all',onClick:function(){useCoordinateBounds(false);}},'Use all my blocks'),
+            h('button',{type:'button','data-gwe-selection-bounds':'selected',disabled:!hasRetainedSelection,onClick:function(){useCoordinateBounds(true);}},'Use selection bounds')),
+          h('form',{className:'gwe-coordinate-selection-form',noValidate:true,'aria-describedby':'gwe-coordinate-selection-help',onSubmit:reviewCoordinateSelection},
+            ['from','to'].map(function(side){return h('fieldset',{key:side,className:'gwe-coordinate-corner'},h('legend',null,side==='from'?'First corner':'Opposite corner'),
+              ['x','y','z'].map(function(axis){var field=side+'.'+axis,id='gwe-select-'+side+'-'+axis,invalid=coordinateInvalid.indexOf(field)!==-1;return h('label',{key:axis,htmlFor:id},axis.toUpperCase(),
+                h('input',{id:id,type:'number',inputMode:'numeric',step:1,min:axis==='y'?1:-64,max:axis==='y'?128:64,value:coordinateRange[side][axis],'aria-invalid':invalid?'true':undefined,'aria-describedby':invalid?'gwe-coordinate-selection-status':undefined,onChange:function(event){changeCoordinateField(side,axis,event.target.value);}}));}));}),
+            h('label',{className:'gwe-edit-label',htmlFor:'gwe-select-operation'},'Selection action'),
+            h('select',{id:'gwe-select-operation',value:selectionOperation,onChange:function(event){setSelectionOperation(event.target.value);clearCoordinateReview();}},[['replace','Replace selection'],['add','Add to selection'],['remove','Remove from selection']].map(function(choice){return h('option',{key:choice[0],value:choice[0]},choice[1]);})),
+            h('label',{className:'gwe-edit-label',htmlFor:'gwe-select-material'},'Include material'),
+            h('select',{id:'gwe-select-material',value:coordinateMaterial,onChange:function(event){setCoordinateMaterial(event.target.value);clearCoordinateReview();}},h('option',{value:'all'},'All materials'),BLOCK_TYPES.map(function(type){return h('option',{key:type.id,value:type.id},type.name);})),
+            h('p',{className:'gwe-builder-note'},'Bounds may include other blocks between the corners. Review the matches before changing the outline.'),
+            h('button',{id:'gwe-coordinate-review',type:'submit'},'Review selection')),
+          h('p',{id:'gwe-coordinate-selection-status',className:'gwe-coordinate-status',role:coordinateError?'alert':'status','aria-atomic':'true'},coordinateNotice),
+          coordinatePreview && h('div',{'data-gwe-coordinate-preview':'true',className:'gwe-coordinate-review'},
+            h('p',null,['x','y','z'].map(function(axis){return axis.toUpperCase()+' '+coordinatePreview.bounds.min[axis]+' to '+coordinatePreview.bounds.max[axis];}).join(' · ')),
+            h('p',null,coordinatePreview.count+' matching block'+(coordinatePreview.count===1?'':'s')+' · '+coordinatePreview.resultingCount+' selected after applying'),
+            h('button',{type:'button',className:'gwe-primary','data-gwe-apply-coordinate-selection':'true',onClick:applyCoordinateSelection},selectionIntent==='print' && coordinatePreview.resultingCount?'Use selection & prepare print':'Apply selection')));
+      }
       var starters=React.useMemo(architecturalStarters,[]);
       var starterCards=React.useMemo(function(){return starterOpen?starters.filter(function(s){return s.category===starterCategory;}).map(function(s){return {stamp:s,image:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(activitySnapshotSvg({blocks:s.blocks}))};}):[];},[starterOpen,starterCategory,starters]);
       var configuredStarter=React.useMemo(function(){return configureArchitecturalStarter(starterId,starterOptions);},[starterId,starterOptions]);
@@ -3588,18 +3832,46 @@
         return true;
         });
       }
+      function focusWorldShelf(id){
+        window.requestAnimationFrame(function(){
+          var shelf=document.querySelector('.gwe-world-shelf');if(!shelf)return;
+          var card=id && Array.prototype.find.call(shelf.querySelectorAll('[data-gwe-project-id]'),function(node){return node.getAttribute('data-gwe-project-id')===id;});
+          var target=card && card.querySelector('.gwe-project-pick') || shelf.querySelector('.gwe-project-pick') || shelf.querySelector('h2');
+          if(target && target.isConnected)target.focus();
+        });
+      }
+      function downloadShelfProject(project){
+        var result=downloadWorldProject(project.id);
+        if(result.projects && (result.ok || result.missing || result.refresh))setWorldShelf({ok:true,projects:result.projects});
+        if(result.missing){setProjectChoice('');setRemoveProject('');focusWorldShelf();}
+        if(result.ok){
+          if(result.project.version!==project.version){setRemoveProject('');focusWorldShelf(project.id);}
+          publishProjectNotice('Downloaded '+result.project.world.title+' from the latest saved version in this browser.');
+        }else publishProjectNotice(result.reason);
+      }
+      function removeShelfProject(project){
+        var live=window[ENGINE_KEY];
+        if(live && live._workshopProjectId===project.id){setRemoveProject('');publishProjectNotice('This is now your current project. Open another project before removing it from the shelf.');focusWorldShelf(project.id);return;}
+        var result=removeWorldProject(project.id,undefined,removeProject && removeProject.version);
+        if(result.ok || result.conflict || result.missing){
+          setWorldShelf({ok:true,projects:result.projects});setRemoveProject('');
+          if(result.ok || result.missing)setProjectChoice('');
+          publishProjectNotice(result.ok?'Removed '+project.world.title+' from this browser.':result.reason);
+          focusWorldShelf(result.conflict?project.id:null);
+        }else publishProjectNotice(result.reason);
+      }
       function renderWorldShelf(){
-        return h('section',{className:'gwe-world-shelf','aria-label':__alloT('stem.geometryworld_builder.my_worlds','My Worlds')},h('div',{className:'gwe-shelf-heading'},h('h2',null,'My Worlds'),h('span',null,worldShelf.projects.length+' / 8 projects')),
+        return h('section',{className:'gwe-world-shelf','aria-label':__alloT('stem.geometryworld_builder.my_worlds','My Worlds')},h('div',{className:'gwe-shelf-heading'},h('h2',{tabIndex:-1},'My Worlds'),h('span',null,worldShelf.projects.length+' / 8 projects')),
           h('p',null,'Free Build drafts saved on this browser. Blocks, shapes, materials, and garden choice are kept. Download JSON for a portable copy.'),
           !worldShelf.ok && h('p',{role:'status'},worldShelf.reason),
           !worldShelf.projects.length && h('p',{className:'gwe-shelf-empty'},'Your next creation belongs here. Start building and a draft will appear automatically.'),
-          h('div',{className:'gwe-project-grid'},projectCards.map(function(card){var p=card.project;return h('article',{className:'gwe-project-card',key:p.id},
+          h('div',{className:'gwe-project-grid'},projectCards.map(function(card){var p=card.project;return h('article',{className:'gwe-project-card',key:p.id,'data-gwe-project-id':p.id},
             h('button',{type:'button',className:'gwe-project-pick','aria-pressed':projectChoice===p.id,onClick:function(){setProjectChoice(p.id);setRemoveProject('');}},card.image?h('img',{src:card.image,alt:'',loading:'lazy'}):h('span',{className:'gwe-project-empty-art','aria-hidden':'true'},'◇'),h('strong',null,p.world.title),h('span',null,p.world.blocks.length+' blocks · '+new Date(p.savedAt).toLocaleDateString()),window[ENGINE_KEY] && window[ENGINE_KEY]._workshopProjectId===p.id && h('span',{className:'gwe-project-current'},'Current project')),
             projectChoice===p.id && h('div',{className:'gwe-project-actions'},h('p',null,'Open these editable blocks in Free Build. Your current Free Build draft is saved first.'),h('button',{type:'button',className:'gwe-primary',onClick:function(){openShelfProject(p);}},'Open this project'),
               h('button',{type:'button',disabled:!p.world.blocks.length,onClick:function(){duplicateShelfProject(p);}},'Duplicate project'),
-              h('button',{type:'button',disabled:!p.world.blocks.length,onClick:function(){downloadBlob(new Blob([JSON.stringify(p.world,null,2)],{type:'application/json'}),safeFilePart(p.world.title)+'.json');}},'Download project JSON'),
-              h('button',{type:'button',disabled:!!(window[ENGINE_KEY] && window[ENGINE_KEY]._workshopProjectId===p.id),onClick:function(){setRemoveProject(p.id);}},'Remove from shelf'),
-              removeProject===p.id && h('div',{className:'gwe-project-remove'},h('p',null,'Remove this saved project from this browser? Download a copy first if you want to keep it.'),h('button',{type:'button',onClick:function(){var result=removeWorldProject(p.id);if(result.ok){setWorldShelf(result);setProjectChoice('');setRemoveProject('');}else publishProjectNotice(result.reason);}},'Confirm removal'),h('button',{type:'button',onClick:function(){setRemoveProject('');}},'Keep project'))));})),
+              h('button',{type:'button',disabled:!p.world.blocks.length,onClick:function(){downloadShelfProject(p);}},'Download project JSON'),
+              h('button',{type:'button',disabled:!!(window[ENGINE_KEY] && window[ENGINE_KEY]._workshopProjectId===p.id),onClick:function(){setRemoveProject({id:p.id,version:p.version});}},'Remove from shelf'),
+              removeProject && removeProject.id===p.id && h('div',{className:'gwe-project-remove'},h('p',null,'Remove this saved project from this browser? Download a copy first if you want to keep it.'),h('button',{type:'button',onClick:function(){removeShelfProject(p);}},'Confirm removal'),h('button',{type:'button',onClick:function(){setRemoveProject('');focusWorldShelf(p.id);}},'Keep project'))));})),
           h('p',{className:'gwe-project-status',role:'status'},projectNotice));
       }
       function renderStarterLibrary(){
@@ -3621,13 +3893,28 @@
             h('button',{type:'button',disabled:!configuredStarter.ok,onClick:function(){if(!configuredStarter.ok)return;var s=configuredStarter.stamp,result=previewBuildStamp(window[ENGINE_KEY],s,stampCoordinates());setSelectionEditPreview(result);setSelectionEditNotice(result.ok?s.name+': '+s.blocks.length+' editable blocks. Review the outline, then apply.':result.reason);}},'Preview starter')));
       }
       function changePointerMode(mode){var live=window[ENGINE_KEY];cancelSelectionPreview();if(live && live.cancelDrawing)live.cancelDrawing(true);if(live && live.setDrawMode)live.setDrawMode('single');setPointerMode(mode);}
+      function selectAimedWorkshopBlock(){
+        var live=window[ENGINE_KEY],hit=live && live.blockUnderCrosshair && live.blockUnderCrosshair(),p=hit && hit.object && hit.object.userData && hit.object.userData.gridPos;
+        var mesh=p && live && live.blocks && live.blocks[keyFor(p)];
+        if(!mesh || !isStudentBlock(mesh.userData)){
+          var message='Aim at a block you placed. Your current selection is unchanged.';
+          setSelectionEditNotice(message);announce(ctx,message,'info');return;
+        }
+        var result=updateWorkshopSelection(live,[p],selectionOperation);
+        if(!result.ok){setSelectionEditNotice(result.reason);return;}
+        cancelSelectionPreview();clearCoordinateReview();
+        setSelectionEditNotice(result.count+' blocks selected.');
+        var selected=selectionMeasurement(live);
+        patchGeometryState(ctx,{measureResult:selected?selected.measurement:null,builderPrintCheck:null});
+      }
       function renderDirectControls(){
         return h('details',{className:'gwe-details gwe-direct-controls'},h('summary',null,'Select blocks & move the camera'),
           h('div',{className:'gwe-pointer-modes',role:'group','aria-label':__alloT('stem.geometryworld_builder.world_pointer_tool','World pointer tool')},[['build','Build'],['select','Select blocks'],['transform','Move handles'],['orbit','Orbit camera']].map(function(m){return h('button',{type:'button',key:m[0],'aria-pressed':pointerMode===m[0],disabled:m[0]==='transform' && !hasRetainedSelection,onClick:function(){changePointerMode(m[0]);}},m[1]);})),
           h('p',{className:'gwe-builder-note'},pointerMode==='select'?'Click a block or drag a rectangle. Choose visible block centers or include hidden blocks below. Shift adds; Alt removes. Escape returns to building.':pointerMode==='transform'?'Drag an axis to preview a grid move. Arrow keys move one block; Shift moves five. The circular arrow previews a 90° rotation around the footprint corner. Apply commits; Escape cancels.':pointerMode==='orbit'?'Drag to orbit. Shift-drag or right-drag to pan. Scroll to zoom. Touch users can drag and use the camera buttons. Escape returns to building.':'Use Select blocks to choose parts of a structure. Orbit camera gives you a cursor-controlled construction view.'),
           pointerMode==='select' && h('label',{className:'gwe-edit-label'},'Selection depth',h('select',{'aria-label':__alloT('stem.geometryworld_builder.selection_depth','Selection depth'),value:selectionDepth,onChange:function(e){setSelectionDepth(e.target.value);}},h('option',{value:'visible'},'Visible block centers'),h('option',{value:'all'},'Include hidden blocks'))),
           pointerMode==='select' && h('label',{className:'gwe-edit-label'},'Selection action',h('select',{'aria-label':__alloT('stem.geometryworld_builder.selection_action','Selection action'),value:selectionOperation,onChange:function(e){setSelectionOperation(e.target.value);}},[['replace','Replace selection'],['add','Add blocks'],['remove','Remove blocks']].map(function(o){return h('option',{key:o[0],value:o[0]},o[1]);}))),
-          pointerMode==='select' && h('button',{type:'button',onClick:function(){var live=window[ENGINE_KEY],hit=live && live.blockUnderCrosshair && live.blockUnderCrosshair(),p=hit && hit.object && hit.object.userData.gridPos,result=updateWorkshopSelection(live,p?[p]:[],selectionOperation);cancelSelectionPreview();setSelectionEditNotice(result.ok?result.count+' blocks selected.':result.reason);var selected=selectionMeasurement(live);patchGeometryState(ctx,{measureResult:selected?selected.measurement:null});}},'Use aimed block for selection'),
+          pointerMode==='select' && h('button',{type:'button',onClick:selectAimedWorkshopBlock},'Use aimed block for selection'),
+          renderCoordinateSelection(),
           hasRetainedSelection && h('div',{className:'gwe-nudge-controls',role:'group','aria-label':__alloT('stem.geometryworld_builder.preview_a_one_block_move','Preview a one-block move')},[['− X',-1,0,0],['+ X',1,0,0],['Down',0,-1,0],['Up',0,1,0],['− Z',0,0,-1],['+ Z',0,0,1]].map(function(a){return h('button',{type:'button',key:a[0],onClick:function(){var offset={x:a[1],y:a[2],z:a[3]},result=previewSelectionEdit(window[ENGINE_KEY],'move',offset);setSelectionEditMode('move');setSelectionOffset({x:String(a[1]),y:String(a[2]),z:String(a[3])});setSelectionEditPreview(result);setSelectionEditNotice(result.ok?'Move one block '+a[0]+'. Review the outline, then apply.':result.reason);}},a[0]);})),
           hasRetainedSelection && h('p',{className:'gwe-builder-note'},'X moves left/right; Z moves in depth. Buttons preview one grid step. Apply preview commits the whole selection.'),
           pointerMode!=='build' && h('button',{type:'button',onClick:function(){patchGeometryState(ctx,{sandboxDockCollapsed:true});focusWorldSurface(0);}},'Open canvas controls'));
@@ -3641,6 +3928,14 @@
       var _selectionEditPreview=React.useState(null), selectionEditPreview=_selectionEditPreview[0], setSelectionEditPreview=_selectionEditPreview[1];
       var _selectionEditNotice=React.useState(''), selectionEditNotice=_selectionEditNotice[0], setSelectionEditNotice=_selectionEditNotice[1];
       var selectionPreviewOwner=React.useRef({kind:'selection-editor'});
+      var previewReturnTarget=React.useRef(null),previewFocusRequest=React.useRef(0);
+      React.useEffect(function(){
+        if(!selectionEditPreview)return;
+        previewFocusRequest.current+=1;
+        var target=document.activeElement,live=window[ENGINE_KEY];
+        if(target && target!==document.body && !target.closest('.gwe-preview-review,.gwe-preview-footer,.gwe-edit-preview,.gwe-pointer-hud'))previewReturnTarget.current={node:target,engine:live,lesson:live && live._currentLesson,selector:target.closest('.gwe-coordinate-builder')?'#gwe-coordinate-build-review':null};
+      },[selectionEditPreview]);
+      React.useEffect(function(){return function(){previewFocusRequest.current+=1;};},[]);
       var _challengeResult=React.useState(null),challengeResult=_challengeResult[0],setChallengeResult=_challengeResult[1];
       var _challengeCelebrate=React.useState(false),challengeCelebrate=_challengeCelebrate[0],setChallengeCelebrate=_challengeCelebrate[1];
       React.useEffect(function(){if(!challengeCelebrate)return undefined;var timer=setTimeout(function(){setChallengeCelebrate(false);},1600);return function(){clearTimeout(timer);};},[challengeCelebrate]);
@@ -3699,7 +3994,7 @@
       React.useEffect(function(){if(!selectionEditPreview || !data.sandboxDockCollapsed)setPreviewReview(false);},[selectionEditPreview,data.sandboxDockCollapsed]);
       React.useEffect(function(){
         if(!previewReview)return undefined;
-        function escape(event){if(event.key!=='Escape' || document.pointerLockElement || (window[ENGINE_KEY] && window[ENGINE_KEY]._pendingWorldTransition))return;event.preventDefault();event.stopPropagation();cancelSelectionPreview();finishPreviewReview();}
+        function escape(event){if(event.key!=='Escape' || document.pointerLockElement || (window[ENGINE_KEY] && window[ENGINE_KEY]._pendingWorldTransition))return;event.preventDefault();event.stopPropagation();completePreview('cancel');}
         window.addEventListener('keydown',escape,true);return function(){window.removeEventListener('keydown',escape,true);};
       },[previewReview]);
       function workshopFocusAllowed(owner,expectedCollapsed,request){
@@ -3713,6 +4008,11 @@
       function navigateWorkshopTool(tool){
         if(!tool || !tool.available)return;
         if(tool.id==='palette'){resumeBuilding('material');return;}
+        if(tool.id==='send'){prepareSelectedPrint();return;}
+        setCoordinateBuildActive(tool.id==='construct');
+        if(tool.id==='construct'){setPrintPreparationActive(false);setSelectionChooserOpen(false);setSelectionIntent('');}
+        setCoordinateActive(tool.id==='coordinates');
+        if(tool.id==='coordinates')setPrintPreparationActive(false);
         var request=setToolFinderOpen(false);patchGeometryState(ctx,{sandboxDockCollapsed:false,builderPanel:'build'});
         var current=window[ENGINE_KEY];
         window.requestAnimationFrame(function(){
@@ -3736,8 +4036,31 @@
           h('div',{className:'gwe-tool-results'},tools.map(function(tool){return h('button',{type:'button',key:tool.id,className:'gwe-tool-result','data-tool':tool.id,disabled:!tool.available,onClick:function(){navigateWorkshopTool(tool);}},h('span',{className:'gwe-tool-group'},tool.group),h('strong',null,tool.title),h('span',null,tool.available?tool.description:tool.id==='send'?'Place blocks before sending a creation to Print Lab.':'Select a creation first to use this tool.'),h('span',{className:'gwe-tool-arrow','aria-hidden':'true'},'↗'));})),
           !hasRetainedSelection && tools.some(function(tool){return tool.selection && !tool.available;}) && h('button',{type:'button',className:'gwe-finder-select',onClick:function(){navigateWorkshopTool(findWorkshopTools('',false).find(function(tool){return tool.id==='select';}));}},'Show selection controls'));
       }
-      function beginPreviewReview(){previewCameraOrigin.current=capturePreviewCamera(window[ENGINE_KEY]);var result=frameBuildPreview(ctx,selectionEditPreview,selectionPreviewOwner.current);if(!result.ok){setSelectionEditNotice(result.reason);return;}setToolFinderOpen(false);setPreviewReview(true);window.requestAnimationFrame(function(){var review=document.querySelector('.gwe-preview-review');if(review)review.focus({preventScroll:true});});}
-      function finishPreviewReview(){setPreviewReview(false);patchGeometryState(ctx,{sandboxDockCollapsed:false});window.requestAnimationFrame(function(){var target=document.querySelector('.gwe-edit-preview') || toolFinderButton.current;if(target){target.tabIndex=-1;target.focus({preventScroll:true});}});}
+      function beginPreviewReview(){previewCameraOrigin.current=capturePreviewCamera(window[ENGINE_KEY]);var result=frameBuildPreview(ctx,selectionEditPreview,selectionPreviewOwner.current);if(!result.ok){setSelectionEditNotice(result.reason);return;}var owner=window[ENGINE_KEY],request=setToolFinderOpen(false),focusRequest=++previewFocusRequest.current;setPreviewReview(true);window.requestAnimationFrame(function(){if(focusRequest!==previewFocusRequest.current || !workshopFocusAllowed(owner,true,request))return;var review=document.querySelector('.gwe-preview-review');if(review)review.focus({preventScroll:true});});}
+      function focusAfterPreview(preferNotice){
+        var owner=window[ENGINE_KEY],request=toolFocusRequest.current,focusRequest=++previewFocusRequest.current,origin=previewReturnTarget.current;
+        window.requestAnimationFrame(function(){
+          if(focusRequest!==previewFocusRequest.current || !workshopFocusAllowed(owner,false,request))return;
+          var dock=document.querySelector('.gwe-builder-dock'),target=preferNotice && dock && dock.querySelector('.gwe-edit-preview');
+          if(!target && printPreparationActive)target=dock && dock.querySelector('#gwe-print-connections');
+          if(!target && origin && origin.engine===owner && origin.lesson===owner._currentLesson && origin.node.isConnected && dock && dock.contains(origin.node))target=origin.node;
+          if(!target && origin && origin.engine===owner && origin.lesson===owner._currentLesson && origin.selector)target=dock && dock.querySelector(origin.selector);
+          if(!target && coordinateBuildActive)target=dock && dock.querySelector('#gwe-coordinate-build-review');
+          target=target || dock && (dock.querySelector('.gwe-creation-editor > summary') || dock.querySelector('.gwe-starter-library > summary')) || toolFinderButton.current;
+          if(!target || !target.isConnected)return;
+          for(var node=target.parentElement;node && node!==dock;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;
+          var body=target.closest('.gwe-builder-body');if(body){var rect=target.getBoundingClientRect(),viewport=body.getBoundingClientRect();if(rect.top<viewport.top || rect.bottom>viewport.bottom)body.scrollTop+=rect.top-viewport.top-12;}
+          try{target.focus({preventScroll:true});}catch(_){target.focus();}
+        });
+      }
+      function finishPreviewReview(){if(!printPreparationActive && selectionEditPreview && selectionEditPreview.kind==='coordinate-build')setCoordinateBuildActive(true);setPreviewReview(false);patchGeometryState(ctx,{sandboxDockCollapsed:false});focusAfterPreview(true);}
+      function completePreview(action){
+        if(!printPreparationActive && selectionEditPreview && selectionEditPreview.kind==='coordinate-build')setCoordinateBuildActive(true);
+        var result=action==='apply'?applyCreationChange():null;
+        if(action==='cancel'){cancelSelectionPreview();setSelectionEditNotice('Preview canceled. Your build is unchanged.');}
+        setPreviewReview(false);patchGeometryState(ctx,{sandboxDockCollapsed:false});
+        focusAfterPreview(action==='apply' && (!result || !result.ok));
+      }
       function renderPreviewCameraControls(){
         function action(name,value){var live=window[ENGINE_KEY],camera=live && live._previewReviewCamera;if(camera && camera[name])camera[name](value);}
         return h('details',{className:'gwe-preview-camera-tools',onToggle:function(){action('scheduleFit');}},h('summary',null,'Rotate & zoom preview'),
@@ -3746,7 +4069,7 @@
           h('div',{className:'gwe-preview-zoom-buttons',role:'group','aria-label':__alloT('stem.geometryworld_builder.preview_camera_zoom','Preview camera zoom')},h('button',{type:'button',onClick:function(){action('zoom',1/1.18);}},'Closer'),h('button',{type:'button',onClick:function(){action('fit');}},'Fit model'),h('button',{type:'button',onClick:function(){action('zoom',1.18);}},'Farther')));
       }
       function renderPreviewFacts(){var facts=previewChangeFacts(selectionEditPreview);return facts && h('div',{className:'gwe-preview-facts'},h('span',null,h('strong',null,facts.count),' preview blocks'),h('span',null,h('strong',null,facts.width+' × '+facts.depth+' × '+facts.height),' block bounds'),h('small',null,facts.net===0?'Block count stays the same.':(facts.net>0?'+':'')+facts.net+' blocks overall.'));}
-      function renderPreviewButtons(inWorld){return h('div',{className:'gwe-preview-buttons'},h('button',{type:'button',className:selectionEditPreview.ok?'gwe-primary':'',disabled:!selectionEditPreview.ok,onClick:function(){applyCreationChange();if(inWorld)finishPreviewReview();}},'Apply preview'),h('button',{type:'button',disabled:!inWorld && !previewChangeFacts(selectionEditPreview),onClick:inWorld?finishPreviewReview:beginPreviewReview},inWorld?'Back to tools':'Review in world'),h('button',{type:'button',onClick:function(){cancelSelectionPreview();if(inWorld)finishPreviewReview();}},'Cancel preview'));}
+      function renderPreviewButtons(inWorld){return h('div',{className:'gwe-preview-buttons'},h('button',{type:'button',className:selectionEditPreview.ok?'gwe-primary':'',disabled:!selectionEditPreview.ok,onClick:function(){completePreview('apply');}},'Apply preview'),h('button',{type:'button',disabled:!inWorld && !previewChangeFacts(selectionEditPreview),onClick:inWorld?finishPreviewReview:beginPreviewReview},inWorld?'Back to tools':'Review in world'),h('button',{type:'button',onClick:function(){completePreview('cancel');}},'Cancel preview'));}
       var _stampLibrary=React.useState(function(){return readBuildStamps();}), stampLibrary=_stampLibrary[0], setStampLibrary=_stampLibrary[1];
       var _stampName=React.useState(''), stampName=_stampName[0], setStampName=_stampName[1];
       var _stampId=React.useState(''), stampId=_stampId[0], setStampId=_stampId[1];
@@ -3790,7 +4113,16 @@
       var _scaleError=React.useState(''), scaleError=_scaleError[0], setScaleError=_scaleError[1];
       var _printScaleExpanded=React.useState(null), printScaleExpanded=_printScaleExpanded[0], setPrintScaleExpanded=_printScaleExpanded[1];
       var scaleInputRef=React.useRef(null);
-      React.useEffect(function(){setScaleDraft(String(currentPrintUnit));setScaleError('');},[currentPrintUnit]);
+      var _printReceipt=React.useState(null), printReceipt=_printReceipt[0], setPrintReceipt=_printReceipt[1];
+      var printFocusTimerRef=React.useRef(null);
+      var _printPreparationActive=React.useState(false), printPreparationActive=_printPreparationActive[0], setPrintPreparationActive=_printPreparationActive[1];
+      React.useEffect(function(){setPrintPreparationActive(false);},[data.activeLesson]);
+      var scaleHasDraft=scaleDraft.trim()==='' || Number(scaleDraft)!==currentPrintUnit;
+      var receiptSelection=window[ENGINE_KEY] && window[ENGINE_KEY]._builderSelection;
+      var receiptSelectionKey=receiptSelection && Array.isArray(receiptSelection.blocks) ? blockMeasurementSignature(window[ENGINE_KEY],receiptSelection.blocks.map(keyFor)) : '';
+      React.useEffect(function(){setPrintReceipt(null);},[currentPrintUnit,data.activeLesson,receiptSelectionKey]);
+      React.useEffect(function(){return function(){clearTimeout(printFocusTimerRef.current);};},[]);
+      React.useEffect(function(){setScaleDraft(String(currentPrintUnit));setScaleError('');},[currentPrintUnit,data.activeLesson,data.builderPrintContext]);
       var liveBuilderCtx = React.useRef(ctx); liveBuilderCtx.current = ctx;
       var _creationCameraView=React.useState(selectedCreationCameraView(window[ENGINE_KEY])), setCreationCameraView=_creationCameraView[1];
       React.useEffect(function () {
@@ -3924,11 +4256,19 @@
       // sandbox floor is a 25 x 25 x 1 'structure' that would otherwise be quoted
       // as a 125 x 125 x 5 mm print that fits, when Send would refuse it.
       var measuredIsStudentBuild = !!(measured && measurementIsStudentBuild(engine, measured));
-      var printEnvelope = measuredIsStudentBuild ? defaultPrintEnvelope(measured, storedPrinterProfile(ctx), currentPrintUnit) : null;
+      var printEnvelope = hasRetainedSelection ? defaultPrintEnvelope(measured, storedPrinterProfile(ctx), currentPrintUnit) : null;
+      var printSelectionSignature = measuredIsStudentBuild ? blockMeasurementSignature(engine,measured.blocks.map(keyFor)) : '';
+      var printCheck = data.builderPrintCheck && data.builderPrintCheck.selectionSignature===printSelectionSignature ? data.builderPrintCheck : null;
+      var fitPrintScale = printEnvelope && (!printEnvelope.fits || printEnvelope.tight) ? suggestedPrintScale(measured,storedPrinterProfile(ctx)) : null;
+      var visiblePrintReceipt = printReceipt && printReceipt.signature===printSelectionSignature && printReceipt.unitMm===currentPrintUnit ? printReceipt : null;
       var placed = engine && isFinite(engine.blocksPlaced) ? engine.blocksPlaced : (Number(data.blocksPlaced) || 0);
       var launcherOpen = !!data.showSandboxLauncher;
       var collapsed = data.sandboxDockCollapsed === undefined ? typeof window.matchMedia === 'function' && window.matchMedia('(max-width:800px),(max-height:520px)').matches : !!data.sandboxDockCollapsed;
       function resumeBuilding(choice) {
+        setPrintPreparationActive(false);
+        setCoordinateActive(false);
+        setCoordinateBuildActive(false);
+        setSelectionChooserOpen(false);setSelectionIntent('');
         var request=setToolFinderOpen(false);
         if(pointerMode!=='build'){setPointerMode('build');cancelSelectionPreview();}
         var owner = window[ENGINE_KEY];
@@ -3970,12 +4310,13 @@
       }
       function applyCreationChange(){
         var live=window[ENGINE_KEY],overlay=live && live._buildBatchPreview;
-        if(overlay && overlay.owner!==selectionPreviewOwner.current){setSelectionEditNotice('Another building preview replaced this one. Preview your creation change again.');setSelectionEditPreview(null);return;}
+        if(overlay && overlay.owner!==selectionPreviewOwner.current){setSelectionEditNotice('Another building preview replaced this one. Preview your creation change again.');setSelectionEditPreview(null);return {ok:false};}
         var result=commitSelectionEdit(live,selectionEditPreview);
-        if(!result.ok){setSelectionEditNotice(result.reason);setSelectionEditPreview(null);return;}
+        if(!result.ok){setSelectionEditNotice(result.reason);setSelectionEditPreview(null);return result;}
         var label=selectionEditPreview.label;if(live._workshopTransformActions)live._workshopTransformActions.reset();setSelectionEditPreview(null);setSelectionEditNotice(label+' applied. Undo reverses the whole change.');
         var selected=selectionMeasurement(window[ENGINE_KEY]);patchGeometryState(ctx,{measureResult:selected?selected.measurement:null,builderPanel:'build'});
         announce(ctx,label+' applied. Undo reverses the whole change.','success');
+        return result;
       }
       function stampCoordinates(){var result={};['x','y','z'].forEach(function(axis){result[axis]=stampOrigin[axis].trim()===''?NaN:Number(stampOrigin[axis]);});return result;}
       function previewStoredStamp(){
@@ -4049,6 +4390,7 @@
           ),
           (selectionEditNotice || selectionEditPreview) && h('section',{className:'gwe-edit-preview','data-ready':selectionEditPreview && selectionEditPreview.ok?'true':'false','aria-label':__alloT('stem.geometryworld_builder.creation_change_preview','Creation change preview'),tabIndex:-1},
             h('p',{className:'gwe-edit-notice',role:'status','aria-live':'polite'},selectionEditNotice),
+            !selectionEditPreview && h('button',{type:'button',className:'gwe-preview-return',onClick:function(){focusAfterPreview(false);}},printPreparationActive?'Return to print connections':'Return to edit controls'),
             selectionEditPreview && renderPreviewFacts())
         );
       }
@@ -4066,7 +4408,95 @@
       function applyPrintScale(value) {
         var result=setBuilderPrintScale(liveBuilderCtx.current,value);
         if (!result.ok) {setScaleError(result.error);if(scaleInputRef.current)scaleInputRef.current.focus();return;}
-        setScaleDraft(String(result.value));setScaleError('');
+        setScaleDraft(String(result.value));setScaleError('');setPrintReceipt(null);
+      }
+      function focusPrintElement(selector) {
+        clearTimeout(printFocusTimerRef.current);
+        var owner=window[ENGINE_KEY],request=toolFocusRequest.current;
+        printFocusTimerRef.current=setTimeout(function(){
+          var target=document.querySelector(selector);
+          if(target && target.closest('.gwe-builder-dock') && !workshopFocusAllowed(owner,false,request))return;
+          if(target && target.isConnected){
+            var body=target.closest('.gwe-builder-body');
+            if(body){var rect=target.getBoundingClientRect(),viewport=body.getBoundingClientRect();if(/^#gwe-print-(title|size|connections|export)$/.test(selector) || rect.top<viewport.top)body.scrollTop+=rect.top-viewport.top-12;else if(rect.bottom>viewport.bottom)body.scrollTop+=rect.bottom-viewport.bottom+12;}
+            else if(target.scrollIntoView)target.scrollIntoView({block:'nearest'});
+            try{target.focus({preventScroll:true});}catch(_){target.focus();}
+          }
+        },0);
+      }
+      function openSelectionChooser(forPrint){
+        setSelectionIntent(forPrint?'print':'select');setSelectionChooserOpen(true);setSelectionChoiceError('');
+        setCoordinateActive(false);setCoordinateBuildActive(false);setPrintPreparationActive(false);setToolFinderOpen(false);
+        patchGeometryState(ctx,{sandboxDockCollapsed:false,builderPanel:'build',hudPanel:''});
+        focusPrintElement('#gwe-selection-choice-title');
+      }
+      function closeSelectionChooser(){setSelectionChooserOpen(false);setSelectionIntent('');focusPrintElement('.gwe-builder-quick-actions button:not(:disabled)');}
+      function finishSelectionChoice(){
+        setSelectionChooserOpen(false);
+        if(selectionIntent==='print'){prepareSelectedPrint();return;}
+        setSelectionIntent('');focusPrintElement('#gwe-selected-creation-title');
+      }
+      function chooseAllStudentBlocks(){
+        var live=window[ENGINE_KEY],bounds=coordinateSelectionBounds(live,false);
+        var preview=bounds && previewCoordinateSelection(live,{from:bounds.from,to:bounds.to,operation:'replace',material:'all'});
+        var result=preview && preview.ok?commitCoordinateSelection(live,preview):preview;
+        if(!result || !result.ok){setSelectionChoiceError(result && result.reason || 'Place your own blocks before selecting a creation.');return;}
+        changePointerMode('build');clearCoordinateReview();var selected=selectionMeasurement(live);
+        patchGeometryState(ctx,{measureResult:selected?selected.measurement:null,builderPrintCheck:null});
+        announce(ctx,result.count+' of your blocks selected, including hidden blocks.','success');finishSelectionChoice();
+      }
+      function chooseCoordinateRegion(){
+        setSelectionChooserOpen(false);setSelectionOperation('replace');useCoordinateBounds(false);
+        navigateWorkshopTool({id:'coordinates',available:true,selector:'.gwe-coordinate-selection'});
+      }
+      function chooseAimedCreation(){
+        var selected=measureSelectedBuild(ctx);
+        if(!selected){setSelectionChoiceError('No build found at the crosshair. Choose all your blocks or a coordinate region, or return to building to aim at your creation.');return;}
+        clearCoordinateReview();cancelSelectionPreview();finishSelectionChoice();
+      }
+      function renderSelectionChooser(){
+        if(!selectionChooserOpen)return null;
+        var count=coordinateSelectionCells(window[ENGINE_KEY]).length;
+        return h('section',{className:'gwe-selection-chooser','aria-labelledby':'gwe-selection-choice-title',onKeyDown:function(event){if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeSelectionChooser();}}},
+          h('p',{className:'gwe-journey-kicker'},selectionIntent==='print'?'Before you print':'Choose your creation'),
+          h('h3',{id:'gwe-selection-choice-title',tabIndex:-1},selectionIntent==='print'?'Choose what to print':'Choose your blocks'),
+          h('p',null,'Only your selected blocks will be included. The ground and lesson structures stay in the world.'),
+          h('div',{className:'gwe-selection-choices'},
+            h('button',{type:'button','data-gwe-select-all':true,disabled:!count,onClick:chooseAllStudentBlocks},h('strong',null,'Use all my blocks'),h('span',null,count+' block'+(count===1?'':'s')+' · includes hidden and separate pieces')),
+            h('button',{type:'button','data-gwe-select-region':true,disabled:!count,onClick:chooseCoordinateRegion},h('strong',null,'Choose a coordinate region'),h('span',null,'Type two corners, filter by material, then review the selection.')),
+            h('button',{type:'button','data-gwe-select-aimed':true,disabled:!count,onClick:chooseAimedCreation},h('strong',null,'Use the build I’m aiming at'),h('span',null,'Select the connected blocks under the crosshair.'))),
+          !count && h('p',{role:'status'},'Your world is ready for its first block. Return to building, place a few blocks, then come back here.'),
+          selectionChoiceError && h('p',{className:'gwe-selection-choice-error',role:'alert'},selectionChoiceError),
+          hasRetainedSelection && h('button',{type:'button',className:'gwe-primary','data-gwe-keep-selection':true,onClick:finishSelectionChoice},'Keep current selection'));
+      }
+      function prepareSelectedPrint() {
+        if(!selectionMeasurement(window[ENGINE_KEY])){openSelectionChooser(true);return;}
+        setSelectionChooserOpen(false);setSelectionIntent('');
+        setCoordinateActive(false);
+        setCoordinateBuildActive(false);
+        setToolFinderOpen(false);
+        setPrintPreparationActive(true);
+        patchGeometryState(ctx,{sandboxDockCollapsed:false,builderPanel:'build',hudPanel:''});
+        focusPrintElement('#gwe-print-title');
+      }
+      function guardPrintExport() {
+        if(!selectionMeasurement(window[ENGINE_KEY])){openSelectionChooser(true);return false;}
+        if(selectionEditPreview){setSelectionEditNotice('Apply or cancel your build preview before exporting. The preview is not part of your saved geometry yet.');focusPrintElement('.gwe-edit-preview');return false;}
+        if(!scaleHasDraft)return true;
+        setScaleError('Apply or discard your size edit before exporting. The applied scale is '+currentPrintUnit+' mm per block.');
+        setPrintScaleExpanded(true);
+        focusPrintElement('#gwe-print-scale-value');
+        return false;
+      }
+      function exportPreparedPrint(kind) {
+        if(!guardPrintExport())return;
+        var exportCtx=Object.assign({},ctx,{addToast:function(message,tone){
+          setPrintReceipt({signature:printSelectionSignature,unitMm:currentPrintUnit,message:message,error:tone==='error'});
+          if(ctx.addToast)ctx.addToast(message,tone);
+        }});
+        if(kind==='stl'){
+          if(selectedBuildStlDownload(exportCtx))setPrintReceipt({signature:printSelectionSignature,unitMm:currentPrintUnit,message:'STL downloaded: geometry-world-selected-build-mm.stl. '+currentPrintUnit+' mm per block. Import in millimeters at 100% scale, then review supports and slicing settings.'});
+        }else openSelectedBuildInPrintLab(exportCtx);
       }
       function returnLauncherFocus() {
         if (typeof document === 'undefined') return;
@@ -4174,11 +4604,35 @@
         );
       }
       function closeShowcaseFiles() {
-        cancelEditablePreview(); setShowcaseFilesOpen(false); setShowcaseFileNotice('');
+        cancelEditablePreview(); setShowcaseFilesOpen(false); setShowcaseFileNotice(''); setShowcaseFileError(false);
       }
       function openShowcaseFiles() {
         var eng = window[ENGINE_KEY]; if (!eng || eng._showcaseExporting) return;
-        cancelEditablePreview(); setShowcaseFileNotice(''); setShowcaseFilesOpen(true);
+        cancelEditablePreview(); setShowcaseFileNotice(''); setShowcaseFileError(false); setShowcaseFilesOpen(true);
+      }
+      function runShowcaseFileAction(action, successMessage) {
+        var currentContext = liveBuilderCtx.current;
+        var feedbackContext = Object.assign({}, currentContext, { addToast: function(message, kind) {
+          // Keep the exact recovery guidance visible in the modal as well as in
+          // the host toast. A toast can be obscured behind the modal backdrop.
+          setShowcaseFileNotice(message); setShowcaseFileError(kind === 'error');
+          if (typeof currentContext.addToast === 'function') currentContext.addToast(message, kind);
+        } });
+        if (action(feedbackContext) && successMessage) { setShowcaseFileNotice(successMessage); setShowcaseFileError(false); }
+      }
+      function runShowcasePrintAction(action, successMessage) {
+        if (scaleHasDraft) {
+          setShowcaseFileNotice('Apply or discard your size edit before exporting. The applied scale is '+currentPrintUnit+' mm per block.');
+          setShowcaseFileError(true); focusPrintElement('#gwe-showcase-review-scale'); return;
+        }
+        runShowcaseFileAction(action, successMessage);
+      }
+      function reviewShowcasePrintScale() {
+        var eng=window[ENGINE_KEY];
+        if (!eng || eng._showcaseExporting || typeof eng.endShowcase!=='function') return;
+        eng.endShowcase({restoreFocus:false}); closeShowcaseFiles();
+        patchGeometryState(liveBuilderCtx.current,{sandboxDockCollapsed:false,builderPanel:'build',hudPanel:''});
+        setPrintScaleExpanded(true); focusPrintElement('#gwe-print-scale-value');
       }
       function chooseShowcaseFile() {
         var eng = window[ENGINE_KEY]; if (!eng || eng._showcaseExporting || editableBusy) return;
@@ -4400,6 +4854,71 @@
       React.useEffect(function(){if(!isSandbox || homeOpen || data.showcaseActive || (data.drawMode && data.drawMode!=='single'))setPointerMode('build');},[isSandbox,homeOpen,data.showcaseActive,data.drawMode]);
       var milestones=activityMilestones(guide,journal,engine && engine.npcs),milestoneSignature=JSON.stringify(milestones);
       React.useEffect(function(){var group=createActivityMilestones(engine,milestones);return function(){disposeActivityMilestones(group);};},[engine,engine && engine._currentLesson,milestoneSignature]);
+      function openCoordinateBuilder(){navigateWorkshopTool({id:'construct',available:true,selector:'.gwe-coordinate-builder'});}
+      function closeCoordinateBuilder(){setCoordinateBuildActive(false);focusPrintElement('.gwe-coordinate-builder > summary');}
+      function changeCoordinateBuild(field,value){
+        setCoordinateBuild(function(previous){var next=Object.assign({},previous);if(field.indexOf('origin.')===0){next.origin=Object.assign({},previous.origin);next.origin[field.slice(7)]=value;}else next[field]=value;if(field==='mode' && value==='wall' && next.axis==='y')next.axis='x';return next;});
+        setBuildError('');setBuildInvalid([]);setBuildPositionNotice('');cancelSelectionPreview();
+      }
+      function positionNextCoordinateBuild(){
+        var result=positionCoordinateBuild(window[ENGINE_KEY],coordinateBuild,buildAttachFace);
+        setBuildError(result.ok?'':result.reason);setBuildInvalid(result.invalidFields || []);setBuildPositionNotice('');cancelSelectionPreview();
+        if(!result.ok){focusPrintElement(result.invalidFields && result.invalidFields.length?'#gwe-build-'+result.invalidFields[0].replace('.','-'):'#gwe-coordinate-build-error');return;}
+        var origin={x:String(result.origin.x),y:String(result.origin.y),z:String(result.origin.z)};
+        setCoordinateBuild(function(previous){return Object.assign({},previous,{origin:origin});});
+        setBuildPositionNotice('Starting cell filled: X '+origin.x+', Y '+origin.y+', Z '+origin.z+'. Review the position, then Preview placement.');
+        focusPrintElement('#gwe-build-origin-x');
+      }
+      function coordinateBuildHistory(action){
+        var live=window[ENGINE_KEY],stack=live && live[action==='undo'?'_undoStack':'_redoStack'];
+        if(!workshopFocusAllowed(live,false,toolFocusRequest.current) || !stack || !stack.length || typeof live[action]!=='function')return;
+        cancelSelectionPreview();setBuildError('');setBuildInvalid([]);setBuildPositionNotice('');
+        var changed=live[action]();if(!changed){var failure='That action could not be '+(action==='undo'?'undone':'redone')+'. Your build is unchanged. Preview the next change again.';setSelectionEditNotice(failure);announce(ctx,failure,'error');return;}
+        var selected=selectionMeasurement(live),notice=action==='undo'?'Undid the last building action.':'Redid the last building action.';
+        setSelectionEditNotice(notice+' Your coordinates are kept for the next preview.');
+        patchGeometryState(ctx,{measureResult:selected?selected.measurement:null,builderPanel:'build'});announce(ctx,notice,'success');
+      }
+      function reviewCoordinateBuild(event){
+        event.preventDefault();var live=window[ENGINE_KEY],result=previewCoordinateBuild(live,coordinateBuild);
+        setBuildError(result.ok?'':result.reason);setBuildInvalid(result.invalidFields || []);
+        previewReturnTarget.current={node:document.querySelector('#gwe-coordinate-build-review'),engine:live,lesson:live && live._currentLesson,selector:'#gwe-coordinate-build-review'};
+        setSelectionEditPreview(result.additions?result:null);
+        setSelectionEditNotice(result.ok?result.label+'. Review the outline, then Apply preview. '+result.afterSelection.blocks.length+' block'+(result.afterSelection.blocks.length===1?'':'s')+' will be selected. One Undo removes this placement.':'');
+        if(!result.ok)focusPrintElement(result.invalidFields && result.invalidFields.length?'#gwe-build-'+result.invalidFields[0].replace('.','-'):'#gwe-coordinate-build-error');
+        else focusPrintElement('.gwe-edit-preview');
+      }
+      function renderCoordinateBuilder(){
+        function number(field,label,value,min,max){var id='gwe-build-'+field.replace('.','-'),invalid=buildInvalid.indexOf(field)!==-1;return h('label',{key:field,htmlFor:id},label,h('input',{id:id,type:'number',inputMode:'numeric',step:1,min:min,max:max,value:value,'aria-invalid':invalid?'true':undefined,'aria-describedby':invalid?'gwe-coordinate-build-error':undefined,onChange:function(event){changeCoordinateBuild(field,event.target.value);}}));}
+        function choice(field,label,choices){var id='gwe-build-'+field;return h('label',{key:field,htmlFor:id},label,h('select',{id:id,value:coordinateBuild[field],onChange:function(event){changeCoordinateBuild(field,event.target.value);}},choices.map(function(item){return h('option',{key:item[0],value:item[0]},item[1]);})));}
+        return h('details',{className:'gwe-details gwe-coordinate-builder',open:coordinateBuildActive,onToggle:function(event){var open=event.currentTarget.open;setCoordinateBuildActive(open);if(open){setCoordinateActive(false);setPrintPreparationActive(false);setSelectionChooserOpen(false);setPointerMode('build');var live=window[ENGINE_KEY];if(live && live.setDrawMode)live.setDrawMode('single');if(!coordinateBuildActive)focusPrintElement('.gwe-coordinate-builder > summary');}},onKeyDown:function(event){if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeCoordinateBuilder();}}},
+          h('summary',null,'Build by coordinates'),
+          h('p',{id:'gwe-coordinate-build-help'},'Place blocks without aiming. Choose a starting cell and size, preview the outline, then apply.'),
+          h('div',{className:'gwe-build-context'},
+            h('p',{'data-gwe-build-selection-summary':true},hasRetainedSelection?retainedMeasured.blocks.length+' block'+(retainedMeasured.blocks.length===1?'':'s')+' currently selected for printing.':'No blocks selected yet. Your first placement will become the selection.'),
+            h('div',{className:'gwe-build-history',role:'group','aria-label':'Building history'},['undo','redo'].map(function(action){var available=engine && engine[action==='undo'?'_undoStack':'_redoStack'] && engine[action==='undo'?'_undoStack':'_redoStack'].length;return h('button',{key:action,type:'button','data-gwe-coordinate-history':action,'aria-disabled':!available?'true':undefined,onClick:function(){coordinateBuildHistory(action);}},action==='undo'?'Undo last action':'Redo last action');}))),
+          h('form',{id:'gwe-coordinate-build-form',className:'gwe-coordinate-build-form',noValidate:true,'aria-describedby':'gwe-coordinate-build-help',onSubmit:reviewCoordinateBuild},
+            choice('mode','What to build',[['block','One block'],['line','Line'],['floor','Floor'],['wall','Wall']]),
+            h('fieldset',{className:'gwe-coordinate-corner'},h('legend',null,'Starting cell'),['x','y','z'].map(function(axis){return number('origin.'+axis,axis.toUpperCase(),coordinateBuild.origin[axis],axis==='y'?1:-64,axis==='y'?128:64);})),
+            h('p',{className:'gwe-build-axis-help'},'X = across · Y = up · Z = depth. Y = 1 rests on the ground.'),
+            coordinateBuild.mode!=='block' && h('div',{className:'gwe-build-dimensions'},
+              (coordinateBuild.mode==='line' || coordinateBuild.mode==='wall') && choice('axis','Build direction',coordinateBuild.mode==='wall'?[['x','X · across'],['z','Z · depth']]:[['x','X · across'],['y','Y · up'],['z','Z · depth']]),
+              number('length',coordinateBuild.mode==='floor'?'Width (X), cells':'Length, cells',coordinateBuild.length,1,32),
+              coordinateBuild.mode==='floor' && number('width','Depth (Z), cells',coordinateBuild.width,1,32),
+              coordinateBuild.mode==='wall' && number('height','Height (Y), cells',coordinateBuild.height,1,32)),
+            coordinateBuild.mode!=='block' && h('p',{className:'gwe-build-axis-help'},'Extends from the starting cell toward larger coordinates. Dimensions count whole grid cells.'),
+            hasRetainedSelection && h('fieldset',{className:'gwe-build-continue'},h('legend',null,'Continue a selected build'),
+              h('p',null,'Fill the starting cell beside the selection’s grid bounds. Other axes align with its smallest coordinates. Fractional shapes may leave a gap; inspect the preview.'),
+              h('label',{htmlFor:'gwe-build-attach-face'},'Position next part',h('select',{id:'gwe-build-attach-face',value:buildAttachFace,'aria-invalid':buildInvalid.indexOf('attach-face')!==-1?'true':undefined,'aria-describedby':buildInvalid.indexOf('attach-face')!==-1?'gwe-coordinate-build-error':undefined,onChange:function(event){setBuildAttachFace(event.target.value);setBuildError('');setBuildInvalid([]);setBuildPositionNotice('');}},[['y+','Above (+Y)'],['x+','Across (+X)'],['x-','Across (−X)'],['z+','In depth (+Z)'],['z-','In depth (−Z)'],['y-','Below (−Y)']].map(function(item){return h('option',{key:item[0],value:item[0]},item[1]);}))),
+              h('button',{type:'button','data-gwe-position-next':true,disabled:!hasRetainedSelection,onClick:positionNextCoordinateBuild},'Fill starting cell'),
+              !hasRetainedSelection && h('p',null,'Place or select some blocks first to use this shortcut.'),
+              buildPositionNotice && h('p',{role:'status','data-gwe-position-status':true},buildPositionNotice)),
+            h('div',{className:'gwe-build-recipe'},choice('type','Material',BLOCK_TYPES.map(function(type){return [type.id,type.name];})),choice('shape','Block shape',BLOCK_SHAPES.map(function(shape){return [shape.id,shape.name];})),choice('rotation','Rotation',[[0,'0°'],[1,'90°'],[2,'180°'],[3,'270°']])),
+            (hasRetainedSelection || coordinateBuild.selectionMode==='add') && h('label',{htmlFor:'gwe-build-selectionMode'},'Select after placing',h('select',{id:'gwe-build-selectionMode',value:coordinateBuild.selectionMode,'aria-invalid':buildInvalid.indexOf('selectionMode')!==-1?'true':undefined,'aria-describedby':buildInvalid.indexOf('selectionMode')!==-1?'gwe-coordinate-build-error':'gwe-build-selection-help',onChange:function(event){changeCoordinateBuild('selectionMode',event.target.value);}},h('option',{value:'new'},'Only new blocks'),h('option',{value:'add'},'Selected blocks + new blocks'))),
+            h('p',{id:'gwe-build-selection-help',className:'gwe-build-axis-help'},coordinateBuild.selectionMode==='add'?'Keep the earlier selection so all selected parts can be prepared for print together.':'Earlier blocks stay in the world. Only this placement will be selected for printing.'),
+            buildError && h('p',{id:'gwe-coordinate-build-error',role:'alert',tabIndex:-1},buildError),
+            h('button',{id:'gwe-coordinate-build-review',type:'submit',className:'gwe-primary'},'Preview placement')),
+          h('p',{className:'gwe-builder-note'},'Occupied cells are protected. Each placement is one undoable action.'));
+      }
       function renderDrawingTools() {
         var mode=data.drawMode || 'single',preview=data.drawPreview || {};
         return h('section',{className:'gwe-drawing-tools','aria-label':__alloT('stem.geometryworld_builder.fast_building','Fast building')},
@@ -4417,7 +4936,7 @@
       if(previewReview)additions.push(h('style',{key:'gwe-preview-phone-space'},'@media(max-width:600px){#geoworld-fs-workspace .gwe-builder-dock{display:none!important}}'));
       if(isSandbox && data.worldActive && previewReview && collapsed && selectionEditPreview && !homeOpen && !data.showcaseActive)additions.push(h('section',{key:'gwe-preview-review',className:'gwe-preview-review',tabIndex:-1,'data-ready':selectionEditPreview.ok?'true':'false','aria-label':__alloT('stem.geometryworld_builder.review_proposed_building_change','Review proposed building change')},h('span',{className:'gwe-preview-eyebrow'},selectionEditPreview.ok?'PREVIEW · NOT YET APPLIED':'PREVIEW · NEEDS ADJUSTMENT'),h('h3',null,selectionEditPreview.label || 'Proposed change'),renderPreviewFacts(),h('p',{role:'status'},selectionEditPreview.ok?'Inspect the materials and shape, then apply. One Undo restores your previous build.':selectionEditNotice),renderPreviewButtons(true),renderPreviewCameraControls(),h('label',{className:'gwe-preview-surroundings'},h('input',{type:'checkbox',checked:previewSurroundings,onChange:function(event){setPreviewSurroundings(event.target.checked);}}),'Show surroundings'),h('small',{className:'gwe-preview-escape'},'Esc cancels this preview.')));
       if(isSandbox && data.worldActive && data.builderPrintGuide && data.builderPrintFocus && !homeOpen && !data.showcaseActive)additions.push(h('section',{key:'gwe-print-focus',className:'gwe-print-focus-hud','aria-label':__alloT('stem.geometryworld_builder.highlighted_print_region','Highlighted print region')},h('strong',null,data.builderPrintFocus.label+' · '+data.builderPrintFocus.blocks+' blocks'),h('p',null,'Gold corners mark this region. Your full selection is still included in exports.'),h('div',null,h('button',{type:'button',className:'gwe-print-focus-return',onClick:function(){if(engine && engine.setViewPreset)engine.setViewPreset('free');patchGeometryState(ctx,{builderPrintFocus:null,sandboxDockCollapsed:false});focusPrintCameraControl(engine,'.gwe-print-guide-options > summary');}},'Return camera'),h('button',{type:'button',onClick:function(){patchGeometryState(ctx,{builderPrintFocus:null,sandboxDockCollapsed:false});focusPrintCameraControl(engine,'.gwe-print-guide-options > summary');}},'Clear highlight'))));
-      if(isSandbox && data.worldActive && pointerMode!=='build' && !previewReview && !homeOpen && !data.showcaseActive)additions.push(h('section',{key:'gwe-pointer-hud',className:'gwe-pointer-hud','aria-label':__alloT('stem.geometryworld_builder.canvas_controls','Canvas controls')},h('strong',null,pointerMode==='select'?'Select blocks':pointerMode==='transform'?'Move & rotate':'Orbit camera'),h('span',null,pointerMode==='select'?'Click or drag · '+selectionOperation+' · '+(selectionDepth==='visible'?'visible centers':'through depth'):pointerMode==='transform'?(selectionEditNotice || 'Drag an axis · Review · Apply'):'Drag to orbit · Shift-drag to pan'),pointerMode==='transform' && !selectionEditPreview && h('button',{type:'button',onClick:function(){focusSelectedBuild(ctx);}},'Frame selection'),pointerMode==='transform' && selectionEditPreview && h('div',{className:'gwe-pointer-zoom'},h('button',{type:'button',disabled:!selectionEditPreview.ok,onClick:applyCreationChange},'Apply move or rotation'),h('button',{type:'button',onClick:cancelSelectionPreview},'Cancel move or rotation')),pointerMode==='orbit' && h('div',{className:'gwe-pointer-zoom'},[['Closer',-.2],['Farther',.2],['Pan left',-.8],['Pan right',.8]].map(function(a){return h('button',{type:'button',key:a[0],onClick:function(){var actions=engine._workshopCameraActions;if(actions){if(a[0].indexOf('Pan')===0)actions.pan(a[1],0);else actions.zoom(Math.exp(a[1]));}}},a[0]);})),h('button',{type:'button',onClick:function(){setPointerMode('build');focusWorldSurface(0);}},'Done · Esc')));
+      if(isSandbox && data.worldActive && pointerMode!=='build' && !previewReview && !homeOpen && !data.showcaseActive)additions.push(h('section',{key:'gwe-pointer-hud',className:'gwe-pointer-hud','aria-label':__alloT('stem.geometryworld_builder.canvas_controls','Canvas controls')},h('strong',null,pointerMode==='select'?'Select blocks':pointerMode==='transform'?'Move & rotate':'Orbit camera'),h('span',null,pointerMode==='select'?'Click or drag · '+selectionOperation+' · '+(selectionDepth==='visible'?'visible centers':'through depth'):pointerMode==='transform'?(selectionEditNotice || 'Drag an axis · Review · Apply'):'Drag to orbit · Shift-drag to pan'),pointerMode==='transform' && !selectionEditPreview && h('button',{type:'button',onClick:function(){focusSelectedBuild(ctx);}},'Frame selection'),pointerMode==='transform' && selectionEditPreview && h('div',{className:'gwe-pointer-zoom'},h('button',{type:'button',disabled:!selectionEditPreview.ok,onClick:function(){completePreview('apply');}},'Apply move or rotation'),h('button',{type:'button',onClick:function(){completePreview('cancel');}},'Cancel move or rotation')),pointerMode==='orbit' && h('div',{className:'gwe-pointer-zoom'},[['Closer',-.2],['Farther',.2],['Pan left',-.8],['Pan right',.8]].map(function(a){return h('button',{type:'button',key:a[0],onClick:function(){var actions=engine._workshopCameraActions;if(actions){if(a[0].indexOf('Pan')===0)actions.pan(a[1],0);else actions.zoom(Math.exp(a[1]));}}},a[0]);})),h('button',{type:'button',onClick:function(){setPointerMode('build');focusWorldSurface(0);}},'Done · Esc')));
 
       if(isSandbox && data.worldActive && !homeOpen && !guideOpen && engine && !engine._showcase && data.drawMode && data.drawMode!=='single' && engine.isDrawingAllowed && engine.isDrawingAllowed()) {
         var drawInfo=data.drawPreview || {},drawStarted=!!drawInfo.started;
@@ -4440,14 +4959,14 @@
 
       if (isSandbox && data.worldActive) additions.push(h('aside', {
         key: 'gwe-dock', className: 'gwe-builder-dock', 'data-collapsed': collapsed ? 'true' : 'false',
-        'aria-label': __alloT('stem.geometryworld_builder.free_build_studio','Free Build Studio'), 'data-finder':toolFinderOpen?'true':'false'
+        'aria-label': __alloT('stem.geometryworld_builder.free_build_studio','Free Build Studio'), 'data-finder':toolFinderOpen?'true':'false', 'data-print-preparing':printPreparationActive?'true':'false', 'data-coordinate-selecting':coordinateActive?'true':'false', 'data-coordinate-building':coordinateBuildActive?'true':'false', 'data-selection-choosing':selectionChooserOpen?'true':'false'
       },
         h('div', { className: 'gwe-builder-head' },
           h('div', { className: 'gwe-builder-title' },
             h('span', { className: 'gwe-builder-icon', 'aria-hidden': 'true' }, studioCubeMark(h)),
             !collapsed && h('div', null, h('div', { className: 'gwe-builder-eyebrow' }, 'Build tools'), h('div', { className: 'gwe-builder-name' }, 'Free Build Studio'))
           ),
-          h('button', { type: 'button', className: 'gwe-collapse', onClick: function () { if (!collapsed) resumeBuilding(); else patchGeometryState(ctx, { sandboxDockCollapsed:false, builderPanel:'build' }); }, 'aria-expanded': collapsed ? 'false' : 'true', 'aria-label': collapsed ? 'Expand Free Build Studio' : 'Collapse Free Build Studio', title: collapsed ? 'Free Build Studio' : 'Collapse Free Build Studio' }, collapsed ? 'Studio' : '\u2212')
+          (printPreparationActive || coordinateActive || coordinateBuildActive || selectionChooserOpen) && !collapsed ? h('button',{type:'button',className:'gwe-collapse','aria-label':'Return to build tools',onClick:function(){if(coordinateBuildActive)closeCoordinateBuilder();else if(selectionChooserOpen)closeSelectionChooser();else if(coordinateActive)closeCoordinateSelection();else {setPrintPreparationActive(false);focusPrintElement('[data-gwe-prepare="print"]');}}},'Tools') : h('button', { type: 'button', className: 'gwe-collapse', onClick: function () { if (!collapsed) resumeBuilding(); else patchGeometryState(ctx, { sandboxDockCollapsed:false, builderPanel:'build' }); }, 'aria-expanded': collapsed ? 'false' : 'true', 'aria-label': collapsed ? 'Expand Free Build Studio' : 'Collapse Free Build Studio', title: collapsed ? 'Free Build Studio' : 'Collapse Free Build Studio' }, collapsed ? 'Studio' : '\u2212')
         ),
         !collapsed && h('div',{className:'gwe-tool-finder-bar'},h('button',{ref:toolFinderButton,type:'button',className:'gwe-tool-finder-toggle','aria-expanded':toolFinderOpen,'aria-controls':'gwe-tool-finder',onClick:function(){if(toolFinderOpen)closeToolFinder();else {setToolQuery('');setToolCategory('all');setToolFinderOpen(true);}}},h('svg',{viewBox:'0 0 24 24',width:18,height:18,fill:'none',stroke:'currentColor',strokeWidth:1.8,'aria-hidden':'true'},h('circle',{cx:10,cy:10,r:6}),h('path',{d:'m15 15 5 5'})),toolFinderOpen?'Close tool finder':'Find a tool',h('span',{'aria-hidden':'true'},toolFinderOpen?'×':'→'))),
         !collapsed && !toolFinderOpen && h('ol', {className:'gwe-workflow', 'aria-label':__alloT('stem.geometryworld_builder.creation_workflow','Creation workflow')},
@@ -4458,22 +4977,24 @@
         !collapsed && !toolFinderOpen && h('div', {className:'gwe-builder-actions gwe-builder-quick-actions'},
           hasStudentBuild === false
             ? h('button',{type:'button',className:'gwe-primary','aria-label':__alloT('stem.geometryworld_builder.start_building','Start building'),onClick:function(){resumeBuilding();}},'Start building')
-            : h('button',{type:'button',className:measuredIsStudentBuild ? '' : 'gwe-primary','aria-label':__alloT('stem.geometryworld_builder.select_and_measure_aimed_build','Select and measure aimed build'),onClick:function(){measureSelectedBuild(ctx);}},hasRetainedSelection ? 'Select another build' : 'Select build'),
-          h('button',{type:'button',className:measuredIsStudentBuild ? 'gwe-primary' : '','data-gwe-send':'print',disabled:hasStudentBuild === false,'aria-label':__alloT('stem.geometryworld_builder.send_selected_build_to_print_lab','Send selected build to Print Lab'),'aria-describedby':hasStudentBuild === false ? 'gwe-build-guidance' : undefined,title:hasStudentBuild === false ? 'Place blocks before selecting a creation for Print Lab' : undefined,onClick:function(){openSelectedBuildInPrintLab(ctx);}},'Send to Print Lab')
+            : h('button',{type:'button',className:measuredIsStudentBuild ? '' : 'gwe-primary','data-gwe-choose-selection':true,onClick:function(){openSelectionChooser(false);}},hasRetainedSelection ? 'Change selection' : 'Choose blocks'),
+          hasStudentBuild === false ? h('button',{type:'button','data-gwe-open-coordinate-build':true,onClick:openCoordinateBuilder},'Build by coordinates') : h('button',{type:'button',className:measuredIsStudentBuild ? 'gwe-primary' : '','data-gwe-prepare':'print',onClick:prepareSelectedPrint},'Prepare 3D print')
         ),
         !collapsed && toolFinderOpen && renderToolFinder(),
         !collapsed && h('div', { className: 'gwe-builder-body',hidden:toolFinderOpen },
+          renderSelectionChooser(),
           h('p', { id:'gwe-build-guidance',className: 'gwe-builder-intro' + (hasRetainedSelection ? ' gwe-assistive-copy' : ''), 'data-gwe-build-guidance': hasRetainedSelection ? 'selected' : hasStudentBuild === false ? 'empty' : 'select' }, hasRetainedSelection
             ? 'Your selection stays outlined as you look around.'
             : hasStudentBuild === false
-              ? firstBlockGuidance(base.props['data-touch-active'] === 'true') + ' Then choose Select build to inspect your creation.'
-              : 'Aim at a block you placed, then choose Select build to inspect your creation.'),
+              ? firstBlockGuidance(base.props['data-touch-active'] === 'true') + ' You can also use Build by coordinates below. Then use Choose blocks to inspect your creation.'
+              : 'Choose blocks to select your whole build, a coordinate region, or the creation under the crosshair.'),
+          renderCoordinateBuilder(),
           renderDrawingTools(),
           renderBuildChallenge(),
           hasRetainedSelection ? h('section',{key:'gwe-creation-summary',className:'gwe-creation-summary','data-selected':'true','aria-label':__alloT('stem.geometryworld_builder.selected_creation','Selected creation')},
             h('div',{className:'gwe-selected-heading'},
               h('span',{className:'gwe-selected-emblem','aria-hidden':'true'},studioCubeMark(h)),
-              h('div',null,h('span',{className:'gwe-selected-eyebrow'},'Outlined selection'),h('h3',null,'Selected creation'))
+              h('div',null,h('span',{className:'gwe-selected-eyebrow'},'Outlined selection'),h('h3',{id:'gwe-selected-creation-title',tabIndex:-1},'Selected creation'))
             ),
             h('div',{className:'gwe-selected-metrics','aria-label':__alloT('stem.geometryworld_builder.selected_build_summary','Selected build summary')},
               h('div',{className:'gwe-metric'},h('strong',null,measured.count),h('span',null,'Blocks selected')),
@@ -4491,7 +5012,7 @@
             )
           ),
           measured && !measuredIsStudentBuild && h('p', { className: 'gwe-builder-note', 'data-gwe-not-student': 'true', role: 'status' },
-            'That measurement was the ground or a lesson structure. Aim at a block you placed to size a print.'),
+            'That measurement was the ground or a lesson structure. Choose your own blocks to prepare a print.'),
           measured && h('div', { key:'gwe-inspect-actions',className: 'gwe-builder-actions', 'aria-label':__alloT('stem.geometryworld_builder.inspect_selected_creation','Inspect selected creation') },
             measuredIsStudentBuild && h('button',{type:'button',className:'gwe-focus-action',onClick:function(){focusSelectedBuild(ctx);},title:__alloT('stem.geometryworld_builder.frame_your_creation_and_keep_editing','Frame your creation and keep editing')},'Focus creation'),
             hasRetainedSelection && renderCreationViewPresets('gwe-camera-presets',__alloT('stem.geometryworld_builder.frame_selected_creation','Frame selected creation')),
@@ -4500,9 +5021,17 @@
             engine && engine._builderSelection && h('button', {type:'button',className:'gwe-clear-selection', onClick:function(){engine._builderSelection=null;patchGeometryState(ctx,{measureResult:null,builderPanel:'build'});}}, 'Clear selection')
           ),
           renderCreationEditing(),
-          printEnvelope && h('section', { key:'gwe-print-ready',className: 'gwe-print-ready', 'data-fit': printEnvelope.tight ? 'tight' : printEnvelope.fits ? 'true' : 'false', 'aria-label':__alloT('stem.geometryworld_builder.print_lab_block_envelope','Print Lab block envelope') },
+          printPreparationActive && !hasRetainedSelection && h('section',{className:'gwe-print-ready','aria-labelledby':'gwe-print-selection-lost'},
+            h('h3',{id:'gwe-print-selection-lost'},'Choose a selection to continue'),
+            h('p',{role:'status'},'The previous selection is no longer available. Choose the blocks you want to print.'),
+            h('button',{type:'button',className:'gwe-primary',onClick:function(){openSelectionChooser(true);}},'Choose print blocks')),
+          printEnvelope && h('section', { key:'gwe-print-ready',id:'gwe-print-preparation',className: 'gwe-print-ready', 'data-fit': printEnvelope.tight ? 'tight' : printEnvelope.fits ? 'true' : 'false', 'aria-labelledby':'gwe-print-title' },
+            h('h3',{id:'gwe-print-title',tabIndex:-1},'Prepare your 3D print'),
+            h('p',{className:'gwe-print-intro'},measured.count+' selected block'+(measured.count===1?'':'s')+'. Review the size and connections, then continue in Print Lab or download the model.'),
+            h('button',{type:'button',className:'gwe-print-change-selection',onClick:function(){openSelectionChooser(true);}},'Change included blocks'),
+            h('nav',{className:'gwe-print-jumps','aria-label':'Print preparation steps'},[['gwe-print-size','1. Size'],['gwe-print-connections','2. Connections'],['gwe-print-export','3. Export']].map(function(step){return h('button',{key:step[0],type:'button',onClick:function(){focusPrintElement('#'+step[0]);}},step[1]);})),
             h('div', {className:'gwe-print-ready-heading'},
-              h('span', { className: 'gwe-print-ready-label' }, 'Print Lab block envelope'),
+              h('h4', { id:'gwe-print-size',tabIndex:-1,className: 'gwe-print-ready-label' }, '1. Physical size'),
               h('span', {className:'gwe-fit-badge'}, printEnvelope.tight ? 'Tight fit' : printEnvelope.fits ? 'Fits profile' : 'Review size')
             ),
             h('div', {className:'gwe-print-dimensions',role:'status'},
@@ -4517,6 +5046,8 @@
               )
             ),
             h('p', {className:'gwe-print-scale'}, currentPrintUnit + ' mm per block \u00B7 Bed ' + printEnvelope.profileLabel),
+            h('p',{className:'gwe-print-profile-note'},printEnvelope.usingSavedProfile?'Using your saved Print Lab printer profile.':'Using the default printer profile. Choose your actual printer in Print Lab.'),
+            fitPrintScale!==null && h('button',{type:'button',className:'gwe-fit-scale','data-gwe-fit-scale':'true',onClick:function(){applyPrintScale(fitPrintScale);}},'Fit with margin: '+fitPrintScale+' mm per block'),
             h('details',{className:'gwe-details gwe-print-guide-options'},
               h('summary',null,'Inspect print fit'),
               h('p',{className:'gwe-builder-note'},'Prepare editable geometry before exporting. A connecting base adds a solid plate and columns under raised parts. Internal gaps still need review in Print Lab.'),
@@ -4524,7 +5055,7 @@
                 h('div',{className:'gwe-base-dimensions'},[['padding','Base margin',0,4],['thickness','Base thickness',1,4]].map(function(field){return h('label',{key:field[0]},field[1],h('input',{type:'number',inputMode:'numeric',min:field[2],max:field[3],step:1,value:baseOptions[field[0]],'aria-label':field[1]+' in blocks',onChange:function(event){updateBaseOption(field[0],event.target.value);}}),h('small',null,'blocks'));})),
                 h('label',null,'Base appearance',h('select',{value:baseOptions.material,onChange:function(event){updateBaseOption('material',event.target.value);}},['stone','wood','brick'].map(function(material){return h('option',{key:material,value:material},material.charAt(0).toUpperCase()+material.slice(1));}))),
                 h('p',{className:'gwe-builder-note'},'Margin extends on every side. Appearance stays editable; choose physical filament in Print Lab.')),
-              h('div',{className:'gwe-builder-actions'},[['base','Preview connecting base'],['lower','Preview lower to ground']].map(function(a){return h('button',{type:'button',key:a[0],onClick:function(){var result=previewPrintPreparation(window[ENGINE_KEY],a[0],baseOptions);setSelectionEditPreview(result);setSelectionEditNotice(result.ok?result.label+': review the new geometry, then apply. Undo reverses the entire preparation.':result.reason);}},a[1]);})),
+              h('div',{className:'gwe-builder-actions'},[['base','Preview connecting base'],['lower','Preview lower to ground']].map(function(a){return h('button',{type:'button',key:a[0],onClick:function(){var result=previewPrintPreparation(window[ENGINE_KEY],a[0],baseOptions);setSelectionEditPreview(result);setSelectionEditNotice(result.ok?result.label+': review the new geometry, then apply. Undo reverses the entire preparation.':result.reason);focusPrintElement('.gwe-edit-preview');}},a[1]);})),
               h('p',null,'See the printer volume and separate pieces around your selected creation.'),
               h('div',{className:'gwe-builder-actions'},
                 h('button',{type:'button','aria-pressed':!!data.builderPrintGuide,onClick:function(){patchGeometryState(ctx,{builderPrintGuide:!data.builderPrintGuide,builderPrintFocus:null});}},data.builderPrintGuide?'Hide print guide':'Show print guide'),
@@ -4549,6 +5080,7 @@
                   h('button',{type:'submit'},'Apply scale')
                 ),
                 h('p',{id:'gwe-print-scale-help',className:'gwe-scale-help'},'Sets the physical size of STL exports and the model sent to Print Lab.'),
+                scaleHasDraft && h('button',{type:'button','data-gwe-scale-discard':'true',onClick:function(){setScaleDraft(String(currentPrintUnit));setScaleError('');focusPrintElement('#gwe-print-scale-value');}},'Discard size edit'),
                 scaleError && h('p',{id:'gwe-print-scale-error',className:'gwe-scale-error',role:'alert'},scaleError)
               ),
               h('p', null, printEnvelope.tight
@@ -4561,11 +5093,23 @@
                 : 'Measured from whole blocks against Print Lab\u2019s default printer profile. Set a school printer in Print Lab to check against the real bed.'),
               printVolumeSentence(measured, currentPrintUnit) && h('p', { className: 'gwe-print-ready-basis', 'data-gwe-print-volume': 'true' }, printVolumeSentence(measured, currentPrintUnit)),
               h('p', { className: 'gwe-builder-note' }, 'Print Lab scale: ' + currentPrintUnit + ' mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.')
-            )
-          ),
-          data.builderPrintCheck && h('div', {key:'gwe-connection-check',className:'gwe-connection-check', role:'status', 'data-connected':selectionNeedsReview(data.builderPrintCheck) ? 'false':'true'},
-            h('strong',null,data.builderPrintCheck.error ? 'Check this selection' : data.builderPrintCheck.components>1 ? data.builderPrintCheck.components+' separate pieces' : data.builderPrintCheck.nonManifoldEdges ? 'Touching edges need review' : data.builderPrintCheck.openEdges ? 'Open surfaces need review' : selectionNeedsReview(data.builderPrintCheck) ? 'Review this selection' : 'One joined piece'),
-            h('p',null,data.builderPrintCheck.error || (data.builderPrintCheck.components>1 ? 'Some shapes do not touch, even when their grid cells are next to each other. Join them with a base, move the shapes, or plan separate parts in Print Lab.' : data.builderPrintCheck.nonManifoldEdges ? 'Some surfaces meet only along an edge. Add a connecting block or review the highlighted creation in Print Lab.' : data.builderPrintCheck.openEdges ? 'The selected mesh has open edges. Review its surfaces in Print Lab before preparing a print.' : selectionNeedsReview(data.builderPrintCheck) ? 'The selection check is incomplete. Open Print Lab to inspect the exported mesh.' : 'The selected shapes share surfaces. Print Lab will check the exported mesh and physical scale.'))
+            ),
+            h('h4',{id:'gwe-print-connections',tabIndex:-1,className:'gwe-print-step'},'2. Connections'),
+            h('div', {key:'gwe-connection-check',className:'gwe-connection-check', role:'status', 'data-connected':selectionNeedsReview(printCheck) ? 'false':'true'},
+              h('strong',null,!printCheck ? 'Checking selected geometry' : printCheck.error ? 'Check this selection' : printCheck.components>1 ? printCheck.components+' separate pieces' : printCheck.nonManifoldEdges ? 'Touching edges need review' : printCheck.openEdges ? 'Open surfaces need review' : selectionNeedsReview(printCheck) ? 'Review this selection' : 'One joined piece'),
+              h('p',null,!printCheck ? 'Current connection results will appear here. You can also inspect the exported mesh in Print Lab.' : printCheck.error || (printCheck.components>1 ? 'Some shapes do not touch. Use Inspect print fit to preview a connecting base, or plan separate parts in Print Lab.' : printCheck.nonManifoldEdges ? 'Some surfaces meet only along an edge. Add a connecting block or review the creation in Print Lab.' : printCheck.openEdges ? 'The selected mesh has open edges. Review its surfaces in Print Lab.' : selectionNeedsReview(printCheck) ? 'The selection check is incomplete. Open Print Lab to inspect the exported mesh.' : 'The selected shapes share surfaces. Review supports and the exported mesh in Print Lab.'))
+            ),
+            selectionNeedsReview(printCheck) && h('button',{type:'button',className:'gwe-connection-options',onClick:function(){var details=document.querySelector('.gwe-print-guide-options');if(details)details.open=true;focusPrintElement('.gwe-print-guide-options > summary');}},'Review connection options'),
+            h('h4',{id:'gwe-print-export',tabIndex:-1,className:'gwe-print-step'},'3. Review & export'),
+            selectionEditPreview && h('p',{className:'gwe-scale-pending'},'A build preview is waiting. Apply or cancel it before exporting.'),
+            h('p',{id:'gwe-print-next-step',className:'gwe-print-next-step'},'Print Lab checks the model and helps you choose physical filament. For another slicer, download STL and import in millimeters at 100% scale.'),
+            h('p',{id:'gwe-print-scale-pending',className:'gwe-scale-pending',role:'status'},scaleHasDraft?'Size edit not applied. Apply or discard it before exporting.':'Applied scale: '+currentPrintUnit+' mm per block.'),
+            h('div',{className:'gwe-builder-actions gwe-print-export-actions'},
+              h('button',{type:'button',className:'gwe-primary','data-gwe-send':'print','aria-describedby':'gwe-print-next-step gwe-print-scale-pending',onClick:function(){exportPreparedPrint('lab');}},'Send to Print Lab'),
+              h('button',{type:'button','data-gwe-download':'stl','aria-describedby':'gwe-print-next-step gwe-print-scale-pending',onClick:function(){exportPreparedPrint('stl');}},'Download STL')
+            ),
+            h('p',{id:'gwe-print-export-status',className:'gwe-print-export-status',role:visiblePrintReceipt && visiblePrintReceipt.error?'alert':'status'},visiblePrintReceipt?visiblePrintReceipt.message:''),
+            h('p',{className:'gwe-print-profile-note'},'These checks guide preparation. Your slicer still needs a printer profile, layer settings, and support review.')
           ),
           h('section', {'aria-label':__alloT('stem.geometryworld_builder.keep_your_work','Keep your work')},
             h('h3', {className:'gwe-section-title'}, 'Keep your work'),
@@ -4592,6 +5136,7 @@
           renderEditableRecovery()
         ),
         !collapsed && h('div',{className:'gwe-builder-footer'},
+          coordinateBuildActive && !selectionEditPreview && !toolFinderOpen && hasRetainedSelection && h('button',{type:'button',className:'gwe-resume-building gwe-coordinate-print-next',onClick:prepareSelectedPrint},'Prepare selected blocks for print'),
           selectionEditPreview && !toolFinderOpen ? h('div',{className:'gwe-preview-footer','aria-label':__alloT('stem.geometryworld_builder.pending_preview_actions','Pending preview actions')},h('div',{className:'gwe-preview-footer-heading'},h('strong',null,selectionEditPreview.ok?'Ready to apply':'Adjust the preview'),h('span',null,(previewChangeFacts(selectionEditPreview) || {}).count || 0,' blocks')),renderPreviewButtons(false)) : h('button',{type:'button',className:'gwe-resume-building',onClick:function(){resumeBuilding();}},
             h('svg',{viewBox:'0 0 24 24',width:18,height:18,fill:'none',stroke:'currentColor',strokeWidth:1.7,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true',focusable:'false'},h('path',{d:'M14 5l7 7-7 7M21 12H3'})),
             'Back to building'))
@@ -4622,7 +5167,7 @@
         )
       ));
 
-      if(data.showcaseActive) additions.push(h('section', {key:'gwe-showcase',className:'gwe-showcase','data-files-open':showcaseFilesOpen?'true':'false','data-look':data.showcaseLook || 'meadow','data-view':data.showcaseView || 'perspective',role:'dialog','aria-modal':'true','aria-label':__alloT('stem.geometryworld_builder.showcase_creation','Showcase creation'),onKeyDown:function(event){if(event.key==='ArrowLeft' || event.key==='ArrowRight'){event.preventDefault();var eng=window[ENGINE_KEY];if(eng && eng.rotateShowcase)eng.rotateShowcase(event.key==='ArrowLeft' ? -1:1);}trapDialogKeys(event,function(){var eng=window[ENGINE_KEY];if(eng && eng.endShowcase)eng.endShowcase();});event.stopPropagation();}},
+      if(data.showcaseActive) additions.push(h('section', {key:'gwe-showcase',className:'gwe-showcase','data-files-open':showcaseFilesOpen?'true':'false','data-look':data.showcaseLook || 'meadow','data-view':data.showcaseView || 'perspective',role:showcaseFilesOpen?'region':'dialog','aria-modal':showcaseFilesOpen?undefined:'true','aria-label':__alloT('stem.geometryworld_builder.showcase_creation','Showcase creation'),onKeyDown:function(event){if(event.key==='ArrowLeft' || event.key==='ArrowRight'){event.preventDefault();var eng=window[ENGINE_KEY];if(eng && eng.rotateShowcase)eng.rotateShowcase(event.key==='ArrowLeft' ? -1:1);}trapDialogKeys(event,function(){var eng=window[ENGINE_KEY];if(eng && eng.endShowcase)eng.endShowcase();});event.stopPropagation();}},
         h('div',{className:'gwe-showcase-caption',inert:showcaseFilesOpen?'':undefined,'aria-hidden':showcaseFilesOpen?'true':undefined},h('span',null,'GEOMETRY WORLD / SHOWCASE'),h('strong',null,'Made by you.'),
           measured && h('p',{className:'gwe-showcase-meta','aria-label':__alloT('stem.geometryworld_builder.creation_dimensions','Creation dimensions')},measured.count+' block'+(measured.count===1?'':'s')+' \u00B7 '+measured.L+' \u00D7 '+measured.W+' \u00D7 '+measured.H+' units'),
           h('div',{className:'gwe-showcase-looks',role:'group','aria-label':__alloT('stem.geometryworld_builder.scene_look','Scene look')},
@@ -4641,7 +5186,7 @@
           )
         ),
         showcaseFilesOpen && h('div',{className:'gwe-showcase-files-backdrop',onClick:function(event){if(event.target===event.currentTarget)closeShowcaseFiles();}},
-          h('section',{id:'gwe-showcase-files',className:'gwe-showcase-files',ref:showcaseFilesRef,tabIndex:-1,role:'region','aria-labelledby':'gwe-showcase-files-title',onKeyDown:function(event){event.stopPropagation();trapDialogKeys(event,closeShowcaseFiles);}},
+          h('section',{id:'gwe-showcase-files',className:'gwe-showcase-files',ref:showcaseFilesRef,tabIndex:-1,role:'dialog','aria-modal':'true','aria-labelledby':'gwe-showcase-files-title',onKeyDown:function(event){event.stopPropagation();trapDialogKeys(event,closeShowcaseFiles);}},
             h('header',{className:'gwe-files-header'},
               h('div',null,h('span',{className:'gwe-files-eyebrow'},'KEEP CREATING'),h('h2',{id:'gwe-showcase-files-title'},'Use your creation'),h('p',null,(measured ? measured.count+' block'+(measured.count===1?'':'s')+' · ' : '')+'Selected creation')),
               h('button',{type:'button',className:'gwe-files-close','aria-label':__alloT('stem.geometryworld_builder.close_import_and_export','Close import and export'),onClick:closeShowcaseFiles},'×')
@@ -4650,14 +5195,17 @@
               h('section',{className:'gwe-file-card'},
                 h('div',{className:'gwe-file-heading'},fileIcon('edit'),h('h3',null,'Edit in AlloFlow')),
                 h('p',null,'Keep this creation’s blocks, materials, shapes, and rotations in an editable Geometry World file.'),
-                h('button',{type:'button',disabled:!!data.showcaseSaving,onClick:function(){if(saveSelectedEditableWorld(ctx))setShowcaseFileNotice('Editable creation downloaded. Open this JSON in Geometry World to build on it.');}},'Download editable JSON')
+                h('button',{type:'button',disabled:!!data.showcaseSaving,onClick:function(){runShowcaseFileAction(saveSelectedEditableWorld,'Editable creation downloaded. Open this JSON in Geometry World to build on it.');}},'Download editable JSON')
               ),
               h('section',{className:'gwe-file-card'},
                 h('div',{className:'gwe-file-heading'},fileIcon('print'),h('h3',null,'Prepare a 3D print')),
                 h('p',null,'STL in millimeters · '+currentPrintUnit+' mm per block. Open Print Lab to review size and printability.'),
+                printEnvelope && h('p',{className:'gwe-file-print-dimensions'},'Printed bounds (width × depth × height): '+printEnvelope.label+'. '+(printEnvelope.tight?'Tight fit: allow more room on the printer bed.':printEnvelope.fits?'Fits the current printer profile; review surfaces and supports in Print Lab.':'Larger than the current printer profile. Reduce the print size or revise your build.')),
+                scaleHasDraft && h('p',{id:'gwe-showcase-scale-pending',className:'gwe-file-scale-pending'},'Size edit not applied. Review it before exporting.'),
+                h('button',{id:'gwe-showcase-review-scale',type:'button',disabled:!!data.showcaseSaving,onClick:reviewShowcasePrintScale},scaleHasDraft?'Review size edit':'Adjust print size'),
                 h('div',{className:'gwe-file-actions'},
-                  h('button',{type:'button',disabled:!!data.showcaseSaving,onClick:function(){if(selectedBuildStlDownload(ctx))setShowcaseFileNotice('STL downloaded in millimeters. Import it into your slicer at 100% scale.');}},'Download STL'),
-                  h('button',{type:'button',className:'gwe-file-primary',disabled:!!data.showcaseSaving,onClick:function(){openSelectedBuildInPrintLab(ctx);}},'Open in Print Lab')
+                  h('button',{type:'button',disabled:!!data.showcaseSaving,'aria-describedby':scaleHasDraft?'gwe-showcase-scale-pending':undefined,onClick:function(){runShowcasePrintAction(selectedBuildStlDownload,'STL downloaded in millimeters. Import it into your slicer at 100% scale.');}},'Download STL'),
+                  h('button',{type:'button',className:'gwe-file-primary',disabled:!!data.showcaseSaving,'aria-describedby':scaleHasDraft?'gwe-showcase-scale-pending':undefined,onClick:function(){runShowcasePrintAction(openSelectedBuildInPrintLab);}},'Open in Print Lab')
                 ),
                 h('p',{className:'gwe-file-note'},'STL contains geometry. Choose the physical filament in Print Lab or your slicer.')
               ),
@@ -4670,7 +5218,7 @@
               h('div',{className:'gwe-file-photo'},h('div',null,h('strong',null,'Keep a picture'),h('span',null,'High-resolution PNG')),
                 h('button',{type:'button',disabled:!!data.showcaseSaving,'aria-busy':!!data.showcaseSaving,onClick:function(){saveShowcaseImage(ctx);}},data.showcaseSaving?'Saving image...':'Save image')
               ),
-              showcaseFileNotice && h('p',{className:'gwe-file-status',role:'status','aria-live':'polite'},showcaseFileNotice)
+              showcaseFileNotice && h('p',{className:'gwe-file-status','data-state':showcaseFileError?'error':'success',role:showcaseFileError?'alert':'status','aria-atomic':'true'},showcaseFileNotice)
             )
           )
         )
@@ -4679,6 +5227,7 @@
         if(!React.isValidElement(child) || child.type==='style')return child;
         if(child.props['data-gw-save-recovery'])return React.cloneElement(child,{inert:undefined,'aria-hidden':undefined});
         if(data.showSaveRecovery)return React.cloneElement(child,{inert:'','aria-hidden':'true'});
+        if(data.showcaseActive && showcaseFilesOpen && child.type!=='input' && child.props.className!=='gwe-showcase' && child.props.id!=='allo-live-geometryworld')return React.cloneElement(child,{inert:'','aria-hidden':'true'});
         if(child.type==='input' || child.props.className==='gwe-home-backdrop' || child.props.className==='gwe-activity-backdrop' || child.props.className==='gwe-concept-backdrop')return child;
         return React.cloneElement(child,{inert:(homeOpen||guideOpen||conceptOpen)?'':child.props.inert,'aria-hidden':(homeOpen||guideOpen||conceptOpen)?'true':child.props['aria-hidden']});
       });

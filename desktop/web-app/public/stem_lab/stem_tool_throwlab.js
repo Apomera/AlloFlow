@@ -5528,7 +5528,7 @@ window.StemLab = window.StemLab || {
                       display: 'inline-flex', alignItems: 'center', gap: 3,
                       padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700,
                       background: locked ? 'rgba(34,197,94,0.20)' : 'rgba(15,23,42,0.35)',
-                      color: locked ? '#86efac' : '#64748b',
+                      color: locked ? '#86efac' : '#94a3b8',
                       border: '1px solid ' + (locked ? 'rgba(34,197,94,0.55)' : '#334155'),
                       filter: locked ? 'none' : 'grayscale(100%)'
                     }
@@ -5600,7 +5600,7 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('h3', { style: { color: 'rgb(' + [16, 8, 0].map(function (s) { return Math.round((parseInt(meta.accent.slice(1), 16) >> s & 255) * 0.55 + 115); }).join(',') + ')', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );

@@ -2007,6 +2007,514 @@
       crewEnergy: crewEnergy, cargoEnergy: cargoEnergy, energy: crewEnergy + cargoEnergy, energyLost: energyLost };
   }
 
+  // Saved investigations contain only the inputs shared by the integrated
+  // orbit. Independent water inventories, airlock, debris and human studies
+  // have different clocks and must not silently become part of this trial.
+  var ISS_OPS_INPUTS = [
+    { key: 'opsCrew', label: 'Crew aboard', unit: 'people', defaultValue: 7, min: 3, max: 11, type: 'number' },
+    { key: 'opsResearch', label: 'Research load', unit: '%', defaultValue: 60, min: 0, max: 100, type: 'number' },
+    { key: 'opsArrayAngle', label: 'Solar-array alignment', unit: 'degrees', defaultValue: 86, min: 0, max: 90, type: 'number' },
+    { key: 'opsEclipse', label: 'Eclipse duration', unit: 'minutes', defaultValue: 35, min: 20, max: 45, type: 'number' },
+    { key: 'opsBattery', label: 'Initial battery reserve', unit: '%', defaultValue: 76, min: 0, max: 100, type: 'number' },
+    { key: 'opsRecovery', label: 'Water recovery', unit: '%', defaultValue: 98, min: 70, max: 99, type: 'number' },
+    { key: 'opsScrub', label: 'CO2 scrubber throughput', unit: '%', defaultValue: 88, min: 0, max: 100, type: 'number' },
+    { key: 'opsRadiator', label: 'Radiator area', unit: '%', defaultValue: 82, min: 30, max: 100, type: 'number' },
+    { key: 'opsCooling', label: 'Coolant coupling', unit: '%', defaultValue: 86, min: 40, max: 100, type: 'number' },
+    { key: 'opsCabinStart', label: 'Initial cabin temperature', unit: 'C', defaultValue: 22, min: 16, max: 30, type: 'number' },
+    { key: 'opsCmg', label: 'Initial CMG load', unit: '%', defaultValue: 28, min: 0, max: 100, type: 'number' },
+    { key: 'opsAirFlow', label: 'Local ventilation flow', unit: 'm3/h', defaultValue: 90, min: 0, max: 180, type: 'number' },
+    { key: 'opsAirActivity', label: 'Crew activity multiplier', unit: 'times baseline', defaultValue: 1, min: 1, max: 3, type: 'number' },
+    { key: 'opsAirStart', label: 'Initial CO2 concentration', unit: 'ppm', defaultValue: 2600, min: 0, max: 8000, type: 'number' },
+    { key: 'opsAirRestore', label: 'Vent restoration enabled', unit: '', defaultValue: false, type: 'boolean' },
+    { key: 'opsAirRestoreMinute', label: 'Vent restoration time', unit: 'minutes', defaultValue: 45, min: 0, max: 85, type: 'number' },
+    { key: 'opsAttitudeTorque', label: 'Disturbance torque', unit: 'N m', defaultValue: .35, min: 0, max: 4, type: 'number' },
+    { key: 'opsAttitudeInertia', label: 'Station rotational inertia', unit: 'million kg m2', defaultValue: 80, min: 40, max: 160, type: 'number' },
+    { key: 'opsAttitudeDump', label: 'Momentum unloading enabled', unit: '', defaultValue: false, type: 'boolean' },
+    { key: 'opsAttitudeBurnMinute', label: 'Unloading start time', unit: 'minutes', defaultValue: 40, min: 0, max: 85, type: 'number' },
+    { key: 'opsAttitudeThrust', label: 'Unloading thruster force', unit: 'N per thruster', defaultValue: 5, min: 1, max: 15, type: 'number' },
+    { key: 'opsAttitudeFuel', label: 'Unloading propellant', unit: 'kg', defaultValue: 1.5, min: 0, max: 3, type: 'number' }
+  ];
+  var ISS_OPS_RESULTS = [
+    { key: 'batteryMin', label: 'Minimum battery reserve', unit: '%' },
+    { key: 'batteryEnd', label: 'Final battery reserve', unit: '%' },
+    { key: 'co2Peak', label: 'Peak CO2 concentration', unit: 'ppm' },
+    { key: 'cabinMin', label: 'Minimum cabin temperature', unit: 'C' },
+    { key: 'cabinMax', label: 'Maximum cabin temperature', unit: 'C' },
+    { key: 'cmgPeak', label: 'Peak CMG load', unit: '%' },
+    { key: 'recovery', label: 'Water recovery used', unit: '%' },
+    { key: 'waterResupply', label: 'Water makeup requirement', unit: 'L/day' }
+  ];
+  var ISS_OPS_EXTRA_RESULTS = [
+    { key: 'pointingEnd', label: 'Final pointing change', unit: 'degrees' },
+    { key: 'propellantUsed', label: 'Unloading propellant used', unit: 'kg' }
+  ];
+  function issOpsSetup(value) {
+    var input = value && typeof value === 'object' && !Array.isArray(value) ? value : {}, setup = {};
+    ISS_OPS_INPUTS.forEach(function (field) {
+      var raw = Object.prototype.hasOwnProperty.call(input, field.key) ? input[field.key] : undefined;
+      if (field.type === 'boolean') setup[field.key] = raw === true;
+      else {
+        var numeric = typeof raw === 'number' || typeof raw === 'string' && raw.trim() !== '';
+        setup[field.key] = issFlightNumber(numeric ? raw : undefined, field.defaultValue, field.min, field.max);
+      }
+    });
+    return setup;
+  }
+  function issOpsSetupChanges(before, after) {
+    var previous = issOpsSetup(before), current = issOpsSetup(after);
+    function active(setup, key) {
+      if (['opsAttitudeBurnMinute','opsAttitudeThrust','opsAttitudeFuel'].indexOf(key) !== -1) return setup.opsAttitudeDump;
+      if (key === 'opsAirRestoreMinute') return setup.opsAirRestore && setup.opsAirFlow < 90;
+      return true;
+    }
+    // A setting is inactive only if its feature cannot use it in either
+    // setup. Being active does not guarantee a change in recorded outcomes.
+    return ISS_OPS_INPUTS.filter(function (field) { return previous[field.key] !== current[field.key]; }).map(function (field) {
+      var activeBefore = active(previous, field.key), activeAfter = active(current, field.key);
+      return { key: field.key, before: previous[field.key], after: current[field.key], activeBefore: activeBefore, activeAfter: activeAfter,
+        inactiveReason: activeBefore || activeAfter ? null : field.key === 'opsAirRestoreMinute' ? 'restoration-inactive' : 'unloading-disabled' };
+    });
+  }
+  function issOpsSnapshot(options, requestedMinute) {
+    var input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
+    function finite(value) { return typeof value === 'number' && isFinite(value); }
+    function numbers(object, fields) { return object && fields.every(function (field) { return finite(object[field]); }); }
+    function samples(model, fields) {
+      return model && model.config && Array.isArray(model.samples) && model.samples.length > 0 &&
+        model.samples[0] && model.samples[0].minute === 0 && model.samples[model.samples.length - 1] && model.samples[model.samples.length - 1].minute === 92 &&
+        model.samples.every(function (sample, index, all) {
+          return numbers(sample, fields) && finite(sample.minute) && sample.minute >= 0 && sample.minute <= 92 && (!index || sample.minute > all[index - 1].minute);
+        });
+    }
+    var minute = finite(requestedMinute) ? Math.max(0, Math.min(92, requestedMinute)) : 0;
+    var recovery = finite(input.recovery) ? Math.max(70, Math.min(99, input.recovery)) : 98;
+    var air = input.air;
+    if (!samples(air, ['local','cabin','exhaled','removed','transferred','circulated']) ||
+        !numbers(air.config, ['crew','flow','scrub','activity','restoreMinute','localVolume','cabinVolume','restoredFlow','clearAirMax','gramsPerPpmM3']) ||
+        air.config.localVolume <= 0 || air.config.cabinVolume <= 0 || air.config.gramsPerPpmM3 <= 0) air = issAirRun({ power: input.power });
+    var thermal = input.thermal;
+    if (!samples(thermal, ['cabin','radiator','generated','absorbed','radiated','transferred']) ||
+        !numbers(thermal.config, ['area','conductance','cabinStart','radiatorStart','cabinCapacity','radiatorCapacity','metabolicKW','emissivity','sigma']) ||
+        thermal.config.cabinCapacity <= 0 || thermal.config.radiatorCapacity <= 0) thermal = issThermalRun({ power: input.power });
+    var attitude = input.attitude;
+    if (!attitude || !numbers(attitude.config, ['capacity','inertia','disturbance','fuel']) || attitude.config.capacity <= 0 || attitude.config.inertia <= 0 ||
+        !numbers(attitude, ['thrustTorque','massFlow','burnSeconds']) || !Array.isArray(attitude.segments) || !attitude.segments.length ||
+        !attitude.segments.every(function (segment) { return numbers(segment, ['start','end','total','angle','net']) && segment.start >= 0 && segment.end >= segment.start && segment.end <= 5520; })) attitude = issAttitudeRun({});
+    // Read every live instrument at the same physical instant. The orbit's
+    // extrema remain separate evidence for flight rules and saved trials.
+    var powerNow = issPowerState(input.power, minute), airNow = issAirInspect(air, minute);
+    var thermalNow = issThermalInspect(thermal, minute), attitudeNow = issAttitudeInspect(attitude, minute);
+    return { minute: minute, lit: powerNow.lit, power: powerNow.percent,
+      co2: Math.max(airNow.cabinPpm, airNow.localPpm),
+      co2Zone: Math.abs(airNow.cabinPpm - airNow.localPpm) <= 1e-9 ? 'both' : airNow.localPpm > airNow.cabinPpm ? 'crew' : 'cabin',
+      cabinPpm: airNow.cabinPpm, localPpm: airNow.localPpm, temp: thermalNow.cabin, cmg: attitudeNow.percent, recovery: recovery };
+  }
+  function issOpsTimeline(options) {
+    var input = options && typeof options === 'object' ? options : {};
+    function finite(value) { return typeof value === 'number' && isFinite(value); }
+    function minute(value, seconds) {
+      if (!finite(value)) return null;
+      var time = seconds ? value / 60 : value;
+      return time >= 0 && time <= 92 ? time : null;
+    }
+    var powerStart = issPowerState(input.power, 0), powerEnd = issPowerState(input.power, 92);
+    var eclipse = powerEnd.sunlightMinutes, powerAtEclipse = issPowerState(input.power, eclipse);
+    var air = input.air;
+    if (!air || !air.config || !Array.isArray(air.samples) || !air.samples.length || minute(air.peakMinute) === null || !finite(air.peakPpm)) air = issAirRun({ power: input.power });
+    var thermal = input.thermal;
+    if (!thermal || !Array.isArray(thermal.samples) || !thermal.samples.some(function (sample) { return sample && minute(sample.minute) !== null && finite(sample.cabin); })) thermal = issThermalRun({ power: input.power });
+    var attitude = input.attitude;
+    if (!attitude || !attitude.config || !finite(attitude.config.capacity) || attitude.config.capacity <= 0 ||
+        !finite(attitude.config.inertia) || attitude.config.inertia <= 0 || !Array.isArray(attitude.segments) || !attitude.segments.length ||
+        !attitude.segments.every(function (segment) { return segment && ['start','end','total','angle','net'].every(function (key) { return finite(segment[key]); }) && segment.start >= 0 && segment.end >= segment.start && segment.end <= 5520; })) attitude = issAttitudeRun({});
+
+    // The power model has two monotone phases. A reserve event marks the first
+    // downward arrival at 25%, not an upward recovery from a low starting state.
+    var reserve = null, reserveLeft = null, reserveRight = null;
+    if (powerStart.percent < 25) reserve = 0;
+    else if (powerAtEclipse.percent <= 25 && powerStart.generation < powerStart.loadKW) { reserveLeft = 0; reserveRight = eclipse; }
+    else if (powerEnd.percent <= 25 && powerAtEclipse.percent >= 25 && powerStart.loadKW > 0) { reserveLeft = eclipse; reserveRight = 92; }
+    if (reserveLeft !== null) {
+      if (issPowerState(input.power, reserveLeft).percent <= 25) reserve = reserveLeft;
+      else {
+        for (var iteration = 0; iteration < 48; iteration++) {
+          var middle = (reserveLeft + reserveRight) / 2;
+          if (issPowerState(input.power, middle).percent <= 25) reserveRight = middle; else reserveLeft = middle;
+        }
+        reserve = reserveRight;
+      }
+    }
+    var empty = powerStart.percent === 0 ? 0 : minute(powerEnd.emptyMinute);
+    var full = powerStart.percent === 100 ? 0 : minute(powerEnd.fullMinute);
+    var powerInspection = powerStart.percent <= powerEnd.percent ? 0 : powerEnd.percent === 0 && empty !== null ? empty : 92;
+
+    // Thermal extrema use the existing model samples, exactly as its reported
+    // range does. When both limits are exceeded, inspect the larger excursion;
+    // equal excursions select the earlier reading. Comfortable runs show max.
+    var cold = null, hot = null;
+    thermal.samples.forEach(function (sample) {
+      if (!sample || minute(sample.minute) === null || !finite(sample.cabin)) return;
+      if (!cold || sample.cabin < cold.cabin || sample.cabin === cold.cabin && sample.minute < cold.minute) cold = sample;
+      if (!hot || sample.cabin > hot.cabin || sample.cabin === hot.cabin && sample.minute < hot.minute) hot = sample;
+    });
+    var coldExcursion = Math.max(0, 18 - cold.cabin), hotExcursion = Math.max(0, hot.cabin - 27);
+    var inspectCold = coldExcursion > hotExcursion || coldExcursion > 0 && coldExcursion === hotExcursion && cold.minute < hot.minute;
+
+    // CMG load can peak before an unloading burn. Include the exact capacity
+    // crossing so a saturation plateau is inspected at its first instant.
+    var attitudeTimes = [0, 92], peak = -Infinity, peakMinute = 0;
+    attitude.segments.forEach(function (segment) { attitudeTimes.push(segment.start / 60, segment.end / 60); });
+    if (minute(attitude.firstCapacity, true) !== null) attitudeTimes.push(attitude.firstCapacity / 60);
+    attitudeTimes.forEach(function (time) {
+      if (minute(time) === null) return;
+      var percent = issAttitudeInspect(attitude, time).percent;
+      if (finite(percent) && (percent > peak || percent === peak && time < peakMinute)) { peak = percent; peakMinute = time; }
+    });
+    // The analytic capacity event starts the physical saturation plateau even
+    // if converting its seconds to minutes leaves the inspected percent an ulp
+    // below 100. Do not use that tolerance for unsaturated changes across 80%.
+    if (attitude.peakPercent === 100 && minute(attitude.firstCapacity, true) !== null) peakMinute = minute(attitude.firstCapacity, true);
+
+    var order = ['start','eclipse','end','battery-reserve','battery-full','battery-empty','air-limit','air-restore','thermal-limit','attitude-caution','attitude-capacity','burn-start','burn-end'];
+    var events = [];
+    function add(id, time, mode, kind, lab) {
+      if (minute(time) === null) return;
+      var event = { id: id, minute: time, mode: mode, kind: kind };
+      if (lab) event.lab = lab;
+      events.push(event);
+    }
+    add('start', 0, 'integrated', 'checkpoint');
+    add('eclipse', eclipse, 'power', 'checkpoint');
+    add('end', 92, 'integrated', 'checkpoint');
+    add('battery-reserve', reserve, 'power', 'boundary');
+    add('battery-full', full, 'power', 'boundary');
+    add('battery-empty', empty, 'power', 'boundary');
+    add('air-limit', air.firstLimitMinute, 'eclss', 'boundary', 'air');
+    add('air-restore', air.restoreMinute, 'eclss', 'intervention', 'air');
+    add('thermal-limit', thermal.firstLimitMinute, 'thermal', 'boundary');
+    add('attitude-caution', minute(attitude.firstCaution, true), 'attitude', 'boundary');
+    add('attitude-capacity', minute(attitude.firstCapacity, true), 'attitude', 'boundary');
+    add('burn-start', minute(attitude.burnStart, true), 'attitude', 'intervention');
+    add('burn-end', minute(attitude.burnEnd, true), 'attitude', 'intervention');
+    events.sort(function (a, b) { return a.minute - b.minute || order.indexOf(a.id) - order.indexOf(b.id); });
+    return { events: events, inspections: {
+      power: { minute: powerInspection, kind: 'minimum' }, air: { minute: air.peakMinute, kind: 'peak' },
+      thermal: { minute: inspectCold ? cold.minute : hot.minute, kind: inspectCold ? 'minimum' : 'maximum' },
+      attitude: { minute: peakMinute, kind: 'peak' }, water: { minute: null, kind: 'setup' }
+    } };
+  }
+  function issOpsTrial(setup, results, notes, id) {
+    if (!results || typeof results !== 'object' || Array.isArray(results)) return null;
+    var snapshot = {};
+    for (var index = 0; index < ISS_OPS_RESULTS.length; index++) {
+      var key = ISS_OPS_RESULTS[index].key, value = results[key];
+      if (!Object.prototype.hasOwnProperty.call(results, key) || typeof value !== 'number' || !isFinite(value)) return null;
+      snapshot[key] = value;
+    }
+    // These additive measurements were not present in older records. Missing
+    // or damaged optional evidence stays absent; never invent a zero or replay.
+    ISS_OPS_EXTRA_RESULTS.forEach(function (field) {
+      var value = results[field.key];
+      if (Object.prototype.hasOwnProperty.call(results, field.key) && typeof value === 'number' && isFinite(value)) snapshot[field.key] = value;
+    });
+    notes = notes && typeof notes === 'object' && !Array.isArray(notes) ? notes : {};
+    return { version: 1, id: Math.floor(issFlightNumber(id, 1, 1, 1000000000)), setup: issOpsSetup(setup), results: snapshot,
+      prediction: typeof notes.prediction === 'string' ? notes.prediction.slice(0, 600) : '',
+      reflection: typeof notes.reflection === 'string' ? notes.reflection.slice(0, 1200) : '' };
+  }
+  function issOpsTrials(value) {
+    if (!Array.isArray(value)) return [];
+    var trials = [], seen = {};
+    // Newest valid occurrence wins; an invalid duplicate cannot erase evidence.
+    for (var index = value.length - 1; index >= 0 && trials.length < 6; index--) {
+      var row = value[index];
+      if (!row || typeof row !== 'object' || Array.isArray(row) || row.version !== 1 ||
+          typeof row.id !== 'number' || !isFinite(row.id) || row.id < 1 || row.id > 1000000000 || Math.floor(row.id) !== row.id ||
+          !row.setup || typeof row.setup !== 'object' || Array.isArray(row.setup) || seen[row.id]) continue;
+      // A setup and its measured results are one piece of evidence. Reject a
+      // damaged setup instead of attaching its results to repaired defaults.
+      var canonical = issOpsSetup(row.setup);
+      if (!ISS_OPS_INPUTS.every(function (item) { return Object.prototype.hasOwnProperty.call(row.setup, item.key) && row.setup[item.key] === canonical[item.key]; })) continue;
+      var trial = issOpsTrial(row.setup, row.results, row, row.id);
+      if (trial) { seen[row.id] = true; trials.push(trial); }
+    }
+    return trials.reverse();
+  }
+  function issOpsAppendTrial(value, recorded, baselineId) {
+    var previous = issOpsTrials(value), incoming = issOpsTrials([recorded])[0];
+    if (!incoming) return previous;
+    var baseline = previous.filter(function (trial) { return trial.id === baselineId; })[0];
+    var next = previous.filter(function (trial) { return trial.id !== incoming.id; }).concat([incoming]);
+    // Keep the learner's selected reference while replacing the oldest other
+    // trial. A new measurement must not silently discard its comparison basis.
+    while (next.length > 6) {
+      var removeIndex = next.findIndex(function (trial) { return !baseline || trial.id !== baseline.id; });
+      next.splice(removeIndex, 1);
+    }
+    return next;
+  }
+  function issOpsRuleComparison(before, after) {
+    function valid(results) {
+      return results && typeof results === 'object' && !Array.isArray(results) && ISS_OPS_RESULTS.every(function (field) {
+        return Object.prototype.hasOwnProperty.call(results, field.key) && typeof results[field.key] === 'number' && isFinite(results[field.key]);
+      });
+    }
+    if (!valid(before) || !valid(after)) return null;
+    // Flight decisions use full-precision evidence, including the different
+    // strict and inclusive boundaries. Temperature is one combined rule.
+    var rules = [
+      { id: 'power', passes: function (r) { return r.batteryMin >= 25; } },
+      { id: 'air', passes: function (r) { return r.co2Peak < 4000; } },
+      { id: 'water', passes: function (r) { return r.recovery >= 90; } },
+      { id: 'thermal', passes: function (r) { return r.cabinMin >= 18 && r.cabinMax <= 27; } },
+      { id: 'attitude', passes: function (r) { return r.cmgPeak < 80; } }
+    ];
+    return rules.map(function (rule) {
+      var previous = rule.passes(before), current = rule.passes(after);
+      return { id: rule.id, before: previous, after: current,
+        state: previous ? (current ? 'still-go' : 'introduced') : (current ? 'resolved' : 'still-check') };
+    });
+  }
+  function issOpsResultText(value, digits, boundaries) {
+    if (typeof value !== 'number' || !isFinite(value)) return '\u2014';
+    var precision = typeof digits === 'number' && isFinite(digits) ? Math.max(0, Math.min(100, Math.floor(digits))) : 0;
+    var formatted = value.toFixed(precision), rounded = Number(formatted);
+    if (Array.isArray(boundaries)) {
+      for (var index = 0; index < boundaries.length; index++) {
+        var boundary = boundaries[index];
+        if (typeof boundary === 'number' && isFinite(boundary) && value !== boundary && rounded === boundary)
+          return (value < boundary ? '< ' : '> ') + (boundary === 0 ? 0 : boundary).toFixed(precision);
+      }
+    }
+    return rounded === 0 ? (0).toFixed(precision) : formatted;
+  }
+  function issOpsDeltaText(before, after, digits) {
+    if (typeof before !== 'number' || !isFinite(before) || typeof after !== 'number' || !isFinite(after)) return '\u2014';
+    var delta = after - before;
+    if (!isFinite(delta)) return '\u2014';
+    if (delta === 0) return '0';
+    var precision = typeof digits === 'number' && isFinite(digits) ? Math.max(0, Math.min(100, Math.floor(digits))) : 0;
+    var magnitude = Math.abs(delta).toFixed(precision), sign = delta > 0 ? '+' : '\u2212';
+    // A small measured change is different from unchanged evidence, even when
+    // it is smaller than this table's displayed decimal place.
+    return sign + (Number(magnitude) === 0 ? '<' + Math.pow(10, -precision).toFixed(precision) : magnitude);
+  }
+  function issOpsTrialCsv(value) {
+    function field(value) {
+      var text = String(value);
+      // Quote delimiters/newlines and neutralize formula-like user text, even
+      // behind whitespace. Genuine negative numeric readings stay numeric.
+      if (typeof value === 'string' && (/^[\s\uFEFF]*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text))) text = "'" + text;
+      return '"' + text.replace(/"/g, '""') + '"';
+    }
+    function heading(item) { return item.label + (item.unit ? ' (' + item.unit + ')' : ''); }
+    var headers = ['Trial ID', 'Model version', 'Orbit duration (minutes)'].concat(ISS_OPS_INPUTS.map(heading), ISS_OPS_RESULTS.map(heading), ISS_OPS_EXTRA_RESULTS.map(heading), ['Prediction', 'Reflection']);
+    var rows = [headers.map(field).join(',')];
+    issOpsTrials(value).forEach(function (trial) {
+      var cells = [trial.id, trial.version, 92].concat(ISS_OPS_INPUTS.map(function (item) { return trial.setup[item.key]; }),
+        ISS_OPS_RESULTS.map(function (item) { return trial.results[item.key]; }),
+        ISS_OPS_EXTRA_RESULTS.map(function (item) { return Object.prototype.hasOwnProperty.call(trial.results, item.key) ? trial.results[item.key] : ''; }), [trial.prediction, trial.reflection]);
+      rows.push(cells.map(field).join(','));
+    });
+    return rows.join('\r\n') + '\r\n';
+  }
+
+  function issOpsMeasurementTarget(value, key) {
+    if (!ISS_OPS_RESULTS.concat(ISS_OPS_EXTRA_RESULTS).some(function (field) { return field.key === key; })) return null;
+    var setup = issOpsSetup(value);
+    function target(mode, lab, minute, kind, reading) { return { key: key, mode: mode, lab: lab, minute: minute, kind: kind, value: reading }; }
+    if (key === 'recovery') return target('eclss', 'water', null, 'setup', setup.opsRecovery);
+    if (key === 'waterResupply') {
+      var need = setup.opsCrew * 3.8;
+      return target('eclss', 'water', null, 'setup', need - need * setup.opsRecovery / 100);
+    }
+    var power = { generation: 160 * Math.sin(setup.opsArrayAngle * Math.PI / 180),
+      load: 68 + setup.opsCrew * 1.6 + setup.opsResearch * .22, eclipse: setup.opsEclipse, battery: setup.opsBattery, capacity: 210 };
+    if (key === 'batteryMin' || key === 'batteryEnd') {
+      var powerEnd = issPowerState(power, 92);
+      if (key === 'batteryEnd') return target('power', null, 92, 'end', powerEnd.percent);
+      var powerStart = issPowerState(power, 0);
+      var firstMinimum = powerStart.percent <= powerEnd.percent ? 0 : powerEnd.percent === 0 && powerEnd.emptyMinute !== null ? powerEnd.emptyMinute : 92;
+      return target('power', null, firstMinimum, 'minimum', powerEnd.minimumPercent);
+    }
+    if (key === 'co2Peak') {
+      var air = issAirRun({ power: power, crew: setup.opsCrew, scrub: setup.opsScrub, flow: setup.opsAirFlow,
+        activity: setup.opsAirActivity, startPpm: setup.opsAirStart, restore: setup.opsAirRestore, restoreMinute: setup.opsAirRestoreMinute });
+      return target('eclss', 'air', air.peakMinute, 'peak', air.peakPpm);
+    }
+    if (key === 'cabinMin' || key === 'cabinMax') {
+      var thermal = issThermalRun({ power: power, radiator: setup.opsRadiator, cooling: setup.opsCooling, cabinStart: setup.opsCabinStart, crew: setup.opsCrew });
+      var minimum = key === 'cabinMin', extreme = thermal.samples[0];
+      thermal.samples.forEach(function (sample) {
+        if ((minimum ? sample.cabin < extreme.cabin : sample.cabin > extreme.cabin) || sample.cabin === extreme.cabin && sample.minute < extreme.minute) extreme = sample;
+      });
+      return target('thermal', null, extreme.minute, minimum ? 'minimum' : 'maximum', extreme.cabin);
+    }
+    var attitude = issAttitudeRun({ cmg: setup.opsCmg, torque: setup.opsAttitudeTorque, inertia: setup.opsAttitudeInertia,
+      dump: setup.opsAttitudeDump, burnMinute: setup.opsAttitudeBurnMinute, thrust: setup.opsAttitudeThrust, fuel: setup.opsAttitudeFuel });
+    if (key !== 'cmgPeak') {
+      var attitudeEnd = issAttitudeInspect(attitude, 92);
+      return target('attitude', null, 92, 'end', key === 'pointingEnd' ? attitudeEnd.angleDeg : attitudeEnd.fuelUsed);
+    }
+    // Segment boundaries and the exact capacity crossing contain every CMG
+    // extremum. Match the timeline's earliest-peak convention for plateaus.
+    var times = [0, 92], peak = -Infinity, peakMinute = 0;
+    attitude.segments.forEach(function (segment) { times.push(segment.start / 60, segment.end / 60); });
+    if (attitude.firstCapacity !== null) times.push(attitude.firstCapacity / 60);
+    times.forEach(function (minute) {
+      var percent = issAttitudeInspect(attitude, minute).percent;
+      if (percent > peak || percent === peak && minute < peakMinute) { peak = percent; peakMinute = minute; }
+    });
+    if (attitude.peakPercent === 100 && attitude.firstCapacity !== null) peakMinute = attitude.firstCapacity / 60;
+    return target('attitude', null, peakMinute, 'peak', attitude.peakPercent);
+  }
+
+  function issOpsTrajectory(value) {
+    var setup = issOpsSetup(value);
+    var power = { generation: 160 * Math.sin(setup.opsArrayAngle * Math.PI / 180),
+      load: 68 + setup.opsCrew * 1.6 + setup.opsResearch * .22, eclipse: setup.opsEclipse, battery: setup.opsBattery, capacity: 210 };
+    var air = issAirRun({ power: power, crew: setup.opsCrew, scrub: setup.opsScrub, flow: setup.opsAirFlow,
+      activity: setup.opsAirActivity, startPpm: setup.opsAirStart, restore: setup.opsAirRestore, restoreMinute: setup.opsAirRestoreMinute });
+    var thermal = issThermalRun({ power: power, radiator: setup.opsRadiator, cooling: setup.opsCooling, cabinStart: setup.opsCabinStart, crew: setup.opsCrew });
+    var attitude = issAttitudeRun({ cmg: setup.opsCmg, torque: setup.opsAttitudeTorque, inertia: setup.opsAttitudeInertia,
+      dump: setup.opsAttitudeDump, burnMinute: setup.opsAttitudeBurnMinute, thrust: setup.opsAttitudeThrust, fuel: setup.opsAttitudeFuel });
+    var trajectory = { setup: setup, power: power, air: air, thermal: thermal, attitude: attitude, points: [] };
+    var times = [], powerEnd = issPowerState(power, 92);
+    for (var minute = 0; minute <= 92; minute++) times.push(minute);
+    [powerEnd.sunlightMinutes, powerEnd.fullMinute, powerEnd.emptyMinute, air.restoreMinute, air.peakMinute].forEach(function (time) { times.push(time); });
+    var cold = thermal.samples[0], hot = thermal.samples[0];
+    thermal.samples.forEach(function (sample) {
+      if (sample.cabin < cold.cabin || sample.cabin === cold.cabin && sample.minute < cold.minute) cold = sample;
+      if (sample.cabin > hot.cabin || sample.cabin === hot.cabin && sample.minute < hot.minute) hot = sample;
+    });
+    times.push(cold.minute, hot.minute);
+    attitude.segments.forEach(function (segment) { times.push(segment.start / 60, segment.end / 60); });
+    [attitude.firstCaution, attitude.firstCapacity, attitude.burnStart, attitude.burnEnd].forEach(function (seconds) {
+      if (seconds !== null) times.push(seconds / 60);
+    });
+    // Integer samples keep plots bounded; exact event times preserve short
+    // burns and fractional phase changes. Only identical timestamps merge.
+    times = times.filter(function (time) { return typeof time === 'number' && isFinite(time); })
+      .map(function (time) { return Math.max(0, Math.min(92, time)); })
+      .sort(function (a, b) { return a - b; })
+      .filter(function (time, index, all) { return !index || time !== all[index - 1]; });
+    trajectory.points = times.map(function (time) { return issOpsTrajectoryPoint(trajectory, time); });
+    return trajectory;
+  }
+  function issOpsTrajectoryPoint(trajectory, requestedMinute) {
+    var minute = typeof requestedMinute === 'number' && isFinite(requestedMinute) ? Math.max(0, Math.min(92, requestedMinute)) : 0;
+    var power = issPowerState(trajectory.power, minute), air = issAirInspect(trajectory.air, minute);
+    var thermal = issThermalInspect(trajectory.thermal, minute), attitude = issAttitudeInspect(trajectory.attitude, minute);
+    // Inspect the physical models at the requested time instead of linearly
+    // interpolating plotted samples across a burn or lighting change.
+    return { minute: minute, lit: power.lit, battery: power.percent, co2: Math.max(air.cabinPpm, air.localPpm),
+      temp: thermal.cabin, cmg: attitude.percent, pointing: attitude.angleDeg, propellant: attitude.fuelUsed };
+  }
+
+  function issOpsTrajectoryEvents(trajectory, metric) {
+    var metricEvents = {
+      battery: ['battery-reserve','battery-full','battery-empty'],
+      co2: ['air-limit','air-restore'], temp: ['thermal-limit'],
+      cmg: ['attitude-caution','attitude-capacity','burn-start','burn-end'],
+      pointing: ['attitude-capacity','burn-start','burn-end'], propellant: ['attitude-capacity','burn-start','burn-end']
+    };
+    var selected = typeof metric === 'string' && Object.prototype.hasOwnProperty.call(metricEvents, metric) ? metric : 'battery';
+    var timeline = issOpsTimeline(trajectory), included = ['start','eclipse','end'].concat(metricEvents[selected]);
+    var events = timeline.events.filter(function (event) { return included.indexOf(event.id) !== -1; }).map(function (event) {
+      return { id: event.id, minute: event.minute, kind: event.kind };
+    });
+    function add(id, minute, kind) {
+      if (typeof minute === 'number' && isFinite(minute) && minute >= 0 && minute <= 92) events.push({ id: id, minute: minute, kind: kind });
+    }
+    if (selected === 'battery') add('battery-min', timeline.inspections.power.minute, 'minimum');
+    else if (selected === 'co2') add('co2-peak', trajectory.air.peakMinute, 'peak');
+    else if (selected === 'cmg') add('cmg-peak', timeline.inspections.attitude.minute, 'peak');
+    else if (selected === 'temp') {
+      var cold = trajectory.thermal.samples[0], hot = cold;
+      trajectory.thermal.samples.forEach(function (sample) {
+        if (sample.cabin < cold.cabin || sample.cabin === cold.cabin && sample.minute < cold.minute) cold = sample;
+        if (sample.cabin > hot.cabin || sample.cabin === hot.cabin && sample.minute < hot.minute) hot = sample;
+      });
+      add('cabin-min', cold.minute, 'minimum'); add('cabin-max', hot.minute, 'maximum');
+    }
+    // Keep distinct event identities even at the same instant. The caller can
+    // use distinct numeric times for next/previous navigation without losing
+    // which source or physical event supplied each checkpoint.
+    var order = ['start','eclipse','end','battery-reserve','battery-full','battery-empty','air-limit','air-restore','thermal-limit',
+      'attitude-caution','attitude-capacity','burn-start','burn-end','battery-min','co2-peak','cabin-min','cabin-max','cmg-peak'];
+    return events.sort(function (a, b) { return a.minute - b.minute || order.indexOf(a.id) - order.indexOf(b.id); });
+  }
+
+  function issOpsTrajectoryCsv(options) {
+    function object(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    function finite(value) { return typeof value === 'number' && isFinite(value); }
+    function numbers(value, keys) { return object(value) && keys.every(function (key) { return finite(value[key]); }); }
+    function validId(value) { return finite(value) && Math.floor(value) === value && value >= 1 && value <= 1000000000; }
+    function descriptor(value, side) {
+      if (!object(value) || !(validId(value.id) || side === 'comparison' && value.id === null)) throw new TypeError('Invalid ' + side + ' trajectory source identity');
+      var model = value.trajectory;
+      if (!object(model) || !object(model.setup)) throw new TypeError('Invalid ' + side + ' trajectory model');
+      var canonical = issOpsSetup(model.setup);
+      if (!ISS_OPS_INPUTS.every(function (field) { return Object.prototype.hasOwnProperty.call(model.setup, field.key) && model.setup[field.key] === canonical[field.key]; }) ||
+          !numbers(model.power, ['generation','load','eclipse','battery','capacity']) || model.power.capacity <= 0 ||
+          !object(model.air) || !object(model.air.config) || !Array.isArray(model.air.samples) || !model.air.samples.length ||
+          !finite(model.air.peakMinute) || model.air.peakMinute < 0 || model.air.peakMinute > 92 || !finite(model.air.peakPpm) ||
+          !numbers(model.air.config, ['crew','flow','scrub','activity','restoreMinute','localVolume','cabinVolume','restoredFlow','clearAirMax','gramsPerPpmM3']) ||
+          model.air.config.localVolume <= 0 || model.air.config.cabinVolume <= 0 || model.air.config.gramsPerPpmM3 <= 0 ||
+          !object(model.thermal) || !numbers(model.thermal.config, ['area','conductance','cabinStart','radiatorStart','cabinCapacity','radiatorCapacity','metabolicKW','emissivity','sigma']) ||
+          model.thermal.config.cabinCapacity <= 0 || model.thermal.config.radiatorCapacity <= 0 || !Array.isArray(model.thermal.samples) || !model.thermal.samples.length ||
+          !object(model.attitude) || !numbers(model.attitude.config, ['capacity','inertia','disturbance','fuel']) || model.attitude.config.capacity <= 0 || model.attitude.config.inertia <= 0 ||
+          !numbers(model.attitude, ['thrustTorque','massFlow','burnSeconds']) || !Array.isArray(model.attitude.segments) || !model.attitude.segments.length ||
+          !model.attitude.segments.every(function (segment) { return numbers(segment, ['start','end','total','angle','net']) && segment.start >= 0 && segment.end >= segment.start && segment.end <= 5520; }) ||
+          !Array.isArray(model.points) || !model.points.length || !model.points.every(function (point) { return numbers(point, ['minute','battery','co2','temp','cmg','pointing','propellant']) && point.minute >= 0 && point.minute <= 92 && typeof point.lit === 'boolean'; }))
+        throw new TypeError('Invalid ' + side + ' trajectory model');
+      [['air',['local','cabin','exhaled','removed','transferred','circulated']],['thermal',['cabin','radiator','generated','absorbed','radiated','transferred']]].forEach(function (entry) {
+        var samples = model[entry[0]].samples;
+        if (!samples.every(function (sample, index) { return numbers(sample, ['minute'].concat(entry[1])) && sample.minute >= 0 && sample.minute <= 92 && (!index || sample.minute > samples[index - 1].minute); }) ||
+            samples[0].minute !== 0 || samples[samples.length - 1].minute !== 92) throw new TypeError('Invalid ' + side + ' trajectory samples');
+      });
+      return { id: value.id, trajectory: model, setup: canonical, side: side, events: {} };
+    }
+    if (!object(options)) throw new TypeError('Trajectory export requires baseline and comparison sources');
+    var sources = [descriptor(options.baseline, 'baseline'), descriptor(options.comparison, 'comparison')];
+    var metrics = ['battery','co2','temp','cmg','pointing','propellant'];
+    var metric = metrics.indexOf(options.metric) !== -1 ? options.metric : 'battery';
+    var minute = finite(options.minute) ? Math.max(0, Math.min(92, options.minute)) : 0;
+    var times = [minute];
+    sources.forEach(function (source) {
+      source.trajectory.points.forEach(function (point) { times.push(point.minute); });
+      metrics.forEach(function (metric) {
+        issOpsTrajectoryEvents(source.trajectory, metric).forEach(function (event) {
+          times.push(event.minute);
+          var ids = source.events[event.minute] || (source.events[event.minute] = []);
+          if (ids.indexOf(event.id) === -1) ids.push(event.id);
+        });
+      });
+    });
+    times.sort(function (a, b) { return a - b; });
+    times = times.filter(function (time, index) { return !index || time !== times[index - 1]; });
+    function field(value) {
+      var text = String(value);
+      if (typeof value === 'string' && (/^[\s\uFEFF]*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text))) text = "'" + text;
+      return '"' + text.replace(/"/g, '""') + '"';
+    }
+    var headers = ['Data provenance','Model version','Orbit duration (minutes)','Selected measurement','Side','Source kind','Trial ID','Time (minutes)','Selected cursor','Phase','Events',
+      'Battery reserve (%)','Highest zone CO2 (ppm)','Cabin temperature (C)','CMG storage used (%)','Pointing change (degrees)','Unloading propellant used (kg)']
+      .concat(ISS_OPS_INPUTS.map(function (item) { return item.label + (item.unit ? ' (' + item.unit + ')' : ''); }));
+    var rows = [headers.map(field).join(',')];
+    times.forEach(function (time) {
+      sources.forEach(function (source) {
+        var point = issOpsTrajectoryPoint(source.trajectory, time);
+        if (!metrics.every(function (key) { return finite(point[key]); })) throw new TypeError('Nonfinite ' + source.side + ' trajectory reading');
+        var values = ['Recomputed from setup using current classroom model',1,92,metric,source.side,source.id === null ? 'current' : 'saved',source.id === null ? '' : source.id,
+          time,time === minute,point.lit ? 'sunlight' : 'eclipse',(source.events[time] || []).join('; '),point.battery,point.co2,point.temp,point.cmg,point.pointing,point.propellant]
+          .concat(ISS_OPS_INPUTS.map(function (item) { return source.setup[item.key]; }));
+        rows.push(values.map(field).join(','));
+      });
+    });
+    return rows.join('\r\n') + '\r\n';
+  }
+
   // User-started clocks stay local to the mounted experiment. Saved projects
   // restore their last time, never an autoplaying simulation. Experiment
   // models receive seconds; display acceleration does not alter their physics.
@@ -2068,6 +2576,197 @@
           (props.speeds || [1, 4, 10]).map(function (speed, index) { return h('option', { key: speed, value: speed }, props.speedLabels && props.speedLabels[index] || speed + '×'); }))),
       h('span', { style: { flexBasis: '100%', fontSize: 11, color: '#94a3b8' } },
         t('stem.spacestation.playback_hint', 'Playback pauses when you seek, change the setup, or leave this view.')));
+  }
+
+  // This viewer owns only comparison preferences. Its memoized forecasts use
+  // copied setups; inspecting either curve never loads a trial or seeks a lab.
+  function issOpsTrajectoryCompare(props) {
+    var React = props.React, h = React.createElement;
+    var __alloT = function (k, fb) { var v; try { v = (typeof props.t === 'function') ? props.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+    var fill = props.fill;
+    function trajectoryText(key, fallback) { return __alloT('stem.spacestation.trajectory_' + key, fallback); }
+    var open = props.open === true;
+    var downloadState = React.useState(''), downloadMessage = downloadState[0], setDownloadMessage = downloadState[1];
+    var beforeSetup = JSON.stringify(issOpsSetup(props.baseline.setup));
+    var afterSetup = JSON.stringify(issOpsSetup(props.comparison ? props.comparison.setup : props.currentSetup));
+    var before = React.useMemo(function () { return open ? issOpsTrajectory(JSON.parse(beforeSetup)) : null; }, [open, beforeSetup]);
+    var after = React.useMemo(function () { return open ? issOpsTrajectory(JSON.parse(afterSetup)) : null; }, [open, afterSetup]);
+    var fields = [
+      { key: 'battery', label: trajectoryText('battery', 'Battery reserve'), unit: '%', delta: 'pp', digits: 1, limits: [25], fixed: 100 },
+      { key: 'co2', label: trajectoryText('co2', 'Highest zone CO₂'), unit: 'ppm', delta: 'ppm', digits: 0, limits: [4000], floor: 4000 },
+      { key: 'temp', label: trajectoryText('temp', 'Cabin temperature'), unit: '°C', delta: '°C', digits: 2, limits: [18, 27] },
+      { key: 'cmg', label: trajectoryText('cmg', 'CMG storage used'), unit: '%', delta: 'pp', digits: 1, limits: [80], fixed: 100 },
+      { key: 'pointing', label: trajectoryText('pointing', 'Pointing change'), unit: '°', delta: '°', digits: 2, limits: [], floor: 1 },
+      { key: 'propellant', label: trajectoryText('propellant', 'Unloading propellant used'), unit: 'kg', delta: 'kg', digits: 3, limits: [], floor: .01 }
+    ];
+    var field = fields.filter(function (item) { return item.key === props.metric; })[0] || fields[0];
+    var beforeEvents = React.useMemo(function () { return before ? issOpsTrajectoryEvents(before, field.key) : []; }, [before, field.key]);
+    var afterEvents = React.useMemo(function () { return after ? issOpsTrajectoryEvents(after, field.key) : []; }, [after, field.key]);
+    var minute = typeof props.minute === 'number' && isFinite(props.minute) ? Math.max(0, Math.min(92, props.minute)) : 0;
+    var beforeLabel = fill(trajectoryText('trial', 'Trial {trial}'), { trial: props.baseline.id });
+    var afterLabel = props.comparison ? fill(trajectoryText('trial', 'Trial {trial}'), { trial: props.comparison.id }) : trajectoryText('current', 'Current setup');
+    function valueText(value) { return issOpsResultText(value, field.digits, field.limits) + ' ' + field.unit; }
+    function seek(value) { props.onChange({ opsTrajectoryMinute: Math.max(0, Math.min(92, value)) }); }
+    function seekKey(event) {
+      var offsets = { ArrowLeft: -.1, ArrowDown: -.1, ArrowRight: .1, ArrowUp: .1, PageDown: -1, PageUp: 1 };
+      if (Object.prototype.hasOwnProperty.call(offsets, event.key) || event.key === 'Home' || event.key === 'End') {
+        event.preventDefault(); seek(event.key === 'Home' ? 0 : event.key === 'End' ? 92 : minute + offsets[event.key]);
+      }
+    }
+    function plotSeek(event) {
+      var svg = event.currentTarget;
+      if (typeof event.clientX !== 'number' || !isFinite(event.clientX)) return;
+      var matrix = svg.getScreenCTM && svg.getScreenCTM();
+      if (matrix && svg.createSVGPoint && typeof matrix.inverse === 'function') {
+        if (matrix.a * matrix.d - matrix.b * matrix.c === 0) return;
+        var point = svg.createSVGPoint(); point.x = event.clientX; point.y = event.clientY;
+        // Use SVG coordinates so borders, responsive scaling and CSS transforms
+        // cannot shift the requested instant away from the plotted position.
+        seek((point.matrixTransform(matrix.inverse()).x - 8) / 984 * 92);
+      } else {
+        var box = svg.getBoundingClientRect(), style = typeof getComputedStyle === 'function' ? getComputedStyle(svg) : null;
+        var leftBorder = style ? parseFloat(style.borderLeftWidth) || 0 : 0, rightBorder = style ? parseFloat(style.borderRightWidth) || 0 : 0;
+        var width = box.width - leftBorder - rightBorder;
+        if (width > 0) seek(((event.clientX - box.left - leftBorder) / width * 1000 - 8) / 984 * 92);
+      }
+    }
+    function release(event) {
+      if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    function downloadComparison() {
+      if (!before || !after) return;
+      var url = null, link = null, started = false;
+      try {
+        // Serialize this rendered pair once. A later edit to Current setup must
+        // not relabel or change the evidence already handed to the download.
+        var csv = issOpsTrajectoryCsv({ baseline: { id: props.baseline.id, trajectory: before },
+          comparison: { id: props.comparison ? props.comparison.id : null, trajectory: after }, minute: minute, metric: field.key });
+        url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
+        link = document.createElement('a'); link.href = url; link.download = 'space-station-comparison.csv'; link.style.display = 'none';
+        document.body.appendChild(link); link.click(); started = true;
+        setDownloadMessage(fill(trajectoryText('export_started', 'Comparison CSV download started for {baseline} and {comparison}.'), { baseline: beforeLabel, comparison: afterLabel }));
+      } catch (error) {
+        setDownloadMessage(trajectoryText('export_failed', 'Could not start the comparison download. Try again.'));
+      } finally {
+        if (link) link.remove();
+        if (url && typeof URL.revokeObjectURL === 'function') {
+          if (started) setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          else URL.revokeObjectURL(url);
+        }
+      }
+    }
+    function jumpMoment(time, event) {
+      var panel = event.currentTarget.closest('[data-ops-trajectory]');
+      seek(time);
+      requestAnimationFrame(function () {
+        var heading = panel && panel.isConnected && panel.querySelector('#iss-trajectory-readout-title');
+        if (heading) heading.focus();
+      });
+    }
+    function renderMoments() {
+      var eventNames = {
+        start: trajectoryText('event_start', 'Orbit start'), eclipse: trajectoryText('event_eclipse', 'Eclipse entry'), end: trajectoryText('event_end', 'Orbit complete'),
+        'battery-reserve': trajectoryText('event_battery_reserve', 'Battery reserve reference · 25%'),
+        'battery-full': trajectoryText('event_battery_full', 'Battery full'), 'battery-empty': trajectoryText('event_battery_empty', 'Battery empty'),
+        'battery-min': trajectoryText('event_battery_min', 'Minimum battery reserve'),
+        'air-limit': trajectoryText('event_air_limit', 'CO₂ reference · 4000 ppm'), 'air-restore': trajectoryText('event_air_restore', 'Ventilation restoration'),
+        'co2-peak': trajectoryText('event_co2_peak', 'Peak zone CO₂'),
+        'thermal-limit': trajectoryText('event_thermal_limit', 'Cabin comfort boundary'),
+        'cabin-min': trajectoryText('event_cabin_min', 'Minimum cabin temperature'), 'cabin-max': trajectoryText('event_cabin_max', 'Maximum cabin temperature'),
+        'attitude-caution': trajectoryText('event_attitude_caution', 'CMG caution reference · 80%'),
+        'attitude-capacity': trajectoryText('event_attitude_capacity', 'CMG capacity · 100%'),
+        'cmg-peak': trajectoryText('event_cmg_peak', 'Peak CMG storage'),
+        'burn-start': trajectoryText('event_burn_start', 'Unloading starts'), 'burn-end': trajectoryText('event_burn_end', 'Unloading ends')
+      };
+      var all = beforeEvents.concat(afterEvents);
+      var times = all.map(function (event) { return event.minute; }).sort(function (a, b) { return a - b; }).filter(function (time, index, list) { return !index || time !== list[index - 1]; });
+      var previous = null, next = null;
+      times.forEach(function (time) { if (time < minute) previous = time; else if (time > minute && next === null) next = time; });
+      function group(side, label, events) {
+        return h('section', { className: 'iss-trajectory-event-group', 'data-ops-trajectory-event-group': side, 'aria-labelledby': 'iss-trajectory-events-' + side },
+          h('h6', { id: 'iss-trajectory-events-' + side }, (side === 'baseline' ? trajectoryText('baseline', 'Baseline') : trajectoryText('comparison', 'Comparison')) + ' · ' + label),
+          h('ol', null, events.map(function (item) {
+            var kind = item.kind === 'intervention' ? trajectoryText('event_action', 'Modeled action') : item.kind === 'boundary' ? trajectoryText('event_reference', 'Reference boundary') : item.kind === 'checkpoint' ? trajectoryText('event_checkpoint', 'Orbit checkpoint') : trajectoryText('event_extreme', 'Modeled extreme');
+            return h('li', { key: item.id }, h('button', { type: 'button', 'data-ops-trajectory-event': side + ':' + item.id, 'data-event-minute': item.minute,
+              'aria-pressed': minute === item.minute, onClick: function (event) { jumpMoment(item.minute, event); } },
+              h('strong', null, fill(trajectoryText('event_time', 'T+{minute} min'), { minute: item.minute.toFixed(2) })),
+              h('span', null, eventNames[item.id]), h('small', null, kind)));
+          })));
+      }
+      return h('details', { className: 'iss-trajectory-events', 'data-ops-trajectory-events': true },
+        h('summary', { id: 'iss-trajectory-events-title' }, fill(trajectoryText('events_title', 'Key moments · {metric} ({count})'), { metric: field.label, count: all.length })),
+        h('p', null, trajectoryText('events_intro', 'Select a moment from either setup to compare both readings at that exact time. Times are displayed to 0.01 minute; jumps retain full model precision. Coincident moments keep their separate meanings.')),
+        h('div', { className: 'iss-trajectory-event-nav' },
+          h('button', { type: 'button', 'data-ops-trajectory-previous': true, disabled: previous === null, onClick: function (event) { if (previous !== null) jumpMoment(previous, event); } }, trajectoryText('previous_moment', 'Previous moment')),
+          h('button', { type: 'button', 'data-ops-trajectory-next': true, disabled: next === null, onClick: function (event) { if (next !== null) jumpMoment(next, event); } }, trajectoryText('next_moment', 'Next moment'))),
+        h('p', { className: 'iss-trajectory-event-scope' }, trajectoryText('events_scope', 'Previous and next move between distinct times across both setups. A reference boundary can mark an initial reading already outside the range; it does not by itself determine the full-orbit flight-rule result.')),
+        h('div', { className: 'iss-trajectory-event-groups' }, group('baseline', beforeLabel, beforeEvents), group('comparison', afterLabel, afterEvents)));
+    }
+    function panel() {
+      if (!before || !after) return null;
+      var a = issOpsTrajectoryPoint(before, minute), b = issOpsTrajectoryPoint(after, minute);
+      var values = before.points.concat(after.points).map(function (point) { return point[field.key]; });
+      var low = field.key === 'temp' ? Math.min(18, Math.min.apply(null, values)) : 0;
+      var high = field.fixed || Math.max(field.floor || 27, Math.max.apply(null, values));
+      var padding = (high - low) * .06 || 1;
+      if (!field.fixed) { if (field.key === 'temp') low -= padding; high += padding; }
+      function x(time) { return 8 + time / 92 * 984; }
+      function y(value) { return 192 - (value - low) / (high - low) * 184; }
+      function curve(points) { return points.map(function (point, index) { return (index ? 'L' : 'M') + x(point.minute).toFixed(4) + ' ' + y(point[field.key]).toFixed(4); }).join(' '); }
+      var ticks = [0, .25, .5, .75, 1].map(function (fraction) { return high - fraction * (high - low); });
+      var chartLabel = fill(trajectoryText('chart_label', 'Recomputed {measurement} over 92 minutes. Baseline {baseline} is dashed; comparison {comparison} is solid. At {minute} minutes: {before} and {after}. Use the comparison time slider for exact readings.'),
+        { measurement: field.label, baseline: beforeLabel, comparison: afterLabel, minute: minute.toFixed(2), before: valueText(a[field.key]), after: valueText(b[field.key]) });
+      function reading(id, label, point) {
+        return h('div', { className: 'iss-trajectory-reading', 'data-ops-trajectory-reading': id, 'data-value': point[field.key], 'data-minute': point.minute, 'data-lit': point.lit },
+          h('span', null, (id === 'baseline' ? trajectoryText('baseline', 'Baseline') : trajectoryText('comparison', 'Comparison')) + ' · ' + label),
+          h('strong', null, valueText(point[field.key])),
+          h('small', null, point.lit ? trajectoryText('sunlight', 'Sunlight') : trajectoryText('eclipse', 'Eclipse')));
+      }
+      return h('div', { id: 'iss-ops-trajectory-panel', 'data-ops-trajectory-panel': true },
+        h('p', { id: 'iss-trajectory-scope' }, trajectoryText('scope', 'Recomputed from each setup using the current classroom model. These curves are separate from saved measurements, including older trials with missing results. The working controls, lab clocks and notebook evidence stay unchanged.')),
+        props.comparison && props.comparison.id === props.baseline.id ? h('p', null, trajectoryText('self', 'The same saved trial is selected on both sides; its curves overlap.')) : null,
+        h('label', { htmlFor: 'iss-ops-trajectory-metric' }, trajectoryText('metric', 'Measurement through the orbit')),
+        h('select', { id: 'iss-ops-trajectory-metric', 'data-ops-trajectory-metric': true, value: field.key, onChange: function (event) { props.onChange({ opsTrajectoryMetric: event.target.value }); } },
+          fields.map(function (item) { return h('option', { key: item.key, value: item.key }, item.label); })),
+        h('h6', { id: 'iss-trajectory-readout-title', className: 'iss-trajectory-readout-title', tabIndex: -1, 'aria-describedby': 'iss-trajectory-reading-values iss-trajectory-delta' }, fill(trajectoryText('readings_time', 'Comparison readings · {minute} min'), { minute: minute.toFixed(2) })),
+        h('div', { id: 'iss-trajectory-reading-values', className: 'iss-trajectory-readings' }, reading('baseline', beforeLabel, a), reading('comparison', afterLabel, b)),
+        h('p', { id: 'iss-trajectory-delta', className: 'iss-trajectory-delta', 'data-ops-trajectory-delta': true, 'data-value': b[field.key] - a[field.key] }, trajectoryText('difference', 'Comparison minus baseline: ') + issOpsDeltaText(a[field.key], b[field.key], field.digits) + ' ' + field.delta),
+        h('p', { className: 'iss-trajectory-scale' }, field.label + ' (' + field.unit + ') · ' + trajectoryText('shared_axis', 'Shared scale for both setups')),
+        h('div', { className: 'iss-trajectory-plot' },
+          h('div', { className: 'iss-trajectory-y', 'aria-hidden': 'true' }, ticks.map(function (tick, index) { return h('span', { key: index }, tick.toFixed(field.digits)); })),
+          h('div', { className: 'iss-trajectory-graph' },
+            h('svg', { viewBox: '0 0 1000 200', preserveAspectRatio: 'none', role: 'img', 'data-ops-trajectory-chart': field.key,
+              'aria-label': chartLabel,
+              'aria-describedby': 'iss-trajectory-graph-help',
+              onPointerDown: function (event) { if (event.button !== 0 || event.isPrimary === false) return; event.preventDefault(); if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); plotSeek(event); },
+              onPointerMove: function (event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) plotSeek(event); }, onPointerUp: release, onPointerCancel: release },
+              ticks.map(function (tick, index) { return h('line', { key: 'grid-' + index, className: 'iss-trajectory-grid', x1: 8, x2: 992, y1: y(tick), y2: y(tick), vectorEffect: 'non-scaling-stroke' }); }),
+              field.limits.map(function (limit) { return h('line', { key: 'limit-' + limit, className: 'iss-trajectory-limit', x1: 8, x2: 992, y1: y(limit), y2: y(limit), vectorEffect: 'non-scaling-stroke' }); }),
+              h('path', { className: 'iss-trajectory-line iss-trajectory-comparison', 'data-ops-trajectory-curve': 'comparison', d: curve(after.points), vectorEffect: 'non-scaling-stroke' }),
+              h('path', { className: 'iss-trajectory-line iss-trajectory-baseline', 'data-ops-trajectory-curve': 'baseline', d: curve(before.points), vectorEffect: 'non-scaling-stroke' }),
+              h('line', { className: 'iss-trajectory-cursor', x1: x(minute), x2: x(minute), y1: 4, y2: 196, vectorEffect: 'non-scaling-stroke' }),
+              h('ellipse', { className: 'iss-trajectory-marker-a', 'data-ops-trajectory-marker': 'baseline', cx: x(minute), cy: y(a[field.key]), rx: 6, ry: 4, vectorEffect: 'non-scaling-stroke' }),
+              h('path', { className: 'iss-trajectory-marker-b', 'data-ops-trajectory-marker': 'comparison', d: 'M' + x(minute) + ' ' + (y(b[field.key]) - 3) + 'l5 3-5 3-5-3Z', vectorEffect: 'non-scaling-stroke' })),
+            h('div', { className: 'iss-trajectory-x', 'aria-hidden': 'true' }, [0, 23, 46, 69, 92].map(function (time) { return h('span', { key: time }, time); })))),
+        h('p', { className: 'iss-trajectory-axis-title' }, trajectoryText('axis_time', 'Time since orbit start (minutes)')),
+        h('div', { className: 'iss-trajectory-legend' },
+          h('span', null, h('i', { className: 'iss-trajectory-key-a', 'aria-hidden': 'true' }), beforeLabel + ' · ' + trajectoryText('dashed', 'dashed')),
+          h('span', null, h('i', { className: 'iss-trajectory-key-b', 'aria-hidden': 'true' }), afterLabel + ' · ' + trajectoryText('solid', 'solid'))),
+        field.limits.length ? h('p', { className: 'iss-trajectory-scale' }, fill(trajectoryText('references', 'Dotted lines: classroom comparison values ({values}). Flight rules still assess the complete orbit, not just this instant.'), { values: field.limits.join(', ') + ' ' + field.unit })) : null,
+        h('label', { htmlFor: 'iss-ops-trajectory-time', className: 'iss-trajectory-time-label' }, trajectoryText('time', 'Comparison time'), h('strong', null, minute.toFixed(2) + ' min')),
+        h('input', { id: 'iss-ops-trajectory-time', 'data-ops-trajectory-time': true, type: 'range', min: 0, max: 92, step: 'any', value: minute,
+          'aria-valuetext': fill(trajectoryText('time_value', '{minute} minutes; baseline {before}; comparison {after}'), { minute: minute.toFixed(2), before: valueText(a[field.key]), after: valueText(b[field.key]) }),
+          'aria-describedby': 'iss-trajectory-graph-help', onChange: function (event) { seek(Number(event.target.value)); }, onKeyDown: seekKey }),
+        h('p', { id: 'iss-trajectory-graph-help' }, trajectoryText('graph_help', 'Drag or tap the chart, or use the comparison time slider. Arrow keys move 0.1 minute, Page Up/Down one minute, and Home/End select the endpoints. This comparison cursor is independent of the working orbit clock.')),
+        h('div', { className: 'iss-trajectory-export' },
+          h('button', { type: 'button', 'data-ops-trajectory-export': true, 'aria-describedby': 'iss-trajectory-export-help', onClick: downloadComparison }, trajectoryText('export', 'Download comparison CSV')),
+          h('p', { id: 'iss-trajectory-export-help', 'data-ops-trajectory-export-help': true }, trajectoryText('export_help', 'Includes all six recomputed measurements, both source setups, lighting phases, key moments and this cursor time. Two rows per timestamp, one per setup. Saved notebook measurements and notes stay in the separate notebook CSV.')),
+          downloadMessage ? h('p', { 'data-ops-trajectory-export-status': true, role: 'status' }, downloadMessage) : null),
+        renderMoments());
+    }
+    return h('section', { className: 'iss-trajectory', 'data-ops-trajectory': true, 'aria-labelledby': 'iss-trajectory-toggle' },
+      h('h5', null, h('button', { id: 'iss-trajectory-toggle', className: 'iss-trajectory-toggle', type: 'button', 'data-ops-trajectory-toggle': true, 'aria-expanded': open, 'aria-controls': 'iss-ops-trajectory-panel', onClick: function () { props.onChange({ opsTrajectoryOpen: !open }); } },
+        h('span', { 'aria-hidden': 'true' }, open ? '▾' : '▸'), trajectoryText('title', 'Compare through the orbit'))), panel());
   }
 
   // Geostationary radius follows Kepler's third law for one sidereal day.
@@ -3917,7 +4616,7 @@
             interiorGuided: true, lowGImpulse: 10, lowGResult: null,
             interiorView: '3d', interiorNav: freshInteriorNavigation(),
             researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
-            opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsPowerReference: true, opsCabinStart: 22, opsThermalReference: true, opsThermalFocus: 'loop', opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsAirFlow: 90, opsAirActivity: 1, opsAirStart: 2600, opsAirRestore: false, opsAirRestoreMinute: 45, opsAirReference: true, opsAirFocus: 'zone', opsEclssLab: 'air', opsWaterDay: 0, opsWaterClean: 120, opsWaterWaste: 25, opsWaterThroughput: 36, opsWaterOutage: false, opsWaterOutageStart: 10, opsWaterOutageDays: 6, opsWaterDelivery: false, opsWaterDeliveryDay: 12, opsWaterDeliveryLitres: 100, opsWaterReference: true, opsPressureMinute: 0, opsPressureVolume: 12, opsPressureStart: 101.3, opsPressureCycle: true, opsPressureVent: 3, opsPressureFill: 3, opsPressureLeak: 0, opsPressureVentMinutes: 6, opsPressureHoldMinutes: 4, opsPressureIsolate: false, opsPressureReference: true, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsAttitudeTorque: .35, opsAttitudeInertia: 80, opsAttitudeDump: false, opsAttitudeBurnMinute: 40, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5, opsAttitudeReference: true, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsDebrisBumper: .5, opsDebrisMaterial: 'aluminum', opsDebrisSpread: 10, opsDebrisTime: 0, opsDebrisCompare: true, opsDebrisBaseline: null, opsDebrisVectors: true, opsDebrisProbe: 50, opsDebrisMagnify: false, opsDebrisSweepMetric: 'fluence', opsDebrisSweepLog: true, opsDebrisPairMode: 'contact', opsDebrisDetectorRadius: 10, opsDebrisDetectorOffset: 0, opsDebrisScanMetric: 'energy', opsDebrisScanScale: 'linear', opsDebrisApertureStudy: false, opsDebrisApertureOffset: 0, opsDebrisApertureBasis: 'total', opsDebrisApertureView: 'contact', opsDebrisFlightPanel: 'position', opsDebrisBudgetFocus: 'forward', opsDebrisMotionRadius: 50, opsDebrisMotionDiagram: 'velocity', opsDebrisMotionSteps: false, opsDebrisMotionMark: null, opsDebrisPositionA: null, opsDebrisPositionNotice: '', opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
+            opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsPowerReference: true, opsCabinStart: 22, opsThermalReference: true, opsThermalFocus: 'loop', opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsAirFlow: 90, opsAirActivity: 1, opsAirStart: 2600, opsAirRestore: false, opsAirRestoreMinute: 45, opsAirReference: true, opsAirFocus: 'zone', opsEclssLab: 'air', opsWaterDay: 0, opsWaterClean: 120, opsWaterWaste: 25, opsWaterThroughput: 36, opsWaterOutage: false, opsWaterOutageStart: 10, opsWaterOutageDays: 6, opsWaterDelivery: false, opsWaterDeliveryDay: 12, opsWaterDeliveryLitres: 100, opsWaterReference: true, opsPressureMinute: 0, opsPressureVolume: 12, opsPressureStart: 101.3, opsPressureCycle: true, opsPressureVent: 3, opsPressureFill: 3, opsPressureLeak: 0, opsPressureVentMinutes: 6, opsPressureHoldMinutes: 4, opsPressureIsolate: false, opsPressureReference: true, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsAttitudeTorque: .35, opsAttitudeInertia: 80, opsAttitudeDump: false, opsAttitudeBurnMinute: 40, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5, opsAttitudeReference: true, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsDebrisBumper: .5, opsDebrisMaterial: 'aluminum', opsDebrisSpread: 10, opsDebrisTime: 0, opsDebrisCompare: true, opsDebrisBaseline: null, opsDebrisVectors: true, opsDebrisProbe: 50, opsDebrisMagnify: false, opsDebrisSweepMetric: 'fluence', opsDebrisSweepLog: true, opsDebrisPairMode: 'contact', opsDebrisDetectorRadius: 10, opsDebrisDetectorOffset: 0, opsDebrisScanMetric: 'energy', opsDebrisScanScale: 'linear', opsDebrisApertureStudy: false, opsDebrisApertureOffset: 0, opsDebrisApertureBasis: 'total', opsDebrisApertureView: 'contact', opsDebrisFlightPanel: 'position', opsDebrisBudgetFocus: 'forward', opsDebrisMotionRadius: 50, opsDebrisMotionDiagram: 'velocity', opsDebrisMotionSteps: false, opsDebrisMotionMark: null, opsDebrisPositionA: null, opsDebrisPositionNotice: '', opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], opsTrials: [], opsTrialSelected: null, opsTrialCompare: 'current', opsPrediction: '', assemblyIdx: 11,
             orbitAlt: 420, orbitInc: 51.6,
             orbitPredictRef: 420, orbitPredictPick: null, orbitPredictAlt: null, orbitPredictLog: [],
             orbitChallenge: null, orbitChallengePick: null, orbitChallengeDone: {},
@@ -3974,12 +4673,12 @@
       // and an sr-only utility. Scoped under .iss-root so nothing leaks.
       function wcagStyles() {
         return h('style', { dangerouslySetInnerHTML: { __html:
-          '.iss-root{--iss-line:rgba(148,163,184,.22);--allo-stem-panel:#172235;--allo-stem-text:#e7eef8;--allo-stem-text-soft:#a9b8cb;position:relative;isolation:isolate;box-sizing:border-box;width:100%;padding:clamp(14px,2.4vw,26px);overflow:visible;border:1px solid rgba(125,211,252,.24);border-radius:24px;background:radial-gradient(circle at 9% 2%,rgba(14,165,233,.2),transparent 27%),radial-gradient(circle at 92% 8%,rgba(99,102,241,.2),transparent 28%),linear-gradient(155deg,#060b18 0%,#081221 52%,#07101d 100%);box-shadow:0 28px 70px rgba(2,6,23,.38),inset 0 1px 0 rgba(255,255,255,.05);color-scheme:dark}' +
+          '.iss-root{--iss-line:rgba(148,163,184,.22);--allo-stem-panel:#172235;--allo-stem-text:#e7eef8;--allo-stem-text-soft:#cbd5e1;position:relative;isolation:isolate;box-sizing:border-box;width:100%;padding:clamp(14px,2.4vw,26px);overflow:visible;border:1px solid rgba(125,211,252,.24);border-radius:24px;background:radial-gradient(circle at 9% 2%,rgba(14,165,233,.2),transparent 27%),radial-gradient(circle at 92% 8%,rgba(99,102,241,.2),transparent 28%),linear-gradient(155deg,#060b18 0%,#081221 52%,#07101d 100%);box-shadow:0 28px 70px rgba(2,6,23,.38),inset 0 1px 0 rgba(255,255,255,.05);color-scheme:dark}' +
           '.iss-root:before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;opacity:.52;background-image:radial-gradient(circle at 14% 19%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 78% 13%,#bae6fd 0 1px,transparent 1.5px),radial-gradient(circle at 43% 8%,#fff 0 1px,transparent 1.4px),radial-gradient(circle at 93% 31%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 61% 28%,#c4b5fd 0 1px,transparent 1.5px);background-size:177px 151px,223px 197px,139px 181px,251px 169px,193px 227px}.iss-root *{box-sizing:border-box}.iss-root button,.iss-root input,.iss-root textarea{font:inherit}.iss-root button{min-width:24px;min-height:24px;transition:transform .18s ease,border-color .18s ease,background-color .18s ease,box-shadow .18s ease,filter .18s ease}.iss-root input[type="range"]{min-height:24px}.iss-root button:not(:disabled):hover{transform:translateY(-1px);filter:brightness(1.12);box-shadow:0 8px 22px rgba(2,6,23,.24)}.iss-root button:not(:disabled):active{transform:translateY(0) scale(.985)}' +
           '.iss-root summary{min-height:24px}.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root textarea:focus-visible,.iss-root summary:focus-visible,.iss-root canvas:focus-visible,.iss-root [tabindex]:focus-visible{outline:3px solid #fbbf24;outline-offset:3px;border-radius:8px}.iss-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
           '.iss-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;margin-bottom:18px}.iss-eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:7px;color:#7dd3fc;font-size:10px;font-weight:900;letter-spacing:1.7px;text-transform:uppercase}.iss-live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 4px rgba(74,222,128,.12),0 0 16px #4ade80}.iss-title{font-size:clamp(21px,3vw,31px)!important;line-height:1.08;letter-spacing:-.035em;text-shadow:0 2px 22px rgba(56,189,248,.16)}.iss-subtitle{max-width:710px;font-size:clamp(11.5px,1.5vw,13px)!important;line-height:1.6!important}' +
           '.iss-orbit-mark{position:relative;width:92px;height:92px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.22),rgba(14,165,233,.04) 56%,transparent 58%);border:1px solid rgba(125,211,252,.18);box-shadow:inset 0 0 25px rgba(14,165,233,.14),0 0 32px rgba(14,165,233,.08)}.iss-orbit-mark:before{content:"";position:absolute;width:78px;height:31px;border:1px solid #38bdf8;border-radius:50%;transform:rotate(-18deg);box-shadow:0 0 13px rgba(56,189,248,.3)}.iss-orbit-mark:after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#fbbf24;box-shadow:0 0 15px #fbbf24;transform:translate(34px,-13px)}.iss-orbit-core{font-size:34px;filter:drop-shadow(0 4px 12px rgba(2,6,23,.55))}' +
-          '.iss-status-strip{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-status-item{padding:8px 10px;border:1px solid var(--iss-line);border-radius:10px;background:rgba(2,6,23,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.iss-status-label{display:block;color:#7f91a8;font-size:9.5px;font-weight:850;letter-spacing:1.05px;text-transform:uppercase}.iss-status-value{display:block;margin-top:2px;color:#e0f2fe;font:800 11.5px ui-monospace,SFMono-Regular,Consolas,monospace}' +
+          '.iss-status-strip{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-status-item{padding:8px 10px;border:1px solid var(--iss-line);border-radius:10px;background:rgba(2,6,23,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.iss-status-label{display:block;color:#a9b8cb;font-size:9.5px;font-weight:850;letter-spacing:1.05px;text-transform:uppercase}.iss-status-value{display:block;margin-top:2px;color:#e0f2fe;font:800 11.5px ui-monospace,SFMono-Regular,Consolas,monospace}' +
           '.iss-tablist{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px!important;padding:7px;margin:0 0 14px!important;border:1px solid var(--iss-line);border-radius:15px;background:rgba(2,6,23,.48);backdrop-filter:blur(12px)}.iss-tab{position:relative;min-height:43px;padding:8px 9px!important;border-radius:10px!important;line-height:1.2}.iss-tab[aria-selected="true"]{background:linear-gradient(135deg,#38bdf8,#0ea5e9)!important;box-shadow:0 7px 20px rgba(14,165,233,.23),inset 0 1px 0 rgba(255,255,255,.38)}.iss-tab-icon{display:inline-block;margin-right:3px;font-size:14px;filter:drop-shadow(0 2px 4px rgba(2,6,23,.4))}' +
           '.iss-panel{min-height:280px;padding:clamp(12px,2vw,18px);border:1px solid var(--iss-line);border-radius:18px;background:linear-gradient(160deg,rgba(15,23,42,.8),rgba(8,17,31,.74));box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 18px 40px rgba(2,6,23,.18);backdrop-filter:blur(12px)}.iss-card{position:relative;overflow:hidden;border:1px solid var(--iss-line)!important;border-left:3px solid var(--iss-card-accent)!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(30,41,59,.86),rgba(15,23,42,.82))!important;box-shadow:0 12px 28px rgba(2,6,23,.16),inset 0 1px 0 rgba(255,255,255,.04)}.iss-card:after{content:"";position:absolute;right:-55px;top:-75px;width:145px;height:145px;border-radius:50%;pointer-events:none;background:var(--iss-card-accent);opacity:.045}.iss-card-title{display:flex;align-items:center;gap:7px;padding-bottom:8px;border-bottom:1px solid rgba(148,163,184,.12);letter-spacing:.01em}' +
           '.iss-interior-hero{position:relative;overflow:hidden!important;border-radius:16px!important;background:radial-gradient(circle at 83% 18%,rgba(125,211,252,.16),transparent 31%),linear-gradient(125deg,rgba(14,165,233,.22),rgba(79,70,229,.14) 58%,rgba(15,23,42,.52))!important;box-shadow:0 14px 32px rgba(2,6,23,.2),inset 0 1px 0 rgba(255,255,255,.07)}.iss-interior-hero:after{content:"";position:absolute;right:-30px;bottom:-56px;width:180px;height:100px;border:1px solid rgba(125,211,252,.18);border-radius:50%;transform:rotate(-12deg)}.iss-route{padding:8px;border:1px solid var(--iss-line);border-radius:14px;background:rgba(2,6,23,.34)}.iss-route-button{position:relative;overflow:hidden}.iss-route-button[aria-pressed="true"]:after{content:"";position:absolute;inset:auto 9px 0;height:2px;border-radius:2px;background:currentColor;box-shadow:0 0 10px currentColor}' +
@@ -4000,12 +4699,13 @@
           '@media (max-width:620px){.iss-interior-hud{grid-template-columns:1fr auto}.iss-interior-hud span:nth-child(3){display:none}.iss-interior-controls{grid-template-columns:1fr}.iss-interior-thrusters{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-safety{justify-content:stretch}.iss-interior-safety button{flex:1 1 110px}.iss-interior-route-hud{display:none}.iss-discovery-row{grid-template-columns:1fr}}@media (forced-colors:active){.iss-interior-3d,.iss-nav-challenge,.iss-interior-view-switch,.iss-interior-event,.iss-interior-braking,.iss-interior-objective,.iss-interior-next-hatch{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-interior-hud,.iss-interior-help{display:none}.iss-interior-reticle{--iss-motion-color:CanvasText}.iss-interior-impact-flash{display:none}}' +
           '.iss-station-stage{position:relative;border-radius:18px!important;border-color:rgba(125,211,252,.35)!important;box-shadow:0 18px 45px rgba(2,6,23,.42),inset 0 0 45px rgba(14,165,233,.08)}.iss-stage-hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.iss-hud-chip{padding:6px 9px;border:1px solid rgba(125,211,252,.25);border-radius:8px;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);color:#bae6fd;font:800 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.7px}.iss-stage-help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border:1px solid rgba(148,163,184,.22);border-radius:20px;background:rgba(2,6,23,.64);backdrop-filter:blur(8px);color:#cbd5e1;font-size:9.5px;font-weight:700;pointer-events:none;white-space:nowrap}.iss-module-picker{padding:8px;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.34)}.iss-module-marker{position:absolute;z-index:3;display:flex;align-items:center;gap:5px;transform:translate(-50%,-135%);pointer-events:none;transition:left .08s linear,top .08s linear,opacity .16s ease}.iss-module-marker i{display:block;width:18px;height:18px;border-left:1px solid #fbbf24;border-top:1px solid #fbbf24;transform:translate(9px,9px) rotate(-45deg)}.iss-module-marker span{padding:4px 7px;border:1px solid rgba(251,191,36,.5);border-radius:6px;background:rgba(2,6,23,.76);color:#fef3c7;font:850 8px ui-monospace,monospace;letter-spacing:.7px;box-shadow:0 0 16px rgba(251,191,36,.16)}.iss-hud-chip[data-phase="sunlight"]{color:#fde68a;border-color:rgba(251,191,36,.38)}.iss-hud-chip[data-phase="eclipse"]{color:#c7d2fe;border-color:rgba(129,140,248,.42)}.iss-orientation-widget{position:absolute;right:10px;bottom:8px;width:88px;height:88px;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(2,6,23,.45))}.iss-orientation-widget line{transition:x2 .08s linear,y2 .08s linear}' +
           '.iss-learning-visual{position:relative;overflow:hidden;margin:0 0 12px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:radial-gradient(circle at 50% 100%,rgba(14,165,233,.12),transparent 56%),rgba(2,6,23,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 25px rgba(2,6,23,.2)}.iss-learning-visual svg{display:block;width:100%;height:auto}.iss-visual-caption{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:10.5px;letter-spacing:.35px}.iss-flow-path{stroke-dasharray:7 7;animation:iss-flow 7s linear infinite}.iss-orbit-station{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-system-tabs{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.34)}.iss-system-tab[aria-pressed="true"]{box-shadow:inset 0 -2px 0 currentColor,0 7px 18px rgba(2,6,23,.2)}.iss-system-steps{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-system-steps button{min-height:31px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:9.5px;font-weight:800;cursor:pointer}.iss-system-steps button[aria-pressed="true"]{border-color:#7dd3fc;background:rgba(14,165,233,.18);color:#e0f2fe;box-shadow:inset 0 -2px 0 #38bdf8}.iss-system-coupling{margin-top:-4px}.iss-coupling-pipe{stroke-dasharray:6 6;animation:iss-flow 5s linear infinite}.iss-dock-canvas{box-shadow:0 16px 36px rgba(2,6,23,.34),inset 0 0 35px rgba(14,165,233,.08)}.iss-timeline{position:relative;padding-left:19px}.iss-timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:2px;background:linear-gradient(#38bdf8,#818cf8,#22c55e);box-shadow:0 0 12px rgba(56,189,248,.35)}.iss-timeline-item{position:relative}.iss-timeline-item-button{width:100%;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-timeline-item-button:hover{background:linear-gradient(90deg,rgba(56,189,248,.08),transparent)}.iss-timeline-item:before{content:"";position:absolute;left:-18px;top:12px;width:9px;height:9px;border:2px solid #7dd3fc;border-radius:50%;background:#07101d;box-shadow:0 0 10px rgba(56,189,248,.55)}.iss-day-strip{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.32)}.iss-day-chip[aria-pressed="true"]{box-shadow:inset 0 -2px 0 #e879f9,0 7px 18px rgba(232,121,249,.12)}' +
-          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-cmg-spin{to{transform:rotate(360deg)}}.iss-cmg-rotor{animation:iss-cmg-spin 1.1s linear infinite}.iss-cmg-rotor[data-spin="reverse"]{animation-direction:reverse}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-hover-name{position:absolute;z-index:3;left:0;top:0;padding:3px 7px;border:1px solid rgba(125,211,252,.45);border-radius:6px;background:rgba(2,6,23,.82);color:#e0f2fe;font:850 9.5px ui-monospace,monospace;letter-spacing:.6px;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .12s ease}.iss-quiz-hero{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-bottom:10px;padding:12px 14px;border:1px solid rgba(125,211,252,.28);border-radius:14px;background:radial-gradient(circle at 6% 50%,rgba(56,189,248,.22),transparent 38%),linear-gradient(120deg,rgba(2,6,23,.72),rgba(15,23,42,.5))}.iss-quiz-badge{filter:drop-shadow(0 0 8px rgba(56,189,248,.35))}.iss-quiz-kicker{color:#7dd3fc;font:850 9.5px ui-monospace,monospace;letter-spacing:1.3px}.iss-quiz-headline{color:#f1f5f9;font-size:15px;font-weight:800;margin:3px 0}.iss-quiz-meta{color:#94a3b8;font:800 9.5px ui-monospace,monospace;letter-spacing:.8px}.iss-quiz-letter{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:9px;border-radius:6px;border:1px solid #475569;background:rgba(2,6,23,.45);color:#bae6fd;font:850 10.5px ui-monospace,monospace;vertical-align:middle}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-quiz-answer-state{display:block;margin-bottom:3px;color:#e2e8f0;font-size:10.5px;font-weight:900;letter-spacing:.2px}.iss-quiz-debrief{margin-bottom:11px}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
-          '@media (max-width:520px){.iss-quiz-console{grid-template-columns:auto 1fr}.iss-quiz-score{grid-column:1/-1;text-align:left;display:flex;gap:6px;align-items:baseline}.iss-quiz-score strong{display:inline}.iss-visual-caption{flex-direction:column;gap:2px}.iss-location-strip{flex-wrap:wrap;overflow-x:visible}.iss-location-link{display:none}.iss-assembly-stepper{grid-template-columns:1fr 1fr}.iss-assembly-stepper span{grid-column:1/-1;grid-row:1;text-align:center}.iss-assembly-stepper button{grid-row:2}}' +          '.iss-ops-hero{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.25);border-radius:15px;background:radial-gradient(circle at 88% 18%,rgba(74,222,128,.12),transparent 30%),linear-gradient(135deg,rgba(14,165,233,.12),rgba(15,23,42,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.iss-ops-health{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;border:5px solid currentColor;background:rgba(2,6,23,.52);font:900 17px ui-monospace,monospace;box-shadow:inset 0 0 22px rgba(2,6,23,.5),0 0 22px currentColor}.iss-ops-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}.iss-ops-metric{min-width:0;overflow:visible;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.42)}.iss-ops-metric button{display:block;width:100%;padding:9px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-ops-metric button:hover{background:rgba(56,189,248,.07)}.iss-ops-metric button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-ops-metric-label{display:block;overflow:hidden;color:#94a3b8;font-size:8px;font-weight:850;letter-spacing:.7px;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.iss-ops-metric-value{display:block;margin-top:3px;color:#e0f2fe;font:850 13px ui-monospace,monospace}.iss-ops-metric small{display:block;margin-top:4px;color:#64748b;font:750 7.5px ui-monospace,monospace;letter-spacing:.3px}.iss-rule-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.iss-rule-light{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#fbbf24;box-shadow:0 0 9px #fbbf24}.iss-rule-light.is-go{background:#4ade80;box-shadow:0 0 9px #4ade80}.iss-rule-light.is-hold{background:#f87171;box-shadow:0 0 9px #f87171}.iss-ops-presets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:10px}.iss-ops-presets button{min-width:0;display:flex;align-items:center;gap:7px;padding:8px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38);color:#cbd5e1;text-align:left;cursor:pointer}.iss-ops-presets button[aria-pressed="true"]{border-color:#7dd3fc;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(99,102,241,.15));box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-presets strong,.iss-ops-presets small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.iss-ops-presets strong{font-size:9.5px}.iss-ops-presets small{margin-top:2px;color:#7f91a8;font-size:7.5px}.iss-preset-icon{display:grid;place-items:center;width:24px;height:24px;flex:0 0 auto;border:1px solid #475569;border-radius:50%;color:#7dd3fc;font:900 9px ui-monospace,monospace}.iss-custom-badge{grid-column:1/-1;padding:3px 7px;color:#fbbf24;font:800 8px ui-monospace,monospace;letter-spacing:.6px}.iss-ops-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:6px;padding:7px;margin-bottom:12px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.36)}.iss-ops-mode{min-height:39px;padding:7px!important}.iss-ops-mode[aria-pressed="true"]{background:linear-gradient(135deg,rgba(14,165,233,.3),rgba(99,102,241,.22))!important;border-color:#38bdf8!important;color:#e0f2fe!important;box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.iss-ops-control{padding:10px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38)}.iss-ops-control label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:10.5px;font-weight:800}.iss-ops-control input[type="range"]{width:100%;margin:9px 0 4px}.iss-meter{height:8px;overflow:hidden;margin-top:7px;border:1px solid #475569;border-radius:6px;background:#101827}.iss-meter>span{display:block;height:100%;border-radius:5px;transition:width .25s ease}.iss-spark{margin-top:7px;border-top:1px solid rgba(148,163,184,.12)}.iss-spark svg{display:block;width:100%;height:42px}.iss-orbit-curve{padding-top:8px}.iss-orbit-curve svg{height:auto;max-width:720px;margin:0 auto}.iss-forecast-legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9px}.iss-forecast-legend span{display:flex;align-items:center;gap:5px}.iss-forecast-legend i{width:13px;height:3px;border-radius:3px}.iss-orbit-scrubber{padding:9px 10px 10px;border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.24)}.iss-orbit-scrubber label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:9.5px;font-weight:800}.iss-orbit-scrubber input{width:100%;margin:8px 0 7px}.iss-orbit-readout{display:flex;flex-wrap:wrap;gap:5px 13px;color:#94a3b8;font:750 8.5px ui-monospace,monospace}.iss-forecast-cursor{filter:drop-shadow(0 0 4px currentColor)}.iss-rule-status{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;margin:-2px 0 12px;padding:9px 10px;border:1px solid rgba(74,222,128,.28);border-radius:11px;background:rgba(34,197,94,.07)}.iss-rule-status.is-check{border-color:rgba(248,113,113,.38);background:rgba(239,68,68,.08)}.iss-rule-status-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#14532d;color:#bbf7d0;font-weight:900}.iss-rule-status.is-check .iss-rule-status-icon{background:#7f1d1d;color:#fecaca}.iss-rule-status strong{display:block;color:#bbf7d0;font:850 9px ui-monospace,monospace;letter-spacing:.7px}.iss-rule-status.is-check strong{color:#fecaca}.iss-rule-status p{margin:2px 0 0;color:#94a3b8;font-size:9.5px;line-height:1.35}.iss-rule-status button{padding:6px 9px;border:1px solid #64748b;border-radius:8px;background:rgba(2,6,23,.36);color:#e2e8f0;font-size:9px;font-weight:800;cursor:pointer}.iss-ops-schematic{margin-bottom:10px}.iss-ops-debrief{margin-top:12px;padding:12px;border:1px solid rgba(125,211,252,.22);border-radius:13px;background:rgba(2,6,23,.4)}.iss-ops-log{display:grid;gap:4px;margin-top:8px;color:#94a3b8;font:700 9.5px ui-monospace,monospace}.iss-emergency-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.iss-emergency-choice{text-align:left;padding:10px!important}.iss-assembly-stage{position:relative;overflow:hidden;margin-bottom:10px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:#050b18}.iss-assembly-stage svg{display:block;width:100%;height:auto}.iss-assembly-note{margin:0;padding:10px 14px 2px;color:#cbd5e1;font-size:11.5px;line-height:1.5}.iss-assembly-growth{border-top:1px solid rgba(125,211,252,.18);background:#07101d}.iss-assembly-growth svg{display:block;width:100%;height:auto}.iss-location-strip{display:flex;align-items:center;gap:4px;margin:0 0 10px;padding:7px 9px;overflow-x:auto;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.35)}.iss-location-node{flex:0 0 auto;display:flex;align-items:center;gap:4px;color:#64748b;font-size:9px;font-weight:800}.iss-location-node.is-current{color:#7dd3fc}.iss-location-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}.iss-location-link{width:18px;height:1px;background:#334155}.iss-network-focus{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-network-focus button{min-height:32px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.34);color:#cbd5e1;font-size:10px;font-weight:800;cursor:pointer}.iss-network-focus button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.18);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-network-detail{padding:0 10px 9px;color:#a9b8cb;font-size:10.5px;line-height:1.45}.iss-reference-key i{height:0!important;background:transparent!important;border-top:2px dashed #94a3b8}.iss-mission-replay{margin-top:10px;padding:10px;border:1px solid rgba(129,140,248,.24);border-radius:12px;background:rgba(30,27,75,.18)}.iss-replay-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin-bottom:9px}.iss-replay-heading strong{color:#c7d2fe;font:850 10px ui-monospace,monospace;letter-spacing:.7px}.iss-replay-heading span{color:#94a3b8;font-size:10px}.iss-replay-lane{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-replay-lane:before{content:"";position:absolute;left:8%;right:8%;top:13px;height:2px;background:linear-gradient(90deg,#fbbf24,#fde68a,#818cf8,#38bdf8)}.iss-replay-lane button{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding:3px 4px 6px;border:0;background:transparent;color:#cbd5e1;cursor:pointer}.iss-replay-lane button i{width:10px;height:10px;border:2px solid #818cf8;border-radius:50%;background:#0b1026;box-shadow:0 0 8px rgba(129,140,248,.5)}.iss-replay-lane button[aria-pressed="true"] i{background:#7dd3fc;border-color:#e0f2fe;box-shadow:0 0 11px #38bdf8}.iss-replay-lane strong{font:850 9.5px ui-monospace,monospace}.iss-replay-lane span{font-size:9.5px;font-weight:800;text-align:center}.iss-replay-lane small{color:#7f91a8;font-size:9px;text-align:center}.iss-map-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.iss-map-controls button{min-height:36px;padding:6px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.42);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-map-controls button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.16);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-hud-selection{color:#fef3c7;border-color:rgba(251,191,36,.35)}.iss-orientation-cue{flex:0 0 auto;padding:2px 4px;color:#fbbf24;font:850 8px ui-monospace,monospace;letter-spacing:.6px}.iss-hatch-enter{animation:iss-hatch-enter .34s ease-out}.iss-assembly-new{animation:iss-install-pulse 1.8s ease-in-out infinite}.iss-assembly-controls{padding:0 12px 12px}.iss-assembly-controls label{display:flex;justify-content:space-between;color:#cbd5e1;font-size:11px;font-weight:800}.iss-assembly-controls label strong{color:#7dd3fc}.iss-assembly-controls input{width:100%;margin:8px 0;accent-color:#38bdf8}.iss-assembly-stepper{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center}.iss-assembly-stepper button{min-height:34px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-assembly-stepper button:disabled{opacity:.42;cursor:not-allowed}.iss-assembly-stepper span{color:#94a3b8;font:800 10px ui-monospace,monospace}.iss-timeline-item.is-active{margin-left:-8px;padding-left:8px!important;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(14,165,233,.12),transparent)}.iss-ops-presets small,.iss-ops-metric small,.iss-ops-metric-label,.iss-orbit-readout{font-size:10px}@keyframes iss-hatch-enter{from{opacity:.25;transform:scale(.94);filter:brightness(.55)}to{opacity:1;transform:scale(1);filter:brightness(1)}}@keyframes iss-install-pulse{50%{filter:drop-shadow(0 0 7px #7dd3fc)}}' +
-          '@media (max-width:760px){.iss-ops-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-modes{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-grid{grid-template-columns:1fr}.iss-ops-hero{grid-template-columns:1fr}.iss-ops-health{display:none}}@media (max-width:520px){.iss-rule-status{grid-template-columns:auto 1fr}.iss-rule-status button{grid-column:1/-1;width:100%}.iss-replay-lane{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-replay-lane:before{display:none}.iss-hud-selection,.iss-stage-hud .iss-hud-chip:nth-child(4){display:none}.iss-orientation-widget{width:70px;height:70px}}@media (max-width:420px){.iss-emergency-grid{grid-template-columns:1fr}.iss-orbit-readout{gap:4px 8px}}' +          '.iss-float{animation:iss-drift 4s ease-in-out infinite alternate}@keyframes iss-drift{from{transform:translate(0,-3px) rotate(-1deg)}to{transform:translate(7px,4px) rotate(2deg)}}@keyframes iss-pulse{50%{opacity:.48;box-shadow:0 0 0 7px rgba(74,222,128,0),0 0 22px #4ade80}}.iss-live-dot{animation:iss-pulse 2.4s ease-in-out infinite}' +
+          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-cmg-spin{to{transform:rotate(360deg)}}.iss-cmg-rotor{animation:iss-cmg-spin 1.1s linear infinite}.iss-cmg-rotor[data-spin="reverse"]{animation-direction:reverse}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-hover-name{position:absolute;z-index:3;left:0;top:0;padding:3px 7px;border:1px solid rgba(125,211,252,.45);border-radius:6px;background:rgba(2,6,23,.82);color:#e0f2fe;font:850 9.5px ui-monospace,monospace;letter-spacing:.6px;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .12s ease}.iss-quiz-hero{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-bottom:10px;padding:12px 14px;border:1px solid rgba(125,211,252,.28);border-radius:14px;background:radial-gradient(circle at 6% 50%,rgba(56,189,248,.22),transparent 38%),linear-gradient(120deg,rgba(2,6,23,.72),rgba(15,23,42,.5))}.iss-quiz-badge{filter:drop-shadow(0 0 8px rgba(56,189,248,.35))}.iss-quiz-kicker{color:#7dd3fc;font:850 9.5px ui-monospace,monospace;letter-spacing:1.3px}.iss-quiz-headline{color:#f1f5f9;font-size:15px;font-weight:800;margin:3px 0}.iss-quiz-meta{color:#cbd5e1;font:800 9.5px ui-monospace,monospace;letter-spacing:.8px}.iss-quiz-letter{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:9px;border-radius:6px;border:1px solid #475569;background:rgba(2,6,23,.45);color:#bae6fd;font:850 10.5px ui-monospace,monospace;vertical-align:middle}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#cbd5e1;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-quiz-answer-state{display:block;margin-bottom:3px;color:#e2e8f0;font-size:10.5px;font-weight:900;letter-spacing:.2px}.iss-quiz-debrief{margin-bottom:11px}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
+          '@media (max-width:520px){.iss-quiz-console{grid-template-columns:auto 1fr}.iss-quiz-score{grid-column:1/-1;text-align:left;display:flex;gap:6px;align-items:baseline}.iss-quiz-score strong{display:inline}.iss-visual-caption{flex-direction:column;gap:2px}.iss-location-strip{flex-wrap:wrap;overflow-x:visible}.iss-location-link{display:none}.iss-assembly-stepper{grid-template-columns:1fr 1fr}.iss-assembly-stepper span{grid-column:1/-1;grid-row:1;text-align:center}.iss-assembly-stepper button{grid-row:2}}' +          '.iss-ops-hero{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.25);border-radius:15px;background:radial-gradient(circle at 88% 18%,rgba(74,222,128,.12),transparent 30%),linear-gradient(135deg,rgba(14,165,233,.12),rgba(15,23,42,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.iss-ops-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}.iss-ops-metric{min-width:0;overflow:visible;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.42)}.iss-ops-metric button{display:block;width:100%;padding:9px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-ops-metric button:hover{background:rgba(56,189,248,.07)}.iss-ops-metric button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-ops-metric-label{display:block;overflow:hidden;color:#94a3b8;font-size:8px;font-weight:850;letter-spacing:.7px;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.iss-ops-metric-value{display:block;margin-top:3px;color:#e0f2fe;font:850 13px ui-monospace,monospace}.iss-ops-metric small{display:block;margin-top:4px;color:#94a3b8;font:750 7.5px ui-monospace,monospace;letter-spacing:.3px}.iss-rule-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.iss-rule-light{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#fbbf24;box-shadow:0 0 9px #fbbf24}.iss-rule-light.is-go{background:#4ade80;box-shadow:0 0 9px #4ade80}.iss-rule-light.is-hold{background:#f87171;box-shadow:0 0 9px #f87171}.iss-ops-presets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:10px}.iss-ops-presets button{min-width:0;display:flex;align-items:center;gap:7px;padding:8px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38);color:#cbd5e1;text-align:left;cursor:pointer}.iss-ops-presets button[aria-pressed="true"]{border-color:#7dd3fc;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(99,102,241,.15));box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-presets strong,.iss-ops-presets small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.iss-ops-presets strong{font-size:9.5px}.iss-ops-presets small{margin-top:2px;color:#a9b8cb;font-size:7.5px}.iss-preset-icon{display:grid;place-items:center;width:24px;height:24px;flex:0 0 auto;border:1px solid #475569;border-radius:50%;color:#7dd3fc;font:900 9px ui-monospace,monospace}.iss-custom-badge{grid-column:1/-1;padding:3px 7px;color:#fbbf24;font:800 8px ui-monospace,monospace;letter-spacing:.6px}.iss-ops-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:6px;padding:7px;margin-bottom:12px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.36)}.iss-ops-mode{min-height:39px;padding:7px!important}.iss-ops-mode[aria-pressed="true"]{background:linear-gradient(135deg,rgba(14,165,233,.3),rgba(99,102,241,.22))!important;border-color:#38bdf8!important;color:#e0f2fe!important;box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.iss-ops-control{padding:10px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38)}.iss-ops-control label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:10.5px;font-weight:800}.iss-ops-control input[type="range"]{width:100%;margin:9px 0 4px}.iss-meter{height:8px;overflow:hidden;margin-top:7px;border:1px solid #475569;border-radius:6px;background:#101827}.iss-meter>span{display:block;height:100%;border-radius:5px;transition:width .25s ease}.iss-spark{margin-top:7px;border-top:1px solid rgba(148,163,184,.12)}.iss-spark svg{display:block;width:100%;height:42px}.iss-orbit-curve{padding-top:8px}.iss-orbit-curve svg{height:auto;max-width:720px;margin:0 auto}.iss-forecast-legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9px}.iss-forecast-legend span{display:flex;align-items:center;gap:5px}.iss-forecast-legend i{width:13px;height:3px;border-radius:3px}.iss-orbit-scrubber{padding:9px 10px 10px;border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.24)}.iss-orbit-scrubber label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:9.5px;font-weight:800}.iss-orbit-scrubber input{width:100%;margin:8px 0 7px}.iss-orbit-readout{display:flex;flex-wrap:wrap;gap:5px 13px;color:#94a3b8;font:750 8.5px ui-monospace,monospace}.iss-forecast-cursor{filter:drop-shadow(0 0 4px currentColor)}.iss-rule-status{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;margin:-2px 0 12px;padding:9px 10px;border:1px solid rgba(74,222,128,.28);border-radius:11px;background:rgba(34,197,94,.07)}.iss-rule-status.is-check{border-color:rgba(248,113,113,.38);background:rgba(239,68,68,.08)}.iss-rule-status-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#14532d;color:#bbf7d0;font-weight:900}.iss-rule-status.is-check .iss-rule-status-icon{background:#7f1d1d;color:#fecaca}.iss-rule-status strong{display:block;color:#bbf7d0;font:850 9px ui-monospace,monospace;letter-spacing:.7px}.iss-rule-status.is-check strong{color:#fecaca}.iss-rule-status p{margin:2px 0 0;color:#94a3b8;font-size:9.5px;line-height:1.35}.iss-rule-status button{padding:6px 9px;border:1px solid #64748b;border-radius:8px;background:rgba(2,6,23,.36);color:#e2e8f0;font-size:9px;font-weight:800;cursor:pointer}.iss-ops-schematic{margin-bottom:10px}.iss-ops-debrief{margin-top:12px;padding:12px;border:1px solid rgba(125,211,252,.22);border-radius:13px;background:rgba(2,6,23,.4)}.iss-ops-log{display:grid;gap:4px;margin-top:8px;color:#94a3b8;font:700 9.5px ui-monospace,monospace}.iss-emergency-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.iss-emergency-choice{text-align:left;padding:10px!important}.iss-assembly-stage{position:relative;overflow:hidden;margin-bottom:10px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:#050b18}.iss-assembly-stage svg{display:block;width:100%;height:auto}.iss-assembly-note{margin:0;padding:10px 14px 2px;color:#cbd5e1;font-size:11.5px;line-height:1.5}.iss-assembly-growth{border-top:1px solid rgba(125,211,252,.18);background:#07101d}.iss-assembly-growth svg{display:block;width:100%;height:auto}.iss-location-strip{display:flex;align-items:center;gap:4px;margin:0 0 10px;padding:7px 9px;overflow-x:auto;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.35)}.iss-location-node{flex:0 0 auto;display:flex;align-items:center;gap:4px;color:#64748b;font-size:9px;font-weight:800}.iss-location-node.is-current{color:#7dd3fc}.iss-location-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}.iss-location-link{width:18px;height:1px;background:#334155}.iss-network-focus{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-network-focus button{min-height:32px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.34);color:#cbd5e1;font-size:10px;font-weight:800;cursor:pointer}.iss-network-focus button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.18);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-network-detail{padding:0 10px 9px;color:#a9b8cb;font-size:10.5px;line-height:1.45}.iss-reference-key i{height:0!important;background:transparent!important;border-top:2px dashed #94a3b8}.iss-mission-replay{margin-top:10px;padding:10px;border:1px solid rgba(129,140,248,.24);border-radius:12px;background:rgba(30,27,75,.18)}.iss-replay-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin-bottom:9px}.iss-replay-heading strong{color:#c7d2fe;font:850 10px ui-monospace,monospace;letter-spacing:.7px}.iss-replay-heading span{color:#94a3b8;font-size:10px}.iss-replay-lane{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-replay-lane:before{content:"";position:absolute;left:8%;right:8%;top:13px;height:2px;background:linear-gradient(90deg,#fbbf24,#fde68a,#818cf8,#38bdf8)}.iss-replay-lane button{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding:3px 4px 6px;border:0;background:transparent;color:#cbd5e1;cursor:pointer}.iss-replay-lane button i{width:10px;height:10px;border:2px solid #818cf8;border-radius:50%;background:#0b1026;box-shadow:0 0 8px rgba(129,140,248,.5)}.iss-replay-lane button[aria-pressed="true"] i{background:#7dd3fc;border-color:#e0f2fe;box-shadow:0 0 11px #38bdf8}.iss-replay-lane strong{font:850 9.5px ui-monospace,monospace}.iss-replay-lane span{font-size:9.5px;font-weight:800;text-align:center}.iss-replay-lane small{color:#a9b8cb;font-size:9px;text-align:center}.iss-map-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.iss-map-controls button{min-height:36px;padding:6px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.42);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-map-controls button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.16);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-hud-selection{color:#fef3c7;border-color:rgba(251,191,36,.35)}.iss-orientation-cue{flex:0 0 auto;padding:2px 4px;color:#fbbf24;font:850 8px ui-monospace,monospace;letter-spacing:.6px}.iss-hatch-enter{animation:iss-hatch-enter .34s ease-out}.iss-assembly-new{animation:iss-install-pulse 1.8s ease-in-out infinite}.iss-assembly-controls{padding:0 12px 12px}.iss-assembly-controls label{display:flex;justify-content:space-between;color:#cbd5e1;font-size:11px;font-weight:800}.iss-assembly-controls label strong{color:#7dd3fc}.iss-assembly-controls input{width:100%;margin:8px 0;accent-color:#38bdf8}.iss-assembly-stepper{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center}.iss-assembly-stepper button{min-height:34px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-assembly-stepper button:disabled{opacity:.42;cursor:not-allowed}.iss-assembly-stepper span{color:#94a3b8;font:800 10px ui-monospace,monospace}.iss-timeline-item.is-active{margin-left:-8px;padding-left:8px!important;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(14,165,233,.12),transparent)}.iss-ops-presets small,.iss-ops-metric small,.iss-ops-metric-label,.iss-orbit-readout{font-size:10px}@keyframes iss-hatch-enter{from{opacity:.25;transform:scale(.94);filter:brightness(.55)}to{opacity:1;transform:scale(1);filter:brightness(1)}}@keyframes iss-install-pulse{50%{filter:drop-shadow(0 0 7px #7dd3fc)}}' +
+          '@media (max-width:760px){.iss-ops-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-modes{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-grid{grid-template-columns:1fr}.iss-ops-hero{grid-template-columns:1fr}}@media (max-width:520px){.iss-rule-status{grid-template-columns:auto 1fr}.iss-rule-status button{grid-column:1/-1;width:100%}.iss-replay-lane{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-replay-lane:before{display:none}.iss-hud-selection,.iss-stage-hud .iss-hud-chip:nth-child(4){display:none}.iss-orientation-widget{width:70px;height:70px}}@media (max-width:420px){.iss-emergency-grid{grid-template-columns:1fr}.iss-orbit-readout{gap:4px 8px}}' +          '.iss-float{animation:iss-drift 4s ease-in-out infinite alternate}@keyframes iss-drift{from{transform:translate(0,-3px) rotate(-1deg)}to{transform:translate(7px,4px) rotate(2deg)}}@keyframes iss-pulse{50%{opacity:.48;box-shadow:0 0 0 7px rgba(74,222,128,0),0 0 22px #4ade80}}.iss-live-dot{animation:iss-pulse 2.4s ease-in-out infinite}' +
           '@media (max-width:760px){.iss-root{padding:12px;border-radius:18px}.iss-hero{grid-template-columns:1fr}.iss-orbit-mark{display:none}.iss-status-strip{grid-template-columns:1fr 1fr}.iss-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-layout{grid-template-columns:1fr}.iss-panel{padding:11px}.iss-hud-chip:nth-child(2){display:none}}@media (max-width:420px){.iss-status-strip{grid-template-columns:1fr 1fr}.iss-status-value{font-size:10.5px}.iss-tab{font-size:10.5px!important;min-height:40px}.iss-stage-help{white-space:normal;width:calc(100% - 24px);text-align:center}.iss-route{grid-template-columns:1fr 1fr!important}}' +
           '@media (max-width:620px){.iss-fact-grid{grid-template-columns:1fr 1fr!important}.iss-learning-visual:not(.iss-blueprint){overflow-x:auto;-webkit-overflow-scrolling:touch}.iss-learning-visual:not(.iss-blueprint)>svg{min-width:560px}}' +
-          '@media (forced-colors: active){.iss-root,.iss-panel,.iss-card,.iss-tablist,.iss-route,.iss-learning-visual{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}.iss-root:before,.iss-card:after{display:none}.iss-root button{forced-color-adjust:auto}.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root textarea:focus-visible,.iss-root summary:focus-visible,.iss-root canvas:focus-visible,.iss-root [tabindex]:focus-visible{outline:3px solid Highlight!important}.iss-root [aria-selected="true"],.iss-root [aria-pressed="true"],.iss-root [aria-current]{outline:2px solid Highlight;outline-offset:-2px}}@media (prefers-contrast: more){.iss-root{--iss-line:rgba(226,232,240,.72)}.iss-panel,.iss-card,.iss-tablist{backdrop-filter:none}.iss-status-label,.iss-visual-caption,.iss-network-detail{color:#e2e8f0}}@media (prefers-reduced-motion: reduce){.iss-root *,.iss-root *:before,.iss-root *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}'
+          '@media (forced-colors: active){.iss-root,.iss-panel,.iss-card,.iss-tablist,.iss-route,.iss-learning-visual{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}.iss-root:before,.iss-card:after{display:none}.iss-root button{forced-color-adjust:auto}.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root textarea:focus-visible,.iss-root summary:focus-visible,.iss-root canvas:focus-visible,.iss-root [tabindex]:focus-visible{outline:3px solid Highlight!important}.iss-root [aria-selected="true"],.iss-root [aria-pressed="true"],.iss-root [aria-current]{outline:2px solid Highlight;outline-offset:-2px}}@media (prefers-contrast: more){.iss-root{--iss-line:rgba(226,232,240,.72)}.iss-panel,.iss-card,.iss-tablist{backdrop-filter:none}.iss-status-label,.iss-visual-caption,.iss-network-detail{color:#e2e8f0}}@media (prefers-reduced-motion: reduce){.iss-root *,.iss-root *:before,.iss-root *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}' +
+          '.theme-contrast .iss-root:before{display:none}.theme-contrast .iss-tab[aria-selected="true"],.theme-contrast .iss-eva-phase-dot{background:#000!important}'
         } });
       }
 
@@ -11398,7 +12098,6 @@
         }
         function step(manualStep) {
           if (st.over || (st.paused && !manualStep)) return;
-          st.t += DT;
           var ux = Number(st.thrust.up) - Number(st.thrust.down), uy = Number(st.thrust.fwd) - Number(st.thrust.back);
           // A rate-hold controller fires the same finite thrusters as the pilot.
           // It cancels relative velocity, not position; manual input overrides it.
@@ -11408,39 +12107,66 @@
           }
           var force = THRUST * (st.precision ? .25 : 1);
           // mdot = F / (Isp * g0), NASA Glenn specific-impulse definition.
-          var requestedFuel = (Math.abs(ux) + Math.abs(uy)) * force * DT / (ISP * G0);
-          var usedFuel = Math.min(st.propellant, requestedFuel), burnFraction = requestedFuel > 0 ? usedFuel / requestedFuel : 0;
-          var ax = ux * force * burnFraction / (DRY_MASS + st.propellant - usedFuel / 2);
-          var ay = uy * force * burnFraction / (DRY_MASS + st.propellant - usedFuel / 2);
-          st.propellant = Math.max(0, st.propellant - usedFuel); st.fuel = st.propellant / PROPELLANT * 100;
-          st.deltaV += Math.sqrt(ax * ax + ay * ay) * DT;
-          st.firing = { up: ax > .00001, down: ax < -.00001, fwd: ay > .00001, back: ay < -.00001 };
-          ACCEL = acceleration();
+          var fuelRate = (Math.abs(ux) + Math.abs(uy)) * force / (ISP * G0);
+          var availableFuel = Math.max(0, st.propellant);
           var previous = { x: st.x, y: st.y, vx: st.vx, vy: st.vy };
-          var nextState = propagateRelative(st, DT, ax, ay);
+          // Inspect the same tick without committing it. A final fraction of
+          // propellant burns at full commanded thrust, then coasts; spreading
+          // that impulse over the entire tick changes the contact position.
+          function sampleTick(seconds) {
+            var depletionSeconds = fuelRate > 0 ? availableFuel / fuelRate : 0;
+            var burnSeconds = fuelRate > 0 ? Math.min(seconds, depletionSeconds) : 0;
+            var usedFuel = fuelRate > 0 && seconds >= depletionSeconds ? availableFuel : fuelRate * burnSeconds;
+            var ax = burnSeconds > 0 ? ux * force / (DRY_MASS + availableFuel - usedFuel / 2) : 0;
+            var ay = burnSeconds > 0 ? uy * force / (DRY_MASS + availableFuel - usedFuel / 2) : 0;
+            var point = burnSeconds > 0 ? propagateRelative(previous, burnSeconds, ax, ay) : previous;
+            if (seconds > burnSeconds) point = propagateRelative(point, seconds - burnSeconds, 0, 0);
+            return { point: point, seconds: seconds, usedFuel: usedFuel,
+              deltaV: Math.hypot(ax, ay) * burnSeconds, ax: ax, ay: ay };
+          }
+          function outside(point) { return Math.hypot(point.x, point.y) > 420 || point.y > 35; }
+          function locateEvent(predicate) {
+            var low = 0, high = DT;
+            for (var refine = 0; refine < 40; refine++) {
+              var middle = (low + high) / 2;
+              if (predicate(sampleTick(middle).point)) high = middle; else low = middle;
+            }
+            return sampleTick(high);
+          }
+          var fullTick = sampleTick(DT), next = fullTick, terminal = null;
+          if (outside(previous)) { next = sampleTick(0); terminal = 'exit'; }
+          else {
+            // Resolve the first physical event before committing time, fuel,
+            // thrust delta-v or the debrief. A contact inside a tick cannot
+            // consume propellant or mission time from after that contact.
+            if (previous.y < -5 && next.point.y >= -5) {
+              var contact = locateEvent(function (point) { return point.y >= -5; });
+              if (Math.abs(contact.point.x) < 70) { next = contact; terminal = 'contact'; }
+            }
+            if (outside(fullTick.point)) {
+              var exit = locateEvent(outside);
+              if (!terminal || exit.seconds < next.seconds) { next = exit; terminal = 'exit'; }
+            }
+          }
+          var nextState = next.point;
+          st.t += next.seconds;
+          st.propellant = Math.max(0, availableFuel - next.usedFuel); st.fuel = st.propellant / PROPELLANT * 100;
+          st.deltaV += next.deltaV;
+          st.firing = { up: st.propellant > 0 && next.ax > .00001, down: st.propellant > 0 && next.ax < -.00001,
+            fwd: st.propellant > 0 && next.ay > .00001, back: st.propellant > 0 && next.ay < -.00001 };
+          ACCEL = acceleration();
           st.x = nextState.x; st.y = nextState.y; st.vx = nextState.vx; st.vy = nextState.vy;
+          if (terminal === 'contact') st.y = -5;
           if (st.t - st.lastTrail >= 1.4) { st.trail.push({ x: st.x, y: st.y }); st.trail = st.trail.slice(-70); st.lastTrail = st.t; }
-          var range = Math.sqrt(st.x * st.x + st.y * st.y);
           var speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
-          // Swept contact with the station's front plane prevents tunnelling.
-          // Capture is possible only from the approach side, with positive closure.
-          var contact = previous.y < -5 && st.y >= -5;
-          if (contact) {
-            var fraction = (-5 - previous.y) / (st.y - previous.y);
-            var contactX = previous.x + (st.x - previous.x) * fraction;
-            if (Math.abs(contactX) < 70) {
-              st.x = contactX; st.y = -5;
-              st.vx = previous.vx + (st.vx - previous.vx) * fraction;
-              st.vy = previous.vy + (st.vy - previous.vy) * fraction;
-              speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
+          if (terminal === 'contact') {
             // {speed} is substituted AFTER translation. Interpolating it into the
             // fallback instead would work today but silently drop the measured
             // contact speed the moment a lang pack supplies these keys, because
             // __alloT then returns the pack string and never sees the number.
             if (speed <= 0.6 && Math.abs(st.x) < 2.5) endRun('docked', __alloT('stem.spacestation.dock_win', 'Soft capture! Contact at {speed} m/s — gentle enough for the docking latches.').replace('{speed}', speed.toFixed(2)));
             else endRun('bonk', __alloT('stem.spacestation.dock_bonk', 'Contact too fast or off-axis ({speed} m/s). Real vehicles would abort long before this — try arriving under 0.6 m/s, centered.').replace('{speed}', speed.toFixed(2)));
-            }
-          } else if (range > 420 || st.y > 35 || (st.fuel <= 0 && speed < 0.05 && range > 60)) {
+          } else if (terminal === 'exit') {
             endRun('drift', __alloT('stem.spacestation.dock_drift', 'Drifted out of the approach zone. Notice HOW you drifted — in orbit, thrusting forward raises you and slows you.'));
           }
         }
@@ -11765,7 +12491,7 @@
           }
         }
         var rafId = 0, frame = 0, lastTimestamp = null, accumulator = 0, lastHudAt = -1;
-        var milestones = { m100: false, m40: false, m15: false };
+        var milestones = { m100: false, m40: false, m15: false, fuelEmpty: false };
         function updateHudMirror() {
           // Text mirror of the canvas HUD (WCAG 1.1.1) — imperative textContent
           // update, so no per-frame React state churn. aria-live stays "off":
@@ -11780,6 +12506,7 @@
           var braking = brakingSnapshot(), margin = braking.margin;
           var closure = range > .01 ? -(st.x * st.vx + st.y * st.vy) / range : 0;
           el.textContent = 'Phase ' + phase + ' · range ' + range.toFixed(1) + ' m · relative speed ' + speed.toFixed(2) + ' m/s · closing ' + closure.toFixed(2) + ' m/s · radial ' + st.vx.toFixed(2) + ' m/s · stopping margin ' + (isFinite(margin) ? margin.toFixed(1) + ' m (estimate)' : braking.reason === 'empty' ? 'unavailable (no propellant)' : 'unavailable (insufficient propellant)') + ' · remaining RCS Δv ' + braking.remainingDeltaV.toFixed(3) + ' m/s · fuel ' + st.fuel.toFixed(1) + '% (' + st.propellant.toFixed(1) + ' kg) · MET ' + st.t.toFixed(1) + ' s · ' + (st.over ? 'run over' : st.paused ? 'paused' : (range < 40 ? 1 : st.timeScale) + '× clock');
+          if (!st.over && st.propellant <= 0) el.textContent += ' · ' + __alloT('stem.spacestation.dock_fuel_empty_coast', 'Propellant depleted: unpowered flight continues');
           if (controls) {
             updateRangeTimeline(controls); updateVelocityMap(controls);
             var pauseButton = controls.querySelector('[data-dock-pause]');
@@ -11858,6 +12585,10 @@
             }
           }
           if (!st.over) {
+            if (!milestones.fuelEmpty && st.propellant <= 0) {
+              milestones.fuelEmpty = true;
+              announceToSR(__alloT('stem.spacestation.dock_fuel_empty_sr', 'Propellant depleted. Thrusters and Rate hold cannot change the motion. Unpowered flight continues; inspect the coast forecast or restart a practice approach.'));
+            }
             if (!milestones.m100 && range < 100) { milestones.m100 = true; announceToSR(__alloFill(__alloT('stem.spacestation.sr_100_meters_to_the_port_speed_meters_per_second', '100 meters to the port. Speed {value1} meters per second.'), { value1: speed.toFixed(2) })); }
             if (!milestones.m40 && range < 40) { milestones.m40 = true; announceToSR(__alloT('stem.spacestation.sr_final_approach_40_meters_dock_slower_than_0_6_met', 'Final approach, 40 meters. Dock slower than 0.6 meters per second.')); }
             if (!milestones.m15 && range < 15) { milestones.m15 = true; announceToSR(__alloT('stem.spacestation.sr_capture_corridor_15_meters_verify_alignment_and_p', 'Capture corridor, 15 meters. Verify alignment and positive stopping margin.')); }
@@ -11868,6 +12599,7 @@
           // crossed during this run, not ones already behind the vehicle.
           var startRange = Math.hypot(st.x, st.y);
           milestones.m100 = startRange < 100; milestones.m40 = startRange < 40; milestones.m15 = startRange < 15;
+          milestones.fuelEmpty = false;
         };
         function loop(timestamp) {
           if (!cv.isConnected) { cleanup(); return; }
@@ -12275,8 +13007,8 @@
               var current = i === phaseIndex;
               var label = evaS.done && evaS.failMsg && current ? 'ABORT' : step;
               return h('div', { key: step, style: { position: 'relative', zIndex: 1, width: '25%', textAlign: 'center' } },
-                h('span', { 'aria-hidden': 'true', style: { display: 'inline-flex', width: 20, height: 20, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: reached ? (current ? phaseColor : '#0e7490') : '#172033', border: '2px solid ' + (reached ? phaseColor : '#475569'), color: '#f8fafc', fontSize: 9, fontWeight: 900, boxShadow: current ? '0 0 12px ' + phaseColor : 'none' } }, i < phaseIndex ? '✓' : String(i + 1)),
-                h('div', { style: { marginTop: 4, color: current ? phaseColor : reached ? '#cbd5e1' : '#64748b', fontSize: 8, fontWeight: current ? 900 : 750, letterSpacing: .6 } }, label));
+                h('span', { className: 'iss-eva-phase-dot', 'aria-hidden': 'true', style: { display: 'inline-flex', width: 20, height: 20, alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: reached ? (current ? phaseColor : '#0e7490') : '#172033', border: '2px solid ' + (reached ? phaseColor : '#475569'), color: current ? '#04121f' : '#f8fafc', fontSize: 9, fontWeight: 900, boxShadow: current ? '0 0 12px ' + phaseColor : 'none' } }, i < phaseIndex ? '✓' : String(i + 1)),
+                h('div', { style: { marginTop: 4, color: current ? phaseColor : reached ? '#cbd5e1' : '#94a3b8', fontSize: 8, fontWeight: current ? 900 : 750, letterSpacing: .6 } }, label));
             })),
           h('div', { className: 'iss-visual-caption' }, h('span', null, 'Blue = tether A  /  Gold = tether B'), h('span', null, 'PHASE ' + phaseLabel + ' · ' + (evaS.started ? tetherStatus + ' · ' + reserveStatus + ' · PROJECTED ' + projectedOxygen.toFixed(0) + '%' : 'AIRLOCK READY'))));
       }
@@ -14078,7 +14810,7 @@
         var cursorX = x(cursorMinute);
         var phase = cursorMinute < eclipseStart ? 'SUNLIGHT' : 'ECLIPSE';
         var phaseColor = phase === 'SUNLIGHT' ? '#fbbf24' : '#818cf8';
-        var summary = __alloFill(__alloT('stem.spacestation.a11y_orbit_margins', 'Predicted orbit margins. At T plus {value1} minutes in {value2}, battery is {value3} percent, thermal margin {value4} percent, attitude margin {value5} percent.'), { value1: cursorMinute.toFixed(0), value2: phase.toLowerCase(), value3: cursorSample.battery.toFixed(0), value4: cursorSample.thermal.toFixed(0), value5: cursorSample.attitude.toFixed(0) });
+        var summary = __alloFill(__alloT('stem.spacestation.a11y_orbit_margins', 'Predicted orbit margins. At T plus {value1} minutes in {value2}, battery is {value3} percent, thermal margin {value4} percent, attitude margin {value5} percent.'), { value1: cursorMinute.toFixed(2), value2: phase.toLowerCase(), value3: cursorSample.battery.toFixed(0), value4: cursorSample.thermal.toFixed(0), value5: cursorSample.attitude.toFixed(0) });
         return h('div', { className: 'iss-learning-visual iss-orbit-forecast', 'data-iss-orbit-forecast': 'true' },
           h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': summary },
             h('defs', null,
@@ -14107,8 +14839,17 @@
             [['Battery reserve',cursorSample.battery,'#4ade80'],['Thermal margin',cursorSample.thermal,'#fb923c'],['Attitude margin',cursorSample.attitude,'#a78bfa']].map(function (item) { return h('span', { key: item[0] }, h('i', { style: { background: item[2] } }), item[0] + ' ' + item[1].toFixed(0) + '%'); }),
             referenceSamples ? h('span', { className: 'iss-reference-key' }, h('i', null), 'Dashed = nominal orbit') : null),
           h('div', { className: 'iss-orbit-scrubber' },
-            h('label', { htmlFor: 'iss-orbit-cursor' }, h('span', null, 'Scrub predicted orbit'), h('strong', { 'aria-hidden': 'true' }, 'T+' + cursorMinute.toFixed(0) + ' MIN')),
-            h('input', { id: 'iss-orbit-cursor', type: 'range', min: 0, max: 92, step: 1, value: cursorMinute, 'aria-valuetext': 'T plus ' + cursorMinute.toFixed(0) + ' minutes, ' + phase.toLowerCase(), 'aria-describedby': 'iss-orbit-readout', onChange: function (event) { upd({ opsOrbitMinute: Number(event.target.value) }); }, style: { accentColor: phaseColor } }),
+            h('label', { htmlFor: 'iss-orbit-cursor' }, h('span', null, 'Scrub predicted orbit'), h('strong', { 'aria-hidden': 'true' }, 'T+' + cursorMinute.toFixed(2) + ' MIN')),
+            h('input', { id: 'iss-orbit-cursor', type: 'range', min: 0, max: 92, step: 'any', value: cursorMinute,
+              'aria-valuetext': __alloFill(__alloT('stem.spacestation.orbit_cursor_time', 'T plus {minute} minutes, {phase}'), { minute: cursorMinute.toFixed(2), phase: phase.toLowerCase() }),
+              'aria-describedby': 'iss-orbit-readout', onChange: function (event) { upd({ opsOrbitMinute: Number(event.target.value), opsInspection: null, opsIntegratedSeekToken: !d.opsIntegratedSeekToken }); },
+              onKeyDown: function (event) {
+                var offsets = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -10, PageUp: 10 };
+                if (Object.prototype.hasOwnProperty.call(offsets, event.key) || event.key === 'Home' || event.key === 'End') {
+                  event.preventDefault();
+                  upd({ opsOrbitMinute: event.key === 'Home' ? 0 : event.key === 'End' ? 92 : opsClamp(cursorMinute + offsets[event.key], 0, 92), opsInspection: null, opsIntegratedSeekToken: !d.opsIntegratedSeekToken });
+                }
+              }, style: { accentColor: phaseColor } }),
             h('div', { id: 'iss-orbit-readout', className: 'iss-orbit-readout', 'aria-live': 'off' }, h('strong', { style: { color: phaseColor } }, phase), h('span', null, 'Battery ' + cursorSample.battery.toFixed(0) + '%'), h('span', null, 'Thermal ' + cursorSample.thermal.toFixed(0) + '%'), h('span', null, 'Attitude ' + cursorSample.attitude.toFixed(0) + '%'))));
       }
       function opsLogEntry(message, patch) {
@@ -14117,11 +14858,11 @@
       }
       function renderOpsNetwork(metrics, focus) {
         var nodes = [
-          { id: 'power', x: 92, y: 56, label: 'POWER', value: metrics.power.toFixed(0) + '%', color: metrics.power > 25 ? '#fbbf24' : '#f87171' },
-          { id: 'air', x: 548, y: 56, label: 'AIR', value: metrics.co2.toFixed(0) + ' ppm', color: metrics.co2 < metrics.co2Action ? '#34d399' : '#f87171' },
-          { id: 'water', x: 86, y: 154, label: 'WATER', value: metrics.recovery.toFixed(0) + '%', color: metrics.recovery > 90 ? '#38bdf8' : '#fbbf24' },
-          { id: 'thermal', x: 554, y: 154, label: 'THERMAL', value: metrics.temp.toFixed(1) + '°C', color: metrics.temp > 18 && metrics.temp < 27 ? '#fb923c' : '#f87171' },
-          { id: 'attitude', x: 320, y: 180, label: 'ATTITUDE', value: metrics.cmg.toFixed(0) + '%', color: metrics.cmg < 80 ? '#a78bfa' : '#f87171' }
+          { id: 'power', x: 92, y: 56, label: 'POWER', value: issOpsResultText(metrics.power, 1, [25]) + '%', color: metrics.power >= 25 ? '#fbbf24' : '#f87171' },
+          { id: 'air', x: 548, y: 56, label: 'AIR', value: issOpsResultText(metrics.co2, 0, [metrics.co2Action]) + ' ppm', color: metrics.co2 < metrics.co2Action ? '#34d399' : '#f87171' },
+          { id: 'water', x: 86, y: 154, label: 'WATER', value: issOpsResultText(metrics.recovery, 0, [90]) + '%', color: metrics.recovery >= 90 ? '#38bdf8' : '#fbbf24' },
+          { id: 'thermal', x: 554, y: 154, label: 'THERMAL', value: issOpsResultText(metrics.temp, 2, [18, 27]) + '°C', color: metrics.temp >= 18 && metrics.temp <= 27 ? '#fb923c' : '#f87171' },
+          { id: 'attitude', x: 320, y: 180, label: 'ATTITUDE', value: issOpsResultText(metrics.cmg, 1, [80]) + '%', color: metrics.cmg < 80 ? '#a78bfa' : '#f87171' }
         ];
         // The focus buttons are 'all' plus one per node, so that IS the
         // allow-list. Unclamped, a persisted junk id reached
@@ -14132,8 +14873,8 @@
         var selectedFocus = focusIds.indexOf(focus) !== -1 ? focus : 'all';
         var details = { all: 'Crew safety is the combined result of power, air, water, heat rejection, and attitude control.', power: 'Power feeds every rack, pump, fan, heater, computer, and control actuator aboard.', air: 'Cabin airflow carries carbon dioxide and humidity to life-support equipment for removal.', water: 'Recovered humidity and wastewater reduce resupply mass while supporting oxygen generation.', thermal: 'Electrical work becomes heat, which coolant loops carry to radiators for rejection to space.', attitude: 'CMGs hold orientation without routine propellant, keeping arrays, radiators, and visiting vehicles aligned.' };
         function active(node) { return selectedFocus === 'all' || selectedFocus === node.id; }
-        return h('div', { className: 'iss-learning-visual iss-ops-schematic', 'data-iss-network-focus': selectedFocus },
-          h('svg', { viewBox: '0 0 640 220', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_systems_overview', 'Connected station systems overview focused on {value1}.'), { value1: selectedFocus }) + ' ' + nodes.map(function (n) { return n.label + ' ' + n.value; }).join(', ') },
+        return h('div', { className: 'iss-learning-visual iss-ops-schematic', 'data-iss-network-focus': selectedFocus, 'data-ops-network-minute': metrics.minute },
+          h('svg', { viewBox: '0 0 640 220', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_systems_at_time', 'Connected station systems focused on {focus}. Current setup forecast at T plus {minute} minutes. Air is the highest current zone reading. Water is a fixed recovery setting.'), { focus: selectedFocus, minute: metrics.minute.toFixed(2) }) + ' ' + nodes.map(function (n) { return n.label + ' ' + n.value; }).join(', ') },
             h('defs', null, h('radialGradient', { id: 'iss-ops-earth', cx: '40%', cy: '30%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '100%', stopColor: '#0b3567' }))),
             h('rect', { width: 640, height: 220, fill: '#040a16' }), h('circle', { cx: 320, cy: 310, r: 156, fill: 'url(#iss-ops-earth)', opacity: .72 }),
             nodes.map(function (n, i) { var on = active(n); return h('path', { key: 'p' + i, className: on ? 'iss-flow-path' : '', d: 'M320 111 Q' + ((320 + n.x) / 2) + ' ' + ((100 + n.y) / 2 - 13) + ' ' + n.x + ' ' + n.y, fill: 'none', stroke: on ? n.color : '#334155', strokeWidth: on ? 2.2 : 1, opacity: on ? .76 : .3 }); }),
@@ -14158,17 +14899,13 @@
           h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_highlight_a_station_system_flow', 'Highlight a station system flow') }, [{ id: 'all', label: 'All systems' }].concat(nodes.map(function (node) { return { id: node.id, label: node.label }; })).map(function (item) { var on = selectedFocus === item.id; return h('button', { key: item.id, type: 'button', 'data-iss-system-focus': item.id, 'aria-pressed': on, onClick: function () { upd({ opsFocus: item.id }); } }, item.label); })),
           h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite' }, details[selectedFocus] || details.all));
       }      function renderOperations() {
-        var crew = opsClamp(d.opsCrew == null ? 7 : d.opsCrew, 3, 11);
-        var research = opsClamp(d.opsResearch == null ? 60 : d.opsResearch, 0, 100);
-        var arrayAngle = opsClamp(d.opsArrayAngle == null ? 86 : d.opsArrayAngle, 0, 90);
-        var eclipse = opsClamp(d.opsEclipse == null ? 35 : d.opsEclipse, 20, 45);
-        var battery = opsClamp(d.opsBattery == null ? 76 : d.opsBattery, 0, 100);
-        var recovery = opsClamp(d.opsRecovery == null ? 98 : d.opsRecovery, 70, 99);
-        var scrub = opsClamp(d.opsScrub == null ? 88 : d.opsScrub, 0, 100);
-        var radiator = opsClamp(d.opsRadiator == null ? 82 : d.opsRadiator, 30, 100);
-        var cooling = opsClamp(d.opsCooling == null ? 86 : d.opsCooling, 40, 100);
-        var cabinStart = issFlightNumber(d.opsCabinStart, 22, 16, 30);
-        var cmg = opsClamp(d.opsCmg == null ? 28 : d.opsCmg, 0, 100);
+        // The live forecast and recorded evidence use the same canonical inputs.
+        var trialSetup = issOpsSetup(d);
+        var crew = trialSetup.opsCrew, research = trialSetup.opsResearch;
+        var arrayAngle = trialSetup.opsArrayAngle, eclipse = trialSetup.opsEclipse;
+        var battery = trialSetup.opsBattery, recovery = trialSetup.opsRecovery;
+        var scrub = trialSetup.opsScrub, radiator = trialSetup.opsRadiator;
+        var cooling = trialSetup.opsCooling, cabinStart = trialSetup.opsCabinStart, cmg = trialSetup.opsCmg;
         var missionDays = opsClamp(d.opsMissionDays == null ? 180 : d.opsMissionDays, 30, 900);
         var exercise = opsClamp(d.opsExercise == null ? 2.5 : d.opsExercise, 0, 3);
         // ── Model constants ────────────────────────────────────────────────
@@ -14196,8 +14933,8 @@
         var waterReturn = waterNeed * recovery / 100;
         var resupplyWater = waterNeed - waterReturn;
         var oxygenNeed = crew * .84;
-        var airSettings = { power: powerSettings, crew: crew, scrub: scrub, flow: d.opsAirFlow,
-          activity: d.opsAirActivity, startPpm: d.opsAirStart, restore: d.opsAirRestore, restoreMinute: d.opsAirRestoreMinute };
+        var airSettings = { power: powerSettings, crew: crew, scrub: scrub, flow: trialSetup.opsAirFlow,
+          activity: trialSetup.opsAirActivity, startPpm: trialSetup.opsAirStart, restore: trialSetup.opsAirRestore, restoreMinute: trialSetup.opsAirRestoreMinute };
         var airModel = issAirRun(airSettings), airEnd = issAirInspect(airModel, 92);
         var co2 = airModel.peakPpm;
         var thermalSettings = { power: powerSettings, radiator: radiator, cooling: cooling, cabinStart: cabinStart, crew: crew };
@@ -14205,18 +14942,12 @@
         var thermalEnd = issThermalInspect(thermalModel, 92);
         var cabinTemp = thermalEnd.cabin;
         var thermalComfortable = thermalModel.minCabin >= 18 && thermalModel.maxCabin <= 27;
-        var attitudeSettings = { cmg: cmg, torque: d.opsAttitudeTorque, inertia: d.opsAttitudeInertia, dump: d.opsAttitudeDump, burnMinute: d.opsAttitudeBurnMinute, thrust: d.opsAttitudeThrust, fuel: d.opsAttitudeFuel };
+        var attitudeSettings = { cmg: cmg, torque: trialSetup.opsAttitudeTorque, inertia: trialSetup.opsAttitudeInertia, dump: trialSetup.opsAttitudeDump, burnMinute: trialSetup.opsAttitudeBurnMinute, thrust: trialSetup.opsAttitudeThrust, fuel: trialSetup.opsAttitudeFuel };
         var attitudeModel = issAttitudeRun(attitudeSettings), attitudeEnd = issAttitudeInspect(attitudeModel, 92);
         var nextCmg = attitudeEnd.percent;
         var boneLoss = 1.25 * (missionDays / 30) * (1 - Math.min(exercise, 2.5) / 2.5 * .68);
-        var powerScore = projectedBattery;
-        // Teaching margin follows the highest modeled zone through the orbit.
+        // Retained for the air-loop illustration; flight status uses rules below.
         var airScore = opsClamp(100 - Math.max(0, co2 - 2000) / 50, 0, 100);
-        var thermalScore = Math.min(issThermalMargin(thermalModel.minCabin), issThermalMargin(thermalModel.maxCabin));
-        var attitudeScore = opsClamp(100 - attitudeModel.peakPercent * .65, 0, 100);
-        var health = Math.round((powerScore + airScore + recovery + thermalScore + attitudeScore) / 5);
-        var healthColor = health >= 75 ? '#4ade80' : health >= 50 ? '#fbbf24' : '#f87171';
-        var metrics = { power: projectedBattery, co2: co2, co2Action: CO2_ACTION_PPM, recovery: recovery, temp: cabinTemp, cmg: nextCmg };
         var sunlightMinutes = 92 - eclipse;
         function powerTimes(settings) {
           var end = issPowerState(settings, 92), times = [];
@@ -14241,10 +14972,13 @@
         for (var nominalStep = 0; nominalStep < nominalTimes.length; nominalStep++) {
           var nominalMinute = nominalTimes[nominalStep];
           nominalForecast.push({ minute: nominalMinute, battery: issPowerState(nominalPowerSettings, nominalMinute).percent, thermal: issThermalMargin(issThermalInspect(nominalThermalModel, nominalMinute).cabin), attitude: issAttitudeMargin(nominalAttitudeModel, nominalMinute) });
-        }        var orbitMinute = opsClamp(d.opsOrbitMinute == null ? 0 : d.opsOrbitMinute, 0, 92);
+        }
+        var snapshot = issOpsSnapshot({ power: powerSettings, air: airModel, thermal: thermalModel, attitude: attitudeModel, recovery: recovery }, d.opsOrbitMinute);
+        var orbitMinute = snapshot.minute;
+        var metrics = Object.assign({ co2Action: CO2_ACTION_PPM }, snapshot);
         var orbitCursor = {
-          battery: issPowerState(powerSettings, orbitMinute).percent,
-          thermal: issThermalMargin(issThermalInspect(thermalModel, orbitMinute).cabin),
+          battery: snapshot.power,
+          thermal: issThermalMargin(snapshot.temp),
           attitude: issAttitudeMargin(attitudeModel, orbitMinute)
         };        var modes = [['integrated','🛰️','Integrated'],['power','☀️','Power'],['eclss','♻️','Air + water'],['thermal','🌡️','Thermal'],['attitude','🧭','Attitude'],['debris','🛡️','Debris'],['human','🦴','Human'],['emergency','🚨','Emergency'],['rendezvous','🚀','Rendezvous']];
         var scenarioPresets = [
@@ -14270,12 +15004,13 @@
         var scenarioIds = ['custom'].concat(scenarioPresets.map(function (s0) { return s0.id; }));
         var opsScenario = scenarioIds.indexOf(d.opsScenario) !== -1 ? d.opsScenario : 'custom';
         var flightRules = [
-          { mode: 'power', label: 'Battery reserve', value: powerEnd.minimumPercent.toFixed(0) + '%', rule: '≥ 25%', pass: powerEnd.minimumPercent >= 25, color: powerEnd.minimumPercent >= 25 ? '#4ade80' : '#f87171' },
-          { mode: 'eclss', label: 'Cabin CO₂', value: co2.toFixed(0) + ' ppm', rule: '< ' + CO2_ACTION_PPM + ' ppm', pass: co2 < CO2_ACTION_PPM, color: co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171' },
-          { mode: 'eclss', label: 'Water loop', value: recovery.toFixed(1) + '%', rule: '≥ 90%', pass: recovery >= 90, color: recovery >= 90 ? '#38bdf8' : '#fbbf24' },
-          { mode: 'thermal', label: 'Cabin temp', value: thermalModel.minCabin.toFixed(1) + '–' + thermalModel.maxCabin.toFixed(1) + ' °C', rule: '18–27 °C', pass: thermalComfortable, color: thermalComfortable ? '#fb923c' : '#f87171' },
-          { mode: 'attitude', label: 'CMG load', value: attitudeModel.peakPercent.toFixed(0) + '%', rule: '< 80%', pass: attitudeModel.peakPercent < 80, color: attitudeModel.peakPercent < 80 ? '#a78bfa' : '#f87171' }
+          { id: 'power', mode: 'power', label: 'Battery reserve', value: issOpsResultText(powerEnd.minimumPercent, 0, [25]) + '%', rule: '≥ 25%', pass: powerEnd.minimumPercent >= 25, color: powerEnd.minimumPercent >= 25 ? '#4ade80' : '#f87171' },
+          { id: 'air', mode: 'eclss', lab: 'air', label: 'Cabin CO₂', value: issOpsResultText(co2, 0, [CO2_ACTION_PPM]) + ' ppm', rule: '< ' + CO2_ACTION_PPM + ' ppm', pass: co2 < CO2_ACTION_PPM, color: co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171' },
+          { id: 'water', mode: 'eclss', lab: 'water', label: 'Water loop', value: issOpsResultText(recovery, 1, [90]) + '%', rule: '≥ 90%', pass: recovery >= 90, color: recovery >= 90 ? '#38bdf8' : '#fbbf24' },
+          { id: 'thermal', mode: 'thermal', label: 'Cabin temp', value: issOpsResultText(thermalModel.minCabin, 1, [18, 27]) + ' to ' + issOpsResultText(thermalModel.maxCabin, 1, [18, 27]) + ' °C', rule: '18–27 °C', pass: thermalComfortable, color: thermalComfortable ? '#fb923c' : '#f87171' },
+          { id: 'attitude', mode: 'attitude', label: 'CMG load', value: issOpsResultText(attitudeModel.peakPercent, 0, [80]) + '%', rule: '< 80%', pass: attitudeModel.peakPercent < 80, color: attitudeModel.peakPercent < 80 ? '#a78bfa' : '#f87171' }
         ];
+        var timeline = issOpsTimeline({ power: powerSettings, air: airModel, thermal: thermalModel, attitude: attitudeModel, recovery: recovery });
         var violatedRules = flightRules.filter(function (rule) { return !rule.pass; });
         var primaryRule = violatedRules.length ? violatedRules[0] : null;
         var concernCopy = !primaryRule ? 'All five flight rules are green. Scrub the orbit or load a stress scenario to explore the operating boundary.' :
@@ -14284,14 +15019,16 @@
           primaryRule.label === 'Water loop' ? 'Recovery efficiency is below the comparison target. Inspect losses, finite reserves and your resupply plan.' :
           primaryRule.mode === 'thermal' ? 'The cabin leaves its comfort band during this orbit. Inspect the heat input and cooling path.' :
           'Projected momentum storage reaches the caution band. Inspect the disturbance torque and unloading plan.';
-        function setMode(id, lab) { var patch = { opsMode: id, opsEmergencyResult: '' }; if (id === 'eclss' && lab) patch.opsEclssLab = lab; upd(patch); }
+        function setMode(id, lab) { var patch = { opsMode: id, opsEmergencyResult: '', opsInspection: null }; if (id === 'eclss' && lab) patch.opsEclssLab = lab; upd(patch); }
         function renderRuleStatus() {
           return h('div', { className: 'iss-rule-status' + (primaryRule ? ' is-check' : ' is-go'), role: 'status', 'aria-live': 'polite' },
             h('span', { className: 'iss-rule-status-icon', 'aria-hidden': 'true' }, primaryRule ? '!' : '✓'),
             h('div', null, h('strong', null, primaryRule ? violatedRules.length + ' FLIGHT RULE' + (violatedRules.length === 1 ? '' : 'S') + ' TO CHECK' : '5 / 5 FLIGHT RULES GO'), h('p', null, concernCopy)),
-            primaryRule ? h('button', { type: 'button', onClick: function () { setMode(primaryRule.mode, primaryRule.label === 'Water loop' ? 'water' : 'air'); } }, 'Inspect ' + primaryRule.label + ' →') : null);
+            primaryRule ? h('button', { type: 'button', 'data-ops-primary-inspect': true, onClick: function (event) { inspectRule(primaryRule, event); } }, 'Inspect ' + primaryRule.label + ' →') : null);
         }
         function applyScenario(scenario) {
+          // Reloading an unchanged preset must also pause at the same instant.
+          scenario = Object.assign({}, scenario, { patch: Object.assign({}, scenario.patch, { opsIntegratedSeekToken: !d.opsIntegratedSeekToken }) });
           upd(Object.assign({ opsScenario: scenario.id, opsMode: 'integrated', opsOrbitMinute: 0, opsCabinStart: 22, opsAttitudeTorque: .35, opsAttitudeInertia: 80, opsAttitudeDump: false, opsAttitudeBurnMinute: 40, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5, opsAirFlow: 90, opsAirActivity: 1, opsAirStart: 2600, opsAirRestore: false, opsAirRestoreMinute: 45, opsEclssLab: 'air', opsWaterDay: 0, opsWaterSide: 'after', opsWaterClean: 120, opsWaterWaste: 25, opsWaterThroughput: 36, opsWaterOutage: false, opsWaterOutageStart: 10, opsWaterOutageDays: 6, opsWaterDelivery: false, opsWaterDeliveryDay: 12, opsWaterDeliveryLitres: 100, opsPressureMinute: 0, opsPressureVolume: 12, opsPressureStart: 101.3, opsPressureCycle: true, opsPressureVent: 3, opsPressureFill: 3, opsPressureLeak: 0, opsPressureVentMinutes: 6, opsPressureHoldMinutes: 4, opsPressureIsolate: false, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsDebrisBumper: .5, opsDebrisMaterial: 'aluminum', opsDebrisSpread: 10, opsDebrisTime: 0, opsEmergencyResult: '' }, scenario.patch));
           if (announceToSR) announceToSR(__alloFill(__alloT('stem.spacestation.sr_scenario_loaded', '{value1} mission scenario loaded.'), { value1: scenario.label }));
         }
@@ -14300,23 +15037,412 @@
             scenarioPresets.map(function (scenario) { var on = opsScenario === scenario.id; return h('button', { key: scenario.id, type: 'button', 'data-iss-scenario': scenario.id, 'aria-pressed': on, onClick: function () { applyScenario(scenario); } }, h('span', { className: 'iss-preset-icon', 'aria-hidden': 'true' }, scenario.icon), h('span', null, h('strong', null, scenario.label), h('small', null, scenario.note))); }),
             opsScenario === 'custom' ? h('span', { className: 'iss-custom-badge', role: 'status' }, 'CUSTOM CONFIGURATION') : null);
         }
+        var trialResults = { batteryMin: powerEnd.minimumPercent, batteryEnd: projectedBattery, co2Peak: co2,
+          cabinMin: thermalModel.minCabin, cabinMax: thermalModel.maxCabin, cmgPeak: attitudeModel.peakPercent,
+          recovery: recovery, waterResupply: resupplyWater, pointingEnd: attitudeEnd.angleDeg, propellantUsed: attitudeEnd.fuelUsed };
+        var trials = issOpsTrials(d.opsTrials);
+        var selectedTrial = trials.filter(function (trial) { return trial.id === Number(d.opsTrialSelected); })[0] || trials[trials.length - 1] || null;
+        var comparisonTrial = trials.filter(function (trial) { return trial.id === Number(d.opsTrialCompare); })[0] || null;
+        var trialMatches = !!selectedTrial && ISS_OPS_INPUTS.every(function (field) { return trialSetup[field.key] === selectedTrial.setup[field.key]; });
+        var prediction = typeof d.opsPrediction === 'string' ? d.opsPrediction.slice(0, 600) : '';
+        var trialMeasurements = [
+          { key: 'batteryMin', label: 'Minimum battery', digits: 1, unit: '%', delta: 'pp', boundaries: [25], rule: '≥ 25%', pass: function (r) { return r.batteryMin >= 25; } },
+          { key: 'batteryEnd', label: 'Final battery', digits: 1, unit: '%', delta: 'pp' },
+          { key: 'co2Peak', label: 'Peak cabin CO₂', digits: 0, unit: 'ppm', delta: 'ppm', boundaries: [4000], rule: '< 4000 ppm', pass: function (r) { return r.co2Peak < 4000; } },
+          { key: 'recovery', label: 'Water recovery', digits: 1, unit: '%', delta: 'pp', boundaries: [90], rule: '≥ 90%', pass: function (r) { return r.recovery >= 90; } },
+          { key: 'waterResupply', label: 'Daily water makeup', digits: 2, unit: 'L/day', delta: 'L/day' },
+          { key: 'cabinMin', label: 'Minimum cabin temperature', digits: 1, unit: '°C', delta: '°C', boundaries: [18], rule: '≥ 18 °C', pass: function (r) { return r.cabinMin >= 18; } },
+          { key: 'cabinMax', label: 'Maximum cabin temperature', digits: 1, unit: '°C', delta: '°C', boundaries: [27], rule: '≤ 27 °C', pass: function (r) { return r.cabinMax <= 27; } },
+          { key: 'cmgPeak', label: 'Peak CMG load', digits: 1, unit: '%', delta: 'pp', boundaries: [80], rule: '< 80%', pass: function (r) { return r.cmgPeak < 80; } },
+          { key: 'pointingEnd', label: 'Final pointing change', digits: 2, unit: '°', delta: '°' },
+          { key: 'propellantUsed', label: 'Unloading propellant used', digits: 3, unit: 'kg', delta: 'kg' }
+        ];
+        var trialMeasurement = trialMeasurements.filter(function (field) { return field.key === d.opsTrialMeasurement; })[0] || trialMeasurements[0];
+        function hasMeasurement(trial, key) { return !!trial && Object.prototype.hasOwnProperty.call(trial.results, key) && typeof trial.results[key] === 'number' && isFinite(trial.results[key]); }
+        function measurementText(field, value) { return issOpsResultText(value, field.digits, field.boundaries) + ' ' + field.unit; }
+        function trialText(key, fallback) { return __alloT('stem.spacestation.trials_' + key, fallback); }
+        function eventText(key, fallback) { return __alloT('stem.spacestation.ops_events_' + key, fallback); }
+        function eventTime(minute) { return __alloFill(eventText('time', 'T+{minute} min'), { minute: minute.toFixed(2) }); }
+        var eventCopy = {
+          start: [eventText('start', 'Orbit start'), eventText('start_note', 'Inspect the starting conditions for this setup.')],
+          eclipse: [eventText('eclipse', 'Eclipse entry'), eventText('eclipse_note', 'Solar generation stops; stored energy supplies station loads.')],
+          end: [eventText('end', 'Orbit complete'), eventText('end_note', 'Compare the final readings with earlier peaks and minimums.')],
+          'battery-reserve': [eventText('reserve', 'Battery reserve · 25%'), eventText('reserve_note', 'Reserve reaches 25% while falling, or starts below it. Exactly 25% still passes the reserve rule.')],
+          'battery-full': [eventText('full', 'Battery full'), eventText('full_note', 'Storage has reached capacity. Surplus generation is curtailed.')],
+          'battery-empty': [eventText('empty', 'Battery empty'), eventText('empty_note', 'Stored energy is exhausted. Check supplied power and the connected air and cooling systems.')],
+          'air-limit': [eventText('air', 'CO₂ at or above 4000 ppm'), eventText('air_note', 'The highest modeled air zone reaches the comparison line. Its peak may occur later.')],
+          'air-restore': [eventText('restore', 'Ventilation restoration'), eventText('restore_note', 'The planned airflow change starts here. Inspect later readings to see its effect.')],
+          'thermal-limit': [eventText('thermal', 'Cabin comfort boundary'), eventText('thermal_note', 'The cabin starts outside, or reaches the edge of, the 18–27°C band. Both endpoints are inside the allowed band.')],
+          'attitude-caution': [eventText('caution', 'CMG caution · 80%'), eventText('caution_note', 'Momentum storage reaches the caution band. The flight rule requires a peak below 80%.')],
+          'attitude-capacity': [eventText('capacity', 'CMG capacity · 100%'), eventText('capacity_note', 'The gyros have reached their storage limit. Additional momentum can change the station’s pointing.')],
+          'burn-start': [eventText('burn_start', 'Unloading starts'), eventText('burn_start_note', 'The scheduled thruster burn begins removing stored momentum.')],
+          'burn-end': [eventText('burn_end', 'Unloading ends'), eventText('burn_end_note', 'The finite burn ends. Disturbance torque continues afterward.')]
+        };
+        function focusInspection(panel, selector) {
+          requestAnimationFrame(function () {
+            var heading = panel && panel.isConnected && panel.querySelector(selector);
+            if (heading) heading.focus();
+          });
+        }
+        function seekLabTimeKey(event, seek) {
+          var offsets = { ArrowLeft: -.1, ArrowDown: -.1, ArrowRight: .1, ArrowUp: .1, PageDown: -1, PageUp: 1 };
+          if (Object.prototype.hasOwnProperty.call(offsets, event.key) || event.key === 'Home' || event.key === 'End') {
+            event.preventDefault();
+            seek(event.key === 'Home' ? 0 : event.key === 'End' ? 92 : orbitMinute + offsets[event.key]);
+          }
+        }
+        function inspectTarget(target, source, id, event) {
+          var panel = event.currentTarget.closest('[data-iss-operations]');
+          var patch = { opsMode: target.mode, opsEmergencyResult: '',
+            opsInspection: { source: source, id: id, minute: target.minute, setup: JSON.stringify(trialSetup) },
+            opsIntegratedSeekToken: !d.opsIntegratedSeekToken };
+          if (target.lab) patch.opsEclssLab = target.lab;
+          if (target.lab === 'water') patch.opsWaterSeekToken = !d.opsWaterSeekToken;
+          if (target.minute !== null) {
+            patch.opsOrbitMinute = target.minute;
+            // An inspection must pause even when it selects the current instant.
+            var token = { power: 'opsPowerSeekToken', eclss: 'opsAirSeekToken', thermal: 'opsThermalSeekToken', attitude: 'opsAttitudeSeekToken' }[target.mode];
+            if (token) patch[token] = !d[token];
+          }
+          upd(patch);
+          focusInspection(panel, '#iss-ops-inspection-title');
+        }
+        function inspectRule(rule, event) {
+          inspectTarget(Object.assign({ mode: rule.mode, lab: rule.lab }, timeline.inspections[rule.id]), 'rule', rule.id, event);
+        }
+        function backToEvents(event) {
+          var panel = event.currentTarget.closest('[data-iss-operations]');
+          upd({ opsMode: 'integrated', opsInspection: null });
+          focusInspection(panel, '#iss-ops-events-title');
+        }
+        function inspectMeasurement(trial, event) {
+          if (!selectedTrial || trial && !hasMeasurement(trial, trialMeasurement.key)) return;
+          var setup = trial ? trial.setup : trialSetup;
+          var target = issOpsMeasurementTarget(setup, trialMeasurement.key);
+          if (!target) return;
+          var panel = event.currentTarget.closest('[data-iss-operations]');
+          // Load and seek in one update: a saved final reading must never open
+          // at the old working cursor or attach its evidence to another setup.
+          var patch = Object.assign({}, trial ? setup : {}, {
+            opsMode: target.mode, opsEmergencyResult: '', opsLoadedTrial: null,
+            opsTrialMeasurement: target.key,
+            opsInspection: { source: 'measurement', id: target.key, minute: target.minute, trialId: trial ? trial.id : null, setup: JSON.stringify(setup) },
+            opsIntegratedSeekToken: !d.opsIntegratedSeekToken, opsPowerSeekToken: !d.opsPowerSeekToken,
+            opsAirSeekToken: !d.opsAirSeekToken, opsThermalSeekToken: !d.opsThermalSeekToken, opsAttitudeSeekToken: !d.opsAttitudeSeekToken
+          });
+          if (trial) patch.opsScenario = 'custom';
+          if (target.lab) patch.opsEclssLab = target.lab;
+          if (target.lab === 'water') patch.opsWaterSeekToken = !d.opsWaterSeekToken;
+          if (target.minute !== null) patch.opsOrbitMinute = target.minute;
+          upd(patch);
+          focusInspection(panel, '#iss-ops-inspection-title');
+        }
+        function backToComparison(event) {
+          var panel = event.currentTarget.closest('[data-iss-operations]');
+          upd({ opsMode: 'integrated', opsInspection: null });
+          focusInspection(panel, '#iss-trial-inspection-title');
+        }
+        function renderMeasurementInspection(selection) {
+          var field = trialMeasurements.filter(function (item) { return item.key === selection.id; })[0];
+          if (!selectedTrial || !field || selection.setup !== JSON.stringify(trialSetup)) return null;
+          var saved = selection.trialId === null ? null : trials.filter(function (trial) { return trial.id === selection.trialId; })[0];
+          if (selection.trialId !== null && (!hasMeasurement(saved, field.key) || JSON.stringify(saved.setup) !== selection.setup)) return null;
+          var target = issOpsMeasurementTarget(trialSetup, field.key);
+          if (!target || selection.minute !== target.minute || target.mode !== mode || target.lab && target.lab !== d.opsEclssLab || target.minute !== null && Math.abs(target.minute - orbitMinute) > 1e-7) return null;
+          var source = saved ? __alloFill(trialText('inspection_trial', 'Trial {trial}'), { trial: saved.id }) : trialText('current', 'Current setup');
+          var timing = target.kind === 'minimum' ? eventText('minimum', 'Minimum reading') : target.kind === 'maximum' ? eventText('maximum', 'Maximum reading') : target.kind === 'peak' ? eventText('peak', 'Peak reading') : trialText('final_reading', 'Final reading');
+          var detail = target.minute === null ? trialText('inspection_water', 'Setup calculation from crew size and recovery efficiency. The water-reserve experiment uses its separate day clock; daily water makeup is not a simulated delivery.') : timing + ' · ' + eventTime(target.minute) + '. ' + trialText('inspection_exact', 'The lab is paused at the modeled time for this measurement.');
+          return h('section', { className: 'iss-ops-inspection', 'data-ops-inspection': field.key, 'aria-labelledby': 'iss-ops-inspection-title' },
+            h('h4', { id: 'iss-ops-inspection-title', tabIndex: -1, 'aria-describedby': 'iss-ops-inspection-detail' }, source + ' · ' + field.label),
+            h('p', { id: 'iss-ops-inspection-detail' }, detail),
+            saved ? h('p', { 'data-ops-inspection-recorded': true, 'data-value': saved.results[field.key] }, trialText('recorded_reading', 'Recorded value: ') + measurementText(field, saved.results[field.key])) : null,
+            h('p', { 'data-ops-inspection-modeled': true, 'data-value': target.value }, trialText('modeled_reading', 'Model inspection: ') + measurementText(field, target.value)),
+            h('p', null, saved ? trialText('inspection_recomputed', 'This lab recomputes the saved setup using the current classroom model. Recorded measurements and notes remain unchanged. The loaded controls stay in place when you return to the comparison.') : trialText('inspection_forecast', 'This is the current setup forecast. Saved measurements, notes and the next-trial prediction remain unchanged.')),
+            h('button', { type: 'button', 'data-ops-return-comparison': true, onClick: backToComparison }, trialText('return_comparison', 'Return to comparison')));
+        }
+        function renderInspection() {
+          var selection = d.opsInspection;
+          if (selection && selection.source === 'measurement') return renderMeasurementInspection(selection);
+          if (!selection || selection.setup !== JSON.stringify(trialSetup)) return null;
+          var atCursor = selection.source === 'cursor';
+          if (atCursor && (typeof selection.minute !== 'number' || !isFinite(selection.minute) || selection.minute < 0 || selection.minute > 92)) return null;
+          var rule = (selection.source === 'rule' || atCursor) && flightRules.filter(function (item) { return item.id === selection.id; })[0];
+          var target = rule ? Object.assign({ mode: rule.mode, lab: rule.lab }, atCursor ? { minute: selection.minute, kind: 'cursor' } : timeline.inspections[rule.id]) :
+            selection.source === 'event' && timeline.events.filter(function (item) { return item.id === selection.id; })[0];
+          if (!target || target.mode !== mode || target.lab && target.lab !== d.opsEclssLab || target.minute !== null && Math.abs(target.minute - orbitMinute) > 1e-7) return null;
+          var label = rule ? rule.label : eventCopy[target.id][0];
+          var kind = target.kind === 'minimum' ? eventText('minimum', 'Minimum reading') : target.kind === 'maximum' ? eventText('maximum', 'Maximum reading') : eventText('peak', 'Peak reading');
+          var detail = atCursor ? eventTime(target.minute) + '. ' + eventText('cursor_reading', 'Reading at the selected time in the current setup forecast. The flight-rule cards still assess the complete orbit, including earlier peaks and minimums.') : target.minute === null ? eventText('static', 'Setup check: water recovery is a fixed efficiency, not an orbital event. The water-reserve lab uses its separate day clock.') :
+            rule ? kind + ' · ' + eventTime(target.minute) + '. ' + (rule.id === 'thermal' && rule.pass ? eventText('comfortable', 'Maximum modeled cabin temperature; the complete range remains inside 18–27°C.') : eventText('limiting', 'This is the limiting reading behind the current flight-rule result, even if the system recovers later.')) : eventTime(target.minute) + '. ' + eventCopy[target.id][1];
+          return h('section', { className: 'iss-ops-inspection', 'data-ops-inspection': selection.id, 'aria-labelledby': 'iss-ops-inspection-title' },
+            h('h4', { id: 'iss-ops-inspection-title', tabIndex: -1, 'aria-describedby': 'iss-ops-inspection-detail' }, eventText('current', 'Current setup') + ' · ' + label),
+            h('p', { id: 'iss-ops-inspection-detail' }, detail),
+            h('button', { type: 'button', 'data-ops-back-events': true, onClick: backToEvents }, eventText('back', 'Back to orbit event schedule')));
+        }
+        function renderEventSchedule() {
+          return h('details', { className: 'iss-ops-events', 'data-ops-events': true, open: true },
+            h('summary', { id: 'iss-ops-events-title', tabIndex: 0 }, eventText('title', 'Orbit event schedule') + ' · ' + timeline.events.length),
+            h('p', null, eventText('intro', 'Current setup · 92-minute forecast. Select an event to pause at its exact time and inspect the relevant lab. Flight-rule cards above inspect the readings behind each result.')),
+            h('ol', null, timeline.events.map(function (item) {
+              var copy = eventCopy[item.id];
+              var category = item.kind === 'intervention' ? eventText('intervention', 'Planned action') : item.kind === 'boundary' ? eventText('boundary', 'System boundary') : eventText('checkpoint', 'Orbit checkpoint');
+              return h('li', { key: item.id }, h('button', { type: 'button', 'data-ops-event': item.id, 'data-event-minute': item.minute,
+                'aria-pressed': Math.abs(orbitMinute - item.minute) < 1e-7,
+                onClick: function (event) { inspectTarget(item, 'event', item.id, event); } },
+                h('strong', null, eventTime(item.minute)), h('span', null, copy[0]), h('small', null, category)));
+            })),
+            h('p', null, eventText('scope', 'Events at the same time stay separate. Water recovery is a setup check. Saved trial results stay in the notebook; this schedule follows the current controls.')));
+        }
+        function trialRuleFailures(results) {
+          return [results.batteryMin >= 25 ? null : 'Battery reserve', results.co2Peak < CO2_ACTION_PPM ? null : 'Cabin CO₂',
+            results.recovery >= 90 ? null : 'Water loop', results.cabinMin >= 18 && results.cabinMax <= 27 ? null : 'Cabin temp',
+            results.cmgPeak < 80 ? null : 'CMG load'].filter(Boolean);
+        }
+        function trialOutcome(results) {
+          var failed = trialRuleFailures(results);
+          return failed.length ? (5 - failed.length) + '/5 ' + trialText('rules_go_check', 'rules GO · Check: ') + failed.join(', ') : trialText('rules_go', '5/5 rules GO');
+        }
+        function recordTrial() {
+          var previousId = trials.reduce(function (highest, trial) { return Math.max(highest, trial.id); }, Math.floor(issFlightNumber(d.opsRuns, 0, 0, 999999999)));
+          var nextId = previousId < 1000000000 ? previousId + 1 : 1;
+          while (trials.some(function (trial) { return trial.id === nextId; })) nextId++;
+          var trial = issOpsTrial(trialSetup, trialResults, { prediction: prediction, reflection: '' }, nextId);
+          if (!trial) return;
+          var log = (Array.isArray(d.opsLog) ? d.opsLog.filter(function (entry) { return typeof entry === 'string'; }) : []).concat([
+            'TRIAL ' + trial.id + ' // ' + trialOutcome(trial.results)]).slice(-5);
+          var baselineId = selectedTrial ? selectedTrial.id : trial.id;
+          upd({ opsTrials: issOpsAppendTrial(trials, trial, baselineId), opsTrialSelected: baselineId, opsTrialCompare: selectedTrial ? trial.id : 'current',
+            opsRuns: trial.id, opsLog: log, opsLoadedTrial: null, opsOrbitMinute: 92, opsIntegratedSeekToken: !d.opsIntegratedSeekToken, opsPowerSeekToken: !d.opsPowerSeekToken,
+            opsAirSeekToken: !d.opsAirSeekToken, opsThermalSeekToken: !d.opsThermalSeekToken, opsAttitudeSeekToken: !d.opsAttitudeSeekToken });
+          if (announceToSR) announceToSR(__alloFill(trialText('recorded_comparison', 'Trial {trial} recorded. Baseline trial {baseline} retained.'), { trial: trial.id, baseline: baselineId }) + ' ' + trialOutcome(trial.results));
+        }
+        function loadTrialSetup(trial, event, keepComparison) {
+          if (!trial || !selectedTrial) return;
+          var panel = event.currentTarget.closest('[data-iss-operations]');
+          // Loading controls must not overwrite an unfinished prediction for
+          // the next experiment. Saved predictions stay with their own trials.
+          upd(Object.assign({}, trial.setup, { opsTrialSelected: selectedTrial.id, opsTrialCompare: keepComparison ? trial.id : 'current',
+            opsScenario: 'custom', opsOrbitMinute: 0, opsInspection: null, opsLoadedTrial: trial.id, opsIntegratedSeekToken: !d.opsIntegratedSeekToken,
+            opsPowerSeekToken: !d.opsPowerSeekToken, opsAirSeekToken: !d.opsAirSeekToken,
+            opsThermalSeekToken: !d.opsThermalSeekToken, opsAttitudeSeekToken: !d.opsAttitudeSeekToken }));
+          focusInspection(panel, '#iss-trial-load-notice');
+        }
+        function loadTrial(event) {
+          loadTrialSetup(selectedTrial, event, false);
+        }
+        function exportTrials() {
+          if (!trials.length) return;
+          var url = URL.createObjectURL(new Blob(['\uFEFF' + issOpsTrialCsv(trials)], { type: 'text/csv;charset=utf-8' }));
+          var link = document.createElement('a'); link.href = url; link.download = 'space-station-trials.csv';
+          document.body.appendChild(link); link.click(); link.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          if (announceToSR) announceToSR(trialText('exported', 'Trial notebook downloaded as CSV.'));
+        }
+        function openNotebook(event) {
+          var panel = event.currentTarget.closest('[data-iss-operations]');
+          upd({ opsMode: 'integrated' });
+          requestAnimationFrame(function () {
+            var heading = panel && panel.isConnected && panel.querySelector('#iss-trials-title');
+            if (heading) heading.focus();
+          });
+        }
+        function trialRecordNotice() {
+          var latest = trials.filter(function (trial) { return trial.id === Number(d.opsRuns); })[0];
+          return latest && selectedTrial ? __alloFill(trialText('latest_record', 'Latest record: trial {trial}. Selected baseline: trial {baseline}.'), { trial: latest.id, baseline: selectedTrial.id }) : '';
+        }
+        function renderLabNotebook() {
+          var sharedLab = mode === 'power' || mode === 'thermal' || mode === 'attitude' || mode === 'eclss' && d.opsEclssLab !== 'water' && d.opsEclssLab !== 'pressure';
+          if (!sharedLab) return null;
+          return h('section', { className: 'iss-lab-notebook', 'data-ops-lab-notebook': true, 'aria-labelledby': 'iss-lab-notebook-title' },
+            h('div', null, h('h4', { id: 'iss-lab-notebook-title' }, trialText('lab_title', 'Investigation notebook')),
+              h('p', null, selectedTrial ? trialText('lab_compare', 'Record this setup to compare it with your saved baseline. Recording pauses the clock at the orbit end; it keeps your starting conditions.') : trialText('lab_start', 'Record a baseline, change one control, then record another trial to compare the evidence.'))),
+            h('div', { className: 'iss-trial-actions' },
+              h('button', { type: 'button', 'data-ops-lab-record': true, onClick: recordTrial }, trialText('lab_record', 'Record this trial')),
+              h('button', { type: 'button', 'data-ops-open-notebook': true, onClick: openNotebook }, trialText('open', 'Open notebook'))),
+            h('details', null, h('summary', null, trialText('lab_prediction', 'Add or edit your prediction')),
+              h('label', { htmlFor: 'iss-lab-prediction' }, trialText('prediction', 'Prediction for the next trial (optional)')),
+              h('textarea', { id: 'iss-lab-prediction', rows: 2, maxLength: 600, value: prediction, onChange: function (event) { upd({ opsPrediction: event.target.value.slice(0, 600) }); } })),
+            trialRecordNotice() ? h('p', { 'data-ops-trial-notice': true }, trialRecordNotice()) : null);
+        }
+        function renderMeasurementInspector() {
+          if (!selectedTrial) return null;
+          var baselineMissing = !hasMeasurement(selectedTrial, trialMeasurement.key);
+          var comparisonMissing = comparisonTrial && !hasMeasurement(comparisonTrial, trialMeasurement.key);
+          var same = comparisonTrial && comparisonTrial.id === selectedTrial.id;
+          return h('section', { className: 'iss-trial-inspector', 'data-ops-measurement-inspector': true, 'aria-labelledby': 'iss-trial-inspection-title' },
+            h('h5', { id: 'iss-trial-inspection-title', tabIndex: -1 }, trialText('inspect_title', 'Investigate a measurement')),
+            h('p', { id: 'iss-trial-inspection-help' }, trialText('inspect_help', 'Choose a measurement to open its lab at the modeled minimum, peak or final instant. Loading a saved trial replaces the working controls and pauses playback; your comparison selections, notes and next-trial prediction are kept.')),
+            h('label', { htmlFor: 'iss-trial-measurement' }, trialText('inspect_measurement', 'Measurement to inspect')),
+            h('select', { id: 'iss-trial-measurement', 'data-ops-measurement-select': true, value: trialMeasurement.key,
+              onChange: function (event) { upd({ opsTrialMeasurement: event.target.value }); } }, trialMeasurements.map(function (field) { return h('option', { key: field.key, value: field.key }, field.label); })),
+            h('div', { className: 'iss-trial-inspector-actions' },
+              h('div', null,
+                h('button', { type: 'button', 'data-ops-inspect-baseline': true, disabled: baselineMissing,
+                  'aria-describedby': 'iss-trial-inspection-help' + (baselineMissing ? ' iss-trial-baseline-unavailable' : ''),
+                  onClick: function (event) { inspectMeasurement(selectedTrial, event); } }, __alloFill(trialText('inspect_baseline', 'Load baseline trial {trial} and inspect'), { trial: selectedTrial.id })),
+                baselineMissing ? h('p', { id: 'iss-trial-baseline-unavailable', 'data-ops-inspection-unavailable': 'baseline' }, trialText('inspect_missing', 'Not recorded for this trial. Load its setup separately to explore a new forecast.')) : null),
+              same ? null : h('div', null,
+                h('button', { type: 'button', 'data-ops-inspect-comparison': true, disabled: !!comparisonMissing,
+                  'aria-describedby': 'iss-trial-inspection-help' + (comparisonMissing ? ' iss-trial-comparison-unavailable' : ''),
+                  onClick: function (event) { inspectMeasurement(comparisonTrial, event); } }, comparisonTrial ? __alloFill(trialText('inspect_comparison', 'Load comparison trial {trial} and inspect'), { trial: comparisonTrial.id }) : trialText('inspect_current', 'Inspect current setup')),
+                comparisonMissing ? h('p', { id: 'iss-trial-comparison-unavailable', 'data-ops-inspection-unavailable': 'comparison' }, trialText('inspect_missing', 'Not recorded for this trial. Load its setup separately to explore a new forecast.')) : null)));
+        }
+        function renderTrialNotebook() {
+          var compared = comparisonTrial ? comparisonTrial.results : trialResults;
+          var comparedSetup = comparisonTrial ? comparisonTrial.setup : trialSetup;
+          var comparedLabel = comparisonTrial ? trialText('trial', 'Trial') + ' ' + comparisonTrial.id : trialText('current', 'Current setup');
+          var changes = selectedTrial ? issOpsSetupChanges(selectedTrial.setup, comparedSetup) : [];
+          var activeChanges = changes.filter(function (change) { return change.activeBefore || change.activeAfter; });
+          var inactiveChanges = changes.filter(function (change) { return !change.activeBefore && !change.activeAfter; });
+          var ruleChanges = selectedTrial ? issOpsRuleComparison(selectedTrial.results, compared) : null;
+          var loadedTrial = trials.filter(function (trial) { return trial.id === d.opsLoadedTrial && ISS_OPS_INPUTS.every(function (field) { return trial.setup[field.key] === trialSetup[field.key]; }); })[0];
+          function setting(value, field) { return typeof value === 'boolean' ? (value ? trialText('on', 'On') : trialText('off', 'Off')) : value + (field.unit ? ' ' + field.unit : ''); }
+          function setupDetails(setup) { return h('dl', null, ISS_OPS_INPUTS.map(function (field) { return h('div', { key: field.key }, h('dt', null, field.label), h('dd', null, setting(setup[field.key], field))); })); }
+          function changedSetting(change) {
+            var field = ISS_OPS_INPUTS.filter(function (item) { return item.key === change.key; })[0];
+            return h('li', { key: change.key, 'data-ops-setup-change': change.key, 'data-change-active': change.activeBefore || change.activeAfter },
+              field.label + ': ' + setting(change.before, field) + ' → ' + setting(change.after, field),
+              change.inactiveReason ? h('small', null, change.inactiveReason === 'unloading-disabled' ? trialText('inactive_unloading', 'Unused in both setups: momentum unloading is off.') : trialText('inactive_restoration', 'Unused in both setups: vent restoration is off or airflow is already at least 90 m³/h.')) : null);
+          }
+          function saveReflection(trialId, text) {
+            var reflection = text.slice(0, 1200);
+            upd({ opsTrials: trials.map(function (trial) { return trial.id === trialId ? Object.assign({}, trial, { reflection: reflection }) : trial; }) });
+          }
+          function renderRuleComparison() {
+            if (!ruleChanges) return null;
+            var resolved = ruleChanges.filter(function (rule) { return rule.state === 'resolved'; }).length;
+            var introduced = ruleChanges.filter(function (rule) { return rule.state === 'introduced'; }).length;
+            var labels = { power: trialText('rule_power', 'Battery reserve'), air: trialText('rule_air', 'Cabin CO₂'), water: trialText('rule_water', 'Water recovery'), thermal: trialText('rule_thermal', 'Cabin temperature'), attitude: trialText('rule_attitude', 'CMG load') };
+            var states = { resolved: trialText('resolved', 'Now meets the rule'), introduced: trialText('introduced', 'New rule to check'), 'still-check': trialText('still_check', 'Still needs attention'), 'still-go': trialText('still_go', 'Still meets the rule') };
+            return h('section', { className: 'iss-rule-comparison', 'data-ops-rule-comparison': true, 'aria-labelledby': 'iss-rule-comparison-title' },
+              h('h5', { id: 'iss-rule-comparison-title', tabIndex: -1 }, trialText('rule_changes', 'Flight-rule changes')),
+              h('p', null, resolved || introduced ? __alloFill(trialText('rule_change_counts', '{resolved} changed to GO; {introduced} changed to CHECK. Other rule decisions are unchanged.'), { resolved: resolved, introduced: introduced }) : trialText('rule_changes_none', 'No flight-rule decisions changed. Measurements can still differ.')),
+              h('ul', null, ruleChanges.map(function (rule) { return h('li', { key: rule.id, 'data-ops-rule-change': rule.id, 'data-change-state': rule.state },
+                h('span', null, labels[rule.id]), h('strong', null, (rule.before ? 'GO' : 'CHECK') + ' → ' + (rule.after ? 'GO' : 'CHECK')), h('small', null, states[rule.state])); })),
+              h('p', { className: 'iss-trial-scope' }, trialText('five_rule_note', 'Read left to right: baseline → comparison. Cabin temperature counts as one rule and must satisfy both temperature limits.')));
+          }
+          var rows = trialMeasurements;
+          return h('section', { className: 'iss-trials', 'data-ops-trial-notebook': true, 'aria-labelledby': 'iss-trials-title' },
+            h('h4', { id: 'iss-trials-title', tabIndex: -1 }, trialText('title', 'Orbit investigation notebook')),
+            h('p', { id: 'iss-trials-help' }, trialText('intro', 'Predict, change one control, then compare evidence. Each trial starts from its own setup and covers 92 minutes; recording does not advance the starting conditions.')),
+            h('label', { htmlFor: 'iss-trial-prediction' }, trialText('prediction', 'Prediction for the next trial (optional)')),
+            h('textarea', { id: 'iss-trial-prediction', 'data-ops-prediction': true, rows: 2, maxLength: 600, value: prediction,
+              placeholder: trialText('prediction_hint', 'If I change… I predict… because…'), onChange: function (event) { upd({ opsPrediction: event.target.value.slice(0, 600) }); } }),
+            h('p', { className: 'iss-trial-scope' }, trialText('prediction_draft', 'This is your draft for the next recording. Loading a saved setup keeps this draft; saved predictions appear with their own trial details below.')),
+            h('div', { className: 'iss-trial-actions' },
+              h('button', { type: 'button', className: 'iss-trial-record', 'data-ops-record-trial': true, 'aria-describedby': 'iss-trials-help', onClick: recordTrial }, trialText('record', 'Record this 92-minute trial')),
+              h('button', { type: 'button', 'data-ops-trial-export': true, disabled: !trials.length, onClick: exportTrials }, trialText('export', 'Download notebook CSV'))),
+            h('p', { className: 'iss-trial-scope' }, trialText('scope_v2', 'Up to six trials are saved: your selected baseline and the five newest other trials. Each new record is compared with that baseline. Download the CSV to keep a longer history. Results cover power, cabin air, thermal control, attitude and water recovery; the separate water-reserve, airlock and debris experiments are not included.')),
+            trialRecordNotice() ? h('p', { 'data-ops-trial-notice': true }, trialRecordNotice()) : null,
+            loadedTrial && selectedTrial ? h('p', { id: 'iss-trial-load-notice', className: 'iss-trial-load-notice', tabIndex: -1, role: 'status', 'data-ops-loaded-trial': loadedTrial.id },
+              __alloFill(trialText('loaded_setup_draft', 'Loaded trial {trial} controls. Baseline: trial {baseline}. The orbit clock was paused and reset to zero; your next-trial prediction was kept.'), { trial: loadedTrial.id, baseline: selectedTrial.id })) : null,
+            !selectedTrial ? h('p', { className: 'iss-trial-empty' }, trialText('empty', 'No recorded trials yet. Record your starting setup as a baseline.')) : h('div', null,
+              h('div', { className: 'iss-trial-selectors' },
+                h('div', null, h('label', { htmlFor: 'iss-trial-select' }, trialText('saved', 'Saved baseline')),
+                  h('select', { id: 'iss-trial-select', 'data-ops-trial-select': true, value: selectedTrial.id, onChange: function (event) { upd({ opsTrialSelected: Number(event.target.value) }); } }, trials.map(function (trial) {
+                    return h('option', { key: trial.id, value: trial.id }, trialText('trial', 'Trial') + ' ' + trial.id + ' · ' + (5 - trialRuleFailures(trial.results).length) + '/5 GO'); }))),
+                h('div', null, h('label', { htmlFor: 'iss-trial-compare' }, trialText('compare_with', 'Compare with')),
+                  h('select', { id: 'iss-trial-compare', 'data-ops-trial-compare': true, value: comparisonTrial ? comparisonTrial.id : 'current', onChange: function (event) { upd({ opsTrialCompare: event.target.value }); } },
+                    h('option', { value: 'current' }, trialText('current', 'Current setup')), trials.map(function (trial) { return h('option', { key: trial.id, value: trial.id }, trialText('trial', 'Trial') + ' ' + trial.id); })))),
+              h('p', { 'data-ops-trial-outcome': selectedTrial.id }, h('strong', null, trialText('trial', 'Trial') + ' ' + selectedTrial.id + ': '), trialOutcome(selectedTrial.results)),
+              h('p', { 'data-ops-comparison-outcome': comparisonTrial ? comparisonTrial.id : 'current' }, h('strong', null, comparedLabel + ': '), trialOutcome(compared)),
+              h('div', { 'data-ops-trial-comparison': true },
+                renderRuleComparison(),
+                comparisonTrial ? h('div', { className: 'iss-trial-comparison-source' },
+                  h('p', null, comparisonTrial.id === selectedTrial.id ? trialText('same_trial', 'The same saved trial is selected in both columns.') : trialText('saved_comparison', 'The comparison uses saved evidence. Editing the working controls does not change these results.')),
+                  h('div', { className: 'iss-trial-actions' },
+                    h('button', { type: 'button', 'data-ops-comparison-load': true, onClick: function (event) { loadTrialSetup(comparisonTrial, event, true); } }, __alloFill(trialText('load_comparison', 'Load comparison trial {trial} setup'), { trial: comparisonTrial.id })),
+                    h('button', { type: 'button', 'data-ops-compare-current': true, onClick: function (event) {
+                      var panel = event.currentTarget.closest('[data-iss-operations]');
+                      upd({ opsTrialCompare: 'current' }); focusInspection(panel, '#iss-rule-comparison-title');
+                    } }, trialText('compare_working', 'Compare with current setup')))) : null,
+                h('p', { 'data-ops-change-guidance': activeChanges.length }, changes.length === 0 ? trialText('same', 'Both setups use the same controls.') : activeChanges.length === 0 ? trialText('inactive_only', 'Only inactive settings differ. These settings are unused in both setups.') : activeChanges.length === 1 ? trialText('single_active_change', 'One active control changed. Use the results to test your prediction.') : trialText('many_active_changes', 'Several active controls changed. You cannot attribute the difference to one control alone.')),
+                activeChanges.length ? h('ul', { className: 'iss-trial-changes', 'data-ops-active-changes': true }, activeChanges.map(changedSetting)) : null,
+                inactiveChanges.length ? h('details', { className: 'iss-trial-inactive', 'data-ops-inactive-changes': true },
+                  h('summary', null, __alloFill(trialText('inactive_count', 'Inactive setting differences: {count}'), { count: inactiveChanges.length })),
+                  h('p', null, trialText('inactive_help', 'These saved values still belong to each setup. They are listed separately because neither setup uses them; enabling the feature can make them relevant.')),
+                  h('ul', { className: 'iss-trial-changes' }, inactiveChanges.map(changedSetting))) : null,
+                h('p', { className: 'iss-trial-scope' }, trialText('outcome_scope', 'An active control can affect part of a trajectory without changing every summary measurement. Equal results do not prove identical orbits. New recordings include final pointing change and unloading propellant used; older records may not include them.')),
+                h('p', { className: 'iss-trial-scope' }, trialText('scroll_hint', 'On a narrow screen, scroll the table sideways to see all measurements and changes.')),
+                h('div', { className: 'iss-trial-table-wrap', tabIndex: 0, role: 'region', 'aria-label': trialText('table_region', 'Trial measurements; scroll horizontally on a narrow screen') },
+                  h('table', { className: 'iss-trial-table' },
+                    h('caption', null, trialText('trial', 'Trial') + ' ' + selectedTrial.id + ' → ' + comparedLabel + '. ' + trialText('delta_note_precise', 'Change = comparison minus baseline; pp means percentage points. GO and CHECK use unrounded results. Values that round to a rule boundary show < or > to preserve their side of the boundary.')),
+                    h('thead', null, h('tr', null, h('th', { scope: 'col' }, trialText('measurement', 'Measurement')), h('th', { scope: 'col' }, trialText('baseline', 'Baseline')), h('th', { scope: 'col' }, comparedLabel), h('th', { scope: 'col' }, trialText('change', 'Change')))),
+                    h('tbody', null, rows.map(function (row) {
+                      var before = selectedTrial.results[row.key], after = compared[row.key];
+                      var hasBoth = typeof before === 'number' && isFinite(before) && typeof after === 'number' && isFinite(after);
+                      var deltaText = hasBoth ? issOpsDeltaText(before, after, row.digits) + ' ' + row.delta : trialText('not_comparable', 'Not comparable');
+                      function valueCell(results, value) {
+                        if (typeof value !== 'number' || !isFinite(value)) return h('td', { 'data-result-missing': true }, trialText('not_recorded', 'Not recorded'));
+                        return h('td', null, issOpsResultText(value, row.digits, row.boundaries) + ' ' + row.unit, row.pass ? h('small', { 'data-result-state': row.pass(results) ? 'go' : 'check' }, row.pass(results) ? 'GO' : 'CHECK') : null);
+                      }
+                      return h('tr', { key: row.key, 'data-ops-trial-metric': row.key }, h('th', { scope: 'row' }, row.label, row.rule ? h('small', null, row.rule) : null), valueCell(selectedTrial.results, before), valueCell(compared, after), h('td', null, deltaText)); }))))),
+              renderMeasurementInspector(),
+              h(issOpsTrajectoryCompare, { React: React, t: __alloT, fill: __alloFill, baseline: selectedTrial, comparison: comparisonTrial, currentSetup: trialSetup,
+                open: d.opsTrajectoryOpen, metric: d.opsTrajectoryMetric, minute: d.opsTrajectoryMinute, onChange: upd }),
+              comparisonTrial && comparisonTrial.id !== selectedTrial.id ? h('details', { className: 'iss-trial-setup', 'data-ops-compared-details': true },
+                h('summary', null, __alloFill(trialText('comparison_details', 'Comparison trial {trial}: saved setup and notes'), { trial: comparisonTrial.id })),
+                h('h5', null, trialText('saved_prediction', 'Saved prediction')),
+                h('p', { className: 'iss-trial-note', 'data-ops-compared-prediction': true }, comparisonTrial.prediction || trialText('no_prediction', 'No prediction recorded.')),
+                h('label', { htmlFor: 'iss-trial-comparison-reflection' }, __alloFill(trialText('comparison_reflection', 'Evidence and reflection for comparison trial {trial}'), { trial: comparisonTrial.id })),
+                h('p', { id: 'iss-trial-comparison-reflection-help', className: 'iss-trial-scope' }, trialText('comparison_reflection_help', 'Edits are saved to this comparison trial. Its recorded prediction, setup and measurements stay unchanged.')),
+                h('textarea', { id: 'iss-trial-comparison-reflection', 'data-ops-compared-reflection': true, rows: 3, maxLength: 1200, value: comparisonTrial.reflection,
+                  'aria-describedby': 'iss-trial-comparison-reflection-help',
+                  placeholder: trialText('reflection_hint', 'What changed? Which measurements support or challenge your prediction?'), onChange: function (event) { saveReflection(comparisonTrial.id, event.target.value); } }),
+                setupDetails(comparisonTrial.setup)) : null,
+              h('details', { className: 'iss-trial-setup' }, h('summary', null, __alloFill(trialText('baseline_details', 'Baseline trial {trial}: saved setup and prediction'), { trial: selectedTrial.id })),
+                h('p', { className: 'iss-trial-note' }, selectedTrial.prediction || trialText('no_prediction', 'No prediction recorded.')),
+                setupDetails(selectedTrial.setup)),
+              h('label', { htmlFor: 'iss-trial-reflection' }, __alloFill(trialText('baseline_reflection', 'Evidence and reflection for baseline trial {trial}'), { trial: selectedTrial.id })),
+              h('textarea', { id: 'iss-trial-reflection', 'data-ops-reflection': true, rows: 3, maxLength: 1200, value: selectedTrial.reflection,
+                placeholder: trialText('reflection_hint', 'What changed? Which measurements support or challenge your prediction?'), onChange: function (event) {
+                  saveReflection(selectedTrial.id, event.target.value); } }),
+              h('div', { className: 'iss-trial-actions' }, h('button', { type: 'button', 'data-ops-trial-restore': true, onClick: loadTrial }, __alloFill(trialText('load_baseline', 'Load baseline trial {trial} setup'), { trial: selectedTrial.id }))),
+              h('p', null, __alloFill(trialMatches ? trialText('replay_matches_baseline', 'Current controls match baseline trial {trial}. Use the events below to inspect its modeled orbit.') : trialText('replay_changed_baseline', 'Current controls differ from baseline trial {trial}. Load that baseline setup to replay it; saved measurements stay unchanged.'), { trial: selectedTrial.id })),
+              renderMissionReplay()));
+        }
         function renderMissionReplay() {
-          if (!(d.opsRuns || 0)) return null;
+          if (!selectedTrial || !trialMatches) return null;
           var replayEvents = [
             { minute: 0, label: 'Orbit start', note: 'Sunlit power-up' },
-            { minute: Math.round(sunlightMinutes / 2), label: 'Peak daylight', note: 'Maximum collection' },
+            { minute: Math.round(sunlightMinutes / 2), label: 'Mid-sunlight', note: 'Inspect energy storage' },
             { minute: sunlightMinutes, label: 'Eclipse entry', note: 'Battery takes load' },
             { minute: 92, label: 'Orbit complete', note: 'Review margins' }
           ];
           return h('div', { className: 'iss-mission-replay', 'data-iss-mission-replay': 'true' },
-            h('div', { className: 'iss-replay-heading' }, h('strong', null, 'MISSION REPLAY // ORBIT ' + (d.opsRuns || 0)), h('span', null, 'Select an event to inspect synchronized telemetry.')),
-            h('div', { className: 'iss-replay-lane', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_mission_replay_events', 'Mission replay events') }, replayEvents.map(function (event) { var on = Math.round(orbitMinute) === Math.round(event.minute); return h('button', { key: event.label, type: 'button', 'data-iss-replay-event': event.minute, 'aria-pressed': on, onClick: function () { upd({ opsOrbitMinute: event.minute }); } }, h('i', { 'aria-hidden': 'true' }), h('strong', null, 'T+' + event.minute), h('span', null, event.label), h('small', null, event.note)); })));
+            h('div', { className: 'iss-replay-heading' }, h('strong', null, 'TRIAL REPLAY // TRIAL ' + selectedTrial.id), h('span', null, 'Select an event to inspect synchronized telemetry.')),
+            h('div', { className: 'iss-replay-lane', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_mission_replay_events', 'Mission replay events') }, replayEvents.map(function (event) { var on = Math.abs(orbitMinute - event.minute) < 1e-7; return h('button', { key: event.label, type: 'button', 'data-iss-replay-event': event.minute, 'aria-pressed': on, onClick: function () { upd({ opsOrbitMinute: event.minute, opsInspection: null, opsIntegratedSeekToken: !d.opsIntegratedSeekToken }); } }, h('i', { 'aria-hidden': 'true' }), h('strong', null, 'T+' + event.minute), h('span', null, event.label), h('small', null, event.note)); })));
         }        function statusBox(title, value, note, color) { return h('div', { className: 'iss-ops-control' }, h('div', { style: { color: SOFT, fontSize: 8.5, fontWeight: 850, letterSpacing: .8, textTransform: 'uppercase' } }, title), h('strong', { style: { display: 'block', marginTop: 4, color: color, fontSize: 18 } }, value), h('div', { style: { marginTop: 4, color: SOFT, fontSize: 9.5, lineHeight: 1.45 } }, note)); }
         function renderIntegrated() {
-          return h('div', null, renderOpsNetwork(metrics, d.opsFocus || 'all'), renderOpsForecast(orbitForecast, sunlightMinutes, orbitMinute, orbitCursor, opsScenario === 'nominal' ? null : nominalForecast), h('div', { className: 'iss-ops-grid' },
+          return h('div', null, renderTelemetry(), renderOpsForecast(orbitForecast, sunlightMinutes, orbitMinute, orbitCursor, opsScenario === 'nominal' ? null : nominalForecast), renderEventSchedule(), h('div', { className: 'iss-ops-grid' },
             opsControl('iss-ops-crew','Crew aboard',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-ops-research','Research load',research,0,100,5,'%','#a78bfa','opsResearch'),
             opsControl('iss-ops-angle','Solar-array alignment',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), opsControl('iss-ops-battery','Battery state',battery,0,100,1,'%','#4ade80','opsBattery')),
-            h('button', { type: 'button', onClick: function () { var run = (d.opsRuns || 0) + 1; var log = (Array.isArray(d.opsLog) ? d.opsLog : []).concat(['ORBIT ' + run + ' // battery ' + projectedBattery.toFixed(0) + '%, cabin ' + cabinTemp.toFixed(1) + '°C, CMG ' + nextCmg.toFixed(0) + '%']).slice(-5); upd({ opsRuns: run, opsLog: log, opsLastDebrief: health, opsScenario: 'custom', opsOrbitMinute: 92 }); if (announceToSR) announceToSR(__alloFill(__alloT('stem.spacestation.sr_orbit_simulation_complete_station_health_percent', 'Orbit simulation complete. Station health {value1} percent.'), { value1: health })); }, style: { width: '100%', marginTop: 10, padding: '10px 14px', border: '1px solid #4ade80', borderRadius: 10, background: 'rgba(34,197,94,.14)', color: '#86efac', fontWeight: 900, cursor: 'pointer' } }, '▶ Simulate the next 92-minute orbit'), renderMissionReplay());
+            renderTrialNotebook());
+        }
+        function renderTelemetry() {
+          var zone = snapshot.co2Zone === 'crew' ? eventText('zone_crew', 'Crew zone') : snapshot.co2Zone === 'cabin' ? eventText('zone_cabin', 'Cabin zone') : eventText('zone_both', 'Both zones');
+          var readings = [
+            { id: 'power', value: snapshot.power, label: eventText('reading_battery', 'Battery reserve'), text: issOpsResultText(snapshot.power, 1, [25]) + '%', note: eventText('battery_now', 'Stored energy at this instant') },
+            { id: 'air', value: snapshot.co2, label: eventText('reading_air', 'Highest current CO₂'), text: issOpsResultText(snapshot.co2, 0, [CO2_ACTION_PPM]) + ' ppm', note: zone + ' · ' + eventText('air_now', 'Compare both sensors in the air lab') },
+            { id: 'thermal', value: snapshot.temp, label: eventText('reading_cabin', 'Cabin temperature'), text: issOpsResultText(snapshot.temp, 2, [18, 27]) + ' °C', note: eventText('cabin_now', 'Current cabin reading') },
+            { id: 'attitude', value: snapshot.cmg, label: eventText('reading_cmg', 'CMG storage used'), text: issOpsResultText(snapshot.cmg, 1, [80, 100]) + '%', note: eventText('cmg_now', 'Current stored momentum') }
+          ];
+          return h('section', { className: 'iss-ops-telemetry', 'data-ops-telemetry': true, 'aria-labelledby': 'iss-ops-telemetry-title' },
+            h('div', { className: 'iss-telemetry-heading' }, h('h4', { id: 'iss-ops-telemetry-title' }, eventText('telemetry_title', 'Station at the selected time')),
+              h('strong', { 'data-ops-telemetry-time': true }, eventTime(orbitMinute) + ' · ' + (snapshot.lit ? eventText('sunlight', 'Sunlight') : eventText('eclipse_phase', 'Eclipse')))),
+            h('p', { id: 'iss-ops-telemetry-help' }, eventText('telemetry_help', 'Current setup forecast. These readings follow the orbit cursor and playback below. Flight-rule cards above assess the complete orbit; a recovered reading does not erase an earlier failure.')),
+            renderOpsNetwork(metrics, d.opsFocus || 'all'),
+            h('div', { className: 'iss-telemetry-readings' }, readings.map(function (reading) {
+              var rule = flightRules.filter(function (item) { return item.id === reading.id; })[0];
+              return h('button', { key: reading.id, type: 'button', 'data-ops-telemetry-reading': reading.id, 'data-reading-value': reading.value, 'data-reading-minute': orbitMinute,
+                'aria-describedby': 'iss-ops-telemetry-help',
+                onClick: function (event) { inspectTarget({ mode: rule.mode, lab: rule.lab, minute: orbitMinute }, 'cursor', rule.id, event); } },
+                h('span', null, reading.label), h('strong', null, reading.text), h('small', null, reading.note), h('span', { className: 'iss-telemetry-inspect' }, eventText('inspect_now', 'Inspect this moment →')));
+            })),
+            h('p', { 'data-ops-telemetry-water': true }, __alloFill(eventText('water_fixed', 'Water recovery: {recovery}%. Fixed setup setting; it does not change with the orbit clock. Explore water reserves with the separate day clock.'), { recovery: issOpsResultText(recovery, 1, [90]) })),
+            h(issExperimentPlayback, { React: React, id: 'integrated', t: __alloT, value: orbitMinute * 60, max: 5520,
+              speeds: [60, 300, 600], speedLabels: ['1 min/s', '5 min/s', '10 min/s'], resetKey: JSON.stringify(trialSetup) + ':' + !!d.opsIntegratedSeekToken,
+              onAdvance: function (seconds) { upd({ opsOrbitMinute: seconds / 60, opsInspection: null }); } }));
         }
         function renderPower() {
           var current = issPowerState(powerSettings, orbitMinute);
@@ -14405,8 +15531,8 @@
             h('div', { className: 'iss-power-clock' },
               h('div', { className: 'iss-power-clock-heading' }, h('strong', null, 'T+' + orbitMinute.toFixed(1) + ' min'), h('span', null, stateLabel)),
               h(issExperimentPlayback, { React: React, id: 'power', t: __alloT, value: orbitMinute * 60, max: 92 * 60, speeds: [60,300,600], speedLabels: ['1 min/s','5 min/s','10 min/s'], resetKey: [crew,research,arrayAngle,eclipse,battery,!!d.opsPowerSeekToken].join(':'), onAdvance: function (seconds) { upd({ opsOrbitMinute: seconds / 60 }); } }),
-              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-power-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(1) + ' min')),
-                h('input', { id: 'iss-power-time', type: 'range', min: 0, max: 92, step: .1, value: orbitMinute, 'aria-describedby': 'iss-power-graph-help', 'aria-valuetext': __alloFill(__alloT('stem.spacestation.power_time_value', '{minute} minutes, {phase}, battery {reserve} percent'), { minute: orbitMinute.toFixed(1), phase: current.lit ? __alloT('stem.spacestation.power_sunlight', 'sunlight') : __alloT('stem.spacestation.power_eclipse', 'eclipse'), reserve: current.percent.toFixed(1) }), onChange: function (event) { seek(Number(event.target.value)); } })),
+              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-power-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(2) + ' min')),
+                h('input', { id: 'iss-power-time', type: 'range', min: 0, max: 92, step: 'any', value: orbitMinute, 'aria-describedby': 'iss-power-graph-help', 'aria-valuetext': __alloFill(__alloT('stem.spacestation.power_time_value', '{minute} minutes, {phase}, battery {reserve} percent'), { minute: orbitMinute.toFixed(2), phase: current.lit ? __alloT('stem.spacestation.power_sunlight', 'sunlight') : __alloT('stem.spacestation.power_eclipse', 'eclipse'), reserve: current.percent.toFixed(1) }), onChange: function (event) { seek(Number(event.target.value)); }, onKeyDown: function (event) { seekLabTimeKey(event, seek); } })),
               h('div', { className: 'iss-power-light-band', 'aria-hidden': true }, h('span', { style: { width: sunlightMinutes / 92 * 100 + '%' } }, 'SUNLIGHT ' + sunlightMinutes + ' MIN'), h('span', { style: { flex: 1 } }, 'ECLIPSE ' + eclipse + ' MIN'), h('i', { style: { left: orbitMinute / 92 * 100 + '%' } }))),
             h('div', { className: 'iss-power-chart-heading' }, h('h4', null, 'Stored energy · battery reserve'), h('button', { type: 'button', 'data-power-reference': true, 'aria-pressed': showReference, onClick: function () { upd({ opsPowerReference: !showReference }); } }, 'Compare lossless storage')),
             h('div', { className: 'iss-power-plot-grid' }, h('div', { className: 'iss-power-y-axis', 'aria-hidden': true }, h('span', null, '100%'), h('span', null, '50%'), h('span', null, '0%')),
@@ -14426,7 +15552,7 @@
             h('div', { className: 'iss-power-x-axis', 'aria-hidden': true }, h('span', null, '0 min'), h('span', null, '46 min'), h('span', null, '92 min')),
             h('div', { className: 'iss-power-chart-key' }, h('span', null, 'Solid mint: selected battery'), showReference ? h('span', null, 'Dashed violet: no conversion losses') : null, h('span', null, 'Dotted rose: 25% reserve target')),
             showReference ? h('p', { className: 'iss-power-comparison', 'data-power-comparison': true }, 'At this time: selected ' + current.percent.toFixed(1) + '% · lossless ' + reference.percent.toFixed(1) + '%. Both have the same capacity, sunlight and demand.') : null,
-            h('p', { id: 'iss-power-graph-help', className: 'iss-power-help' }, 'Drag or tap the graph to inspect. Use the time slider and arrow keys for 0.1-minute steps. Inspection pauses playback.'),
+            h('p', { id: 'iss-power-graph-help', className: 'iss-power-help' }, 'Drag or tap the graph to inspect. Slider arrow keys move 0.1 minute; Page Up/Down move 1 minute; Home/End select the orbit endpoints. Inspection pauses playback.'),
             h('div', { className: 'iss-experiment-actions' }, checkpoint('start','Orbit start',0), checkpoint('full','Battery reaches full',powerEnd.fullMinute), checkpoint('eclipse','Enter eclipse',sunlightMinutes), checkpoint('empty','Battery reaches empty',powerEnd.emptyMinute), checkpoint('end','Orbit end',92)),
             h('div', { className: 'iss-power-readings' },
               reading('stored', 'Stored energy', current.storedKWh.toFixed(1) + ' kWh', current.percent.toFixed(1) + '% of 210 kWh usable storage', batteryColor),
@@ -14436,7 +15562,7 @@
             h('p', { className: 'iss-power-balance', 'data-power-balance': true }, 'Energy accounted for: initial ' + current.startKWh.toFixed(1) + ' + solar ' + current.generatedKWh.toFixed(1) + ' = loads supplied ' + current.servedKWh.toFixed(1) + ' + stored ' + current.storedKWh.toFixed(1) + ' + losses ' + current.lossKWh.toFixed(1) + ' + unused ' + current.curtailedKWh.toFixed(1) + ' kWh. Display values are rounded.'),
             h('div', { className: 'iss-power-outcome', 'data-power-outcome': powerEnd.unservedKWh > 0 ? 'shortfall' : 'supplied' },
               h('strong', null, powerEnd.unservedKWh > 0 ? 'This setup runs out of stored energy.' : 'This setup supplies the full orbit.'),
-              h('p', null, powerEnd.unservedKWh > 0 ? 'Battery empty at T+' + powerEnd.emptyMinute.toFixed(1) + ' min. ' + powerEnd.unservedKWh.toFixed(1) + ' kWh of demand goes unmet. Try better array alignment, less research demand, or more starting reserve.' : 'Minimum reserve ' + powerEnd.minimumPercent.toFixed(1) + '%. ' + powerEnd.curtailedKWh.toFixed(1) + ' kWh of available solar energy cannot be stored. Extra sunlight after full charge does not extend the night-time reserve.'),
+              h('p', null, powerEnd.unservedKWh > 0 ? 'Battery empty at T+' + powerEnd.emptyMinute.toFixed(1) + ' min. ' + powerEnd.unservedKWh.toFixed(1) + ' kWh of demand goes unmet. Try better array alignment, less research demand, or more starting reserve.' : 'Minimum reserve ' + issOpsResultText(powerEnd.minimumPercent, 1, [25]) + '%. ' + powerEnd.curtailedKWh.toFixed(1) + ' kWh of available solar energy cannot be stored. Extra sunlight after full charge does not extend the night-time reserve.'),
               opsMeter('Battery after one orbit',projectedBattery,projectedBattery >= 25 ? '#6ee7b7' : '#fda4af',orbitDelta >= 0 ? 'Net charge +' + orbitDelta.toFixed(1) + '%' : 'Net discharge ' + orbitDelta.toFixed(1) + '%')),
             h('details', { className: 'iss-physics-note' }, h('summary', null, 'Power model and assumptions'),
               h('p', null, 'One 92-minute orbit starts in sunlight. Solar power serves station demand first. A 210 kWh usable battery stores surplus at 95% charge efficiency and supplies deficits at 95% discharge efficiency (90.25% round trip). Storage stays between empty and full; rejected sunlight is not saved. These are illustrative aggregate parameters, not measured station hardware specifications.'),
@@ -14648,8 +15774,8 @@
               h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.air_trials','Cabin air investigation starting conditions')},presets.map(function(preset){return h('button',{key:preset[0],type:'button','data-air-preset':preset[0],onClick:function(){upd(Object.assign({opsCrew:7,opsScrub:88,opsAirActivity:1,opsAirStart:2600,opsAirRestoreMinute:45,opsArrayAngle:86,opsEclipse:35,opsBattery:76,opsResearch:60,opsOrbitMinute:0,opsScenario:'custom',opsAirSeekToken:!d.opsAirSeekToken},preset[2]));}},preset[1]);})),
               h('div',{className:'iss-air-clock'},h('div',{className:'iss-air-clock-heading'},h('strong',null,'T+'+orbitMinute.toFixed(1)+' min'),h('span',null,phase)),
                 h(issExperimentPlayback,{React:React,id:'air',t:__alloT,value:orbitMinute*60,max:5520,speeds:[60,300,600],speedLabels:['1 min/s','5 min/s','10 min/s'],resetKey:[JSON.stringify(config),!!d.opsAirSeekToken].join(':'),onAdvance:function(seconds){upd({opsOrbitMinute:seconds/60});}}),
-                h('label',{className:'iss-experiment-control',htmlFor:'iss-air-time'},h('span',null,'Inspect orbit time',h('strong',null,orbitMinute.toFixed(1)+' min')),
-                  h('input',{id:'iss-air-time',type:'range',min:0,max:92,step:.1,value:orbitMinute,'aria-describedby':'iss-air-graph-help','aria-valuetext':__alloFill(__alloT('stem.spacestation.air_time_value','{minute} minutes; crew-zone CO₂ {local} ppm; cabin CO₂ {cabin} ppm'),{minute:orbitMinute.toFixed(1),local:current.localPpm.toFixed(0),cabin:current.cabinPpm.toFixed(0)}),onChange:function(event){seek(Number(event.target.value));}}))),
+                h('label',{className:'iss-experiment-control',htmlFor:'iss-air-time'},h('span',null,'Inspect orbit time',h('strong',null,orbitMinute.toFixed(2)+' min')),
+                  h('input',{id:'iss-air-time',type:'range',min:0,max:92,step:'any',value:orbitMinute,'aria-describedby':'iss-air-graph-help','aria-valuetext':__alloFill(__alloT('stem.spacestation.air_time_value','{minute} minutes; crew-zone CO₂ {local} ppm; cabin CO₂ {cabin} ppm'),{minute:orbitMinute.toFixed(2),local:current.localPpm.toFixed(0),cabin:current.cabinPpm.toFixed(0)}),onChange:function(event){seek(Number(event.target.value));},onKeyDown:function(event){seekLabTimeKey(event,seek);}}))),
               h('div',{className:'iss-air-workbench'},
                 h('div',{className:'iss-air-scene','data-air-phase':!current.powered?'unpowered':current.restored?'restored':current.flow<30?'restricted':'circulating'},
                   h('div',{className:'iss-air-scene-heading'},h('strong',{style:{color:phaseColor}},phase),h('span',null,'Schematic cabin cutaway')),
@@ -14691,11 +15817,11 @@
               h('div',{className:'iss-air-x-axis','aria-hidden':true},h('span',null,'0 min'),h('span',null,'46 min'),h('span',null,'92 min')),
               h('div',{className:'iss-air-chart-key'},h('span',null,'Orange: crew zone'),h('span',null,'Blue: cabin'),h('span',null,'Amber: 4000 ppm investigation line'),showReference?h('span',null,'Dashed: crew zone without recovery'):null),
               showReference?h('p',{className:'iss-air-comparison','data-air-comparison':true},'At this moment: planned recovery '+current.localPpm.toFixed(0)+' ppm near the crew · no recovery '+reference.localPpm.toFixed(0)+' ppm. Both runs use the same crew, starting air and scrubber.'):null,
-              h('p',{className:'iss-air-help',id:'iss-air-graph-help'},'Drag or tap the graph to inspect both sensors. Arrow keys on the time slider move by 0.1 minute. Inspection pauses playback; setup changes start a new run.'),
+              h('p',{className:'iss-air-help',id:'iss-air-graph-help'},'Drag or tap the graph to inspect both sensors. Slider arrow keys move 0.1 minute; Page Up/Down move 1 minute; Home/End select the orbit endpoints. Inspection pauses playback; setup changes start a new run.'),
               h('div',{className:'iss-experiment-actions',role:'group','aria-label':__alloT('stem.spacestation.air_events','Inspect cabin air events')},eventButton('start','Orbit start',0),eventButton('limit','4000 ppm crossing',airModel.firstLimitMinute),eventButton('restore','Restore flow',airModel.restoreMinute),eventButton('after','5 min after recovery',canCompare?Math.min(92,airModel.restoreMinute+5):null),eventButton('peak','Highest reading',airModel.peakMinute),eventButton('end','Orbit end',92)),
               h('div',{className:'iss-air-budget'},reading('initial','CO₂ initially present',current.initialGrams.toFixed(1)+' g','Both air volumes','#c4b5fd'),reading('exhaled','Exhaled since start',current.exhaledGrams.toFixed(1)+' g','Added by the crew','#fdba74'),reading('removed','Removed from air',current.removedGrams.toFixed(1)+' g','Captured by the scrubber','#6ee7b7'),reading('remaining','Still in the air',(current.localGrams+current.cabinGrams).toFixed(1)+' g','Crew zone + larger cabin','#7dd3fc')),
               h('p',{className:'iss-air-balance','data-air-balance':true},'CO₂ balance: initial '+current.initialGrams.toFixed(1)+' + exhaled '+current.exhaledGrams.toFixed(1)+' − scrubbed '+current.removedGrams.toFixed(1)+' = remaining '+(current.localGrams+current.cabinGrams).toFixed(1)+' g. Mixing only redistributes mass. Display values are rounded.'),
-              h('div',{className:'iss-air-outcome','data-air-outcome':airModel.peakPpm>=config.investigationPpm?'crossed':'below'},h('strong',null,airModel.peakPpm>=config.investigationPpm?'A local reading reaches the investigation line.':'Both zones stay below the investigation line.'),h('p',null,'Highest reading '+airModel.peakPpm.toFixed(0)+' ppm at T+'+airModel.peakMinute.toFixed(1)+' min · final crew zone '+airEnd.localPpm.toFixed(0)+' ppm · final cabin '+airEnd.cabinPpm.toFixed(0)+' ppm. '+(airModel.peakPpm>=config.investigationPpm&&airEnd.localPpm<config.investigationPpm?'Recovery improves the final air; it does not erase the earlier peak.':'Compare ventilation and removal together.'))),
+              h('div',{className:'iss-air-outcome','data-air-outcome':airModel.peakPpm>=config.investigationPpm?'crossed':'below'},h('strong',null,airModel.peakPpm>=config.investigationPpm?'A local reading reaches the investigation line.':'Both zones stay below the investigation line.'),h('p',null,'Highest reading '+issOpsResultText(airModel.peakPpm,0,[config.investigationPpm])+' ppm at T+'+airModel.peakMinute.toFixed(1)+' min · final crew zone '+issOpsResultText(airEnd.localPpm,0,[config.investigationPpm])+' ppm · final cabin '+issOpsResultText(airEnd.cabinPpm,0,[config.investigationPpm])+' ppm. '+(airModel.peakPpm>=config.investigationPpm&&airEnd.localPpm<config.investigationPpm?'Recovery improves the final air; it does not erase the earlier peak.':'Compare ventilation and removal together.'))),
               h('details',{className:'iss-physics-note'},h('summary',null,'Cabin air model and assumptions'),
                 h('p',null,'Two internally mixed volumes (12 and 388 m³) begin at the same CO₂ concentration, at a fixed 101.325 kPa and 22 °C. One crew member occupies the smaller zone. Baseline production is 42 g/hour per person; the local activity multiplier is an illustrative increase. The ideal-gas relation converts CO₂ mass to ppm by volume. These volumes, flows and activity settings are teaching assumptions, not ISS geometry or telemetry.'),
                 h('p',null,'Equal exchange flows transfer Q(Czone − Ccabin). Effective clean-air throughput is 70 m³/hour × scrubber setting; removal scales with cabin concentration. A recovery raises a restricted mixing flow to 90 m³/hour. Fans and scrubbing stop if the shared power model delivers no electricity; partial electrical supply is assumed sufficient. Pressure regulation, oxygen consumption, molecular diffusion, spatial fluid dynamics, bed cycling/capacity and individual equipment power demands are omitted.'),
@@ -14796,15 +15922,15 @@
             h('div', { className: 'iss-thermal-clock' },
               h('div', { className: 'iss-thermal-clock-heading' }, h('strong', null, 'T+' + orbitMinute.toFixed(1) + ' min'), h('span', { 'data-thermal-trend': true }, trend + ' · ' + signed(current.cabinRate,3) + ' °C/min')),
               h(issExperimentPlayback, { React: React, id: 'thermal', t: __alloT, value: orbitMinute * 60, max: 92 * 60, speeds: [60,300,600], speedLabels: ['1 min/s','5 min/s','10 min/s'], resetKey: [crew,research,arrayAngle,eclipse,battery,radiator,cooling,cabinStart,!!d.opsThermalSeekToken].join(':'), onAdvance: function (seconds) { upd({ opsOrbitMinute: seconds / 60 }); } }),
-              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-thermal-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(1) + ' min')),
-                h('input', { id: 'iss-thermal-time', type: 'range', min: 0, max: 92, step: .1, value: orbitMinute, 'aria-describedby': 'iss-thermal-graph-help',
-                  'aria-valuetext': __alloFill(__alloT('stem.spacestation.thermal_time_value', '{minute} minutes; cabin {temperature} degrees Celsius'), { minute: orbitMinute.toFixed(1), temperature: current.cabin.toFixed(2) }),
-                  onChange: function (event) { seek(Number(event.target.value)); } }))),
+              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-thermal-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(2) + ' min')),
+                h('input', { id: 'iss-thermal-time', type: 'range', min: 0, max: 92, step: 'any', value: orbitMinute, 'aria-describedby': 'iss-thermal-graph-help',
+                  'aria-valuetext': __alloFill(__alloT('stem.spacestation.thermal_time_value', '{minute} minutes; cabin {temperature} degrees Celsius'), { minute: orbitMinute.toFixed(2), temperature: current.cabin.toFixed(2) }),
+                  onChange: function (event) { seek(Number(event.target.value)); }, onKeyDown: function (event) { seekLabTimeKey(event, seek); } }))),
             h('div', { className: 'iss-thermal-chart-heading' }, h('h4', null, 'Temperature through one orbit'), h('button', { type: 'button', 'data-thermal-reference': true, 'aria-pressed': showReference, onClick: function () { upd({ opsThermalReference: !showReference }); } }, 'Compare full cooling')),
             h('div', { className: 'iss-thermal-plot-grid' },
               h('div', { className: 'iss-thermal-y-axis', 'aria-hidden': true }, [0,1,2,3,4].map(function (index) { var value = yMax - index / 4 * (yMax - yMin); return h('span', { key: index }, value.toFixed(value % 1 ? 1 : 0) + '°'); })),
               h('svg', { viewBox: '0 -3 1000 106', preserveAspectRatio: 'none', role: 'img', 'data-thermal-plot': true, 'aria-describedby': 'iss-thermal-graph-help',
-                'aria-label': __alloFill(__alloT('stem.spacestation.thermal_plot_label', 'Cabin and radiator temperatures over one orbit. Cabin ranges from {min} to {max} degrees Celsius. Current cabin {cabin}, radiator {radiator}.'), { min: thermalModel.minCabin.toFixed(2), max: thermalModel.maxCabin.toFixed(2), cabin: current.cabin.toFixed(2), radiator: current.radiator.toFixed(2) }),
+                'aria-label': __alloFill(__alloT('stem.spacestation.thermal_plot_label', 'Cabin and radiator temperatures over one orbit. Cabin ranges from {min} to {max} degrees Celsius. Current cabin {cabin}, radiator {radiator}.'), { min: issOpsResultText(thermalModel.minCabin, 2, [18, 27]), max: issOpsResultText(thermalModel.maxCabin, 2, [18, 27]), cabin: current.cabin.toFixed(2), radiator: current.radiator.toFixed(2) }),
                 onPointerDown: function (event) { if (event.button !== 0 || event.isPrimary === false) return; event.preventDefault(); if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); pointerSeek(event); },
                 onPointerMove: function (event) { if (event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) pointerSeek(event); },
                 onPointerUp: releasePointer, onPointerCancel: releasePointer },
@@ -14821,7 +15947,7 @@
             h('div', { className: 'iss-thermal-x-axis', 'aria-hidden': true }, h('span', null, '0 min'), h('span', null, '46 min'), h('span', null, '92 min')),
             h('div', { className: 'iss-thermal-chart-key' }, h('span', null, 'Orange: cabin'), h('span', null, 'Blue: radiator'), showReference ? h('span', null, 'Dashed: cabin with full cooling') : null, h('span', null, 'Green band: 18–27 °C')),
             showReference ? h('p', { className: 'iss-thermal-comparison', 'data-thermal-comparison': true }, 'Same heat input and starting temperatures: selected cabin ' + current.cabin.toFixed(2) + ' °C · full-cooling cabin ' + reference.cabin.toFixed(2) + ' °C. More cooling can also take the cabin below its comfort band.') : null,
-            h('p', { className: 'iss-thermal-help', id: 'iss-thermal-graph-help' }, 'Drag or tap the graph to inspect. The time slider supports arrow keys in 0.1-minute steps. Inspecting pauses playback.'),
+            h('p', { className: 'iss-thermal-help', id: 'iss-thermal-graph-help' }, 'Drag or tap the graph to inspect. Slider arrow keys move 0.1 minute; Page Up/Down move 1 minute; Home/End select the orbit endpoints. Inspecting pauses playback.'),
             h('div', { className: 'iss-experiment-actions' }, eventButton('start','Orbit start',0), eventButton('eclipse','Enter eclipse',sunlightMinutes), eventButton('limit',thermalModel.firstLimitMinute === 0 ? 'Outside at start' : 'Comfort boundary',thermalModel.firstLimitMinute), eventButton('end','Orbit end',92)),
             h('div', { className: 'iss-thermal-budget' },
               reading('generated-energy','Heat generated',current.generatedKWh.toFixed(1) + ' kWh','Equipment and crew since orbit start','#fdba74'),
@@ -14831,7 +15957,7 @@
             h('p', { className: 'iss-thermal-balance', 'data-thermal-balance': true }, 'Heat balance: generated ' + current.generatedKWh.toFixed(1) + ' + absorbed ' + current.absorbedKWh.toFixed(1) + ' − radiated ' + current.radiatedKWh.toFixed(1) + ' = stored change ' + signed(current.storedKWh,1) + ' kWh. Coolant transfer is internal to this balance. Display values are rounded.'),
             h('div', { className: 'iss-thermal-outcome', 'data-thermal-outcome': inBand ? 'comfortable' : 'outside' },
               h('strong', null, inBand ? 'The cabin stays within the comfort band.' : thermalModel.maxCabin > 27 ? 'Heat builds up faster than the cooling path can remove it.' : 'This setup cools the cabin below its comfort band.'),
-              h('p', null, 'Cabin range ' + thermalModel.minCabin.toFixed(2) + '–' + thermalModel.maxCabin.toFixed(2) + ' °C. ' + (thermalModel.firstLimitMinute === null ? 'The radiator continues to reject heat during eclipse, while both temperatures respond gradually.' : (thermalModel.firstLimitMinute === 0 ? 'The cabin starts outside the comfort band.' : 'The first comfort boundary is reached at T+' + thermalModel.firstLimitMinute.toFixed(1) + ' min.') + ' Adjust area, loop setting or research demand and compare.'))),
+              h('p', null, 'Cabin range ' + issOpsResultText(thermalModel.minCabin, 2, [18, 27]) + ' to ' + issOpsResultText(thermalModel.maxCabin, 2, [18, 27]) + ' °C. ' + (thermalModel.firstLimitMinute === null ? 'The radiator continues to reject heat during eclipse, while both temperatures respond gradually.' : (thermalModel.firstLimitMinute === 0 ? 'The cabin starts outside the comfort band.' : 'The first comfort boundary is reached at T+' + thermalModel.firstLimitMinute.toFixed(1) + ' min.') + ' Adjust area, loop setting or research demand and compare.'))),
             h('details', { className: 'iss-physics-note' }, h('summary', null, 'Thermal model and assumptions'),
               h('p', null, 'Two coupled heat stores represent cabin/equipment and external coolant/radiator. Heat capacity makes temperature continuous through sunlight and eclipse. The coolant carries Q = K(Tc − Tr). The radiator emits εσA(Tr⁴ − 3⁴), with absolute temperatures in kelvin; σ = 5.670374419 × 10⁻⁸ W/m²/K⁴.'),
               h('p', null, 'Illustrative values: 24 MJ/K cabin capacity, 6 MJ/K radiator capacity, radiator starting at 4 °C, emissivity 0.85, up to 320 m² radiating area and up to 4 kW/K loop conductance. The selected loop percentage scales conductance; it is not a fluid-dynamics model. Heat input is 72% of delivered electrical power plus 100 W per crew member. No electrical supply stops the modeled pump; crew heat remains.'),
@@ -14900,9 +16026,9 @@
             h('div', { className: 'iss-attitude-clock' },
               h('div', { className: 'iss-attitude-clock-heading' }, h('strong', null, 'T+' + orbitMinute.toFixed(1) + ' min'), h('span', null, phaseText)),
               h(issExperimentPlayback, { React: React, id: 'attitude', t: __alloT, value: orbitMinute * 60, max: 5520, speeds: [60,300,600], speedLabels: ['1 min/s','5 min/s','10 min/s'], resetKey: [cmg,config.disturbance,config.inertia,config.dump,config.burnMinute,config.thrust,config.fuel,!!d.opsAttitudeSeekToken].join(':'), onAdvance: function (seconds) { upd({ opsOrbitMinute: seconds / 60 }); } }),
-              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-attitude-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(1) + ' min')),
-                h('input', { id: 'iss-attitude-time', type: 'range', min: 0, max: 92, step: .1, value: orbitMinute, 'aria-describedby': 'iss-attitude-graph-help',
-                  'aria-valuetext': __alloFill(__alloT('stem.spacestation.attitude_time_value', '{minute} minutes; gyro momentum {percent} percent; pointing change {angle} degrees'), { minute: orbitMinute.toFixed(1), percent: current.percent.toFixed(1), angle: current.angleDeg.toFixed(2) }), onChange: function (event) { seek(Number(event.target.value)); } }))),
+              h('label', { className: 'iss-experiment-control', htmlFor: 'iss-attitude-time' }, h('span', null, 'Inspect orbit time', h('strong', null, orbitMinute.toFixed(2) + ' min')),
+                h('input', { id: 'iss-attitude-time', type: 'range', min: 0, max: 92, step: 'any', value: orbitMinute, 'aria-describedby': 'iss-attitude-graph-help',
+                  'aria-valuetext': __alloFill(__alloT('stem.spacestation.attitude_time_value', '{minute} minutes; gyro momentum {percent} percent; pointing change {angle} degrees'), { minute: orbitMinute.toFixed(2), percent: current.percent.toFixed(1), angle: current.angleDeg.toFixed(2) }), onChange: function (event) { seek(Number(event.target.value)); }, onKeyDown: function (event) { seekLabTimeKey(event, seek); } }))),
             h('div', { className: 'iss-attitude-workbench' },
               h('div', { className: 'iss-attitude-scene', 'data-attitude-phase': current.phase, 'data-attitude-focus': focus },
                 h('div', { className: 'iss-attitude-scene-heading' }, h('strong', { style: { color: phaseColor } }, phaseText), h('span', null, 'Actual angle · camera auto-fit')),
@@ -14979,7 +16105,7 @@
             h('div', { className: 'iss-attitude-charts' }, chart('momentum','Gyro momentum · % of capacity','percent',100,'#c4b5fd','%'), chart('angle','Station pointing change · degrees','angleDeg',angleMax,'#fdba74','°')),
             h('div', { className: 'iss-attitude-chart-key' }, h('span', null, 'Amber line: 80% caution'), h('span', null, 'Orange band: thruster burn'), showReference ? h('span', null, 'Dashed: same setup without a burn') : null),
             showReference ? h('p', { className: 'iss-attitude-comparison', 'data-attitude-comparison': true }, 'At this moment: planned burn ' + current.angleDeg.toFixed(2) + '° pointing change · no burn ' + reference.angleDeg.toFixed(2) + '°. Both runs use the same starting momentum, inertia and disturbance.') : null,
-            h('p', { className: 'iss-attitude-help', id: 'iss-attitude-graph-help' }, 'Drag or tap either graph to inspect. Arrow keys on the time slider move by 0.1 minute. Inspection pauses playback; changing the setup starts a new run.'),
+            h('p', { className: 'iss-attitude-help', id: 'iss-attitude-graph-help' }, 'Drag or tap either graph to inspect. Slider arrow keys move 0.1 minute; Page Up/Down move 1 minute; Home/End select the orbit endpoints. Inspection pauses playback; changing the setup starts a new run.'),
             h('div', { className: 'iss-experiment-actions' }, eventButton('start','Orbit start',0), eventButton('capacity','Capacity limit',attitudeModel.firstCapacity), eventButton('burn-start','Burn start',attitudeModel.burnStart), eventButton('burn-end','Burn end',attitudeModel.burnEnd), eventButton('end','Orbit end',5520)),
             h('div', { className: 'iss-attitude-budget' },
               reading('disturbance-impulse','Disturbance added',signed(current.disturbanceImpulse / 1000,2) + ' kN·m·s','External angular impulse since orbit start','#fdba74'),
@@ -14989,7 +16115,7 @@
             h('p', { className: 'iss-attitude-balance', 'data-attitude-balance': true }, 'Momentum balance: initial ' + (attitudeModel.initial / 1000).toFixed(2) + ' + disturbance ' + (current.disturbanceImpulse / 1000).toFixed(2) + ' − thrusters ' + Math.abs(current.thrusterImpulse / 1000).toFixed(2) + ' = gyro ' + (current.gyro / 1000).toFixed(2) + ' + station ' + (current.body / 1000).toFixed(2) + ' kN·m·s. Internal gyro torque does not change the total. Display values are rounded.'),
             h('div', { className: 'iss-attitude-outcome', 'data-attitude-outcome': outcome },
               h('strong', null, outcome === 'drifting' ? 'Momentum capacity is exhausted. The station continues to drift.' : outcome === 'offset' ? 'The rotation stops, but the pointing offset remains.' : 'The gyros keep the starting orientation throughout this orbit.'),
-              h('p', null, 'Orbit peak ' + attitudeModel.peakPercent.toFixed(1) + '% · final pointing change ' + attitudeEnd.angleDeg.toFixed(2) + '° · propellant used ' + attitudeEnd.fuelUsed.toFixed(3) + ' kg. ' + (outcome === 'offset' ? 'Rate hold stops further rotation; a separate pointing maneuver would be needed to return to the starting orientation.' : outcome === 'drifting' ? 'Try an earlier burn or allocate more propellant, then compare the no-burn curve.' : 'The model continues to accumulate disturbance momentum after a burn.'))),
+              h('p', null, 'Orbit peak ' + issOpsResultText(attitudeModel.peakPercent, 1, [80, 100]) + '% · final pointing change ' + attitudeEnd.angleDeg.toFixed(2) + '° · propellant used ' + attitudeEnd.fuelUsed.toFixed(3) + ' kg. ' + (outcome === 'offset' ? 'Rate hold stops further rotation; a separate pointing maneuver would be needed to return to the starting orientation.' : outcome === 'drifting' ? 'Try an earlier burn or allocate more propellant, then compare the no-burn curve.' : 'The model continues to accumulate disturbance momentum after a burn.'))),
             h('details', { className: 'iss-physics-note' }, h('summary', null, 'Attitude model and assumptions'),
               h('p', null, 'A one-axis ideal rate-hold controller assigns total angular momentum to a ±19,000 N·m·s gyro envelope. Any excess belongs to station rotation: ω = Hstation / I. External angular impulse changes the total; gyro torque only transfers momentum internally. Constant-torque phases are integrated exactly, split at gyro capacity, burn start and cutoff. There is no artificial damping or instant momentum reset.'),
               h('p', null, 'Illustrative values: station inertia 40–160 million kg·m², a constant 0–4 N·m disturbance, and two 1–15 N thrusters at opposite 8 m moment arms. The couple torque is 2Fr and fuel flow is 2F / (220 s × 9.80665 m/s²). A planned burn stops at 8% gyro momentum, fuel exhaustion or orbit end. The controller can exchange up to the required 240 N·m in this simplified envelope. Thrusters form a pure couple, so translational motion is omitted.'),
@@ -15979,12 +17105,37 @@
         }
         var content=mode==='power'?renderPower():mode==='eclss'?renderEclss():mode==='thermal'?renderThermal():mode==='attitude'?renderAttitude():mode==='debris'?renderDebris():mode==='human'?renderHuman():mode==='emergency'?renderEmergency():mode==='rendezvous'?renderRendezvous():renderIntegrated();
         return h('div',{'data-iss-operations':mode},
-          h('div',{className:'iss-ops-hero'},h('div',null,h('div',{className:'iss-eyebrow'},h('span',{className:'iss-live-dot','aria-hidden':'true'}),'Mission operations sandbox'),h('h3',{style:{margin:'0 0 5px',color:TEXT,fontSize:20}},'Keep a city-sized spacecraft alive.'),h('p',{style:{margin:0,maxWidth:690,color:SOFT,fontSize:12,lineHeight:1.55}},'Change crew demand, orbital lighting, recovery efficiency, cooling, and risk controls. Explore orbital systems, water reserves, airlock pressure, and microsecond debris impacts.')),h('div',{className:'iss-ops-health',style:{color:healthColor},'aria-label':__alloFill(__alloT('stem.spacestation.a11y_station_health_percent', 'Station health {value1} percent'), { value1: health })},health+'%')),
+          h('style', null, '.iss-trajectory-export{margin-top:14px;padding-top:12px;border-top:1px solid #607d94}.iss-trajectory-export button{min-height:44px;padding:10px 14px;border:1px solid #7ba1b9;border-radius:8px;background:#14354c;color:#e0f2fe;font-size:12px;font-weight:750;line-height:1.5;cursor:pointer}.iss-trials .iss-trajectory-export p{font-size:11px;line-height:1.6}.iss-trials .iss-trajectory-export [role=status]{font-size:12px;color:#e0f2fe;font-weight:650}@media(max-width:520px){.iss-trajectory-export button{width:100%}}@media(forced-colors:active){.iss-trajectory-export,.iss-trajectory-export button{border-color:CanvasText!important}.iss-trajectory-export button{background:Canvas!important;color:CanvasText!important}}'),
+          h('style', null, '.iss-trajectory-readout-title{margin:14px 0 0;font-size:13px;line-height:1.5;color:#e0f2fe}.iss-trajectory [tabindex]:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-trajectory-events{margin-top:14px;border:1px solid #607d94;border-radius:9px;padding:10px;background:#10283b}.iss-trajectory-events summary{min-height:32px;font-size:13px;font-weight:800;line-height:1.5;color:#bae6fd;cursor:pointer}.iss-trajectory-event-nav{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.iss-trajectory-event-nav button{min-height:44px;padding:9px 14px;border:1px solid #7ba1b9;border-radius:8px;background:#14354c;color:#e0f2fe;font-size:12px;font-weight:750;cursor:pointer}.iss-trajectory-event-nav button:disabled{opacity:.55;cursor:default}.iss-trajectory-event-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}.iss-trajectory-event-group{min-width:0}.iss-trajectory-event-group h6{margin:0 0 9px;font-size:13px;line-height:1.5;color:#e0f2fe}.iss-trajectory-event-group ol{margin:0;padding:0;list-style:none;display:grid;gap:7px}.iss-trajectory-event-group button{display:grid;width:100%;min-width:0;min-height:54px;gap:4px;padding:10px;text-align:left;background:#0b1c2d;color:#e2e8f0;border:1px solid #607d94;border-radius:8px;line-height:1.5;font-size:12px;cursor:pointer}.iss-trajectory-event-group button strong{font:750 12px/1.5 ui-monospace,monospace;color:#e0f2fe}.iss-trajectory-event-group button small{font-size:11px;color:#b8cada}.iss-trajectory-event-group button[aria-pressed=true]{outline:2px solid #fbbf24;outline-offset:-3px}.iss-trajectory-event-group[data-ops-trajectory-event-group=baseline] h6{border-bottom:2px dashed #fde68a;padding-bottom:7px}.iss-trajectory-event-group[data-ops-trajectory-event-group=comparison] h6{border-bottom:2px solid #67e8f9;padding-bottom:7px}.iss-trials .iss-trajectory-event-scope{font-size:11px}@media(max-width:600px){.iss-trajectory-event-groups{grid-template-columns:1fr}.iss-trajectory-event-nav button{flex:1 1 100%}}@media(forced-colors:active){.iss-trajectory-events,.iss-trajectory-event-nav button,.iss-trajectory-event-group button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-trajectory-readout-title,.iss-trajectory-events :is(summary,h6){color:CanvasText!important;border-color:CanvasText!important}.iss-trajectory-event-group button[aria-pressed=true]{outline-color:Highlight}.iss-trajectory-event-nav button:disabled{color:GrayText!important;opacity:1}}'),
+          h('style', null, '.iss-trajectory{margin:14px 0;border:1px solid #607d94;border-radius:10px;background:#0d2032;min-width:0;overflow-wrap:anywhere}.iss-trajectory h5{margin:0}.iss-trajectory-toggle{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;border:0;border-radius:9px;padding:12px;background:transparent;color:#bae6fd;text-align:left;font-size:14px;font-weight:800;cursor:pointer}.iss-trajectory [data-ops-trajectory-panel]{padding:0 12px 12px;min-width:0}.iss-trajectory-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.iss-trajectory-reading{padding:12px;border:1px solid #607d94;border-radius:9px;min-width:0}.iss-trajectory-reading>span,.iss-trajectory-reading>small{display:block;font-size:12px;line-height:1.5;color:#cbd5e1}.iss-trajectory-reading>strong{display:block;margin:7px 0;font:800 21px/1.5 ui-monospace,monospace;color:#e0f2fe}.iss-trajectory-reading[data-ops-trajectory-reading=baseline]{border-top:3px dashed #fde68a}.iss-trajectory-reading[data-ops-trajectory-reading=comparison]{border-top:3px solid #67e8f9}.iss-trials .iss-trajectory-delta{font-weight:750;color:#e0f2fe}.iss-trajectory-plot{display:grid;grid-template-columns:52px minmax(0,1fr);gap:6px;min-width:0}.iss-trajectory-y{height:220px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:4px 0;font:10px/1.5 ui-monospace,monospace;color:#cbd5e1}.iss-trajectory-graph{min-width:0}.iss-root .iss-trajectory-graph svg{display:block;width:100%;height:220px;min-width:0!important;touch-action:none;background:#081524;border:1px solid #607d94;border-radius:7px;cursor:crosshair}.iss-trajectory-grid{stroke:#334b61;stroke-width:1}.iss-trajectory-limit{stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:2 5}.iss-trajectory-line{fill:none;stroke-width:2.5;stroke-linejoin:round}.iss-trajectory-baseline{stroke:#fde68a;stroke-dasharray:8 5}.iss-trajectory-comparison{stroke:#67e8f9}.iss-trajectory-cursor{stroke:#e2e8f0;stroke-width:1;stroke-dasharray:3 3}.iss-trajectory-marker-a{stroke:#fde68a;fill:#081524;stroke-width:2}.iss-trajectory-marker-b{stroke:#67e8f9;fill:#67e8f9;stroke-width:1.5}.iss-trajectory-x{display:flex;justify-content:space-between;gap:4px;margin-top:5px;font:10px/1.5 ui-monospace,monospace;color:#cbd5e1}.iss-trials .iss-trajectory-axis-title{text-align:center;font-size:11px}.iss-trajectory-legend{display:flex;flex-wrap:wrap;gap:9px 20px;font-size:12px;color:#e2e8f0}.iss-trajectory-legend span{display:flex;align-items:center;gap:7px}.iss-trajectory-legend i{width:25px;border-top:3px solid #67e8f9;flex-shrink:0}.iss-trajectory-legend .iss-trajectory-key-a{border-color:#fde68a;border-top-style:dashed}.iss-trials .iss-trajectory-scale{font-size:11px;color:#cbd5e1}.iss-trials .iss-trajectory-time-label{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.iss-trajectory input[type=range]{display:block;width:100%;min-width:0;min-height:36px;margin:0;accent-color:#67e8f9}.iss-trajectory :is(button,select,input):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}@media(max-width:520px){.iss-trajectory-readings{grid-template-columns:1fr}.iss-trajectory-reading>strong{font-size:20px}.iss-trajectory-plot{grid-template-columns:44px minmax(0,1fr);gap:4px}}@media(forced-colors:active){.iss-trajectory,.iss-trajectory-toggle,.iss-trajectory-reading,.iss-root .iss-trajectory-graph svg{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-trajectory :is(p,span,strong,small,label){color:CanvasText!important}.iss-trajectory-grid,.iss-trajectory-limit{stroke:GrayText}.iss-trajectory-line,.iss-trajectory-cursor,.iss-trajectory-marker-a,.iss-trajectory-marker-b{stroke:CanvasText}.iss-trajectory-marker-a{fill:Canvas}.iss-trajectory-marker-b{fill:CanvasText}.iss-trajectory-legend i{border-color:CanvasText!important}}'),
+          h('style', null, '.iss-trial-inspector{margin:14px 0;padding:12px;border:1px solid #607d94;border-radius:10px;background:#102338;min-width:0}.iss-trial-inspector h5{font-size:14px;color:#bae6fd;margin:0}.iss-trial-inspector-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.iss-trial-inspector-actions button{width:100%;min-height:44px;padding:10px 12px;border:1px solid #7ba1b9;border-radius:8px;background:#14354c;color:#e0f2fe;font-size:12px;font-weight:750;line-height:1.5;cursor:pointer}.iss-trial-inspector-actions button:disabled{opacity:.6;cursor:default}@media(max-width:520px){.iss-trial-inspector-actions{grid-template-columns:1fr}}@media(forced-colors:active){.iss-trial-inspector,.iss-trial-inspector-actions button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-trial-inspector h5{color:CanvasText!important}.iss-trial-inspector-actions button:disabled{color:GrayText!important;opacity:1}}'),
+          h('style', null, '.iss-trial-inactive{margin:12px 0;border:1px solid #475569;border-radius:9px;padding:10px;background:#111e34}.iss-trial-inactive summary{min-height:24px;font-size:12px;font-weight:750;cursor:pointer;color:#bae6fd}.iss-trial-changes small{display:block;font-size:11px;color:#b8cada}.iss-trial-table td[data-result-missing]{color:#b8cada}@media(forced-colors:active){.iss-trial-inactive{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-trial-table td[data-result-missing]{color:CanvasText!important}}'),
+          h('style', null, '.iss-ops-telemetry .iss-ops-schematic svg{display:block;width:100%;height:auto;min-width:0!important}'),
+          h('style', null, '@media(forced-colors:active){.iss-ops-telemetry .iss-network-focus button,.iss-ops-telemetry .iss-network-detail{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-ops-telemetry .iss-network-focus button[aria-pressed="true"]{outline:2px solid Highlight;outline-offset:-4px}}'),
+          h('style', null, '.iss-ops-telemetry{margin:14px 0;padding:14px;border:1px solid #45667e;border-radius:14px;background:#0b192a;color:#e2e8f0;min-width:0}.iss-telemetry-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}.iss-telemetry-heading h4{margin:0;font-size:16px;color:#e0f2fe}.iss-telemetry-heading>strong{font:800 13px/1.5 ui-monospace,monospace;color:#a5f3fc}.iss-ops-telemetry>p{font-size:12px;line-height:1.6;color:#cbd5e1;margin:10px 0}.iss-telemetry-readings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}.iss-telemetry-readings button{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;padding:12px;border:1px solid #607d94;border-radius:10px;background:#12273b;color:#e2e8f0;text-align:left;font:600 12px/1.5 Inter,system-ui,sans-serif;cursor:pointer;overflow-wrap:anywhere}.iss-telemetry-readings button strong{font:800 20px/1.5 ui-monospace,monospace;color:#e0f2fe}.iss-telemetry-readings button small{font-size:11px;color:#b8cada}.iss-telemetry-inspect{margin-top:auto;font-size:11px;color:#a5f3fc}.iss-ops-telemetry .iss-experiment-playback{padding-top:10px;border-top:1px solid #45667e}.iss-ops-telemetry .iss-experiment-playback button{min-height:44px;padding:9px 14px;border:1px solid #7ba1b9;border-radius:8px;background:#14354c;color:#e0f2fe;font-size:12px;font-weight:750;cursor:pointer}.iss-ops-telemetry .iss-experiment-playback button:disabled{opacity:.55;cursor:default}.iss-ops-telemetry :is(button,select):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}@media(max-width:800px){.iss-telemetry-readings{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.iss-ops-telemetry{padding:10px}.iss-telemetry-readings{grid-template-columns:1fr}.iss-telemetry-readings button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px}.iss-telemetry-readings button strong{font-size:18px}.iss-telemetry-readings button small,.iss-telemetry-inspect{grid-column:1/-1}.iss-ops-telemetry .iss-experiment-playback label{flex-wrap:wrap}}@media(forced-colors:active){.iss-ops-telemetry,.iss-telemetry-readings button,.iss-ops-telemetry .iss-experiment-playback :is(button,select){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-ops-telemetry :is(h4,p,span,strong,small,label){color:CanvasText!important}}'),
+          h('style', null, '.iss-rule-comparison{padding:12px;margin:12px 0;border:1px solid #526a83;border-radius:10px;background:#0c1c2e}.iss-rule-comparison h5,.iss-trial-setup h5{margin:0 0 6px;font-size:13px;color:#bae6fd}.iss-trial-setup h5{margin-top:12px}.iss-rule-comparison ul{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;list-style:none;padding:0;margin:12px 0}.iss-rule-comparison li{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid #526a83;border-radius:8px;background:#13263a;font-size:11px;color:#e2e8f0;min-width:0;overflow-wrap:anywhere}.iss-rule-comparison li strong{font:800 12px/1.5 ui-monospace,monospace;color:#cbd5e1}.iss-rule-comparison li small{font-size:10px;line-height:1.5;color:#cbd5e1}.iss-rule-comparison [data-change-state="resolved"] strong{color:#86efac}.iss-rule-comparison [data-change-state="introduced"] strong{color:#fda4af}.iss-rule-comparison [data-change-state="still-check"] strong{color:#fde68a}.iss-trial-comparison-source{padding:0 0 10px;border-bottom:1px solid #475569}.iss-trials .iss-trial-load-notice{padding:12px;border:1px solid #7dd3fc;border-radius:9px;background:#12344c;color:#e0f2fe}@media(max-width:900px){.iss-rule-comparison ul{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:520px){.iss-rule-comparison ul{grid-template-columns:1fr}.iss-rule-comparison li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px}.iss-rule-comparison li small{grid-column:1/-1}}@media(forced-colors:active){.iss-rule-comparison,.iss-rule-comparison li,.iss-trials .iss-trial-load-notice{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-rule-comparison :is(h5,strong,small,span),.iss-trial-setup h5{color:CanvasText!important}}'),
+          h('style', null, '.iss-ops-events,.iss-ops-inspection{margin:14px 0;padding:14px;border:1px solid #52728a;border-radius:12px;background:#0b192b;color:#e2e8f0;min-width:0}.iss-ops-events summary{padding:6px 0;min-height:32px;color:#bae6fd;font-size:14px;font-weight:800;cursor:pointer}.iss-ops-events p,.iss-ops-inspection p{margin:9px 0;font-size:12px;line-height:1.6;color:#cbd5e1}.iss-ops-events ol{list-style:none;margin:12px 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.iss-ops-events li{min-width:0}.iss-ops-events button{display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%;height:100%;min-height:94px;text-align:left;overflow-wrap:anywhere}.iss-ops-events button,.iss-ops-inspection button{padding:10px 12px;border:1px solid #607a91;border-radius:9px;background:#14273b;color:#e2e8f0;font:600 12px/1.4 Inter,system-ui,sans-serif;cursor:pointer}.iss-ops-events button strong{color:#a5f3fc;font:800 13px/1.4 ui-monospace,monospace}.iss-ops-events button small{color:#b4c5d6;font-size:10px}.iss-ops-events button[aria-pressed="true"]{border-color:#7dd3fc;box-shadow:inset 3px 0 #7dd3fc;background:#16364b}.iss-ops-inspection h4{margin:0;color:#bae6fd;font-size:15px}.iss-ops-inspection button{min-height:44px}.iss-ops-events :is(summary,button):focus-visible,.iss-ops-inspection :is(h4,button):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-ops-rule-inspect{display:block;margin-top:5px;font-size:10px;color:#cbd5e1}@media(max-width:760px){.iss-ops-events ol{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.iss-ops-events ol{grid-template-columns:1fr}.iss-ops-events button{min-height:84px}}@media(forced-colors:active){.iss-ops-events,.iss-ops-inspection,.iss-ops-events button,.iss-ops-inspection button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-ops-events :is(summary,p,strong,span,small),.iss-ops-inspection :is(h4,p),.iss-ops-rule-inspect{color:CanvasText!important}.iss-ops-events button[aria-pressed="true"]{outline:2px solid Highlight;outline-offset:-4px}}'),
+          h('style', null, '.iss-lab-notebook{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;margin:0 0 14px;padding:14px;border:1px solid #4e6b87;border-radius:12px;background:#0b1c30;color:#e2e8f0}.iss-lab-notebook h4{margin:0;font-size:14px;color:#bae6fd}.iss-lab-notebook p{font-size:11px;line-height:1.6;margin:5px 0 0;color:#cbd5e1}.iss-lab-notebook .iss-trial-actions{align-self:center;margin:0}.iss-lab-notebook details,.iss-lab-notebook>p{grid-column:1/-1}.iss-lab-notebook summary{font-size:12px;min-height:26px;cursor:pointer;color:#bae6fd}.iss-lab-notebook label{display:block;margin:8px 0 5px;font-size:11px}.iss-lab-notebook textarea{width:100%;min-height:72px;resize:vertical;padding:9px;border:1px solid #64748b;border-radius:8px;background:#111e34;color:#f1f5f9;font:12px/1.5 Inter,system-ui,sans-serif}.iss-lab-notebook [data-ops-trial-notice]{color:#a7f3d0}@media(max-width:760px){.iss-lab-notebook{grid-template-columns:1fr}.iss-lab-notebook .iss-trial-actions{display:grid;grid-template-columns:1fr 1fr}.iss-lab-notebook .iss-trial-actions button{padding:9px}}@media(forced-colors:active){.iss-lab-notebook,.iss-lab-notebook textarea,.iss-lab-notebook button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-lab-notebook :is(h4,p,summary,label){color:CanvasText!important}}'),
+            h('style', null,
+              '.iss-trials{margin-top:16px;padding:16px;border:1px solid #475569;border-radius:14px;background:#0b1425;color:#e2e8f0;min-width:0}.iss-trials h4{margin:0 0 8px;font-size:17px;color:#e0f2fe}.iss-trials p{font-size:12px;line-height:1.6;margin:9px 0;color:#cbd5e1}.iss-trials label{display:block;font-size:12px;font-weight:750;margin:12px 0 6px}.iss-trials textarea,.iss-trials select{box-sizing:border-box;width:100%;min-width:0;border:1px solid #64748b;border-radius:8px;background:#111e34;color:#f1f5f9;padding:10px;font:inherit;font-size:12px;line-height:1.5}.iss-trials textarea{resize:vertical;min-height:72px}.iss-trials textarea::placeholder{color:#a9b8cb}.iss-trials select{min-height:44px}.iss-trial-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.iss-trial-actions button{min-height:44px;padding:10px 14px;border:1px solid #64748b;border-radius:9px;background:#14233a;color:#e2e8f0;font-size:12px;font-weight:750;cursor:pointer}.iss-trial-actions .iss-trial-record{border-color:#7dd3fc;background:#12344c;color:#e0f2fe}.iss-trial-actions button:disabled{opacity:.55;cursor:default}.iss-trials :is(button,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-trial-selectors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid #334155}.iss-trials .iss-trial-scope{color:#a9b8cb;font-size:11px}.iss-trial-empty{padding:12px;border:1px dashed #475569;border-radius:8px}.iss-trial-changes{padding-left:20px;font-size:12px;line-height:1.7;overflow-wrap:anywhere}.iss-trial-table-wrap{overflow:auto;border:1px solid #475569;border-radius:9px}.iss-trial-table{width:100%;min-width:490px;border-collapse:collapse;font-size:12px}.iss-trial-table caption{padding:10px;text-align:left;color:#cbd5e1;font-size:11px;line-height:1.5;background:#111e34}.iss-trial-table th,.iss-trial-table td{padding:10px;text-align:left;border-top:1px solid #334155;font-variant-numeric:tabular-nums}.iss-trial-table thead th{color:#bae6fd;background:#14233a}.iss-trial-table th small,.iss-trial-table td small{display:block;font-size:10px;margin-top:4px;color:#a9b8cb}.iss-trial-table td small[data-result-state="go"]{color:#86efac}.iss-trial-table td small[data-result-state="check"]{color:#fda4af}.iss-trial-setup{margin:12px 0;border:1px solid #475569;border-radius:9px;padding:10px}.iss-trial-setup summary{min-height:24px;font-size:12px;font-weight:750;cursor:pointer;color:#bae6fd}.iss-trial-setup dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:11px}.iss-trial-setup dl>div{padding:7px;border-top:1px solid #334155}.iss-trial-setup dt{color:#cbd5e1}.iss-trial-setup dd{margin:3px 0 0;color:#f1f5f9}.iss-trial-note{white-space:pre-wrap;overflow-wrap:anywhere}.iss-trials .iss-replay-lane button{min-height:60px}.iss-ops-summary{padding:12px;border:1px solid currentColor;border-radius:12px;text-align:center;min-width:110px;font-size:11px;font-weight:800}.iss-ops-summary strong{display:block;font:900 25px ui-monospace,monospace}.iss-ops-summary span{display:block;margin-top:4px}.iss-ops-summary[data-state="check"]{color:#fda4af;background:#32141f}.iss-ops-summary[data-state="go"]{color:#86efac;background:#102a21}@media(max-width:520px){.iss-trials{padding:12px}.iss-trial-selectors{grid-template-columns:1fr;gap:0}.iss-trial-actions button{flex:1 1 100%}.iss-trial-setup dl{grid-template-columns:1fr}.iss-ops-summary{display:flex;align-items:center;justify-content:center;gap:8px}.iss-ops-summary span{margin:0}}@media(forced-colors:active){.iss-trials,.iss-trials textarea,.iss-trials select,.iss-trial-actions button,.iss-trial-table caption,.iss-trial-table thead th,.iss-ops-summary{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-trials :is(h4,p,label,summary,dt,dd,small,strong,span){color:CanvasText!important}.iss-trials .iss-mission-replay,.iss-trials .iss-replay-lane button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-trials .iss-replay-lane:before{background:CanvasText!important}}'),
+          h('div',{className:'iss-ops-hero'},h('div',null,h('div',{className:'iss-eyebrow'},h('span',{className:'iss-live-dot','aria-hidden':'true'}),'Mission operations sandbox'),h('h3',{style:{margin:'0 0 5px',color:TEXT,fontSize:20}},'Keep a city-sized spacecraft alive.'),h('p',{style:{margin:0,maxWidth:690,color:SOFT,fontSize:12,lineHeight:1.55}},'Change crew demand, orbital lighting, recovery efficiency, cooling, and risk controls. Explore orbital systems, water reserves, airlock pressure, and microsecond debris impacts.')),h('div',{className:'iss-ops-summary','data-ops-summary':true,'data-state':violatedRules.length?'check':'go','aria-label':trialOutcome(trialResults)},
+            h('strong',null,(5-violatedRules.length)+'/5'),h('span',null,trialText('rules', 'flight rules')),h('span',null,violatedRules.length?'CHECK':'GO'))),
           renderScenarioPresets(),
-          h('div',{className:'iss-ops-metrics',role:'list','aria-label':__alloT('stem.spacestation.a11y_station_flight_rules', 'Station flight rules')},flightRules.map(function(rule){return h('div',{key:rule.label,className:'iss-ops-metric',role:'listitem'},h('button',{type:'button','data-flight-rule':rule.mode,onClick:function(){setMode(rule.mode,rule.label==='Water loop'?'water':'air');},'aria-label':rule.label+' '+rule.value+'. Flight rule '+rule.rule+'. '+(rule.pass?'Go':'Attention')},h('span',{className:'iss-rule-heading'},h('span',{className:'iss-ops-metric-label'},rule.label),h('i',{className:'iss-rule-light'+(rule.pass?' is-go':' is-hold'),'aria-hidden':'true'})),h('strong',{className:'iss-ops-metric-value',style:{color:rule.color}},rule.value),h('small',null,'RULE '+rule.rule+' · '+(rule.pass?'GO':'CHECK')+(rule.mode==='power'?' · ORBIT MINIMUM':rule.mode==='thermal'?' · ORBIT RANGE':rule.mode==='attitude'||rule.label==='Cabin CO₂'?' · ORBIT PEAK':rule.label==='Water loop'?' · RECOVERY ONLY':''))));})),
+          h('div', { className: 'iss-ops-metrics', role: 'list', 'aria-label': __alloT('stem.spacestation.a11y_station_flight_rules', 'Station flight rules') }, flightRules.map(function (rule) {
+            var inspection = timeline.inspections[rule.id];
+            var cue = inspection.minute === null ? eventText('inspect_setup', 'Inspect recovery setup') : (rule.id === 'thermal' && rule.pass ? eventText('inspect_maximum', 'Inspect maximum temperature') : eventText('inspect_reading', 'Inspect limiting reading')) + ' · ' + eventTime(inspection.minute);
+            var accessible = __alloFill(eventText('rule_label', '{label} {value}. Flight rule {rule}. {status}. {action}'), { label: rule.label, value: rule.value, rule: rule.rule, status: rule.pass ? 'GO' : 'CHECK', action: cue });
+            return h('div', { key: rule.id, className: 'iss-ops-metric', role: 'listitem' }, h('button', { type: 'button', 'data-flight-rule': rule.mode, 'data-ops-rule': rule.id,
+              'aria-label': accessible,
+              onClick: function (event) { inspectRule(rule, event); } },
+              h('span', { className: 'iss-rule-heading' }, h('span', { className: 'iss-ops-metric-label' }, rule.label), h('i', { className: 'iss-rule-light' + (rule.pass ? ' is-go' : ' is-hold'), 'aria-hidden': 'true' })),
+              h('strong', { className: 'iss-ops-metric-value', style: { color: rule.color } }, rule.value),
+              h('small', null, 'RULE ' + rule.rule + ' · ' + (rule.pass ? 'GO' : 'CHECK') + (rule.id === 'power' ? ' · ORBIT MINIMUM' : rule.id === 'thermal' ? ' · ORBIT RANGE' : rule.id === 'water' ? ' · RECOVERY ONLY' : ' · ORBIT PEAK')),
+              h('span', { className: 'iss-ops-rule-inspect' }, cue)));
+          })),
           renderRuleStatus(),
-          h('div',{className:'iss-ops-modes',role:'group','aria-label':__alloT('stem.spacestation.a11y_operations_simulation', 'Operations simulation')},modes.map(function(m){var on=mode===m[0];return h('button',{className:'iss-ops-mode',key:m[0],type:'button','aria-pressed':on,onClick:function(){setMode(m[0]);},style:{borderRadius:9,border:'1px solid '+(on?'#38bdf8':'#334155'),background:on?'rgba(14,165,233,.18)':PANEL,color:on?'#bae6fd':TEXT,fontSize:10.5,fontWeight:850,cursor:'pointer'}},m[1]+' '+m[2]);})),content,
-          h('div',{className:'iss-ops-debrief'},h('strong',{style:{color:'#7dd3fc',fontSize:11}},'FLIGHT DIRECTOR DEBRIEF'),h('p',{style:{margin:'5px 0 0',color:TEXT,fontSize:11.5,lineHeight:1.55}},health>=75?'All modeled systems retain useful margin. Now increase research load or crew size and find the boundary.':health>=50?'The station is operating with thin margin. Inspect the red or amber subsystem before the next orbit.':'Mission rule violation: one or more life-critical systems require immediate correction.'),(Array.isArray(d.opsLog) ? d.opsLog : []).length?h('div',{className:'iss-ops-log',role:'log'},(Array.isArray(d.opsLog) ? d.opsLog : []).map(function(entry,i){return h('div',{key:i},entry);})):null));
+          h('div',{className:'iss-ops-modes',role:'group','aria-label':__alloT('stem.spacestation.a11y_operations_simulation', 'Operations simulation')},modes.map(function(m){var on=mode===m[0];return h('button',{className:'iss-ops-mode',key:m[0],type:'button','aria-pressed':on,onClick:function(){setMode(m[0]);},style:{borderRadius:9,border:'1px solid '+(on?'#38bdf8':'#334155'),background:on?'rgba(14,165,233,.18)':PANEL,color:on?'#bae6fd':TEXT,fontSize:10.5,fontWeight:850,cursor:'pointer'}},m[1]+' '+m[2]);})),renderInspection(),renderLabNotebook(),content,
+          h('div',{className:'iss-ops-debrief'},h('strong',{style:{color:'#7dd3fc',fontSize:11}},'FLIGHT DIRECTOR DEBRIEF'),h('p',{style:{margin:'5px 0 0',color:TEXT,fontSize:11.5,lineHeight:1.55}},violatedRules.length?trialText('debrief_check', 'Flight rules to check: ')+violatedRules.map(function(rule){return rule.label;}).join(', ')+'. '+concernCopy:trialText('debrief_go', 'All five modeled flight rules pass for this setup. Record a baseline, change one control and compare the evidence. These classroom rules do not certify real spacecraft safety.')),(Array.isArray(d.opsLog) ? d.opsLog.filter(function(entry){return typeof entry==='string';}) : []).length?h('div',{className:'iss-ops-log',role:'log'},d.opsLog.filter(function(entry){return typeof entry==='string';}).slice(-5).map(function(entry,i){return h('div',{key:i},entry);})):null));
       }
       // ── Tabs ──
       // The 3-D station leads: it is the thing the tool is named after, it is
@@ -18259,11 +19410,13 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
 
       function renderLaunchRoutes() {
         return h('div', { className: 'iss-launch-routes', role: 'group', 'aria-label': __alloT('stem.spacestation.launch_routes', 'Choose a station experiment') },
+          h('style', null, '.iss-launch-routes{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:1100px){.iss-launch-routes{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.iss-launch-routes{grid-template-columns:1fr}}'),
           [
             ['interior', __alloT('stem.spacestation.launch_crew', 'Work a crew shift'), __alloT('stem.spacestation.launch_crew_detail', 'Float, catch cargo, and investigate momentum')],
+            ['operations', __alloT('stem.spacestation.launch_operations', 'Investigate station systems'), __alloT('stem.spacestation.launch_operations_detail', 'Test a change, record evidence, and compare trials')],
             ['orbit', __alloT('stem.spacestation.launch_orbit', 'Engineer an orbit'), __alloT('stem.spacestation.launch_orbit_detail', 'Plan two burns and explore atmospheric drag')],
             ['missions', __alloT('stem.spacestation.launch_missions', 'Take the flight controls'), __alloT('stem.spacestation.launch_missions_detail', 'Manage thrust, fuel, and a precise docking')]
-          ].map(function (route, index) { return h('button', { key: route[0], type: 'button', className: 'iss-launch-route', 'data-iss-launch': route[0], onClick: function () { selectTab(TABS.findIndex(function (candidate) { return candidate.id === route[0]; }), true); } },
+          ].map(function (route, index) { return h('button', { key: route[0], type: 'button', className: 'iss-launch-route', 'data-iss-launch': route[0], 'data-iss-launch-route': route[0], onClick: function () { selectTab(TABS.findIndex(function (candidate) { return candidate.id === route[0]; }), true); } },
             h('span', { className: 'iss-launch-number', 'aria-hidden': 'true' }, '0' + (index + 1)),
             h('span', null, h('strong', null, route[1]), h('small', null, route[2])), h('span', { className: 'iss-launch-arrow', 'aria-hidden': 'true' }, '↗')); }));
       }

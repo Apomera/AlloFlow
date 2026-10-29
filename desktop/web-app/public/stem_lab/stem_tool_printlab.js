@@ -22,6 +22,11 @@
   var GEOMETRY_EDGE_CLEARANCE_MM = 5;
   var DEFAULT_PRINTER_PROFILE = { name: 'School printer', bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250, planningClearanceMm: GEOMETRY_EDGE_CLEARANCE_MM, nozzleMm: 0.4, maxTriangles: 250000, maxBytes: MAX_FILE_BYTES };
   var TABS = ['Design', 'Preflight', 'Materials', 'Submit'];
+  var PRINTER_FIELDS = [
+    ['bedWidthMm','Bed width (mm)',50,1000],['bedDepthMm','Bed depth (mm)',50,1000],['bedHeightMm','Build height (mm)',50,1000],
+    ['planningClearanceMm','Planning clearance (mm)',0,50],['nozzleMm','Nozzle diameter (mm)',0.1,2]
+  ];
+  function printerProfileDraft(profile) { var draft={};PRINTER_FIELDS.forEach(function(field){draft[field[0]]=String(profile[field[0]]);});return draft; }
   var SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus', 'lathe', 'extrude'];
   // Drawn shapes carry a profile. These mirror Prim3D's DEFAULT_PROFILES and
   // normalizeProfile so the cold path (Prim3D not loaded yet) normalizes a
@@ -986,6 +991,7 @@
       // A legacy stored activeTab is left as it is: rewriting it would change the key once more.
       var storedStage = TABS.indexOf(stored.printStage) >= 0 ? stored.printStage : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab : 'Design');
       var _tab = React.useState(pendingHandoff && !resumedGeometry || geometryGone ? 'Design' : storedStage), activeTab = _tab[0], setActiveTab = _tab[1];
+      var workflowRootRef = React.useRef(null);
       var _ready = React.useState(!!(window.AlloModules && window.AlloModules.PrintableModel && window.AlloModules.Prim3D)), runtimeReady = _ready[0], setRuntimeReady = _ready[1];
       var _profilePoints = React.useState({}), profilePoints = _profilePoints[0], setProfilePoints = _profilePoints[1];
       var _runtimeError = React.useState(''), runtimeError = _runtimeError[0], setRuntimeError = _runtimeError[1];
@@ -996,8 +1002,24 @@
       var _sourceName = React.useState(pendingHandoff ? pendingHandoff.sourceName : ''), sourceName = _sourceName[0], setSourceName = _sourceName[1];
       var _hash = React.useState(''), contentHash = _hash[0], setContentHash = _hash[1];
       var _unit = React.useState(initialUnitMm), unitMm = _unit[0], setUnitMm = _unit[1];
+      var _unitDraft = React.useState(String(initialUnitMm)), unitDraft = _unitDraft[0], setUnitDraft = _unitDraft[1];
+      var _unitError = React.useState(''), unitError = _unitError[0], setUnitError = _unitError[1];
+      var unitInputRef = React.useRef(null), unitFocusRequested = React.useRef(false);
+      var unitHasDraft = unitDraft.trim() === '' || Number(unitDraft) !== unitMm;
+      React.useEffect(function () {
+        if (unitFocusRequested.current && activeTab === 'Design' && unitInputRef.current) {
+          unitFocusRequested.current = false; unitInputRef.current.focus();
+        }
+      }, [activeTab, unitError]);
       var _report = React.useState(initialReport), report = _report[0], setReport = _report[1];
-      var _status = React.useState(resumedGeometry ? 'The Geometry World build you sent is still open here until this page is closed or reloaded. If you changed it since, send it again from Geometry World.' : pendingHandoff ? (pendingHandoff.sourceTool === 'artStudio' ? 'Loaded an Art Studio sculpture locally as an editable primitive recipe. Set its physical scale, preview, and run the advisory preflight.' : pendingHandoff.sourceTool === 'archStudio' ? 'Loaded an Architecture Studio build locally. Confirm its scale, preview, and advisory preflight.' : 'Loaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.') : geometryGone ? 'The Geometry World build you were checking closed with the page, because models stay only in memory. Send it again from Geometry World to keep going.' : 'Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
+      var reportFocusRequested=React.useRef(false);
+      var _reportRun=React.useState(0),reportRun=_reportRun[0],setReportRun=_reportRun[1];
+      React.useLayoutEffect(function(){
+        if(!reportFocusRequested.current)return;reportFocusRequested.current=false;
+        var root=workflowRootRef.current,target=root && root.querySelector('[data-print-report-heading]');
+        if(activeTab==='Preflight' && root && root.isConnected && target)target.focus();
+      },[report,activeTab,reportRun]);
+      var _status = React.useState(resumedGeometry ? 'The Geometry World build you sent is still open here until this page is closed or reloaded. If you changed it since, send it again from Geometry World.' : pendingHandoff ? (pendingHandoff.sourceTool === 'artStudio' ? 'Loaded an Art Studio sculpture locally as an editable primitive recipe. Set its physical scale, preview, and run the advisory preflight.' : pendingHandoff.sourceTool === 'archStudio' ? 'Loaded an Architecture Studio build locally. Confirm its scale, preview, and advisory preflight.' : 'Loaded your selected Geometry World blocks locally. Confirm the physical size, check the model, then choose filament and prepare your print files.') : geometryGone ? 'The Geometry World build you were checking closed with the page, because models stay only in memory. Send it again from Geometry World to keep going.' : 'Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
       var _revision = React.useState(0), revision = _revision[0], setRevision = _revision[1];
       var _subject = React.useState(''), aiSubject = _subject[0], setAiSubject = _subject[1];
       var _refine = React.useState(''), aiRefinement = _refine[0], setAiRefinement = _refine[1];
@@ -1006,12 +1028,21 @@
       // A note written about a different My Worlds project must not ship with this one.
       var otherProject = !!(freshHandoff && pendingHandoff.draftId && stored.gwDraftId && stored.gwDraftId !== pendingHandoff.draftId);
       var _title = React.useState(freshHandoff ? pendingHandoff.title : (stored.title || (pendingHandoff ? pendingHandoff.title : ''))), title = _title[0], setTitle = _title[1];
+      var titleInputRef = React.useRef(null);
       var _description = React.useState(freshHandoff ? pendingHandoff.description : (stored.description || (pendingHandoff ? pendingHandoff.description : ''))), description = _description[0], setDescription = _description[1];
       var _sourceContext = React.useState(pendingHandoff ? { sourceTool: pendingHandoff.sourceTool, projectId:pendingHandoff.projectId, draftId:pendingHandoff.draftId || '', sourceModel: pendingHandoff.sourceModel, summary: pendingHandoff.summary } : null), sourceContext = _sourceContext[0], setSourceContext = _sourceContext[1];
       var _note = React.useState(otherProject ? '' : (stored.studentNote || '')), studentNote = _note[0], setStudentNote = _note[1];
       var _aiUse = React.useState(pendingHandoff && !resumedGeometry ? (pendingHandoff.aiUse || 'NONE') : (stored.aiUse || 'NONE')), aiUse = _aiUse[0], setAiUse = _aiUse[1];
       var _aiDisclosure = React.useState(pendingHandoff && !resumedGeometry ? (pendingHandoff.aiDisclosure || '') : (stored.aiDisclosure || '')), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
+      var _aiDisclosureError = React.useState(''), aiDisclosureError = _aiDisclosureError[0], setAiDisclosureError = _aiDisclosureError[1];
+      var aiDisclosureInputRef = React.useRef(null);
       var _profile = React.useState(initialProfile), profile = _profile[0], setProfile = _profile[1];
+      var _profileDraft=React.useState(function(){return printerProfileDraft(initialProfile);}),profileDraft=_profileDraft[0],setProfileDraft=_profileDraft[1];
+      var _profileError=React.useState(''),profileError=_profileError[0],setProfileError=_profileError[1];
+      var _profileInvalid=React.useState([]),profileInvalid=_profileInvalid[0],setProfileInvalid=_profileInvalid[1];
+      var profileInputRefs=React.useRef({}),profileFocusRequested=React.useRef('');
+      var profileHasDraft=PRINTER_FIELDS.some(function(field){return profileDraft[field[0]].trim()==='' || Number(profileDraft[field[0]])!==profile[field[0]];});
+      React.useLayoutEffect(function(){var key=profileFocusRequested.current,input=profileInputRefs.current[key];if(key && activeTab==='Preflight' && input && input.isConnected){profileFocusRequested.current='';input.focus();}},[activeTab,profileError]);
       var _material = React.useState(stored.materialId || 'PLA'), materialId = _material[0], setMaterialId = _material[1];
       var _infill = React.useState(clamp(stored.infillPercent, 0, 100, 20)), infillPercent = _infill[0], setInfillPercent = _infill[1];
       var _support = React.useState(clamp(stored.supportPercent, 0, 200, 10)), supportPercent = _support[0], setSupportPercent = _support[1];
@@ -1032,6 +1063,8 @@
       var simulatorRef = React.useRef(null);
       var contextRevisionRef = React.useRef(0);
       var operationTokensRef = React.useRef(Object.create(null));
+      var downloadRequestRef = React.useRef(null);
+      var _downloadFeedback = React.useState(null), downloadFeedback = _downloadFeedback[0], setDownloadFeedback = _downloadFeedback[1];
 
       var savedSculpts = (ctx.toolData && ctx.toolData.geoSandbox && ctx.toolData.geoSandbox.savedSculpts) || {};
       var savedNames = Object.keys(savedSculpts).sort();
@@ -1101,8 +1134,39 @@
         return next;
       }
 
-      function cancelOperation(kind) {
+      function cancelOperation(kind, message) {
         operationTokensRef.current[kind] = (operationTokensRef.current[kind] || 0) + 1;
+        var request = downloadRequestRef.current;
+        if (request && request.operation === kind) {
+          downloadRequestRef.current = null;
+          setDownloadFeedback({ kind: request.kind, status: 'cancelled', message: message || 'Download preparation stopped because the model or details changed. Start the download again when ready.' });
+        }
+      }
+
+      function beginDownload(kind, operation, message) {
+        if (downloadRequestRef.current) return null;
+        var request = { kind: kind, operation: operation, token: beginOperation(operation), revision: contextRevisionRef.current };
+        downloadRequestRef.current = request;
+        setDownloadFeedback({ kind: kind, status: 'busy', message: message });
+        return request;
+      }
+
+      function finishDownload(request, status, message) {
+        if (downloadRequestRef.current !== request || !operationIsCurrent(request.operation, request.token, request.revision)) return;
+        downloadRequestRef.current = null;
+        setDownloadFeedback({ kind: request.kind, status: status, message: message });
+      }
+
+      function cancelDownload() {
+        var request = downloadRequestRef.current;
+        if (!request) return;
+        cancelOperation(request.operation, 'Download preparation cancelled. You can start it again.');
+        var root = workflowRootRef.current, trigger = root && root.querySelector('[data-print-download="' + request.kind + '"]');
+        if (trigger && trigger.isConnected) trigger.focus();
+      }
+
+      function cancelMetadataDownloads() {
+        cancelOperation('handoff'); cancelOperation('export');
       }
 
       function beginDesignOperation(kind) {
@@ -1139,15 +1203,56 @@
       }
 
       function applyUnitScale(value, message) {
+        if(!guardProfileDraft())return;
         var next = clamp(value, 0.01, 1000, unitMm);
         invalidateManufacturingEvidence();
-        setUnitMm(next);
+        setUnitMm(next); setUnitDraft(String(next)); setUnitError('');
         persist({ unitMm: next, preflight: null, preflightBinding: '' });
         if (message) announce(message);
       }
 
+      function focusUnitDraft() {
+        var input = unitInputRef.current;
+        if (input && input.isConnected) { unitFocusRequested.current = false; input.focus(); }
+        else { unitFocusRequested.current = true; setActiveTab('Design'); persist({ printStage:'Design' }); }
+      }
+      function guardUnitDraft() {
+        if (!unitHasDraft) return true;
+        setUnitError('Apply or discard your size edit before continuing. The applied scale is ' + unitMm + ' mm per unit.');
+        focusUnitDraft(); return false;
+      }
+      function focusProfileDraft(key){
+        key=key || (PRINTER_FIELDS.find(function(field){return profileDraft[field[0]].trim()==='' || Number(profileDraft[field[0]])!==profile[field[0]];}) || PRINTER_FIELDS[0])[0];
+        var input=profileInputRefs.current[key];
+        if(input && input.isConnected){profileFocusRequested.current='';input.focus();}
+        else{profileFocusRequested.current=key;setActiveTab('Preflight');persist({printStage:'Preflight'});}
+      }
+      function guardProfileDraft(){
+        if(!profileHasDraft)return true;
+        setProfileError('Apply or discard your printer profile edit before continuing. The current check still uses the applied profile.');
+        focusProfileDraft();return false;
+      }
+      function guardPrintDrafts(){return guardUnitDraft() && guardProfileDraft();}
+      function commitUnitDraft(event) {
+        event.preventDefault();
+        var number = unitDraft.trim() === '' ? NaN : Number(unitDraft);
+        if (!Number.isFinite(number) || number < 0.01 || number > 1000) {
+          setUnitError('Enter a size from 0.01 to 1000 millimeters per unit. Your applied scale is unchanged.'); focusUnitDraft(); return;
+        }
+        applyUnitScale(number, 'Applied ' + number + ' millimeters per unit. Check the updated model before exporting.');
+      }
+
       function chooseTab(name) {
+        if (TABS.indexOf(name) < 0) return;
+        if (name !== 'Design' && !guardUnitDraft()) return;
+        if (name !== 'Preflight' && !guardProfileDraft()) return;
+        reportFocusRequested.current=false;
         setActiveTab(name); persist({ printStage: name });
+        // Stage links live inside panels that are replaced. Move focus to the
+        // persistent tab now, so keyboard users can continue into the new panel.
+        // No queued callback can later steal focus from a newer action or view.
+        var root = workflowRootRef.current, target = root && root.querySelector('[role="tab"][id="print-lab-tab-' + name.toLowerCase() + '"]');
+        if (root && root.isConnected && target && target.isConnected) target.focus();
       }
 
       function onTabKey(event, index) {
@@ -1155,7 +1260,6 @@
         event.preventDefault();
         var next = event.key === 'Home' ? 0 : event.key === 'End' ? TABS.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + TABS.length) % TABS.length;
         chooseTab(TABS[next]);
-        var target = document.getElementById('print-lab-tab-' + TABS[next].toLowerCase()); if (target) target.focus();
       }
 
       function replaceDesign(nextFormat, nextRecipe, nextBytes, nextRoot, nextName, nextUnit, nextReport, nextHash, preserveOperation) {
@@ -1164,7 +1268,7 @@
         var nextPreflightBinding = persistedNextReport ? persistedPreflightBinding(nextRecipe, cleanUnit, profile) : '';
         invalidateManufacturingEvidence({ preserveOperation: preserveOperation });
         setFormat(nextFormat); setRecipe(nextRecipe || null); setFileBytes(nextBytes || null); setGlbRoot(nextRoot || null); setSourceName(nextName || '');
-        setUnitMm(cleanUnit); setReport(nextReport || null); setContentHash(nextHash || '');
+        setUnitMm(cleanUnit); setUnitDraft(String(cleanUnit)); setUnitError(''); setReport(nextReport || null); setContentHash(nextHash || '');
         persist({ recipe: nextFormat === 'RECIPE' ? nextRecipe : null, unitMm: cleanUnit, preflight: persistedNextReport, preflightBinding: nextPreflightBinding });
       }
 
@@ -1175,7 +1279,7 @@
         var cleanUnit = clamp(nextUnitMm == null ? unitMm : nextUnitMm, 0.01, 1000, 20);
         invalidateManufacturingEvidence({ preserveOperation: preserveOperation });
         setRecipe(clean); setFormat('RECIPE'); setFileBytes(null); setGlbRoot(null); setSourceName(''); setReport(null); setContentHash('');
-        setUnitMm(cleanUnit);
+        setUnitMm(cleanUnit); setUnitDraft(String(cleanUnit)); setUnitError('');
         setSourceContext(null);
         persist({ recipe: clean, unitMm: cleanUnit, preflight: null, preflightBinding: '' });
       }
@@ -1213,6 +1317,7 @@
         announce(__alloT('stem.printlab.sr_downloaded_the_editable_sculpture_recipe_load_it', 'Downloaded the editable sculpture recipe. Load it in Art Studio with its Load model button.'));
       }
       function returnToArtStudio() {
+        if (!guardPrintDrafts()) return;
         var P3D = window.AlloModules && window.AlloModules.Prim3D, clean = recipe && P3D && P3D.normalizeRecipe ? P3D.normalizeRecipe(recipe) : recipe;
         if (!clean || !clean.parts || !clean.parts.length) { announce(__alloT('stem.printlab.sr_there_is_no_primitive_recipe_to_send_back_yet', 'There is no primitive recipe to send back yet.')); return; }
         if (typeof ctx.setStemLabTool !== 'function') { downloadArtStudioRecipe(); return; }
@@ -1238,6 +1343,7 @@
         ctx.setStemLabTool(toolId);
       }
       function returnToGeometryWorld() {
+        if (!guardPrintDrafts()) return;
         var source = sourceContext && sourceContext.sourceModel;
         if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce(__alloT('stem.printlab.sr_no_editable_geometry_world_source_is_available_in', 'No editable Geometry World source is available in this session.')); return; }
         if (typeof ctx.setStemLabTool !== 'function') { downloadGeometryWorldSource(); return; }
@@ -1252,20 +1358,22 @@
         ctx.setStemLabTool('geometryWorld');
       }
 
-      function runPreflight() {
+      function runPreflight(focusReport) {
+        if (!guardPrintDrafts()) return null;
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
         if (!Printable) { announce(__alloT('stem.printlab.sr_the_inspection_engine_is_still_loading', 'The inspection engine is still loading.')); return null; }
         var next = format === 'RECIPE' ? Printable.inspectRecipe(recipe, unitMm, profile)
           : format === 'STL' ? Printable.inspectStl(fileBytes, unitMm, profile)
           : Printable.inspectGlb(fileBytes, unitMm, profile);
         if (format === 'GLB' && glbRoot) next = inspectObjectCapabilities(glbRoot, next);
-        setReport(next);
+        reportFocusRequested.current=focusReport===true;if(focusReport===true)setReportRun(function(value){return value+1;});setReport(next);
         persist({ preflight: format === 'RECIPE' ? next : null, preflightBinding: format === 'RECIPE' ? persistedPreflightBinding(recipe, unitMm, profile) : '', profile: profile, unitMm: unitMm });
         announce(next.status === 'FAIL' ? 'Preflight found blocking items. Review the report.' : next.status === 'WARN' ? 'Preflight completed with staff-review warnings.' : 'Preflight completed without a blocking geometry error. Staff and slicer review are still required.');
         return next;
       }
 
       function createRepairCandidate() {
+        if(!guardPrintDrafts())return;
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
         if (!Printable || format !== 'STL' || !fileBytes) { announce(__alloT('stem.printlab.sr_conservative_local_repair_is_available_for_an_imp', 'Conservative local repair is available for an imported STL.')); return; }
         var result = Printable.repairStl(fileBytes, { unitMm: unitMm, profile: profile, weldTolerance: 0.00001 });
@@ -1274,6 +1382,7 @@
       }
 
       function useRepairCandidate() {
+        if(!guardPrintDrafts())return;
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
         if (!Printable || !repairResult || !repairResult.ok || !repairResult.buffer) return;
         var bytes = new Uint8Array(repairResult.buffer);
@@ -1286,6 +1395,7 @@
       }
 
       function downloadRepairCandidate() {
+        if(!guardPrintDrafts())return;
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
         if (!Printable || !repairResult || !repairResult.ok || !repairResult.buffer) return;
         downloadBlob(new Blob([repairResult.buffer], { type: 'model/stl' }), Printable.safeFilename(title || 'student-model') + '-conservative-repair.stl');
@@ -1293,10 +1403,19 @@
       }
 
       function setProfileField(key, value) {
-        var raw = Object.assign({}, profile); raw[key] = Number(value);
-        var next = normalizePrinterProfile(raw);
+        setProfileDraft(function(previous){var next=Object.assign({},previous);next[key]=value;return next;});
+        setProfileError('');setProfileInvalid([]);cancelOperation('export');cancelOperation('handoff');cancelOperation('ticket');
+      }
+      function commitProfileDraft(event){
+        event.preventDefault();var raw=Object.assign({},profile),invalid=[];
+        PRINTER_FIELDS.forEach(function(field){var value=profileDraft[field[0]].trim()===''?NaN:Number(profileDraft[field[0]]);if(!Number.isFinite(value) || value<field[2] || value>field[3])invalid.push(field[0]);else raw[field[0]]=value;});
+        setProfileInvalid(invalid);
+        if(invalid.length){var field=PRINTER_FIELDS.find(function(item){return item[0]===invalid[0];});setProfileError('Enter '+field[1]+' from '+field[2]+' to '+field[3]+'. Your applied printer profile is unchanged.');focusProfileDraft(invalid[0]);return;}
+        var next=normalizePrinterProfile(raw);setProfileError('');setProfileDraft(printerProfileDraft(next));
+        if(!profileHasDraft)return;
         invalidateManufacturingEvidence();
         setProfile(next); persist({ profile: next, preflight: null, preflightBinding: '' });
+        announce('Printer profile applied. Run preflight again for this build area.');
       }
 
       function importFile(event) {
@@ -1425,6 +1544,7 @@
       }
 
       function createJobTicket() {
+        if (!guardPrintDrafts()) return;
         if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce(__alloT('stem.printlab.sr_complete_model_analysis_before_creating_a_job_tic', 'Complete model analysis before creating a job ticket.')); return; }
         if (!gcodeEvidenceCurrent) { announce(__alloT('stem.printlab.sr_import_comment_metadata_from_the_approved_school', 'Import comment metadata from the approved school slicer for this exact model, scale, material, and printer profile before creating a job ticket.')); return; }
         if (!quoteMaterial || !(Number(quoteMaterial.estimatedGrams) > 0)) { announce(__alloT('stem.printlab.sr_the_reviewed_slicer_handoff_must_include_a_positi', 'The reviewed slicer handoff must include a positive material mass in grams before creating a job ticket.')); return; }
@@ -1452,6 +1572,7 @@
       }
 
       function downloadJobTicket() {
+        if (!guardPrintDrafts()) return;
         if (!Printable || !jobTicket) return;
         try { downloadBlob(new Blob([Printable.serializePrintJobTicket(jobTicket)], { type: 'application/json' }), Printable.safeFilename(title || 'print-job') + '.alloflow-print-job.json'); announce(__alloT('stem.printlab.sr_downloaded_the_versioned_job_ticket_for_staff_rev', 'Downloaded the versioned job ticket for staff review.')); }
         catch (error) { announce(error && error.message ? error.message : 'The job ticket could not be downloaded.'); }
@@ -1489,11 +1610,22 @@
         return next;
       }
 
+      function guardAiDisclosure() {
+        if (aiUse === 'NONE' || safeText(aiDisclosure, 300)) { setAiDisclosureError(''); return true; }
+        setAiDisclosureError('Explain how AI assisted this design before preparing the print package or review handoff.');
+        if (aiDisclosureInputRef.current) aiDisclosureInputRef.current.focus();
+        return false;
+      }
+
       function downloadHandoff() {
+        if (!guardPrintDrafts()) return;
         if (!Printable) { announce(__alloT('stem.printlab.sr_the_handoff_engine_is_still_loading', 'The handoff engine is still loading.')); return; }
         var activeReport = report || runPreflight(); if (!activeReport || activeReport.status === 'FAIL') { chooseTab('Preflight'); announce(__alloT('stem.printlab.sr_resolve_blocking_preflight_items_before_creating', 'Resolve blocking preflight items before creating a handoff.')); return; }
-        var token = beginOperation('handoff'), startedRevision = contextRevisionRef.current;
-        var hashPromise = contentHash ? Promise.resolve(contentHash) : Printable.sha256Hex(format === 'RECIPE' ? JSON.stringify(recipe || {}) : fileBytes);
+        if (!title.trim()) { if (titleInputRef.current) titleInputRef.current.focus(); return; }
+        if (!guardAiDisclosure()) return;
+        var request = beginDownload('handoff', 'handoff', 'Preparing the review handoff…'); if (!request) return;
+        var token = request.token, startedRevision = request.revision;
+        var hashPromise = Promise.resolve().then(function () { return contentHash || Printable.sha256Hex(format === 'RECIPE' ? JSON.stringify(recipe || {}) : fileBytes); });
         hashPromise.then(function (hash) {
           if (!operationIsCurrent('handoff', token, startedRevision)) return;
           var genericName = format === 'RECIPE' ? '' : 'student-model.' + format.toLowerCase();
@@ -1505,13 +1637,16 @@
           });
           var name = Printable.safeFilename(title || 'student-model') + '.alloflow-print.json';
           downloadBlob(new Blob([serialized], { type: 'application/json' }), name);
-          announce(__alloT('stem.printlab.sr_downloaded_a_privacy_minimized_staff_review_hando', 'Downloaded a privacy-minimized staff-review handoff. The model file itself was not embedded.'));
-        }).catch(function (error) { if (operationIsCurrent('handoff', token, startedRevision)) announce(error && error.message ? error.message : 'The handoff could not be created.'); });
+          finishDownload(request, 'complete', 'Review handoff download started. Share it with the reviewer alongside the model file.');
+        }).catch(function (error) { finishDownload(request, 'error', (error && error.message ? error.message : 'The handoff could not be created.') + ' Try the download again.'); });
       }
 
       function downloadPrintPackage() {
+        if (!guardPrintDrafts()) return;
         if(!Printable || !sourceContext || sourceContext.sourceTool!=='geometryWorld' || !report || report.status==='FAIL') {chooseTab('Preflight');return;}
-        var token=beginOperation('export'), startedRevision=contextRevisionRef.current;
+        if (!guardAiDisclosure()) return;
+        var request=beginDownload('package','export','Preparing the print package: model, editable source, and review details…');if(!request)return;
+        var token=request.token, startedRevision=request.revision;
         Promise.all([ensureThree(),ensurePrintZip()]).then(function(ready){
           if(!operationIsCurrent('export',token,startedRevision))return null;
           var THREE=ready[0], object=makeModelObject(THREE,format,recipe,fileBytes,glbRoot,unitMm);
@@ -1534,30 +1669,32 @@
             zip.file('READ-ME.txt','Geometry World print package\n\nOpen model.stl in the school slicer. Units are millimeters: import at 100% scale. The chosen '+unitMm+' mm per block is already applied.\nDimensions (width x depth x height): '+inspection.dimensionsMm.width+' x '+inspection.dimensionsMm.depth+' x '+inspection.dimensionsMm.height+' mm.\n'+(editable?'To edit the selected creation, open editable-world.json with Geometry World > Open editable world.':'The selection exceeds editable sandbox file limits; block-source.json preserves its source recipe for recovery.')+'\nmanifest.json records the STL hash, dimensions, material, printer profile and advisory checks. Review orientation, supports and the sliced layers before staff approval. This package does not start a printer.\n'+(safeText(studentNote,300)?'\nDesign note from the student: '+safeText(studentNote,300)+'\n':''));
             return zip.generateAsync({type:'blob',compression:'DEFLATE'});
           });
-        }).then(function(blob){if(blob && operationIsCurrent('export',token,startedRevision)){downloadBlob(blob,Printable.safeFilename(title||'geometry-world')+'-print-package.zip');announce(__alloT('stem.printlab.sr_downloaded_one_print_package_with_a_millimeter_st', 'Downloaded one print package with a millimeter STL, source, and review manifest.'));}})
-          .catch(function(error){if(operationIsCurrent('export',token,startedRevision))announce(error.message||'The print package could not be created.');});
+        }).then(function(blob){if(blob && operationIsCurrent('export',token,startedRevision)){downloadBlob(blob,Printable.safeFilename(title||'geometry-world')+'-print-package.zip');finishDownload(request,'complete','Print package download started. Unzip it and open model.stl in your slicer at 100% scale; the millimeter size is already applied.');}})
+          .catch(function(error){finishDownload(request,'error',(error && error.message || 'The print package could not be created.')+' Try the download again.');});
       }
       function exportStl() {
+        if (!guardPrintDrafts()) return;
         if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce(__alloT('stem.printlab.sr_run_preflight_and_resolve_blocking_items_before_e', 'Run preflight and resolve blocking items before exporting STL.')); return; }
-        var token = beginOperation('export'), startedRevision = contextRevisionRef.current;
+        var request = beginDownload('stl', 'export', 'Preparing the STL at its final millimeter size…'); if (!request) return;
+        var token = request.token, startedRevision = request.revision;
         ensureThree().then(function (THREE) {
           if (!operationIsCurrent('export', token, startedRevision)) return;
           var object = makeModelObject(THREE, format, recipe, fileBytes, glbRoot, unitMm);
           if (!object) throw new Error('There is no model ready to export.');
-          centerAndGround(THREE, object);
-          var buffer = Printable.exportBinaryStl(THREE, object);
-          disposeObject(object, false);
+          var buffer;
+          try { centerAndGround(THREE, object); buffer = Printable.exportBinaryStl(THREE, object); }
+          finally { disposeObject(object, false); }
           if (!buffer) throw new Error('The model did not contain exportable triangles.');
           downloadBlob(new Blob([buffer], { type: 'model/stl' }), Printable.safeFilename(title || 'student-model') + '.stl');
-          announce(__alloT('stem.printlab.sr_stl_exported_re_open_it_in_the_school_s_slicer_to', 'STL exported. Re-open it in the school’s slicer to confirm orientation, supports, scale, and machine settings.'));
-        }).catch(function (error) { if (operationIsCurrent('export', token, startedRevision)) announce(error && error.message ? error.message : 'STL export was unavailable.'); });
+          finishDownload(request, 'complete', 'STL download started. Open it in your slicer at 100% scale; the millimeter size is already applied.');
+        }).catch(function (error) { finishDownload(request, 'error', (error && error.message ? error.message : 'STL export was unavailable.') + ' Try the download again.'); });
       }
 
       function field(label, value, onChange, options) {
         options = options || {};
         return h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' },
           h('span', { className: 'mb-1 block' }, label),
-          h('input', { type: options.type || 'text', value: value, min: options.min, max: options.max, step: options.step, maxLength: options.maxLength, onChange: function (event) { onChange(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white' })
+          h('input', { id: options.id, ref: options.ref, type: options.type || 'text', value: value, min: options.min, max: options.max, step: options.step, maxLength: options.maxLength, onChange: function (event) { onChange(event.target.value); }, className: 'min-h-[44px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white' })
         );
       }
 
@@ -1629,11 +1766,11 @@
                   h('h2', { id: 'print-lab-geometry-source-title', className: 'mt-1 text-lg font-black text-white' }, 'From Geometry World'),
                   h('p', { className: 'mt-1 max-w-2xl text-xs leading-5 text-slate-200' }, 'The STL preview is physical geometry. A separate editable block recipe is held only in this open session so shapes and rotations are not lost.')
                 ),
-                h('span', { className: 'rounded-full border border-cyan-400/50 bg-cyan-950 px-3 py-1 text-[0.625rem] font-black text-cyan-100' }, 'Default: 5 mm / block')
+                h('span', { className: 'rounded-full border border-cyan-400/50 bg-cyan-950 px-3 py-1 text-[0.625rem] font-black text-cyan-100' }, 'Applied: ' + unitMm + ' mm / block')
               ),
               h('dl', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4' },
                 [
-                  ['Connected blocks', sourceContext.summary && sourceContext.summary.blockCount || 0],
+                  ['Selected blocks', sourceContext.summary && sourceContext.summary.blockCount || 0],
                   ['Shaped pieces', sourceContext.summary && sourceContext.summary.shapedCount || 0],
                   ['STL triangles', sourceContext.summary && sourceContext.summary.triangleCount || 0],
                   ['Block envelope', sourceContext.summary && sourceContext.summary.dimensions ? sourceContext.summary.dimensions.L + ' × ' + sourceContext.summary.dimensions.W + ' × ' + sourceContext.summary.dimensions.H + ' blocks' : '-']
@@ -1724,7 +1861,13 @@
                   })
                 )
               ),
-              field(sourceContext && sourceContext.sourceTool === 'geometryWorld' ? 'Millimeters per Geometry World block' : sourceContext && sourceContext.sourceTool === 'archStudio' ? 'Millimeters per Architecture Studio block' : 'Millimeters per model unit', unitMm, function (value) { applyUnitScale(value); }, { type: 'number', min: 0.01, max: 1000, step: 0.1 }),
+              h('form', {noValidate:true,onSubmit:commitUnitDraft,'aria-label':'Physical model scale','data-print-scale-editor':true,className:'mt-3 space-y-2'},
+                h('label',{htmlFor:'print-lab-scale-input',className:'block text-sm font-bold text-slate-200'},sourceContext && sourceContext.sourceTool === 'geometryWorld' ? 'Millimeters per Geometry World block' : sourceContext && sourceContext.sourceTool === 'archStudio' ? 'Millimeters per Architecture Studio block' : 'Millimeters per model unit'),
+                h('input',{ref:unitInputRef,id:'print-lab-scale-input',type:'number',inputMode:'decimal',min:0.01,max:1000,step:'any',value:unitDraft,'aria-invalid':unitError?'true':undefined,'aria-describedby':'print-lab-scale-help'+(unitError?' print-lab-scale-error':''),onChange:function(event){setUnitDraft(event.target.value);setUnitError('');cancelOperation('export');cancelOperation('handoff');},className:'min-h-[44px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white'}),
+                h('p',{id:'print-lab-scale-help',className:'text-xs leading-5 text-slate-200'},unitHasDraft?'Size edit not applied. The preview and print files still use '+unitMm+' mm per unit.':'Applied scale: '+unitMm+' mm per unit. This size is used for the preview and print files.'),
+                h('div',{className:'flex flex-wrap gap-2'},h('button',{type:'submit',className:'min-h-[44px] rounded-lg bg-emerald-700 px-4 text-sm font-bold text-white'},'Apply scale'),
+                  unitHasDraft && h('button',{type:'button',onClick:function(){setUnitDraft(String(unitMm));setUnitError('');focusUnitDraft();},className:'min-h-[44px] rounded-lg border border-slate-500 px-4 text-sm font-bold text-white'},'Discard size edit')),
+                unitError && h('p',{id:'print-lab-scale-error',role:'alert',className:'rounded-lg border border-rose-600 bg-rose-950/30 p-3 text-sm text-rose-100'},unitError)),
               geometryPhysicalSize && h('p', { className: 'mt-2 rounded-lg border border-emerald-800 bg-emerald-950/30 p-2 text-xs font-bold text-emerald-100' }, 'Current mesh envelope: ' + geometryPhysicalSize.label + ' (width × depth × height).'),
               geometryPrinterFit && h('div', {
                 className: 'mt-2 rounded-lg border p-2 text-[0.6875rem] leading-5 ' + (geometryClearanceFit ? 'border-emerald-700 bg-emerald-950/30 text-emerald-100' : 'border-amber-600 bg-amber-950/30 text-amber-100'),
@@ -1801,17 +1944,20 @@
       }
 
       function preflightPanel() {
+        var findings=report && report.issues || [],counts={ERROR:0,WARNING:0,INFO:0};
+        findings.forEach(function(item){counts[item.severity==='ERROR'?'ERROR':item.severity==='WARNING'?'WARNING':'INFO']++;});
+        var findingCodes=findings.map(function(item){return item.code;}),hasSizeFinding=findingCodes.indexOf('BED_FIT')!==-1;
+        var hasGeometryFinding=findingCodes.some(function(code){return ['NO_GEOMETRY','TOO_MANY_TRIANGLES','FILE_TOO_LARGE','OPEN_EDGES','NON_MANIFOLD_EDGES','MULTIPLE_SHELLS','DEGENERATE_TRIANGLES','INCONSISTENT_WINDING','INWARD_WINDING_ADVISORY','ASSEMBLY_NOT_UNIONED'].indexOf(code)!==-1;});
         return h('div', { className: 'grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]' },
           h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-profile-title' },
             h('h2', { id: 'print-profile-title', className: 'text-base font-black text-white' }, 'School printer profile'),
             h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Use the receiving printer’s actual build area. These values are not machine settings.'),
-            h('div', { className: 'mt-3 space-y-2' },
-              field('Bed width (mm)', profile.bedWidthMm, function (v) { setProfileField('bedWidthMm', v); }, { type: 'number', min: 50, max: 1000, step: 1 }),
-              field('Bed depth (mm)', profile.bedDepthMm, function (v) { setProfileField('bedDepthMm', v); }, { type: 'number', min: 50, max: 1000, step: 1 }),
-              field('Build height (mm)', profile.bedHeightMm, function (v) { setProfileField('bedHeightMm', v); }, { type: 'number', min: 50, max: 1000, step: 1 }),
-              field('Planning clearance (mm)', geometryPlanningClearanceMm, function (v) { setProfileField('planningClearanceMm', v); }, { type: 'number', min: 0, max: 50, step: 1 }),
-              field('Nozzle diameter (mm)', profile.nozzleMm, function (v) { setProfileField('nozzleMm', v); }, { type: 'number', min: 0.1, max: 2, step: 0.05 })
-            ),
+            h('form',{className:'mt-3 space-y-2',noValidate:true,onSubmit:commitProfileDraft,'aria-label':'Printer profile settings','data-print-profile-editor':true},
+              PRINTER_FIELDS.map(function(field){var key=field[0],id='print-lab-profile-'+key;return h('label',{key:key,htmlFor:id,className:'block text-[0.6875rem] font-bold text-slate-200'},h('span',{className:'mb-1 block'},field[1]),h('input',{id:id,ref:function(node){profileInputRefs.current[key]=node;},type:'number',inputMode:'decimal',min:field[2],max:field[3],step:'any',value:profileDraft[key],'aria-invalid':profileInvalid.indexOf(key)!==-1?'true':undefined,'aria-describedby':'print-lab-profile-help'+(profileError?' print-lab-profile-error':''),onChange:function(event){setProfileField(key,event.target.value);},className:'min-h-[44px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white'}));}),
+              h('p',{id:'print-lab-profile-help',className:'text-xs leading-5 text-slate-200'},profileHasDraft?'Profile edit not applied. Size checks still use '+profile.bedWidthMm+' × '+profile.bedDepthMm+' × '+profile.bedHeightMm+' mm.':'Applied build area: '+profile.bedWidthMm+' × '+profile.bedDepthMm+' × '+profile.bedHeightMm+' mm. Width × depth × height.'),
+              h('div',{className:'flex flex-wrap gap-2'},h('button',{type:'submit',className:'min-h-[44px] rounded-lg bg-cyan-700 px-4 text-sm font-bold text-white'},'Apply printer profile'),
+                profileHasDraft && h('button',{type:'button',onClick:function(){setProfileDraft(printerProfileDraft(profile));setProfileError('');setProfileInvalid([]);focusProfileDraft('bedWidthMm');},className:'min-h-[44px] rounded-lg border border-slate-500 px-4 text-sm font-bold text-white'},'Discard profile edit')),
+              profileError && h('p',{id:'print-lab-profile-error',role:'alert',className:'rounded-lg border border-rose-500 bg-rose-950 p-3 text-sm leading-5 text-rose-100'},profileError)),
             h('p', { className: 'mt-2 text-[0.625rem] leading-5 text-slate-300' }, 'Planning clearance is a conservative advisory buffer removed from both sides of each profile dimension. Adjust it for clips, purge lines, and local procedures; it is not a machine setting.'),
             geometryPhysicalSize && geometryPrinterFit && h('div', {
               className: 'mt-3 rounded-xl border p-3 ' + (geometryClearanceFit ? 'border-emerald-700 bg-emerald-950/30 text-emerald-100' : 'border-amber-600 bg-amber-950/30 text-amber-100'),
@@ -1823,7 +1969,7 @@
               h('strong', { className: 'block text-xs' }, geometryClearanceFit ? 'Geometry World scale fits this profile' : 'Geometry World scale needs attention'),
               h('p', { className: 'mt-1 text-[0.6875rem] leading-5' }, 'Model envelope: ' + geometryPhysicalSize.label + '. Printer profile: ' + geometryPrinterFit.profileLabel + '.'),
               h('p', { className: 'mt-1 text-[0.625rem] leading-5 opacity-90' }, geometryClearanceFit
-                ? 'Includes the preferred ' + geometryPlanningClearanceMm + ' mm planning clearance. Profile changes update this check immediately; slicer and staff review remain required.'
+                ? 'Includes the preferred ' + geometryPlanningClearanceMm + ' mm planning clearance. Apply profile changes to update this check; slicer and staff review remain required.'
                 : geometryScaleRecommendation && geometryScaleRecommendation.canFit
                   ? 'Suggested scale: ' + geometryScaleRecommendation.recommendedUnitMm + ' mm per block, producing approximately ' + geometryScaleRecommendation.recommendedPhysicalSize.label + '. This assumes the current orientation.'
                   : 'Revise the model or choose a different printer profile before running preflight.'),
@@ -1845,7 +1991,7 @@
                 className: 'mt-2 min-h-[42px] w-full rounded-lg bg-cyan-700 px-3 text-xs font-black text-white hover:bg-cyan-700'
               }, 'Apply ' + geometryScaleRecommendation.recommendedUnitMm + ' mm / block')
             ),
-            h('button', { type: 'button', disabled: !runtimeReady || (format === 'RECIPE' ? !recipe : !fileBytes), onClick: runPreflight, className: 'mt-3 min-h-[44px] w-full rounded-xl bg-emerald-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Run advisory preflight'),
+            h('button', { type: 'button', disabled: !runtimeReady || (format === 'RECIPE' ? !recipe : !fileBytes), onClick:function(){runPreflight(true);}, className: 'mt-3 min-h-[44px] w-full rounded-xl bg-emerald-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Run advisory preflight'),
             h('div', { className: 'mt-4 rounded-xl border border-slate-700 bg-slate-950 p-3', 'aria-labelledby': 'repair-title' },
               h('h3', { id: 'repair-title', className: 'text-sm font-black text-white' }, 'Analyze & Repair'),
               h('p', { className: 'mt-1 text-[0.6875rem] leading-5 text-slate-300' }, 'STL repair only welds near-identical vertices and removes degenerate triangles. It does not fill holes, boolean-union shells, remesh, test wall thickness, or certify safety.'),
@@ -1859,10 +2005,14 @@
           ),
           h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'preflight-report-title' },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-              h('h2', { id: 'preflight-report-title', className: 'text-base font-black text-white' }, 'Preflight report'),
+              h('h2', { id: 'preflight-report-title', 'data-print-report-heading':true, tabIndex:-1,'aria-describedby':report?'print-lab-report-summary':undefined,className: 'text-base font-black text-white focus:outline focus:outline-2 focus:outline-offset-4 focus:outline-amber-200' }, 'Preflight report'),
               report && h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (report.status === 'FAIL' ? 'bg-rose-800 text-white' : report.status === 'WARN' ? 'bg-amber-400 text-slate-950' : 'bg-emerald-700 text-white') }, report.status)
             ),
             !report && h('p', { className: 'mt-3 rounded-xl border border-dashed border-slate-600 p-4 text-sm text-slate-300' }, 'Run preflight after choosing the model and physical scale.'),
+            report && h('p',{id:'print-lab-report-summary',className:'mt-3 rounded-xl border border-slate-600 bg-slate-950 p-3 text-sm leading-6 text-white'},counts.ERROR+' blocking item'+(counts.ERROR===1?'':'s')+' · '+counts.WARNING+' review warning'+(counts.WARNING===1?'':'s')+(counts.INFO?' · '+counts.INFO+' information note'+(counts.INFO===1?'':'s'):'')),
+            report && (hasSizeFinding || hasGeometryFinding && sourceContext && sourceContext.sourceTool==='geometryWorld') && h('div',{className:'mt-3 flex flex-wrap gap-2','data-print-finding-actions':true},
+              hasSizeFinding && h('button',{type:'button',onClick:function(){if(!guardPrintDrafts())return;chooseTab('Design');focusUnitDraft();},className:'min-h-[44px] rounded-lg border border-cyan-400 px-4 text-sm font-bold text-cyan-100'},'Adjust physical size'),
+              hasGeometryFinding && sourceContext && sourceContext.sourceTool==='geometryWorld' && h('button',{type:'button',onClick:returnToGeometryWorld,className:'min-h-[44px] rounded-lg border border-cyan-400 px-4 text-sm font-bold text-cyan-100'},'Revise selected blocks')),
             report && h('div', { className: 'mt-3 space-y-3' },
               h('dl', { className: 'grid gap-2 sm:grid-cols-2 xl:grid-cols-4' },
                 [['Width', report.dimensionsMm && report.dimensionsMm.width, 'mm'], ['Depth', report.dimensionsMm && report.dimensionsMm.depth, 'mm'], ['Height', report.dimensionsMm && report.dimensionsMm.height, 'mm'], ['Triangles', report.triangleCount, '']].map(function (row) { return h('div', { key: row[0], className: 'rounded-xl bg-slate-950 p-3' }, h('dt', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-300' }, row[0]), h('dd', { className: 'mt-1 text-lg font-black text-white' }, row[1] == null ? '—' : row[1] + (row[2] ? ' ' + row[2] : ''))); })
@@ -1873,6 +2023,10 @@
             h('div', { className: 'mt-4 rounded-xl border border-cyan-800 bg-cyan-950/30 p-3 text-xs leading-5 text-cyan-100' },
               h('strong', null, 'Advisory, not certification. '),
               'Print Lab does not prove wall thickness, self-intersection repair, support success, material suitability, or machine safety. A trained staff member must inspect the sliced result before accepting a request.'
+            ),
+            report && h('div', { className: 'mt-4 rounded-xl border border-slate-600 p-3', 'data-print-next-step':'preflight' },
+              h('p', { className:'text-sm leading-6 text-slate-200' }, report.status === 'FAIL' ? 'Resolve the blocking findings before preparing print files. You can return to the model and its physical size.' : 'Next, choose the physical filament available for your printer. Keep the findings above in mind when reviewing the sliced model.'),
+              h('button', { type:'button', onClick:function(){chooseTab(report.status === 'FAIL' ? 'Design' : 'Materials');}, className:'mt-3 min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-sm font-black text-white' }, report.status === 'FAIL' ? 'Review model & scale' : 'Continue to Materials')
             )
           )
         );
@@ -1931,26 +2085,65 @@
               h('p', { className: 'mt-2 text-[0.6875rem] leading-5 text-slate-300' }, materialEstimate ? 'Rough scenario estimate, not an upper bound on filament use. It assumes a fixed 22% shell fraction; actual walls, supports, overlaps, and purge waste can change the result in either direction.' : 'Imported mesh reports in this pilot do not estimate solid volume reliably enough to quote material.'),
               h('p', { className: 'mt-3 text-[0.6875rem] leading-5 text-amber-100' }, 'Follow the printer manufacturer, filament manufacturer, school ventilation/enclosure, supervision, burn, moving-parts, and post-processing procedures. This tool does not replace them.')
             )
+          ),
+          h('section', { className:'rounded-2xl border border-cyan-700 bg-slate-900 p-4', 'aria-label':'Next print step', 'data-print-next-step':'materials' },
+            h('p', { className:'text-sm leading-6 text-slate-200' }, 'Selected filament: ' + chosenMaterial.name + '. ' + (!report || report.status === 'FAIL' ? 'Check the model and resolve blocking findings before preparing print files.' : 'Continue to prepare your STL and review package. This does not start a printer.')),
+            h('button', { type:'button', onClick:function(){chooseTab(!report || report.status === 'FAIL' ? 'Preflight' : 'Submit');}, className:'mt-3 min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-sm font-black text-white' }, !report || report.status === 'FAIL' ? 'Return to Preflight' : 'Continue to Submit')
           )
         );
       }
 
       function submitPanel() {
-        return h('div', { className: 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]' },
+        var downloadBusy = !!(downloadFeedback && downloadFeedback.status === 'busy');
+        var needsPreflight = !report || report.status === 'FAIL';
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]' },
           h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'submission-details-title' },
             h('h2', { id: 'submission-details-title', className: 'text-lg font-black text-white' }, 'Prepare a staff-review handoff'),
             h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Describe the object, not the student. Do not enter a full name, email, student ID, or other personal information. The package is not a purchase and does not deduct points.'),
             h('div', { className: 'mt-3 space-y-3' },
-              field('Model title', title, function (value) { cancelOperation('handoff'); setTitle(value); persist({ title: safeText(value, 100) }); }),
-              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'What is it for?'), h('textarea', { value: description, maxLength: 500, rows: 3, onChange: function (event) { cancelOperation('handoff'); setDescription(event.target.value); persist({ description: safeText(event.target.value, 500) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
-              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Design note for the reviewer'), h('textarea', { value: studentNote, maxLength: 300, rows: 3, onChange: function (event) { cancelOperation('handoff'); setStudentNote(event.target.value); persist({ studentNote: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
-              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'AI participation'), h('select', { value: aiUse, onChange: function (event) { cancelOperation('handoff'); setAiUse(event.target.value); persist({ aiUse: event.target.value }); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-white' }, h('option', { value: 'NONE' }, 'No AI assistance'), h('option', { value: 'ASSISTED' }, 'AI assisted part of the design'), h('option', { value: 'MOSTLY_AI' }, 'AI created most of the starting geometry'))),
-              aiUse !== 'NONE' && h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Explain the AI contribution'), h('textarea', { value: aiDisclosure, maxLength: 300, rows: 2, onChange: function (event) { cancelOperation('handoff'); setAiDisclosure(event.target.value); persist({ aiDisclosure: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' }))
+              field('Model title', title, function (value) { cancelMetadataDownloads(); setTitle(value); persist({ title: safeText(value, 100) }); }, { id: 'print-lab-model-title', ref: titleInputRef }),
+              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'What is it for?'), h('textarea', { value: description, maxLength: 500, rows: 3, onChange: function (event) { cancelMetadataDownloads(); setDescription(event.target.value); persist({ description: safeText(event.target.value, 500) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
+              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Design note for the reviewer'), h('textarea', { value: studentNote, maxLength: 300, rows: 3, onChange: function (event) { cancelMetadataDownloads(); setStudentNote(event.target.value); persist({ studentNote: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
+              h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'AI participation'), h('select', { value: aiUse, onChange: function (event) { cancelMetadataDownloads(); setAiDisclosureError(''); setAiUse(event.target.value); persist({ aiUse: event.target.value }); }, className: 'min-h-[44px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-white' }, h('option', { value: 'NONE' }, 'No AI assistance'), h('option', { value: 'ASSISTED' }, 'AI assisted part of the design'), h('option', { value: 'MOSTLY_AI' }, 'AI created most of the starting geometry'))),
+              aiUse !== 'NONE' && h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Explain the AI contribution'), h('textarea', { id: 'print-lab-ai-disclosure', ref: aiDisclosureInputRef, value: aiDisclosure, maxLength: 300, rows: 2, 'aria-required': 'true', 'aria-invalid': aiDisclosureError ? 'true' : undefined, 'aria-describedby': aiDisclosureError ? 'print-lab-ai-disclosure-error' : undefined, onChange: function (event) { cancelMetadataDownloads(); setAiDisclosureError(''); setAiDisclosure(event.target.value); persist({ aiDisclosure: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
+              aiDisclosureError && h('p', { id: 'print-lab-ai-disclosure-error', role: 'alert', className: 'rounded-xl border border-rose-500 bg-rose-950 p-3 text-sm leading-6 text-rose-100' }, aiDisclosureError)
+            )
+
+          ),
+          h('aside', { className: 'space-y-3 rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'handoff-summary-title' },
+            h('h2', { id: 'handoff-summary-title', className: 'text-base font-black text-white' }, 'Handoff summary'),
+            needsPreflight && h('div', { id: 'print-lab-download-prerequisite', className: 'rounded-xl border border-amber-500 bg-amber-950/30 p-3 text-sm text-amber-100' },
+              h('p', null, report ? 'Resolve the blocking preflight findings before downloading print files.' : 'Run preflight to check this model and its physical size before downloading print files.'),
+              h('button', { type: 'button', onClick: function () { chooseTab('Preflight'); }, className: 'mt-2 min-h-[44px] rounded-lg border border-amber-400 px-3 font-bold text-white' }, 'Return to Preflight')),
+            !title.trim() && h('div', { id: 'print-lab-title-prerequisite', className: 'rounded-xl border border-slate-500 p-3 text-sm text-slate-200' },
+              h('p', null, 'Add a model title to include in the review handoff.'),
+              h('button', { type: 'button', onClick: function () { if (titleInputRef.current) titleInputRef.current.focus(); }, className: 'mt-2 min-h-[44px] rounded-lg border border-cyan-400 px-3 font-bold text-cyan-100' }, 'Add model title')),
+            h('dl', { className: 'space-y-2 text-xs' },
+              [['Format', format], ['Preflight', report ? report.status : 'Not run'], ['Scale', unitMm + ' mm per unit'], ['Material study', chosenMaterial.name], ['Review JSON embeds model', 'No'], ['School Rewards asset', rewardsAssetCompatibility.compatible ? (rewardsAssetCompatibility.needsAsset ? rewardsAssetSizeLabel + ' ready' : 'Recipe included') : rewardsAssetSizeLabel + ' too large']].map(function (row) { return h('div', { key: row[0], className: 'flex justify-between gap-3 border-b border-slate-800 pb-2' }, h('dt', { className: 'text-slate-300' }, row[0]), h('dd', { className: 'text-right font-bold text-white' }, row[1])); })
             ),
-            h('div', { className: 'mt-5 rounded-2xl border border-violet-700 bg-slate-950 p-4', 'aria-labelledby': 'job-ticket-title' },
+            h('p', { className: 'rounded-xl border border-cyan-800 bg-cyan-950/30 p-3 text-[0.6875rem] leading-5 text-cyan-100' }, 'The .alloflow-print.json file contains the design recipe when applicable, a generic source-file label, a content hash, scale declaration, AI disclosure, and the advisory report. It contains no account identifier and performs no network submission.'),
+            !rewardsAssetCompatibility.compatible && h('div', { className: 'rounded-xl border border-amber-500 bg-amber-950/35 p-3 text-[0.6875rem] leading-5 text-amber-100', role: 'alert', 'data-school-rewards-asset-ready': 'false' },
+              h('strong', { className: 'block text-xs text-white' }, 'Reduce the model before opening School Rewards'),
+              h('p', { className: 'mt-1' }, rewardsAssetCompatibility.reason + ' Current local file: ' + rewardsAssetSizeLabel + '; portal maximum: 4 MiB. The 5 MiB local inspection allowance is intentionally larger so staff can inspect and simplify a borderline file without uploading it.')
+            ),
+            sourceContext && sourceContext.sourceTool==='geometryWorld' && h('button',{type:'button',disabled:needsPreflight,'aria-disabled':downloadBusy?'true':undefined,'aria-describedby':needsPreflight?'print-lab-download-prerequisite':undefined,'data-print-download':'package',onClick:downloadPrintPackage,className:'min-h-[48px] w-full rounded-xl bg-emerald-700 px-4 text-sm font-black text-white disabled:opacity-50'+(downloadBusy?' opacity-60':'')},downloadBusy && downloadFeedback.kind==='package'?'Preparing print package…':'Download print package'),
+            sourceContext && sourceContext.sourceTool==='geometryWorld' && h('p',{className:'text-xs leading-5 text-slate-200'},'One ZIP contains the STL at its final millimeter size, block source, and review manifest. Use the editable world file to reopen supported builds.'),
+            h('button', { type: 'button', disabled: !title.trim() || needsPreflight, 'aria-disabled':downloadBusy?'true':undefined, 'aria-describedby':needsPreflight?'print-lab-download-prerequisite':!title.trim()?'print-lab-title-prerequisite':undefined,'data-print-download':'handoff', onClick: downloadHandoff, className: 'min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-sm font-black text-white disabled:opacity-50'+(downloadBusy?' opacity-60':'') }, downloadBusy && downloadFeedback.kind==='handoff'?'Preparing review handoff…':'Download review handoff'),
+            h('button', { type: 'button', disabled: needsPreflight, 'aria-disabled':downloadBusy?'true':undefined,'aria-describedby':needsPreflight?'print-lab-download-prerequisite':undefined,'data-print-download':'stl', onClick: exportStl, className: 'min-h-[44px] w-full rounded-xl border border-cyan-400 px-4 text-sm font-black text-cyan-100 disabled:opacity-50'+(downloadBusy?' opacity-60':'') }, downloadBusy && downloadFeedback.kind==='stl'?'Preparing STL…':'Optional STL export'),
+            h('div', { 'data-print-download-feedback': true, 'data-print-download-state': downloadFeedback ? downloadFeedback.status : 'idle', className: downloadFeedback ? 'rounded-xl border border-slate-500 bg-slate-950 p-3' : undefined },
+              h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm leading-6 text-white' }, downloadFeedback ? downloadFeedback.message : ''),
+              downloadBusy && h('button', { type: 'button', onClick: cancelDownload, className: 'mt-2 min-h-[44px] rounded-lg border border-slate-400 px-3 text-sm font-bold text-white' }, 'Cancel preparation')),
+            rewardsPortalUrl && h('button', { type: 'button', disabled: !rewardsAssetCompatibility.compatible, 'data-school-rewards-asset-ready': rewardsAssetCompatibility.compatible ? 'true' : 'false', onClick: function () { try { var popup = window.open(rewardsPortalUrl, '_blank', 'noopener,noreferrer'); if (popup) popup.opener = null; } catch (_) { announce(__alloT('stem.printlab.sr_the_school_rewards_portal_could_not_open', 'The School Rewards portal could not open.')); } }, className: 'min-h-[44px] w-full rounded-xl border border-emerald-400 bg-emerald-950/30 px-4 text-sm font-black text-emerald-100 disabled:cursor-not-allowed disabled:border-slate-600 disabled:text-slate-400' }, 'Open School Rewards portal'),
+            !rewardsPortalUrl && h('p', { className: 'text-[0.6875rem] leading-5 text-slate-300' }, 'Connect the Google Education School Rewards portal in AlloFlow Project Settings to open it directly from this step.'),
+            h('p', { className: 'text-[0.6875rem] leading-5 text-amber-100' }, 'The receiving school workflow must pair the handoff with the original GLB/STL when needed, verify the content hash, inspect the slicer preview, approve a point quote, and only then create a store request.')
+
+          )),
+            h('details', { className: 'rounded-2xl border border-violet-700 bg-slate-950 p-4', 'data-print-staff-details': true },
+              h('summary', { className: 'min-h-[44px] cursor-pointer py-2 text-base font-bold text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-200' }, 'Staff review: slicer evidence and Job Ticket'),
               h('h3', { id: 'job-ticket-title', className: 'text-base font-black text-white' }, 'Job Ticket'),
               h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'First slice in the approved school slicer, then import its comments. Print Lab reads metadata comments only: it never interprets or executes G-code commands.'),
-              h('label', { className: 'mt-3 inline-flex min-h-[44px] cursor-pointer items-center rounded-xl border border-violet-500 px-4 text-xs font-black text-violet-100' }, 'Import local G-code comment metadata', h('input', { type: 'file', accept: '.gcode,.gco,.gc,text/x-gcode', className: 'sr-only', onChange: importGcodeMetadata })),
+              h('label', { className: 'mt-3 inline-flex min-h-[44px] cursor-pointer items-center rounded-xl border border-violet-500 px-4 text-xs font-black text-violet-100 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-200' }, 'Import local G-code comment metadata', h('input', { type: 'file', accept: '.gcode,.gco,.gc,text/x-gcode', className: 'sr-only', onChange: importGcodeMetadata })),
               gcodeMetadata && h('dl', { className: 'mt-3 grid gap-2 text-xs sm:grid-cols-2' }, [['Slicer', gcodeMetadata.slicer || 'Not named'], ['Time', Math.round(gcodeMetadata.estimatedTimeSeconds / 60) + ' min'], ['Filament', gcodeMetadata.filamentGrams ? gcodeMetadata.filamentGrams + ' g' : gcodeMetadata.filamentLengthMm ? gcodeMetadata.filamentLengthMm + ' mm' : 'Mass not reported'], ['Layers', gcodeMetadata.layerCount || 'Not reported']].map(function (row) { return h('div', { key: row[0], className: 'rounded-lg bg-slate-900 p-2' }, h('dt', { className: 'text-slate-300' }, row[0]), h('dd', { className: 'font-bold text-white' }, row[1])); })),
               gcodeMetadata && !gcodeMetadata.filamentGrams && h('p', { className: 'mt-2 rounded-lg border border-amber-600 bg-amber-950/30 p-2 text-[0.6875rem] leading-5 text-amber-100' }, gcodeMetadata.filamentLengthMm ? 'This metadata reports filament length but not mass. Re-export from the approved slicer with filament grams enabled before creating a ticket.' : 'This metadata does not report filament mass. Re-export from the approved slicer with filament grams enabled before creating a ticket.'),
               h('fieldset', { className: 'mt-4 rounded-xl border border-slate-700 p-3' }, h('legend', { className: 'px-1 text-xs font-black text-white' }, 'Configurable point estimate'),
@@ -1965,45 +2158,28 @@
                 h('p', { className: 'mt-2 text-sm font-black text-cyan-200' }, pointQuote ? pointQuote.totalPoints + ' point advisory estimate' : 'Awaiting estimate'),
                 h('p', { className: 'text-[0.6875rem] text-slate-300' }, 'Includes base, setup, material, time, complexity, minimum, and rounding rules. It is not a charge until staff approves it.')
               ),
-              h('label', { className: 'mt-3 flex min-h-[40px] items-center gap-2 text-xs text-slate-200' }, h('input', { type: 'checkbox', checked: materialReviewed, onChange: function (event) { setMaterialReviewed(event.target.checked); clearJobArtifacts(); } }), 'Reviewer confirmed the exact material selection'),
-              h('label', { className: 'flex min-h-[40px] items-center gap-2 text-xs text-slate-200' }, h('input', { type: 'checkbox', checked: profileReviewed, onChange: function (event) { setProfileReviewed(event.target.checked); clearJobArtifacts(); } }), 'Reviewer confirmed the receiving printer profile'),
+              h('label', { className: 'mt-3 flex min-h-[44px] items-center gap-2 text-xs text-slate-200' }, h('input', { type: 'checkbox', checked: materialReviewed, onChange: function (event) { setMaterialReviewed(event.target.checked); clearJobArtifacts(); } }), 'Reviewer confirmed the exact material selection'),
+              h('label', { className: 'flex min-h-[44px] items-center gap-2 text-xs text-slate-200' }, h('input', { type: 'checkbox', checked: profileReviewed, onChange: function (event) { setProfileReviewed(event.target.checked); clearJobArtifacts(); } }), 'Reviewer confirmed the receiving printer profile'),
               h('button', { type: 'button', disabled: !gcodeEvidenceCurrent || !quoteMaterial || !materialReviewed || !profileReviewed || !report || report.status === 'FAIL', onClick: createJobTicket, className: 'mt-2 min-h-[44px] w-full rounded-xl bg-violet-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Create alloflow-print-job/1 ticket'),
               jobTicket && h('button', { type: 'button', onClick: downloadJobTicket, className: 'mt-2 min-h-[44px] w-full rounded-xl border border-violet-400 px-4 text-sm font-black text-violet-100' }, 'Download Job Ticket'),
               h('p', { className: 'mt-2 text-[0.6875rem] leading-5 text-amber-100' }, 'The ticket includes a deterministic SHA-256 digest of its normalized payload, excluding the integrity field. It can reveal later edits, but it is not a signature, authenticity proof, staff authorization, or server approval. It contains no commands, credentials, account identifier, or student identifier and does not authorize a physical print.')
-            )
-          ),
-          h('aside', { className: 'space-y-3 rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'handoff-summary-title' },
-            h('h2', { id: 'handoff-summary-title', className: 'text-base font-black text-white' }, 'Handoff summary'),
-            h('dl', { className: 'space-y-2 text-xs' },
-              [['Format', format], ['Preflight', report ? report.status : 'Not run'], ['Scale', unitMm + ' mm per unit'], ['Material study', chosenMaterial.name], ['Review JSON embeds model', 'No'], ['School Rewards asset', rewardsAssetCompatibility.compatible ? (rewardsAssetCompatibility.needsAsset ? rewardsAssetSizeLabel + ' ready' : 'Recipe included') : rewardsAssetSizeLabel + ' too large']].map(function (row) { return h('div', { key: row[0], className: 'flex justify-between gap-3 border-b border-slate-800 pb-2' }, h('dt', { className: 'text-slate-300' }, row[0]), h('dd', { className: 'text-right font-bold text-white' }, row[1])); })
             ),
-            h('p', { className: 'rounded-xl border border-cyan-800 bg-cyan-950/30 p-3 text-[0.6875rem] leading-5 text-cyan-100' }, 'The .alloflow-print.json file contains the design recipe when applicable, a generic source-file label, a content hash, scale declaration, AI disclosure, and the advisory report. It contains no account identifier and performs no network submission.'),
-            !rewardsAssetCompatibility.compatible && h('div', { className: 'rounded-xl border border-amber-500 bg-amber-950/35 p-3 text-[0.6875rem] leading-5 text-amber-100', role: 'alert', 'data-school-rewards-asset-ready': 'false' },
-              h('strong', { className: 'block text-xs text-white' }, 'Reduce the model before opening School Rewards'),
-              h('p', { className: 'mt-1' }, rewardsAssetCompatibility.reason + ' Current local file: ' + rewardsAssetSizeLabel + '; portal maximum: 4 MiB. The 5 MiB local inspection allowance is intentionally larger so staff can inspect and simplify a borderline file without uploading it.')
-            ),
-            sourceContext && sourceContext.sourceTool==='geometryWorld' && h('button',{type:'button',disabled:!report || report.status==='FAIL',onClick:downloadPrintPackage,className:'min-h-[48px] w-full rounded-xl bg-emerald-700 px-4 text-sm font-black text-white disabled:opacity-50'},'Download print package'),
-            sourceContext && sourceContext.sourceTool==='geometryWorld' && h('p',{className:'text-xs leading-5 text-slate-200'},'One ZIP contains the STL at its final millimeter size, block source, and review manifest. Use the editable world file to reopen supported builds.'),
-            h('button', { type: 'button', disabled: !title.trim() || !report || report.status === 'FAIL', onClick: downloadHandoff, className: 'min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Download review handoff'),
-            rewardsPortalUrl && h('button', { type: 'button', disabled: !rewardsAssetCompatibility.compatible, 'data-school-rewards-asset-ready': rewardsAssetCompatibility.compatible ? 'true' : 'false', onClick: function () { try { var popup = window.open(rewardsPortalUrl, '_blank', 'noopener,noreferrer'); if (popup) popup.opener = null; } catch (_) { announce(__alloT('stem.printlab.sr_the_school_rewards_portal_could_not_open', 'The School Rewards portal could not open.')); } }, className: 'min-h-[44px] w-full rounded-xl border border-emerald-400 bg-emerald-950/30 px-4 text-sm font-black text-emerald-100 disabled:cursor-not-allowed disabled:border-slate-600 disabled:text-slate-400' }, 'Open School Rewards portal'),
-            !rewardsPortalUrl && h('p', { className: 'text-[0.6875rem] leading-5 text-slate-300' }, 'Connect the Google Education School Rewards portal in AlloFlow Project Settings to open it directly from this step.'),
-            h('button', { type: 'button', disabled: !report || report.status === 'FAIL', onClick: exportStl, className: 'min-h-[44px] w-full rounded-xl border border-cyan-400 px-4 text-sm font-black text-cyan-100 disabled:opacity-50' }, 'Optional STL export'),
-            h('p', { className: 'text-[0.6875rem] leading-5 text-amber-100' }, 'The receiving school workflow must pair the handoff with the original GLB/STL when needed, verify the content hash, inspect the slicer preview, approve a point quote, and only then create a store request.'),
-            h('section', { className: 'rounded-xl border border-emerald-700 bg-slate-950 p-3', 'aria-labelledby': 'simulator-title' },
+            h('details', { className: 'rounded-2xl border border-emerald-700 bg-slate-950 p-4', 'data-print-simulator-details': true },
+              h('summary', { className: 'min-h-[44px] cursor-pointer py-2 text-base font-bold text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-200' }, 'Optional: practice with the simulator'),
               h('h3', { id: 'simulator-title', className: 'text-sm font-black text-white' }, 'Simulator'),
               h('p', { className: 'mt-1 text-[0.6875rem] leading-5 text-slate-300' }, 'Practice queue, telemetry, and two-printer capacity planning locally. OctoPrint, Moonraker, PrusaLink, Bambu, CuraEngine, PrusaSlicer, OrcaSlicer, boolean/remesh, wall-thickness, and text-to-mesh adapters remain disabled.'),
-              h('button', { type: 'button', disabled: !jobTicket, onClick: queueSimulation, className: 'mt-2 min-h-[40px] w-full rounded-lg bg-emerald-700 px-3 text-xs font-black text-white disabled:opacity-50' }, 'Queue in simulator'),
-              h('button', { type: 'button', disabled: !simulatorJobKey, onClick: advanceSimulation, className: 'mt-2 min-h-[40px] w-full rounded-lg border border-emerald-500 px-3 text-xs font-black text-emerald-100 disabled:opacity-50' }, 'Advance simulated telemetry'),
-              h('button', { type: 'button', disabled: !jobTicket, onClick: planCapacity, className: 'mt-2 min-h-[40px] w-full rounded-lg border border-cyan-500 px-3 text-xs font-black text-cyan-100 disabled:opacity-50' }, 'Plan 3-copy / 2-printer example'),
+              h('button', { type: 'button', disabled: !jobTicket, onClick: queueSimulation, className: 'mt-2 min-h-[44px] w-full rounded-lg bg-emerald-700 px-3 text-xs font-black text-white disabled:opacity-50' }, 'Queue in simulator'),
+              h('button', { type: 'button', disabled: !simulatorJobKey, onClick: advanceSimulation, className: 'mt-2 min-h-[44px] w-full rounded-lg border border-emerald-500 px-3 text-xs font-black text-emerald-100 disabled:opacity-50' }, 'Advance simulated telemetry'),
+              h('button', { type: 'button', disabled: !jobTicket, onClick: planCapacity, className: 'mt-2 min-h-[44px] w-full rounded-lg border border-cyan-500 px-3 text-xs font-black text-cyan-100 disabled:opacity-50' }, 'Plan 3-copy / 2-printer example'),
               simulatorSnapshot && simulatorJobKey && h('p', { className: 'mt-2 text-xs font-bold text-white' }, 'Simulated state: ', simulatorSnapshot.jobs[simulatorJobKey] && simulatorSnapshot.jobs[simulatorJobKey].state),
               simulatedSchedule && h('p', { className: 'mt-2 text-[0.6875rem] text-slate-300' }, simulatedSchedule.assignments.length + ' simulated assignment(s); ' + simulatedSchedule.unscheduled.length + ' unscheduled.')
             )
-          )
         );
       }
 
       var panel = activeTab === 'Design' ? designPanel() : activeTab === 'Preflight' ? preflightPanel() : activeTab === 'Materials' ? materialsPanel() : submitPanel();
-      return h('div', { className: 'mx-auto max-w-7xl space-y-4 rounded-3xl bg-slate-950 p-3 text-slate-100 sm:p-5', 'data-print-lab': 'true' },
+      return h('div', { ref:workflowRootRef, className: 'mx-auto max-w-7xl space-y-4 rounded-3xl bg-slate-950 p-3 text-slate-100 sm:p-5', 'data-print-lab': 'true' },
+        h('style',null,'@media(forced-colors:active){[data-print-lab] button{border:1px solid ButtonText!important}[data-print-lab] button:disabled{border-color:GrayText!important;color:GrayText!important}[data-print-lab] [role=tab][aria-selected=true]{border:2px solid Highlight!important;text-decoration:underline;text-underline-offset:4px}[data-print-lab] :focus-visible{outline:3px solid Highlight!important;outline-offset:3px}}'),
         h('header', { className: 'rounded-2xl border border-cyan-800 bg-gradient-to-br from-cyan-950 via-slate-900 to-violet-950 p-5' },
           h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-[.18em] text-cyan-300' }, 'Additive manufacturing studio'),
           h('h1', { className: 'mt-1 text-2xl font-black text-white' }, 'Print Lab'),

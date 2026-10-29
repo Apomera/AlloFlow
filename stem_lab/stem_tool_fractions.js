@@ -11735,7 +11735,7 @@ window.StemLab = window.StemLab || {
         !challenge
           ? h('button', { 'aria-label': __alloT('stem.fractions.generate_challenge', 'Generate Challenge'),
               onClick: generateChallenge,
-              className: 'w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold rounded-xl text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md'
+              className: 'w-full py-2.5 bg-gradient-to-r from-rose-700 to-pink-700 text-white font-bold rounded-xl text-sm hover:from-rose-700 hover:to-pink-700 transition-all shadow-md'
             }, __alloT('stem.fractions.generate_challenge_2', '\uD83C\uDFB2 Generate Challenge'))
           : h('div', { className: 'space-y-2' },
               h('div', { className: 'flex items-center gap-2' },

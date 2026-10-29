@@ -1,0 +1,17 @@
+{
+  "checked": "2026-10-28",
+  "scope": "Two new attached filter feeders, model portraits, identification practice, guide entries and modest dive encounters; five sourced connections among existing species.",
+  "modelLimits": "Posed dimensions, counts, placement and subtle motion are illustration choices. Reported collection depths are not physiological limits. Neither new species is given coral bleaching states. The worm crown is not a complete taxonomic key.",
+  "species": [
+    {"id":"goldmouth_sea_squirt","scientific":"Polycarpa aurata","iucn":"NE","iucnYear":null,"sources":["https://www.marinespecies.org/aphia.php?id=251001&p=taxdetails","https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-chordata","https://journal.ugm.ac.id/TradMedJ/article/viewFile/105930/43949","https://www.sealifebase.ca/FieldGuide/FieldGuideSummary.php?c_code=608&genusname=Polycarpa&speciesname=aurata"],"support":"WoRMS accepted name; Hawaii tunicate anatomy and larval chordate features; Herwin et al. 2026 p132 documented two siphons and colour variation; SeaLifeBase reported Indo-West Pacific, 3-20m and Not Evaluated. No medicinal claims included."},
+    {"id":"feather_duster_worm","scientific":"Sabellastarte spectabilis","iucn":"NE","iucnYear":null,"sources":["https://www.marinespecies.org/aphia.php?id=429077&p=taxdetails","https://www.vliz.be/imisdocs/publications/356989.pdf","https://collections.museumsvictoria.com.au/species/8516","https://www.enature.qa/specie/sabellastarte-spectabilis/"],"support":"WoRMS accepted name; Tovar-Hernandez et al. 2020 p55-58 and fig21 paired nearly circular radiolar lobes, sand-covered tube, Indonesian collections at 3-16m and taxonomic uncertainty. Museums Victoria genus-level crown withdrawal and identification limits. Qatar e-Nature feeding, banding and Not Evaluated. No reproductive generalizations."}
+  ],
+  "population": {"healthyPrevious":237,"healthyCurrent":239,"budget":240,"addedCounts":{"goldmouth_sea_squirt":1,"feather_duster_worm":1},"meaning":"Illustrative encounter counts, not abundance estimates."},
+  "verification": {
+    "models": "Both models visually reviewed in high/low detail and alternate angles; two draws each, reduced-motion and disposal tests pass. High detail worm uses a specific 16000-triangle cap for curved pinnules; existing species caps are unchanged.",
+    "focusedTests": "Catalog, population, role collections, field marks, source links, practice, real/fallback anchoring, geometry, draw batches, connections, navigation and i18n checks pass.",
+    "browser": "9 desktop/phone guide and connection checks plus 7 focused live-dive checks passed with no browser/shader/network errors. Whole-scene census verified 76 living species and 239 organism groups; both new organisms can be located without awarding identification credit.",
+    "reports": ["reports/coralreef-species-diversity-2026-10-28/guide-verification.json","reports/coralreef-species-diversity-2026-10-28/dive-focused/report.json"],
+    "limits": "The exhaustive whole-catalog bleaching/material-family test timed out, including an isolated temporary 300-second retry; its other nine checks passed. A broader dive interaction run timed out at the existing varicose phyllidia observation control; focused checks for the two additions passed. No public deployment performed."
+  }
+}

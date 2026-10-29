@@ -144,7 +144,9 @@
     ocellated_eagle_ray: ['fish', 'solitary', 4.2, 0, 60], textile_cone: ['invertebrate', 'bottom', 0.09, 0, 50],
     orange_cup_coral: ['coral', 'sessile', 0.075, 1, 60], banded_sea_krait: ['reptile', 'solitary', 1.2, 0, 60],
     white_spotted_hermit_crab: ['invertebrate', 'bottom', 0.20, 0, 50], longfin_bannerfish: ['fish', 'pair', 0.15, 2, 75],
-    bigfin_reef_squid: ['invertebrate', 'hover', 0.40, 0, 100]
+    bigfin_reef_squid: ['invertebrate', 'hover', 0.40, 0, 100],
+    goldmouth_sea_squirt: ['invertebrate', 'sessile', 0.12, 3, 20],
+    feather_duster_worm: ['invertebrate', 'sessile', 0.16, 3, 16]
   };
   var SPECIAL = {
     whitetip_reef_shark: 'cruise', reef_manta: 'manta', green_turtle: 'turtle', hawksbill_turtle: 'turtle', giant_moray: 'moray',
@@ -170,7 +172,8 @@
     firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand', leaf_scorpionfish: 'rubble', longnose_hawkfish: 'slope', chocolate_chip_sea_star: 'sand',
     porcelain_anemone_crab: 'anemone', varicose_phyllidia: 'reef', broadclub_cuttlefish: 'rubbleEdge', blackspotted_puffer: 'garden',
     ocellated_eagle_ray: 'channel', textile_cone: 'rubbleEdge', orange_cup_coral: 'shadedRock', banded_sea_krait: 'bommieSide',
-    white_spotted_hermit_crab: 'rubble', longfin_bannerfish: 'slope', bigfin_reef_squid: 'channel'
+    white_spotted_hermit_crab: 'rubble', longfin_bannerfish: 'slope', bigfin_reef_squid: 'channel',
+    goldmouth_sea_squirt: 'shadedShoulder', feather_duster_worm: 'rockShoulder'
   };
   function speciesInfo(Species, id) {
     var raw = null, fb = INFO[id] || null;
@@ -1230,6 +1233,7 @@
     blue_sea_star: ['star', 0x2f6fe0, 0x5f8ff0, 5], long_spined_urchin: ['urchin', 0x111116, 0x2a2a3a], nudibranch: ['slug', 0x7a3ad8, 0xf5a01e],
     cleaner_shrimp: ['slug', 0xd83a2a, 0xffffff], christmas_tree_worm: ['worm', 0x3fb0ff, 0xf5f5f5], day_octopus: ['octopus', 0x9a6a4a, 0xd0a080],
     sea_cucumber: ['cucumber', 0x2a2a20, 0x5a5040], sea_fan: ['fan', 0xc84a6a, 0xe07a8a], barrel_sponge: ['barrel', 0x9a4a3a, 0xc07050],
+    goldmouth_sea_squirt: ['tunicate', 0xd9d2df, 0xf0aa38], feather_duster_worm: ['featherworm', 0x805237, 0xebd8b4],
     soft_coral: ['soft', 0xe07ab0, 0xf5c0d8], brain_coral: ['brain', 0xb8a050, 0x7a8a40], staghorn_coral: ['staghorn', 0xc8a070, 0xe8d0a0],
     table_coral: ['table', 0x8a9a5a, 0xb0c080], mushroom_coral: ['mushroom', 0xb8a080, 0xd8c8a0], boulder_coral: ['boulder', 0x8a7a50, 0xa89a60],
     cauliflower_coral: ['staghorn', 0xb68180, 0xe4c5bd], foliose_coral: ['table', 0xb78675, 0xe8cbb5],
@@ -1317,6 +1321,22 @@
       var cuc = shape === 'cucumber';
       ball(0, (cuc ? 0.12 : 0.1) * L, 0, 0.5 * L, (cuc ? 0.13 : 0.16) * L, (cuc ? 0.15 : 0.2) * L, function (x, y, z, nx, ny, nz, rgb) { var e = !cuc && Math.abs(nz) > 0.75, c = e ? B : A, s = 0.75 + 0.3 * ny; rgb[0] = c.r * s; rgb[1] = c.g * s; rgb[2] = c.b * s; });
       if (!cuc) { fin([0.34 * L, 0.2 * L, 0.05 * L], [0.38 * L, 0.42 * L, 0.06 * L], [0.3 * L, 0.2 * L, 0.06 * L], B); fin([0.34 * L, 0.2 * L, -0.05 * L], [0.3 * L, 0.2 * L, -0.06 * L], [0.38 * L, 0.42 * L, -0.06 * L], B); }
+    } else if (shape === 'tunicate') {
+      ball(0, 0.4 * L, 0, 0.28 * L, 0.4 * L, 0.24 * L, paint(A));
+      ball(-0.03 * L, 0.78 * L, 0, 0.16 * L, 0.16 * L, 0.14 * L, paint(B));
+      ball(-0.03 * L, 0.916 * L, 0, 0.105 * L, 0.012 * L, 0.09 * L, paint(new T.Color(0.06, 0.025, 0.035), false));
+      ball(0.22 * L, 0.56 * L, 0, 0.18 * L, 0.13 * L, 0.13 * L, paint(B));
+      ball(0.376 * L, 0.56 * L, 0, 0.012 * L, 0.08 * L, 0.085 * L, paint(new T.Color(0.06, 0.025, 0.035), false));
+    } else if (shape === 'featherworm') {
+      tube([[0, 0, 0], [0, 0.1 * L, 0], [0, 0.2 * L, 0], [0, 0.3 * L, 0]], 0.065 * L, 0, A);
+      for (var lobe = 0; lobe < 2; lobe++) for (k = 0; k < 9; k++) {
+        var angle = k / 8 * Math.PI + lobe * Math.PI, dx = Math.cos(angle) * 0.45 * L, dz = Math.sin(angle) * 0.45 * L;
+        tube([[0, 0.28 * L, 0], [dx * 0.3, 0.4 * L, dz * 0.3], [dx * 0.7, 0.51 * L, dz * 0.7], [dx, 0.55 * L, dz]], 0.006 * L, 0.8, k % 2 ? A : B);
+        for (var feather = 1; feather < 6; feather++) {
+          var t = feather / 6, px = dx * t, py = (0.28 + 0.27 * t) * L, pz = dz * t;
+          tube([[px - dz * 0.1, py, pz + dx * 0.1], [px - dz * 0.03, py, pz + dx * 0.03], [px + dz * 0.03, py, pz - dx * 0.03], [px + dz * 0.1, py, pz - dx * 0.1]], 0.002 * L, 0.5, B);
+        }
+      }
     } else if (shape === 'worm') {
       [-1, 1].forEach(function (side) { var g = new T.ConeGeometry(0.42 * L, 1.1 * L, detail ? 10 : 6, 4); g.translate(0, 0.55 * L, 0); b.absorb(T, g, M(side * 0.32 * L, 0, 0, 1, 1, 1), function (x, y, z, nx, ny, nz, rgb) { var c = Math.sin(y / L * 30) > 0.6 ? B : A; rgb[0] = c.r; rgb[1] = c.g; rgb[2] = c.b; }); });
     } else if (shape === 'octopus') {
@@ -2215,6 +2235,20 @@
         // shoulder, not the sun-facing coral garden or an invented cave ceiling.
         a = Math.atan2(-0.3, -0.42) - Math.atan2(bm.s, bm.c) + (v - 0.5) * 0.7;
         return onBommie(bm, a, 0.76 + 0.13 * w);
+      }
+      if (zone === 'rockShoulder' || zone === 'shadedShoulder') {
+        // Attached filter feeders need exposed hard substrate, rather than a
+        // sandy floor point merely near a rubble field. Uphill rock skirts can
+        // be buried by the rendered floor: move inward to an exposed shoulder.
+        bm = bommies[Math.floor(u * bommies.length) % bommies.length];
+        a = zone === 'shadedShoulder' ? Math.atan2(-0.3, -0.42) - Math.atan2(bm.s, bm.c) + (v - 0.5) * 0.7 : v * TAU;
+        for (var inset = 0; inset < 6; inset++) {
+          var shoulder = onBommie(bm, a, (0.55 + 0.2 * w) * Math.pow(0.74, inset));
+          if (!shoulder || shoulder.y < terrain.floorY(shoulder.x, shoulder.z) + 0.2) continue;
+          var support = exposedRockAt(shoulder.x, shoulder.z);
+          if (support) { shoulder.y = support.point.y; return shoulder; }
+        }
+        return null;
       }
       if (zone === 'station' || zone === 'stationBase') {
         bm = station; a = v * TAU;
@@ -3428,16 +3462,25 @@
       // seated on the substrate rather than burying most of the living body.
       if (o.speciesId === 'nudibranch' || o.speciesId === 'cleaner_shrimp' || o.speciesId === 'harlequin_shrimp') return 0.0005;
       // A two-centimetre burial hides most of these small real specimens.
-      return o.speciesId === 'porcelain_anemone_crab' || o.speciesId === 'white_spotted_hermit_crab' || o.speciesId === 'varicose_phyllidia' || o.speciesId === 'textile_cone' || o.speciesId === 'orange_cup_coral' ? 0.002 : 0.02;
+      return o.speciesId === 'porcelain_anemone_crab' || o.speciesId === 'white_spotted_hermit_crab' || o.speciesId === 'varicose_phyllidia' || o.speciesId === 'textile_cone' || o.speciesId === 'orange_cup_coral' || o.speciesId === 'goldmouth_sea_squirt' || o.speciesId === 'feather_duster_worm' ? 0.002 : 0.02;
     }
     var substrateProbe;
+    function exposedRockAt(x, z) {
+      if (!bommieMesh || !floorMesh) return null;
+      bommieMesh.updateMatrixWorld(true); floorMesh.updateMatrixWorld(true);
+      var probe = substrateProbe || (substrateProbe = new T.Raycaster());
+      probe.ray.origin.set(x, 1, z); probe.ray.direction.set(0, -1, 0);
+      var rock = probe.intersectObject(bommieMesh, false)[0], floor = probe.intersectObject(floorMesh, false)[0];
+      return rock && (!floor || rock.point.y > floor.point.y + 0.15) ? rock : null;
+    }
     function matchSmallSubstrate(o) {
-      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp')) return;
+      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp' && o.speciesId !== 'goldmouth_sea_squirt' && o.speciesId !== 'feather_duster_worm')) return;
       // The rock's rendered triangles can lie centimetres above its smooth
       // analytic placement surface. Match these centimetre-sized animals to
       // the actual supporting face once, so their feet and bodies remain above
       // the reef. Larger colonies retain their established placement and tilt.
-      var surfaces = [floorMesh, bommieMesh].filter(Boolean);
+      var hardAttached = o.speciesId === 'goldmouth_sea_squirt' || o.speciesId === 'feather_duster_worm';
+      var surfaces = (hardAttached ? [bommieMesh] : [floorMesh, bommieMesh]).filter(Boolean);
       surfaces.forEach(function (mesh) { mesh.updateMatrixWorld(true); });
       var probe = substrateProbe || (substrateProbe = new T.Raycaster());
       probe.ray.origin.set(o.home.x, 1, o.home.z); probe.ray.direction.set(0, -1, 0);

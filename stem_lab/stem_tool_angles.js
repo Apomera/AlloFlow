@@ -24,6 +24,15 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // WCAG 1.4.3 high contrast: host buttons go black with green ink; drop the gradient painted over that black
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-angles-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-angles-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"protractor\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-angles')) return;
@@ -850,8 +859,8 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('h3', { style: { color: 'rgb(' + [16, 8, 0].map(function (s) { return Math.round((parseInt(meta.accent.slice(1), 16) >> s & 255) * 0.55); }).join(',') + ')', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),

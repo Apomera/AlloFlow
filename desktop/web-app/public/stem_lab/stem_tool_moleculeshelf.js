@@ -234,7 +234,7 @@
             : '🌱 ' + t('stem.moleculeShelf.ai_off', 'AI hints are off — the shelf still works, with built-in observation prompts instead of the AI coach.')))),
         h('button', {
           onClick: openShelf,
-          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-md shadow-indigo-600/20 transition-all w-fit',
+          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white ' + (ctx.theme === 'contrast' ? 'bg-black border-2 border-white' : 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700') + ' shadow-md shadow-indigo-600/20 transition-all w-fit',
           'aria-label': t('stem.moleculeShelf.open_title', 'Open the Molecule Shelf in a new window (Mol* viewer with the Notice-Wonder coach)')
         }, t('stem.moleculeShelf.open', '🧬 Open Molecule Shelf')),
         popupState === 'opening' && h('p', { className: 'text-xs text-sky-300' },

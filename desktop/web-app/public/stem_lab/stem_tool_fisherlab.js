@@ -290,6 +290,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       '.fl-sim-canvas:focus-visible { outline: 4px solid #fbbf24; outline-offset: -4px; }',
       // Keep the harbor, instrument rails, controls, and log in distinct layout areas.
       ".fl-fisherlab-root { container-type: inline-size; }",
+      // The root is painted dark in every theme: pin light inks (HC keeps yellow).
+      ".fl-fisherlab-root { --allo-stem-text:#e2e8f0; --allo-stem-text-soft:#cbd5e1; }",
+      ".theme-contrast .fl-fisherlab-root { --allo-stem-text:#ffff00; --allo-stem-text-soft:#ffff00; }",
       ".fl-fisherlab-root:has(.fl-theater) { container-type: normal; }",
       ".fl-large-text .fl-sim-instruments div, .fl-large-text .fl-sim-mission div { font-size:14px !important; line-height:1.5 !important; }",
       ".fl-sim-stage { position:relative; display:grid; grid-template-columns:180px minmax(0,1fr) 220px; grid-template-rows:auto clamp(420px,65vh,720px) auto auto; grid-template-areas:\"bar bar bar\" \"instruments scene mission\" \"controls controls controls\" \"log log log\"; gap:10px; overflow:hidden; border:1px solid #24475b; border-radius:12px; background:linear-gradient(145deg,#0b2233,#04121e); }",
@@ -19443,7 +19446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               },
               style: {
                 padding: '10px 8px',
-                background: isSelected ? 'linear-gradient(135deg, #0ea5e9, #0284c7)' : 'linear-gradient(135deg, #0f172a, #1e293b)',
+                background: isSelected ? 'linear-gradient(135deg, #0369a1, #075985)' : 'linear-gradient(135deg, #0f172a, #1e293b)',
                 color: isSelected ? '#ffffff' : '#94a3b8',
                 border: '1px solid ' + (isSelected ? '#38bdf8' : 'rgba(100,116,139,0.3)'),
                 borderRadius: 8,
@@ -20323,7 +20326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   padding: 12,
                   borderRadius: 8,
                   border: '1px solid ' + (route.tab === 'sim' ? '#5eead4' : 'rgba(226,232,240,0.16)'),
-                  background: route.tab === 'sim' ? 'linear-gradient(145deg, #115e59, #123747)' : 'linear-gradient(180deg, rgba(15,23,42,0.76), rgba(8,13,24,0.78))',
+                  background: route.tab === 'sim' ? 'linear-gradient(145deg, #0d4a47, #123747)' : 'linear-gradient(180deg, rgba(15,23,42,0.76), rgba(8,13,24,0.78))',
                   color: '#e2e8f0',
                   cursor: 'pointer',
                   display: 'flex',

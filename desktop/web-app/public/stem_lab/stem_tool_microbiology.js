@@ -37,7 +37,7 @@
       '--allo-stem-panel:#1e293b;' +
       '--allo-stem-deeper:#020617;' +
       '--allo-stem-text:#e2e8f0;' +
-      '--allo-stem-text-soft:#94a3b8;' +
+      '--allo-stem-text-soft:#cbd5e1;' +
       '--allo-stem-border:#334155;' +
       '--allo-stem-button-bg:#1e293b;' +
       '--allo-stem-button-text:#e2e8f0;' +

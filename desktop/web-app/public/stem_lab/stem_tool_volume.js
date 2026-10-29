@@ -95,6 +95,13 @@ window.StemLab = window.StemLab || {
       '@media (prefers-reduced-motion: reduce) { .allo-vol-cube { animation: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
+  })();  // WCAG 1.4.3 high contrast: pale mode cards, hero band and gradient buttons go black
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-volume-hc-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-volume-hc-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"volume\"] :is(.allo-vol-bg-slider,.allo-vol-bg-freeform,.allo-vol-bg-word,.allo-vol-bg-displacement,[id^=\"stem-volume-panel-\"],button[class*=\"bg-gradient-to-\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"volume\"] [id^=\"stem-volume-panel-\"] h3{color:#ffff00!important}";
+    document.head.appendChild(st);
   })();
 
 
@@ -3200,7 +3207,7 @@ window.StemLab = window.StemLab || {
           // Zoom
           !isDisplacement && h('div', { className: 'flex items-center gap-1' },
             h('button', { 'aria-label': __alloT('stem.volume.zoom_out', 'Zoom out'), onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
-            h('span', { className: 'text-[0.6875rem] text-emerald-600 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
+            h('span', { className: 'text-[0.6875rem] text-emerald-700 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
             h('button', { 'aria-label': __alloT('stem.volume.zoom_in', 'Zoom in'), onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
             h('button', { 'aria-label': __alloT('stem.volume.reset_3d_view_rotation_and_zoom', 'Reset 3D view rotation and zoom'), onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-600 text-emerald-700 font-bold text-[0.6875rem] hover:bg-emerald-100' }, '\u21BA'))
         ),
@@ -3248,10 +3255,10 @@ window.StemLab = window.StemLab || {
         // ── Topic-accent hero band per mode ──
         (function() {
           var MODE_META = {
-            slider:   { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83C\uDF9A', title: __alloT('stem.volume.slider_v_l_w_h_watch_it_grow', 'Slider \u2014 V = l \u00d7 w \u00d7 h, watch it grow'),     hint: __alloT('stem.volume.sliders_snap_to_integer_dimensions_gre', 'Sliders snap to integer dimensions \u2014 great for the early visual: doubling each side multiplies volume by 8 (2\u00b3). Surface area scales as 2\u00b2; volume as 2\u00b3. The square-cube law explains why elephants have thick legs and shrews can fall safely.') },
+            slider:   { accent: '#065f46', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83C\uDF9A', title: __alloT('stem.volume.slider_v_l_w_h_watch_it_grow', 'Slider \u2014 V = l \u00d7 w \u00d7 h, watch it grow'),     hint: __alloT('stem.volume.sliders_snap_to_integer_dimensions_gre', 'Sliders snap to integer dimensions \u2014 great for the early visual: doubling each side multiplies volume by 8 (2\u00b3). Surface area scales as 2\u00b2; volume as 2\u00b3. The square-cube law explains why elephants have thick legs and shrews can fall safely.') },
             freeform: { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: __alloT('stem.volume.freeform_build_any_shape_count_cubes', 'Freeform \u2014 build any shape, count cubes'),         hint: __alloT('stem.volume.l_blocks_hollow_shapes_irregular_prism', 'L-blocks, hollow shapes, irregular prisms. Volume = total cubes regardless of arrangement. CCSS 5.MD.5: relate volume of a right rectangular prism to multiplication and addition (V = b\u00d7h or as the sum of partial volumes).') },
-            word:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDCDD', title: __alloT('stem.volume.word_problems_volume_in_the_real_world', 'Word Problems \u2014 volume in the real world'),        hint: __alloT('stem.volume.a_fish_tank_with_5_3_4_60_cubes_of_wat', 'A fish tank with 5\u00d73\u00d74 = 60 cubes of water. A lunchbox of 4\u00d73\u00d72 = 24 sandwich cubes. Every multiplication of three dimensions is a real container with a real capacity. CCSS 5.MD.5b: solve real-world problems involving volume.') },
-            displacement: { accent: '#0369a1', soft: 'rgba(2,132,199,0.12)', icon: '\uD83E\uDDEA', title: 'Displacement Lab - measure volume with water', hint: dispUsesSinker ? 'Predict, record the sinker-only reading, fully submerge the cork with the sinker, and use combined minus sinker-only. The change in milliliters equals the cork volume in cubic centimeters.' : 'Predict, read the bottom of the meniscus, fully submerge the specimen, and use final minus initial. The change in milliliters equals the object volume in cubic centimeters.' }
+            word:     { accent: '#92400e', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDCDD', title: __alloT('stem.volume.word_problems_volume_in_the_real_world', 'Word Problems \u2014 volume in the real world'),        hint: __alloT('stem.volume.a_fish_tank_with_5_3_4_60_cubes_of_wat', 'A fish tank with 5\u00d73\u00d74 = 60 cubes of water. A lunchbox of 4\u00d73\u00d72 = 24 sandwich cubes. Every multiplication of three dimensions is a real container with a real capacity. CCSS 5.MD.5b: solve real-world problems involving volume.') },
+            displacement: { accent: '#075985', soft: 'rgba(2,132,199,0.12)', icon: '\uD83E\uDDEA', title: 'Displacement Lab - measure volume with water', hint: dispUsesSinker ? 'Predict, record the sinker-only reading, fully submerge the cork with the sinker, and use combined minus sinker-only. The change in milliliters equals the cork volume in cubic centimeters.' : 'Predict, read the bottom of the meniscus, fully submerge the specimen, and use final minus initial. The change in milliliters equals the object volume in cubic centimeters.' }
           };
           var modeKey = isDisplacement ? 'displacement' : (isWord ? 'word' : (isFreeform ? 'freeform' : 'slider'));
           var meta = MODE_META[modeKey];
@@ -3273,7 +3280,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -3370,7 +3377,7 @@ window.StemLab = window.StemLab || {
                 )
               )
             ),
-            h('p', { className: 'text-[0.625rem] text-amber-700 italic text-center' },
+            h('p', { className: 'text-[0.625rem] text-amber-800 italic text-center' },
               __alloT('stem.volume.adjust_the_sliders_below_to_match_the_', 'Adjust the sliders below to match the story — or try a new context. Solve 5 word problems to earn 📝 Word Wizard. Visit all 8 contexts for 🌍 Real-World Explorer.')
             )
           );
