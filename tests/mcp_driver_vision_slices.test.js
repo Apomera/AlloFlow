@@ -80,3 +80,27 @@ describe('selectVisionParts', () => {
     expect(noRender.parts[1].inline_data.data).toBe('RAWPDF');
   });
 });
+
+// (2026-10-28, NIST HB44 pages 58-61 of a 76 MB PDF: 3 x 99 MB inline) a page-range run on a large PDF
+// uses rendered pages, so each vision call carries only the pages it names.
+describe('page-range runs on large PDFs use rendered pages', () => {
+  const MB = (n) => Math.ceil(n * 1048576 * 4 / 3); // base64 length of an n-MB file
+  const base = { visionMode: undefined, modelBridge: null, fileName: 'hb44.pdf', pageRange: [58, 61] };
+  it('a slice of a file over 15 MB switches to image mode', () => {
+    expect(Driver.rangeRunNeedsImageMode({ ...base, base64Length: MB(76) })).toBe(true);
+    expect(Driver.rangeRunNeedsImageMode({ ...base, base64Length: MB(16) })).toBe(true);
+  });
+  it('a small file, a whole-document run, an agent bridge, image mode already, or a non-PDF stays as it was', () => {
+    expect(Driver.rangeRunNeedsImageMode({ ...base, base64Length: MB(14) })).toBe(false);
+    expect(Driver.rangeRunNeedsImageMode({ ...base, pageRange: null, base64Length: MB(76) })).toBe(false);
+    expect(Driver.rangeRunNeedsImageMode({ ...base, modelBridge: () => {}, base64Length: MB(76) })).toBe(false);
+    expect(Driver.rangeRunNeedsImageMode({ ...base, visionMode: 'images', base64Length: MB(76) })).toBe(false);
+    expect(Driver.rangeRunNeedsImageMode({ ...base, fileName: 'deck.pptx', base64Length: MB(76) })).toBe(false);
+  });
+  it('the run preparation applies it before rendering', async () => {
+    const { readFileSync } = await import('node:fs');
+    const src = readFileSync(resolve(process.cwd(), 'desktop/mcp/remediation_headless_driver.cjs'), 'utf8');
+    const prep = src.slice(src.indexOf('async function prepareVisionMode(runOpts) {'), src.indexOf('const rendered = await renderPdfToPageImages(runOpts.base64ForRender'));
+    expect(prep.includes("if (rangeRunNeedsImageMode({ visionMode, modelBridge: runOpts.modelBridge, fileName: runOpts.fileName, pageRange: runOpts.pageRange, base64Length: String(runOpts.base64ForRender || '').length })) {")).toBe(true);
+  });
+});

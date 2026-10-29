@@ -1,0 +1,18 @@
+
+          Analyze the provided text and create a structured visual representation.
+          Type: Venn Diagram
+          Identify two distinct contrasting categories (Set A, Set B) from the text and their shared commonalities (Shared).
+          CRITICAL FOR VENN DIAGRAM: You MUST return exactly 3 branches in this order: 1. The first distinct category (Set A). 2. The second distinct category (Set B). 3. The shared/overlapping traits (Title: 'Shared').
+          
+          Adapt the language to English and the complexity to 5th Grade.
+          
+          
+          
+          Do not use emojis.
+          
+          Return ONLY JSON matching this structure exactly (conceptually map the requested type to this hierarchy):
+          { "main": "Central Topic/Goal/Problem", "branches": [{ "sectionRole": "stable English machine role", "title": "Category/Step/Solution/Cause", "items": ["Detail/Substep/Effect"],  }] }
+          Note: Flow Chart "connections" use valid 0-based target indices and optional concise route labels; legacy "connectsTo" arrays are accepted and repaired automatically. Machine roles must remain stable English identifiers even when visible text is translated.
+          
+          Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+        

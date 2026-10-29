@@ -132,7 +132,7 @@ describe('1. the provenance footer states what AlloFlow did, and nothing it cann
     it(file + ' puts the helper in the contentinfo footer (English-marked) and the old claim is gone', () => {
       const src = read(file);
       const footer = sliceBetween(src, 'font-size:0.75rem;color:#475569;" lang="en" dir="ltr">', '</footer>', { file, label: 'provenance footer' });
-      expect(footer).toContain('${_alloOutputProvenanceFooterHtml({ fileNameHtml: _safeFileNameHtml, pageCount: pageCount })}');
+      expect(footer).toContain('${_alloOutputProvenanceFooterHtml({ fileNameHtml: _safeFileNameHtml, pageCount: pageCount, pageRange: _pageRange, totalPages: fullPageCount })}');
       expect(src).not.toMatch(/automatically transformed for accessibility compliance/i);
     });
   }

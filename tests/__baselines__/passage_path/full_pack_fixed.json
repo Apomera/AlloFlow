@@ -1,0 +1,575 @@
+{
+  "selected": [
+    {
+      "index": 0,
+      "type": "analysis",
+      "directive": "Essential verification step.",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "source-global-singleton",
+      "generationConfigFingerprint": "cfg-analysis-1igddki",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "analysis",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "fields": {},
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": null,
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-analysis-1igddki"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "type": "glossary",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "context-singleton",
+      "generationConfigFingerprint": "cfg-glossary-110rfer",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "glossary",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "auto",
+        "imageModel": "imagen-test",
+        "visionModel": "",
+        "fields": {
+          "effectiveImageStyle": "Auto"
+        },
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-glossary-110rfer"
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "type": "image",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-image-w75hn3",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "image",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "auto",
+        "imageModel": "imagen-test",
+        "visionModel": "",
+        "fields": {
+          "effectiveVisualStyle": "Auto"
+        },
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-image-w75hn3"
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "type": "outline",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-outline-1ii8ips",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "outline",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "fields": {},
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-outline-1ii8ips"
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "type": "sentence-frames",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-sentence-frames-1khgh5l",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "sentence-frames",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "fields": {},
+        "generationContext": {
+          "resource": {
+            "lessonDnaFingerprint": "src-1xtfg4m-124"
+          }
+        }
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-sentence-frames-1khgh5l"
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "type": "faq",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-faq-10qhi7e",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "faq",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "fields": {},
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-faq-10qhi7e"
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "type": "timeline",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-timeline-9lpdif",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "timeline",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "auto",
+        "imageModel": "imagen-test",
+        "visionModel": "",
+        "fields": {
+          "imageStyle": "Auto",
+          "mode": "auto"
+        },
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-timeline-9lpdif"
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "type": "persona",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-persona-1detnso",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "persona",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "fields": {
+          "sourceTopic": "The Moon"
+        },
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-persona-1detnso"
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "type": "concept-sort",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-concept-sort-1249j5e",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "concept-sort",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "auto",
+        "imageModel": "imagen-test",
+        "visionModel": "",
+        "fields": {
+          "imageStyle": "Auto",
+          "itemCount": "auto"
+        },
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-concept-sort-1249j5e"
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "type": "brainstorm",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-brainstorm-1vr7wse",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "brainstorm",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "fields": {
+          "activityConfig": {},
+          "activityMode": "ideas"
+        },
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-brainstorm-1vr7wse"
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "type": "quiz",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-quiz-1z0kcnu",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "quiz",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "auto",
+        "imageModel": "imagen-test",
+        "visionModel": "",
+        "fields": {
+          "mcqVisualMode": "none",
+          "quizMode": "exit-ticket"
+        },
+        "generationContext": {
+          "resource": {
+            "lessonDnaFingerprint": "src-1xtfg4m-124"
+          }
+        }
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-quiz-1z0kcnu"
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "type": "adventure",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "variant-repeatable",
+      "generationConfigFingerprint": "cfg-adventure-l3p9a7",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "adventure",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "fields": {},
+        "generationContext": {
+          "resource": {
+            "lessonDnaFingerprint": "src-1xtfg4m-124"
+          }
+        }
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-adventure-l3p9a7"
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "type": "lesson-plan",
+      "directive": "",
+      "action": "generate",
+      "generationAction": "generate",
+      "existingArtifactId": null,
+      "novelResource": true,
+      "generationPolicy": "context-singleton",
+      "generationConfigFingerprint": "cfg-lesson-plan-1nmmtxa",
+      "generationConfig": {
+        "version": "generation-config/v1",
+        "type": "lesson-plan",
+        "backend": "gemini",
+        "provider": "gemini",
+        "model": "gemini-test",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "fields": {},
+        "generationContext": {}
+      },
+      "variants": [
+        {
+          "action": "generate",
+          "reason": "No reusable artifact exists for this source-aware generation identity.",
+          "grade": "5th Grade",
+          "language": "English",
+          "existingArtifactId": null,
+          "generationConfigFingerprint": "cfg-lesson-plan-1nmmtxa"
+        }
+      ]
+    }
+  ],
+  "skipped": [],
+  "readingSource": {
+    "inputArtifactId": null,
+    "inputInstructionalText": {
+      "schemaVersion": 1,
+      "role": "primary",
+      "form": "original",
+      "sourceArtifactId": null,
+      "primaryArtifactId": null,
+      "designationSource": "workflow-default",
+      "replacementAuthorization": {
+        "authorized": false,
+        "source": "none"
+      },
+      "complexity": {
+        "requestedGrade": "",
+        "calibrationTarget": "",
+        "measuredGrade": null,
+        "method": "",
+        "status": "unavailable",
+        "contentFingerprint": "",
+        "measuredAt": "",
+        "language": "English",
+        "measurementScope": "",
+        "measurementVersion": "",
+        "extractionVersion": "",
+        "rawFleschKincaidGrade": null,
+        "displayFleschKincaidGrade": null,
+        "averageSentenceLength": null,
+        "averageSyllablesPerWord": null,
+        "bodyCounts": null,
+        "artifactCharacterCount": null,
+        "bodyCharacterCount": null,
+        "artifactFingerprint": "",
+        "bodyFingerprint": "",
+        "legacyArtifactMetrics": null
+      }
+    },
+    "sourceArtifactId": null,
+    "sourceInstructionalText": {
+      "schemaVersion": 1,
+      "role": "primary",
+      "form": "original",
+      "sourceArtifactId": null,
+      "primaryArtifactId": null,
+      "designationSource": "workflow-default",
+      "replacementAuthorization": {
+        "authorized": false,
+        "source": "none"
+      },
+      "complexity": {
+        "requestedGrade": "",
+        "calibrationTarget": "",
+        "measuredGrade": null,
+        "method": "",
+        "status": "unavailable",
+        "contentFingerprint": "",
+        "measuredAt": "",
+        "language": "English",
+        "measurementScope": "",
+        "measurementVersion": "",
+        "extractionVersion": "",
+        "rawFleschKincaidGrade": null,
+        "displayFleschKincaidGrade": null,
+        "averageSentenceLength": null,
+        "averageSyllablesPerWord": null,
+        "bodyCounts": null,
+        "artifactCharacterCount": null,
+        "bodyCharacterCount": null,
+        "artifactFingerprint": "",
+        "bodyFingerprint": "",
+        "legacyArtifactMetrics": null
+      }
+    },
+    "sourceFamilyId": "input-uncategorized-source-utf16-v1-7e5b4a5a-200",
+    "unitId": null,
+    "primaryArtifactId": null,
+    "sourceSelection": "input"
+  },
+  "estimatedProviderCalls": 13,
+  "estimatedResourceGenerations": 13,
+  "summary": {
+    "rowCount": 13,
+    "skippedRowCount": 0,
+    "variantCount": 13,
+    "expectedCalls": 13,
+    "imageCalls": 1,
+    "actions": {
+      "reuse": 0,
+      "generate": 13,
+      "variant": 0,
+      "refresh": 0
+    },
+    "resourceCalls": 13,
+    "providerCalls": 13,
+    "glossaryImageCalls": 0,
+    "glossaryImageEditCalls": 0,
+    "maxRequestConcurrency": 1
+  }
+}

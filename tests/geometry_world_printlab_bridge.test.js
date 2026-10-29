@@ -95,7 +95,8 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
       expect(source).toContain('Free Build Studio');
       expect(source).toContain('Open a blank Free Build Sandbox');
       expect(source).toContain('defaultPrintEnvelope');
-      expect(source).toContain('Print Lab block envelope');
+      expect(source).toContain('Prepare your 3D print');
+      expect(source).toContain('1. Physical size');
       expect(source).toContain('FALLBACK_BED_MM');
       expect(source).toContain('HANDOFF_UNIT_MM');
     });
@@ -180,6 +181,14 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
 function studentEngineAt(key, blockType = 'stone') {
   return { blocks: { [key]: { userData: { blockType, gridPos: { x: 0, y: 1, z: 0 } } } } };
 }
+// The print card follows the retained export selection; an M-key inspector
+// measurement alone no longer authorizes a printable size preview.
+function retainMeasuredBuild(ctx) {
+  const engine = window.__geoWorldEngine;
+  const measurement = ctx.toolData.geometryWorld.measureResult;
+  engine._builderSelection = { blocks: measurement.blocks.slice() };
+  engine.measureStructure = vi.fn(() => measurement);
+}
 // Tagged the way the engine tags the lesson floor (placeGroundBlock).
 function groundEngineAt(key) {
   return { blocks: { [key]: { userData: { blockType: 'grass', gridPos: { x: 0, y: 0, z: 0 }, _lessonBlock: true, _measurementLayer: 'ground' } } } };
@@ -206,6 +215,7 @@ describe('Geometry World bridge runtime behavior', () => {
         },
       },
     });
+    retainMeasuredBuild(ctx);
     const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() {
       return cfg.render(ctx);
     }));
@@ -241,7 +251,7 @@ describe('Geometry World bridge runtime behavior', () => {
     const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() {
       return cfg.render(ctx);
     }));
-    expect(html).not.toContain('Print Lab block envelope');
+    expect(html).not.toContain('id="gwe-print-preparation"');
     expect(html).not.toContain('125 × 125 × 5 mm');
     expect(html).toContain('That measurement was the ground or a lesson structure.');
     // The count and bounds still show; they are true, just not printable.
@@ -271,11 +281,13 @@ describe('Geometry World bridge runtime behavior', () => {
         },
       },
     });
+    retainMeasuredBuild(ctx);
     const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() {
       return cfg.render(ctx);
     }));
 
-    expect(html).toContain('Print Lab block envelope');
+    expect(html).toContain('Prepare your 3D print');
+    expect(html).toContain('1. Physical size');
     expect(html).toContain('50 × 40 × 30 mm');
     expect(html).toContain('Fits the 220 × 220 × 250 mm printer profile at 5 mm per block');
     expect(html).toContain('default printer profile');
@@ -311,6 +323,7 @@ describe('Geometry World bridge runtime behavior', () => {
         printLab: { profile: { name: 'Lab mini', bedWidthMm: 120, bedDepthMm: 120, bedHeightMm: 120 } },
       },
     });
+    retainMeasuredBuild(ctx);
     const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() {
       return cfg.render(ctx);
     }));
@@ -400,6 +413,7 @@ describe('Geometry World bridge runtime behavior', () => {
     window.__geoWorldEngine = studentEngineAt('0,1,0');
     const ctx = makeCtx({ toolData: { geometryWorld: { activeLesson: 'builderSandbox', worldActive: true, selectedBlock: 0, selectedShape: 0,
       measureResult: { isComplete: true, count: 43, L: 43, W: 20, H: 10, blocks: [{ x: 0, y: 1, z: 0 }] } } } });
+    retainMeasuredBuild(ctx);
     const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() { return cfg.render(ctx); }));
     expect(html).toContain('data-fit="tight"');
     expect(html).toContain('Tight fit');
@@ -567,10 +581,10 @@ describe('Geometry World bridge runtime behavior', () => {
     });
     const html = renderTool('printLab', { printLab: {} });
     expect(html).toContain('From Geometry World');
-    expect(html).toContain('Default: 5 mm / block');
+    expect(html).toContain('Applied: 5 mm / block');
     expect(html).toContain('Revise in Geometry World');
     expect(html).toContain('Download editable block source');
-    expect(html).toContain('Connected blocks');
+    expect(html).toContain('Selected blocks');
     expect(html).toContain('Current physical size');
     expect(html).toContain('5 × 10 × 15 mm');
     expect(html).toContain('Reset to 5 mm / block');
@@ -661,6 +675,11 @@ describe('Geometry World bridge runtime behavior', () => {
         setNativeValue.call(clearanceInput, '10');
         clearanceInput.dispatchEvent(new window.Event('input', { bubbles: true }));
       });
+
+      expect(host.textContent).toContain('Suggested scale: 6.66 mm per block');
+      const applyProfile = [...host.querySelectorAll('button')].find((button) => button.textContent === 'Apply printer profile');
+      expect(applyProfile).toBeTruthy();
+      act(() => applyProfile.click());
 
       expect(host.textContent).toContain('Suggested scale: 5 mm per block');
       expect(host.textContent).toContain('producing approximately 5 × 10 × 30 mm');
@@ -1033,13 +1052,13 @@ describe('the Showcase creations view keeps both Print Lab and a slicer-ready fi
   it('wires the panel button to the same Print Lab handoff the dock uses', () => {
     const panel = showcasePanel();
     expect(panel).toContain('Open in Print Lab');
-    expect(panel).toContain('openSelectedBuildInPrintLab(ctx)');
+    expect(panel).toContain('runShowcasePrintAction(openSelectedBuildInPrintLab)');
   });
 
   it('offers a standalone STL download beside it, so a student can use their own slicer', () => {
     const panel = showcasePanel();
     expect(panel).toContain('Download STL');
-    expect(panel).toContain('selectedBuildStlDownload(ctx)');
+    expect(panel).toContain('runShowcasePrintAction(selectedBuildStlDownload,');
     // The unit must be stated in the panel: a bare STL carries no unit metadata, so a student
     // importing into Cura/PrusaSlicer needs to know it is already millimetres at 100%.
     expect(panel).toMatch(/mm per block/);

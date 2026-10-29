@@ -1,0 +1,17 @@
+
+            Generate 3 Frequently Asked Questions (FAQs) based on the text below.
+            Write the questions a student reading THIS text is likely to get wrong or find confusing: likely misconceptions about its ideas, terms used in a confusing or unusual sense, and easily mixed-up details. Do not write generic questions about the topic. Ground every answer in the text: when a misconception is involved, name it and correct it using what the text says. Do not present outside facts as coming from the text; if a short piece of background the text does not give is essential, say plainly that it is background, not from the text.
+            Target Audience: 5th Grade students.
+            Language: English.
+            
+            
+            
+            Do not use emojis.
+            
+            Do NOT provide translations.
+            
+            Format: Return ONLY a JSON array of objects with "question", "answer"  keys.
+            Example: [{"question": "Why is the sky blue? ☁️", "answer": "...", "question_en": "...", "answer_en": "..."}]
+            
+            Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+        

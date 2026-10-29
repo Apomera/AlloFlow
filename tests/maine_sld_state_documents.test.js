@@ -183,7 +183,8 @@ describe('standalone PDF extraction leaves concurrent remediation source telemet
     expect(result.fullText).toBe(passage);
     expect(window.__alloSourceLinkCount).toBe(1);
     expect(window.__alloSourceFormFields).toEqual({ fields: 1, widgets: 1, withAccessibleName: 1 });
-    expect(window.__alloSourceLinks).toEqual([{ text: passage, url: 'https://example.gov/state/rule', occurrences: 1 }]);
+    // (2026-10-28) per-page counts ride along so a page-range run restores only its own pages' links
+    expect(window.__alloSourceLinks).toEqual([{ text: passage, url: 'https://example.gov/state/rule', occurrences: 1, byPage: { 1: 1 } }]);
     expect(setup.pdf.destroy).toHaveBeenCalledTimes(1);
   });
 });

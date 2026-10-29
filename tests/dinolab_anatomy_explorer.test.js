@@ -28,7 +28,7 @@ function definitions(id, mode = 'evidence') {
   const dn = art.DINOS.find(item => item.id === id), profile = art.skeletalAnatomyProfileFor(dn);
   return art.dinoDetailedBodyPartDefinitions(dn, profile.weightBearingForelimbs, art.reconstructionHypothesesFor(dn, profile, mode).active);
 }
-function render(id = 'archaeopteryx', selected = '', layers = {}, mode = 'evidence') {
+function render(id = 'archaeopteryx', selected = '', layers = {}, mode = 'evidence', quiz = null) {
   // The production component identity stays stable across renders. Reset only
   // the read-only evaluation's cache so each SSR scenario receives its own hooks.
   art.resetFieldStationForTest();
@@ -36,6 +36,9 @@ function render(id = 'archaeopteryx', selected = '', layers = {}, mode = 'eviden
     useState(initial) {
       if (initial && typeof initial === 'object' && initial.speciesId === id && Object.keys(initial).length === 2 && initial.id === '') {
         return React.useState({ speciesId: id, id: selected });
+      }
+      if (quiz && initial && initial.speciesId === id && Array.isArray(initial.deck) && Array.isArray(initial.answers)) {
+        return React.useState(Object.assign({}, initial, quiz));
       }
       return React.useState(initial);
     }
@@ -91,15 +94,58 @@ describe('Dino Lab anatomy explorer contract', () => {
       expect(parseInt(node.style.minHeight, 10)).toBeGreaterThanOrEqual(44);
     }
     expect(doc.querySelectorAll('#dinolab-anatomy-browser')).toHaveLength(1);
+    const svg = overlay.querySelector('svg');
+    expect(svg.getAttribute('aria-hidden')).toBe('true');
+    expect(svg.getAttribute('focusable')).toBe('false');
+    for (const attribute of ['data-dino-part-leader', 'data-dino-part-leader-outline', 'data-dino-part-ring', 'data-dino-part-ring-outline', 'data-dino-part-dot']) {
+      expect(Array.from(svg.querySelectorAll('[' + attribute + ']')).map(node => node.getAttribute(attribute))).toEqual(parts.map(part => part.id));
+    }
+    for (const part of parts) {
+      const group = svg.querySelector('[data-dino-part-line="' + part.id + '"]');
+      const leader = group.querySelector('[data-dino-part-leader]'), leaderOutline = group.querySelector('[data-dino-part-leader-outline]');
+      const ring = group.querySelector('[data-dino-part-ring]'), ringOutline = group.querySelector('[data-dino-part-ring-outline]');
+      const dot = group.querySelector('[data-dino-part-dot]');
+      expect([leader.tagName, leaderOutline.tagName, ring.tagName, ringOutline.tagName, dot.tagName]).toEqual(['line', 'line', 'circle', 'circle', 'circle']);
+      expect(Number(leaderOutline.getAttribute('stroke-width'))).toBeGreaterThanOrEqual(Number(leader.getAttribute('stroke-width')) + 2);
+      expect(Number(ringOutline.getAttribute('stroke-width'))).toBeGreaterThanOrEqual(Number(ring.getAttribute('stroke-width')) + 2);
+      expect(leaderOutline.getAttribute('stroke')).not.toBe(leader.getAttribute('stroke'));
+      expect(ringOutline.getAttribute('stroke')).not.toBe(ring.getAttribute('stroke'));
+      expect(Number(ringOutline.getAttribute('r'))).toBe(9); expect(ringOutline.getAttribute('r')).toBe(ring.getAttribute('r'));
+      expect(leaderOutline.compareDocumentPosition(leader) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(ringOutline.compareDocumentPosition(ring) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(group.querySelectorAll('[tabindex], button, a, [role]')).toHaveLength(0);
+    }
   });
 
-  it('gives the selected guide one focusable, accessible ID and exposes all four description fields', () => {
+  it('gives the selected guide one focusable, accessible ID and exposes its anatomical term with all four description fields', () => {
     const doc = render('archaeopteryx', 'wing'), guide = doc.getElementById('dinolab-selected-part-guide');
     expect(guide).not.toBeNull(); expect(doc.querySelectorAll('#dinolab-selected-part-guide')).toHaveLength(1);
     expect(guide.tagName).toBe('SECTION'); expect(guide.getAttribute('role')).toBe('region');
     expect(guide.getAttribute('aria-label')).toContain('anatomy description'); expect(guide.getAttribute('tabindex')).toBe('-1');
-    expect(Array.from(guide.querySelectorAll('dt')).map(node => node.textContent)).toEqual(['What it does', 'Characteristics', 'Look for', 'Fossils and inference']);
-    expect(guide.querySelectorAll('dd')).toHaveLength(4);
+    expect(Array.from(guide.querySelectorAll('dt')).map(node => node.textContent)).toEqual(['Anatomical term', 'What it does', 'Characteristics', 'Look for', 'Fossils and inference']);
+    expect(guide.querySelectorAll('dd')).toHaveLength(5);
+    expect(guide.querySelector('dt').nextElementSibling.textContent).toBe('Forelimb plumage');
+    const facts = guide.querySelector('.dinolab-part-facts'), part = definitions('archaeopteryx').find(item => item.id === 'wing');
+    expect(facts.tagName).toBe('DL'); expect(facts.children).toHaveLength(4);
+    expect(Array.from(facts.querySelectorAll('dd')).map(node => node.textContent)).toEqual([part.purpose, part.characteristics, part.look, part.evidence]);
+    for (const row of facts.children) {
+      expect(Array.from(row.children).map(node => node.tagName)).toEqual(['DT', 'DD']);
+    }
+    const inspection = guide.querySelector('.dinolab-part-inspection');
+    expect(inspection).not.toBeNull();
+    expect(facts.compareDocumentPosition(inspection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const navigation = guide.querySelector('.dinolab-part-guide-navigation');
+    expect(navigation.getAttribute('role')).toBe('group');
+    expect(navigation.getAttribute('aria-label')).toBe('Navigate from this body part');
+    expect(Array.from(navigation.querySelectorAll('button')).map(node => [node.textContent, node.getAttribute('aria-controls')])).toEqual([
+      ['View on model', 'dinolab-3d-canvas-archaeopteryx'], ['Back to body-part key', 'dinolab-body-part-key']
+    ]);
+    for (const button of navigation.querySelectorAll('button')) {
+      expect(button.getAttribute('type')).toBe('button');
+      expect(parseInt(button.style.minHeight, 10)).toBeGreaterThanOrEqual(44);
+      expect(doc.querySelectorAll('#' + button.getAttribute('aria-controls'))).toHaveLength(1);
+    }
+    expect(doc.getElementById('dinolab-body-part-key').tagName).toBe('DETAILS');
     expect(doc.querySelector('[data-dino-part-label="wing"]').getAttribute('aria-pressed')).toBe('true');
     expect(doc.querySelector('[data-dino-part-choice="wing"]').getAttribute('aria-pressed')).toBe('true');
     const link = guide.querySelector('a');
@@ -107,10 +153,97 @@ describe('Dino Lab anatomy explorer contract', () => {
     expect(link.getAttribute('aria-label')).toContain('opens in a new tab');
   });
 
+  it('places a selected-part summary after the viewer only for a valid anatomy selection, with usable guide and key targets', () => {
+    const doc = render('archaeopteryx', 'wing', { field3dScientificNames: false });
+    const summary = doc.querySelector('.dinolab-selected-part-summary');
+    expect(summary).not.toBeNull();
+    expect(doc.querySelectorAll('.dinolab-selected-part-summary')).toHaveLength(1);
+    expect(doc.querySelector('.dinolab-3d-viewer').nextElementSibling).toBe(summary);
+    expect(summary.textContent).toContain(definitions('archaeopteryx').find(part => part.id === 'wing').label);
+    expect(summary.textContent).toContain('Forelimb plumage');
+    expect(Array.from(summary.querySelectorAll('button')).map(node => [node.textContent, node.getAttribute('aria-controls')])).toEqual([
+      ['See whole animal', 'dinolab-3d-canvas-archaeopteryx'], ['Read part guide', 'dinolab-selected-part-guide'], ['Browse body parts', 'dinolab-body-part-key']
+    ]);
+    for (const button of summary.querySelectorAll('button')) {
+      expect(button.getAttribute('type')).toBe('button');
+      expect(parseInt(button.style.minHeight, 10)).toBeGreaterThanOrEqual(44);
+      expect(doc.querySelectorAll('#' + button.getAttribute('aria-controls'))).toHaveLength(1);
+    }
+    const contextToggle = summary.querySelector('[data-dino-part-context-toggle]');
+    expect(contextToggle.getAttribute('aria-pressed')).toBe('false');
+    expect(contextToggle.disabled).toBe(true); // SSR starts at the whole-animal study.
+    for (const [selection, layers, mode] of [
+      ['', {}, 'evidence'], ['unknown-part', {}, 'evidence'], ['wing', {}, 'classic'],
+      ['wing', { field3dLabelMode: 'evidence' }, 'evidence'], ['wing', { field3dLabelMode: 'none' }, 'evidence']
+    ]) expect(render('archaeopteryx', selection, layers, mode).querySelector('.dinolab-selected-part-summary')).toBeNull();
+  });
+
+  it('keeps facts in quiz feedback and review guides without adding selected-guide navigation or duplicate targets', () => {
+    const deck = art.dinoAnatomyQuizDeck(false, 17), target = deck[0].partId;
+    const answers = [{ partId: target, choice: target, correct: true, hintUsed: false }];
+    for (const finished of [false, true]) {
+      const doc = render('archaeopteryx', 'wing', { field3dShowBody: false, field3dShowSkeleton: false }, 'evidence', { open: true, deck, index: 0, answers, finished, review: finished ? target : '' });
+      const guide = doc.querySelector((finished ? '.dinolab-quiz-review-guide' : '.dinolab-quiz-feedback') + ' .dinolab-part-guide');
+      expect(guide).not.toBeNull();
+      expect(guide.hasAttribute('id')).toBe(false);
+      expect(guide.hasAttribute('tabindex')).toBe(false);
+      expect(guide.querySelector('.dinolab-part-guide-navigation')).toBeNull();
+      expect(guide.querySelector('.dinolab-part-inspection')).toBeNull();
+      expect(guide.querySelector('.dinolab-part-layer-help')).not.toBeNull();
+      expect(guide.querySelector('[data-dino-part-reveal]')).toBeNull();
+      expect(doc.querySelectorAll('[data-dino-part-reveal]')).toHaveLength(1);
+      expect(Array.from(guide.querySelectorAll('.dinolab-part-facts dt')).map(node => node.textContent)).toEqual(['What it does', 'Characteristics', 'Look for', 'Fossils and inference']);
+      expect(guide.querySelector('.dinolab-part-facts').textContent).toContain(definitions('archaeopteryx').find(part => part.id === target).evidence);
+      expect(doc.querySelectorAll('#dinolab-selected-part-guide')).toHaveLength(1);
+      expect(doc.querySelectorAll('#dinolab-body-part-key')).toHaveLength(1);
+      expect(doc.querySelectorAll('.dinolab-part-guide-navigation')).toHaveLength(1);
+    }
+  });
+
+  it('offers an accessible opt-in focus checkbox, restores its saved state and retains every model label name', () => {
+    const plain = render('archaeopteryx', 'wing');
+    const focused = render('archaeopteryx', 'wing', { field3dFocusSelectedLabel: true });
+    const labelNames = doc => Array.from(doc.querySelectorAll('[data-dino-part-label]')).map(node => [node.getAttribute('data-dino-part-label'), node.getAttribute('aria-label'), node.getAttribute('aria-pressed')]);
+    expect(labelNames(focused)).toEqual(labelNames(plain));
+    for (const [doc, checked] of [[plain, false], [focused, true]]) {
+      const checkbox = doc.getElementById('dinolab-focus-selected-label');
+      expect(checkbox).not.toBeNull(); expect(doc.querySelectorAll('#dinolab-focus-selected-label')).toHaveLength(1);
+      expect(checkbox.closest('.dinolab-selected-part-summary')).not.toBeNull();
+      expect(checkbox.tagName).toBe('INPUT'); expect(checkbox.type).toBe('checkbox');
+      expect(checkbox.checked).toBe(checked); expect(checkbox.disabled).toBe(false);
+      expect(doc.querySelector('label[for="dinolab-focus-selected-label"]').textContent.trim()).toBe('Focus selected label');
+      const helpId = checkbox.getAttribute('aria-describedby');
+      expect(helpId).toBeTruthy(); expect(doc.querySelectorAll('#' + helpId)).toHaveLength(1);
+      expect(doc.getElementById(helpId).textContent).toMatch(/supporting traces/i);
+      expect(doc.getElementById(helpId).textContent).toMatch(/keep their comparison landmarks/i);
+      expect(doc.querySelector('[data-dino-part-label="wing"]').getAttribute('aria-pressed')).toBe('true');
+      expect(doc.querySelectorAll('[data-dino-part-label]')).toHaveLength(definitions('archaeopteryx').length);
+    }
+    expect(render('archaeopteryx', '', { field3dFocusSelectedLabel: true }).querySelector('#dinolab-focus-selected-label')).toBeNull();
+    expect(render('archaeopteryx', 'wing', { field3dFocusSelectedLabel: true, field3dLabelMode: 'none' }).querySelector('#dinolab-focus-selected-label')).toBeNull();
+  });
+
   it('explains the selected part\'s hidden layer and omits the hint when that layer is visible', () => {
-    expect(render('archaeopteryx', 'skull', { field3dShowSkeleton: false }).querySelector('.dinolab-part-layer-help').textContent).toContain('fossil layer');
-    expect(render('archaeopteryx', 'wing', { field3dShowBody: false }).querySelector('.dinolab-part-layer-help').textContent).toContain('life surface');
-    expect(render('archaeopteryx', 'wing').querySelector('.dinolab-part-layer-help')).toBeNull();
+    for (const [part, layers, kind, text] of [
+      ['skull', { field3dShowSkeleton: false }, 'bone', 'fossil layer'],
+      ['skull', { field3dShowSkeleton: true, field3dBodyOpacity: 100 }, 'bone', 'opaque life surface'],
+      ['wing', { field3dShowBody: false }, 'life', 'life surface'],
+      ['hand', { field3dShowSkeleton: false, field3dShowBody: false }, 'model', 'Both model layers']
+    ]) {
+      const doc = render('archaeopteryx', part, layers), notice = doc.querySelector('.dinolab-part-visibility-notice');
+      expect(notice.closest('.dinolab-selected-part-summary')).not.toBeNull();
+      expect(notice.getAttribute('role')).toBe('note'); expect(notice.textContent).toContain(text);
+      const button = notice.querySelector('[data-dino-part-reveal]');
+      expect(doc.querySelectorAll('[data-dino-part-reveal]')).toHaveLength(1);
+      expect(button.getAttribute('data-dino-part-reveal')).toBe(kind); expect(button.type).toBe('button');
+      expect(doc.getElementById(button.getAttribute('aria-controls')).tagName).toBe('CANVAS');
+      expect(doc.getElementById(button.getAttribute('aria-describedby')).textContent).toBe(doc.querySelector('.dinolab-part-layer-help').textContent);
+      expect(doc.getElementById('dinolab-selected-part-guide').querySelector('[data-dino-part-reveal]')).toBeNull();
+    }
+    const visible = render('archaeopteryx', 'wing');
+    expect(visible.querySelector('.dinolab-part-layer-help')).toBeNull(); expect(visible.querySelector('.dinolab-part-visibility-notice')).toBeNull();
+    const proxy = render('dimetrodon', 'head', { field3dShowSkeleton: false, field3dShowBody: false });
+    expect(proxy.querySelector('.dinolab-part-layer-help')).toBeNull(); expect(proxy.querySelector('[data-dino-part-reveal]')).toBeNull();
   });
 
   it('identifies internal tissues as inferred proxies and offers an opacity reveal when the life surface hides them', () => {
@@ -120,12 +253,14 @@ describe('Dino Lab anatomy explorer contract', () => {
       expect(part, id).toBeDefined();
       expect(part.inferredProxy, id).toBe(true);
       expect(part.requiresTranslucentBody, id).toBe(true);
-      const opaqueGuide = render('archaeopteryx', id, { field3dBodyOpacity: 100 }).getElementById('dinolab-selected-part-guide');
+      const opaqueDoc = render('archaeopteryx', id, { field3dBodyOpacity: 100 }), opaqueGuide = opaqueDoc.getElementById('dinolab-selected-part-guide');
       expect(opaqueGuide.querySelector('.dinolab-part-layer-help').textContent).toContain('inferred tissue shapes');
-      expect(Array.from(opaqueGuide.querySelectorAll('button')).some(node => node.textContent === 'Reveal inferred tissues')).toBe(true);
-      const revealedGuide = render('archaeopteryx', id, { field3dBodyOpacity: 45 }).getElementById('dinolab-selected-part-guide');
+      expect(Array.from(opaqueGuide.querySelectorAll('button')).some(node => node.textContent === 'Reveal inferred tissues')).toBe(false);
+      const reveal = opaqueDoc.querySelector('.dinolab-selected-part-summary [data-dino-part-reveal="tissue"]');
+      expect(reveal.textContent).toBe('Reveal inferred tissues'); expect(opaqueDoc.querySelectorAll('[data-dino-part-reveal]')).toHaveLength(1);
+      const revealedDoc = render('archaeopteryx', id, { field3dBodyOpacity: 45 }), revealedGuide = revealedDoc.getElementById('dinolab-selected-part-guide');
       expect(revealedGuide.querySelector('.dinolab-part-layer-help')).toBeNull();
-      expect(Array.from(revealedGuide.querySelectorAll('button')).some(node => node.textContent === 'Reveal inferred tissues')).toBe(false);
+      expect(revealedDoc.querySelector('[data-dino-part-reveal]')).toBeNull();
     }
   });
 
@@ -148,19 +283,20 @@ describe('Dino Lab anatomy explorer contract', () => {
 
   it('selects a part, focuses its guide on request, and safely clears the selection', () => {
     const selectionSource = block('        function selectBodyPart(id, focusGuide) {', '        function applyStudyView(');
+    const guideFocusSource = block('        function focusBodyPartGuide() {', '        function focusBodyPartModel() {');
     const selection = vi.fn(), preset = vi.fn(), study = vi.fn(), camera = vi.fn(), interaction = vi.fn();
     const controls = { open: false }, closest = vi.fn(() => controls);
     const focus = vi.fn(() => expect(controls.open).toBe(true)), scroll = vi.fn(), selectedRef = { current: '' }, yaw = { current: { study: 'full' } };
     // A new selection must discard the frame saved for a different landmark.
     const inspectionFrame = { current: { part: 'head', study: 'head' } };
     const endTrace = vi.fn();
-    const make = new Function('bodyPartDefinitions', 'selectedBodyPartRef', 'setBodyPartSelection', 'props', 'notifyOrientationInteraction', 'setCameraPreset', 'yawRef', 'setStudyView', 'cameraControlRef', 'anatomyGuideRef', 'window', 'partInspectionFrameRef', 'endSupportingRelation', selectionSource + '\nreturn selectBodyPart;');
+    const make = new Function('bodyPartDefinitions', 'selectedBodyPartRef', 'setBodyPartSelection', 'props', 'notifyOrientationInteraction', 'setCameraPreset', 'yawRef', 'setStudyView', 'cameraControlRef', 'anatomyGuideRef', 'window', 'partInspectionFrameRef', 'endSupportingRelation', guideFocusSource + selectionSource + '\nreturn selectBodyPart;');
     const choose = make(definitions('archaeopteryx'), selectedRef, selection, { species: { id: 'archaeopteryx' } }, interaction, preset, yaw, study, { current: camera }, { current: { closest, focus, scrollIntoView: scroll } }, { requestAnimationFrame(callback) { callback(); } }, inspectionFrame, endTrace);
     choose('wing', true); expect(selectedRef.current).toBe('wing'); expect(interaction).toHaveBeenCalledOnce();
     expect(inspectionFrame.current).toBeNull();
     expect(endTrace).toHaveBeenCalledWith(false);
     expect(closest).toHaveBeenCalledWith('details.dinolab-3d-controls-disclosure'); expect(controls.open).toBe(true);
-    expect(focus).toHaveBeenCalledWith({ preventScroll: true }); expect(scroll).toHaveBeenCalledWith({ block: 'nearest' });
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true }); expect(scroll).toHaveBeenCalledWith({ block: 'start' });
     expect(camera.mock.calls[0].at(-1)).toBe('body');
     inspectionFrame.current = { part: 'wing', study: 'body' };
     choose('', false); expect(selectedRef.current).toBe(''); expect(camera.mock.calls.at(-1).at(-1)).toBe('full');

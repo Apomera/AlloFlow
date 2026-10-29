@@ -61,6 +61,14 @@ export const POST_MERGE_PARTS = {
     "mantle-head-eyes-funnel",
     "broad-oval-fins",
     "eight-arms-two-feeding-tentacles"
+  ],
+  "goldmouth_sea_squirt": [
+    "tunic",
+    "siphons"
+  ],
+  "feather_duster_worm": [
+    "tube",
+    "feeding-crown"
   ]
 };
 export const POST_MERGE_IDS = Object.keys(POST_MERGE_PARTS);

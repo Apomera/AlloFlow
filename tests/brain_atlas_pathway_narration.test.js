@@ -4,8 +4,8 @@
 // aria-live region, so each step produced a second announcement of a bare
 // "3 / 12" on top, every 0.9 to 2.6 seconds for as long as playback ran. That
 // is the live-region-narrates-the-animation pattern. The counter is still
-// there; it just stops talking. This pins that no aria-live region in the tool
-// is driven by a timer.
+// there; it just stops talking. Playback now gives each explanation reading
+// time; this pins that the visual counter does not add a second announcement.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 
@@ -21,10 +21,10 @@ describe('brainAtlas pathway playback narrates once per step', () => {
   it('each step is still announced explicitly, so nothing was lost', () => {
     // the auto-advance passes announce: true and the step function speaks
     expect(src).toMatch(/selectBrainAtlas3DPathwayStep\(brain3DPathwayInfo\.steps\[nextIndex\], nextIndex, \{ keepPlaying: true, announce: true \}\)/);
-    expect(src).toMatch(/if \(opts\.announce !== false && typeof announceToSR === 'function'\) announceToSR\('Step ' \+ \(resolvedIndex \+ 1\)/);
+    expect(src).toContain("if (opts.announce !== false && typeof announceToSR === 'function') announceToSR(t('stem.brainatlas.d3_pathway_step_announcement'");
   });
 
-  it('no remaining live region sits inside the interval-driven playback panel', () => {
+  it('no remaining live region sits inside the timer-driven playback panel', () => {
     // the pathway panel is the only timer-driven surface in the tool; every
     // other aria-live here changes on a user action (a filter, a slider, a load)
     const start = src.indexOf('brainatlas-3d-pathway-steps');

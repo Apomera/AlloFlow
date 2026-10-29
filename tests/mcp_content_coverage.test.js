@@ -120,3 +120,45 @@ it('a bare page number ending each one-line page is furniture; a number that is 
  const wrong=[[1,5],[2,6],[3,8]].map(([n,v])=>({pageNum:n,text:row(n)+' '+v}));
  expect(cov(wrong,html).missingTokens).toBe(3);
 });
+it('a footnote number after a sentence-final year reads as the marker it is, not as a decimal (NCES "2019.20 Private")',()=>{
+ const src='enrolled in a higher grade in 2019.20 Private school data are collected. Students ages 3\u201321.22 Totals include imputations.';
+ const kept='<p>enrolled in a higher grade in 2019.<sup>20</sup> Private school data are collected. Students ages 3\u201321.<sup>22</sup> Totals include imputations.</p>';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:kept,method:'pdfjs'})).toMatchObject({missingTokens:0});
+ // a dropped marker is reported as the marker, never as a number the page does not print
+ const dropped='<p>enrolled in a higher grade in 2019. Private school data are collected. Students ages 3\u201321. Totals include imputations.</p>';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:dropped,method:'pdfjs'}).missingWords.map(w=>w.word).sort()).toEqual(['20','22']);
+ // a real decimal the output prints stays one token, and a lowercase continuation is not a footnote
+ expect(P.assessSourceCoverage({sourceText:'Total 1234.56 Dollars',outputHtml:'<p>Total 1234.56 Dollars</p>',method:'pdfjs'})).toMatchObject({missingTokens:0});
+ expect(P.assessSourceCoverage({sourceText:'rate of 2019.20 percent',outputHtml:'<p>rate of 2019. 20 percent</p>',method:'pdfjs'}).missingWords.map(w=>w.word)).toEqual(['2019.20']);
+});
+it('a chart tick-label run glues a year to the next label ("2010fall"): split when both parts are output words',()=>{
+ const html='<table><tr><th>Fall 2010</th><th>Fall 2015</th></tr></table>';
+ expect(P.assessSourceCoverage({sourceText:'Fall 2010fall 2015',outputHtml:html,method:'pdfjs'})).toMatchObject({missingTokens:0});
+ expect(P.assessSourceCoverage({sourceText:'Fall 2010falx 2015',outputHtml:html,method:'pdfjs'}).missingWords.map(w=>w.word)).toEqual(['2010falx']);
+});
+it('a capital split from the rest of its word at a line end rejoins (NSF "T hey also tend")',()=>{
+ expect(P.assessSourceCoverage({sourceText:'more often (Figure 3).4 T\nhey also tend to take courses',outputHtml:'<p>more often (Figure 3).<sup>4</sup> They also tend to take courses</p>',method:'pdfjs'})).toMatchObject({missingTokens:0});
+ // not when the remainder is a word of its own in the output ("A rose" stays two words)
+ expect(P.assessSourceCoverage({sourceText:'A rose grew and arose',outputHtml:'<p>A rose grew and arose</p>',method:'pdfjs'})).toMatchObject({missingTokens:0});
+ expect(P.assessSourceCoverage({sourceText:'T hey',outputHtml:'<p>Hey there</p>',method:'pdfjs'}).missingWords.map(w=>w.word)).toEqual(['t']);
+});
+it('a URL scheme split by a vertical banner ("http" / "s" / "://doi.org") rejoins into the one word the page prints',()=>{
+ const html='<p>This publication is available free of charge from: <a href="https://doi.org/10.6028/NIST.SP.800-63-3">https://doi.org/10.6028/NIST.SP.800-63-3</a></p>';
+ expect(P.assessSourceCoverage({sourceText:'This publication is available free of charge from: http\ns\n://doi.org/10.6028/NIST.SP.800-63-3',outputHtml:html,method:'pdfjs'})).toMatchObject({missingTokens:0});
+ expect(P.assessSourceCoverage({sourceText:'free of charge from: http\ns\n://doi.org/10.6028/NIST.SP.800-63-3',outputHtml:'<p>free of charge from: doi.org/10.6028/NIST.SP.800-63-3</p>',method:'pdfjs'}).missingWords.map(w=>w.word)).toContain('https');
+});
+it('sub/superscripts and marks read as separate runs rejoin into the output word (USGS "H 2 SO 4", "TM", "person 1")',()=>{
+ const html='<p>Add H<sub>2</sub>SO<sub>4</sub> to the WebElements\u2122 Periodic Table list.</p><table><tr><th>30 kg person\u00b9</th></tr></table>';
+ expect(P.assessSourceCoverage({sourceText:'Add H 2 SO 4 to the WebElements TM Periodic Table list.\n30 kg person 1',outputHtml:html,method:'pdfjs'})).toMatchObject({missingTokens:0});
+ // a long second piece is a word, not a mark: "Data Base" does not become "database"
+ expect(P.assessSourceCoverage({sourceText:'the Data Base',outputHtml:'<p>the database and the base</p>',method:'pdfjs'}).missingTokens).toBeGreaterThan(0);
+ // nothing joins when the output does not print the joined word
+ expect(P.assessSourceCoverage({sourceText:'H 2 SO 4',outputHtml:'<p>sulfuric acid</p>',method:'pdfjs'}).missingTokens).toBeGreaterThan(0);
+});
+it('a math font text layer that repeats each glyph is not text (HB44 "VV mmmmmm", "mmmmssmmmmmmssss")',()=>{
+ const src='The minimum verification scale division VV mmmmmm ssssssssss mmmmssmmmmmmssss shall not exceed';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:'<p>The minimum verification scale division V<sub>min</sub> shall not exceed</p>',method:'pdfjs'}).missingWords.map(w=>w.word)).toEqual(['vv']);
+ // a real word, or one the output prints, is kept
+ expect(P.assessSourceCoverage({sourceText:'Mississippi sells cookies',outputHtml:'<p>sells cookies</p>',method:'pdfjs'}).missingWords.map(w=>w.word)).toEqual(['mississippi']);
+ expect(P.assessSourceCoverage({sourceText:'buzz zzzz',outputHtml:'<p>buzz zzzz</p>',method:'pdfjs'})).toMatchObject({missingTokens:0,sourceTokens:2}); // printed in the output: still counted
+});

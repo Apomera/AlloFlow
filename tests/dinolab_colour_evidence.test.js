@@ -86,31 +86,27 @@ describe('the direct-evidence set is exactly the melanosome taxa', () => {
   });
 });
 
-describe('the distinction is visible in the readout row', () => {
-  it('shows a colour-evidence chip', () => {
-    expect(SRC).toMatch(/readoutChip\('Colour '/);
-  });
-
-  it('says which of the two it is, in words', () => {
-    // Colour alone is not available to every student.
-    expect(SRC).toContain("'from fossil pigment'");
-    expect(SRC).toContain("'illustrated'");
-  });
-
-  it('uses a different colour for each case', () => {
-    // Read this call only; the neighboring sheen chip has its own palette.
-    const block = colourChipSource();
-    const colours = [...block.matchAll(/rgba\([^)]+\)/g)].map((m) => m[0]);
-    expect(colours.length, 'expected two colours').toBe(2);
-    expect(new Set(colours).size, 'both cases share a colour').toBe(2);
-  });
-
-  it('reads the flag rather than hardcoding a species list', () => {
-    // A hardcoded list in the view would drift from the classifier.
-    const block = colourChipSource();
-    expect(block).toContain('integumentEvidence.direct');
-    for (const id of MEASURED) {
-      expect(block.toLowerCase(), `the chip hardcodes ${id}`).not.toContain(id);
+describe('the displayed colour claim follows the evidence and active palette', () => {
+  function chip(evidence, paletteMode) {
+    // Evaluate the actual rendered expression rather than duplicating its gate.
+    const render = new Function('integumentEvidence', 'surfaceHypothesis', 'readoutChip', 'return '+colourChipSource()+';');
+    return render(evidence, Object.freeze({paletteMode}), (label, border) => ({label, border}));
+  }
+  for (const direct of [false,true]) for (const [mode,showsPigment] of [['natural',true],['neutral',false],['classic',false],['avian',true]]) {
+    it('labels '+mode+' with direct pigment evidence '+direct, () => {
+      const evidence=Object.freeze({direct}), rendered=chip(evidence,mode), supported=direct&&showsPigment;
+      expect(rendered.label).toBe(supported?'Colour from fossil pigment':'Colour illustrated');
+      expect(rendered.border).toBe(supported?'rgba(232,121,249,0.72)':'rgba(148,163,184,0.55)');
+      expect(evidence.direct).toBe(direct);
+    });
+  }
+  it('keeps species evidence intact when a simplified display suppresses the pigment claim', () => {
+    const classify=classifier();
+    for (const id of [...MEASURED,'tyrannosaurus']) {
+      const evidence=classify({id}),before=JSON.parse(JSON.stringify(evidence));
+      for (const mode of ['neutral','classic']) expect(chip(evidence,mode).label).toBe('Colour illustrated');
+      expect(evidence).toEqual(before);
+      expect(chip(evidence,'natural').label).toBe(MEASURED.includes(id)?'Colour from fossil pigment':'Colour illustrated');
     }
   });
 });

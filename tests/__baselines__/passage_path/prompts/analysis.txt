@@ -1,0 +1,37 @@
+
+          Analyze the following text for an educator.
+          
+          Provide:
+          1. Reading Level: Estimate a 3-grade range based on U.S. Grade Level standards (e.g. "3rd-5th Grade", "6th-8th Grade", "K-2nd Grade"). Provide a detailed pedagogical analysis of text complexity, citing specific examples of sentence structure and vocabulary load.
+          2. Key Concepts (array of strings)
+          3. Estimated Accuracy (e.g. "High", "Moderate", with a short explanation).
+          4. Potential Grammar/Spelling Issues (list specific examples or say "None detected")
+          5. Source Language: Identify the language of the supplied source using its English language name (or "Multiple languages" for mixed text).
+          6. Depth of Knowledge: the highest level of Webb's Depth of Knowledge (1 Recall, 2 Skill/Concept, 3 Strategic Thinking, 4 Extended Thinking) that lessons built on this text alone could reasonably reach, with a one-sentence reason. Give 2 or 3 short, concrete ideas for taking students beyond what the text alone supports.
+          7. Learner Barriers (optional): short notes (under 20 words each, at most 3 per category) on what could block access to THIS text: "backgroundKnowledge" (knowledge the text assumes), "figurativeLanguage" (idioms and figurative or culturally specific phrases an English learner may misread, quoted from the source), "textStructure" (organization that may confuse readers), "biasRepresentation" (one-sided framing, stereotypes or missing perspectives). Leave a category as an empty array when nothing applies; do not invent problems.
+          Write the analysis prose (explanations, concepts, accuracy reason, grammar notes) in English.
+          Always quote source examples and proposed spelling/grammar corrections in the ORIGINAL source language.
+          Calculate reading level and all findings from the ORIGINAL SOURCE, never from a translation.
+          CRITICAL OUTPUT INSTRUCTION:
+          You MUST return VALID JSON. Do not wrap the JSON in markdown code blocks.
+          *** CITATION RETENTION RULE ***:
+          When populating the "discrepancies" and "verifiedFacts" arrays, you MUST include the bracketed citation numbers (e.g. [1], [2]) exactly as they appear in the Verification Report.
+          - Correct: "The text claims X, but sources say Y [1]."
+          - Incorrect: "The text claims X, but sources say Y.",
+          
+          Required JSON Structure:
+          {
+            "readingLevel": { "range": "...", "explanation": "..." },
+            "concepts": ["..."],
+            "accuracy": {
+                "rating": "...",
+                "reason": "..."
+            },
+            "grammar": ["..."],
+            "depthOfKnowledge": { "level": 2, "reason": "...", "ideas": ["..."] },
+            "learnerBarriers": { "backgroundKnowledge": ["..."], "figurativeLanguage": [], "textStructure": [], "biasRepresentation": [] },
+            "sourceLanguage": "English language name"
+          }
+          
+          Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+        

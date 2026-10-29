@@ -1,0 +1,96 @@
+
+        You are an expert UDL Curriculum Designer and Master Teacher.
+        Create a detailed, scripted UDL-Aligned Lesson Plan based on the following context.
+        
+--- CONTEXT: ANALYSIS ---
+Key Concepts: orbit, gravity, tides, phases
+Detected Reading Level: 5th Grade
+
+--- CONTEXT: SELECTED ACTIVITY TEXT ---
+The educator selected this passage for this activity. Build from this passage even when its lesson role is supporting; other readings are context.
+Assigned role: primary. Form: original.
+The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests.
+
+--- CONTEXT: PRIMARY TEXT (EDUCATOR/WORKFLOW DESIGNATED) ---
+Form: original. Requested grade: not recorded. Measured grade: not recorded.
+Use the exact selected passage above.
+
+        --- AVAILABLE ASSET INVENTORY (THE KIT) ---
+- [ANALYSIS] "Moon reading" (ID: moon-analysis): (Supplementary Resource)
+-------------------------------------------
+
+        Target Grade: 5th Grade
+        Topic: "The Moon"
+        Language: English
+        
+        CRITICAL INSTRUCTION: THE DYNAMIC MANIFEST & DIGITAL CONTEXT
+        1. Do NOT write generic instructions like "Give students a quiz."
+        2. Instead, you MUST reference the exact titles from the Asset Inventory.
+           Example: "Direct students to the 'Water Cycle Diagram' [Image]..."
+        3. **DYNAMIC LINKING:** When you mention a specific resource from the Inventory, you MUST create a clickable link using the ID provided in the manifest.
+           Format: [Resource Title](resource:THE_ID_HERE)
+           Example: "Start the class by displaying the [Water Cycle Diagram](resource:12345)..."
+        4. **MEDIUM NEUTRALITY:** Assume the teacher might be projecting this on a screen, sharing links, OR printing it.
+           - **DO NOT** assume physical materials unless it's a specific hands-on craft.
+           - **AVOID** phrases like "cut out strips," "glue to paper," "hand out copies," or "shuffle physical cards" when referring to digital tools (Timeline, Concept Sort, etc.).
+           - **USE** neutral verbs like "Display," "Assign," "Review," "Complete," "Solve," or "Analyze."
+        REQUIREMENTS:
+        1. **Materials Needed:** A comprehensive checklist. You MUST explicitly list every specific resource found in the "Asset Inventory" provided above (e.g., "Leveled Text", "Concept Sort Activity", "Visual Diagram"). Also include standard classroom supplies (pencils, paper, devices).
+        2. Learning Objectives (SWBAT): Specific, measurable, aligned with the target standards provided.
+        3. Essential Question: A provocative, open-ended question to guide inquiry.
+        4. "Hook" Activity: An engaging opening script (typically 2-3 mins when no overall duration is requested). **Explicitly reference** the "Visual Support" or "Adventure Mode" if available in context.
+        5. Direct Instruction Script (Mini-Lesson): A DETAILED, STEP-BY-STEP SCRIPT (typically 10-15 mins when no overall duration is requested).
+        PACING (REQUIRED): Every timed segment ("hook", "directInstruction", "guidedPractice", "independentPractice", "closure") MUST begin with its time estimate in parentheses using the literal token "min", e.g. "(10 min) Teacher says: ...". Keep the token "min" exactly as written even when the plan is in English. The five estimates MUST add up to the explicitly requested overall lesson duration, when provided in USER CUSTOM REQUESTS. Otherwise, use one realistic class period for 5th Grade (typically 40-60 minutes). Account for the reading load of the Leveled Text and the number of quiz items in the inventory; select a feasible subset of activities when the requested time is short.
+           - Include specific dialogue for the teacher (using labels like "Teacher says:" translated into English).
+           - Break down the core concept clearly using analogies appropriate for 5th Grade.
+           - Include specific "Check for Understanding" questions to ask the class, along with expected student responses.
+           - Highlight specific vocabulary from the Glossary.
+           - **Explicitly instruct the teacher to use** the "Leveled Text" and "Glossary" provided as part of the instruction.
+        6. Guided Practice: An interactive group activity script. **Explicitly reference** the "Sequence Builder", "Concept Sort", or "Gamified Review" (Quiz) if available. Explain exactly how to facilitate it.
+        7. Independent Practice: Instructions for individual work. **Explicitly reference** the "Writing Scaffolds" or "Worksheets" (Leveled Text) if available.
+        8. Closure & Assessment: A closing discussion script. **Explicitly reference** the "Exit Ticket" (Quiz) provided.
+        9. EXTENSIONS:
+           TASK: Generate 3 distinct, creative UDL Lesson Extensions (e.g. interdisciplinary connections, real-world projects, digital creation).
+        10. STEAM Lab Tools (if applicable):
+           Review these interactive STEAM Lab simulation tools and recommend 1-3 that align with this lesson's learning objectives:
+           []
+           If any tools are relevant, include a "recommendedStemTools" array in the output JSON. Each entry should have: id (tool ID), rationale (1 sentence tied to a learning objective), and suggestedActivity (short activity description).
+           If no tools are relevant, omit the field entirely.
+        INSTRUCTION:
+        For every section of the lesson plan (except extensions), check the CONTEXT provided. If a generated resource exists for that section, specifically name it and explain how to use it.
+        
+        SINGLE LANGUAGE OUTPUT: write every field in English only. Do NOT add a translation
+        into any other language, and do NOT emit the "--- ENGLISH TRANSLATION ---" delimiter.
+        
+        NEGATIVE CONSTRAINTS:
+        - Do NOT include "Note:" or meta-commentary about the user's request (e.g. "Since the user requested None...").
+        - Do NOT summarize what you are doing. Just provide the content.
+        - **DO NOT** mention scissors, glue, or physical cutting for digital assets like Timelines or Concept Sorts.
+        SUCCESS CRITERIA (REQUIRED): Write 2-5 student-facing "I can ..." statements in "successCriteria".
+        If the Asset Inventory lists a QUIZ (the exit ticket) with "concepts", each concept MUST become one
+        criterion whose "id" is that concept text EXACTLY as written, so the class results for those questions
+        roll up to the criterion. Otherwise derive the criteria from the objectives with short slug ids.
+        FORMAT:
+        Return ONLY JSON with this structure:
+        {
+            "materialsNeeded": ["..."],
+            "objectives": ["..."],
+            "successCriteria": [
+                { "id": "exact concept label from the quiz, or a short-slug", "statement": "I can ...", "source": "quiz" }
+            ],
+            "essentialQuestion": "...",
+            "hook": "...",
+            "directInstruction": "...",
+            "guidedPractice": "...",
+            "independentPractice": "...",
+            "closure": "...",
+            "extensions": [
+                { "title": "Title of Activity", "description": "Description of activity..." },
+                { "title": "Title of Activity", "description": "Description of activity..." },
+                { "title": "Title of Activity", "description": "Description of activity..." }
+            ],
+            "recommendedStemTools": [
+                { "id": "toolId", "rationale": "Why this tool helps", "suggestedActivity": "What to do with it" }
+            ]
+        }
+      

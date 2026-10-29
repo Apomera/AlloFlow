@@ -46,6 +46,17 @@ const oldEntry = (ageMs, message, extra = {}) => ({
   stack: '', source: '', line: 0, column: 0, url: LIVE_URL, count: 1, v: 'web', ...extra,
 });
 
+// The technical log (entries' text, trace tails, the page query) is a teacher-view
+// opt-in since 2026-10-28; these tests cover that path.
+const teacherView = (win) => { win.__alloPendingCoachPosture = 'educator'; };
+function fullLogReportOf(w) {
+  if (!w.document.getElementById('allo-err-panel')) w.AlloModules.ErrorReporter.openPanel('errors');
+  const box = w.document.getElementById('aer-include-log');
+  expect(box, 'teacher view offers the full log').toBeTruthy();
+  box.click();
+  return reportOf(w);
+}
+
 function reportOf(w) {
   if (!w.document.getElementById('allo-err-panel')) w.AlloModules.ErrorReporter.openPanel('errors');
   let checkbox = w.document.getElementById('aer-review-confirm');
@@ -122,13 +133,13 @@ describe('module timeouts that recovered', () => {
 
 describe('the live-session join secret never leaves the page', () => {
   it('is scrubbed from new entries, the report, and the worker payload', () => {
-    const w = boot();
+    const w = boot({ before: teacherView });
     w.console.error('fetch failed for https://x.example/api?key=AIzaSECRETKEY&v=1');
     const entry = w.AlloModules.ErrorReporter.getBuffer()[0];
     expect(entry.url).toContain('allo_mb=[redacted]');
     expect(entry.url).toContain('allo_ai=off');
     expect(entry.message).toContain('key=[redacted]');
-    const r = reportOf(w);
+    const r = fullLogReportOf(w);
     const all = JSON.stringify(r);
     expect(all).not.toContain(SECRET_HEAD);
     expect(all).not.toContain('AIzaSECRETKEY');
@@ -143,10 +154,11 @@ describe('the live-session join secret never leaves the page', () => {
 
   it('is scrubbed from trace tails, which other modules write unscrubbed', () => {
     const w = boot({ before: (win) => {
+      teacherView(win);
       win.__alloSessionSyncTrace = [{ at: Date.now(), event: 'mailbox:entry', detail: { href: LIVE_URL } }];
     } });
     w.console.error('x');
-    const r = reportOf(w);
+    const r = fullLogReportOf(w);
     expect(r.what).toContain('mailbox:entry');
     expect(r.what).not.toContain(SECRET_HEAD);
   });
@@ -161,9 +173,10 @@ describe('the live-session join secret never leaves the page', () => {
 describe('session trace lines in reports', () => {
   it('prints the fields of entries that keep them at the top level', () => {
     const w = boot({ before: (win) => {
+      teacherView(win);
       win.__alloSessionSyncTrace = [{ at: new Date().toISOString(), event: 'mailbox:call-failed', a: 'poll', ms: 20013, code: 'allo/mailbox-timeout' }];
     } });
     w.console.error('x');
-    expect(reportOf(w).what).toMatch(/mailbox:call-failed \{.*"code":"allo\/mailbox-timeout"/);
+    expect(fullLogReportOf(w).what).toMatch(/mailbox:call-failed \{.*"code":"allo\/mailbox-timeout"/);
   });
 });

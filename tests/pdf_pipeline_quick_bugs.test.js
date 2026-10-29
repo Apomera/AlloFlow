@@ -140,7 +140,8 @@ describe('B2-2: "Fix Remaining" re-fix lane runs the main fidelity sweep + carri
     // Pin the merge and both halves of fidelityLimited; the source it reads is
     // now _fixRemainingSource rather than pdfFixResult.
     expect(vp).toMatch(/_refixNotes = \(_docPipeline && typeof _docPipeline\.mergeFidelityNotes === 'function'\)/);
-    expect(vp).toMatch(/const fidelityLimited = _refixNotes\.length > 0 \|\| \(typeof _fixRemainingSource\.integrityCoverage === 'number'/);
+    // (2026-10-28) caution notes do not count toward the limit
+    expect(vp).toMatch(/const fidelityLimited = _refixNotes\.some\(\(n\) => !\(n && n\.caution === true\)\) \|\| \(typeof _fixRemainingSource\.integrityCoverage === 'number'/);
     expect(vp).toMatch(/autoFixPasses: \(_fixRemainingSource\.autoFixPasses \|\| 0\) \+ totalPasses,/);
   });
 });

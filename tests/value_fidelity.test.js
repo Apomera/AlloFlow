@@ -64,7 +64,8 @@ describe('anti-drift: doc_pipeline ships the detector + the gate calls it', () =
   });
   it('the integrity gate calls it on the FINAL output (covers transform + fix paths)', () => {
     // (2026-10-27) plus the numbers a numbered list draws (_alloListMarkerNumbers, anchored to the source)
-    expect(pipeSrc).toMatch(/_numericFidelityLosses\(_srcRaw,\s*htmlToPlainText\(_finalForIntegrity\)\s*\+\s*' '\s*\+\s*_alloListMarkerNumbers\(_srcRaw,\s*_finalForIntegrity\)\)/);
+    // (2026-10-28) and each page's own printed number (_alloFolioNumbers, from the ground-truth page map)
+    expect(pipeSrc).toMatch(/_numericFidelityLosses\(_srcRaw,\s*htmlToPlainText\(_finalForIntegrity\)\s*\+\s*' '\s*\+\s*_alloListMarkerNumbers\(_srcRaw,\s*_finalForIntegrity\)\s*\+\s*' '\s*\+\s*_alloFolioNumbers\(typeof window !== 'undefined' \? window\.__lastGroundTruthPageMap : null\)\)/);
   });
   it('the detector uses the number-token regex + strips commas + skips single digits', () => {
     expect(pipeSrc).toMatch(/\\d\[\\d,\]\*/);            // the token matcher \d[\d,]*

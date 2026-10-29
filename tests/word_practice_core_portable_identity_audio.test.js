@@ -36,6 +36,56 @@ describe.each(Object.keys(lanes))('Word Practice stable portable contract (%s)',
     const core = load(lane), pack = core.normalizeInput({ words: [{ entryId: 'one', word: 'bank' }, { entryId: 'one', word: 'BANK', definition: 'One meaning.' }, 'ship', 'Ship'] });
     expect(pack.items).toHaveLength(2); expect(pack.items[0]).toMatchObject({ id: 'entry:one', entryId: 'one', definition: 'One meaning.' });
   });
+  it('keeps same-spelling imports in different languages distinct without requiring authored IDs', () => {
+    const core = load(lane), words = [
+      { word: 'gift', termLanguage: 'English', definition: 'A present.', wordAudio: englishAudio },
+      { word: 'Gift', termLanguage: 'German', definition: 'Poison.', wordAudio: frenchAudio },
+      { word: 'GIFT', termLanguage: 'en-US', example: 'A birthday gift.' }
+    ];
+    const before = JSON.stringify(words), pack = core.normalizeInput({ words });
+    expect(pack.items.map(item => [item.word, item.termLanguage, item.definition, item.wordAudio])).toEqual([
+      ['gift', 'English', 'A present.', englishAudio], ['Gift', 'German', 'Poison.', frenchAudio]
+    ]);
+    expect(pack.items[0].example).toBe('A birthday gift.');
+    expect(new Set(pack.items.map(item => item.id)).size).toBe(2);
+    expect(reimport(core, pack).items).toEqual(pack.items);
+    expect(core.createSequence(pack, { repetitions: 2, shuffle: false }).map(card => card.itemId)).toEqual([pack.items[0].id, pack.items[1].id, pack.items[0].id, pack.items[1].id]);
+    expect(JSON.stringify(words)).toBe(before);
+  });
+  it('separates explicit regions, scripts and unknown languages while merging equivalent language aliases', () => {
+    const core = load(lane), pack = core.normalizeInput({ language: 'French', words: [
+      { word: 'pain' }, { word: 'PAIN', termLanguage: 'fr-FR', definition: 'Bread.' },
+      { word: 'pain', termLanguage: 'French (Canadian)' },
+      { word: 'pain', termLanguage: 'ar' }, { word: 'pain', termLanguage: 'ar-Latn' },
+      { word: 'pain', termLanguage: 'Family language' }, { word: 'pain', termLanguage: 'Another language' },
+    ] });
+    expect(pack.items).toHaveLength(6);
+    expect(pack.items[0]).toMatchObject({ word: 'pain', termLanguage: 'French', definition: 'Bread.' });
+    expect(reimport(core, pack).items).toEqual(pack.items);
+    expect(() => core.normalizeInput({ words: [{ id: 'same', word: 'pain', termLanguage: 'English' }, { id: 'same', word: 'pain', termLanguage: 'French' }] })).toThrow(/ID refers to different languages/);
+  });
+  it('shares untagged clips only within their originating language, independent of record order', () => {
+    const core = load(lane), words = [
+      { word: 'bread', termLanguage: 'French', _ttsAssets: { pain: frenchAudio } },
+      { word: 'pain', termLanguage: 'English' }, { word: 'pain', termLanguage: 'French' }
+    ];
+    for (const ordered of [words, words.slice().reverse()]) {
+      const pack = core.normalizeInput({ language: 'English', words: ordered });
+      expect(pack.items.find(item => item.word === 'pain' && item.termLanguage === 'English').wordAudio).toBe('');
+      expect(pack.items.find(item => item.word === 'pain' && item.termLanguage === 'French').wordAudio).toBe(frenchAudio);
+      expect(reimport(core, pack).items).toEqual(pack.items);
+    }
+    const pack = core.normalizeInput({ language: 'English', ttsAssets: { pain: englishAudio }, words: words.slice(1) });
+    expect(pack.items.map(item => item.wordAudio)).toEqual([englishAudio, '']);
+  });
+  it('honors a shared clip’s actual language when it differs from its container', () => {
+    const core = load(lane), pack = core.normalizeInput({ language: 'English', words: [
+      { word: 'holder', _ttsAssets: { pain: asset(frenchAudio, 'French') } },
+      { word: 'pain', termLanguage: 'French' }, { word: 'pain', termLanguage: 'English' },
+    ] });
+    expect(pack.items[1]).toMatchObject({ wordAudio: frenchAudio, wordAudioStatus: 'ready' });
+    expect(pack.items[2].wordAudio).toBe('');
+  });
   it('reserves existing portable IDs before assigning new IDs and rejects ambiguous authored identities', () => {
     const core = load(lane), pack = core.normalizeInput({ words: ['new', { id: 'w1', word: 'kept' }, { id: 'saved-sense', word: 'kept' }] });
     expect(pack.items.map(item => item.id)).toEqual(['w2', 'w1', 'saved-sense']); expect(reimport(core, pack).items).toEqual(pack.items);

@@ -17,7 +17,11 @@ async function mount(page,species,state={}){
   await page.getByRole('button',{name:'Fit whole animal',exact:true}).click();
   await page.locator('.dinolab-3d-controls-disclosure > summary').click();await settle(page);
 }
-async function measure(page){await page.evaluate(()=>{(window as any).__lightPixels=null;(window as any).__lightRequest=true;});await expect.poll(()=>page.evaluate(()=>!!(window as any).__lightPixels)).toBe(true);return page.evaluate(()=>(window as any).__lightPixels);}
+async function measure(page){await page.evaluate(()=>{const w=window as any;w.__lightPixels=null;w.__lightRequest=true;
+  // Reduced-motion study views render on demand. Sample the current scene
+  // explicitly instead of waiting for an animation frame that may never draw.
+  w.__lightRenderer.render(w.__lightScene,w.__lightCamera);
+});await expect.poll(()=>page.evaluate(()=>!!(window as any).__lightPixels)).toBe(true);return page.evaluate(()=>(window as any).__lightPixels);}
 async function inspect(page){return page.evaluate(()=>{
   const w=window as any,T=w.THREE,s=w.__lightScene,r=w.__lightRenderer,c=w.__lightCamera,m=s.getObjectByName('dinolab-specimen'),key=s.getObjectByName('dinolab-key-light');s.updateMatrixWorld(true);c.updateMatrixWorld(true);let outside=0,invalid=0;const materials=new Map();
   m.traverse(p=>{if(!p.isMesh)return;if(p.material)materials.set(p.material.uuid,{id:p.material.uuid,color:p.material.color?.toArray(),map:p.material.map?.uuid});

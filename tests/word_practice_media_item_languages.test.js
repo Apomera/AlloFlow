@@ -26,6 +26,23 @@ const context = { PptxGenJS: Presentation };
 const opts = mode => ({ mode, repetitions: 1, shuffle: false, includeAudio: false });
 
 describe.each(Object.keys(lanes))('Word Practice media item languages (%s)', lane => {
+  it('exports both languages of a same-spelling import with their own meanings and recordings', async () => {
+    const { media } = load(lane), input = { language: 'English', words: [
+      { word: 'pain', termLanguage: 'English', definition: 'Physical discomfort.', definitionLanguage: 'English', wordAudio: english },
+      { word: 'pain', termLanguage: 'French', definition: 'Un aliment à base de farine.', definitionLanguage: 'French', wordAudio: french },
+    ] };
+    const before = JSON.stringify(input);
+    const deck = await media.buildPptx(input, { ...opts('vocabulary'), includeAudio: true }, undefined, context);
+    expect(deck.slides).toHaveLength(2);
+    for (const [index, [language, audio]] of [['en', english], ['fr', french]].entries()) {
+      const slide = deck.slides[index];
+      expect(slide.texts.find(entry => entry.text === 'pain').options.lang).toBe(language);
+      expect(slide.texts.find(entry => entry.text === input.words[index].definition).options.lang).toBe(language);
+      expect(slide.sounds).toHaveLength(1);
+      expect(slide.sounds[0].data).toBe(audio.replace(/^data:/, ''));
+    }
+    expect(JSON.stringify(input)).toBe(before);
+  });
   it('requests each source word language and keeps actual resolved synthesis provenance through Save/Open normalization', async () => {
     const { core, media } = load(lane);
     const callTTS = vi.fn(async (word, voice, speed, options) => {

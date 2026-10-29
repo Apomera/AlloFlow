@@ -255,11 +255,14 @@ describe('the badge and vocabulary tables speak through the translator', () => {
     // The rock-cycle quiz reads a type-guarded copy of d.rcQuiz (a3a2b8473);
     // the invariant is the same: the guard looks the English term up raw.
     expect(s).toContain('_rcQuizSafe.concept && ROCKS_VOCAB[_rcQuizSafe.concept] &&');
-    // ...while both cards render through the helpers. The third term call is
-    // the quiz results card, which names each topic for DISPLAY and still
-    // groups the answers by the raw English concept.
-    expect((s.match(/rkVocabDef\(__alloT,/g) || []).length).toBe(2);
-    expect((s.match(/rkVocabTerm\(__alloT,/g) || []).length).toBe(3);
+    // Original quizzes and targeted practice render through the helpers.
+    // Results and the weakest-topic action translate their visible topic
+    // names while continuing to group by the raw English concept.
+    expect((s.match(/rkVocabDef\(__alloT,/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect((s.match(/rkVocabTerm\(__alloT,/g) || []).length).toBeGreaterThanOrEqual(5);
+    expect(s).toContain('feedback && q.concept && ROCKS_VOCAB[q.concept]');
+    expect(s).toContain('rkVocabDef(__alloT, q.concept)');
+    expect(s).toContain('rkVocabTerm(__alloT, weakest)');
     expect(s).toContain("var c = QUIZ_BANK[k].concept || '';");
   });
 

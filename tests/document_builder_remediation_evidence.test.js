@@ -70,7 +70,8 @@ describe('pipeline evidence is computed before reports consume it', () => {
   it('the fix result carries the evidence fields needed for a defensible dossier', () => {
     expect(dp).toMatch(/issueResolution: _issueResolution/);
     expect(dp).toMatch(/fidelityNotes: _structuralFidelityNotes/);
-    expect(dp).toMatch(/fidelityLimited: \(integrityCoverage != null && integrityCoverage < 90\) \|\| _structuralFidelityNotes\.length > 0/);
+    // (2026-10-28) a note marked caution does not limit fidelity
+    expect(dp).toMatch(/fidelityLimited: \(integrityCoverage != null && integrityCoverage < 90\) \|\| _structuralFidelityNotes\.some\(\(n\) => !\(n && n\.caution === true\)\)/);
     expect(dp).toMatch(/ocrAccuracy,/);
     expect(dp).toMatch(/groundTruthCharCount: window\.__lastGroundTruthCharCount \|\| 0/);
     expect(dp).toMatch(/groundTruthMethod: window\.__lastGroundTruthMethod \|\| null/);

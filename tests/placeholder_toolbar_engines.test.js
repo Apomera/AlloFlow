@@ -27,9 +27,13 @@ function pipelinePlaceholder() {
   // The caption escapes with the real helper (2026-10-26: escape an entity only once).
   const escOnce = new Function(sliceBetween(PIPELINE, 'var _alloEscapeTextOnce = function (s) {', '\n};',
     { file: 'doc_pipeline_source.jsx', label: 'caption escape helper', includeEnd: true }) + '\nreturn _alloEscapeTextOnce;')();
-  const params = ['imgId', 'imgIdx', 'hasCropData', 'cropJson', 'hasSrc', '_dragOver2', '_dragLeave2', '_dropHandler2', 'srcToken', 'desc', 'imgInfo', '_uploadHandler2', '_pickHandler2', 'isRegenerated', 'purpose', '_alloEscapeTextOnce'];
+  // (2026-10-28) the caption goes through _alloCaptionSpan (aria-hidden when it repeats the alt, as here)
+  const captionSpan = new Function('_alloEscapeTextOnce', sliceBetween(PIPELINE, 'function _alloCaptionSpan(desc, alt) {', '\n// (2026-10-28) REGROUPED vs SCRAMBLED.',
+    { file: 'doc_pipeline_source.jsx', label: 'caption span helper', includeStart: true }) + '\nreturn _alloCaptionSpan;')(escOnce);
+  const desc = 'Figure 2. Line chart of preprimary enrollment rates, 2010 through 2021.';
+  const params = ['imgId', 'imgIdx', 'hasCropData', 'cropJson', 'hasSrc', '_dragOver2', '_dragLeave2', '_dropHandler2', 'srcToken', 'desc', 'imgInfo', '_uploadHandler2', '_pickHandler2', 'isRegenerated', 'purpose', '_alloEscapeTextOnce', '_alloCaptionSpan', 'imgAlt'];
   const render = new Function(...params, 'return ' + template + ';');
-  return render('pdf-img-1', 1, false, '', false, 'void 0', 'void 0', 'void 0', '', 'Figure 2. Line chart of preprimary enrollment rates, 2010 through 2021.', { page: 20 }, 'void 0', 'void 0', false, 'Shows the pandemic dip in enrollment.', escOnce);
+  return render('pdf-img-1', 1, false, '', false, 'void 0', 'void 0', 'void 0', '', desc, { page: 20 }, 'void 0', 'void 0', false, 'Shows the pandemic dip in enrollment.', escOnce, captionSpan, desc);
 }
 
 // Renderer placeholder: the concatenated template for an image block without a source.

@@ -61,7 +61,7 @@ describe('RoadReady driving-view refinements', () => {
     const startupWorldGate = src.slice(startupWorldGateStart,
       src.indexOf('updateAudio();', startupWorldGateStart));
     expect(startupWorldGate).toContain('updateCyclists(dt);');
-    expect(startupWorldGate).toContain('checkCollisions();');
+    expect(startupWorldGate).toContain('checkCollisions(dt);');
     expect(src).toContain('graceRef.current.until = timeRef.current + 4');
     expect(src).toContain('var autoBeltSafetyScan = rideAlongActive');
     expect(src).toContain('var startupControlsLocked = startupSequenceActive(');
@@ -137,7 +137,7 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain("roadUserType !== 'motorcycle'");
     expect(src).toContain('if (dist > Math.max(4, cyclistCollisionReach)) return');
     expect(src).not.toContain('(18 + Math.random() * MAP_SIZE * 0.35)');
-    const trafficCollisionStart = src.indexOf('var checkCollisions = function()');
+    const trafficCollisionStart = src.indexOf('var checkCollisions = function(dt)');
     const trafficCollisionBranch = src.slice(trafficCollisionStart,
       src.indexOf('// Following distance check', trafficCollisionStart));
     expect(trafficCollisionBranch).toContain(

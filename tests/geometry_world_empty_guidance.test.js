@@ -65,7 +65,7 @@ describe('Geometry World first-block guidance', () => {
     const app = mountGuidance();
     expect(app.engine.blocksPlaced).toBe(50);
     expect(app.guide().dataset.gweBuildGuidance).toBe('empty');
-    expect(app.guide().textContent).toBe('Aim at the ground and press B to add your first block. Then choose Select build to inspect your creation.');
+    expect(app.guide().textContent).toBe('Aim at the ground and press B to add your first block. You can also use Build by coordinates below. Then use Choose blocks to inspect your creation.');
   });
 
   it('excludes actual lesson and ground blocks without assuming a rectangular floor size', () => {
@@ -84,7 +84,7 @@ describe('Geometry World first-block guidance', () => {
   it('uses selection guidance for an imported student block even with no placement history', () => {
     const app = mountGuidance({ blocks: [mesh('ground', 'grass'), mesh()], engine: { blocksPlaced: 0, _undoStack: [], _redoStack: [] } });
     expect(app.guide().dataset.gweBuildGuidance).toBe('select');
-    expect(app.guide().textContent).toBe('Aim at a block you placed, then choose Select build to inspect your creation.');
+    expect(app.guide().textContent).toBe('Choose blocks to select your whole build, a coordinate region, or the creation under the crosshair.');
   });
 
   it('returns to first-block guidance after undo or clear leaves only the floor, and recovers after redo', () => {

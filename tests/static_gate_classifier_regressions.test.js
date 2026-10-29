@@ -84,6 +84,17 @@ describe('live announcer classification', () => {
     ['unknown live props', source => source.replace("'aria-live': 'polite',", "'aria-live': 'polite', ...unknown,")],
     ['unknown owner props', source => source.replace('{owner: feedbackRef}', '{owner: feedbackRef, ...unknown}')],
     ['unknown factory', source => source.replace('h(Feedback,', 'makeFactory()(Feedback,')],
+    ['writer spread override', source => source.replace('feedback[1]({text: message}); }};', 'feedback[1]({text: message}); }, ...unknown};')],
+    ['duplicate writer method', source => source.replace('feedback[1]({text: message}); }};', 'feedback[1]({text: message}); }, report: function() {}};')],
+    ['computed writer method', source => source.replace('feedback[1]({text: message}); }};', 'feedback[1]({text: message}); }, [unknown]: function() {}};')],
+    ['duplicate live ref', source => source.replace('}, feedback[0].text)', ', ref: function() {}}, feedback[0].text)')],
+    ['duplicate live setting', source => source.replace("'aria-live': 'polite',", "'aria-live': 'polite', 'aria-live': 'off',")],
+    ['duplicate owner prop', source => source.replace('{owner: feedbackRef}', '{owner: feedbackRef, owner: otherRef}')],
+    ['computed owner prop', source => source.replace('{owner: feedbackRef}', '{owner: feedbackRef, [unknown]: otherRef}')],
+    ['computed method overwrite', source => source.replace('if (writer) writer.report(message);', 'if (writer) { writer[someMethod] = discard; writer.report(message); }')],
+    ['computed owner overwrite', source => source.replace("announce('ready');", "feedbackRef[someProperty] = {report: discard}; announce('ready');")],
+    ['discarded component element', source => source.replace('return h(Feedback, {owner: feedbackRef});', "h(Feedback, {owner: feedbackRef}); return h('div', null, 'unrelated');")],
+    ['discarded live element', source => source.replace("return h('div',", "h('div',").replace('}, feedback[0].text);', "}, feedback[0].text); return h('p', null, 'unrelated');")],
     ['unused state setter', source => source.replace('feedback[1]({text: message});', 'function unused() { feedback[1]({text: message}); }')],
   ])('rejects a ref writer with %s', (_label, change) => {
     expect(scan('scan_silent_announcer.cjs', change(ownedLiveWriter())).status).toBe(1);

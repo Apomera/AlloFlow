@@ -237,3 +237,20 @@ describe('developer inbox shell', () => {
     expect(kv.list).not.toHaveBeenCalled();
   });
 });
+
+// The server-side scan flags possible PII for review. It used to store up to three
+// matched values per type, a second copy of exactly what it flagged (2026-10-28).
+describe('server-side PII scan findings', () => {
+  it('records the type and count without the matched text', async () => {
+    const kv = fakeKv();
+    const response = await post({ what: 'Write to pat.lee@school.example about SSN 123-45-6789.', steps: 'Opened the quiz.' }, envFor(kv));
+    expect(response.status).toBe(201);
+    const stored = JSON.parse([...kv.store.values()].at(-1));
+    const findings = stored.pii_scan.findings;
+    expect(findings.map(f => f.type)).toEqual(expect.arrayContaining(['email', 'SSN']));
+    for (const f of findings) expect(Object.keys(f).sort()).toEqual(['count', 'type']);
+    const scan = JSON.stringify(stored.pii_scan);
+    expect(scan).not.toContain('pat.lee');
+    expect(scan).not.toContain('123-45-6789');
+  });
+});

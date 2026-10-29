@@ -642,7 +642,7 @@ describe('mineral habit — the crystal is the shape the words name', () => {
   it('tags exactly the minerals whose descriptions name a habit', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     const tagged = {};
-    src.split('\n').filter((l) => /streak:/.test(l) && /luster:/.test(l) && /habit:/.test(l))
+    src.slice(src.indexOf('const MINERALS = ['), src.indexOf('// ── Quiz bank ──')).split('\n').filter((l) => /streak:/.test(l) && /luster:/.test(l) && /habit:/.test(l))
       .forEach((l) => { tagged[/\{\s*id:\s*'(\w+)'/.exec(l)[1]] = /habit:\s*'(\w+)'/.exec(l)[1]; });
     expect(tagged).toEqual({
       magnetite: 'octahedral',
@@ -672,7 +672,7 @@ describe('mineral habit — the crystal is the shape the words name', () => {
       barrel: /barrel/i, platy: /plates/i, bipyramidal: /pyramid/i,
     };
     const src = readFileSync(ROCKS_FILE, 'utf8');
-    const rows = src.split('\n').filter((l) => /streak:/.test(l) && /luster:/.test(l) && /habit:/.test(l));
+    const rows = src.slice(src.indexOf('const MINERALS = ['), src.indexOf('// ── Quiz bank ──')).split('\n').filter((l) => /streak:/.test(l) && /luster:/.test(l) && /habit:/.test(l));
     expect(rows.length).toBe(12);
     rows.forEach((l) => {
       const id = /\{\s*id:\s*'(\w+)'/.exec(l)[1];
@@ -1102,12 +1102,14 @@ describe('the last two catalogue gaps: grain size and organic rock', () => {
   const rowFor = (id) => block().split('\n').filter((l) => l.includes("{ id: '" + id + "',"))[0] || '';
 
   it('completes the clastic grain-size series sand, silt, clay', () => {
-    // Sandstone (grains visible), siltstone (gritty, not resolvable), shale
+    // Sandstone (grains visible), siltstone (intermediate grain size), shale
     // (smooth and fissile). Each needs its OWN texture or the picture repeats.
     const textures = ['sandstone', 'siltstone', 'shale'].map((id) => /texture: '([^']+)'/.exec(rowFor(id))[1]);
     expect(textures).toEqual(['clastic', 'clastic-fine', 'fine-layered']);
     expect(new Set(textures).size).toBe(3);
-    expect(rowFor('siltstone')).toContain('gritty');
+    expect(rowFor('siltstone')).toContain('smaller than sand and larger than clay');
+    expect(rowFor('siltstone')).toContain('a hand lens');
+    expect(rowFor('siltstone')).not.toContain('between your teeth');
   });
 
   it('carries coal, the one common rock that is not made of mineral grains', () => {

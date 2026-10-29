@@ -582,7 +582,7 @@ describe('magnetism tool — expanded interactive simulation models', () => {
     expect(fresh).toMatchObject({ doneCount: 0, complete: false, next: { key: 'claim' } });
     const evidenceOnly = physics.missionCERState('power_path', { magnetism: { notebookTrials: [{ station: 'Field', setup: 'probe', result: 'reading', prediction: 'field' }] } });
     expect(evidenceOnly.items).toMatchObject([{ key: 'claim', done: false }, { key: 'evidence', done: true }, { key: 'reasoning', done: false }]);
-    const complete = physics.missionCERState('power_path', { magnetism: { notebookClaim: 'Changing flux creates voltage.', notebookTrials: [{ station: 'Hand generator', setup: 'moving magnet', result: '0.80 V', prediction: 'faster' }] } });
+    const complete = physics.missionCERState('power_path', { magnetism: { notebookClaim: 'Changing flux creates voltage.', notebookReasoning: 'The moving-magnet trial measured 0.80 V. A still control would test whether motion is needed.', notebookTrials: [{ station: 'Hand generator', setup: 'moving magnet', result: '0.80 V', prediction: 'faster' }] } });
     expect(complete).toMatchObject({ doneCount: 3, complete: true, next: null });
   });
 });
@@ -1576,7 +1576,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(html).toContain('Field components');
     expect(html).toContain('Bx ');
     expect(html).toContain('/ By ');
-    expect(html).toContain('Power-law exponent');
+    expect(html).toContain('Recorded power-law exponent');
     expect(html).toContain('-3.00');
     expect(html).toContain('Controlled scan.');
     expect(html).toContain('Run 7-point scan');
@@ -1635,7 +1635,8 @@ describe('magnetism tool — jsdom mount smoke', () => {
     const motor = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeSign: -1, chargeField: 1 }));
     expect(motor).toContain('Charged-particle beam — Lorentz force');
     expect(motor).toContain('F = qv × B');
-    expect(motor).toContain('curving down');
+    // A negative charge moving right in a field out of the page bends up.
+    expect(motor).toContain('curving up');
 
     const generator = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'induce', induceMode: 'coil', genAngle: 90 }));
     expect(generator).toContain('Rotating-coil generator — see the phase shift');
@@ -1870,7 +1871,7 @@ describe('magnetism tool — domains, scope, eddy (R4)', () => {
   it('the eddy race respects reduced motion and stays honest about scale', () => {
     const source = readFileSync(TOOL_PATHS[0], 'utf8');
     expect(source).toContain('classroom-demo-scale timings');
-    expect(source).toContain('_prefersReducedMotion) {');
+    expect(source).toContain('_motionPreference.current.reduced');
     expect(source).toContain('eddy currents');
     expect(source).toContain('Curie');
   });

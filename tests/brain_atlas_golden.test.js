@@ -147,7 +147,7 @@ describe('brainAtlas render goldens', () => {
     expect(html).toMatch(/Neurotransmitters/);
     expect(html).toMatch(/Neuron/);
     expect(html).toMatch(/Synapse/);
-    expect(html).toMatch(/1 through 23 switch views/);
+    expect(html).toMatch(/1 through 5 switch views/);
   });
 
   it('refinement UI: plain detail hides advanced anatomy until requested', () => {

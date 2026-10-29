@@ -39,7 +39,7 @@ describe('compact glossary toolbar', () => {
     const view = mount();
     const row = view.section.querySelector('[data-glossary-compact-toolbar]');
     const items = [...row.children];
-    expect(items.map((el) => el.getAttribute('data-help-key') || el.getAttribute('role') || (el.hasAttribute('data-glossary-sort') ? 'sort' : el.hasAttribute('data-glossary-tools-toggle') ? 'tools' : el.tagName))).toEqual(['glossary_search', 'group', 'sort', 'tools']);
+    expect(items.map((el) => el.getAttribute('data-help-key') || el.getAttribute('role') || (el.hasAttribute('data-glossary-sort') ? 'sort' : el.hasAttribute('data-glossary-tools-toggle') ? 'tools' : el.hasAttribute('data-glossary-export-toggle') ? 'exports' : el.tagName))).toEqual(['glossary_search', 'group', 'sort', 'tools', 'exports']);
     for (const el of controls(row).filter(shown)) expect(el.className.includes('min-h-11'), name(el) + ' is 44 px tall').toBe(true);
   });
 
@@ -145,16 +145,20 @@ describe('Tools disclosure', () => {
     const level1 = visibleNames(first);
     const games = visibleNames(openPanel('glossary-games-tools'));
     const teacher = visibleNames(openPanel('glossary-teacher-tools'));
+    const exportView = mount();
+    click(exportView.section.querySelector('[data-glossary-export-toggle]'));
+    const exports = visibleNames(exportView);
     const all = openPanel('glossary-games-tools');
     click(all.section.querySelector('[aria-controls="glossary-teacher-tools"]'));
     const everything = controls(all.section);
-    const reachable = new Set([...level0, ...level1, ...games, ...teacher]);
+    const reachable = new Set([...level0, ...level1, ...games, ...teacher, ...exports]);
     expect(everything.length).toBeGreaterThan(20);
     for (const el of everything) expect(reachable.has(name(el)), name(el)).toBe(true);
     // Game cards need Tools + Start game; the teacher panel needs Tools + More tools.
     expect(level1.has('glossary_word_search')).toBe(false);
     expect(games.has('glossary_word_search')).toBe(true);
-    expect(teacher.has('glossary_export_standard')).toBe(true);
+    expect(teacher.has('glossary_export_standard')).toBe(false);
+    expect(exports.has('glossary_export_standard')).toBe(true);
   });
 
   it('students get a Practice toggle without the teacher controls', () => {
@@ -166,6 +170,8 @@ describe('Tools disclosure', () => {
     expect(view.container.querySelector('[data-help-key="glossary_edit"]')).toBeNull();
     expect(view.container.querySelector('[aria-controls="glossary-teacher-tools"]')).toBeNull();
     expect(view.container.querySelector('[data-glossary-udl-goal]')).toBeNull();
+    expect(view.container.querySelector('[data-glossary-export-toggle]')).toBeNull();
+    expect(view.container.querySelector('[data-glossary-export-tools]')).toBeNull();
   });
 
   it('keeps the existing ids, panel wiring and search feedback hooks', () => {
@@ -184,5 +190,27 @@ describe('Tools disclosure', () => {
     click(clear);
     expect(setGlossarySearchTerm).toHaveBeenCalledWith('');
     expect(document.activeElement).toBe(field);
+  });
+});
+
+describe('direct glossary exports', () => {
+  it('opens exports in one activation without opening Tools or duplicating actions', () => {
+    const handleExportGlossaryFile = vi.fn();
+    const view = mount({ handleExportGlossaryFile });
+    const toggle = view.section.querySelector('[data-glossary-export-toggle]');
+    const exports = view.section.querySelector('[data-glossary-export-tools]');
+    expect(shown(toggle)).toBe(true);
+    expect(shown(exports)).toBe(false);
+    click(toggle);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(shown(exports)).toBe(true);
+    expect(shown(region(view))).toBe(false);
+    const wordList = exports.querySelector('[data-glossary-export-word-list]');
+    click(wordList);
+    expect(handleExportGlossaryFile).toHaveBeenCalledWith('chooser', { opener: wordList });
+    expect(view.section.querySelectorAll('[data-help-key="glossary_export_standard"]')).toHaveLength(1);
+    expect(view.section.querySelectorAll('[data-glossary-export-word-list]')).toHaveLength(1);
+    click(toggle);
+    expect(shown(exports)).toBe(false);
   });
 });

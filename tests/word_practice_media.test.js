@@ -145,7 +145,7 @@ describe('editable PowerPoint practice', () => {
     expect(pptx.slides.length).toBeGreaterThan(1);
     const body = pptx.slides.flatMap(slide => slide.texts.map(item => flattenText(item.text))).join(' ');
     expect(body).toContain('term169');
-    expect(body).toContain('Spanish: barco');
+    expect(body).toContain('Spanish:\nbarco');
     expect(pptx.wordPracticeWarnings).toHaveLength(1);
     expect(closeAudio).toHaveBeenCalledTimes(1);
   });

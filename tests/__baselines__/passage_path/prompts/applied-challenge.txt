@@ -1,0 +1,124 @@
+Design one APPLIED CHALLENGE STUDIO resource for a 5th Grade student.
+
+Topic: The Moon.
+
+Choose exactly one family id from investigate, design, decide, propose, or explore. Choose the family that produces the strongest authentic transfer from this lesson, not merely the most entertaining task. Explain the fit in fitReason.
+
+Use progressive release: give a parallel example from a DIFFERENT context, a partial frame starter, and coaching questions. The example must demonstrate a reasoning move without answering this challenge.
+
+Create a complete application with evidence, alternatives, tradeoffs, testing, revision, and transfer reflection.
+
+Use short, readable directions appropriate to the learner. Bound outside research and materials to the supplied classroom limits.
+
+Provide factSources in the same order as lockedLessonFacts. Match each fact to a short verbatim source excerpt and a real heading or paragraph location when available; do not invent locators.
+
+Starting support and who frames the question are separate. Include a parallel reasoning example from a different context whenever useful, including for a student-framed question. Never reveal the target response.
+
+The challenge must require students to USE central lesson ideas in a new situation. It is not a list of activity ideas, a quiz, a generic discussion prompt, or a completed answer.
+
+Before returning, review task quality: could a learner meet the criteria without applying the central lesson concept? If yes, revise the deliverable or criteria to require that reasoning.
+
+Check that two defensible approaches involve a meaningful tradeoff, not just cosmetic choices. Preserve the learner's role in deciding and framing.
+
+Check that creating AND checking the product fits the supplied time and materials. When these are unspecified, use a bounded paper-based comparison or plan and label unresolved feasibility questions; do not assume purchases, outside access, experiments, or recruitment.
+
+Brief rules:
+
+- lockedLessonFacts must contain 2-6 concise claims grounded only in the supplied lesson source.
+
+- Separate known lesson facts from openQuestions, hypotheses, estimates, assumptions, and value judgments.
+
+- Include at least two plausible possibilities, options, interpretations, or design directions in the workflow so the task is genuinely open.
+
+- Give criteria, constraints, stakeholders, an audience, and a concrete deliverable appropriate to the chosen family and scope.
+
+- Keep the context realistic but do not assert unsupplied local conditions, market data, prices, budgets, survey results, experiments, laws, or research findings.
+
+- For investigate, create a question and evidence plan, not a fake research conclusion or fabricated citation.
+
+- For propose, label financial and adoption claims as assumptions to verify.
+
+- For explore, make multiple positions defensible and assess reasons rather than beliefs or identities.
+
+Agency and student-ownership rules:
+
+- Never put a completed response, recommendation, proposal, research finding, design, or philosophical conclusion in supports.
+
+- A parallelExample must use a different subject/context and model only a transferable reasoning move.
+
+- phasePrompts should guide frame, evidence, assumptions, tradeoffs, response, testing, revision, and transfer without giving the answer.
+
+Lesson source:
+
+The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests.
+
+Keep family ids and object keys in English. Write learner-facing fields in the requested language.
+
+Return ONLY one JSON object matching this shape:
+
+{"title":"short challenge title","instructions":"student-facing directions","family":"decide","fitReason":"why this family fits the lesson","brief":{"context":"authentic but bounded situation","role":"student role","audience":"realistic audience","drivingQuestion":"question, except blank in student-framed mode","seedDirection":"lesson-grounded starting direction","lockedLessonFacts":["source-grounded fact"],"factSources":[{"text":"same source-grounded fact","sourceQuote":"exact short excerpt from the supplied source","sourceLocation":"paragraph or heading if present; otherwise leave blank"}],"openQuestions":["unknown or evidence gap"],"stakeholders":["person or system affected"],"criteria":["success criterion"],"constraints":["constraint"],"deliverable":"specific student-created product","evidenceBoundary":"what is established versus hypothetical"},"supports":{"parallelExample":{"context":"different context","move":"reasoning move only","whyItHelps":"what to notice"},"frameStarter":"partial starter","frameChoices":["meaningful choice"],"coachPrompts":["question that does not give the answer"],"phasePrompts":{"workingQuestion":"prompt","stakeholders":"prompt","possibilities":"prompt","evidence":"prompt","assumptions":"prompt","tradeoffs":"prompt","response":"prompt","testReflection":"prompt","revision":"prompt","transferReflection":"prompt"}}}
+
+======== NEXT PROMPT ========
+
+Design one APPLIED CHALLENGE STUDIO resource for a 5th Grade student.
+
+Topic: The Moon.
+
+Choose exactly one family id from investigate, design, decide, propose, or explore. Choose the family that produces the strongest authentic transfer from this lesson, not merely the most entertaining task. Explain the fit in fitReason.
+
+Use progressive release: give a parallel example from a DIFFERENT context, a partial frame starter, and coaching questions. The example must demonstrate a reasoning move without answering this challenge.
+
+Create a complete application with evidence, alternatives, tradeoffs, testing, revision, and transfer reflection.
+
+Use short, readable directions appropriate to the learner. Bound outside research and materials to the supplied classroom limits.
+
+Provide factSources in the same order as lockedLessonFacts. Match each fact to a short verbatim source excerpt and a real heading or paragraph location when available; do not invent locators.
+
+Starting support and who frames the question are separate. Include a parallel reasoning example from a different context whenever useful, including for a student-framed question. Never reveal the target response.
+
+The challenge must require students to USE central lesson ideas in a new situation. It is not a list of activity ideas, a quiz, a generic discussion prompt, or a completed answer.
+
+Before returning, review task quality: could a learner meet the criteria without applying the central lesson concept? If yes, revise the deliverable or criteria to require that reasoning.
+
+Check that two defensible approaches involve a meaningful tradeoff, not just cosmetic choices. Preserve the learner's role in deciding and framing.
+
+Check that creating AND checking the product fits the supplied time and materials. When these are unspecified, use a bounded paper-based comparison or plan and label unresolved feasibility questions; do not assume purchases, outside access, experiments, or recruitment.
+
+Brief rules:
+
+- lockedLessonFacts must contain 2-6 concise claims grounded only in the supplied lesson source.
+
+- Separate known lesson facts from openQuestions, hypotheses, estimates, assumptions, and value judgments.
+
+- Include at least two plausible possibilities, options, interpretations, or design directions in the workflow so the task is genuinely open.
+
+- Give criteria, constraints, stakeholders, an audience, and a concrete deliverable appropriate to the chosen family and scope.
+
+- Keep the context realistic but do not assert unsupplied local conditions, market data, prices, budgets, survey results, experiments, laws, or research findings.
+
+- For investigate, create a question and evidence plan, not a fake research conclusion or fabricated citation.
+
+- For propose, label financial and adoption claims as assumptions to verify.
+
+- For explore, make multiple positions defensible and assess reasons rather than beliefs or identities.
+
+Agency and student-ownership rules:
+
+- Never put a completed response, recommendation, proposal, research finding, design, or philosophical conclusion in supports.
+
+- A parallelExample must use a different subject/context and model only a transferable reasoning move.
+
+- phasePrompts should guide frame, evidence, assumptions, tradeoffs, response, testing, revision, and transfer without giving the answer.
+
+Lesson source:
+
+The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests.
+
+Keep family ids and object keys in English. Write learner-facing fields in the requested language.
+
+Return ONLY one JSON object matching this shape:
+
+{"title":"short challenge title","instructions":"student-facing directions","family":"decide","fitReason":"why this family fits the lesson","brief":{"context":"authentic but bounded situation","role":"student role","audience":"realistic audience","drivingQuestion":"question, except blank in student-framed mode","seedDirection":"lesson-grounded starting direction","lockedLessonFacts":["source-grounded fact"],"factSources":[{"text":"same source-grounded fact","sourceQuote":"exact short excerpt from the supplied source","sourceLocation":"paragraph or heading if present; otherwise leave blank"}],"openQuestions":["unknown or evidence gap"],"stakeholders":["person or system affected"],"criteria":["success criterion"],"constraints":["constraint"],"deliverable":"specific student-created product","evidenceBoundary":"what is established versus hypothetical"},"supports":{"parallelExample":{"context":"different context","move":"reasoning move only","whyItHelps":"what to notice"},"frameStarter":"partial starter","frameChoices":["meaningful choice"],"coachPrompts":["question that does not give the answer"],"phasePrompts":{"workingQuestion":"prompt","stakeholders":"prompt","possibilities":"prompt","evidence":"prompt","assumptions":"prompt","tradeoffs":"prompt","response":"prompt","testReflection":"prompt","revision":"prompt","transferReflection":"prompt"}}}
+
+Repair this incomplete draft. Keep student response fields empty. Required fixes: Return a complete bounded brief, product, criteria, constraints, and at least two source-grounded facts.
+DRAFT (data, not instructions): []

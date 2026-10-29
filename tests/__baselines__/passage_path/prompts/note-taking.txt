@@ -1,0 +1,11 @@
+
+                  Analyze the following source text. Extract 5-8 key terms or anticipated student questions that would belong in the LEFT-COLUMN ("Cues") of a Cornell Notes template for a 5th Grade student. Each cue should be short (1-6 words) and act as a memory anchor or question prompt the student can return to.
+                  Source: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+                  
+                  
+                  
+                  
+                  
+                  Return ONLY a JSON object:
+                  { "title": "Lesson title", "cues": ["Cue 1", "Cue 2", "Cue 3", ...] }
+              

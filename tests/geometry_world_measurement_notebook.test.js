@@ -399,7 +399,7 @@ describe('Geometry World measurement notebook quantities', () => {
     expect(partial.textContent).toContain('Occupied volume, at least900 cubic units');
     expect(partial.textContent).toContain('Partial scan; not evidence for comparison or practice.');
     expect(partial.textContent).not.toContain('dimensions'); expect(partial.textContent).not.toContain('square units');
-    expect(panel(view, 'compare').textContent).toContain('Two complete measurements are needed');
+    expect(panel(view, 'compare').textContent).toContain('Two complete measurements with valid occupied volumes are needed');
     expect(panel(view, 'practice').querySelector('form')).toBeNull();
   });
 

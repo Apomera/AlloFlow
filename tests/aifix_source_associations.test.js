@@ -47,6 +47,13 @@ describe('bounded accessibility additions remain useful', () => {
   expect(await h.run(input)).toBe(out);
   expect(h.evidence[0].candidateRejectionCount).toBe(0);
  });
+ // (2026-10-28, IRS i1040 worksheet) block boundaries inside a cell are word breaks for the table gate
+ it('accepts moving a cell label out of a list item into its own paragraph', async () => {
+  const input = doc('<table><tr><th>Line</th><th>Entry</th></tr><tr><td>1</td><td><ul><li>You were born before January 2, 1961.</li><li>Blind. Total number of boxes checked</li></ul></td></tr></table>' + prose);
+  const h = make(s => s.replace('<li>Blind. Total number of boxes checked</li></ul>', '<li>Blind.</li></ul><p>Total number of boxes checked</p>'));
+  expect(await h.run(input)).toContain('<p>Total number of boxes checked</p>');
+  expect(h.evidence[0].candidateRejectionCount).toBe(0);
+ });
  it('accepts descriptive link wording without changing the destination', async () => {
   const input = doc('<a href="https://school.example/assignment">Click here</a>' + prose);
   const h = make(s => s.replace('Click here', 'Read the assignment instructions'));

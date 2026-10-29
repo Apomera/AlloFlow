@@ -32,7 +32,7 @@ describe('Assessment Builder runtime recovery', () => {
     await act(async () => { button.click(); button.click(); });
     expect(callGemini).toHaveBeenCalledTimes(1); expect(button.disabled).toBe(true);
     await act(async () => { resolveFirst(response(1)); await Promise.resolve(); });
-    expect(host.textContent).toContain('1/2 ready'); expect(host.textContent).toContain('Retry incomplete');
+    expect(host.textContent).toContain('1/2 prepared'); expect(host.textContent).toContain('Retry incomplete');
     expect(history).toHaveLength(1); const id = history[0].id;
     await act(async () => button.click());
     expect(callGemini).toHaveBeenCalledTimes(2); expect(history).toHaveLength(1);

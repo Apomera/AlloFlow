@@ -219,9 +219,15 @@ describe('assessment completion focus handoffs', () => {
   });
 
   it.each([{ total: 1, label: 'next question' }, { total: 5, label: 'assessment summary' }])('cancels the delayed $label handoff when the learner moves elsewhere', async ({ total }) => {
-    const f = await mountLab({ quizTotal: total, quizReviewMode: true,
+    // These five targets are ordered for seed 1234. Correctly answered items
+    // have left the pending queue, while the captured batch keeps feedback visible.
+    const batch = ['heart', 'tympanum', 'ventral_skin', 'dorsal_skin', 'nictitating'];
+    const f = await mountLab({ quizTotal: total, quizScore: total, quizIdx: total - 1, quizReviewMode: true,
+      quizReviewQueue: batch.slice(total),
+      _quizReviewSession: { scope: 'frog|assessment|1234', ids: batch },
+      _quizReviewResolution: { scope: 'frog|assessment|1234', ids: batch.slice(0, total) },
       assessmentCompletedAt: 123, assessmentRecordedScore: 0, assessmentRecordedTotal: 1,
-      quizFeedback: { correct: true, chosen: 'tympanum', supported: false } });
+      quizFeedback: { correct: true, chosen: batch[total - 1], supported: true } });
     const before = recordedWork(f.state), control = f.continuation;
     const outside = document.createElement('button'); outside.dataset.assessmentTestOutside = 'true';
     outside.textContent = 'Another task'; document.body.appendChild(outside);

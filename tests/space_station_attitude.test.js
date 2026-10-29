@@ -324,7 +324,7 @@ describe('space station interactive pointing lab', () => {
     expect(view.host.querySelector('[data-flight-rule="attitude"]').textContent).toContain('ORBIT PEAK');
     view.patch({ opsMode: 'integrated' });
     expect(view.host.querySelector('#iss-orbit-readout').textContent).toContain('Attitude ' + margin(model, 70).toFixed(0) + '%');
-    const simulate = [...view.host.querySelectorAll('button')].find(button => button.textContent.includes('Simulate the next'));
+    const simulate = view.host.querySelector('[data-ops-record-trial]');
     act(() => simulate.click());
     expect(view.time).toBe(92);
     expect(view.data.opsCmg).toBe(70);

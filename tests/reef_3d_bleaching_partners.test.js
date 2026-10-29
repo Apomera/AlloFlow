@@ -143,7 +143,16 @@ describe('Lane G2: animals with algae partners bleach, the rest do not', () => {
   });
 
   it('adds no material family or shader program: bleaching only changes colours, maps and uniforms', () => {
-    const fams = (health, ids = S.ids) => { const set = new Set(); for (const id of ids) for (const quality of ['low', 'high']) build(id, { seed: 3, quality, health }, (h) => meshes(h).forEach((m) => set.add(sig(m)))); return set; };
+    // Cache only exact requests: unsupported states still go through create(),
+    // so a regression in health normalization cannot hide behind this cache.
+    // Legacy catalog and individual partner checks reuse their measured data.
+    const signatures = new Map();
+    const signatureFor = (id, quality, health = 'healthy') => {
+      const key = id + ':' + quality + ':' + health;
+      if (!signatures.has(key)) signatures.set(key, build(id, { seed: 3, quality, health }, h => meshes(h).map(sig)));
+      return signatures.get(key);
+    };
+    const fams = (health, ids = S.ids) => { const set = new Set(); for (const id of ids) for (const quality of ['low', 'high']) signatureFor(id, quality, health).forEach(s => set.add(s)); return set; };
     // New specimen textures are present in the healthy catalog too; bleaching adds no family.
     const healthy = fams('healthy'), all = new Set([...healthy, ...fams('bleached'), ...fams('dead')]);
     expect(all, 'bleaching adds no material family to the healthy catalog').toEqual(healthy);
@@ -152,7 +161,7 @@ describe('Lane G2: animals with algae partners bleach, the rest do not', () => {
     expect([...all].filter(s => !legacy.has(s)).sort()).toEqual(POST_MERGE_FAMILIES.map(s => s + ',reef3d-species-v7|d').sort());
     expect(new Set([...all].map((k) => k.split(',').pop())), 'one shader patch').toEqual(new Set(['reef3d-species-v7|d']));
     for (const id of PARTNERS) for (const quality of ['low', 'high']) {
-      const a = build(id, { seed: 3, quality }, (h) => meshes(h).map(sig)), b = build(id, { seed: 3, quality, health: 'bleached' }, (h) => meshes(h).map(sig));
+      const a = signatureFor(id, quality), b = signatureFor(id, quality, 'bleached');
       expect(b, id + ' ' + quality).toEqual(a);
     }
   });

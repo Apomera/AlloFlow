@@ -14,7 +14,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SRC = fs.readFileSync(path.resolve(__dirname, '../doc_pipeline_source.jsx'), 'utf8');
+const SRC = fs.readFileSync(process.env.ALLO_PIPELINE_SOURCE || path.resolve(__dirname, '../doc_pipeline_source.jsx'), 'utf8'); // env: private copy for mutation checks
 
 // Extract `const NAME = (...) => { ... }` verbatim from source via brace-balancing.
 // Regex {n,m} quantifiers self-balance, so they don't perturb the net brace depth.
@@ -56,6 +56,21 @@ describe('acceptFixedHtmlDetailed — AI-fix acceptance gate', () => {
     const d = A.acceptFixedHtmlDetailed(fixed, orig);
     expect(d.accepted).toBe(false);
     expect(d.reason).toBe('size-shrink');
+  });
+
+  // (2026-10-28, NIST SP 800-63 slice: five 200-character alts cut to one line were refused twice)
+  it('accepts a shrink that comes only from shortening alt text, but not one that empties an alt', () => {
+    const longAlt = 'Step 1 graphic for AAL selection: a green circle with the number 1 beside a grey rounded label reading the step question in dark text on a white page background';
+    const img = (alt) => '<img src="x.png" alt="' + alt + '">';
+    const orig = DOC('<p>' + para(30) + '</p>' + [1, 2, 3, 4, 5].map(() => img(longAlt)).join(''));
+    const short = DOC('<p>' + para(30) + '</p>' + [1, 2, 3, 4, 5].map((n) => img('Step ' + n)).join(''));
+    expect(short.length / orig.length).toBeLessThan(0.95);
+    expect(A.acceptFixedHtmlDetailed(short, orig).accepted).toBe(true);
+    const emptied = DOC('<p>' + para(30) + '</p>' + [1, 2, 3, 4, 5].map(() => img('')).join(''));
+    expect(A.acceptFixedHtmlDetailed(emptied, orig).reason).toBe('size-shrink');
+    // visible text cut alongside the alts is still refused
+    const cut = DOC('<p>' + para(5) + '</p>' + [1, 2, 3, 4, 5].map((n) => img('Step ' + n)).join(''));
+    expect(A.acceptFixedHtmlDetailed(cut, orig).accepted).toBe(false);
   });
 
   it('rejects text shrink below the 0.97 floor even when byte size is held in-band with markup', () => {

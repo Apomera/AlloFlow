@@ -1,0 +1,31 @@
+
+            Create writing supports (Scaffolds) based on the text below for 5th Grade students.
+            Type: Sentence Starters
+            Language: English.
+            
+            
+            
+            
+            Do NOT provide translations.
+            
+            Do not use emojis.
+            Output Requirements:
+            1. Scaffolds:
+               - If "Sentence Starters": Provide 6-9 distinct sentence beginnings that help students structure an answer or argument about the text, in three tiers (2-3 each, listed emerging first): mark each with "tier": "emerging" (short, highly supported, e.g. "The ___ is ___ because ___."), "expanding" (a fuller frame with a transition word), or "bridging" (an open academic stem that asks students to connect or justify ideas).
+               - If "Paragraph Frame": Provide a fill-in-the-blank paragraph structure. Use [blank] (bracketed text) to indicate where students should write.
+               - If "Discussion Prompts": Provide 3-5 provocative discussion questions.
+               - For every type: Add "wordBank": 6-10 key words copied from the text that students can use in their writing (single words or short phrases, spelled as in the text).
+            2. Grading Rubric:
+               - Create a Markdown table rubric (Criteria vs Levels 1-5) specifically for this activity.
+               - Include criteria for Content, Use of Scaffolds, and Mechanics.
+            Return ONLY a JSON object with this structure:
+            {
+                "mode": "list" (for Starters/Prompts) OR "paragraph" (for Frame),
+                "items": [{ "text": "...", "tier": "emerging|expanding|bridging" (Sentence Starters only) }] (if mode is list),
+                "text": "..." (if mode is paragraph),
+                "wordBank": ["word from the text", "..."],
+                "rubric": "Markdown string of the rubric table",
+            }
+            
+            Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+         

@@ -125,7 +125,7 @@ const DRIVING_SCENARIOS = [
   { id: 'residential', speedLimit: 25, phrases: ['Watch for kids', 'driveways'] },
   { id: 'suburban', speedLimit: 40, phrases: ['traffic lights', 'turn lanes'] },
   { id: 'highway', speedLimit: 65, phrases: ['Practice merging', '3-second following distance'] },
-  { id: 'roundabout', speedLimit: 25, phrases: ['Yield to traffic already in the circle', 'No stopping inside'] },
+  { id: 'roundabout', speedLimit: 25, phrases: ['Yield to traffic already in the circle', 'Keep moving unless safety requires a stop'] },
   { id: 'rural', speedLimit: 50, phrases: ['moose', 'deer', 'cyclists'] },
   { id: 'parking', speedLimit: 10, phrases: ['Parallel Parking', 'road-test maneuver'] },
   { id: 'night', speedLimit: 40, phrases: ['Night Driving', 'Do not overdrive'] },
@@ -1960,7 +1960,7 @@ describe('RoadReady intersection-rule invariants', () => {
     expect(src).toContain('trafficSignalMovementIndication(');
     expect(src).toContain("s, approach.approachGroup,");
     expect(src).toContain('var activeOneWayViolation = playerCrossCorridor ? !!crossRequiredDirection : activeOneWay.enabled');
-    expect(src).toContain('function leftTurnGapState(traffic, self, signal, playerCar)');
+    expect(src).toContain('function leftTurnGapState(traffic, self, signal, playerCar, world)');
     expect(src).toContain("t._turnIntent === 'left'");
     expect(src).toContain('function createIntersectionTurnPath(startX, startY, startHeading, crossPose, crossDirection, turnIntent)');
     expect(src).toContain('function intersectionTurnPoint(path, progress)');
@@ -2006,8 +2006,9 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).toContain('var hudGapState = followingVehicleRoadState(');
     expect(src).toContain('var rearState = followingVehicleRoadState(');
     expect(src).toContain('var aiFollowState = followingVehicleRoadState(');
+    expect(src).toContain('function followingCenterDistance(world, observer, target, roadState)');
     expect(src).toContain(
-      'var playerAhead = playerSameLane ? playerFollowState.ahead : Infinity;');
+      'followingCenterDistance(infiniteWorldRef.current, t, playerCar, playerFollowState)');
     expect(src).not.toContain('var otherAhead = (other.y - t.y) * tDirSign2;');
     expect(src).not.toContain('var playerAhead = (t.heading > 0 ? playerCar.y - t.y : t.y - playerCar.y);');
     expect(src).not.toContain('var sameLaneAsNearest;');
@@ -2042,8 +2043,8 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).toContain('var emRoadAhead = 0;');
     expect(src).toContain('emRoadAhead = (emNowFrame.longitudinal - carNowFrame.longitudinal)');
     expect(src).toContain('var emResponseDistance = Math.max(6, emFollow.holdGap + 0.25)');
-    expect(src).toContain('if (!em.responded && !em.checked && emRoadAhead > -emResponseDistance)');
-    expect(src).toContain('if (em.life <= 0 || emRoadAhead > 20)');
+    expect(src).toContain('if (!emRoundabout && !em.responded && !em.checked && emRoadAhead > -emResponseDistance)');
+    expect(src).toContain('if (em.life <= 0 || (emRoundabout ? em._roundaboutRouteComplete : emRoadAhead > 20))');
     expect(src).toContain('var emFallbackSign = Number(em._travelSign) < 0 ? -1 : 1;');
     expect(src).not.toContain('if (!em.checked && em.y < car.y + 6)');
     expect(src).not.toContain('em.y -= em.speed * dt;');

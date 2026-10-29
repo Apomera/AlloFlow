@@ -35,11 +35,12 @@ const words = () => [
 ];
 function exporter(data = words(), extra = {}, title = 'Plants: Leaves') {
   const addToast = vi.fn();
+  const liveRef = { current: { generatedContent: { id: 'g1', type: 'glossary', title, data }, t: (key) => key, addToast, ...extra } };
   const api = window.AlloModules.createExport({
-    liveRef: { current: { generatedContent: { id: 'g1', type: 'glossary', title, data }, t: (key) => key, addToast, ...extra } },
+    liveRef,
     escapeXml: (s) => String(s),
   });
-  return { api, addToast };
+  return { api, addToast, liveRef };
 }
 // Captures the Blob text, the file name and the object-URL lifecycle.
 function captureDownloads() {
@@ -68,6 +69,7 @@ function parseCsv(text) {
 }
 const dialog = () => document.querySelector('.agx-overlay [role="dialog"]');
 const buttonIn = (root, text) => [...root.querySelectorAll('button')].find((b) => b.textContent === text);
+const primaryIn = root => root.querySelector('.agx-btn-primary');
 const key = (el, k, shiftKey = false) => { const ev = new KeyboardEvent('keydown', { key: k, shiftKey, bubbles: true, cancelable: true }); el.dispatchEvent(ev); return ev; };
 
 describe('CSV word list', () => {
@@ -164,6 +166,116 @@ describe('Quizlet and Anki lines', () => {
   });
 });
 
+describe('explicit word-list export scope', () => {
+  function scopedExporter() {
+    const data = [
+      { entryId: 'river', term: 'Bank', def: 'The land beside a river.', isSelected: false, translations: { Spanish: 'Orilla' } },
+      { entryId: 'money', term: 'Bank', def: 'A place that holds money.', isSelected: true, translations: { Spanish: 'Banco' } },
+      { term: 'Seed', def: 'A plant before it grows.' },
+    ];
+    const run = exporter(data);
+    run.liveRef.current.filteredGlossaryResource = run.liveRef.current.generatedContent;
+    run.liveRef.current.filteredGlossaryData = [{ ...data[2], _originalIdx: 2 }, { ...data[0], _originalIdx: 0 }];
+    return { ...run, data };
+  }
+  const output = (format, files) => format === 'quizlet' ? dialog().querySelector('textarea').value : files[0].text;
+  const chooseScope = (box, scope) => { const select = box.querySelector('[data-agx-scope]'); select.value = scope; select.dispatchEvent(new Event('change')); };
+
+  it.each(['csv', 'anki', 'quizlet'])('exports only selected entries in %s, including default-included words hidden by filters', format => {
+    const { files } = captureDownloads();
+    const run = scopedExporter();
+    expect(run.api.handleExportGlossaryFile(format, { scope: 'selected' })).toBe(true);
+    const text = output(format, files);
+    expect(text).toContain('A place that holds money.');
+    expect(text).toContain('A plant before it grows.');
+    expect(text).not.toContain('The land beside a river.');
+  });
+  it.each(['csv', 'anki', 'quizlet'])('exports the filtered entries in displayed order in %s, independently of selection', format => {
+    const { files } = captureDownloads();
+    const run = scopedExporter();
+    expect(run.api.handleExportGlossaryFile(format, { scope: 'filtered' })).toBe(true);
+    const text = output(format, files);
+    expect(text.indexOf('Seed')).toBeLessThan(text.lastIndexOf('Bank'));
+    expect(text).toContain('The land beside a river.');
+    expect(text).not.toContain('A place that holds money.');
+  });
+  it.each(['csv', 'anki', 'quizlet'])('refuses an empty or unavailable scope instead of exporting all words in %s', format => {
+    const { files } = captureDownloads();
+    const run = scopedExporter();
+    run.data.forEach(item => { item.isSelected = false; });
+    expect(run.api.handleExportGlossaryFile(format, { scope: 'selected' })).toBe(false);
+    run.liveRef.current.filteredGlossaryData = [];
+    expect(run.api.handleExportGlossaryFile(format, { scope: 'filtered' })).toBe(false);
+    expect(run.api.handleExportGlossaryFile(format, { scope: 'unknown' })).toBe(false);
+    expect(files).toHaveLength(0);
+    expect(dialog()).toBeNull();
+    expect(run.addToast).toHaveBeenLastCalledWith('No words in this scope. Choose another scope or change the filters or selection.', 'info');
+  });
+  it('rejects filters from a replaced resource even when the resource ID was reused', () => {
+    const { files } = captureDownloads();
+    const run = scopedExporter();
+    run.liveRef.current.generatedContent = { ...run.liveRef.current.generatedContent, data: [{ entryId: 'river', term: 'New', def: 'A different lesson.' }] };
+    expect(run.api.handleExportGlossaryFile('csv', { scope: 'filtered' })).toBe(false);
+    expect(files).toHaveLength(0);
+    expect(run.api.handleExportGlossaryFile('csv', { scope: 'all' })).toBe(true);
+    expect(files[0].text).toContain('A different lesson.');
+  });
+  it('resolves visible rows against current source entries without duplicate rows or stale definitions', () => {
+    const { files } = captureDownloads();
+    const run = scopedExporter();
+    run.liveRef.current.filteredGlossaryData = [
+      { ...run.data[1], def: 'An outdated definition.' },
+      { ...run.data[1] },
+      { ...run.data[0] },
+      { entryId: 'deleted', term: 'Deleted', def: 'Do not export this.' },
+      { _originalIdx: 2, term: 'Wrong', def: 'Do not use this index.' },
+    ];
+    expect(run.api.handleExportGlossaryFile('csv', { scope: 'filtered' })).toBe(true);
+    const rows = parseCsv(files[0].text.slice(1));
+    expect(rows.slice(1).map(row => [row[0], row[1]])).toEqual([
+      ['Bank', 'A place that holds money.'], ['Bank', 'The land beside a river.'],
+    ]);
+  });
+  it('shows scope counts, defaults to all, and keeps an empty chosen scope available for correction', () => {
+    const run = scopedExporter();
+    run.api.handleExportGlossaryFile('chooser');
+    const box = dialog(), scope = box.querySelector('[data-agx-scope]');
+    expect(scope.value).toBe('all');
+    expect([...scope.options].map(option => option.textContent)).toEqual(['All words (3)', 'Filtered words (2)', 'Selected words (2)']);
+    expect(box.querySelector('label[for="' + scope.id + '"]').textContent).toBe('Words to export');
+    run.data.forEach(item => { item.isSelected = false; });
+    chooseScope(box, 'selected');
+    expect(scope.value).toBe('selected');
+    expect(scope.selectedOptions[0].textContent).toBe('Selected words (0)');
+    expect(primaryIn(box).disabled).toBe(true);
+    expect(box.querySelector('[role="status"]').textContent).toContain('No words in this scope.');
+    chooseScope(box, 'all');
+    expect(primaryIn(box).disabled).toBe(false);
+  });
+  it('preserves scope and card back through Quizlet, including a now-empty selection, and restores focus', () => {
+    const run = scopedExporter();
+    const opener = document.createElement('button'); document.body.append(opener);
+    cleanups.push(() => opener.remove());
+    run.api.handleExportGlossaryFile('chooser', { opener });
+    chooseScope(dialog(), 'selected');
+    dialog().querySelector('input[value="quizlet"]').click();
+    dialog().querySelector('[data-agx-back]').value = 'Spanish';
+    primaryIn(dialog()).click();
+    expect(dialog().querySelector('textarea').value).toBe('Bank\tBanco');
+    expect(dialog().textContent).toContain('Words to export: Selected words (2)');
+    expect(run.addToast).toHaveBeenCalledWith('1 card was skipped because its selected back is missing.', 'info');
+    run.data.forEach(item => { item.isSelected = false; });
+    delete run.data[1].translations;
+    buttonIn(dialog(), 'Back to export options').click();
+    expect(dialog().querySelector('[data-agx-scope]').value).toBe('selected');
+    expect(dialog().querySelector('[data-agx-back]').value).toBe('Spanish');
+    expect(dialog().querySelector('input[value="quizlet"]').checked).toBe(true);
+    expect(primaryIn(dialog()).disabled).toBe(true);
+    buttonIn(dialog(), 'Cancel').click();
+    expect(document.activeElement).toBe(opener);
+  });
+});
+
 describe('the word-list dialogs', () => {
   function openChooser() {
     const opener = document.createElement('button');
@@ -183,7 +295,7 @@ describe('the word-list dialogs', () => {
     expect(document.activeElement).toBe(box.querySelector('input[type="radio"][value="csv"]'));
     const radios = [...box.querySelectorAll('input[type="radio"]')];
     expect(radios.map((r) => r.closest('label').textContent)).toEqual(['Spreadsheet (CSV)', 'Quizlet (copy and paste)', 'Anki (text file)']);
-    const select = box.querySelector('select');
+    const select = box.querySelector('[data-agx-back]');
     expect(box.querySelector('label[for="' + select.id + '"]').textContent).toBe('Back of each card');
     expect([...select.options].map((o) => o.textContent)).toEqual(['Definition', 'Arabic translation', 'Spanish translation']);
     expect(select.closest('[hidden]'), 'no card back for a spreadsheet').not.toBeNull();
@@ -209,6 +321,65 @@ describe('the word-list dialogs', () => {
     expect(dialog()).toBeNull();
     expect(document.activeElement).toBe(opener);
   });
+  it('previews the included and omitted cards before choosing a translated export', () => {
+    openChooser();
+    const box = dialog();
+    const summary = box.querySelector('[role="status"]');
+    expect(summary.textContent).toBe('3 words included.');
+    box.querySelector('input[value="quizlet"]').click();
+    const select = box.querySelector('[data-agx-back]');
+    select.value = 'Arabic';
+    select.dispatchEvent(new Event('change'));
+    expect(summary.textContent).toBe('1 card ready. 2 words will be left out because their selected backs are missing.');
+    expect(select.getAttribute('aria-describedby')).toBe(summary.id);
+    expect(primaryIn(box).textContent).toBe('Prepare Quizlet text');
+    expect(primaryIn(box).disabled).toBe(false);
+  });
+  it('wraps keyboard focus around the checked format after a radio selection changes', () => {
+    openChooser();
+    const box = dialog();
+    const choice = box.querySelector('input[value="quizlet"]');
+    choice.click();
+    choice.focus();
+    expect(key(choice, 'Tab', true).defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(buttonIn(box, 'Cancel'));
+    expect(key(document.activeElement, 'Tab').defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(choice);
+  });
+  it('keeps an empty card export open and lets the teacher choose a usable format', () => {
+    const { files } = captureDownloads();
+    exporter([{ term: 'Leaf', def: '', translations: { Spanish: 'Hoja' } }]).api.handleExportGlossaryFile('chooser');
+    const box = dialog();
+    box.querySelector('input[value="anki"]').click();
+    expect(primaryIn(box).textContent).toBe('Download Anki file');
+    expect(primaryIn(box).disabled).toBe(true);
+    expect(box.querySelector('[role="status"]').textContent).toContain('No words have text for the back of the card yet.');
+    primaryIn(box).click();
+    expect(dialog()).toBe(box);
+    expect(files).toHaveLength(0);
+    const select = box.querySelector('[data-agx-back]');
+    select.value = 'Spanish';
+    select.dispatchEvent(new Event('change'));
+    expect(primaryIn(box).disabled).toBe(false);
+    primaryIn(box).click();
+    expect(dialog()).toBeNull();
+    expect(files[0].text).toContain('Leaf\tHoja');
+  });
+  it('retains the chooser when the glossary changes before a card export', () => {
+    const entries = [{ term: 'Leaf', def: 'A plant part.' }];
+    const { files } = captureDownloads();
+    exporter(entries).api.handleExportGlossaryFile('chooser');
+    const box = dialog();
+    box.querySelector('input[value="quizlet"]').click();
+    entries[0].def = '';
+    primaryIn(box).click();
+    expect(dialog()).toBe(box);
+    expect(primaryIn(box).disabled).toBe(true);
+    expect(files).toHaveLength(0);
+    box.querySelector('input[value="csv"]').click();
+    expect(primaryIn(box).textContent).toBe('Download CSV');
+    expect(primaryIn(box).disabled).toBe(false);
+  });
   it('Cancel closes and returns focus too', () => {
     const { opener } = openChooser();
     buttonIn(dialog(), 'Cancel').click();
@@ -219,8 +390,8 @@ describe('the word-list dialogs', () => {
     const { opener } = openChooser();
     const box = dialog();
     box.querySelector('input[value="quizlet"]').click();
-    box.querySelector('select').value = 'Spanish';
-    buttonIn(box, 'Export').click();
+    box.querySelector('[data-agx-back]').value = 'Spanish';
+    primaryIn(box).click();
     const copy = dialog();
     expect(copy, 'the Quizlet dialog').not.toBeNull();
     expect(document.getElementById(copy.getAttribute('aria-labelledby')).textContent).toBe('Copy for Quizlet');
@@ -237,9 +408,38 @@ describe('the word-list dialogs', () => {
   it('choosing the spreadsheet downloads it and puts focus back', () => {
     const { files } = captureDownloads();
     const { opener } = openChooser();
-    buttonIn(dialog(), 'Export').click();
+    primaryIn(dialog()).click();
     expect(dialog()).toBeNull();
     expect(files.map((f) => f.type)).toEqual(['text/csv;charset=utf-8']);
+    expect(document.activeElement).toBe(opener);
+  });
+  it('previews complete card backs while keeping the full import text available', () => {
+    const data = Array.from({ length: 5 }, (_, i) => ({ term: 'Word ' + i, def: 'Meaning ' + i }));
+    data[0].term = '<img src=x onerror=alert(1)>';
+    exporter(data).api.handleExportGlossaryFile('quizlet');
+    const copy = dialog();
+    const preview = copy.querySelector('.agx-sample');
+    expect(preview.querySelectorAll('dt')).toHaveLength(3);
+    expect(preview.querySelector('dd').textContent).toBe('Meaning 0');
+    expect(preview.querySelector('img')).toBeNull();
+    expect(preview.querySelector('dt').textContent).toBe('<img src=x onerror=alert(1)>');
+    expect(copy.textContent).toContain('Showing 3 of 5 cards.');
+    expect(copy.querySelector('textarea').value.split('\n')).toHaveLength(5);
+    expect(copy.querySelector('details').open).toBe(false);
+  });
+  it('returns to the chosen format and language without losing the original opener', () => {
+    const { opener } = openChooser();
+    dialog().querySelector('input[value="quizlet"]').click();
+    dialog().querySelector('[data-agx-back]').value = 'Arabic';
+    primaryIn(dialog()).click();
+    expect(dialog().querySelector('.agx-sample dd').textContent).toBe('ورقة: جزء من النبات');
+    expect(dialog().textContent).toContain('Back of each card: Arabic translation');
+    buttonIn(dialog(), 'Back to export options').click();
+    expect(dialog().querySelector('input[value="quizlet"]').checked).toBe(true);
+    expect(dialog().querySelector('[data-agx-back]').value).toBe('Arabic');
+    expect(document.activeElement.value).toBe('quizlet');
+    expect(dialog().querySelector('[role="status"]').textContent).toContain('1 card ready.');
+    buttonIn(dialog(), 'Cancel').click();
     expect(document.activeElement).toBe(opener);
   });
   it('Copy uses the host helper first (Canvas blocks the Clipboard API)', async () => {
@@ -259,9 +459,42 @@ describe('the word-list dialogs', () => {
     await act(async () => { buttonIn(copy, 'Copy').click(); });
     expect(navigator.clipboard.writeText).toHaveBeenCalled();
     expect(document.execCommand).toHaveBeenCalledWith('copy');
+    expect(copy.querySelector('details').open).toBe(true);
     expect(document.activeElement).toBe(area);
     expect([area.selectionStart, area.selectionEnd]).toEqual([0, area.value.length]);
     expect(copy.querySelector('[role="status"]').textContent.includes('Ctrl+C')).toBe(true);
+  });
+  it('handles repeated Copy clicks as one pending copy operation', async () => {
+    let resolveCopy;
+    window.alloCopyText = vi.fn(() => new Promise(resolve => { resolveCopy = resolve; }));
+    exporter().api.handleExportGlossaryFile('quizlet');
+    const copy = dialog();
+    const button = buttonIn(copy, 'Copy');
+    button.click(); button.click();
+    expect(window.alloCopyText).toHaveBeenCalledTimes(1);
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(copy.querySelector('[role="status"]').textContent).toBe('Copying…');
+    await act(async () => { resolveCopy(true); });
+    expect(button.hasAttribute('aria-busy')).toBe(false);
+    expect(button.hasAttribute('aria-disabled')).toBe(false);
+    expect(copy.querySelector('[role="status"]').textContent).toContain('Copied.');
+  });
+  it('does not run a late clipboard fallback after returning to export options', async () => {
+    let resolveCopy;
+    window.alloCopyText = vi.fn(() => new Promise(resolve => { resolveCopy = resolve; }));
+    const writeText = vi.fn(async () => {});
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    document.execCommand = vi.fn(() => true);
+    exporter().api.handleExportGlossaryFile('quizlet');
+    buttonIn(dialog(), 'Copy').click();
+    buttonIn(dialog(), 'Back to export options').click();
+    const current = dialog();
+    const focused = document.activeElement;
+    await act(async () => { resolveCopy(false); });
+    expect(writeText).not.toHaveBeenCalled();
+    expect(document.execCommand).not.toHaveBeenCalled();
+    expect(dialog()).toBe(current);
+    expect(document.activeElement).toBe(focused);
   });
   it('Download .txt from the Quizlet dialog saves the same text', () => {
     const { files } = captureDownloads();
@@ -288,13 +521,13 @@ describe('teacher tools entry point', () => {
     const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
     act(() => root.render(React.createElement(window.AlloModules.GlossaryView, glossaryMediaProps({ t: (k) => k, isTeacherMode: true, ...props }))));
     cleanups.push(() => { act(() => root.unmount()); container.remove(); quiet.mockRestore(); });
-    act(() => container.querySelector('button[aria-controls="glossary-teacher-tools"]').click());
+    act(() => container.querySelector('[data-glossary-export-toggle]').click());
     return container;
   }
   it('one "Export word list…" button after the flash-card exports opens the chooser and returns focus to it', () => {
     const { api } = exporter();
     const container = mount({ handleExportGlossaryFile: api.handleExportGlossaryFile });
-    const tools = container.querySelector('[id="glossary-teacher-tools"]');
+    const tools = container.querySelector('[data-glossary-export-tools]');
     const buttons = [...tools.querySelectorAll('button')];
     const index = buttons.findIndex((b) => b.hasAttribute('data-glossary-export-word-list'));
     expect(index, 'the button').toBeGreaterThan(0);

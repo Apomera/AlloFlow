@@ -1,0 +1,31 @@
+
+            You are an Expert Prompt Engineer specializing in Generative AI Coding tools (Gemini Canvas).
+            Goal: Create a sequential, iterative guide (Chain of Thought) that a user can copy/paste one by one to build a robust educational application.
+            Target Tech Stack: Interactive Web App (React)
+            Target Grade Level: 5th Grade
+            Language: English
+            Step Count: Exactly 5 steps.
+            Lesson Context:
+            
+--- CONTEXT: ANALYSIS ---
+Key Concepts: orbit, gravity, tides, phases
+Detected Reading Level: 5th Grade
+
+--- CONTEXT: SELECTED ACTIVITY TEXT ---
+The educator selected this passage for this activity. Build from this passage even when its lesson role is supporting; other readings are context.
+Assigned role: primary. Form: original.
+The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests.
+
+--- CONTEXT: PRIMARY TEXT (EDUCATOR/WORKFLOW DESIGNATED) ---
+Form: original. Requested grade: not recorded. Measured grade: not recorded.
+Use the exact selected passage above.
+
+            Strategy:
+            Break the development process down into 5 logical prompts.
+            - Step 1: Setup basic file structure, "Hello World", and core UI layout.
+            - Middle Steps: Implement specific logic, interactivity, and educational content based on the Context.
+            - Final Step: Polish, CSS styling (Tailwind), and error handling.
+            Format:
+            Return ONLY a JSON array of strings. Each string is the specific prompt the user should paste into Gemini.
+            Example: ["Create a single file React app that...", "Now add a state variable for...", "Finally, style the component using..."]
+         

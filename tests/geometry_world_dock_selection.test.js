@@ -27,7 +27,7 @@ describe('dock summary and actual exported selection agree',()=>{
     expect(Array.from(ui.querySelectorAll('.gwe-grid-span dd')).map(value=>value.textContent)).toEqual(['2grid cells','1grid cell','1grid cell']);
     expect(ui.querySelector('.gwe-creation-summary').dataset.selected).toBe('true');
     expect(ui.querySelector('.gwe-selection-scope').textContent).toBe('Showcase and Print Lab use these blocks.');
-    expect(ui.querySelector('[aria-label="Print Lab block envelope"]').textContent).toContain('10 × 5 × 5 mm');
+    expect(ui.querySelector('.gwe-print-dimensions[role="status"]').textContent).toContain('10 × 5 × 5 mm');
     expect(ctx.toolData.geometryWorld.measureResult).toBe(unrelated);
     api.openSelectedBuildInPrintLab(ctx);
     expect(window.__alloPrintLabPendingHandoff.sourceModel.blocks).toHaveLength(2);
@@ -39,7 +39,7 @@ describe('dock summary and actual exported selection agree',()=>{
       engine._builderSelection={blocks:[b]};ctx.toolData.geometryWorld.measureResult={blocks:a,count:2,isComplete:true,L:2,W:1,H:1};
       ui=dock();expect(Array.from(ui.querySelectorAll('[aria-label="Selected build summary"] .gwe-metric')).map(metric=>metric.textContent)).toEqual(['1Blocks selected']);expect(Array.from(ui.querySelectorAll('.gwe-grid-span dd')).map(value=>value.textContent)).toEqual(['1grid cell','1grid cell','1grid cell']);
       expect(ui.querySelector('.gwe-creation-summary').dataset.selected).toBe('true');
-      expect(ui.querySelector('[aria-label="Print Lab block envelope"]').textContent).toContain('5 × 5 × 5 mm');
+      expect(ui.querySelector('.gwe-print-dimensions[role="status"]').textContent).toContain('5 × 5 × 5 mm');
       api.openSelectedBuildInPrintLab(ctx);
       expect(window.__alloPrintLabPendingHandoff.sourceModel.blocks).toHaveLength(1);
       expect(window.__alloPrintLabPendingHandoff.sourceModel.blocks[0].type).toBe('wood');
@@ -51,7 +51,7 @@ describe('dock summary and actual exported selection agree',()=>{
       expect(ui.querySelector('.gwe-creation-summary').dataset.selected).toBe('false');
       expect(ui.querySelector('.gwe-selection-scope')).toBeNull();
       expect(ui.querySelector('[aria-label="Build summary"]').textContent).toContain('1Selected');
-      expect(ui.querySelector('[aria-label="Print Lab block envelope"]')).toBeNull();
+      expect(ui.querySelector('.gwe-print-dimensions[role="status"]')).toBeNull();
       expect(ui.textContent).toContain('That measurement was the ground or a lesson structure.');
     }
   });

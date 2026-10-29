@@ -1,0 +1,28 @@
+
+                You are an expert Math Curriculum Designer.
+                
+                Topic/Skill: "tides and the Moon"
+                Source Context: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests...."
+Grade Level: 5th Grade
+Interests: 
+                Instruction: Create EXACTLY the number and types of problems described in the Topic/Skill above. Match the count, types, and difficulty the user specified. If no specific count is given, create 5 problems.
+                Context Usage: Frame the word problems using characters, settings, or themes from the Source Context.
+                
+                
+                
+                Output Format:
+                Return a JSON object with a "problems" array.
+                Return ONLY JSON in the following format:
+                {
+                  "title": "Problem Set: tides and the Moon...",
+                  "problems": [
+                    {
+                      "question": "Problem 1 text...",
+                      "answer": "Answer 1",
+                      "steps": [{ "explanation": "...", "latex": "..." }],
+                      "realWorld": "1-2 sentence real-life connection — name a specific career or everyday situation where this skill is used. Do NOT restate the problem as a word problem.",
+                    }
+                  ],
+                  "graphData": null
+                }
+              

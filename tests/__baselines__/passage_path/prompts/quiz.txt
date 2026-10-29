@@ -1,0 +1,71 @@
+
+          Create a short "Exit Ticket" quiz based on this text.
+          Quiz target: today's lesson content.
+          Audience: 5th Grade level students.
+          
+          Language: English.
+          
+          
+          
+          
+          SOURCE-GROUNDED ASSESSMENT RULES:
+          - Build every item from the source text below.
+          - Test specific facts, vocabulary, relationships, claims, processes, or inferences in that source.
+          - Do not ask generic topic questions that could be answered without reading the source.
+          
+          RESPONSE AND SCORING DESIGN: For short-answer and self-explanation include studentCriteria: an array of 2-4 brief, student-facing success criteria describing the quality of reasoning without revealing the answer. Keep the complete answer and rubric in expectedAnswer/rubric only. For every item include sourceEvidence: a short exact quotation from the source that supports its key or reasoning. Use an empty string if the source does not supply that evidence, including prerequisites that rely on background knowledge. Do not invent quotations. For mcq and multi-select include optionFeedback: one concise explanation per option, in exactly the same order, explaining its reasoning or misconception. Fill-blank policy is normalized. Sequence mode is diagnostic; use four to six steps. Numeric unit aliases must be spellings of the same unit; conversion is handled separately by the app.
+          Include the following item types:
+          1. 3 Multiple Choice Question(s) with 4 options each.
+          Additionally, generate exactly 1 unscored closing reflection prompt(s) in the reflections array. Ask about learning, remaining confusion, or a change in thinking; do not ask for confidence because confidence is collected per assessed item.
+          Written responses receive provisional AI feedback. Provide specific reference answers and observable rubrics; avoid vague criteria.
+          
+          ANSWER-CUE RULES for choice items: write every option in parallel grammatical form with similar length and detail, so the correct option is not the longest, the shortest, or the most specific. Never use "all of the above", "none of the above", or options that combine or name other options. Do not put absolute words (always, never, only, every) only in the wrong options. Vary which position holds the correct answer.
+          IMPORTANT — concept tagging for retention tracking: For EVERY item (regardless of type), additionally provide a "conceptLabel" field — a 2-4 word stable concept tag describing what the item tests (e.g., "photosynthesis basics", "subject-verb agreement", "fraction equivalents"). Use lowercase. Use the SAME label across items that test the same underlying concept. This enables cross-session retention tracking — students who saw "photosynthesis basics" in last week's exit-ticket and again in today's review get tracked as the same concept.
+          For EVERY assessed item also provide "dok": an integer 1-4 giving the cognitive demand the item ACTUALLY requires on Webb's Depth of Knowledge (1 = recall, 2 = skill/concept, 3 = strategic thinking, 4 = extended thinking). Rate honestly; do not copy the target level.
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          Do not use emojis.
+          
+          Do NOT provide translation fields of any kind.
+          
+          Return ONLY valid JSON: {
+  "questions": [
+    {
+      "type": "mcq",
+      "question": "Question text?",
+      "options": [
+        "Option A",
+        "Option B",
+        "Option C",
+        "Option D"
+      ],
+      "correctAnswer": "Option A",
+      "conceptLabel": "short concept",
+      "sourceEvidence": "Exact quotation from the provided source, or empty when unavailable",
+      "optionFeedback": [
+        "Reason for option A",
+        "Reason for option B",
+        "Reason for option C",
+        "Reason for option D"
+      ]
+    }
+  ],
+  "reflections": [
+    "Reflection prompt"
+  ]
+}
+          
+          Source text:
+          "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+        

@@ -29,6 +29,31 @@ afterEach(() => {
 });
 
 describe('Brain Atlas cutaway orientation navigator', () => {
+  it.each(['sagittal', 'coronal', 'axial'])('preserves the %s depth on coordinate-free keyboard activation', axis => {
+    const s = setup(axis, 57);
+    const rect = { left: 40, top: 300, width: 200, height: 112 };
+    s.button.props.onClick({ detail: 0, clientX: 0, clientY: 0,
+      currentTarget: { querySelector: () => ({ getBoundingClientRect: () => rect }) }
+    });
+    expect(s.store.toolData.brainAtlas.brain3DSlicePosition).toBe(57);
+    const preventDefault = vi.fn();
+    s.button.props.onKeyDown({ key: 'ArrowRight', preventDefault });
+    expect(preventDefault).toHaveBeenCalledOnce();
+    expect(s.store.toolData.brainAtlas.brain3DSlicePosition).toBe(62);
+  });
+
+  it.each(['sagittal', 'coronal', 'axial'])('keeps real %s pointer clicks working after keyboard activation', axis => {
+    const s = setup(axis, 57);
+    const rect = { left: 40, top: 300, width: 200, height: 112 };
+    const currentTarget = { querySelector: () => ({ getBoundingClientRect: () => rect }) };
+    s.button.props.onClick({ detail: 0, clientX: 0, clientY: 0, currentTarget });
+    const plane = setup(axis, 75).plane.props;
+    s.button.props.onClick({ detail: 1, clientX: rect.left + (Number(plane.x1) + Number(plane.x2)) / 2,
+      clientY: rect.top + (Number(plane.y1) + Number(plane.y2)) / 2, currentTarget
+    });
+    expect(s.store.toolData.brainAtlas.brain3DSlicePosition).toBe(75);
+  });
+
   it.each(['sagittal', 'coronal', 'axial'])('keeps %s direction labels outside the entire plane track', axis => {
     const s = setup(axis, 50);
     const [start, end] = s.labels.map(node => node.props);
@@ -38,12 +63,12 @@ describe('Brain Atlas cutaway orientation navigator', () => {
       expect(Number(start.x)).toBe(Number(end.x));
       expect(Number(start.y) + 10).toBeLessThan(Number(firstPlane.y1));
       expect(Number(end.y) - 10).toBeGreaterThan(Number(lastPlane.y1));
-      expect([start.children, end.children]).toEqual(['S', 'I']);
+      expect([start.children, end.children]).toEqual(['I', 'S']);
     } else {
       expect(Number(start.y)).toBe(Number(end.y));
       expect(Number(start.x) + 10).toBeLessThan(Number(firstPlane.x1));
       expect(Number(end.x) - 10).toBeGreaterThan(Number(lastPlane.x1));
-      expect([start.children, end.children]).toEqual(axis === 'sagittal' ? ['L', 'R'] : ['A', 'P']);
+      expect([start.children, end.children]).toEqual(axis === 'sagittal' ? ['L', 'R'] : ['P', 'A']);
     }
     expect(start.textAnchor).toBe('middle');
     expect(end.textAnchor).toBe('middle');

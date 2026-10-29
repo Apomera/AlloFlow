@@ -118,6 +118,28 @@ describe('optional reef observation companion', () => {
     expect(t.data.speciesPractice).toBeUndefined();
   });
 
+  it.each(['Locate', 'another control'])('does not reclaim focus when a delayed opening frame runs after %s', async action => {
+    const t = await mount({ section: 'explore', diveStudySpeciesId: 'clownfish' }), engine = await start(t);
+    await settleFocus();
+    const frames = [];
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => { frames.push(callback); return frames.length; });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+    engine.target = { ...engine.target, uid: 'phyllidia-1', speciesId: 'varicose_phyllidia' };
+    await t.patch({ diveStudySpeciesId: 'varicose_phyllidia' });
+    const card = t.host.querySelector('[data-marine-observation="varicose_phyllidia"]');
+    expect(document.activeElement).toBe(card.querySelector('h3'));
+    const target = action === 'Locate' ? t.host.querySelector('canvas') : textButton(t.host, 'Open the species guide');
+    if (action === 'Locate') await click(card.querySelector('[data-observation-locate]'));
+    else await React.act(async () => target.focus());
+    expect(document.activeElement).toBe(target);
+    expect(frames.length).toBeGreaterThan(0);
+    await React.act(async () => frames.splice(0).forEach(callback => callback(1000)));
+    expect(document.activeElement).toBe(target);
+    if (action === 'Locate') expect(engine.focus).toHaveBeenLastCalledWith('phyllidia-1');
+    else expect(engine.focus).not.toHaveBeenCalled();
+    expect(engines).toHaveLength(1); expect(engine.dispose).not.toHaveBeenCalled();
+  });
+
   it('explains loading, absent and graphics-error states, changing sites only after an explicit action', async () => {
     config.ready = false;
     const t = await mount({ section: 'explore', diveSiteId: 'damaged', diveStudySpeciesId: 'clownfish' }), engine = await start(t);

@@ -14,7 +14,7 @@ const EXPECTED_IDS = {
   fish: ['clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish', 'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper',
     'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish'],
   reptile: ['green_turtle', 'hawksbill_turtle', 'banded_sea_krait'],
-  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp', 'chocolate_chip_sea_star', 'porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'textile_cone', 'white_spotted_hermit_crab', 'bigfin_reef_squid'],
+  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp', 'chocolate_chip_sea_star', 'porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'textile_cone', 'white_spotted_hermit_crab', 'bigfin_reef_squid', 'goldmouth_sea_squirt', 'feather_duster_worm'],
   coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'orange_cup_coral'],
   structure: ['reef_star', 'reef_ball', 'coral_tree_nursery']
 };
@@ -24,6 +24,9 @@ const COLONY = new Set([...EXPECTED_IDS.coral, ...EXPECTED_IDS.structure]);
 const BUDGET = { animal: [1500, 6000], colony: [4000, 12000], member: [400, 1500] };
 // Rounded instanced anemone fingers: 64 / 140 copies, still two draws.
 const ANEMONE_BUDGET = [2500, 8300];
+// One feather duster in a reef: narrow curved pinnules need denser geometry
+// for the magnified specimen view, while retaining only two draw calls.
+const FEATHER_DUSTER_BUDGET = [3000, 16000];
 // Corals, sponges and frames do not move; everything else must animate.
 const STATIC = ['barrel_sponge', 'brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star', 'reef_ball'];
 
@@ -187,7 +190,7 @@ describe('Reef3DSpecies models', () => {
         expect(Number.isFinite(h.radius) && h.radius > 0, id).toBe(true);
         if (id === 'christmas_tree_worm') { expect(h.radius).toBeGreaterThan(0.05); expect(h.radius).toBeLessThan(0.4); }
         else { expect(h.radius / info.lengthM, id + ' radius vs length').toBeGreaterThan(0.25); expect(h.radius / info.lengthM, id + ' radius vs length').toBeLessThan(1.6); }
-        const n = tris(h.root), cap = (id === 'magnificent_anemone' ? ANEMONE_BUDGET : BUDGET[COLONY.has(id) ? 'colony' : 'animal'])[quality === 'low' ? 0 : 1];
+        const n = tris(h.root), cap = (id === 'magnificent_anemone' ? ANEMONE_BUDGET : id === 'feather_duster_worm' ? FEATHER_DUSTER_BUDGET : BUDGET[COLONY.has(id) ? 'colony' : 'animal'])[quality === 'low' ? 0 : 1];
         expect(n, `${id} ${quality} triangles`).toBeLessThanOrEqual(cap);
         report.push(n);
         h.dispose();

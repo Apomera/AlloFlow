@@ -1,0 +1,29 @@
+
+            Create a "Concept Sort" activity about the topic "renewable and non-renewable energy". No source text is provided: use accurate, widely accepted facts appropriate for 5th Grade students.
+            Target Audience: 5th Grade students.
+            Language: English.
+            
+            
+            
+            
+            Task:
+            1. Identify 2 or 3 contrasting categories, concepts, or themes central to the topic (e.g., "Renewable vs Non-Renewable", "Input vs Output").
+            2. Generate 10-14 items (cards) about the topic for students to sort into these categories. Each item must be accurate, unambiguous, and sortable into exactly ONE of the categories.
+            Differentiation Strategy for 5th Grade:
+            - LOWER LEVEL: Focus on concrete, tangible examples. The content of the cards should be short (1-5 words) to act as captions for visual support.
+            
+            
+            
+            Return ONLY JSON with this structure:
+            {
+                "categories": [
+                    { "id": "c1", "label": "Category 1 Name", "color": "bg-indigo-500" },
+                    { "id": "c2", "label": "Category 2 Name", "color": "bg-pink-500" }
+                ],
+                "items": [
+                    { "id": "i1", "content": "Card Text", "categoryId": "c1" },
+                    { "id": "i2", "content": "Card Text", "categoryId": "c2" }
+                ]
+            }
+            Topic: "renewable and non-renewable energy"
+         

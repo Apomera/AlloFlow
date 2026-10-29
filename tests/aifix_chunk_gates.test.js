@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-const SRC = fs.readFileSync(path.resolve('doc_pipeline_source.jsx'), 'utf8');
+const SRC = fs.readFileSync(process.env.ALLO_PIPELINE_SOURCE || path.resolve('doc_pipeline_source.jsx'), 'utf8'); // env: private copy for mutation checks
 function region(begin, end) {
   const a = SRC.indexOf(begin), b = SRC.indexOf(end, a + begin.length);
   if (a < 0 || b < 0) throw new Error('Missing source anchor: ' + begin);

@@ -3,10 +3,9 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -214,10 +213,10 @@ describe('magnetism unknown-ion case file', () => {
       expect(host.querySelector('.mag-ion-feedback').getAttribute('data-state')).toBe('revise');
       expect(host.querySelector('fieldset.mag-ion-options legend')).toBeTruthy();
       expect(host.querySelector('[role="status"][aria-live="polite"]')).toBeTruthy();
-      const results = await axe.run(host, {
+      const results = await runIsolatedAxe(host.innerHTML, { options: {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
         rules: { 'color-contrast': { enabled: false } },
-      });
+      } });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       host.remove();

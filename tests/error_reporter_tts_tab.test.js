@@ -86,8 +86,11 @@ describe('error reporter TTS tab', () => {
     // has a read-aloud tail to attach.
     window.__alloTtsTrace.push({ at: Date.now(), event: 'pk:seq', detail: { idx: 1, source: 'buffer' } });
     // The report body is what reaches the bug form/worker — drive it via the
-    // Copy log button, which renders the same payload.
+    // Copy log button, which renders the same payload. Trace tails are part of
+    // the technical log, a teacher-view opt-in since 2026-10-28.
+    window.__alloPendingCoachPosture = 'educator';
     document.getElementById('aer-tab-errors').click();
+    document.getElementById('aer-include-log').click();
     let copied = '';
     window.navigator.clipboard || Object.defineProperty(window.navigator, 'clipboard', { value: {}, configurable: true });
     Object.defineProperty(window.navigator, 'clipboard', {

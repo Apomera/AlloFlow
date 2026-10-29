@@ -203,7 +203,8 @@ describe('text size follows the reading settings', () => {
     }
     expect(/\.awp \.awp-aa\{[^}]*min-width:44px/.test(css) && /\.awp button\{[^}]*min-height:44px/.test(css), 'Aa keeps a 44 px target at any text size').toBe(true);
     expect(Object.keys(PX_BEFORE).every((key) => sizes.some(([s, , m]) => (m ? '@' : '') + s === key)), 'every old size is still styled').toBe(true);
-    expect(/(?:^|[;{])\s*font-family\s*:[^;}]*!important/.test(css), 'nothing overrides the body font class').toBe(false);
+    const fontOverrides = [...css.matchAll(/([^{}]+)\{[^{}]*font-family\s*:[^;}]*!important[^{}]*\}/g)];
+    expect(fontOverrides.every(([, selector]) => selector.includes('[data-awp-card-font]:not([data-awp-card-font=default])')), 'only an explicitly selected card font can override reading settings').toBe(true);
   });
 
   it('the projected word\'s own size uses rem bounds that scale', async () => {

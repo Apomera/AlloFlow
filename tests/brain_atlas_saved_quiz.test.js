@@ -30,11 +30,66 @@ function session(extra = {}) {
 beforeEach(() => {
   resetStemLab();
   delete window.__alloBrainAtlas3DStructureIndex;
+  // Existing interaction examples use a known queue; order variation is tested
+  // separately below, without relying on a particular random run.
+  vi.spyOn(Math, 'random').mockReturnValue(0.999);
 });
 
-afterEach(() => { vi.useRealTimers(); document.getElementById('brainatlas-3d-saved-quiz-next')?.remove(); });
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); document.getElementById('brainatlas-3d-saved-quiz-next')?.remove(); });
 
 describe('Brain Atlas saved study rounds', () => {
+  it('varies target positions independently of the stable answer list and preserves a resumed queue', () => {
+    const firstPositions = new Set();
+    for (const draw of [0, 0.999]) {
+      resetStemLab();
+      const s = session();
+      Math.random.mockReturnValue(draw);
+      s.click('Start custom quiz');
+      const queue = [...s.state().brain3DSavedQuizQueue];
+      const answerOrder = () => flatten(s.tree()).filter(node => node.props?.['data-brainatlas-saved-answer']).map(node => node.props['data-brainatlas-saved-answer']);
+      expect(answerOrder()).toEqual(items.map(item => item.key));
+      firstPositions.add(answerOrder().indexOf(queue[0]));
+      expect([...queue].sort()).toEqual(items.map(item => item.key).sort());
+      expect(s.state().brain3DSavedStructures).toEqual(items.map(item => item.key));
+      // Rendering and resuming must not regenerate the randomized queue.
+      Math.random.mockReturnValue(draw === 0 ? 0.999 : 0);
+      s.tree(); s.tree();
+      expect(s.state().brain3DSavedQuizQueue).toEqual(queue);
+      s.answer(items.findIndex(item => item.key === queue[0]));
+      s.click('Next structure');
+      const saved = JSON.parse(JSON.stringify(s.state()));
+      resetStemLab();
+      const resumed = session(saved);
+      expect(resumed.state().brain3DSavedQuizQueue).toEqual(queue);
+      expect(resumed.state().brain3DSavedQuizIndex).toBe(1);
+      resumed.answer(items.findIndex(item => item.key === queue[1]));
+      resumed.click('Finish round');
+      expect(resumed.state().brain3DSavedQuizResults.map(result => result.key)).toEqual(queue);
+    }
+    expect([...firstPositions].sort()).toEqual([0, 1]);
+  }, 15000);
+
+  it('announces the randomized first target using the same clue as the visible prompt', () => {
+    const s = session();
+    Math.random.mockReturnValue(0);
+    s.click('Start custom quiz');
+    expect(s.state().brain3DSavedQuizQueue[0]).toBe(items[1].key);
+    const prompt = s.find(node => node.props?.['data-brainatlas-saved-quiz-prompt'] === 'clue');
+    const clue = flatten(prompt).find(node => node.type === 'strong').props.children;
+    expect(s.announceToSR).toHaveBeenLastCalledWith(expect.stringContaining(clue));
+    expect(String(clue)).not.toMatch(/thalam/i);
+  });
+
+  it('announces and records locating practice when a new round has no unique clue', () => {
+    const saved = ['Allen_thalamus_L', 'Allen_thalamus_R'];
+    const s = session({ brain3DStructureIndex: saved.map(key => ({ key, label: key })), brain3DSavedStructures: saved });
+    s.click('Start custom quiz');
+    expect(s.find(node => node.props?.['data-brainatlas-saved-quiz-prompt'] === 'name')).toBeTruthy();
+    expect(s.announceToSR).toHaveBeenLastCalledWith('Saved structure round started. Locating practice. Find Allen_thalamus_L. The name is shown because this set has no unique clue for this structure.');
+    s.find(node => node.props?.['data-brainatlas-saved-answer'] === saved[0]).props.onClick();
+    expect(s.state().brain3DSavedQuizResults[0].hinted).toBe(true);
+  });
+
   it('moves keyboard focus to the continue control after a correct answer', () => {
     vi.useFakeTimers();
     const s = session();

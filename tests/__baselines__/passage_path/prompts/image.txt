@@ -1,0 +1,15 @@
+
+            Analyze the following text to create a visual plan for an educational diagram: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests.".
+            
+            Task:
+            1. List key visual elements (physical objects, icons, spatial relationships) for the image generator prompt.
+            2. Write a concise (1-sentence) Alt Text description for screen readers describing what the final diagram will show (e.g. "A diagram showing the water cycle stages").
+            Constraints: Include essential labels only in English.
+            Audience: 5th Grade students. Show the main parts and one simple relationship, such as an arrow or a sequence. Labels: at most 6, one to three words each; key subject terms are fine when the text uses them. If the specific instructions above ask for something different, follow them.
+            
+            Return ONLY JSON:
+            {
+                "visualElements": "comma-separated list of elements...",
+                "altText": "Concise description..."
+            }
+        

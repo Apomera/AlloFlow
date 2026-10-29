@@ -14,7 +14,9 @@ describe('figure captions do not double-announce the alt text', () => {
   it('the main image-render figcaption wraps the duplicated description in aria-hidden', () => {
     // Harness repair (2026-07-09): a later XSS hardening escapes ${desc} inline — the aria-hidden
     // wrap (the thing under test) is unchanged.
-    expect(src.includes('<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true">${_alloEscapeTextOnce(desc)}</span></figcaption>'), 'aria-hidden description').toBe(true);
+    // (2026-10-28) aria-hidden only when the caption repeats the alt; a longer description stays readable
+    // (NSF, NIST CSF: the long description never reached screen readers). See remediation_page_range_slice.
+    expect(src.includes('<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em">${_alloCaptionSpan(desc, imgAlt)}</figcaption>'), 'aria-hidden description').toBe(true);
     // (2026-10-26, Aaron option B: the English "Purpose:" line no longer follows it in the delivered caption.)
   });
 

@@ -182,7 +182,7 @@ describe('rock cycle colour contrast', () => {
       const src = readFileSync(p, 'utf8');
       const block = src.slice(src.indexOf('var MODE_META = {'), src.indexOf('var meta = MODE_META[mode]'));
       const accents = [...block.matchAll(/accent:\s*'(#[0-9a-fA-F]{6})'/g)].map((m) => m[1]);
-      expect(accents.length).toBe(7); // landscape, rocks, minerals, mystery, workbench, quiz, weathHunt
+      expect(accents.length).toBe(11); // Includes comparison, field cases, density, and notebook modes.
       accents.forEach((hex) => {
         const r = contrast(hex, TW.white);
         expect(r, `banner accent ${hex} = ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
@@ -198,10 +198,12 @@ describe('rock cycle colour contrast', () => {
       const src = readFileSync(p, 'utf8');
       expect(src).toContain('"data-rocks-header": "responsive"');
       expect(src).toContain('"data-rocks-mode-nav": "responsive"');
-      expect(src).toContain('order-3 flex w-full flex-wrap gap-1 sm:order-none sm:w-auto sm:ml-auto');
+      expect(src).toContain('rk-mode-nav order-3 flex w-full flex-wrap gap-1');
+      expect(src).toContain('.rk-explorer .rk-mode-nav { display:flex; flex-wrap:wrap;');
+      expect(src).toContain('flex:1 0 auto;');
       expect(src).toContain('"data-rocks-header-action": "back"');
       expect(src).toContain('grid h-11 w-11 shrink-0');
-      expect(src).toContain('className: "min-h-[44px] px-3 py-2 rounded-lg');
+      expect(src).toContain('className: "rk-mode-button min-h-[44px] px-3 py-2 rounded-lg');
       expect(src).not.toContain('className: "flex gap-1 ml-auto"');
     });
   });

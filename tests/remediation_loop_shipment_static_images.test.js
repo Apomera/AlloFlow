@@ -208,7 +208,8 @@ describe('figure slots pair with images by what they describe; wrong pictures ar
     expect(claims([], images)).toEqual([false, false, false, false, false]);
   });
   it('the pairing-doubt note is skipped when descriptions paired every slot', () => {
-    expect(source.includes('if (!_imagePairingTrusted && _placeholderCount > 0 && !(_slotAlign && _slotAlign.matched === _placeholderCount)) {'), 'note gated').toBe(true);
+    // (2026-10-28) or every slot that needs a picture (decorative slots excluded: NASA)
+    expect(source.includes('if (!_imagePairingTrusted && _placeholderCount > 0 && !(_slotAlign && (_slotAlign.matched === _placeholderCount || (_meaningfulSlots > 0 && _slotAlign.matched >= _meaningfulSlots)))) {'), 'note gated').toBe(true);
   });
   it('refuses when a commented-out image would shift the indexes', () => {
     const html = '<!-- <img src="old.png"> --><img src="__ALLOFLOW_DATAURL_FINAL_1__" alt="x">';
@@ -553,13 +554,22 @@ describe('the fix loop does not re-send a title finding the HTML already settled
     const sub = '<html><head><title>Maine SAD 35 – Regular Meeting Agenda</title></head><body><h1>Maine SAD 35</h1><p>Regular Meeting Agenda</p></body></html>';
     expect(settled(issue, sub)).toBe(true);
   });
+  // (2026-10-28, IRS i1040: location was "document" and the quote sat in the finding's text)
+  it('a quote of the current title in the finding TEXT also keeps it open', () => {
+    const irs = doc('Standard Deduction Worksheet for Dependents', 'Standard Deduction Worksheet for Dependents');
+    expect(settled({ ruleId: 'document-title', location: 'document', issue: 'The page title "Standard Deduction Worksheet for Dependents" names only the first of three worksheets.' }, irs)).toBe(false);
+    expect(settled({ ruleId: 'document-title', location: 'document', message: 'Title "standard deduction worksheet for dependents" is too narrow' }, irs)).toBe(false);
+    expect(settled({ ruleId: 'document-title', location: 'document', issue: 'The title should describe the worksheets.' }, irs)).toBe(true);
+  });
   it('only ever applies to document-title findings', () => {
     expect(settled({ ruleId: 'image-alt', issue: 'x' }, doc('Civics', 'Civics'))).toBe(false);
     expect(settled('a bare string issue', doc('Civics', 'Civics'))).toBe(false);
   });
   it('is wired into the pass entries, and an empty pass skips the fixer', () => {
-    expect(source.includes('.filter((i) => !_alloTitleIssueSettled(i, accessibleHtml)).map(i => ({'), 'entries filter').toBe(true);
-    expect(source.includes('const fixedHtml = (!_fixEntries.length && !_feedbackNow) ? accessibleHtml : await aiFixChunked('), 'skip fixer').toBe(true);
+    // (2026-10-28) entries expand per merged instance after the same filter
+    expect(source.includes('.filter((i) => !_alloTitleIssueSettled(i, accessibleHtml))\n              .flatMap((i) =>'), 'entries filter').toBe(true);
+    // (2026-10-28) also when only Equal Access reminders are left
+    expect(source.includes('const fixedHtml = ((!_fixEntries.length && !_feedbackNow) || _remindersOnly) ? accessibleHtml : await aiFixChunked('), 'skip fixer').toBe(true);
     expect((source.match(/AI audit evidence was incomplete \(/g) || []).length, 'logged once').toBe(1);
   });
 });
@@ -648,7 +658,8 @@ describe('RSU 57 budget run fixes (2026-10-26)', () => {
     expect(escOnce('ACHIEVING &amp; ENGAGED')).toBe('ACHIEVING &amp; ENGAGED');
     expect(escOnce('Career & Tech <b>')).toBe('Career &amp; Tech &lt;b&gt;');
     expect(escOnce('A&B &#169; &#x2014; &copy; & ;')).toBe('A&amp;B &#169; &#x2014; &copy; &amp; ;');
-    expect(source.includes('<span aria-hidden="true">${_alloEscapeTextOnce(desc)}</span></figcaption>'), 'caption uses it').toBe(true);
+    // (2026-10-28) through _alloCaptionSpan, which escapes once with the same helper
+    expect(source.includes('${_alloCaptionSpan(desc, imgAlt)}</figcaption>') && source.includes("var esc = (typeof _alloEscapeTextOnce === 'function') ? _alloEscapeTextOnce"), 'caption uses it').toBe(true);
   });
   it('the delivered caption no longer carries the English "Purpose:" line (Aaron, option B); the purpose stays in the image metadata', () => {
     expect(source.includes('<span lang="en">Purpose:</span>'), 'no Purpose line in the figure template').toBe(false);

@@ -16,7 +16,7 @@ function learnerWork(state) {
 async function mountLab(patch = {}) {
   const config = window.StemLab._registry.dissection || loadTool('stem_lab/stem_tool_dissection.js', 'dissection');
   const host = document.createElement('div'); document.body.appendChild(host);
-  const root = ReactDOMClient.createRoot(host), awardXP = vi.fn(), pluginInstanceToken = {};
+  const root = ReactDOMClient.createRoot(host), awardXP = vi.fn(), announce = vi.fn(), pluginInstanceToken = {};
   let state, update;
   const initial = {
     specimen: 'frog', _dissLoadedSpec: 'frog', activeLayer: 'skin', anatomicalView: 'dorsal',
@@ -30,10 +30,10 @@ async function mountLab(patch = {}) {
   function Component() {
     const [toolData, setToolData] = React.useState({ dissection: initial });
     state = toolData.dissection; update = setToolData;
-    return config.render(makeCtx({ toolData, setToolData, awardXP, pluginInstanceToken }));
+    return config.render(makeCtx({ toolData, setToolData, awardXP, announceToSR: announce, pluginInstanceToken }));
   }
   const fixture = {
-    host, awardXP, get state() { return state; },
+    host, awardXP, announce, get state() { return state; },
     get tabs() { return [...host.querySelectorAll('[data-dissection-specimens] [role="tab"]')]; },
     get selectedTab() { return host.querySelector('[data-dissection-specimens] [role="tab"][aria-selected="true"]'); },
     get toolbar() { return host.querySelector('.diss-toolbar[role="toolbar"]'); },
@@ -227,6 +227,66 @@ describe('refused specimen navigation preserves progress and recovery focus', ()
     expect(f.state.procedureFeedback.message).toContain('Could not save the latest');
     expect(f.state.specimen).toBe('frog'); expect(f.selectedTab).toBe(current); expect(document.activeElement).toBe(current);
     expect(learnerWork(f.state)).toEqual(before); expect(localStorage.getItem(saveKey)).toBe(savedRaw);
+    expect(f.awardXP).not.toHaveBeenCalled();
+  });
+});
+
+describe('inspection feedback matches the actual keyboard outcome', () => {
+  it.each(['Enter', ' '])('keeps the guided observation instruction after %j activates its target', async key => {
+    const f = await mountLab({ guidedMode: true, guidedStep: 0, guidedTargetIds: ['nictitating'] });
+    const canvas = f.node('diss-canvas');
+    await f.key(canvas, 'End');
+    expect(canvas._keyboardPreviewOrganId).toBe('nictitating');
+    f.announce.mockClear();
+    await f.key(canvas, key);
+    expect(f.state.guidedObservationPending).toBe('nictitating');
+    expect(f.state.guidedStep).toBe(0);
+    expect(f.state.verifiedIdentifications).toEqual({});
+    expect(f.state.procedureFeedback).toMatchObject({ tone: 'working' });
+    expect(f.state.procedureFeedback.message).toContain('Now choose the specimen observation');
+    expect(f.state.procedureFeedback.message).toContain('has not advanced yet');
+    expect(f.announce.mock.calls.some(([message]) => message.startsWith('Inspected '))).toBe(false);
+    expect(document.activeElement).toBe(f.node('diss-guided-observation-check'));
+    expect(f.awardXP).not.toHaveBeenCalled();
+  });
+
+  it.each(['Enter', ' '])('describes an existing record as review after %j', async key => {
+    const f = await mountLab(), before = learnerWork(f.state), canvas = f.node('diss-canvas');
+    await f.key(canvas, 'End');
+    f.announce.mockClear();
+    await f.key(canvas, key);
+    expect(f.state.procedureFeedback.message).toContain('Reviewing your existing observation record for Nictitating Membrane');
+    expect(f.state.procedureFeedback.tone).toBe('working');
+    expect(f.announce.mock.calls.some(([message]) => message.startsWith('Inspected '))).toBe(false);
+    expect(learnerWork(f.state)).toEqual(before);
+    expect(document.activeElement).toBe(f.node('diss-selection-title'));
+    expect(f.awardXP).not.toHaveBeenCalled();
+  });
+
+  it.each(['Enter', ' '])('announces a first inspection once after %j without granting verification', async key => {
+    const f = await mountLab({ exploredOrgans: {}, organNotes: {}, organConfidence: {} }), canvas = f.node('diss-canvas');
+    await f.key(canvas, 'End');
+    expect(f.state.exploredOrgans).toEqual({});
+    f.announce.mockClear();
+    await f.key(canvas, key);
+    expect(f.state.exploredOrgans).toEqual({ 'frog|nictitating': true });
+    expect(f.state.verifiedIdentifications).toEqual({});
+    expect(f.state.procedureFeedback.tone).toBe('success');
+    expect(f.state.procedureFeedback.message).toContain('Inspected Nictitating Membrane.');
+    expect(f.announce.mock.calls.filter(([message]) => message.startsWith('Inspected '))).toHaveLength(1);
+    expect(document.activeElement).toBe(f.node('diss-selection-title'));
+  });
+
+  it('retains recovery feedback when the directory cannot inspect an occluded structure', async () => {
+    const f = await mountLab({ exploredOrgans: {}, organNotes: {}, organConfidence: {} }), before = learnerWork(f.state);
+    const hidden = f.node('diss-organ-ventral_skin');
+    expect(hidden.getAttribute('data-exposure-state')).not.toBe('visible');
+    f.announce.mockClear();
+    await act(async () => { hidden.focus(); hidden.click(); });
+    expect(f.state.procedureFeedback.tone).toBe('caution');
+    expect(f.state.procedureFeedback.message).toMatch(/occluded|not yet exposed/);
+    expect(f.announce.mock.calls.some(([message]) => message.startsWith('Inspected '))).toBe(false);
+    expect(learnerWork(f.state)).toEqual(before);
     expect(f.awardXP).not.toHaveBeenCalled();
   });
 });

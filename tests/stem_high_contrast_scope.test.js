@@ -14,6 +14,11 @@ const TOOLS = ['applab', 'dissection', 'evolab', 'trajectorycomputing', 'watercy
   'punnett', 'singing', 'behaviorlab', 'consciousness', 'dataplot', 'economicslab', 'lifeskills', 'nuclearlab', 'optics', 'pets',
   'schoolbehaviortoolkit', 'spacecolony', 'statslab', 'typingpractice', 'worldbuilder', 'geo', 'magnetism', 'birdlab', 'bridgelab'];
 
+// Hand-written blocks (gradient-button and panel flips from the Oct 28 gradient-text pass): no generated
+// ink flip, but every selector must still stay inside .theme-contrast and the tool's own shell.
+const SMALL_BLOCKS = ['angles', 'calculus', 'circuitshelf', 'coding', 'datalab', 'funcgrapher', 'gamestudio', 'inequality', 'logiclab',
+  'manipulatives', 'money', 'semiconductor', 'solarsystem', 'volume', 'wave'];
+
 // Hand-targeted rules (authored ink restored over the forced yellow; °F/°C toggle cue kept).
 const TARGETED = {
   brainatlas: ':is(.brainatlas-stim-preset-symbol,.brainatlas-stim-compare-symbol){color:#fff!important}',
@@ -56,6 +61,25 @@ describe('STEM high-contrast theme scope', () => {
       expect(flips.length + chipInk.length, `${tool}: no light-panel flip or chip-ink rule`).toBeGreaterThan(0);
       expect(flips.every((r) => r.includes(':not(:empty):not(svg,canvas,video,iframe,object){')), `${tool}: a repaint is missing the swatch/media guard`).toBe(true);
       expect(css.includes('{color:#ffff00!important'), `${tool}: no ink flip`).toBe(true);
+    });
+  }
+});
+
+describe('STEM hand-written high-contrast blocks stay scoped', () => {
+  // Split a selector list on top-level commas only (keeps :is(a,b) and :not(a,b) whole).
+  const selectors = (list) => { const out = []; let depth = 0, cur = ''; for (const ch of list) { if (ch === '(') depth++; if (ch === ')') depth--; if (ch === ',' && !depth) { out.push(cur.trim()); cur = ''; } else cur += ch; } return out.concat(cur.trim()).filter(Boolean); };
+  for (const tool of SMALL_BLOCKS) {
+    it(`${tool} scopes every high-contrast selector to its own shell`, () => {
+      const src = fs.readFileSync(path.join(DIR, `stem_tool_${tool}.js`), 'utf8');
+      const id = /registerTool\(\s*['"]([^'"]+)['"]/.exec(src)[1];
+      const m = /st\.id = 'allo-([\w]+)-hc-css';\s*st\.textContent = ("(?:[^"\\]|\\.)*");/.exec(src);
+      expect(m, `${tool}: no allo-${tool}-hc-css block`).not.toBeNull();
+      expect(m[1]).toBe(tool);
+      const scope = `.theme-contrast [data-stem-tool-shell="${id}"]`;
+      const rules = JSON.parse(m[2]).split('}').map((r) => r.trim()).filter(Boolean);
+      expect(rules.length).toBeGreaterThan(0);
+      const stray = rules.flatMap((r) => selectors(r.slice(0, r.indexOf('{')))).filter((s) => !s.startsWith(scope));
+      expect(stray, `${tool}: selectors outside ${scope}`).toEqual([]);
     });
   }
 });

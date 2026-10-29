@@ -142,7 +142,10 @@ describe('Student controlled supporting traces', () => {
         expect(button.getAttribute('aria-controls')).toContain('dinolab-selected-part-guide');
       }
     }
-    expect(view.host.querySelector('[data-dino-part-label="knee"]').textContent).toMatch(/^A · Knee/);
+    const selectedLabel = view.host.querySelector('[data-dino-part-label="knee"]');
+    expect(selectedLabel.textContent).toMatch(/^✓ A · Knee/);
+    expect(selectedLabel.querySelector('[data-dino-part-selected-check="knee"]').getAttribute('aria-hidden')).toBe('true');
+    expect(selectedLabel.getAttribute('aria-label')).toBe('Endpoint A: Describe Knee');
     expect(view.host.querySelector('[data-dino-part-label="ankle"]').textContent).toMatch(/^B · Ankle/);
     expect(view.host.querySelector('[data-dino-part-label="ankle"]').getAttribute('aria-label')).toContain('Endpoint B');
     await React.act(async () => view.host.querySelector('[data-dino-part-label="ankle"]').click());

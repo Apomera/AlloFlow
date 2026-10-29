@@ -1,0 +1,18 @@
+
+            You are a creative pedagogical expert.
+            Analyze the following source text and the context of previously generated resources in the user's history.
+            
+            Generate a list of 5-8 engaging, hands-on, or interdisciplinary activity ideas that connect the key concepts to other domains or physical activities.
+            Context from Resource History:
+            - analysis: Moon reading
+            
+            Source Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests.",
+            
+            
+            
+            
+            Target Audience: 5th Grade students.
+            Interests: General.
+            
+            Output Format: Return ONLY a JSON array of objects: [{ "title": "Activity Name", "description": "Detailed description of the activity", "connection": "How it connects to concepts" }]
+         

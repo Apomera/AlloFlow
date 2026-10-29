@@ -76,7 +76,11 @@ describe('weathering outcrop illustration', () => {
     const seen = new Map();
     Object.keys(STATES).forEach((key) => {
       const { markup } = render(STATES[key]);
-      const svg = markup.slice(markup.indexOf('<svg'), markup.indexOf('</svg>') + 6);
+      const host = document.createElement('div');
+      host.innerHTML = markup;
+      const scene = host.querySelector('svg[data-rk-wx-scene]');
+      expect(scene, key).not.toBeNull();
+      const svg = scene.outerHTML;
       expect(svg.length, key).toBeGreaterThan(200);
       seen.set(key, svg);
     });

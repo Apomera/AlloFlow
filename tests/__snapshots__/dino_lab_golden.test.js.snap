@@ -7987,7 +7987,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </div>
 </details>
 </div>
-<div class="dinolab-field-context-strip" data-dinolab-evidence-strip="true" role="group" aria-label="Reconstruction evidence context" style="margin-top:10px;padding:10px;border-radius:11px;border:1px solid rgba(94,234,212,0.28);background:linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08));box-shadow:0 8px 24px rgba(2,6,23,0.18)">
+<div class="dinolab-field-context-strip" data-dinolab-evidence-strip="true" role="group" aria-label="Reconstruction evidence context" style="margin-top:10px;padding:10px;border-radius:11px;border:1px solid rgba(94,234,212,0.28);background:linear-gradient(135deg, rgba(15,23,42,0.94), rgba(13,58,60,0.94));box-shadow:0 8px 24px rgba(2,6,23,0.18);--allo-stem-text:#f1f5f9;--allo-stem-text-soft:#cbd5e1">
 <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px">
 <div style="color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:900;letter-spacing:0.04em;text-transform:uppercase">Evidence context</div>
 <div style="color:var(--allo-stem-text-soft, #94a3b8);font-size:11.5px;line-height:1.35">Keep observations separate from inference as you explore</div>

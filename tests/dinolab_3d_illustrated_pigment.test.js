@@ -28,8 +28,8 @@ describe('Dino Lab illustrated scale pigment',()=>{
     dinoSkinMapping(THREE,material,2,.2,profile);const shader=compile(material);
     expect(material.userData.dinoIllustratedPigment).toBe(eligible);
     expect(shader.fragmentShader.includes('float dinoPigmentCloud(')).toBe(eligible);
-    expect(shader.fragmentShader.includes('* dinoPigmentCloud(vDinoSkinPosition)')).toBe(eligible);
-    expect(material.customProgramCacheKey()).toBe(eligible?'dinolab-specimen-skin-mottling-v1':'dinolab-specimen-skin-v2');release(material);
+    expect(shader.fragmentShader.includes('dinoPigmentVariation = dinoPigmentCloud(vDinoSkinPosition)')).toBe(eligible);
+    expect(material.customProgramCacheKey()).toBe(eligible?'dinolab-specimen-skin-zones-v1':'dinolab-specimen-skin-v2');release(material);
   });
   for(const style of ['fine-grain',undefined,null])it('keeps unscaled, untagged or missing maps outside the illustrated skin variant: '+String(style),()=>{
     const material=mappedMaterial(style),profile=integumentProfileFor(byId('tyrannosaurus'),palette,'natural');
@@ -51,8 +51,8 @@ describe('Dino Lab illustrated scale pigment',()=>{
     dinoSkinMapping(THREE,material,1,.2,profile);const shader=compile(material,type),fragment=shader.fragmentShader;
     expect(fragment.indexOf('float dinoPigmentCloud(')).toBeLessThan(fragment.indexOf('void main()'));
     expect(fragment.indexOf('mapTexelToLinear(dinoSampleSkin(')).toBeLessThan(fragment.indexOf('#include <color_fragment>'));
-    expect(fragment.indexOf('#include <color_fragment>')).toBeLessThan(fragment.indexOf('* dinoPigmentCloud(vDinoSkinPosition)'));
-    expect(fragment.split('float dinoPigmentCloud(').length).toBe(2);expect(fragment.split('* dinoPigmentCloud(vDinoSkinPosition)').length).toBe(2);
+    expect(fragment.indexOf('#include <color_fragment>')).toBeLessThan(fragment.indexOf('dinoPigmentVariation = dinoPigmentCloud(vDinoSkinPosition)'));
+    expect(fragment.split('float dinoPigmentCloud(').length).toBe(2);expect(fragment.split('dinoPigmentVariation = dinoPigmentCloud(vDinoSkinPosition)').length).toBe(2);
     expect(shader.vertexShader).toContain('vDinoSkinPosition = dinoSkinPosition;');release(material);
   });
   it('keeps mixed scale/filament coats outside the illustrated field and compatible with ordinary coat programs',()=>{
@@ -76,5 +76,36 @@ describe('Dino Lab illustrated scale pigment',()=>{
     mesh.rotation.y+=.7;mesh.position.x+=2;mesh.updateMatrixWorld(true);
     expect(Array.from(geometry.attributes.dinoSkinPosition.array)).toEqual(stored);expect(mesh.localToWorld(new THREE.Vector3(1,0,0)).toArray()).not.toEqual(worldBefore);
     geometry.dispose();mesh.material.dispose();
+  });
+  it('keeps illustrated palette ratios finite, bounded and independent without changing atlas or material tint',()=>{
+    const ratios=['dinoIllustratedBackTint','dinoIllustratedFlankTint','dinoIllustratedUndersideTint'];
+    for(const colors of [palette,{skin:'#000000',dark:'#ffffff',accent:'#ff0000'},{skin:'#ffffff',dark:'#000000',accent:'#0000ff'}]){
+      const profile=Object.freeze(integumentProfileFor(byId('tyrannosaurus'),colors,'natural'));
+      const material=mappedMaterial('fine-scales');material.color.set('#82918b');material.opacity=.62;material.transparent=true;
+      const original={map:material.map,color:material.color.toArray(),opacity:material.opacity,transparent:material.transparent};
+      dinoSkinMapping(THREE,material,2,.2,profile);const first=compile(material),second=compile(material);
+      for(const name of ratios){
+        const values=first.uniforms[name].value.toArray();
+        for(const value of values){expect(Number.isFinite(value)).toBe(true);expect(value).toBeGreaterThanOrEqual(.15);expect(value).toBeLessThanOrEqual(3);}
+        expect(second.uniforms[name].value.toArray()).toEqual(values);expect(second.uniforms[name].value).not.toBe(first.uniforms[name].value);
+        first.uniforms[name].value.set(99,99,99);expect(second.uniforms[name].value.toArray()).toEqual(values);
+      }
+      expect(first.uniforms.dinoShadeStrength.value).toBe(0);
+      expect({map:material.map,color:material.color.toArray(),opacity:material.opacity,transparent:material.transparent}).toEqual(original);
+      if(colors===palette){for(const value of second.uniforms.dinoIllustratedBackTint.value.toArray())expect(value).toBeLessThan(1);for(const value of second.uniforms.dinoIllustratedUndersideTint.value.toArray())expect(value).toBeGreaterThan(1);}
+      release(material);
+    }
+  });
+  it('retains the ordinary shader and original shade controls for direct-evidence and neutral palettes',()=>{
+    let unchangedFragment=null;
+    for(const [species,hypothesis] of [['microraptor','evidence'],['anchiornis','evidence'],['sinosauropteryx','evidence'],['psittacosaurus','evidence'],['borealopelta','evidence'],['borealopelta','classic'],['tyrannosaurus','conservative']]){
+      const {profile,style}=nativeProfile(species,hypothesis),material=mappedMaterial(style);
+      dinoSkinMapping(THREE,material,1,.2,profile);const shader=compile(material);
+      expect(Object.keys(shader.uniforms).filter(name=>name.startsWith('dinoIllustrated'))).toEqual([]);
+      expect(material.userData.dinoIllustratedPigment).toBe(false);
+      expect(shader.uniforms.dinoShadeStrength.value).toBe(['subtle','none'].includes(profile.pattern)?.2:0);
+      if(unchangedFragment===null)unchangedFragment=shader.fragmentShader;else expect(shader.fragmentShader).toBe(unchangedFragment);
+      release(material);
+    }
   });
 });

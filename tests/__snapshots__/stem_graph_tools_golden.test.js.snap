@@ -19,7 +19,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 9,
   "lengthBucket": 139,
   "paths": 0,
-  "sha": "17368db0b5e3918c",
+  "sha": "0b67d8c757f0bb4b",
   "svgs": 2,
 }
 `;
@@ -31,7 +31,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 9,
   "lengthBucket": 64,
   "paths": 0,
-  "sha": "6415c9c3564f61d8",
+  "sha": "c2bbbf03042af99c",
   "svgs": 1,
 }
 `;
@@ -67,7 +67,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 0,
   "lengthBucket": 47,
   "paths": 0,
-  "sha": "3e67a17fe24bddd0",
+  "sha": "e9b1343ec5d078a0",
   "svgs": 0,
 }
 `;
@@ -91,7 +91,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 6,
   "lengthBucket": 82,
   "paths": 0,
-  "sha": "5179cb5a7aae737c",
+  "sha": "13a0d525643ca677",
   "svgs": 0,
 }
 `;
@@ -103,7 +103,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 7,
   "lengthBucket": 100,
   "paths": 0,
-  "sha": "80a5ecb25a4b63ee",
+  "sha": "540e2e03578f71d0",
   "svgs": 1,
 }
 `;
@@ -115,7 +115,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 119,
   "paths": 1,
-  "sha": "c58778b470d4703b",
+  "sha": "c1dcad0cab1bd7d7",
   "svgs": 1,
 }
 `;
@@ -127,7 +127,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 4,
   "lengthBucket": 145,
   "paths": 1,
-  "sha": "26c610c0b6cd744e",
+  "sha": "4dd7dd40805c302f",
   "svgs": 1,
 }
 `;
@@ -139,7 +139,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 2,
   "lengthBucket": 92,
   "paths": 0,
-  "sha": "2df4a934507e1b82",
+  "sha": "6af61020db7ea118",
   "svgs": 0,
 }
 `;

@@ -1,0 +1,90 @@
+You are an expert social studies and ELA curriculum designer creating a Document-Based Question (DBQ) activity.
+
+Target Audience: 5th Grade students.
+Language: English.
+
+
+
+
+Source Material (use ALL of this to create rich, substantial document excerpts):
+"""
+The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests.
+"""
+
+Create a complete DBQ activity packet with these components:
+
+1. HISTORICAL CONTEXT: A brief (2-3 sentence) introduction that sets the stage for students. Use simple, engaging language.
+
+2. DOCUMENTS: Extract 3 document excerpts from the source material. Never invent a quotation or attribute words to a real author, speaker or publication that did not write them. Each document MUST be:
+   - A SUBSTANTIAL passage — at least 50-100 words each. Students need enough text to practice reading and finding evidence.
+   - A distinct passage, quote, data point, or perspective from the text
+   - Labeled (Document A, Document B, etc.)
+   - Accompanied by a source note (author, date, context) using only details stated in the material; write "Unknown" instead of guessing
+   - Marked with "excerptKind": "verbatim" (exact words copied from the material), "adapted" (the material's words simplified or shortened) or "reconstructed" (a passage you wrote to represent a source; it must never read as a quotation)
+   - Adapted to 5th Grade reading level — use simple vocabulary and short sentences
+   - Include a "documentType" field: one of "primary", "secondary", "data", "visual", "testimony"
+   - IMPORTANT: Do NOT truncate or over-summarize. Real DBQ documents are meaty — give students something substantial to work with.
+
+3. HAPP SOURCING FRAMEWORK: For each document, provide structured HAPP (Historical context, Audience, Purpose, Point of view) scaffolding:
+   - "happPrompts": An object with guiding questions for each HAPP dimension
+   - Use simple sentence starters like "This was written by..." and "The author wanted to..."
+
+4. SOURCING QUESTIONS: For each document, provide 1 sourcing questions.
+   - Use sentence starters: "I think the author wrote this because..."
+
+5. ANALYSIS QUESTIONS: For each document, provide 1 analysis questions.
+   - Use sentence starters: "The main idea is..." and "I know this because..."
+
+6. CORROBORATION CLAIMS: Identify 2-3 key claims or themes that appear across multiple documents. For each claim, note which document IDs support or challenge it.
+
+7. SYNTHESIS ESSAY PROMPT: A culminating writing prompt that requires students to use evidence from multiple documents.
+   Include a simple thesis sentence starter: "I think ___ because Document A shows ___ and Document B shows ___."
+
+8. RUBRIC: A 4-point rubric (1-4) with criteria for: Thesis, Evidence Use, Analysis, Organization.
+   - Rubric language should be simple and encouraging. A "4" for elementary means: states a clear opinion with a reason, mentions at least 2 documents, uses simple connecting words. A "1" means: no clear opinion stated.
+
+
+
+Return ONLY JSON:
+{
+  "title": "DBQ Title",
+  "historicalContext": "Context paragraph",
+  "documents": [
+    {
+      "id": "A",
+      "title": "Document A: Title",
+      "documentType": "primary",
+      "source": "Author, Date, Context",
+      "sourceUrl": "https://... (REQUIRED for linked documents, optional for others)",
+      "excerptKind": "verbatim | adapted | reconstructed",
+      "excerpt": "The document text...",
+      "happPrompts": {
+        "historical": "What was happening when this was created?",
+        "audience": "Who was this written for?",
+        "purpose": "Why was this created?",
+        "pointOfView": "What perspective does the author have?"
+      },
+      "sourcingQuestions": ["Question 1"],
+      "analysisQuestions": ["Question 1"],
+      "sentenceStarters": ["I think the author...", "This document shows..."]
+    }
+  ],
+  "corroborationClaims": [
+    {
+      "claim": "A key theme or argument",
+      "supportingDocs": ["A", "C"],
+      "challengingDocs": ["B"],
+      "guideQuestion": "How do Documents A and C agree on this? How does Document B differ?"
+    }
+  ],
+  "synthesisPrompt": "The essay question...",
+  "thesisStarter": "I believe that ___ because...",
+  "rubric": [
+    {"criteria": "Thesis", "1": "description", "2": "description", "3": "description", "4": "description"},
+    {"criteria": "Evidence Use", "1": "...", "2": "...", "3": "...", "4": "..."},
+    {"criteria": "Analysis", "1": "...", "2": "...", "3": "...", "4": "..."},
+    {"criteria": "Organization", "1": "...", "2": "...", "3": "...", "4": "..."}
+  ],
+  "teacherNotes": "Brief notes on scaffolding, differentiation, or extension ideas"
+}
+Create exactly 3 documents. Multiple excerpts from one reading are excerpts of the SAME source, not independent historical sources. Do not invent document titles, authors, dates or links. Unknown source metadata stays unknown.

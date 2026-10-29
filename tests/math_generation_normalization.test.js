@@ -256,7 +256,7 @@ describe('generated math artifact normalization', () => {
       .toBe('The semantic question survives hostile identifier traversal.');
   });
 
-  it('only auto-verifies complete numeric expressions and plain numeric answers', () => {
+  it('only auto-verifies complete numeric expressions and plain numeric or fraction answers', () => {
     const verified = verifyMath([
       { expression: '2 * (3 + 4)', answer: '13', steps: [{ expression: '3+4' }] },
       { expression: '2x + 3', answer: '5' },
@@ -272,11 +272,11 @@ describe('generated math artifact normalization', () => {
     });
     expect(verified[0].steps[0]).toMatchObject({ _computedResult: 7, _verified: true });
     expect(verified.slice(1).map(problem => problem._verification)).toEqual([
-      { verified: false, mismatch: false, computed: null, autoCorrected: false },
-      { verified: false, mismatch: false, computed: null, autoCorrected: false },
-      { verified: false, mismatch: false, computed: 0.5, autoCorrected: false },
-      { verified: false, mismatch: false, computed: 2, autoCorrected: false },
-      { verified: false, mismatch: false, computed: null, autoCorrected: false }
+      { verified: false, mismatch: false, computed: null, autoCorrected: false, reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review', scope: 'numeric_calculation' },
+      { verified: false, mismatch: false, computed: null, autoCorrected: false, reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review', scope: 'numeric_calculation' },
+      { verified: true, mismatch: false, computed: 0.5, autoCorrected: false, status: 'verified', scope: 'numeric_calculation' },
+      { verified: false, mismatch: false, computed: 2, autoCorrected: false, reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review', scope: 'numeric_calculation' },
+      { verified: false, mismatch: false, computed: null, autoCorrected: false, reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review', scope: 'numeric_calculation' }
     ]);
     for (const problem of verified.slice(1)) {
       expect(problem).not.toHaveProperty('_originalAnswer');
@@ -291,8 +291,8 @@ describe('generated math artifact normalization', () => {
 
     expect(verified.map(problem => problem.answer)).toEqual(['3', '3']);
     expect(verified.map(problem => problem._verification)).toEqual([
-      { verified: false, mismatch: false, computed: null, autoCorrected: false },
-      { verified: false, mismatch: false, computed: null, autoCorrected: false }
+      { verified: false, mismatch: false, computed: null, autoCorrected: false, reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review', scope: 'numeric_calculation' },
+      { verified: false, mismatch: false, computed: null, autoCorrected: false, reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review', scope: 'numeric_calculation' }
     ]);
     for (const problem of verified) {
       expect(problem).not.toHaveProperty('_originalAnswer');
@@ -312,6 +312,7 @@ describe('generated math artifact normalization', () => {
     for (const problem of verified) {
       expect(problem._verification).toEqual({
         verified: false, mismatch: false, computed: null, autoCorrected: false,
+        reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review', scope: 'numeric_calculation',
       });
       expect(problem).not.toHaveProperty('_originalAnswer');
     }
@@ -337,6 +338,7 @@ describe('generated math artifact normalization', () => {
 
     expect(result._verification).toEqual({
       verified: false, mismatch: false, computed: null, autoCorrected: false,
+        reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review', scope: 'numeric_calculation',
     });
     expect(result).not.toHaveProperty('_originalAnswer');
     expect(result).not.toHaveProperty('_verified');

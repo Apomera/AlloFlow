@@ -20,6 +20,71 @@ afterEach(() => {
   document.getElementById('brainatlas-region-search')?.remove();
 });
 describe('Brain Atlas compact workspace', () => {
+  it.each([
+    { group: 'systems', view: 'neuron', key: '1', expected: 'neurotransmitters', count: 5 },
+    { group: 'clinical', view: 'strokeTerritories', key: '3', expected: 'brainstemCrossSection', count: 4 },
+    { group: 'simulations', view: 'sleepStages', key: '4', expected: 'crossLateral', count: 4 }
+  ])('maps number keys to the visible $group topic choices', ({ group, view, key, expected, count }) => {
+    const s = setup({ view, viewGroup: group, search: 'memory', quizMode: true });
+    const shell = s.get('data-brainatlas-tool');
+    expect(shell.props['aria-label']).toContain(`1 through ${count} switch views`);
+    const options = s.nodes().filter(el => el.props?.['data-brainatlas-view-button'] === 'true');
+    const expectedLabel = options[Number(key) - 1].props.children[1].props.children;
+    const event = { key, target: { tagName: 'BUTTON' }, preventDefault: vi.fn() };
+    shell.props.onKeyDown(event);
+    expect(event.preventDefault).toHaveBeenCalledOnce();
+    expect(s.store.toolData.brainAtlas).toMatchObject({
+      view: expected, viewGroup: group, search: '', selectedRegion: null, quizMode: false,
+      viewsExplored: { [expected]: true }
+    });
+    expect(s.announceToSR).toHaveBeenCalledWith(`View ${key}: ${expectedLabel}.`);
+  });
+
+  it('uses the newly selected topic for its next number shortcut', () => {
+    const s = setup({ view: 'neuron', viewGroup: 'systems' });
+    const clinicalGroup = s.nodes().find(el => el.props?.className === 'brainatlas-group-button' && el.props.children[0].props.children === 'Clinical');
+    clinicalGroup.props.onClick();
+    const event = { key: '4', target: { tagName: 'BUTTON' }, preventDefault: vi.fn() };
+    const shell = s.get('data-brainatlas-tool');
+    expect(shell.props['aria-label']).toContain('1 through 4 switch views');
+    shell.props.onKeyDown(event);
+    expect(s.store.toolData.brainAtlas).toMatchObject({ view: 'csfHydrocephalus', viewGroup: 'clinical' });
+  });
+
+  it.each(['0', '2', '9'])('ignores key %s outside the single-view Development topic', key => {
+    const s = setup({ view: 'prenatalDevelopment', viewGroup: 'development', search: 'week', selectedRegion: 'kept' });
+    const shell = s.get('data-brainatlas-tool');
+    expect(shell.props['aria-label']).toContain('1 through 1 switch views');
+    const before = JSON.stringify(s.store.toolData.brainAtlas);
+    const event = { key, target: { tagName: 'BUTTON' }, preventDefault: vi.fn() };
+    shell.props.onKeyDown(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(JSON.stringify(s.store.toolData.brainAtlas)).toBe(before);
+    expect(s.announceToSR).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { reason: 'input', target: { tagName: 'INPUT' } },
+    { reason: 'textarea', target: { tagName: 'TEXTAREA' } },
+    { reason: 'select', target: { tagName: 'SELECT' } },
+    { reason: 'editable content', target: { tagName: 'SPAN', isContentEditable: true } },
+    { reason: 'Control', ctrlKey: true },
+    { reason: 'Alt', altKey: true },
+    { reason: 'Meta', metaKey: true },
+    { reason: 'handled event', defaultPrevented: true },
+    { reason: 'composition', isComposing: true },
+    { reason: 'native composition', nativeEvent: { isComposing: true } }
+  ])('does not intercept number keys during $reason', ({ reason, ...overrides }) => {
+    const s = setup({ view: 'neuron', viewGroup: 'systems', search: 'memory' });
+    const shell = s.get('data-brainatlas-tool');
+    const before = JSON.stringify(s.store.toolData.brainAtlas);
+    const event = { key: '1', target: { tagName: 'BUTTON' }, preventDefault: vi.fn(), ...overrides };
+    shell.props.onKeyDown(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(JSON.stringify(s.store.toolData.brainAtlas)).toBe(before);
+    expect(s.announceToSR).not.toHaveBeenCalled();
+  });
+
   it('switches specialty diagrams between readable scrolling and a fitted overview', () => {
     const s = setup({ view: 'visualPathway', canvasZoom: 1.5 });
     const stage = () => s.nodes().find(el => el.props?.className === 'brainatlas-canvas-stage');

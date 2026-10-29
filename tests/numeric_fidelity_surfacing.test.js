@@ -34,7 +34,7 @@ describe('anti-drift: doc_pipeline pushes numeric losses into the persistent not
     expect(pipeSrc).toMatch(/_numericLossWarn = _valWarn;/);
   });
   it('pushes a numeric note into _structuralFidelityNotes (drives the panel + fidelityLimited)', () => {
-    expect(pipeSrc).toMatch(/_structuralFidelityNotes\.push\(\{ kind: 'numeric', msg: _numericLossWarn \}\)/);
+    expect(pipeSrc).toMatch(/_structuralFidelityNotes\.push\(\{ kind: 'numeric', msg: _numericLossWarn(?:, evidence: _numericLossEvidence)? \}\)/);
   });
 });
 

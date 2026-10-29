@@ -15,7 +15,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 21,
   "inputs": 4,
   "lengthBucket": 63,
-  "sha": "b859700bd29561fa",
+  "sha": "dc311e5aed629be8",
   "svgs": 0,
 }
 `;
@@ -24,8 +24,8 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 11,
   "inputs": 0,
-  "lengthBucket": 71,
-  "sha": "cdfdd8ca7560ebcf",
+  "lengthBucket": 70,
+  "sha": "0893cd1da0357157",
   "svgs": 0,
 }
 `;
@@ -34,8 +34,8 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 46,
   "inputs": 0,
-  "lengthBucket": 117,
-  "sha": "b44aace850170578",
+  "lengthBucket": 116,
+  "sha": "e5e5d85c2322c81c",
   "svgs": 0,
 }
 `;
@@ -45,7 +45,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 21,
   "inputs": 0,
   "lengthBucket": 104,
-  "sha": "af8fb20395fbb998",
+  "sha": "7c03dc0aecc2743e",
   "svgs": 0,
 }
 `;
@@ -54,8 +54,8 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 30,
   "inputs": 0,
-  "lengthBucket": 166,
-  "sha": "47863558cf66d24d",
+  "lengthBucket": 167,
+  "sha": "6b52179eae0cd59a",
   "svgs": 0,
 }
 `;
@@ -64,8 +64,8 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 35,
   "inputs": 8,
-  "lengthBucket": 101,
-  "sha": "5d0bed8b1c6f9033",
+  "lengthBucket": 102,
+  "sha": "59822fb774ba00e7",
   "svgs": 0,
 }
 `;
@@ -95,7 +95,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 66,
   "inputs": 1,
   "lengthBucket": 313,
-  "sha": "774d64cbe65198ec",
+  "sha": "5239abaf3397cc97",
   "svgs": 0,
 }
 `;
@@ -104,8 +104,8 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 13,
   "inputs": 0,
-  "lengthBucket": 149,
-  "sha": "4b2486df6d3afa01",
+  "lengthBucket": 148,
+  "sha": "18bd8f831063d70d",
   "svgs": 0,
 }
 `;
@@ -125,7 +125,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 16,
   "inputs": 0,
   "lengthBucket": 57,
-  "sha": "29bf741c8ef2de47",
+  "sha": "29e3dcefc989976d",
   "svgs": 0,
 }
 `;
@@ -155,17 +155,17 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 19,
   "inputs": 0,
   "lengthBucket": 88,
-  "sha": "0a8b1a72808f774c",
+  "sha": "75335c5ad4eaca6d",
   "svgs": 0,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for singing 1`] = `
 {
-  "buttons": 30,
+  "buttons": 31,
   "inputs": 0,
-  "lengthBucket": 63,
-  "sha": "48e52a95174bd098",
+  "lengthBucket": 65,
+  "sha": "689e9b92e521898f",
   "svgs": 0,
 }
 `;

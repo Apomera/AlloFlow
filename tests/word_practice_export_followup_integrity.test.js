@@ -12,7 +12,7 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 const recording = marker => 'data:audio/wav;base64,' + Buffer.from('RIFF' + '\0'.repeat(4) + 'WAVE' + marker + '\0'.repeat(40)).toString('base64');
 const customAudio = recording('custom'), defaultAudio = recording('default');
 const flattenText = value => Array.isArray(value) ? value.map(run => { expect(typeof run.text).toBe('string'); return run.text; }).join('') : value;
-const button = (doc, label) => [...doc.querySelectorAll('button')].find(node => node.textContent === label);
+const button = (doc, label) => [...doc.querySelectorAll('button')].find(node => node.textContent === label && !node.closest('[hidden]'));
 const wordsField = doc => doc.querySelector('.awp-fields textarea');
 function load(lane) {
   const dom = new JSDOM('<!doctype html><html lang="en"><body><button>Launch</button></body></html>', { runScripts: 'outside-only', url: 'https://alloflow.example/' });
@@ -165,7 +165,7 @@ describe.each(Object.keys(lanes))('portable Word Practice follow-up integrity (%
         ['سفينة', 'ar', 'rtl'], ['bateau', 'fr', 'ltr'], ['Visible unknown passage', 'und', 'auto']
       ]);
       expect(passages[0].previousElementSibling.textContent).toBe('Arabic: ');
-      expect(passages[0].previousElementSibling.lang).toBe('und');
+      expect(passages[0].previousElementSibling.lang).toBe('en');
     }
   });
 

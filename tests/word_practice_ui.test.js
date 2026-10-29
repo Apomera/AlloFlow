@@ -6,7 +6,7 @@ const coreSource = fs.readFileSync('word_practice_core.js', 'utf8');
 const uiSource = fs.readFileSync('word_practice_ui.js', 'utf8');
 const wav = 'data:audio/wav;base64,' + Buffer.from('RIFF' + '\0'.repeat(4) + 'WAVE' + '\0'.repeat(40)).toString('base64');
 let dom, win, ui;
-const button = text => [...win.document.querySelectorAll('button')].find(node => node.textContent === text);
+const button = text => [...win.document.querySelectorAll('button')].find(node => node.textContent === text && !node.parentElement.closest('[hidden]'));
 const field = label => [...win.document.querySelectorAll('label')].find(node => node.querySelector('span')?.textContent === label)?.querySelector('input,select,textarea');
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 beforeEach(() => {

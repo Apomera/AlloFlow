@@ -22,7 +22,7 @@ const sentenceWords = () => ['cat', 'dog', 'fox'].map((word, i) => ({
     prompt: 'I see a ____.', choices: i === 0 ? [word, 'rain', 'sun'] : [word, 'rain'], answer: word
   }
 }));
-const button = (doc, text) => [...doc.querySelectorAll('button')].find(node => node.textContent === text);
+const button = (doc, text) => [...doc.querySelectorAll('button')].find(node => node.textContent === text && !node.parentElement.closest('[hidden]'));
 const field = (doc, text) => [...doc.querySelectorAll('label')].find(node => node.querySelector('span')?.textContent === text)?.querySelector('input,textarea,select');
 function load(lane) {
   const dom = new JSDOM('<!doctype html><html><body><button>Launch</button></body></html>', {

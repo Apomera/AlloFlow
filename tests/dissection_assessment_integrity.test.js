@@ -70,6 +70,7 @@ describe('dissection authored assessment cues', () => {
       d, quizQ, specimen: 'sheepEye', quizKind: 'function', dissectionStructureCue: structureCue,
       updMany: patch => Object.assign(d, patch), addToast: null, awardStemXP: vi.fn(), setProcedureFeedback: vi.fn(),
       preserveAssessmentFocus: vi.fn(),
+      claimAssessmentResponse: () => true,
     };
     if (mode === 'supported reveal') productionFunction('revealQuizAnswer', bindings)();
     else productionFunction('submitQuizAnswer', bindings)(quizQ.id);
@@ -113,11 +114,13 @@ describe('dissection Guided answer integrity', () => {
   it('checks shuffled choices by identity and never grants credit for a distractor', () => {
     const target = { id: 'optic_nerve', name: 'Optic Nerve' }, distractor = { id: 'cornea' };
     const choices = guidedChoices(target, [target, distractor], 'sheepEye|guided-observation|optic_nerve');
-    const d = { guidedObservationPending: target.id, verifiedIdentifications: {} };
+    const d = { guidedMode: true, guidedObservationPending: target.id, verifiedIdentifications: {} };
     const upd = vi.fn((key, value) => { d[key] = value; });
     const updMany = vi.fn(patch => Object.assign(d, patch));
     const awardStemXP = vi.fn();
+    const guidedSubmission = { accepted: false };
     const record = productionFunction('recordGuidedObservationChoice', {
+      guidedSubmission, _disGuidedSubmissions: { test: guidedSubmission }, dissectionSaveOwner: 'test',
       d, organs: [target, distractor], currentGuided: { organId: target.id }, specimen: 'sheepEye', activeLayer: 'skin',
       guidedStep: 0, guidedSteps: [target, distractor], guidedTargetIds: [target.id, distractor.id],
       upd, updMany, awardStemXP, setProcedureFeedback: vi.fn(), sfxDisProbe: vi.fn(), addToast: null,

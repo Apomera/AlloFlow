@@ -156,33 +156,33 @@ describe('dissection canvas animation loop', () => {
       const assessmentResetFields = ['traceNervous', 'traceCirculation', 'traceDigestion', 'traceRespiration', 'traceExcretory', 'showEndocrine', 'livingFunctionEnabled', 'livingFunctionPaused'];
       const quizEntryStart = source.indexOf("} else if (route === 'quiz')");
       const quizEntrySource = source.slice(quizEntryStart, source.indexOf('} else {', quizEntryStart));
-      const practicalEntryStart = source.indexOf("var previousLabelMode = d.labelMode || 'show';");
-      const practicalEntrySource = source.slice(practicalEntryStart, source.indexOf('var remaining = 120;', practicalEntryStart));
+      const practicalEntryStart = source.indexOf('var practicalIds = visibleQuizPool.map');
+      const practicalEntrySource = source.slice(practicalEntryStart, source.indexOf('} else closeTimedPractical();', practicalEntryStart));
+      const resetStart = source.indexOf('function resetAssessmentTeachingState()');
+      const assessmentResetSource = source.slice(resetStart, source.indexOf('function restartAssessmentSession(', resetStart));
+      const restartSource = source.slice(source.indexOf('function restartAssessmentSession('), source.indexOf('function setStudyRoute('));
       expect(quizEntryStart).toBeGreaterThan(-1);
       expect(practicalEntryStart).toBeGreaterThan(-1);
+      expect(resetStart).toBeGreaterThan(-1);
       assessmentResetFields.forEach((field) => {
-        expect(quizEntrySource).toContain(`${field}: false`);
-        expect(practicalEntrySource).toContain(`${field}: false`);
+        expect(assessmentResetSource).toContain(`${field}: false`);
       });
       const assessmentVisualResetFields = ['inspectionLens', 'lensPinned', 'macroInset'];
       assessmentVisualResetFields.forEach((field) => {
-        expect(quizEntrySource).toContain(`${field}: false`);
-        expect(practicalEntrySource).toContain(`${field}: false`);
+        expect(assessmentResetSource).toContain(`${field}: false`);
       });
       for (const field of ['rulerMode', 'annotateMode', 'compareTechniqueAttempts', 'compareReplayPlaying', 'splitComparison', 'beforeTechniqueView']) {
-        expect(quizEntrySource).toContain(`${field}: false`);
-        expect(practicalEntrySource).toContain(`${field}: false`);
+        expect(assessmentResetSource).toContain(`${field}: false`);
       }
       for (const field of ['rulerStart', 'rulerEnd']) {
-        expect(quizEntrySource).toContain(`${field}: null`);
-        expect(practicalEntrySource).toContain(`${field}: null`);
+        expect(assessmentResetSource).toContain(`${field}: null`);
       }
       for (const field of ['lensPinnedPoint', 'lensPinnedOrganId', '_procedureDemo', '_procedureReplay']) {
-        expect(quizEntrySource).toContain(`${field}: null`);
-        expect(practicalEntrySource).toContain(`${field}: null`);
+        expect(assessmentResetSource).toContain(`${field}: null`);
       }
-      expect(quizEntrySource).toContain('clearAssessmentTeachingTimers();');
-      expect(source.slice(source.lastIndexOf('clearAssessmentTeachingTimers();', practicalEntryStart), practicalEntryStart)).toContain('clearAssessmentTeachingTimers();');
+      expect(assessmentResetSource).toContain('clearAssessmentTeachingTimers();');
+      for (const entry of [quizEntrySource, practicalEntrySource, restartSource]) expect(entry).toContain('resetAssessmentTeachingState();');
+      expect(restartSource).toContain('if (assessmentEntryBlocked()) return false;');
 
       expect(source).toContain('function scheduleReducedCanvasPulseClear(canvasEl, field, duration)');
       expect(source).toContain("var timerKey = field === '_toolContactPulse' ? '_dissReducedContactTimer' : '_dissReducedOutcomeTimer';");

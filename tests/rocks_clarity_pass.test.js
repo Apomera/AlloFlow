@@ -310,13 +310,13 @@ describe('quiz round', () => {
     expect(m).toContain('data-rk-quiz-answer-pic="apatite"');
   });
 
-  it('starts a clean round', () => {
+  it('starts a clean round only when requested and resumes it when switching activities', () => {
     const t = tree({ mode: 'quiz', quizIdx: 35, quizDone: true, quizLog: { 0: 1 }, quizScore: 1 });
     findAll(t.node, (n) => n.props && n.props['data-rk-quiz-again'])[0].props.onClick();
     expect(t.store.rocks).toMatchObject({ quizIdx: 0, quizScore: 0, quizLog: null, quizDone: null });
     const sw = tree({ mode: 'rocks', quizLog: { 0: 1 }, quizDone: true, quizIdx: 7 });
     findAll(sw.node, (n) => n.type === 'button' && n.props['aria-label'] === 'Switch to Quiz mode')[0].props.onClick();
-    expect(sw.store.rocks).toMatchObject({ mode: 'quiz', quizIdx: 0, quizLog: null, quizDone: null });
+    expect(sw.store.rocks).toMatchObject({ mode: 'quiz', quizIdx: 7, quizLog: { 0: 1 }, quizDone: true });
   });
 
   it('survives hostile saved state', () => {
@@ -438,7 +438,11 @@ describe('rock card section links', () => {
     const hint = m.slice(m.indexOf('Rocks: igneous, sedimentary, metamorphic'));
     const p = hint.slice(hint.indexOf('<p'), hint.indexOf('>', hint.indexOf('<p')));
     expect(p).not.toContain('italic');
-    expect(p).toContain('font-size:12.5px');
+    expect(m).toContain('class="rk-hero-copy"');
+    const rule = /\.rk-explorer \.rk-hero-copy p \{([^}]+)\}/.exec(m);
+    expect(rule).toBeTruthy();
+    expect(rule[1]).toContain('font-size:13px');
+    expect(rule[1]).not.toContain('italic');
   });
 });
 
@@ -518,7 +522,16 @@ describe('rock and mineral cards link to each other', () => {
   it('a mineral chip opens that mineral\'s card, and a rock chip opens the rock\'s', () => {
     vi.useFakeTimers();
     const scrolled = [];
-    const qs = vi.spyOn(document, 'querySelector').mockImplementation((sel) => ({ scrollIntoView: () => scrolled.push(sel) }));
+    const headings = [];
+    const qs = vi.spyOn(document, 'querySelector').mockImplementation((sel) => {
+      const card = document.createElement('section');
+      const heading = document.createElement('h3');
+      card.appendChild(heading);
+      card.scrollIntoView = () => scrolled.push(sel);
+      vi.spyOn(heading, 'focus');
+      headings.push(heading);
+      return card;
+    });
     const t = tree({ mode: 'rocks', selectedRock: 'granite' });
     const quartz = findAll(t.node, (n) => n.props && n.props['data-rk-made-of-mineral'] === 'quartz')[0];
     expect(quartz.props['aria-label']).toBe('quartz 32%. Open its mineral card.');
@@ -528,6 +541,8 @@ describe('rock and mineral cards link to each other', () => {
     expect(t.store.rocks.selectedRock).toBe(null);
     vi.advanceTimersByTime(200);
     expect(scrolled).toEqual(['[data-rk-mineral-hero]']);
+    expect(headings[0].focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(headings[0].getAttribute('tabindex')).toBe('-1');
     // The card it scrolls to is on the page it opens.
     expect(render(t.store.rocks)).toContain('data-rk-mineral-hero');
 
@@ -539,6 +554,7 @@ describe('rock and mineral cards link to each other', () => {
     expect(t2.store.rocks.selectedMineral).toBe(null);
     vi.advanceTimersByTime(200);
     expect(scrolled[1]).toBe('[data-rk-rock-card]');
+    expect(headings[1].focus).toHaveBeenCalledWith({ preventScroll: true });
     expect(render(t2.store.rocks)).toContain('data-rk-rock-card');
     qs.mockRestore();
   });
@@ -750,8 +766,8 @@ describe('badge progress and where to earn it', () => {
       return { store, setStemLabTool };
     };
     const q = go('quiz_ace', { quizScore: 2, quizIdx: 7 });
-    // Like the Quiz tab button: a fresh round.
-    expect(q.store.rocks).toMatchObject({ mode: 'quiz', quizScore: 0, quizIdx: 0 });
+    // Like the Quiz tab button, badge navigation preserves the current round.
+    expect(q.store.rocks).toMatchObject({ mode: 'quiz', quizScore: 2, quizIdx: 7 });
     expect(go('wb_identify').store.rocks.mode).toBe('workbench');
     const c = go('cycle_interact');
     expect(c.setStemLabTool).toHaveBeenCalledWith('rockCycle');

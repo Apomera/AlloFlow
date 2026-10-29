@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
 
@@ -11,7 +11,7 @@ afterEach(() => { while (windows.length) windows.pop().close(); });
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 const recording = marker => 'data:audio/wav;base64,' + Buffer.from('RIFF' + '\0'.repeat(4) + 'WAVE' + marker + '\0'.repeat(40)).toString('base64');
 const wordAudio = recording('word'), soundAudio = recording('sound'), importedAudio = recording('imported');
-const button = (doc, text) => [...doc.querySelectorAll('button')].find(node => node.textContent === text);
+const button = (doc, text) => [...doc.querySelectorAll('button')].find(node => node.textContent === text && !node.closest('[hidden]'));
 function load(lane) {
   const dom = new JSDOM('<!doctype html><html lang="en"><body></body></html>', { runScripts: 'outside-only', url: 'https://alloflow.example/' });
   const win = dom.window; windows.push(win); win.eval(sources[lane]);
@@ -33,6 +33,14 @@ async function importSet(context, pack) {
   Object.defineProperty(file, 'files', { configurable: true, value: [{ size: 10000, text: async () => JSON.stringify(pack) }] });
   file.dispatchEvent(new context.win.Event('change', { bubbles: true })); await tick();
 }
+async function blobText(context, blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new context.win.FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(blob);
+  });
+}
+const manyTranslations = () => ['French', 'Arabic', 'Spanish', 'German', 'Italian', 'Portuguese', 'Japanese', 'Korean', 'Chinese', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Vietnamese', 'Thai', 'Russian', 'Ukrainian', 'Polish', 'Turkish', 'Hebrew', 'Greek', 'Romanian', 'Dutch', 'Swedish']
+  .map((language, index) => ({ language, text: 'Meaning ' + index + ': café — سفينة 🦋' }));
+const translationShape = (values, shape) => shape === 'array' ? values : Object.fromEntries(values.map(item => [item.language, item.text]));
 
 describe.each(Object.keys(sources))('Word Practice translated content portability (%s)', lane => {
   it.each([
@@ -75,6 +83,39 @@ describe.each(Object.keys(sources))('Word Practice translated content portabilit
     expect((await save(context)).items[0].translations).toEqual(saved.items[0].translations);
   });
 
+  it.each(['array', 'object'])('preserves every translation beyond twenty from a %s through Save/Open, HTML and PowerPoint actions', async shape => {
+    const context = load(lane), expected = manyTranslations();
+    context.ui.open({ words: [{ word: 'Leaf', translations: translationShape(expected, shape) }], options: { mode: 'vocabulary', repetitions: 1, includeAudio: false } });
+    const saved = await save(context);
+    expect(saved.items[0].translations).toEqual(expected);
+    await importSet(context, saved);
+    expect(context.doc.querySelector('.awp-status').textContent).toBe('Word set opened.');
+    expect((await save(context)).items[0].translations).toEqual(expected);
+
+    const beforeHtml = context.blobs.length;
+    button(context.doc, 'Download HTML').click(); await tick();
+    expect(context.blobs.length).toBe(beforeHtml + 1);
+    const offline = new JSDOM(await blobText(context, context.blobs.at(-1)), { runScripts: 'dangerously' });
+    windows.push(offline.window);
+    button(offline.window.document, 'Show meaning').click();
+    expect([...offline.window.document.querySelectorAll('.awp-card .awp-translation')].map(node => node.textContent)).toEqual(expected.map(item => item.text));
+
+    let presentation;
+    context.win.PptxGenJS = class {
+      constructor() { presentation = this; this.slides = []; }
+      addSlide() { const slide = { texts: [], addText(text) { this.texts.push(text); } }; this.slides.push(slide); return slide; }
+      async write() { return new context.win.Blob(['presentation']); }
+    };
+    const beforePptx = context.blobs.length;
+    button(context.doc, 'Download PowerPoint').click();
+    // Multi-page exports yield between pages so cancellation stays responsive.
+    // Wait for the actual download, rather than assuming one event-loop turn.
+    await vi.waitFor(() => expect(context.doc.querySelector('.awp-status').textContent).toBe('PowerPoint downloaded.'));
+    expect(context.blobs.length).toBe(beforePptx + 1);
+    const passages = presentation.slides.flatMap(slide => slide.texts).filter(Array.isArray).flatMap(runs => runs.map(run => run.text));
+    expect(passages.filter(text => text.startsWith('Meaning '))).toEqual(expected.map(item => item.text));
+  });
+
   it.each(['presenter', 'offline'])('renders complete translated terms and definition-only passages in the %s', async surface => {
     const context = load(lane), input = { words: [{ word: 'Leaf', translations: { French: { term: 'Feuille', def: 'Une partie de la plante.' }, Arabic: { definition: 'جزء من النبات.' } } }] };
     const options = { mode: 'vocabulary', repetitions: 1, includeAudio: false };
@@ -107,6 +148,20 @@ describe.each(Object.keys(sources))('Word Practice translated content portabilit
     expect(() => core.normalizeInput({ words })).toThrow(/too much instructional text.*524,288/);
   });
 
+  it.each(['array', 'object'])('rejects an oversized %s of translations on one word without replacing the open set', async shape => {
+    const context = load(lane), expected = { word: 'kept', definition: 'Keep this meaning.' };
+    context.ui.open({ title: 'Current set', words: [expected] });
+    const translations = translationShape(Array.from({ length: 45 }, (_, index) => ({ language: 'Language ' + index, text: 'x'.repeat(12000) })), shape);
+    const imported = { title: 'Oversized import', words: [{ word: 'Leaf', translations }] };
+    expect(() => context.core.normalizeInput(imported)).toThrow(/too much instructional text.*524,288/);
+    await importSet(context, imported);
+    expect(context.doc.querySelector('.awp-status').textContent).toMatch(/too much instructional text.*524,288/);
+    const retained = await save(context);
+    expect(retained.title).toBe('Current set');
+    expect(retained.items).toHaveLength(1);
+    expect(retained.items[0]).toMatchObject(expected);
+  });
+
   it('shows an oversized structured import error while retaining the currently selected set', async () => {
     const context = load(lane); context.ui.open({ words: ['kept'] });
     await importSet(context, { words: [{ word: 'Leaf', translations: { French: { term: 'x'.repeat(6000), def: 'y'.repeat(6000) } } }] });
@@ -137,7 +192,7 @@ describe.each(Object.keys(sources))('Word Practice translated content portabilit
   it('hands the translated player labels and translator to the actual PowerPoint download callback', async () => {
     const context = load(lane); let received;
     context.win.AlloWordPracticeMedia = { async buildPptx(pack, options, sequence, mediaContext) {
-      received = { pack, options, sequence, mediaContext }; return { async writeFile() {} };
+      received = { pack, options, sequence, mediaContext }; return { async write() { return new context.win.Blob(['pptx']); } };
     } };
     const t = key => ({ 'word_practice.hear_word': 'Escuchar palabra', 'word_practice.spell_teacher': 'Pide a tu docente que diga la palabra.' })[key] || key;
     context.ui.open({ words: ['Hoja'], language: 'Spanish', t });

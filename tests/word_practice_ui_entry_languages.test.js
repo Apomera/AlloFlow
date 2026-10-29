@@ -11,7 +11,7 @@ afterEach(() => { while (windows.length) windows.pop().close(); });
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 const wav = marker => 'data:audio/wav;base64,' + Buffer.from('RIFF' + '\0'.repeat(4) + 'WAVE' + marker + '\0'.repeat(40)).toString('base64');
 const english = wav('english'), french = wav('french'), first = wav('financial'), second = wav('river');
-const button = (doc, text) => [...doc.querySelectorAll('button')].find(node => node.textContent === text);
+const button = (doc, text) => [...doc.querySelectorAll('button')].find(node => node.textContent === text && !node.parentElement.closest('[hidden]'));
 const checkboxes = doc => [...doc.querySelectorAll('.awp-meaning-choices input')];
 const sameWords = () => [
   { entryId: 'financial', term: 'bank', termLanguage: 'English', def: 'A financial institution.', definitionLanguage: 'English', wordAudio: first },
@@ -75,6 +75,27 @@ describe.each(Object.keys(lanes))('Practice entry identity and interface languag
     const c = load(lane); c.ui.open({ words: [...sameWords(), { word: 'river', definition: 'Flowing water.' }] });
     edit(c, 'river\nbank\nbank'); const saved = await save(c);
     expect(saved.items.map(item => item.definition)).toEqual(['Flowing water.', 'A financial institution.', 'The land beside a river.']);
+  });
+
+  it('keeps same-spelling words in different languages distinct and names each language beside its meaning', async () => {
+    const c = load(lane);
+    c.ui.open({ currentUiLanguage: 'French', words: [
+      { word: 'gift', termLanguage: 'English', definition: 'A present.', wordAudio: first },
+      { word: 'Gift', termLanguage: 'German', definition: 'A poison.', wordAudio: second },
+    ], options: { mode: 'vocabulary', repetitions: 1, shuffle: false } });
+    expect(checkboxes(c.doc)).toHaveLength(2);
+    expect([...c.doc.querySelectorAll('.awp-meaning-language')].map(node => [node.textContent, node.lang])).toEqual([['anglais', 'fr'], ['allemand', 'fr']]);
+    expect(c.doc.querySelector('.awp-meaning-choices').textContent).toContain('A present.'); expect(c.doc.querySelector('.awp-meaning-choices').textContent).toContain('A poison.');
+    const original = await save(c), ids = original.items.map(item => item.id);
+    expect(original.items.map(item => item.termLanguage)).toEqual(['English', 'German']);
+    expect(original.items.map(item => item.wordAudio)).toEqual([first, second]);
+    edit(c, 'gift\nGift'); expect((await save(c)).items.map(item => item.id)).toEqual(ids);
+    checkboxes(c.doc)[0].click(); const selected = await save(c);
+    expect(selected.items).toHaveLength(1); expect(selected.items[0]).toMatchObject({ id: ids[1], termLanguage: 'German', definition: 'A poison.', wordAudio: second });
+    checkboxes(c.doc).find(node => node.dataset.entryId === ids[0]).click();
+    const restored = await save(c), file = c.doc.querySelector('input[type=file]');
+    Object.defineProperty(file, 'files', { configurable: true, value: [{ size: 10000, text: async () => JSON.stringify(restored) }] }); file.dispatchEvent(new c.win.Event('change', { bubbles: true })); await tick();
+    const reopened = await save(c); expect(reopened.items.map(item => [item.id, item.termLanguage, item.wordAudio])).toEqual(restored.items.map(item => [item.id, item.termLanguage, item.wordAudio]));
   });
 
   it('reports an over-capacity meaning restoration without an uncaught error or a misleading checked state', async () => {

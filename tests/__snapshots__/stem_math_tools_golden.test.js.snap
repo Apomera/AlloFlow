@@ -7,7 +7,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 5,
   "lengthBucket": 81,
   "rects": 0,
-  "sha": "0c54a061464e203f",
+  "sha": "083baaa043516e7f",
   "svgs": 0,
 }
 `;
@@ -17,9 +17,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 34,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 87,
+  "lengthBucket": 86,
   "rects": 0,
-  "sha": "37d66f3683c3c01d",
+  "sha": "96a72c889bbd4a82",
   "svgs": 0,
 }
 `;
@@ -43,7 +43,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 2,
   "lengthBucket": 77,
   "rects": 0,
-  "sha": "537a5b8de436b54b",
+  "sha": "b85e5ebb52b63b5e",
   "svgs": 1,
 }
 `;
@@ -55,7 +55,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 2,
   "lengthBucket": 77,
   "rects": 0,
-  "sha": "537a5b8de436b54b",
+  "sha": "b85e5ebb52b63b5e",
   "svgs": 1,
 }
 `;
@@ -65,9 +65,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 24,
   "circles": 7,
   "inputs": 0,
-  "lengthBucket": 166,
+  "lengthBucket": 168,
   "rects": 9,
-  "sha": "c4de0d1ec2b98941",
+  "sha": "e5d89eafd6c5ae4a",
   "svgs": 1,
 }
 `;
@@ -91,7 +91,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 5,
   "lengthBucket": 92,
   "rects": 1,
-  "sha": "ad99e1ab59c8deac",
+  "sha": "0a247e88180cc700",
   "svgs": 2,
 }
 `;
@@ -103,7 +103,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 4,
   "lengthBucket": 165,
   "rects": 0,
-  "sha": "ec846de42adc3234",
+  "sha": "a8d94d7effba63db",
   "svgs": 1,
 }
 `;
@@ -115,7 +115,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 6,
   "lengthBucket": 209,
   "rects": 0,
-  "sha": "3438653962f1dc44",
+  "sha": "68271b129be7034b",
   "svgs": 0,
 }
 `;

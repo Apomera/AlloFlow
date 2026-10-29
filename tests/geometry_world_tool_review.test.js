@@ -69,7 +69,7 @@ describe('tool discovery',()=>{
     React.act(()=>app.host.querySelector('.gwe-tool-finder form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
     expect(app.host.querySelector('.gwe-tool-finder')).toBeTruthy();expect(app.host.querySelector('.gwe-builder-body').hidden).toBe(true);
     app.engine.blocks[student[0]]=student[1];app.patch({testRenderRevision:2});React.act(()=>vi.advanceTimersByTime(1000));
-    expect(app.host.querySelector('[data-tool=send]').disabled).toBe(false);expect(app.host.querySelector('[data-tool=send]').textContent).toContain('Open your creation in Print Lab');
+    expect(app.host.querySelector('[data-tool=send]').disabled).toBe(false);expect(app.host.querySelector('[data-tool=send]').textContent).toContain('Review your creation’s size, connections, and export options.');
   });
 });
 describe('preview review',()=>{

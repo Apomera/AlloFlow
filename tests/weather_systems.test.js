@@ -93,18 +93,18 @@ describe('Weather Systems science kernel', () => {
     expect(kernel.readinessActionForHazard('lightning')).toBe('indoors');
     expect(kernel.readinessActionForHazard('flood')).toBe('avoidTravel');
     expect(kernel.readinessActionForHazard('ice')).toBe('delayTravel');
-    const state = kernel.resolvedState({ scenario: 'coldFront' });
-    const scored = kernel.scoreForecast(state, { precip: 'storms', timing: '4-6', hazard: 'lightning', action: 'indoors', evidence: ['pressure', 'front', 'radar'] });
+    const state = kernel.resolvedState({ scenario: 'summerStorm' });
+    const scored = kernel.scoreForecast(state, { precip: 'storms', timing: '0-3', hazard: 'lightning', action: 'indoors', evidence: ['pressure', 'front', 'radar'] });
     expect(scored.actionCorrect).toBe(true);
     expect(scored.expectedAction).toBe('indoors');
   });
-  it('calibrates student confidence against ensemble agreement', () => {
+  it('compares student confidence with model agreement without claiming calibration', () => {
     const kernel = window.WeatherSystemsKernel;
     const state = kernel.resolvedState({ scenario: 'coldFront' });
     const agreement = kernel.ensembleForecast(state).agreement * 100;
     const near = kernel.calibrateConfidence(state, agreement);
     expect(near.status).toBe('well');
-    expect(near.label).toBe('Well calibrated');
+    expect(near.label).toBe('Near model agreement');
     const low = kernel.calibrateConfidence(state, 40);
     expect(['well', 'under']).toContain(low.status);
   });
@@ -112,7 +112,9 @@ describe('Weather Systems science kernel', () => {
     const kernel = window.WeatherSystemsKernel;
     const state = kernel.resolvedState({ scenario: 'coldFront' });
     const weak = kernel.scoreForecast(state, { precip: 'none', timing: 'after12', hazard: 'none', evidence: ['pressure', 'front', 'radar'] });
-    const strong = kernel.scoreForecast(state, { precip: 'storms', timing: '4-6', hazard: 'lightning', evidence: ['pressure', 'front', 'radar'] });
+    // Match the actual regional conditions at T+6 rather than the old scenario
+    // answer key, which said thunderstorms despite a rain-only plotted model.
+    const strong = kernel.scoreForecast(state, { precip: 'rain', timing: '0-3', hazard: 'none', evidence: ['pressure', 'front', 'radar'] });
     expect(weak.score).toBeLessThan(50);
     expect(strong.score).toBe(100);
   });
@@ -224,20 +226,22 @@ describe('Weather Systems science kernel', () => {
     expect(kernel.regionalWeatherFieldStatus(field, { ...active, validAt: '2026-07-25T15:00' }).code).toBe('time');
   });
 
-  it('compares a saved forecast checkpoint with the matching later observation', () => {
+  it('compares a saved forecast checkpoint with the matching later model value', () => {
     const kernel = window.WeatherSystemsKernel;
-    const checkpoint = {
-      latitude: 43.6591, longitude: -70.2568, validAt: '2026-07-25T14:00',
-      predicted: { temperature: 24, precipitation: 1.2, pressure: 1007, windSpeed: 24, windDir: 220, weatherCode: 95 }
-    };
-    const live = { latitude: 43.6591, longitude: -70.2568 };
+    const checkpoint = kernel.createLiveForecastCheckpoint({
+      latitude: 43.6591, longitude: -70.2568, validAt: '2026-07-25T14:00Z',
+      source: 'Open-Meteo', sourceKind: 'model', observedAt: '2026-07-25T12:00Z',
+      retrievedAt: '2026-07-25T12:01Z', timelineRole: 'forecast', pressureType: 'surface', precipitationIntervalSeconds: 3600,
+      temperature: 24, precipitation: 1.2, pressure: 1007, windSpeed: 24, windDir: 220, weatherCode: 95
+    }, '2026-07-25T12:05Z');
+    const live = { latitude: 43.6591, longitude: -70.2568, source: 'Open-Meteo', sourceKind: 'model', observedAt: '2026-07-25T15:00Z', retrievedAt: '2026-07-25T15:01Z' };
     const pending = kernel.forecastCheckpointStatus(checkpoint, [{ time: checkpoint.validAt, role: 'forecast' }], live);
     expect(pending.code).toBe('pending');
     const result = kernel.forecastCheckpointStatus(checkpoint, [{
       time: checkpoint.validAt, role: 'earlier', temperature: 22, precipitation: 0.7,
-      pressure: 1009, windSpeed: 18, windDir: 200, weatherCode: 61
+      pressure: 1009, windSpeed: 18, windDir: 200, weatherCode: 61, pressureType: 'surface', precipitationIntervalSeconds: 3600
     }], live);
-    expect(result.code).toBe('verified');
+    expect(result.code).toBe('compared');
     expect(result.metrics.temperature.error).toBe(2);
     expect(result.metrics.pressure.error).toBe(-2);
     expect(result.metrics.windDirection.error).toBe(20);
@@ -939,12 +943,12 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       }
     }, { gradeLevel: '10th Grade' });
     expect(html).toContain('3D engine ready');
-    expect(html).toContain('Saved observation scene');
+    expect(html).toContain('Saved model estimate scene');
     expect(html).toContain('Portland, Maine, United States');
-    expect(html).toContain('Saved observation');
+    expect(html).toContain('Saved model estimate');
     expect(html).toContain('data-weather-source-freshness="stale"');
     expect(html).toContain('SAVED');
-    expect(html).toContain('Thunderstorms | Observed 2026-07-16T14:00 EDT.');
+    expect(html).toContain('Thunderstorms | Model valid 2026-07-16T14:00 EDT.');
     expect(html).toContain('8.4 km');
     expect(html).toContain('href="https://open-meteo.com/"');
     expect(html).toContain('Coordinates are rounded and stored only with this local lab state.');
@@ -1122,30 +1126,33 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Focus map and evidence layers');
   });
 
-  it('renders signed forecast-versus-observation errors in the verification studio', () => {
+  it('renders signed model differences in live forecast review', () => {
+    const checkpoint = window.WeatherSystemsKernel.createLiveForecastCheckpoint({
+      label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568,
+      source: 'Open-Meteo', sourceKind: 'model', observedAt: '2026-07-25T12:00Z',
+      retrievedAt: '2026-07-25T12:01Z', validAt: '2026-07-25T14:00Z', timelineRole: 'forecast',
+      timezone: 'UTC', utcOffsetSeconds: 0, pressureType: 'surface', precipitationIntervalSeconds: 3600,
+      temperature: 24, precipitation: 1.2, pressure: 1007, windSpeed: 24, windDir: 220, weatherCode: 95, condition: 'Thunderstorms'
+    }, '2026-07-25T12:05Z');
     const html = renderTool('weatherSystems', {
       weatherSystems: {
         tab: 'forecast',
-        liveWeather: { label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568, observedAt: '2026-07-25T15:00', timezone: 'EDT' },
-        liveWeatherTimeline: [{ time: '2026-07-25T14:00', role: 'earlier', offsetHours: -1, temperature: 22, precipitation: 0.7, pressure: 1009, windSpeed: 18, windDir: 200, weatherCode: 61, condition: 'Rain' }],
-        liveForecastCheckpoints: [{
-          id: 'portland-14', location: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568,
-          issuedAt: '2026-07-25T12:00', validAt: '2026-07-25T14:00', timezone: 'EDT', offsetHours: 2,
-          predicted: { temperature: 24, precipitation: 1.2, pressure: 1007, windSpeed: 24, windDir: 220, weatherCode: 95, condition: 'Thunderstorms' }
-        }]
+        liveWeather: { label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568, observedAt: '2026-07-25T15:00Z', retrievedAt: '2026-07-25T15:01Z', source: 'Open-Meteo', sourceKind: 'model', timezone: 'UTC' },
+        liveWeatherTimeline: [{ time: '2026-07-25T14:00Z', role: 'earlier', offsetHours: -1, temperature: 22, precipitation: 0.7, pressure: 1009, windSpeed: 18, windDir: 200, weatherCode: 61, condition: 'Rain', pressureType: 'surface', precipitationIntervalSeconds: 3600 }],
+        liveForecastCheckpoints: [checkpoint]
       }
     }, { gradeLevel: '10th Grade' });
     expect(html).toContain('data-weather-forecast-verification-studio');
-    expect(html).toContain('Forecast Verification Studio');
-    expect(html).toContain('data-weather-checkpoint-status="verified"');
-    expect(html).toContain('Forecast error = forecast minus observation');
-    expect(html).toContain('Temperature error');
+    expect(html).toContain('Live Forecast Review');
+    expect(html).toContain('data-weather-checkpoint-status="compared"');
+    expect(html).toContain('Model difference = saved forecast minus later model value');
+    expect(html).toContain('Temperature difference');
     expect(html).toContain('+2\u00B0C');
-    expect(html).toContain('Pressure error');
+    expect(html).toContain('Pressure difference');
     expect(html).toContain('-2 hPa');
-    expect(html).toContain('Wind-direction error');
+    expect(html).toContain('Wind-direction difference');
     expect(html).toContain('+20\u00B0');
-    expect(html).toContain('Condition category differed from the observation.');
+    expect(html).toContain('Condition category differs from the later model value.');
   });
 
   it('renders an opt-in open geographic terrain mode with attribution and fallback', () => {
@@ -1221,7 +1228,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('data-weather-geographic-hud');
     expect(html).toContain('Weather command display');
     expect(html).toContain('data-weather-observation-freshness="stale"');
-    expect(html).toContain('Saved observation');
+    expect(html).toContain('Saved model estimate');
     expect(html).toContain('refresh before making a current-conditions claim');
     expect(html).toContain('43.6591, -70.2568 | Site 19 m');
     expect(html).toContain('aria-label="Portland, Maine, United States | Thunderstorms | 28.4\u00B0C | 74% RH | SW 22.1 km/h wind | 1004.6 hPa"');
@@ -1303,7 +1310,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Crosswind sample | Higher than site');
     expect(html).toContain('data-weather-terrain-wind-analysis');
     expect(html).toContain('Crosswind terrain context');
-    expect(html).toContain('Observed wind from SW');
+    expect(html).toContain('Modeled wind from SW');
     expect(html).toContain('110.4\u00B0 from the upwind axis');
     expect(html).toContain('Gentle average grade (+1.55\u00B0)');
     expect(html).toContain('lateral terrain context, not direct evidence that air is being lifted');
@@ -1749,7 +1756,8 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('data-weather-experiment-chart');
     expect(html).toContain('Controlled experiment comparison at plus 6 hours');
     expect(html).toContain('One-variable test');
-    expect(html).toContain('made precipitation potential increase');
+    expect(html).toContain('changed precipitation potential from');
+    expect(html).toContain('Prediction category: increase.');
   });
 
   it('renders a complete forecast mission and teacher guide', () => {
@@ -1866,7 +1874,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(guide).toContain('Explain how uncertainty changes confidence or action.');
     expect(guide).toContain('Developing and using models');
     expect(guide).toContain('Stability and change');
-    expect(guide).toContain('A calibrated uncertainty statement that distinguishes agreement from probability.');
+    expect(guide).toContain('A justified uncertainty statement that distinguishes agreement from probability.');
     expect(guide).toContain('What ensemble disagreement or model assumption should limit confidence?');
     expect(guide).toContain('An uncertainty statement that distinguishes model agreement from operational probability.');
     expect(guide).toContain('YOUR LEARNING PATHWAY');
@@ -2097,7 +2105,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       evidence: ['pressure', 'windShift'],
       carriedEvidence: { signalTitle: 'System strengthening', ids: ['pressure', 'windShift'], startHour: 0, endHour: 3 }
     } }, { gradeLevel: '7th Grade' });
-    expect(middle).toContain('I predict rain will begin within 0 to 3 hours.');
+    expect(middle).toContain('At T+6 h, I predict rain. First precipitation: now through 3 hours after issue.');
     expect(middle).toContain('My strongest evidence is pressure tendency, wind direction and speed.');
     expect(middle).toContain('system strengthening connects the observations to the forecast.');
     expect(middle).toContain('2 of 3');
@@ -2165,8 +2173,8 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('On air');
     expect(html).toContain('aria-label="Broadcast briefing completeness"');
     expect(html).toContain('aria-valuenow="100"');
-    expect(html).toContain('Family weather update: Thunderstorms are most likely in 4 to 6 hours.');
-    expect(html).toContain('Main concern: lightning.');
+    expect(html).toContain('Family weather update: At T+6 h, the regional forecast is thunderstorms. First precipitation: more than 3 through 6 hours after issue.');
+    expect(html).toContain('Main concern through the target hour: lightning.');
     expect(html).toContain('Recommended action: move activities indoors.');
     expect(html).toContain('Forecast confidence: 80%.');
     expect(html).toContain('Communication readiness is separate from forecast accuracy.');
@@ -2195,11 +2203,11 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     const kernel = window.WeatherSystemsKernel;
     const state = kernel.resolvedState({ scenario: 'coldFront' });
     const result = kernel.scoreForecast(state, {
-      precip: 'storms', timing: '4-6', hazard: 'lightning', action: 'indoors', confidence: 95, evidence: ['pressure', 'front', 'radar']
+      precip: 'rain', timing: '0-3', hazard: 'none', action: 'normal', confidence: 95, evidence: ['pressure', 'front', 'radar']
     });
     const html = renderTool('weatherSystems', { weatherSystems: {
       tab: 'forecast', scenario: 'coldFront', forecastResult: result,
-      predictionPrecip: 'storms', predictionTiming: '4-6', predictionHazard: 'lightning', readinessAction: 'indoors', forecastConfidence: '95',
+      predictionPrecip: 'rain', predictionTiming: '0-3', predictionHazard: 'none', readinessAction: 'normal', forecastConfidence: '95',
       evidence: ['pressure', 'front', 'radar'], reasoning: 'Pressure is falling while the front approaches and humid air rises.'
     } }, { gradeLevel: '10th Grade' });
     expect(html).toContain(result.calibration.label);
@@ -2588,8 +2596,8 @@ describe('Weather Systems station-network and experiment charts', () => {
     expect(html).toContain('CHANGE');
     // Metrics the single variable did not touch say so rather than showing a bare zero.
     expect(html).toContain('no change');
-    expect(html).toContain('+18%');
-    expect(html).toContain('+12%');
+    expect(html).toContain('+18 pp');
+    expect(html).toContain('+12 pp');
     // The unvalidated sky-blue series colour is gone.
     expect(html).not.toContain('#38bdf8"');
   });
@@ -2793,18 +2801,18 @@ describe('Weather Systems ensemble, verification and storyline visuals', () => {
     expect(spread).toContain('#4a3aa7');
   });
 
-  it('gives each forecast error a signed bias bar with a key', () => {
+  it('gives each model difference a signed bias bar with a key', () => {
     const { readFileSync } = require('node:fs');
     const { resolve } = require('node:path');
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weathersystems.js'), 'utf8');
     // Bias bars read from a centre line, scaled per metric so a 2-degree miss and a
     // 20-hectopascal miss are not drawn the same length.
     expect(source).toContain('function biasBar(metric, definition)');
-    expect(source).toContain("{ id: 'temperature', label: 'Temperature error', scale: 6 }");
-    expect(source).toContain("{ id: 'pressure', label: 'Pressure error', scale: 12 }");
+    expect(source).toContain("{ id: 'temperature', label: 'Temperature difference', scale: 6 }");
+    expect(source).toContain("{ id: 'pressure', label: 'Pressure difference', scale: 12 }");
     expect(source).toContain('data-weather-bias-key');
-    expect(source).toContain('forecast too low');
-    expect(source).toContain('forecast too high');
+    expect(source).toContain('saved forecast lower');
+    expect(source).toContain('saved forecast higher');
   });
 
   it('separates the score-weighting segments by hue and by a surface gap', () => {
@@ -3320,12 +3328,12 @@ describe('Weather Systems geographic map loader resilience', () => {
     expect(source).toContain('Cells visualize model-grid samples, not live radar or official warning boundaries.');
   });
 
-  it('persists future-hour checkpoints for later observation comparison', () => {
+  it('persists future-hour checkpoints for later model comparison', () => {
     const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
-    expect(source).toContain('function saveLiveForecastCheckpoint()');
+    expect(source).toContain('function saveLiveForecastCheckpoint(weatherOverride)');
     expect(source).toContain('liveForecastCheckpoints: checkpoints');
     expect(source).toContain('forecastCheckpointStatus(checkpoint, timeline, d.liveWeather)');
-    expect(source).toContain('Forecast error = forecast minus observation');
+    expect(source).toContain('Model difference = saved forecast minus later model value');
   });
 
 

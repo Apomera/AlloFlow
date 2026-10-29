@@ -222,7 +222,7 @@ describe('flashcard recall practice', () => {
     const panel = card({}, { activeLayer: 'missing' });
     expect(panel.querySelector('#diss-flashcard-summary').textContent).toBe('No structures in this layer');
     expect(panel.querySelector('[data-flashcard-counter]')).toBeNull();
-    expect(panel.textContent).toContain('Return to specimen');
+    expect(panel.textContent).toContain('End practice and return to specimen');
   });
 });
 
@@ -354,7 +354,8 @@ describe('specimen-wide observation review', () => {
     expect([...panel.querySelectorAll('[data-observation-entry]')].map(el => el.dataset.observationEntry)).toEqual(['cornea','lens']);
     expect(panel.textContent).not.toContain('Uninspected draft');
     expect(panel.querySelector('[data-observation-review-count]').textContent).toBe('2 of 2 inspected structures shown.');
-    expect(panel.textContent).toContain('Identification checks assess understanding.');
+    expect(panel.textContent).toContain('confidence alone does not count as a check');
+    expect(panel.querySelector('[data-observation-filter="unverified"]')).not.toBeNull();
   });
   it('shows a locked saved note without offering a navigation bypass', () => {
     const item = review().querySelector('[data-observation-entry="lens"]');

@@ -153,7 +153,7 @@ describe('R1 — distribution verdict (BEHAVIORAL, the real fn)', () => {
 const _fs = dp.indexOf('const htmlToPlainText = (html) => {');
 const _fe = dp.indexOf('// acceptFixedHtmlDetailed: strict guard', _fs);
 const { _recomputeContentFidelity } = new Function(
-  '_numericFidelityLosses', '_computeStructuralFidelityNotes', '_alloListMarkerNumbers', '_alloAxisSeriesHint',
+  '_numericFidelityLosses', '_computeStructuralFidelityNotes', '_alloListMarkerNumbers', '_alloAxisSeriesHint', '_alloFolioNumbers',
   dp.slice(_fs, _fe) + '\nreturn { _recomputeContentFidelity };'
 )(
   // real-shaped stubs: the REAL fns are module-scope; here we verify the PLUMBING (kind mapping,
@@ -161,7 +161,8 @@ const { _recomputeContentFidelity } = new Function(
   (src, out) => (src.includes('42') && !out.includes('42')) ? ['42'] : [],
   (src, html) => /table/i.test(src) && !/<table/i.test(html) ? [{ kind: 'tables', msg: 'Tables: lost' }] : [],
   () => '', // list-number credits (2026-10-27): none in these fixtures
-  () => '' // chart-axis hint (2026-10-27): no series here
+  () => '', // chart-axis hint (2026-10-27): no series here
+  () => '' // page-folio credits (2026-10-28): no page map here
 );
 
 describe('#6-ext — per-round recompute carries numeric + structural warnings (BEHAVIORAL)', () => {

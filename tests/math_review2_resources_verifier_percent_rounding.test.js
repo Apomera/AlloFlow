@@ -12,7 +12,7 @@
 //    so 0.33 and 0.3333 were "verified" as 1/3. Verified now means exact
 //    agreement (float noise aside), or agreement after the rounding the question
 //    states ("nearest hundredth", "2 decimal places"). A close-but-rounded key
-//    without a stated rounding is neither verified nor flagged. A stated rounding
+//    without a stated rounding requires review without being called a mismatch. A stated rounding
 //    also stops a correctly rounded key (7/2 -> 4) from being flagged.
 //
 // MATH_REVIEW2_GEN_MODULE lets the mutation check load a copy with the fix reverted.
@@ -39,17 +39,17 @@ describe('% is percent, never remainder', () => {
     ['Add 15% to 5.', '15% + 5', '5.15'],
     ['What is 80 increased by 15%?', '80 + 15%', '92'],
     ['What is 80 increased by 15%?', '80 + 15%', '80.15'],
-  ])('%s: an additive percent (%s) is left unverified, not flagged', (question, expression, answer) => {
+  ])('%s: an additive percent (%s) is requires review without a mismatch claim', (question, expression, answer) => {
     const v = check({ question, expression, answer });
-    expect(v.reviewRequired, JSON.stringify(v)).toBeFalsy();
+    expect(v.reviewRequired, JSON.stringify(v)).toBe(true);
     expect(v.mismatch).toBe(false);
     expect(v.verified).toBe(false);
     expect(v.computed).toBeNull();
   });
 
-  it('a bare numeric question with an additive percent is not flagged either', () => {
+  it('a bare numeric question with an additive percent requires review too', () => {
     const v = check({ question: '15% + 5', answer: '5.15' });
-    expect(v.reviewRequired, JSON.stringify(v)).toBeFalsy();
+    expect(v.reviewRequired, JSON.stringify(v)).toBe(true);
     expect(v.verified).toBe(false);
   });
 
@@ -74,7 +74,7 @@ describe('% is percent, never remainder', () => {
     const v = check({ question: 'Find the remainder.', expression: '17 % 5', answer: '2' });
     expect(v.verified).toBe(false);
     expect(v.computed).toBeNull();
-    expect(v.reviewRequired).toBeFalsy();
+    expect(v.reviewRequired).toBe(true);
   });
 });
 
@@ -83,7 +83,7 @@ describe('verified means exact, or exact after the stated rounding', () => {
     const v = check({ question: 'Write 1/3 as a decimal.', expression: '1/3', answer });
     expect(v.verified, JSON.stringify(v)).toBe(false);
     expect(v.mismatch).toBe(false);
-    expect(v.reviewRequired).toBeFalsy();
+    expect(v.reviewRequired).toBe(true);
   });
 
   it('a bare "1 / 3" question with a 0.33 key is not verified', () => {

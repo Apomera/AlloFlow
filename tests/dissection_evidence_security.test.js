@@ -42,6 +42,7 @@ const inspectStored = productionFunction('inspectDissectionStoredValue', {
   isPlainDissectionRecord: plainRecord,
   DISSECTION_SAVE_SCHEMA_VERSION: 21,
   dissectionEvidenceImageFormat: imageFormat,
+  isValidDissectionAnnotation: productionFunction('isValidDissectionAnnotation', { isPlainDissectionRecord: plainRecord }),
 });
 const fileToken = productionFunction('evidenceFileToken');
 

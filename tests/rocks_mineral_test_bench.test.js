@@ -442,7 +442,8 @@ describe('evidence-first Mineral Workbench learning flow', () => {
 
     const toggle = findAll(guided.node, (n) => n.type === 'button' && n.props['data-wb-guided-toggle'] === 'active')[0];
     expect(toggle, 'guided focus toggle').toBeTruthy();
-    expect(toggle.props['aria-pressed']).toBe(true);
+    expect(toggle.props['aria-pressed']).toBeUndefined();
+    expect(toggle.props.children).toBe('Show full workbench');
     toggle.props.onClick();
     expect(guided.store.rocks.wb.guided).toBe(false);
   });
@@ -734,7 +735,7 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('2.5–&lt;3.0 g/cm³ measurement band');
     expect(markup).toContain('Would keep:');
     expect(markup).toContain('Would leave 3 candidates');
-    expect(markup).toContain('This branch would leave 3 candidates.');
+    expect(markup).toContain('Would leave 3 candidates.');
   });
 
   it('uses the wider provisional band for projected shortlists without changing outcome probabilities', () => {

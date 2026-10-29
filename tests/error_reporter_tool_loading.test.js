@@ -96,7 +96,20 @@ it('redacts the complete assignment-bearing URL fragment from diagnostic metadat
   w.AlloModules.ErrorReporter.record('warn', 'Tool wait exceeded15s', '', 'module-loader', 0, 0);
   const text = report(w);
   expect(text).not.toContain('PRIVATE_ASSIGNMENT_CANARY');
+  // The default report names the page without its query or fragment at all.
+  expect(text).toContain('Page: https://example.test/app/\n');
+  expect(JSON.stringify(w.AlloModules.ErrorReporter.getBuffer())).not.toContain('PRIVATE_ASSIGNMENT_CANARY');
+});
+
+it('redacts the fragment in the teacher-view full log too', () => {
+  const w = boot({ failed: [], pending: [], queued: [] });
+  w.__alloPendingCoachPosture = 'educator';
+  w.history.replaceState({}, '', '/app/#allo_pack=PRIVATE_ASSIGNMENT_CANARY');
+  w.AlloModules.ErrorReporter.record('warn', 'Tool wait exceeded15s', '', 'module-loader', 0, 0);
+  w.AlloModules.ErrorReporter.openPanel('errors');
+  w.document.getElementById('aer-include-log').click();
+  const text = report(w);
+  expect(text).not.toContain('PRIVATE_ASSIGNMENT_CANARY');
   expect(text).toContain('URL: https://example.test/app/#[redacted]');
   expect(text).toContain('URL fragment omitted.');
-  expect(JSON.stringify(w.AlloModules.ErrorReporter.getBuffer())).not.toContain('PRIVATE_ASSIGNMENT_CANARY');
 });

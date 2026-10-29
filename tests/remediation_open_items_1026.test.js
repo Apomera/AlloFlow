@@ -137,7 +137,8 @@ describe('the delivered file drops editor leftovers', () => {
 
 // ── 4. one h1: the source outline is shown one level down when it tags several H1s ──────────────
 const outlineCode = sliceBetween(PIPE, '      const _outlineShift =', '      const _sourceHeadingsDirective =', F);
-const outline = (headings) => new Function('_sourceStruct', outlineCode + '\nreturn { shift: _outlineShift, levels: _sourceStruct.headings.map(_outlineLevel), note: _outlineNote };')({ hasTags: true, headings });
+// (2026-10-28) the slice now also builds the page-range outline filter; a whole-document run has no range.
+const outline = (headings) => new Function('_sourceStruct', '_pageRange', 'pageCount', outlineCode + '\nreturn { shift: _outlineShift, levels: _sourceStruct.headings.map(_outlineLevel), note: _outlineNote };')({ hasTags: true, headings }, null, 0);
 describe('the source heading outline agrees with the single-h1 rule', () => {
   it('several H1 sections (osep) are listed as H2 and everything below moves down one, capped at 6', () => {
     const o = outline([{ level: 1 }, { level: 2 }, { level: 1 }, { level: 6 }, { level: 3 }]);
@@ -500,7 +501,8 @@ describe('run-in headings and running-header detection', () => {
 describe('chart text is not said three times', () => {
   const overlap = new Function(sliceBetween(PIPE, 'var _alloTextOverlap = function', '\n// Which extracted images a legend repair', F) + '\nreturn _alloTextOverlap;')();
   const code = sliceBetween(PIPE, '      const _capShort =', '      det.innerHTML = ', F);
-  const run = (alt, summary) => new Function('_capAlt', 'parsed', '_alloTextOverlap', code + '\nreturn { caption: _chartCaption, keepSummary: !!(_sumText && !_sumRepeats) };')(alt, { chartSummary: summary }, overlap);
+  // (2026-10-28) the caption also asks whether the values are printed in the document; these fixtures are estimated
+  const run = (alt, summary) => new Function('_capAlt', 'parsed', '_alloTextOverlap', 'rows', '_alloChartValuesPrinted', code + '\nreturn { caption: _chartCaption, keepSummary: !!(_sumText && !_sumRepeats) };')(alt, { chartSummary: summary }, overlap, [], () => false);
   const alt = 'Line chart of annual enrollment, FY08 to FY25: about 3,570 students in FY08 falling steadily to about 2,980 in FY20, dropping to about 2,740 in FY21.';
   it('the table caption names the chart (alt up to its colon), not its values', () => {
     expect(run(alt, '').caption).toBe('Chart data, AI-estimated: Line chart of annual enrollment, FY08 to FY25');
@@ -520,7 +522,13 @@ describe('missing numbers that look like chart axis labels', () => {
     expect(hint(['13', '13.5', '11.5', '9.5', '8.5', '6.5', '5.5', '4.5', '0.5', '$1,000'])).toBe(' 9 of them form one evenly spaced series (0.5 to 13.5 in steps of 0.5), which is typical of chart axis labels that a chart description summarises; check that the rest are intact.');
   });
   it('a tiny step that "fits" everything but fills little of its grid is not taken (0.1 here; the series is 0..4 by 1)', () => {
-    expect(hint(['0', '0.1', '1', '2', '3', '4'])).toBe(' 5 of them form one evenly spaced series (0 to 4 in steps of 1), which is typical of chart axis labels that a chart description summarises; check that the rest are intact.');
+    expect(hint(['0', '0.1', '1', '2', '3', '4'])).toBe(' 5 of them are consecutive numbers (0 to 4), which is typical of line or item numbers printed a second time, or of chart axis labels; check that the rest are intact.');
+  });
+  // (2026-10-28, IRS i1040 worksheets: line numbers 10..24 printed twice were called "chart axis labels")
+  it('consecutive whole numbers name line numbers as well as axis labels; other steps keep the axis wording', () => {
+    expect(hint(['10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24'])).toBe(' 15 of them are consecutive numbers (10 to 24), which is typical of line or item numbers printed a second time, or of chart axis labels; check that the rest are intact.');
+    expect(hint(['10', '20', '30', '40', '50'])).toContain('in steps of 10), which is typical of chart axis labels');
+    expect(hint(['0.5', '1.5', '2.5', '3.5', '4.5'])).toContain('in steps of 1), which is typical of chart axis labels');
   });
   it('says nothing for scattered numbers or too few', () => {
     expect(hint(['94', '2025', '17.3', '6', '412'])).toBe('');
@@ -538,6 +546,12 @@ describe('one line for one coverage cause in the connector', () => {
     const out = V.explainDelivery({ files: {}, verdictReasons: { review, cautions: [] }, taggedPdfError: 'content_coverage_requires_review', contentCoverage: { missingWords: [{ word: '13.5', count: 1 }] } });
     expect(out.needsAPerson).toHaveLength(1);
     expect(out.needsAPerson[0]).toMatch(/^Some words or numbers from the original are not in the accessible version \(listed with the tagged-PDF item below\)\..*chart axis labels.*a changed score, date or percentage must be fixed\.$/);
+  });
+  // (2026-10-28, SP 800-63 slice) when another reason withholds the PDF, there is no list below: the words go in the line
+  it('names the words in the line itself when the tagged-PDF item below does not list them', () => {
+    const out = V.explainDelivery({ files: {}, verdictReasons: { review, cautions: [] }, taggedPdfError: 'page_range_tagged_pdf_unsupported', contentCoverage: { missingWords: [{ word: 'http', count: 3 }, { word: 's', count: 4 }] } });
+    expect(out.needsAPerson[0]).not.toContain('listed with the tagged-PDF item below');
+    expect(out.needsAPerson[0]).toMatch(/must be fixed\. Words not found in the accessible version: "http" \(x3\), "s" \(x4\)\.$/);
   });
   it('a numbers warning on its own is kept as is', () => {
     expect(V.explainDelivery({ files: {}, verdictReasons: { review: [review[1]], cautions: [] } }).needsAPerson).toEqual([review[1]]);
@@ -636,8 +650,9 @@ describe('numeric fidelity credits the numbers a list draws', () => {
     expect(lib.marks(SRC, '<ul><li>Consideration and action to approve the minutes of June 4.</li></ul>')).toBe('');
   });
   it('is added on both numeric checks', () => {
-    expect(PIPE.includes("_numericFidelityLosses(sourceText, htmlToPlainText(_stripSinks(html)) + ' ' + _alloListMarkerNumbers(sourceText, _stripSinks(html)))")).toBe(true);
-    expect(PIPE.includes("_numericFidelityLosses(_srcRaw, htmlToPlainText(_finalForIntegrity) + ' ' + _alloListMarkerNumbers(_srcRaw, _finalForIntegrity))")).toBe(true);
+    // (2026-10-28) followed by the page-folio credit (tests/remediation_page_range_slice.test.js)
+    expect(PIPE.includes("_numericFidelityLosses(sourceText, htmlToPlainText(_stripSinks(html)) + ' ' + _alloListMarkerNumbers(sourceText, _stripSinks(html)) + ' ' + _alloFolioNumbers(")).toBe(true);
+    expect(PIPE.includes("_numericFidelityLosses(_srcRaw, htmlToPlainText(_finalForIntegrity) + ' ' + _alloListMarkerNumbers(_srcRaw, _finalForIntegrity) + ' ' + _alloFolioNumbers(")).toBe(true);
   });
 });
 

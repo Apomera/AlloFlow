@@ -121,13 +121,16 @@ function mountLiveWithSeed(seed) {
   const host = document.createElement('div');
   document.body.appendChild(host);
   const root = ReactDOMClient.createRoot(host);
+  let latestData = seed;
   function Harness() {
     const [toolData, setToolData] = React.useState({ spaceStation: seed });
+    latestData = toolData.spaceStation;
     return cfg.render(mountCtx(toolData, setToolData));
   }
   renderTool(root, React.createElement(Harness));
   return {
     host,
+    getData() { return latestData; },
     cleanup() {
       unmountTool(root, host);
     },
@@ -2021,7 +2024,7 @@ describe('space station tool', () => {
     it('renders the connected Mission Operations simulations', () => {
       const integrated = mountWithSeed({ ...BASE, tab: 'operations' });
       expect(integrated).toIncludeText('Keep a city-sized spacecraft alive.');
-      expect(integrated).toIncludeText('Simulate the next 92-minute orbit');
+      expect(integrated).toIncludeText('Record this 92-minute trial');
       expect(integrated).toIncludeText('Cabin CO₂');
       expect(integrated).toIncludeText('FLIGHT DIRECTOR DEBRIEF');
       expect(integrated).toIncludeText('NEXT-ORBIT MARGIN FORECAST');
@@ -2030,11 +2033,15 @@ describe('space station tool', () => {
       expect(integrated).toIncludeText('RULE ≥ 25% · GO');
       expect(integrated).toIncludeText('data-iss-orbit-forecast');
       expect(integrated).toIncludeText('Scrub predicted orbit');
-      expect(integrated).toIncludeText('T+0 MIN');
+      expect(integrated).toIncludeText('T+0.00 MIN');
       expect(integrated).toIncludeText('5 / 5 FLIGHT RULES GO');
       expect(integrated).toIncludeText('All systems');
       expect(integrated).toIncludeText('Crew safety is the combined result');
+    });
 
+    // Keep the same smoke coverage in independent groups: ten full mounts
+    // under one timeout fail on a busy host before any assertion disagrees.
+    it('renders Mission Operations model fidelity and nominal-reference forecasts', () => {
       // ── Ops-model fidelity ────────────────────────────────────────────────
       // These pin two properties the model got WRONG, both of which taught
       // something false about the real station.
@@ -2059,7 +2066,9 @@ describe('space station tool', () => {
 
       const comparison = mountWithSeed({ ...BASE, tab: 'operations', opsScenario: 'science', opsResearch: 95 });
       expect(comparison).toIncludeText('Dashed = nominal orbit');
+    });
 
+    it('renders Mission Operations power, life-support, debris and human summaries', () => {
       const power = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'power' });
       expect(power).toIncludeText('SUNLIGHT 57 MIN');
       expect(power).toIncludeText('Battery after one orbit');
@@ -2072,7 +2081,9 @@ describe('space station tool', () => {
       const human = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'human' });
       expect(human).toIncludeText('Modeled bone loss');
       expect(human).toIncludeText('Radiation exposure');
+    });
 
+    it('renders Mission Operations emergency and rendezvous boards', () => {
       const coolingIncident = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'emergency', opsEmergency: 'cooling' });
       expect(coolingIncident).toIncludeText('INCIDENT DISPLAY // EXTERNAL COOLING LOOP');
       expect(coolingIncident).toIncludeText('data-iss-emergency-visual="cooling"');
@@ -2126,14 +2137,1098 @@ describe('space station tool', () => {
           setValue.call(scrubber, '70');
           scrubber.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        expect(live.host.textContent).toIncludeText('T+70 MIN');
+        expect(live.host.textContent).toIncludeText('T+70.00 MIN');
         expect(live.host.textContent).toIncludeText('ECLIPSE');
         expect(live.host.querySelector('#iss-orbit-cursor').getAttribute('aria-valuetext')).toContain('eclipse');
-        expect(live.host.querySelector('[data-iss-orbit-forecast] svg').getAttribute('aria-label')).toContain('T plus 70 minutes');
+        expect(live.host.querySelector('[data-iss-orbit-forecast] svg').getAttribute('aria-label')).toContain('T plus 70.00 minutes');
       } finally {
         live.cleanup();
       }
     });
+    it('prioritizes a failed flight rule even when the other systems retain margin', () => {
+      for (const [patch, rule] of [[{ opsBattery: 20 }, 'Battery reserve'], [{ opsRecovery: 89 }, 'Water loop']]) {
+        const live = mountLiveWithSeed({ ...BASE, tab: 'operations', ...patch });
+        try {
+          expect(live.host.querySelector('[data-ops-summary]').dataset.state).toBe('check');
+          expect(live.host.querySelector('[data-ops-summary]').getAttribute('aria-label')).toContain(rule);
+          expect(live.host.querySelector('.iss-ops-debrief').textContent).toContain('Flight rules to check: ' + rule);
+          act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+          expect(live.host.querySelector('[data-ops-trial-outcome]').textContent).toContain(rule);
+        } finally { live.cleanup(); }
+      }
+    });
+
+    it('synchronizes integrated telemetry while keeping complete-orbit failures and saved evidence', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsAirFlow: 3, opsAirRestore: true, opsAirRestoreMinute: 70,
+        opsCmg: 78, opsAttitudeTorque: 2.4, opsAttitudeDump: true, opsAttitudeBurnMinute: 50 });
+      const reading = id => Number(live.host.querySelector('[data-ops-telemetry-reading="' + id + '"]').dataset.readingValue);
+      try {
+        expect(reading('power')).toBe(76);
+        expect(reading('air')).toBeCloseTo(2600, 6);
+        expect(reading('thermal')).toBe(22);
+        expect(reading('attitude')).toBe(78);
+        expect(live.host.querySelector('[data-ops-telemetry-time]').textContent).toContain('T+0.00 min');
+        expect(live.host.querySelector('[data-ops-telemetry-water]').textContent).toContain('Fixed setup setting');
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        const saved = live.host.querySelector('[data-ops-trial-outcome]').textContent;
+        expect(reading('air')).toBeLessThan(3000);
+        expect(reading('attitude')).toBeLessThan(80);
+        expect(live.host.querySelector('[data-ops-rule="air"]').textContent).toContain('CHECK');
+        expect(live.host.querySelector('[data-ops-rule="attitude"]').textContent).toContain('CHECK');
+        expect(live.host.querySelector('[data-iss-network-focus]').dataset.opsNetworkMinute).toBe('92');
+        act(() => { live.host.querySelector('[data-ops-telemetry-reading="air"]').click(); });
+        expect(live.host.querySelector('[data-iss-air-lab]')).toBeTruthy();
+        expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain('T+92.00 min');
+        expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain('Reading at the selected time');
+        act(() => { live.host.querySelector('[data-ops-back-events]').click(); });
+        expect(reading('air')).toBeLessThan(3000);
+        act(() => { live.host.querySelector('[data-ops-rule="air"]').click(); });
+        expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain('Peak reading · T+70.00 min');
+        act(() => { live.host.querySelector('[data-ops-back-events]').click(); });
+        expect(reading('air')).toBeGreaterThan(4500);
+        expect(live.host.querySelector('[data-ops-trial-outcome]').textContent).toBe(saved);
+        expect(live.host.querySelector('[data-iss-network-focus] svg').getAttribute('aria-label')).toContain('T plus 70.00 minutes');
+      } finally { live.cleanup(); }
+    });
+
+    it('pauses integrated playback on same-time seeking, recording and loading a trial', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations' });
+      const play = () => live.host.querySelector('[data-iss-playback-toggle="integrated"]');
+      try {
+        expect(play().getAttribute('aria-pressed')).toBe('false');
+        act(() => { play().click(); });
+        expect(play().getAttribute('aria-pressed')).toBe('true');
+        act(() => { live.host.querySelector('#iss-orbit-cursor').dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true })); });
+        expect(play().getAttribute('aria-pressed')).toBe('false');
+        expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('0');
+        act(() => { play().click(); });
+        act(() => { live.host.querySelector('[data-iss-scenario="nominal"]').click(); });
+        expect(play().getAttribute('aria-pressed')).toBe('false');
+        act(() => { play().click(); });
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        expect(play().getAttribute('aria-pressed')).toBe('false');
+        expect(play().disabled).toBe(true);
+        act(() => { live.host.querySelector('[data-ops-trial-restore]').click(); });
+        expect(play().getAttribute('aria-pressed')).toBe('false');
+        expect(play().disabled).toBe(false);
+        expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('0');
+        act(() => { play().click(); });
+        act(() => { live.host.querySelector('[data-ops-event="start"]').click(); });
+        expect(play().getAttribute('aria-pressed')).toBe('false');
+      } finally { live.cleanup(); }
+    });
+
+    it('preserves recorded evidence across scenario edits and restores its replay deliberately', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations' });
+      try {
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        const baseline = live.host.querySelector('[data-ops-trial-outcome]').textContent;
+        act(() => { live.host.querySelector('[data-iss-scenario="eclipse"]').click(); });
+        expect(live.host.querySelector('[data-ops-trial-outcome]').textContent).toBe(baseline);
+        expect(live.host.querySelector('[data-iss-mission-replay]')).toBeNull();
+        expect(live.host.querySelector('[data-ops-trial-comparison]').textContent).toContain('Several active controls changed');
+        act(() => { live.host.querySelector('[data-ops-trial-restore]').click(); });
+        expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('0');
+        expect(live.host.querySelector('#iss-ops-battery').value).toBe('76');
+        expect(live.host.querySelector('[data-iss-replay-event="57"]')).toBeTruthy();
+        expect(live.host.querySelector('[data-ops-trial-comparison]').textContent).toContain('Both setups use the same controls');
+      } finally { live.cleanup(); }
+    });
+
+    it('inspects a recovered air failure at its peak without changing saved evidence', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsAirFlow: 3, opsAirRestore: true, opsAirRestoreMinute: 70 });
+      try {
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        const saved = live.host.querySelector('[data-ops-trial-outcome]').textContent;
+        expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('92');
+        const crossing = Number(live.host.querySelector('[data-ops-event="air-limit"]').dataset.eventMinute);
+        expect(crossing).toBeGreaterThan(48);
+        expect(crossing).toBeLessThan(49);
+        act(() => { live.host.querySelector('[data-ops-primary-inspect]').click(); });
+        expect(live.host.querySelector('[data-iss-air-lab]')).toBeTruthy();
+        expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain('Peak reading · T+70.00 min');
+        expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain('limiting reading');
+        act(() => { live.host.querySelector('[data-ops-back-events]').click(); });
+        expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('70');
+        expect(live.host.querySelector('[data-ops-trial-outcome]').textContent).toBe(saved);
+        act(() => { live.host.querySelector('[data-ops-event="air-limit"]').click(); });
+        expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain('comparison line');
+        act(() => { live.host.querySelector('[data-ops-back-events]').click(); });
+        expect(Number(live.host.querySelector('#iss-orbit-cursor').value)).toBe(crossing);
+        expect(live.host.querySelector('[data-ops-event="air-limit"]').getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.querySelector('[data-ops-trial-outcome]').textContent).toBe(saved);
+      } finally { live.cleanup(); }
+    });
+
+    it('keeps nearby event times distinct and retains exact cursor keyboard movement', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsAirFlow: 3, opsAirRestore: true, opsAirRestoreMinute: 57.1, opsOrbitMinute: 57.1 });
+      try {
+        expect(live.host.querySelector('[data-ops-event="air-restore"]').getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.querySelector('[data-ops-event="eclipse"]').getAttribute('aria-pressed')).toBe('false');
+        const slider = live.host.querySelector('#iss-orbit-cursor');
+        expect(slider.value).toBe('57.1');
+        act(() => { slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); });
+        expect(Number(slider.value)).toBeCloseTo(58.1, 10);
+        act(() => { slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true })); });
+        expect(slider.value).toBe('0');
+        act(() => { slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true })); });
+        expect(slider.value).toBe('92');
+      } finally { live.cleanup(); }
+    });
+
+    it('opens static water recovery inspection without changing the orbit clock', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsRecovery: 89, opsOrbitMinute: 71.25, opsWaterDay: 13 });
+      try {
+        expect(live.host.querySelector('[data-ops-event="water"]')).toBeNull();
+        act(() => { live.host.querySelector('[data-ops-rule="water"]').click(); });
+        expect(live.host.querySelector('[data-iss-water-lab]')).toBeTruthy();
+        expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain('Setup check');
+        expect(live.host.querySelector('[data-ops-inspection]').textContent).not.toContain('T+');
+        act(() => { live.host.querySelector('[data-ops-back-events]').click(); });
+        expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('71.25');
+      } finally { live.cleanup(); }
+    });
+
+    it('keeps a saved baseline while recording a revised trial directly from a system lab', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations' });
+      try {
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        act(() => { live.host.querySelector('[data-iss-scenario="eclipse"]').click(); });
+        const power = [...live.host.querySelectorAll('.iss-ops-mode')].find(button => button.textContent.includes('Power'));
+        act(() => { power.click(); });
+        expect(live.host.querySelector('[data-ops-lab-notebook]')).toBeTruthy();
+        act(() => { live.host.querySelector('[data-ops-lab-record]').click(); });
+        expect(live.host.querySelector('[data-iss-operations]').dataset.issOperations).toBe('power');
+        expect(live.host.querySelector('[data-ops-trial-notice]').textContent).toContain('trial 2');
+        act(() => { live.host.querySelector('[data-ops-open-notebook]').click(); });
+        expect(live.host.querySelector('[data-ops-trial-select]').value).toBe('1');
+        expect(live.host.querySelector('[data-ops-trial-compare]').value).toBe('2');
+        expect(live.host.querySelector('[data-ops-trial-comparison]').textContent).toContain('Eclipse duration: 35 minutes → 45 minutes');
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        expect(live.host.querySelector('[data-ops-trial-select]').value).toBe('1');
+        expect(live.host.querySelector('[data-ops-trial-compare]').value).toBe('3');
+      } finally { live.cleanup(); }
+    });
+
+    it('loads the compared trial without changing the baseline or discarding the next prediction', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsBattery: 20, opsPrediction: 'A: lower reserve.' });
+      const inputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      const textValue = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+      function fill(selector, value, setter) {
+        act(() => { const field = live.host.querySelector(selector); setter.call(field, value); field.dispatchEvent(new Event('input', { bubbles: true })); });
+      }
+      try {
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        fill('#iss-ops-battery', '100', inputValue);
+        fill('[data-ops-prediction]', 'B: more reserve.', textValue);
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        expect(live.host.querySelectorAll('[data-ops-rule-change]')).toHaveLength(5);
+        expect(live.host.querySelector('[data-ops-rule-change="power"]').dataset.changeState).toBe('resolved');
+        expect(live.host.querySelector('[data-ops-compared-prediction]').textContent).toBe('B: more reserve.');
+        fill('[data-ops-prediction]', 'C: unfinished prediction.', textValue);
+        fill('#iss-ops-battery', '0', inputValue);
+        expect(live.host.querySelector('[data-ops-rule-change="power"]').dataset.changeState).toBe('resolved');
+        act(() => { live.host.querySelector('[data-ops-comparison-load]').click(); });
+        expect(live.host.querySelector('[data-ops-trial-select]').value).toBe('1');
+        expect(live.host.querySelector('[data-ops-trial-compare]').value).toBe('2');
+        expect(live.host.querySelector('#iss-ops-battery').value).toBe('100');
+        expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('0');
+        expect(live.host.querySelector('[data-ops-prediction]').value).toBe('C: unfinished prediction.');
+        expect(live.host.querySelector('[data-ops-loaded-trial]').dataset.opsLoadedTrial).toBe('2');
+        expect(live.host.querySelector('[data-iss-mission-replay]')).toBeNull();
+        act(() => { live.host.querySelector('[data-ops-compare-current]').click(); });
+        expect(live.host.querySelector('[data-ops-trial-compare]').value).toBe('current');
+        expect(live.host.querySelector('[data-ops-rule-change="power"]').dataset.changeState).toBe('resolved');
+        act(() => { live.host.querySelector('[data-ops-trial-restore]').click(); });
+        expect(live.host.querySelector('#iss-ops-battery').value).toBe('20');
+        expect(live.host.querySelector('[data-ops-prediction]').value).toBe('C: unfinished prediction.');
+        expect(live.host.querySelector('[data-ops-rule-change="power"]').dataset.changeState).toBe('still-check');
+        expect(live.host.querySelector('[data-iss-mission-replay]')).toBeTruthy();
+      } finally { live.cleanup(); }
+    });
+
+    it('records pointing and propellant evidence while keeping legacy values unrecorded in either comparison column', () => {
+      const first = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCmg: 85, opsAttitudeTorque: 2.4, opsAttitudeInertia: 40 });
+      let legacySeed;
+      try {
+        act(() => { first.host.querySelector('[data-ops-record-trial]').click(); });
+        const recorded = first.getData().opsTrials[0];
+        expect(recorded.results.pointingEnd).toBeCloseTo(32.26420956713728, 8);
+        expect(recorded.results.propellantUsed).toBe(0);
+        expect(first.host.querySelector('[data-ops-trial-metric="pointingEnd"] td').textContent).toBe('32.26 °');
+        expect(first.host.querySelector('[data-ops-trial-metric="propellantUsed"] td').textContent).toBe('0.000 kg');
+        expect(first.host.querySelectorAll('[data-result-missing]')).toHaveLength(0);
+        legacySeed = JSON.parse(JSON.stringify(first.getData()));
+        delete legacySeed.opsTrials[0].results.pointingEnd;
+        delete legacySeed.opsTrials[0].results.propellantUsed;
+        legacySeed.opsAttitudeInertia = 160;
+      } finally { first.cleanup(); }
+      const live = mountLiveWithSeed(legacySeed);
+      const cells = key => [...live.host.querySelector('[data-ops-trial-metric="' + key + '"]').querySelectorAll('td')].map(cell => cell.textContent);
+      function select(selector, value) {
+        act(() => { const field = live.host.querySelector(selector); field.value = value; field.dispatchEvent(new Event('change', { bubbles: true })); });
+      }
+      try {
+        expect(cells('pointingEnd')).toEqual(['Not recorded', '8.07 °', 'Not comparable']);
+        expect(cells('propellantUsed')).toEqual(['Not recorded', '0.000 kg', 'Not comparable']);
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        expect(Object.keys(live.getData().opsTrials[0].results)).toHaveLength(8);
+        expect(live.getData().opsTrials[0].version).toBe(1);
+        expect(live.getData().opsTrials[1].results.pointingEnd).toBeCloseTo(8.06605239178432, 8);
+        expect(cells('pointingEnd')).toEqual(['Not recorded', '8.07 °', 'Not comparable']);
+        select('[data-ops-trial-select]', '2');
+        select('[data-ops-trial-compare]', '1');
+        expect(cells('pointingEnd')).toEqual(['8.07 °', 'Not recorded', 'Not comparable']);
+        expect(cells('propellantUsed')).toEqual(['0.000 kg', 'Not recorded', 'Not comparable']);
+        select('[data-ops-trial-select]', '1');
+        expect(cells('pointingEnd')).toEqual(['Not recorded', 'Not recorded', 'Not comparable']);
+        expect(live.host.querySelectorAll('[data-ops-rule-change]')).toHaveLength(5);
+      } finally { live.cleanup(); }
+    });
+
+    it('edits only the comparison trial reflection without changing evidence, predictions, selectors or clocks', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsPrediction: 'A prediction', opsWaterDay: 8, opsPressureMinute: 2 });
+      const inputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      const textSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+      function fill(selector, value, setter = textSetter) {
+        act(() => { const field = live.host.querySelector(selector); setter.call(field, value); field.dispatchEvent(new Event('input', { bubbles: true })); });
+      }
+      try {
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        fill('[data-ops-reflection]', 'A reflection stays attached to A.');
+        fill('#iss-ops-battery', '100', inputSetter);
+        fill('[data-ops-prediction]', 'B prediction');
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        fill('[data-ops-prediction]', 'Unfinished next-trial draft');
+        fill('#iss-orbit-cursor', '37.25', inputSetter);
+        act(() => { live.host.querySelector('[data-iss-playback-toggle="integrated"]').click(); });
+        const before = JSON.parse(JSON.stringify(live.getData()));
+        const table = live.host.querySelector('.iss-trial-table').textContent;
+        const reflection = 'B evidence: more stored energy.\nPointing and fuel remain recorded.';
+        fill('[data-ops-compared-reflection]', reflection);
+        const expected = JSON.parse(JSON.stringify(before));
+        expected.opsTrials[1].reflection = reflection;
+        expect(live.getData()).toEqual(expected);
+        expect(live.host.querySelector('[data-ops-reflection]').value).toBe('A reflection stays attached to A.');
+        expect(live.host.querySelector('[data-ops-compared-reflection]').value).toBe(reflection);
+        expect(live.host.querySelector('[data-ops-compared-prediction]').textContent).toBe('B prediction');
+        expect(live.host.querySelector('[data-ops-prediction]').value).toBe('Unfinished next-trial draft');
+        expect(live.host.querySelector('[data-ops-trial-select]').value).toBe('1');
+        expect(live.host.querySelector('[data-ops-trial-compare]').value).toBe('2');
+        expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('37.25');
+        expect(live.host.querySelector('[data-iss-playback-toggle="integrated"]').getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.querySelector('.iss-trial-table').textContent).toBe(table);
+        expect(live.host.querySelector('#iss-trial-comparison-reflection').getAttribute('aria-describedby')).toBe('iss-trial-comparison-reflection-help');
+        act(() => { const select = live.host.querySelector('[data-ops-trial-select]'); select.value = '2'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+        expect(live.host.querySelector('[data-ops-reflection]').value).toBe(reflection);
+        expect(live.host.querySelector('[data-ops-compared-reflection]')).toBeNull();
+      } finally { live.cleanup(); }
+    });
+
+    it('discloses inactive burn settings and counts a one-sided activation as an active difference', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsAttitudeDump: false, opsAttitudeBurnMinute: 40 });
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      function attitudeLab() {
+        act(() => { [...live.host.querySelectorAll('.iss-ops-mode')].find(button => button.textContent.includes('Attitude')).click(); });
+      }
+      try {
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        attitudeLab();
+        act(() => { live.host.querySelector('[data-attitude-burn-toggle]').click(); });
+        act(() => { const field = live.host.querySelector('#iss-attitude-burn-time'); setter.call(field, '80'); field.dispatchEvent(new Event('input', { bubbles: true })); });
+        act(() => { live.host.querySelector('[data-attitude-burn-toggle]').click(); });
+        act(() => { live.host.querySelector('[data-ops-open-notebook]').click(); });
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        expect(live.host.querySelector('[data-ops-change-guidance]').dataset.opsChangeGuidance).toBe('0');
+        expect(live.host.querySelector('[data-ops-change-guidance]').textContent).toContain('Only inactive settings differ');
+        expect(live.host.querySelector('[data-ops-active-changes]')).toBeNull();
+        const inactive = live.host.querySelector('[data-ops-inactive-changes]');
+        expect(inactive.querySelector('summary').textContent).toContain('Inactive setting differences: 1');
+        expect(inactive.querySelector('[data-ops-setup-change="opsAttitudeBurnMinute"]').dataset.changeActive).toBe('false');
+        expect(inactive.textContent).toContain('momentum unloading is off');
+        act(() => { live.host.querySelector('[data-ops-compare-current]').click(); });
+        attitudeLab();
+        act(() => { live.host.querySelector('[data-attitude-burn-toggle]').click(); });
+        act(() => { live.host.querySelector('[data-ops-open-notebook]').click(); });
+        expect(live.host.querySelector('[data-ops-change-guidance]').dataset.opsChangeGuidance).toBe('2');
+        expect(live.host.querySelector('[data-ops-inactive-changes]')).toBeNull();
+        expect(live.host.querySelector('[data-ops-setup-change="opsAttitudeBurnMinute"]').dataset.changeActive).toBe('true');
+        expect(live.host.querySelector('[data-ops-setup-change="opsAttitudeDump"]').dataset.changeActive).toBe('true');
+        expect(live.getData().opsTrials[0].setup.opsAttitudeDump).toBe(false);
+        expect(live.getData().opsTrials[1].setup.opsAttitudeDump).toBe(false);
+      } finally { live.cleanup(); }
+    });
+
+    it('counts one operational control separately from inactive vent timing', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsAirFlow: 3, opsAirRestore: false, opsAirRestoreMinute: 45 });
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      function fill(selector, value) {
+        act(() => { const field = live.host.querySelector(selector); setter.call(field, value); field.dispatchEvent(new Event('input', { bubbles: true })); });
+      }
+      try {
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        act(() => { live.host.querySelector('[data-ops-rule="air"]').click(); });
+        act(() => { live.host.querySelector('[data-air-restore-toggle]').click(); });
+        fill('#iss-air-restore-time', '80');
+        act(() => { live.host.querySelector('[data-air-restore-toggle]').click(); });
+        act(() => { live.host.querySelector('[data-ops-open-notebook]').click(); });
+        fill('#iss-ops-battery', '20');
+        expect(live.host.querySelector('[data-ops-change-guidance]').dataset.opsChangeGuidance).toBe('1');
+        expect(live.host.querySelector('[data-ops-change-guidance]').textContent).toContain('One active control changed');
+        expect(live.host.querySelectorAll('[data-ops-active-changes] [data-ops-setup-change]')).toHaveLength(1);
+        expect(live.host.querySelector('[data-ops-active-changes] [data-ops-setup-change]').dataset.opsSetupChange).toBe('opsBattery');
+        const timing = live.host.querySelector('[data-ops-inactive-changes] [data-ops-setup-change="opsAirRestoreMinute"]');
+        expect(timing.dataset.changeActive).toBe('false');
+        expect(timing.textContent).toContain('vent restoration is off or airflow is already at least 90');
+      } finally { live.cleanup(); }
+    });
+
+    describe('paired trajectory explorer', () => {
+      const copy = value => JSON.parse(JSON.stringify(value));
+      const withoutView = state => Object.fromEntries(Object.entries(copy(state)).filter(([key]) => !['opsTrajectoryOpen', 'opsTrajectoryMetric', 'opsTrajectoryMinute'].includes(key)));
+      function click(live, selector) { act(() => { live.host.querySelector(selector).click(); }); }
+      function select(live, selector, value) {
+        act(() => { const field = live.host.querySelector(selector); field.value = value; field.dispatchEvent(new Event('change', { bubbles: true })); });
+      }
+      function fill(live, selector, value) {
+        act(() => {
+          const field = live.host.querySelector(selector);
+          const prototype = field.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+          Object.getOwnPropertyDescriptor(prototype, 'value').set.call(field, value);
+          field.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      }
+      const reading = (live, side) => live.host.querySelector('[data-ops-trajectory-reading="' + side + '"]');
+      const value = (live, side) => Number(reading(live, side).dataset.value);
+
+      it('reveals different same-time motion despite equal summaries without changing working state or recorded evidence', () => {
+        const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCmg: 100, opsAttitudeTorque: 0, opsAttitudeDump: true,
+          opsAttitudeBurnMinute: 10, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5, opsPrediction: 'A: unload early.',
+          opsWaterDay: 13, opsPressureMinute: 4.5, opsDebrisTime: 42 });
+        try {
+          click(live, '[data-ops-record-trial]');
+          fill(live, '[data-ops-reflection]', 'A evidence remains attached to A.');
+          act(() => { [...live.host.querySelectorAll('.iss-ops-mode')].find(button => button.textContent.includes('Attitude')).click(); });
+          fill(live, '#iss-attitude-burn-time', '70');
+          fill(live, '#iss-lab-prediction', 'B: unload late.');
+          click(live, '[data-ops-lab-record]');
+          click(live, '[data-ops-open-notebook]');
+          fill(live, '[data-ops-compared-reflection]', 'B has the same final summaries.');
+          fill(live, '[data-ops-prediction]', 'C: unfinished investigation.');
+          fill(live, '#iss-ops-battery', '12');
+          fill(live, '#iss-orbit-cursor', '37.25');
+          const evidence = copy(live.getData().opsTrials);
+          expect(evidence[0].results).toEqual(evidence[1].results);
+          expect(evidence[0].results.cmgPeak).toBe(100);
+          expect(live.host.querySelector('[data-ops-trajectory-toggle]').getAttribute('aria-expanded')).toBe('false');
+          expect(live.host.querySelector('[data-ops-trajectory-panel]')).toBeNull();
+          const before = withoutView(live.getData());
+          click(live, '[data-iss-playback-toggle="integrated"]');
+          click(live, '[data-ops-trajectory-toggle]');
+          expect(live.host.querySelector('[data-ops-trajectory-toggle]').getAttribute('aria-expanded')).toBe('true');
+          expect(live.host.querySelector('[data-ops-trajectory-metric]').value).toBe('battery');
+          expect(live.host.querySelector('[data-ops-trajectory-time]').value).toBe('0');
+          expect(value(live, 'baseline')).toBe(76);
+          expect(value(live, 'comparison')).toBe(76);
+          select(live, '[data-ops-trajectory-metric]', 'cmg');
+          fill(live, '[data-ops-trajectory-time]', '40');
+          expect(value(live, 'baseline')).toBeCloseTo(8, 10);
+          expect(value(live, 'comparison')).toBe(100);
+          expect(Number(live.host.querySelector('[data-ops-trajectory-delta]').dataset.value)).toBeCloseTo(92, 10);
+          for (const side of ['baseline', 'comparison']) {
+            expect(reading(live, side).dataset.minute).toBe('40');
+            expect(reading(live, side).dataset.lit).toBe('true');
+            const path = live.host.querySelector('[data-ops-trajectory-curve="' + side + '"]').getAttribute('d');
+            expect(path).toMatch(/^M/);
+            expect(path).not.toMatch(/NaN|Infinity/);
+            expect(live.host.querySelector('[data-ops-trajectory-marker="' + side + '"]')).toBeTruthy();
+          }
+          expect(live.host.querySelector('[data-ops-trajectory-chart]')).toBeTruthy();
+          expect(withoutView(live.getData())).toEqual(before);
+          expect(live.host.querySelector('[data-iss-playback-toggle="integrated"]').getAttribute('aria-pressed')).toBe('true');
+          click(live, '[data-ops-trajectory-toggle]');
+          expect(live.host.querySelector('[data-ops-trajectory-panel]')).toBeNull();
+          click(live, '[data-ops-trajectory-toggle]');
+          expect(live.host.querySelector('[data-ops-trajectory-time]').value).toBe('40');
+          expect(live.host.querySelector('[data-ops-trajectory-metric]').value).toBe('cmg');
+          expect(withoutView(live.getData())).toEqual(before);
+
+          // The same saved pair swaps direction without consulting working controls.
+          select(live, '[data-ops-trial-select]', '2');
+          select(live, '[data-ops-trial-compare]', '1');
+          expect(value(live, 'baseline')).toBe(100);
+          expect(value(live, 'comparison')).toBeCloseTo(8, 10);
+          expect(Number(live.host.querySelector('[data-ops-trajectory-delta]').dataset.value)).toBeCloseTo(-92, 10);
+          select(live, '[data-ops-trial-compare]', '2');
+          expect(value(live, 'baseline')).toBe(value(live, 'comparison'));
+          expect(Number(live.host.querySelector('[data-ops-trajectory-delta]').dataset.value)).toBe(0);
+          select(live, '[data-ops-trial-compare]', 'current');
+          select(live, '[data-ops-trajectory-metric]', 'battery');
+          fill(live, '[data-ops-trajectory-time]', '0');
+          expect(value(live, 'baseline')).toBe(76);
+          expect(value(live, 'comparison')).toBe(12);
+          expect(reading(live, 'comparison').textContent).toContain('Current setup');
+          expect(live.getData().opsTrials).toEqual(evidence);
+          expect(live.getData().opsPrediction).toBe('C: unfinished investigation.');
+          expect(live.getData().opsOrbitMinute).toBe(37.25);
+        } finally { live.cleanup(); }
+      });
+
+      it('keeps its fractional keyboard cursor independent while exposing all six measurements', () => {
+        const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsWaterDay: 13, opsPressureMinute: 4.5, opsDebrisTime: 42 });
+        const slider = () => live.host.querySelector('[data-ops-trajectory-time]');
+        try {
+          click(live, '[data-ops-record-trial]');
+          fill(live, '#iss-orbit-cursor', '71.25');
+          const before = withoutView(live.getData());
+          click(live, '[data-ops-trajectory-toggle]');
+          expect(slider().id).toBe('iss-ops-trajectory-time');
+          expect(slider().getAttribute('step')).toBe('any');
+          const options = [...live.host.querySelectorAll('[data-ops-trajectory-metric] option')].map(option => option.value).sort();
+          expect(options).toEqual(['battery', 'cmg', 'co2', 'pointing', 'propellant', 'temp']);
+          for (const metric of options) {
+            select(live, '[data-ops-trajectory-metric]', metric);
+            expect(Number.isFinite(value(live, 'baseline'))).toBe(true);
+            expect(value(live, 'baseline')).toBe(value(live, 'comparison'));
+          }
+          fill(live, '[data-ops-trajectory-time]', '57.12345');
+          expect(Number(slider().value)).toBe(57.12345);
+          for (const [key, minute] of [['ArrowUp', 57.22345], ['ArrowDown', 57.12345], ['ArrowRight', 57.22345], ['ArrowLeft', 57.12345],
+            ['PageUp', 58.12345], ['PageDown', 57.12345], ['End', 92], ['ArrowUp', 92], ['Home', 0], ['ArrowDown', 0]]) {
+            const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+            act(() => { slider().dispatchEvent(event); });
+            expect(event.defaultPrevented).toBe(true);
+            expect(Number(slider().value)).toBeCloseTo(minute, 10);
+            expect(Number(reading(live, 'baseline').dataset.minute)).toBeCloseTo(minute, 10);
+            expect(Number(reading(live, 'comparison').dataset.minute)).toBeCloseTo(minute, 10);
+          }
+          const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+          act(() => { slider().dispatchEvent(tab); });
+          expect(tab.defaultPrevented).toBe(false);
+          expect(withoutView(live.getData())).toEqual(before);
+        } finally { live.cleanup(); }
+      });
+
+      it('recomputes legacy setup trajectories without filling missing recorded measurements', () => {
+        const first = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCmg: 85, opsAttitudeTorque: 2.4, opsAttitudeInertia: 40 });
+        let seed;
+        try {
+          click(first, '[data-ops-record-trial]');
+          seed = copy(first.getData());
+          delete seed.opsTrials[0].results.pointingEnd;
+          delete seed.opsTrials[0].results.propellantUsed;
+          Object.assign(seed, { opsTrajectoryOpen: true, opsTrajectoryMetric: 'pointing', opsTrajectoryMinute: 92, opsPrediction: 'Keep this draft.' });
+        } finally { first.cleanup(); }
+        const live = mountLiveWithSeed(seed);
+        let persisted;
+        try {
+          const before = withoutView(live.getData());
+          expect(live.host.querySelector('[data-ops-trajectory-panel]')).toBeTruthy();
+          expect(live.host.querySelector('[data-ops-trajectory]').textContent).toMatch(/recomput/i);
+          expect(value(live, 'baseline')).toBeCloseTo(32.26420956713728, 8);
+          expect(value(live, 'comparison')).toBe(value(live, 'baseline'));
+          expect(live.host.querySelector('[data-ops-trial-metric="pointingEnd"] td').textContent).toBe('Not recorded');
+          select(live, '[data-ops-measurement-select]', 'pointingEnd');
+          expect(live.host.querySelector('[data-ops-inspect-baseline]').disabled).toBe(true);
+          select(live, '[data-ops-trajectory-metric]', 'propellant');
+          expect(value(live, 'baseline')).toBe(0);
+          expect(live.host.querySelector('[data-ops-trial-metric="propellantUsed"] td').textContent).toBe('Not recorded');
+          expect(live.getData().opsTrials).toEqual(before.opsTrials);
+          expect(Object.keys(live.getData().opsTrials[0].results)).toHaveLength(8);
+          persisted = copy(live.getData());
+        } finally { live.cleanup(); }
+        const reloaded = mountLiveWithSeed(persisted);
+        try {
+          expect(reloaded.host.querySelector('[data-ops-trajectory-toggle]').getAttribute('aria-expanded')).toBe('true');
+          expect(reloaded.host.querySelector('[data-ops-trajectory-metric]').value).toBe('propellant');
+          expect(reloaded.host.querySelector('[data-ops-trajectory-time]').value).toBe('92');
+          expect(reloaded.getData().opsTrials).toEqual(seed.opsTrials);
+          expect(reloaded.host.querySelector('[data-ops-prediction]').value).toBe('Keep this draft.');
+        } finally { reloaded.cleanup(); }
+      });
+
+      describe('paired comparison CSV export', () => {
+        function exportSeed() {
+          const first = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCmg: 100, opsAttitudeTorque: 0, opsAttitudeDump: true,
+            opsAttitudeBurnMinute: 10, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5, opsPrediction: 'Recorded prediction.' });
+          try {
+            click(first, '[data-ops-record-trial]');
+            const seed = copy(first.getData());
+            seed.opsTrials[0].reflection = 'Saved evidence remains unchanged.';
+            seed.opsTrials.push({ ...copy(seed.opsTrials[0]), id: 2, setup: { ...seed.opsTrials[0].setup, opsAttitudeBurnMinute: 70 } });
+            return { ...seed, opsTrialCompare: 2, opsRuns: 2, opsTrajectoryOpen: true, opsTrajectoryMetric: 'cmg', opsTrajectoryMinute: 40,
+              opsOrbitMinute: 37.25, opsWaterDay: 13, opsPressureMinute: 4.5, opsDebrisTime: 42, opsPrediction: 'Keep the unfinished prediction.' };
+          } finally { first.cleanup(); }
+        }
+        function downloads() {
+          const priorCreate = Object.getOwnPropertyDescriptor(URL, 'createObjectURL');
+          const priorRevoke = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL');
+          const blobs = [], anchors = [];
+          const create = vi.fn(blob => { blobs.push(blob); return 'blob:station-comparison-' + blobs.length; });
+          const revoke = vi.fn();
+          Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: create });
+          Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: revoke });
+          const activate = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
+            anchors.push({ node: this, filename: this.download, href: this.href, connected: this.isConnected });
+          });
+          return { blobs, anchors, create, revoke, activate, restore() {
+            activate.mockRestore();
+            if (priorCreate) Object.defineProperty(URL, 'createObjectURL', priorCreate); else delete URL.createObjectURL;
+            if (priorRevoke) Object.defineProperty(URL, 'revokeObjectURL', priorRevoke); else delete URL.revokeObjectURL;
+          } };
+        }
+        async function csvBlob(blob) {
+          const bytes = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(new Uint8Array(reader.result));
+            reader.onerror = () => reject(reader.error);
+            reader.readAsArrayBuffer(blob);
+          });
+          expect([...bytes.slice(0, 3)]).toEqual([239, 187, 191]);
+          return new TextDecoder().decode(bytes);
+        }
+
+        it('downloads a UTF-8 snapshot without persisting export state or pausing live playback', async () => {
+          const live = mountLiveWithSeed(exportSeed());
+          const capture = downloads();
+          try {
+            expect(live.host.querySelector('[data-ops-trajectory-export]').textContent).toBe('Download comparison CSV');
+            expect(live.host.querySelector('[data-ops-trajectory-export-help]').textContent).toMatch(/recomput/i);
+            expect(live.host.querySelector('[data-ops-trajectory-export-status]')).toBeNull();
+            click(live, '[data-iss-playback-toggle="integrated"]');
+            const before = copy(live.getData());
+            vi.useFakeTimers();
+            click(live, '[data-ops-trajectory-export]');
+            expect(capture.create).toHaveBeenCalledTimes(1);
+            expect(capture.anchors).toHaveLength(1);
+            expect(capture.anchors[0]).toMatchObject({ filename: 'space-station-comparison.csv', connected: true });
+            expect(capture.anchors[0].node.isConnected).toBe(false);
+            expect(capture.blobs[0].type).toBe('text/csv;charset=utf-8');
+            expect(live.host.querySelector('[data-ops-trajectory-export-status]').getAttribute('role')).toBe('status');
+            expect(live.host.querySelector('[data-ops-trajectory-export-status]').textContent).toMatch(/download.*started/i);
+            expect(live.getData()).toEqual(before);
+            expect(live.host.querySelector('[data-iss-playback-toggle="integrated"]').getAttribute('aria-pressed')).toBe('true');
+            expect(capture.revoke).not.toHaveBeenCalled();
+            act(() => { vi.advanceTimersByTime(1000); });
+            expect(capture.revoke).toHaveBeenCalledWith('blob:station-comparison-1');
+            vi.useRealTimers();
+            const csv = await csvBlob(capture.blobs[0]);
+            expect(csv).toContain('baseline');
+            expect(csv).toContain('comparison');
+            expect(csv).toContain('13.641666666666667');
+            expect(csv).toContain('73.64166666666667');
+            expect(csv).not.toContain('Keep the unfinished prediction.');
+            expect(live.getData()).toEqual(before);
+          } finally { vi.useRealTimers(); capture.restore(); live.cleanup(); }
+        });
+
+        it('captures the selected saved or current source anew after changing the comparison and reopening', async () => {
+          const live = mountLiveWithSeed(exportSeed());
+          const capture = downloads();
+          try {
+            vi.useFakeTimers();
+            click(live, '[data-ops-trajectory-export]');
+            act(() => { vi.advanceTimersByTime(1000); });
+            vi.useRealTimers();
+            const savedCsv = await csvBlob(capture.blobs[0]);
+            select(live, '[data-ops-trial-compare]', 'current');
+            fill(live, '#iss-ops-battery', '12');
+            select(live, '[data-ops-trajectory-metric]', 'battery');
+            fill(live, '[data-ops-trajectory-time]', '57.12345');
+            click(live, '[data-ops-trajectory-toggle]');
+            expect(live.host.querySelector('[data-ops-trajectory-export]')).toBeNull();
+            click(live, '[data-ops-trajectory-toggle]');
+            const before = copy(live.getData());
+            vi.useFakeTimers();
+            click(live, '[data-ops-trajectory-export]');
+            act(() => { vi.advanceTimersByTime(1000); });
+            vi.useRealTimers();
+            const currentCsv = await csvBlob(capture.blobs[1]);
+            expect(currentCsv).toContain('current');
+            expect(currentCsv).toContain('57.12345');
+            expect(currentCsv).not.toBe(savedCsv);
+            expect(await csvBlob(capture.blobs[0])).toBe(savedCsv);
+            expect(capture.anchors.every(anchor => !anchor.node.isConnected)).toBe(true);
+            expect(live.getData()).toEqual(before);
+          } finally { vi.useRealTimers(); capture.restore(); live.cleanup(); }
+        });
+
+        it('reports URL and activation failures, releases resources, and supports a successful retry', async () => {
+          const live = mountLiveWithSeed(exportSeed());
+          const capture = downloads();
+          try {
+            const before = copy(live.getData());
+            capture.create.mockImplementationOnce(() => { throw new Error('Object URLs unavailable'); });
+            click(live, '[data-ops-trajectory-export]');
+            expect(live.host.querySelector('[data-ops-trajectory-export-status]').textContent).toMatch(/could not.*(?:retry|try again)/i);
+            expect(capture.activate).not.toHaveBeenCalled();
+            expect(capture.revoke).not.toHaveBeenCalled();
+            expect(live.getData()).toEqual(before);
+            let failedAnchor;
+            capture.activate.mockImplementationOnce(function () { failedAnchor = this; throw new Error('Download activation unavailable'); });
+            click(live, '[data-ops-trajectory-export]');
+            expect(failedAnchor.isConnected).toBe(false);
+            expect(capture.revoke).toHaveBeenCalledWith('blob:station-comparison-1');
+            expect(live.host.querySelector('[data-ops-trajectory-export-status]').textContent).toMatch(/could not.*(?:retry|try again)/i);
+            expect(live.getData()).toEqual(before);
+            vi.useFakeTimers();
+            click(live, '[data-ops-trajectory-export]');
+            expect(live.host.querySelector('[data-ops-trajectory-export-status]').textContent).toMatch(/download.*started/i);
+            expect(capture.anchors).toHaveLength(1);
+            act(() => { vi.advanceTimersByTime(1000); });
+            vi.useRealTimers();
+            expect(capture.revoke).toHaveBeenCalledWith('blob:station-comparison-2');
+            expect(await csvBlob(capture.blobs[1])).toContain('comparison');
+            expect(document.querySelectorAll('a[download="space-station-comparison.csv"]')).toHaveLength(0);
+            expect(live.getData()).toEqual(before);
+          } finally { vi.useRealTimers(); capture.restore(); live.cleanup(); }
+        });
+
+        it('exports recomputed legacy trajectories without creating missing recorded evidence', async () => {
+          const seed = exportSeed();
+          delete seed.opsTrials[0].results.pointingEnd;
+          delete seed.opsTrials[0].results.propellantUsed;
+          seed.opsTrajectoryMetric = 'pointing';
+          const live = mountLiveWithSeed(seed);
+          const capture = downloads();
+          try {
+            const before = copy(live.getData());
+            vi.useFakeTimers();
+            click(live, '[data-ops-trajectory-export]');
+            act(() => { vi.advanceTimersByTime(1000); });
+            vi.useRealTimers();
+            const csv = await csvBlob(capture.blobs[0]);
+            expect(csv).toMatch(/recomputed/i);
+            expect(csv).toMatch(/pointing/i);
+            expect(live.host.querySelector('[data-ops-trial-metric="pointingEnd"] td').textContent).toBe('Not recorded');
+            expect(live.host.querySelector('[data-ops-trial-metric="propellantUsed"] td').textContent).toBe('Not recorded');
+            expect(Object.keys(live.getData().opsTrials[0].results)).toHaveLength(8);
+            expect(live.getData()).toEqual(before);
+          } finally { vi.useRealTimers(); capture.restore(); live.cleanup(); }
+        });
+      });
+
+      describe('paired event checkpoints', () => {
+        const eventButton = (live, side, id) => live.host.querySelector('[data-ops-trajectory-event="' + side + ':' + id + '"]');
+        const eventMinute = (live, side, id) => Number(eventButton(live, side, id).dataset.eventMinute);
+        function eventPairSeed() {
+          const first = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCmg: 100, opsAttitudeTorque: 0, opsAttitudeDump: true,
+            opsAttitudeBurnMinute: 10, opsAttitudeThrust: 5, opsAttitudeFuel: 1.5 });
+          try {
+            click(first, '[data-ops-record-trial]');
+            const seed = copy(first.getData());
+            seed.opsTrials.push({ ...copy(seed.opsTrials[0]), id: 2, setup: { ...seed.opsTrials[0].setup, opsAttitudeBurnMinute: 70 } });
+            return { ...seed, opsTrialCompare: 2, opsRuns: 2, opsTrajectoryOpen: true, opsTrajectoryMetric: 'cmg', opsTrajectoryMinute: 0,
+              opsOrbitMinute: 37.25, opsWaterDay: 13, opsPressureMinute: 4.5, opsDebrisTime: 42, opsPrediction: 'Keep this next-trial draft.' };
+          } finally { first.cleanup(); }
+        }
+
+        it('seeks exact fractional burn checkpoints and marks coincident events without altering live playback or evidence', () => {
+          const live = mountLiveWithSeed(eventPairSeed());
+          try {
+            const events = live.host.querySelector('[data-ops-trajectory-events]');
+            expect(events.tagName).toBe('DETAILS');
+            expect(events.open).toBe(false);
+            click(live, '#iss-trajectory-events-title');
+            expect(events.open).toBe(true);
+            expect(live.host.querySelector('[data-ops-trajectory-event-group="baseline"]').textContent).toContain('Trial 1');
+            expect(live.host.querySelector('[data-ops-trajectory-event-group="comparison"]').textContent).toContain('Trial 2');
+            const precise = eventMinute(live, 'baseline', 'burn-end');
+            expect(precise).toBe(13.641666666666667);
+            click(live, '[data-iss-playback-toggle="integrated"]');
+            const before = copy(live.getData());
+            click(live, '[data-ops-trajectory-event="baseline:burn-end"]');
+            expect(live.getData()).toEqual({ ...before, opsTrajectoryMinute: precise });
+            expect(Number(live.host.querySelector('[data-ops-trajectory-time]').value)).toBe(precise);
+            expect(value(live, 'baseline')).toBeCloseTo(8, 10);
+            expect(value(live, 'comparison')).toBe(100);
+            expect(Number(reading(live, 'baseline').dataset.minute)).toBe(precise);
+            expect(Number(reading(live, 'comparison').dataset.minute)).toBe(precise);
+            expect(eventButton(live, 'baseline', 'burn-end').getAttribute('aria-pressed')).toBe('true');
+            expect(eventButton(live, 'comparison', 'burn-end').getAttribute('aria-pressed')).toBe('false');
+            expect(live.host.querySelector('[data-iss-playback-toggle="integrated"]').getAttribute('aria-pressed')).toBe('true');
+            fill(live, '[data-ops-trajectory-time]', String(precise + 5e-9));
+            expect(eventButton(live, 'baseline', 'burn-end').getAttribute('aria-pressed')).toBe('false');
+            click(live, '[data-ops-trajectory-event="baseline:start"]');
+            for (const side of ['baseline', 'comparison']) {
+              for (const id of ['start', 'attitude-caution', 'attitude-capacity', 'cmg-peak']) {
+                expect(eventMinute(live, side, id)).toBe(0);
+                expect(eventButton(live, side, id).getAttribute('aria-pressed')).toBe('true');
+              }
+            }
+            expect(live.getData()).toEqual({ ...before, opsTrajectoryMinute: 0 });
+          } finally { live.cleanup(); }
+        });
+
+        it('navigates the ordered distinct checkpoints from both saved setups in either direction', () => {
+          const live = mountLiveWithSeed(eventPairSeed());
+          const previous = () => live.host.querySelector('[data-ops-trajectory-previous]');
+          const next = () => live.host.querySelector('[data-ops-trajectory-next]');
+          const expected = [0, 10, 13.641666666666667, 57, 70, 73.64166666666667, 92];
+          try {
+            const before = copy(live.getData());
+            expect(previous().disabled).toBe(true);
+            expect(next().disabled).toBe(false);
+            for (const minute of expected.slice(1)) {
+              click(live, '[data-ops-trajectory-next]');
+              expect(live.getData().opsTrajectoryMinute).toBe(minute);
+              expect(Number(reading(live, 'baseline').dataset.minute)).toBe(minute);
+              expect(Number(reading(live, 'comparison').dataset.minute)).toBe(minute);
+            }
+            expect(next().disabled).toBe(true);
+            for (const minute of expected.slice(0, -1).reverse()) {
+              click(live, '[data-ops-trajectory-previous]');
+              expect(live.getData().opsTrajectoryMinute).toBe(minute);
+            }
+            expect(previous().disabled).toBe(true);
+            fill(live, '[data-ops-trajectory-time]', '12');
+            click(live, '[data-ops-trajectory-next]');
+            expect(live.getData().opsTrajectoryMinute).toBe(expected[2]);
+            fill(live, '[data-ops-trajectory-time]', '12');
+            click(live, '[data-ops-trajectory-previous]');
+            expect(live.getData().opsTrajectoryMinute).toBe(10);
+            expect(live.getData()).toEqual({ ...before, opsTrajectoryMinute: 10 });
+          } finally { live.cleanup(); }
+        });
+
+        it('filters checkpoints by measurement and keeps the disclosure open without inventing disabled actions', () => {
+          const first = mountLiveWithSeed({ ...BASE, tab: 'operations', opsAttitudeDump: true, opsAttitudeFuel: 0,
+            opsAirRestore: true, opsAirFlow: 90, opsAirRestoreMinute: 45 });
+          let seed;
+          try {
+            click(first, '[data-ops-record-trial]');
+            seed = { ...copy(first.getData()), opsTrajectoryOpen: true };
+          } finally { first.cleanup(); }
+          const live = mountLiveWithSeed(seed);
+          try {
+            click(live, '#iss-trajectory-events-title');
+            const events = live.host.querySelector('[data-ops-trajectory-events]');
+            for (const [metric, included, excluded] of [
+              ['battery', ['battery-min'], ['co2-peak', 'cabin-min', 'cabin-max', 'cmg-peak', 'air-restore', 'burn-start', 'burn-end']],
+              ['co2', ['co2-peak'], ['battery-min', 'cabin-min', 'cabin-max', 'cmg-peak', 'air-restore', 'burn-start', 'burn-end']],
+              ['temp', ['cabin-min', 'cabin-max'], ['battery-min', 'co2-peak', 'cmg-peak', 'air-restore', 'burn-start', 'burn-end']],
+              ['cmg', ['cmg-peak'], ['battery-min', 'co2-peak', 'cabin-min', 'cabin-max', 'air-restore', 'burn-start', 'burn-end']],
+              ['pointing', [], ['battery-min', 'co2-peak', 'cabin-min', 'cabin-max', 'cmg-peak', 'air-restore', 'burn-start', 'burn-end']],
+              ['propellant', [], ['battery-min', 'co2-peak', 'cabin-min', 'cabin-max', 'cmg-peak', 'air-restore', 'burn-start', 'burn-end']]
+            ]) {
+              select(live, '[data-ops-trajectory-metric]', metric);
+              expect(live.host.querySelector('[data-ops-trajectory-events]')).toBe(events);
+              expect(events.open).toBe(true);
+              for (const side of ['baseline', 'comparison']) {
+                for (const id of ['start', 'eclipse', 'end', ...included]) expect(eventButton(live, side, id)).toBeTruthy();
+                for (const id of excluded) expect(eventButton(live, side, id)).toBeNull();
+              }
+              const selectedLabel = live.host.querySelector('[data-ops-trajectory-metric] option:checked').textContent;
+              expect(live.host.querySelector('#iss-trajectory-events-title').textContent).toContain(selectedLabel);
+            }
+            expect(live.getData().opsTrials).toEqual(seed.opsTrials);
+          } finally { live.cleanup(); }
+        });
+
+        it('updates current and self-comparison checkpoints while leaving legacy saved evidence unchanged', () => {
+          const seed = eventPairSeed();
+          delete seed.opsTrials[0].results.pointingEnd;
+          delete seed.opsTrials[0].results.propellantUsed;
+          seed.opsTrajectoryMetric = 'battery';
+          const live = mountLiveWithSeed(seed);
+          const group = side => live.host.querySelector('[data-ops-trajectory-event-group="' + side + '"]');
+          const checkpointTimes = side => [...group(side).querySelectorAll('[data-ops-trajectory-event]')].map(node => [node.dataset.opsTrajectoryEvent.split(':')[1], Number(node.dataset.eventMinute)]);
+          try {
+            const savedBaseline = checkpointTimes('baseline');
+            expect(group('comparison').textContent).toContain('Trial 2');
+            select(live, '[data-ops-trial-compare]', 'current');
+            expect(group('comparison').textContent).toContain('Current setup');
+            fill(live, '#iss-ops-battery', '20');
+            expect(eventMinute(live, 'comparison', 'battery-min')).toBe(0);
+            expect(eventMinute(live, 'baseline', 'battery-min')).toBe(92);
+            expect(checkpointTimes('baseline')).toEqual(savedBaseline);
+            // Editing a physical control resets the working orbit as usual;
+            // subsequent checkpoint navigation must leave that clock alone.
+            const workingMinute = live.getData().opsOrbitMinute;
+            select(live, '[data-ops-trial-compare]', '1');
+            expect(group('comparison').textContent).toContain('Trial 1');
+            expect(checkpointTimes('comparison')).toEqual(checkpointTimes('baseline'));
+            select(live, '[data-ops-trajectory-metric]', 'pointing');
+            click(live, '[data-ops-trajectory-event="baseline:burn-end"]');
+            expect(value(live, 'baseline')).toBe(value(live, 'comparison'));
+            expect(live.host.querySelector('[data-ops-trial-metric="pointingEnd"] td').textContent).toBe('Not recorded');
+            select(live, '[data-ops-measurement-select]', 'pointingEnd');
+            expect(live.host.querySelector('[data-ops-inspect-baseline]').disabled).toBe(true);
+            expect(live.getData().opsTrials).toEqual(seed.opsTrials);
+            expect(live.getData().opsPrediction).toBe(seed.opsPrediction);
+            expect(live.getData().opsOrbitMinute).toBe(workingMinute);
+            expect(live.getData().opsWaterDay).toBe(seed.opsWaterDay);
+            expect(live.getData().opsPressureMinute).toBe(seed.opsPressureMinute);
+          } finally { live.cleanup(); }
+        });
+      });
+
+      it('normalizes invalid persisted view preferences without repairing or altering trial evidence', () => {
+        const first = mountLiveWithSeed({ ...BASE, tab: 'operations' });
+        let seed;
+        try {
+          click(first, '[data-ops-record-trial]');
+          seed = copy(first.getData());
+        } finally { first.cleanup(); }
+        for (const [metric, minute, expectedMetric, expectedMinute] of [
+          ['unknown', '40', 'battery', 0], ['cmg', Infinity, 'cmg', 0], ['temp', -8, 'temp', 0], ['battery', 120, 'battery', 92]
+        ]) {
+          const live = mountLiveWithSeed({ ...copy(seed), opsTrajectoryOpen: true, opsTrajectoryMetric: metric, opsTrajectoryMinute: minute });
+          try {
+            expect(live.host.querySelector('[data-ops-trajectory-metric]').value).toBe(expectedMetric);
+            expect(Number(live.host.querySelector('[data-ops-trajectory-time]').value)).toBe(expectedMinute);
+            expect(Number(reading(live, 'baseline').dataset.minute)).toBe(expectedMinute);
+            expect(Number.isFinite(value(live, 'baseline'))).toBe(true);
+            expect(live.getData().opsTrials).toEqual(seed.opsTrials);
+            expect(live.getData().opsOrbitMinute).toBe(seed.opsOrbitMinute);
+          } finally { live.cleanup(); }
+        }
+      });
+    });
+
+    describe('notebook measurement inspection', () => {
+      const copy = value => JSON.parse(JSON.stringify(value));
+      function click(live, selector) { act(() => { live.host.querySelector(selector).click(); }); }
+      function select(live, selector, value) {
+        act(() => { const field = live.host.querySelector(selector); field.value = value; field.dispatchEvent(new Event('change', { bubbles: true })); });
+      }
+      function fill(live, selector, value) {
+        act(() => {
+          const field = live.host.querySelector(selector);
+          const prototype = field.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+          Object.getOwnPropertyDescriptor(prototype, 'value').set.call(field, value);
+          field.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      }
+      function measurement(live, value) { select(live, '[data-ops-measurement-select]', value); }
+
+      it.each([['power', 'power'], ['air', 'eclss'], ['thermal', 'thermal'], ['attitude', 'attitude']])(
+        'preserves fractional %s lab time and supports exact keyboard seeking without moving independent clocks', (lab, mode) => {
+          const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsMode: mode, opsEclssLab: 'air', opsOrbitMinute: 57.12345,
+            opsWaterDay: 13, opsPressureMinute: 4.5, opsDebrisTime: 42 });
+          const slider = () => live.host.querySelector('#iss-' + lab + '-time');
+          const play = () => live.host.querySelector('[data-iss-playback-toggle="' + lab + '"]');
+          function key(value, expected) {
+            const event = new KeyboardEvent('keydown', { key: value, bubbles: true, cancelable: true });
+            act(() => { slider().dispatchEvent(event); });
+            expect(event.defaultPrevented).toBe(true);
+            expect(live.getData().opsOrbitMinute).toBeCloseTo(expected, 10);
+            expect(Number(slider().value)).toBeCloseTo(expected, 10);
+            expect(play().getAttribute('aria-pressed')).toBe('false');
+          }
+          try {
+            expect(slider().getAttribute('step')).toBe('any');
+            expect(Number(slider().value)).toBe(57.12345);
+            expect(slider().getAttribute('aria-valuetext')).toContain('57.12 minutes');
+            expect(slider().closest('label').textContent).toContain('57.12');
+            act(() => { play().click(); });
+            expect(play().getAttribute('aria-pressed')).toBe('true');
+            for (const [name, time] of [['ArrowUp', 57.22345], ['ArrowDown', 57.12345], ['ArrowRight', 57.22345], ['ArrowLeft', 57.12345],
+              ['PageUp', 58.12345], ['PageDown', 57.12345], ['End', 92], ['ArrowUp', 92], ['PageUp', 92], ['Home', 0], ['ArrowDown', 0], ['PageDown', 0]]) {
+              key(name, time);
+            }
+            act(() => { play().click(); });
+            expect(play().getAttribute('aria-pressed')).toBe('true');
+            key('Home', 0);
+            const unrelated = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+            act(() => { slider().dispatchEvent(unrelated); });
+            expect(unrelated.defaultPrevented).toBe(false);
+            expect(live.getData().opsWaterDay).toBe(13);
+            expect(live.getData().opsPressureMinute).toBe(4.5);
+            expect(live.getData().opsDebrisTime).toBe(42);
+          } finally { live.cleanup(); }
+        }
+      );
+
+      it('loads the named comparison at its final pointing result without changing the notebook or draft', () => {
+        const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCmg: 85, opsAttitudeTorque: 2.4, opsAttitudeInertia: 40,
+          opsPrediction: 'A: lower inertia.', opsWaterDay: 8, opsPressureMinute: 2.5 });
+        try {
+          click(live, '[data-ops-record-trial]');
+          fill(live, '[data-ops-reflection]', 'Keep the starting trial evidence.');
+          act(() => { [...live.host.querySelectorAll('.iss-ops-mode')].find(button => button.textContent.includes('Attitude')).click(); });
+          fill(live, '#iss-attitude-inertia', '160');
+          fill(live, '#iss-lab-prediction', 'B: four times the inertia.');
+          click(live, '[data-ops-lab-record]');
+          click(live, '[data-ops-open-notebook]');
+          fill(live, '[data-ops-compared-reflection]', 'B has less final pointing change.');
+          fill(live, '[data-ops-prediction]', 'C: unfinished prediction.');
+          fill(live, '#iss-ops-battery', '12');
+          fill(live, '#iss-orbit-cursor', '37.25');
+          measurement(live, 'pointingEnd');
+          const before = copy(live.getData());
+          const action = live.host.querySelector('[data-ops-inspect-comparison]');
+          expect(action.textContent).toMatch(/Load.*2.*inspect/i);
+          click(live, '[data-iss-playback-toggle="integrated"]');
+          click(live, '[data-ops-inspect-comparison]');
+          const after = live.getData();
+          expect(after.opsTrials).toEqual(before.opsTrials);
+          expect(after.opsPrediction).toBe(before.opsPrediction);
+          expect(after.opsTrialSelected).toBe(before.opsTrialSelected);
+          expect(after.opsTrialCompare).toBe(before.opsTrialCompare);
+          expect(after.opsBattery).toBe(before.opsTrials[1].setup.opsBattery);
+          expect(after.opsAttitudeInertia).toBe(160);
+          expect(after.opsOrbitMinute).toBe(92);
+          expect(after.opsWaterDay).toBe(8);
+          expect(after.opsPressureMinute).toBe(2.5);
+          expect(after.opsInspection).toMatchObject({ source: 'measurement', id: 'pointingEnd', trialId: 2, minute: 92 });
+          expect(live.host.querySelector('[data-iss-attitude-lab]')).toBeTruthy();
+          expect(live.host.querySelector('[data-attitude-reading="angle"] strong').textContent).toBe('8.07°');
+          expect(live.host.querySelector('[data-iss-playback-toggle="attitude"]').getAttribute('aria-pressed')).toBe('false');
+          const banner = live.host.querySelector('[data-ops-inspection="pointingEnd"]');
+          expect(banner.textContent).toContain('Trial 2');
+          expect(banner.textContent).toContain('T+92.00 min');
+          expect(banner.textContent).toMatch(/recorded/i);
+          click(live, '[data-ops-return-comparison]');
+          expect(live.host.querySelector('[data-ops-trial-select]').value).toBe('1');
+          expect(live.host.querySelector('[data-ops-trial-compare]').value).toBe('2');
+          expect(live.host.querySelector('[data-ops-measurement-select]').value).toBe('pointingEnd');
+          expect(live.host.querySelector('[data-ops-prediction]').value).toBe(before.opsPrediction);
+          expect(live.host.querySelector('[data-iss-playback-toggle="integrated"]').getAttribute('aria-pressed')).toBe('false');
+          click(live, '[data-ops-inspect-baseline]');
+          expect(live.getData().opsAttitudeInertia).toBe(40);
+          expect(live.getData().opsInspection.trialId).toBe(1);
+          expect(live.host.querySelector('[data-attitude-reading="angle"] strong').textContent).toBe('32.26°');
+          expect(live.getData().opsTrials).toEqual(before.opsTrials);
+        } finally { live.cleanup(); }
+      });
+
+      it('opens each cabin temperature measurement at its own earliest extremum', () => {
+        for (const [start, minimumMinute, maximumMinute] of [[22, 0, 64.83333333333299], [30, 92, 0]]) {
+          const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCabinStart: start });
+          try {
+            click(live, '[data-ops-record-trial]');
+            const saved = copy(live.getData().opsTrials);
+            for (const [key, minute] of [['cabinMax', maximumMinute], ['cabinMin', minimumMinute]]) {
+              measurement(live, key);
+              click(live, '[data-ops-inspect-baseline]');
+              expect(live.host.querySelector('[data-iss-thermal-lab]')).toBeTruthy();
+              expect(live.getData().opsOrbitMinute).toBeCloseTo(minute, 10);
+              expect(Number(live.host.querySelector('#iss-thermal-time').value)).toBeCloseTo(minute, 10);
+              expect(live.getData().opsInspection).toMatchObject({ source: 'measurement', id: key, trialId: 1 });
+              expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain(key === 'cabinMax' ? 'Maximum cabin temperature' : 'Minimum cabin temperature');
+              expect(live.getData().opsTrials).toEqual(saved);
+              click(live, '[data-ops-return-comparison]');
+            }
+          } finally { live.cleanup(); }
+        }
+      });
+
+      it('inspects current controls without loading a trial and removes duplicate self-comparison actions', () => {
+        const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsTrialMeasurement: 'unknown-measurement' });
+        try {
+          click(live, '[data-ops-record-trial]');
+          expect(live.host.querySelector('[data-ops-measurement-select]').value).toBe('batteryMin');
+          expect(live.host.querySelectorAll('[data-ops-measurement-select] option')).toHaveLength(10);
+          fill(live, '#iss-ops-battery', '20');
+          fill(live, '#iss-orbit-cursor', '0');
+          const before = copy(live.getData());
+          expect(live.host.querySelector('[data-ops-inspect-comparison]').textContent).toContain('Inspect current setup');
+          click(live, '[data-iss-playback-toggle="integrated"]');
+          click(live, '[data-ops-inspect-comparison]');
+          expect(live.getData().opsBattery).toBe(20);
+          expect(live.getData().opsOrbitMinute).toBe(0);
+          expect(live.getData().opsInspection).toMatchObject({ source: 'measurement', id: 'batteryMin', trialId: null, minute: 0 });
+          expect(live.getData().opsTrials).toEqual(before.opsTrials);
+          expect(live.host.querySelector('[data-ops-inspection]').textContent).toContain('Current setup');
+          expect(live.host.querySelector('[data-iss-playback-toggle="power"]').getAttribute('aria-pressed')).toBe('false');
+          fill(live, '#iss-power-angle', '0');
+          expect(live.host.querySelector('[data-ops-inspection]')).toBeNull();
+          click(live, '[data-ops-open-notebook]');
+          select(live, '[data-ops-trial-compare]', '1');
+          expect(live.host.querySelector('[data-ops-inspect-baseline]')).toBeTruthy();
+          expect(live.host.querySelector('[data-ops-inspect-comparison]')).toBeNull();
+        } finally { live.cleanup(); }
+      });
+
+      it('disables only the legacy side with missing recorded evidence', () => {
+        const first = mountLiveWithSeed({ ...BASE, tab: 'operations' });
+        let seed;
+        try {
+          click(first, '[data-ops-record-trial]');
+          seed = copy(first.getData());
+          seed.opsTrials.push({ ...copy(seed.opsTrials[0]), id: 2 });
+          delete seed.opsTrials[0].results.pointingEnd;
+          delete seed.opsTrials[0].results.propellantUsed;
+          seed.opsTrialCompare = 2;
+          seed.opsRuns = 2;
+        } finally { first.cleanup(); }
+        const live = mountLiveWithSeed(seed);
+        try {
+          measurement(live, 'pointingEnd');
+          expect(live.host.querySelector('[data-ops-inspect-baseline]').disabled).toBe(true);
+          expect(live.host.querySelector('[data-ops-inspect-comparison]').disabled).toBe(false);
+          expect(live.host.querySelector('[data-ops-inspection-unavailable="baseline"]').textContent).toMatch(/not recorded/i);
+          const unchanged = copy(live.getData());
+          click(live, '[data-ops-inspect-baseline]');
+          expect(live.getData()).toEqual(unchanged);
+          click(live, '[data-ops-inspect-comparison]');
+          expect(live.getData().opsInspection.trialId).toBe(2);
+          expect(live.getData().opsTrials).toEqual(unchanged.opsTrials);
+          click(live, '[data-ops-return-comparison]');
+          select(live, '[data-ops-trial-select]', '2');
+          select(live, '[data-ops-trial-compare]', '1');
+          measurement(live, 'propellantUsed');
+          expect(live.host.querySelector('[data-ops-inspect-baseline]').disabled).toBe(false);
+          expect(live.host.querySelector('[data-ops-inspect-comparison]').disabled).toBe(true);
+          expect(live.host.querySelector('[data-ops-inspection-unavailable="comparison"]').textContent).toMatch(/not recorded/i);
+          expect(Object.keys(live.getData().opsTrials[0].results)).toHaveLength(8);
+        } finally { live.cleanup(); }
+      });
+
+      it('inspects fixed water measurements while retaining all independent clocks', () => {
+        const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsRecovery: 89, opsWaterDay: 13, opsPressureMinute: 4.5 });
+        try {
+          click(live, '[data-ops-record-trial]');
+          fill(live, '#iss-orbit-cursor', '71.25');
+          const saved = copy(live.getData().opsTrials);
+          for (const key of ['recovery', 'waterResupply']) {
+            measurement(live, key);
+            click(live, '[data-ops-inspect-baseline]');
+            expect(live.host.querySelector('[data-iss-water-lab]')).toBeTruthy();
+            expect(live.getData().opsInspection).toMatchObject({ source: 'measurement', id: key, minute: null, trialId: 1 });
+            expect(live.getData().opsOrbitMinute).toBe(71.25);
+            expect(live.getData().opsWaterDay).toBe(13);
+            expect(live.getData().opsPressureMinute).toBe(4.5);
+            expect(live.getData().opsTrials).toEqual(saved);
+            expect(live.host.querySelector('[data-ops-inspection]').textContent).not.toContain('T+');
+            click(live, '[data-ops-return-comparison]');
+            expect(live.host.querySelector('[data-ops-measurement-select]').value).toBe(key);
+          }
+        } finally { live.cleanup(); }
+      });
+    });
+
+    it('keeps rounded rule readings on the correct side of strict and inclusive boundaries', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsBattery: 24.999, opsRecovery: 89.999, opsCmg: 79.999, opsAttitudeTorque: 0 });
+      try {
+        expect(live.host.querySelector('[data-ops-rule="power"] .iss-ops-metric-value').textContent).toBe('< 25%');
+        expect(live.host.querySelector('[data-ops-rule="water"] .iss-ops-metric-value').textContent).toBe('< 90.0%');
+        expect(live.host.querySelector('[data-ops-rule="attitude"] .iss-ops-metric-value').textContent).toBe('< 80%');
+        act(() => { live.host.querySelector('[data-ops-record-trial]').click(); });
+        const row = live.host.querySelector('[data-ops-trial-metric="cmgPeak"]');
+        expect(row.querySelector('td').textContent).toBe('< 80.0 %GO');
+        expect(live.host.querySelector('[data-ops-rule-change="attitude"]').dataset.changeState).toBe('still-go');
+        expect(live.host.querySelector('[data-ops-rule-change="power"]').dataset.changeState).toBe('still-check');
+      } finally { live.cleanup(); }
+    });
+
+    it('keeps network boundary colors and lab outcome readings consistent with the rules', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsBattery: 24.999, opsRecovery: 90,
+        opsCmg: 79.999, opsAttitudeTorque: 0, opsCabinStart: 17.999 });
+      try {
+        const waterLabel = [...live.host.querySelectorAll('[data-iss-network-focus] svg text')].find(node => node.textContent === 'WATER');
+        expect(waterLabel.getAttribute('fill')).toBe('#38bdf8');
+        expect(live.host.querySelector('[data-ops-rule="water"]').textContent).toContain('GO');
+        act(() => { live.host.querySelector('[data-ops-rule="power"]').click(); });
+        expect(live.host.querySelector('[data-iss-power-lab]').textContent).toContain('Minimum reserve < 25.0%');
+        act(() => { live.host.querySelector('[data-ops-rule="thermal"]').click(); });
+        expect(live.host.querySelector('[data-thermal-outcome]').textContent).toContain('Cabin range < 18.00 to ');
+        act(() => { live.host.querySelector('[data-ops-rule="attitude"]').click(); });
+        expect(live.host.querySelector('[data-attitude-outcome]').textContent).toContain('Orbit peak < 80.0%');
+      } finally { live.cleanup(); }
+    });
+
     it('loads a cascading-fault preset and drills into the violated power rule', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'operations' });
       try {
@@ -2162,9 +3257,9 @@ describe('space station tool', () => {
     it('runs an orbit simulation and an emergency procedure', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'operations' });
       try {
-        const simulate = [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes('Simulate the next'));
+        const simulate = live.host.querySelector('[data-ops-record-trial]');
         act(() => { simulate.click(); });
-        expect(live.host.textContent).toIncludeText('ORBIT 1 // battery');
+        expect(live.host.textContent).toIncludeText('TRIAL 1 // 5/5 rules GO');
         expect(live.host.querySelector('#iss-orbit-cursor').value).toBe('92');
         expect(live.host.querySelector('[data-iss-mission-replay]')).toBeTruthy();
         const eclipseEvent = live.host.querySelector('[data-iss-replay-event="57"]');

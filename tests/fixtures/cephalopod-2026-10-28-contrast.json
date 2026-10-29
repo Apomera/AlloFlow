@@ -1,0 +1,22 @@
+[
+ {
+  "label": "cephalopod 2026-10-28 contrast: header count badge ink",
+  "old": "fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',",
+  "new": "fontSize: 10, fontWeight: 700, color: '#c4b5fd', background: 'rgba(167,139,250,0.12)',"
+ },
+ {
+  "label": "cephalopod 2026-10-28 contrast: active group tab ink",
+  "old": "color: on ? g.color : '#94a3b8',",
+  "new": "color: on ? '#f1f5f9' : '#94a3b8',"
+ },
+ {
+  "label": "cephalopod 2026-10-28 contrast: era MYA line ink",
+  "old": "h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },\n                      eraE.startMya",
+  "new": "h('div', { style: { fontSize: 9, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },\n                      eraE.startMya"
+ },
+ {
+  "label": "cephalopod 2026-10-28 contrast: species range line ink",
+  "old": "h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.range));",
+  "new": "h('div', { style: { fontSize: 9, color: '#cbd5e1' } }, r.range));"
+ }
+]

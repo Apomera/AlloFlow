@@ -288,8 +288,10 @@ describe('space station docking physics', () => {
     expect(sim.state.overResult).toBe('docked');
     expect(sim.state.x).toBeCloseTo(forecast.endpoint.x, 5);
     expect(Math.hypot(sim.state.vx, sim.state.vy)).toBeCloseTo(forecast.speed, 6);
-    expect(sim.state.t - forecast.endpoint.time).toBeGreaterThanOrEqual(0);
-    expect(sim.state.t - forecast.endpoint.time).toBeLessThan(1 / 60);
+    // Live flight now ends within the tick at physical contact. The forecast
+    // uses coarser RK4 knots and a finite event bracket; neither time is
+    // required to be later than the other within that numerical tolerance.
+    expect(Math.abs(sim.state.t - forecast.endpoint.time)).toBeLessThan(1e-6);
   });
 
   it('distinguishes a short forecast window from a later collision', () => {
@@ -593,6 +595,116 @@ describe('space station docking physics', () => {
     sim.canvas._dockManeuver('fwd');
     expect(JSON.stringify(sim.state)).toBe(end);
     expect(sim.reports).toHaveLength(1);
+  });
+
+  it('records the actual sub-tick coast contact time in flight, maneuver and debrief', () => {
+    const sim = flight();
+    Object.assign(sim.state, { x: 0, y: -5.001, vx: 0, vy: .3 });
+    const forecast = sim.canvas._dockForecast();
+    sim.canvas._dockManeuver('coast');
+    expect(sim.state.overResult).toBe('docked');
+    expect(sim.state.t).toBeCloseTo(.001 / .3, 11);
+    expect(sim.state.t).toBeLessThan(1 / 60);
+    expect(sim.state.t).toBeCloseTo(forecast.endpoint.time, 6);
+    expect(sim.state.lastManeuver.seconds).toBe(sim.state.t);
+    expect(sim.reports[0].dockDebrief.elapsed).toBe(sim.state.t);
+    expect(sim.state.propellant).toBe(80);
+    expect(sim.state.deltaV).toBe(0);
+    expect(sim.reports).toHaveLength(1);
+  });
+
+  it('charges a powered contact only for thrust delivered before the physical event', () => {
+    const sim = flight();
+    const exhaust = 220 * 9.80665, rate = 400 / exhaust, mass = 8080, targetTime = .01;
+    // Independently integrate the variable-mass rocket velocity over 10 ms.
+    const slices = 1000, dt = targetTime / slices;
+    let distance = 0;
+    for (let i = 0; i < slices; i++) distance += (.3 - exhaust * Math.log1p(-rate * ((i + .5) * dt) / mass)) * dt;
+    Object.assign(sim.state, { x: 0, y: -5 - distance, vx: 0, vy: .3 });
+    sim.canvas._dockManeuver('fwd');
+    expect(sim.state.overResult).toBe('docked');
+    expect(sim.state.t).toBeCloseTo(targetTime, 10);
+    const used = rate * sim.state.t, delta = -exhaust * Math.log1p(-used / mass);
+    expect(80 - sim.state.propellant).toBeCloseTo(used, 11);
+    expect(sim.state.lastManeuver.usedFuel).toBeCloseTo(used, 11);
+    expect(sim.state.deltaV).toBeCloseTo(delta, 11);
+    expect(sim.state.vy).toBeCloseTo(.3 + delta, 10);
+    expect(sim.reports[0].dockDebrief.propellantUsed).toBeCloseTo(used, 11);
+    expect(sim.reports[0].dockDebrief.elapsed).toBe(sim.state.t);
+    const terminal = JSON.stringify(sim.state);
+    sim.advance(2);
+    expect(JSON.stringify(sim.state)).toBe(terminal);
+    expect(sim.reports).toHaveLength(1);
+  });
+
+  it('burns the last propellant first and then coasts for the remainder of its tick', () => {
+    const sim = flight(), reserve = .001, exhaust = 220 * 9.80665, rate = 400 / exhaust;
+    const burnTime = reserve / rate, initialMass = 8000 + reserve, pulse = .25;
+    Object.assign(sim.state, { x: 0, y: -190, vx: 0, vy: 0, propellant: reserve, fuel: reserve / 80 * 100 });
+    sim.canvas._dockSetPulseSeconds(pulse);
+    sim.canvas._dockManeuver('fwd');
+    const delta = exhaust * Math.log1p(reserve / 8000);
+    const poweredDistance = exhaust * (burnTime - 8000 / rate * Math.log1p(reserve / 8000));
+    expect(burnTime).toBeLessThan(1 / 60);
+    expect(sim.state.t).toBeCloseTo(pulse, 12);
+    expect(sim.state.vy).toBeCloseTo(delta, 12);
+    expect(sim.state.y).toBeCloseTo(-190 + poweredDistance + delta * (pulse - burnTime), 9);
+    expect(sim.state.propellant).toBe(0);
+    expect(sim.state.over).toBe(false);
+    expect(sim.state.lastManeuver.usedFuel).toBe(reserve);
+    expect(sim.state.deltaV).toBeCloseTo(delta, 12);
+    expect(sim.state.firing).toEqual({});
+  });
+
+  it('continues fuel-free slow motion inside the zone and announces depletion once', () => {
+    const sim = flight({ orbital: true });
+    Object.assign(sim.state, { x: 26, y: -190, vx: 0, vy: .01, propellant: 0, fuel: 0 });
+    const expected = sim.canvas._dockForecastSample(10);
+    sim.advance(10);
+    expect(sim.state.over).toBe(false);
+    expect(sim.state.t).toBeCloseTo(10, 9);
+    for (const key of ['x', 'y', 'vx', 'vy']) expect(sim.state[key]).toBeCloseTo(expected[key], 8);
+    expect(sim.state.propellant).toBe(0);
+    expect(sim.reports).toHaveLength(0);
+    expect(sim.hud.textContent).toContain('Propellant depleted: unpowered flight continues');
+    expect(sim.announcements.filter(message => message.startsWith('Propellant depleted.'))).toHaveLength(1);
+    sim.advance(2);
+    expect(sim.announcements.filter(message => message.startsWith('Propellant depleted.'))).toHaveLength(1);
+  });
+
+  it.each([
+    { x: 419.999, y: 0, vx: .3, vy: 0 },
+    { x: 100, y: 34.999, vx: 0, vy: .3 }
+  ])('ends at the first sub-tick approach-zone exit: %j', initial => {
+    const sim = flight();
+    Object.assign(sim.state, initial);
+    const forecast = sim.canvas._dockForecast();
+    sim.canvas._dockManeuver('coast');
+    expect(sim.state.overResult).toBe('drift');
+    expect(sim.state.t).toBeCloseTo(.001 / .3, 10);
+    expect(sim.state.t).toBeCloseTo(forecast.endpoint.time, 6);
+    expect(sim.state.lastManeuver.seconds).toBe(sim.state.t);
+    expect(sim.reports[0].dockDebrief.elapsed).toBe(sim.state.t);
+    expect(sim.state.propellant).toBe(80);
+    expect(sim.reports).toHaveLength(1);
+  });
+
+  it('matches orbital coast forecast contact and never evolves an already-exited state', () => {
+    const sim = flight({ orbital: true });
+    Object.assign(sim.state, { x: .6, y: -5.001, vx: -.015, vy: .24 });
+    const forecast = sim.canvas._dockForecast();
+    sim.canvas._dockManeuver('coast');
+    expect(sim.state.overResult).toBe('docked');
+    expect(sim.state.t).toBeCloseTo(forecast.endpoint.time, 6);
+    for (const key of ['x', 'y', 'vx', 'vy']) expect(sim.state[key]).toBeCloseTo(forecast.endpoint[key], 7);
+    sim.canvas._dockReset(true);
+    Object.assign(sim.state, { x: 421, y: 0, vx: .2, vy: 0 });
+    sim.canvas._dockManeuver('fwd');
+    expect(sim.state.t).toBe(0);
+    expect(sim.state.propellant).toBe(80);
+    expect(sim.state.deltaV).toBe(0);
+    expect(sim.state).toMatchObject({ x: 421, y: 0, vx: .2, vy: 0, overResult: 'drift' });
+    expect(sim.reports).toHaveLength(2);
   });
 
   it('ignores invalid or hidden-page commands and clears step feedback when resuming or resetting', () => {

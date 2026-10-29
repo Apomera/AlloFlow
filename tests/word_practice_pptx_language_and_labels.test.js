@@ -49,8 +49,8 @@ describe.each(Object.keys(lanes))('PowerPoint language and guidance (%s)', lane 
       const paragraph = texts.find(entry => Array.isArray(entry.text) && entry.text.some(run => run.text === text));
       expect(paragraph.options).toMatchObject({ lang, rtlMode });
       expect(paragraph.text.at(-1).options).toMatchObject({ lang, rtlMode });
-      expect(paragraph.text[0].options.rtlMode).toBe(rtlMode);
-      expect(paragraph.text[0].options.lang).toBe('und');
+      expect(paragraph.text[0].options.rtlMode).toBe(false);
+      expect(paragraph.text[0].options.lang).toBe('en');
     }
   });
 

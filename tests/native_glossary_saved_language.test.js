@@ -78,7 +78,7 @@ describe('saved native glossary speech and English language services', () => {
     expect(window.AlloDictionary.getCached).not.toHaveBeenCalled();
     expect(container.textContent).not.toContain('A hurtful sensation.');
     expect([...container.querySelectorAll('button')].some(node => node.textContent.trim() === 'Aa')).toBe(false);
-    expect(container.textContent).toContain('French');
+    expect(container.textContent).toContain(new Intl.DisplayNames(['ar'], { type: 'language', languageDisplay: 'standard' }).of('fr'));
   });
 });
 

@@ -94,7 +94,8 @@ describe('XSS-2 — banner block is escaped + the write sanitizer kills unclosed
 // ── XSS-3: backslash stripped from JS-context alt ──
 describe('XSS-3 — _imgAltSafe / _altSafe strip backslash (no JS-string delimiter escape)', () => {
   it('source: both alt-safe builders strip backslash before the quotes', () => {
-    expect((src.match(/\.replace\(\/\\\\\/g, ''\)\.replace\(\/"\/g, ''\)\.replace\(\/'\/g, ''\)/g) || []).length).toBeGreaterThanOrEqual(2);
+    // (2026-10-28) backslash still stripped FIRST; quotes are now escaped (\x22/\x27), not dropped
+    expect((src.match(/\.replace\(\/\\\\\/g, ''\)\.replace\(\/"\/g, '\\\\x22'\)\.replace\(\/'\/g, '\\\\x27'\)/g) || []).length).toBeGreaterThanOrEqual(2);
   });
 });
 

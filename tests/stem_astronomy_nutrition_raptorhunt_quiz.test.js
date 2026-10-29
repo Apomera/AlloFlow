@@ -26,11 +26,14 @@ function loadAstro(withRotation) {
 
 function loadLabels(withRotation) {
   const start = nut.indexOf('var LABELS = [');
-  const end = nut.indexOf(withRotation ? 'function NutritionFactsPanel(' : '// The authored labels put', start);
   expect(start).toBeGreaterThan(-1);
+  const arrayStart = start + 'var LABELS = '.length;
+  const end = withRotation
+    ? nut.indexOf('function NutritionFactsPanel(', start)
+    : parseExpressionAt(nut, arrayStart, { ecmaVersion: 'latest' }).end;
   expect(end).toBeGreaterThan(start);
   // eslint-disable-next-line no-new-func
-  return new Function('__alloT', nut.slice(start, end) + '\nreturn LABELS;')((k, fb) => fb);
+  return new Function('__alloT', nut.slice(start, end) + ';\nreturn LABELS;')((k, fb) => fb);
 }
 
 function loadMyths(withRotation) {
@@ -86,7 +89,7 @@ describe('Nutrition Lab label-reader rotation', () => {
   const raw = loadLabels(false);
   const rotated = loadLabels(true);
 
-  it('the authored labels put 8 of 12 correct answers at choice 1 (the tell)', () => {
+  it('the authored labels cluster most correct answers at choice 1 (the tell)', () => {
     const answers = raw.flatMap((L) => L.questions.map((q) => q.answer));
     expect(answers.length).toBe(12);
     expect(answers.filter((a) => a === 1).length).toBeGreaterThanOrEqual(8);
@@ -113,7 +116,7 @@ describe('Nutrition Lab label-reader rotation', () => {
       return q.choices[q.answer];
     };
     expect(correctOf('ONE bar')).toBe('90 calories');
-    expect(correctOf('ADDED sugar')).toBe('6 g (almost all)');
+    expect(correctOf('ADDED sugar')).toBe('6 g');
   });
 });
 

@@ -1,0 +1,19 @@
+
+              Analyze the following text and identify vocabulary.
+              Find up to:
+              - 2 "Academic" (Tier 2) terms: General sophisticated words used across disciplines.
+              - 2 "Domain-Specific" (Tier 3) terms: Specific to this specific topic/field.
+              Choose ONLY words that actually appear in the source; if it has fewer suitable words, return fewer rather than adding outside vocabulary. Define each word in the sense it has IN THIS TEXT (not its most common dictionary sense). For each term add "contextSentence": the sentence from the source where it is used, copied exactly (shorten with ... only if longer than about 30 words).
+              For each term, provide:
+              1. An English definition of the word as it is used in this text. Write definitions that match the reading level/complexity of the provided source text.
+              2. The Tier category ("Academic" or "Domain-Specific").
+              
+              
+              Do not use emojis.
+              
+              
+              
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific" }]
+              
+              Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+            

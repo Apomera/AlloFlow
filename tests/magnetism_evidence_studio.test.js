@@ -1,12 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -16,7 +15,7 @@ const physics = require(TOOL_PATH);
 function studioSeed(extra = {}) {
   return Object.assign({
     tab: 'field', fieldView: '2d', learningMode: 'guided',
-    notebookOpen: true, notebookPrediction: '', notebookClaim: '', notebookTrials: [],
+    notebookOpen: true, notebookPrediction: '', notebookClaim: '', notebookReasoning: '', notebookTrials: [],
     missionId: 'power_path', missionStarted: false, missionPanelOpen: false,
     labFocus: false, labShellPanel: 'evidence', analyzerMysteryWins: {}, xfmrMissionWins: {},
   }, extra);
@@ -127,13 +126,14 @@ describe('magnetism Evidence Studio', () => {
         learningMode: 'challenge',
         notebookPrediction: 'More secondary turns should raise AC output voltage.',
         notebookClaim: 'The turns ratio controls output voltage.',
+        notebookReasoning: 'Doubling secondary turns doubled the measured voltage while primary turns and input voltage stayed fixed.',
         notebookTrials: trials,
       }),
     });
     expect(restored.station).toMatchObject({ id: 'transformer', chapterId: 'power' });
     expect(restored.chapter).toMatchObject({ id: 'power', accent: '#fbbf24' });
     expect(restored).toMatchObject({
-      activeStage: 'complete', statusLabel: 'Claim ready',
+      activeStage: 'complete', statusLabel: 'Ready for review',
       predictionDone: true, trialCount: 2, claimWritten: true,
       reportReady: true, progressValue: 3, progressPercent: 100,
       remainingSlots: 6,
@@ -158,6 +158,7 @@ describe('magnetism Evidence Studio', () => {
       learningMode: 'challenge',
       notebookPrediction: 'Reversing current should reverse torque.',
       notebookClaim: 'Current direction controls torque direction.',
+      notebookReasoning: 'The observed torque agrees with the force direction. A second run reversing only current would test the change.',
       notebookTrials: [savedTrial(1, {
         station: 'Motor forces',
         setup: 'current forward and field right',
@@ -183,7 +184,76 @@ describe('magnetism Evidence Studio', () => {
       expect(studio.textContent).toContain('Recorded evidence trials');
       expect(studio.textContent).toContain('current forward and field right → clockwise torque');
       expect(studio.textContent).toContain('Claim supported by your evidence');
+      expect(studio.querySelector('#mag-notebook-reasoning').value).toContain('A second run');
+      expect(studio.textContent).toContain('This does not verify the explanation or establish a fair test.');
     });
+  });
+
+  it('keeps legacy claim-and-trial records as drafts until the learner supplies reasoning', () => {
+    const seed = studioSeed({
+      notebookClaim: 'The field became stronger.',
+      notebookTrials: [savedTrial(1)],
+    });
+    for (const reasoning of [undefined, null, '', ' \n\t ', { text: 'not a saved explanation' }]) {
+      const draft = { ...seed, notebookReasoning: reasoning };
+      expect(physics.evidenceStudioState(draft)).toMatchObject({
+        reportReady: false, statusLabel: 'Draft with evidence', reasoningWritten: false,
+      });
+      expect(physics.missionCERState('power_path', draft)).toMatchObject({
+        complete: false, doneCount: 2, next: { key: 'reasoning' },
+      });
+    }
+    const explanation = 'Trial 1 is one observation. To test a change I need a comparison with strength and probe direction held constant.';
+    const complete = { ...seed, notebookReasoning: explanation };
+    expect(physics.evidenceStudioState(complete)).toMatchObject({ reportReady: true, statusLabel: 'Ready for review' });
+    expect(physics.missionReportState('power_path', complete).reasoning).toBe(explanation);
+    expect(physics.missionCERState('power_path', { ...complete, notebookTrials: [] }).complete).toBe(false);
+    expect(physics.missionCERState('power_path', { ...complete, notebookClaim: ' ' }).complete).toBe(false);
+  });
+
+  it('preserves learner reasoning in the report preview and both downloads', async () => {
+    resetStemLab();
+    const cfg = loadTool('stem_lab/stem_tool_magnetism.js', 'magnetism');
+    const reasoning = '=A1 is a learner note, not a spreadsheet formula. Trial 1 measured 2 relative units.';
+    const live = mountInteractive(cfg, studioSeed({
+      labShellPanel: 'mission', missionStarted: true,
+      notebookClaim: 'This setup has a measurable magnetic field.', notebookReasoning: reasoning,
+      notebookTrials: [savedTrial(1, { metrics: [{ key: 'field_rel', label: 'Field', value: 2, unit: 'relative', model: 'field:map', digits: 2 }] })],
+    }));
+    const originalCreate = window.URL.createObjectURL;
+    const originalRevoke = window.URL.revokeObjectURL;
+    const blobs = [];
+    window.URL.createObjectURL = (blob) => { blobs.push(blob); return 'blob:magnetism-test-' + blobs.length; };
+    window.URL.revokeObjectURL = () => {};
+    const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    function readBlob(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(blob);
+      });
+    }
+    try {
+      const report = live.host.querySelector('[aria-label="Mission lab report preview"]');
+      expect(report.textContent).toContain('Reasoning: ' + reasoning);
+      expect(report.textContent).toContain('Review the explanation and control variables');
+      click(buttonContaining(report, 'Save JSON report'));
+      click(buttonContaining(report, 'Save CSV data'));
+      expect(blobs).toHaveLength(2);
+      expect(JSON.parse(await readBlob(blobs[0]))).toMatchObject({ reasoning });
+      const csv = await readBlob(blobs[1]);
+      expect(csv.split('\r\n')[0]).toContain('"claim","reasoning"');
+      expect(csv.split('\r\n')[0]).toContain('"unit","model"');
+      expect(csv).toContain('"field:map"');
+      expect(csv).toContain('"\'' + reasoning + '"');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    } finally {
+      download.mockRestore();
+      window.URL.createObjectURL = originalCreate;
+      window.URL.revokeObjectURL = originalRevoke;
+      live.close();
+    }
   });
 
   it('supports the guided capture, claim, and close loop with clear state feedback', () => {
@@ -205,10 +275,20 @@ describe('magnetism Evidence Studio', () => {
 
       changeValue(studio.querySelector('#mag-notebook-claim'), 'More coil turns increase the center field when current stays fixed.');
       studio = live.host.querySelector('[data-magnetism-evidence-studio="true"]');
+      expect(studio.getAttribute('data-stage')).toBe('claim');
+      expect(studio.getAttribute('data-status')).toBe('building');
+      expect(studio.textContent).toContain('Draft with evidence');
+      changeValue(studio.querySelector('#mag-notebook-reasoning'), 'The baseline records one observation. I need another trial with more turns at the same current to test the relationship.');
+      studio = live.host.querySelector('[data-magnetism-evidence-studio="true"]');
       expect(studio.getAttribute('data-stage')).toBe('complete');
       expect(studio.getAttribute('data-status')).toBe('ready');
       expect(studio.querySelector('.mag-studio-claim').getAttribute('data-ready')).toBe('true');
-      expect(studio.textContent).toContain('Ready for the mission report');
+      expect(studio.textContent).toContain('Ready for review');
+
+      changeValue(studio.querySelector('#mag-notebook-reasoning'), '   ');
+      studio = live.host.querySelector('[data-magnetism-evidence-studio="true"]');
+      expect(studio.getAttribute('data-status')).toBe('building');
+      expect(studio.querySelector('.mag-studio-claim').getAttribute('data-ready')).toBe('false');
 
       click(buttonContaining(studio, 'Close notebook'));
       expect(live.host.querySelector('[data-magnetism-evidence-studio]')).toBeNull();
@@ -272,10 +352,10 @@ describe('magnetism Evidence Studio', () => {
       earthSolarWind: 8,
     }, async (host) => {
       const studio = host.querySelector('[data-magnetism-evidence-studio="true"]');
-      const results = await axe.run(studio, {
+      const results = await runIsolatedAxe(studio.outerHTML, { options: {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
         rules: { 'color-contrast': { enabled: false } },
-      });
+      } });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     });
   }, 15000);

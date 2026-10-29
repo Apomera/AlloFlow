@@ -39,6 +39,8 @@ async function captureInitialAudits(documentLanguage, rtl = false) {
     _alloTitleFromHeading: titleFromHeading,
     bodyContent: prose,
     pageCount: 1,
+    _pageRange: null, // (2026-10-28) the footer names a page-range slice
+    fullPageCount: 1,
     extractedLength: prose.length,
     window: { __lastGroundTruthMethod: 'pdfjs-text' },
     warnLog: noop,

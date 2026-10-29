@@ -125,14 +125,29 @@ function mountPower(seed = {}) {
   const cfg = window.StemLab._registry.spaceStation;
   const host = document.createElement('div'); document.body.appendChild(host);
   const root = createRoot(host);
+  cleanups.push(() => {
+    try {
+      // jsdom 29 retains sheets removed with a subtree. Detaching each style
+      // first prevents thousands of rules accumulating across mounted trials.
+      host.querySelectorAll('style').forEach(style => style.remove());
+      act(() => root.unmount());
+    } finally {
+      host.remove();
+    }
+  });
   let data, setData;
   function Harness() {
     const [toolData, setToolData] = React.useState({ spaceStation: { tab: 'operations', opsMode: 'power', ...seed } });
     data = toolData.spaceStation; setData = setToolData;
     return cfg.render({ React, toolData, setToolData, update() {}, updateMulti() {}, addToast() {}, announceToSR() {}, awardXP() {}, setStemLabTool() {}, aiHintsEnabled: false, gradeLevel: '7th Grade', t: (key, fallback) => fallback ?? key });
   }
-  act(() => root.render(React.createElement(Harness)));
-  cleanups.push(() => { act(() => root.unmount()); host.remove(); });
+  // Match the main station harness: jsdom/css-tree formats unused validation
+  // error stacks while parsing this tool's large stylesheet. Skip stack
+  // capture only during the initial render and restore it even if render fails.
+  const stackTraceLimit = Error.stackTraceLimit;
+  Error.stackTraceLimit = 0;
+  try { act(() => root.render(React.createElement(Harness))); }
+  finally { Error.stackTraceLimit = stackTraceLimit; }
   return {
     host,
     get data() { return data; },
@@ -153,7 +168,10 @@ describe('space station interactive power lab', () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     Object.defineProperty(document, 'hidden', { configurable: true, value: false });
   });
-  afterEach(() => { cleanups.forEach(fn => fn()); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  afterEach(() => {
+    try { cleanups.forEach(fn => fn()); }
+    finally { vi.restoreAllMocks(); vi.unstubAllGlobals(); }
+  });
 
   it('updates scene, flows and storage at exact eclipse/full events', () => {
     const view = mountPower();

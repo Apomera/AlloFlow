@@ -1,0 +1,32 @@
+
+              Design a classroom ANCHOR CHART for a 5th Grade student. Topic: "The Moon". Chart type request: auto - choose the strongest chart type for the source and topic. Prefer vocabulary for term-heavy content, process/routine for steps, comparison for contrasts, misconception for common mix-ups, criteria-success for rubrics, worked-example for procedures with a model, strategy for reusable academic moves, question-guide for discussion or analysis prompts, and concept-map for parts of a whole..
+
+              An anchor chart is a poster-sized visual reference co-created in class. It should be CONCISE (each bullet 3-10 words), MEMORABLE (use language a student would actually use), and ORGANIZED (clear sections).
+
+              Supported chartType values: reference, process, concept-map, comparison, strategy, vocabulary, routine, worked-example, criteria-success, misconception, question-guide. If the request is "auto", choose exactly one supported chartType and make the sections match that purpose. The chartType JSON value must be only the selected id, with no explanation.
+
+              Do NOT design a separate critique, sticky-note, peer-comment, or student-submission workflow. The app already has annotation tools and Interactive Mode. Focus this output on the poster content itself.
+
+              For each section, also propose a simple iconPrompt describing a SIMPLE icon (a single concrete object, no text/letters) that represents the section visually — this will be drawn in a hand-drawn marker style.
+
+              Source text for context (may be empty): "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+
+              
+              
+              
+              
+              
+              The "chartType" value and every "iconPrompt" must stay in English (machine id / image-generator input).
+              Return ONLY a JSON object with this exact shape:
+              {
+                "chartType": "reference",
+                "title": "Short, memorable title (3-6 words, can be all-caps if punchy)",
+                "sections": [
+                  {
+                    "label": "SECTION LABEL (1-3 words, often a verb or category)",
+                    "bullets": ["Short bullet 1", "Short bullet 2", "Short bullet 3"],
+                    "iconPrompt": "simple object that represents this section"
+                  }
+                ]
+              }
+          

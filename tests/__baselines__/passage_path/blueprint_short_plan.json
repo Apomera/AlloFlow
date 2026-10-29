@@ -1,0 +1,472 @@
+{
+  "dryRun": {
+    "ok": true,
+    "approvalRequired": true,
+    "errors": [],
+    "missingCapabilities": [],
+    "requiredCapabilities": [
+      "text"
+    ],
+    "steps": [
+      {
+        "index": 0,
+        "tool": "analysis",
+        "status": "ready",
+        "commandId": "generate_analysis",
+        "directive": "",
+        "generationAction": "generate",
+        "expectedCalls": 1,
+        "generationConfigFingerprint": "cfg-analysis-bwg68q"
+      },
+      {
+        "index": 1,
+        "tool": "simplified",
+        "status": "ready",
+        "commandId": "generate_simplified",
+        "directive": "Create a supplemental Adapted Text while keeping the analyzed primary text available.",
+        "generationAction": "generate",
+        "expectedCalls": 1,
+        "generationConfigFingerprint": "cfg-simplified-1drjge6"
+      },
+      {
+        "index": 2,
+        "tool": "quiz",
+        "status": "ready",
+        "commandId": "generate_quiz",
+        "directive": "",
+        "generationAction": "generate",
+        "expectedCalls": 1,
+        "generationConfigFingerprint": "cfg-quiz-v5chb8"
+      },
+      {
+        "index": 3,
+        "tool": "lesson-plan",
+        "status": "ready",
+        "commandId": null,
+        "directive": "",
+        "generationAction": "generate",
+        "expectedCalls": 1,
+        "generationConfigFingerprint": "cfg-lesson-plan-1t0ubli"
+      }
+    ]
+  },
+  "execution": {
+    "errors": [],
+    "legacyConfig": {
+      "recommendedResources": [
+        "analysis",
+        "simplified",
+        "quiz",
+        "lesson-plan"
+      ],
+      "resourcePlan": [
+        {
+          "tool": "analysis",
+          "directive": "",
+          "uiId": "analysis-0",
+          "instructionalText": {
+            "schemaVersion": 1,
+            "role": "primary",
+            "form": "original",
+            "sourceArtifactId": null,
+            "primaryArtifactId": null,
+            "designationSource": "workflow-default",
+            "replacementAuthorization": {
+              "authorized": false,
+              "source": "none"
+            },
+            "complexity": {
+              "requestedGrade": "",
+              "calibrationTarget": "",
+              "measuredGrade": null,
+              "method": "",
+              "status": "unavailable",
+              "contentFingerprint": "",
+              "measuredAt": "",
+              "language": "English"
+            }
+          },
+          "generationAction": "generate",
+          "generationIdentity": "gm1-analysis-wx8e8f",
+          "generationVariants": [
+            {
+              "generationIdentity": "gm1-analysis-wx8e8f",
+              "type": "analysis",
+              "grade": null,
+              "language": "English",
+              "variantKey": "singleton",
+              "sourceFingerprint": "",
+              "sourceArtifactId": "",
+              "contextFingerprint": "",
+              "contextInputsFingerprint": "ctxi-1jey7ut",
+              "generationConfig": {
+                "version": "generation-config/v1",
+                "type": "analysis",
+                "backend": "",
+                "provider": "",
+                "model": "",
+                "fallbackModel": "",
+                "imageProvider": "",
+                "imageModel": "",
+                "visionModel": "",
+                "fields": {},
+                "generationContext": {}
+              },
+              "generationConfigFingerprint": "cfg-analysis-bwg68q",
+              "action": "generate",
+              "existingArtifactId": null,
+              "reason": "No reusable artifact exists for this source-aware generation identity."
+            }
+          ],
+          "existingArtifactId": null,
+          "variantKey": "singleton",
+          "explicitVariantKey": null,
+          "variantKeyDerived": false,
+          "sourceFingerprint": "",
+          "sourceArtifactId": null,
+          "contextFingerprint": "",
+          "contextInputsFingerprint": "ctxi-1jey7ut",
+          "contextFingerprintDerived": true,
+          "generationConfig": {
+            "version": "generation-config/v1",
+            "type": "analysis",
+            "backend": "",
+            "provider": "",
+            "model": "",
+            "fallbackModel": "",
+            "imageProvider": "",
+            "imageModel": "",
+            "visionModel": "",
+            "fields": {},
+            "generationContext": {}
+          },
+          "generationConfigFingerprint": "cfg-analysis-bwg68q",
+          "generationPolicy": "source-global-singleton",
+          "novelResource": true,
+          "suppressedGenerationVariants": []
+        },
+        {
+          "tool": "simplified",
+          "directive": "Create a supplemental Adapted Text while keeping the analyzed primary text available.",
+          "uiId": "simplified-access",
+          "instructionalText": {
+            "schemaVersion": 1,
+            "role": "supplemental",
+            "form": "adapted",
+            "sourceArtifactId": null,
+            "primaryArtifactId": null,
+            "designationSource": "workflow-default",
+            "replacementAuthorization": {
+              "authorized": false,
+              "source": "none"
+            },
+            "complexity": {
+              "requestedGrade": "",
+              "calibrationTarget": "",
+              "measuredGrade": null,
+              "method": "",
+              "status": "unavailable",
+              "contentFingerprint": "",
+              "measuredAt": "",
+              "language": "English"
+            }
+          },
+          "generationAction": "generate",
+          "generationIdentity": "gm1-simplified-1p4x39c",
+          "generationVariants": [
+            {
+              "generationIdentity": "gm1-simplified-1p4x39c",
+              "type": "simplified",
+              "grade": null,
+              "language": "English",
+              "variantKey": "singleton",
+              "sourceFingerprint": "",
+              "sourceArtifactId": "",
+              "contextFingerprint": "",
+              "contextInputsFingerprint": "ctxi-1jey7ut",
+              "generationConfig": {
+                "version": "generation-config/v1",
+                "type": "simplified",
+                "backend": "",
+                "provider": "",
+                "model": "",
+                "fallbackModel": "",
+                "imageProvider": "",
+                "imageModel": "",
+                "visionModel": "",
+                "fields": {
+                  "customInstructions": "create a supplemental adapted text while keeping the analyzed primary text available."
+                },
+                "generationContext": {}
+              },
+              "generationConfigFingerprint": "cfg-simplified-1drjge6",
+              "action": "generate",
+              "existingArtifactId": null,
+              "reason": "No reusable artifact exists for this source-aware generation identity."
+            }
+          ],
+          "existingArtifactId": null,
+          "variantKey": "singleton",
+          "explicitVariantKey": null,
+          "variantKeyDerived": false,
+          "sourceFingerprint": "",
+          "sourceArtifactId": null,
+          "contextFingerprint": "",
+          "contextInputsFingerprint": "ctxi-1jey7ut",
+          "contextFingerprintDerived": true,
+          "generationConfig": {
+            "version": "generation-config/v1",
+            "type": "simplified",
+            "backend": "",
+            "provider": "",
+            "model": "",
+            "fallbackModel": "",
+            "imageProvider": "",
+            "imageModel": "",
+            "visionModel": "",
+            "fields": {
+              "customInstructions": "create a supplemental adapted text while keeping the analyzed primary text available."
+            },
+            "generationContext": {}
+          },
+          "generationConfigFingerprint": "cfg-simplified-1drjge6",
+          "generationPolicy": "context-singleton",
+          "novelResource": true,
+          "suppressedGenerationVariants": []
+        },
+        {
+          "tool": "quiz",
+          "directive": "",
+          "uiId": "quiz-1",
+          "instructionalText": {
+            "schemaVersion": 1,
+            "role": "unspecified",
+            "form": "original",
+            "sourceArtifactId": null,
+            "primaryArtifactId": null,
+            "designationSource": "legacy-inferred",
+            "replacementAuthorization": {
+              "authorized": false,
+              "source": "none"
+            },
+            "complexity": {
+              "requestedGrade": "",
+              "calibrationTarget": "",
+              "measuredGrade": null,
+              "method": "",
+              "status": "unavailable",
+              "contentFingerprint": "",
+              "measuredAt": "",
+              "language": "English"
+            }
+          },
+          "generationAction": "generate",
+          "generationIdentity": "gm1-quiz-1ngwqc1",
+          "generationVariants": [
+            {
+              "generationIdentity": "gm1-quiz-1ngwqc1",
+              "type": "quiz",
+              "grade": null,
+              "language": "English",
+              "variantKey": "default",
+              "sourceFingerprint": "",
+              "sourceArtifactId": "",
+              "contextFingerprint": "",
+              "contextInputsFingerprint": "ctxi-1jey7ut",
+              "generationConfig": {
+                "version": "generation-config/v1",
+                "type": "quiz",
+                "backend": "",
+                "provider": "",
+                "model": "",
+                "fallbackModel": "",
+                "imageProvider": "",
+                "imageModel": "",
+                "visionModel": "",
+                "fields": {
+                  "mcqVisualMode": "none",
+                  "quizMode": "exit-ticket"
+                },
+                "generationContext": {}
+              },
+              "generationConfigFingerprint": "cfg-quiz-v5chb8",
+              "action": "generate",
+              "existingArtifactId": null,
+              "reason": "No reusable artifact exists for this source-aware generation identity."
+            }
+          ],
+          "existingArtifactId": null,
+          "variantKey": "default",
+          "explicitVariantKey": null,
+          "variantKeyDerived": true,
+          "sourceFingerprint": "",
+          "sourceArtifactId": null,
+          "contextFingerprint": "",
+          "contextInputsFingerprint": "ctxi-1jey7ut",
+          "contextFingerprintDerived": true,
+          "generationConfig": {
+            "version": "generation-config/v1",
+            "type": "quiz",
+            "backend": "",
+            "provider": "",
+            "model": "",
+            "fallbackModel": "",
+            "imageProvider": "",
+            "imageModel": "",
+            "visionModel": "",
+            "fields": {
+              "mcqVisualMode": "none",
+              "quizMode": "exit-ticket"
+            },
+            "generationContext": {}
+          },
+          "generationConfigFingerprint": "cfg-quiz-v5chb8",
+          "generationPolicy": "variant-repeatable",
+          "novelResource": true,
+          "suppressedGenerationVariants": []
+        },
+        {
+          "tool": "lesson-plan",
+          "directive": "",
+          "uiId": "lesson-plan-2",
+          "instructionalText": {
+            "schemaVersion": 1,
+            "role": "unspecified",
+            "form": "original",
+            "sourceArtifactId": null,
+            "primaryArtifactId": null,
+            "designationSource": "legacy-inferred",
+            "replacementAuthorization": {
+              "authorized": false,
+              "source": "none"
+            },
+            "complexity": {
+              "requestedGrade": "",
+              "calibrationTarget": "",
+              "measuredGrade": null,
+              "method": "",
+              "status": "unavailable",
+              "contentFingerprint": "",
+              "measuredAt": "",
+              "language": "English"
+            }
+          },
+          "generationAction": "generate",
+          "generationIdentity": "gm1-lesson-plan-7wvn6c",
+          "generationVariants": [
+            {
+              "generationIdentity": "gm1-lesson-plan-7wvn6c",
+              "type": "lesson-plan",
+              "grade": null,
+              "language": "English",
+              "variantKey": "singleton",
+              "sourceFingerprint": "",
+              "sourceArtifactId": "",
+              "contextFingerprint": "",
+              "contextInputsFingerprint": "ctxi-1jey7ut",
+              "generationConfig": {
+                "version": "generation-config/v1",
+                "type": "lesson-plan",
+                "backend": "",
+                "provider": "",
+                "model": "",
+                "fallbackModel": "",
+                "imageProvider": "",
+                "imageModel": "",
+                "visionModel": "",
+                "fields": {},
+                "generationContext": {}
+              },
+              "generationConfigFingerprint": "cfg-lesson-plan-1t0ubli",
+              "action": "generate",
+              "existingArtifactId": null,
+              "reason": "No reusable artifact exists for this source-aware generation identity."
+            }
+          ],
+          "existingArtifactId": null,
+          "variantKey": "singleton",
+          "explicitVariantKey": null,
+          "variantKeyDerived": false,
+          "sourceFingerprint": "",
+          "sourceArtifactId": null,
+          "contextFingerprint": "",
+          "contextInputsFingerprint": "ctxi-1jey7ut",
+          "contextFingerprintDerived": true,
+          "generationConfig": {
+            "version": "generation-config/v1",
+            "type": "lesson-plan",
+            "backend": "",
+            "provider": "",
+            "model": "",
+            "fallbackModel": "",
+            "imageProvider": "",
+            "imageModel": "",
+            "visionModel": "",
+            "fields": {},
+            "generationContext": {}
+          },
+          "generationConfigFingerprint": "cfg-lesson-plan-1t0ubli",
+          "generationPolicy": "context-singleton",
+          "novelResource": true,
+          "suppressedGenerationVariants": []
+        }
+      ],
+      "toolDirectives": {
+        "analysis": "",
+        "simplified": "Create a supplemental Adapted Text while keeping the analyzed primary text available.",
+        "quiz": "",
+        "lesson-plan": ""
+      },
+      "sourcePolicy": {
+        "kind": "workspace-source"
+      },
+      "globalSettings": {
+        "gradeLevel": "",
+        "primaryLanguage": "",
+        "language": "English",
+        "leveledTextLanguage": "",
+        "selectedLanguages": [],
+        "nativeLanguageDefaultsVersion": 0,
+        "appLanguage": "English",
+        "effectiveLanguageList": [
+          "English"
+        ],
+        "translationMode": "",
+        "currentUiLanguage": "",
+        "translationTargetChoices": [],
+        "translationTarget": "",
+        "differentiationRange": "None",
+        "differentiationTypes": [],
+        "differentiationCustomGrades": [],
+        "studentInterests": [],
+        "dokLevel": "",
+        "useEmojis": false,
+        "textFormat": "",
+        "imageGenerationStyle": "",
+        "imageAspectRatio": "",
+        "generationContext": {},
+        "generationOptions": {},
+        "toolOverrides": {},
+        "backend": "",
+        "provider": "",
+        "model": "",
+        "fallbackModel": "",
+        "imageProvider": "",
+        "imageModel": "",
+        "visionModel": "",
+        "targetStandards": [],
+        "standardsFingerprint": "",
+        "contextFingerprint": "",
+        "sourceArtifactId": "",
+        "version": "generation-matrix/v1",
+        "sourceFingerprint": "",
+        "differentiationGrades": [],
+        "contextBaseFingerprint": "",
+        "contextFingerprintDerived": true,
+        "contextInputsFingerprint": "ctxi-1jey7ut",
+        "groupId": "",
+        "forceRefresh": false
+      }
+    }
+  }
+}

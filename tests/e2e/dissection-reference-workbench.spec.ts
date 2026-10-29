@@ -166,7 +166,7 @@ test('recall practice supports keyboard review rounds without changing evidence 
     return { explored: d.exploredOrgans, notes: d.organNotes, confidence: d.organConfidence, verified: d.verifiedIdentifications, score: d.quizScore, total: d.quizTotal, queue: d.quizReviewQueue };
   });
   expect(actual).toEqual({ explored: evidence, notes, confidence: { 'frog|heart': 2 }, verified: { 'frog|heart': true }, score: 2, total: 3, queue: ['lungs'] });
-  await panel.getByRole('button', { name: 'Return to specimen', exact: true }).click();
+  await panel.getByRole('button', { name: 'End practice and return to specimen', exact: true }).click();
   await expect(page.locator('#diss-canvas')).toBeFocused();
   await expect(panel).toHaveCount(0);
   await page.getByRole('button', { name: 'Flashcard', exact: true }).click();

@@ -28,6 +28,13 @@ function boot(options = {}) {
   api.openPanel('errors');
   return { w, api, clipboard };
 }
+// The captured log text is a teacher-view opt-in since 2026-10-28; tests that
+// check log content take that path the way a teacher would.
+const teacherView = (w) => { w.__alloPendingCoachPosture = 'educator'; };
+function includeFullLog(w) {
+  expect(element(w, 'aer-include-log'), 'teacher view offers the full log').toBeTruthy();
+  element(w, 'aer-include-log').click();
+}
 function edit(w, id, value) {
   element(w, id).value = value;
   element(w, id).dispatchEvent(new w.Event('input', { bubbles: true }));
@@ -66,9 +73,10 @@ describe('deployment-owned support destinations', () => {
   });
 
   it('retains local diagnostics/copy with reporting disabled, including a stale handler call', async () => {
-    const { w, api, clipboard } = boot({ policy: { version: 1, enabled: false } });
+    const { w, api, clipboard } = boot({ policy: { version: 1, enabled: false }, before: teacherView });
     expect(element(w, 'aer-review-confirm').disabled).toBe(true);
     element(w, 'aer-send').onclick();
+    includeFullLog(w);
     element(w, 'aer-copy').click();
     await flush();
     expect(w.fetch).not.toHaveBeenCalled();
@@ -175,7 +183,8 @@ describe('exact outgoing-copy review', () => {
   });
 
   it('invalidates confirmation on a normal edit and updates diagnostics only by explicit refresh', () => {
-    const { w, api } = boot();
+    const { w, api } = boot({ before: teacherView });
+    includeFullLog(w);
     confirm(w);
     edit(w, 'aer-report-what', 'Edited diagnostic.');
     expect(element(w, 'aer-review-confirm').checked).toBe(false);

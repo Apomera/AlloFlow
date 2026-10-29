@@ -28,7 +28,8 @@ describe('M8 — figcaption description/purpose are escaped', () => {
   it('escapes desc and purpose in the figcaption (not just the alt)', () => {
     // 2026-10-26: escaped by _alloEscapeTextOnce (& < > escaped, an existing entity not doubled), and the
     // "Purpose:" line left the delivered caption (Aaron, option B), so no purpose text is interpolated there.
-    expect(src.includes('<span aria-hidden="true">${_alloEscapeTextOnce(desc)}</span></figcaption>'), 'desc escaped').toBe(true);
+    // (2026-10-28) the caption goes through _alloCaptionSpan, which escapes with _alloEscapeTextOnce either way
+    expect(src.includes('${_alloCaptionSpan(desc, imgAlt)}</figcaption>') && src.includes("'<span aria-hidden=\"true\">' + esc(desc) + '</span>' : '<span>' + esc(desc) + '</span>'") && src.includes("var esc = (typeof _alloEscapeTextOnce === 'function') ? _alloEscapeTextOnce"), 'desc escaped').toBe(true);
     expect(src.includes(".replace(/</g, '&lt;').replace(/>/g, '&gt;');"), 'helper escapes < and >').toBe(true);
     expect(/<\/span>\$\{purpose \?/.test(src), 'no raw purpose in the caption').toBe(false);
   });

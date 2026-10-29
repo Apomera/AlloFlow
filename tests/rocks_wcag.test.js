@@ -330,12 +330,15 @@ describe('WCAG 1.4.3 — the tool paints no themed ground, so it must not read t
     });
   });
 
-  it('keeps the hero hint as a fixed dark utility', () => {
-    // 2026-09-24: one step darker (slate-700) and a size up, no longer
-    // italic. Still a fixed utility, never a themed token.
+  it('keeps the hero hint as fixed dark ink', () => {
+    // The responsive hero uses scoped CSS on a light substrate in every theme.
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      expect(src).toContain("React.createElement('p', { className: 'text-slate-700', style: { margin: '3px 0 0', fontSize: 12.5");
+      const rule = /\.rk-explorer \.rk-hero-copy p \{([^}]+)\}/.exec(src);
+      expect(rule).toBeTruthy();
+      const ink = /color:(#[0-9a-f]{6})/.exec(rule[1])[1];
+      expect(ratio(ink, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+      expect(rule[1]).not.toContain('var(--allo-stem');
     });
   });
 

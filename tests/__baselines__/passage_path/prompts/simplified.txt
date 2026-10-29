@@ -1,0 +1,35 @@
+
+              Rewrite the following text for 5th Grade level in English.
+              
+              
+            UPPER ELEMENTARY ADJUSTMENT:
+            - Use clear, direct language.
+            - Sentences can be slightly longer but avoid dense syntax.
+            - Introduce academic vocabulary with context clues.
+            - COMPLEX TOPIC HANDLING: Focus on clarity. Avoid passive voice. Break down multi-step processes into distinct sentences. Prioritize readability over stylistic flair.
+            
+            MEASURABLE TARGETS FOR 5th Grade (these are checked after generation):
+            - Average sentence length: at most 15 words. Individual sentences may vary, but the average across the whole passage must not exceed this.
+            - Average syllables per word: at most 1.4. Prefer the shorter of two words that mean the same thing.
+            - Flesch-Kincaid grade level of the finished passage: 5 to 6.
+            - Every Tier 3 term in the passage must be defined in the same sentence it first appears, in plain words.
+            - CALIBRATION: writing to a grade label alone reliably lands one to two grades above it. Write to the numbers above, not to the label, and when a sentence is borderline, split it.
+            
+              TARGET LENGTH: Maintain approximately the same length as the source text (~38 words). Do not significantly shorten or expand unless necessary for the target grade level.
+              
+              INSTRUCTIONAL PURPOSE: Create an adapted companion that supports reading the original. Preserve the original as the primary reading reference; do not claim this rewrite replaces it or is an unchanged original. This guidance applies even when no standards are attached.
+              
+              
+              - Do not use emojis.
+              - Remove all hyperlinks and citations.
+              - DO NOT emit any "Sources", "References", "Bibliography", "Verified Sources", "Références", "Sources du texte", "Referencias", "Quellen", or equivalent section. The references list is appended automatically by the app — any references section you produce will be discarded and may cause duplicates.
+              
+              
+              
+              
+              
+              
+              
+              CRITICAL: Return ONLY the English text. Do NOT add a translation into any other language.
+              Text Segment: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+          

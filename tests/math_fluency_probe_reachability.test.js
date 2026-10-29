@@ -146,8 +146,8 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     // Migration plan enhancement #2, closed 2026-08-17. Producer: Math Studio's
     // all-fluency branch parks {problemCount, at} in a window slot and fires an
     // event. Consumer: MathFluencyPanel consumes once (mount OR event, for the
-    // already-mounted case), rejects stale slots, snaps the count to its own
-    // fixed options, and never parses free-text directives into settings.
+    // already-mounted case), rejects stale slots, preserves supported counts,
+    // and never parses free-text directives into settings.
     const studio = readFileSync('math_create_module.js', 'utf8');
     expect(studio).toContain('window.__alloFluencyPendingConfig = {');
     expect(studio).toContain('fluencyBlocks.reduce((s, b) => s + (Math.floor(Number(b.quantity)) || 0), 0)');
@@ -157,15 +157,11 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     expect(fluency).toContain('function consumePending()');
     expect(fluency).toContain('delete window.__alloFluencyPendingConfig;');
     expect(fluency).toContain('> 120000) return;'); // stale-slot rejection
-    expect(fluency).toContain('var options = [20, 40, 60, 80, 120, 150];'); // snap to real options
+    expect(fluency).toContain('setProblemCount(wanted);'); // preserve the plan count
     expect(fluency).toContain("window.addEventListener('alloflow:fluency-pending-config', receive);");
     expect(fluency).toContain("window.removeEventListener('alloflow:fluency-pending-config', receive);");
-    // and the snap logic actually snaps
-    const snap = (wanted) => [20, 40, 60, 80, 120, 150].reduce((best, opt) => Math.abs(opt - wanted) < Math.abs(best - wanted) ? opt : best, 20);
-    expect(snap(25)).toBe(20);
-    expect(snap(35)).toBe(40);
-    expect(snap(100)).toBe(80);
-    expect(snap(500)).toBe(150);
+    // Runtime handoff, generator count and rejected requests are exercised in
+    // math_fluency_assessment_count.test.js, against the real component.
   });
 
   it('a mixed assessment names its dropped fluency blocks instead of silently omitting them', () => {

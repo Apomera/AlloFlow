@@ -63,11 +63,16 @@ describe('structure-specific brain atlas explanations', () => {
     const tool = loadTool('stem_lab/stem_tool_brainatlas.js', 'brainAtlas');
     const structures = ['Allen_ventral_posterior_lateral_nucleus_L', 'Allen_ventral_posterior_medial_nucleus_L'];
     const nodes = flatten(tool.render(makeCtx({}, newStore({ brainAtlas: { view: 'medial', atlasDisplayMode: '3d', brain3DCompareActive: true, brain3DCompareStructures: structures } }))));
-    const cards = nodes.filter(n => n.props?.className === 'brainatlas-3d-compare-card');
-    expect(cards).toHaveLength(2);
-    cards.forEach((card, i) => {
-      const text = ReactDOMServer.renderToStaticMarkup(card);
-      for (const field of fields) expect(text).toContain(profiles[canonical(structures[i])][field].replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;'));
+    const rows = nodes.filter(n => n.props?.['data-brainatlas-compare-category']);
+    expect(rows).toHaveLength(fields.length);
+    fields.forEach(field => {
+      const row = rows.find(n => n.props['data-brainatlas-compare-category'] === field);
+      const values = flatten(row).filter(n => n.type === 'article');
+      expect(values).toHaveLength(2);
+      values.forEach((value, i) => {
+        expect(value.props['data-brainatlas-profile']).toBe(canonical(structures[i]));
+        expect(flatten(value).find(n => n.props?.['data-brainatlas-profile-field'] === field)?.props.children).toBe(profiles[canonical(structures[i])][field]);
+      });
     });
   });
 

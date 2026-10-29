@@ -4,16 +4,16 @@
 // function clue; the name is available behind a hint, and taking the hint is
 // recorded and reported. Also fixes the disabled-button focus defect here, the
 // same one already fixed in the headline check and the Stimulation Lab.
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadTool, makeCtx, newStore, ReactDOMServer, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_brainatlas.js';
-const SAVED = ['body_of_hippocampus', 'amygdaloid_complex', 'left_cerebellum'];
+const SAVED = ['Allen_body_of_hippocampus_L', 'Allen_amygdaloid_complex_L', 'Allen_lateral_hemisphere_of_cerebellum_L'];
 const LABELS = {
-  body_of_hippocampus: 'Body of Hippocampus',
-  amygdaloid_complex: 'Amygdaloid Complex',
-  left_cerebellum: 'Left Cerebellum',
+  Allen_body_of_hippocampus_L: 'Body of Hippocampus (Left)',
+  Allen_amygdaloid_complex_L: 'Amygdaloid Complex (Left)',
+  Allen_lateral_hemisphere_of_cerebellum_L: 'Lateral Hemisphere of Cerebellum (Left)',
 };
 
 function flatten(node) {
@@ -46,6 +46,7 @@ function session(extra = {}) {
 
 describe('brainAtlas saved-set round asks for retrieval, not a string match', () => {
   beforeEach(() => { resetStemLab(); vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 
   it('prompts with a clue rather than the answer', () => {
     const s = session();
@@ -57,6 +58,35 @@ describe('brainAtlas saved-set round asks for retrieval, not a string match', ()
     expect(answers.length).toBe(SAVED.length);
     const targetLabel = String(answers.find((el) => el.props['data-brainatlas-saved-answer'] === SAVED[0]).props.children);
     expect(text).not.toContain(targetLabel);
+    expect(text).not.toMatch(/hippocamp/i);
+  });
+
+  it.each([
+    ['Allen_body_of_hippocampus_L', /hippocamp/i],
+    ['Allen_amygdaloid_complex_L', /amygdal/i],
+    ['Allen_anterior_commissure', /anterior commissure/i],
+    ['Allen_thalamus_R', /thalam/i],
+    ['Allen_hypothalamus_L', /hypothalam/i],
+    ['Allen_corpus_callosum', /corpus callosum|callosal/i],
+    ['Allen_fornix', /fornix|forniceal/i],
+    ['Allen_lateral_hemisphere_of_cerebellum_L', /cerebell/i],
+    ['Allen_cerebellar_vermis', /cerebell|vermis|vermian/i],
+    ['Allen_precentral_gyrus_L', /precentral|primary motor/i],
+    ['Allen_postcentral_gyrus_R', /postcentral|somatosensory/i],
+    ['Allen_olfactory_bulb_L', /olfactory bulb/i],
+    ['Allen_olfactory_tract_R', /olfactory tract/i],
+    ['VH_M_optic_chiasm', /chiasm/i],
+    ['Allen_optic_tract_L', /optic tract/i],
+    ['Allen_optic_radiation_R', /optic radiation/i],
+    ['Allen_cerebral_aqueduct', /aqueduct/i],
+    ['Allen_pineal_body', /pineal/i],
+  ])('uses an authored, answer-free clue for real model key %s', (key, aliases) => {
+    const s = session({ brain3DStructureIndex: [{ key, label: key }], brain3DSavedStructures: [key], brain3DSavedQuizQueue: [key] });
+    const prompt = s.get('data-brainatlas-saved-quiz-prompt', 'clue');
+    expect(prompt).toBeTruthy();
+    const text = ReactDOMServer.renderToStaticMarkup(prompt);
+    expect(text).not.toMatch(aliases);
+    expect(text).not.toContain('...');
   });
 
   it('states the practice goal and what taking the hint changes', () => {
@@ -160,7 +190,7 @@ describe('brainAtlas saved-set round asks for retrieval, not a string match', ()
     expect(src).toMatch(/brain3DSavedQuizNameShown = brain3DSavedQuizHinted \|\| !brain3DSavedQuizClue \|\| brain3DSavedQuizClueShared/);
     // two parts of the same structure map to one atlas region, so they share a
     // clue word for word; asking by clue there would be unanswerable
-    const siblings = ['body_of_hippocampus', 'head_of_hippocampus'];
+    const siblings = ['Allen_body_of_hippocampus_L', 'Allen_head_of_hippocampus_L'];
     resetStemLab();
     const tool = loadTool(FILE, 'brainAtlas');
     const store = newStore({
@@ -177,5 +207,33 @@ describe('brainAtlas saved-set round asks for retrieval, not a string match', ()
     const nodes = flatten(tool.render(makeCtx({ announceToSR: vi.fn() }, store)));
     expect(nodes.find((el) => el.props?.['data-brainatlas-saved-quiz-prompt'] === 'name')).toBeTruthy();
     expect(nodes.find((el) => el.props?.['data-brainatlas-saved-quiz-prompt'] === 'clue')).toBeUndefined();
+  });
+
+  it.each([
+    ['Allen_anterior_cortical_nucleus_L', 'Allen_amygdaloid_complex_L'],
+    ['Allen_body_of_hippocampus_L', 'Allen_head_of_hippocampus_L'],
+    ['Allen_thalamus_L', 'Allen_thalamus_R'],
+  ])('records the locating fallback honestly for missing or ambiguous clues: %s', (target, distractor) => {
+    const saved = [target, distractor];
+    // Only the target needs a retry, but both choices remain in the answer list.
+    const s = session({ brain3DStructureIndex: saved.map(key => ({ key, label: key })), brain3DSavedStructures: saved, brain3DSavedQuizQueue: [target] });
+    expect(s.get('data-brainatlas-saved-quiz-prompt', 'name')).toBeTruthy();
+    expect(s.get('data-brainatlas-saved-quiz-hint')).toBeUndefined();
+    expect(s.html()).toContain('recorded as name-assisted');
+    s.get('data-brainatlas-saved-answer', target).props.onClick();
+    expect(s.store.toolData.brainAtlas.brain3DSavedQuizResults).toEqual([{ key: target, firstTry: true, hinted: true }]);
+    s.get('id', 'brainatlas-3d-saved-quiz-next').props.onClick();
+    const summary = ReactDOMServer.renderToStaticMarkup(s.get('data-brainatlas-3d-quiz-summary'));
+    expect(summary).toContain('1 of these were answered after the name was shown');
+    expect(summary).not.toContain('Answered from the clue alone');
+  });
+
+  it('uses the visible locating fallback in next-item announcements', () => {
+    const saved = [SAVED[0], 'Allen_thalamus_L', 'Allen_thalamus_R'];
+    const s = session({ brain3DStructureIndex: saved.map(key => ({ key, label: key })), brain3DSavedStructures: saved, brain3DSavedQuizQueue: saved });
+    s.get('data-brainatlas-saved-answer', saved[0]).props.onClick();
+    s.get('id', 'brainatlas-3d-saved-quiz-next').props.onClick();
+    expect(s.get('data-brainatlas-saved-quiz-prompt', 'name')).toBeTruthy();
+    expect(s.announceToSR).toHaveBeenLastCalledWith(expect.stringContaining('Locating practice. Find Allen_thalamus_L.'));
   });
 });

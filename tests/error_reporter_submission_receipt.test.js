@@ -32,7 +32,9 @@ function confirmReview(w) {
   expect(element(w, 'aer-send').disabled).toBe(false);
 }
 
-function boot(fetchImpl = () => Promise.resolve(response({ ok: true, id: 'bug-receipt-123' }))) {
+// The captured log text is a teacher-view opt-in since 2026-10-28; `teacher`
+// takes that path the way a teacher would, for tests that check log content.
+function boot(fetchImpl = () => Promise.resolve(response({ ok: true, id: 'bug-receipt-123' })), { teacher = false } = {}) {
   vi.useFakeTimers();
   const w = new JSDOM('<html><body><button id="trigger">Diagnostics</button></body></html>', {
     url: 'https://example.test/app/?allo_mb=JOIN_SECRET', runScripts: 'outside-only', virtualConsole: new VirtualConsole(),
@@ -45,11 +47,13 @@ function boot(fetchImpl = () => Promise.resolve(response({ ok: true, id: 'bug-re
   w.alert = vi.fn();
   const clipboard = { writeText: vi.fn(() => Promise.resolve()) };
   Object.defineProperty(w.navigator, 'clipboard', { value: clipboard });
+  if (teacher) w.__alloPendingCoachPosture = 'educator';
   w.eval(source);
   const api = w.AlloModules.ErrorReporter;
   api.record('error', logCanary);
   element(w, 'trigger').focus();
   api.openPanel('errors');
+  if (teacher) element(w, 'aer-include-log').click();
   return { w, api, clipboard };
 }
 
@@ -98,7 +102,7 @@ describe('error report submission receipts', () => {
   });
 
   it('keeps a saved receipt visible, distinguishes review, and copies no private log or URL', async () => {
-    const { w, api, clipboard } = boot();
+    const { w, api, clipboard } = boot(undefined, { teacher: true });
     confirmReview(w);
     click(w, 'aer-send');
     await flush();
@@ -368,7 +372,7 @@ describe('optional error report description', () => {
   });
 
   it('labels an optional bounded field and still allows a report without a description', async () => {
-    const { w } = boot();
+    const { w } = boot(undefined, { teacher: true });
     const field = description(w);
     expect(field).toBeTruthy();
     expect(field.labels[0].textContent).toMatch(/what happened/i);
@@ -437,7 +441,7 @@ describe('optional error report description', () => {
   });
 
   it('bounds the draft to 2000 characters and preserves it ahead of a full diagnostic log', async () => {
-    const { w, api, clipboard } = boot();
+    const { w, api, clipboard } = boot(undefined, { teacher: true });
     const prefix = 'Description starts here: ';
     const bounded = prefix + 'd'.repeat(2000 - prefix.length - 1) + '!';
     expect(bounded.length).toBe(2000);

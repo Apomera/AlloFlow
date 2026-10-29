@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 function loaderFactorySource() {
-  const shell = fs.readFileSync(path.join(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  const shell = fs.readFileSync(path.join(process.cwd(), 'AlloFlowANTI.txt'), 'utf8').replace(/\r\n?/g, '\n');
   const start = shell.indexOf('function makeEnsureLoader(');
   const endMarker = '\n      }\n\n      window.__alloEnsureStemPluginsLoaded';
   const end = shell.indexOf(endMarker, start);
@@ -15,6 +16,37 @@ const tools = [
   { id: 'heatLab', label: 'Heat & Thermodynamics Lab', file: 'stem_lab/stem_tool_heatlab.js' },
   { id: 'nuclearLab', label: 'Nuclear & Radiation Lab', file: 'stem_lab/stem_tool_nuclearlab.js' },
 ];
+
+
+const pluginSource = (tool: (typeof tools)[number]) =>
+  `window.StemLab._registry[${JSON.stringify(tool.id)}] = true;`;
+// The isolated loader must have the same trusted delivery authority as the host.
+// Approve only these exact fixture bytes; Chromium still enforces their SRI.
+const deliveryBody = {
+  allowDesktopRemoteFallback: false,
+  assets: Object.fromEntries(tools.map(tool => [tool.file, {
+    bytes: Buffer.byteLength(pluginSource(tool)),
+    integrity: 'sha384-' + createHash('sha384').update(pluginSource(tool)).digest('base64'),
+  }])),
+  fallbackCommit: null,
+  schemaVersion: 1,
+};
+const deliveryManifest = {
+  ...deliveryBody,
+  releaseId: createHash('sha256').update(JSON.stringify(deliveryBody)).digest('hex'),
+};
+function loaderBootstrapSource() {
+  return [
+    fs.readFileSync(path.join(process.cwd(), 'browser_delivery_policy.js'), 'utf8'),
+    `var __alloBrowserDelivery = _alloCreateBrowserDeliveryPolicy(${JSON.stringify(deliveryManifest)}, { baseUrl: 'https://plugins.test/' });`,
+    `var pluginCdnBase = 'https://plugins.test/';`,
+    `var pluginCdnVersion = 'recovery-test';`,
+    `window.StemLab = { _registry: {}, registerTool: function(id, value) { this._registry[id] = value || true; }, isRegistered: function(id) { return !!this._registry[id]; } };`,
+    loaderFactorySource(),
+    `window.__alloEnsureStemPluginsLoaded = makeEnsureLoader('Stem', ${JSON.stringify(tools.map((x) => x.file))}, function() { return true; });`,
+    `window.__alloEnsureStemPluginsLoaded();`,
+  ].join('\n');
+}
 
 const viewports = [
   { name: 'desktop', width: 1280, height: 800 },
@@ -37,7 +69,8 @@ for (const viewport of viewports) {
         await route.fulfill({
           status: 200,
           contentType: 'application/javascript',
-          body: `window.StemLab._registry[${JSON.stringify(tool.id)}] = true;`,
+          body: pluginSource(tool),
+          headers: { 'Access-Control-Allow-Origin': '*' },
         });
       });
 
@@ -50,15 +83,7 @@ for (const viewport of viewports) {
         </main>
       `);
 
-      const bootstrap = [
-        `var pluginCdnBase = 'https://plugins.test/';`,
-        `var pluginCdnVersion = 'recovery-test';`,
-        `window.StemLab = { _registry: {}, registerTool: function(id, value) { this._registry[id] = value || true; }, isRegistered: function(id) { return !!this._registry[id]; } };`,
-        loaderFactorySource(),
-        `window.__alloEnsureStemPluginsLoaded = makeEnsureLoader('Stem', ${JSON.stringify(tools.map((x) => x.file))}, function() { return true; });`,
-        `window.__alloEnsureStemPluginsLoaded();`,
-      ].join('\n');
-      await page.addScriptTag({ content: bootstrap });
+      await page.addScriptTag({ content: loaderBootstrapSource() });
 
       await page.evaluate((selected) => {
         const status = document.getElementById('tool-status')!;
@@ -114,6 +139,31 @@ for (const viewport of viewports) {
       expect(attempts).toBe(2);
       expect(requested.every((url) => url.includes(tool.file))).toBeTruthy();
       expect(requested[1]).toContain('retry=');
+      const loadedScript = page.locator('script[data-allo-plugin-module="' + tool.file + '"]').last();
+      await expect(loadedScript).toHaveAttribute('integrity', deliveryManifest.assets[tool.file].integrity);
+      await expect(loadedScript).toHaveAttribute('crossorigin', 'anonymous');
     });
   }
 }
+
+
+test('changed plugin bytes fail integrity without executing or registering', async ({ page }) => {
+  const tool = tools[0];
+  let requests = 0;
+  await page.route('https://plugins.test/**', async route => {
+    requests += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: pluginSource(tool) + 'window.__tamperedPluginExecuted = true;',
+    });
+  });
+  await page.setContent('<main>Plugin integrity fixture</main>');
+  await page.addScriptTag({ content: loaderBootstrapSource() });
+  await page.evaluate(id => (window as any).__alloEnsureStemPluginLoaded(id), tool.id);
+  await expect.poll(() => page.evaluate(id => (window as any).__alloGetStemPluginState(id)?.status, tool.id)).toBe('error');
+  expect(await page.evaluate(id => (window as any).StemLab.isRegistered(id), tool.id)).toBe(false);
+  expect(await page.evaluate(() => (window as any).__tamperedPluginExecuted)).toBeUndefined();
+  expect(requests).toBe(1);
+});

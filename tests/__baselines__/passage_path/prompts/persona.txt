@@ -1,0 +1,30 @@
+
+                Analyze the following text about "The Moon".
+                Source Text:
+                "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests....",
+                Task: Identify 3 specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier', 'Marie Curie', 'A Red Blood Cell') relevant to this content that a 5th Grade student could interview to learn more.
+                
+                
+                Return ONLY a JSON array of objects with this exact structure:
+                [
+                    {
+                        "name": "Name",
+                        "role": "Short Description",
+                        "year": "Relevant Year or Era",
+                        "context": "Why they are relevant",
+                        "visualDescription": "A highly detailed physical description for an image generator (e.g., 'Oil painting of [Name], [details], neutral background').",
+                        "artStyle": "An era-appropriate portrait style",
+                        "nationality": "Country/region of origin",
+                        "greeting": "A short, engaging starting message from this character to the student.",
+                        "voice": "One of: Fenrir, Kore, Leda, Orus, Charon, Zephyr, Aoede",
+                        "voiceProfile": "Subtle, consistent accent, pace, tone and mannerisms",
+                        "initialRapport": 10,
+                        "quests": [
+                            { "id": "q1", "text": "Hidden objective the student can uncover", "difficulty": 20, "isCompleted": false },
+                            { "id": "q2", "text": "Hidden objective the student can uncover", "difficulty": 50, "isCompleted": false },
+                            { "id": "q3", "text": "Hidden objective the student can uncover", "difficulty": 75, "isCompleted": false }
+                        ],
+                        "suggestedQuestions": ["Question 1", "Question 2", "Question 3"]
+                    }
+                ]
+              

@@ -14,12 +14,15 @@ afterEach(() => {
   delete window.__alloGeometryWorldReturnProject;
 });
 
-function fixture({ unit = 5, profile, check = { components: 1, openEdges: 0, nonManifoldEdges: 0 } } = {}) {
+function fixture({ unit = 5, profile, staleCheck = false, check = { components: 1, openEdges: 0, nonManifoldEdges: 0 } } = {}) {
   window.THREE = THREE;
   window.StemLab = { _registry: { geometryWorld: { aliases: [], render(ctx) {
     return ctx.React.createElement('main', { id: 'geoworld-fs-workspace' });
   } } } };
-  new Function(readFileSync('stem_lab/stem_tool_geometryworld_builder.js', 'utf8'))();
+  const builderSource = readFileSync('stem_lab/stem_tool_geometryworld_builder.js', 'utf8');
+  new Function(builderSource)();
+  const signature = new Function(builderSource.slice(builderSource.indexOf('  function blockMeasurementTuple('),
+    builderSource.indexOf('  function selectionRefreshSnapshot(')) + '\nreturn blockMeasurementSignature;')();
   const api = window.StemLab.geometryWorldBuilderPure;
   const positions = [];
   for (let x = 0; x < 6; x++) positions.push({ x, y: 1, z: 0 });
@@ -44,7 +47,8 @@ function fixture({ unit = 5, profile, check = { components: 1, openEdges: 0, non
   }
   const before = api.buildGeometryWorldStl(engine, positions).buffer;
   const history = JSON.stringify([engine._undoStack, engine._redoStack]);
-  const ctx = { React, toolData: { geometryWorld: { worldActive: true, activeLesson: 'builderSandbox', builderPrintContext: { unitMm: unit }, builderPrintCheck: check }, printLab: { profile } }, setStemLabTool: vi.fn(), addToast() {} };
+  const currentCheck = check && { ...check, selectionSignature: staleCheck ? 'previous-selection' : signature(engine, positions.map(p => [p.x, p.y, p.z].join(','))) };
+  const ctx = { React, toolData: { geometryWorld: { worldActive: true, activeLesson: 'builderSandbox', builderPrintContext: { unitMm: unit }, builderPrintCheck: currentCheck }, printLab: { profile } }, setStemLabTool: vi.fn(), addToast() {} };
   const host = document.createElement('div');
   host.innerHTML = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() {
     return window.StemLab._registry.geometryWorld.render(ctx);
@@ -53,6 +57,14 @@ function fixture({ unit = 5, profile, check = { components: 1, openEdges: 0, non
 }
 
 describe('physical size and mesh review in the Geometry World dock', () => {
+  it('does not label new geometry as joined using a stale selection check', () => {
+    const { host } = fixture({ staleCheck: true });
+    const card = host.querySelector('.gwe-connection-check');
+    expect(card.getAttribute('data-connected')).toBe('false');
+    expect(card.querySelector('strong').textContent).toBe('Checking selected geometry');
+    expect(card.textContent).not.toContain('One joined piece');
+  });
+
   it('labels all three axes and announces their order and millimeter values', () => {
     const { host } = fixture();
     expect([...host.querySelectorAll('.gwe-print-axis-label')].map(el => el.textContent)).toEqual(['Width', 'Depth', 'Height']);

@@ -3,10 +3,9 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -171,10 +170,10 @@ describe('magnetism station-aware Field Notes', () => {
       const deck = host.querySelector('[data-magnetism-field-notes="true"]');
       expect(deck.getAttribute('data-note-kind')).toBe('connect');
       expect(deck.querySelector('.mag-note-transfer').textContent).toBe('Connect → Field Walk');
-      const results = await axe.run(deck, {
+      const results = await runIsolatedAxe(deck.outerHTML, { options: {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
         rules: { 'color-contrast': { enabled: false } },
-      });
+      } });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     });
   }, 15000);

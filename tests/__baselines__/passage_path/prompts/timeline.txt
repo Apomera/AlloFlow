@@ -1,0 +1,68 @@
+
+             You are a Sequence Validation Expert. Your task is to extract or CREATE a SINGLE, UNAMBIGUOUS sequence from the provided text.
+             Target Audience: 5th Grade students.
+             Language: English.
+             
+             
+             
+             
+             Focus Topic / Content hint: "The Moon"
+             
+             *** MODE SELECTION (AUTO-DETECT) ***
+             Examine the source text AND the teacher's content hint below, then pick the single best ordering mode from this list:
+  - "chronological": Chronological — Events by date/year/era. e.g., "1776", "1865", "Colonial Era", "Industrial Revolution"
+  - "procedural": Procedural Steps — Ordered steps in a process. e.g., "Step 1: Mix", "Step 2: Heat", "Step 3: Cool"
+  - "lifecycle": Life Cycle / Developmental — Biological or developmental stages. e.g., "Egg", "Caterpillar", "Chrysalis", "Butterfly"
+  - "size": Size / Scale — Measurable physical magnitudes. e.g., "Atom", "Molecule", "Cell", "Tissue", "Organ"
+  - "hierarchy": Hierarchy / Taxonomy — Nested organizational levels. e.g., "Kingdom", "Phylum", "Class", "Order" OR "City", "County", "State", "Nation"
+  - "cause-effect": Cause → Effect — Logical causal chain. e.g., "Sunlight hits leaves", "Photosynthesis occurs", "Sugar is produced", "Plant grows"
+  - "intensity": Intensity / Degree — Measurable amounts (least → most). e.g., "0°C", "25°C", "50°C", "100°C" OR "Acidic", "Neutral", "Basic"
+  - "narrative": Narrative Arc — Story stages (exposition → resolution). e.g., "Exposition", "Rising Action", "Climax", "Falling Action", "Resolution"
+             Teacher's content hint: "The Moon" (may explicitly suggest a mode; if so, prefer that)
+             Return your pick as "detectedMode": "<mode key>" in the JSON response.
+             Use that mode's ordering criterion for the items.
+         
+             *** FUNDAMENTAL REQUIREMENT ***
+             There must be EXACTLY ONE CORRECT ORDER for the items you generate. A student must be able to determine the correct order purely from the item descriptions without guessing.
+             *** VALIDATION RULES (You MUST verify each) ***
+             Rule 1: BINARY COMPARABILITY - For any two items A and B, it must be objectively determinable which comes "before" or "after" on the axis.
+             Rule 2: NO TIES - No two items can reasonably occupy the same position.
+             Rule 3: NO AMBIGUOUS WORDING - Avoid vague terms. Use specifics: "1776" not "Colonial Era", "Cell" not "Small Structure".
+             Rule 4: SELF-CONTAINED ITEMS - Each item must make sense in isolation (no "Then...", "Next...", "It...").
+             Rule 5: EXTRACTABLE FROM TEXT - Items must be derivable from the source text (or clearly inferred logical steps).
+             Rule 6: MINIMUM DISTINCTIVENESS - Each item must differ enough that its position is unambiguous.
+             *** ITEM COUNT RULE ***
+             Generate ONLY as many items as the text can clearly support with UNAMBIGUOUS ordering.
+             - Minimum: 4 items (fewer = too easy, not enough to form a meaningful sequence)
+             - Maximum: 10 items (more = overwhelming for students)
+             - Preferred: 6 items if the text supports it
+             - CRITICAL: Do NOT pad with items that have ambiguous positions just to reach a count.
+             *** PRE-GENERATION CHECKLIST (Internal - do not output) ***
+             Before generating, mentally verify:
+             [ ] Can I state the SINGLE ordering criterion in one clear phrase?
+             [ ] For every pair of items, can I definitively say which is "earlier/smaller/lower" on this axis?
+             [ ] If I shuffled these items, would an informed student find exactly ONE correct arrangement?
+             [ ] Are all items self-contained with no pronouns or relative words?
+             Do NOT provide translations.
+             
+             Return ONLY a JSON object with this structure:
+             {
+                 "detectedMode": "<one of: chronological, procedural, lifecycle, size, hierarchy, cause-effect, intensity, narrative>",
+                 "progressionLabel": "AXIS: [Criterion Name] ([Low End] → [High End])",
+                 
+                 "items": [
+                     {
+                         "date": "Specific Position (e.g., '1776', 'Step 1', '10 cm')",
+                         
+                         "event": "Complete, standalone description of this item",
+                         
+                     }
+                 ]
+             }
+             EXAMPLE progressionLabel formats:
+             - "Timeline: Earliest (1492) → Latest (1776)"
+             - "Size Scale: Smallest (Atom) → Largest (Universe)"
+             - "Process Steps: First (Observe) → Last (Conclude)"
+             
+             Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
+          

@@ -92,7 +92,8 @@ describe('pipeline + UI wiring (source-pinned)', () => {
   });
   it('the result carries fidelityNotes + the #1 fidelityLimited score qualifier', () => {
     expect(src).toContain('fidelityNotes: _structuralFidelityNotes,');
-    expect(src).toContain('fidelityLimited: (integrityCoverage != null && integrityCoverage < 90) || _structuralFidelityNotes.length > 0,');
+    // (2026-10-28) a note marked caution does not limit fidelity
+    expect(src.includes('fidelityLimited: (integrityCoverage != null && integrityCoverage < 90) || _structuralFidelityNotes.some((n) => !(n && n.caution === true)),')).toBe(true);
   });
   it('the view shows the score qualifier chip + the per-note list', () => {
     const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');

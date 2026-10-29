@@ -90,7 +90,7 @@ function check(s,withSkin=true){
  }
  if(withSkin){expect(f.parent).toBe(s.rig);expect(f.ancestry.some(owner=>owner.uuid===s.rig&&owner.name==='dinolab-connected-cranial-motion')).toBe(true);}else{expect(f.parent).toBe(s.model);expect(f.ancestry[0]).toEqual({uuid:s.model,name:'dinolab-specimen'});}
  if(withSkin){
-  expect(s.atlas.materials).toHaveLength(3);for(const mat of s.atlas.materials){expect(mat.mapping).toBe(true);expect(mat.key).toBe('dinolab-specimen-skin-mottling-v1');expect(mat.maps).toEqual(s.atlas.materials[0].maps);}
+  expect(s.atlas.materials).toHaveLength(3);for(const mat of s.atlas.materials){expect(mat.mapping).toBe(true);expect(mat.key).toBe('dinolab-specimen-skin-zones-v1');expect(mat.maps).toEqual(s.atlas.materials[0].maps);}
   expect(new Set(s.atlas.channels.map(channel=>channel.uuid)).size).toBe(3);expect(new Set(s.atlas.channels.map(channel=>channel.rgbaSha256)).size).toBe(3);
   for(const channel of s.atlas.channels){expect(channel.width).toBe(512);expect(channel.height).toBe(256);expect(channel.style).toBe('fine-scales');expect(channel.uploaded).toBe(true);expect(channel.alphaBad+channel.seamX+channel.seamY).toBe(0);expect(channel.max).toBeGreaterThan(channel.min);expect(channel.rgbaSha256).toMatch(/^[a-f0-9]{64}$/);expect(channel.wrapS).toBe(s.atlas.constants.repeat);expect(channel.wrapT).toBe(s.atlas.constants.repeat);expect(channel.minFilter).toBe(s.atlas.constants.min);expect(channel.magFilter).toBe(s.atlas.constants.mag);expect(channel.generateMipmaps).toBe(true);expect(channel.encoding).toBe(channel.key==='map'?s.atlas.constants.srgb:s.atlas.constants.linear);}
  }

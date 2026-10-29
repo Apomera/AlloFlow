@@ -126,7 +126,7 @@ describe('canonical remediation residual fixes', () => {
     expect(source.includes('<title>${_wrapTitleHtml}</title>'), 'wrapper title').toBe(true);
     expect(source.includes("|| ('Accessible Document — ' + _safeDocumentTitleHtml);"), 'escaped file-name fallback').toBe(true);
     // 2026-09-28 (G1): the footer line moved into _alloOutputProvenanceFooterHtml; it still gets the ESCAPED name.
-    expect(source).toContain('_alloOutputProvenanceFooterHtml({ fileNameHtml: _safeFileNameHtml, pageCount: pageCount })');
+    expect(source).toContain('_alloOutputProvenanceFooterHtml({ fileNameHtml: _safeFileNameHtml, pageCount: pageCount, pageRange: _pageRange, totalPages: fullPageCount })');
     expect(source).not.toContain("Original: ${(_fileName || 'unknown')}");
   });
 

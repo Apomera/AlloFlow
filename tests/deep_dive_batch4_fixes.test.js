@@ -138,7 +138,8 @@ describe('M21/M22 — fidelity panel honesty', () => {
     expect(view).toContain('some source text may not have carried over');
   });
   it('M22: Fix-Remaining keeps the coverage<90 half of fidelityLimited', () => {
-    expect(view).toContain('const fidelityLimited = _refixNotes.length > 0');
+    // (2026-10-28) caution notes are disclosed, not a limit: the notes half counts only non-caution notes
+    expect(view).toContain('const fidelityLimited = _refixNotes.some((n) => !(n && n.caution === true))');
     expect(view).toContain("_fixRemainingSource.integrityCoverage < 90");
     expect(view).toContain('fidelityLimited,');
   });

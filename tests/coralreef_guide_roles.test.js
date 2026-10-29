@@ -27,7 +27,7 @@ async function mount() {
 const featured = {
   grazers: ['parrotfish', 'green_turtle', 'long_spined_urchin'],
   cleaners: ['cleaner_wrasse', 'cleaner_shrimp'],
-  plankton: ['blue_tang', 'anthias', 'blue_green_chromis', 'reef_manta', 'christmas_tree_worm', 'sea_fan']
+  plankton: ['blue_tang', 'anthias', 'blue_green_chromis', 'reef_manta', 'christmas_tree_worm', 'sea_fan', 'goldmouth_sea_squirt', 'feather_duster_worm']
 };
 
 describe('featured reef roles in the species guide', () => {
@@ -56,7 +56,7 @@ describe('featured reef roles in the species guide', () => {
     const t = await mount();
     await select(role(t), 'plankton');
     await select(t.host.querySelector('[data-guide-group-filter]'), 'invertebrate');
-    expect(ids(t).sort()).toEqual(['christmas_tree_worm', 'sea_fan']);
+    expect(ids(t).sort()).toEqual(['christmas_tree_worm', 'feather_duster_worm', 'goldmouth_sea_squirt', 'sea_fan']);
     await select(t.host.querySelector('[data-guide-search-mode]'), 'description'); await query(t, 'protective plankton');
     expect(ids(t)).toEqual(['christmas_tree_worm']);
     const card = t.host.querySelector('[data-species="christmas_tree_worm"]');
