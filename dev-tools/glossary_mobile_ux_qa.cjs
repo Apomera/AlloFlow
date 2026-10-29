@@ -143,7 +143,7 @@ async function main() {
     await page.waitForFunction(() => window.glossaryUxState.data.every(item => item.isSelected === false));
     await list.getByRole('checkbox', { name: 'Include Leaf', exact: true }).check();
     await page.waitForFunction(() => window.glossaryUxState.data[0].isSelected === true && window.glossaryUxState.data[1].isSelected === false);
-    await list.getByRole('textbox', { name: 'Edit definition', exact: true }).first().fill('A leaf captures sunlight for a plant.');
+    await list.getByRole('textbox', { name: 'Edit definition for Leaf', exact: true }).fill('A leaf captures sunlight for a plant.');
     const translation = list.locator('tbody > tr').first().locator('[dir="rtl"] textarea');
     await translation.fill('ورقة خضراء تلتقط ضوء الشمس.');
     await page.waitForFunction(() => window.glossaryUxState.data[0].def === 'A leaf captures sunlight for a plant.' && window.glossaryUxState.data[0].translations.Arabic === 'ورقة خضراء تلتقط ضوء الشمس.');

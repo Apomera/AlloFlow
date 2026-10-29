@@ -102,8 +102,8 @@ async function getAuth() {
   if (!creds || !creds.token) {
     throw new Error(
       'No Cloudflare credential found.\n' +
-      '  Either set CLOUDFLARE_API_TOKEN, or run `npx wrangler login` once on a\n' +
-      '  machine where wrangler runs (it only needs to write the OAuth token).'
+      '  Either set CLOUDFLARE_API_TOKEN, or run `node dev-tools/cf_login.cjs`\n' +
+      '  (the browser sign-in wrangler login does, without wrangler).'
     );
   }
   if (creds.kind === 'oauth') {

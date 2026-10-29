@@ -1,6 +1,6 @@
 // Generated exact-source bridge. Do not edit; run build.cjs.
-// Source SHA-256: d20801a01bcf2361bb47077cca4dbff748e511682cded01bf80bef582fcce69b
-export const sourceSha256 = "d20801a01bcf2361bb47077cca4dbff748e511682cded01bf80bef582fcce69b";
+// Source SHA-256: 34c22e8a26432f2dbfa5587e24f4b388abdb371a68d7f193ad2204ac03a007e4
+export const sourceSha256 = "34c22e8a26432f2dbfa5587e24f4b388abdb371a68d7f193ad2204ac03a007e4";
 export function createWatershedRuntime() {
 const window = { StemLab: { findById: (items, id) => items.find(item => item.id === id) } };
 const t = (key, fallback) => fallback == null ? key : fallback;

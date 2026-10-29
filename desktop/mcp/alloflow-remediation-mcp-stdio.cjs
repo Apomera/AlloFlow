@@ -1482,6 +1482,52 @@ function persistAgentRun(run) {
     workflow: run.workflow, options: run.options, progress: run.progress, result: run.result,
     partialRows: run.partialRows || [], error: run.error });
 }
+// Answer journal: every client reply, keyed by the request's content hash, so a resumed run
+// replays what was already answered instead of re-asking the whole unfinished document. A
+// replay is only ever for a byte-identical prompt + images; anything that changed is asked
+// again. Holds document text, so it is removed once the run completes without failures and
+// swept at boot when its run record is gone or expired.
+const AGENT_JOURNAL_MAX_BYTES = 64 * 1024 * 1024;
+function agentJournalPath(id) { return agentRecordPath(id).replace(/\.json$/, '.answers.jsonl'); }
+function loadAgentJournal(id) {
+  const journal = new Map();
+  let raw;
+  try { if (fs.statSync(agentJournalPath(id)).size > AGENT_JOURNAL_MAX_BYTES) return journal; raw = fs.readFileSync(agentJournalPath(id), 'utf8'); }
+  catch (_) { return journal; }
+  // A crash can leave a torn last line; every line is self-contained, so skip what does not parse,
+  // and end the torn line first so the next answer is not appended onto it (and lost with it).
+  if (raw.length && !raw.endsWith('\n')) { try { fs.appendFileSync(agentJournalPath(id), '\n'); } catch (_) {} }
+  for (const line of raw.split('\n')) {
+    let row; try { row = JSON.parse(line); } catch (_) { continue; }
+    if (row && /^[a-f0-9]{64}$/.test(row.k) && typeof row.t === 'string' && row.t.length && row.t.length <= 3000000) journal.set(row.k, row.t);
+  }
+  return journal;
+}
+function appendAgentJournal(run, key, text) {
+  if (!run.journal || run.journalFull) return;
+  const line = Buffer.from(JSON.stringify({ k: key, t: text }) + '\n', 'utf8');
+  const file = agentJournalPath(run.runId);
+  let fd = null;
+  try {
+    let size = 0; try { size = fs.statSync(file).size; } catch (_) {}
+    if (size + line.length > AGENT_JOURNAL_MAX_BYTES) { run.journalFull = true; run.rlog('answer journal is full; later answers will not be saved for resume'); return; }
+    fd = fs.openSync(file, 'a', 0o600); fs.writeSync(fd, line); fs.fsyncSync(fd);
+    run.journal.set(key, text);
+  } catch (error) { run.rlog('answer journal write failed (resume will re-ask): ' + error.message); }
+  finally { if (fd !== null) try { fs.closeSync(fd); } catch (_) {} }
+}
+function removeAgentJournal(id) { try { fs.rmSync(agentJournalPath(id), { force: true }); } catch (_) {} }
+function sweepAgentJournals() {
+  let names = [];
+  try { names = fs.readdirSync(path.join(STATE_DIR, 'agent-runs')); } catch (_) { return; }
+  for (const name of names) {
+    const match = /^(arun-[a-f0-9-]{36})\.answers\.jsonl$/.exec(name);
+    if (!match) continue;
+    let keep = false;
+    try { const record = readAgentRecord(match[1]); keep = !(record.status === 'completed' && !(record.progress && record.progress.failed)); } catch (_) {}
+    if (!keep) removeAgentJournal(match[1]);
+  }
+}
 function readAgentRecord(id) {
   const file = agentRecordPath(id);let record;
   try { if(fs.statSync(file).size > 8*1024*1024)throw Error('too large');record=JSON.parse(fs.readFileSync(file,'utf8')); }
@@ -1524,6 +1570,7 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
     requestSeq: 0,
     coalesced: 0,
     cacheHits: 0,
+    journalReplays: 0,
     latenciesMs: [],
     answeredCache: new Map(),
     pending: new Map(),
@@ -1539,6 +1586,8 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
     log('[' + run.runId.slice(0, 13) + '] ' + String(line).slice(0, 500));
   };
   run.rlog = rlog;
+  run.journal = run.workflow.narrationOnly ? null : workflow.resumeId ? loadAgentJournal(run.runId) : new Map();
+  if (run.journal && run.journal.size) rlog('resume: ' + run.journal.size + ' saved answer(s) will be replayed for unchanged requests');
   // Idempotent re-asks (perf report 2026-08-19, finding 2): when the pipeline's per-call
   // deadline fires it abandons its promise and re-asks with a NEW call — but the client may
   // already be composing (or have delivered) the answer to the original. Keying requests by
@@ -1567,6 +1616,13 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
       run.cacheHits += 1;
       rlog('re-ask of an already-answered request served from the delivered answer (no client work)');
       resolveReply(replay.text);
+      return;
+    }
+    const saved = run.journal && run.journal.get(key);
+    if (saved !== undefined) {
+      run.journalReplays += 1;
+      rlog('request answered from the saved answer journal (unchanged since the interrupted attempt; no client work)');
+      resolveReply(saved);
       return;
     }
     for (const existing of run.pending.values()) {
@@ -1663,6 +1719,7 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
         ...(run.progress.failed ? { retry: { tool: 'remediation_agent_resume', arguments: { run_id: run.runId } } } : {}),
         note: 'Review each file verdict. Resume retries failures and reuses hash-verified completed documents.' };
       run.status = 'completed';
+      if (!run.progress.failed) removeAgentJournal(run.runId);
       const lat = run.latenciesMs;
       run.result = Object.assign({}, summary, {
         modelTransport: run.workflow.narrationOnly ? 'none' : 'agent-bridge',
@@ -1672,6 +1729,7 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
           requestsPublished: run.requestSeq,
           coalescedReasks: run.coalesced,
           replayedAnswers: run.cacheHits,
+          journalReplayedAnswers: run.journalReplays,
           clientLatencySeconds: lat.length ? {
             count: lat.length,
             mean: Math.round(lat.reduce((a, b) => a + b, 0) / lat.length / 1000),
@@ -2797,6 +2855,8 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     integrityCoverage: out.integrityCoverage,
     integrityWarning: out.integrityWarning,
     fidelityNotes: out.fidelityNotes,
+    // (2026-10-28) how to decide each judgment call (from the run's page, normalised)
+    decisionGuides: Verification.normalizeDecisionGuides(out.decisionGuides),
     ...Verification.normalizeCandidateRejectionEvidence(out),
     // Compact per-engine audit evidence from the driver, re-normalised here (the page context is
     // untrusted), and the same per-engine status summary the app derives from these objects.
@@ -4793,7 +4853,7 @@ const TOOL_HANDLERS = {
     try{entries=fs.readdirSync(dir).filter(n=>/^arun-[0-9a-f-]{36}\.json$/i.test(n)).map(n=>({name:n,time:fs.statSync(path.join(dir,n)).mtimeMs})).sort((a,b)=>b.time-a.time);}catch(error){if(error.code!=='ENOENT')throw error;}
     const runs=[];
     for(const entry of entries.slice(0,1000)) {try{const r=readAgentRecord(entry.name.replace(/\.json$/,''));const active=agentRun&&agentRun.runId===r.runId&&agentRun.status==='running';runs.push({runId:r.runId,status:active?'running':r.status==='running'?'interrupted':r.status,startedAt:r.startedAt,updatedAt:r.updatedAt,kind:r.workflow.narrationOnly?'narration':'remediation',files:r.workflow.files,progress:r.progress,error:r.error||null,resumable:!active});}catch(_){}if(runs.length>=limit)break;}
-    return {runs,note:'Resume user-requested work with remediation_agent_resume. An interrupted document may restart; verified completed files and audio sections are reused.'};
+    return {runs,note:'Resume user-requested work with remediation_agent_resume. An interrupted document runs again, replaying saved replies to unchanged requests; verified completed files and audio sections are reused.'};
   },
   document_narrate_start(args) {
     assertAllowedKeys(args, ['file_path','dir_path','output_dir','narration','narration_voice','narration_provider','narration_language','readalong_epub','max_run_minutes'], 'arguments');
@@ -4823,7 +4883,7 @@ const TOOL_HANDLERS = {
       {modelTransport:'agent-bridge',maxRunMinutes:Math.min(180,Math.max(1,Number(old.maxRunMinutes)||60))});
     fs.mkdirSync(outDir,{recursive:true});
     agentRun=startAgentRun(files[0],outDir,opts,{files,narrationOnly:record.workflow.narrationOnly===true,skipExisting:true,resumeId:record.runId});
-    return {runId:agentRun.runId,status:'running',note:'Resumed. Hash-verified completed documents and audio sections are reused; the unfinished document restarts if needed.'};
+    return {runId:agentRun.runId,status:'running',note:'Resumed. Hash-verified completed documents and audio sections are reused; requests the unfinished document already asked are answered from saved replies when unchanged.'};
   },
   async remediation_agent_respond_batch(args) {
     assertAllowedKeys(args,['run_id','responses','wait_seconds'],'arguments');
@@ -4969,6 +5029,7 @@ const TOOL_HANDLERS = {
     run.rlog('client answered ' + entry.requestId + ' (' + entry.kind + ') in ' + Math.round(latencyMs / 1000) + 's'
       + (entry.resolvers.length > 1 ? ' — satisfied ' + entry.resolvers.length + ' coalesced asks' : ''));
     run.answeredCache.set(entry.key, { text: args.text, at: Date.now() });
+    appendAgentJournal(run, entry.key, args.text);
     if (run.answeredCache.size > 32) {
       const oldest = run.answeredCache.keys().next().value;
       run.answeredCache.delete(oldest);
@@ -5215,6 +5276,7 @@ rl.on('close', () => {
   shutdown('stdin closed');
 });
 
+sweepAgentJournals();
 restoreJobs(); // before the first request, so a client can ask about work the last process was doing
 RESTORED_TO_REQUEUE.sort(
   (a, b) => Date.parse(a.createdAt || 0) - Date.parse(b.createdAt || 0),

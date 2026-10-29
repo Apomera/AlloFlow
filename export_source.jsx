@@ -2893,7 +2893,11 @@ const createExport = (deps) => {
         irish: 'ga', kannada: 'kn', kazakh: 'kk', khmer: 'km', lao: 'lo', latvian: 'lv',
         lithuanian: 'lt', macedonian: 'mk', malayalam: 'ml', maltese: 'mt', marathi: 'mr',
         mongolian: 'mn', nepali: 'ne', serbian: 'sr', sinhala: 'si', slovenian: 'sl',
-        uzbek: 'uz', welsh: 'cy', zulu: 'zu'
+        uzbek: 'uz', welsh: 'cy', zulu: 'zu',
+        acholi: 'ach', burmese: 'my', 'chin (falam)': 'cfm', 'chin (hakha)': 'cnh',
+        dari: 'prs', esperanto: 'eo', hausa: 'ha', hmong: 'hmn', igbo: 'ig',
+        karen: 'kar', kinyarwanda: 'rw', kirundi: 'rn', latin: 'la', lingala: 'ln',
+        'maay maay': 'ymm', marshallese: 'mh', tigrinya: 'ti', yoruba: 'yo'
     };
     const _glossaryLanguageInfo = value => {
         const original = typeof value === 'string' ? value.trim() : '';
@@ -2923,6 +2927,25 @@ const createExport = (deps) => {
         const rtl = script ? /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script) : /^(ar|arc|he|iw|fa|prs|ur|ps|ku|ckb|sd|ug|yi|dv|syr|nqo)$/i.test(parts[0]);
         const dir = !script && /^(und|mul|zxx)$/i.test(parts[0]) ? 'auto' : rtl ? 'rtl' : 'ltr';
         return { tag, dir, language: parts[0], script, region };
+    };
+    // UI labels are display-only; saved translation keys and audio identifiers
+    // retain their original script, region and spelling.
+    let _glossaryDisplayNames = null, _glossaryDisplayLocale = '', _glossaryDisplayConstructor = null;
+    const _glossaryLanguageLabel = value => {
+        const original = typeof value === 'string' ? value.trim() : '';
+        const info = _glossaryLanguageInfo(original);
+        if (!info.tag || typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function') return original;
+        try {
+            const locale = _exportLanguage();
+            if (!_glossaryDisplayNames || locale !== _glossaryDisplayLocale || _glossaryDisplayConstructor !== Intl.DisplayNames) {
+                _glossaryDisplayNames = new Intl.DisplayNames([locale], { type: 'language', languageDisplay: 'standard', fallback: 'none' });
+                _glossaryDisplayLocale = locale; _glossaryDisplayConstructor = Intl.DisplayNames;
+            }
+            // Unsupported interface locales must not silently gain labels in
+            // a different language from the rest of the exported document.
+            if (_glossaryDisplayNames.resolvedOptions().locale.split('-')[0].toLowerCase() !== locale.split('-')[0].toLowerCase()) return original;
+            return _glossaryDisplayNames.of(info.tag) || original;
+        } catch (_) { return original; }
     };
     const _glossarySourceLanguage = (resource, item, field) => {
         const explicit = [item && item[field], item && item.baseLanguage, item && item.termLanguage]
@@ -2987,7 +3010,7 @@ const createExport = (deps) => {
         // the host's language utilities. A name they do not know comes back as
         // English, so it gets dir="auto" and no lang rather than a wrong one.
         const sourceLanguage = (item, field) => _glossarySourceLanguage(generatedContent, item, field);
-        const languageLabel = language => /^english$/i.test(language) ? _gxText('languages.english', 'English') : language;
+        const languageLabel = _glossaryLanguageLabel;
         const sideLangAttrs = (languageName) => {
             if (!languageName) return ' lang="en" dir="ltr"';
             const info = _glossaryLanguageInfo(languageName);
@@ -3050,7 +3073,7 @@ function flashcardExportImageAlt(item) {
                 font-weight: bold;
             }
             .lang-label {
-                font-size: 0.625rem;
+                font-size: 0.75rem;
                 text-transform: uppercase;
                 color: #475569;
                 margin-bottom: 2px;
@@ -3060,6 +3083,9 @@ function flashcardExportImageAlt(item) {
             .secondary-text { font-size: 1rem; color: #4f46e5; font-weight: bold; margin-top: 5px; }
             .def-text { font-size: 0.8125rem; color: #475569; line-height: 1.4; }
             .def-trans { font-size: 0.8125rem; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
+            .def-text, .def-trans { width: 100%; }
+            .def-text[dir], .def-text > span[dir], .def-trans > span[dir] { display: block; text-align: start; white-space: pre-wrap; }
+            .def-text > .lang-label, .def-trans > .lang-label { display: block; text-align: start; margin-bottom: 5px; }
             .etym-text { font-size: 0.6875rem; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
             .etym-roots { margin-top: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: 100%; }
             .root-chip { font-size: 0.625rem; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 2px 6px; border-radius: 999px; font-style: normal; }
@@ -3071,6 +3097,19 @@ function flashcardExportImageAlt(item) {
                 text-align: center; font-weight: bold; border-radius: 8px;
                 border: 1px solid #e2e8f0;
                 page-break-after: avoid;
+            }
+            @media screen {
+                .card-container { border-style: solid; border-radius: 12px; box-shadow: 0 2px 8px rgba(15,23,42,.05); }
+                .def-text, .def-trans { font-size: 0.9375rem; line-height: 1.55; }
+                .lang-label { font-size: 0.75rem; letter-spacing: 0.04em; }
+            }
+            @media screen and (max-width: 560px) {
+                body { padding: 12px; }
+                .card-container { flex-direction: column; }
+                .card-side { flex: auto; padding: 20px 16px; }
+                .front { border-inline-end: 0; border-bottom: 2px dashed #cbd5e1; }
+                .cut-guide { display: none; }
+                .set-header { margin-top: 24px; }
             }
         `;
         const titleKey = isLanguageMode ? 'flashcards.print_title_language' : 'flashcards.print_title_standard';
@@ -3138,8 +3177,9 @@ function flashcardExportImageAlt(item) {
         };
         const renderSet = (lang = null, setCards = cards) => {
             const sourceLabels = [...new Set(setCards.map(item => languageLabel(sourceLanguage(item, 'termLanguage'))))].join(' / ');
+            const targetLabel = languageLabel(lang);
             const header = lang
-                ? (isLanguageMode ? `${sourceLabels} ⟷ ${lang}` : lang)
+                ? (isLanguageMode ? `${sourceLabels} ⟷ ${targetLabel}` : targetLabel)
                 : sourceLabels;
             htmlBody += `<h2 class="set-header">${_escapeExportText(header)} ${_escapeExportText(t('flashcards.set_header'))}</h2>`;
             setCards.forEach(item => {
@@ -3155,17 +3195,19 @@ function flashcardExportImageAlt(item) {
                 const termLanguage = sourceLanguage(item, 'termLanguage');
                 const definitionLanguage = sourceLanguage(item, 'definitionLanguage');
                 const termLabel = languageLabel(termLanguage), definitionLabel = languageLabel(definitionLanguage);
+                const languageKey = value => _glossaryLanguageInfo(value).tag.toLowerCase() || value.trim().toLowerCase();
+                const showDefinitionLanguage = !!_glossaryPlainText(item.def || item.definition).trim() && languageKey(definitionLanguage) !== languageKey(termLanguage);
                 const termAttrs = sideLangAttrs(termLanguage), definitionAttrs = sideLangAttrs(definitionLanguage);
                 const tr = sideLangAttrs(lang);
                 if (isLanguageMode) {
                     frontContent = `
                         <div class="lang-label">${_escapeExportText(termLabel)}</div>
                         <div class="primary-text"${termAttrs}>${cleanText(item.term)}</div>
-                        ${definitionLanguage !== termLanguage ? `<div class="lang-label">${_escapeExportText(definitionLabel)}</div>` : ''}
+                        ${showDefinitionLanguage ? `<div class="lang-label">${_escapeExportText(definitionLabel)}</div>` : ''}
                         <div class="def-text"${definitionAttrs}>${cleanText(item.def || item.definition)}</div>
                     `;
                     backContent = `
-                        <div class="lang-label">${_escapeExportText(lang)}</div>
+                        <div class="lang-label">${_escapeExportText(targetLabel)}</div>
                         <div class="primary-text"${tr}>${cleanText(transTerm)}</div>
                         <div class="def-text"${tr}>${cleanText(transDef)}</div>
                     `;
@@ -3174,11 +3216,11 @@ function flashcardExportImageAlt(item) {
                         <div class="cut-guide">${_escapeExportText(t('flashcards.fold_guide'))}</div>
                         <div class="lang-label">${_escapeExportText(termLabel)}</div>
                         <div class="primary-text"${termAttrs}>${cleanText(item.term)}</div>
-                        ${transTerm ? `<div class="secondary-text"${tr}>${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${_escapeExportText(lang)}</div>` : ''}
+                        ${transTerm ? `<div class="secondary-text"${tr}>${cleanText(transTerm)}</div><div class="lang-label" style="margin-top:2px;">${_escapeExportText(targetLabel)}</div>` : ''}
                     `;
                     backContent = `
-                        <div class="def-text"><strong>${_escapeExportText(definitionLabel)}:</strong> <span${definitionAttrs}>${cleanText(item.def || item.definition)}</span></div>
-                        ${transDef ? `<div class="def-trans"><strong>${_escapeExportText(lang)}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}${typeof item.contextSentence === 'string' && item.contextSentence.trim() ? `<div class="def-text" data-context-sentence style="margin-top:8px;"><strong>${_escapeExportText(_gxText('glossary.context_sentence_label', 'In the text:'))}</strong> <q${definitionAttrs}>${cleanText(item.contextSentence.trim())}</q></div>` : ''}
+                        <div class="def-text"><strong class="lang-label">${_escapeExportText(definitionLabel)}:</strong> <span${definitionAttrs}>${cleanText(item.def || item.definition)}</span></div>
+                        ${transDef ? `<div class="def-trans"><strong class="lang-label">${_escapeExportText(targetLabel)}:</strong> <span${tr}>${cleanText(transDef)}</span></div>` : ''}${typeof item.contextSentence === 'string' && item.contextSentence.trim() ? `<div class="def-text" data-context-sentence style="margin-top:8px;"><strong>${_escapeExportText(_gxText('glossary.context_sentence_label', 'In the text:'))}</strong> <q${definitionAttrs}>${cleanText(item.contextSentence.trim())}</q></div>` : ''}
                         ${item.etymology ? `<div class="etym-text">📜 <strong>${_escapeExportText(t('glossary.etymology_label') || 'Roots')}:</strong> ${cleanText(item.etymology)}</div>` : ''}
                         ${Array.isArray(item.roots) && item.roots.length > 0 ? `<div class="etym-roots">${item.roots.map(r => `<span class="root-chip"><b>${cleanText(r.root || '')}</b>${r.lang ? ` <i>(${cleanText(r.lang)})</i>` : ''}${r.meaning ? ` = ${cleanText(r.meaning)}` : ''}</span>`).join(' ')}</div>${(() => { const seen = new Set(); const allRel = []; item.roots.forEach(r => { if (Array.isArray(r.related)) r.related.forEach(w => { const k = String(w || '').trim(); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); allRel.push(k); } }); }); return allRel.length > 0 ? `<div class="etym-related"><strong>${_escapeExportText(t('export.related_words_label') || 'Related words:')}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : ''; })()}` : ''}
                     `;
@@ -3188,7 +3230,7 @@ function flashcardExportImageAlt(item) {
                     const term = String(item.term);
                     frontContent += audioButton(clips.front, _gxText('flashcards.play_term', 'Play {term}', { term }));
                     backContent = audioButton(clips.back, isLanguageMode
-                        ? _gxText('flashcards.play_translation', 'Play {term} in {lang}', { term, lang })
+                        ? _gxText('flashcards.play_translation', 'Play {term} in {lang}', { term, lang: targetLabel })
                         : _gxText('flashcards.play_definition', 'Play the definition of {term}', { term })) + backContent;
                 }
                 const image = typeof item.image === 'string' && /^(?:https?:\/\/|data:image\/(?:png|jpe?g|gif|webp|avif|svg\+xml)(?:;|,))/i.test(item.image) ? item.image : '';
@@ -3440,13 +3482,34 @@ function flashcardExportImageAlt(item) {
         const translation = _flashcardTranslation(item, lang);
         return translation.usable ? translation.spoken : '';
     };
-    const _gxEntries = () => {
-        const { generatedContent } = liveRef.current || {};
+    const _gxEntries = (scope = 'all') => {
+        const { generatedContent, filteredGlossaryData, filteredGlossaryResource } = liveRef.current || {};
         if (!generatedContent || generatedContent.type !== 'glossary') return null;
         let list = generatedContent.data;
         if (typeof list === 'string') { try { list = JSON.parse(list); } catch (_) { list = []; } }
-        return (Array.isArray(list) ? list : []).filter(item => item && typeof item === 'object' && _gxOneLine(item.term));
+        list = Array.isArray(list) ? list : [];
+        const entries = list.filter(item => item && typeof item === 'object' && _gxOneLine(item.term));
+        if (scope === 'all') return entries;
+        if (scope === 'selected') return entries.filter(item => item.isSelected !== false);
+        // Filters belong to the source object used to compute the visible rows.
+        // A missing or stale filter never falls back to the complete glossary.
+        if (scope !== 'filtered' || filteredGlossaryResource !== generatedContent || !Array.isArray(filteredGlossaryData)) return [];
+        const entrySet = new Set(entries), byId = new Map(), seen = new Set();
+        const idOf = item => item && item.entryId != null && String(item.entryId).trim() ? String(item.entryId) : '';
+        entries.forEach(item => { const id = idOf(item); if (id) byId.set(id, byId.has(id) ? null : item); });
+        return filteredGlossaryData.map(row => {
+            if (!row || typeof row !== 'object') return null;
+            if (entrySet.has(row)) return row;
+            const id = idOf(row);
+            if (id) return byId.get(id) || null;
+            const original = Number.isInteger(row._originalIdx) ? list[row._originalIdx] : null;
+            return entrySet.has(original) && row.term === original.term && _gxDefinition(row) === _gxDefinition(original) ? original : null;
+        }).filter(item => item && !seen.has(item) && seen.add(item));
     };
+    const _gxScopeLabel = (scope, count) => scope === 'filtered'
+        ? _gxText('export.word_list_scope_filtered', 'Filtered words ({count})', { count })
+        : scope === 'selected' ? _gxText('export.word_list_scope_selected', 'Selected words ({count})', { count })
+        : _gxText('export.word_list_scope_all', 'All words ({count})', { count });
     const _gxLanguages = entries => {
         const languages = [];
         entries.forEach(item => {
@@ -3466,10 +3529,12 @@ function flashcardExportImageAlt(item) {
         entries.forEach(item => rows.push([item.term, _gxDefinition(item), item.tier].concat(languages.map(lang => _gxTranslation(item, lang)))));
         return String.fromCharCode(0xFEFF) + rows.map(row => row.map(_gxCsvCell).join(',')).join('\r\n') + '\r\n';
     };
-    const _gxPairs = (entries, back) => entries.map(item => ({
+    const _gxPairs = (entries, back, resource = liveRef.current?.generatedContent) => entries.map(item => ({
         front: _gxOneLine(item.term),
         back: _gxOneLine(back === 'definition' ? _gxDefinition(item) : _gxTranslation(item, back)),
         tags: _gxOneLine(item.tier).replace(/\s+/g, '_'),
+        frontLanguage: _glossarySourceLanguage(resource, item, 'termLanguage'),
+        backLanguage: back === 'definition' ? _glossarySourceLanguage(resource, item, 'definitionLanguage') : back,
     })).filter(pair => pair.front && pair.back);
     const _gxQuizlet = pairs => pairs.map(pair => pair.front + '\t' + pair.back).join('\n');
     // Anki ignores raw # comment records. Quoting preserves valid #include or
@@ -3497,19 +3562,26 @@ function flashcardExportImageAlt(item) {
         document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(url), 1500);
     };
-    const _GX_CSS = '.agx-overlay{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-start;justify-content:center;padding:12px;overflow:auto;background:rgba(15,23,42,.6);color-scheme:light}'
-        + '.agx-dialog{box-sizing:border-box;width:min(100%,34rem);max-height:calc(100vh - 24px);overflow:auto;padding:16px;border-radius:12px;background:#fff;color:#0f172a;font:0.9375rem/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)}'
-        + '.agx-dialog h2{margin:0 0 10px;font-size:1.125rem}.agx-dialog [hidden]{display:none!important}'
+    const _GX_CSS = '.agx-overlay{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-start;justify-content:center;padding:12px;overflow:auto;overscroll-behavior:contain;background:rgba(15,23,42,.6);color-scheme:light}'
+        + '.agx-dialog{box-sizing:border-box;width:min(100%,34rem);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;padding:20px;border-radius:16px;background:#fff;color:#0f172a;font:0.9375rem/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)}'
+        + '.agx-dialog h2{margin:0 0 10px;font-size:1.125rem}.agx-dialog h3{margin:16px 0 6px;font-size:1rem}.agx-dialog [hidden]{display:none!important}'
         + '.agx-dialog fieldset{margin:0 0 10px;padding:6px 12px;border:1px solid #94a3b8;border-radius:8px}.agx-dialog legend{padding:0 4px;font-weight:700}'
         + '.agx-option{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}.agx-option input{flex:none;width:1.25rem;height:1.25rem;margin:0}'
+        + '.agx-format{box-sizing:border-box;padding:10px;margin:6px 0;border:2px solid transparent;border-radius:8px;overflow-wrap:anywhere}.agx-format[data-selected="true"]{border-color:#4338ca;background:#eef2ff;color:#312e81;font-weight:700}.agx-format input{accent-color:#4338ca}'
         + '.agx-label{display:block;margin:8px 0 4px;font-weight:700}'
         + '.agx-dialog select,.agx-dialog textarea{box-sizing:border-box;width:100%;max-width:100%;padding:8px;border:1px solid #64748b;border-radius:6px;background:#fff;color:#0f172a;font:inherit}'
         + '.agx-dialog select{min-height:44px}.agx-dialog textarea{font:0.8125rem/1.4 ui-monospace,monospace}'
         + '.agx-note{margin:6px 0 0;font-size:0.875rem;color:#334155}.agx-status{min-height:1.4em;margin:8px 0 0;font-size:0.875rem;color:#1e293b}'
+        + '.agx-preview{padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;overflow-wrap:anywhere}.agx-preview[data-empty="true"]{border-color:#a16207;background:#fefce8;color:#713f12}'
+        + '.agx-sample{max-height:18rem;overflow:auto;overscroll-behavior:contain;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc}.agx-sample dl{margin:0}.agx-sample dl>div{padding:12px}.agx-sample dl>div+div{border-top:1px solid #cbd5e1}.agx-sample dt{font-weight:700;overflow-wrap:anywhere}.agx-sample dd{margin:4px 0 0;color:#334155;overflow-wrap:anywhere}'
+        + '.agx-raw{margin-top:12px}.agx-raw summary{min-height:44px;align-content:center;font-weight:700;cursor:pointer}.agx-raw textarea{resize:vertical;min-height:6rem;tab-size:4}'
+        + '.agx-review{margin-top:8px}.agx-review summary{min-height:44px;align-content:center;font-weight:700;cursor:pointer;overflow-wrap:anywhere}.agx-review-words{max-height:12rem;overflow:auto;overscroll-behavior:contain;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc}.agx-review ul{margin:0;padding:10px 12px 10px 32px;padding-inline-start:32px;padding-inline-end:12px}.agx-review li{padding:4px 0;overflow-wrap:anywhere}'
         + '.agx-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}'
         + '.agx-btn{min-height:44px;padding:8px 14px;border:1px solid #64748b;border-radius:8px;background:#fff;color:#0f172a;font:inherit;font-weight:700;cursor:pointer}'
         + '.agx-btn-primary{border-color:#4338ca;background:#4338ca;color:#fff}'
+        + '.agx-btn:disabled,.agx-btn[aria-disabled="true"]{border-color:#94a3b8;background:#e2e8f0;color:#475569;cursor:not-allowed}'
         + '.agx-dialog :focus-visible{outline:3px solid #4338ca;outline-offset:2px}'
+        + '@media (forced-colors:active){.agx-format[data-selected="true"]{border-color:Highlight}.agx-btn:disabled{color:GrayText}.agx-dialog :focus-visible{outline-color:Highlight}}'
         + '@media (prefers-reduced-motion:reduce){.agx-overlay,.agx-overlay *{transition:none!important;animation:none!important}}';
     let _gxActive = null;
     // In-page dialog built here (Canvas blocks window.confirm): focus trap,
@@ -3534,6 +3606,20 @@ function flashcardExportImageAlt(item) {
         dialog.setAttribute('aria-labelledby', uid + '-title');
         overlay.appendChild(dialog);
         let closed = false;
+        let detachObserver = null;
+        const background = [];
+        const scrollLocks = [];
+        const releaseBackground = () => {
+            if (detachObserver) detachObserver.disconnect();
+            background.forEach(({ node, inert }) => {
+                if (inert === null) node.removeAttribute('inert');
+                else node.setAttribute('inert', inert);
+            });
+            scrollLocks.forEach(({ node, declarations }) => {
+                ['overflow', 'overflow-x', 'overflow-y'].forEach(property => node.style.removeProperty(property));
+                declarations.forEach(([property, value, priority]) => node.style.setProperty(property, value, priority));
+            });
+        };
         const ui = {
             dialog, returnTo, uid,
             el: (tag, className, text, parent) => {
@@ -3553,15 +3639,22 @@ function flashcardExportImageAlt(item) {
                 if (closed) return;
                 closed = true;
                 overlay.remove();
+                releaseBackground();
                 if (_gxActive === ui) _gxActive = null;
                 if (restore && returnTo && returnTo.isConnected && typeof returnTo.focus === 'function') returnTo.focus();
             },
         };
         ui.el('h2', '', title, dialog).id = uid + '-title';
-        const focusable = () => Array.from(dialog.querySelectorAll('button,input,select,textarea,a[href],[tabindex]:not([tabindex="-1"])')).filter(node => !node.disabled && !node.closest('[hidden]'));
+        const focusable = () => {
+            const nodes = Array.from(dialog.querySelectorAll('button,input,select,textarea,summary,a[href],[tabindex]:not([tabindex="-1"])')).filter(node => !node.disabled && !node.closest('[hidden]') && (!node.closest('details:not([open])') || node.tagName === 'SUMMARY'));
+            // A radio group has one Tab stop: its checked choice. Match the
+            // browser's order so Shift+Tab still wraps after changing format.
+            return nodes.filter(node => node.type !== 'radio' || !node.name || node.checked || !nodes.some(other => other.type === 'radio' && other.name === node.name && other.checked));
+        };
         overlay.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); ui.close(); return; }
             if (event.key !== 'Tab') return;
+            event.stopPropagation();
             const list = focusable();
             if (!list.length) { event.preventDefault(); return; }
             const first = list[0], last = list[list.length - 1];
@@ -3571,18 +3664,38 @@ function flashcardExportImageAlt(item) {
         overlay.addEventListener('mousedown', (event) => { if (event.target === overlay) ui.close(); });
         build(ui);
         doc.body.appendChild(overlay);
+        // aria-modal alone does not prevent background focus or scrolling.
+        // Keep exact prior state so exports opened from an existing host dialog
+        // do not remove that dialog's inert regions or scroll lock on return.
+        Array.from(doc.body.children).filter(node => node !== overlay).forEach(node => {
+            background.push({ node, inert: node.getAttribute('inert') });
+            node.setAttribute('inert', '');
+        });
+        [doc.documentElement, doc.body].forEach(node => {
+            const declarations = Array.from(node.style).filter(property => /^overflow(?:-[xy])?$/.test(property))
+                .map(property => [property, node.style.getPropertyValue(property), node.style.getPropertyPriority(property)]);
+            scrollLocks.push({ node, declarations });
+            node.style.setProperty('overflow', 'hidden', 'important');
+        });
+        // Host teardown may remove the overlay without going through Close.
+        // Release its state without moving focus into a disappearing view.
+        detachObserver = new MutationObserver(() => { if (!overlay.isConnected) ui.close(false); });
+        detachObserver.observe(doc.body, { childList: true });
         _gxActive = ui;
         const start = dialog.querySelector('[data-agx-autofocus]') || focusable()[0];
         if (start) start.focus();
         return ui;
     };
-    const _gxQuizletDialog = (text, count, opener) => _gxDialog(_gxText('export.word_list_quizlet_title', 'Copy for Quizlet'), opener, (ui) => {
+    const _gxQuizletDialog = (text, count, opener, exportOptions = {}) => _gxDialog(_gxText('export.word_list_quizlet_title', 'Copy for Quizlet'), opener, (ui) => {
         ui.el('p', 'agx-note', _gxText('export.word_list_quizlet_help', 'In Quizlet, create a set, choose Import, and paste this text. Keep Tab between term and definition and New line between cards.'), ui.dialog);
-        const label = ui.el('label', 'agx-label', _gxText('export.word_list_quizlet_text', 'Text to paste into Quizlet'), ui.dialog);
-        const area = ui.el('textarea', '', '', ui.dialog);
+        ui.el('p', 'agx-note', _gxText('export.word_list_scope', 'Words to export') + ': ' + _gxScopeLabel(exportOptions.scope, exportOptions.scopeCount), ui.dialog);
+        const raw = ui.el('details', 'agx-raw', '', null);
+        ui.el('summary', '', _gxText('export.word_list_show_import_text', 'View import text'), raw);
+        const label = ui.el('label', 'agx-label', _gxText('export.word_list_quizlet_text', 'Text to paste into Quizlet'), raw);
+        const area = ui.el('textarea', '', '', raw);
         label.htmlFor = area.id = ui.uid + '-text';
         area.readOnly = true;
-        area.rows = 8;
+        area.rows = 5;
         area.value = text;
         area.setAttribute('dir', 'auto');
         area.setAttribute('spellcheck', 'false');
@@ -3592,28 +3705,70 @@ function flashcardExportImageAlt(item) {
             : _gxText('export.word_list_card_count', '{count} cards ready.', { count }), ui.dialog);
         status.setAttribute('role', 'status');
         status.setAttribute('aria-live', 'polite');
+        status.setAttribute('aria-atomic', 'true');
         const actions = ui.el('div', 'agx-actions', '', ui.dialog);
         // Canvas blocks the Clipboard API: the host helper, then the API, then execCommand,
         // and last the selected text for the teacher to copy by hand.
+        let copying = false;
         const copyButton = ui.button(_gxText('common.copy', 'Copy'), async () => {
-            let ok = false;
-            try { if (typeof window.alloCopyText === 'function') ok = !!(await window.alloCopyText(text)); } catch (_) { ok = false; }
-            if (!ok) { try { if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { await navigator.clipboard.writeText(text); ok = true; } } catch (_) { ok = false; } }
-            if (!ok) { try { area.focus(); area.select(); ok = document.execCommand('copy') === true; if (ok) copyButton.focus(); } catch (_) { ok = false; } }
-            if (!ok) { area.focus(); area.select(); }
-            status.textContent = ok
-                ? _gxText('export.word_list_copied', 'Copied. Paste it into the Import box in Quizlet.')
-                : _gxText('export.word_list_copy_failed', 'Copying is blocked here. The text is selected: press Ctrl+C (or Cmd+C) to copy it.');
+            if (copying) return;
+            copying = true;
+            copyButton.setAttribute('aria-disabled', 'true');
+            copyButton.setAttribute('aria-busy', 'true');
+            status.textContent = _gxText('export.word_list_copying', 'Copying…');
+            try {
+                let ok = false;
+                try { if (typeof window.alloCopyText === 'function') ok = !!(await window.alloCopyText(text)); } catch (_) { ok = false; }
+                if (!ui.dialog.isConnected) return;
+                if (!ok) { try { if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { await navigator.clipboard.writeText(text); ok = true; } } catch (_) { ok = false; } }
+                if (!ui.dialog.isConnected) return;
+                if (!ok) { try { raw.open = true; area.focus(); area.select(); ok = document.execCommand('copy') === true; if (ok) copyButton.focus(); } catch (_) { ok = false; } }
+                if (!ok) { raw.open = true; area.focus(); area.select(); }
+                status.textContent = ok
+                    ? _gxText('export.word_list_copied', 'Copied. Paste it into the Import box in Quizlet.')
+                    : _gxText('export.word_list_copy_failed', 'Copying is blocked here. The text is selected: press Ctrl+C (or Cmd+C) to copy it.');
+            } finally {
+                copying = false;
+                copyButton.removeAttribute('aria-disabled');
+                copyButton.removeAttribute('aria-busy');
+            }
         }, true, actions);
         copyButton.setAttribute('data-agx-autofocus', '');
         ui.button(_gxText('export.word_list_download_txt', 'Download .txt'), () => {
-            _gxDownload(text, 'text/plain;charset=utf-8', _gxFileName('quizlet', 'txt'));
+            _gxDownload(text, 'text/plain;charset=utf-8', exportOptions.filename);
             status.textContent = _gxText('export.word_list_downloaded', 'Word list downloaded.');
         }, false, actions);
-        ui.button(_gxText('common.close', 'Close'), () => ui.close(), false, actions);
+        const previewTitle = ui.el('h3', '', _gxText('export.word_list_preview', 'Card preview'), ui.dialog);
+        previewTitle.id = ui.uid + '-preview';
+        const backLabel = exportOptions.back && exportOptions.back !== 'definition'
+            ? _gxText('export.word_list_back_translation', '{lang} translation', { lang: _glossaryLanguageLabel(exportOptions.back) })
+            : _gxText('export.word_list_back_definition', 'Definition');
+        ui.el('p', 'agx-note', _gxText('export.word_list_back', 'Back of each card') + ': ' + backLabel, ui.dialog);
+        if (count > 3) ui.el('p', 'agx-note', _gxText('export.word_list_preview_count', 'Showing {shown} of {total} cards.', { shown: 3, total: count }), ui.dialog);
+        const preview = ui.el('div', 'agx-sample', '', ui.dialog);
+        preview.tabIndex = 0;
+        preview.setAttribute('role', 'region');
+        preview.setAttribute('aria-labelledby', previewTitle.id);
+        const list = ui.el('dl', '', '', preview);
+        exportOptions.preview.forEach(pair => {
+            const row = ui.el('div', '', '', list);
+            const part = (tag, value, language) => {
+                const node = ui.el(tag, '', value, row), info = _glossaryLanguageInfo(language);
+                // An empty lang explicitly marks unknown text rather than
+                // inheriting the interface language and mispronouncing it.
+                node.setAttribute('lang', info.tag || '');
+                node.setAttribute('dir', info.dir);
+            };
+            part('dt', pair.front, pair.frontLanguage);
+            part('dd', pair.back, pair.backLanguage);
+        });
+        ui.dialog.appendChild(raw);
+        const footer = ui.el('div', 'agx-actions', '', ui.dialog);
+        ui.button(_gxText('export.word_list_change_options', 'Back to export options'), () => handleExportGlossaryFile('chooser', { format: 'quizlet', back: exportOptions.back, scope: exportOptions.scope, opener: ui.returnTo }), false, footer);
+        ui.button(_gxText('common.close', 'Close'), () => ui.close(), false, footer);
     });
-    const _gxChooser = (languages, opener) => _gxDialog(_gxText('export.word_list_title', 'Export word list'), opener, (ui) => {
-        let format = 'csv';
+    const _gxChooser = (languages, opener, initial = {}) => _gxDialog(_gxText('export.word_list_title', 'Export word list'), opener, (ui) => {
+        let format = ['csv', 'quizlet', 'anki'].includes(initial.format) ? initial.format : 'csv';
         const notes = {
             csv: _gxText('export.word_list_csv_note', 'Opens in Excel, Google Sheets or Numbers. Each language gets its own column.'),
             quizlet: _gxText('export.word_list_quizlet_note', 'Shows the text to copy into the Import box in Quizlet.'),
@@ -3623,47 +3778,122 @@ function flashcardExportImageAlt(item) {
         ui.el('legend', '', _gxText('export.word_list_format', 'File format'), fieldset);
         const backWrap = ui.el('div', '', '', null);
         const note = ui.el('p', 'agx-note', '', null);
-        const sync = () => { backWrap.hidden = format === 'csv'; note.textContent = notes[format]; };
-        [['csv', _gxText('export.word_list_csv', 'Spreadsheet (CSV)')], ['quizlet', _gxText('export.word_list_quizlet', 'Quizlet (copy and paste)')], ['anki', _gxText('export.word_list_anki', 'Anki (text file)')]].forEach(([value, text], index) => {
-            const row = ui.el('label', 'agx-option', '', fieldset);
+        const summary = ui.el('p', 'agx-status agx-preview', '', null);
+        summary.setAttribute('role', 'status');
+        summary.setAttribute('aria-live', 'polite');
+        summary.setAttribute('aria-atomic', 'true');
+        summary.id = ui.uid + '-summary';
+        const sync = () => {
+            backWrap.hidden = format === 'csv';
+            note.textContent = notes[format];
+            fieldset.querySelectorAll('input').forEach(input => { input.closest('label').dataset.selected = String(input.checked); });
+            const scope = scopeSelect.value;
+            Array.from(scopeSelect.options).forEach(option => { option.textContent = _gxScopeLabel(option.value, (_gxEntries(option.value) || []).length); });
+            scopeHelp.textContent = scope === 'filtered'
+                ? _gxText('export.word_list_scope_filtered_help', 'Exports the words currently shown, in their displayed order.')
+                : scope === 'selected' ? _gxText('export.word_list_scope_selected_help', 'Uses the Include checkboxes in Edit mode, including selected words hidden by filters.')
+                : _gxText('export.word_list_scope_all_help', 'Exports every glossary word, including words hidden by filters.');
+            const entries = _gxEntries(scope) || [];
+            const missingBacks = format === 'csv' ? [] : entries.filter(item => !_gxPairs([item], select.value).length);
+            const skipped = missingBacks.length;
+            const ready = entries.length - skipped;
+            summary.textContent = !entries.length
+                ? _gxText('export.word_list_scope_empty', 'No words in this scope. Choose another scope or change the filters or selection.')
+                : format === 'csv'
+                ? (ready === 1 ? _gxText('export.word_list_word_count_one', '1 word included.') : _gxText('export.word_list_word_count', '{count} words included.', { count: ready }))
+                : !ready ? _gxText('export.word_list_no_cards', 'No words have text for the back of the card yet.')
+                : ready === 1 ? _gxText('export.word_list_card_count_one', '1 card ready.')
+                : _gxText('export.word_list_card_count', '{count} cards ready.', { count: ready });
+            if (skipped) summary.textContent += ' ' + (skipped === 1
+                ? _gxText('export.word_list_skip_preview_one', '1 word will be left out because its selected back is missing.')
+                : _gxText('export.word_list_skip_preview', '{count} words will be left out because their selected backs are missing.', { count: skipped }));
+            review.hidden = !skipped;
+            reviewList.replaceChildren();
+            missingBacks.forEach(item => {
+                const row = ui.el('li', '', '', reviewList);
+                ui.el('bdi', '', _gxOneLine(item.term), row).setAttribute('dir', 'auto');
+            });
+            summary.dataset.empty = String(!ready);
+            exportButton.disabled = !ready;
+            exportButton.textContent = format === 'quizlet'
+                ? _gxText('export.word_list_continue_quizlet', 'Prepare Quizlet text')
+                : format === 'anki' ? _gxText('export.word_list_download_anki', 'Download Anki file')
+                : _gxText('export.word_list_download_csv', 'Download CSV');
+        };
+        [['csv', _gxText('export.word_list_csv', 'Spreadsheet (CSV)')], ['quizlet', _gxText('export.word_list_quizlet', 'Quizlet (copy and paste)')], ['anki', _gxText('export.word_list_anki', 'Anki (text file)')]].forEach(([value, text]) => {
+            const row = ui.el('label', 'agx-option agx-format', '', fieldset);
             const input = ui.el('input', '', '', row);
             input.type = 'radio';
             input.name = ui.uid + '-format';
             input.value = value;
-            input.checked = index === 0;
-            if (index === 0) input.setAttribute('data-agx-autofocus', '');
+            input.checked = value === format;
+            if (input.checked) input.setAttribute('data-agx-autofocus', '');
             input.addEventListener('change', () => { if (input.checked) { format = value; sync(); } });
             ui.el('span', '', text, row);
         });
+        const scopeLabel = ui.el('label', 'agx-label', _gxText('export.word_list_scope', 'Words to export'), ui.dialog);
+        const scopeSelect = ui.el('select', '', '', ui.dialog);
+        scopeLabel.htmlFor = scopeSelect.id = ui.uid + '-scope';
+        scopeSelect.setAttribute('data-agx-scope', '');
+        ['all', 'filtered', 'selected'].forEach(scope => { ui.el('option', '', '', scopeSelect).value = scope; });
+        scopeSelect.value = initial.scope || 'all';
+        const scopeHelp = ui.el('p', 'agx-note', '', ui.dialog);
+        scopeHelp.id = ui.uid + '-scope-help';
+        scopeSelect.setAttribute('aria-describedby', scopeHelp.id + ' ' + summary.id);
+        scopeSelect.addEventListener('change', sync);
         ui.dialog.appendChild(backWrap);
         const backLabel = ui.el('label', 'agx-label', _gxText('export.word_list_back', 'Back of each card'), backWrap);
         const select = ui.el('select', '', '', backWrap);
+        select.setAttribute('data-agx-back', '');
         backLabel.htmlFor = select.id = ui.uid + '-back';
+        select.setAttribute('aria-describedby', summary.id);
+        select.addEventListener('change', sync);
         ui.el('option', '', _gxText('export.word_list_back_definition', 'Definition'), select).value = 'definition';
-        languages.forEach(lang => { ui.el('option', '', _gxText('export.word_list_back_translation', '{lang} translation', { lang }), select).value = lang; });
+        languages.forEach(lang => { ui.el('option', '', _gxText('export.word_list_back_translation', '{lang} translation', { lang: _glossaryLanguageLabel(lang) }), select).value = lang; });
+        if (typeof initial.back === 'string' && initial.back && initial.back !== 'definition' && !languages.includes(initial.back)) {
+            ui.el('option', '', _gxText('export.word_list_back_translation', '{lang} translation', { lang: _glossaryLanguageLabel(initial.back) }), select).value = initial.back;
+        }
+        select.value = initial.back || 'definition';
         ui.dialog.appendChild(note);
-        sync();
+        ui.dialog.appendChild(summary);
+        const review = ui.el('details', 'agx-review', '', ui.dialog);
+        const reviewHeading = ui.el('summary', '', _gxText('word_practice.review_words', 'Words to review'), review);
+        reviewHeading.id = ui.uid + '-review';
+        reviewHeading.setAttribute('aria-describedby', summary.id);
+        const reviewWords = ui.el('div', 'agx-review-words', '', review);
+        reviewWords.tabIndex = 0;
+        reviewWords.setAttribute('role', 'region');
+        reviewWords.setAttribute('aria-labelledby', reviewHeading.id);
+        const reviewList = ui.el('ul', '', '', reviewWords);
         const actions = ui.el('div', 'agx-actions', '', ui.dialog);
-        ui.button(_gxText('export.word_list_export', 'Export'), () => {
+        const exportButton = ui.button(_gxText('export.word_list_export', 'Export'), () => {
             const back = select.value;
             const returnTo = ui.returnTo;
-            ui.close(format !== 'quizlet');
-            handleExportGlossaryFile(format, { back, opener: returnTo });
+            if (handleExportGlossaryFile(format, { back, scope: scopeSelect.value, opener: returnTo })) ui.close(format !== 'quizlet');
+            else sync();
         }, true, actions);
         ui.button(_gxText('common.cancel', 'Cancel'), () => ui.close(), false, actions);
+        sync();
     });
     const handleExportGlossaryFile = (format = 'chooser', options = {}) => {
         const { addToast } = liveRef.current || {};
         const opts = options && typeof options === 'object' ? options : {};
-        const entries = _gxEntries();
-        if (!entries) return false;
-        if (!entries.length) {
+        const allEntries = _gxEntries();
+        if (!allEntries) return false;
+        if (!allEntries.length) {
             if (typeof addToast === 'function') addToast(_gxText('export.word_list_empty', 'Add glossary terms before exporting a word list.'), 'info');
             return false;
         }
-        const languages = _gxLanguages(entries);
+        const scope = opts.scope === undefined ? 'all' : opts.scope;
+        const isChooser = !['csv', 'anki', 'quizlet'].includes(format);
+        const entries = _gxEntries(scope) || [];
+        if (!['all', 'filtered', 'selected'].includes(scope) || (!isChooser && !entries.length)) {
+            if (typeof addToast === 'function') addToast(_gxText('export.word_list_scope_empty', 'No words in this scope. Choose another scope or change the filters or selection.'), 'info');
+            return false;
+        }
+        const languages = _gxLanguages(isChooser ? allEntries : entries);
         if ((format === 'anki' || format === 'quizlet') && typeof opts.back === 'string' && opts.back && opts.back !== 'definition' && !languages.includes(opts.back)) {
-            if (typeof addToast === 'function') addToast(_gxText('export.word_list_missing_translation', 'No usable {language} translations are available. Choose a different card back.', { language: opts.back }), 'info');
+            if (typeof addToast === 'function') addToast(_gxText('export.word_list_missing_translation', 'No usable {language} translations are available. Choose a different card back.', { language: _glossaryLanguageLabel(opts.back) }), 'info');
             return false;
         }
         const back = languages.includes(opts.back) ? opts.back : 'definition';
@@ -3695,11 +3925,14 @@ function flashcardExportImageAlt(item) {
             return true;
         }
         if (format === 'quizlet') {
-            _gxQuizletDialog(_gxQuizlet(pairs), pairs.length, opts.opener);
+            // Keep filename and preview provenance with the captured import
+            // text even if another resource arrives while this dialog is open.
+            _gxQuizletDialog(_gxQuizlet(pairs), pairs.length, opts.opener, { back, scope, scopeCount: entries.length,
+                filename: _gxFileName('quizlet', 'txt'), preview: pairs.slice(0, 3) });
             reportSkipped();
             return true;
         }
-        _gxChooser(languages, opts.opener);
+        _gxChooser(languages, opts.opener, opts);
         return true;
     };
 

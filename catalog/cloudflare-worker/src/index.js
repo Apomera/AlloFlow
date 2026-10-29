@@ -114,10 +114,12 @@ function scanForPii(text) {
   for (const p of PII_PATTERNS) {
     const matches = text.match(p.re);
     if (matches && matches.length > 0) {
+      // Type and count only. Storing the matched text kept a second copy of the
+      // very PII the scan exists to flag (in private KV for bug reports, and in
+      // public Git history for lesson and translation submissions).
       findings.push({
         type: p.type,
         count: matches.length,
-        samples: matches.slice(0, 3),
       });
     }
   }

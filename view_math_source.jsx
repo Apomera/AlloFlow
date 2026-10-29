@@ -734,6 +734,7 @@ function MathView(props) {
       problem.problem,
       problem.answer,
       problem.taskType,
+      JSON.stringify(problem.steps),
       problemIndex
     ].join('|'));
     var responseValue = _mathScalarText(resourceStudentResponses[problem.__viewKey]);
@@ -741,6 +742,25 @@ function MathView(props) {
       enabled: canHandleMathProblemEdit && isMathEditing(problemIndex, problem.__viewKey, mathResourceId),
       value: problem.question || problem.problem || '',
       problemToken
+    });
+    var teacherSolutionEditing = isTeacherMode && !mathSelfGradeMode && showMathAnswers
+      && canHandleMathProblemEdit && isMathEditing(problemIndex, problem.__viewKey, mathResourceId);
+    accessibleContexts.set(mathAccessibleContextKey('teacher-answer', problem.__viewKey), {
+      enabled: teacherSolutionEditing,
+      value: problem.answer || '',
+      problemToken
+    });
+    problem.steps.forEach((step, stepIndex) => {
+      accessibleContexts.set(mathAccessibleContextKey('step-explanation-' + stepIndex, problem.__viewKey), {
+        enabled: teacherSolutionEditing,
+        value: step.explanation || '',
+        problemToken
+      });
+      accessibleContexts.set(mathAccessibleContextKey('step-latex-' + stepIndex, problem.__viewKey), {
+        enabled: teacherSolutionEditing,
+        value: step.latex || '',
+        problemToken
+      });
     });
     accessibleContexts.set(mathAccessibleContextKey('self-answer', problem.__viewKey), {
       enabled: mathSelfGradeMode && canSetMathStudentAnswers,
@@ -1150,14 +1170,20 @@ function MathView(props) {
                             {Number(generatedContent.data.preparation?.requested) > 0 && (() => {
                                 const requested = Number(generatedContent.data.preparation.requested);
                                 const reviewCount = mathProblems.filter(problem => problem._verification?.reviewRequired).length;
-                                return <p role="status" className="mt-2 text-sm text-slate-700">{_mathT(t, 'math.preparation_status', '{requested} requested · {available} available · {review} need teacher review', { requested, available: mathProblems.length, review: reviewCount })}{requested > mathProblems.length ? ' · ' + _mathT(t, 'math.preparation_missing', '{count} missing', { count: requested - mathProblems.length }) : ''}</p>;
+                                const verifiedCount = mathProblems.filter(problem => problem._verification?.verified && !problem._verification?.reviewRequired).length;
+                                return <p role="status" className="mt-2 text-sm text-slate-700">{_mathT(t, 'math.preparation_verification_status', '{requested} requested · {prepared} prepared · {verified} answer calculations verified · {review} need teacher review', { requested, prepared: mathProblems.length, verified: verifiedCount, review: reviewCount })}{requested > mathProblems.length ? ' · ' + _mathT(t, 'math.preparation_missing', '{count} missing', { count: requested - mathProblems.length }) : ''}</p>;
                             })()}
                             {mathSelfGradeMode && (
+                                <>
                                 <p id={selfGradeHelpId} className="mt-2 text-sm font-medium text-emerald-800">
                                     {hasAllSelfGradeAnswers
                                         ? _mathT(t, 'math.self_grade_all_answered', 'All {count} problems are answered. Review your responses, then submit.', { count: mathProblems.length })
                                         : selfGradeReviewHelp || _mathT(t, 'math.self_grade_progress', 'Answered {answered} of {total}. Answer every problem to enable Submit Assessment.', { answered: answeredSelfGradeCount, total: mathProblems.length })}
                                 </p>
+                                <p className="mt-2 text-sm text-slate-700">
+                                    {_mathT(t, 'math.assessment_draft_notice', 'Your answers are saved after Submit Assessment completes. Leaving or switching assessments before submitting clears your draft answers.')}
+                                </p>
+                                </>
                             )}
                         </div>
                         {graphHtml && (
@@ -1223,8 +1249,24 @@ function MathView(props) {
                                                 {formatInlineText(formatMathQuestion(problem), false)}
                                             </h3>
                                         )}
-                                        {problem._verification?.reviewRequired && <div role="alert" className="mt-2 rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950">This problem needs teacher review before answers can be checked. Its question, answer, or expression is missing or inconsistent.</div>}
-                                        {problem._verification && <span style={{ fontSize: "11px", marginLeft: "6px", opacity: 0.8 }} title={problem._verification.verified ? "Answer computationally verified" : problem._verification.autoCorrected ? "Answer auto-corrected by evaluator" : ""}>{problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : ""}</span>}
+                                        {problem._verification?.reviewRequired && <div role="alert" className="mt-2 rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950">
+                                            {_mathT(t, 'math.verification_review_notice', 'This problem needs teacher review. Automatic checks could not confirm this question and answer. Check the question, answer key, and solution steps before using it for assessment.')}
+                                            {isTeacherMode && !mathSelfGradeMode && problem.question && problem.answer
+                                                && ['unsupported_verification', 'answer_needs_review'].includes(problem._verification.reason) && (
+                                                <button type="button" disabled={!canHandleMathProblemEdit}
+                                                    onClick={() => handleMathProblemEdit(pIdx, 'teacher_reviewed', true, null, problem.__viewKey, mathResourceId)}
+                                                    className="mt-2 block min-h-[44px] rounded-lg border border-amber-800 bg-white px-3 py-2 font-bold text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-800 disabled:opacity-50">
+                                                    {_mathT(t, 'math.verification_teacher_acknowledge', 'I reviewed this question and answer')}
+                                                </button>
+                                            )}
+                                        </div>}
+                                        {problem._verification && <p className="mt-2 text-xs font-semibold text-slate-700">
+                                            {problem._verification.verified && !problem._verification.reviewRequired
+                                                ? _mathT(t, 'math.verification_calculation_verified', 'Answer calculation verified')
+                                                : problem._verification.teacherReviewed && !problem._verification.reviewRequired
+                                                    ? _mathT(t, 'math.verification_teacher_reviewed', 'Teacher reviewed (not computationally verified)')
+                                                    : _mathT(t, 'math.verification_needs_review', 'Needs teacher review')}
+                                        </p>}
                                     </div>
                                     {isTeacherMode && !mathSelfGradeMode && (
                                         <button
@@ -1334,6 +1376,12 @@ function MathView(props) {
                                                                             disabled={!canHandleMathProblemEdit}
                                                                             placeholder={t('common.placeholder_step_explanation')}
                                                                         />
+                                                                        {mathKeyboardButton(() => openAccessibleMathInput({
+                                                                            title: `Add math to explanation ${idx + 1} for problem ${pIdx + 1}`,
+                                                                            contextKey: mathAccessibleContextKey('step-explanation-' + idx, problem.__viewKey),
+                                                                            onInsert: (result, currentValue) => handleMathProblemEdit(pIdx, 'step_explanation', appendInlineMath(currentValue, result.latex), idx, problem.__viewKey, mathResourceId)
+                                                                        }), `Open accessible math keyboard for explanation ${idx + 1} of problem ${pIdx + 1}`, !canHandleMathProblemEdit)}
+                                                                        {step.explanation && <div className="rounded border border-slate-200 bg-white p-2 text-sm text-slate-800" aria-label={`Explanation ${idx + 1} preview for problem ${pIdx + 1}`}>{formatInlineText(step.explanation, false)}</div>}
                                                                         <input
                                                                             aria-label={t('math.edit_step_latex') || `Edit step ${idx + 1} LaTeX expression`}
                                                                             type="text"
@@ -1343,6 +1391,14 @@ function MathView(props) {
                                                                             disabled={!canHandleMathProblemEdit}
                                                                             placeholder={t('common.placeholder_latex_expression_optional')}
                                                                         />
+                                                                        {mathKeyboardButton(() => openAccessibleMathInput({
+                                                                            title: `Edit expression ${idx + 1} for problem ${pIdx + 1}`,
+                                                                            contextKey: mathAccessibleContextKey('step-latex-' + idx, problem.__viewKey),
+                                                                            initialLatex: step.latex || '',
+                                                                            insertLabel: 'Use as step expression',
+                                                                            onInsert: result => handleMathProblemEdit(pIdx, 'step_latex', result.latex, idx, problem.__viewKey, mathResourceId)
+                                                                        }), `Open accessible math keyboard for expression ${idx + 1} of problem ${pIdx + 1}`, !canHandleMathProblemEdit)}
+                                                                        {step.latex && <div className="overflow-x-auto rounded border border-slate-200 bg-white p-2 text-center text-slate-800" aria-label={`Expression ${idx + 1} preview for problem ${pIdx + 1}`}><MathSymbol text={step.latex} /></div>}
                                                                     </div>
                                                                 ) : (
                                                                     <>
@@ -1370,6 +1426,7 @@ function MathView(props) {
                                                         <CheckCircle2 size={14}/> {t('math.display.answer_header')}
                                                     </h4>
                                                      {isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? (
+                                                         <>
                                                          <input
                                                              type="text"
                                                              className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 font-serif text-lg font-bold text-green-900"
@@ -1379,6 +1436,15 @@ function MathView(props) {
                                                              disabled={!canHandleMathProblemEdit}
                                                              placeholder={t('common.placeholder_enter_answer')}
                                                          />
+                                                         {mathKeyboardButton(() => openAccessibleMathInput({
+                                                             title: `Edit answer for problem ${pIdx + 1}`,
+                                                             contextKey: mathAccessibleContextKey('teacher-answer', problem.__viewKey),
+                                                             initialLatex: problem.answer || '',
+                                                             insertLabel: 'Use as answer key',
+                                                             onInsert: result => handleMathProblemEdit(pIdx, 'answer', result.latex, null, problem.__viewKey, mathResourceId)
+                                                         }), `Open accessible math keyboard for answer key ${pIdx + 1}`, !canHandleMathProblemEdit)}
+                                                         {problem.answer && <div className="mt-2 overflow-x-auto rounded border border-green-200 bg-white p-2 text-lg text-green-900" aria-label={`Answer key ${pIdx + 1} preview`}><MathSymbol text={problem.answer} /></div>}
+                                                         </>
                                                      ) : (
                                                          <div className="text-lg font-bold text-green-900 font-serif">
                                                              <MathSymbol text={problem.answer} />

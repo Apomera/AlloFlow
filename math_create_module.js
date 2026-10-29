@@ -76,6 +76,94 @@
       setTimeout(function () { setSrMsg(String(msg || '')); }, 30);
     }
 
+    // Use the same MathLive dialog as the Math view. A request belongs to the
+    // exact committed authoring context; late keyboard results cannot overwrite
+    // a changed input, reordered/deleted block, or a different restored plan.
+    var keyboardContextRef = React.useRef({ signature: '', revision: 0, props: props });
+    var keyboardRequestRef = React.useRef(0);
+    var _keyboardBusy = React.useState(false), keyboardBusy = _keyboardBusy[0], setKeyboardBusy = _keyboardBusy[1];
+    var keyboardSignature = JSON.stringify([mathInput, stemLabCreateMode, mathMode, mathSubject, gradeLevel, showAssessmentBuilder, assessmentBlocks]);
+    React.useLayoutEffect(function () {
+      var previous = keyboardContextRef.current;
+      keyboardContextRef.current = {
+        signature: keyboardSignature,
+        revision: previous.revision + (previous.signature === keyboardSignature ? 0 : 1),
+        props: props
+      };
+    });
+    function appendMath(value, latex) {
+      var current = String(value || '').trimEnd();
+      var equation = '\\(' + String(latex || '').trim() + '\\)';
+      return current ? current + ' ' + equation : equation;
+    }
+    function openAuthoringMath(blockId) {
+      if (keyboardBusy) return;
+      var launchElement = document.activeElement;
+      var context = keyboardContextRef.current;
+      var revision = context.revision;
+      var requestId = ++keyboardRequestRef.current;
+      var blocks = context.props.assessmentBlocks || [];
+      var matches = blockId == null ? [] : blocks.filter(function (block) { return block.id === blockId; });
+      if (blockId != null && matches.length !== 1) return;
+      var initialValue = blockId == null ? context.props.mathInput || '' : matches[0].directive || '';
+      var current = function () {
+        return assessmentMountedRef.current && keyboardRequestRef.current === requestId
+          && keyboardContextRef.current.revision === revision;
+      };
+      setKeyboardBusy(true);
+      Promise.resolve().then(function () {
+        if (window.AlloMathInput) return window.AlloMathInput;
+        if (typeof window.__alloLoadPlugin !== 'function') throw new Error('Math keyboard is unavailable');
+        return window.__alloLoadPlugin('mathlive_loader.js').then(function () { return window.AlloMathInput; });
+      }).then(function (input) {
+        if (!current()) return null;
+        if (!input || typeof input.promptEquation !== 'function') throw new Error('Math keyboard did not initialize');
+        return input.promptEquation({
+          title: blockId == null ? 'Add math to your prompt' : 'Add math to this block directive',
+          insertLabel: 'Insert math',
+          hint: 'Enter fractions, powers, or roots. Preview the equation here, then insert it as inline math into your text.'
+        });
+      }).then(function (result) {
+        if (!result || !String(result.latex || '').trim() || !current()) return;
+        var latest = keyboardContextRef.current.props;
+        if (blockId == null) {
+          if (typeof latest.setMathInput === 'function') latest.setMathInput(function (previous) {
+            return current() && previous === initialValue ? appendMath(previous, result.latex) : previous;
+          });
+        } else if (typeof latest.setAssessmentBlocks === 'function') {
+          latest.setAssessmentBlocks(function (previous) {
+            if (!current() || !Array.isArray(previous)) return previous;
+            var matching = previous.filter(function (block) { return block.id === blockId; });
+            if (matching.length !== 1 || (matching[0].directive || '') !== initialValue) return previous;
+            return previous.map(function (block) {
+              return block.id === blockId ? { ...block, directive: appendMath(block.directive, result.latex) } : block;
+            });
+          });
+        }
+      }).catch(function () {
+        if (current()) addToast('Math keyboard is unavailable. You can still type LaTeX into the field.', 'error');
+      }).finally(function () {
+        if (assessmentMountedRef.current && keyboardRequestRef.current === requestId) {
+          setKeyboardBusy(false);
+          // MathLive restores focus before its promise settles. The launcher
+          // was disabled then, so retry once React has re-enabled it. Do not
+          // steal focus after a context switch or from another active control.
+          setTimeout(function () {
+            if (assessmentMountedRef.current && keyboardRequestRef.current === requestId
+                && launchElement && launchElement.isConnected && !launchElement.disabled
+                && document.activeElement === document.body) launchElement.focus();
+          }, 0);
+        }
+      });
+    }
+    function authoringMathButton(blockId, label) {
+      return React.createElement('button', {
+        type: 'button', 'aria-label': label, disabled: keyboardBusy,
+        className: 'mt-2 min-h-[44px] rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50',
+        onClick: function () { openAuthoringMath(blockId); }
+      }, 'Math keyboard');
+    }
+
     // Dialog semantics: focus the close button on open, trap Tab, close on
     // Escape, restore focus on unmount.
     var dialogRef = React.useRef(null);
@@ -84,6 +172,9 @@
       var previouslyFocused = document.activeElement;
       if (closeBtnRef.current) closeBtnRef.current.focus();
       function onKeyDown(e) {
+        // MathLive owns keyboard events in its nested dialog, including the
+        // Escape event that removes that dialog during capture.
+        if (e.defaultPrevented || (e.target instanceof Node && dialogRef.current && !dialogRef.current.contains(e.target))) return;
         if (e.key === 'Escape') { e.preventDefault(); onClose(); return; }
         if (e.key !== 'Tab' || !dialogRef.current) return;
         var focusables = dialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
@@ -98,6 +189,25 @@
         if (previouslyFocused && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
       };
     }, []);
+
+    var assessmentSignature = JSON.stringify([assessmentBlocks.filter(block => block.type !== 'fluency'), gradeLevel, mathSubject, props.leveledTextLanguage, props.translationMode, props.currentUiLanguage]);
+    var assessmentMatchesSettings = !!assessmentResult && assessmentCacheRef.current?.result === assessmentResult
+      && assessmentCacheRef.current.signature === assessmentSignature;
+    function isPreparedForReview(section) {
+      return !section.error && Array.isArray(section.problems) && section.requested > 0
+        && section.problems.length === section.requested
+        && (section.preparation?.prepared ?? section.preparation?.accepted) === section.requested
+        && section.problems.every(problem => problem._verification?.verified === true
+          || (problem._verification?.reviewRequired === true
+            && ['unsupported_verification', 'answer_needs_review'].includes(problem._verification.reason)));
+    }
+    var assessmentReviewOnly = assessmentMatchesSettings && assessmentResult.sections.length > 0
+      && assessmentResult.sections.every(isPreparedForReview)
+      && assessmentResult.content.problems.some(problem => problem._verification?.reviewRequired === true);
+    var assessmentGenerateLabel = assessmentReviewOnly ? 'Prepared - open to review'
+      : (assessmentBusy ? 'Preparing (' : assessmentMatchesSettings && assessmentResult.content.preparation.status === 'partial'
+        ? 'Retry incomplete sections (' : 'Generate All (')
+        + assessmentBlocks.reduce((sum, block) => sum + block.quantity, 0) + ' problems)';
 
     var body = showAssessmentBuilder
       ? React.createElement("div", {
@@ -252,7 +362,7 @@
           // form got an unlabelled text box (WCAG 3.3.2).
           "aria-label": "Block " + (idx + 1) + " directive",
           className: "w-full px-3 py-1.5 text-xs border border-slate-100 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none placeholder-slate-300"
-        })), /*#__PURE__*/React.createElement("button", {
+        }), authoringMathButton(block.id, "Open math keyboard for block " + (idx + 1) + " directive")), /*#__PURE__*/React.createElement("button", {
           onClick: () => setAssessmentBlocks(assessmentBlocks.filter((_, i) => i !== idx)),
           className: "p-1 text-slate-500 hover:text-red-500 transition-colors",
           "aria-label": "Remove block"
@@ -266,13 +376,14 @@
             directive: ''
           }]),
           className: "w-full py-2.5 border-2 border-dashed border-slate-300 text-slate-400 font-bold text-sm rounded-xl hover:border-indigo-400 hover:text-indigo-500 transition-all"
-        }, "+ Add Block"), assessmentResult && React.createElement("div", { role: "status", className: "rounded-lg border border-amber-300 p-3 text-sm" }, assessmentResult.sections.map((section, index) => React.createElement("p", { key: section.id }, 'Section ' + (index + 1) + ': ' + (section.preparation?.ready || 0) + '/' + section.requested + ' ready' + (section.error ? ' — ' + section.error : section.status === 'partial' ? ' — review or retry needed' : ''))), assessmentResult.content.problems.length > 0 && React.createElement("button", { type: "button", disabled: assessmentBusy, className: "mt-2 rounded bg-indigo-700 px-3 py-2 text-white", onClick: () => {
+        }, "+ Add Block"), assessmentResult && React.createElement("div", { role: "status", className: "rounded-lg border border-amber-300 p-3 text-sm" }, assessmentResult.sections.map((section, index) => React.createElement("p", { key: section.id }, 'Section ' + (index + 1) + ': ' + (section.preparation?.prepared ?? section.preparation?.accepted ?? 0) + '/' + section.requested + ' prepared; ' + (section.preparation?.verified || 0) + ' answer calculations verified; ' + (section.preparation?.reviewRequired || 0) + ' need teacher review' + (section.error ? ' — ' + section.error : section.status === 'partial' ? (isPreparedForReview(section) ? ' - teacher review needed' : ' - review or retry needed') : ''))), assessmentResult.content.problems.length > 0 && React.createElement("button", { type: "button", disabled: assessmentBusy, className: "mt-2 rounded bg-indigo-700 px-3 py-2 text-white", onClick: () => {
           if (typeof props.setGeneratedContent === 'function') props.setGeneratedContent({ id: assessmentResult.id, type: 'math', title: assessmentResult.content.title, data: assessmentResult.content });
           setActiveView('math'); onClose();
         } }, "Open prepared assessment")), assessmentBlocks.length > 0 && /*#__PURE__*/React.createElement("div", {
           className: "flex gap-3 pt-2"
-        }, /*#__PURE__*/React.createElement("button", { "aria-label": "Generate assessment problems", disabled: assessmentBusy, "aria-busy": assessmentBusy,
+        }, /*#__PURE__*/React.createElement("button", { "aria-label": "Generate assessment problems", disabled: assessmentBusy || assessmentReviewOnly, "aria-busy": assessmentBusy,
           onClick: () => {
+            if (assessmentReviewOnly) return;
             const fluencyBlocks = assessmentBlocks.filter(b => b.type === 'fluency');
             if (fluencyBlocks.length > 0 && assessmentBlocks.length === fluencyBlocks.length) {
               // Route to the LIVE fluency panel (MathFluencyPanel, mounted in the
@@ -288,7 +399,7 @@
               // quantity. It used to be silently discarded at this seam
               // (migration plan enhancement #2). Free-text directives are NOT
               // parsed into settings; the panel consumes this slot once, on
-              // mount, snapping the count to its own fixed options.
+              // mount, preserving supported counts and explaining any constraints.
               try {
                 window.__alloFluencyPendingConfig = {
                   problemCount: fluencyBlocks.reduce((s, b) => s + (Math.floor(Number(b.quantity)) || 0), 0),
@@ -323,7 +434,7 @@
             if (!helpers || typeof helpers.generateMathAssessment !== 'function') { addToast('Math preparation is still loading. Please try again.', 'warning'); return; }
             assessmentRunRef.current = true;
             setAssessmentBusy(true);
-            const signature = JSON.stringify([nonFluencyBlocks, gradeLevel, mathSubject, props.leveledTextLanguage, props.translationMode]);
+            const signature = assessmentSignature;
             const cached = assessmentCacheRef.current?.signature === signature ? assessmentCacheRef.current : null;
             helpers.generateMathAssessment(nonFluencyBlocks, {
               callGemini, grade: gradeLevel, subject: mathSubject, language: props.leveledTextLanguage,
@@ -339,21 +450,23 @@
                 setHistory(previous => previous.some(entry => entry.id === item.id) ? previous.map(entry => entry.id === item.id ? item : entry) : [...previous, item]);
               }
               const p = result.content.preparation;
-              addToast(p.requested + ' requested, ' + p.ready + ' ready, ' + p.reviewRequired + ' need review; ' + Math.max(0, p.requested - p.accepted) + ' missing.', p.status === 'ready' ? 'success' : 'warning');
+              addToast(p.requested + ' requested, ' + (p.prepared ?? p.accepted) + ' prepared, ' + (p.verified || 0) + ' answer calculations verified, ' + p.reviewRequired + ' need teacher review; ' + Math.max(0, p.requested - p.accepted) + ' missing.', p.verificationStatus === 'verified' ? 'success' : 'warning');
             }).catch(error => { if (assessmentMountedRef.current) addToast('Assessment preparation failed. Please try again.', 'error'); })
               .finally(() => { assessmentRunRef.current = false; if (assessmentMountedRef.current) setAssessmentBusy(false); });
           },
           className: "flex-1 py-3 bg-gradient-to-r from-indigo-700 to-blue-700 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
         }, /*#__PURE__*/React.createElement(Sparkles, {
           size: 16
-        }), assessmentBusy ? " Preparing… (" : assessmentResult?.content.preparation.status === "partial" ? " Retry incomplete sections (" : " Generate All (", assessmentBlocks.reduce((s, b) => s + b.quantity, 0), " problems)"), /*#__PURE__*/React.createElement("button", { "aria-label": "Save to Resources",
+        }), assessmentGenerateLabel), /*#__PURE__*/React.createElement("button", { "aria-label": "Save plan to Resources",
           onClick: () => {
             const stemAssessment = {
-              id: 'stem-' + Date.now(),
+              id: 'stem-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
               type: 'stem-assessment',
-              title: t('stem.fluency.stem_assessment') + (mathSubject || 'General Math'),
+              title: 'Assessment plan - ' + (mathSubject || 'General Math'),
               timestamp: Date.now(),
+              config: { grade: gradeLevel, language: props.leveledTextLanguage || 'English' },
               data: {
+                resourceKind: 'plan',
                 blocks: assessmentBlocks.map(b => ({
                   ...b
                 })),
@@ -363,10 +476,10 @@
               }
             };
             setHistory(prev => [...prev, stemAssessment]);
-            addToast(t('stem.fluency.stem_assessment_saved_to_resources') + assessmentBlocks.length + ' blocks)', 'success');
+            addToast('Assessment plan saved to Resources (' + assessmentBlocks.length + ' blocks). Generated questions are saved separately.', 'success');
           },
           className: "py-3 px-5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
-        }, "\uD83D\uDCBE Save to Resources")))
+        }, "\uD83D\uDCBE Save plan to Resources")), React.createElement("p", { className: "text-sm text-slate-700", role: "note" }, "Save plan stores the block settings. Generated questions, answer keys, and steps save automatically as a separate math resource. Student answers are saved when submitted; unsubmitted answers are not saved."))
       : React.createElement("div", {
           className: "space-y-5 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, /*#__PURE__*/React.createElement("div", {
@@ -433,7 +546,7 @@
           placeholder: stemLabCreateMode === 'solve' ? 'Enter a math problem to solve step-by-step...' : stemLabCreateMode === 'content' ? 'Paste or describe content to generate math problems from...' : 'Enter topic, standard, or description (e.g. "3rd grade multiplication word problems")...',
           className: "w-full h-28 px-4 py-3 text-sm border border-slate-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none bg-white",
           "aria-label": "Math problem input"
-        }), stemLabCreateMode === 'content' && /*#__PURE__*/React.createElement("p", {
+        }), authoringMathButton(null, "Open math keyboard for math prompt"), stemLabCreateMode === 'content' && /*#__PURE__*/React.createElement("p", {
           // "From My Content" never needed the teacher to re-paste the lesson:
           // handleGenerateMath attaches the current source itself, gated on the
           // useMathSourceContext flag (a MathPanel checkbox, default on). The

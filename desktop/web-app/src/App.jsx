@@ -36201,6 +36201,7 @@ const parseTaggedContent = (text) => {
   };
   _exportLiveRef.current = {
       history, sourceTopic, gradeLevel, generatedContent, studentResponses,
+      filteredGlossaryData, filteredGlossaryResource: generatedContent, glossarySearchTerm, glossaryFilter, glossarySort,
       profiles, adventureState,
       probeHistory, surveyResponses, fidelityLog, sessionCounter,
       externalCBMScores, interventionLogs,
@@ -45678,6 +45679,51 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                             </div>
                         </div>
                     );
+                })()}
+                {activeView === 'stem-assessment' && (() => {
+                    // Saved plans and submitted work share a historical resource type.
+                    // Render their stored payload directly; opening must never generate or grade again.
+                    const saved = generatedContent || {};
+                    const data = saved.data && typeof saved.data === 'object' ? saved.data : {};
+                    const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+                    const label = (key, fallback) => { const value = t(key); return typeof value === 'string' && value !== key ? value : fallback; };
+                    const results = Array.isArray(data.results) ? data.results.filter(row => row && typeof row === 'object') : null;
+                    const blocks = Array.isArray(data.blocks) ? data.blocks.filter(block => block && typeof block === 'object') : [];
+                    const title = label(results ? 'math.saved_results' : 'math.saved_plan', results ? 'Submitted assessment results' : 'Assessment plan');
+                    return <section aria-labelledby="saved-math-assessment-title" className="max-w-4xl mx-auto space-y-5 p-4 sm:p-6">
+                        <header>
+                            <p className="text-sm font-bold text-indigo-800">{title}</p>
+                            <h2 id="saved-math-assessment-title" className="text-2xl font-bold text-slate-900 break-words">{text(saved.title) || title}</h2>
+                        </header>
+                        {results ? <>
+                            {Number.isFinite(data.score) && Number.isFinite(data.total) && <p className="text-lg font-bold text-slate-900">{label('math.saved_score', 'Score')}: {data.score} / {data.total}{Number.isFinite(data.percentage) ? ` (${data.percentage}%)` : ''}</p>}
+                            <p className="text-sm text-slate-700">{label('math.saved_results_note', 'These are the answers and results recorded when you submitted. Opening this resource does not grade them again.')}</p>
+                            <ol className="space-y-4">
+                                {results.map((row, index) => <li key={index} className="rounded-xl border border-slate-300 bg-white p-4 space-y-2">
+                                    <h3 className="font-semibold text-slate-900 break-words">{index + 1}. {formatInlineText(text(row.question), false)}</h3>
+                                    <p className="text-slate-800 break-words"><strong>{label('math.saved_response', 'Your submitted answer')}: </strong>{formatInlineText(text(row.response), false)}</p>
+                                    <p className="font-semibold text-slate-800">{row.correct === true ? label('math.saved_correct', 'Correct') : row.correct === false ? label('math.saved_incorrect', 'Incorrect') : label('math.saved_ungraded', 'Not graded')}</p>
+                                </li>)}
+                            </ol>
+                            {!results.length && <p>{label('math.saved_no_results', 'No submitted answers were recorded in this resource.')}</p>}
+                        </> : blocks.length ? <>
+                            <p className="text-sm text-slate-700">{label('math.saved_plan_note', 'This plan saves the requested sections and settings. Generated questions are saved separately as a Math resource.')}</p>
+                            <ol className="space-y-3">
+                                {blocks.map((block, index) => <li key={index} className="rounded-xl border border-slate-300 bg-white p-4">
+                                    <h3 className="font-bold text-slate-900">{index + 1}. {text(block.type).replace(/_/g, ' ')} · {text(block.quantity)} {label('math.saved_problems', 'problems')}</h3>
+                                    <p className="text-slate-800 break-words">{formatInlineText(text(block.directive), false)}</p>
+                                </li>)}
+                            </ol>
+                            {isTeacherMode && <button type="button" className="min-h-[44px] rounded-lg bg-indigo-700 text-white px-4 py-2 font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700" onClick={() => {
+                                setAssessmentBlocks(blocks.map((block, index) => ({ ...block, id: 'restored-block-' + index })));
+                                if (text(data.subject)) setMathSubject(text(data.subject));
+                                if (text(saved.config?.grade)) setGradeLevel(text(saved.config.grade));
+                                if (text(saved.config?.language)) setLeveledTextLanguage(text(saved.config.language));
+                                setShowAssessmentBuilder(true);
+                                openMathCreate();
+                            }}>{label('math.saved_edit_plan', 'Edit a copy in Math Studio')}</button>}
+                        </> : <p role="status" className="rounded-xl border border-amber-400 bg-amber-50 p-4 text-amber-950">{label('math.saved_empty', 'This saved assessment has no readable plan or submitted results. Choose another resource or return to Math Studio.')}</p>}
+                    </section>;
                 })()}
                 {activeView === 'math' && window.AlloModules && window.AlloModules.MathView && React.createElement(window.AlloModules.MathView, {
                     t, generatedContent, isTeacherMode, isIndependentMode, isProcessing,

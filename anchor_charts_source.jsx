@@ -517,7 +517,8 @@ const AnchorChartView = React.memo((props) => {
     }
   };
 
-  const [editingRequested, setIsEditing] = React.useState(false);
+  // startEditing: the host opens an unfilled "Start blank" chart straight into editing.
+  const [editingRequested, setIsEditing] = React.useState(!!props.startEditing);
   const isEditing = isTeacherMode && editingRequested;
   const [regenIdx, setRegenIdx] = React.useState(-1);
   const [exportState, setExportState] = React.useState('idle');  // 'idle' | 'rendering' | 'error'
@@ -574,7 +575,7 @@ const AnchorChartView = React.memo((props) => {
     rubricContext: JSON.stringify([generatedContent?.id, showInteractiveDialog, rubricDraft, title, sections.map(s => [s.id, s.label, s.bullets])]) };
   React.useEffect(() => { rubricRequestRef.current++; setIsGeneratingRubric(false); }, [generatedContent?.id, showInteractiveDialog, isTeacherMode, allowRuntimeAi, !!callGeminiProp]);
   React.useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
-  React.useEffect(() => { setGradingState('idle'); setIsEditing(false); setShowInteractiveDialog(false); }, [generatedContent?.id, isTeacherMode]);
+  React.useEffect(() => { setGradingState('idle'); setIsEditing(!!props.startEditing); setShowInteractiveDialog(false); }, [generatedContent?.id, isTeacherMode]);
   const writeIcon = (resourceId, sectionId, iconUrl, expectedPrompt) => {
     const update = resource => {
       if (!resource || resource.id !== resourceId || resource.type !== 'anchor-chart') return resource;
@@ -923,6 +924,17 @@ const AnchorChartView = React.memo((props) => {
             aria-label={isEditing ? tx('anchor_chart.finish_editing', 'Finish editing') : tx('anchor_chart.edit_chart', 'Edit chart')}
             data-help-key="anchor_chart_edit_toggle"
           >{isEditing ? '✓ ' + tx('common.done_editing', 'Done editing') : '✎ ' + tx('common.edit', 'Edit')}</button>}
+          {isEditing && (
+            <label className="inline-flex items-center gap-1 text-xs font-bold text-amber-900" data-help-key="anchor_chart_layout_picker">
+              {tx('anchor_chart.layout', 'Layout')}
+              <select value={chartType} onChange={(e) => handleNoteUpdate('chartType', e.target.value)}
+                className="px-2 py-1 text-xs font-bold rounded-full border border-amber-300 bg-white text-amber-900 focus-visible:ring-2 focus-visible:ring-amber-500">
+                {Object.keys(ANCHOR_CHART_TYPE_META).map((id) => (
+                  <option key={id} value={id}>{tx('anchor_chart.type_' + id.replace(/-/g, '_'), ANCHOR_CHART_TYPE_META[id].label || id)}</option>
+                ))}
+              </select>
+            </label>
+          )}
           {/* Interactive mode toggle — teacher only. Shows "Armed" badge when on. */}
           {isTeacherMode ? (
             interactive.armed ? (

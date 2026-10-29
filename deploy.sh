@@ -169,6 +169,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ curated non-STEM CDN modules render without throwing."
   node dev-tools/check_aria_handler.cjs --quiet
   echo "  ✓ no object-typed aria-labels / unguarded tool-state array-spreads."
+  node dev-tools/check_pii_logging.cjs --quiet
+  echo "  ✓ no error logging carries what people wrote (bug reports, Copy log and DevTools show it)."
   node dev-tools/check_stem_ratio_claims.cjs
   echo "  ✓ no NEW unreviewed ratio claim in a STEM tool ('about N times', 'N orders of magnitude', 'Nx more'). A ratchet, not a fact-checker: most such claims cite outside facts and cannot be verified mechanically, so the gate only demands that a NEW one is worked out by a person before it is baselined. Three shipped wrong and were found by hand on 2026-09-20 — nuclearLab said its U-238 chain spans '24 orders of magnitude' when its OWN table spans 10^20.9; flightsim said Mach 9.6 is 'about 50 times faster than highway speeds' when the nearest antecedent (SR-71) is ~34x and the X-43 is ~108x, so 50 matched neither reading; nutritionLab said the kidneys filter 'your whole blood volume about 60 times a day' when 60x is the PLASMA figure and stem_tool_anatomy.js already said 40x for blood — two tools contradicting each other on the same physiology. Every other gate passes these: the code parses, renders and tests green, the sentence is just false. 95 claims across 34 tools baselined."
   node dev-tools/scan_hook_order_branches.cjs --quiet

@@ -1,0 +1,863 @@
+{
+  "schema_version": "pd-1.0",
+  "kind": "pd_module",
+  "metadata": {
+    "id": "accessible-documents-judgment-calls",
+    "version": "1.0.0",
+    "language": "en-US",
+    "title": "Accessible Documents: The Calls Only a Person Can Make",
+    "topic": "Accessibility",
+    "summary": "How to decide the questions an accessibility checker leaves to a person (headings, colour, reading order, image descriptions, changed numbers and more), with the WCAG criteria behind each and practice cases from real school documents.",
+    "estMinutes": 40,
+    "credit": "AlloFlow Seed Library",
+    "license": "CC-BY-SA-4.0",
+    "audience": "educator"
+  },
+  "sections": [
+    {
+      "title": "Start here",
+      "activities": [
+        {
+          "id": "read-what-checkers-cannot-do",
+          "type": "read",
+          "title": "What a checker can and cannot decide",
+          "content": {
+            "body": "Accessibility checkers are good at what they can measure: a missing image description, a heading level that skips, text with too little contrast. Some questions they cannot answer, because the answer depends on meaning. Is this bold line a heading or just emphasis? Does \"below\" mean \"next in the text\", or does the reader have to see the page? Is a changed number a page number, or a score that is now wrong?\n\nA checker flags these and leaves them to a person. This module covers the calls that come up most often when a PDF becomes an accessible document. Each lesson says what the checker cannot know, the question to ask, the usual answers and what each one leads to, then gives you practice cases like the ones real documents produce.\n\nThe lessons cite the WCAG 2.1 success criteria they relate to, with links to the W3C pages that explain each one. WCAG 2.1 Level AA is the standard the U.S. Department of Justice named in its 2024 ADA Title II rule for state and local governments, including public schools. Some calls are not WCAG rules at all but matter just as much: an accessible copy has to say what the original says.\n\nThe steps that mention the Workbench or running the check again refer to AlloFlow's document review. With another tool, make the same change there.",
+            "keyPoints": [
+              "A checker finds what it can measure; meaning needs a person.",
+              "For each flagged item, ask the guide's question and choose an answer, or say you are not sure.",
+              "\"Not sure\" is a real answer: leave the item open and ask someone who knows the content."
+            ],
+            "links": [
+              {
+                "label": "WCAG 2 overview (W3C)",
+                "url": "https://www.w3.org/WAI/standards-guidelines/wcag/"
+              },
+              {
+                "label": "ADA Title II web rule fact sheet (ADA.gov)",
+                "url": "https://www.ada.gov/resources/2024-03-08-web-rule/"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Words, colour and links",
+      "activities": [
+        {
+          "id": "learn-sensory-words",
+          "type": "read",
+          "title": "Words that point by position, shape or colour",
+          "content": {
+            "body": "What the checker cannot know: The checker spots words such as below, above, left, right, round, red or large. It cannot tell whether a reader has to SEE the page to follow the sentence, or whether the word means something else (\"your right to appeal\", \"the largest group\").\n\nThe question to ask: Could someone who cannot see the layout still follow this sentence?\n\nHow to decide:\n1. Read the whole sentence aloud without looking at the page.\n2. Ask: would I know which thing is meant, or what to do?\n3. Position words are fine when the thing is also named, or when \"below\" simply means \"next in the text\": a screen reader reaches that text next.\n\nFine as it is: The steps below explain how to apply.  /  Hispanic students were the largest group.\nNeeds a change: Use the form on the right.  ->  Use the Contact form (on the right).\n\nWCAG: 1.3.3 Sensory Characteristics (Level A).",
+            "keyPoints": [
+              "Fine as written: The word is not about position or appearance (\"the largest share\", \"a legal right\"), or the thing is also named (\"Table 2 below\"), or \"below\" just means the text that comes next. Then: Record it as fine. Nothing in the document changes.",
+              "Reword it: The reader must see where something is or what it looks like (\"click the green button\", \"see the box on the right\"). Then: Name the thing as well: \"select Submit (the green button)\", \"see the Contact box\". Edit the sentence, then run the check again.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.3.3 Sensory Characteristics (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/sensory-characteristics.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-colour-only",
+          "type": "read",
+          "title": "Colour as the only signal",
+          "content": {
+            "body": "What the checker cannot know: Equal Access asks this of every document whose styles use colour. It cannot tell whether colour is ever the ONLY way a meaning is shown.\n\nThe question to ask: Does any part of this document show meaning by colour alone?\n\nHow to decide:\n1. Look for colour keys and legends, coloured words that carry meaning, highlighted rows, and charts.\n2. Print preview in grayscale: is anything lost?\n3. If every meaning survives without colour, it is fine.\n\nFine as it is: Headings are dark blue for style; nothing depends on the colour.\nNeeds a change: Overdue items are in red.  ->  Overdue items are marked \"Overdue\" (and shown in red).\n\nWCAG: 1.4.1 Use of Color (Level A).",
+            "keyPoints": [
+              "No, colour is never the only signal: Colour is decorative, or every coloured meaning is also given in words, symbols, labels or patterns. Then: Confirm it for this document. The confirmation is recorded and asked again if the document changes.",
+              "Yes, add another signal: For example \"answers in red\", required fields shown only in red, or a chart key that uses colours alone. Then: Add a word, symbol or label next to the colour (\"(required)\", \"Correct:\", labels on chart slices). Edit, then run the check again.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.4.1 Use of Color (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/use-of-color.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-link-wording",
+          "type": "read",
+          "title": "Can you tell where a link goes from its words?",
+          "content": {
+            "body": "What the checker cannot know: Screen-reader users often list all links on a page. The checker cannot tell whether \"click here\" or a bare web address makes sense out of context.\n\nThe question to ask: Read only the link's words: do you know where it goes?\n\nHow to decide:\n1. Read the link words on their own.\n2. Name the destination or the action.\n3. A printed web address can stay, next to a descriptive link.\n\nFine as it is: Read the full board policy.\nNeeds a change: Click here  ->  Register for the open house.\n\nWCAG: 2.4.4 Link Purpose (In Context) (Level A).",
+            "keyPoints": [
+              "Yes: The words name the destination (\"Apply for free meals\"). Then: Record it as fine.",
+              "Reword the link: \"Click here\", \"more\", or a long address with no description. Then: Change the link words to name the destination (Workbench or edit), then run the check again.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 2.4.4 Link Purpose (In Context) (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "practice-words",
+          "type": "quiz",
+          "title": "Practice: words, colour and links (pass at 75%)",
+          "content": {
+            "questions": [
+              {
+                "prompt": "A budget summary says: \"Special education was the largest share of new spending.\" Could someone who cannot see the layout still follow this sentence?",
+                "options": [
+                  "Fine as written",
+                  "Reword it"
+                ],
+                "correctIndex": 0,
+                "explanation": "\"Largest\" is about the amount, not how anything looks on the page."
+              },
+              {
+                "prompt": "A worksheet says: \"Write your answers in the box on the right.\" Could someone who cannot see the layout still follow this sentence?",
+                "options": [
+                  "Fine as written",
+                  "Reword it"
+                ],
+                "correctIndex": 1,
+                "explanation": "Someone using a screen reader cannot tell which box is \"on the right\". Name it: \"Write your answers in the Answers box.\""
+              },
+              {
+                "prompt": "A district notice says: \"The steps below explain how to ask for an evaluation.\" Could someone who cannot see the layout still follow this sentence?",
+                "options": [
+                  "Fine as written",
+                  "Reword it"
+                ],
+                "correctIndex": 0,
+                "explanation": "\"Below\" means the text that comes next, and a screen reader reaches that text next."
+              },
+              {
+                "prompt": "A quiz key says \"Correct answers are shown in green.\" The answers have no other mark. Does any part of this document show meaning by colour alone?",
+                "options": [
+                  "No, colour is never the only signal",
+                  "Yes, add another signal"
+                ],
+                "correctIndex": 1,
+                "explanation": "Colour is the only signal. Add a word or symbol, such as \"(correct)\" or a check mark."
+              },
+              {
+                "prompt": "A newsletter prints its section headings in blue. Each heading is also larger, bold, and names the section. Does any part of this document show meaning by colour alone?",
+                "options": [
+                  "No, colour is never the only signal",
+                  "Yes, add another signal"
+                ],
+                "correctIndex": 0,
+                "explanation": "The colour is decoration; the words and the heading structure carry the meaning."
+              },
+              {
+                "prompt": "A notice says: \"To apply for free meals, click here.\" Read only the link's words: do you know where it goes?",
+                "options": [
+                  "Yes",
+                  "Reword the link"
+                ],
+                "correctIndex": 1,
+                "explanation": "\"Click here\" says nothing when read alone. Make the link words \"Apply for free meals\"."
+              },
+              {
+                "prompt": "A link reads \"Free and reduced-price meal application\". Read only the link's words: do you know where it goes?",
+                "options": [
+                  "Yes",
+                  "Reword the link"
+                ],
+                "correctIndex": 0,
+                "explanation": "The words name where the link goes."
+              }
+            ]
+          },
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
+        }
+      ]
+    },
+    {
+      "title": "Headings, lists, quotations and reading order",
+      "activities": [
+        {
+          "id": "learn-heading-or-emphasis",
+          "type": "read",
+          "title": "Is this bold text a heading?",
+          "content": {
+            "body": "What the checker cannot know: The checker sees short, bold or large text on its own line. It cannot tell whether the text names a section (a heading) or is emphasis, a label, a caption or a repeated page header.\n\nThe question to ask: Does this text introduce the content that follows it?\n\nHow to decide:\n1. Screen-reader users jump between headings the way sighted readers skim bold titles.\n2. Ask: would this line belong in a table of contents?\n3. Text shown twice (a caption repeated by the description) is a caption, not a heading.\n\nFine as it is: Note: bring a calculator.  (a label inside a paragraph)\nNeeds a change: A bold line \"Materials\" above a list of supplies  ->  heading \"Materials\".\n\nWCAG: 1.3.1 Info and Relationships (Level A); 2.4.6 Headings and Labels (Level AA).",
+            "keyPoints": [
+              "Yes, make it a heading: It names a section, like \"Materials\" or \"Step 2: Mix the solution\". Then: Mark it as a heading one level below the section it sits in (use the Workbench or edit it), then run the check again.",
+              "No, it is not a heading: It is emphasis, a label (\"Due:\"), a caption, or a header repeated on every page. Then: Record it as fine.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.3.1 Info and Relationships (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html"
+              },
+              {
+                "label": "WCAG 2.4.6 Headings and Labels (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/headings-and-labels.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-list-or-paragraphs",
+          "type": "read",
+          "title": "Is this really a list?",
+          "content": {
+            "body": "What the checker cannot know: The checker sees lines that look like a series (numbers, bullets, short repeated lines). It cannot tell whether they belong together as a list or are separate paragraphs, table rows or an address.\n\nThe question to ask: Are these related items meant to be read as one group?\n\nHow to decide:\n1. A screen reader announces \"list, 5 items\", so the listener knows how much is coming.\n2. Use a numbered list when the order matters (steps), bullets when it does not.\n\nFine as it is: A mailing address on three lines.\nNeeds a change: (1) Shuffle (2) Deal (3) Score  ->  a numbered list.\n\nWCAG: 1.3.1 Info and Relationships (Level A).",
+            "keyPoints": [
+              "Yes, mark it as a list: Steps, options, materials, rules: items that belong together. Then: Mark it as a list, numbered when the order matters (Workbench or edit).",
+              "No, leave the paragraphs: Separate paragraphs, an address, or a table. Then: Record it as fine.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.3.1 Info and Relationships (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-quotation",
+          "type": "read",
+          "title": "Is this a quotation?",
+          "content": {
+            "body": "What the checker cannot know: The checker sees text in quotation marks. It cannot tell a real quotation (someone's words) from a title, a term, a button label, or words printed in a logo.\n\nThe question to ask: Is this someone else's words being quoted, set apart as a passage?\n\nHow to decide:\n1. Only quoted passages set apart from the text need quotation markup.\n2. Short quotes inside a sentence are fine with quotation marks.\n3. Words shown in a logo or picture are part of its description.\n\nFine as it is: Select \"Submit\".  /  The logo reads \"cds\".\nNeeds a change: A paragraph from the law, indented and in quotes  ->  block quotation.\n\nWCAG: 1.3.1 Info and Relationships (Level A).",
+            "keyPoints": [
+              "Yes, a block quotation: A passage quoted from a person or a source, set apart from the text. Then: Mark it as a block quotation (Workbench), keeping the source if the page names one.",
+              "No, leave it: A title, a term in quotes, a menu or button label, words in a picture, or a short quote inside a sentence (quotation marks are enough). Then: Record it as fine.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.3.1 Info and Relationships (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-blockquote-indent",
+          "type": "read",
+          "title": "An indented block marked as a quotation",
+          "content": {
+            "body": "What the checker cannot know: The checker sees a block quotation. It cannot tell whether it really is a quotation or was used only to indent text.\n\nThe question to ask: Is this indented block a quotation?\n\nHow to decide:\n1. Quotation markup tells a screen reader \"this is quoted\".\n2. Using it for indentation announces a quotation that is not there.\n\nFine as it is: A quoted paragraph from a court decision.\nNeeds a change: An indented note to parents  ->  a normal paragraph.\n\nWCAG: 1.3.1 Info and Relationships (Level A).",
+            "keyPoints": [
+              "Yes, it is a quotation: Someone's words or a passage from a source. Then: Record it as fine; name the source in the text if the page gives one.",
+              "No, it is only indented: Ordinary text that was indented for looks. Then: Make it a normal paragraph (Workbench). Indentation is styling, not meaning.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.3.1 Info and Relationships (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-reading-order",
+          "type": "read",
+          "title": "Reading order differs from the original",
+          "content": {
+            "body": "What the checker cannot know: AlloFlow measures how far the order of the words moved from the original. It cannot tell whether the new order is better (a two-column form grouped by section) or wrong (columns mixed together, a caption far from its picture).\n\nThe question to ask: Reading from top to bottom, does the accessible version make sense in this order?\n\nHow to decide:\n1. Read the headings in order: do they follow the document's logic?\n2. Read the first and last sentence of each section.\n3. Check that instructions come before the questions they explain, and captions sit next to their pictures.\n\nFine as it is: A two-column intake form read section by section (child, then parent).\nNeeds a change: Two newsletter columns mixed line by line  ->  restore each article in full.\n\nWCAG: 1.3.2 Meaningful Sequence (Level A).",
+            "keyPoints": [
+              "The order makes sense: Sections follow sensibly, and each passage reads in order inside. Then: Record it as checked.",
+              "Something is out of place: Sentences are jumbled, a section is in the wrong place, or instructions come after the fields they describe. Then: Move the passage to where it belongs (Workbench or edit), then run the check again.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.3.2 Meaningful Sequence (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/meaningful-sequence.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "practice-structure",
+          "type": "quiz",
+          "title": "Practice: headings, lists, quotations and reading order (pass at 75%)",
+          "content": {
+            "questions": [
+              {
+                "prompt": "A lab sheet has the bold line \"Materials\", followed by a list of supplies. Does this text introduce the content that follows it?",
+                "options": [
+                  "Yes, make it a heading",
+                  "No, it is not a heading"
+                ],
+                "correctIndex": 0,
+                "explanation": "It names a section, so screen reader users should be able to jump to it like any heading."
+              },
+              {
+                "prompt": "A permission slip has the bold label \"Due:\" followed by a date on the same line. Does this text introduce the content that follows it?",
+                "options": [
+                  "Yes, make it a heading",
+                  "No, it is not a heading"
+                ],
+                "correctIndex": 1,
+                "explanation": "It is a label inside a sentence, not the name of a section."
+              },
+              {
+                "prompt": "A syllabus has five lines that each start with a dash: textbook, calculator, lab notebook, goggles, folder. Are these related items meant to be read as one group?",
+                "options": [
+                  "Yes, mark it as a list",
+                  "No, leave the paragraphs"
+                ],
+                "correctIndex": 0,
+                "explanation": "These items belong together. As a list, a screen reader announces \"list, 5 items\" and the reader knows what to expect."
+              },
+              {
+                "prompt": "A letter ends with the school address on three short lines. Are these related items meant to be read as one group?",
+                "options": [
+                  "Yes, mark it as a list",
+                  "No, leave the paragraphs"
+                ],
+                "correctIndex": 1,
+                "explanation": "An address is not a list of items; separate lines are fine."
+              },
+              {
+                "prompt": "An English handout sets apart a four-line passage from a novel, with the author named after it. Is this someone else's words being quoted, set apart as a passage?",
+                "options": [
+                  "Yes, a block quotation",
+                  "No, leave it"
+                ],
+                "correctIndex": 0,
+                "explanation": "It is a passage quoted from a source. Marking it as a quotation tells screen reader users where it starts and ends."
+              },
+              {
+                "prompt": "A how-to sheet says: Select \"Submit\" when you are done. Is this someone else's words being quoted, set apart as a passage?",
+                "options": [
+                  "Yes, a block quotation",
+                  "No, leave it"
+                ],
+                "correctIndex": 1,
+                "explanation": "The quotation marks show a button label, not a quotation."
+              },
+              {
+                "prompt": "A paragraph of instructions was indented only to line up with a picture, and it is marked as a quotation. Is this indented block a quotation?",
+                "options": [
+                  "Yes, it is a quotation",
+                  "No, it is only indented"
+                ],
+                "correctIndex": 1,
+                "explanation": "It is ordinary text. As a quotation, a screen reader announces a quote that is not there."
+              },
+              {
+                "prompt": "An indented paragraph is a passage from the state law, with the citation after it. Is this indented block a quotation?",
+                "options": [
+                  "Yes, it is a quotation",
+                  "No, it is only indented"
+                ],
+                "correctIndex": 0,
+                "explanation": "Someone else's words, set apart from the text: a real quotation."
+              },
+              {
+                "prompt": "The original had two columns. The accessible copy reads the whole left column, then the right, and each article reads in order. Reading from top to bottom, does the accessible version make sense in this order?",
+                "options": [
+                  "The order makes sense",
+                  "Something is out of place"
+                ],
+                "correctIndex": 0,
+                "explanation": "That is the order a sighted reader would follow."
+              },
+              {
+                "prompt": "On a form, the instructions for section B now come after the section B questions. Reading from top to bottom, does the accessible version make sense in this order?",
+                "options": [
+                  "The order makes sense",
+                  "Something is out of place"
+                ],
+                "correctIndex": 1,
+                "explanation": "Someone listening would answer the questions before hearing how. Move the instructions before the questions."
+              }
+            ]
+          },
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pictures and their descriptions",
+      "activities": [
+        {
+          "id": "learn-image-description",
+          "type": "read",
+          "title": "Does the image description fit the image?",
+          "content": {
+            "body": "What the checker cannot know: Only someone who knows why the image is in the document can say whether its description gives a reader what they need.\n\nThe question to ask: Does the description say what matters about this image for this document?\n\nHow to decide:\n1. Purpose first: why is the image here?\n2. Charts: the trend and the key values.\n3. Pictures of text: the text itself.\n4. Decoration: an empty description, so screen readers skip it.\n\nFine as it is: Photo: students measuring rainfall in a jar.\nNeeds a change: image001.png  ->  Map of the district's five school zones.\n\nWCAG: 1.1.1 Non-text Content (Level A).",
+            "keyPoints": [
+              "It fits: It says what the image shows that matters here. Then: Record it as fine.",
+              "Rewrite it: It is vague (\"image\"), wrong, or describes looks instead of purpose. Then: Rewrite it in the image review panel, then run the check again.",
+              "It is decorative: A border, divider or clip art that adds nothing. Then: Mark it decorative so screen readers skip it.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.1.1 Non-text Content (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-long-image-description",
+          "type": "read",
+          "title": "Image descriptions over 150 characters",
+          "content": {
+            "body": "What the checker cannot know: The checker counts characters. It cannot judge whether the description gives the point of the image, or whether the long detail belongs in visible text where everyone can read it.\n\nThe question to ask: Does the description give the purpose of the image in a sentence or two?\n\nHow to decide:\n1. Start with why the image is there.\n2. A screen reader reads the whole description every time: keep it to what the reader needs.\n3. Detail that everyone needs belongs in visible text, not hidden in the description.\n\nFine as it is: Bar chart: average math scores rose from 240 in 2000 to 282 in 2019.\nNeeds a change: A green circle with the number 1 beside a grey rounded label reading...  ->  Step 1: decide which assurance level applies.\n\nWCAG: 1.1.1 Non-text Content (Level A).",
+            "keyPoints": [
+              "Keep it: It is long because the image carries information that is not in the text, and the description stays on point. Then: Record it as fine. Consider putting the detail in a visible caption or table as well.",
+              "Shorten it: It describes appearance (colours, shapes, layout) rather than what the image is for. Then: Rewrite it to the purpose (\"Step 1 of 6: choose your assurance level\"); keep data in the chart table or text.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.1.1 Non-text Content (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-picture-placement",
+          "type": "read",
+          "title": "Is each picture in the right place?",
+          "content": {
+            "body": "What the checker cannot know: AlloFlow matches pictures to captions by what they describe. When the counts or descriptions disagree, it cannot be sure each picture sits under the right caption, or where a leftover picture belongs.\n\nThe question to ask: Is each picture next to the caption and text it belongs to?\n\nHow to decide:\n1. Compare each picture with the original page.\n2. Pictures gathered at the end (placement review) need a home or can be removed if decorative.\n\nFine as it is: The photo of the launch sits under \"Artemis I\".\nNeeds a change: A chart of enrollment under the caption for test scores  ->  swap them.\n\nWCAG: 1.1.1 Non-text Content (Level A); 1.3.2 Meaningful Sequence (Level A).",
+            "keyPoints": [
+              "All in place: Every picture matches its caption and nearby text. Then: Record it as checked.",
+              "Move or replace a picture: A picture is under the wrong caption, or sits in the \"review\" section at the end. Then: Use the image review panel to move or replace it, then run the check again.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 1.1.1 Non-text Content (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+              },
+              {
+                "label": "WCAG 1.3.2 Meaningful Sequence (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/meaningful-sequence.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "practice-images",
+          "type": "quiz",
+          "title": "Practice: pictures and their descriptions (pass at 75%)",
+          "content": {
+            "questions": [
+              {
+                "prompt": "A photo of the new bus loop has the description \"image1.png\". Does the description say what matters about this image for this document?",
+                "options": [
+                  "It fits",
+                  "Rewrite it",
+                  "It is decorative"
+                ],
+                "correctIndex": 1,
+                "explanation": "A file name tells a reader nothing. Say what the photo shows that matters."
+              },
+              {
+                "prompt": "A row of clip-art stars separates two sections of a newsletter. Does the description say what matters about this image for this document?",
+                "options": [
+                  "It fits",
+                  "Rewrite it",
+                  "It is decorative"
+                ],
+                "correctIndex": 2,
+                "explanation": "It adds nothing a reader needs, so screen readers should skip it."
+              },
+              {
+                "prompt": "A map has the description \"Map: the drop-off loop is on Elm Street, behind the gym.\" Does the description say what matters about this image for this document?",
+                "options": [
+                  "It fits",
+                  "Rewrite it",
+                  "It is decorative"
+                ],
+                "correctIndex": 0,
+                "explanation": "It gives what the map is for: where the drop-off loop is."
+              },
+              {
+                "prompt": "A 300-character description of the school logo describes its colours, its font and the swirl around the letters. Does the description give the purpose of the image in a sentence or two?",
+                "options": [
+                  "Keep it",
+                  "Shorten it"
+                ],
+                "correctIndex": 1,
+                "explanation": "A logo needs its name (\"Riverside School logo\"), not its appearance."
+              },
+              {
+                "prompt": "A 250-character description of a bar chart gives the riders on each of the four bus routes. The numbers appear nowhere else. Does the description give the purpose of the image in a sentence or two?",
+                "options": [
+                  "Keep it",
+                  "Shorten it"
+                ],
+                "correctIndex": 0,
+                "explanation": "The chart carries information that is not in the text, so the long description is doing real work."
+              },
+              {
+                "prompt": "A photo of the science fair winners sits under the caption \"Cafeteria menu\". Is each picture next to the caption and text it belongs to?",
+                "options": [
+                  "All in place",
+                  "Move or replace a picture"
+                ],
+                "correctIndex": 1,
+                "explanation": "The picture and caption do not match. Move the photo to its own caption."
+              },
+              {
+                "prompt": "Each picture in a recipe handout sits next to the step it shows, and matches its caption. Is each picture next to the caption and text it belongs to?",
+                "options": [
+                  "All in place",
+                  "Move or replace a picture"
+                ],
+                "correctIndex": 0,
+                "explanation": "Every picture is where the original put it."
+              }
+            ]
+          },
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
+        }
+      ]
+    },
+    {
+      "title": "Accuracy: did anything change?",
+      "activities": [
+        {
+          "id": "learn-changed-numbers",
+          "type": "read",
+          "title": "Numbers that may have changed",
+          "content": {
+            "body": "What the checker cannot know: AlloFlow compares every number in the original with the accessible version. A number can be flagged because it was dropped or changed, or harmlessly: a page number, a chart axis label, a list number, or the same value written another way.\n\nThe question to ask: Is each listed number either present (perhaps written differently) or harmless?\n\nHow to decide:\n1. Check scores, dates, money and percentages first: they matter most.\n2. Search the original for each listed number and look at what it was.\n3. Harmless: 10, 20, 30... on a chart axis; page numbers; \"(1)...(10)\" numbering a list.\n\nFine as it is: 16 and 17 were the printed page numbers.\nNeeds a change: The original says 32%; the accessible version says 23%  ->  correct it.\n\nNot a WCAG rule. This is about accuracy: an accessible copy has to say what the original says, or the people who rely on it get different information.",
+            "keyPoints": [
+              "All accounted for: Each one is a page number, an axis label, a list number, a footnote mark, or the same value written differently. Then: Record it as checked.",
+              "A value is wrong or missing: A score, date, amount, count or percentage is missing or different. Then: Correct it in the document from the original, then run the check again. Do not share until it is fixed.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-missing-words",
+          "type": "read",
+          "title": "Words that may be missing",
+          "content": {
+            "body": "What the checker cannot know: AlloFlow checks that every word of the original appears in the accessible version. A word can be flagged because it was dropped, or because the PDF's hidden text split or glued words, repeats a page header, or holds chart labels.\n\nThe question to ask: Is each listed word really in the accessible version, or harmless?\n\nHow to decide:\n1. Search the accessible version for each listed word.\n2. A run of missing words in one place usually means a passage was dropped: compare that part of the page.\n3. Odd fragments (\"hey\", \"2010fall\", \"http\") usually come from how the PDF stores text, not from a loss.\n\nFine as it is: \"Racial/Ethnic\" was split across two lines in the PDF.\nNeeds a change: The last paragraph of page 3 is not in the accessible version  ->  add it.\n\nNot a WCAG rule. This is about accuracy: an accessible copy has to say what the original says, or the people who rely on it get different information.",
+            "keyPoints": [
+              "Nothing is lost: Each word is there (perhaps split, joined or styled differently), or it is a page number, chart label or decoration. Then: Record it as checked. The tagged PDF stays held until the check passes on a later run.",
+              "Something is missing: A sentence, name, heading or answer choice is not in the accessible version. Then: Add the missing text in the right place (Workbench or edit), then run the check again.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-scan-corrections",
+          "type": "read",
+          "title": "Words corrected in a scanned page",
+          "content": {
+            "body": "What the checker cannot know: The page is a scan. Text recognition misread some words, and AlloFlow corrected them from a second reading. It cannot be certain every correction matches the paper.\n\nThe question to ask: Do the corrected words match the scanned page?\n\nHow to decide:\n1. Check names, numbers and dates first.\n2. Zoom into the scan where the corrected word sits.\n\nFine as it is: \"normaI\" was corrected to \"normal\".\nNeeds a change: A corrected date that does not match the scan  ->  fix it.\n\nNot a WCAG rule. This is about accuracy: an accessible copy has to say what the original says, or the people who rely on it get different information.",
+            "keyPoints": [
+              "They match: The listed corrections match what the scan shows. Then: Record it as checked.",
+              "A word is wrong: A name, number or word does not match the scan. Then: Correct it from the scan, then run the check again.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "practice-accuracy",
+          "type": "quiz",
+          "title": "Practice: accuracy: did anything change? (pass at 75%)",
+          "content": {
+            "questions": [
+              {
+                "prompt": "The flagged values are 1, 2, 3 and 4. In the original they are the page numbers at the bottom of each page. Is each listed number either present (perhaps written differently) or harmless?",
+                "options": [
+                  "All accounted for",
+                  "A value is wrong or missing"
+                ],
+                "correctIndex": 0,
+                "explanation": "Page numbers are left out on purpose; the content did not change."
+              },
+              {
+                "prompt": "The original says the meeting is on March 14. The accessible copy says March 4. Is each listed number either present (perhaps written differently) or harmless?",
+                "options": [
+                  "All accounted for",
+                  "A value is wrong or missing"
+                ],
+                "correctIndex": 1,
+                "explanation": "A date changed. Correct it from the original before sharing."
+              },
+              {
+                "prompt": "The flagged words are \"Page 3 of 8\", the footer printed on each page of the original. Is each listed word really in the accessible version, or harmless?",
+                "options": [
+                  "Nothing is lost",
+                  "Something is missing"
+                ],
+                "correctIndex": 0,
+                "explanation": "Page footers are left out on purpose; nothing a reader needs is lost."
+              },
+              {
+                "prompt": "Answer choice B of question 4 (\"12 hours\") is not in the accessible copy. Is each listed word really in the accessible version, or harmless?",
+                "options": [
+                  "Nothing is lost",
+                  "Something is missing"
+                ],
+                "correctIndex": 1,
+                "explanation": "A reader would see only three choices. Add the missing choice from the original."
+              },
+              {
+                "prompt": "The scan shows \"Mr. Okafor\". The corrected text says \"Mr. Okafar\". Do the corrected words match the scanned page?",
+                "options": [
+                  "They match",
+                  "A word is wrong"
+                ],
+                "correctIndex": 1,
+                "explanation": "The correction got a name wrong. Fix it from the scan."
+              },
+              {
+                "prompt": "A correction changed \"rn eeting\" to \"meeting\", which matches the scan. Do the corrected words match the scanned page?",
+                "options": [
+                  "They match",
+                  "A word is wrong"
+                ],
+                "correctIndex": 0,
+                "explanation": "The correction matches what the page shows."
+              }
+            ]
+          },
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
+        }
+      ]
+    },
+    {
+      "title": "When an accessible copy is not enough",
+      "activities": [
+        {
+          "id": "learn-fillable-form",
+          "type": "read",
+          "title": "A fillable form became a page you cannot type into",
+          "content": {
+            "body": "What the checker cannot know: The original is a fillable PDF form. The accessible HTML shows the questions clearly but cannot be typed into, and AlloFlow cannot know how families will fill it in.\n\nThe question to ask: Will people need to fill this in, and how?\n\nHow to decide:\n1. An accessible form needs labelled fields a screen reader announces.\n2. The HTML here is a reading version; it does not replace the form itself.\n\nFine as it is: A permission slip families print and sign.\nNeeds a change: An online enrollment form  ->  needs an accessible fillable version.\n\nWCAG: 4.1.2 Name, Role, Value (Level A).",
+            "keyPoints": [
+              "Reading copy is enough: People read it, or fill in a paper copy, or answer another way. Then: Share the accessible HTML as the reading copy.",
+              "A fillable version is needed: People must type into it. Then: Offer the original fillable PDF as well, or ask whoever owns the form for an accessible fillable version or an online form.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 4.1.2 Name, Role, Value (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-active-content",
+          "type": "read",
+          "title": "Scripts or attached files in the original",
+          "content": {
+            "body": "What the checker cannot know: The original PDF contains scripts, launch actions or attached files. AlloFlow never runs or opens them, so it cannot say what they do or whether anyone needs them.\n\nThe question to ask: Does anyone need what these do?\n\nHow to decide:\n1. Fillable forms often contain small scripts that format dates or phone numbers.\n2. Attachments (like printer settings files) are usually leftovers from how the PDF was made.\n\nFine as it is: An embedded \"Press Quality.joboptions\" printer settings file.\nNeeds a change: A budget workbook attached inside the PDF that people need  ->  share it separately.\n\nNot a single WCAG rule. This is about whether the accessible copy can do everything the original does.",
+            "keyPoints": [
+              "No, the HTML is enough: They are form helpers (date or phone formatting) or extras nobody uses. Then: Share the accessible HTML; it carries no active content.",
+              "Yes, ask the author: The document depends on them (a calculator, an attachment people must open). Then: Ask whoever made the PDF for a version without them, or for the attachment as its own file.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "learn-download-link",
+          "type": "read",
+          "title": "Do the download links work with the keyboard?",
+          "content": {
+            "body": "What the checker cannot know: The checker sees a link to a file (PDF, Word, spreadsheet). It cannot press it to find out whether the file opens with the keyboard alone, or whether the link is the one the document meant.\n\nThe question to ask: Does each file link open with the keyboard, and point to the right file?\n\nHow to decide:\n1. Press Tab until the link is highlighted, then press Enter.\n2. Compare the address with the original document.\n3. Good link text says what the file is: \"2024 budget (PDF)\".\n\nFine as it is: Download the application form (PDF).\nNeeds a change: A link added to a page footer that was plain text in the original  ->  remove it.\n\nWCAG: 2.1.1 Keyboard (Level A); 2.4.4 Link Purpose (In Context) (Level A).",
+            "keyPoints": [
+              "Yes, it works: Tab reaches the link, Enter opens the file, and it is the file the original linked. Then: Record it as fine.",
+              "No, fix or remove it: It does not open, opens the wrong file, or was not a link in the original. Then: Correct the address from the original document, or remove the link, then run the check again.",
+              "Not sure: You cannot tell from the page, or it depends on how the document will be used. Then: Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides."
+            ],
+            "links": [
+              {
+                "label": "WCAG 2.1.1 Keyboard (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html"
+              },
+              {
+                "label": "WCAG 2.4.4 Link Purpose (In Context) (W3C)",
+                "url": "https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context.html"
+              }
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "practice-beyond",
+          "type": "quiz",
+          "title": "Practice: when an accessible copy is not enough (pass at 75%)",
+          "content": {
+            "questions": [
+              {
+                "prompt": "A field trip notice had fillable boxes, but families sign and return a paper copy. Will people need to fill this in, and how?",
+                "options": [
+                  "Reading copy is enough",
+                  "A fillable version is needed"
+                ],
+                "correctIndex": 0,
+                "explanation": "Nobody needs to type into it, so an accessible reading copy is enough."
+              },
+              {
+                "prompt": "Staff must send an absence request by typing into the form and emailing it. Will people need to fill this in, and how?",
+                "options": [
+                  "Reading copy is enough",
+                  "A fillable version is needed"
+                ],
+                "correctIndex": 1,
+                "explanation": "People must type into it. Offer the original fillable PDF too, or ask whoever owns the form for an accessible fillable version."
+              },
+              {
+                "prompt": "The original PDF has a script that only formats the phone number field as people type. Does anyone need what these do?",
+                "options": [
+                  "No, the HTML is enough",
+                  "Yes, ask the author"
+                ],
+                "correctIndex": 0,
+                "explanation": "A formatting helper; the HTML copy does the job without it."
+              },
+              {
+                "prompt": "The original PDF carries an attached spreadsheet that families must fill in and return. Does anyone need what these do?",
+                "options": [
+                  "No, the HTML is enough",
+                  "Yes, ask the author"
+                ],
+                "correctIndex": 1,
+                "explanation": "People need the attachment, and the HTML copy does not include it. Ask the author for an accessible version."
+              },
+              {
+                "prompt": "In the accessible copy, pressing Enter on \"Download the form\" opens a \"page not found\" message. Does each file link open with the keyboard, and point to the right file?",
+                "options": [
+                  "Yes, it works",
+                  "No, fix or remove it"
+                ],
+                "correctIndex": 1,
+                "explanation": "The link does not work. Correct the address from the original, or remove the link and say where to get the form."
+              },
+              {
+                "prompt": "Tab reaches \"Download the permission slip (PDF)\" and Enter opens the same file the original linked. Does each file link open with the keyboard, and point to the right file?",
+                "options": [
+                  "Yes, it works",
+                  "No, fix or remove it"
+                ],
+                "correctIndex": 0,
+                "explanation": "It works with the keyboard and says where it goes."
+              }
+            ]
+          },
+          "gate": {
+            "kind": "score",
+            "threshold": 0.75
+          }
+        }
+      ]
+    },
+    {
+      "title": "Bring it to your documents",
+      "activities": [
+        {
+          "id": "checklist-before-sharing",
+          "type": "checklist",
+          "title": "Before you share an accessible document",
+          "content": {
+            "items": [
+              "Every flagged judgment call has a decision, or someone who knows the content is checking it.",
+              "Numbers, dates and names match the original.",
+              "Each picture sits with the text it belongs to, and has a description or is marked decorative.",
+              "Links say where they go and open the right page.",
+              "If people must type into a form, they have a fillable version.",
+              "I know who to ask when I am not sure."
+            ]
+          },
+          "gate": {
+            "kind": "none"
+          }
+        },
+        {
+          "id": "reflect-your-documents",
+          "type": "reflect",
+          "title": "Name the calls you will meet",
+          "content": {
+            "prompt": "Think of a document you share often, such as a newsletter, a syllabus or a form. Which two of these calls are most likely to come up in it, and how will you decide them? Who at your school will you ask when you are not sure?"
+          },
+          "gate": {
+            "kind": "none"
+          }
+        }
+      ]
+    }
+  ]
+}

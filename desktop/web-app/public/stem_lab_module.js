@@ -687,6 +687,9 @@
         try { window.dispatchEvent(new Event('resize')); } catch (e) {}
       };
       var _stemFsEnter = function(el) {
+        // A denied native request can settle after its tool has unmounted.
+        // Never let that stale fallback lock the body for a detached stage.
+        if (!el || el.isConnected === false) return;
         // Entering twice without an exit between is the trap here. The second call
         // used to re-snapshot the styles - saving the FILL-FRAME values (100vh,
         // fixed) as if they were the element's originals - so the stage could never
@@ -6358,7 +6361,7 @@
         var _tutBtn = isContrast ? { backgroundColor: '#fbbf24', color: '#000' }
           : isDark ? { backgroundColor: '#e0e7ff', color: '#312e81' }
             : { backgroundColor: '#fff', color: '#4f46e5' };
-        var _tutSkip = isContrast ? { color: '#fbbf24' } : { color: '#a5b4fc' };
+        var _tutSkip = isContrast ? { color: '#fbbf24' } : isDark ? { color: '#e0e7ff' } : { color: '#fff' };
         // Glow ring colour follows the theme; the sheen is a translucent light bar
         // that sweeps across the card (amber in contrast mode so it stays on-palette).
         // Sheen alpha is capped at 0.12 on the indigo cards: at 0.28 the white text
@@ -9797,6 +9800,8 @@
             // toast during their initial render (e.g. funcgrapher canvasNarrate
             // chain) trigger "Cannot update component while rendering" without it.
             addToast: _deferSafe(function(msg, type) {
+              // Some tools pass { title, message, type }; flatten it so the toast and SR get text.
+              if (msg && typeof msg === 'object') { type = type || msg.type; msg = [msg.title, msg.message].filter(Boolean).join(' — '); }
               if (addToast) addToast(msg, type);
               // Strip emoji from message for cleaner SR output
               if (typeof announceToSR === 'function' && msg) {

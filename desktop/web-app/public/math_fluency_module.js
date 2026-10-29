@@ -1225,6 +1225,7 @@
     var _c = useState('recommended'), difficulty = _c[0], setDifficulty = _c[1];
     var _d = useState(120), timeLimit = _d[0], setTimeLimit = _d[1];
     var _e = useState(120), problemCount = _e[0], setProblemCount = _e[1];
+    var _handoffCount = useState(false), handoffCountIssue = _handoffCount[0], setHandoffCountIssue = _handoffCount[1];
     var _f = useState([]), problems = _f[0], setProblems = _f[1];
     var _g = useState(0), currentIndex = _g[0], setCurrentIndex = _g[1];
     var _h = useState(0), timer = _h[0], setTimer = _h[1];
@@ -1271,14 +1272,19 @@
         var applied = [];
         var ops = { add: 1, sub: 1, mul: 1, div: 1, mixed: 1 };
         if (ops[pending.operation]) { setOperation(pending.operation); applied.push('operation'); }
-        var wanted = Math.floor(Number(pending.problemCount));
-        if (wanted >= 1) {
-          var options = [20, 40, 60, 80, 120, 150];
-          var snapped = options.reduce(function (best, opt) {
-            return Math.abs(opt - wanted) < Math.abs(best - wanted) ? opt : best;
-          }, options[0]);
-          setProblemCount(snapped);
-          applied.push('problemCount');
+        var hasCountIssue = false;
+        // Practice generators support every whole-number count from 1 to 200.
+        // Preset menu choices must not silently replace a teacher's plan.
+        // Fixed-form benchmark counts remain owned by their validated bank.
+        if (pending.mode !== 'benchmark' && Object.prototype.hasOwnProperty.call(pending, 'problemCount')) {
+          var wanted = Number(pending.problemCount);
+          if ((typeof pending.problemCount === 'number' || typeof pending.problemCount === 'string') && Number.isSafeInteger(wanted) && wanted >= 1 && wanted <= 200) {
+            setProblemCount(wanted);
+            applied.push('problemCount');
+          } else {
+            hasCountIssue = true;
+          }
+          setHandoffCountIssue(hasCountIssue);
         }
         // Standardized administration. A handoff may only ever set mode TO
         // benchmark; it must not silently drop a teacher out of one.
@@ -1292,7 +1298,7 @@
         // be written into that student's record.
         var student = typeof pending.student === 'string' ? pending.student.trim() : '';
         setProbeStudent(isBenchmark && student ? student : null);
-        if (!applied.length) return;
+        if (!applied.length || hasCountIssue) return;
         if (typeof addToast === 'function') {
           addToast(isBenchmark
             ? tt('math_fluency.probe_handoff_applied', 'Fixed-form probe set up. Review the settings, then press Start.')
@@ -1681,6 +1687,7 @@
     }, [learnerStorageReady, finishProbe, soundEnabled, addToast, sessionGoal, history]);
 
     var startProbe = useCallback(function () {
+      if (probeMode !== 'benchmark' && handoffCountIssue) return;
       // A handed-off administration carries its own grade; otherwise follow the
       // app-wide grade level as before.
       if (!learnerStorageReady) return;
@@ -1715,7 +1722,7 @@
         };
       }
       beginProbe(nextProblems, config);
-    }, [learnerStorageReady, timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, probeGradeOverride, probeStudent, beginProbe, addToast, adaptivePractice, touchKeypad, reducedMotion, highContrast, readAloud, calmDisplay, speechAvailable]);
+    }, [learnerStorageReady, timeLimit, operation, difficulty, problemCount, handoffCountIssue, gradeLevel, probeMode, probeForm, probeGradeOverride, probeStudent, beginProbe, addToast, adaptivePractice, touchKeypad, reducedMotion, highContrast, readAloud, calmDisplay, speechAvailable]);
 
     var resumeSavedAccuracyFocus = useCallback(function () {
       var restored = sanitizeAccuracyDraft(accuracyDraft, new Date());
@@ -2692,6 +2699,7 @@
     var setupGradeBanks = setupNormalizedGrade && window.MATH_PROBE_BANKS ? window.MATH_PROBE_BANKS[setupNormalizedGrade] : null;
     var setupBank = setupGradeBanks ? setupGradeBanks[probeForm] : null;
     var setupBenchmarkReady = probeMode !== 'benchmark' || validateFluencyForm(setupBank).valid;
+    var setupCountReady = probeMode === 'benchmark' || !handoffCountIssue;
     var setupSupportCount = (reducedMotion ? 1 : 0) + (highContrast ? 1 : 0) + (touchKeypad ? 1 : 0)
       + (calmDisplay ? 1 : 0) + (adaptivePractice && probeMode === 'practice' ? 1 : 0)
       + (readAloud && speechAvailable && probeMode === 'practice' ? 1 : 0);
@@ -2705,7 +2713,7 @@
         ? (setupBenchmarkReady ? tt('math_fluency.fixed_form_named', 'Fixed Form {form}', { form: probeForm }) : tt('math_fluency.fixed_form_unavailable_short', 'Fixed form unavailable'))
         : effectiveSeconds === 0 ? tt('math_fluency.accuracy_focus', 'Accuracy Focus') : tt('math_fluency.timed_practice', 'Timed practice');
       var timeLabel = effectiveSeconds === 0 ? tt('math_fluency.no_countdown', 'No countdown') : effectiveSeconds + ' ' + tt('math_fluency.seconds', 'seconds');
-      var countLabel = effectiveCount + ' ' + (effectiveCount === 1 ? tt('math_fluency.fact', 'fact') : tt('math_fluency.facts', 'facts'));
+      var countLabel = setupCountReady ? effectiveCount + ' ' + (effectiveCount === 1 ? tt('math_fluency.fact', 'fact') : tt('math_fluency.facts', 'facts')) : tt('math_fluency.choose_problem_count', 'Choose number of problems');
       var supportLabels = [];
       if (calmDisplay) supportLabels.push(tt('math_fluency.calm_display', 'Calm display'));
       if (readAloud && speechAvailable && probeMode === 'practice') supportLabels.push(tt('math_fluency.spoken_facts', 'Spoken facts'));
@@ -2716,12 +2724,12 @@
       return h('div', { className: 'mf-session-launch', style: { marginBottom: '14px' } },
         h('section', {
           id: 'mf-session-preview', className: 'mf-session-preview', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
-          style: { marginBottom: '9px', padding: '11px 12px', borderRadius: '11px', border: '1px solid ' + (setupBenchmarkReady ? '#fdba74' : '#fca5a5'), background: setupBenchmarkReady ? '#fff7ed' : '#fef2f2', color: setupBenchmarkReady ? '#9a3412' : '#991b1b' }
+          style: { marginBottom: '9px', padding: '11px 12px', borderRadius: '11px', border: '1px solid ' + (setupBenchmarkReady && setupCountReady ? '#fdba74' : '#fca5a5'), background: setupBenchmarkReady && setupCountReady ? '#fff7ed' : '#fef2f2', color: setupBenchmarkReady && setupCountReady ? '#9a3412' : '#991b1b' }
         },
-          h('strong', { style: { display: 'block', fontSize: '12px', marginBottom: '7px' } }, setupBenchmarkReady ? tt('math_fluency.ready_to_start', 'Ready to start') : tt('math_fluency.choose_available_form', 'Choose an available form')),
+          h('strong', { style: { display: 'block', fontSize: '12px', marginBottom: '7px' } }, !setupCountReady ? tt('math_fluency.choose_problem_count', 'Choose number of problems') : setupBenchmarkReady ? tt('math_fluency.ready_to_start', 'Ready to start') : tt('math_fluency.choose_available_form', 'Choose an available form')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '5px' } },
             [modeLabel, operationLabels[operationKey] || operationKey, countLabel, timeLabel].map(function (label, index) {
-              return h('span', { key: index, style: { padding: '4px 7px', borderRadius: '999px', border: '1px solid ' + (setupBenchmarkReady ? '#fed7aa' : '#fecaca'), background: '#fff', fontSize: '10px', fontWeight: 800 } }, label);
+              return h('span', { key: index, style: { padding: '4px 7px', borderRadius: '999px', border: '1px solid ' + (setupBenchmarkReady && setupCountReady ? '#fed7aa' : '#fecaca'), background: '#fff', fontSize: '10px', fontWeight: 800 } }, label);
             })
           ),
           // A handed-off administration is recorded against a named learner, so
@@ -2740,12 +2748,12 @@
         ),
         h('button', {
           'aria-label': probeMode === 'benchmark' ? tt('math_fluency.start_fixed_form', 'Start fixed form') : tt('math_fluency.start_practice', 'Start practice'),
-          'aria-describedby': 'mf-session-preview', disabled: !setupBenchmarkReady || !learnerStorageReady, onClick: startProbe,
+          'aria-describedby': 'mf-session-preview' + (!setupCountReady ? ' mf-handoff-count-issue' : ''), disabled: !setupBenchmarkReady || !setupCountReady || !learnerStorageReady, onClick: startProbe,
           style: {
-            width: '100%', padding: '10px', background: setupBenchmarkReady ? 'linear-gradient(to right, #f59e0b, #f97316)' : '#cbd5e1',
-            color: setupBenchmarkReady ? '#fff' : '#475569', fontWeight: 800, borderRadius: '12px', fontSize: '14px',
-            border: 'none', cursor: setupBenchmarkReady ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            boxShadow: setupBenchmarkReady ? '0 4px 15px rgba(245,158,11,0.3)' : 'none'
+            width: '100%', padding: '10px', background: setupBenchmarkReady && setupCountReady ? 'linear-gradient(to right, #f59e0b, #f97316)' : '#cbd5e1',
+            color: setupBenchmarkReady && setupCountReady ? '#fff' : '#475569', fontWeight: 800, borderRadius: '12px', fontSize: '14px',
+            border: 'none', cursor: setupBenchmarkReady && setupCountReady ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            boxShadow: setupBenchmarkReady && setupCountReady ? '0 4px 15px rgba(245,158,11,0.3)' : 'none'
           }
         }, h(Play, { size: 16 }), !setupBenchmarkReady
           ? tt('math_fluency.fixed_form_unavailable_short', 'Fixed Form Unavailable')
@@ -2925,10 +2933,13 @@
         h('div', null,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.of_problems', '# of Problems')),
           h('select', {
-            value: problemCount, onChange: function (e) { setProblemCount(parseInt(e.target.value)); }, disabled: probeMode === 'benchmark',
+            value: handoffCountIssue && probeMode !== 'benchmark' ? '' : problemCount, onChange: function (e) { setProblemCount(parseInt(e.target.value, 10)); setHandoffCountIssue(false); }, disabled: probeMode === 'benchmark',
+            'aria-invalid': !setupCountReady || undefined, 'aria-describedby': !setupCountReady ? 'mf-handoff-count-issue' : undefined,
             'aria-label': tt('math_fluency.number_of_problems', 'Number of problems'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
+            handoffCountIssue && h('option', { value: '', disabled: true }, tt('math_fluency.number_of_problems', 'Number of problems')),
+            [20, 40, 60, 80, 120, 150].indexOf(problemCount) === -1 && h('option', { value: problemCount }, String(problemCount)),
             h('option', { value: 20 }, '20 (Quick Check)'),
             h('option', { value: 40 }, '40 (Short)'),
             h('option', { value: 60 }, '60 (Standard)'),
@@ -2938,6 +2949,9 @@
           )
         )
       ),
+
+      !setupCountReady && h('p', { id: 'mf-handoff-count-issue', role: 'alert', style: { color: '#991b1b', background: '#fef2f2', padding: '10px', border: '1px solid #fca5a5', borderRadius: '8px' } },
+        tt('math_fluency.builder_count_unsupported', 'This assessment plan requests a count outside Fluency practice limits. Choose a whole-number count from 1 to 200 before starting.')),
 
       // Mode summary and instructional reference preview
       (function () {

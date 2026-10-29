@@ -38,7 +38,10 @@ Folder runs are sequential (up to 60 supported files, non-recursive), continue p
 per-file failures, and reuse completed outputs only after their hashes and options match.
 After interruption, find saved work with `remediation_agent_runs`;
 `remediation_agent_resume` takes the intended saved `run_id`.
-The unfinished document may restart; completed files are verified and reused.
+The unfinished document runs again, but every request whose prompt and images are unchanged
+is answered from the run's saved answers instead of being asked again; completed files are
+verified and reused. The saved answers hold document text and are deleted when the run
+completes without failures.
 An active client conversation is still needed to answer model requests.
 
 Add `narration: "accessible"` to announce headings, lists, tables and image descriptions,
@@ -411,7 +414,8 @@ Honesty notes, because this lane moves the data boundary rather than removing it
   Text-first documents are the sweet spot; scanned pages surface as images to describe. Agent
   runs hold the single-flight lane and default to a 60-minute per-document wall clock
   (`max_run_minutes`, cap 180). Saved run records support explicit resume after restart;
-  the client supplies new model replies and unfinished documents may restart.
+  unchanged requests are answered from the run's saved answers, and the client answers only
+  the requests that changed or were never answered.
 - **The transport is latency-tuned for a conversational client** (2026-08-19 perf report): the
   driver publishes a host transport profile that widens the pipeline's per-call deadlines to
   600s (vs 180s text / 120s vision tuned for HTTP sockets) and exempts the run from Gemini

@@ -2383,7 +2383,7 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
                   var _tail = fullDocument.slice(-400);
                   var _citRegex = /\[(?:[\u207d(]?)([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)(?:[\u207e)]?)\]\(([^)\n]*)(\))?/g;
                   var _lastCites = (_tail.match(_citRegex) || []).slice(-3);
-                  warnLog('[Citations pre-repair] tail(-120) ends: ' + JSON.stringify(_tail.slice(-120)) + ' | last citations: ' + JSON.stringify(_lastCites));
+                  warnLog('[Citations pre-repair] tail length ' + _tail.length + ' | last citations: ' + JSON.stringify(_lastCites));
                 } catch (_diagErr) { /* non-fatal */ }
                 // Restore any URLs Gemini corrupted (truncation at end of section,
                 // space injection at dots like "webmd. com", dropped https://) using

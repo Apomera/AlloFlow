@@ -1,7 +1,7 @@
 {
   "schema_version": "pd-1.0",
   "kind": "pd_catalog",
-  "generated_at": "2026-09-06T00:50:41.585Z",
+  "generated_at": "2026-10-29T02:56:34.256Z",
   "entries": [
     {
       "slug": "udl-representation-quickstart",
@@ -164,6 +164,24 @@
       "udlGuidelines": [
         "rep_1",
         "rep_2"
+      ]
+    },
+    {
+      "slug": "accessible-documents-judgment-calls",
+      "moduleId": "accessible-documents-judgment-calls",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:5b429b0b879d5f2d156641fd6887fbd17d268c6f3624f6f364b138eb79fdae85",
+      "title": "Accessible Documents: The Calls Only a Person Can Make",
+      "topic": "Accessibility",
+      "summary": "How to decide the questions an accessibility checker leaves to a person (headings, colour, reading order, image descriptions, changed numbers and more), with the WCAG criteria behind each and practice cases from real school documents.",
+      "estMinutes": 40,
+      "credit": "AlloFlow Seed Library",
+      "license": "CC-BY-SA-4.0",
+      "audience": "educator",
+      "path": "catalog/pd/approved/accessible-documents-judgment-calls.json",
+      "udlGuidelines": [
+        "rep_1"
       ]
     }
   ],

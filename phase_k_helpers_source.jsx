@@ -2494,7 +2494,7 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] formatInlineText fired"); } catch(_) {}
       if (!text) return null;
       if (typeof text !== 'string') {
-          warnLog("formatInlineText received non-string:", text);
+          warnLog("formatInlineText received non-string:", typeof text);
           return String(text);
       }
       text = text

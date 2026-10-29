@@ -178,6 +178,27 @@ function liveDelegations(src) {
       }
     }
   });
+  const keyName = (node) => node?.type === 'Property' && !node.computed
+    ? String(node.key.type === 'Identifier' ? node.key.name : node.key.value) : null;
+  // Unknown spreads, computed keys, accessors, or duplicate keys can replace the
+  // writer/ref/live-region property after the apparently healthy declaration.
+  function knownProps(node) {
+    if (node?.type !== 'ObjectExpression') return false;
+    const keys = new Set();
+    return node.properties.every((property) => {
+      const key = keyName(property);
+      if (key === null || property.kind !== 'init' || keys.has(key)) return false;
+      keys.add(key);
+      return true;
+    });
+  }
+  const returnedElement = (ancestors) => {
+    for (let index = ancestors.length - 1; index >= 0; index--) {
+      if (ancestors[index].type === 'ReturnStatement') return true;
+      if (fnTypes.has(ancestors[index].type)) return false;
+    }
+    return false;
+  };
   const pairStates = new Map(), pairSetters = new Map();
   walk(ast, (node, ancestors) => {
     if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier' && node.init && node.init.type === 'MemberExpression'
@@ -192,7 +213,7 @@ function liveDelegations(src) {
     const callee = node.callee, name = callee.type === 'Identifier' ? callee.name : callee.type === 'MemberExpression' && callee.property.name;
     if (!['createElement', 'h', 'H', 'el', 'e'].includes(name)) return;
     const props = node.arguments[1];
-    if (!props || props.type !== 'ObjectExpression' || !props.properties.some((p) => p.type === 'Property'
+    if (!knownProps(props) || !props.properties.some((p) => p.type === 'Property'
         && (p.key.value || p.key.name) === 'aria-live' && p.value.type === 'Literal' && ['polite', 'assertive'].includes(p.value.value))) return;
     for (const child of node.arguments.slice(2)) walk(child, (n, chain) => {
       if (fnTypes.has(n.type)) return false;
@@ -210,8 +231,7 @@ function liveDelegations(src) {
   // writer, and the caller mounts that component with the very same ref.
   const initializers = new Map(), refHooks = new Set(), publishedMethods = new Map(), changedMembers = new Map();
   const propertyName = (node) => node?.type === 'MemberExpression' && (node.computed ? node.property.value : node.property.name);
-  const keyName = (node) => node?.type === 'Property' && !node.computed ? (node.key.value || node.key.name) : null;
-  const knownProps = (node) => node?.type === 'ObjectExpression' && node.properties.every(p => p.type === 'Property');
+  const changedMember = (binding, property) => changedMembers.get(binding)?.has(property) || changedMembers.get(binding)?.has(null);
   const member = (node, property) => node && node.type === 'MemberExpression' && propertyName(node) === property;
   walk(ast, (node, ancestors) => {
     if (node.type !== 'VariableDeclarator' || node.id.type !== 'Identifier' || !node.init) return;
@@ -231,7 +251,7 @@ function liveDelegations(src) {
     const binding = resolve(written.object.name, ancestors);
     if (!binding) return;
     if (!changedMembers.has(binding)) changedMembers.set(binding, new Set());
-    changedMembers.get(binding).add(propertyName(written));
+    changedMembers.get(binding).add(propertyName(written) ?? null);
   });
   for (const [componentName, component] of functions) {
     if (duplicate.has(componentName) || component.params[0]?.type !== 'Identifier') continue;
@@ -239,7 +259,7 @@ function liveDelegations(src) {
     const propsBinding = resolve(component.params[0].name, context), candidates = [];
     walk(component.body, (node, ancestors) => {
       if (fnTypes.has(node.type)) return false;
-      if (node.type !== 'VariableDeclarator' || node.id.type !== 'Identifier' || node.init?.type !== 'ObjectExpression') return;
+      if (node.type !== 'VariableDeclarator' || node.id.type !== 'Identifier' || !knownProps(node.init)) return;
       const writer = resolve(node.id.name, ancestors);
       if (!writer || reassigned.has(writer.id)) return;
       for (const prop of node.init.properties) {
@@ -257,13 +277,13 @@ function liveDelegations(src) {
           }
         }, ancestors.concat(node, node.init, prop, prop.value));
         const method = prop.key.name || prop.key.value;
-        if (writesLive && !changedMembers.get(writer)?.has(method)) candidates.push({ writer, method });
+        if (writesLive && !changedMember(writer, method)) candidates.push({ writer, method });
       }
     }, context);
     if (!candidates.length) continue;
     walk(component.body, (node, ancestors) => {
       if (fnTypes.has(node.type)) return false;
-      if (node.type !== 'CallExpression') return;
+      if (node.type !== 'CallExpression' || !returnedElement(ancestors)) return;
       const props = node.arguments[1];
       if (!knownProps(props) || !props.properties.some(p => keyName(p) === 'aria-live'
           && p.value.type === 'Literal' && ['polite', 'assertive'].includes(p.value.value))) return;
@@ -285,7 +305,7 @@ function liveDelegations(src) {
   }
   const mountedRefMethods = new Map();
   walk(ast, (node, ancestors) => {
-    if (node.type !== 'CallExpression' || node.arguments[0]?.type !== 'Identifier' || !knownProps(node.arguments[1])) return;
+    if (node.type !== 'CallExpression' || node.arguments[0]?.type !== 'Identifier' || !knownProps(node.arguments[1]) || !returnedElement(ancestors)) return;
     const calleeName = node.callee.type === 'Identifier' ? node.callee.name : propertyName(node.callee);
     if (!['h', 'H', 'el', 'e', 'createElement'].includes(calleeName)) return;
     const component = functions.get(node.arguments[0].name), binding = resolve(node.arguments[0].name, ancestors);
@@ -294,7 +314,7 @@ function liveDelegations(src) {
       const prop = node.arguments[1].properties.find(p => keyName(p) === proof.ownerProp);
       if (!prop || prop.value.type !== 'Identifier') continue;
       const ref = resolve(prop.value.name, ancestors);
-      if (!refHooks.has(ref) || changedMembers.get(ref)?.has('current')) continue;
+      if (!refHooks.has(ref) || changedMember(ref, 'current')) continue;
       if (!mountedRefMethods.has(ref)) mountedRefMethods.set(ref, new Set());
       mountedRefMethods.get(ref).add(proof.method);
     }
@@ -302,7 +322,7 @@ function liveDelegations(src) {
   function writesThroughMountedRef(call, ancestors) {
     if (call.object.type !== 'Identifier') return false;
     const binding = resolve(call.object.name, ancestors);
-    if (changedMembers.get(binding)?.has(propertyName(call))) return false;
+    if (changedMember(binding, propertyName(call))) return false;
     const alias = initializers.get(binding);
     if (!alias || !member(alias.node, 'current') || alias.node.object.type !== 'Identifier') return false;
     const ref = resolve(alias.node.object.name, alias.ancestors);

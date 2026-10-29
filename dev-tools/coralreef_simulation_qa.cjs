@@ -7,7 +7,10 @@
 // Optional: --trail-only (camera/trail and responsive checks, skips swim/survey regression)
 // Optional: --capture-only (download checks using the production drawing-buffer policy)
 // Optional: --diversity-only (catalog population, observation controls, and species rendering)
+// Optional: --species id,id (focus diversity interaction checks on selected additions)
+// Optional: --action-timeout 60000 (real UI actions on software WebGL renderers)
 // Optional: --lens-only (optical magnification, normal-buffer exports, and responsive controls)
+// CORALREEF_QA_BROWSER can select an installed Chromium executable.
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
@@ -22,6 +25,7 @@ const TRAIL_ONLY = process.argv.includes('--trail-only');
 const CAPTURE_ONLY = process.argv.includes('--capture-only');
 const DIVERSITY_ONLY = process.argv.includes('--diversity-only');
 const LENS_ONLY = process.argv.includes('--lens-only');
+const ACTION_TIMEOUT = Math.max(1000, Math.min(180000, Number(arg('--action-timeout', '60000')) || 60000));
 const OUT = path.resolve(ROOT, arg('--out', 'reports/coralreef-simulation-2026-10-26'));
 fs.mkdirSync(OUT, { recursive: true });
 const report = { url: BASE, requestedExploreQuality: QUALITY, mode: LENS_ONLY ? 'observation-lens' : DIVERSITY_ONLY ? 'species-diversity' : CAPTURE_ONLY ? 'reef-image' : TRAIL_ONLY ? 'habitat-trail' : 'complete', created: new Date().toISOString(), checks: [], screenshots: [], errors: [], metrics: {}, sources: {} };
@@ -337,7 +341,9 @@ async function checkObservationLens(stage) {
 }
 
 async function checkReefDiversity(stage, canvas) {
-  const ids = ['porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'textile_cone', 'orange_cup_coral', 'banded_sea_krait', 'white_spotted_hermit_crab', 'longfin_bannerfish', 'bigfin_reef_squid'];
+  const additions = ['porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'textile_cone', 'orange_cup_coral', 'banded_sea_krait', 'white_spotted_hermit_crab', 'longfin_bannerfish', 'bigfin_reef_squid', 'goldmouth_sea_squirt', 'feather_duster_worm'];
+  const requested = arg('--species', '').split(',').filter(Boolean), ids = requested.length ? requested : additions;
+  if (ids.some(id => !additions.includes(id))) throw new Error('Unknown diversity species: ' + ids.filter(id => !additions.includes(id)).join(', '));
   const census = await page.evaluate(ids => {
     const scene = window.__qaRenderers.find(item => !item.disposed).scene, byId = {}, placeholders = [], badGeometry = [];
     scene.getObjectByName('reef-explore-organisms').traverse(object => {
@@ -353,28 +359,37 @@ async function checkReefDiversity(stage, canvas) {
     return { counts: Object.fromEntries(Object.entries(byId).map(([id, values]) => [id, values.size])), placeholders, badGeometry,
       targets: Object.fromEntries(ids.map(id => [id, window.__qaControllers.explore.findSpecies(id)])) };
   }, ids);
-  assert(Object.keys(census.counts).length === 74 && Object.values(census.counts).reduce((sum, n) => sum + n, 0) === 237, 'Healthy reef contains 74 living species and 237 organism groups', census.counts);
-  assert(census.placeholders.length === 0 && census.badGeometry.length === 0 && ids.every(id => census.targets[id]), 'All eleven added species use real finite models and are locatable', census);
+  assert(Object.keys(census.counts).length === 76 && Object.values(census.counts).reduce((sum, n) => sum + n, 0) === 239, 'Healthy reef contains 76 living species and 239 organism groups', census.counts);
+  assert(census.placeholders.length === 0 && census.badGeometry.length === 0 && ids.every(id => census.targets[id]), 'Checked species use real finite models and are locatable', census);
   await capture('diverse-reef-start', canvas);
   const before = await state('explore'), log = await logState();
+  report.observationActions = [];
   for (const id of ids) {
     // Fixture setup chooses an observation card; the learner's actual Locate
     // and Aim controls then operate on the existing, unchanged reef.
+    const startedAt = Date.now();
+    report.observationProgress = { speciesId: id, phase: 'open-card', actionTimeoutMs: ACTION_TIMEOUT };
     await page.evaluate(id => window.previewSet(old => ({ ...old, coralReef: { ...old.coralReef, diveStudySpeciesId: id } })), id);
     const card = page.locator('[data-marine-observation="' + id + '"]');
-    await card.locator('[data-observation-locate]').click();
+    await expect(card).toBeVisible({ timeout: ACTION_TIMEOUT });
+    report.observationProgress.phase = 'locate';
+    await card.locator('[data-observation-locate]').click({ timeout: ACTION_TIMEOUT });
     await waitState('explore', 's.focused && s.focused.speciesId === ' + JSON.stringify(id));
-    await page.locator('[data-dive-navigation]').getByRole('button', { name: 'Aim camera at selection', exact: true }).click();
+    report.observationProgress.phase = 'aim';
+    await page.locator('[data-dive-navigation]').getByRole('button', { name: 'Aim camera at selection', exact: true }).click({ timeout: ACTION_TIMEOUT });
+    report.observationProgress.phase = 'focused-frame';
     await waitFocusedFrame();
     const current = await state('explore');
     assert(current.paused && !current.navigation && JSON.stringify(current.diver) === JSON.stringify(before.diver) && await logState() === log, id + ' can be located and observed without moving or awarding discovery');
+    report.observationActions.push({ speciesId: id, elapsedMs: Date.now() - startedAt });
+    report.observationProgress.phase = 'complete';
   }
   // Diagnostic close views use the real scene and existing renderer. Temporarily
   // frame the model at its actual habitat position, then restore every camera and
   // visibility value. These images are visual QA, not a learner teleport feature.
   // Tiny host-associated animals need their host's normal culling/approach
   // context; a detached diagnostic camera is not a useful portrait of them.
-  for (const id of ['ocellated_eagle_ray', 'bigfin_reef_squid', 'blackspotted_puffer']) {
+  for (const id of ['ocellated_eagle_ray', 'bigfin_reef_squid', 'blackspotted_puffer', 'goldmouth_sea_squirt', 'feather_duster_worm'].filter(id => ids.includes(id))) {
     const png = await page.evaluate(id => {
       const item = window.__qaRenderers.find(item => !item.disposed), ctl = window.__qaControllers.explore, target = ctl.findSpecies(id);
       let root; item.scene.getObjectByName('reef-explore-organisms').traverse(o => { if (o.userData.exploreUid === target.uid) root = o; });
@@ -406,7 +421,7 @@ async function checkReefDiversity(stage, canvas) {
     report.url = BASE;
     // Keep transient downloads inside the writable QA workspace on Windows.
     const downloadsPath = path.join(OUT, 'downloads'); fs.mkdirSync(downloadsPath, { recursive: true });
-    browser = await chromium.launch({ headless: true, downloadsPath, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+    browser = await chromium.launch({ headless: true, executablePath: process.env.CORALREEF_QA_BROWSER || undefined, downloadsPath, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
     page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1, reducedMotion: 'reduce', acceptDownloads: true });
     await setup(page);
     await page.goto(new URL('?section=explore', BASE).href, { waitUntil: 'load' });
@@ -579,6 +594,19 @@ async function checkReefDiversity(stage, canvas) {
   } catch (error) {
     report.pass = false; report.failure = error.stack || String(error);
     if (page) {
+      if (report.observationProgress) report.observationDiagnostics = await page.evaluate(id => {
+        const card = document.querySelector('[data-marine-observation="' + id + '"]');
+        const locate = card?.querySelector('[data-observation-locate]'), rect = locate?.getBoundingClientRect();
+        const controller = window.__qaControllers?.explore, state = controller?.getState(), target = controller?.findSpecies(id);
+        const active = document.activeElement;
+        return { requestedSpecies: window.previewState?.coralReef?.diveStudySpeciesId,
+          cardPresent: !!card, status: card?.querySelector('[data-observation-status]')?.textContent,
+          locate: locate ? { disabled: locate.disabled, width: rect.width, height: rect.height, top: rect.top, left: rect.left,
+            display: getComputedStyle(locate).display, visibility: getComputedStyle(locate).visibility } : null,
+          focusedElement: active ? { tag: active.tagName, id: active.id, text: active.textContent?.slice(0, 120) } : null,
+          controller: state ? { ready: state.ready, paused: state.paused, quality: state.quality, frames: state.frames, focused: state.focused, navigation: state.navigation } : null,
+          target, visibility: document.visibilityState };
+      }, report.observationProgress.speciesId).catch(failure => ({ error: String(failure) }));
       report.lastPageText = await page.locator('body').innerText().catch(() => '');
       await page.screenshot({ path: path.join(OUT, 'failure.png'), fullPage: false, timeout: 10000 }).catch(() => {});
     }

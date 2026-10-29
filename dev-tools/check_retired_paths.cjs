@@ -38,6 +38,9 @@ const ALLOWED = new Set([
   'tests/retired_paths_index_search.test.js',
   'reports/adapted-reader-integration-01-2026-09-26-1730/pass-two/baseline/tests/desktop_web_shell_boundary.test.js',
   'dev-tools/check_retired_paths.cjs',
+  // The off-site backup EXCLUDES the old leaked prismflow-deploy/.env from its export:
+  // a safeguard like .assetsignore, never a write to the retired tree.
+  'dev-tools/push_slim_backup.sh',
 ]);
 
 const SCAN = /\.(js|cjs|mjs|sh|json|ya?ml|toml)$/;

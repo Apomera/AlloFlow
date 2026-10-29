@@ -5734,7 +5734,7 @@ Return ONLY JSON: { "characters": [{"name": "CharName", "description": "brief 5-
           sentenceAudios.push(audioUrl || null);
         } catch (error) {
           if (error?.name === "AbortError" || signal?.aborted) throw error;
-          console.warn("Sentence TTS failed for:", sentence, error);
+          console.warn("Sentence TTS failed (" + String(sentence || "").length + " characters):", error);
           sentenceAudios.push(null);
         }
       }

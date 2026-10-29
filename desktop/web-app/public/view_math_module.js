@@ -792,12 +792,30 @@ function MathView(props) {
   var accessibleContexts = new Map();
   mathProblems.forEach((problem, problemIndex) => {
     var usesManipulativeResponse = getMathManipulativeResponseAvailability(problem).available === true;
-    var problemToken = _mathStableHash([problem.__viewKey, problem.question, problem.problem, problem.answer, problem.taskType, problemIndex].join('|'));
+    var problemToken = _mathStableHash([problem.__viewKey, problem.question, problem.problem, problem.answer, problem.taskType, JSON.stringify(problem.steps), problemIndex].join('|'));
     var responseValue = _mathScalarText(resourceStudentResponses[problem.__viewKey]);
     accessibleContexts.set(mathAccessibleContextKey('problem-question', problem.__viewKey), {
       enabled: canHandleMathProblemEdit && isMathEditing(problemIndex, problem.__viewKey, mathResourceId),
       value: problem.question || problem.problem || '',
       problemToken
+    });
+    var teacherSolutionEditing = isTeacherMode && !mathSelfGradeMode && showMathAnswers && canHandleMathProblemEdit && isMathEditing(problemIndex, problem.__viewKey, mathResourceId);
+    accessibleContexts.set(mathAccessibleContextKey('teacher-answer', problem.__viewKey), {
+      enabled: teacherSolutionEditing,
+      value: problem.answer || '',
+      problemToken
+    });
+    problem.steps.forEach((step, stepIndex) => {
+      accessibleContexts.set(mathAccessibleContextKey('step-explanation-' + stepIndex, problem.__viewKey), {
+        enabled: teacherSolutionEditing,
+        value: step.explanation || '',
+        problemToken
+      });
+      accessibleContexts.set(mathAccessibleContextKey('step-latex-' + stepIndex, problem.__viewKey), {
+        enabled: teacherSolutionEditing,
+        value: step.latex || '',
+        problemToken
+      });
     });
     accessibleContexts.set(mathAccessibleContextKey('self-answer', problem.__viewKey), {
       enabled: mathSelfGradeMode && canSetMathStudentAnswers,
@@ -1238,17 +1256,19 @@ function MathView(props) {
   }, mathTitle || 'Math Practice'), Number(generatedContent.data.preparation?.requested) > 0 && (() => {
     const requested = Number(generatedContent.data.preparation.requested);
     const reviewCount = mathProblems.filter(problem => problem._verification?.reviewRequired).length;
+    const verifiedCount = mathProblems.filter(problem => problem._verification?.verified && !problem._verification?.reviewRequired).length;
     return /*#__PURE__*/React.createElement("p", {
       role: "status",
       className: "mt-2 text-sm text-slate-700"
-    }, _mathT(t, 'math.preparation_status', '{requested} requested · {available} available · {review} need teacher review', {
+    }, _mathT(t, 'math.preparation_verification_status', '{requested} requested · {prepared} prepared · {verified} answer calculations verified · {review} need teacher review', {
       requested,
-      available: mathProblems.length,
+      prepared: mathProblems.length,
+      verified: verifiedCount,
       review: reviewCount
     }), requested > mathProblems.length ? ' · ' + _mathT(t, 'math.preparation_missing', '{count} missing', {
       count: requested - mathProblems.length
     }) : '');
-  })(), mathSelfGradeMode && /*#__PURE__*/React.createElement("p", {
+  })(), mathSelfGradeMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     id: selfGradeHelpId,
     className: "mt-2 text-sm font-medium text-emerald-800"
   }, hasAllSelfGradeAnswers ? _mathT(t, 'math.self_grade_all_answered', 'All {count} problems are answered. Review your responses, then submit.', {
@@ -1256,7 +1276,9 @@ function MathView(props) {
   }) : selfGradeReviewHelp || _mathT(t, 'math.self_grade_progress', 'Answered {answered} of {total}. Answer every problem to enable Submit Assessment.', {
     answered: answeredSelfGradeCount,
     total: mathProblems.length
-  }))), graphHtml && /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm text-slate-700"
+  }, _mathT(t, 'math.assessment_draft_notice', 'Your answers are saved after Submit Assessment completes. Leaving or switching assessments before submitting clears your draft answers.')))), graphHtml && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2"
@@ -1313,14 +1335,14 @@ function MathView(props) {
   }, `Problem ${pIdx + 1}: `), formatInlineText(formatMathQuestion(problem), false)), problem._verification?.reviewRequired && /*#__PURE__*/React.createElement("div", {
     role: "alert",
     className: "mt-2 rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950"
-  }, "This problem needs teacher review before answers can be checked. Its question, answer, or expression is missing or inconsistent."), problem._verification && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: "11px",
-      marginLeft: "6px",
-      opacity: 0.8
-    },
-    title: problem._verification.verified ? "Answer computationally verified" : problem._verification.autoCorrected ? "Answer auto-corrected by evaluator" : ""
-  }, problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : "")), isTeacherMode && !mathSelfGradeMode && /*#__PURE__*/React.createElement("button", {
+  }, _mathT(t, 'math.verification_review_notice', 'This problem needs teacher review. Automatic checks could not confirm this question and answer. Check the question, answer key, and solution steps before using it for assessment.'), isTeacherMode && !mathSelfGradeMode && problem.question && problem.answer && ['unsupported_verification', 'answer_needs_review'].includes(problem._verification.reason) && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: !canHandleMathProblemEdit,
+    onClick: () => handleMathProblemEdit(pIdx, 'teacher_reviewed', true, null, problem.__viewKey, mathResourceId),
+    className: "mt-2 block min-h-[44px] rounded-lg border border-amber-800 bg-white px-3 py-2 font-bold text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-800 disabled:opacity-50"
+  }, _mathT(t, 'math.verification_teacher_acknowledge', 'I reviewed this question and answer'))), problem._verification && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs font-semibold text-slate-700"
+  }, problem._verification.verified && !problem._verification.reviewRequired ? _mathT(t, 'math.verification_calculation_verified', 'Answer calculation verified') : problem._verification.teacherReviewed && !problem._verification.reviewRequired ? _mathT(t, 'math.verification_teacher_reviewed', 'Teacher reviewed (not computationally verified)') : _mathT(t, 'math.verification_needs_review', 'Needs teacher review'))), isTeacherMode && !mathSelfGradeMode && /*#__PURE__*/React.createElement("button", {
     id: mathEditButtonId(problem.__viewKey),
     type: "button",
     "aria-label": isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? "Save edits" : "Edit problem",
@@ -1406,7 +1428,14 @@ function MathView(props) {
     onChange: e => handleMathProblemEdit(pIdx, 'step_explanation', e.target.value, idx, problem.__viewKey, mathResourceId),
     disabled: !canHandleMathProblemEdit,
     placeholder: t('common.placeholder_step_explanation')
-  }), /*#__PURE__*/React.createElement("input", {
+  }), mathKeyboardButton(() => openAccessibleMathInput({
+    title: `Add math to explanation ${idx + 1} for problem ${pIdx + 1}`,
+    contextKey: mathAccessibleContextKey('step-explanation-' + idx, problem.__viewKey),
+    onInsert: (result, currentValue) => handleMathProblemEdit(pIdx, 'step_explanation', appendInlineMath(currentValue, result.latex), idx, problem.__viewKey, mathResourceId)
+  }), `Open accessible math keyboard for explanation ${idx + 1} of problem ${pIdx + 1}`, !canHandleMathProblemEdit), step.explanation && /*#__PURE__*/React.createElement("div", {
+    className: "rounded border border-slate-200 bg-white p-2 text-sm text-slate-800",
+    "aria-label": `Explanation ${idx + 1} preview for problem ${pIdx + 1}`
+  }, formatInlineText(step.explanation, false)), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('math.edit_step_latex') || `Edit step ${idx + 1} LaTeX expression`,
     type: "text",
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 text-sm font-mono text-slate-600",
@@ -1414,7 +1443,18 @@ function MathView(props) {
     onChange: e => handleMathProblemEdit(pIdx, 'step_latex', e.target.value, idx, problem.__viewKey, mathResourceId),
     disabled: !canHandleMathProblemEdit,
     placeholder: t('common.placeholder_latex_expression_optional')
-  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }), mathKeyboardButton(() => openAccessibleMathInput({
+    title: `Edit expression ${idx + 1} for problem ${pIdx + 1}`,
+    contextKey: mathAccessibleContextKey('step-latex-' + idx, problem.__viewKey),
+    initialLatex: step.latex || '',
+    insertLabel: 'Use as step expression',
+    onInsert: result => handleMathProblemEdit(pIdx, 'step_latex', result.latex, idx, problem.__viewKey, mathResourceId)
+  }), `Open accessible math keyboard for expression ${idx + 1} of problem ${pIdx + 1}`, !canHandleMathProblemEdit), step.latex && /*#__PURE__*/React.createElement("div", {
+    className: "overflow-x-auto rounded border border-slate-200 bg-white p-2 text-center text-slate-800",
+    "aria-label": `Expression ${idx + 1} preview for problem ${pIdx + 1}`
+  }, /*#__PURE__*/React.createElement(MathSymbol, {
+    text: step.latex
+  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-slate-700 mb-2 leading-relaxed font-medium text-sm"
   }, formatInlineText(step.explanation, false)), step.latex && /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-3 rounded text-center border border-slate-100 overflow-x-auto flex justify-center"
@@ -1430,7 +1470,7 @@ function MathView(props) {
     className: "text-xs font-black text-green-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
-  }), " ", t('math.display.answer_header')), isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement("input", {
+  }), " ", t('math.display.answer_header')), isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("input", {
     type: "text",
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 font-serif text-lg font-bold text-green-900",
     "aria-label": t('math.edit_answer') || `Edit answer for problem ${pIdx + 1}`,
@@ -1438,7 +1478,18 @@ function MathView(props) {
     onChange: e => handleMathProblemEdit(pIdx, 'answer', e.target.value, null, problem.__viewKey, mathResourceId),
     disabled: !canHandleMathProblemEdit,
     placeholder: t('common.placeholder_enter_answer')
-  }) : /*#__PURE__*/React.createElement("div", {
+  }), mathKeyboardButton(() => openAccessibleMathInput({
+    title: `Edit answer for problem ${pIdx + 1}`,
+    contextKey: mathAccessibleContextKey('teacher-answer', problem.__viewKey),
+    initialLatex: problem.answer || '',
+    insertLabel: 'Use as answer key',
+    onInsert: result => handleMathProblemEdit(pIdx, 'answer', result.latex, null, problem.__viewKey, mathResourceId)
+  }), `Open accessible math keyboard for answer key ${pIdx + 1}`, !canHandleMathProblemEdit), problem.answer && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 overflow-x-auto rounded border border-green-200 bg-white p-2 text-lg text-green-900",
+    "aria-label": `Answer key ${pIdx + 1} preview`
+  }, /*#__PURE__*/React.createElement(MathSymbol, {
+    text: problem.answer
+  }))) : /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-bold text-green-900 font-serif"
   }, /*#__PURE__*/React.createElement(MathSymbol, {
     text: problem.answer

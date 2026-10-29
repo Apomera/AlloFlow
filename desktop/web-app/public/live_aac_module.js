@@ -486,6 +486,16 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
       cleaned = window.sanitizeSessionValue(cleaned, 'resource');
     }
   } catch (_) {}
+  // Lesson-path planning data (seed text, parents, roles) stays with the teacher,
+  // and a "Start blank" resource that is still unfilled never packs.
+  const blankDraftMinimum = item.lessonPath && item.lessonPath.seed && item.lessonPath.seed.kind === 'blank' && typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenDispatcher && window.AlloModules.GenDispatcher.hasMinimumContent;
+  if (typeof blankDraftMinimum === 'function' && !blankDraftMinimum(item.type, item.data)) return null;
+  if (cleaned && typeof cleaned === 'object' && 'lessonPath' in cleaned) {
+    cleaned = {
+      ...cleaned
+    };
+    delete cleaned.lessonPath;
+  }
   // Chunked packs retain only validated reading leaves after BOTH privacy
   // sanitizers run. All other sanitized fields, including audio, stay as-is.
   const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;

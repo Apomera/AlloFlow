@@ -242,6 +242,31 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     sourceText=sourceText.replace(/\b(\p{Lu}) (\p{Lu}{2,})\b/gu,(m,a,b)=>outWords.has((a+b).toLowerCase())?a+b:m);
     // The same split in lower case ("j ust": civics footnote, 2026-10-26), unless the letter is a word in the output.
     sourceText=sourceText.replace(/\b(\p{Ll}) (\p{Ll}{2,})\b/gu,(m,a,b)=>outWords.has(a+b)&&!outWords.has(a)?a+b:m);
+    // Sub/superscripts and marks are separate text runs ("H 2 SO 4", "WebElements TM", "30 kg person 1": USGS
+    // guide, 2026-10-28) where the output reads one word (H<sub>2</sub>SO<sub>4</sub>, ™, ¹). 2-4 adjacent pieces
+    // join when the joined word is an output word and a later piece is a 1-3 digit number or 1-2 CAPITALS
+    // (lowercase "to", "in" are words: "in to" -> "into" was a false join, notifications).
+    // Not when the output ALSO prints the pieces side by side (read with inline tags joined): then the source's
+    // separate words may be just that ("Waxaan u", "BIO 105" printed both ways: Somali letter, syllabus).
+    {const parts=sourceText.split(/(\s+)/);
+      const outSeq=' '+wordsOf(String(outputHtml||'').replace(/<\/?(?:sup|sub|span|em|strong|b|i|u|small|mark|abbr)\b[^>]*>/gi,'').replace(/<[^>]*>/g,' ')).join(' ')+' ';
+      for(let i=0;i<parts.length;i+=2)for(let k=4;k>=2;k--){const at=[];for(let j=0;j<k;j++)at.push(i+2*j);if(at[k-1]>=parts.length)continue;
+        // the first piece has a letter: digits split across runs ("1" "00") are chart labels, not a formula (budget)
+        const pieces=at.map(x=>parts[x]);if(!pieces.every(x=>/^[\p{L}\p{N}]{1,12}$/u.test(x))||!/\p{L}/u.test(pieces[0]))continue;
+        if(!outWords.has(pieces.join('').toLowerCase())||!pieces.slice(1).some(x=>/^\p{N}{1,3}$/u.test(x)||/^\p{Lu}{1,2}$/u.test(x)))continue;
+        if(outSeq.includes(' '+pieces.join(' ').toLowerCase()+' '))continue;
+        parts[i]=pieces.join('');for(let j=1;j<k;j++){parts[at[j]]='';parts[at[j]-1]='';}break;}
+      sourceText=parts.join('');}
+    // A math font's text layer repeats each glyph ("VV mmmmmm", "ssssssssss", "mmmmssmmmmmmssss": NIST HB44
+    // formulas, 2026-10-28): a 4+ letter token made only of runs of at most two letters, absent from the output, is
+    // not text. (Two-letter runs like "ii" stay: roman numerals.)
+    sourceText=sourceText.replace(/(?<![\p{L}\p{N}])((\p{L})\2+(?:(\p{L})\3+)*)(?![\p{L}\p{N}])/gu,(m)=>m.length>=4&&new Set(m.toLowerCase()).size<=2&&!outWords.has(m.toLowerCase())?' ':m);
+    // A URL scheme split by a vertical banner's text runs ("http" / "s" / "://doi.org/...": NIST SP 800-63,
+    // 2026-10-28) rejoins: the page prints one word, https.
+    sourceText=sourceText.replace(/(?<![\p{L}\p{N}])http\s+s(?=\s*:\/\/)/giu,'https');
+    // A capital split from the rest of its word at a line end ("(Figure 3).4 T / hey also tend": NSF, 2026-10-28):
+    // joined when the joined word is in the output and the remainder is not a word there of its own.
+    sourceText=sourceText.replace(/(?<![\p{L}\p{N}])(\p{Lu})\s+(\p{Ll}{2,})(?![\p{L}\p{N}])/gu,(m,a,b)=>outWords.has((a+b).toLowerCase())&&!outWords.has(b)?a+b:m);
     sourceText=sourceText.replace(/(\p{L}+)-(\p{Ll}+)/gu,(m,a,b)=>outWords.has((a+b).toLowerCase())&&!(outWords.has(a.toLowerCase())&&outWords.has(b.toLowerCase()))?a+b:m);
     sourceText=sourceText.replace(/\b(\p{Ll}+)I(\p{Ll}*)\b/gu,(m,a,b)=>outWords.has((a+'l'+b).toLowerCase())&&!outWords.has(m.toLowerCase())?a+'l'+b:m);
     // A superscript ordinal arrives as its own run ("8 th", "10 th"; 14 of 16 "missing" tokens on a
@@ -263,6 +288,16 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     // child-find, 2026-10-27): a lowercase letter or digit then an uppercase letter and a colon splits there,
     // when the part before it is an output word.
     sourceText=sourceText.replace(/(?<![\p{L}\p{N}])([\p{L}\p{N}]*[\p{Ll}\p{N}])(\p{Lu})(?=:)/gu,(m,a,b)=>outWords.has(a.toLowerCase())?a+' '+b:m);
+    // A chart's tick labels drawn as one run glue a year to the next label ("2010fall": NCES, 2026-10-28):
+    // a 2-4 digit number and a 3+ letter word split when both are output words and the glued form is not.
+    sourceText=sourceText.replace(/(?<![\p{L}\p{N}])(\d{2,4})(\p{L}{3,})(?![\p{L}\p{N}])/gu,(m,a,b)=>!outWords.has(m.toLowerCase())&&outWords.has(a)&&outWords.has(b.toLowerCase())?a+' '+b:m);
+    // A footnote number printed right after a sentence-final year or range end reads as a decimal ("in
+    // 2019.20 Private", "ages 3-21.22 Totals": NCES, 2026-10-28). Split it off, so a dropped marker is
+    // reported as "20", not as a "2019.20" the page never prints. Only after a 4-digit year or a range end,
+    // before a capitalised word, and never when the output has the decimal itself.
+    // Read the output as its tokens do: inline tags join ("2019.<sup>20</sup>" is "2019.20"), blocks split.
+    const outInline=String(outputHtml||'').replace(/<\/?(?:sup|sub|span|em|strong|b|i|u|small|mark|abbr)\b[^>]*>/gi,'').replace(/<[^>]*>/g,' ');
+    sourceText=sourceText.replace(/(?<![\d.,])(\d{4}|\d{1,3}[\u2013-]\d{1,4})\.(\d{1,3})(?=\s+\p{Lu})/gu,(m,a,b)=>new RegExp('(?<![\\d.,])'+a.replace(/^.*[\u2013-]/,'')+'\\.'+b+'(?![\\d])').test(outInline)?m:a+'. '+b);
   }
   // A page's own number printed at its top or bottom ("1", "Page 2", "2 of 3") is page furniture, not
   // content: drop one copy per page when it sits in that page's first or last two lines.

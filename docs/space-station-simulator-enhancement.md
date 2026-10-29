@@ -7,7 +7,288 @@ and hypervelocity debris shielding.
 Existing crew-shift activities, learning checks, keyboard navigation,
 reduced-motion behavior and diagram alternatives remain.
 
+## Operations investigation notebook
+
+The Integrated view supports an independent-trial workflow: predict, record a
+baseline, change a control, and compare the evidence. Recording evaluates one
+92-minute orbit from the displayed starting conditions. It does not feed the
+final battery, temperature, air or momentum state into a subsequent orbit.
+
+Each saved trial contains a versioned snapshot of the 22 integrated controls,
+including initial battery and cabin temperature, local air mixing and vent
+restoration, CMG storage and unloading settings, crew and research demand,
+array alignment, eclipse duration, cooling, scrubbing and water recovery.
+The results preserve the full-precision minimum and final battery reserve,
+peak CO₂, cabin temperature range, peak CMG load, recovery percentage and
+daily water makeup requirement. New recordings also preserve final pointing
+change in degrees and unloading propellant used in kilograms. These two optional
+measurements expose attitude effects that a peak-CMG reading alone can miss;
+they do not add flight rules. The model version remains 1 because the underlying
+physics is unchanged. Older trials retain their original eight measurements:
+missing supplemental evidence is shown as "Not recorded", with "Not comparable"
+for its difference, and exported as an empty CSV cell. Recorded zero propellant
+remains numeric zero. Changing the current controls never updates
+saved inputs, results or predictions. A trial's evidence/reflection field
+remains editable; the prediction is captured when that trial is recorded.
+
+Select a saved baseline and compare it with either the current forecast or
+another saved trial. The table shows physical units, signed differences and
+unrounded GO/CHECK decisions. Percentage changes are reported as percentage
+points. A five-rule comparison identifies newly passing checks, newly failing
+checks and unchanged decisions. Cabin temperature counts as one rule requiring
+both temperature limits; the two rows remain available as supporting readings.
+Readings that round to a rule boundary use `<` or `>` to preserve their side of
+that boundary. Small nonzero differences keep their sign instead of appearing
+unchanged. These displays never change the full-precision recorded measurements.
+The integrated system diagram and supporting lab outcome paragraphs use the
+same boundary-aware formatting. Diagram colors include the passing endpoints
+for battery reserve, water recovery and cabin temperature.
+The changed-control list counts controls that are active in either setup.
+Differences unused in both setups appear in a separate disclosure: unloading
+time, thrust and fuel when unloading is off, and vent-restoration time when
+restoration is off or airflow is already at least 90 m³/h. Enabling a feature on
+either side keeps its changed settings in the active list. Inertia remains an
+active control even when peak CMG is unchanged. Equal summary measurements do
+not prove identical trajectories, and changing one active setting does not
+necessarily change every outcome. Saved setup details include the prediction
+and every recorded input. The comparison trial has its own editable reflection
+and read-only setup and prediction, so adding evidence does not require changing
+the baseline. Editing either reflection preserves both recorded setups, results,
+predictions, selections, clocks and the unfinished next-trial prediction.
+Loading comparison controls keeps the baseline and
+comparison selections. A separate action switches the comparison to the current
+working setup and transfers focus to the rule-change summary.
+
+"Investigate a measurement" connects the comparison table to its supporting
+lab. Choose any of the ten measurements, then explicitly load and inspect the
+baseline or comparison trial, or inspect the current setup without loading a
+record. A saved inspection restores that trial's controls and seeks in the same
+update: minima and peaks use their earliest modeled occurrence, final battery,
+pointing and propellant use minute 92, and cabin minimum and maximum each use
+their own extremum. Fractional times are retained. Water recovery and daily
+makeup are setup calculations and leave both the orbit cursor and independent
+water/pressure clocks unchanged.
+
+The four orbital lab sliders retain the full inspection time rather than
+snapping it to a tenth of a minute. Their visible and spoken time labels use
+two decimals; arrow keys move 0.1 minute from the actual cursor, Page Up/Down
+move one minute, and Home/End select the endpoints. CMG peak inspection uses
+strict comparisons for unsaturated readings so a tiny rise across the 80%
+boundary is not mistaken for a tie. A true saturation plateau still opens at
+the analytic first-capacity event.
+
+Inspection pauses playback and retains the selected pair, saved evidence,
+reflections and unfinished prediction. Its focused banner distinguishes the
+recorded value from the current model's recomputed value, including when those
+values differ. Changing the setup or cursor removes stale inspection context.
+Return to comparison keeps the loaded controls and focuses the measurement
+selector's heading. Self-comparison offers one inspection action. An older
+trial missing optional pointing or propellant evidence has a disabled action
+and a visible explanation; its ordinary Load setup action remains available.
+
+The optional "Compare through the orbit" panel compares the selected baseline
+and saved comparison (or current working setup) at the same independent time.
+Six channels cover battery reserve, highest-zone CO₂, cabin temperature, CMG
+storage, pointing change and unloading propellant. Both curves share a scale;
+the baseline is dashed and the comparison is solid. Readout cards identify
+each source and its own sunlight/eclipse phase, including different eclipse
+durations. Reference lines show classroom comparison values; instantaneous
+readings do not replace the full-orbit flight-rule decisions.
+
+The panel recomputes trajectories from canonical setups using the existing
+physics models. Curves connect regular model samples and exact event/extremum
+times; cursor readouts inspect the requested time directly. These are separate
+from recorded evidence, so older trials may be explored without filling their
+missing saved measurements. For example, early and late unloading can give
+identical final summaries while storing very different momentum mid-orbit.
+Opening the panel, selecting a metric, and scrubbing never load either setup,
+change lab clocks, edit notes or alter the selected pair. Its own cursor accepts
+fractional times, arrow steps of 0.1 minute, one-minute Page Up/Down steps,
+Home/End endpoints and pointer inspection. View preferences persist; models
+are computed only while open and reused until a compared setup changes.
+
+"Key moments" adds exact event navigation within that paired view. Each
+setup has its own labeled, chronological group, including orbit endpoints and
+eclipse entry. The selected measurement determines the other events: battery
+reserve/full/empty/minimum, ventilation restoration and peak CO₂, cabin extrema
+and comfort boundaries, or momentum storage and actual unloading boundaries.
+Disabled or inactive actions do not appear. Extrema and planned actions at the
+same time keep separate entries rather than losing their meaning.
+
+Selecting an event moves only the independent comparison cursor and focuses
+both source readings and their difference. Previous/next moment traverses the
+union of distinct raw event times; displayed hundredths never replace model
+precision. The event groups refresh when the metric, selected pair or current
+setup changes. Reference boundaries may include an initial reading already
+outside the range and do not independently decide the full-orbit flight rules.
+The disclosure stays compact when closed and supports keyboard access, phone
+layouts and forced colors.
+
+"Download comparison CSV" preserves the paired trajectories separately from
+the notebook's recorded summaries. Its rectangular table has two rows at every
+shared timestamp, baseline followed by comparison, and includes all six
+measurements regardless of the selected chart. Times combine both sample grids,
+all key moments and the exact selected cursor; only numerically identical times
+merge. Both models are inspected at each shared time rather than joining their
+separate sample arrays or interpolating values.
+
+Each row identifies the data as recomputed by the current classroom model and
+includes model version, orbit duration, selected measurement, side, saved/current
+source kind, saved trial ID when applicable, selected-cursor flag, lighting
+phase, source-specific event IDs, units and all 22 canonical setup controls.
+This makes a Current setup export reproducible after the controls change. The
+CSV keeps raw numeric precision and uses UTF-8 with a BOM, quoted fields and
+CRLF rows. A click captures one pair; download status and retry handling do not
+alter tool state. Temporary download links and object URLs are released.
+Legacy missing recorded results remain missing in the notebook export even
+when the comparison download contains recomputed readings for those channels.
+
+Up to six valid trials persist with the tool's saved state: the selected baseline
+and the five newest other trials. Recording a revised trial keeps that baseline
+selected and compares the new record against it automatically. Changing the
+baseline selector changes which trial is retained during later recordings.
+Download the notebook as CSV to retain a larger record.
+The export includes model version, orbit duration, all settings and results,
+prediction and reflection, with units and spreadsheet formula escaping for
+user-entered text. Invalid saved records are excluded rather than pairing their
+results with repaired or missing settings.
+
+The 3-D map includes a direct route to station investigations. Power, cabin air,
+thermal and attitude labs have notebook actions and an optional prediction
+field. Recording there keeps the selected lab open, pauses its clock at orbit
+completion and preserves all starting conditions. Opening the notebook transfers
+keyboard focus to its heading. Water-inventory, pressure, debris and human labs
+do not offer the integrated-trial record action because their scope differs.
+
+Trial replay appears only when the current canonical controls match the
+selected saved setup. Loading a saved trial restores its controls, pauses the
+four shared orbital labs, resets the inspection cursor to zero, and keeps both
+saved evidence and the unfinished prediction for the next recording. The focused
+load notice identifies the loaded trial and retained baseline. Saved predictions
+remain with their trial details. Loading the baseline also selects Current setup
+for comparison; loading the comparison trial keeps the saved comparison selected.
+Replay events inspect that setup's modeled orbit at the start, mid-sunlight,
+eclipse entry and completion. Selecting a trial alone does not change the
+working setup. This is deterministic model inspection, not a recorded animation.
+
+Operations status and the flight-director debrief now follow the five explicit
+comparison rules. An average score cannot turn a failed reserve, air, recovery,
+temperature or CMG check into an all-clear message. These remain classroom
+comparison rules, not operational certification or measured station telemetry.
+The notebook covers power, cabin air, thermal control, attitude and recovery;
+the separate water-inventory, airlock, debris and human studies are outside its
+scope. The daily water makeup result is a recovery calculation, not a finite
+inventory or resupply simulation.
+
+`tests/space_station_ops_trials.test.js` covers input normalization, agreement
+with the physics models' defaults and limits, detached snapshots, corrupted
+persistence, retained baselines, bounds, JSON round trips, and CSV escaping. With the local preview
+running, `node dev-tools/space_station_trials_qa.cjs` exercises the notebook's
+native controls, saved/current comparisons, restoration, notes and export on
+desktop and phone. Browser run outcomes are recorded separately from this
+description of the checks.
+`node dev-tools/space_station_inquiry_qa.cjs` also checks the map entry, recording
+and playback pause in each shared lab, focus when opening the notebook, and
+baseline retention across eight recordings, including phone and forced-colors
+accessibility checks.
+`tests/space_station_ops_comparison.test.js` covers the five-rule transitions,
+strict and inclusive thresholds, invalid inputs, threshold-aware formatting and
+small signed differences. `node dev-tools/space_station_comparison_qa.cjs` checks
+saved/current comparisons, loading either trial, preserved drafts, independent
+clocks, notes, focus, boundary readings and desktop/phone accessibility.
+`tests/space_station_ops_learning.test.js` covers active-setting dependencies,
+optional attitude evidence, legacy records, JSON persistence and CSV blanks.
+`node dev-tools/space_station_learning_qa.cjs` checks the inertia investigation,
+independent reflection editing, inactive-setting explanations, supplemental
+readings, older records and CSV exports on desktop and phone, including
+forced-colors and accessibility checks.
+`tests/space_station_ops_inspection.test.js` checks all ten measurement routes,
+canonical setup conversion, exact extrema and earliest ties, fixed water math,
+and nonmutation. `node dev-tools/space_station_inspection_qa.cjs` exercises
+saved/current inspection, load-and-seek consistency, fractional times, playback
+pause, legacy evidence, model/record differences, stale-context handling,
+return focus and desktop/phone accessibility.
+`tests/space_station_ops_trajectory.test.js` checks model agreement, event
+sampling, independent phases, fractional inspection and nonmutation.
+`node dev-tools/space_station_trajectory_qa.cjs` checks paired curves and all
+six readings, identical-summary investigations, current/self comparisons,
+legacy records, independent keyboard/pointer seeking, persistence and
+desktop/phone accessibility.
+`tests/space_station_ops_trajectory_events.test.js` checks measurement-specific
+event sets, exact and coincident times, inactive actions, source phases,
+boundary semantics and nonmutation without rebuilding the physical models.
+`node dev-tools/space_station_trajectory_events_qa.cjs` checks event seeking,
+distinct-time navigation, source updates, preserved evidence and clocks,
+focus, and desktop/phone accessibility.
+`tests/space_station_ops_trajectory_export.test.js` checks the comparison CSV's
+schema, source snapshots, exact shared times, model readings, event identities,
+legacy separation, validation and nonmutation. The native download workflow,
+retry behavior, saved/current/self pairs, accessibility and phone layout are
+covered by `node dev-tools/space_station_trajectory_export_qa.cjs`.
+
 ## Physics and scope
+
+- **Synchronized integrated telemetry:** The systems diagram and four physical
+  readouts now inspect the same orbit instant as the forecast cursor. Battery
+  reserve, highest current CO₂ zone, cabin temperature and CMG storage all use
+  existing model inspection at that timestamp. Previously the diagram combined
+  final battery/temperature/CMG with peak CO₂ regardless of the cursor. Water
+  recovery is explicitly a fixed setup value with a separate inventory day clock.
+  Integrated playback advances the shared orbit clock only after Play is selected.
+  Seeking, recording, loading, changing setup and leaving the view pause it;
+  same-time event selection also pauses. Each physical readout opens its lab at
+  the current instant, whereas flight-rule cards still inspect the limiting
+  reading over the complete orbit. Recovery can therefore improve current
+  telemetry while an earlier peak keeps the full-orbit rule at CHECK. Saved
+  trial inputs, measurements and notes remain unchanged during inspection.
+  `tests/space_station_ops_snapshot.test.js` checks model agreement, fractional
+  time, highest-zone selection, recovery, invalid state and nonmutation.
+  `node dev-tools/space_station_telemetry_qa.cjs` checks synchronized readings,
+  current-versus-orbit outcomes, lab navigation, playback pause paths, saved
+  evidence, keyboard focus and desktop/phone accessibility.
+
+- **Flight-rule inspection and orbit events:** Each Operations rule card opens
+  the supporting lab at its limiting reading, including an earlier CO₂ peak or
+  CMG saturation that later recovers. Battery inspection selects the earliest
+  minimum; thermal inspection selects the greatest excursion outside the comfort
+  band, or the maximum when comfortable. Inspection pauses playback even if
+  that instant was already selected. Its focused context names the current
+  setup and reading; changing the setup or cursor removes stale context.
+  The integrated event schedule separately orders actual model boundaries,
+  eclipse entry, ventilation restoration and unloading start/end. Coincident
+  events remain separate. Event seeking retains full model precision, while
+  timestamps display hundredths of a minute; cursor arrows move one minute,
+  Page Up/Down ten, and Home/End select the orbit endpoints. Boundary events do
+  not independently determine GO/CHECK: exactly 25% battery and 18–27°C remain
+  passing values. Water recovery stays a static setup inspection and preserves
+  its separate day clock. This schedule follows the current controls; saved
+  evidence and trial replay retain their existing matching-setup rules.
+  `tests/space_station_ops_timeline.test.js` checks event times, units, limiting
+  readings, initial violations, equality and coincident events.
+  `node dev-tools/space_station_events_qa.cjs` exercises navigation, pause,
+  focus, persistence, fractional times and desktop/phone accessibility.
+
+- **Docking event timing and depleted propellant:** Live docking now resolves
+  first contact and approach-zone exit within a physics tick before recording
+  elapsed time, propellant consumption, thrust delta-v or a completion debrief.
+  The maneuver step report and flight result therefore describe the same
+  physical instant, rather than a contact position paired with a later clock
+  and fuel reading. A partially fueled final tick applies the commanded force
+  until depletion and then coasts through the remainder; it does not spread a
+  weaker force over the whole tick. The same existing midpoint-mass thrust and
+  RK4 orbital model are used, with event location refined inside the tick.
+  No-propellant, low-speed flight inside the approach zone remains active.
+  The HUD and a one-time screen-reader announcement explain that thrusters
+  and Rate hold cannot change the motion; the coast forecast, pause, coast
+  stepping and practice restart remain available. Contact and actual zone
+  exit still end the attempt once. The existing front-plane contact model,
+  training capture envelope and schematic hardware geometry are unchanged.
+  `tests/space_station_mission_physics.test.js` covers sub-tick coast and
+  powered contact, matching flight/maneuver/debrief clocks and fuel budgets,
+  fractional fuel exhaustion, continued fuel-free orbital motion, exact
+  approach-zone exits, live/forecast agreement and one-time completion.
+  The focused mission physics suite passed all 108 tests for this change;
+  browser outcomes are recorded separately.
 
 - **Module exterior detail:** Eleven cylindrical modules now have smoother
   32-segment hulls, dedicated circular end surfaces and raised ochre handrails.

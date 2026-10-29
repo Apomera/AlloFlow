@@ -132,6 +132,7 @@ function applyPdfDeliveryEvidence(summary,evidence) {
 // Plain-language meaning + next step for every withhold/review code, so staff never have to
 // decode `taggedPdfError` or `taggedPdfDelivery.code` themselves. Wording only: never changes a verdict.
 const WITHHOLD_EXPLANATIONS={
+  page_range_tagged_pdf_unsupported:['This run made an accessible version of some pages only. A tagged PDF has to cover the whole document, so none was made.','Share the accessible HTML for these pages, or run the whole document to get a tagged PDF.'],
   active_content_scan_unavailable:['The original PDF has parts AlloFlow cannot safely inspect (for example an XFA fillable form, embedded files or an unusually deep structure), so no tagged PDF was made.','Share the accessible HTML, or have a person rebuild the PDF from it in Word or Acrobat.'],
   active_content_requires_review:['The original PDF contains scripts, launch actions or embedded files, so no tagged PDF was made. In a fillable form these are often just date or phone-number formatting.','Share the accessible HTML. If a fillable PDF is needed, ask whoever made the form for a version without scripts, or have someone review them first.'],
   content_coverage_requires_review:['The accessible version may be missing words from the original, so the tagged PDF was held back.','Search the original for the words listed below and check that each one is in the accessible version. Often they are page numbers, chart axis labels, a title printed twice, a raised "nd" or "th", or a word the PDF split in two. Running again gives the same result; share once a person confirms nothing is lost.'],
@@ -149,6 +150,23 @@ const WITHHOLD_EXPLANATIONS={
   'ocr-text-layer-incomplete':['Part of this scan\'s hidden text layer could not be written, so a screen reader would read the PDF wrongly. This happens with scripts the offline text recognition or font does not cover, such as Arabic, Urdu, Persian or Hebrew.','Share the accessible HTML, which has the full text. Running again will not change this.'],
   'delivery-verdict-unavailable':['AlloFlow could not reach a final verdict for the tagged PDF.','Run the document again. If it repeats, keep this report for support.'],
 };
+// (2026-10-28) Decision guides arrive from the page (untrusted): keep only the known shape, bounded.
+function normalizeDecisionGuides(value){
+  const str=(v,n)=>typeof v==='string'?v.slice(0,n):'';
+  if(!Array.isArray(value))return [];
+  return value.slice(0,20).filter(g=>g&&typeof g==='object'&&/^[a-z][a-z-]{1,40}$/.test(g.id)).map(g=>({
+    id:g.id,title:str(g.title,120),question:str(g.question,300),checkerCannot:str(g.checkerCannot,600),
+    wcag:(Array.isArray(g.wcag)?g.wcag:[]).filter(w=>typeof w==='string'&&/^\d\.\d{1,2}\.\d{1,2}$/.test(w)).slice(0,4),
+    // W3C Understanding page per criterion; any other URL is dropped. wcagNote: why a check is not a WCAG rule.
+    wcagRefs:(Array.isArray(g.wcagRefs)?g.wcagRefs:[]).slice(0,4).filter(r=>r&&/^\d\.\d{1,2}\.\d{1,2}$/.test(r.sc)&&/^https:\/\/www\.w3\.org\/WAI\/WCAG2[12]\/Understanding\/[a-z-]{3,60}\.html$/.test(r.url)&&/^(A|AA|AAA)$/.test(r.level)).map(r=>({sc:r.sc,name:str(r.name,80),level:r.level,url:r.url})),
+    wcagNote:str(g.wcagNote,300),
+    options:(Array.isArray(g.options)?g.options:[]).slice(0,5).filter(o=>o&&/^[a-z][a-z-]{0,20}$/.test(o.id)).map(o=>({id:o.id,settles:o.settles===true,label:str(o.label,80),choose:str(o.choose,400),then:str(o.then,400)})),
+    lesson:{steps:(g.lesson&&Array.isArray(g.lesson.steps)?g.lesson.steps:[]).slice(0,6).map(s=>str(s,300)).filter(Boolean),fine:str(g.lesson&&g.lesson.fine,300),fix:str(g.lesson&&g.lesson.fix,300)},
+    findings:(Array.isArray(g.findings)?g.findings:[]).filter(f=>typeof f==='string'&&/^[a-zA-Z]+:[\w-]{1,60}$/.test(f)).slice(0,12),
+    // (2026-10-28, phase 3) where each flagged value, word or phrase sits in the original: page + words around it
+    evidence:(Array.isArray(g.evidence)?g.evidence:[]).slice(0,8).filter(e=>e&&typeof e.label==='string'&&e.label.trim()).map(e=>({label:str(e.label,80),
+      where:(Array.isArray(e.where)?e.where:[]).slice(0,2).filter(w=>w&&Number.isSafeInteger(w.page)&&w.page>0).map(w=>({page:w.page,before:str(w.before,200),match:str(w.match,100),after:str(w.after,200)}))}))}));
+}
 function explainDelivery(summary){
   const s=summary||{},items=[];
   // "tagged_pdf_delivery_unverified (ocr-text-layer-incomplete: …)" names its real cause in parentheses;
@@ -221,10 +239,15 @@ function explainDelivery(summary){
   const covRe=[/^content fidelity needs a human check/i,/^numbers may have changed between source and output/i,/^Source content coverage requires review$/i];
   const isCov=x=>covRe.some(r=>r.test(x));
   if(needs.filter(isCov).length>=2){const at=needs.findIndex(isCov);needs=needs.filter(x=>!isCov(x));
-    needs.splice(at,0,'Some words or numbers from the original are not in the accessible version'+(wordList?' (listed with the tagged-PDF item below)':'')+'. Check them against the original before sharing: they are often chart axis labels, page numbers or a title printed twice, but a changed score, date or percentage must be fixed.');}
-  return {needsAPerson:needs.slice(0,12),quickChecks,worthAGlance:list(reasons.cautions),headline:ready?'Automated checks passed for everything they can test. A person should still read it once before sharing.'
+    // (2026-10-28, SP 800-63 slice) "listed below" only when the coverage item below carries the list; another
+    // withhold reason (a page range) has none, so the words go here.
+    const listedBelow=!!wordList&&s.taggedPdfError==='content_coverage_requires_review';
+    needs.splice(at,0,'Some words or numbers from the original are not in the accessible version'+(listedBelow?' (listed with the tagged-PDF item below)':'')+'. Check them against the original before sharing: they are often chart axis labels, page numbers or a title printed twice, but a changed score, date or percentage must be fixed.'+(wordList&&!listedBelow?' '+wordList+'.':''));}
+  // (2026-10-28) decisions: how to decide each judgment call above (remediation_decision_guides.js via the run)
+  return {needsAPerson:needs.slice(0,12),quickChecks,decisions:normalizeDecisionGuides(s.decisionGuides),worthAGlance:list(reasons.cautions),headline:ready?'Automated checks passed for everything they can test. A person should still read it once before sharing.'
       // One instruction, not two: each item's own next step says what to do (Urdu UDHR: "check it" vs "share it").
-      :items.length?'No tagged PDF was made for this file. The reason and what to do instead are below.'
+      // (2026-10-28, NASA slice) the headline named the PDF reason only, while the review came from a finding below
+      :items.length?'No tagged PDF was made for this file. The reason and what to do instead are below.'+(needs.length?' Separately, '+needs.length+(needs.length===1?' finding needs':' findings need')+' a person before sharing.':'')
       :(!needs.length&&quickChecks.length)?'Automated checks finished. Only quick checks are left: a person should glance at them before sharing.'
       :'Automated checks finished, but some findings need a person to look before sharing.',items};
 }
@@ -353,4 +376,4 @@ function compactVerificationEvidence(source) {
   if (!out.ai && !out.axe && !out.equalAccess) return null;
   return out;
 }
-module.exports={compactVerificationEvidence,pdfUaEvidence,applyPdfDeliveryEvidence,explainDelivery,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};
+module.exports={compactVerificationEvidence,pdfUaEvidence,applyPdfDeliveryEvidence,explainDelivery,normalizeDecisionGuides,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};

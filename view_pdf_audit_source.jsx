@@ -469,9 +469,11 @@ function _viewAttachRuntimeBindingProof(target, html, bindingKey, snapshotKey, d
   }
 }
 // Review attestations are metadata. Keep live proof only for the exact, already-bound HTML.
-function _viewWithReviewAttestations(result, reviewedFindings, pipeline) {
+// (2026-10-28) reviewDecisions: the answer chosen from each finding's decision guide ({ guide, option, at }); undefined keeps it.
+function _viewWithReviewAttestations(result, reviewedFindings, pipeline, reviewDecisions) {
   if (!result || typeof result !== 'object') return result;
   const next = { ...result, reviewedFindings };
+  if (reviewDecisions !== undefined) next.reviewDecisions = reviewDecisions;
   if (_viewIsLiveVerificationHtmlBound(result, result.accessibleHtml, pipeline)) {
     _viewAttachRuntimeBindingProof(next, result.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
   }
@@ -4259,6 +4261,7 @@ function PdfAuditView(props) {
     setHumanEditsAdopted(0);
     setReviewFindingsLive(null);
     setReviewDismissed({});
+    setReviewDecisions({});
     const onHumanEdit = (ev) => {
       const detail = (ev && ev.detail) || {};
       if (detail.documentEpoch !== pdfDocumentEpoch) return;   // same strict epoch gate as the others
@@ -5605,6 +5608,22 @@ function PdfAuditView(props) {
   // re-emits of the same finding.
   const [_reviewFindingsLive, setReviewFindingsLive] = useState(null);
   const [_reviewDismissed, setReviewDismissed] = useState({});
+  // (2026-10-28) Which answer a person chose for each judgment call (decision guides), keyed like _reviewDismissed.
+  const [_reviewDecisions, setReviewDecisions] = useState({});
+  // (2026-10-28, phase 3) A decision on a content check (numbers, reading order, pictures...): recorded under
+  // 'fidelity|<kind>' with the same shape as a review decision, on the saved result when it is current.
+  const _recordFidelityDecision = (kind, guideId, optionId) => {
+    const key = 'fidelity|' + kind;
+    const entry = { guide: guideId, option: optionId, at: Date.now() };
+    setReviewDecisions((prev) => ({ ...(prev || {}), [key]: entry }));
+    if (pdfFixResult) {
+      const token = _captureAsyncHtmlToken();
+      const ok = !!(token && token.documentEpoch === pdfDocumentEpoch && token.html === pdfFixResult.accessibleHtml
+        && _commitAsyncHtmlIfCurrent(token, (prev) => _viewWithReviewAttestations(prev, prev.reviewedFindings, _docPipeline, { ...(prev.reviewDecisions || {}), [key]: entry })));
+      if (!ok) { addToast(t('pdf_audit.review_queue.toast_changed') || 'The document changed before this review was recorded. Check the current findings and try again.', 'info'); return; }
+    }
+    addToast(t('pdf_audit.decision_guide.recorded') || 'Decision recorded in the report.', 'success');
+  };
   const _reviewFocusRequest = useRef(null);
   React.useLayoutEffect(() => {
     const request = _reviewFocusRequest.current;
@@ -7996,10 +8015,24 @@ function PdfAuditView(props) {
       '2.4.6': 'headings-and-labels', '2.4.7': 'focus-visible', '3.1.1': 'language-of-page',
       '3.1.2': 'language-of-parts', '3.2.1': 'on-focus', '3.2.2': 'on-input',
       '3.3.1': 'error-identification', '3.3.2': 'labels-or-instructions', '4.1.1': 'parsing',
-      '4.1.2': 'name-role-value', '4.1.3': 'status-messages',
+      '4.1.2': 'name-role-value', '4.1.3': 'status-messages', '1.3.3': 'sensory-characteristics',
     };
     const slug = map[String(wcag).trim()];
     return slug ? `https://www.w3.org/WAI/WCAG21/Understanding/${slug}.html` : null;
+  };
+  // (2026-10-28) A decision guide's WCAG criteria as links to the same Understanding pages; checks that are not WCAG rules say so.
+  const _guideWcagLine = (g) => {
+    if (!g) return null;
+    const refs = (g.wcagRefs || []).filter((r) => r && _wcagUnderstandingUrl(r.sc));
+    if (!refs.length) return g.wcagNote ? <p className="mt-1 italic" data-guide-wcag="none">{g.wcagNote}</p> : null;
+    return (
+      <p className="mt-1" data-guide-wcag={refs.map((r) => r.sc).join(' ')}>
+        <span className="font-bold">{t('pdf_audit.decision_guide.wcag_label') || 'WCAG:'}</span>{' '}
+        {refs.map((r, i) => (
+          <React.Fragment key={r.sc}>{i ? ', ' : ''}<a href={_wcagUnderstandingUrl(r.sc)} target="_blank" rel="noopener noreferrer" className="font-bold underline text-blue-800">{r.sc + ' ' + r.name + ' (Level ' + r.level + ')'}<span className="sr-only"> {t('pdf_audit.help_directory.new_tab') || '(opens in a new tab)'}</span></a></React.Fragment>
+        ))}
+      </p>
+    );
   };
   // Tier 6 helper: build a localized auditor-agreement tooltip.
   const _agreementTooltip = (n, total) => {
@@ -10207,6 +10240,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
                             candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120), ...(typeof entry.sourceLocation === 'string' ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {}) })) : [],
                             reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
+                            reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
                             _plainLanguage: project._plainLanguage || null,
@@ -11543,7 +11577,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const committed = finalMetadataToken && finalMetadataToken.html === bestHtml && _commitAsyncHtmlIfCurrent(finalMetadataToken, (prev) => {
                               if (!prev || prev.accessibleHtml !== bestHtml) return prev;
                               // M22: fidelityLimited has TWO halves (coverage<90 OR fresh fidelity notes).
-                              const fidelityLimited = _refixNotes.length > 0 || (typeof _fixRemainingSource.integrityCoverage === 'number' && _fixRemainingSource.integrityCoverage < 90);
+                              // (2026-10-28) A note marked caution is disclosed, not a limit (pipeline rule).
+                              const fidelityLimited = _refixNotes.some((n) => !(n && n.caution === true)) || (typeof _fixRemainingSource.integrityCoverage === 'number' && _fixRemainingSource.integrityCoverage < 90);
                               const accessibilityReview = !!((prev.axeAudit && Array.isArray(prev.axeAudit.critical) && prev.axeAudit.critical.length > 0)
                                 || (prev.secondEngineAudit && Number.isFinite(prev.secondEngineAudit.failViolations) && prev.secondEngineAudit.failViolations > 0)
                                 || (Number.isFinite(prev.afterScore) && prev.afterScore < 50));
@@ -13233,19 +13268,31 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       _workspaceNavigate('#allo-sec-workbench');
                       addToast(t('pdf_audit.issue.sent_workbench') || '🛠 Loaded into the Expert Workbench below — review and run it.', 'info');
                     };
-                    const _setReviewAttestation = (event, key, reviewed) => {
+                    // (2026-10-28) decision: { guide, option } chosen from the finding's decision guide. An answer that settles
+                    // the finding (no change needed) marks it reviewed; an answer that needs an edit is recorded and the
+                    // finding stays open until a later check no longer flags it.
+                    const _setReviewAttestation = (event, key, reviewed, decision) => {
                       const token = _captureAsyncHtmlToken();
-                      const at = reviewed ? Date.now() : null;
+                      const at = Date.now();
+                      const decisionOnly = !!decision && !reviewed;
                       const change = (value) => {
                         if (key === null) return null;
                         const updated = { ...(value || {}) };
+                        if (decisionOnly) return Object.keys(updated).length ? updated : null;
                         if (reviewed) updated[key] = at; else delete updated[key];
+                        return Object.keys(updated).length ? updated : null;
+                      };
+                      const changeDecision = (value) => {
+                        if (key === null) return null;
+                        const updated = { ...(value || {}) };
+                        if (decision) updated[key] = { guide: decision.guide, option: decision.option, at };
+                        else if (!reviewed) delete updated[key];
                         return Object.keys(updated).length ? updated : null;
                       };
                       // A delayed click from an older document must not attest to the new one.
                       if (pdfFixResult) {
                         if (!token || token.documentEpoch !== pdfDocumentEpoch || token.html !== pdfFixResult.accessibleHtml
-                            || !_commitAsyncHtmlIfCurrent(token, prev => _viewWithReviewAttestations(prev, change(prev.reviewedFindings), _docPipeline))) {
+                            || !_commitAsyncHtmlIfCurrent(token, prev => _viewWithReviewAttestations(prev, change(prev.reviewedFindings), _docPipeline, changeDecision(prev.reviewDecisions)))) {
                           addToast(t('pdf_audit.review_queue.toast_changed') || 'The document changed before this review was recorded. Check the current findings and try again.', 'info');
                           return;
                         }
@@ -13261,6 +13308,37 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         preferredKey: reviewed ? (neighbor && _rfKey(neighbor)) : (key || (_rfAll[0] && _rfKey(_rfAll[0]))),
                       };
                       setReviewDismissed(prev => change(prev) || {});
+                      setReviewDecisions(prev => changeDecision(prev) || {});
+                      if (decisionOnly) addToast(t('pdf_audit.decision_guide.recorded_edit') || 'Decision recorded. Make the change (Workbench or edit the document), then run the check again; the item clears when the checker no longer flags it.', 'info');
+                    };
+                    // (2026-10-28) Decision guides (remediation_decision_guides.js, shipped with the pipeline module).
+                    const _guides = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.RemediationDecisionGuides) || null;
+                    const _guideFor = (f) => (_guides && typeof _guides.guideFor === 'function') ? _guides.guideFor(f.engine, f.id) : null;
+                    const _rfDecisions = { ...((pdfFixResult && pdfFixResult.reviewDecisions) || {}), ..._reviewDecisions };
+                    const _decisionLabel = (f) => {
+                      const d = _rfDecisions[_rfKey(f)];
+                      const g = d && _guides && _guides.guideById(d.guide);
+                      const o = g && g.options.find((x) => x.id === d.option);
+                      return o ? o.label : null;
+                    };
+                    const _openLesson = (event, id) => {
+                      event.preventDefault();
+                      const el = document.getElementById('allo-guide-' + id);
+                      if (!el) return;
+                      el.open = true;
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      const s = el.querySelector('summary'); if (s) s.focus();
+                    };
+                    const _usedGuides = _rfAll.map(_guideFor).filter((g, i, a) => g && a.indexOf(g) === i);
+                    // (2026-10-28, phase 3) How the original read where the checker points: the quoted words (or the
+                    // flagged text) located in the source pages, with the page number and the words around them.
+                    const _srcPages = (pdfFixResult && Array.isArray(pdfFixResult.groundTruthPages)) ? pdfFixResult.groundTruthPages : null;
+                    const _sourceEvidence = (f) => {
+                      if (!_srcPages || !_guides || typeof _guides.sourceContext !== 'function') return [];
+                      const quoted = (String(f.description || '').match(/['"\u201c]([^'"\u201d]{2,80})['"\u201d]/) || [])[1]; // single or double quotes
+                      const probes = [quoted].concat((f.where || []).map((w) => String(w || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120))).filter(Boolean);
+                      for (const p of probes) { const hit = _guides.sourceContext(_srcPages, p, 2); if (hit.length) return hit; }
+                      return [];
                     };
                     return (
                       <div id="pdf-review-findings" className="pdf-workspace-review mt-4 bg-white rounded-2xl border-2 border-amber-300 p-4 space-y-2" role="region" aria-label={t('pdf_audit.review_queue.aria') || 'Findings that need human judgment'}>
@@ -13306,6 +13384,41 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   </span>
                                   {(f.where || []).length > 0 && <span className="block mt-0.5 font-mono text-[10px] opacity-80">→ {f.where.map((w, wi) => <span key={wi}>{wi > 0 ? ' · ' : ''}“{w}”</span>)}</span>}
                                   {_triageFor(f) && <span className="block mt-0.5 text-[10px] font-bold text-indigo-900">{_triageLabel(_triageFor(f))}</span>}
+                                  {(() => {
+                                    const ev = _sourceEvidence(f);
+                                    return ev.length ? (
+                                      <span className="block mt-0.5 text-[10px] text-slate-800" data-review-source={_rfKey(f)}>
+                                        {ev.map((w, wi) => (
+                                          <span key={wi} className="block"><span className="font-bold">{_rqFill(t('pdf_audit.decision_guide.in_original') || 'In the original (page {page}):', { page: w.page })}</span> {w.before}<mark className="bg-yellow-200 text-slate-900 px-0.5">{w.match}</mark>{w.after}</span>
+                                        ))}
+                                      </span>
+                                    ) : null;
+                                  })()}
+                                  {_decisionLabel(f) && <span className="block mt-0.5 text-[10px] font-bold text-emerald-900" data-review-decision={_rfKey(f)}>{(t('pdf_audit.decision_guide.your_decision') || 'Your decision:') + ' ' + _decisionLabel(f)}</span>}
+                                  {(() => {
+                                    const g = _guideFor(f);
+                                    if (!g) return null;
+                                    return (
+                                      <details className="mt-1 rounded border border-amber-200 bg-white px-2 py-1" data-decision-guide={g.id}>
+                                        <summary className="cursor-pointer font-bold text-indigo-900">{t('pdf_audit.decision_guide.how_to_decide') || 'How to decide'}</summary>
+                                        <p className="mt-1"><span className="font-bold">{t('pdf_audit.decision_guide.why_person') || 'Why a person decides:'}</span> {g.checkerCannot}</p>
+                                        <p className="mt-1 font-semibold">{g.question}</p>
+                                        <ul className="mt-1 space-y-1 list-none">
+                                          {g.options.map((o) => (
+                                            <li key={o.id} className="rounded bg-amber-50/60 px-1.5 py-1">
+                                              {o.id === 'unsure'
+                                                ? <span className="font-bold">{o.label}</span>
+                                                : <button type="button" onClick={(event) => _setReviewAttestation(event, _rfKey(f), !!o.settles, { guide: g.id, option: o.id })} data-review-action="decide" data-review-key={_rfKey(f)} data-review-option={o.id} className={'px-1.5 py-0.5 rounded font-bold transition-colors ' + (o.settles ? 'bg-emerald-800 text-white hover:bg-emerald-900' : 'bg-indigo-700 text-white hover:bg-indigo-800')} aria-label={o.label + ': ' + f.id}>{o.label}</button>}
+                                              <span className="ml-1">{o.choose}</span>
+                                              <span className="block opacity-90">{'→ ' + o.then}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                        {_guideWcagLine(g)}
+                                        <a href={'#allo-guide-' + g.id} onClick={(event) => _openLesson(event, g.id)} className="inline-block mt-1 font-bold underline text-indigo-900">{t('pdf_audit.decision_guide.lesson_link') || 'How to decide: 2-minute lesson'}</a>
+                                      </details>
+                                    );
+                                  })()}
                                   {_rfIsSheet(f) && _rfCanConfirmSheet && (
                                     <span className="block mt-1 text-[11px] text-amber-950">
                                       {f.id === 'style_color_misuse'
@@ -13347,12 +13460,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <p className="text-xs mt-2">{t('pdf_audit.review_queue.undo_note') || 'Undo a mark to return that finding to the pending list. This does not change the document or verification.'}</p>
                           <ul className="pdf-workspace-review-list mt-2 space-y-1.5 list-none">{_rfReviewed.map(f => (
                             <li key={_rfKey(f)} className="pdf-workspace-review-row flex items-start gap-2 rounded-lg border border-slate-300 p-2 text-xs">
-                              <div className="flex-1 min-w-0"><strong>{(_rfEngineLabel[f.engine] || f.engine) + ' · ' + f.id}</strong>{f.description && <p>{f.description}</p>}</div>
+                              <div className="flex-1 min-w-0"><strong>{(_rfEngineLabel[f.engine] || f.engine) + ' · ' + f.id}</strong>{f.description && <p>{f.description}</p>}{_decisionLabel(f) && <p className="font-semibold" data-review-decision={_rfKey(f)}>{(t('pdf_audit.decision_guide.your_decision') || 'Your decision:') + ' ' + _decisionLabel(f)}</p>}</div>
                               <div className="pdf-workspace-review-actions"><button type="button" data-review-action="undo" data-review-key={_rfKey(f)} onClick={event => _setReviewAttestation(event, _rfKey(f), false)} aria-label={_rqFill(t('pdf_audit.review_queue.undo_aria') || 'Undo reviewed mark: {engine} {id}', { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id })} className="rounded border px-2 py-1">{t('pdf_audit.sheet_review.undo') || 'Undo'}</button></div>
                             </li>
                           ))}</ul>
                           <button type="button" data-review-action="reset" onClick={event => _setReviewAttestation(event, null, false)} className="mt-2 rounded border px-2 py-1 text-xs">{t('pdf_audit.review_queue.reset_all') || 'Reset all reviewed marks'}</button>
                         </details>}
+                        {_usedGuides.length > 0 && (
+                          <div className="pdf-workspace-guides mt-3 border-t border-amber-200 pt-2" data-decision-lessons>
+                            <h5 className="text-xs font-black text-amber-900">{t('pdf_audit.decision_guide.lessons_heading') || 'How to decide: short lessons'}</h5>
+                            {_usedGuides.map((g) => (
+                              <details key={g.id} id={'allo-guide-' + g.id} className="mt-1 rounded border border-slate-300 bg-white px-2 py-1 text-[11px]">
+                                <summary className="cursor-pointer font-bold">{g.title}{g.wcag && g.wcag.length ? ' (WCAG ' + g.wcag.join(', ') + ')' : ''}</summary>
+                                <p className="mt-1">{g.checkerCannot}</p>
+                                <ol className="mt-1 list-decimal pl-5 space-y-0.5">{g.lesson.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+                                <p className="mt-1"><span className="font-bold">{t('pdf_audit.decision_guide.example_fine') || 'Fine as it is:'}</span> {g.lesson.fine}</p>
+                                <p className="mt-0.5"><span className="font-bold">{t('pdf_audit.decision_guide.example_fix') || 'Needs a change:'}</span> {g.lesson.fix}</p>
+                                {_guideWcagLine(g)}
+                              </details>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
@@ -14748,7 +14876,51 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   {pdfFixResult.fidelityNotes.filter(Boolean).map((n, i) => (
                                     <li key={i} className={'text-xs leading-snug flex items-start gap-1.5 ' + (n.kind === 'refusal' ? 'text-red-700 font-semibold' : (n.kind === 'numeric' || n.kind === 'placement') ? 'text-amber-800 font-semibold' : 'text-sky-800')}>
                                       <span aria-hidden="true">{n.kind === 'refusal' ? '🚫' : n.kind === 'numeric' ? '🔢' : n.kind === 'placement' ? '📑' : n.kind === 'tables' ? '▦' : '🔗'}</span>
+                                      <div className="flex-1 min-w-0">
                                       <span>{typeof n === 'string' ? n : n.msg}</span>
+                                      {(() => {
+                                        // (2026-10-28, phase 3) How to decide this content check, with the evidence behind it.
+                                        const G = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.RemediationDecisionGuides) || null;
+                                        const g = G && n && n.kind ? G.guideFor('fidelity', n.kind) : null;
+                                        if (!g) return null;
+                                        const dec = ({ ...((pdfFixResult && pdfFixResult.reviewDecisions) || {}), ..._reviewDecisions })['fidelity|' + n.kind];
+                                        const chosen = dec && g.options.find((o) => o.id === dec.option);
+                                        const ev = Array.isArray(n.evidence) ? n.evidence : [];
+                                        return (
+                                          <details className="mt-1 rounded border border-sky-200 bg-white px-2 py-1 font-normal text-slate-900" data-decision-guide={g.id} data-fidelity-kind={n.kind}>
+                                            <summary className="cursor-pointer font-bold text-indigo-900">{(t('pdf_audit.decision_guide.how_to_decide') || 'How to decide') + (chosen ? ' · ' + (t('pdf_audit.decision_guide.your_decision') || 'Your decision:') + ' ' + chosen.label : '')}</summary>
+                                            {ev.length > 0 && (
+                                              <ul className="mt-1 space-y-0.5 list-none" data-fidelity-evidence>
+                                                {ev.map((e, ei) => (
+                                                  <li key={ei}><span className="font-bold">{e.value}</span>{(e.where || []).length === 0
+                                                    ? ' — ' + (t('pdf_audit.decision_guide.not_located') || 'not located in the original\'s text')
+                                                    : (e.where || []).map((w, wi) => <span key={wi} className="block pl-2">{(t('pdf_audit.decision_guide.in_original') || 'In the original (page {page}):').replace('{page}', w.page)} {w.before}<mark className="bg-yellow-200 px-0.5">{w.match}</mark>{w.after}</span>)}</li>
+                                                ))}
+                                              </ul>
+                                            )}
+                                            <p className="mt-1"><span className="font-bold">{t('pdf_audit.decision_guide.why_person') || 'Why a person decides:'}</span> {g.checkerCannot}</p>
+                                            {_guideWcagLine(g)}
+                                            <p className="mt-1 font-semibold">{g.question}</p>
+                                            <ul className="mt-1 space-y-1 list-none">
+                                              {g.options.map((o) => (
+                                                <li key={o.id}>
+                                                  {o.id === 'unsure' ? <span className="font-bold">{o.label}</span>
+                                                    : <button type="button" onClick={() => _recordFidelityDecision(n.kind, g.id, o.id)} data-fidelity-decide={o.id} className={'px-1.5 py-0.5 rounded font-bold text-white ' + (o.settles ? 'bg-emerald-800 hover:bg-emerald-900' : 'bg-indigo-700 hover:bg-indigo-800')}>{o.label}</button>}
+                                                  <span className="ml-1">{o.choose}</span>
+                                                  <span className="block opacity-90">{'→ ' + o.then}</span>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                            <details id={'allo-guide-' + g.id + '-content'} className="mt-1">
+                                              <summary className="cursor-pointer font-bold underline text-indigo-900">{t('pdf_audit.decision_guide.lesson_link') || 'How to decide: 2-minute lesson'}</summary>
+                                              <ol className="mt-1 list-decimal pl-5 space-y-0.5">{g.lesson.steps.map((s, si) => <li key={si}>{s}</li>)}</ol>
+                                              <p className="mt-1"><span className="font-bold">{t('pdf_audit.decision_guide.example_fine') || 'Fine as it is:'}</span> {g.lesson.fine}</p>
+                                              <p className="mt-0.5"><span className="font-bold">{t('pdf_audit.decision_guide.example_fix') || 'Needs a change:'}</span> {g.lesson.fix}</p>
+                                            </details>
+                                          </details>
+                                        );
+                                      })()}
+                                      </div>
                                     </li>
                                   ))}
                                 </ul>
@@ -16519,6 +16691,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
                                   candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120), ...(typeof entry.sourceLocation === 'string' ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {}) })) : [],
                                   reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
+                                  reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
                             _plainLanguage: project._plainLanguage || null,

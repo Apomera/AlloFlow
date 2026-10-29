@@ -2,13 +2,66 @@
 (function (root) {
   'use strict';
   const CSS = `
-.awp,.awp *{box-sizing:border-box}.awp{font:1rem/1.5 system-ui,sans-serif;color:#14213d;background:#f5f7fb;overflow-wrap:anywhere;color-scheme:light}.awp-overlay{position:fixed;inset:0;z-index:2147483000;padding:20px;display:flex;align-items:center;justify-content:center;background:#14213dcc}.awp-dialog{width:min(100%,1100px);max-height:calc(100dvh - 40px);overflow:auto;border-radius:20px;background:#f5f7fb;padding:1.5rem;box-shadow:0 16px 80px #0005}.awp h1,.awp p{margin:0 0 .75rem}.awp h1{font-size:1.625rem;line-height:1.2}.awp button,.awp input,.awp textarea,.awp select{font:inherit;color:#14213d}.awp button{min-height:44px;padding:.5625rem .9375rem;border:1px solid #a8b4c7;border-radius:9px;background:white;cursor:pointer;white-space:normal}.awp button:hover:not(:disabled){background:#e9effa}.awp button:disabled{color:#596579;background:#e7ebf2;cursor:default}.awp .awp-primary{color:white;background:#294fc3;border-color:#294fc3}.awp .awp-primary:hover:not(:disabled){background:#1e3d99}.awp .awp-aa{min-width:44px;font-weight:700}.awp :focus-visible{outline:3px solid #bc4a00;outline-offset:3px}.awp input:not([type=checkbox]):not([type=radio]):not([type=range]),.awp textarea,.awp select{width:100%;max-width:100%;border:1px solid #8191a9;background:white;border-radius:7px;padding:.5625rem}.awp textarea{resize:vertical;min-height:10.625rem}.awp label{display:block;font-weight:600}.awp label>span{display:block;margin-bottom:.3125rem}.awp label:has(input[type=checkbox]){display:flex;align-items:center;gap:.5625rem;font-weight:400}.awp input[type=checkbox]{width:1.25rem;height:1.25rem;flex-shrink:0;accent-color:#294fc3}.awp-head,.awp-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap}.awp-head{justify-content:space-between;margin-bottom:1.25rem}.awp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem}.awp-fields{display:grid;gap:.8125rem}.awp-note{font-size:.875rem;color:#45536a}.awp-status{min-height:1.5625rem;margin-top:.875rem!important;color:#263e6c}.awp-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.125rem}.awp-surface{border:1px solid #bdc8da;border-radius:14px;background:white;padding:1.125rem;min-width:0}.awp-player{width:100%;max-width:1400px;margin:auto;padding:1.25rem}.awp-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:48vh;padding:2.125rem;border:1px solid #bac6d9;border-radius:16px;background:white;margin:1rem 0;overflow:hidden}.awp-card{max-width:100%;width:100%;text-align:center}.awp-word{font-weight:750;font-size:clamp(2.125rem,9vw,7rem);line-height:1.2;overflow-wrap:anywhere;white-space:normal}.awp-stage[data-position^=top]{align-items:flex-start}.awp-stage[data-position^=bottom]{align-items:flex-end}.awp-stage[data-position$=left] .awp-card{text-align:left}.awp-stage[data-position$=right] .awp-card{text-align:right}.awp-detail{font-size:clamp(1.25rem,3vw,2.125rem);line-height:1.5;white-space:pre-wrap}.awp-phonemes{display:flex;justify-content:center;flex-wrap:wrap;gap:.875rem;font-size:clamp(1.75rem,6vw,4.5rem);font-weight:650}.awp-phoneme{padding:.125rem .75rem;border-bottom:4px solid #294fc3}.awp-choices{display:flex;justify-content:center;flex-wrap:wrap;gap:.625rem;margin-top:1.5rem}.awp-choices button{font-size:clamp(1.25rem,3vw,1.875rem);min-width:5.625rem}.awp-feedback{font-size:1.25rem;min-height:1.875rem;margin-top:.875rem!important}.awp-progress{font-variant-numeric:tabular-nums}.awp-footer{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap}.awp:fullscreen{overflow:auto;background:#f5f7fb}.awp [hidden]{display:none!important}.awp .awp-gap{margin-top:.875rem}.awp .awp-review[aria-pressed=true]{background:#fdf0cf;border-color:#926300;color:#664500}
+.awp,.awp *{box-sizing:border-box}.awp{font:1rem/1.5 system-ui,sans-serif;color:#14213d;background:#f5f7fb;overflow-wrap:anywhere;color-scheme:light}.awp-overlay{position:fixed;inset:0;z-index:2147483000;padding:20px;display:flex;align-items:center;justify-content:center;background:#14213dcc}.awp-dialog{width:min(100%,1100px);max-height:calc(100dvh - 40px);overflow:auto;border-radius:20px;background:#f5f7fb;padding:1.5rem;box-shadow:0 16px 80px #0005}.awp h1,.awp p{margin:0 0 .75rem}.awp h1{font-size:1.625rem;line-height:1.2}.awp button,.awp input,.awp textarea,.awp select{font:inherit;color:#14213d}.awp button{min-height:44px;padding:.5625rem .9375rem;border:1px solid #a8b4c7;border-radius:9px;background:white;cursor:pointer;white-space:normal}.awp button:hover:not(:disabled){background:#e9effa}.awp button:disabled{color:#596579;background:#e7ebf2;cursor:default}.awp .awp-primary{color:white;background:#294fc3;border-color:#294fc3}.awp .awp-primary:hover:not(:disabled){background:#1e3d99}.awp .awp-aa{min-width:44px;font-weight:700}.awp :focus-visible{outline:3px solid #bc4a00;outline-offset:3px}.awp input:not([type=checkbox]):not([type=radio]):not([type=range]),.awp textarea,.awp select{width:100%;max-width:100%;border:1px solid #8191a9;background:white;border-radius:7px;padding:.5625rem}.awp textarea{resize:vertical;min-height:10.625rem}.awp label{display:block;font-weight:600}.awp label>span{display:block;margin-bottom:.3125rem}.awp label:has(input[type=checkbox]){display:flex;align-items:center;gap:.5625rem;font-weight:400}.awp input[type=checkbox]{width:1.25rem;height:1.25rem;flex-shrink:0;accent-color:#294fc3}.awp-head,.awp-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap}.awp-head{justify-content:space-between;margin-bottom:1.25rem}.awp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem}.awp-fields{display:grid;gap:.8125rem}.awp-note{font-size:.875rem;color:#45536a}.awp-status{min-height:1.5625rem;margin-top:.875rem!important;color:#263e6c}.awp-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.125rem}.awp-surface{border:1px solid #bdc8da;border-radius:14px;background:white;padding:1.125rem;min-width:0}.awp-player{width:100%;max-width:1400px;margin:auto;padding:1.25rem}.awp-stage{position:relative;display:flex;align-items:safe center;justify-content:center;min-height:48vh;max-height:60dvh;padding:2.125rem;border:1px solid #bac6d9;border-radius:16px;background:white;margin:1rem 0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.awp-card{max-width:100%;width:100%;text-align:center}.awp-word{font-weight:750;font-size:clamp(2.125rem,9vw,7rem);line-height:1.2;overflow-wrap:anywhere;white-space:normal}.awp-stage[data-position^=top]{align-items:flex-start}.awp-stage[data-position^=bottom]{align-items:safe flex-end}.awp-stage[data-position$=left] .awp-card{text-align:left}.awp-stage[data-position$=right] .awp-card{text-align:right}.awp-detail{font-size:clamp(1.25rem,3vw,2.125rem);line-height:1.5;white-space:pre-wrap}.awp-phonemes{display:flex;justify-content:center;flex-wrap:wrap;gap:.875rem;font-size:clamp(1.75rem,6vw,4.5rem);font-weight:650}.awp-phoneme{padding:.125rem .75rem;border-bottom:4px solid #294fc3}.awp-choices{display:flex;justify-content:center;flex-wrap:wrap;gap:.625rem;margin-top:1.5rem}.awp-choices button{font-size:clamp(1.25rem,3vw,1.875rem);min-width:5.625rem}.awp-feedback{font-size:1.25rem;min-height:1.875rem;margin-top:.875rem!important}.awp-progress{font-variant-numeric:tabular-nums}.awp-footer{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap}.awp:fullscreen{overflow:auto;background:#f5f7fb}.awp [hidden]{display:none!important}.awp .awp-gap{margin-top:.875rem}.awp .awp-review[aria-pressed=true]{background:#fdf0cf;border-color:#926300;color:#664500}
 .awp-sr{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.awp-card .awp-definition,.awp-card .awp-example{text-align:start}
+.awp .awp-choices button[aria-disabled=true]{cursor:default;background:#f5f7fb}
+.awp-preview-word{font-weight:750;line-height:1.2;overflow-wrap:anywhere;white-space:normal}.awp-preview-detail{line-height:1.5;white-space:pre-wrap}.awp-preview-definition,.awp-preview-example{text-align:start}
+.awp .awp-sentence-prompt[data-prose=true],.awp .awp-preview-prompt[data-prose=true]{text-align:start}.awp-preview-picker{margin-bottom:.75rem}
+.awp-stage .awp-language-name,.awp-card-preview .awp-preview-language-name{display:block;text-align:start;font-weight:650;margin-bottom:.25rem}.awp-stage .awp-translation,.awp-card-preview .awp-preview-translation{display:block;text-align:start}.awp-stage .awp-language-name,.awp-card-preview .awp-preview-language-name,.awp-card-preview .awp-note{color:var(--awp-card-muted,#45536a)}
+.awp-preview-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}.awp-preview-toolbar p{margin:0;font-variant-numeric:tabular-nums}.awp-preview-sounds{display:flex;justify-content:center;flex-wrap:wrap;gap:.875rem;font-weight:650}.awp-preview-sound{padding:.125rem .75rem;border-bottom:4px solid var(--awp-card-accent,#294fc3)}.awp-preview-choices{display:flex;justify-content:center;flex-wrap:wrap;gap:.625rem;list-style:none;padding:0;margin:1.5rem 0 0}.awp-preview-choice{max-width:100%;min-width:5.625rem;min-height:44px;padding:.5625rem .9375rem;border:1px solid var(--awp-card-border,#a8b4c7);border-radius:9px;background:white;color:var(--awp-card-heading,#14213d)}.awp-preview-feedback{margin-top:.875rem!important;color:var(--awp-card-accent,#294fc3)}
+.awp-appearance{min-width:0;margin:1rem 0 0;padding:1rem;border:1px solid #bdc8da;border-radius:12px;background:white}.awp-appearance legend{font-weight:700;padding:0 .375rem}.awp-appearance-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}.awp-appearance-controls label{min-width:0}.awp-appearance-panel{margin:.5rem 0}.awp-appearance-panel summary{min-height:44px;cursor:pointer;font-weight:650}.awp-card-preview{margin-top:.75rem;padding:1rem;max-height:18rem;overflow:auto;border:1px solid #bac6d9;border-radius:12px;text-align:center;overscroll-behavior:contain}.awp-preview-heading{font-size:1rem;margin:1rem 0 .375rem}.awp-stage,.awp-card-preview{background:var(--awp-card-background,#fff);border-color:var(--awp-card-border,#bac6d9);color:var(--awp-card-text,#14213d)}.awp-stage .awp-word,.awp-card-preview .awp-preview-word{color:var(--awp-card-heading,#14213d)}.awp-stage .awp-note,.awp-card-preview .awp-preview-language-name{color:var(--awp-card-muted,#45536a)}.awp-stage .awp-phoneme{border-color:var(--awp-card-accent,#294fc3)}.awp-stage .awp-choices button{color:var(--awp-card-heading,#14213d);border-color:var(--awp-card-border,#a8b4c7)}.awp-stage .awp-feedback{color:var(--awp-card-accent,#294fc3)}.awp [data-awp-card-font]:not([data-awp-card-font=default]),.awp [data-awp-card-font]:not([data-awp-card-font=default]) *{font-family:var(--awp-card-font-family)!important}
 .awp-meaning-choices{min-width:0;margin:0;padding:.75rem;border:1px solid #bdc8da;border-radius:9px}.awp-meaning-choices label{min-height:44px;padding:.375rem 0;align-items:flex-start!important}.awp-meaning-choices input{margin-top:.25rem}.awp-meaning-choices legend{font-weight:650;padding:0 .25rem}
-@media(max-width:640px){.awp-overlay{padding:6px}.awp-dialog{padding:.9375rem;max-height:calc(100dvh - 12px);border-radius:12px}.awp-grid{grid-template-columns:minmax(0,1fr);gap:1rem}.awp-player{padding:.5rem}.awp-stage{padding:1.125rem .625rem;min-height:42vh}.awp-head{gap:.5rem}.awp h1{font-size:1.375rem}.awp button{padding:.5625rem .6875rem}.awp-word{font-size:clamp(1.875rem,11vw,4.5rem)}}
+.awp-fields{align-content:start;min-width:0}.awp-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8125rem}.awp-options>label:first-child{grid-column:1/-1}.awp-checks{display:grid;gap:.375rem}.awp-checks label{min-height:36px}.awp-checks label>span{margin:0}.awp-audio-setup{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-top:1rem;padding:.875rem 1rem;border:1px solid #bdc8da;border-radius:12px;background:#edf2fc}.awp-audio-setup .awp-note{margin:0;flex:1 1 25rem}.awp-format-note{margin-top:1rem!important}.awp-delivery{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}.awp-set-actions{padding-top:.875rem;border-top:1px solid #d5deeb}.awp-set-actions button{background:transparent}.awp-timing-note{grid-column:1/-1;margin:0!important}
+.awp-audio-details{flex:1 1 25rem;min-width:0}.awp-audio-setup .awp-audio-mode{margin-top:.375rem;font-weight:600;color:#263e6c}.awp-plan{margin-top:1rem;padding:.875rem 1rem;border:1px solid #bdc8da;border-radius:12px;background:white}.awp-plan p{margin:0}.awp-plan-count{font-weight:650;font-variant-numeric:tabular-nums}.awp-plan .awp-plan-note{margin-top:.375rem;color:#784411}.awp-plan[data-needs-review=true]{border-inline-start:4px solid #a76918}
+.awp-operation{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-top:1rem;padding:.75rem;background:#f5f7fb;border:1px solid #bdc8da;border-radius:10px}.awp-operation[data-active=true]{position:sticky;bottom:0;max-height:min(50dvh,18rem);overflow:auto}.awp-operation:has(.awp-status:empty):has(button[hidden]){display:none}.awp-operation .awp-status{flex:1 1 18rem;margin:0!important;min-height:0}.awp-operation progress{width:100%;height:.625rem;accent-color:#294fc3}.awp-review-details{margin-top:.75rem}.awp-review-details summary{cursor:pointer;min-height:44px;font-weight:650}.awp-review-details ul{max-height:12rem;overflow:auto;margin:.375rem 0;padding-inline-start:1.5rem;scrollbar-gutter:stable;overscroll-behavior:contain}.awp-review-details h2{font-size:.875rem;margin:.75rem 0 .25rem}.awp-review-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+@media(max-width:640px){.awp-overlay{padding:6px}.awp-dialog{padding:.9375rem;max-height:calc(100dvh - 12px);border-radius:12px}.awp-grid{grid-template-columns:minmax(0,1fr);gap:1rem}.awp-player{padding:.5rem}.awp-dialog .awp-player{padding-inline:0}.awp-stage{padding:1.125rem .625rem;min-height:42vh}.awp-head{gap:.5rem}.awp h1{font-size:1.375rem}.awp button{padding:.5625rem .6875rem}.awp-word{font-size:clamp(1.875rem,11vw,4.5rem)}}
+@media(max-width:640px){.awp-options{grid-template-columns:minmax(0,1fr)}.awp-delivery{grid-template-columns:repeat(2,minmax(0,1fr))}.awp-delivery .awp-primary{grid-column:1/-1}.awp-set-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.awp-audio-setup{padding:.75rem}.awp-audio-setup button{width:100%}.awp-operation{padding:.5rem}.awp-operation button{width:100%;padding-inline:.375rem}}
+@media(max-width:640px){.awp-appearance-controls{grid-template-columns:minmax(0,1fr)}.awp-appearance{padding:.75rem}.awp-card-preview{padding:.75rem}}
 @media(prefers-reduced-motion:reduce){.awp *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}`;
 
   // This factory is embedded verbatim in the offline file; keep it dependency-free.
+  function styleCardSurface(surface, options, core) {
+    const appearance = core.cardAppearance(options), scale = appearance.textScale;
+    surface.dataset.awpCardFont = options.cardFont;
+    surface.style.setProperty('--awp-card-font-family', appearance.fontFamily);
+    ['background', 'heading', 'text', 'accent', 'muted', 'border'].forEach(name => surface.style.setProperty('--awp-card-' + name, '#' + appearance[name]));
+    const clamp = (minimum, viewport, maximum) => 'clamp(' + minimum * scale + 'rem,' + viewport * scale + 'vw,' + maximum * scale + 'rem)';
+    surface.querySelectorAll('.awp-word,.awp-preview-word').forEach(word => { const variation = Number(word.dataset.awpWordScale) || 1; word.style.fontSize = clamp(1.875, 9 * variation, 7 * variation); });
+    surface.querySelectorAll('.awp-detail,.awp-preview-detail').forEach(node => { node.style.fontSize = clamp(1.25, 3, 2.125); });
+    surface.querySelectorAll('.awp-phonemes,.awp-preview-sounds').forEach(node => { node.style.fontSize = clamp(1.75, 6, 4.5); });
+    surface.querySelectorAll('.awp-choices button,.awp-preview-choice').forEach(node => { node.style.fontSize = clamp(1.25, 3, 1.875); });
+    surface.querySelectorAll('.awp-feedback,.awp-preview-feedback').forEach(node => { node.style.fontSize = 1.25 * scale + 'rem'; });
+    surface.querySelectorAll('.awp-note,.awp-language-name,.awp-preview-language-name').forEach(node => { node.style.fontSize = .875 * scale + 'rem'; });
+    surface.querySelectorAll('.awp-sentence-prompt,.awp-preview-prompt').forEach(node => {
+      // CJK characters occupy roughly twice the width of a Latin letter. Keep
+      // short prompts centered, but give longer prose a steady reading edge.
+      const value = node.textContent, wide = /[\u2e80-\u9fff\uac00-\ud7af\uf900-\ufaff\uff01-\uff60]/u;
+      const width = Array.from(value).reduce((sum, char) => sum + (wide.test(char) ? 2 : 1), 0);
+      node.dataset.prose = String(/[\r\n]/.test(value) || width > 120);
+    });
+  }
+  function appearanceControls(parent, options, label, onChange, prefix) {
+    const doc = parent.ownerDocument, controls = {};
+    const add = (name, key, fallback, choices) => {
+      const wrapper = doc.createElement('label'), caption = doc.createElement('span'), select = doc.createElement('select');
+      label(caption, key, fallback); select.id = prefix + name; wrapper.htmlFor = select.id; caption.id = select.id + '-label'; select.setAttribute('aria-labelledby', caption.id);
+      wrapper.append(caption, select); parent.appendChild(wrapper);
+      choices.forEach(([value, text, translationKey]) => { const option = doc.createElement('option'); option.value = value; if (translationKey) label(option, translationKey, text); else option.textContent = text; select.appendChild(option); });
+      select.addEventListener('change', () => onChange({ cardFont: controls.cardFont.value, cardTextScale: Number(controls.cardTextScale.value), cardTheme: controls.cardTheme.value }));
+      controls[name] = select;
+    };
+    add('cardFont', 'card_font', 'Card font', [['default', 'Default font', 'font_default'], ['arial', 'Arial'], ['verdana', 'Verdana'], ['georgia', 'Georgia']]);
+    add('cardTextScale', 'card_text_size', 'Card text size', [['0.85', '85%'], ['1', '100%'], ['1.2', '120%'], ['1.4', '140%']]);
+    add('cardTheme', 'card_style', 'Card style', [['paper', 'Plain', 'style_paper'], ['cream', 'Warm', 'style_cream'], ['mist', 'Blue tint', 'style_mist']]);
+    controls.setOptions = value => {
+      controls.cardFont.value = value.cardFont; controls.cardTheme.value = value.cardTheme;
+      const scale = String(value.cardTextScale);
+      if (![...controls.cardTextScale.options].some(option => option.value === scale)) { const custom = doc.createElement('option'); custom.value = scale; custom.textContent = Math.round(value.cardTextScale * 100) + '%'; controls.cardTextScale.appendChild(custom); }
+      controls.cardTextScale.value = scale;
+    };
+    controls.setOptions(options); return controls;
+  }
   function mountPlayer(host, pack, options, initialSequence, core, hooks = {}) {
     const doc = host.ownerDocument, win = doc.defaultView;
     const labels = (hooks && hooks.labels) || {};
@@ -40,10 +93,19 @@
     if (hooks.onBack) button(L('back_to_setup', 'Back to setup'), () => { destroy(); hooks.onBack(); }, headerActions);
     const fullscreen = button(L('full_screen', 'Full screen'), async () => { try { if (doc.fullscreenElement) await doc.exitFullscreen(); else if (host.requestFullscreen) await host.requestFullscreen(); else setLabel(status, 'full_screen_unavailable', 'Full screen is unavailable in this browser.'); } catch (_) { setLabel(status, 'full_screen_unavailable', 'Full screen is unavailable in this browser.'); } }, headerActions);
     if (typeof hooks.openReadingSettings === 'function') { const reading = button('Aa', event => hooks.openReadingSettings(event.currentTarget), headerActions, 'awp-aa'); reading.setAttribute('aria-label', L('reading_settings', 'Reading settings')); reading.setAttribute('aria-haspopup', 'dialog'); }
+    const appearancePanel = make('details', null, 'awp-appearance-panel');
+    make('summary', L('appearance', 'Card appearance'), '', appearancePanel);
+    const appearanceFields = make('div', null, 'awp-appearance-controls', appearancePanel);
+    let appearancePrefix = 'awp-player-appearance-'; while (doc.getElementById(appearancePrefix + 'cardFont')) appearancePrefix += 'x';
+    appearanceControls(appearanceFields, options, setLabel, patch => {
+      options = core.normalizeOptions({ ...options, ...patch }); styleCardSurface(stage, options, core);
+      if (typeof hooks.onAppearanceChange === 'function') hooks.onAppearanceChange(patch);
+    }, appearancePrefix);
     const progress = make('p', '', 'awp-progress');
     const omitted = options.includeAudio ? (hooks.audioIssues || core.audioIssueCounts(pack)).staleLanguage : 0;
     if (omitted) { const warning = make('p', L(omitted === 1 ? 'audio_language_omitted_one' : 'audio_language_omitted', omitted === 1 ? '{count} saved recording uses a different language and is not played. Prepare replacement audio in Present & Export.' : '{count} saved recordings use a different language and are not played. Prepare replacement audio in Present & Export.', { count: omitted }), 'awp-note awp-audio-warning'); warning.setAttribute('role', 'status'); }
     const stage = make('div', null, 'awp-stage');
+    stage.tabIndex = 0; stage.setAttribute('role', 'region');
     stage.setAttribute('aria-label', L('practice_card', 'Practice card'));
     const card = make('div', null, 'awp-card', stage);
     const announcement = make('p', '', 'awp-sr'); announcement.setAttribute('role', 'status'); announcement.setAttribute('aria-live', 'polite'); announcement.setAttribute('aria-atomic', 'true');
@@ -68,6 +130,11 @@
       wordButton.hidden = !options.includeAudio || hideAnswer; soundsButton.hidden = !options.includeAudio || hideAnswer;
       wordButton.disabled = !item || !core.safeAudio(item.wordAudio);
       soundsButton.disabled = !item || !item.phonemes.length || item.phonemes.some(sound => !core.safeAudio(sound.audio));
+    }
+    function restoreToolbarFocus(focused) {
+      if (focused && toolbar.contains(focused) && (focused.disabled || focused.hidden)) {
+        stage.focus({ preventScroll: true }); stage.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+      }
     }
     function stopAudio() { audioRun++; if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load(); audio = null; } if (finishAudio) { finishAudio(); finishAudio = null; } }
     async function playClips(clips) {
@@ -101,31 +168,37 @@
       setLabel(reviewRound, 'start_review', 'Start review ({count})', { count: review.size }); reviewRound.disabled = !review.size;
     }
     function appendTranslation(parent, translation) {
-      if (translation.language) passage(parent, translation.language + ': ', '', 'awp-language-name');
+      if (translation.language) { const label = core.languageLabel(translation.language, hooks.uiLanguage || labels.__uiLanguage || 'English'); passage(parent, label.text + ': ', label.language, 'awp-language-name'); }
       passage(parent, translation.text, translation.language, 'awp-translation');
     }
     function renderCard() {
       // Choices are replaced on every card/reveal. Keep keyboard focus inside
       // the player when its focused choice is removed by that replacement.
-      const hadCardFocus = card.contains(doc.activeElement);
+      const focused = doc.activeElement, hadCardFocus = card.contains(focused);
       const choiceIndex = Array.from(card.querySelectorAll('.awp-choices button')).indexOf(doc.activeElement);
       const item = current(), frame = sequence[index]; card.replaceChildren();
       stage.dataset.position = frame.position;
-      const showWord = () => { const word = passage(card, item.word, fieldLanguage(item, 'term'), 'awp-word', 'div'); word.style.fontSize = 'clamp(1.875rem,' + (9 * frame.scale) + 'vw,' + (7 * frame.scale) + 'rem)'; };
+      const showWord = () => { const word = passage(card, item.word, fieldLanguage(item, 'term'), 'awp-word', 'div'); word.dataset.awpWordScale = String(frame.scale); };
       if (options.mode === 'sentence') {
         const activity = item.sentenceActivity;
-        passage(card, activity.prompt, fieldLanguage(item, 'sentence'), 'awp-detail', 'p');
+        passage(card, activity.prompt, fieldLanguage(item, 'sentence'), 'awp-detail awp-sentence-prompt', 'p');
         const choices = make('div', null, 'awp-choices', card);
         const feedback = make('p', '', 'awp-feedback', card); feedback.setAttribute('role', 'status');
         if (revealed) labeledPassage(feedback, 'answer', 'Answer: {answer}', 'answer', activity.answer, fieldLanguage(item, 'term'));
-        activity.choices.forEach(choice => language(button(choice, () => {
-          if (core.key(choice) === core.key(activity.answer)) { labeledPassage(feedback, 'sentence_correct', 'Yes. {answer} completes the sentence.', 'answer', activity.answer, fieldLanguage(item, 'term')); revealed = true; reveal.disabled = true; updateAudioControls(); schedule(); }
-          else setLabel(feedback, 'sentence_try_again', 'Try another word. Read the whole sentence again.');
-        }, choices), fieldLanguage(item, 'term')));
+        activity.choices.forEach(choice => {
+          const choiceButton = language(button(choice, () => {
+            if (revealed) return;
+            if (core.key(choice) === core.key(activity.answer)) { labeledPassage(feedback, 'sentence_correct', 'Yes. {answer} completes the sentence.', 'answer', activity.answer, fieldLanguage(item, 'term')); revealed = true; reveal.disabled = true; choices.querySelectorAll('button').forEach(node => node.setAttribute('aria-disabled', 'true')); updateAudioControls(); schedule(); }
+            else setLabel(feedback, 'sentence_try_again', 'Try another word. Read the whole sentence again.');
+          }, choices), fieldLanguage(item, 'term'));
+          // Keep a solved choice focusable for arrow-key navigation, while
+          // exposing that further guesses no longer change this card.
+          if (revealed) choiceButton.setAttribute('aria-disabled', 'true');
+        });
       } else if (options.mode === 'spelling' && !revealed) {
         make('p', item.wordAudio && options.includeAudio ? L('spell_listen', 'Listen, then spell the word.') : L('spell_teacher', 'Ask your teacher to say the word, then spell it.'), 'awp-detail', card);
       } else if (options.mode === 'blend' && !revealed && item.phonemes.length) {
-        const sounds = make('div', null, 'awp-phonemes', card);
+        const sounds = language(make('div', null, 'awp-phonemes', card), fieldLanguage(item, 'term'));
         item.phonemes.forEach(sound => passage(sounds, sound.label, fieldLanguage(item, 'term'), 'awp-phoneme'));
         make('p', L('blend_help', 'Say the sounds, then blend the word.'), 'awp-note awp-gap', card);
       } else {
@@ -164,19 +237,23 @@
       }
       if (parts.length === 2) announcement.appendChild(doc.createTextNode(parts[1]));
       updateAudioControls();
+      styleCardSurface(stage, options, core);
       if (hadCardFocus) {
         const choices = card.querySelectorAll('.awp-choices button');
         const target = choiceIndex >= 0 && choices.length ? choices[Math.min(choiceIndex, choices.length - 1)] : host;
         target.focus({ preventScroll: true });
-      }
+        if (target !== host) target.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+      } else restoreToolbarFocus(focused);
     }
     function render() {
+      const focused = doc.activeElement;
       stopAudio(); revealed = false; status.textContent = '';
+      stage.scrollTop = 0; stage.scrollLeft = 0;
       const item = current();
       if (!item) { stage.textContent = L('add_words', 'Add words to begin practice.'); [previous, next, reveal, wordButton, soundsButton, timerButton, reviewButton, newRound, reviewRound].forEach(button => button.disabled = true); return; }
       setLabel(progress, 'card_progress', 'Card {n} of {total}', { n: index + 1, total: sequence.length });
       previous.disabled = index === 0; next.disabled = index >= sequence.length - 1;
-      renderCard(); updateReview(); updateTimer(); schedule();
+      renderCard(); updateReview(); updateTimer(); schedule(); restoreToolbarFocus(focused);
     }
     function move(direction) {
       if (index + direction >= sequence.length) { running = false; updateTimer(); schedule(); stopAudio(); setLabel(status, 'round_complete', 'Round complete. Start a new round or review the words you marked.'); return; }
@@ -187,10 +264,12 @@
       if (dead || event.ctrlKey || event.metaKey || event.altKey || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
       // A panel opened inside the full-screen player keeps its own keys.
       const panel = event.target.closest && event.target.closest('[role="dialog"]'); if (panel && host.contains(panel)) return;
+      if (event.target.closest && event.target.closest('.awp-appearance-panel')) return;
+      if (!current()) return;
       if (event.key === 'ArrowRight') { event.preventDefault(); move(1); }
       else if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); }
       else if (event.key === ' ' && event.target.tagName !== 'BUTTON') { event.preventDefault(); if (options.autoAdvance) { running = !running; updateTimer(); schedule(); } else move(1); }
-      else if (event.key.toLowerCase() === 'r' && !reveal.hidden) { event.preventDefault(); revealed = true; renderCard(); schedule(); }
+      else if (event.key.toLowerCase() === 'r' && !reveal.hidden && !reveal.disabled) { event.preventDefault(); revealed = true; renderCard(); schedule(); }
     }
     function visibility() { if (doc.hidden) { running = false; stopAudio(); updateTimer(); schedule(); } }
     function fullscreenChange() { setLabel(fullscreen, doc.fullscreenElement ? 'exit_full_screen' : 'full_screen', doc.fullscreenElement ? 'Exit full screen' : 'Full screen'); }
@@ -216,7 +295,7 @@
   // reader: optional { css, fontCss } from the host's reading settings; an embedded font needs font-src data:.
   function buildHtml(input, value, suppliedSequence, labels, reader, uiLanguageName) {
     const core = root.AlloWordPracticeCore;
-    const normalized = core.normalizeInput(input), options = core.normalizeOptions(value || normalized.options);
+    const normalized = core.normalizeInput(input), options = core.normalizeOptions({ ...normalized.options, ...value });
     const pack = withoutOriginalAudio(withoutAudio({ ...normalized, options }, options.includeAudio));
     const sequence = suppliedSequence || core.createSequence(pack, options);
     const playerLabels = labels && typeof labels === 'object' ? labels : {};
@@ -225,7 +304,7 @@
     const audioIssues = options.includeAudio ? core.audioIssueCounts(normalized) : {};
     const cssText = part => typeof part === 'string' ? part.replace(/</g, '\\3c ') : '';
     const fontCss = reader ? cssText(reader.fontCss) : '', readerCss = reader ? cssText(reader.css) : '';
-    return '<!doctype html><html lang="' + core.escapeHtml(language) + '" dir="' + uiLanguage.dir + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; media-src data: blob:; img-src data:' + (fontCss ? '; font-src data:' : '') + '"><title>' + core.escapeHtml(pack.title) + '</title><style>body{margin:0;background:#f5f7fb}' + CSS + (fontCss || readerCss ? '\n' + fontCss + '\n' + readerCss : '') + '</style></head><body><main id="practice" aria-label="' + core.escapeHtml(playerLabels.practice_label || 'Word practice') + '"></main><script>\n(function(){"use strict";const core=(' + core.createCore.toString() + ')();const pack=core.normalizeInput(' + core.safeJson(pack) + ');const options=core.normalizeOptions(' + core.safeJson(options) + ');(' + mountPlayer.toString() + ')(document.getElementById("practice"),pack,options,' + core.safeJson(sequence) + ',core,{labels:' + core.safeJson(playerLabels) + ',uiLanguage:' + core.safeJson(uiName) + ',audioIssues:' + core.safeJson(audioIssues) + '});})();\n</script></body></html>';
+    return '<!doctype html><html lang="' + core.escapeHtml(language) + '" dir="' + uiLanguage.dir + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; media-src data: blob:; img-src data:' + (fontCss ? '; font-src data:' : '') + '"><title>' + core.escapeHtml(pack.title) + '</title><style>body{margin:0;background:#f5f7fb}' + CSS + (fontCss || readerCss ? '\n' + fontCss + '\n' + readerCss : '') + '</style></head><body><main id="practice" aria-label="' + core.escapeHtml(playerLabels.practice_label || 'Word practice') + '"></main><script>\n(function(){"use strict";const styleCardSurface=' + styleCardSurface.toString() + ';const appearanceControls=' + appearanceControls.toString() + ';const core=(' + core.createCore.toString() + ')();const pack=core.normalizeInput(' + core.safeJson(pack) + ');const options=core.normalizeOptions(' + core.safeJson(options) + ');(' + mountPlayer.toString() + ')(document.getElementById("practice"),pack,options,' + core.safeJson(sequence) + ',core,{labels:' + core.safeJson(playerLabels) + ',uiLanguage:' + core.safeJson(uiName) + ',audioIssues:' + core.safeJson(audioIssues) + '});})();\n</script></body></html>';
   }
 
   // The player's strings, translated once per dialog and handed to the player (and
@@ -234,13 +313,14 @@
   PLAYER_STRINGS.push(['word_practice.audio_language_omitted', '{count} saved recordings use a different language and are not played. Prepare replacement audio in Present & Export.']);
   PLAYER_STRINGS.push(['word_practice.audio_language_omitted_one', '{count} saved recording uses a different language and is not played. Prepare replacement audio in Present & Export.']);
   PLAYER_STRINGS.push(['word_practice.mode_popup', 'Word Fluency Pop-Up']);
+  [['appearance', 'Card appearance'], ['card_font', 'Card font'], ['font_default', 'Default font'], ['card_text_size', 'Card text size'], ['card_style', 'Card style'], ['style_paper', 'Plain'], ['style_cream', 'Warm'], ['style_mist', 'Blue tint'], ['card_preview', 'Card preview']].forEach(([key, fallback]) => PLAYER_STRINGS.push(['word_practice.' + key, fallback]));
   let active = null, nextDialogId = 0;
   function open(context = {}) {
     if (context.signal && context.signal.aborted) return { close() {} };
     if (active) active.close();
     const core = root.AlloWordPracticeCore, doc = root.document, previousFocus = doc.activeElement;
     const fieldPrefix = 'awp-' + (++nextDialogId) + '-'; let nextFieldId = 0;
-    let pack = core.normalizeInput(context), player = null, closed = false, busy = false;
+    let pack = core.normalizeInput(context), player = null, closed = false, busy = false, operation = null;
     // The visible list is a selection, not the metadata store. A word removed
     // during editing can be restored without discarding its prepared content.
     const catalogue = new Map();
@@ -257,7 +337,6 @@
     const inheritedBanks = () => languageKey(pack.language) === sourceLanguage
       ? { phonemeBank: context.phonemeBank, wordBank: context.wordBank }
       : { phonemeBank: {}, wordBank: {} };
-    const abort = new root.AbortController();
     // Host t() echoes a missing key; the English beside each key is the fallback.
     const uiLanguageName = context.currentUiLanguage || context.uiLanguage || (typeof context.t === 'function' ? '' : 'English');
     const uiLanguage = core.languageInfo(uiLanguageName), dialogTextLanguages = new Map();
@@ -308,13 +387,17 @@
     make('p', tx('word_practice.words_note', 'Up to 200 words or short phrases. Existing meanings, activities and recordings stay with words you keep.'), left, 'awp-note');
     const meaningChoices = make('fieldset', null, left, 'awp-meaning-choices'); meaningChoices.hidden = true;
     const right = make('div', null, grid, 'awp-fields');
-    const mode = field(right, tx('word_practice.activity', 'Practice activity'), 'select');
+    const activityOptions = make('div', null, right, 'awp-options');
+    const mode = field(activityOptions, tx('word_practice.activity', 'Practice activity'), 'select');
     [['popup', tx('word_practice.mode_popup', 'Word Fluency Pop-Up')], ['blend', tx('word_practice.mode_blend', 'Sound & Blend')], ['vocabulary', tx('word_practice.mode_vocabulary', 'Word Meaning')], ['spelling', tx('word_practice.mode_spelling', 'Listen & Spell')], ['sentence', tx('word_practice.mode_sentence', 'Finish the Sentence')]].forEach(([value, label]) => { const option = make('option', label, mode); option.value = value; });
-    const repetitions = field(right, tx('word_practice.repetitions', 'Repetitions per word'), 'input', 'number'); repetitions.min = '1'; repetitions.max = '10';
-    const pacing = field(right, tx('word_practice.pacing', 'Pacing'), 'select'); [['manual', tx('word_practice.pacing_manual', 'Teacher advances')], ['timed', tx('word_practice.pacing_timed', 'Timed cards')]].forEach(([value, label]) => { const option = make('option', label, pacing); option.value = value; });
-    const interval = field(right, tx('word_practice.seconds_per_card', 'Seconds per card'), 'input', 'number'); interval.min = '1'; interval.max = '30'; interval.step = '0.5';
+    const repetitions = field(activityOptions, tx('word_practice.repetitions', 'Repetitions per word'), 'input', 'number'); repetitions.min = '1'; repetitions.max = '10';
+    const pacing = field(activityOptions, tx('word_practice.pacing', 'Pacing'), 'select'); [['manual', tx('word_practice.pacing_manual', 'Teacher advances')], ['timed', tx('word_practice.pacing_timed', 'Timed cards')]].forEach(([value, label]) => { const option = make('option', label, pacing); option.value = value; });
+    const interval = field(activityOptions, tx('word_practice.seconds_per_card', 'Seconds per card'), 'input', 'number'); interval.min = '1'; interval.max = '30'; interval.step = '0.5';
+    const timingNote = make('p', tx('word_practice.timing_formats', 'Timed cards work in the presenter and HTML. Advance PowerPoint slides manually.'), activityOptions, 'awp-note awp-timing-note');
+    timingNote.id = pacing.id + '-help'; pacing.setAttribute('aria-describedby', timingNote.id);
+    const checkboxes = make('div', null, right, 'awp-checks');
     function checkbox(text) {
-      const label = make('label', null, right), input = make('input', null, label), name = make('span', text, label), id = fieldPrefix + (++nextFieldId);
+      const label = make('label', null, checkboxes), input = make('input', null, label), name = make('span', text, label), id = fieldPrefix + (++nextFieldId);
       input.type = 'checkbox'; input.id = id; label.htmlFor = id; name.id = id + '-label'; input.setAttribute('aria-labelledby', name.id); return input;
     }
     const shuffle = checkbox(tx('word_practice.shuffle', 'Shuffle each repetition'));
@@ -323,13 +406,140 @@
     const includeAudio = checkbox(tx('word_practice.include_audio', 'Include prepared audio'));
     const useReading = readingButton ? checkbox(tx('reading_settings.use_mine', 'Use my reading settings')) : null;
     if (useReading) { const help = make('p', tx('word_practice.use_mine_help', 'The HTML file uses your font, text size and spacing.'), right, 'awp-note'); help.id = useReading.id + '-help'; useReading.setAttribute('aria-describedby', help.id); }
-    const coverage = make('p', '', setup, 'awp-note awp-gap');
+    const appearanceSection = make('fieldset', null, setup, 'awp-appearance');
+    make('legend', tx('word_practice.appearance', 'Card appearance'), appearanceSection);
+    const appearanceFields = make('div', null, appearanceSection, 'awp-appearance-controls');
+    const appearance = appearanceControls(appearanceFields, pack.options, (node, key, fallback) => updateLabel(node, tx('word_practice.' + key, fallback)), () => {}, fieldPrefix + 'appearance-');
+    const previewHeading = make('h2', tx('word_practice.card_preview', 'Card preview'), appearanceSection, 'awp-preview-heading'); previewHeading.id = fieldPrefix + 'preview';
+    const previewPicker = make('select', null, appearanceSection, 'awp-preview-picker'); previewPicker.setAttribute('aria-labelledby', previewHeading.id);
+    const previewToolbar = make('div', null, appearanceSection, 'awp-preview-toolbar');
+    const previewProgress = make('p', '', previewToolbar, 'awp-preview-progress'); previewProgress.setAttribute('role', 'status'); previewProgress.setAttribute('aria-live', 'polite'); previewProgress.setAttribute('aria-atomic', 'true');
+    const previewActions = make('div', null, previewToolbar, 'awp-row');
+    const previewPrevious = make('button', tx('word_practice.previous', 'Previous'), previewActions); previewPrevious.type = 'button';
+    const previewNext = make('button', tx('word_practice.next', 'Next'), previewActions); previewNext.type = 'button';
+    const previewReveal = make('button', '', previewActions); previewReveal.type = 'button';
+    const preview = make('div', null, appearanceSection, 'awp-card-preview'); preview.id = fieldPrefix + 'preview-card'; preview.tabIndex = 0; preview.setAttribute('role', 'region'); preview.setAttribute('aria-labelledby', previewHeading.id);
+    [previewPrevious, previewNext, previewReveal, previewPicker].forEach(control => control.setAttribute('aria-controls', preview.id));
+    let previewItems = [], previewId = '', previewIndex = 0, previewMode = '', previewRevealed = false, previewContentKey = '', previewPickerKey = '';
+    const focusPreview = () => { preview.focus({ preventScroll: true }); preview.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }); };
+    const movePreview = direction => {
+      if (busy) return;
+      const next = previewIndex + direction; if (next < 0 || next >= previewItems.length) return;
+      const focused = doc.activeElement;
+      previewId = previewItems[next].id; previewRevealed = false; updateAppearancePreview(pack);
+      if ((focused === previewPrevious || focused === previewNext) && focused.disabled) focusPreview();
+    };
+    previewPrevious.onclick = () => movePreview(-1); previewNext.onclick = () => movePreview(1);
+    previewReveal.onclick = () => { if (!busy && !previewReveal.disabled && !previewReveal.hidden) { const focused = doc.activeElement === previewReveal; previewRevealed = true; updateAppearancePreview(pack); if (focused) focusPreview(); } };
+    previewPicker.onchange = event => { event.stopPropagation(); if (!busy && previewItems.some(item => item.id === previewPicker.value)) { previewId = previewPicker.value; previewRevealed = false; updateAppearancePreview(pack); } };
+    const audioSetup = make('div', null, setup, 'awp-audio-setup');
+    const audioDetails = make('div', null, audioSetup, 'awp-audio-details');
+    const coverage = make('p', '', audioDetails, 'awp-note awp-gap');
+    const audioModeNote = make('p', '', audioDetails, 'awp-note awp-audio-mode'); audioModeNote.hidden = true;
     const audioWarning = make('p', '', setup, 'awp-note awp-audio-warning'); audioWarning.hidden = true; audioWarning.setAttribute('role', 'status'); audioWarning.setAttribute('aria-live', 'polite');
-    make('p', tx('word_practice.formats_note', 'HTML keeps interactive practice and works offline. PowerPoint uses fixed slides and embeds available recordings. Sentence activities use only prepared boards; PowerPoint includes prompt and answer slides.'), setup, 'awp-note');
-    const actions = make('div', null, setup, 'awp-actions');
-    const status = make('p', '', setup, 'awp-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+    const plan = make('div', null, setup, 'awp-plan'); plan.setAttribute('role', 'status'); plan.setAttribute('aria-live', 'polite'); plan.setAttribute('aria-atomic', 'true');
+    const planCount = make('p', '', plan, 'awp-plan-count');
+    const planNote = make('p', '', plan, 'awp-note awp-plan-note'); planNote.hidden = true;
+    const reviewDetails = make('details', null, setup, 'awp-review-details'); reviewDetails.hidden = true;
+    const reviewSummary = make('summary', tx('word_practice.review_words', 'Words to review'), reviewDetails);
+    const reviewGroups = make('div', null, reviewDetails);
+    const reviewActions = make('div', null, reviewDetails, 'awp-review-actions');
+    const reviewListButton = make('button', tx('word_practice.review_list', 'Review word list'), reviewActions); reviewListButton.type = 'button';
+    reviewListButton.onclick = () => { wordsInput.focus(); wordsInput.scrollIntoView?.({ block: 'nearest' }); };
+    const chooseActivityButton = make('button', tx('word_practice.choose_activity', 'Choose another activity'), reviewActions); chooseActivityButton.type = 'button';
+    chooseActivityButton.onclick = () => { mode.focus(); mode.scrollIntoView?.({ block: 'nearest' }); };
+    make('p', tx('word_practice.formats_note', 'HTML keeps interactive practice and works offline. PowerPoint uses fixed slides and embeds available recordings. Sentence activities use only prepared boards; PowerPoint includes prompt and answer slides.'), setup, 'awp-note awp-format-note');
+    const actions = make('div', null, setup, 'awp-actions awp-delivery');
+    const setActions = make('div', null, setup, 'awp-actions awp-set-actions');
+    // Progress must stay outside the form's aria-busy subtree so updates can be announced during work.
+    const operationPanel = make('div', null, dialog, 'awp-operation');
+    const status = make('p', '', operationPanel, 'awp-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); status.setAttribute('aria-atomic', 'true');
+    const cancelButton = make('button', tx('word_practice.cancel_preparation', 'Cancel preparation'), operationPanel); cancelButton.type = 'button'; cancelButton.hidden = true; cancelButton.onclick = cancelOperation;
+    const operationProgress = make('progress', null, operationPanel); operationProgress.hidden = true; operationProgress.setAttribute('aria-label', tx('word_practice.preparation_progress', 'Preparation progress'));
     const fileInput = make('input', null, setup); fileInput.type = 'file'; fileInput.accept = '.json,application/json'; fileInput.hidden = true;
-    function options() { return core.normalizeOptions({ mode: mode.value, repetitions: repetitions.value, autoAdvance: pacing.value === 'timed', intervalSeconds: interval.value, shuffle: shuffle.checked, varyPosition: position.checked, varySize: size.checked, includeAudio: includeAudio.checked }); }
+    function options() { return core.normalizeOptions({ mode: mode.value, repetitions: repetitions.value, autoAdvance: pacing.value === 'timed', intervalSeconds: interval.value, shuffle: shuffle.checked, varyPosition: position.checked, varySize: size.checked, includeAudio: includeAudio.checked, cardFont: appearance.cardFont.value, cardTextScale: appearance.cardTextScale.value, cardTheme: appearance.cardTheme.value }); }
+    function updateAppearancePreview(current) {
+      const opts = options();
+      previewItems = opts.mode === 'sentence' ? current.items.filter(item => item.sentenceActivity) : current.items;
+      const retained = previewItems.findIndex(item => item.id === previewId);
+      const index = retained >= 0 ? retained : Math.min(previewIndex, Math.max(0, previewItems.length - 1));
+      const item = previewItems[index];
+      if (!item || item.id !== previewId || opts.mode !== previewMode) previewRevealed = false;
+      previewId = item ? item.id : ''; previewIndex = index; previewMode = opts.mode;
+      preview.hidden = false; previewToolbar.hidden = !item;
+      const pickerFocused = doc.activeElement === previewPicker;
+      previewPicker.hidden = previewItems.length < 2; previewPicker.disabled = busy || previewItems.length < 2;
+      const pickerKey = JSON.stringify([opts.mode, previewItems.map(item => [item.id, item.word, core.fieldLanguage(item, 'term', current.language)])]);
+      if (pickerKey !== previewPickerKey) {
+        previewPickerKey = pickerKey; previewPicker.replaceChildren();
+        const meanings = new Map(); catalogue.forEach(item => { const key = core.key(item.word); if (!meanings.has(key)) meanings.set(key, []); meanings.get(key).push(item.id); });
+        previewItems.forEach((item, index) => {
+          const label = core.languageLabel(core.fieldLanguage(item, 'term', current.language), uiLanguageName), duplicates = meanings.get(core.key(item.word)) || [];
+          const parts = [String(index + 1)];
+          if (opts.mode === 'popup' || opts.mode === 'vocabulary') parts.push('\u2068' + item.word + '\u2069');
+          if (label.text) parts.push('\u2068' + label.text + '\u2069');
+          if (duplicates.length > 1) parts.push(tx('word_practice.meaning_number', 'Meaning {n}: ', { n: duplicates.indexOf(item.id) + 1 }).replace(/[:：]\s*$/, '').trim());
+          // Native option labels cannot tag individual language parts. Keep
+          // their mixed text neutral, with each authored word isolated above.
+          const option = setLanguage(make('option', parts.join(' · '), previewPicker), ''); option.value = item.id;
+        });
+      }
+      previewPicker.value = previewId;
+      if (pickerFocused && previewPicker.hidden) focusPreview();
+      previewPrevious.disabled = busy || index === 0; previewNext.disabled = busy || index >= previewItems.length - 1;
+      updateLabel(previewProgress, item ? tx('word_practice.card_progress', 'Card {n} of {total}', { n: index + 1, total: previewItems.length }) : '');
+      const revealKey = opts.mode === 'vocabulary' ? 'show_meaning' : opts.mode === 'blend' ? 'show_word' : 'reveal_answer';
+      updateLabel(previewReveal, tx('word_practice.' + revealKey, opts.mode === 'vocabulary' ? 'Show meaning' : opts.mode === 'blend' ? 'Show word' : 'Reveal answer'));
+      previewReveal.hidden = !item || opts.mode === 'popup' || (opts.mode === 'blend' && !item.phonemes.length);
+      previewReveal.disabled = busy || !item || previewRevealed; previewReveal.setAttribute('aria-expanded', String(previewRevealed));
+      const fieldLanguage = field => core.fieldLanguage(item, field, current.language);
+      // Appearance-only changes keep the existing passages, focus and reading position.
+      // Exclude audio data from this key: only its availability changes a spelling prompt.
+      const contentKey = JSON.stringify([opts.mode, previewRevealed, item ? [item.id, item.word, item.definition, item.example, item.translations, item.phonemes.map(sound => sound.label), item.sentenceActivity, ['term', 'definition', 'example', 'sentence'].map(fieldLanguage), opts.mode === 'spelling' && opts.includeAudio && !!item.wordAudio] : current.items.length]);
+      const scrollTop = preview.scrollTop, scrollLeft = preview.scrollLeft;
+      const sameContent = contentKey === previewContentKey;
+      if (!sameContent) {
+        previewContentKey = contentKey; preview.replaceChildren();
+        const passage = (text, field, cls, parent = preview, tag = 'p') => setLanguage(make(tag, text, parent, cls), fieldLanguage(field));
+        const label = (key, fallback, cls = 'awp-preview-detail') => updateLabel(make('p', '', preview, cls), tx('word_practice.' + key, fallback));
+        if (!item) {
+          label(opts.mode === 'sentence' && current.items.length ? 'plan_sentence_empty' : 'need_words', opts.mode === 'sentence' && current.items.length ? 'No prepared sentence activities are available. Choose another activity, or prepare sentences in Word Sounds.' : 'Add at least one word to begin.', 'awp-note');
+        } else if (opts.mode === 'sentence') {
+          passage(item.sentenceActivity.prompt, 'sentence', 'awp-preview-detail awp-preview-prompt');
+          const choices = make('ul', null, preview, 'awp-preview-choices');
+          item.sentenceActivity.choices.forEach(choice => passage(choice, 'term', 'awp-preview-choice', choices, 'li'));
+          if (previewRevealed) {
+            const marker = '\ufff0', template = tx('word_practice.answer', 'Answer: {answer}', { answer: marker }), parts = template.split(marker);
+            const answer = make('p', '', preview, 'awp-preview-feedback'); setLanguage(answer, dialogTextLanguages.get(template) || 'English');
+            answer.appendChild(doc.createTextNode(parts.length === 2 ? parts[0] : template + ' '));
+            passage(item.sentenceActivity.answer, 'term', '', answer, 'span');
+            if (parts.length === 2) answer.appendChild(doc.createTextNode(parts[1]));
+          }
+        } else if (opts.mode === 'spelling' && !previewRevealed) {
+          if (opts.includeAudio && item.wordAudio) label('spell_listen', 'Listen, then spell the word.');
+          else label('spell_teacher', 'Ask your teacher to say the word, then spell it.');
+        } else if (opts.mode === 'blend' && !previewRevealed && item.phonemes.length) {
+          const sounds = setLanguage(make('div', null, preview, 'awp-preview-sounds'), fieldLanguage('term'));
+          item.phonemes.forEach(sound => passage(sound.label, 'term', 'awp-preview-sound', sounds, 'span'));
+          label('blend_help', 'Say the sounds, then blend the word.', 'awp-note awp-gap');
+        } else {
+          passage(item.word, 'term', 'awp-preview-word', preview, 'div');
+          if (opts.mode === 'vocabulary' && previewRevealed) {
+            if (item.definition) passage(item.definition, 'definition', 'awp-preview-detail awp-gap awp-preview-definition');
+            if (item.example) passage(item.example, 'example', 'awp-preview-detail awp-preview-example');
+            item.translations.forEach(translation => {
+              const row = make('p', '', preview, 'awp-preview-detail');
+              if (translation.language) { const label = core.languageLabel(translation.language, uiLanguageName); setLanguage(make('span', label.text + ': ', row, 'awp-preview-language-name'), label.language); }
+              setLanguage(make('span', translation.text, row, 'awp-preview-translation'), translation.language);
+            });
+            if (!item.definition && !item.example && !item.translations.length) label('no_meaning', 'No meaning or example has been prepared for this word.', 'awp-note awp-gap');
+          }
+        }
+        preview.scrollTop = 0; preview.scrollLeft = 0;
+      }
+      styleCardSurface(preview, opts, core);
+      if (sameContent) { preview.scrollTop = scrollTop; preview.scrollLeft = scrollLeft; }
+    }
     function readPack() {
       // Match each written occurrence to a distinct authored entry. Current
       // selection order wins; removed entries remain available for restoration.
@@ -355,13 +565,16 @@
       make('legend', tx('word_practice.meaning_choices', 'Choose meanings'), meaningChoices);
       make('p', tx('word_practice.meaning_choices_help', 'Entries with the same spelling stay separate. Select the meanings to include.'), meaningChoices, 'awp-note');
       const selected = new Set(pack.items.map(item => item.id));
-      duplicates.forEach(items => items.forEach((item, index) => {
+      duplicates.forEach(items => {
+        const languageKeys = new Set(items.map(item => { const value = core.fieldLanguage(item, 'term', pack.language); return core.languageInfo(value).tag || core.key(value); }));
+        items.forEach((item, index) => {
         const label = make('label', null, meaningChoices), input = make('input', null, label); input.type = 'checkbox'; input.checked = selected.has(item.id); input.disabled = busy; input.dataset.entryId = item.id;
         const labelText = make('span', null, label);
         make('span', tx('word_practice.meaning_number', 'Meaning {n}: ', { n: index + 1 }), labelText);
         setLanguage(make('span', item.word, labelText), core.fieldLanguage(item, 'term', pack.language));
+        if (languageKeys.size > 1) { const label = core.languageLabel(core.fieldLanguage(item, 'term', pack.language), uiLanguageName); make('span', ' — ', labelText); setLanguage(make('span', label.text, labelText, 'awp-note awp-meaning-language'), label.language); }
         if (item.definition) { make('span', ' — ', labelText); setLanguage(make('span', item.definition.length > 160 ? item.definition.slice(0, 157) + '…' : item.definition, labelText), core.fieldLanguage(item, 'definition', pack.language)); }
-        else if (item.termLanguage) { make('span', ' — ', labelText); setLanguage(make('span', item.termLanguage, labelText), ''); }
+        else if (item.termLanguage && languageKeys.size === 1) { const label = core.languageLabel(item.termLanguage, uiLanguageName); make('span', ' — ', labelText); setLanguage(make('span', label.text, labelText, 'awp-note awp-meaning-language'), label.language); }
         input.addEventListener('change', event => {
           event.stopPropagation();
           try {
@@ -370,31 +583,102 @@
             pack = core.normalizeInput({ ...current, words, options: options() }); remember(pack); wordsInput.value = pack.items.map(value => value.word).join('\n'); updateCoverage();
           } catch (error) { updateCoverage(); status.textContent = error.message || tx('word_practice.action_failed', 'Unable to finish this action.'); setLanguage(status, 'English'); }
         });
-      }));
+        });
+      });
       if (focused) [...meaningChoices.querySelectorAll('input')].find(input => input.dataset.entryId === focused)?.focus({ preventScroll: true });
+    }
+    function updateLabel(node, value) { if (node.textContent !== value) node.textContent = value; setLanguage(node, dialogTextLanguages.get(value) || 'English'); }
+    function updatePlan(current) {
+      const opts = options(), total = current.items.length;
+      const selected = opts.mode === 'sentence' ? current.items.filter(item => item.sentenceActivity) : current.items;
+      updateLabel(planCount, tx('word_practice.plan_count', 'Practice cards: {cards} · Words included: {words} · Repetitions: {repetitions}', { cards: selected.length * opts.repetitions, words: selected.length, repetitions: opts.repetitions }));
+      let notice = '';
+      if (!total) notice = tx('word_practice.need_words', 'Add at least one word to begin.');
+      else if (opts.mode === 'sentence' && !selected.length) notice = tx('word_practice.plan_sentence_empty', 'No prepared sentence activities are available. Choose another activity, or prepare sentences in Word Sounds.');
+      else if (opts.mode === 'sentence' && selected.length < total) notice = tx('word_practice.plan_sentence_subset', 'Words with prepared sentence activities: {included} of {total}. The other words will be left out of this activity.', { included: selected.length, total });
+      else if (opts.mode === 'blend') {
+        const missing = selected.filter(item => !item.phonemes.length).length;
+        if (missing) notice = tx('word_practice.plan_sounds_missing', 'Words without a prepared sound sequence: {count}. They will appear as whole words.', { count: missing });
+      } else if (opts.mode === 'vocabulary') {
+        const missing = selected.filter(item => !item.definition && !item.example && !item.translations.length).length;
+        if (missing) notice = tx('word_practice.plan_meanings_missing', 'Words without a meaning, example or translation: {count}. Add that content in the source glossary or choose another activity.', { count: missing });
+      } else if (opts.mode === 'spelling') {
+        const missing = selected.filter(item => !opts.includeAudio || !item.wordAudio).length;
+        if (missing) notice = tx('word_practice.plan_teacher_voice', 'Words needing a teacher to say them aloud: {count} of {total}. Prepare and include audio for independent spelling practice.', { count: missing, total });
+      }
+      planNote.hidden = !notice; updateLabel(planNote, notice); plan.dataset.needsReview = String(!!notice);
+      audioModeNote.hidden = opts.includeAudio;
+      updateLabel(audioModeNote, opts.includeAudio ? '' : tx('word_practice.audio_excluded', 'Prepared audio will be left out of the presentation, downloads and saved word set.'));
+      const groups = [];
+      const addGroup = (key, fallback, items) => { if (items.length) groups.push({ key, title: tx(key, fallback), items }); };
+      if (opts.mode === 'sentence') addGroup('word_practice.review_missing_sentences', 'No prepared sentence activity', current.items.filter(item => !item.sentenceActivity));
+      if (opts.mode === 'vocabulary') addGroup('word_practice.review_missing_meanings', 'No meaning, example or translation', selected.filter(item => !item.definition && !item.example && !item.translations.length));
+      if (opts.mode === 'blend') addGroup('word_practice.review_missing_sounds', 'No prepared sound sequence', selected.filter(item => !item.phonemes.length));
+      if (opts.includeAudio) {
+        addGroup('word_practice.review_missing_audio', 'No word recording', selected.filter(item => !item.wordAudio));
+        if (opts.mode === 'blend') addGroup('word_practice.review_incomplete_audio', 'Incomplete sound recordings', selected.filter(item => item.phonemes.length && item.phonemes.some(sound => !sound.audio)));
+      }
+      const focusedGroup = reviewGroups.contains(doc.activeElement) ? doc.activeElement.dataset.reviewGroup : '';
+      const scrollPositions = new Map([...reviewGroups.querySelectorAll('ul')].map(list => [list.dataset.reviewGroup, list.scrollTop]));
+      reviewDetails.hidden = !groups.length; reviewGroups.replaceChildren();
+      groups.forEach((group, index) => {
+        const heading = make('h2', group.title, reviewGroups); heading.id = fieldPrefix + 'review-' + index;
+        const list = make('ul', null, reviewGroups); list.tabIndex = 0; list.dataset.reviewGroup = group.key; list.setAttribute('aria-labelledby', heading.id);
+        group.items.forEach(item => setLanguage(make('li', item.word, list), core.fieldLanguage(item, 'term', current.language)));
+        list.scrollTop = scrollPositions.get(group.key) || 0;
+      });
+      if (focusedGroup) {
+        const nextFocus = [...reviewGroups.querySelectorAll('ul')].find(list => list.dataset.reviewGroup === focusedGroup);
+        (nextFocus || (groups.length ? reviewSummary : wordsInput)).focus({ preventScroll: true });
+      }
     }
     function updateCoverage() {
       try { const current = readPack(), counts = core.audioCoverage(current), sentences = current.items.filter(item => item.sentenceActivity).length; coverage.textContent = tx('word_practice.coverage', '{count} words · Word audio: {audio}/{total} · Complete sound sequences: {complete}/{total} · Sentence activities: {sentences}', { count: current.items.length, audio: counts.words, total: counts.totalWords, complete: counts.completePhonemeWords, sentences: sentences }); setLanguage(coverage, dialogTextLanguages.get(coverage.textContent));
         const stale = includeAudio.checked ? core.audioIssueCounts(current).staleLanguage : 0; audioWarning.hidden = !stale;
         if (stale) { audioWarning.textContent = tx(stale === 1 ? 'word_practice.audio_language_omitted_one' : 'word_practice.audio_language_omitted', stale === 1 ? '{count} saved recording uses a different language and is not played. Prepare replacement audio in Present & Export.' : '{count} saved recordings use a different language and are not played. Prepare replacement audio in Present & Export.', { count: stale }); setLanguage(audioWarning, dialogTextLanguages.get(audioWarning.textContent)); }
-        renderMeaningChoices(); }
-      catch (error) { coverage.textContent = error.message; }
+        updatePlan(current); renderMeaningChoices(); updateAppearancePreview(current); }
+      catch (error) { coverage.textContent = error.message; setLanguage(coverage, 'English'); planCount.textContent = ''; planNote.hidden = false; updateLabel(planNote, error.message); plan.dataset.needsReview = 'true'; reviewDetails.hidden = true; preview.hidden = true; previewToolbar.hidden = true; previewPicker.hidden = true; }
       interval.disabled = pacing.value !== 'timed';
+      interval.parentElement.hidden = pacing.value !== 'timed';
+      timingNote.hidden = pacing.value !== 'timed';
     }
     function fill() {
       titleInput.value = pack.title; wordsInput.value = pack.items.map(item => item.word).join('\n');
       const opts = pack.options; mode.value = opts.mode; repetitions.value = opts.repetitions; pacing.value = opts.autoAdvance ? 'timed' : 'manual'; interval.value = opts.intervalSeconds;
       shuffle.checked = opts.shuffle; position.checked = opts.varyPosition; size.checked = opts.varySize; includeAudio.checked = opts.includeAudio;
+      appearance.setOptions(opts);
       updateCoverage();
     }
-    function setBusy(value) { busy = value; setup.setAttribute('aria-busy', String(value)); setup.querySelectorAll('button,input,textarea,select').forEach(control => { control.disabled = value; }); if (!value) interval.disabled = pacing.value !== 'timed'; }
-    async function action(callback) {
-      if (busy || closed) return;
-      status.textContent = ''; setBusy(true);
-      try { await callback(); } catch (error) { if (!closed && error.name !== 'AbortError') status.textContent = error.message || tx('word_practice.action_failed', 'Unable to finish this action.'); }
-      finally { if (!closed) { setBusy(false); updateCoverage(); } }
+    function setBusy(value) { busy = value; operationPanel.dataset.active = String(value); setup.setAttribute('aria-busy', String(value)); setup.querySelectorAll('button,input,textarea,select').forEach(control => { control.disabled = value; }); if (!value) interval.disabled = pacing.value !== 'timed'; }
+    const isCurrentOperation = run => !closed && operation === run && !run.controller.signal.aborted;
+    function reportProgress(run, value, progress) {
+      if (!isCurrentOperation(run)) return;
+      updateLabel(status, value);
+      if (progress && Number.isFinite(progress.completed) && Number.isFinite(progress.total) && progress.total > 0) {
+        operationProgress.max = progress.total; operationProgress.value = Math.max(0, Math.min(progress.completed, progress.total));
+      } else operationProgress.removeAttribute('value');
     }
-    function actionButton(label, callback, primary) { const button = make('button', label, actions, primary ? 'awp-primary' : ''); button.type = 'button'; button.onclick = () => action(callback); return button; }
+    function finishOperation(run) {
+      if (operation !== run || closed) return;
+      const restoreFocus = doc.activeElement === cancelButton;
+      operation = null; setBusy(false); cancelButton.hidden = true; operationProgress.hidden = true; updateCoverage();
+      if (restoreFocus && run.opener && run.opener.isConnected && !run.opener.disabled) run.opener.focus();
+    }
+    function cancelOperation() {
+      const run = operation; if (!run) return;
+      run.controller.abort();
+      updateLabel(status, tx('word_practice.preparation_cancelled', 'Preparation cancelled. Your words and settings are unchanged.'));
+      finishOperation(run);
+    }
+    async function action(callback, opener) {
+      if (busy || closed) return;
+      const run = { controller: new root.AbortController(), opener: opener || doc.activeElement };
+      operation = run; status.textContent = ''; setBusy(true); cancelButton.hidden = false; operationProgress.hidden = false; operationProgress.removeAttribute('value');
+      root.setTimeout(() => { if (isCurrentOperation(run) && (doc.activeElement === doc.body || doc.activeElement === run.opener)) cancelButton.focus(); }, 0);
+      try { await callback(run); } catch (error) { if (isCurrentOperation(run) && error.name !== 'AbortError') updateLabel(status, error.message || tx('word_practice.action_failed', 'Unable to finish this action.')); }
+      finally { finishOperation(run); }
+    }
+    function actionButton(label, callback, primary, parent) { const button = make('button', label, parent || actions, primary ? 'awp-primary' : ''); button.type = 'button'; button.onclick = () => action(callback, button); return button; }
     function ready() { const current = readPack(); if (!current.items.length) throw new Error(tx('word_practice.need_words', 'Add at least one word to begin.')); return current; }
     function filename(extension) { return (pack.title.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').slice(0, 80).trim() || 'word-practice') + extension; }
     function download(contents, mime, extension) {
@@ -407,7 +691,7 @@
     actionButton(tx('word_practice.present', 'Present'), () => {
       const current = ready(), opts = options(), sequence = core.createSequence(current, opts);
       setup.hidden = true; playerHost.hidden = false;
-      const hooks = { onBack() { closeReading(); player = null; playerHost.replaceChildren(); playerHost.hidden = true; setup.hidden = false; header.hidden = false; if (readingButton) readingButton.hidden = false; present.focus(); }, labels: playerLabels(), uiLanguage: uiLanguageName };
+      const hooks = { onBack() { closeReading(); player = null; playerHost.replaceChildren(); playerHost.hidden = true; setup.hidden = false; header.hidden = false; if (readingButton) readingButton.hidden = false; present.focus(); }, onAppearanceChange(patch) { appearance.setOptions(core.normalizeOptions({ ...options(), ...patch })); updateAppearancePreview(pack); }, labels: playerLabels(), uiLanguage: uiLanguageName };
       // One "Aa" while presenting: the player's, which also works in full screen.
       if (readingButton) { closeReading(); readingButton.hidden = true; hooks.labels.reading_settings = tx('reading_settings.title', 'Reading settings'); hooks.openReadingSettings = openReading; }
       player = mountPlayer(playerHost, current, opts, sequence, core, hooks);
@@ -425,70 +709,76 @@
       } catch (_) { fontMissing = true; }
       return { reader: { css, fontCss }, fontMissing };
     }
-    actionButton(tx('word_practice.download_html', 'Download HTML'), async () => {
+    actionButton(tx('word_practice.download_html', 'Download HTML'), async run => {
       const current = ready(), opts = options(), labels = playerLabels();
       let reader = null, fontMissing = false;
       if (useReading && useReading.checked) {
         status.textContent = tx('word_practice.preparing_reading', 'Adding your reading settings…');
         ({ reader, fontMissing } = await readerStyles());
-        if (closed) return;
+        if (!isCurrentOperation(run)) return;
       }
       download(buildHtml(current, opts, undefined, labels, reader, uiLanguageName), 'text/html;charset=utf-8', '.html');
       status.textContent = tx('word_practice.html_downloaded', 'HTML downloaded. Open the file in a browser to practice offline.') + (fontMissing ? ' ' + tx('word_practice.font_not_embedded', 'Your font could not be added to the file, so it uses the system font.') : '');
     });
-    actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), async () => {
+    actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), async run => {
       const current = ready(), opts = options();
       const media = root.AlloWordPracticeMedia; if (!media || !media.buildPptx) throw new Error(tx('word_practice.pptx_unavailable', 'The PowerPoint exporter is unavailable. Try reopening Present & Export.'));
       status.textContent = tx('word_practice.building_pptx', 'Building PowerPoint…');
-      const pptx = await media.buildPptx(current, opts, core.createSequence(current, opts), { ...context, labels: playerLabels(), signal: abort.signal });
-      if (closed) return;
-      await pptx.writeFile({ fileName: filename('.pptx') });
-      if (!closed) status.textContent = tx('word_practice.pptx_downloaded', 'PowerPoint downloaded.') + (pptx.wordPracticeWarnings && pptx.wordPracticeWarnings.length ? ' ' + pptx.wordPracticeWarnings.join(' ') : '');
+      const pptx = await media.buildPptx(current, opts, core.createSequence(current, opts), { ...context, labels: playerLabels(), signal: run.controller.signal, onProgress: progress => reportProgress(run, tx('word_practice.building_pptx_progress', 'Building PowerPoint. Cards: {completed} of {total}.', progress), progress) });
+      if (!isCurrentOperation(run)) return;
+      reportProgress(run, tx('word_practice.finishing_pptx', 'Finishing PowerPoint file…'));
+      // Serialize without downloading: late compression results from a cancelled run are discarded.
+      const blob = await pptx.write({ outputType: 'blob' });
+      if (!isCurrentOperation(run)) return;
+      download(blob, 'application/vnd.openxmlformats-officedocument.presentationml.presentation', '.pptx');
+      status.textContent = tx('word_practice.pptx_downloaded', 'PowerPoint downloaded.') + (pptx.wordPracticeWarnings && pptx.wordPracticeWarnings.length ? ' ' + pptx.wordPracticeWarnings.join(' ') : '');
     });
-    actionButton(tx('word_practice.prepare_audio', 'Prepare audio'), async () => {
+    actionButton(tx('word_practice.prepare_audio', 'Prepare audio'), async run => {
       const current = ready(), media = root.AlloWordPracticeMedia;
       if (!media || !media.prepareAudio) throw new Error(tx('word_practice.audio_unavailable', 'Audio preparation is unavailable. Try reopening Present & Export.'));
       status.textContent = tx('word_practice.preparing_missing', 'Preparing missing recordings…');
-      const prepared = await media.prepareAudio(current, { ...context, ...inheritedBanks(), signal: abort.signal }, progress => {
-        if (closed) return;
-        if (typeof progress === 'string') status.textContent = core.text(progress, 240);
-        else if (progress && Number.isFinite(progress.completed) && Number.isFinite(progress.total)) status.textContent = progress.word ? tx('word_practice.preparing_progress_word', 'Preparing recordings: {completed} of {total} — {word}.', { completed: progress.completed, total: progress.total, word: core.text(progress.word, 120) }) : tx('word_practice.preparing_progress', 'Preparing recordings: {completed} of {total}.', { completed: progress.completed, total: progress.total });
-        else status.textContent = tx('word_practice.preparing', 'Preparing recordings…');
+      const prepared = await media.prepareAudio(current, { ...context, ...inheritedBanks(), signal: run.controller.signal }, progress => {
+        if (!isCurrentOperation(run)) return;
+        const value = typeof progress === 'string' ? core.text(progress, 240) : progress && Number.isFinite(progress.completed) && Number.isFinite(progress.total) ? progress.word ? tx('word_practice.preparing_progress_word', 'Preparing recordings: {completed} of {total} — {word}.', { completed: progress.completed, total: progress.total, word: core.text(progress.word, 120) }) : tx('word_practice.preparing_progress', 'Preparing recordings: {completed} of {total}.', { completed: progress.completed, total: progress.total }) : tx('word_practice.preparing', 'Preparing recordings…');
+        reportProgress(run, value, progress);
       });
-      if (closed) return;
+      if (!isCurrentOperation(run)) return;
       const audioStatus = prepared.audioStatus || {}, errors = Array.isArray(audioStatus.errors) ? [...new Set(audioStatus.errors.map(value => core.text(value, 180)).filter(Boolean))] : [];
       pack = core.normalizeInput(prepared); remember(pack); fill();
       const counts = core.audioCoverage(pack);
       status.textContent = tx('word_practice.audio_ready', 'Audio ready for {words} of {total} words. Complete sound sequences: {complete}.', { words: counts.words, total: counts.totalWords, complete: counts.completePhonemeWords }) + ' '
         + (core.text(audioStatus.message, 240) || (counts.words < counts.totalWords || counts.phonemes < counts.totalPhonemes ? tx('word_practice.missing_silent', 'Missing recordings remain silent.') : tx('word_practice.all_ready', 'All prepared recordings are ready.')))
         + (errors.length ? ' ' + errors.slice(0, 2).join(' ') + (errors.length > 2 ? ' ' + tx('word_practice.more_issues', '{count} more recording issues.', { count: errors.length - 2 }) : '') : '');
-    });
-    actionButton(tx('word_practice.save_set', 'Save word set'), () => { const current = ready(); download(core.serializePack(withoutAudio({ ...current, options: options() }, includeAudio.checked)), 'application/json', '.json'); status.textContent = tx('word_practice.set_saved', 'Word set saved with its practice settings.'); });
-    const openSet = actionButton(tx('word_practice.open_set', 'Open word set'), () => {});
+    }, false, audioSetup);
+    actionButton(tx('word_practice.save_set', 'Save word set'), () => { const current = ready(); download(core.serializePack(withoutAudio({ ...current, options: options() }, includeAudio.checked)), 'application/json', '.json'); status.textContent = tx('word_practice.set_saved', 'Word set saved with its practice settings.'); }, false, setActions);
+    const openSet = actionButton(tx('word_practice.open_set', 'Open word set'), () => {}, false, setActions);
     openSet.onclick = () => { if (!busy) { fileInput.value = ''; fileInput.click(); } };
-    fileInput.addEventListener('change', () => action(async () => {
+    fileInput.addEventListener('change', () => action(async run => {
       const file = fileInput.files && fileInput.files[0]; if (!file) return;
       if (file.size > 32 * 1024 * 1024) throw new Error(tx('word_practice.set_too_large', 'This word set is too large. Use a file smaller than 32 MB.'));
       const imported = core.normalizeInput(JSON.parse(await file.text()));
-      if (closed) return;
+      if (!isCurrentOperation(run)) return;
       if (!imported.items.length) throw new Error(tx('word_practice.set_no_words', 'This file does not contain a word list.'));
       // A file starts a new set, even when its language/word spelling matches.
       // Neither removed words nor their recordings belong to the imported set.
-      pack = imported; catalogue.clear(); remember(pack); fill(); status.textContent = tx('word_practice.set_opened', 'Word set opened.');
+      pack = imported; catalogue.clear(); remember(pack); previewId = ''; previewIndex = 0; previewMode = ''; previewRevealed = false; previewPickerKey = ''; fill(); status.textContent = tx('word_practice.set_opened', 'Word set opened.');
     }));
     setup.addEventListener('change', updateCoverage);
+    let coverageTimer = null;
+    const scheduleCoverage = () => { root.clearTimeout(coverageTimer); coverageTimer = root.setTimeout(() => { coverageTimer = null; if (!closed && !busy) updateCoverage(); }, 180); };
+    wordsInput.addEventListener('input', scheduleCoverage); repetitions.addEventListener('input', scheduleCoverage);
     function trap(event) {
       if (event.key === 'Escape' && !doc.fullscreenElement) { event.preventDefault(); close(); return; }
       if (event.key !== 'Tab') return;
       const scope = doc.fullscreenElement && doc.fullscreenElement.contains(playerHost) ? doc.fullscreenElement : dialog;
-      const candidates = Array.from(scope.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]')).filter(node => !node.disabled && !node.hidden && node.getClientRects().length);
+      const candidates = Array.from(scope.querySelectorAll('button,input,textarea,select,summary,a[href],[tabindex="0"]')).filter(node => !node.disabled && !node.closest('[hidden]') && (!node.closest('details:not([open])') || node.tagName === 'SUMMARY') && node.getClientRects().length);
       if (!candidates.length) { event.preventDefault(); return; }
       const first = candidates[0], last = candidates[candidates.length - 1];
       if (event.shiftKey && (doc.activeElement === first || !candidates.includes(doc.activeElement))) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && (doc.activeElement === last || !candidates.includes(doc.activeElement))) { event.preventDefault(); first.focus(); }
     }
     function close() {
-      if (closed) return; closed = true; abort.abort(); if (player) player.destroy(); overlay.removeEventListener('keydown', trap);
+      if (closed) return; closed = true; root.clearTimeout(coverageTimer); if (operation) { operation.controller.abort(); operation = null; } if (player) player.destroy(); overlay.removeEventListener('keydown', trap);
       if (context.signal) context.signal.removeEventListener('abort', close);
       closeReading(); overlay.remove();
       hiddenSiblings.forEach(({ node, inert }) => { if (node.isConnected) node.inert = inert; }); doc.body.style.overflow = priorOverflow;

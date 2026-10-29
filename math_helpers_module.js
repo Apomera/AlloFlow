@@ -434,10 +434,24 @@ const _parseConservativeNumericAnswer = (value) => {
   );
 };
 
+// NFKC flattens Unicode scripts (x² becomes x2). Preserve their grouping
+// before compatibility normalization so powers and subscripts cannot become
+// ordinary factors or digits. This is notation normalization, not algebra.
+const _preserveUnicodeMathScripts = value => {
+  const superscripts = '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁽⁾ⁱⁿ';
+  const subscripts = '₀₁₂₃₄₅₆₇₈₉₊₋₍₎';
+  const normal = '0123456789+-()in';
+  return value
+    .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁽⁾ⁱⁿ]+/g, run =>
+      '^{' + [...run].map(char => normal[superscripts.indexOf(char)]).join('') + '}')
+    .replace(/[₀₁₂₃₄₅₆₇₈₉₊₋₍₎]+/g, run =>
+      '_{' + [...run].map(char => normal[subscripts.indexOf(char)]).join('') + '}');
+};
+
 const _normalizeAnswerText = (value) => {
   let text;
   try {
-    text = String(value ?? '')
+    text = _preserveUnicodeMathScripts(String(value ?? ''))
       .normalize('NFKC')
       .replace(/[\u2212\u2013\u2014]/g, '-')
       .trim();
@@ -467,7 +481,12 @@ const _normalizeAnswerText = (value) => {
 // Self-grade has no AI fallback, so "5x + 3" must match a key of "5x+3".
 // Spaces beside an operator never change the math; spaces between two
 // terms ("1 1/2") do, so only the former are removed.
-const _compactMathOperators = text => text.replace(/\s*([-+*\/^=<>()[\],\u00d7\u00f7\u00b7\u2264\u2265\u2260\u00b1])\s*/g, '$1');
+// TeX braces around one script token are optional: x^{2} and x^2.
+// Keep multi-token groups intact: x^{12} is not the TeX expression x^12,
+// and x^{2+1} must not collapse to x^2+1.
+const _compactMathOperators = text => text
+  .replace(/([_^])\s*\{\s*([a-z0-9])\s*\}/g, '$1$2')
+  .replace(/\s*([-+*\/^=<>()[\],\u00d7\u00f7\u00b7\u2264\u2265\u2260\u00b1])\s*/g, '$1');
 
 const _simpleAssignment = text => {
   const match = text.match(/^([a-z])\s*=\s*(.+)$/i);

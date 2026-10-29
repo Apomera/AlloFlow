@@ -146,7 +146,8 @@ request; you answer, it continues.
 6. `remediation_agent_cancel` aborts; written files stay. Run records survive a
    server restart: find saved run IDs with `remediation_agent_runs`, poll the intended run, then call `remediation_agent_resume`
    when it is interrupted. Verified completed files and audio sections are reused;
-   an unfinished document may restart. The client must remain active to answer
+   an unfinished document runs again with its unchanged requests answered from the
+   run's saved answers. The client must remain active to answer
    new model requests. Resumption does not promise background model execution.
 
 ### Keeping a keyless run fast

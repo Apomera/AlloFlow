@@ -17552,7 +17552,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // in separately-mounted modules (the sidebar panels' AiSetupNotice). One
       // wiring point instead of threading a callback through ~17 prop bags.
       window.__alloOpenAiSetup = () => { try { setShowAIBackendModal(true); } catch (_) {} };
-      return () => { window.removeEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh); window.removeEventListener('storage', refresh); try { delete window.__alloOpenAiSetup; } catch (_) {} };
+      window.__alloOpenQuickStart = () => { try { safeRemoveItem('allo_wizard_completed'); setShowWizard(true); } catch (_) {} };
+      window.__alloBlankStartTypes = ['quiz', 'glossary', 'timeline', 'concept-sort', 'anchor-chart'];
+      return () => { window.removeEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh); window.removeEventListener('storage', refresh); try { delete window.__alloOpenAiSetup; delete window.__alloOpenQuickStart; delete window.__alloBlankStartTypes; } catch (_) {} };
   }, []);
   const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
   const [showSdTurboOfferModal, setShowSdTurboOfferModal] = useState(false);
@@ -32617,6 +32619,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setIsRunningHealthCheck(false);
       setShowHealthCheckPanel(false);
   }, [generatedContent?.id]);
+  const isUnfilledBlankDraft = (item) => {
+      if (!item || item.lessonPath?.seed?.kind !== 'blank') return false;
+      const minimum = window.AlloModules?.GenDispatcher?.hasMinimumContent;
+      return typeof minimum === 'function' && !minimum(item.type, item.data);
+  };
+  React.useEffect(() => {
+      if (!isTeacherMode || !isUnfilledBlankDraft(generatedContent)) return;
+      if (generatedContent.type === 'quiz') setIsEditingQuiz(true);
+      else if (generatedContent.type === 'glossary') setIsEditingGlossary(true);
+      else if (generatedContent.type === 'timeline') setIsEditingTimeline(true);
+  }, [generatedContent?.id, isTeacherMode]);
   const toFocusText = (text) => {
       if (!text) return null;
       return text.split(/(\s+)/).map((part, i) => {
@@ -35928,6 +35941,7 @@ const parseTaggedContent = (text) => {
       sourceStructure: window.AlloModules?.RemediationReview?.normalizeSourceModel(cur.sourceStructure) || null,
       preservationAcknowledgments: window.AlloModules?.RemediationReview?.acknowledgments(cur.preservationAcknowledgments) || {},
       reviewedFindings: (cur.reviewedFindings && typeof cur.reviewedFindings === 'object') ? cur.reviewedFindings : null,
+      reviewDecisions: (cur.reviewDecisions && typeof cur.reviewDecisions === 'object') ? cur.reviewDecisions : null,
       docStyle: cur.docStyle,
       pageCount: cur.pageCount,
       imageCount: cur.imageCount,
@@ -36201,6 +36215,7 @@ const parseTaggedContent = (text) => {
   };
   _exportLiveRef.current = {
       history, sourceTopic, gradeLevel, generatedContent, studentResponses,
+      filteredGlossaryData, glossarySearchTerm, glossaryFilter, glossarySort,
       profiles, adventureState,
       probeHistory, surveyResponses, fidelityLog, sessionCounter,
       externalCBMScores, interventionLogs,
@@ -40436,6 +40451,15 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   // or quiz-pack import).
   const handleUpdateQuestionRoutingRules = useCallback((...__a) => _alloHostHandlers().handleUpdateQuestionRoutingRules(...__a), [setGeneratedContent, setHistory]);
   const handleReflectionChange = (...__a) => _alloHostHandlers().handleReflectionChange(...__a);
+  const handleRemoveQuizReflection = (rIndex) => {
+    const origin = generatedContent;
+    if (!isTeacherMode || origin?.type !== 'quiz' || !Array.isArray(origin.data?.reflections) || !Number.isInteger(rIndex) || rIndex < 0 || rIndex >= origin.data.reflections.length) return false;
+    const remove = resource => (resource && resource.id === origin.id && Array.isArray(resource.data?.reflections)
+      ? { ...resource, data: { ...resource.data, reflections: resource.data.reflections.filter((_, i) => i !== rIndex) } } : resource);
+    setGeneratedContent(remove);
+    setHistory(prev => prev.map(remove));
+    return true;
+  };
   const handleFactCheck = async (...__a) => _alloHostHandlers().handleFactCheck(...__a);
   const handleSettingsIntent = (intentData) => {
       if (!(window.AlloModules && window.AlloModules.GlossaryHelpers)) return _alloAwaitModules([['GlossaryHelpersModule', 'GlossaryHelpers']], 'this tool').then(() => handleSettingsIntent(intentData), () => {});
@@ -42212,6 +42236,17 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     setHistory(prev => prev.map(move));
     return true;
   };
+  const handleAddGlossaryTermAsTyped = (termText) => {
+    const origin = generatedContent;
+    const term = String(termText || '').trim();
+    if (!isTeacherMode || origin?.type !== 'glossary' || !Array.isArray(origin.data) || !term) return false;
+    const makeId = window.AlloModules?.createGlossaryEntryId;
+    const entry = { term, def: '', tier: 'Academic', entryId: typeof makeId === 'function' ? makeId() : 'entry-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
+    const add = resource => (resource && resource.id === origin.id && Array.isArray(resource.data) ? { ...resource, data: [...resource.data, entry] } : resource);
+    setGeneratedContent(add);
+    setHistory(prev => prev.map(add));
+    return true;
+  };
   const handleGlossarySelectionChange = (...__a) => _alloHostHandlers().handleGlossarySelectionChange(...__a);
   const handleGlossarySelectAll = (...__a) => _alloHostHandlers().handleGlossarySelectAll(...__a);
   // Narrow dependency bundle for glossary image creation. Keeping this local
@@ -42347,6 +42382,32 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       csInvalidateAsyncRun();
       csUpdateData((data) => Object.assign({}, data, {
           categories: (data.categories || []).map(c => c.id === categoryId ? Object.assign({}, c, { label: clean }) : c)
+      }));
+  }, [csUpdateData]);
+  const csNewId = (prefix) => prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const csAddCategory = useCallback((label) => {
+      const clean = String(label || '').trim();
+      if (!clean) return;
+      csInvalidateAsyncRun();
+      csUpdateData((data) => {
+          const categories = data.categories || [];
+          const palette = ['bg-indigo-500', 'bg-pink-500', 'bg-emerald-500', 'bg-amber-500', 'bg-sky-500', 'bg-violet-500'];
+          const color = palette.find(c => !categories.some(cat => cat.color === c)) || palette[categories.length % palette.length];
+          return Object.assign({}, data, { categories: categories.concat([{ id: csNewId('c'), label: clean, color }]) });
+      });
+  }, [csUpdateData]);
+  const csDeleteCategory = useCallback((categoryId) => {
+      csInvalidateAsyncRun();
+      csUpdateData((data) => Object.assign({}, data, {
+          categories: (data.categories || []).filter(c => c.id !== categoryId)
+      }));
+  }, [csUpdateData]);
+  const csAddItemManual = useCallback((categoryId, text) => {
+      const clean = String(text || '').trim();
+      if (!clean) return;
+      csInvalidateAsyncRun();
+      csUpdateData((data) => Object.assign({}, data, {
+          items: (data.items || []).concat([{ id: csNewId('i'), content: clean, categoryId, image: null }])
       }));
   }, [csUpdateData]);
   const csRegenerateItem = useCallback(async (...__a) => _alloHostHandlers().csRegenerateItem(...__a), [handleGenerateConceptItem, csUpdateData, csBeginAsyncRun, csAsyncRunIsCurrent]);
@@ -45034,6 +45095,16 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                         </div>
                     );
                 })()}
+                {isTeacherMode && generatedContent && activeView === generatedContent.type && isUnfilledBlankDraft(generatedContent) && (
+                    <div role="status" data-help-key="blank_draft_notice" className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                        {t('common.blank_draft_notice') || 'Draft: students will not see this until you add content.'}
+                    </div>
+                )}
+                {isTeacherMode && generatedContent && activeView === generatedContent.type && generatedContent.lessonPath?.seed?.kind === 'topic' && (
+                    <div role="note" data-help-key="topic_seed_notice" className="mb-4 rounded-xl border border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+                        {t('common.topic_seed_notice', { topic: generatedContent.lessonPath.seed.text || '' }) || ('Made from the topic "' + (generatedContent.lessonPath.seed.text || '') + '", not from source material. Check the facts before sharing.')}
+                    </div>
+                )}
                 {!isTeacherMode && studentWorkConflict && !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(activeView) && window.AlloModules?.StudioResponse?.WorkConflict && React.createElement(window.AlloModules.StudioResponse.WorkConflict, {
                     conflict: studentWorkConflict, status: studentWorkStatus, onResolve: resolveStudentWorkConflict, resource: generatedContent, t,
                 })}
@@ -45088,7 +45159,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     handleCloseWordScramble, closeStudentBingo, handleToggleShowWordSearchAnswers, handlePrintGame,
                     handleSetGameModeToNull, handleToggleShowHealthCheckPanel,
                     handleGlossarySelectAll, handleGlossarySelectionChange, handleDeleteGlossaryItem,
-                    handleRetryGlossaryTranslation, handleMoveGlossaryItem,
+                    handleRetryGlossaryTranslation, handleMoveGlossaryItem, handleAddGlossaryTermAsTyped,
                     fetchReplacementSuggestion, toggleLetterSelection,
                     handleGameScoreUpdate, handleGameCompletion, handleScoreUpdate, handleAiSafetyFlag,
                     handleGenerateBingo, generateWordSearch,
@@ -45303,7 +45374,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     handleReviewTileClick, handleAwardPoints, closeReviewModal,
                     handlePresentationOptionClick, togglePresentationAnswer,
                     togglePresentationExplanation, resetPresentation,
-                    handleQuizChange, handleQuizQuestionAction, handleQuizImageRefine, handleQuizBulkOptionChange, handleReflectionChange, handleFactCheck,
+                    handleQuizChange, handleQuizQuestionAction, handleQuizImageRefine, handleQuizBulkOptionChange, handleReflectionChange, handleRemoveQuizReflection, handleFactCheck,
                     endCollaborativeEscapeRoom, resetEscapeRoom,
                     launchCollaborativeEscapeRoom, launchConceptQuest, openEscapeRoomSettings, selectedLanguages,
                     generateEscapeRoom, handlePuzzleSolved, handleSelectObject,
@@ -45521,6 +45592,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 {activeView === 'anchor-chart' && generatedContent?.type === 'anchor-chart' && window.AlloModules?.AnchorChartView && window.AlloModules?.StudioResponse && React.createElement(window.AlloModules.StudioResponse.Boundary, {
                     key: generatedContent.id + ':' + selectedProfileId + ':' + isTeacherMode,
                     View: window.AlloModules.AnchorChartView, generatedContent, isTeacherMode, isProcessing,
+                    startEditing: isTeacherMode && isUnfilledBlankDraft(generatedContent),
                     studentResponses, studentWorkStatus, studentWorkConflict, onResolveWorkConflict: resolveStudentWorkConflict, activeProfileId: selectedProfileId,
                     onResponseChange: (id, response) => handleStudentInput(id, 'studio', response),
                     onRetrySave: retryStudentWorkSave, allowRuntimeAi: !studentAiFeaturesHidden,
@@ -45636,7 +45708,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     handleSetIsConceptSortGameToTrue,
                     csUpdateCategoryLabel, csUpdateItemText, csMoveItem,
                     csRegenerateItem, csRegenerateItemImage, csUploadItemImage,
-                    csClearItemImage, csDeleteItem, csAddItem,
+                    csClearItemImage, csDeleteItem, csAddItem, csAddCategory, csDeleteCategory, csAddItemManual,
                     csRefineItemImage, csRefinementInputs, setCsRefinementInputs,
                     conceptSortAutoRemoveWords, setConceptSortAutoRemoveWords,
                     closeConceptSort, handleGenerateConceptItem,
@@ -45678,6 +45750,51 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                             </div>
                         </div>
                     );
+                })()}
+                {activeView === 'stem-assessment' && (() => {
+                    // Saved plans and submitted work share a historical resource type.
+                    // Render their stored payload directly; opening must never generate or grade again.
+                    const saved = generatedContent || {};
+                    const data = saved.data && typeof saved.data === 'object' ? saved.data : {};
+                    const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+                    const label = (key, fallback) => { const value = t(key); return typeof value === 'string' && value !== key ? value : fallback; };
+                    const results = Array.isArray(data.results) ? data.results.filter(row => row && typeof row === 'object') : null;
+                    const blocks = Array.isArray(data.blocks) ? data.blocks.filter(block => block && typeof block === 'object') : [];
+                    const title = label(results ? 'math.saved_results' : 'math.saved_plan', results ? 'Submitted assessment results' : 'Assessment plan');
+                    return <section aria-labelledby="saved-math-assessment-title" className="max-w-4xl mx-auto space-y-5 p-4 sm:p-6">
+                        <header>
+                            <p className="text-sm font-bold text-indigo-800">{title}</p>
+                            <h2 id="saved-math-assessment-title" className="text-2xl font-bold text-slate-900 break-words">{text(saved.title) || title}</h2>
+                        </header>
+                        {results ? <>
+                            {Number.isFinite(data.score) && Number.isFinite(data.total) && <p className="text-lg font-bold text-slate-900">{label('math.saved_score', 'Score')}: {data.score} / {data.total}{Number.isFinite(data.percentage) ? ` (${data.percentage}%)` : ''}</p>}
+                            <p className="text-sm text-slate-700">{label('math.saved_results_note', 'These are the answers and results recorded when you submitted. Opening this resource does not grade them again.')}</p>
+                            <ol className="space-y-4">
+                                {results.map((row, index) => <li key={index} className="rounded-xl border border-slate-300 bg-white p-4 space-y-2">
+                                    <h3 className="font-semibold text-slate-900 break-words">{index + 1}. {formatInlineText(text(row.question), false)}</h3>
+                                    <p className="text-slate-800 break-words"><strong>{label('math.saved_response', 'Your submitted answer')}: </strong>{formatInlineText(text(row.response), false)}</p>
+                                    <p className="font-semibold text-slate-800">{row.correct === true ? label('math.saved_correct', 'Correct') : row.correct === false ? label('math.saved_incorrect', 'Incorrect') : label('math.saved_ungraded', 'Not graded')}</p>
+                                </li>)}
+                            </ol>
+                            {!results.length && <p>{label('math.saved_no_results', 'No submitted answers were recorded in this resource.')}</p>}
+                        </> : blocks.length ? <>
+                            <p className="text-sm text-slate-700">{label('math.saved_plan_note', 'This plan saves the requested sections and settings. Generated questions are saved separately as a Math resource.')}</p>
+                            <ol className="space-y-3">
+                                {blocks.map((block, index) => <li key={index} className="rounded-xl border border-slate-300 bg-white p-4">
+                                    <h3 className="font-bold text-slate-900">{index + 1}. {text(block.type).replace(/_/g, ' ')} · {text(block.quantity)} {label('math.saved_problems', 'problems')}</h3>
+                                    <p className="text-slate-800 break-words">{formatInlineText(text(block.directive), false)}</p>
+                                </li>)}
+                            </ol>
+                            {isTeacherMode && <button type="button" className="min-h-[44px] rounded-lg bg-indigo-700 text-white px-4 py-2 font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700" onClick={() => {
+                                setAssessmentBlocks(blocks.map((block, index) => ({ ...block, id: 'restored-block-' + index })));
+                                if (text(data.subject)) setMathSubject(text(data.subject));
+                                if (text(saved.config?.grade)) setGradeLevel(text(saved.config.grade));
+                                if (text(saved.config?.language)) setLeveledTextLanguage(text(saved.config.language));
+                                setShowAssessmentBuilder(true);
+                                openMathCreate();
+                            }}>{label('math.saved_edit_plan', 'Edit a copy in Math Studio')}</button>}
+                        </> : <p role="status" className="rounded-xl border border-amber-400 bg-amber-50 p-4 text-amber-950">{label('math.saved_empty', 'This saved assessment has no readable plan or submitted results. Choose another resource or return to Math Studio.')}</p>}
+                    </section>;
                 })()}
                 {activeView === 'math' && window.AlloModules && window.AlloModules.MathView && React.createElement(window.AlloModules.MathView, {
                     t, generatedContent, isTeacherMode, isIndependentMode, isProcessing,
@@ -48275,10 +48392,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     selectedVoice,
                     gradeLevel,
                     sourceTopic,
-                    glossaryTerms: (() => {
-                        const g = history.find(h => h && h.type === 'glossary');
-                        return g?.data?.terms || [];
-                    })(),
+                    glossaryTerms: latestGlossary,
                     addToast,
                     t,
                     isCanvasEnv: _isCanvasEnv,

@@ -1,6 +1,91 @@
 # Virtual Dissection Lab improvement review
 
-Updated: 2026-08-31
+Updated: 2026-10-29
+
+## Learning workflow and recovery follow-up
+
+- Learning objectives now offer a direct action for the first missing inspection, note, confidence rating, or Guided identification check. Locked targets lead to layer preparation; navigation does not unlock anatomy or award observation credit. Actions pause during assessments and technique animations.
+- Lab tools now offer a readable full-report preview, plain-text download, and manual text selection as alternatives to clipboard access. Reports include objective next steps and saved records awaiting inspection, distinguish reference functions from learner observations, and explicitly identify missing confidence or notes. Evidence images remain separate; text reports are not restorable session backups.
+- Storage warning and protected-save states offer direct access to the current session report. Reference-bearing report exports are unavailable during assessments.
+- Specimen hydration now uses a cancelable queue per mounted lab. Repeated renders coalesce pending loads, while resets, specimen switches, retries, newly restored state, and unmounts invalidate obsolete work. Reset marks the new specimen session loaded before subsequent notes are entered.
+- Fullscreen focus follows actual native or CSS-fallback entry, including delayed browser rejection. Entry announcements wait for the visible transition, repeated pending requests are ignored, and lifecycle listeners are released on exit or unmount.
+
+Behavioral coverage: `dissection_objective_handoff.test.js`, `dissection_report_export.test.js`, `dissection_load_lifecycle.test.js`, and `dissection_fullscreen_lifecycle.test.js`. Desktop and phone workflow coverage: `tests/e2e/dissection-learning-report.spec.ts`.
+
+Verification for this follow-up: 346 focused regression cases verified across the integrated run and targeted reruns, plus two Chromium workflows at 390px and 1440px. The integrated run exposed two obsolete assertions, an assessment failure cascading from an earlier test's incomplete cleanup, and one keyboard-test timeout; the corrected assertions and affected tests passed on rerun. The unrestricted dissection sweep was stopped after resource-related timeouts, so this is not a full-suite certification. JavaScript syntax, scoped whitespace checks, and source/deployment-mirror byte parity passed.
+
+## Observation review and interaction integrity
+
+- Observation review now separates self-rated confidence, documentation, and checked identifications. Search-aware filters show structures that need a check or have a successful Guided/first-attempt assessment record. The list, larger reading view, and exported summary show the source of verification.
+- Available unchecked observations can open a one-structure Guided check directly from the list or reading view. Navigation preserves notes, confidence, observation credit, and layer locks. Successful focused checks award identification credit without granting completion of a full Guided investigation.
+- Assessment entry now clears teaching overlays, baseline comparison, replay state, and active gestures consistently for new assessments, missed-item review, and timed practicals. Pending reveals block entry, and restarting cannot reset an active practical.
+- Saved annotation coordinates must be finite numbers within the model bounds, with complete previous-point pairs. Invalid records remain protected byte-for-byte. Defensive drawing skips malformed live marks and avoids drawing a connecting line across them; valid legacy marks remain supported.
+- A late fullscreen rejection cannot activate CSS fullscreen after its stage is detached. Closing a dissection stage releases its own CSS lock without exiting another element's native fullscreen.
+
+Focused coverage includes `dissection_observation_checks.test.js`, `dissection_annotation_integrity.test.js`, `dissection_assessment_entry.test.js`, and the expanded fullscreen lifecycle suite. `tests/e2e/dissection-observation-checks.spec.ts` covers desktop/phone review filters, accessible reading-view navigation, and evidence-preserving check handoffs.
+
+Verification: 296/296 tests passed across 12 focused suites. All 10 observation-review Chromium workflows passed, including the new desktop/phone checks and scoped WCAG audits. The dissection deployment mirror and all three shared STEM runtime copies are byte-identical; scoped whitespace checks are clean.
+
+## Guided follow-through and evidence repair
+
+- Completing an observation's Guided check now focuses a result summary that separates checked identification from note/confidence completion. It offers the exact missing record action, the next available unchecked observation, and a return to the existing review search/filter. Locked observations remain locked, and finishing all inspected observations does not imply mastery of the whole specimen.
+- Guided and keyboard feedback now preserves the actual outcome: first inspection, existing-record review, pending observation check, or verified identification. A generic inspection announcement no longer replaces the checkpoint instruction, and successful verification no longer leaves a stale “step has not advanced” message.
+- Supported assessment review removes a missed item only after a correct response in that review session. Showing an answer keeps the item queued; unasked items remain for later batches, and first-attempt evidence is unchanged.
+- Notebook identity repair preserves images and metadata while assigning stable distinct IDs to missing, duplicated, or DOM-colliding frame identities. Removing one frame removes one entry. Repair also preserves valid zero-valued IDs and the selected reference wherever the old reference identifies a frame unambiguously.
+
+Focused coverage includes `dissection_observation_checks.test.js`, `dissection_review_resolution.test.js`, `dissection_evidence_identity.test.js`, and expanded keyboard tests. Desktop/phone browser checks exercise actual Guided completion, result focus, scoped accessibility, and return to the unchanged review filter.
+
+Verification: 270/270 regression tests passed across 11 suites, plus all 10 desktop/phone observation-review browser workflows. Source/deployment-mirror byte parity, JavaScript syntax, and scoped whitespace checks passed.
+
+## Recall continuity, notebook capacity, and fullscreen keys
+
+- Flashcards can pause on a specific structure to find it in the specimen or review an existing evidence record. A visible resume control restores the same draft, self-ratings, card, answer visibility, and focused round. Recall drafts remain separate from observed evidence; navigation does not grant credit or unlock anatomy. Successful layer/specimen changes, confirmed reset, a new flashcard round, or explicit end clear the paused activity.
+- Valid notebooks with more than six frames retain all existing frames during hydration, drawing, and autosave. Six remains the limit for new captures. Over-capacity guidance explains how many frames must be removed before capturing again; comparison and individual deletion continue to work, including the oldest selected frame. Explicit storage-quota fallback remains separate and visible.
+- Plain Escape inside the active fullscreen stage exits fullscreen without also clearing selection or observation tools. Tab and Shift+Tab stay within visible enabled stage controls; modified shortcuts, editable controls, and unrelated labs retain their own behavior.
+
+Focused coverage includes `dissection_flashcard_handoff.test.js`, expanded evidence-identity tests, and fullscreen lifecycle tests. The flashcard and fullscreen keyboard browser suites exercise both phone and desktop interactions.
+
+Verification: 294/294 tests passed across 13 focused suites, plus all six desktop/phone flashcard and fullscreen browser scenarios. The dissection runtime and deployment mirror are byte-identical; JavaScript syntax and scoped whitespace checks passed.
+
+## Technique restart review and repeat practice
+
+- Starting a new technique attempt now checks whether the current work matches its saved baseline. Changed or legacy attempts open a review with save-and-restart, discard-and-restart, and cancel choices. Both normal save and save-and-restart explicitly identify replacement of the oldest attempt when the six-attempt archive is full. Unchanged saves do not add duplicate baselines. Cancel preserves the current work, and stale reviews cannot restart another layer, specimen, or changed attempt.
+- Guided identifications and whole-investigation completion award XP only when first earned for the specimen's current progress. Repeated rounds remain available as practice, retain the original verification evidence, and explain why no additional XP was awarded. Duplicate submissions cannot advance a checkpoint or grant credit twice.
+- Fullscreen exit stays outside the scrolling tool area. The controls retain their bounded scroll region on narrow and short screens, so the exit remains visible and usable after reaching the last tool.
+
+Focused coverage includes `dissection_attempt_restart.test.js`, Guided credit regressions, and the existing fullscreen lifecycle tests. Browser workflows cover restart review at phone and desktop sizes, repeated Guided rounds, and fullscreen exit visibility on narrow, landscape, and large-text displays.
+
+Verification: 283/283 tests passed across 15 focused suites. Nine Chromium workflows passed across the initial run and targeted reruns. The initial browser failures came from tests trying to use a collapsed technique panel, a directory hidden by the selected-record view, and a button's visible text instead of its accessible name; the corrected tests use the native panel and directory navigation. Restart reviews passed scoped WCAG checks at 390px and 1440px. Source/deployment-mirror byte parity, JavaScript syntax, and scoped whitespace checks passed.
+
+## Assessment input and action boundaries
+
+- Assessment responses now claim the displayed question or retry before state updates commit. Rapid wrong-then-correct inputs preserve the wrong first attempt, duplicate correct inputs grant credit once, and a deliberate supported retry remains available after feedback. Answer and Show answer share the same guard; question changes, assessment modes, and separate labs remain isolated.
+- Clipboard results belong to the originating lab and copy request. Delayed results cannot replace newer action feedback after a specimen, layer, or learning-route change, and older requests cannot override newer copy outcomes. Routine timer updates still allow pending copies to complete normally.
+- Undo waits until pending layer reveals, view transitions, and direct gestures finish, with an explanation beside the disabled control. Assessments also protect technique work. Stale Undo actions cannot alter a different specimen, layer, or newer attempt; practice on an already revealed layer still supports Undo.
+
+Focused coverage includes `dissection_assessment_submission.test.js`, `dissection_clipboard_lifecycle.test.js`, and `dissection_undo_boundaries.test.js`. Browser workflows exercise rapid assessment inputs and supported retry, delayed clipboard outcomes, and Undo during a real layer reveal at phone and desktop sizes.
+
+Verification: 261/261 tests passed across 17 focused suites, plus all five Chromium workflows across the initial run and a targeted clipboard rerun. The clipboard browser test initially used the visible button text instead of its accessible name; correcting the selector exercised the intended workflow successfully. JavaScript syntax, source/deployment-mirror byte parity, and scoped whitespace checks passed.
+
+## Interrupted review and failed-reset recovery
+
+- Correct supported-review responses now leave the missed-structure queue immediately, so leaving a batch or reloading the lab preserves completed review work. Each batch keeps a fixed set of up to five questions while the pending queue shrinks; unasked and answer-revealed items remain queued. First-attempt assessment evidence is unchanged.
+- A failed specimen reset leaves active layer reveals and their timers intact. Timer and pending-save cleanup now follows successful deletion, so a refused reset neither stalls the current activity nor erases its work. Successful resets still prevent old callbacks from restoring deleted progress.
+- Previous/Next structure navigation hands focus into the record when it reaches an end and disables its own button. Navigation between middle structures keeps the control focused for repeated keyboard use; Guided checks retain their checkpoint handoff.
+
+Coverage includes `dissection_review_interruption.test.js`, `dissection_reset_failure.test.js`, recovery browser workflows, and terminal-structure keyboard navigation.
+
+Verification: 206 distinct regression cases verified across the 203-case integrated run and targeted reruns. Two older focus fixtures lacked the captured review batch; after updating their setup, all 23 focus cases and three legacy review-summary regressions passed. All six browser workflows passed, including interrupted review at 390px/1440px, failed reset during a real reveal, both terminal navigation directions, and unchanged middle navigation. JavaScript syntax, source/deployment-mirror byte parity, and scoped whitespace checks passed.
+
+## Completed-result consistency and protected navigation
+
+- Completed assessments now save their supported-answer count alongside the completed score and total. Reports, certificates, and review summaries retain that count when a newer assessment starts or is abandoned. A known zero remains zero; older or invalid records without a trustworthy count say Not recorded.
+- Specimen switching now checks saved bytes even when autosave has already finished. Same-page changes, deleted or incompatible records, and newly unavailable storage block departure before in-memory work is cleared. The existing report-export and protected-save recovery controls remain available.
+- Layer selection and observation-edit handoffs wait for an active reveal to finish. Disabled actions explain the temporary restriction, and observation reading views remain open and readable. The legitimate reveal completes normally, then navigation becomes available again.
+
+Coverage includes completed-result snapshot tests, specimen-switch conflict tests, observation reveal-navigation tests, and browser workflows for reports, recovery exports, and reveal-time navigation.
+
+Verification: 163/163 tests passed across 16 focused suites. All six Chromium workflows passed across the initial run and targeted navigation rerun. Two navigation tests initially paused the test clock at an instant that had already elapsed; moving the pause slightly forward fixed the setup without changing application behavior. JavaScript syntax, source/deployment-mirror byte parity, and scoped whitespace checks passed.
 
 ## Implemented
 

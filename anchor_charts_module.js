@@ -481,7 +481,7 @@ ${bulletText}`;
       if (mounted.current && request.serial === rubricRequestRef.current) setIsGeneratingRubric(false);
     }
   };
-  const [editingRequested, setIsEditing] = React.useState(false);
+  const [editingRequested, setIsEditing] = React.useState(!!props.startEditing);
   const isEditing = isTeacherMode && editingRequested;
   const [regenIdx, setRegenIdx] = React.useState(-1);
   const [exportState, setExportState] = React.useState("idle");
@@ -554,7 +554,7 @@ ${bulletText}`;
   }, []);
   React.useEffect(() => {
     setGradingState("idle");
-    setIsEditing(false);
+    setIsEditing(!!props.startEditing);
     setShowInteractiveDialog(false);
   }, [generatedContent?.id, isTeacherMode]);
   const writeIcon = (resourceId, sectionId, iconUrl, expectedPrompt) => {
@@ -870,7 +870,15 @@ ${bulletText}`;
       "data-help-key": "anchor_chart_edit_toggle"
     },
     isEditing ? "\u2713 " + tx("common.done_editing", "Done editing") : "\u270E " + tx("common.edit", "Edit")
-  ), isTeacherMode ? interactive.armed ? /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white" }, "\u{1F3AF} ", tx("anchor_chart.interactive_armed", "Interactive armed")), /* @__PURE__ */ React.createElement(
+  ), isEditing && /* @__PURE__ */ React.createElement("label", { className: "inline-flex items-center gap-1 text-xs font-bold text-amber-900", "data-help-key": "anchor_chart_layout_picker" }, tx("anchor_chart.layout", "Layout"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      value: chartType,
+      onChange: (e) => handleNoteUpdate("chartType", e.target.value),
+      className: "px-2 py-1 text-xs font-bold rounded-full border border-amber-300 bg-white text-amber-900 focus-visible:ring-2 focus-visible:ring-amber-500"
+    },
+    Object.keys(ANCHOR_CHART_TYPE_META).map((id) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, tx("anchor_chart.type_" + id.replace(/-/g, "_"), ANCHOR_CHART_TYPE_META[id].label || id)))
+  )), isTeacherMode ? interactive.armed ? /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-fuchsia-600 text-white" }, "\u{1F3AF} ", tx("anchor_chart.interactive_armed", "Interactive armed")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

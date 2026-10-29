@@ -1022,6 +1022,17 @@ function selectVisionParts({ prompt, base64Data, mimeType, pageImages, renderRep
   return { parts, prompt: text + note, selection: { mode, pages: chosen.map((entry) => entry.page), window: window || null } };
 }
 
+// (2026-10-28) A page-range run on a large PDF attached the WHOLE file to every vision call: NIST HB44
+// pages 58-61 of 573 sent 3 x 99 MB inline (Gemini's request limit is about 20 MB), NASA 3 x 47 MB. Such a
+// run uses rendered pages instead, the same image mode other providers and the agent lane use, which
+// attaches only the pages a call names. Smaller files keep the inline PDF (Gemini reads its text layer).
+const RANGE_INLINE_PDF_MAX_BYTES = 15 * 1024 * 1024;
+function rangeRunNeedsImageMode({ visionMode, modelBridge, fileName, pageRange, base64Length }) {
+  if (visionMode === 'images' || modelBridge || !/\.pdf$/i.test(String(fileName || ''))) return false;
+  if (!Array.isArray(pageRange) || pageRange.length !== 2) return false;
+  return Math.floor((Number(base64Length) || 0) * 3 / 4) > RANGE_INLINE_PDF_MAX_BYTES;
+}
+
 // ── Provider transport (Node side) ───────────────────────────────────────────
 // ALLOFLOW_MCP_MODEL_BACKEND picks who answers the pipeline's model calls when no agent
 // bridge is attached: 'gemini' (the default — the transport above, unchanged) or one of the
@@ -1603,6 +1614,12 @@ function createDriver(options) {
         runOpts = Object.assign({}, runOpts, { visionMode });
       }
     }
+    if (rangeRunNeedsImageMode({ visionMode, modelBridge: runOpts.modelBridge, fileName: runOpts.fileName, pageRange: runOpts.pageRange, base64Length: String(runOpts.base64ForRender || '').length })) {
+      (runOpts.onLog || log)('vision mode set to "images" for pages ' + runOpts.pageRange[0] + '-' + runOpts.pageRange[1]
+        + ': the whole PDF (' + Math.round(String(runOpts.base64ForRender).length * 0.75 / 1048576) + ' MB) is too large to attach to every call');
+      visionMode = 'images';
+      runOpts = Object.assign({}, runOpts, { visionMode });
+    }
     if (visionMode !== 'images') return runOpts;
     if (!/\.pdf$/i.test(runOpts.fileName || '')) {
       (runOpts.onLog || log)('vision mode "images" ignored — page rendering applies to PDFs only');
@@ -2090,7 +2107,9 @@ function createDriver(options) {
               } else {
                 const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
                   .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
-                const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
+                // (2026-10-28) a finding merged across audit sections carries each section's own wording (NSF: 6 figures, 1 line)
+                const _instr = _aiIssues.flatMap((i) => (i && Array.isArray(i.instances) && i.instances.length > 1 ? i.instances.map((x) => x.issue || i.issue) : [i])).slice(0, 25)
+                  .map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
                 let _fixedHtml = await pipeline.aiFixChunked(cur.accessibleHtml, _instr, 'mcp-auto-continue-round-' + (round + 1), null, fixControls);
                 const _hasContrast = _aiIssues.some((i) => { const _s = (typeof i === 'string') ? i : (((i.wcag || '') + ' ' + (i.issue || i.description || ''))); return /1\.4\.3|contrast/i.test(_s); });
                 if (_hasContrast) { try { const _sr = pipeline.sanitizeStyleForWCAG(_fixedHtml); if (_sr && _sr.html && _sr.fixCount > 0) _fixedHtml = _sr.html; } catch (_) {} }
@@ -2157,6 +2176,14 @@ function createDriver(options) {
             if (typeof pipeline.taggedPdfDeliveryVerdict !== 'function') {
               throw new Error('Canonical tagged-PDF safety gates are unavailable.');
             }
+            // (2026-10-28) A page-range run has HTML for its slice only; tagging the whole PDF against it fails the
+            // orphan check after minutes of work (NIST CSF 8-11 of 32: 103 link annotations, 11 figures for 3),
+            // and the explanation then said the HTML "has everything". Say what happened instead.
+            const _fullPages = audit && Number.isSafeInteger(audit.pageCount) ? audit.pageCount : null;
+            if (Array.isArray(pageRange) && pageRange.length === 2
+              && !(Number(pageRange[0]) <= 1 && _fullPages && Number(pageRange[1]) >= _fullPages)) {
+              throw new Error('page_range_tagged_pdf_unsupported');
+            }
             const activeScan = cur && cur.activeContent;
             const activeTypes = new Set([
               'open-action',
@@ -2174,6 +2201,13 @@ function createDriver(options) {
               && Number.isSafeInteger(finding.count)
               && finding.count > 0
               && typeof finding.label === 'string');
+            // (2026-10-28) A finding the scan DID make decides the outcome even when another part could not be
+            // walked: IRS i1040 has an embedded file (a nested name tree) and was reported "scan unavailable,
+            // no active content" beside a note naming the attachment. Withheld either way; now for the reason found.
+            if (activeScan && activeScan.schema === 1 && activeScan.any === true && findingsValid && scanFindings.length > 0) {
+              activeContentDetected = true;
+              throw new Error('active_content_requires_review');
+            }
             if (!activeScan || activeScan.schema !== 1 || activeScan.complete !== true
               || activeScan.pageScanFailures !== 0 || typeof activeScan.any !== 'boolean'
               || activeScan.unexaminedStructures !== 0
@@ -2274,6 +2308,43 @@ function createDriver(options) {
             })),
           } : null,
           fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
+          // (2026-10-28) How to decide each judgment call this run leaves to a person (remediation_decision_guides.js,
+          // shipped inside the pipeline module): plain data, so the Node side and MCP clients can show it.
+          decisionGuides: (() => {
+            try {
+              const G = window.AlloModules && window.AlloModules.RemediationDecisionGuides;
+              if (!G || typeof G.guidesForRun !== 'function') return [];
+              const ea2 = (cur && cur.secondEngineAudit) || {};
+              const eaIds = [].concat(ea2.potentialFindings || [], ea2.manualFindings || [], ea2.acknowledgedByAiReview || []).map((f) => f && f.id).filter(Boolean);
+              const guides = G.guidesForRun({
+                equalAccess: eaIds,
+                fidelity: ((cur && cur.fidelityNotes) || []).map((n) => n && n.kind).filter(Boolean),
+                ai: (((cur && cur.verificationAudit) || {}).issues || []).map((i) => i && i.ruleId).filter(Boolean),
+                withhold: taggedPdfError,
+              });
+              // (2026-10-28, phase 3) Evidence: where each flagged value, word or quoted phrase sits in the original.
+              const pages = (cur && Array.isArray(cur.groundTruthPages) && cur.groundTruthPages) || window.__lastGroundTruthPageMap || null;
+              const ctx = (s) => (typeof G.sourceContext === 'function' && pages ? G.sourceContext(pages, s, 2) : []);
+              for (const g of guides) {
+                const ev = [];
+                if (g.id === 'changed-numbers') {
+                  const note = ((cur && cur.fidelityNotes) || []).find((n) => n && n.kind === 'numeric');
+                  for (const e of ((note && note.evidence) || []).slice(0, 8)) ev.push({ label: String(e.value), where: e.where || [] });
+                } else if (g.id === 'missing-words') {
+                  for (const w of ((contentCoverage && contentCoverage.missingWords) || []).slice(0, 8)) ev.push({ label: String(w.word), where: ctx(w.word) });
+                } else {
+                  for (const f of [].concat(ea2.potentialFindings || [], ea2.manualFindings || [])) {
+                    if (!f || !g.findings.includes('equalAccess:' + f.id)) continue;
+                    // single or double quotes: Equal Access quotes with both ("cds", 'below')
+                    const q = (String(f.description || '').match(/['"\u201c]([^'"\u201d]{2,80})['"\u201d]/) || [])[1];
+                    if (q && ev.length < 8 && !ev.some((x) => x.label === q)) ev.push({ label: q, where: ctx(q) });
+                  }
+                }
+                g.evidence = ev;
+              }
+              return guides;
+            } catch (_) { return []; }
+          })(),
           verificationState: (cur && cur.verificationState) || null,
           verificationHtmlBound: !!(cur && typeof pipeline.isLiveVerificationHtmlBound === 'function' && pipeline.isLiveVerificationHtmlBound(cur, cur.accessibleHtml)),
           remainingAxeViolations: (cur && cur.axeAudit && Number.isSafeInteger(cur.axeAudit.totalViolations) && cur.axeAudit.totalViolations >= 0) ? cur.axeAudit.totalViolations : null,
@@ -3463,6 +3534,7 @@ module.exports = {
   PROVIDER_BACKENDS,
   selectVisionParts,
   visionPageWindow,
+  rangeRunNeedsImageMode,
   resolveGeminiApiKey,
   verifyGeminiApiKey,
   resolveChromium,

@@ -1380,6 +1380,19 @@ const _normalizeGeneratedMathSteps = (steps, traversalBudget = null) => {
   }, []);
 };
 const _GENERATED_MATH_EXPRESSION_LIMIT = 500;
+// Normalize only unambiguous numeric notation. Units and prose are retained so
+// they cannot accidentally become a verified number after stripping text.
+const _normalizeGeneratedNumericNotation = (value) => {
+  if (typeof value !== 'string' || value.length > _GENERATED_MATH_EXPRESSION_LIMIT) return null;
+  let source = value.trim();
+  if (/^\$\$[\s\S]*\$\$$/.test(source)) source = source.slice(2, -2).trim();
+  else if (/^\$[^$]*\$$/.test(source)) source = source.slice(1, -1).trim();
+  else if (/^\\\([\s\S]*\\\)$/.test(source) || /^\\\[[\s\S]*\\\]$/.test(source)) source = source.slice(2, -2).trim();
+  return source
+    .replace(/\\(?:dfrac|tfrac|frac)\s*\{\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*\}\s*\{\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*\}/g, '(($1)/($2))')
+    .replace(/\\(?:times|cdot)\b/g, '*').replace(/\\div\b/g, '/')
+    .replace(/\u00d7/g, '*').replace(/\u00f7/g, '/').replace(/\u2212/g, '-');
+};
 // In K-12 problems % is percent, never JavaScript's remainder ("15% + 5" was
 // 15 % +5 = 0). N% becomes (N/100) only where that reading is unambiguous: N%
 // is a factor of * or /, or the whole expression. "80 + 15%" (80.15 or 92?) and
@@ -1401,7 +1414,7 @@ const _evaluateGeneratedNumericExpressionExact = (expression) => {
   try {
     if (typeof expression !== 'string') return null;
     if (expression.length > _GENERATED_MATH_EXPRESSION_LIMIT) return null;
-    const source = expression.trim();
+    const source = _normalizeGeneratedNumericNotation(expression);
     if (!source ||
         !/^[0-9+\-*/().%^\s]+$/.test(source) ||
         source.includes('//') || source.includes('/*') || source.includes('*/')) return null;
@@ -1472,7 +1485,7 @@ const _roundGeneratedMathToPlaces = (value, places) => {
 };
 // 'verified': the key equals the exact value, or the value rounded as the
 // question instructs. 'conflict': the key is wrong (flag for review). 'close':
-// neither, e.g. 0.33 for 1/3 with no rounding stated; not verified, not flagged.
+// neither, e.g. 0.33 for 1/3 with no rounding stated; needs review without a mismatch claim.
 const _generatedMathAnswerAgreement = (exact, answer, roundingPlaces) => {
   const difference = Math.abs(exact - answer);
   if (roundingPlaces === null) {
@@ -1493,6 +1506,24 @@ const _parseGeneratedPlainNumber = (answer) => {
   if (!Number.isFinite(parsed)) return null;
   return Number.isInteger(parsed) && !Number.isSafeInteger(parsed) ? null : parsed;
 };
+// Answer keys accept a plain number or one numeric fraction, including simple
+// LaTeX fractions. Expressions, mixed numbers, units and symbolic answers need
+// teacher review; evaluating those here would imply more than we checked.
+const _parseGeneratedNumericAnswer = (answer) => {
+  const plain = _parseGeneratedPlainNumber(answer);
+  if (plain !== null) return plain;
+  const normalized = _normalizeGeneratedNumericNotation(answer);
+  if (normalized === null) return null;
+  const unwrapped = normalized.replace(/^\(\(([\s\S]+)\)\/\(([\s\S]+)\)\)$/, '$1/$2');
+  const number = '[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)';
+  const fraction = unwrapped.match(new RegExp('^(' + number + ')\\s*/\\s*(' + number + ')$'));
+  if (!fraction) return _parseGeneratedPlainNumber(unwrapped);
+  const numerator = _parseGeneratedPlainNumber(fraction[1]);
+  const denominator = _parseGeneratedPlainNumber(fraction[2]);
+  if (numerator === null || denominator === null || denominator === 0) return null;
+  const quotient = numerator / denominator;
+  return Number.isFinite(quotient) ? quotient : null;
+};
 const verifyGeneratedMathProblems = (problems) => {
   const verifiedProblems = [];
   for (const [, problem] of _generatedMathArrayEntries(problems, _GENERATED_MATH_LIMITS.problems)) {
@@ -1509,7 +1540,7 @@ const verifyGeneratedMathProblems = (problems) => {
     const exactComputed = _evaluateGeneratedNumericExpressionExact(current.expression);
     const computed = _roundGeneratedMathComputed(exactComputed);
     if (next.answer == null && current.correct_answer != null) next.answer = current.correct_answer;
-    const answerNumber = _parseGeneratedPlainNumber(next.answer);
+    const answerNumber = _parseGeneratedNumericAnswer(next.answer);
     const roundingPlaces = _generatedMathRoundingPlaces(current.question || current.problem || current.prompt);
     if (computed !== null) {
       verification.computed = computed;
@@ -1563,6 +1594,16 @@ const verifyGeneratedMathProblems = (problems) => {
           : { ...safeStep, _computedResult: stepResult, _verified: true });
       }
     }
+    // Absence of a detected mismatch is not evidence of correctness. Every
+    // unsupported or ambiguous key is visibly reviewable, including keys with
+    // units whose relevance cannot be established by numeric arithmetic alone.
+    if (!verification.verified && !verification.reviewRequired) {
+      verification.reviewRequired = true;
+      verification.reason = answerNumber === null || exactComputed === null && questionExact === null
+        ? 'unsupported_verification' : 'answer_needs_review';
+    }
+    verification.status = verification.verified && !verification.reviewRequired ? 'verified' : 'needs_review';
+    verification.scope = 'numeric_calculation';
     verifiedProblems.push({ ...next, _verification: verification });
   }
   return verifiedProblems;
@@ -1694,6 +1735,11 @@ const resolveMathRequestedCount = (input, quantity = 5) => {
   const explicit = matches.reduce((sum, match) => sum + Number(match[1]), 0);
   return Math.max(1, Math.min(100, Math.floor(explicit || Number(quantity) || 5)));
 };
+const _generatedMathVerificationSummary = (problems) => {
+  const verified = problems.filter(p => p._verification?.verified && !p._verification?.reviewRequired).length;
+  return { prepared: problems.length, verified, unverified: problems.length - verified,
+    verificationStatus: problems.length > 0 && verified === problems.length ? 'verified' : 'needs_review' };
+};
 const prepareGeneratedMathContent = (raw, fallback, resourceId, requestedCount) => {
   const content = normalizeGeneratedMathContent(raw, fallback, resourceId);
   const received = content.problems.length;
@@ -1705,11 +1751,12 @@ const prepareGeneratedMathContent = (raw, fallback, resourceId, requestedCount) 
       if (!problem.manipulativeResponse) continue;
       const response = problem.manipulativeResponse;
       const result = activityGrader.evaluateManipulativeResponse(response.tool, undefined, response.state);
-      if (result.reason !== 'invalid-actual') problem._verification = { ...problem._verification, reviewRequired: true, reason: 'invalid_manipulative_activity' };
+      if (result.reason !== 'invalid-actual') problem._verification = { ...problem._verification, verified: false, reviewRequired: true, status: 'needs_review', reason: 'invalid_manipulative_activity' };
     }
   }
   const reviewRequired = content.problems.filter(p => p._verification?.reviewRequired).length;
-  content.preparation = { version: 1, requested, received, accepted: content.problems.length,
+  content.preparation = { version: 2, requested, received, accepted: content.problems.length,
+    ..._generatedMathVerificationSummary(content.problems),
     ready: content.problems.length - reviewRequired, reviewRequired,
     omitted: Math.max(0, received - requested),
     status: content.problems.length < requested || reviewRequired ? 'partial' : 'ready' };
@@ -1733,7 +1780,18 @@ const generateMathAssessment = async (blocks, options = {}) => {
     const block = blocks[index];
     const requested = resolveMathRequestedCount('', block.quantity);
     const signature = JSON.stringify([2, block, options.grade, options.subject, language, translation]);
-    const previous = (options.previousSections || []).find(section => section.signature === signature && section.status === 'ready');
+    // A complete section awaiting teacher review is already prepared. Retrying
+    // another section must not replace its exact questions, keys, steps or IDs.
+    // Known conflicts and invalid content still require a fresh generation.
+    const previous = (options.previousSections || []).find(section => section.signature === signature
+      && ['ready', 'partial'].includes(section.status)
+      && Array.isArray(section.problems) && section.problems.length === requested
+      && section.problems.every(problem => {
+        const verification = problem && problem._verification;
+        if (!verification || verification.mismatch) return false;
+        if (verification.reason && !['unsupported_verification', 'answer_needs_review'].includes(verification.reason)) return false;
+        return verification.verified || verification.teacherReviewed || verification.reviewRequired === true;
+      }));
     if (previous) { sections.push(previous); continue; }
     const section = { id: String(block.id || 'section-' + (index + 1)), signature, requested, status: 'failed', problems: [] };
     options.onProgress?.({ index, total: blocks.length, section });
@@ -1762,11 +1820,11 @@ const generateMathAssessment = async (blocks, options = {}) => {
           const response = problem.manipulativeResponse;
           const result = response && grader?.evaluateManipulativeResponse(response.tool, undefined, response.state);
           if (!response || !allowed.includes(response.tool) || (block.manipulativeTool && (response.tool + (response.state?.mode && response.state.mode !== 'blocks' ? ':' + response.state.mode : '')) !== block.manipulativeTool) || result?.reason !== 'invalid-actual') {
-            problem._verification = { ...problem._verification, reviewRequired: true, reason: 'invalid_manipulative_activity' };
+            problem._verification = { ...problem._verification, verified: false, reviewRequired: true, status: 'needs_review', reason: 'invalid_manipulative_activity' };
           }
         }
         const review = content.problems.filter(p => p._verification?.reviewRequired).length;
-        content.preparation = { ...content.preparation, reviewRequired: review, ready: content.problems.length - review,
+        content.preparation = { ...content.preparation, ..._generatedMathVerificationSummary(content.problems), reviewRequired: review, ready: content.problems.length - review,
           status: review || content.problems.length < requested ? 'partial' : 'ready' };
       }
       section.problems = content.problems.map(p => ({ ...p, _sectionId: section.id, _blockType: block.type }));
@@ -1788,7 +1846,8 @@ const generateMathAssessment = async (blocks, options = {}) => {
   const requested = sections.reduce((sum, section) => sum + section.requested, 0);
   const reviewRequired = problems.filter(p => p._verification?.reviewRequired).length;
   return { id: resourceId, sections, content: { title: 'Assessment: ' + (options.subject || 'Math'), problems, graphData: null,
-    preparation: { version: 1, requested, received: problems.length, accepted: problems.length, ready: problems.length - reviewRequired,
+    preparation: { version: 2, requested, received: problems.length, accepted: problems.length, ready: problems.length - reviewRequired,
+      ..._generatedMathVerificationSummary(problems),
       reviewRequired, status: sections.every(section => section.status === 'ready') ? 'ready' : 'partial' } } };
 };
 
@@ -1998,9 +2057,9 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
               }
               if (!rawContent) throw new Error("Parsed JSON is null after all strategies");
           } catch (parseErr) {
-              let cleanedPreview = '';
-              try { cleanedPreview = typeof cleaned === 'string' ? cleaned.slice(0, 300) : ''; } catch (_) {}
-              try { console.error('[MATH] JSON Parse Error:', _safeMathGenerationErrorText(parseErr), 'Cleaned input:', cleanedPreview); } catch (_) {}
+              // Length only: the model's text can quote the teacher's source material.
+              const cleanedLength = typeof cleaned === 'string' ? cleaned.length : 0;
+              try { console.error('[MATH] JSON Parse Error:', _safeMathGenerationErrorText(parseErr), 'Cleaned input length:', cleanedLength); } catch (_) {}
               try { warnLog("Math Parse Error:", parseErr); } catch (_) {}
               throw new Error("Failed to parse Math JSON. The AI response was not valid.");
           }

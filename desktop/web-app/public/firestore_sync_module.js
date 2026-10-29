@@ -668,7 +668,13 @@
   // Teacher working data never enters the session document. A quiz fact check
   // stays only when students could already see it as an explanation.
   // Mirrors _alloStripTeacherOnlyFields in live_aac_source.jsx.
-  const TEACHER_ONLY_RESOURCE_KEYS = ['teacherNotes', 'facilitationNotes', 'visualCheck', 'distractorQuality', 'distractorReview', 'sourceEvidence', 'contentReview'];
+  const TEACHER_ONLY_RESOURCE_KEYS = ['teacherNotes', 'facilitationNotes', 'visualCheck', 'distractorQuality', 'distractorReview', 'sourceEvidence', 'contentReview', 'lessonPath'];
+  // A "Start blank" resource the teacher has not filled in yet never reaches students.
+  function isUnfilledBlankDraft(item) {
+    if (!item || !item.lessonPath || !item.lessonPath.seed || item.lessonPath.seed.kind !== 'blank') return false;
+    const minimum = window.AlloModules && window.AlloModules.GenDispatcher && window.AlloModules.GenDispatcher.hasMinimumContent;
+    return typeof minimum === 'function' && !minimum(item.type, item.data);
+  }
   function studentFactCheck(node) {
     const text = typeof node.factCheck === 'string' ? node.factCheck : '';
     if (!text.trim() || typeof node.question !== 'string') return '';
@@ -814,7 +820,7 @@
 
   function prepareSessionResourcesForWrite(resources, options) {
     const maxBytes = Math.max(1024, Number(options && options.maxBytes) || SESSION_RESOURCE_SYNC_MAX_BYTES);
-    const source = (Array.isArray(resources) ? resources : []).map(withStudentWordHelpOnly).map(withholdGradedQuizKeys);
+    const source = (Array.isArray(resources) ? resources : []).filter(item => !isUnfilledBlankDraft(item)).map(withStudentWordHelpOnly).map(withholdGradedQuizKeys);
     const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => sanitizeStudentResearchResource(stripTeacherOnlyResourceFields(sanitizeSessionValue(stripMemoryAidTeacherWorkingData(item), 'resource')))));
     const kept = [];
     let droppedCount = 0;

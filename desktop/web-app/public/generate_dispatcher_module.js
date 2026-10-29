@@ -3084,6 +3084,18 @@ const stampNativeGlossaryTerms = (items, plan) => items.map(item => {
         ...(Object.keys(translations).length ? { translations } : { translations: {} }) };
 });
 const GLOSSARY_IN_TEXT_RULES = 'Choose ONLY words that actually appear in the source; if it has fewer suitable words, return fewer rather than adding outside vocabulary. Define each word in the sense it has IN THIS TEXT (not its most common dictionary sense). For each term add "contextSentence": the sentence from the source where it is used, copied exactly (shorten with ... only if longer than about 30 words).';
+// Tools whose prompts can start from a topic instead of source material (seed start).
+const SEED_START_TYPES = ['anchor-chart', 'concept-sort', 'persona'];
+// Tools whose editors can fill an empty resource by hand (Start blank, no AI call).
+const BLANK_START_TYPES = ['quiz', 'glossary', 'timeline', 'concept-sort', 'anchor-chart'];
+const blankResourceContent = (type) => {
+    if (type === 'quiz') return { questions: [], reflections: [] };
+    if (type === 'glossary') return [];
+    if (type === 'timeline') return { progressionLabel: '', items: [], mode: 'chronological', autoDetected: false };
+    if (type === 'concept-sort') return { categories: [], items: [] };
+    if (type === 'anchor-chart') return { title: '', chartType: 'reference', sections: [] };
+    return null;
+};
 const buildNativeGlossaryPrompt = (options = {}) => {
     const plan = options.languagePlan;
     const languages = [plan.baseLanguage, ...plan.translationLanguages];
@@ -3720,7 +3732,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             if (!_sourceTransformations.includes('reference-trailer-separated')) _sourceTransformations.push('reference-trailer-separated');
         }
     }
-    if (type !== 'alignment-report' && (!textToProcess || !textToProcess.trim())) {
+    // Seed start (experimental, opt-in): a teacher-typed topic stands in for source
+    // material in tools whose prompts can work from a topic. Passage generations never
+    // pass configOverride.seed, so their path is unchanged.
+    const _seedKind = configOverride && configOverride.seed ? configOverride.seed.kind : null;
+    const _seedText = _seedKind === 'topic' && typeof configOverride.seed.text === 'string'
+        ? configOverride.seed.text.replace(/\s+/g, ' ').trim().slice(0, 300) : '';
+    const _seed = _seedKind === 'blank' && BLANK_START_TYPES.includes(type) ? { kind: 'blank' }
+        : _seedText && SEED_START_TYPES.includes(type) ? { kind: 'topic', text: _seedText } : null;
+    const _blankStart = !!_seed && _seed.kind === 'blank';
+    if (type !== 'alignment-report' && !_seed && (!textToProcess || !textToProcess.trim())) {
         const noSourceError = new Error('No source text is available for ' + type + ' generation.');
         noSourceError.code = 'allo/source-missing';
         // Interactive buttons keep the old fail-soft behavior. Unattended
@@ -4298,6 +4319,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       let content;
       let metaInfo = '';
       let glossaryLanguagePlan = null;
+      // `else` sits on its own line so the original glossary line stays byte-identical
+      // (tests and tools anchor on it).
+      if (_blankStart) {
+        content = blankResourceContent(type);
+      } else
       if (type === 'glossary') {
         const glossaryImages = glossaryImageReuseCache.begin({
             sourceText: textToProcess,
@@ -8063,9 +8089,10 @@ ${modeListForAuto}
          const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(effectiveGrade);
          const isAutoCount = !conceptItemCount || conceptItemCount === '';
          const itemCountInstruction = isAutoCount
-            ? `2. Generate items (cards) for students to sort into these categories. *** ITEM COUNT RULE *** Generate ONLY as many items as the source text can clearly support — items must be unambiguous, distinctive, and sortable into exactly ONE of the categories. Minimum 6 items. Maximum 30 items. Preferred: 12-18 items if the text supports it (richer texts can support more). Do NOT pad with weak or ambiguous items just to reach a count.`
+            ? _seed ? `2. Generate 10-14 items (cards) about the topic for students to sort into these categories. Each item must be accurate, unambiguous, and sortable into exactly ONE of the categories.`
+            : `2. Generate items (cards) for students to sort into these categories. *** ITEM COUNT RULE *** Generate ONLY as many items as the source text can clearly support — items must be unambiguous, distinctive, and sortable into exactly ONE of the categories. Minimum 6 items. Maximum 30 items. Preferred: 12-18 items if the text supports it (richer texts can support more). Do NOT pad with weak or ambiguous items just to reach a count.`
             : `2. Generate exactly ${conceptItemCount} items (cards) that students must sort into these categories.`;
-         let categoryInstruction = "1. Identify 2 or 3 contrasting categories, concepts, or themes central to the text (e.g., \"Renewable vs Non-Renewable\", \"Federalist vs Anti-Federalist\", \"Input vs Output\").";
+         let categoryInstruction = _seed ? "1. Identify 2 or 3 contrasting categories, concepts, or themes central to the topic (e.g., \"Renewable vs Non-Renewable\", \"Input vs Output\")." : "1. Identify 2 or 3 contrasting categories, concepts, or themes central to the text (e.g., \"Renewable vs Non-Renewable\", \"Federalist vs Anti-Federalist\", \"Input vs Output\").";
          if (selectedConcepts.length > 0) {
              categoryInstruction = `1. Use these specific categories: ${selectedConcepts.join(', ')}. Ensure items fit clearly into exactly one of these categories.`;
          }
@@ -8073,7 +8100,7 @@ ${modeListForAuto}
          if (usesLocalTextBackend) {
          const localItemCount = isAutoCount ? 10 : Math.max(6, Math.min(Number(conceptItemCount) || 10, 12));
          const prompt = `
-            Create a compact Concept Sort activity from the source excerpt.
+            ${_seed ? `Create a compact Concept Sort activity about the topic "${_seed.text}". No source excerpt is provided: use accurate, widely accepted facts.` : 'Create a compact Concept Sort activity from the source excerpt.'}
             Audience: ${effectiveGrade} students.
             Language: ${effectiveLanguage}.
             ${standardsDirective}
@@ -8106,7 +8133,7 @@ ${modeListForAuto}
          setGenerationTaskProgress(1, 1, t('status_steps.categorizing_concepts'));
          } else {
          const prompt = `
-            Analyze the provided source text to create a "Concept Sort" activity.
+            ${_seed ? `Create a "Concept Sort" activity about the topic "${_seed.text}". No source text is provided: use accurate, widely accepted facts appropriate for ${effectiveGrade} students.` : 'Analyze the provided source text to create a "Concept Sort" activity.'}
             Target Audience: ${effectiveGrade} students.
             Language: ${effectiveLanguage}.
             ${standardsDirective}
@@ -8135,7 +8162,7 @@ ${modeListForAuto}
                     { "id": "i2", "content": "Card Text", "categoryId": "c2" }
                 ]
             }
-            Text: "${textToProcess.substring(0, 10000)}"
+            ${_seed ? `Topic: "${_seed.text}"` : `Text: "${textToProcess.substring(0, 10000)}"`}
          `;
          result = await callGemini(prompt, true);
          }
@@ -8704,9 +8731,9 @@ Return ONLY JSON:
               const personaCount = usesLocalTextBackend ? 2 : 3;
               const personaSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : `${textToProcess.substring(0, 3000)}...`;
               const prompt = `
-                Analyze the following text about "${sourceTopic || "the current lesson topic"}".
+                ${_seed && _seed.kind === 'topic' ? `Choose figures for the topic "${_seed.text}". No source text is provided: pick real, well-documented people or clearly labeled archetypes, and keep every fact accurate.` : `Analyze the following text about "${sourceTopic || "the current lesson topic"}".`}
                 Source Text:
-                "${personaSourceText}",
+                "${_seed && _seed.kind === 'topic' ? 'Topic only: ' + _seed.text : personaSourceText}",
                 Task: Identify ${personaCount} specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier', 'Marie Curie', 'A Red Blood Cell') relevant to this content that a ${effectiveGrade} student could interview to learn more.
                 ${effCustomInstructions ? `TRUSTED TEACHER INSTRUCTIONS: ${effCustomInstructions} (Prioritize these when selecting figures. Keep every "visualDescription" a plain physical description for an image generator.)` : ''}
                 ${languageDirective}
@@ -9618,7 +9645,7 @@ Return ONLY JSON:
           const chartTypeHint = chartTypeGuide[chartType] || chartTypeGuide.reference;
           const chartSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : (textToProcess || '').substring(0, 12000);
           const prompt = `
-              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || chartSourceText.substring(0, 200) || 'reference'}". Chart type request: ${chartType} - ${chartTypeHint}.
+              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${(_seed && _seed.text) || sourceTopic || chartSourceText.substring(0, 200) || 'reference'}". Chart type request: ${chartType} - ${chartTypeHint}.
 
               An anchor chart is a poster-sized visual reference co-created in class. It should be CONCISE (each bullet 3-10 words), MEMORABLE (use language a student would actually use), and ORGANIZED (clear sections).
 
@@ -9628,7 +9655,7 @@ Return ONLY JSON:
 
               For each section, also propose a simple iconPrompt describing a SIMPLE icon (a single concrete object, no text/letters) that represents the section visually — this will be drawn in a hand-drawn marker style.
 
-              Source text for context (may be empty): "${chartSourceText}"
+              Source text for context (may be empty): "${chartSourceText}"${_seed && !chartSourceText.trim() ? ' No source text was provided: build the chart from the topic using accurate, widely accepted facts for this grade, and keep any debated point clearly framed as debated.' : ''}
 
               ${languageDirective}
               ${standardsDirective}
@@ -9680,7 +9707,7 @@ Return ONLY JSON:
           };
           metaInfo = `${effectiveGrade} - ${resolvedChartType}${usesLocalTextBackend ? ' - Local' : ''}`;
       }
-      if (!hasMinimumContent(type, content)) throw emptyGenerationError(emptyResultMessage(t, getDefaultTitle, type));
+      if (!_blankStart && !hasMinimumContent(type, content)) throw emptyGenerationError(emptyResultMessage(t, getDefaultTitle, type));
       let itemTitle = getDefaultTitle(type);
       if (type === 'simplified') {
           itemTitle = `Adapted Text (${effectiveGrade})`;
@@ -9702,6 +9729,8 @@ Return ONLY JSON:
               baseLanguage: glossaryLanguagePlan.baseLanguage, glossaryLanguageSchemaVersion: 1,
           } : {}),
           ..._sourceUse,
+          // Seed provenance lives under one key so student copies can strip it.
+          ...(_seed ? { lessonPath: { seed: _seed } } : {}),
           ...(type === 'analysis' ? {
               sourceSnapshot: _sourceSnapshot,
               instructionalText: _instructionalContextModule?.normalizeInstructionalText?.(configOverride.instructionalText || _selectedSource.instructionalText, {
@@ -9756,7 +9785,12 @@ Return ONLY JSON:
           setStickers([]);
       }
       const toastTitle = type === 'simplified' ? "Adapted Text" : getDefaultTitle(type);
-      addToast(`${toastTitle} generated!`, "success");
+      if (_blankStart) {
+          const blankMessage = t('toasts.blank_created', { title: toastTitle });
+          addToast(blankMessage && blankMessage !== 'toasts.blank_created' ? blankMessage : `Blank ${toastTitle} created. Fill it in before sharing.`, 'success');
+      } else {
+          addToast(`${toastTitle} generated!`, "success");
+      }
       if (switchView) {
           if (type === 'simplified') flyToElement('ui-tool-simplified');
           if (type === 'glossary') flyToElement('ui-tool-glossary');
@@ -9867,6 +9901,8 @@ window.AlloModules.GenDispatcher = {
   attachActivityDerivativeMetadata,
   normalizeAnalysisResult,
   hasMinimumContent,
+  BLANK_START_TYPES,
+  blankResourceContent,
   countPriorAnalysisVersions,
   createAnalysisSourceContent,
   normalizeScaffoldContent,

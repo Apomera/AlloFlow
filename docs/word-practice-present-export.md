@@ -28,6 +28,18 @@ The PowerPoint exporter converts browser recording formats such as WebM to WAV a
 
 Timed pacing is available in the app and HTML. PowerPoint slides advance manually. Sentence prompts withhold answer audio until a correct response or reveal. Imported word sets retain their embedded recordings without inheriting a different language's audio bank from the launcher.
 
+## Card appearance and multilingual practice
+
+**Card appearance** offers Default, Arial, Verdana, and Georgia fonts, text sizes from 85% to 140%, and Plain, Warm, or Blue tint backgrounds. The setup preview lets you browse the eligible words or jump to a card with the preview selector. The selector identifies same-spelling entries by language and meaning, while concealing target words in spelling, blending, and sentence activities. Meanings and answers appear after a deliberate reveal. These settings travel with saved practice sets, interactive HTML, and PowerPoint exports. Long slide content continues onto additional slides when needed.
+
+The presenter and offline HTML also have a compact Card appearance panel. Changing the appearance preserves the current card and answer state. The Default font follows the app's reading settings; explicit card fonts apply to the word and learning content. Available system fonts supply characters that the chosen font does not contain.
+
+Words, meanings, examples, sentences, and translations retain their own language and text direction. Language labels use the interface language when the browser supports it, including script and region distinctions; unknown language names remain as entered. Translation captions sit above the passage and stay smaller than the learning text. Captions and card instructions follow the selected text size. Sound tokens follow the word's direction even when the interface uses a different direction.
+
+Long and multiline sentence prompts align to the start of their writing direction in the preview and player. Short prompts stay centered.
+
+Imports retain separate entries when the same spelling has different word languages, such as English “gift” and German “Gift”. **Choose meanings** identifies the languages beside those entries. Repeated words in equivalent language aliases still merge, while explicit entry IDs keep different meanings separate. Untagged shared recordings stay with their originating language; recordings with language metadata use that declared language.
+
 ## Source and build
 
 - `word_practice_core.js`: bounded data contract, prepared activity adapter, audio validation, and balanced repetition.

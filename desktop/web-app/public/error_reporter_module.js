@@ -181,6 +181,80 @@
       .replace(/([?&#][\w.-]*(?:key|token|secret|passw(?:or)?d|auth|signature|credential|session[-_]?id)[\w.-]*=)[^&#\s"']*/gi, '$1[redacted]');
   }
 
+  // Personal details are scrubbed from everything sent to support, whoever is
+  // using the app: a student can end up in teacher mode, so the view is never a
+  // guarantee. A log-tuned subset of IdentifierRedaction.scrubIdentifiers (that
+  // module may be the one that failed to load): phones need separators and
+  // generic dates stay, because bare digit runs and dates are build stamps and
+  // timestamps in a log. tests/error_reporter_personal_info.test.js holds parity.
+  function scrubPersonalInfo(s) {
+    if (!s) return s || '';
+    return String(s)
+      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[email]')
+      .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[ssn]')
+      .replace(/(?:\+?1[\s.-]?)?(?:\(\d{3}\)\s?|\b\d{3}[\s.-])\d{3}[\s.-]\d{4}\b/g, '[phone]')
+      .replace(/\b(student\s*id|district\s*id|medicaid|case\s*(?:no|number)|dob|date\s+of\s+birth|birth\s*date)(\s*[:#-]?\s*)[A-Z0-9][A-Z0-9\/.-]*/gi, '$1$2[id]')
+      .replace(/\b\d{1,5}\s+[A-Z][A-Za-z]*\s+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Court|Ct|Way|Place|Pl|Terrace|Ter)\b\.?/g, '[address]')
+      .replace(/\b(Mr|Mrs|Ms|Mx|Dr|Miss)\.?\s+[A-Z][a-z]+(?:[ -][A-Z][a-z]+)?/g, '$1. [name]')
+      // Chrome quotes the start of the text that failed to parse:
+      // Unexpected token 'J', "Jordan wro"... is not valid JSON
+      .replace(/"(?:\\.|[^"\\]){0,120}"(?:\.\.\.)?(\s+is not valid JSON)/g, '"…"$1');
+  }
+  // Engine messages use a small vocabulary, so in the default report any other
+  // capitalised word is treated as a possible name. Code names (MiscModals,
+  // TypeError) and acronyms do not match the plain-word shape and stay.
+  var ENGINE_WORDS = /^(?:Uncaught|Unhandled|Error|Cannot|Can|Failed|Unexpected|Invalid|Maximum|Minified|Script|Load|Loading|Network|Request|Response|The|This|That|A|An|Not|No|Null|Undefined|Object|Array|Function|Promise|Module|Import|Export|Permission|Access|Blocked|Origin|Resource|Fetch|Rejection|Property|Properties|Element|Node|Document|Window|Canvas|Audio|Context|Media|Device|Storage|Quota|Database|Transaction|Index|Key|Value|Type|Message|Stack|Code|Status|State|Event|Listener|React|Component|Hook|Render|Rendered|Too|Many|Missing|Unknown|Unable|Could|Did|Does|Is|In|At|On|For|Of|To|And|Or|Expected|Received|Timeout|Timed|Aborted|Denied|Unsupported|Read|Write|Reading|Setting|Google|Gemini|Chrome|Safari|Firefox|Edge|Kokoro|Firebase|Firestore|Cloudflare|Worker|Service|Tool|Lab|Saved|Voice)$/;
+  function maskLikelyNames(s) {
+    return String(s).replace(/\b[A-Z][a-z]+\b/g, function (w) { return ENGINE_WORDS.test(w) ? w : '[…]'; });
+  }
+  // Roster names on a teacher's device. The roster keeps codenames only, but a
+  // teacher can type a real name as a codename, so every one is scrubbed. Single
+  // name parts need IdentifierRedaction's common-word guard ("Will", "Brave");
+  // without it only full names are removed rather than blanking ordinary words.
+  var rosterCache = { at: 0, names: [] };
+  function rosterNames() {
+    if (Date.now() - rosterCache.at < 5000) return rosterCache.names;
+    var names = [];
+    try {
+      var roster = JSON.parse(window.localStorage.getItem('alloflow_roster_key') || 'null');
+      var students = roster && roster.students && typeof roster.students === 'object' ? roster.students : {};
+      names = Object.keys(students).map(function (n) { return String(n).trim(); }).filter(function (n) { return n.length >= 2 && n.length <= 80; });
+    } catch (_) {}
+    rosterCache = { at: Date.now(), names: names };
+    return names;
+  }
+  // Full names match in any case. A single part matches only as written: codenames
+  // are often adjective-animal pairs, and "be brave" must survive "Brave Otter".
+  function nameRegExp(name, anyCase) {
+    var words = name.split(/\s+/).filter(Boolean).map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+    return new RegExp('(^|[^\\w])(' + words.join('[\\s,]+') + ')(?![\\w])', anyCase ? 'gi' : 'g');
+  }
+  function scrubRosterNames(s) {
+    if (!s) return s || '';
+    var names = rosterNames();
+    if (!names.length) return s;
+    var ir = window.AlloModules && window.AlloModules.IdentifierRedaction;
+    var full = [], parts = [];
+    names.forEach(function (n) {
+      full.push(n);
+      var words = n.split(/\s+/).filter(Boolean);
+      if (words.length > 1) full.push(words.slice().reverse().join(', '));
+      if (ir && typeof ir.nameRedactionParts === 'function') {
+        try { (ir.nameRedactionParts(n).safe || []).forEach(function (p) { if (p.length >= 3 && parts.indexOf(p) === -1) parts.push(p); }); } catch (_) {}
+      }
+    });
+    var out = String(s);
+    full.sort(function (a, b) { return b.length - a.length; }).forEach(function (n) { out = out.replace(nameRegExp(n, true), '$1[student]'); });
+    parts.sort(function (a, b) { return b.length - a.length; }).forEach(function (n) { out = out.replace(nameRegExp(n, false), '$1[student]'); });
+    return out;
+  }
+  function redactOutgoing(s) { return scrubRosterNames(scrubPersonalInfo(redactSecrets(s))); }
+  // The host publishes its posture for lazy modules; anything else counts as a
+  // learner, the safe side.
+  function reporterPosture() {
+    try { return window.__alloPendingCoachPosture === 'educator' ? 'educator' : 'learner'; } catch (_) { return 'learner'; }
+  }
+
   function sanitizeDiagnosticValue(value, depth, seen) {
     if (typeof value === 'string') return redactSecrets(value);
     if (!value || typeof value !== 'object') return value;
@@ -501,6 +575,7 @@
     var errorsOnly = buffer.filter(function (e) { return e.level === 'error'; });
     var entriesToInclude = (errorsOnly.length === 0 ? buffer : errorsOnly).slice(-15);
     var nowCount = errorsOnly.filter(countsTowardBadge).length;
+    if (!fullLogRequested()) return buildSafeReportPayload(entriesToInclude, nowCount, browserDevice);
     var what = entriesToInclude.map(function (e, i) {
       var tags = entryTags(e);
       var head = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + (e.count > 1 ? ('  (repeated ×' + e.count + (e.lastTs ? ', last ' + e.lastTs : '') + ')') : '') + (tags.length ? '  [' + tags.join('; ') + ']' : '') + '\n' + e.message;
@@ -522,16 +597,80 @@
 
     var captured = sanitizeDiagnosticValue({
       typeOfIssue: 'Bug Report',
-      whatHappened: what.slice(0, 8000),
-      stepsRepro: steps.slice(0, 4000),
+      whatHappened: redactOutgoing(what).slice(0, 8000),
+      stepsRepro: redactOutgoing(steps).slice(0, 4000),
       browserDevice: redactSecrets(browserDevice).slice(0, 500),
-      url: redactSecrets(window.location.href).slice(0, 500)
+      url: redactOutgoing(window.location.href).slice(0, 500)
     });
     // Redaction can lengthen a cut URL ("https://host" -> "https://host/"). Cap
     // after it, as review does, or the first confirm reports a false credential removal.
     captured.whatHappened = captured.whatHappened.slice(0, 8000);
     captured.stepsRepro = captured.stepsRepro.slice(0, 4000);
     return captured;
+  }
+
+  // The default report, in every view: technical facts only, never text the app
+  // logged. console.error arguments can hold a student's answer, a roster entry
+  // or a prompt, and nobody reads a long log before confirming, so the captured
+  // text stays on the device unless a teacher-view user opts into the full log.
+  var APP_MARKER = /^\s*(\[[A-Za-z][\w .:\/-]{0,40}\])\s*([A-Za-z][\w.-]{0,40})?/;
+  function safeEntryLine(e, i) {
+    var tags = entryTags(e);
+    var line = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + (e.count > 1 ? '  (repeated ×' + e.count + ')' : '') + (tags.length ? '  [' + tags.join('; ') + ']' : '');
+    var first = String(e.message || '').split('\n')[0];
+    var marker = first.match(APP_MARKER);
+    if (e.source || e.stack) {
+      // An engine exception: keep its type and wording, elide long quoted values.
+      line += '\n  ' + maskLikelyNames(scrubPersonalInfo(first.replace(/(["'`])[^"'`]{25,}\1/g, '$1…$1'))).slice(0, 140);
+      if (e.source && e.line) line += '\n  at ' + String(e.source).split(/[?#]/)[0].split(/[\/\\]/).pop() + ':' + e.line;
+    } else if (marker) {
+      // An app diagnostic: only its tag and the module it names ("[CDN-FAIL] MiscModals").
+      var named = marker[2] && window.AlloModules && window.AlloModules[marker[2]] ? marker[2] : maskLikelyNames(scrubPersonalInfo(marker[2] || ''));
+      line += '\n  ' + marker[1] + (named ? ' ' + named : '') + ' (rest of the message not included)';
+    } else {
+      line += '\n  (message text from the app is not included)';
+    }
+    return line;
+  }
+  function safePageUrl() {
+    try {
+      var u = new URL(window.location.href);
+      if (u.protocol === 'blob:') u = new URL(u.pathname);
+      return u.origin + u.pathname;
+    } catch (_) { return '(unknown page)'; }
+  }
+  function buildSafeReportPayload(entries, nowCount, browserDevice) {
+    var lines = entries.map(safeEntryLine).join('\n');
+    var what = (lines ? 'This page load: ' + nowCount + ' unresolved error' + (nowCount === 1 ? '' : 's') + '.\n\n' + lines : '(No errors captured.)');
+    try {
+      var trace = moduleLoadTraceLines();
+      what = '== Diagnostics: ' + identityLine() + ' ==' + (trace ? '\n-- Tool-loading trace (latest attempts) --\n' + trace : '') + '\n\n' + what;
+    } catch (_) {}
+    var steps = 'Page: ' + safePageUrl() + '\nView: ' + (reporterPosture() === 'educator' ? 'teacher' : 'student') + ' mode';
+    if (window.AlloModules) {
+      var loaded = Object.keys(window.AlloModules).filter(function (k) { return k !== 'ErrorReporter'; });
+      if (loaded.length) steps += '\nModules loaded: ' + loaded.join(', ');
+    }
+    return {
+      typeOfIssue: 'Bug Report',
+      whatHappened: redactOutgoing(what).slice(0, 8000),
+      stepsRepro: redactOutgoing(steps).slice(0, 4000),
+      browserDevice: redactSecrets(browserDevice).slice(0, 500),
+      url: redactOutgoing(safePageUrl()).slice(0, 500)
+    };
+  }
+  function fullLogRequested() { return includeTechnicalLog === true && reporterPosture() === 'educator'; }
+  var REPORT_CATEGORIES = [
+    ['', 'Choose one (optional)'],
+    ['click', 'A button or control did not work'],
+    ['blank', 'The page went blank, froze or would not load'],
+    ['audio', 'Read-aloud or audio did not work'],
+    ['looks', 'Something looks wrong or is confusing'],
+    ['other', 'Something else']
+  ];
+  function categoryLabel() {
+    for (var i = 1; i < REPORT_CATEGORIES.length; i++) if (REPORT_CATEGORIES[i][0] === reportCategory) return REPORT_CATEGORIES[i][1];
+    return '';
   }
 
   function ensureReportDraft() {
@@ -560,7 +699,7 @@
     OUTGOING_FIELDS.forEach(function (spec) {
       var field = panel.querySelector('#' + spec[0]);
       if (!field) return;
-      var clean = redactSecrets(field.value).slice(0, spec[3]);
+      var clean = redactOutgoing(field.value).slice(0, spec[3]);
       if (draft[spec[1]] !== clean) {
         draft[spec[1]] = clean;
         reviewedSignature = '';
@@ -573,13 +712,15 @@
     captureDescriptionDraft();
     captureOutgoingDraft();
     var draft = ensureReportDraft();
-    var description = redactSecrets(descriptionDraft.trim()).slice(0, DESCRIPTION_MAX_LENGTH);
+    var description = redactOutgoing(descriptionDraft.trim()).slice(0, DESCRIPTION_MAX_LENGTH);
+    var chosen = categoryLabel();
+    var told = (chosen ? 'Problem: ' + chosen + '\n' : '') + description;
     return {
       typeOfIssue: 'Bug Report',
-      whatHappened: redactSecrets((description ? '== What happened? ==\n' + description + '\n\n' : '') + draft.whatHappened).slice(0, 16000),
-      stepsRepro: redactSecrets(draft.stepsRepro).slice(0, 4000),
+      whatHappened: redactOutgoing((told ? '== What happened? ==\n' + told + '\n\n' : '') + draft.whatHappened).slice(0, 16000),
+      stepsRepro: redactOutgoing(draft.stepsRepro).slice(0, 4000),
       browserDevice: redactSecrets(draft.browserDevice).slice(0, 500),
-      url: redactSecrets(draft.url).slice(0, 500)
+      url: redactOutgoing(draft.url).slice(0, 500)
     };
   }
   function payloadSignature(policy) {
@@ -607,11 +748,11 @@
   function sanitizeReviewDraft() {
     var changed = captureDescriptionDraft();
     if (captureOutgoingDraft()) changed = true;
-    var cleanedDescription = redactSecrets(descriptionDraft);
+    var cleanedDescription = redactOutgoing(descriptionDraft);
     if (cleanedDescription !== descriptionDraft) { descriptionDraft = cleanedDescription; changed = true; }
     var draft = ensureReportDraft();
     OUTGOING_FIELDS.forEach(function (spec) {
-      var cleaned = redactSecrets(draft[spec[1]]).slice(0, spec[3]);
+      var cleaned = redactOutgoing(draft[spec[1]]).slice(0, spec[3]);
       if (cleaned !== draft[spec[1]]) { draft[spec[1]] = cleaned; changed = true; }
       var field = panel && panel.querySelector('#' + spec[0]);
       if (field && field.value !== cleaned) field.value = cleaned;
@@ -620,7 +761,7 @@
     if (description && description.value !== descriptionDraft) description.value = descriptionDraft;
     if (changed) {
       reviewedSignature = '';
-      reviewNotice = 'Credentials were removed. Review the updated fields and confirm again before sending.';
+      reviewNotice = 'Credentials or personal details were removed. Review the updated fields and confirm again before sending.';
     }
     return changed;
   }
@@ -652,6 +793,9 @@
   // This outgoing copy is frozen across later log captures. Only explicit
   // editing or Update report changes it; the persisted diagnostic log is separate.
   var reportDraft = null;
+  // Off by default and offered only in teacher view; see buildSafeReportPayload.
+  var includeTechnicalLog = false;
+  var reportCategory = '';
   var reviewedSignature = '';
   var reviewNotice = '';
   var displayedPolicySignature = '';
@@ -660,7 +804,7 @@
     var field = panel && panel.querySelector('#aer-description');
     if (field && submission.status !== 'sending' && submission.status !== 'saved') {
       var raw = field.value;
-      var next = redactSecrets(raw).slice(0, DESCRIPTION_MAX_LENGTH);
+      var next = redactOutgoing(raw).slice(0, DESCRIPTION_MAX_LENGTH);
       if (descriptionDraft !== next) reviewedSignature = '';
       descriptionDraft = next;
       if (raw !== descriptionDraft) { field.value = descriptionDraft; reviewedSignature = ''; return true; }
@@ -1022,8 +1166,20 @@
     var locked = submission.status === 'sending' || submission.status === 'saved';
     var policy = getSupportReportingPolicy();
     displayedPolicySignature = policy.signature;
+    var teacherView = reporterPosture() === 'educator';
+    var full = fullLogRequested();
     return '<section aria-label="Outgoing support report" style="margin:16px 0;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">' +
       '<h3 style="margin:0 0 8px;font:700 14px/1.4 system-ui,sans-serif;">Review the report to send</h3>' +
+      '<label for="aer-category" style="display:block;margin-top:4px;font:700 12px/1.5 system-ui,sans-serif;">What kind of problem?</label>' +
+      '<select id="aer-category"' + (locked ? ' disabled' : '') + ' style="display:block;margin-top:4px;padding:6px 8px;border:1px solid #64748b;border-radius:6px;background:#fff;color:#0f172a;font:15px/1.4 system-ui,sans-serif;">' +
+        REPORT_CATEGORIES.map(function (c) { return '<option value="' + c[0] + '"' + (c[0] === reportCategory ? ' selected' : '') + '>' + escapeHtml(c[1]) + '</option>'; }).join('') +
+      '</select>' +
+      '<p id="aer-privacy-scope" style="margin:10px 0 0;padding:8px 10px;border-radius:6px;background:#f0fdfa;color:#134e4a;font:12px/1.5 system-ui,sans-serif;">' +
+        escapeHtml(full
+          ? 'This report includes the technical log. Email addresses, phone numbers, ID numbers, birth dates, street addresses and names after Mr., Ms. or Dr. are removed automatically; check the fields below for anything else private.'
+          : 'This report includes technical details only, never text from the app or its log. Email addresses, phone numbers, ID numbers and similar details are also removed from anything you type.') + '</p>' +
+      (teacherView ? '<label style="display:flex;gap:8px;align-items:flex-start;margin-top:10px;font:13px/1.5 system-ui,sans-serif;"><input id="aer-include-log" type="checkbox"' +
+        (locked ? ' disabled' : '') + (full ? ' checked' : '') + '><span>Include the technical log (helps fix the problem; personal details are removed automatically)</span></label>' : '') +
       '<p style="font:12px/1.5 system-ui,sans-serif;">Report type: Bug Report. Your optional description above and the fields below are the complete report. Edit or remove private information; edits do not change the captured log. New events are not added to this draft automatically.</p>' +
       '<p id="aer-support-destination" style="font:12px/1.5 system-ui,sans-serif;overflow-wrap:anywhere;">' +
         escapeHtml(policy.enabled ? 'Support destination: ' + policy.endpoint : policy.valid ? 'External support reporting is disabled by this deployment. Local diagnostics and Copy log remain available.' : 'External support reporting is unavailable because the deployment policy is invalid. Local diagnostics and Copy log remain available.') + '</p>' +
@@ -1578,6 +1734,22 @@
       reviewNotice = 'The draft was updated from the current log. Review and confirm it before sending.';
       refreshPanelIfOpen();
     };
+    // Either choice changes what is sent, so the draft is rebuilt and must be confirmed again.
+    if ($('aer-category')) $('aer-category').onchange = function () {
+      if (submission.status === 'sending' || submission.status === 'saved') return;
+      captureDescriptionDraft();
+      reportCategory = this.value;
+      reviewedSignature = '';
+      refreshPanelIfOpen();
+    };
+    if ($('aer-include-log')) $('aer-include-log').onchange = function () {
+      if (submission.status === 'sending' || submission.status === 'saved') return;
+      captureDescriptionDraft();
+      includeTechnicalLog = this.checked;
+      resetReportDraft();
+      reviewNotice = '';
+      refreshPanelIfOpen();
+    };
     if ($('aer-send')) $('aer-send').onclick = submitReport;
     if ($('aer-goto-confirm')) $('aer-goto-confirm').onclick = function () {
       var box = $('aer-review-confirm');
@@ -1593,6 +1765,8 @@
       if (submission.status !== 'saved') return;
       submission = { status: 'idle', id: '', savedAt: '', message: '', formOpened: false };
       descriptionDraft = '';
+      includeTechnicalLog = false;
+      reportCategory = '';
       resetReportDraft();
       reviewNotice = '';
       if ($('aer-description')) $('aer-description').value = '';

@@ -33,7 +33,13 @@
       irish: 'ga', kannada: 'kn', kazakh: 'kk', khmer: 'km', lao: 'lo', latvian: 'lv',
       lithuanian: 'lt', macedonian: 'mk', malayalam: 'ml', maltese: 'mt', marathi: 'mr',
       mongolian: 'mn', nepali: 'ne', serbian: 'sr', sinhala: 'si', slovenian: 'sl',
-      uzbek: 'uz', welsh: 'cy', zulu: 'zu'
+      uzbek: 'uz', welsh: 'cy', zulu: 'zu',
+      // Keep supported UI names aligned with the recording-language contract
+      // below, including in the standalone player where host helpers are absent.
+      acholi: 'ach', burmese: 'my', 'chin (falam)': 'cfm', 'chin (hakha)': 'cnh',
+      dari: 'prs', esperanto: 'eo', hausa: 'ha', hmong: 'hmn', igbo: 'ig',
+      karen: 'kar', kinyarwanda: 'rw', kirundi: 'rn', latin: 'la', lingala: 'ln',
+      'maay maay': 'ymm', marshallese: 'mh', tigrinya: 'ti', yoruba: 'yo'
     };
     function languageInfo(value) {
       const original = text(value, 80), name = original.toLowerCase();
@@ -46,8 +52,20 @@
       const subtags = tag.split('-').slice(1);
       const extension = subtags.findIndex(part => part.length === 1);
       const script = (extension < 0 ? subtags : subtags.slice(0, extension)).find(part => /^[a-z]{4}$/i.test(part));
-      const rtl = script ? /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script) : /^(ar|fa|he|iw|ur|ps|sd|ug|yi|dv|ckb|syr)(-|$)/i.test(tag);
+      const rtl = script ? /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script) : /^(ar|fa|prs|he|iw|ur|ps|sd|ug|yi|dv|ckb|syr)(-|$)/i.test(tag);
       return { tag, dir: rtl ? 'rtl' : 'ltr' };
+    }
+    // Display labels are separate from saved language/audio identifiers. Keep
+    // script and region distinctions, and tag the label in its actual UI locale.
+    function languageLabel(value, locale = 'English') {
+      const original = text(value, 80), language = languageInfo(original);
+      const fallback = { text: original, language: { tag: '', dir: 'auto' } };
+      if (!language.tag || typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function') return fallback;
+      try {
+        const names = new Intl.DisplayNames([languageInfo(locale).tag || 'en'], { type: 'language', languageDisplay: 'standard', fallback: 'none' });
+        const label = names.of(language.tag);
+        return label ? { text: label, language: languageInfo(names.resolvedOptions().locale) } : fallback;
+      } catch (_) { return fallback; }
     }
     // Recording identity follows the originating Word Sounds defaults. This is
     // deliberately separate from the shorter HTML language-of-parts tag.
@@ -191,8 +209,23 @@
         varySize: options.varySize === true,
         autoAdvance: options.autoAdvance === true,
         intervalSeconds: bounded(options.intervalSeconds == null ? 3 : options.intervalSeconds, 3, 1, 30),
-        includeAudio: options.includeAudio !== false
+        includeAudio: options.includeAudio !== false,
+        cardFont: ['default', 'arial', 'verdana', 'georgia'].includes(options.cardFont) ? options.cardFont : 'default',
+        cardTextScale: bounded(options.cardTextScale == null ? 1 : options.cardTextScale, 1, 0.85, 1.4),
+        cardTheme: ['paper', 'cream', 'mist'].includes(options.cardTheme) ? options.cardTheme : 'paper'
       };
+    }
+    // A shared allowlist keeps saved sets, offline cards and slides consistent.
+    // System font fallbacks provide glyphs for scripts outside the chosen face.
+    function cardAppearance(value) {
+      const options = normalizeOptions(value);
+      const fonts = { default: ['inherit', 'Arial'], arial: ['Arial, Helvetica, sans-serif', 'Arial'], verdana: ['Verdana, Geneva, sans-serif', 'Verdana'], georgia: ['Georgia, "Times New Roman", serif', 'Georgia'] };
+      const palettes = {
+        paper: { background: 'FFFFFF', heading: '172554', text: '1E293B', accent: '1E3A8A', muted: '475569', border: 'BAC6D9' },
+        cream: { background: 'FFF8E8', heading: '44321F', text: '43382B', accent: '775120', muted: '6B5944', border: 'C6B58F' },
+        mist: { background: 'EDF6F6', heading: '163F43', text: '1C4144', accent: '1E5960', muted: '466568', border: 'A0C2C5' }
+      };
+      return { fontFamily: fonts[options.cardFont][0], fontFace: fonts[options.cardFont][1], textScale: options.cardTextScale, ...palettes[options.cardTheme] };
     }
     function translationText(value, word) {
       const string = value => typeof value === 'string' ? value.trim() : '';
@@ -213,11 +246,13 @@
     }
     function translationsFor(value, word) {
       if (typeof value === 'string') { const clean = translationText(value, word); return clean ? [{ language: '', text: clean }] : []; }
-      if (Array.isArray(value)) return value.slice(0, 20).map(item => ({
+      // Preserve every translation; the per-field and total instruction limits
+      // below reject oversized sets without silently dropping languages.
+      if (Array.isArray(value)) return value.map(item => ({
         language: text(item && typeof item === 'object' && (item.language || item.lang), 60), text: translationText(item, word)
       })).filter(item => item.text);
       if (!value || typeof value !== 'object') return [];
-      return Object.keys(value).slice(0, 20).filter(language => !['__proto__', 'constructor', 'prototype'].includes(language)).map(language => ({
+      return Object.keys(value).filter(language => !['__proto__', 'constructor', 'prototype'].includes(language)).map(language => ({
         language: text(language, 60), text: translationText(value[language], word)
       })).filter(item => item.text);
     }
@@ -260,13 +295,26 @@
       const reserved = new Set(words.map(raw => raw && typeof raw === 'object' ? authoredId(raw) ? 'entry:' + authoredId(raw) : portableId(raw) : '').filter(Boolean));
       let nextId = 1;
       const makeId = () => { while (reserved.has('w' + nextId)) nextId++; const id = 'w' + nextId++; reserved.add(id); return id; };
-      const assets = Object.create(null);
+      const assets = new Map();
       function addAssets(source, destination = assets) {
         if (!source || typeof source !== 'object') return;
         Object.keys(source).forEach(name => { if (!['__proto__', 'constructor', 'prototype'].includes(name)) destination[key(name)] = source[name]; });
       }
-      addAssets(input.ttsAssets);
-      words.forEach(item => { if (item && typeof item === 'object') addAssets(item._ttsAssets); });
+      function addSharedAssets(source, fallbackLanguage) {
+        if (!source || typeof source !== 'object') return;
+        Object.keys(source).forEach(name => {
+          if (['__proto__', 'constructor', 'prototype'].includes(name)) return;
+          const value = source[name] && typeof source[name] === 'object' ? source[name] : {};
+          const provenance = audioProvenance(value.provenance || value.synthesisProfile || value.metadata);
+          const scope = audioLanguageKey(provenance.language || fallbackLanguage);
+          if (!assets.has(scope)) assets.set(scope, Object.create(null));
+          assets.get(scope)[key(name)] = source[name];
+        });
+      }
+      // Untagged shared recordings belong to their originating language. An
+      // explicit recording language takes precedence over its container.
+      addSharedAssets(input.ttsAssets, language);
+      words.forEach(item => { if (item && typeof item === 'object') addSharedAssets(item._ttsAssets, fieldLanguage(item, 'term', language)); });
       const banks = [{ bank: input.phonemeBank, language: input.bankLanguage || language }];
       if (input.phonemeBanks && typeof input.phonemeBanks === 'object' && !Array.isArray(input.phonemeBanks)) Object.keys(input.phonemeBanks).forEach(name => { banks.push({ bank: input.phonemeBanks[name], language: name }); });
       const bankSource = (sound, expected) => {
@@ -285,17 +333,19 @@
         if (!original) return;
         if (original.length > LIMITS.wordLength) throw new Error('Each word or short phrase must be 120 characters or fewer.');
         const itemKey = key(original);
+        const termLanguage = fieldLanguage(record, 'term', language), definitionLanguage = fieldLanguage(record, 'definition', language);
+        const languageKey = audioLanguageKey(termLanguage);
         const entryId = authoredId(record), suppliedId = portableId(record);
-        const identity = entryId ? 'entry:' + entryId : suppliedId ? 'id:' + suppliedId : 'word:' + itemKey;
+        const identity = entryId ? 'entry:' + entryId : suppliedId ? 'id:' + suppliedId : 'word:' + JSON.stringify([languageKey, itemKey]);
         const existing = seen.get(identity);
         if (existing && key(existing.word) !== itemKey) throw new Error('One practice entry ID refers to different words. Give each distinct entry its own ID.');
+        if (existing && audioLanguageKey(existing.termLanguage) !== languageKey) throw new Error('One practice entry ID refers to different languages. Give each distinct entry its own ID.');
         const id = existing ? existing.id : entryId ? 'entry:' + entryId : suppliedId || makeId();
         if (usedIds.has(id) && usedIds.get(id) !== identity) throw new Error('Each distinct practice entry needs its own stable ID.');
-        const termLanguage = fieldLanguage(record, 'term', language), definitionLanguage = fieldLanguage(record, 'definition', language);
         const exampleLanguage = fieldLanguage(record, 'example', definitionLanguage);
         const ownAssets = Object.create(null); addAssets(record._ttsAssets, ownAssets);
         const directWord = record.wordAudio || record.audio || record.audioUrl || record.pronunciationAudio;
-        const wordSource = safeAudio(directWord && (directWord.audio || directWord.asset || directWord)) ? directWord : own(ownAssets, itemKey) || own(assets, itemKey) || '';
+        const wordSource = safeAudio(directWord && (directWord.audio || directWord.asset || directWord)) ? directWord : own(ownAssets, itemKey) || own(assets.get(languageKey), itemKey) || '';
         const wordState = normalizedAudio(wordSource, termLanguage, wordSource === directWord ? record.wordAudioProvenance : undefined, record.wordAudioOriginal);
         const phonemes = (Array.isArray(record.phonemes) ? record.phonemes : []).slice(0, 40).map(phoneme => {
           const label = text(typeof phoneme === 'string' ? phoneme : phoneme && (phoneme.label || phoneme.grapheme || phoneme.ipa || phoneme.text || phoneme.phoneme || phoneme.sound), 40);
@@ -368,7 +418,7 @@
       return result;
     }
     function serializePack(pack) { return safeJson(normalizeInput(pack)); }
-    return { LIMITS, text, key, languageInfo, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, createSequence, audioCoverage, serializePack };
+    return { LIMITS, text, key, languageInfo, languageLabel, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, cardAppearance, createSequence, audioCoverage, serializePack };
   }
   root.AlloWordPracticeCore = createWordPracticeCore();
   // The standalone HTML player embeds this exact factory, keeping its validator

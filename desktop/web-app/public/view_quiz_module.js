@@ -12372,6 +12372,7 @@ function QuizViewContent(props) {
   var handleQuizImageRefine = props.handleQuizImageRefine;
   var handleQuizBulkOptionChange = props.handleQuizBulkOptionChange;
   var handleReflectionChange = props.handleReflectionChange;
+  var handleRemoveQuizReflection = props.handleRemoveQuizReflection;
   var handleFactCheck = props.handleFactCheck;
   var endCollaborativeEscapeRoom = props.endCollaborativeEscapeRoom;
   var resetEscapeRoom = props.resetEscapeRoom;
@@ -15191,7 +15192,7 @@ function QuizViewContent(props) {
     }, quizT('quiz.key_quality.no_suggestion', 'The check did not name a single correct option. Review this item.'))), /*#__PURE__*/React.createElement("div", {
       className: "whitespace-pre-line leading-relaxed text-slate-700"
     }, renderFormattedText(_quizFactCheckText(q.factCheck)))));
-  }())), (Array.isArray(generatedContent?.data.reflections) && generatedContent.data.reflections.length > 0 || generatedContent?.data.reflection) && /*#__PURE__*/React.createElement("div", {
+  }())), (Array.isArray(generatedContent?.data.reflections) && (generatedContent.data.reflections.length > 0 || isEditingQuiz) || generatedContent?.data.reflection) && /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "font-bold text-indigo-900 mb-2 flex items-center gap-2"
@@ -15200,7 +15201,7 @@ function QuizViewContent(props) {
   }), " ", t('quiz.reflections')), Array.isArray(generatedContent?.data.reflections) ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, generatedContent?.data.reflections.map((ref, i) => {
-    const text = typeof ref === 'string' ? ref : ref.text || ref.prompt || ref.question || (typeof ref === 'object' ? JSON.stringify(ref) : '');
+    const text = typeof ref === 'string' ? ref : ref && typeof ref.text === 'string' ? ref.text : ref.prompt || ref.question || (typeof ref === 'object' ? JSON.stringify(ref) : '');
     const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;
     var refEntry = reflectionAnswers[i] || {};
     var refSubmitted = !!refEntry.submitted;
@@ -15213,7 +15214,12 @@ function QuizViewContent(props) {
       onChange: e => handleReflectionChange(i, e.target.value),
       className: "w-full text-indigo-800 mb-1 italic text-sm bg-transparent border border-transparent hover:border-indigo-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none",
       rows: getRows(text)
-    }), (textEn !== null || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement(QuizTranslationText, {
+    }), typeof handleRemoveQuizReflection === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-quiz-remove-reflection": true,
+      onClick: () => handleRemoveQuizReflection(i),
+      className: "mb-2 min-h-9 rounded-lg border border-indigo-300 bg-white px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-50"
+    }, quizT('quiz.remove_reflection', 'Remove reflection')), (textEn !== null || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement(QuizTranslationText, {
       as: "textarea",
       "aria-label": t('quiz.edit_reflection_translation') || 'Edit reflection translation',
       value: textEn || '',
@@ -15270,7 +15276,12 @@ function QuizViewContent(props) {
     }, t("ui_common.submit_reflection")), !refDraft.trim() && /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] italic text-slate-600"
     }, _quizGradedCopy('quiz.student.type_to_enable_submit', 'Type a response to enable submit'))))));
-  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }), isEditingQuiz && typeof handleReflectionChange === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-quiz-add-reflection": true,
+    onClick: () => handleReflectionChange(generatedContent.data.reflections.length, ''),
+    className: "min-h-11 w-full rounded-xl border-2 border-dashed border-indigo-300 bg-white px-3 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-50"
+  }, "＋ ", quizT('quiz.add_reflection', 'Add reflection'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-indigo-800 mb-4 italic text-sm"
   }, generatedContent?.data.reflection), !isEditingQuiz && (isPresentationMode ? /*#__PURE__*/React.createElement("div", {
     className: "h-24 border-b border-indigo-200 border-dashed"

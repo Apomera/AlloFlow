@@ -19,7 +19,8 @@
   if (!React) { console.error('[ViewGlossaryModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  // Image changes use the host's resource/entry task, shared with AI generation.
+  function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+// Image changes use the host's resource/entry task, shared with AI generation.
 // Mulberry is fetched only when its picker opens, a search is submitted, or a result is selected.
 const GLOSSARY_IMAGE_TYPES = /^image\/(png|jpeg|gif|webp|avif)$/i;
 function readGlossaryImageFile(file, signal, allowSvg = false) {
@@ -828,6 +829,173 @@ function glossaryEnglishBase(resource, item) {
   return /^(?:en(?:[-_]|$)|english(?:\s*\(|$))/i.test(glossaryFieldLanguage(resource, item));
 }
 
+// Match export language-of-parts metadata even before lazy practice modules load.
+const glossaryLanguageNames = {
+  english: 'en',
+  spanish: 'es',
+  'spanish (latin america)': 'es-419',
+  'spanish (castilian)': 'es-ES',
+  french: 'fr',
+  'french (canadian)': 'fr-CA',
+  german: 'de',
+  italian: 'it',
+  portuguese: 'pt',
+  'portuguese (brazil)': 'pt-BR',
+  'portuguese (portugal)': 'pt-PT',
+  'portuguese (angola)': 'pt-AO',
+  arabic: 'ar',
+  hebrew: 'he',
+  persian: 'fa',
+  farsi: 'fa',
+  urdu: 'ur',
+  pashto: 'ps',
+  sindhi: 'sd',
+  uyghur: 'ug',
+  yiddish: 'yi',
+  dhivehi: 'dv',
+  sorani: 'ckb',
+  'kurdish (sorani)': 'ckb',
+  chinese: 'zh',
+  mandarin: 'zh',
+  'chinese (simplified)': 'zh-Hans',
+  'chinese (traditional)': 'zh-Hant',
+  hindi: 'hi',
+  japanese: 'ja',
+  korean: 'ko',
+  russian: 'ru',
+  ukrainian: 'uk',
+  vietnamese: 'vi',
+  somali: 'so',
+  'haitian creole': 'ht',
+  bengali: 'bn',
+  punjabi: 'pa',
+  tamil: 'ta',
+  telugu: 'te',
+  turkish: 'tr',
+  polish: 'pl',
+  dutch: 'nl',
+  swedish: 'sv',
+  norwegian: 'no',
+  danish: 'da',
+  finnish: 'fi',
+  greek: 'el',
+  romanian: 'ro',
+  hungarian: 'hu',
+  czech: 'cs',
+  slovak: 'sk',
+  swahili: 'sw',
+  indonesian: 'id',
+  malay: 'ms',
+  thai: 'th',
+  tagalog: 'tl',
+  filipino: 'fil',
+  afrikaans: 'af',
+  amharic: 'am',
+  albanian: 'sq',
+  armenian: 'hy',
+  azerbaijani: 'az',
+  basque: 'eu',
+  belarusian: 'be',
+  bosnian: 'bs',
+  bulgarian: 'bg',
+  catalan: 'ca',
+  croatian: 'hr',
+  estonian: 'et',
+  georgian: 'ka',
+  gujarati: 'gu',
+  icelandic: 'is',
+  irish: 'ga',
+  kannada: 'kn',
+  kazakh: 'kk',
+  khmer: 'km',
+  lao: 'lo',
+  latvian: 'lv',
+  lithuanian: 'lt',
+  macedonian: 'mk',
+  malayalam: 'ml',
+  maltese: 'mt',
+  marathi: 'mr',
+  mongolian: 'mn',
+  nepali: 'ne',
+  serbian: 'sr',
+  sinhala: 'si',
+  slovenian: 'sl',
+  uzbek: 'uz',
+  welsh: 'cy',
+  zulu: 'zu',
+  acholi: 'ach',
+  burmese: 'my',
+  'chin (falam)': 'cfm',
+  'chin (hakha)': 'cnh',
+  dari: 'prs',
+  esperanto: 'eo',
+  hausa: 'ha',
+  hmong: 'hmn',
+  igbo: 'ig',
+  karen: 'kar',
+  kinyarwanda: 'rw',
+  kirundi: 'rn',
+  latin: 'la',
+  lingala: 'ln',
+  'maay maay': 'ymm',
+  marshallese: 'mh',
+  tigrinya: 'ti',
+  yoruba: 'yo'
+};
+const glossaryLanguageInfo = value => {
+  const original = typeof value === 'string' ? value.trim() : '';
+  const canonical = input => {
+    const tag = input.replace(/_/g, '-');
+    if (!/^[a-z]{2,3}(?:-[a-z0-9]{1,8})*$/i.test(tag)) return '';
+    try {
+      return typeof Intl.getCanonicalLocales === 'function' ? Intl.getCanonicalLocales(tag)[0] || '' : tag;
+    } catch (_) {
+      return '';
+    }
+  };
+  // An explicit tag wins over a host helper that resolves only its base.
+  let tag = canonical(original);
+  if (!tag && Object.prototype.hasOwnProperty.call(glossaryLanguageNames, original.toLowerCase())) tag = canonical(glossaryLanguageNames[original.toLowerCase()]);
+  if (!tag) {
+    try {
+      const resolve = window.AlloModules?.ModuleScopeExtras?.getSpeechLangCode || window.getSpeechLangCode;
+      const resolved = typeof resolve === 'function' ? canonical(String(resolve(original) || '')) : '';
+      // The host returns English for unknown names; that is not evidence.
+      if (resolved && !/^en(?:-|$)/i.test(resolved)) tag = resolved;
+    } catch (_) {}
+  }
+  if (!tag) return {
+    tag: '',
+    dir: 'auto',
+    language: '',
+    script: '',
+    region: ''
+  };
+  const parts = tag.split('-'),
+    subtags = parts.slice(1);
+  const extension = subtags.findIndex(part => part.length === 1);
+  const core = extension < 0 ? subtags : subtags.slice(0, extension);
+  const script = core.find(part => /^[a-z]{4}$/i.test(part)) || '';
+  const region = core.find(part => /^[a-z]{2}$|^\d{3}$/i.test(part)) || '';
+  const rtl = script ? /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script) : /^(ar|arc|he|iw|fa|prs|ur|ps|ku|ckb|sd|ug|yi|dv|syr|nqo)$/i.test(parts[0]);
+  const dir = !script && /^(und|mul|zxx)$/i.test(parts[0]) ? 'auto' : rtl ? 'rtl' : 'ltr';
+  return {
+    tag,
+    dir,
+    language: parts[0],
+    script,
+    region
+  };
+};
+function glossaryLanguageAttrs(value) {
+  const info = glossaryLanguageInfo(value);
+  // An unknown content language must not inherit the interface language.
+  return {
+    lang: info.tag,
+    dir: info.dir
+  };
+}
+
 // Keep caught launch failures inspectable without attaching the lesson or audio.
 // This also works when a newer glossary view is served to an older app shell.
 function glossaryWordPracticeDiagnostic(error, wordCount, startedAt) {
@@ -1106,7 +1274,7 @@ var GLOSSARY_HOVER_STYLE_ID = 'allo-glossary-hover-styles';
 var GLOSSARY_HOVER_CSS = ['.allo-vghov-row:hover,.allo-vghov-row:focus-within{background-color:#f1f5f9 !important;}', '.theme-dark .allo-vghov-row:hover,.theme-dark .allo-vghov-row:focus-within{background-color:#334155 !important;}', '.theme-contrast .allo-vghov-row:hover,.theme-contrast .allo-vghov-row:focus-within{background-color:#000000 !important;outline:2px solid #ffff00;outline-offset:-2px;}', '[data-glossary-mobile-label]{display:none;}',
 // Keep one set of editing/audio controls. Screen-only rules preserve the
 // printable table; explicit table roles preserve its accessible structure.
-'@media screen and (max-width:639px){', '[data-glossary-word-list] table,[data-glossary-word-list] thead,[data-glossary-word-list] tbody,[data-glossary-word-list] tr{display:block;width:100%;min-width:0;}', '[data-glossary-word-list] thead th:not([data-glossary-selection]){position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}', '[data-glossary-word-list] thead th[data-glossary-selection]{display:block;width:100%;padding:12px;}', '[data-glossary-word-list] thead th[data-glossary-selection]>div{flex-direction:row;justify-content:center;gap:8px;}', '[data-glossary-word-list] tbody>tr{border-bottom:6px solid #e2e8f0;}', '[data-glossary-word-list] tbody>tr:last-child{border-bottom:0;}', '[data-glossary-word-list] td{display:block;width:100%;min-width:0;max-width:100%;padding:12px;border:0;overflow-wrap:anywhere;}', '[data-glossary-word-list] td+td:not([data-glossary-term]){border-top:1px solid #e2e8f0;}', '[data-glossary-word-list] td div{min-width:0;max-width:100%;}', '[data-glossary-word-list] td img{max-width:100%;height:auto !important;}', '[data-glossary-word-list] td textarea,[data-glossary-word-list] td select{min-width:0;max-width:100%;}', '[data-glossary-word-list] [data-glossary-mobile-label]{display:block;margin-bottom:8px;font-size:12px;font-weight:700;font-style:normal;}', '[data-glossary-word-list] [data-glossary-selection] [data-glossary-mobile-label]{display:inline;margin-inline-start:8px;}', '}'].join('\n');
+'@media screen and (max-width:639px){', '[data-glossary-word-list] table,[data-glossary-word-list] thead,[data-glossary-word-list] tbody,[data-glossary-word-list] tr{display:block;width:100%;min-width:0;}', '[data-glossary-word-list] thead th:not([data-glossary-selection]){position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}', '[data-glossary-word-list] thead th[data-glossary-selection]{display:block;width:100%;padding:12px;}', '[data-glossary-word-list] thead th[data-glossary-selection]>div{flex-direction:row;justify-content:center;gap:8px;}', '[data-glossary-word-list] tbody>tr{border-bottom:6px solid #e2e8f0;}', '[data-glossary-word-list] tbody>tr:last-child{border-bottom:0;}', '[data-glossary-word-list] td{display:block;width:100%;min-width:0;max-width:100%;padding:12px;border:0;overflow-wrap:anywhere;}', '[data-glossary-word-list] td+td:not([data-glossary-term]){border-top:1px solid #e2e8f0;}', '[data-glossary-word-list] td div{min-width:0;max-width:100%;}', '[data-glossary-word-list] td img{max-width:100%;height:auto !important;}', '[data-glossary-word-list] td textarea,[data-glossary-word-list] td select{min-width:0;max-width:100%;}', '[data-glossary-word-list] [data-glossary-mobile-label]{display:block;margin-bottom:8px;font-size:0.75rem;font-weight:700;font-style:normal;}', '[data-glossary-word-list] [data-glossary-selection] [data-glossary-mobile-label]{display:inline;margin-inline-start:8px;}', '}'].join('\n');
 function ensureGlossaryHoverStyles() {
   try {
     if (typeof document === 'undefined' || !document.head) return;
@@ -1161,7 +1329,7 @@ function syncGlossaryRowTabStop(row, memory) {
   });
   return items;
 }
-// "Aa" reading settings (font, size, spacing) for full-screen glossary activities.
+// Shared reading settings (font, size, spacing) for the word list and activities.
 // Rendered only once the host publishes them; the panel opens inside the opener's dialog.
 function GlossaryReadingSettingsButton(props) {
   var handleRef = React.useRef(null);
@@ -1170,8 +1338,25 @@ function GlossaryReadingSettingsButton(props) {
       if (handleRef.current) handleRef.current.close(false);
     };
   }, []);
+  function readingAvailable() {
+    var current = window.AlloModules && window.AlloModules.UIFontLibrary;
+    return !!(current && typeof current.readingSettingsAvailable === 'function' && current.readingSettingsAvailable());
+  }
+  var [settingsAvailable, setSettingsAvailable] = React.useState(readingAvailable);
+  React.useEffect(function () {
+    // The host can publish its bridge after this view's first render.
+    // Its settings event also covers resource views mounted during startup.
+    function refreshAvailability() {
+      setSettingsAvailable(readingAvailable());
+    }
+    window.addEventListener('alloflow:reading-settings-changed', refreshAvailability);
+    refreshAvailability();
+    return function () {
+      window.removeEventListener('alloflow:reading-settings-changed', refreshAvailability);
+    };
+  }, []);
   var lib = window.AlloModules && window.AlloModules.UIFontLibrary;
-  if (!lib || typeof lib.readingSettingsAvailable !== 'function' || !lib.readingSettingsAvailable()) return null;
+  if (!settingsAvailable || !lib || typeof lib.readingSettingsAvailable !== 'function' || !lib.readingSettingsAvailable()) return null;
   return /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-haspopup": "dialog",
@@ -1184,8 +1369,12 @@ function GlossaryReadingSettingsButton(props) {
         t: props.t
       });
     },
-    className: 'min-h-11 min-w-11 inline-flex items-center justify-center rounded-full font-bold leading-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 ' + (props.className || '')
-  }, "Aa");
+    className: 'min-h-11 min-w-11 inline-flex items-center justify-center font-bold transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 ' + (props.showLabel ? 'max-w-full gap-2 rounded-lg text-start ' : 'rounded-full leading-none ') + (props.className || '')
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "Aa"), props.showLabel && /*#__PURE__*/React.createElement("span", {
+    className: "min-w-0 break-words"
+  }, props.label));
 }
 function GlossaryView(props) {
   // Pure data + state reads
@@ -1206,6 +1395,30 @@ function GlossaryView(props) {
   });
   var leveledTextLanguage = props.leveledTextLanguage;
   var currentUiLanguage = props.currentUiLanguage;
+  // Only presentation uses display names. Translation keys, select values,
+  // saved language metadata and audio requests keep their original identity.
+  var languageNameFormatter = React.useMemo(function () {
+    if (typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function') return null;
+    try {
+      return new Intl.DisplayNames([glossaryLanguageInfo(currentUiLanguage).tag || 'en'], {
+        type: 'language',
+        languageDisplay: 'standard',
+        fallback: 'none'
+      });
+    } catch (_) {
+      return null;
+    }
+  }, [currentUiLanguage]);
+  function glossaryLanguageLabel(value) {
+    var original = typeof value === 'string' ? value.trim() : '';
+    var info = glossaryLanguageInfo(original);
+    if (!info.tag || !languageNameFormatter) return original;
+    try {
+      return languageNameFormatter.of(info.tag) || original;
+    } catch (_) {
+      return original;
+    }
+  }
   var activeView = props.activeView;
   var isTeacherMode = props.isTeacherMode;
   var gradeLevel = props.gradeLevel;
@@ -1311,6 +1524,7 @@ function GlossaryView(props) {
   var setGlossaryRefinementInputs = props.setGlossaryRefinementInputs;
   // Handlers
   var handleAddGlossaryTerm = props.handleAddGlossaryTerm;
+  var handleAddGlossaryTermAsTyped = props.handleAddGlossaryTermAsTyped;
   var handleQuickAddGlossary = props.handleQuickAddGlossary;
   var handleDeleteTerm = props.handleDeleteTerm;
   var handleGenerateTermImage = props.handleGenerateTermImage;
@@ -1631,6 +1845,10 @@ function GlossaryView(props) {
   });
   var glossaryToolsOpen = glossaryToolsState[0];
   var setGlossaryToolsOpen = glossaryToolsState[1];
+  var [isGlossaryExportsOpen, setIsGlossaryExportsOpen] = React.useState(false);
+  React.useEffect(function () {
+    setIsGlossaryExportsOpen(false);
+  }, [activityResourceKey, isTeacherMode]);
   var glossaryAudioState = React.useState({
     busy: false,
     done: 0,
@@ -2127,8 +2345,11 @@ function GlossaryView(props) {
     if (at < 0) return;
     event.preventDefault();
     var step = key === 'ArrowRight' ? 1 : -1;
-    var dirHost = target.closest('[dir="rtl"], [dir="ltr"]');
-    if (dirHost && dirHost.getAttribute('dir') === 'rtl') step = -step;
+    // This is one roving row. A translated passage must not reverse the
+    // arrow order midway through it and trap focus between two controls.
+    var rowDirection = row.ownerDocument.defaultView?.getComputedStyle(row).direction;
+    if (!rowDirection) rowDirection = row.closest('[dir="rtl"], [dir="ltr"]')?.getAttribute('dir');
+    if (rowDirection === 'rtl') step = -step;
     var next = items[key === 'Home' ? 0 : key === 'End' ? items.length - 1 : Math.max(0, Math.min(items.length - 1, at + step))];
     glossaryRowFocusRef.current.set(row.getAttribute('data-glossary-entry-key'), next);
     syncGlossaryRowTabStop(row, glossaryRowFocusRef.current);
@@ -2169,7 +2390,7 @@ function GlossaryView(props) {
     if (!isGlossaryViewCurrent(owner) || glossaryRetryPendingRef.current !== pending) return;
     var params = {
       term: item.term || '',
-      lang: lang
+      lang: glossaryLanguageLabel(lang)
     };
     var reason = result && result.reason;
     var message = result && result.ok ? glossaryText('glossary.translation_retry_done', 'Translated {term} into {lang}.', params) : reason === 'ai-disabled' ? glossaryText('glossary.translation_retry_ai_off', 'AI translation is turned off. You can type the translation in Edit.') : reason === 'ai-unavailable' ? glossaryText('glossary.translation_retry_unavailable', 'AI translation is not available right now. You can type the translation in Edit.') : reason === 'changed' ? glossaryText('glossary.translation_retry_changed', '{term} changed while it was being translated. Try again.', params) : glossaryText('glossary.translation_retry_failed', 'Could not translate {term} into {lang}. Try again.', params);
@@ -2200,7 +2421,7 @@ function GlossaryView(props) {
     var busy = !!(retry && retry.busy);
     var label = glossaryText('glossary.retry_translation_aria', 'Translate {term} into {lang} again', {
       term: item.term || '',
-      lang: lang
+      lang: glossaryLanguageLabel(lang)
     });
     return /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -2284,6 +2505,18 @@ function GlossaryView(props) {
     return getGlossaryEntryKey(item, idx);
   }
   var currentFlashcardItem = flashcardDeck[flashcardIndex] || null;
+  // Quiz distractors may come from entries with different definition languages.
+  // Match their actual answer text, never a term (the same word can occur twice).
+  function flashcardOptionLanguageAttrs(option) {
+    var languages = new Set();
+    flashcardDeck.forEach(function (item) {
+      var translated = flashcardMode === 'language' && flashcardLang;
+      var text = translated ? glossaryTranslationText(item.translations?.[flashcardLang]) : item.def;
+      if (translated && text.search(/[:：]/) >= 0) text = text.substring(text.search(/[:：]/) + 1).trim();
+      if (text && text === option) languages.add(glossaryLanguageInfo(translated ? flashcardLang : glossaryFieldLanguage(generatedContent, item, 'definition')).tag);
+    });
+    return glossaryLanguageAttrs(languages.size === 1 ? Array.from(languages)[0] : '');
+  }
   var currentFlashcardKey = currentFlashcardItem ? getFlashcardReviewKey(currentFlashcardItem, flashcardIndex) : '';
   var flashcardTransitionKey = String(flashcardMode || 'deck') + '-' + currentFlashcardKey;
   var currentFlashcardConfidence = currentFlashcardKey ? flashcardReviewState[currentFlashcardKey] : '';
@@ -2310,6 +2543,31 @@ function GlossaryView(props) {
     });
     return text;
   }
+  function glossaryDefinitionLabel(item) {
+    var language = item ? glossaryFieldLanguage(generatedContent, item, 'definition') : '';
+    if (!item) {
+      var entries = Array.isArray(filteredGlossaryData) && filteredGlossaryData.length ? filteredGlossaryData : generatedContent?.data || [];
+      var languages = new Map();
+      entries.forEach(function (entry) {
+        var name = glossaryFieldLanguage(generatedContent, entry, 'definition');
+        languages.set(glossaryLanguageInfo(name).tag || name, name);
+      });
+      language = languages.size === 1 ? Array.from(languages.values())[0] : entries.length ? '' : glossaryFieldLanguage(generatedContent, null, 'definition');
+    }
+    if (glossaryLanguageInfo(language).tag === 'en') return glossaryText('glossary.table_def', 'Definition (English)');
+    var label = glossaryText('flashcards.back_label_def', 'Definition');
+    return language ? label + ' (' + glossaryLanguageLabel(language) + ')' : label;
+  }
+  function glossaryHasDifferentDefinitionLanguage(item) {
+    var term = glossaryFieldLanguage(generatedContent, item, 'term');
+    var definition = glossaryFieldLanguage(generatedContent, item, 'definition');
+    // Named aliases and canonical tags describe the same language. Keep a
+    // useful cue for distinct saved scripts, regions, or custom names.
+    var identity = function (value) {
+      return glossaryLanguageInfo(value).tag || value.toLocaleLowerCase();
+    };
+    return identity(term) !== identity(definition);
+  }
   // Optional source quote from generation; rendered as React text (escaped).
   function renderGlossaryContextSentence(item, className, labelClassName) {
     var sentence = item && typeof item.contextSentence === 'string' ? item.contextSentence.trim() : '';
@@ -2320,7 +2578,7 @@ function GlossaryView(props) {
       className: className
     }, /*#__PURE__*/React.createElement("span", {
       className: labelClassName
-    }, glossaryText('glossary.context_sentence_label', 'In the text:')), " ", /*#__PURE__*/React.createElement("q", null, sentence));
+    }, glossaryText('glossary.context_sentence_label', 'In the text:')), " ", /*#__PURE__*/React.createElement("q", glossaryLanguageAttrs(item.contextSentenceLanguage || glossaryFieldLanguage(generatedContent, item, 'definition')), sentence));
   }
   // A word root read aloud or named for a screen reader, as whole translatable
   // sentences (it was English glue: ", meaning " / "Related words: ").
@@ -2343,7 +2601,7 @@ function GlossaryView(props) {
     };
     return glossaryText('glossary.' + (stopping ? 'stop_' : 'read_') + field + '_aria', labels[field], {
       term: term,
-      lang: lang
+      lang: glossaryLanguageLabel(lang)
     });
   }
   function handleGlossaryInputEnter(event, callback, disabled) {
@@ -2383,7 +2641,7 @@ function GlossaryView(props) {
   var glossaryQuizToggleLabel = t('flashcards.tooltip_toggle_quiz') || '';
   var audioFieldLabel = function (field, language) {
     return field === 'term' ? flashcardTermLabel : field === 'definition' ? flashcardDefinitionLabel : glossaryText('glossary.audio_translation_field', '{lang} translation', {
-      lang: language || ''
+      lang: glossaryLanguageLabel(language)
     });
   };
   // One translatable sentence (it was English glue around translated labels).
@@ -2611,6 +2869,7 @@ function GlossaryView(props) {
     };
     var tabStopIdx = flashcardDeck[flashcardIndex] && inRound(flashcardDeck[flashcardIndex], flashcardIndex) ? flashcardIndex : flashcardDeck.findIndex(inRound);
     var onDotsKeyDown = function (e) {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
       var step = {
         ArrowRight: 1,
         ArrowDown: 1,
@@ -2621,7 +2880,9 @@ function GlossaryView(props) {
       var dots = Array.prototype.slice.call(e.currentTarget.querySelectorAll('button'));
       if (!dots.length) return;
       e.preventDefault();
-      var rtl = (e.currentTarget.closest('[dir]') || document.documentElement).getAttribute('dir') === 'rtl';
+      var direction = e.currentTarget.ownerDocument.defaultView?.getComputedStyle(e.currentTarget).direction;
+      if (!direction) direction = (e.currentTarget.closest('[dir]') || document.documentElement).getAttribute('dir');
+      var rtl = direction === 'rtl';
       if (rtl && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) step = -step;
       var at = dots.indexOf(document.activeElement);
       var next = e.key === 'Home' ? 0 : e.key === 'End' ? dots.length - 1 : Math.max(0, Math.min(dots.length - 1, (at < 0 ? 0 : at) + step));
@@ -2666,7 +2927,7 @@ function GlossaryView(props) {
     var nextDisabled = !flashcardRoundIndices.length;
     var focusClass = ' focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
     return /*#__PURE__*/React.createElement("div", {
-      className: "sticky bottom-0 z-40 -mx-4 mt-5 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl px-3 py-3 shadow-2xl pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+      className: "sm:sticky bottom-0 z-40 -mx-4 mt-5 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl px-3 py-3 shadow-2xl pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
     }, /*#__PURE__*/React.createElement("div", {
       className: "mx-auto max-w-4xl space-y-3"
     }, /*#__PURE__*/React.createElement("div", {
@@ -2793,22 +3054,22 @@ function GlossaryView(props) {
       className: "block"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
-    }, flashcardTermLabel), /*#__PURE__*/React.createElement("textarea", {
+    }, flashcardTermLabel), /*#__PURE__*/React.createElement("textarea", _extends({}, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'term')), {
       ref: flashcardEditFirstFieldRef,
       value: currentFlashcardItem.term || '',
       onChange: e => handleGlossaryChange(flashcardIndex, 'term', e.target.value),
       rows: getRows(currentFlashcardItem.term, 24),
       className: `${fieldClass} text-base font-bold`
-    })), /*#__PURE__*/React.createElement("label", {
+    }))), /*#__PURE__*/React.createElement("label", {
       className: "block"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
-    }, flashcardDefinitionLabel), /*#__PURE__*/React.createElement("textarea", {
+    }, flashcardDefinitionLabel), /*#__PURE__*/React.createElement("textarea", _extends({}, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'definition')), {
       value: currentFlashcardItem.def || '',
       onChange: e => handleGlossaryChange(flashcardIndex, 'def', e.target.value),
       rows: getRows(currentFlashcardItem.def, 42),
       className: `${fieldClass} text-sm leading-relaxed`
-    })), /*#__PURE__*/React.createElement("label", {
+    }))), /*#__PURE__*/React.createElement("label", {
       className: "block"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
@@ -2826,12 +3087,12 @@ function GlossaryView(props) {
       className: "block"
     }, /*#__PURE__*/React.createElement("span", {
       className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
-    }, t('glossary.etymology_label') || t('glossary.etymology_roots_label')), /*#__PURE__*/React.createElement("textarea", {
+    }, t('glossary.etymology_label') || t('glossary.etymology_roots_label')), /*#__PURE__*/React.createElement("textarea", _extends({}, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'definition')), {
       value: currentFlashcardItem.etymology || '',
       onChange: e => handleGlossaryChange(flashcardIndex, 'etymology', e.target.value),
       rows: getRows(currentFlashcardItem.etymology, 42),
       className: `${fieldClass} text-sm leading-relaxed`
-    }))), /*#__PURE__*/React.createElement("div", {
+    })))), /*#__PURE__*/React.createElement("div", {
       className: "mt-6 flex flex-col sm:flex-row gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -3653,7 +3914,7 @@ function GlossaryView(props) {
           className: "rounded-lg border border-indigo-100 bg-indigo-50/40 p-2"
         }, /*#__PURE__*/React.createElement("p", {
           className: "text-[10px] font-black uppercase tracking-wide text-indigo-700"
-        }, lang), /*#__PURE__*/React.createElement("p", {
+        }, glossaryLanguageLabel(lang)), /*#__PURE__*/React.createElement("p", {
           dir: isRtlLang(lang) ? 'rtl' : 'ltr',
           className: "mt-1 break-words text-sm text-slate-800"
         }, translation || t('common.untitled')), renderGlossaryEditAudioTools(item, 'translation', translation, `audio-review-translation-${idx}-${lang}`, lang));
@@ -3770,7 +4031,63 @@ function GlossaryView(props) {
       size: 16,
       "aria-hidden": "true",
       className: 'motion-safe:transition-transform ' + (glossaryToolbarToolsOpen ? 'rotate-180' : '')
-    }))), /*#__PURE__*/React.createElement("div", {
+    })), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-export-toggle": true,
+      onClick: () => setIsGlossaryExportsOpen(open => !open),
+      "aria-expanded": isGlossaryExportsOpen,
+      "aria-controls": "glossary-export-tools",
+      className: toolButton + ' bg-white text-indigo-800 border-indigo-300 hover:bg-indigo-50'
+    }, /*#__PURE__*/React.createElement(Download, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " ", glossaryText('common.export', 'Export'), " ", /*#__PURE__*/React.createElement(ChevronDown, {
+      size: 16,
+      "aria-hidden": "true",
+      className: 'motion-safe:transition-transform ' + (isGlossaryExportsOpen ? 'rotate-180' : '')
+    })), /*#__PURE__*/React.createElement(GlossaryReadingSettingsButton, {
+      showLabel: true,
+      t: t,
+      label: glossaryText('reading_settings.title', 'Reading settings'),
+      className: secondaryButton
+    })), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+      id: "glossary-export-tools",
+      "data-glossary-export-tools": true,
+      role: "group",
+      "aria-label": glossaryText('common.export', 'Export'),
+      hidden: !isGlossaryExportsOpen,
+      style: {
+        display: isGlossaryExportsOpen ? undefined : 'none'
+      },
+      className: "flex flex-wrap gap-2 rounded-lg border border-indigo-200 bg-white p-3"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-help-key": "glossary_export_standard",
+      onClick: () => handleExportFlashcards('standard'),
+      className: secondaryButton
+    }, /*#__PURE__*/React.createElement(GalleryHorizontal, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " ", t('flashcards.export_standard')), glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-help-key": "glossary_export_language",
+      onClick: () => handleExportFlashcards('language'),
+      className: secondaryButton
+    }, /*#__PURE__*/React.createElement(Languages, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " ", t('flashcards.export_language')), typeof props.handleExportGlossaryFile === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-export-word-list": true,
+      "aria-haspopup": "dialog",
+      onClick: e => props.handleExportGlossaryFile('chooser', {
+        opener: e.currentTarget
+      }),
+      className: secondaryButton
+    }, /*#__PURE__*/React.createElement(Download, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " ", glossaryText('glossary.export_word_list', 'Export word list…'))), /*#__PURE__*/React.createElement("div", {
       id: "glossary-toolbar-tools",
       hidden: !glossaryToolbarToolsOpen,
       style: {
@@ -3965,10 +4282,10 @@ function GlossaryView(props) {
       className: "min-h-11 max-w-full rounded-lg border border-slate-400 bg-white px-3 text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
     }, /*#__PURE__*/React.createElement("option", {
       value: glossaryBaseLanguage
-    }, glossaryBaseLanguage === 'English' ? t('common.english') : glossaryBaseLanguage), glossaryLanguages.map(lang => /*#__PURE__*/React.createElement("option", {
+    }, glossaryLanguageLabel(glossaryBaseLanguage)), glossaryLanguages.map(lang => /*#__PURE__*/React.createElement("option", {
       key: lang,
       value: lang
-    }, lang))))), /*#__PURE__*/React.createElement("p", {
+    }, glossaryLanguageLabel(lang)))))), /*#__PURE__*/React.createElement("p", {
       id: "glossary-activity-pool",
       role: "status",
       className: "mb-2 text-sm text-slate-700"
@@ -4149,34 +4466,7 @@ function GlossaryView(props) {
       className: "mb-2 text-xs font-black tracking-wider text-slate-700"
     }, t('glossary.more_tools')), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap items-center gap-2"
-    }, /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      "data-help-key": "glossary_export_standard",
-      onClick: () => handleExportFlashcards('standard'),
-      className: secondaryButton
-    }, /*#__PURE__*/React.createElement(GalleryHorizontal, {
-      size: 16,
-      "aria-hidden": "true"
-    }), " ", t('flashcards.export_standard')), glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      "data-help-key": "glossary_export_language",
-      onClick: () => handleExportFlashcards('language'),
-      className: secondaryButton
-    }, /*#__PURE__*/React.createElement(Languages, {
-      size: 16,
-      "aria-hidden": "true"
-    }), " ", t('flashcards.export_language')), typeof props.handleExportGlossaryFile === 'function' && /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      "data-glossary-export-word-list": true,
-      "aria-haspopup": "dialog",
-      onClick: e => props.handleExportGlossaryFile('chooser', {
-        opener: e.currentTarget
-      }),
-      className: secondaryButton
-    }, /*#__PURE__*/React.createElement(Download, {
-      size: 16,
-      "aria-hidden": "true"
-    }), " ", glossaryText('glossary.export_word_list', 'Export word list…')), /*#__PURE__*/React.createElement("label", {
+    }, /*#__PURE__*/React.createElement("label", {
       "data-help-key": "glossary_image_size",
       className: "min-h-11 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
     }, /*#__PURE__*/React.createElement(ImageIcon, {
@@ -4282,31 +4572,60 @@ function GlossaryView(props) {
     role: "dialog",
     "aria-modal": "true",
     "aria-label": flashcardMode === 'language' ? t('flashcards.deck_language', {
-      lang: flashcardLang || ''
+      lang: glossaryLanguageLabel(flashcardLang)
     }) || 'Interactive flashcards' : t('flashcards.deck_standard') || 'Interactive flashcards',
     tabIndex: -1,
     onKeyDown: e => containModalFocus(e, flashcardDialogRef.current, closeInteractiveFlashcards),
-    className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 motion-reduce:animate-none motion-reduce:transition-none overflow-auto"
+    className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start p-4 sm:p-6 animate-in fade-in duration-300 motion-reduce:animate-none motion-reduce:transition-none overflow-auto"
+  }, /*#__PURE__*/React.createElement("div", {
+    "data-flashcard-header": true,
+    className: "mb-4 w-full max-w-4xl space-y-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-end gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0 flex-1"
+  }, flashcardMode === 'standard' && glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0 max-w-full"
+  }, /*#__PURE__*/React.createElement("select", {
+    "aria-label": t('flashcards.deck_standard'),
+    value: standardDeckLang,
+    onChange: e => setStandardDeckLang(e.target.value),
+    className: "min-h-11 w-full min-w-0 max-w-full bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500  shadow-lg"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "English Only"
+  }, glossaryBaseLanguage === 'English' ? t('languages.english_only') : glossaryText('glossary.base_language_only', '{language} only', {
+    language: glossaryLanguageLabel(glossaryBaseLanguage)
+  })), glossaryLanguages.map(l => /*#__PURE__*/React.createElement("option", {
+    key: l,
+    value: l
+  }, "+ ", glossaryLanguageLabel(l))))), flashcardMode === 'language' && glossaryLanguages.length > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0 max-w-full"
+  }, /*#__PURE__*/React.createElement("select", {
+    "aria-label": t('flashcards.deck_language'),
+    value: flashcardLang,
+    onChange: e => setFlashcardLang(e.target.value),
+    className: "min-h-11 w-full min-w-0 max-w-full bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 "
+  }, glossaryLanguages.map(l => /*#__PURE__*/React.createElement("option", {
+    key: l,
+    value: l
+  }, glossaryLanguageLabel(l)))))), /*#__PURE__*/React.createElement("div", {
+    "data-flashcard-header-actions": true,
+    className: "flex shrink-0 items-center gap-2"
   }, /*#__PURE__*/React.createElement(GlossaryReadingSettingsButton, {
     t: t,
     label: glossaryText('reading_settings.title', 'Reading settings'),
-    className: "absolute top-6 right-20 z-50 w-12 h-12 text-lg text-white/80 hover:text-white bg-white/10 hover:bg-white/20 focus-visible:ring-white focus-visible:ring-offset-slate-950"
+    className: "w-12 h-12 shrink-0 text-lg text-white/80 hover:text-white bg-white/10 hover:bg-white/20 focus-visible:ring-white focus-visible:ring-offset-slate-950"
   }), /*#__PURE__*/React.createElement("button", {
     ref: flashcardCloseRef,
     type: "button",
     onClick: closeInteractiveFlashcards,
-    className: "absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+    className: "min-h-12 min-w-12 inline-flex items-center justify-center text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50  focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 32,
     "aria-hidden": "true"
-  })), /*#__PURE__*/React.createElement("div", {
-    id: "flashcard-live-status",
-    className: "sr-only",
-    "aria-live": "polite",
-    "aria-atomic": "true"
-  }, flashcardStatusText), /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-6 left-6 z-50 hidden sm:flex flex-col gap-2"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "hidden sm:flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-pressed": showFlashcardImages,
@@ -4330,40 +4649,22 @@ function GlossaryView(props) {
   }) : /*#__PURE__*/React.createElement(Brain, {
     size: 16,
     "aria-hidden": "true"
-  }), isFlashcardQuizMode ? t('flashcards.quiz_active') : t('flashcards.practice_mode'))), flashcardMode === 'standard' && glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-6 left-4 max-w-[calc(100%-9.5rem)] sm:left-1/2 sm:-translate-x-1/2 z-50"
-  }, /*#__PURE__*/React.createElement("select", {
-    "aria-label": t('flashcards.deck_standard'),
-    value: standardDeckLang,
-    onChange: e => setStandardDeckLang(e.target.value),
-    className: "max-w-full bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500  shadow-lg"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "English Only"
-  }, glossaryBaseLanguage === 'English' ? t('languages.english_only') : glossaryText('glossary.base_language_only', '{language} only', {
-    language: glossaryBaseLanguage
-  })), glossaryLanguages.map(l => /*#__PURE__*/React.createElement("option", {
-    key: l,
-    value: l
-  }, "+ ", l)))), flashcardMode === 'language' && glossaryLanguages.length > 1 && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-6 left-4 max-w-[calc(100%-9.5rem)] sm:left-1/2 sm:-translate-x-1/2 z-50"
-  }, /*#__PURE__*/React.createElement("select", {
-    "aria-label": t('flashcards.deck_language'),
-    value: flashcardLang,
-    onChange: e => setFlashcardLang(e.target.value),
-    className: "max-w-full bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-500 "
-  }, glossaryLanguages.map(l => /*#__PURE__*/React.createElement("option", {
-    key: l,
-    value: l
-  }, l)))), flashcardSummary ? renderFlashcardSummary() : /*#__PURE__*/React.createElement("div", {
+  }), isFlashcardQuizMode ? t('flashcards.quiz_active') : t('flashcards.practice_mode')))), /*#__PURE__*/React.createElement("div", {
+    id: "flashcard-live-status",
+    className: "sr-only",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, flashcardStatusText), flashcardSummary ? renderFlashcardSummary() : /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-4xl min-w-0"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-6 px-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between text-white/80 mb-2"
+    "data-flashcard-progress-heading": true,
+    className: "flex flex-wrap items-center justify-between gap-2 text-white/80 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "font-bold text-lg flex items-center gap-2"
+    className: "min-w-0 max-w-full font-bold text-lg flex flex-wrap items-center gap-2"
   }, flashcardMode === 'standard' ? t('flashcards.deck_standard') : t('flashcards.deck_language', {
-    lang: flashcardLang || 'Language'
+    lang: glossaryLanguageLabel(flashcardLang) || 'Language'
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-normal opacity-70"
   }, "(", flashcardRoundPosition + 1, "/", flashcardRoundIndices.length, ")")), /*#__PURE__*/React.createElement("div", {
@@ -4434,13 +4735,16 @@ function GlossaryView(props) {
     "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term}`,
     title: t('flashcards.tooltip_audio'),
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
-  }, generatedContent?.data[flashcardIndex].term)), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", _extends({
+    "data-flashcard-term-text": true
+  }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'term'))), generatedContent?.data[flashcardIndex].term))), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-indigo-600 uppercase mb-1"
-  }, standardDeckLang), /*#__PURE__*/React.createElement("h3", {
+    "data-flashcard-translation-language": true,
+    className: "max-w-full break-words text-xs font-bold text-indigo-600 uppercase mb-1"
+  }, glossaryLanguageLabel(standardDeckLang)), /*#__PURE__*/React.createElement("h3", {
     className: "text-3xl md:text-4xl font-bold text-indigo-600",
-    dir: isRtlLang(standardDeckLang) ? 'rtl' : 'ltr'
+    dir: glossaryLanguageInfo(standardDeckLang).dir
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: e => {
@@ -4450,20 +4754,26 @@ function GlossaryView(props) {
       if (term) handleUncachedGlossarySpeak(term, `fc-front-${standardDeckLang}`, glossaryHasBaseMetadata(generatedContent, generatedContent.data[flashcardIndex]) ? standardDeckLang : undefined);
     },
     disabled: !((glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "").search(/[:：]/) >= 0 && (glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "").split(/[:：]/)[0].trim()),
-    "aria-label": `${t('common.click_read_aloud')}: ${standardDeckLang}`,
+    "aria-label": `${t('common.click_read_aloud')}: ${glossaryLanguageLabel(standardDeckLang)}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
-  }, (() => {
+  }, /*#__PURE__*/React.createElement("span", _extends({
+    "data-flashcard-translation-text": true
+  }, glossaryTranslationText(currentFlashcardItem?.translations?.[standardDeckLang]) ? glossaryLanguageAttrs(standardDeckLang) : {}), (() => {
     const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "";
     if (fullTrans.search(/[:：]/) >= 0) {
       return fullTrans.split(/[:：]/)[0].trim();
     }
     return "";
-  })())))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "self-start mb-4 text-xs font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2"
+  })()))))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    "data-flashcard-source-language": true,
+    className: "self-start mb-4 max-w-full min-w-0 text-xs font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14,
+    className: "shrink-0",
     "aria-hidden": "true"
-  }), " ", glossaryBaseLanguage === 'English' ? t('languages.english') || 'English' : glossaryBaseLanguage), showFlashcardImages && generatedContent?.data[flashcardIndex].image && /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "min-w-0 break-words"
+  }, glossaryLanguageLabel(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'term')))), showFlashcardImages && generatedContent?.data[flashcardIndex].image && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 w-full flex justify-center"
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
@@ -4482,7 +4792,12 @@ function GlossaryView(props) {
     },
     "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
-  }, generatedContent?.data[flashcardIndex].term)), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("span", _extends({
+    "data-flashcard-term-text": true
+  }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'term'))), generatedContent?.data[flashcardIndex].term))), currentFlashcardItem?.def && glossaryHasDifferentDefinitionLanguage(currentFlashcardItem) && /*#__PURE__*/React.createElement("p", {
+    "data-flashcard-definition-language": true,
+    className: "mt-2 w-full max-w-2xl break-words text-xs font-bold text-indigo-600"
+  }, glossaryDefinitionLabel(currentFlashcardItem)), /*#__PURE__*/React.createElement("p", {
     className: `${showFlashcardImages && generatedContent?.data[flashcardIndex].image ? 'text-lg' : 'text-2xl'} text-slate-600 leading-relaxed max-w-2xl hover:text-indigo-500 transition-colors`
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -4492,7 +4807,9 @@ function GlossaryView(props) {
     },
     "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
-  }, generatedContent?.data[flashcardIndex].def))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", _extends({
+    "data-flashcard-definition-text": true
+  }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'definition'))), generatedContent?.data[flashcardIndex].def)))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse motion-reduce:animate-none"
   }, t('flashcards.flip_hint'), " ", /*#__PURE__*/React.createElement(RefreshCw, {
     size: 10
@@ -4511,11 +4828,17 @@ function GlossaryView(props) {
     if (flashcardMode === 'language' && flashcardLang) {
       const trans = glossaryTranslationText(item.translations?.[flashcardLang]);
       if (trans && trans.search(/[:：]/) >= 0) {
-        return trans.split(/[:：]/)[0].trim();
+        return /*#__PURE__*/React.createElement("span", _extends({
+          "data-flashcard-term-text": true
+        }, glossaryLanguageAttrs(flashcardLang)), trans.split(/[:：]/)[0].trim());
       }
-      return item.term;
+      return /*#__PURE__*/React.createElement("span", _extends({
+        "data-flashcard-term-text": true
+      }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'term'))), item.term);
     }
-    return item.term;
+    return /*#__PURE__*/React.createElement("span", _extends({
+      "data-flashcard-term-text": true
+    }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'term'))), item.term);
   })()), /*#__PURE__*/React.createElement("h3", {
     role: "status",
     "aria-live": "polite",
@@ -4557,9 +4880,11 @@ function GlossaryView(props) {
       className: `p-3 rounded-xl text-xs sm:text-sm font-medium transition-all text-left shadow-sm flex items-center gap-3 ${btnClass}`
     }, icon && /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
-    }, icon), /*#__PURE__*/React.createElement("span", {
-      className: "break-words"
-    }, opt), quizSelectedOption && (isCorrectAnswer || isSelected) && /*#__PURE__*/React.createElement("span", {
+    }, icon), /*#__PURE__*/React.createElement("span", _extends({
+      "data-flashcard-option-text": true
+    }, flashcardOptionLanguageAttrs(opt), {
+      className: "min-w-0 break-words text-start"
+    }), opt), quizSelectedOption && (isCorrectAnswer || isSelected) && /*#__PURE__*/React.createElement("span", {
       className: "sr-only",
       "data-quiz-option-result": "true"
     }, ' (' + (isCorrectAnswer ? glossaryText('glossary.quiz_correct_answer', 'correct answer') : glossaryText('glossary.quiz_your_answer', 'your answer')) + ')'));
@@ -4582,15 +4907,18 @@ function GlossaryView(props) {
     "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`,
     title: t('flashcards.tooltip_audio'),
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
-  }, generatedContent?.data[flashcardIndex].def)), renderGlossaryContextSentence(generatedContent?.data[flashcardIndex], 'mt-2 text-sm md:text-base leading-snug text-white', 'font-bold'), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("span", _extends({
+    "data-flashcard-definition-text": true
+  }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'definition'))), generatedContent?.data[flashcardIndex].def))), renderGlossaryContextSentence(generatedContent?.data[flashcardIndex], 'mt-2 text-sm md:text-base leading-snug text-white', 'font-bold'), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[0.6875rem] leading-snug text-blue-50"
   }, glossaryText('glossary.flashcard_provenance', "Provenance: generated from this lesson's source text and selected grade level."))), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-white/10 border border-blue-300/30 px-4 py-3 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-white uppercase mb-2"
-  }, standardDeckLang), /*#__PURE__*/React.createElement("p", {
+    "data-flashcard-translation-language": true,
+    className: "max-w-full break-words text-xs font-bold text-white uppercase mb-2"
+  }, glossaryLanguageLabel(standardDeckLang)), /*#__PURE__*/React.createElement("p", {
     className: "text-lg md:text-xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer",
-    dir: isRtlLang(standardDeckLang) ? 'rtl' : 'ltr'
+    dir: glossaryLanguageInfo(standardDeckLang).dir
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: e => {
@@ -4599,15 +4927,17 @@ function GlossaryView(props) {
       const def = fullTrans.search(/[:：]/) >= 0 ? fullTrans.substring(fullTrans.search(/[:：]/) + 1).trim() : fullTrans;
       handleUncachedGlossarySpeak(def, `fc-back-def-${standardDeckLang}`, glossaryHasBaseMetadata(generatedContent, generatedContent.data[flashcardIndex]) ? standardDeckLang : undefined);
     },
-    "aria-label": `${t('common.read_translated_definition')}: ${standardDeckLang}`,
+    "aria-label": `${t('common.read_translated_definition')}: ${glossaryLanguageLabel(standardDeckLang)}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
-  }, (() => {
+  }, /*#__PURE__*/React.createElement("span", _extends({
+    "data-flashcard-translation-text": true
+  }, glossaryTranslationText(currentFlashcardItem?.translations?.[standardDeckLang]) ? glossaryLanguageAttrs(standardDeckLang) : {}), (() => {
     const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || glossaryText('glossary.translation_unavailable', 'Translation not available');
     if (fullTrans.search(/[:：]/) >= 0) {
       return fullTrans.substring(fullTrans.search(/[:：]/) + 1).trim();
     }
     return fullTrans;
-  })()))), generatedContent?.data[flashcardIndex]?.etymology && /*#__PURE__*/React.createElement("div", {
+  })())))), generatedContent?.data[flashcardIndex]?.etymology && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-white uppercase mb-1"
@@ -4621,7 +4951,7 @@ function GlossaryView(props) {
     },
     "aria-label": `${t('common.click_read_aloud')}: ${t('glossary.etymology_label') || 'Word roots'}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
-  }, generatedContent.data[flashcardIndex].etymology))), renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, playGlossaryDictionaryAudio, generatedContent))) : (() => {
+  }, /*#__PURE__*/React.createElement("span", glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'definition')), generatedContent.data[flashcardIndex].etymology)))), renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, playGlossaryDictionaryAudio, generatedContent))) : (() => {
     const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[flashcardLang]) || glossaryText('glossary.translation_unavailable', 'Translation not available');
     let transTerm = "";
     let transDef = fullTrans;
@@ -4631,12 +4961,17 @@ function GlossaryView(props) {
       transDef = fullTrans.substring(splitIdx + 1).trim();
     }
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-      className: "self-start mb-4 text-xs font-bold text-indigo-200 uppercase tracking-widest flex items-center gap-2"
+      "data-flashcard-translation-language": true,
+      className: "self-start mb-4 max-w-full min-w-0 text-xs font-bold text-indigo-200 uppercase tracking-widest flex items-center gap-2"
     }, /*#__PURE__*/React.createElement(Globe, {
-      size: 14
-    }), " ", flashcardLang), transTerm && /*#__PURE__*/React.createElement("h2", {
+      size: 14,
+      className: "shrink-0",
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "min-w-0 break-words"
+    }, glossaryLanguageLabel(flashcardLang))), transTerm && /*#__PURE__*/React.createElement("h2", {
       className: "text-4xl md:text-6xl font-black text-white mb-6 hover:text-indigo-200 transition-colors cursor-pointer",
-      dir: isRtlLang(flashcardLang) ? 'rtl' : 'ltr'
+      dir: glossaryLanguageInfo(flashcardLang).dir
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: e => {
@@ -4644,21 +4979,25 @@ function GlossaryView(props) {
         handleUncachedGlossarySpeak(transTerm, 'fc-back-term', glossaryHasBaseMetadata(generatedContent, generatedContent.data[flashcardIndex]) ? flashcardLang : undefined);
       },
       "aria-label": glossaryText('glossary.read_language_term', 'Read {lang} term', {
-        lang: flashcardLang
+        lang: glossaryLanguageLabel(flashcardLang)
       }),
       className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
-    }, transTerm)), /*#__PURE__*/React.createElement("p", {
+    }, /*#__PURE__*/React.createElement("span", _extends({
+      "data-flashcard-translation-text": true
+    }, glossaryLanguageAttrs(flashcardLang)), transTerm))), /*#__PURE__*/React.createElement("p", {
       className: "text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer",
-      dir: isRtlLang(flashcardLang) ? 'rtl' : 'ltr'
+      dir: glossaryLanguageInfo(flashcardLang).dir
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: e => {
         e.stopPropagation();
         handleUncachedGlossarySpeak(transDef, 'fc-back-def', glossaryHasBaseMetadata(generatedContent, generatedContent.data[flashcardIndex]) ? flashcardLang : undefined);
       },
-      "aria-label": `${t('common.read_translated_definition')}: ${flashcardLang}`,
+      "aria-label": `${t('common.read_translated_definition')}: ${glossaryLanguageLabel(flashcardLang)}`,
       className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
-    }, transDef)));
+    }, /*#__PURE__*/React.createElement("span", _extends({
+      "data-flashcard-translation-text": true
+    }, glossaryTranslationText(currentFlashcardItem?.translations?.[flashcardLang]) ? glossaryLanguageAttrs(flashcardLang) : {}), transDef))));
   })()))), renderFlashcardActionBar(), renderFlashcardEditDrawer())), detectiveOpen && (DefinitionDetectiveGame ? /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: glossaryText('glossary.game_error', 'This activity ran into a problem. Close it and try again.')
   }, /*#__PURE__*/React.createElement(DefinitionDetectiveGame, {
@@ -4922,7 +5261,15 @@ function GlossaryView(props) {
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12,
     className: "text-yellow-700 fill-current"
-  }), isAddingTerm ? t('glossary.defining') : t('glossary.add_term')), /*#__PURE__*/React.createElement("p", {
+  }), isAddingTerm ? t('glossary.defining') : t('glossary.add_term')), typeof handleAddGlossaryTermAsTyped === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "glossary_add_term_as_typed",
+    onClick: () => {
+      if (handleAddGlossaryTermAsTyped(newGlossaryTerm)) setNewGlossaryTerm('');
+    },
+    disabled: !newGlossaryTerm.trim() || isAddingTerm,
+    className: "w-full sm:w-auto shrink-0 justify-center min-h-11 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 text-xs font-bold bg-white text-indigo-800 border border-indigo-300 px-4 py-2 rounded-full hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+  }, glossaryText('glossary.add_term_as_typed', 'Add as typed')), /*#__PURE__*/React.createElement("p", {
     id: "glossary-add-term-status",
     role: "status",
     "aria-live": "polite",
@@ -5155,12 +5502,12 @@ function GlossaryView(props) {
     role: "columnheader",
     scope: "col",
     className: "p-4 border-b border-slate-200 min-w-[200px]"
-  }, t('glossary.table_def')), displayLanguages.map(lang => /*#__PURE__*/React.createElement("th", {
+  }, glossaryDefinitionLabel()), displayLanguages.map(lang => /*#__PURE__*/React.createElement("th", {
     role: "columnheader",
     scope: "col",
     key: lang,
     className: "p-4 border-b border-slate-200 min-w-[150px] text-indigo-600 text-center"
-  }, lang)))), /*#__PURE__*/React.createElement("tbody", {
+  }, glossaryLanguageLabel(lang))))), /*#__PURE__*/React.createElement("tbody", {
     role: "rowgroup",
     className: "divide-y divide-slate-100"
   }, filteredGlossaryData.map(item => {
@@ -5215,14 +5562,13 @@ function GlossaryView(props) {
       value: "Domain-Specific"
     }, t('glossary.edit_tier_domain'))), /*#__PURE__*/React.createElement("div", {
       className: "flex items-start gap-2 w-full"
-    }, /*#__PURE__*/React.createElement("textarea", {
-      dir: "auto",
+    }, /*#__PURE__*/React.createElement("textarea", _extends({}, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'term')), {
       "aria-label": t('glossary.edit_term') || 'Edit glossary term',
       value: item.term,
       onChange: e => handleGlossaryChange(idx, 'term', e.target.value),
       rows: getRows(item.term, 25),
       className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm font-bold text-center"
-    }), /*#__PURE__*/React.createElement("button", {
+    })), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": glossaryText('glossary.delete_term_aria', 'Delete term: {term}', {
         term: item.term
@@ -5232,10 +5578,11 @@ function GlossaryView(props) {
       title: t('glossary.tooltips.delete_term')
     }, /*#__PURE__*/React.createElement(Trash2, {
       size: 14
-    })))) : /*#__PURE__*/React.createElement("div", {
-      className: "px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center",
-      dir: "auto"
-    }, item.emoji ? /*#__PURE__*/React.createElement("span", {
+    })))) : /*#__PURE__*/React.createElement("div", _extends({
+      "data-glossary-term-text": true
+    }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'term')), {
+      className: "px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center"
+    }), item.emoji ? /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true",
       className: "mr-1"
     }, item.emoji) : null, item.term), /*#__PURE__*/React.createElement("div", {
@@ -5388,27 +5735,31 @@ function GlossaryView(props) {
       "aria-hidden": "true"
     })), canEditGlossary && typeof props.handleMoveGlossaryItem === 'function' && [renderGlossaryMoveButton(item, idx, -1), renderGlossaryMoveButton(item, idx, 1)]))), /*#__PURE__*/React.createElement("td", {
       role: "cell",
-      className: "p-4 text-slate-600 align-top"
+      "data-glossary-definition": true,
+      className: "p-4 text-slate-600 align-top text-start"
     }, /*#__PURE__*/React.createElement("span", {
       "data-glossary-mobile-label": true,
       "aria-hidden": "true"
-    }, t('glossary.table_def')), /*#__PURE__*/React.createElement("div", {
+    }, glossaryDefinitionLabel(item)), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col gap-2 items-center"
-    }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", {
-      dir: "auto",
+    }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", _extends({}, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'definition')), {
       "aria-label": glossaryText('glossary.edit_definition_aria', 'Edit definition for {term}', {
         term: item.term
       }),
       value: item.def,
       onChange: e => handleGlossaryChange(idx, 'def', e.target.value),
       rows: getRows(item.def, 45),
-      className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-center"
-    }) : /*#__PURE__*/React.createElement("div", {
-      className: "px-2 py-1 text-slate-600 whitespace-pre-wrap",
+      className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-start"
+    })) : /*#__PURE__*/React.createElement("div", {
+      "data-glossary-prose": true,
+      className: "w-full px-2 py-1 text-slate-600 whitespace-pre-wrap text-start leading-relaxed",
       dir: "auto"
-    }, currentUiLanguage !== 'English' && /*#__PURE__*/React.createElement("span", {
+    }, currentUiLanguage !== 'English' && /*#__PURE__*/React.createElement("span", _extends({}, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'term')), {
       className: "block font-bold text-indigo-900 text-xs mb-1 uppercase tracking-wide"
-    }, item.term), item.def), renderGlossaryContextSentence(item, 'px-2 text-xs text-slate-600', 'font-semibold text-slate-700'), /*#__PURE__*/React.createElement("div", {
+    }), item.term), /*#__PURE__*/React.createElement("span", _extends({
+      "data-glossary-definition-text": true,
+      className: "block text-start"
+    }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'definition'))), item.def)), renderGlossaryContextSentence(item, 'w-full px-2 text-xs text-slate-600 text-start leading-relaxed', 'font-semibold text-slate-700'), /*#__PURE__*/React.createElement("div", {
       role: "toolbar",
       "aria-label": glossaryText('glossary.definition_actions_aria', 'Definition actions for {term}', {
         term: item.term || ''
@@ -5464,9 +5815,9 @@ function GlossaryView(props) {
         className: "text-[10px] uppercase tracking-wide text-indigo-500 font-bold"
       }, displayLang), /*#__PURE__*/React.createElement("div", {
         className: "flex items-start gap-1"
-      }, /*#__PURE__*/React.createElement("p", {
+      }, /*#__PURE__*/React.createElement("p", _extends({}, glossaryLanguageAttrs(displayLang), {
         className: "text-slate-700 leading-relaxed italic flex-1"
-      }, etymologyProse), /*#__PURE__*/React.createElement("button", {
+      }), etymologyProse), /*#__PURE__*/React.createElement("button", {
         onClick: () => handleUncachedGlossarySpeak(etymologyProse, `etym-${idx}`, glossaryHasBaseMetadata(generatedContent, item) ? displayLang : undefined),
         disabled: isGeneratingAudio && playingContentId !== `etym-${idx}`,
         className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`,
@@ -5550,34 +5901,36 @@ function GlossaryView(props) {
       const retryState = glossaryRetryState[entryKey + '|' + lang];
       return /*#__PURE__*/React.createElement("td", {
         role: "cell",
+        "data-glossary-translation": true,
         key: lang,
         "aria-busy": retryState && retryState.busy ? 'true' : undefined,
-        className: "p-4 text-slate-600 italic border-l border-slate-50 align-top"
+        className: "p-4 text-slate-600 border-l border-slate-50 align-top text-start"
       }, /*#__PURE__*/React.createElement("span", {
         "data-glossary-mobile-label": true,
         "aria-hidden": "true"
-      }, lang), /*#__PURE__*/React.createElement("div", {
-        className: "flex flex-col gap-2",
-        dir: isRtlLang(lang) ? 'rtl' : 'ltr'
-      }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", {
+      }, glossaryLanguageLabel(lang)), /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-col gap-2"
+      }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", _extends({}, glossaryLanguageAttrs(lang), {
         "aria-label": glossaryText('glossary.edit_translation_aria', 'Edit {lang} translation for {term}', {
-          lang: lang,
+          lang: glossaryLanguageLabel(lang),
           term: item.term
         }),
         value: glossaryTranslationText(item.translations?.[lang]) || "",
         onChange: e => handleGlossaryChange(idx, 'translations', e.target.value, lang),
         rows: getRows(glossaryTranslationText(item.translations?.[lang]), 30),
-        className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm italic text-center"
-      }) : /*#__PURE__*/React.createElement("div", {
-        className: "px-2 py-1 text-slate-600 italic whitespace-pre-wrap text-center"
-      }, glossaryTranslationText(item.translations?.[lang]) || ""), translationStatus && renderGlossaryTranslationStatus(translationStatus, retryState), (glossaryTranslationText(item.translations?.[lang]) || canRetryTranslation) && /*#__PURE__*/React.createElement("div", {
+        className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-start"
+      })) : /*#__PURE__*/React.createElement("div", _extends({
+        "data-glossary-prose": true,
+        "data-glossary-translation-text": true
+      }, glossaryLanguageAttrs(lang), {
+        className: "px-2 py-1 text-slate-600 whitespace-pre-wrap text-start leading-relaxed"
+      }), glossaryTranslationText(item.translations?.[lang]) || ""), translationStatus && renderGlossaryTranslationStatus(translationStatus, retryState), (glossaryTranslationText(item.translations?.[lang]) || canRetryTranslation) && /*#__PURE__*/React.createElement("div", {
         role: "toolbar",
         "aria-label": glossaryText('glossary.translation_actions_aria', '{lang} actions for {term}', {
-          lang: lang,
+          lang: glossaryLanguageLabel(lang),
           term: item.term || ''
         }),
-        className: "flex items-center gap-1  justify-center",
-        dir: "ltr"
+        className: "flex items-center gap-1  justify-center"
       }, glossaryTranslationText(item.translations?.[lang]) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
         type: "button",
         "aria-label": glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang),
@@ -5598,11 +5951,11 @@ function GlossaryView(props) {
       })), /*#__PURE__*/React.createElement("button", {
         type: "button",
         "aria-label": glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', {
-          lang: lang,
+          lang: glossaryLanguageLabel(lang),
           term: item.term
         }),
         title: glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', {
-          lang: lang,
+          lang: glossaryLanguageLabel(lang),
           term: item.term
         }),
         onClick: () => downloadGlossaryFieldAudio(item, 'translation', glossaryTranslationText(item.translations[lang]), `trans-${idx}-${lang}-audio`, `dl-trans-${idx}-${lang}`, lang),

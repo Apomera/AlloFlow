@@ -24,6 +24,8 @@ const EDITORIAL = {
   'family-conversations-practice': { order: 7 },
   'deescalation-branching-practice': { order: 8 },
   'neuromyths-what-we-got-wrong': { order: 9, udlGuidelines: ['rep_1', 'rep_2'] },
+  // built from the remediation decision guides by dev-tools/build_remediation_judgment_pd.cjs
+  'accessible-documents-judgment-calls': { order: 10, udlGuidelines: ['rep_1'] },
 };
 
 const PATHS = [

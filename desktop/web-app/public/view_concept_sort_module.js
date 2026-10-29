@@ -49,6 +49,27 @@ function ConceptSortView(props) {
   var csClearItemImage = props.csClearItemImage;
   var csDeleteItem = props.csDeleteItem;
   var csAddItem = props.csAddItem;
+  var csAddCategory = props.csAddCategory;
+  var csDeleteCategory = props.csDeleteCategory;
+  var csAddItemManual = props.csAddItemManual;
+  // With no AI connected, a typed card is added exactly as written instead of through the AI.
+  var csAiTextOn = function () {
+    try {
+      var resolve = window.__alloResolveAiCapability;
+      return typeof resolve === 'function' ? !!resolve().text : true;
+    } catch (_) {
+      return true;
+    }
+  };
+  var csAddTyped = function (catId, text, categories) {
+    if (!csAiTextOn() && typeof csAddItemManual === 'function') {
+      csAddItemManual(catId, text);
+      props.setCsAddingCatId(null);
+      props.setCsAddingText('');
+      return;
+    }
+    csAddItem(catId, text, categories);
+  };
   // Image refinement (image-to-image edit) — mirrors glossary refine pattern.
   var csRefineItemImage = props.csRefineItemImage;
   var csRefinementInputs = props.csRefinementInputs || {};
@@ -219,7 +240,14 @@ function ConceptSortView(props) {
       title: t('concept_sort.add_item_to_category') || 'Add item to this category',
       "aria-label": `${t('concept_sort.add_item_to') || 'Add item to'} ${cat.label}`,
       disabled: csBusyId === '__adding__'
-    }, "＋ ", t('common.add') || 'Add')), /*#__PURE__*/React.createElement("div", {
+    }, "＋ ", t('common.add') || 'Add'), !cat.__orphans && typeof csDeleteCategory === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-help-key": "concept_sort_delete_category",
+      onClick: () => csDeleteCategory(cat.id),
+      className: "px-2 py-0.5 rounded-full bg-white/70 text-[11px] font-bold hover:bg-white border border-current/20",
+      title: t('concept_sort.delete_category_hint') || 'Delete this category. Its cards move to Uncategorized.',
+      "aria-label": `${t('concept_sort.delete_category') || 'Delete category'} ${cat.label}`
+    }, t('common.delete') || 'Delete')), /*#__PURE__*/React.createElement("div", {
       className: "p-2 space-y-1.5 bg-slate-50/50"
     }, cat.__orphans && /*#__PURE__*/React.createElement("p", {
       className: "text-[11px] text-rose-800 bg-rose-50 border border-rose-200 rounded p-2"
@@ -385,7 +413,7 @@ function ConceptSortView(props) {
       onChange: e => setCsAddingText(e.target.value),
       onKeyDown: e => {
         if (e.key === 'Enter' && csAddingText.trim()) {
-          csAddItem(cat.id, csAddingText, generatedContent?.data.categories || []);
+          csAddTyped(cat.id, csAddingText, generatedContent?.data.categories || []);
         } else if (e.key === 'Escape') {
           setCsAddingCatId(null);
           setCsAddingText('');
@@ -395,7 +423,7 @@ function ConceptSortView(props) {
       "aria-label": t("a11y.new_item_text"),
       disabled: csBusyId === '__adding__'
     }), /*#__PURE__*/React.createElement("button", {
-      onClick: () => csAddItem(cat.id, csAddingText, generatedContent?.data.categories || []),
+      onClick: () => csAddTyped(cat.id, csAddingText, generatedContent?.data.categories || []),
       disabled: !csAddingText.trim() || csBusyId === '__adding__',
       className: "px-2 py-1 bg-emerald-700 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-800"
     }, csBusyId === '__adding__' ? '⏳' : t('common.add') || 'Add'), /*#__PURE__*/React.createElement("button", {
@@ -405,7 +433,52 @@ function ConceptSortView(props) {
       },
       className: "px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50"
     }, t('common.cancel') || 'Cancel'))));
-  })), isConceptSortGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
+  }), typeof csAddCategory === 'function' && (csAddingCatId === '__new_category__' ? /*#__PURE__*/React.createElement("div", {
+    "data-help-key": "concept_sort_add_category_row",
+    className: "flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    autoFocus: true,
+    value: csAddingText,
+    onChange: e => setCsAddingText(e.target.value),
+    onKeyDown: e => {
+      if (e.key === 'Enter' && csAddingText.trim()) {
+        csAddCategory(csAddingText);
+        setCsAddingCatId(null);
+        setCsAddingText('');
+      } else if (e.key === 'Escape') {
+        setCsAddingCatId(null);
+        setCsAddingText('');
+      }
+    },
+    placeholder: t('concept_sort.new_category_placeholder') || 'Category name',
+    "aria-label": t('concept_sort.new_category_label') || 'New category name',
+    className: "flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      csAddCategory(csAddingText);
+      setCsAddingCatId(null);
+      setCsAddingText('');
+    },
+    disabled: !csAddingText.trim(),
+    className: "px-2 py-1 bg-emerald-700 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-800"
+  }, t('common.add') || 'Add'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      setCsAddingCatId(null);
+      setCsAddingText('');
+    },
+    className: "px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50"
+  }, t('common.cancel') || 'Cancel')) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "concept_sort_add_category",
+    onClick: () => {
+      setCsAddingCatId('__new_category__');
+      setCsAddingText('');
+    },
+    className: "w-full min-h-11 rounded-xl border-2 border-dashed border-slate-400 bg-white text-sm font-bold text-slate-700 hover:border-emerald-500 hover:bg-emerald-50"
+  }, "＋ ", t('concept_sort.add_category') || 'Add category'))), isConceptSortGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Concept Sort Game encountered an error."
   }, /*#__PURE__*/React.createElement(ConceptSortGame, {
     data: generatedContent?.data,

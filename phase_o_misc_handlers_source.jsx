@@ -140,7 +140,8 @@ const startClassSession = async (deps) => {
             if (false /* lightweightResources out of scope */) {
                 lightweightResources.forEach((r, i) => {
                     try { JSON.stringify(r); } catch(e2) {
-                        console.error(`[SESSION DEBUG] Resource ${i} (${r?.type}/${r?.title}) is NOT serializable:`, e2?.message);
+                        // Type only: a resource title can name a student.
+                        console.error(`[SESSION DEBUG] Resource ${i} (${r?.type}) is NOT serializable:`, e2?.message);
                     }
                 });
             }

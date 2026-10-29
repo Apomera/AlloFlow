@@ -2413,7 +2413,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
       try {
         structuredClone(r);
       } catch (cloneErr) {
-        console.error(`[SESSION DEBUG] Resource ${i} (${r?.type}/${r?.title}) CANNOT be cloned:`, cloneErr?.message);
+        console.error(`[SESSION DEBUG] Resource ${i} (${r?.type}) CANNOT be cloned:`, cloneErr?.message);
         if (r && typeof r === "object") {
           Object.keys(r).forEach((key) => {
             try {

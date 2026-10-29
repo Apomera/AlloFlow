@@ -358,7 +358,7 @@ For every root, fill langByLocale and meaningByLang for each language in ${JSON.
                     });
             }
         } catch (parseErr) {
-            warnLog('Etymology JSON parse failed — falling back to raw prose:', parseErr?.message, 'raw response preview:', (stripped || '').substring(0, 200));
+            warnLog('Etymology JSON parse failed — falling back to raw prose:', parseErr?.name, 'response length:', String(stripped || '').length);
             etymologyByLang[baseLanguage] = stripped;
         }
         // Repair pass. The model routinely returns prosePerLanguage for every

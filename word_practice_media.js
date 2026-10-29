@@ -230,6 +230,7 @@
         catch (error) { if (error.name === 'AbortError') throw error; errors.push(item.word + ' /' + sound.label + '/: ' + core.text(error.message, 120)); }
       }
       if (typeof onProgress === 'function') onProgress({ completed: index + 1, total: pack.items.length, word: item.word, coverage: core.audioCoverage(pack) });
+      if ((index + 1) % 10 === 0) { await new Promise(resolve => setTimeout(resolve, 0)); checkAbort(context); }
     }
     checkAbort(context);
     const coverage = core.audioCoverage(pack), incomplete = coverage.words < coverage.totalWords || coverage.phonemes < coverage.totalPhonemes;
@@ -261,7 +262,9 @@
     return 'data:audio/wav;base64,' + bytesToBase64(bytes);
   }
   async function buildPptx(input, rawOptions = {}, sequence, context = {}) {
-    const core = getCore(), pack = core.normalizeInput(input), options = core.normalizeOptions(rawOptions);
+    const core = getCore(), pack = core.normalizeInput(input), options = core.normalizeOptions({ ...pack.options, ...rawOptions });
+    const appearance = core.cardAppearance(options), textScale = appearance.textScale;
+    const fontWidth = options.cardFont === 'verdana' ? 1.12 : options.cardFont === 'georgia' ? 1.08 : 1;
     const sourceLanguage = core.languageInfo(pack.language);
     const itemLanguage = (item, field) => core.languageInfo(core.fieldLanguage(item, field, pack.language));
     const uiLanguage = core.languageInfo(context.currentUiLanguage || context.uiLanguage || '');
@@ -282,17 +285,19 @@
     const L = (name, fallback, params) => localized(name, fallback, params).text;
     const uiText = (slide, name, fallback, box, params) => {
       const label = localized(name, fallback, params);
-      slide.addText(label.text, { ...box, ...textLanguage(label.language) });
+      const fontSize = box.fontSize > 20 ? fittedFont(label.text, box, box.fontSize) : box.fontSize;
+      slide.addText(label.text, { ...box, fontFace: appearance.fontFace, fontSize, ...textLanguage(label.language) });
     };
     checkAbort(context);
     if (typeof context.ensurePptx === 'function') await context.ensurePptx();
+    checkAbort(context);
     const Constructor = context.PptxGenJS || root.PptxGenJS;
     if (typeof Constructor !== 'function') throw new Error(L('pptx_unavailable', 'PowerPoint export is unavailable. Reconnect once to load the PowerPoint exporter, then try again.'));
     const cards = Array.isArray(sequence) ? sequence : core.createSequence(pack, options);
     if (!cards.length) throw new Error(L('need_words', 'Add at least one word to begin.'));
     const pptx = new Constructor();
     pptx.layout = 'LAYOUT_WIDE'; pptx.author = 'AlloFlow'; pptx.subject = 'Classroom word practice'; pptx.title = pack.title;
-    pptx.company = 'AlloFlow'; pptx.theme = { headFontFace: 'Arial', bodyFontFace: 'Arial' };
+    pptx.company = 'AlloFlow'; pptx.theme = { headFontFace: appearance.fontFace, bodyFontFace: appearance.fontFace };
     const warnings = new Set(), items = new Map(pack.items.map(item => [item.id, item])), decoded = new Map(), converted = new Map(), sequences = new Map();
     if (options.includeAudio) pack.items.forEach(item => {
       if (item.wordAudioStatus === 'stale-language' || item.phonemes.some(sound => sound.audioStatus === 'stale-language')) warnings.add(staleAudioMessage(context, item.word));
@@ -321,10 +326,15 @@
       return sequences.get(item.id);
     };
     function slideBase(label) {
-      const slide = pptx.addSlide(); slide.background = { color: 'FFFFFF' };
+      const slide = pptx.addSlide(); slide.background = { color: appearance.background };
       const title = pack.title === 'Word Fluency Pop-Up' ? localized('mode_popup', 'Word Fluency Pop-Up') : { text: pack.title, language: sourceLanguage };
-      slide.addText(title.text, { x: 0.55, y: 0.2, w: 12.2, h: 0.4, fontFace: 'Arial', fontSize: 16, color: '475569', margin: 0, fit: 'shrink', ...textLanguage(title.language) });
-      slide.addText(label.map((part, index) => ({ text: (index ? ' · ' : '') + part.text, options: textLanguage(part.language) })), { x: 0.55, y: 6.96, w: 12.2, h: 0.25, fontSize: 12, color: '475569', margin: 0, ...textLanguage(label[0].language) });
+      const heading = title.text.replace(/\s+/gu, ' ');
+      const titleBox = { x: 0.55, y: 0.2, w: 12.2, h: 0.4, margin: 0 };
+      // Reserve a little more header space for long titles; PowerPoint does not
+      // reliably apply automatic shrinking when a deck is opened elsewhere.
+      if (readableTextLines(heading, titleBox.w * 72 / 16 / fontWidth).length > 1) { titleBox.y = 0.15; titleBox.h = 0.65; }
+      slide.addText(heading, { ...titleBox, fontFace: appearance.fontFace, fontSize: fittedFont(heading, titleBox, 16, 10), color: appearance.muted, align: title.language.dir === 'rtl' ? 'right' : 'left', valign: 'top', ...textLanguage(title.language) });
+      slide.addText(label.map((part, index) => ({ text: (index ? ' · ' : '') + part.text, options: textLanguage(part.language) })), { x: 0.55, y: 6.96, w: 12.2, h: 0.25, fontSize: 12, color: appearance.muted, margin: 0, ...textLanguage(label[0].language) });
       return slide;
     }
     function mainWord(slide, word, card, item, fixed = false) {
@@ -332,8 +342,25 @@
       const corner = !fixed && (left || right);
       const box = corner ? { x: left ? 0.6 : 6.7, y: card.position.startsWith('top') ? 1.2 : 3.65, w: 6, h: 2.1 } : { x: 0.7, y: 2.0, w: 11.9, h: 2.6 };
       const longest = Math.max(...word.split(/\s+/).map(part => part.length));
-      const fontSize = Math.max(19, Math.min(100 * (Number(card.scale) || 1), (corner ? 580 : 1080) / Math.max(6, longest)));
-      slide.addText(word, { ...box, fontFace: 'Arial', fontSize, bold: true, color: '172554', align: 'center', valign: 'mid', margin: 0.05, fit: 'shrink', breakLine: false, ...textLanguage(itemLanguage(item, 'term')) });
+      let fontSize = Math.max(19, Math.min(100 * textScale * (Number(card.scale) || 1), (corner ? 580 : 1080) / Math.max(6, longest) / fontWidth));
+      const width = box.w * 72 - 7.2, height = box.h * 72 - 7.2;
+      const tokens = word.match(/\r\n|[\r\n]|[^\S\r\n]+|[^\s]+/gu) || [];
+      const widths = tokens.map(token => sentenceSegments(token).reduce((sum, part) => sum + sentenceWidth(part.text), 0));
+      const lineCount = size => {
+        let lines = 1, used = 0;
+        tokens.forEach((token, index) => {
+          if (/^[\r\n]/.test(token)) { lines++; used = 0; return; }
+          const tokenWidth = widths[index] * size * fontWidth;
+          if (/^\s/u.test(token)) { used = Math.min(width, used + tokenWidth); return; }
+          if (used && used + tokenWidth > width) { lines++; used = 0; }
+          // A single long token wraps between graphemes in the text box.
+          const extraLines = Math.max(0, Math.ceil(tokenWidth / width) - 1);
+          lines += extraLines; used += tokenWidth - extraLines * width;
+        });
+        return lines;
+      };
+      while (fontSize > 12 && lineCount(fontSize) * fontSize * 1.35 > height) fontSize = Math.max(12, fontSize - 1);
+      slide.addText(word, { ...box, fontFace: appearance.fontFace, fontSize, bold: true, color: appearance.heading, align: 'center', valign: 'mid', margin: 0.05, breakLine: false, ...textLanguage(itemLanguage(item, 'term')) });
     }
     async function addAudio(slide, item) {
       if (!options.includeAudio) return;
@@ -353,62 +380,158 @@
         // PptxGenJS expects an extension-bearing audio MIME and base64 payload.
         const data = source.replace(/^data:audio\/(mpeg|mp3);/i, 'audio/mp3;').replace(/^data:audio\/(x-wav|wave|wav);/i, 'audio/wav;');
         slide.addMedia({ type: 'audio', data, x, y: 6.03, w: 0.48, h: 0.48 });
-        uiText(slide, name, label, { x: x + 0.58, y: 6.06, w: 1.8, h: 0.3, fontSize: 14, color: '1E3A8A', margin: 0, fit: 'shrink' });
+        uiText(slide, name, label, { x: x + 0.58, y: 6.06, w: 1.8, h: 0.3, fontSize: 14, color: appearance.accent, margin: 0, fit: 'shrink' });
       });
     }
     let textSegments = null;
     try { if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') textSegments = new Intl.Segmenter(undefined, { granularity: 'grapheme' }); } catch (_) {}
-    const textBoundary = (value, requested) => {
-      if (textSegments) {
-        for (const part of textSegments.segment(value)) {
-          const next = part.index + part.segment.length;
-          if (next === requested) return requested;
-          if (next > requested) return part.index || next;
+    // Sentence pages preserve authored whitespace and whole graphemes. The
+    // conservative line budget leaves room for font substitution in PowerPoint.
+    const sentenceSegments = value => {
+      if (textSegments) return Array.from(textSegments.segment(value), part => ({ text: part.segment, index: part.index }));
+      // Older browsers still keep common combining marks, emoji modifiers,
+      // joined emoji and flag pairs together at continuation boundaries.
+      const parts = []; let index = 0, regionalCount = 0;
+      for (const text of Array.from(value)) {
+        const previous = parts[parts.length - 1];
+        const regional = /\p{Regional_Indicator}/u.test(text);
+        const extending = /[\p{Mark}\u200c\u200d\u{1f3fb}-\u{1f3ff}\u{e0020}-\u{e007f}]/u.test(text);
+        const joined = previous && !/[\r\n\t]/.test(previous.text) && !/[\r\n\t]/.test(text) && (extending || previous.text.endsWith('\u200d') || (regional && regionalCount % 2));
+        if (joined || (previous && previous.text === '\r' && text === '\n')) previous.text += text;
+        else parts.push({ text, index });
+        index += text.length; regionalCount = regional ? regionalCount + 1 : 0;
+      }
+      return parts;
+    };
+    const sentenceWidth = value => /\s/u.test(value) ? 0.35 : /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Extended_Pictographic}]/u.test(value) ? 1.1 : /[A-ZMW]/.test(value) ? 0.85 : /^[\x00-\x7f]/.test(value) ? 0.65 : 0.9;
+    function sentenceTextPages(value, maxLines = Math.max(3, Math.floor(9 / textScale)), maxWidth = 26 / textScale / fontWidth) {
+      const pages = []; let remaining = value;
+      while (remaining) {
+        let lines = 1, width = 0, end = remaining.length, lastBreak = 0;
+        for (const part of sentenceSegments(remaining)) {
+          if (/[\r\n]/.test(part.text)) { lines++; width = 0; }
+          else { const size = sentenceWidth(part.text); if (width + size > maxWidth) { lines++; width = 0; } width += size; }
+          if (lines > maxLines) { end = part.index || part.text.length; break; }
+          if (/\s/u.test(part.text)) lastBreak = part.index + part.text.length;
+        }
+        if (end < remaining.length && lastBreak > end * 0.65) end = lastBreak;
+        pages.push(remaining.slice(0, end)); remaining = remaining.slice(end);
+      }
+      return pages;
+    }
+    function sentenceChoicePages(choices) {
+      const pages = []; let page = '';
+      choices.forEach((choice, index) => {
+        const line = String.fromCharCode(65 + index) + '. ' + choice;
+        const parts = sentenceTextPages(line);
+        if (parts.length > 1) { if (page) pages.push(page); pages.push(...parts); page = ''; return; }
+        const candidate = page ? page + '\n' + line : line;
+        if (page && sentenceTextPages(candidate).length > 1) { pages.push(page); page = line; }
+        else page = candidate;
+      });
+      if (page) pages.push(page);
+      return pages;
+    }
+    const sentencePageYield = async () => { await new Promise(resolve => setTimeout(resolve, 0)); checkAbort(context); };
+    function addSentenceText(slide, text, language, choices = false) {
+      slide.addText(text, { x: 0.85, y: 1.0, w: 11.65, h: 5.5, fontFace: appearance.fontFace, fontSize: 28 * textScale, color: choices ? appearance.accent : appearance.heading, align: language.dir === 'rtl' ? 'right' : 'left', valign: 'top', margin: 0.1, paraSpaceAfterPt: 0, ...textLanguage(language) });
+    }
+    // Estimate word wrapping as well as explicit line breaks. Keep each source
+    // character in exactly one line, including spaces and joined graphemes.
+    function readableTextLines(value, maxWidth) {
+      const lines = []; let start = 0, width = 0;
+      for (const token of value.matchAll(/\r\n|[\r\n]|[^\S\r\n]+|[^\s]+/gu)) {
+        const parts = sentenceSegments(token[0]);
+        const tokenWidth = parts.reduce((sum, part) => sum + sentenceWidth(part.text), 0);
+        if (!/^\s/u.test(token[0]) && tokenWidth <= maxWidth && width && width + tokenWidth > maxWidth) {
+          lines.push(value.slice(start, token.index)); start = token.index; width = 0;
+        }
+        for (const part of parts) {
+          const index = token.index + part.index;
+          if (/[\r\n]/.test(part.text)) {
+            // The fallback segmenter exposes CRLF as two code points.
+            if (part.text === '\n' && value[index - 1] === '\r') { lines[lines.length - 1] += part.text; start = index + 1; continue; }
+            lines.push(value.slice(start, index + part.text.length)); start = index + part.text.length; width = 0; continue;
+          }
+          const size = sentenceWidth(part.text);
+          if (width && width + size > maxWidth) { lines.push(value.slice(start, index)); start = index; width = 0; }
+          width += size;
         }
       }
-      // Older browsers still keep surrogate pairs intact without Segmenter.
-      const before = value.charCodeAt(requested - 1), after = value.charCodeAt(requested);
-      return before >= 0xD800 && before <= 0xDBFF && after >= 0xDC00 && after <= 0xDFFF ? requested - 1 : requested;
-    };
-    const chunks = value => {
-      const result = []; let remaining = value;
-      while (remaining.length > 650) {
-        let end = remaining.lastIndexOf(' ', 650); if (end < 350) end = 650;
-        end = textBoundary(remaining, end);
-        result.push(remaining.slice(0, end)); remaining = remaining.slice(end).trim();
+      lines.push(value.slice(start));
+      return lines;
+    }
+    function fittedFont(value, box, preferred, minimum = 12) {
+      let fontSize = preferred;
+      const margin = typeof box.margin === 'number' ? box.margin * 144 : 0;
+      const width = box.w * 72 - margin, height = box.h * 72 - margin;
+      while (fontSize > minimum && readableTextLines(value, width / fontSize / fontWidth).length * fontSize * 1.35 > height) fontSize = Math.max(minimum, fontSize - 1);
+      return fontSize;
+    }
+    const vocabularyWidth = 27 / textScale / fontWidth, vocabularyBudget = 6.8 / textScale;
+    const vocabularyLineLimit = Math.max(2, Math.floor(vocabularyBudget - 0.4));
+    function vocabularyParts(section) {
+      const labelLength = section.label ? section.label.text.length : 0;
+      const value = (section.label ? section.label.text : '') + section.text;
+      const lines = readableTextLines(value, vocabularyWidth), parts = [];
+      let offset = 0;
+      for (let index = 0; index < lines.length;) {
+        let count = Math.min(vocabularyLineLimit, lines.length - index);
+        // Avoid leaving a single content line on a continuation page.
+        if (lines.length - index - count === 1 && lines[lines.length - 1]) count--;
+        // A trailing newline creates another visible line in PowerPoint.
+        if (count === vocabularyLineLimit && /[\r\n]$/.test(lines[index + count - 1])) count--;
+        const text = lines.slice(index, index + count).join(''); index += count;
+        if (!text) continue;
+        const labelEnd = Math.min(labelLength, offset + text.length);
+        const part = { ...section, text: value.slice(Math.max(offset, labelLength), offset + text.length),
+          label: offset < labelLength ? { ...section.label, text: value.slice(offset, labelEnd) } : null,
+          weight: readableTextLines(text, vocabularyWidth).length + 0.4 };
+        parts.push(part); offset += text.length;
       }
-      if (remaining) result.push(remaining); return result;
-    };
+      return parts;
+    }
+    function vocabularyHeading(slide, item) {
+      // Pasted line breaks are whitespace within a term, not forced title rows.
+      const heading = item.word.replace(/\s+/gu, ' ');
+      let fontSize = 48 * textScale;
+      while (fontSize > 12 && readableTextLines(heading, 11.7 * 72 / fontSize / fontWidth).length * fontSize * 1.35 > 1.05 * 72) fontSize = Math.max(12, fontSize - 1);
+      slide.addText(heading, { x: 0.8, y: 0.92, w: 11.7, h: 1.05, fontFace: appearance.fontFace, fontSize, color: appearance.heading, bold: true, align: 'center', valign: 'mid', margin: 0, ...textLanguage(itemLanguage(item, 'term')) });
+    }
     function vocabularyPages(item) {
       const sections = [];
       if (item.definition) sections.push({ text: item.definition, language: itemLanguage(item, 'definition') });
       if (item.example) sections.push({ text: item.example, language: itemLanguage(item, 'example'), label: localized('pptx_example', 'Example: ') });
-      item.translations.forEach(value => sections.push({ text: value.text, language: core.languageInfo(value.language), label: value.language ? { text: value.language + ': ', language: { tag: '', dir: 'auto' } } : null }));
+      item.translations.forEach(value => {
+        const label = core.languageLabel(value.language, context.currentUiLanguage || context.uiLanguage || 'English');
+        // A dedicated label line keeps opposite writing directions from
+        // joining or moving the separator across the translated passage.
+        sections.push({ text: value.text, language: core.languageInfo(value.language), label: value.language ? { ...label, text: label.text + ':\n', separateLine: true } : null });
+      });
       if (!sections.length) {
         const empty = localized('no_meaning', 'No meaning or example has been prepared for this word.');
         sections.push({ text: empty.text, language: empty.language });
       }
-      const pages = []; let page = [], length = 0;
-      sections.forEach(section => chunks(section.text).forEach((text, index) => {
-        const part = { ...section, text, label: index ? null : section.label };
-        const size = text.length + (part.label ? part.label.text.length : 0);
-        if (page.length && (length + size + 2 > 650 || page.length >= 4)) { pages.push(page); page = []; length = 0; }
-        page.push(part); length += size + 2;
+      const pages = []; let page = [], weight = 0;
+      sections.forEach(section => vocabularyParts(section).forEach(part => {
+        // Larger type gets fewer lines, preserving the 3.5-inch body and margins.
+        if (page.length && weight + part.weight > vocabularyBudget + 0.001) { pages.push(page); page = []; weight = 0; }
+        page.push(part); weight += part.weight;
       }));
       if (page.length) pages.push(page);
       return pages;
     }
     function addVocabularyPage(slide, paragraphs) {
-      const weights = paragraphs.map(part => Math.max(1, Math.ceil((part.text.length + (part.label ? part.label.text.length : 0)) / 65)) + 0.4);
+      const weights = paragraphs.map(part => part.weight);
       const total = weights.reduce((sum, weight) => sum + weight, 0);
       let y = 2.15;
       paragraphs.forEach((part, index) => {
         const h = 3.5 * weights[index] / total;
         const value = part.label ? [
-          { text: part.label.text, options: { ...textLanguage(part.label.language), rtlMode: part.language.dir === 'rtl' } },
+          { text: part.label.text, options: { ...textLanguage(part.label.language), rtlMode: (part.label.separateLine ? part.label.language : part.language).dir === 'rtl', ...(part.label.separateLine ? { fontSize: 20 * textScale, bold: true, color: appearance.muted } : {}) } },
           { text: part.text, options: textLanguage(part.language) }
         ] : part.text;
-        slide.addText(value, { x: 1.0, y, w: 11.3, h, fontSize: 26, color: '1E293B', valign: 'mid', margin: 0.08, fit: 'shrink', paraSpaceAfterPt: 14, ...textLanguage(part.language) });
+        slide.addText(value, { x: 1.0, y, w: 11.3, h, fontFace: appearance.fontFace, fontSize: 26 * textScale, color: appearance.text, align: part.language.dir === 'rtl' ? 'right' : 'left', valign: 'mid', margin: 0.08, paraSpaceAfterPt: 0, ...textLanguage(part.language) });
         y += h;
       });
     }
@@ -422,36 +545,56 @@
         const answerFooter = () => [...footer, localized('pptx_answer', 'Answer')];
         if (options.mode === 'sentence') {
           if (!item.sentenceActivity) throw new Error(L('pptx_sentence_missing', 'A prepared sentence activity is missing.'));
-          const activity = item.sentenceActivity, prompt = slideBase(footer);
-          prompt.addText(activity.prompt, { x: 0.85, y: 1.25, w: 11.65, h: 2.7, fontSize: activity.prompt.length > 500 ? 20 : 34, color: '172554', align: 'center', valign: 'mid', margin: 0.1, fit: 'shrink', ...textLanguage(itemLanguage(item, 'sentence')) });
-          prompt.addText(activity.choices.map((choice, n) => String.fromCharCode(65 + n) + '. ' + choice).join('\n'), { x: 1.4, y: 4.05, w: 10.5, h: 1.65, fontSize: 23, color: '1E3A8A', align: 'center', margin: 0.02, fit: 'shrink', ...textLanguage(itemLanguage(item, 'term')) });
-          if (typeof prompt.addNotes === 'function') prompt.addNotes(L('pptx_answer_note', 'Answer: {answer}. Advance to reveal.', { answer: activity.answer }));
+          const activity = item.sentenceActivity;
+          const choiceText = activity.choices.map((choice, n) => String.fromCharCode(65 + n) + '. ' + choice).join('\n');
+          const compact = activity.prompt.length <= 400 && activity.choices.length <= 4 && activity.choices.every(choice => choice.length <= 50)
+            && sentenceTextPages(activity.prompt, Math.floor(4 / textScale), 22 / textScale / fontWidth).length === 1 && sentenceTextPages(choiceText, Math.floor(4 / textScale), 30 / textScale / fontWidth).length === 1;
+          let finalPrompt;
+          if (compact) {
+            const prompt = finalPrompt = slideBase(footer);
+            prompt.addText(activity.prompt, { x: 0.85, y: 1.25, w: 11.65, h: 2.7, fontSize: 34 * textScale, color: appearance.heading, align: 'center', valign: 'mid', margin: 0.1, fit: 'shrink', ...textLanguage(itemLanguage(item, 'sentence')) });
+            prompt.addText(choiceText, { x: 1.4, y: 4.05, w: 10.5, h: 1.65, fontSize: 23 * textScale, color: appearance.accent, align: 'center', margin: 0.02, fit: 'shrink', ...textLanguage(itemLanguage(item, 'term')) });
+          } else {
+            const prompts = sentenceTextPages(activity.prompt), choices = sentenceChoicePages(activity.choices), total = prompts.length + choices.length;
+            for (let page = 0; page < total; page++) {
+              checkAbort(context);
+              const slide = finalPrompt = slideBase([...footer, localized('pptx_part', 'Part {n}/{total}', { n: page + 1, total })]);
+              const isChoicePage = page >= prompts.length;
+              addSentenceText(slide, isChoicePage ? choices[page - prompts.length] : prompts[page], itemLanguage(item, isChoicePage ? 'term' : 'sentence'), isChoicePage);
+              await sentencePageYield();
+            }
+          }
+          if (typeof finalPrompt.addNotes === 'function') finalPrompt.addNotes(L('pptx_answer_note', 'Answer: {answer}. Advance to reveal.', { answer: activity.answer }));
+          checkAbort(context);
           const answer = slideBase(answerFooter()); mainWord(answer, activity.answer, card, item, true); await addAudio(answer, item);
         } else if (options.mode === 'spelling') {
           const prompt = slideBase(footer);
-          uiText(prompt, options.includeAudio && item.wordAudio ? 'spell_listen' : 'spell_teacher', options.includeAudio && item.wordAudio ? 'Listen, then spell the word.' : 'Ask your teacher to say the word, then spell it.', { x: 1, y: 2.0, w: 11.3, h: 1.5, fontSize: 44, color: '172554', align: 'center', margin: 0, fit: 'shrink' });
-          uiText(prompt, 'pptx_spell_advance', 'Advance to check your spelling.', { x: 1, y: 3.8, w: 11.3, h: 0.7, fontSize: 22, color: '475569', align: 'center', margin: 0, fit: 'shrink' });
+          uiText(prompt, options.includeAudio && item.wordAudio ? 'spell_listen' : 'spell_teacher', options.includeAudio && item.wordAudio ? 'Listen, then spell the word.' : 'Ask your teacher to say the word, then spell it.', { x: 1, y: 2.0, w: 11.3, h: 1.5, fontSize: 44 * textScale, color: appearance.heading, align: 'center', margin: 0, fit: 'shrink' });
+          uiText(prompt, 'pptx_spell_advance', 'Advance to check your spelling.', { x: 1, y: 3.8, w: 11.3, h: 0.7, fontSize: 22 * textScale, color: appearance.muted, align: 'center', margin: 0, fit: 'shrink' });
           if (typeof prompt.addNotes === 'function') prompt.addNotes(L('pptx_say_word_note', 'Say this word aloud if needed: {word}', { word: item.word }));
           await addAudio(prompt, item);
           const answer = slideBase(answerFooter()); mainWord(answer, item.word, card, item, true);
         } else if (options.mode === 'vocabulary') {
           const pages = vocabularyPages(item);
           for (let page = 0; page < pages.length; page++) {
+            checkAbort(context);
             const slide = slideBase(pages.length > 1 ? [...footer, localized('pptx_part', 'Part {n}/{total}', { n: page + 1, total: pages.length })] : footer);
-            slide.addText(item.word, { x: 0.8, y: 0.92, w: 11.7, h: 1.05, fontSize: 48, color: '172554', bold: true, align: 'center', margin: 0, fit: 'shrink', ...textLanguage(itemLanguage(item, 'term')) });
+            vocabularyHeading(slide, item);
             addVocabularyPage(slide, pages[page]);
             if (page === 0) await addAudio(slide, item);
+            await sentencePageYield();
           }
         } else {
           const slide = slideBase(footer); mainWord(slide, item.word, card, item, options.mode === 'blend');
           if (options.mode === 'blend') {
-            const box = { x: 0.8, y: 4.85, w: 11.7, h: 0.7, fontSize: 30, color: '1E3A8A', align: 'center', margin: 0, fit: 'shrink' };
-            if (item.phonemes.length) slide.addText(item.phonemes.map(sound => sound.label).join('  ·  '), { ...box, ...textLanguage(itemLanguage(item, 'term')) });
+            const box = { x: 0.8, y: 4.85, w: 11.7, h: 0.7, fontSize: 30 * textScale, color: appearance.accent, align: 'center', margin: 0, fit: 'shrink' };
+            if (item.phonemes.length) { const sounds = item.phonemes.map(sound => sound.label).join('  ·  '); slide.addText(sounds, { ...box, fontFace: appearance.fontFace, fontSize: fittedFont(sounds, box, box.fontSize), ...textLanguage(itemLanguage(item, 'term')) }); }
             else uiText(slide, 'pptx_no_sounds', 'No sound sequence is prepared for this word.', box);
           }
           await addAudio(slide, item);
         }
         if (typeof context.onProgress === 'function') context.onProgress({ completed: index + 1, total: cards.length });
+        if ((index + 1) % 10 === 0) { await new Promise(resolve => setTimeout(resolve, 0)); checkAbort(context); }
       }
     } finally { if (audioContext && typeof audioContext.close === 'function') await audioContext.close().catch(() => {}); }
     pptx.wordPracticeWarnings = [...warnings];

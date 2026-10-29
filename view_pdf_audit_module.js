@@ -192,6 +192,404 @@ var X = _lazyIcon('X');
     createSourceModel: createSourceModel, normalizeSourceModel: normalizeSourceModel, resolveSourceReference: resolveSourceReference };
 });
 
+// Decision guides for the judgment calls a remediation leaves to a person (2026-10-28).
+// One guide per KIND of call: what the automated check found, what it cannot know, the question a person
+// answers, the usual answers with what each leads to, and a short lesson with examples. The same data feeds
+// the app's "Needs your judgment" list, the connector's report (deliveryExplanation.decisions) and, later,
+// professional-development modules. Content is written for teachers and staff, not accessibility experts.
+// Matching keys: '<source>:<id>' with source equalAccess | axe | ai | fidelity | delivery.
+// An option with settles:true needs no change to the document: choosing it marks the finding reviewed. Other options
+// record the decision and leave the finding open until a later check no longer flags it.
+// Lives in this file because every build path (per-module builder, build.js deploy path, desktop app-build) appends
+// it to doc_pipeline_module.js: window.AlloModules.RemediationDecisionGuides in the browser, and
+// require('remediation_review_helpers.js').decisionGuides in Node (added to the helpers' exports, not replacing them).
+(function (root, factory) {
+  'use strict';
+  var api = factory();
+  if (typeof module === 'object' && module.exports && typeof module.exports === 'object') module.exports.decisionGuides = api;
+  if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.RemediationDecisionGuides = api; }
+})(typeof window !== 'undefined' ? window : globalThis, function () {
+  'use strict';
+  var UNSURE = { id: 'unsure', label: 'Not sure', choose: 'You cannot tell from the page, or it depends on how the document will be used.', then: 'Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides.' };
+  var GUIDES = [
+    {
+      id: 'sensory-words', title: 'Words that point by position, shape or colour', wcag: ['1.3.3'],
+      match: ['equalAccess:text_sensory_misuse'],
+      checkerCannot: 'The checker spots words such as below, above, left, right, round, red or large. It cannot tell whether a reader has to SEE the page to follow the sentence, or whether the word means something else ("your right to appeal", "the largest group").',
+      question: 'Could someone who cannot see the layout still follow this sentence?',
+      options: [
+        { id: 'fine', settles: true, label: 'Fine as written', choose: 'The word is not about position or appearance ("the largest share", "a legal right"), or the thing is also named ("Table 2 below"), or "below" just means the text that comes next.', then: 'Record it as fine. Nothing in the document changes.' },
+        { id: 'reword', label: 'Reword it', choose: 'The reader must see where something is or what it looks like ("click the green button", "see the box on the right").', then: 'Name the thing as well: "select Submit (the green button)", "see the Contact box". Edit the sentence, then run the check again.' },
+        UNSURE],
+      lesson: {
+        steps: ['Read the whole sentence aloud without looking at the page.', 'Ask: would I know which thing is meant, or what to do?', 'Position words are fine when the thing is also named, or when "below" simply means "next in the text": a screen reader reaches that text next.'],
+        fine: 'The steps below explain how to apply.  /  Hispanic students were the largest group.',
+        fix: 'Use the form on the right.  ->  Use the Contact form (on the right).'
+      }
+    },
+    {
+      id: 'colour-only', title: 'Colour as the only signal', wcag: ['1.4.1'],
+      match: ['equalAccess:style_color_misuse'],
+      checkerCannot: 'Equal Access asks this of every document whose styles use colour. It cannot tell whether colour is ever the ONLY way a meaning is shown.',
+      question: 'Does any part of this document show meaning by colour alone?',
+      options: [
+        { id: 'fine', settles: true, label: 'No, colour is never the only signal', choose: 'Colour is decorative, or every coloured meaning is also given in words, symbols, labels or patterns.', then: 'Confirm it for this document. The confirmation is recorded and asked again if the document changes.' },
+        { id: 'fix', label: 'Yes, add another signal', choose: 'For example "answers in red", required fields shown only in red, or a chart key that uses colours alone.', then: 'Add a word, symbol or label next to the colour ("(required)", "Correct:", labels on chart slices). Edit, then run the check again.' },
+        UNSURE],
+      lesson: {
+        steps: ['Look for colour keys and legends, coloured words that carry meaning, highlighted rows, and charts.', 'Print preview in grayscale: is anything lost?', 'If every meaning survives without colour, it is fine.'],
+        fine: 'Headings are dark blue for style; nothing depends on the colour.',
+        fix: 'Overdue items are in red.  ->  Overdue items are marked "Overdue" (and shown in red).'
+      }
+    },
+    {
+      id: 'heading-or-emphasis', title: 'Is this bold text a heading?', wcag: ['1.3.1', '2.4.6'],
+      match: ['equalAccess:text_block_heading'],
+      checkerCannot: 'The checker sees short, bold or large text on its own line. It cannot tell whether the text names a section (a heading) or is emphasis, a label, a caption or a repeated page header.',
+      question: 'Does this text introduce the content that follows it?',
+      options: [
+        { id: 'heading', label: 'Yes, make it a heading', choose: 'It names a section, like "Materials" or "Step 2: Mix the solution".', then: 'Mark it as a heading one level below the section it sits in (use the Workbench or edit it), then run the check again.' },
+        { id: 'fine', settles: true, label: 'No, it is not a heading', choose: 'It is emphasis, a label ("Due:"), a caption, or a header repeated on every page.', then: 'Record it as fine.' },
+        UNSURE],
+      lesson: {
+        steps: ['Screen-reader users jump between headings the way sighted readers skim bold titles.', 'Ask: would this line belong in a table of contents?', 'Text shown twice (a caption repeated by the description) is a caption, not a heading.'],
+        fine: 'Note: bring a calculator.  (a label inside a paragraph)',
+        fix: 'A bold line "Materials" above a list of supplies  ->  heading "Materials".'
+      }
+    },
+    {
+      id: 'quotation', title: 'Is this a quotation?', wcag: ['1.3.1'],
+      match: ['equalAccess:text_quoted_correctly'],
+      checkerCannot: 'The checker sees text in quotation marks. It cannot tell a real quotation (someone\'s words) from a title, a term, a button label, or words printed in a logo.',
+      question: 'Is this someone else\'s words being quoted, set apart as a passage?',
+      options: [
+        { id: 'quote', label: 'Yes, a block quotation', choose: 'A passage quoted from a person or a source, set apart from the text.', then: 'Mark it as a block quotation (Workbench), keeping the source if the page names one.' },
+        { id: 'fine', settles: true, label: 'No, leave it', choose: 'A title, a term in quotes, a menu or button label, words in a picture, or a short quote inside a sentence (quotation marks are enough).', then: 'Record it as fine.' },
+        UNSURE],
+      lesson: {
+        steps: ['Only quoted passages set apart from the text need quotation markup.', 'Short quotes inside a sentence are fine with quotation marks.', 'Words shown in a logo or picture are part of its description.'],
+        fine: 'Select "Submit".  /  The logo reads "cds".',
+        fix: 'A paragraph from the law, indented and in quotes  ->  block quotation.'
+      }
+    },
+    {
+      id: 'list-or-paragraphs', title: 'Is this really a list?', wcag: ['1.3.1'],
+      match: ['equalAccess:list_markup_review'],
+      checkerCannot: 'The checker sees lines that look like a series (numbers, bullets, short repeated lines). It cannot tell whether they belong together as a list or are separate paragraphs, table rows or an address.',
+      question: 'Are these related items meant to be read as one group?',
+      options: [
+        { id: 'list', label: 'Yes, mark it as a list', choose: 'Steps, options, materials, rules: items that belong together.', then: 'Mark it as a list, numbered when the order matters (Workbench or edit).' },
+        { id: 'fine', settles: true, label: 'No, leave the paragraphs', choose: 'Separate paragraphs, an address, or a table.', then: 'Record it as fine.' },
+        UNSURE],
+      lesson: {
+        steps: ['A screen reader announces "list, 5 items", so the listener knows how much is coming.', 'Use a numbered list when the order matters (steps), bullets when it does not.'],
+        fine: 'A mailing address on three lines.',
+        fix: '(1) Shuffle (2) Deal (3) Score  ->  a numbered list.'
+      }
+    },
+    {
+      id: 'download-link', title: 'Do the download links work with the keyboard?', wcag: ['2.1.1', '2.4.4'],
+      match: ['equalAccess:download_keyboard_controllable'],
+      checkerCannot: 'The checker sees a link to a file (PDF, Word, spreadsheet). It cannot press it to find out whether the file opens with the keyboard alone, or whether the link is the one the document meant.',
+      question: 'Does each file link open with the keyboard, and point to the right file?',
+      options: [
+        { id: 'fine', settles: true, label: 'Yes, it works', choose: 'Tab reaches the link, Enter opens the file, and it is the file the original linked.', then: 'Record it as fine.' },
+        { id: 'fix', label: 'No, fix or remove it', choose: 'It does not open, opens the wrong file, or was not a link in the original.', then: 'Correct the address from the original document, or remove the link, then run the check again.' },
+        UNSURE],
+      lesson: {
+        steps: ['Press Tab until the link is highlighted, then press Enter.', 'Compare the address with the original document.', 'Good link text says what the file is: "2024 budget (PDF)".'],
+        fine: 'Download the application form (PDF).',
+        fix: 'A link added to a page footer that was plain text in the original  ->  remove it.'
+      }
+    },
+    {
+      id: 'long-image-description', title: 'Image descriptions over 150 characters', wcag: ['1.1.1'],
+      match: ['equalAccess:media_alt_brief'],
+      checkerCannot: 'The checker counts characters. It cannot judge whether the description gives the point of the image, or whether the long detail belongs in visible text where everyone can read it.',
+      question: 'Does the description give the purpose of the image in a sentence or two?',
+      options: [
+        { id: 'fine', settles: true, label: 'Keep it', choose: 'It is long because the image carries information that is not in the text, and the description stays on point.', then: 'Record it as fine. Consider putting the detail in a visible caption or table as well.' },
+        { id: 'shorten', label: 'Shorten it', choose: 'It describes appearance (colours, shapes, layout) rather than what the image is for.', then: 'Rewrite it to the purpose ("Step 1 of 6: choose your assurance level"); keep data in the chart table or text.' },
+        UNSURE],
+      lesson: {
+        steps: ['Start with why the image is there.', 'A screen reader reads the whole description every time: keep it to what the reader needs.', 'Detail that everyone needs belongs in visible text, not hidden in the description.'],
+        fine: 'Bar chart: average math scores rose from 240 in 2000 to 282 in 2019.',
+        fix: 'A green circle with the number 1 beside a grey rounded label reading...  ->  Step 1: decide which assurance level applies.'
+      }
+    },
+    {
+      id: 'blockquote-indent', title: 'An indented block marked as a quotation', wcag: ['1.3.1'],
+      match: ['equalAccess:blockquote_cite_exists'],
+      checkerCannot: 'The checker sees a block quotation. It cannot tell whether it really is a quotation or was used only to indent text.',
+      question: 'Is this indented block a quotation?',
+      options: [
+        { id: 'fine', settles: true, label: 'Yes, it is a quotation', choose: 'Someone\'s words or a passage from a source.', then: 'Record it as fine; name the source in the text if the page gives one.' },
+        { id: 'fix', label: 'No, it is only indented', choose: 'Ordinary text that was indented for looks.', then: 'Make it a normal paragraph (Workbench). Indentation is styling, not meaning.' },
+        UNSURE],
+      lesson: { steps: ['Quotation markup tells a screen reader "this is quoted".', 'Using it for indentation announces a quotation that is not there.'], fine: 'A quoted paragraph from a court decision.', fix: 'An indented note to parents  ->  a normal paragraph.' }
+    },
+    {
+      id: 'changed-numbers', title: 'Numbers that may have changed', wcag: [],
+      match: ['fidelity:numeric'],
+      checkerCannot: 'AlloFlow compares every number in the original with the accessible version. A number can be flagged because it was dropped or changed, or harmlessly: a page number, a chart axis label, a list number, or the same value written another way.',
+      question: 'Is each listed number either present (perhaps written differently) or harmless?',
+      options: [
+        { id: 'fine', settles: true, label: 'All accounted for', choose: 'Each one is a page number, an axis label, a list number, a footnote mark, or the same value written differently.', then: 'Record it as checked.' },
+        { id: 'fix', label: 'A value is wrong or missing', choose: 'A score, date, amount, count or percentage is missing or different.', then: 'Correct it in the document from the original, then run the check again. Do not share until it is fixed.' },
+        UNSURE],
+      lesson: {
+        steps: ['Check scores, dates, money and percentages first: they matter most.', 'Search the original for each listed number and look at what it was.', 'Harmless: 10, 20, 30... on a chart axis; page numbers; "(1)...(10)" numbering a list.'],
+        fine: '16 and 17 were the printed page numbers.',
+        fix: 'The original says 32%; the accessible version says 23%  ->  correct it.'
+      }
+    },
+    {
+      id: 'missing-words', title: 'Words that may be missing', wcag: [],
+      match: ['delivery:content_coverage_requires_review', 'fidelity:coverage'],
+      checkerCannot: 'AlloFlow checks that every word of the original appears in the accessible version. A word can be flagged because it was dropped, or because the PDF\'s hidden text split or glued words, repeats a page header, or holds chart labels.',
+      question: 'Is each listed word really in the accessible version, or harmless?',
+      options: [
+        { id: 'fine', settles: true, label: 'Nothing is lost', choose: 'Each word is there (perhaps split, joined or styled differently), or it is a page number, chart label or decoration.', then: 'Record it as checked. The tagged PDF stays held until the check passes on a later run.' },
+        { id: 'fix', label: 'Something is missing', choose: 'A sentence, name, heading or answer choice is not in the accessible version.', then: 'Add the missing text in the right place (Workbench or edit), then run the check again.' },
+        UNSURE],
+      lesson: {
+        steps: ['Search the accessible version for each listed word.', 'A run of missing words in one place usually means a passage was dropped: compare that part of the page.', 'Odd fragments ("hey", "2010fall", "http") usually come from how the PDF stores text, not from a loss.'],
+        fine: '"Racial/Ethnic" was split across two lines in the PDF.',
+        fix: 'The last paragraph of page 3 is not in the accessible version  ->  add it.'
+      }
+    },
+    {
+      id: 'reading-order', title: 'Reading order differs from the original', wcag: ['1.3.2'],
+      match: ['fidelity:sourceReadingOrder', 'fidelity:sourceReadingOrderRegrouped'],
+      checkerCannot: 'AlloFlow measures how far the order of the words moved from the original. It cannot tell whether the new order is better (a two-column form grouped by section) or wrong (columns mixed together, a caption far from its picture).',
+      question: 'Reading from top to bottom, does the accessible version make sense in this order?',
+      options: [
+        { id: 'fine', settles: true, label: 'The order makes sense', choose: 'Sections follow sensibly, and each passage reads in order inside.', then: 'Record it as checked.' },
+        { id: 'fix', label: 'Something is out of place', choose: 'Sentences are jumbled, a section is in the wrong place, or instructions come after the fields they describe.', then: 'Move the passage to where it belongs (Workbench or edit), then run the check again.' },
+        UNSURE],
+      lesson: {
+        steps: ['Read the headings in order: do they follow the document\'s logic?', 'Read the first and last sentence of each section.', 'Check that instructions come before the questions they explain, and captions sit next to their pictures.'],
+        fine: 'A two-column intake form read section by section (child, then parent).',
+        fix: 'Two newsletter columns mixed line by line  ->  restore each article in full.'
+      }
+    },
+    {
+      id: 'picture-placement', title: 'Is each picture in the right place?', wcag: ['1.1.1', '1.3.2'],
+      match: ['fidelity:imagePairing', 'fidelity:placement'],
+      checkerCannot: 'AlloFlow matches pictures to captions by what they describe. When the counts or descriptions disagree, it cannot be sure each picture sits under the right caption, or where a leftover picture belongs.',
+      question: 'Is each picture next to the caption and text it belongs to?',
+      options: [
+        { id: 'fine', settles: true, label: 'All in place', choose: 'Every picture matches its caption and nearby text.', then: 'Record it as checked.' },
+        { id: 'fix', label: 'Move or replace a picture', choose: 'A picture is under the wrong caption, or sits in the "review" section at the end.', then: 'Use the image review panel to move or replace it, then run the check again.' },
+        UNSURE],
+      lesson: { steps: ['Compare each picture with the original page.', 'Pictures gathered at the end (placement review) need a home or can be removed if decorative.'], fine: 'The photo of the launch sits under "Artemis I".', fix: 'A chart of enrollment under the caption for test scores  ->  swap them.' }
+    },
+    {
+      id: 'scan-corrections', title: 'Words corrected in a scanned page', wcag: [],
+      match: ['fidelity:ocrVisionAlignment', 'fidelity:lowOcrAccuracy', 'fidelity:lowOcrConfidence'],
+      checkerCannot: 'The page is a scan. Text recognition misread some words, and AlloFlow corrected them from a second reading. It cannot be certain every correction matches the paper.',
+      question: 'Do the corrected words match the scanned page?',
+      options: [
+        { id: 'fine', settles: true, label: 'They match', choose: 'The listed corrections match what the scan shows.', then: 'Record it as checked.' },
+        { id: 'fix', label: 'A word is wrong', choose: 'A name, number or word does not match the scan.', then: 'Correct it from the scan, then run the check again.' },
+        UNSURE],
+      lesson: { steps: ['Check names, numbers and dates first.', 'Zoom into the scan where the corrected word sits.'], fine: '"normaI" was corrected to "normal".', fix: 'A corrected date that does not match the scan  ->  fix it.' }
+    },
+    {
+      id: 'fillable-form', title: 'A fillable form became a page you cannot type into', wcag: ['4.1.2'],
+      match: ['fidelity:formFields'],
+      checkerCannot: 'The original is a fillable PDF form. The accessible HTML shows the questions clearly but cannot be typed into, and AlloFlow cannot know how families will fill it in.',
+      question: 'Will people need to fill this in, and how?',
+      options: [
+        { id: 'reading', settles: true, label: 'Reading copy is enough', choose: 'People read it, or fill in a paper copy, or answer another way.', then: 'Share the accessible HTML as the reading copy.' },
+        { id: 'fillable', label: 'A fillable version is needed', choose: 'People must type into it.', then: 'Offer the original fillable PDF as well, or ask whoever owns the form for an accessible fillable version or an online form.' },
+        UNSURE],
+      lesson: { steps: ['An accessible form needs labelled fields a screen reader announces.', 'The HTML here is a reading version; it does not replace the form itself.'], fine: 'A permission slip families print and sign.', fix: 'An online enrollment form  ->  needs an accessible fillable version.' }
+    },
+    {
+      id: 'active-content', title: 'Scripts or attached files in the original', wcag: [],
+      match: ['fidelity:activeContent', 'delivery:active_content_requires_review'],
+      checkerCannot: 'The original PDF contains scripts, launch actions or attached files. AlloFlow never runs or opens them, so it cannot say what they do or whether anyone needs them.',
+      question: 'Does anyone need what these do?',
+      options: [
+        { id: 'fine', settles: true, label: 'No, the HTML is enough', choose: 'They are form helpers (date or phone formatting) or extras nobody uses.', then: 'Share the accessible HTML; it carries no active content.' },
+        { id: 'fix', label: 'Yes, ask the author', choose: 'The document depends on them (a calculator, an attachment people must open).', then: 'Ask whoever made the PDF for a version without them, or for the attachment as its own file.' },
+        UNSURE],
+      lesson: { steps: ['Fillable forms often contain small scripts that format dates or phone numbers.', 'Attachments (like printer settings files) are usually leftovers from how the PDF was made.'], fine: 'An embedded "Press Quality.joboptions" printer settings file.', fix: 'A budget workbook attached inside the PDF that people need  ->  share it separately.' }
+    },
+    {
+      id: 'image-description', title: 'Does the image description fit the image?', wcag: ['1.1.1'],
+      match: ['ai:alt-quality', 'ai:image-alt', 'fidelity:altQuality'],
+      checkerCannot: 'Only someone who knows why the image is in the document can say whether its description gives a reader what they need.',
+      question: 'Does the description say what matters about this image for this document?',
+      options: [
+        { id: 'fine', settles: true, label: 'It fits', choose: 'It says what the image shows that matters here.', then: 'Record it as fine.' },
+        { id: 'rewrite', label: 'Rewrite it', choose: 'It is vague ("image"), wrong, or describes looks instead of purpose.', then: 'Rewrite it in the image review panel, then run the check again.' },
+        { id: 'decorative', label: 'It is decorative', choose: 'A border, divider or clip art that adds nothing.', then: 'Mark it decorative so screen readers skip it.' },
+        UNSURE],
+      lesson: { steps: ['Purpose first: why is the image here?', 'Charts: the trend and the key values.', 'Pictures of text: the text itself.', 'Decoration: an empty description, so screen readers skip it.'], fine: 'Photo: students measuring rainfall in a jar.', fix: 'image001.png  ->  Map of the district\'s five school zones.' }
+    },
+    {
+      id: 'link-wording', title: 'Can you tell where a link goes from its words?', wcag: ['2.4.4'],
+      match: ['ai:link-text', 'ai:link-purpose', 'fidelity:links'],
+      checkerCannot: 'Screen-reader users often list all links on a page. The checker cannot tell whether "click here" or a bare web address makes sense out of context.',
+      question: 'Read only the link\'s words: do you know where it goes?',
+      options: [
+        { id: 'fine', settles: true, label: 'Yes', choose: 'The words name the destination ("Apply for free meals").', then: 'Record it as fine.' },
+        { id: 'rewrite', label: 'Reword the link', choose: '"Click here", "more", or a long address with no description.', then: 'Change the link words to name the destination (Workbench or edit), then run the check again.' },
+        UNSURE],
+      lesson: { steps: ['Read the link words on their own.', 'Name the destination or the action.', 'A printed web address can stay, next to a descriptive link.'], fine: 'Read the full board policy.', fix: 'Click here  ->  Register for the open house.' }
+    }
+  ];
+  // (2026-10-28) WCAG 2.1 success criteria the guides cite: name, level and the W3C "Understanding" page slug. WCAG 2.1 AA is
+  // the standard the 2024 ADA Title II rule names for public schools; the URLs match the review list's "Learn more" links.
+  var WCAG = {
+    '1.1.1': ['Non-text Content', 'A', 'non-text-content'],
+    '1.3.1': ['Info and Relationships', 'A', 'info-and-relationships'],
+    '1.3.2': ['Meaningful Sequence', 'A', 'meaningful-sequence'],
+    '1.3.3': ['Sensory Characteristics', 'A', 'sensory-characteristics'],
+    '1.4.1': ['Use of Color', 'A', 'use-of-color'],
+    '2.1.1': ['Keyboard', 'A', 'keyboard'],
+    '2.4.4': ['Link Purpose (In Context)', 'A', 'link-purpose-in-context'],
+    '2.4.6': ['Headings and Labels', 'AA', 'headings-and-labels'],
+    '4.1.2': ['Name, Role, Value', 'A', 'name-role-value']
+  };
+  function wcagRefs(list) {
+    return (Array.isArray(list) ? list : []).filter(function (sc) { return WCAG[sc]; }).map(function (sc) {
+      return { sc: sc, name: WCAG[sc][0], level: WCAG[sc][1], url: 'https://www.w3.org/WAI/WCAG21/Understanding/' + WCAG[sc][2] + '.html' };
+    });
+  }
+  var ACCURACY = 'Not a WCAG rule. This is about accuracy: an accessible copy has to say what the original says, or the people who rely on it get different information.';
+  var NO_WCAG = {
+    'changed-numbers': ACCURACY, 'missing-words': ACCURACY, 'scan-corrections': ACCURACY,
+    'active-content': 'Not a single WCAG rule. This is about whether the accessible copy can do everything the original does.'
+  };
+  // Practice items for professional development (catalog/pd, built by dev-tools/build_remediation_judgment_pd.cjs).
+  // Each is a short case like the documents seen in real runs; answer is an option id (never 'unsure'), and why is the
+  // feedback shown after answering. Keep each guide's answers mixed so "it needs a change" is not always right.
+  var PRACTICE = {
+    'sensory-words': [
+      { scenario: 'A budget summary says: "Special education was the largest share of new spending."', answer: 'fine', why: '"Largest" is about the amount, not how anything looks on the page.' },
+      { scenario: 'A worksheet says: "Write your answers in the box on the right."', answer: 'reword', why: 'Someone using a screen reader cannot tell which box is "on the right". Name it: "Write your answers in the Answers box."' },
+      { scenario: 'A district notice says: "The steps below explain how to ask for an evaluation."', answer: 'fine', why: '"Below" means the text that comes next, and a screen reader reaches that text next.' }
+    ],
+    'colour-only': [
+      { scenario: 'A quiz key says "Correct answers are shown in green." The answers have no other mark.', answer: 'fix', why: 'Colour is the only signal. Add a word or symbol, such as "(correct)" or a check mark.' },
+      { scenario: 'A newsletter prints its section headings in blue. Each heading is also larger, bold, and names the section.', answer: 'fine', why: 'The colour is decoration; the words and the heading structure carry the meaning.' }
+    ],
+    'heading-or-emphasis': [
+      { scenario: 'A lab sheet has the bold line "Materials", followed by a list of supplies.', answer: 'heading', why: 'It names a section, so screen reader users should be able to jump to it like any heading.' },
+      { scenario: 'A permission slip has the bold label "Due:" followed by a date on the same line.', answer: 'fine', why: 'It is a label inside a sentence, not the name of a section.' }
+    ],
+    'quotation': [
+      { scenario: 'An English handout sets apart a four-line passage from a novel, with the author named after it.', answer: 'quote', why: 'It is a passage quoted from a source. Marking it as a quotation tells screen reader users where it starts and ends.' },
+      { scenario: 'A how-to sheet says: Select "Submit" when you are done.', answer: 'fine', why: 'The quotation marks show a button label, not a quotation.' }
+    ],
+    'list-or-paragraphs': [
+      { scenario: 'A syllabus has five lines that each start with a dash: textbook, calculator, lab notebook, goggles, folder.', answer: 'list', why: 'These items belong together. As a list, a screen reader announces "list, 5 items" and the reader knows what to expect.' },
+      { scenario: 'A letter ends with the school address on three short lines.', answer: 'fine', why: 'An address is not a list of items; separate lines are fine.' }
+    ],
+    'download-link': [
+      { scenario: 'In the accessible copy, pressing Enter on "Download the form" opens a "page not found" message.', answer: 'fix', why: 'The link does not work. Correct the address from the original, or remove the link and say where to get the form.' },
+      { scenario: 'Tab reaches "Download the permission slip (PDF)" and Enter opens the same file the original linked.', answer: 'fine', why: 'It works with the keyboard and says where it goes.' }
+    ],
+    'long-image-description': [
+      { scenario: 'A 300-character description of the school logo describes its colours, its font and the swirl around the letters.', answer: 'shorten', why: 'A logo needs its name ("Riverside School logo"), not its appearance.' },
+      { scenario: 'A 250-character description of a bar chart gives the riders on each of the four bus routes. The numbers appear nowhere else.', answer: 'fine', why: 'The chart carries information that is not in the text, so the long description is doing real work.' }
+    ],
+    'blockquote-indent': [
+      { scenario: 'A paragraph of instructions was indented only to line up with a picture, and it is marked as a quotation.', answer: 'fix', why: 'It is ordinary text. As a quotation, a screen reader announces a quote that is not there.' },
+      { scenario: 'An indented paragraph is a passage from the state law, with the citation after it.', answer: 'fine', why: 'Someone else\'s words, set apart from the text: a real quotation.' }
+    ],
+    'changed-numbers': [
+      { scenario: 'The flagged values are 1, 2, 3 and 4. In the original they are the page numbers at the bottom of each page.', answer: 'fine', why: 'Page numbers are left out on purpose; the content did not change.' },
+      { scenario: 'The original says the meeting is on March 14. The accessible copy says March 4.', answer: 'fix', why: 'A date changed. Correct it from the original before sharing.' }
+    ],
+    'missing-words': [
+      { scenario: 'The flagged words are "Page 3 of 8", the footer printed on each page of the original.', answer: 'fine', why: 'Page footers are left out on purpose; nothing a reader needs is lost.' },
+      { scenario: 'Answer choice B of question 4 ("12 hours") is not in the accessible copy.', answer: 'fix', why: 'A reader would see only three choices. Add the missing choice from the original.' }
+    ],
+    'reading-order': [
+      { scenario: 'The original had two columns. The accessible copy reads the whole left column, then the right, and each article reads in order.', answer: 'fine', why: 'That is the order a sighted reader would follow.' },
+      { scenario: 'On a form, the instructions for section B now come after the section B questions.', answer: 'fix', why: 'Someone listening would answer the questions before hearing how. Move the instructions before the questions.' }
+    ],
+    'picture-placement': [
+      { scenario: 'A photo of the science fair winners sits under the caption "Cafeteria menu".', answer: 'fix', why: 'The picture and caption do not match. Move the photo to its own caption.' },
+      { scenario: 'Each picture in a recipe handout sits next to the step it shows, and matches its caption.', answer: 'fine', why: 'Every picture is where the original put it.' }
+    ],
+    'scan-corrections': [
+      { scenario: 'The scan shows "Mr. Okafor". The corrected text says "Mr. Okafar".', answer: 'fix', why: 'The correction got a name wrong. Fix it from the scan.' },
+      { scenario: 'A correction changed "rn eeting" to "meeting", which matches the scan.', answer: 'fine', why: 'The correction matches what the page shows.' }
+    ],
+    'fillable-form': [
+      { scenario: 'A field trip notice had fillable boxes, but families sign and return a paper copy.', answer: 'reading', why: 'Nobody needs to type into it, so an accessible reading copy is enough.' },
+      { scenario: 'Staff must send an absence request by typing into the form and emailing it.', answer: 'fillable', why: 'People must type into it. Offer the original fillable PDF too, or ask whoever owns the form for an accessible fillable version.' }
+    ],
+    'active-content': [
+      { scenario: 'The original PDF has a script that only formats the phone number field as people type.', answer: 'fine', why: 'A formatting helper; the HTML copy does the job without it.' },
+      { scenario: 'The original PDF carries an attached spreadsheet that families must fill in and return.', answer: 'fix', why: 'People need the attachment, and the HTML copy does not include it. Ask the author for an accessible version.' }
+    ],
+    'image-description': [
+      { scenario: 'A photo of the new bus loop has the description "image1.png".', answer: 'rewrite', why: 'A file name tells a reader nothing. Say what the photo shows that matters.' },
+      { scenario: 'A row of clip-art stars separates two sections of a newsletter.', answer: 'decorative', why: 'It adds nothing a reader needs, so screen readers should skip it.' },
+      { scenario: 'A map has the description "Map: the drop-off loop is on Elm Street, behind the gym."', answer: 'fine', why: 'It gives what the map is for: where the drop-off loop is.' }
+    ],
+    'link-wording': [
+      { scenario: 'A notice says: "To apply for free meals, click here."', answer: 'rewrite', why: '"Click here" says nothing when read alone. Make the link words "Apply for free meals".' },
+      { scenario: 'A link reads "Free and reduced-price meal application".', answer: 'fine', why: 'The words name where the link goes.' }
+    ]
+  };
+  GUIDES.forEach(function (g) {
+    g.wcagRefs = wcagRefs(g.wcag);
+    if (NO_WCAG[g.id]) g.wcagNote = NO_WCAG[g.id];
+    g.practice = PRACTICE[g.id] || [];
+  });
+  var BY_KEY = {};
+  GUIDES.forEach(function (g) { g.match.forEach(function (k) { BY_KEY[k] = g; }); });
+  function guideFor(source, id) { return BY_KEY[String(source) + ':' + String(id)] || null; }
+  function guideById(id) { for (var i = 0; i < GUIDES.length; i++) if (GUIDES[i].id === id) return GUIDES[i]; return null; }
+  // The guides a finished run needs, each with the findings it covers: ea review rule ids, fidelity note kinds,
+  // AI audit rule ids and the tagged-PDF withhold code. Plain data (JSON-safe) for reports.
+  function guidesForRun(input) {
+    var o = input || {}, out = [], seen = {};
+    var add = function (source, id, finding) {
+      var g = guideFor(source, id);
+      if (!g) return;
+      if (!seen[g.id]) { seen[g.id] = { guide: g, findings: [] }; out.push(seen[g.id]); }
+      var key = source + ':' + id;
+      if (seen[g.id].findings.indexOf(key) === -1) seen[g.id].findings.push(key);
+    };
+    (o.equalAccess || []).forEach(function (id) { add('equalAccess', id); });
+    (o.fidelity || []).forEach(function (id) { add('fidelity', id); });
+    (o.ai || []).forEach(function (id) { add('ai', id); });
+    if (o.withhold) add('delivery', String(o.withhold).replace(/ \(.*$/, ''));
+    return out.map(function (x) { var g = Object.assign({ findings: x.findings }, JSON.parse(JSON.stringify(x.guide))); delete g.practice; return g; });
+  }
+  // (2026-10-28, phase 3) Where a phrase or number sits in the ORIGINAL: page number and the words around it, so a
+  // person sees how the source read without opening it. pages: [{ pageNum, text }] (the run's ground-truth page map).
+  // Numbers match whole numbers only ("16" never inside "2016" or "16.5"); words match case-insensitively with
+  // whitespace collapsed. Returns up to `limit` hits: { page, before, match, after }.
+  function sourceContext(pages, needle, limit) {
+    var max = Math.max(1, Math.min(Number(limit) || 2, 5)), out = [];
+    var n = String(needle == null ? '' : needle).replace(/\s+/g, ' ').trim();
+    if (!Array.isArray(pages) || !n || n.length > 200) return out;
+    var esc = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+');
+    var re = /^[\d.,%$]+$/.test(n) ? new RegExp('(?<![\\d.,])' + esc + '(?![\\d]|[.,]\\d)', 'g') : new RegExp(esc, 'gi');
+    for (var i = 0; i < pages.length && out.length < max; i++) {
+      var pg = pages[i], text = String((pg && pg.text) || '').replace(/\s+/g, ' ');
+      re.lastIndex = 0;
+      var m;
+      while (out.length < max && (m = re.exec(text))) {
+        var s = Math.max(0, m.index - 70), e = Math.min(text.length, m.index + m[0].length + 70);
+        out.push({ page: Number(pg.pageNum) || i + 1, before: (s > 0 ? '\u2026' : '') + text.slice(s, m.index).replace(/^\S*\s/, s > 0 ? '' : '$&'), match: m[0], after: text.slice(m.index + m[0].length, e).replace(/\s\S*$/, e < text.length ? '' : '$&') + (e < text.length ? '\u2026' : '') });
+        if (m[0].length === 0) re.lastIndex++;
+      }
+    }
+    return out;
+  }
+  return { version: 1, guides: GUIDES, guideFor: guideFor, guideById: guideById, guidesForRun: guidesForRun, unsureOption: UNSURE, sourceContext: sourceContext, wcagRefs: wcagRefs };
+});
+
 const _PDF_WORKSPACE_CSS = '.allo-docsuite.pdf-workspace { --pw-bg:#fff; --pw-ink:#17243b; --pw-muted:#475569; --pw-line:#cbd5e1; --pw-soft:#f1f5f9; --pw-accent:#3730a3; --pw-active:#eef2ff; padding:16px; }\n.allo-docsuite.pdf-workspace[data-workspace-theme="dark"] { --pw-bg:#111827; --pw-ink:#f1f5f9; --pw-muted:#cbd5e1; --pw-line:#64748b; --pw-soft:#1e293b; --pw-accent:#c7d2fe; --pw-active:#272653; }\n.allo-docsuite.pdf-workspace[data-workspace-theme="contrast"] { --pw-bg:#000; --pw-ink:#fff; --pw-muted:#fff; --pw-line:#fff; --pw-soft:#000; --pw-accent:#ffeb3b; --pw-active:#000; }\n.pdf-workspace .pdf-workspace-shell { width:100%; max-width:1060px; max-height:94vh; max-height:94dvh; border:1px solid var(--pw-line); border-radius:20px; overflow-y:auto; overflow-x:clip; background:var(--pw-bg); color:var(--pw-ink); scrollbar-gutter:stable; scroll-padding-top:260px; }\n.pdf-workspace .pdf-workspace-header { position:sticky; top:0; z-index:30; background:var(--pw-bg); color:var(--pw-ink); padding:20px 24px 12px; border-bottom:1px solid var(--pw-line); text-align:start; }\n.pdf-workspace .pdf-workspace-topline { display:flex; align-items:center; justify-content:space-between; gap:12px; }\n.pdf-workspace .pdf-workspace-identity { min-width:0; }\n.pdf-workspace .pdf-workspace-eyebrow { color:var(--pw-muted); font-size:11px; font-weight:700; letter-spacing:.04em; margin:0 0 4px; }\n.pdf-workspace .pdf-workspace-identity h2 { font-size:20px; font-weight:750; line-height:1.3; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--pw-ink); }\n.pdf-workspace .pdf-workspace-window-actions { display:flex; align-items:center; flex-shrink:0; }\n.pdf-workspace .pdf-workspace-window-actions button { min-width:40px; min-height:40px; background:var(--pw-bg); color:var(--pw-ink); border-color:var(--pw-line); box-shadow:none; }\n.pdf-workspace .pdf-workspace-stages { display:flex; margin:18px 0 14px; padding:0; gap:8px; list-style:none; }\n.pdf-workspace .pdf-workspace-stages li { display:flex; align-items:center; gap:7px; flex:1; font-size:12px; font-weight:600; line-height:1.3; color:var(--pw-muted); }\n.pdf-workspace .pdf-workspace-step-number { display:inline-flex; flex-shrink:0; align-items:center; justify-content:center; border:1px solid var(--pw-line); width:26px; height:26px; border-radius:50%; font-size:11px; }\n.pdf-workspace .pdf-workspace-stages [aria-current="step"] { color:var(--pw-accent); font-weight:800; }\n.pdf-workspace .pdf-workspace-stages [aria-current="step"] .pdf-workspace-step-number { color:var(--pw-accent); border:2px solid var(--pw-accent); background:var(--pw-active); }\n.pdf-workspace .pdf-workspace-status { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; background:var(--pw-soft); border:1px solid var(--pw-line); border-inline-start:4px solid var(--pw-muted); border-radius:10px; }\n.pdf-workspace .pdf-workspace-status[data-tone="working"] { border-inline-start-color:var(--pw-accent); }\n.pdf-workspace .pdf-workspace-status[data-tone="attention"] { border-inline-start-color:#b45309; }\n.pdf-workspace .pdf-workspace-status[data-tone="ready"] { border-inline-start-color:#15803d; }\n.pdf-workspace .pdf-workspace-status-title { margin:0; font-size:14px; font-weight:750; color:var(--pw-ink); }\n.pdf-workspace .pdf-workspace-status-detail { margin:3px 0 0; max-width:75ch; font-size:12px; line-height:1.5; color:var(--pw-muted); }\n.pdf-workspace .pdf-workspace-primary { flex-shrink:0; background:var(--pw-accent); color:var(--pw-bg); padding:10px 14px; min-height:40px; border:1px solid var(--pw-accent); border-radius:8px; font-weight:700; font-size:12px; }\n.pdf-workspace .pdf-workspace-nav { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }\n.pdf-workspace .pdf-workspace-nav button { color:var(--pw-accent); font-size:12px; font-weight:650; padding:7px 10px; border-radius:6px; min-height:34px; }\n.pdf-workspace .pdf-workspace-nav button:hover { background:var(--pw-active); text-decoration:underline; }\n.pdf-workspace .pdf-workspace-sources { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:24px; text-align:start; }\n.pdf-workspace .pdf-workspace-sources button { padding:14px; border:1px solid var(--pw-line); border-radius:12px; background:var(--pw-bg); color:var(--pw-ink); text-align:start; }\n.pdf-workspace .pdf-workspace-sources button[aria-pressed="true"] { border:2px solid var(--pw-accent); padding:13px; background:var(--pw-active); }\n.pdf-workspace .pdf-workspace-sources strong { display:block; font-size:14px; }\n.pdf-workspace .pdf-workspace-sources span { display:block; margin-top:4px; font-size:11px; color:var(--pw-muted); }\n.pdf-workspace .pdf-workspace-manual { border:1px solid var(--pw-line); border-radius:12px; margin:12px 0; padding:12px 16px; color:var(--pw-ink); background:var(--pw-bg); text-align:start; }\n.pdf-workspace .pdf-workspace-manual > summary { font-weight:700; font-size:13px; cursor:pointer; padding:4px 0; }\n.pdf-workspace .pdf-workspace-manual > div { flex-wrap:wrap; margin-top:14px; }\n.pdf-workspace .pdf-workspace-afterfix { display:grid; grid-template-columns:auto minmax(160px,1fr); align-items:center; gap:8px 14px; margin:14px 0; max-width:600px; text-align:start; font-size:12px; font-weight:700; }\n.pdf-workspace .pdf-workspace-afterfix select { padding:9px 12px; border:1px solid var(--pw-line); border-radius:8px; color:var(--pw-ink); background:var(--pw-bg); }\n.pdf-workspace .pdf-workspace-afterfix small { grid-column:1 / -1; font-size:11px; font-weight:400; color:var(--pw-muted); }\n.pdf-workspace .pdf-workspace-batch-row { flex-wrap:wrap; text-align:start; padding:10px 12px; gap:8px; }\n.pdf-workspace .pdf-workspace-batch-name { min-width:120px; overflow-wrap:anywhere; white-space:normal; }\n.pdf-workspace .pdf-workspace-batch-status { display:flex; flex-direction:column; font-size:11px; min-width:140px; }\n.pdf-workspace .pdf-workspace-batch-status span { font-weight:400; }\n.pdf-workspace .pdf-workspace-batch-queue { max-height:320px; }\n.pdf-workspace .pdf-workspace-header :focus-visible, .pdf-workspace .pdf-workspace-sources :focus-visible, .pdf-workspace .pdf-workspace-manual :focus-visible { outline:3px solid var(--pw-accent); outline-offset:3px; }\n.pdf-workspace button:disabled { cursor:not-allowed; }\n@media(max-width:600px) {\n .allo-docsuite.pdf-workspace { padding:0; }\n .pdf-workspace .pdf-workspace-shell { max-height:100vh; max-height:100dvh; border-radius:0; scroll-padding-top:280px; }\n .pdf-workspace .pdf-workspace-header { padding:12px; }\n .pdf-workspace .pdf-workspace-identity h2 { font-size:16px; }\n .pdf-workspace .pdf-workspace-eyebrow { font-size:10px; }\n .pdf-workspace .pdf-workspace-eyebrow span { display:none; }\n .pdf-workspace .pdf-workspace-stages { margin:10px 0; }\n .pdf-workspace .pdf-workspace-stages li { flex:0; }\n .pdf-workspace .pdf-workspace-stages li > span:last-child { display:none; }\n .pdf-workspace .pdf-workspace-stages [aria-current="step"] { flex:1; }\n .pdf-workspace .pdf-workspace-stages [aria-current="step"] > span:last-child { display:inline; }\n .pdf-workspace .pdf-workspace-step-number { width:22px; height:22px; }\n .pdf-workspace .pdf-workspace-status { flex-wrap:wrap; padding:10px; gap:8px; }\n .pdf-workspace .pdf-workspace-status-detail { font-size:11px; }\n .pdf-workspace .pdf-workspace-primary { padding:8px 12px; min-height:36px; }\n .pdf-workspace .pdf-workspace-nav { gap:0; }\n .pdf-workspace .pdf-workspace-nav button { padding:7px; font-size:11px; }\n .pdf-workspace .pdf-workspace-sources { gap:6px; margin-bottom:18px; }\n .pdf-workspace .pdf-workspace-sources button { padding:10px 8px; }\n .pdf-workspace .pdf-workspace-sources button[aria-pressed="true"] { padding:9px 7px; }\n .pdf-workspace .pdf-workspace-sources strong { font-size:12px; }\n .pdf-workspace .pdf-workspace-sources span { font-size:10px; }\n .pdf-workspace .pdf-workspace-shell > .p-8, .pdf-workspace .pdf-workspace-shell > .p-12 { padding:16px; }\n .pdf-workspace .pdf-workspace-afterfix { grid-template-columns:1fr; }\n}\n@media(max-height:550px) {\n .pdf-workspace .pdf-workspace-header { position:relative; }\n .pdf-workspace .pdf-workspace-shell { scroll-padding-top:12px; }\n}\n@media(prefers-reduced-motion:reduce) { .pdf-workspace *, .pdf-workspace *::before, .pdf-workspace *::after { animation-duration:0s !important; transition-duration:0s !important; scroll-behavior:auto !important; } }\n.pdf-workspace .pdf-workspace-results { padding:20px 24px; }\n@media(max-width:600px) { .pdf-workspace .pdf-workspace-results { padding:14px; } }\n@media(max-width:600px) {\n .pdf-workspace .pdf-workspace-results [aria-labelledby="pdf-audit-title"] { padding:0; }\n .pdf-workspace .pdf-workspace-results button.whitespace-nowrap { white-space:normal; max-width:100%; }\n}\n.pdf-workspace .pdf-workspace-sources .pdf-workspace-selected { display:inline; font-size:inherit; color:inherit; margin:0; }\n\n.pdf-workspace .pdf-workspace-batch-filters { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px; text-align:start; }\n.pdf-workspace .pdf-workspace-batch-filters button { border:1px solid var(--pw-line); border-radius:8px; background:var(--pw-bg); color:var(--pw-ink); padding:7px 10px; min-height:36px; font-size:12px; }\n.pdf-workspace .pdf-workspace-batch-filters button[aria-pressed="true"] { border:2px solid var(--pw-accent); padding:6px 9px; background:var(--pw-active); color:var(--pw-accent); font-weight:700; }\n.pdf-workspace .pdf-workspace-batch-error { flex-basis:100%; min-width:0; border-top:1px solid var(--pw-line); padding-top:6px; color:var(--pw-ink); }\n.pdf-workspace .pdf-workspace-batch-error summary { cursor:pointer; padding:6px 0; font-weight:700; }\n.pdf-workspace .pdf-workspace-batch-error p { margin:4px 0; line-height:1.5; overflow-wrap:anywhere; white-space:pre-wrap; }\n.pdf-workspace .pdf-workspace-batch-empty { padding:12px; text-align:start; color:var(--pw-muted); font-size:12px; }\n.pdf-workspace .pdf-workspace-batch-filters :focus-visible, .pdf-workspace .pdf-workspace-batch-queue :focus-visible, .pdf-workspace .pdf-workspace-batch-progress :focus-visible { outline:3px solid var(--pw-accent); outline-offset:2px; }\n\n.pdf-workspace .pdf-workspace-batch-actions { flex-wrap:wrap; }\n.pdf-workspace .pdf-workspace-batch-actions > button { max-width:100%; white-space:normal; overflow-wrap:anywhere; }\n\n.pdf-workspace .pdf-workspace-recovery { margin:10px 0; padding:10px 12px; border:1px solid var(--pw-line); border-inline-start:4px solid var(--pw-accent); border-radius:8px; background:var(--pw-soft); color:var(--pw-ink); text-align:start; font-size:12px; }\n.pdf-workspace .pdf-workspace-recovery[data-tone="attention"] { border-inline-start-color:#b45309; }\n.pdf-workspace .pdf-workspace-recovery p { margin:3px 0; line-height:1.5; }\n.pdf-workspace .pdf-workspace-recovery button { border:1px solid var(--pw-line); border-radius:6px; padding:8px; margin-top:6px; color:var(--pw-accent); }\n.pdf-workspace .pdf-workspace-batch-review { flex-basis:100%; min-width:0; border-top:1px solid var(--pw-line); color:var(--pw-ink); overflow-wrap:anywhere; }\n.pdf-workspace .pdf-workspace-batch-review summary { padding:8px 0; cursor:pointer; font-weight:700; }\n.pdf-workspace .pdf-workspace-batch-review p { margin:6px 0; line-height:1.5; }\n.pdf-workspace .pdf-workspace-batch-review dl > div { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; padding:3px 0; }\n.pdf-workspace .pdf-workspace-batch-review ul { padding-inline-start:20px; list-style:disc; }\n.pdf-workspace .pdf-workspace-batch-review li { margin:6px 0; line-height:1.5; }\n.pdf-workspace .pdf-workspace-recovery :focus-visible { outline:3px solid var(--pw-accent); outline-offset:2px; }\n\n.pdf-workspace .pdf-workspace-settings { text-align:start; margin:14px 0; padding:16px; border:1px solid var(--pw-line); border-radius:12px; background:var(--pw-soft); color:var(--pw-ink); }\n.pdf-workspace .pdf-workspace-settings summary { font-size:14px; font-weight:750; cursor:pointer; }\n.pdf-workspace .pdf-workspace-settings p { font-size:13px; line-height:1.55; margin:12px 0; color:var(--pw-muted); }\n.pdf-workspace .pdf-workspace-settings fieldset { min-width:0; margin-top:18px; padding:14px; border:1px solid var(--pw-line); border-radius:10px; background:var(--pw-bg); }\n.pdf-workspace .pdf-workspace-settings legend { font-size:14px; font-weight:750; padding:0 6px; }\n.pdf-workspace .pdf-workspace-settings fieldset > div, .pdf-workspace .pdf-workspace-settings fieldset > label { margin-bottom:16px; }\n.pdf-workspace .pdf-workspace-settings fieldset > :last-child { margin-bottom:0; }\n.pdf-workspace .pdf-workspace-settings div, .pdf-workspace .pdf-workspace-settings label, .pdf-workspace .pdf-workspace-settings select { font-size:13px; line-height:1.55; }\n.pdf-workspace .pdf-workspace-settings .flex { flex-wrap:wrap; gap:4px 12px; }\n.pdf-workspace .pdf-workspace-settings input[type=range] { min-height:28px; }\n.pdf-workspace .pdf-workspace-settings select { min-height:40px; }\n.pdf-workspace .pdf-workspace-pacing { display:flex; gap:10px; align-items:flex-start; padding:12px; margin:12px 0; border:1px solid var(--pw-line); border-radius:8px; background:var(--pw-active); color:var(--pw-ink); font-size:13px; text-align:start; }\n.pdf-workspace .pdf-workspace-pacing input { margin-top:4px; width:18px; height:18px; flex-shrink:0; }\n.pdf-workspace .pdf-workspace-pacing span span, .pdf-workspace .pdf-workspace-pacing small { display:block; margin-top:5px; font-size:13px; line-height:1.5; color:var(--pw-muted); }\n.pdf-workspace .pdf-workspace-window-actions { gap:6px; }\n.pdf-workspace .pdf-workspace-log-button { min-width:40px; }\n.pdf-workspace .pdf-workspace-log-button > span:last-child:not(:nth-child(2)) { display:none; }\n.pdf-workspace .pdf-workspace-identity { flex:1; }\n.pdf-workspace .pdf-workspace-outcome { border-color:var(--pw-line); background:var(--pw-bg); }\n.pdf-workspace .pdf-workspace-outcome[data-tone=attention] { border-color:#b45309; }\n.pdf-workspace .pdf-workspace-outcome[data-tone=ready] { border-color:#15803d; }\n.pdf-workspace .pdf-workspace-evidence { border:1px solid var(--pw-line); border-radius:8px; padding:12px; }\n.pdf-workspace .pdf-workspace-evidence > summary { cursor:pointer; font-size:13px; font-weight:700; }\n.pdf-workspace .pdf-workspace-evidence-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }\n.pdf-workspace .pdf-workspace-wait-details { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; line-height:1.5; color:var(--pw-muted); }\n.pdf-workspace .pdf-workspace-settings :focus-visible, .pdf-workspace .pdf-workspace-evidence :focus-visible { outline:3px solid var(--pw-accent); outline-offset:3px; }\n@media(max-width:600px) {\n .pdf-workspace .pdf-workspace-settings { padding:12px; }\n .pdf-workspace .pdf-workspace-settings fieldset { padding:12px; }\n .pdf-workspace .pdf-workspace-log-button { padding:6px; }\n .pdf-workspace .pdf-workspace-log-button > span:first-child { display:none; }\n .pdf-workspace .pdf-workspace-eyebrow { max-width:160px; }\n}\n\n.pdf-workspace-audit-wait { max-width: 36rem; margin: .75rem auto; padding: .75rem; border: 1px solid var(--pw-line); border-radius: .75rem; background: var(--pw-soft); color: var(--pw-ink); font-size: .875rem; line-height: 1.5; }\n.pdf-workspace-audit-wait p { margin: 0; }\n\n.pdf-workspace [data-help-key="pdf_audit_stop"] { background:var(--pw-bg); color:var(--pw-ink); border-color:var(--pw-line); }\n\n.pdf-workspace .pdf-workspace-repairs { width:100%; min-width:0; border:1px solid var(--pw-line); border-radius:10px; padding:12px 14px; background:var(--pw-soft); color:var(--pw-ink); }\n.pdf-workspace .pdf-workspace-repairs > summary { cursor:pointer; font-size:13px; font-weight:700; padding:3px 0; }\n.pdf-workspace .pdf-workspace-repairs > p { font-size:13px; line-height:1.5; color:var(--pw-muted); margin:10px 0; max-width:75ch; }\n.pdf-workspace .pdf-workspace-repair-actions { display:flex; flex-wrap:wrap; gap:10px; }\n.pdf-workspace .pdf-workspace-repair-actions > button { max-width:100%; white-space:normal; }\n.pdf-workspace .pdf-workspace-repairs :focus-visible { outline:3px solid var(--pw-accent); outline-offset:3px; }\n\n.pdf-workspace .pdf-workspace-review { background:var(--pw-bg); color:var(--pw-ink); }\n.pdf-workspace .pdf-workspace-review-list { display:flex; flex-direction:column; gap:8px; margin:10px 0; padding:0; list-style:none; }\n.pdf-workspace .pdf-workspace-review-row { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; padding:12px; background:var(--pw-soft); border:1px solid var(--pw-line); color:var(--pw-ink); border-radius:8px; font-size:13px; line-height:1.5; }\n.pdf-workspace .pdf-workspace-review-actions { display:flex; flex-wrap:wrap; gap:6px; margin-inline-start:auto; }\n.pdf-workspace .pdf-workspace-review-actions button, .pdf-workspace .pdf-workspace-reviewed > button { min-height:36px; padding:6px 10px; border:1px solid var(--pw-line); border-radius:6px; background:var(--pw-bg); color:var(--pw-ink); font-size:12px; font-weight:650; white-space:normal; }\n.pdf-workspace .pdf-workspace-reviewed { margin-top:12px; padding-top:8px; border-top:1px solid var(--pw-line); }\n.pdf-workspace .pdf-workspace-reviewed > summary { cursor:pointer; padding:8px 0; font-size:13px; font-weight:700; }\n.pdf-workspace .pdf-workspace-review :focus-visible { outline:3px solid var(--pw-accent); outline-offset:3px; }\n.pdf-workspace [data-testid="pdf-verification-engine-list"] { font-size:12px; line-height:1.5; gap:8px; margin-top:12px; }\n.pdf-workspace [data-testid="pdf-verification-engine-list"] > li { min-width:0; overflow-wrap:anywhere; }\n.pdf-workspace #pdf-verification-status details { font-size:13px; line-height:1.5; }\n@media(max-width:600px) {\n .pdf-workspace .pdf-workspace-review-actions { width:100%; margin-inline-start:0; }\n .pdf-workspace .pdf-workspace-review-actions button { min-height:40px; flex:1; }\n}';
 function _pdfWorkspaceText(t, key, fallback) {
   const full = "pdf_audit.workspace." + key;
@@ -1150,9 +1548,10 @@ function _viewAttachRuntimeBindingProof(target, html, bindingKey, snapshotKey, d
     return false;
   }
 }
-function _viewWithReviewAttestations(result, reviewedFindings, pipeline) {
+function _viewWithReviewAttestations(result, reviewedFindings, pipeline, reviewDecisions) {
   if (!result || typeof result !== "object") return result;
   const next = { ...result, reviewedFindings };
+  if (reviewDecisions !== void 0) next.reviewDecisions = reviewDecisions;
   if (_viewIsLiveVerificationHtmlBound(result, result.accessibleHtml, pipeline)) {
     _viewAttachRuntimeBindingProof(next, result.accessibleHtml, "verificationHtmlBinding", "_verificationHtmlSnapshot", "_verificationHtmlBindingDigest");
   }
@@ -4969,6 +5368,7 @@ function PdfAuditView(props) {
     setHumanEditsAdopted(0);
     setReviewFindingsLive(null);
     setReviewDismissed({});
+    setReviewDecisions({});
     const onHumanEdit = (ev) => {
       const detail = ev && ev.detail || {};
       if (detail.documentEpoch !== pdfDocumentEpoch) return;
@@ -6159,6 +6559,21 @@ function PdfAuditView(props) {
   const [_humanEditsAdopted, setHumanEditsAdopted] = useState(0);
   const [_reviewFindingsLive, setReviewFindingsLive] = useState(null);
   const [_reviewDismissed, setReviewDismissed] = useState({});
+  const [_reviewDecisions, setReviewDecisions] = useState({});
+  const _recordFidelityDecision = (kind, guideId, optionId) => {
+    const key = "fidelity|" + kind;
+    const entry = { guide: guideId, option: optionId, at: Date.now() };
+    setReviewDecisions((prev) => ({ ...prev || {}, [key]: entry }));
+    if (pdfFixResult) {
+      const token = _captureAsyncHtmlToken();
+      const ok = !!(token && token.documentEpoch === pdfDocumentEpoch && token.html === pdfFixResult.accessibleHtml && _commitAsyncHtmlIfCurrent(token, (prev) => _viewWithReviewAttestations(prev, prev.reviewedFindings, _docPipeline, { ...prev.reviewDecisions || {}, [key]: entry })));
+      if (!ok) {
+        addToast(t("pdf_audit.review_queue.toast_changed") || "The document changed before this review was recorded. Check the current findings and try again.", "info");
+        return;
+      }
+    }
+    addToast(t("pdf_audit.decision_guide.recorded") || "Decision recorded in the report.", "success");
+  };
   const _reviewFocusRequest = useRef(null);
   React.useLayoutEffect(() => {
     const request = _reviewFocusRequest.current;
@@ -8989,10 +9404,17 @@ function PdfAuditView(props) {
       "3.3.2": "labels-or-instructions",
       "4.1.1": "parsing",
       "4.1.2": "name-role-value",
-      "4.1.3": "status-messages"
+      "4.1.3": "status-messages",
+      "1.3.3": "sensory-characteristics"
     };
     const slug = map[String(wcag).trim()];
     return slug ? `https://www.w3.org/WAI/WCAG21/Understanding/${slug}.html` : null;
+  };
+  const _guideWcagLine = (g2) => {
+    if (!g2) return null;
+    const refs = (g2.wcagRefs || []).filter((r) => r && _wcagUnderstandingUrl(r.sc));
+    if (!refs.length) return g2.wcagNote ? /* @__PURE__ */ React.createElement("p", { className: "mt-1 italic", "data-guide-wcag": "none" }, g2.wcagNote) : null;
+    return /* @__PURE__ */ React.createElement("p", { className: "mt-1", "data-guide-wcag": refs.map((r) => r.sc).join(" ") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.decision_guide.wcag_label") || "WCAG:"), " ", refs.map((r, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: r.sc }, i ? ", " : "", /* @__PURE__ */ React.createElement("a", { href: _wcagUnderstandingUrl(r.sc), target: "_blank", rel: "noopener noreferrer", className: "font-bold underline text-blue-800" }, r.sc + " " + r.name + " (Level " + r.level + ")", /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, " ", t("pdf_audit.help_directory.new_tab") || "(opens in a new tab)")))));
   };
   const _agreementTooltip = (n, total) => {
     const base = t("pdf_audit.agreement.tooltip", { n, total }) || `Flagged by ${n} of ${total} auditors`;
@@ -10778,6 +11200,7 @@ Return ONLY JSON:
             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
             candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120), ...typeof entry.sourceLocation === "string" ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {} })) : [],
             reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
+            reviewDecisions: project.reviewDecisions && typeof project.reviewDecisions === "object" ? project.reviewDecisions : null,
             _audioJobMeta: project._audioJobMeta || null,
             _translation: project._translation || null,
             _plainLanguage: project._plainLanguage || null
@@ -11457,7 +11880,7 @@ Return ONLY JSON:
         const finalMetadataToken = _captureAsyncHtmlToken();
         const committed = finalMetadataToken && finalMetadataToken.html === bestHtml && _commitAsyncHtmlIfCurrent(finalMetadataToken, (prev) => {
           if (!prev || prev.accessibleHtml !== bestHtml) return prev;
-          const fidelityLimited = _refixNotes.length > 0 || typeof _fixRemainingSource.integrityCoverage === "number" && _fixRemainingSource.integrityCoverage < 90;
+          const fidelityLimited = _refixNotes.some((n) => !(n && n.caution === true)) || typeof _fixRemainingSource.integrityCoverage === "number" && _fixRemainingSource.integrityCoverage < 90;
           const accessibilityReview = !!(prev.axeAudit && Array.isArray(prev.axeAudit.critical) && prev.axeAudit.critical.length > 0 || prev.secondEngineAudit && Number.isFinite(prev.secondEngineAudit.failViolations) && prev.secondEngineAudit.failViolations > 0 || Number.isFinite(prev.afterScore) && prev.afterScore < 50);
           return {
             ...prev,
@@ -12440,18 +12863,27 @@ Return ONLY JSON:
         _workspaceNavigate("#allo-sec-workbench");
         addToast(t("pdf_audit.issue.sent_workbench") || "\u{1F6E0} Loaded into the Expert Workbench below \u2014 review and run it.", "info");
       };
-      const _setReviewAttestation = (event, key, reviewed) => {
+      const _setReviewAttestation = (event, key, reviewed, decision) => {
         const token = _captureAsyncHtmlToken();
-        const at = reviewed ? Date.now() : null;
+        const at = Date.now();
+        const decisionOnly = !!decision && !reviewed;
         const change = (value) => {
           if (key === null) return null;
           const updated = { ...value || {} };
+          if (decisionOnly) return Object.keys(updated).length ? updated : null;
           if (reviewed) updated[key] = at;
           else delete updated[key];
           return Object.keys(updated).length ? updated : null;
         };
+        const changeDecision = (value) => {
+          if (key === null) return null;
+          const updated = { ...value || {} };
+          if (decision) updated[key] = { guide: decision.guide, option: decision.option, at };
+          else if (!reviewed) delete updated[key];
+          return Object.keys(updated).length ? updated : null;
+        };
         if (pdfFixResult) {
-          if (!token || token.documentEpoch !== pdfDocumentEpoch || token.html !== pdfFixResult.accessibleHtml || !_commitAsyncHtmlIfCurrent(token, (prev) => _viewWithReviewAttestations(prev, change(prev.reviewedFindings), _docPipeline))) {
+          if (!token || token.documentEpoch !== pdfDocumentEpoch || token.html !== pdfFixResult.accessibleHtml || !_commitAsyncHtmlIfCurrent(token, (prev) => _viewWithReviewAttestations(prev, change(prev.reviewedFindings), _docPipeline, changeDecision(prev.reviewDecisions)))) {
             addToast(t("pdf_audit.review_queue.toast_changed") || "The document changed before this review was recorded. Check the current findings and try again.", "info");
             return;
           }
@@ -12469,8 +12901,47 @@ Return ONLY JSON:
           preferredKey: reviewed ? neighbor && _rfKey(neighbor) : key || _rfAll[0] && _rfKey(_rfAll[0])
         };
         setReviewDismissed((prev) => change(prev) || {});
+        setReviewDecisions((prev) => changeDecision(prev) || {});
+        if (decisionOnly) addToast(t("pdf_audit.decision_guide.recorded_edit") || "Decision recorded. Make the change (Workbench or edit the document), then run the check again; the item clears when the checker no longer flags it.", "info");
       };
-      return /* @__PURE__ */ React.createElement("div", { id: "pdf-review-findings", className: "pdf-workspace-review mt-4 bg-white rounded-2xl border-2 border-amber-300 p-4 space-y-2", role: "region", "aria-label": t("pdf_audit.review_queue.aria") || "Findings that need human judgment" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-900 flex-1" }, t("pdf_audit.review_queue.heading") || "Needs your judgment"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5" }, _rfSource.committed ? t("pdf_audit.review_queue.current") || "current result" : (t("pdf_audit.review_queue.as_of") || "as of pass") + " " + _rfSource.passNumber), _canTriage && _rfOpen.length > 0 && !_remediationInFlight && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _runReviewTriage(_rfOpen), disabled: _triageBusy, className: "text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60", title: t("pdf_audit.review_queue.triage_title") || "Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you." }, _triageBusy ? t("pdf_audit.review_queue.triage_busy") || "Asking AI\u2026" : t("pdf_audit.review_queue.triage_button") || "Ask AI to resolve")), /* @__PURE__ */ React.createElement("p", { "data-review-status": true, tabIndex: -1, role: "status", "aria-live": "polite", "aria-atomic": "true", className: "text-xs font-semibold" }, _rqFill(t("pdf_audit.review_queue.status_counts") || "{pending} pending \xB7 {reviewed} reviewed", { pending: _rfOpen.length, reviewed: _rfDone })), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-900" }, _remediationInFlight ? t("pdf_audit.review_queue.explainer") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own." : t("pdf_audit.review_queue.explainer_settled") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself."), /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, t("pdf_audit.review_queue.marking_note") || "Marking reviewed records your judgment. It does not repair the document, clear checker findings or change verification."), _rfSessionOnly > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, _rfSessionOnly === 1 ? t("pdf_audit.review_queue.session_only_one") || "One review is kept only in this workspace from a live pass; it is not yet recorded on the saved result." : _rqFill(t("pdf_audit.review_queue.session_only_many") || "{count} reviews are kept only in this workspace from a live pass; these marks are not yet recorded on the saved result.", { count: _rfSessionOnly })), _triage && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-900", role: "status" }, _triage.skipped === "over-cap" ? _rqFill(t("pdf_audit.review_queue.triage_over_cap") || 'The automatic AI pass was skipped: {found} findings exceed its cap of {cap}. "Ask AI to resolve" runs it on the first {cap}.', { found: _triage.found || "", cap: _triage.cap || 10 }) : _triage.skipped ? _rqFill(t("pdf_audit.review_queue.triage_failed") || "The AI pass could not run ({reason}).", { reason: _triage.skipped }) : Number.isFinite(_triage.resolved) ? _rqFill(t("pdf_audit.review_queue.triage_summary_resolved") || "AI review: {attempted} looked at, fixes applied: {applied}, no longer flagged after the re-check: {resolved}. Still need your judgment: {open}.", { attempted: _triage.attempted, applied: _triage.applied || 0, resolved: _triage.resolved, open: _rfOpen.length }) : _rqFill(t("pdf_audit.review_queue.triage_summary") || "AI review: {attempted} looked at, fixes applied: {applied}. Still need your judgment: {open}.", { attempted: _triage.attempted, applied: _triage.applied || 0, open: _rfOpen.length })), _rfOpen.length === 0 ? /* @__PURE__ */ React.createElement("p", { "data-review-completion": true, tabIndex: -1, className: "text-xs font-semibold" }, t("pdf_audit.review_queue.all_marked") || "All current findings marked reviewed. These are recorded judgments; verification and any confirmed failures remain unchanged.") : /* @__PURE__ */ React.createElement("ul", { className: "pdf-workspace-review-list space-y-1.5 list-none" }, _rfOpen.map((f) => /* @__PURE__ */ React.createElement("li", { key: _rfKey(f), className: "pdf-workspace-review-row flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold", "aria-hidden": "true" }, f.bucket === "incomplete" ? "\u26A0" : f.bucket === "potential" ? "\u{1F50E}" : "\u{1F440}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, f.description && /* @__PURE__ */ React.createElement("span", { className: "block font-semibold" }, f.description), /* @__PURE__ */ React.createElement("span", { className: "block opacity-80" + (f.description ? " mt-0.5" : "") }, /* @__PURE__ */ React.createElement("span", { className: f.description ? "font-mono" : "font-mono font-bold" }, f.id), /* @__PURE__ */ React.createElement("span", { className: "ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[10px] font-bold uppercase tracking-wide" }, (_rfEngineLabel[f.engine] || f.engine) + " \xB7 " + (_rfBucketLabel[f.bucket] || f.bucket)), f.nodes > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1" }, f.nodes, " ", f.nodes === 1 ? t("pdf_audit.review_queue.element") || "element" : t("pdf_audit.review_queue.elements") || "elements"), (f.wcagCriteria || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1" }, "WCAG ", f.wcagCriteria.join(", "))), (f.where || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 font-mono text-[10px] opacity-80" }, "\u2192 ", f.where.map((w, wi) => /* @__PURE__ */ React.createElement("span", { key: wi }, wi > 0 ? " \xB7 " : "", "\u201C", w, "\u201D"))), _triageFor(f) && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 text-[10px] font-bold text-indigo-900" }, _triageLabel(_triageFor(f))), _rfIsSheet(f) && _rfCanConfirmSheet && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-[11px] text-amber-950" }, f.id === "style_color_misuse" ? t("pdf_audit.sheet_review.colour_question") || 'Equal Access asks this of every document with colour in its stylesheet. Check: is colour ever the ONLY way this document shows something (for example "answers in red" or a colour key with no labels)? If not, confirm it for this document.' : (f.checkReasons || []).length ? (t("pdf_audit.sheet_review.contrast_question_reasons") || "AlloFlow's stylesheet check could not answer this because the document uses: {reasons}. If those are decorative only, confirm it for this document.").replace("{reasons}", f.checkReasons.join("; ")) : t("pdf_audit.sheet_review.contrast_question") || "Check that nothing meaningful disappears in Windows high contrast mode, then confirm it for this document."), f.helpUrl && /* @__PURE__ */ React.createElement("a", { href: f.helpUrl, target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("pdf_audit.wcag_report.guidance") || "Guidance")), /* @__PURE__ */ React.createElement("div", { className: "pdf-workspace-review-actions shrink-0 flex gap-1" }, _rfIsSheet(f) && _rfCanConfirmSheet && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _confirmStylesheet(f.id, true), "data-review-action": "confirm-stylesheet", "data-review-key": _rfKey(f), className: "px-1.5 py-0.5 rounded bg-emerald-800 text-white hover:bg-emerald-900 font-bold transition-colors", title: t("pdf_audit.sheet_review.confirm_title") || "I checked this myself. Recorded for this exact document and counted toward verification; any change to the document asks again.", "aria-label": (t("pdf_audit.sheet_review.confirm_aria") || "Confirm for this document:") + " " + f.id }, t("pdf_audit.sheet_review.confirm") || "Confirm for this document"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _reviewToWorkbench(f), "data-review-action": "workbench", "data-review-key": _rfKey(f), "aria-label": _rqFill(t("pdf_audit.review_queue.workbench_aria") || "Open Workbench for {engine} {id}", { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id }), className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.review_queue.wb_title") || "Send to the Expert Workbench \u2014 prefills a targeted command you review and run" }, t("pdf_audit.review_queue.workbench") || "Workbench"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (event) => _setReviewAttestation(event, _rfKey(f), true), "data-review-action": "mark", "data-review-key": _rfKey(f), className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-800 hover:text-white font-bold transition-colors", title: pdfFixResult ? t("pdf_audit.review_queue.done_title") || "Mark as reviewed \u2014 I checked this myself. Recorded in the audit report as a human attestation." : t("pdf_audit.review_queue.mark_title_unsaved") || "Mark as reviewed in this workspace. No saved result is available yet.", "aria-label": _rqFill(t("pdf_audit.review_queue.mark_aria") || "Mark reviewed: {engine} {id}", { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id }) }, t("pdf_audit.review_queue.done_aria") || "Mark reviewed"))))), (_rfSheetAnswered.length > 0 || _rfSheetConfirmed.length > 0) && /* @__PURE__ */ React.createElement("div", { "data-stylesheet-settled": true, className: "rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] text-emerald-950 space-y-1" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, t("pdf_audit.sheet_review.settled_heading") || "Stylesheet questions settled"), _rfSheetAnswered.map((f) => /* @__PURE__ */ React.createElement("p", { key: "answered-" + f.id }, "\u2713 ", /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, f.id), ": ", t("pdf_audit.sheet_review.answered_by_check") || "answered by AlloFlow's stylesheet check", ". ", t("pdf_audit.sheet_review.contrast_answer") || f.answer)), _rfSheetConfirmed.map((f) => /* @__PURE__ */ React.createElement("div", { key: "confirmed-" + f.id, className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "flex-1" }, "\u2713 ", /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, f.id), ": ", t("pdf_audit.sheet_review.confirmed_by_person") || "confirmed by a person for this exact document (a human attestation, not an automated check)"), _rfCanConfirmSheet && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _confirmStylesheet(f.id, false), "data-review-action": "withdraw-stylesheet", className: "rounded border border-emerald-700 px-2 py-0.5 font-bold", "aria-label": (t("pdf_audit.sheet_review.undo_aria") || "Withdraw confirmation:") + " " + f.id }, t("pdf_audit.sheet_review.undo") || "Undo")))), _rfDone > 0 && /* @__PURE__ */ React.createElement("details", { className: "pdf-workspace-reviewed" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-semibold" }, _rqFill(t("pdf_audit.review_queue.reviewed_summary") || "Reviewed findings ({count})", { count: _rfDone })), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2" }, t("pdf_audit.review_queue.undo_note") || "Undo a mark to return that finding to the pending list. This does not change the document or verification."), /* @__PURE__ */ React.createElement("ul", { className: "pdf-workspace-review-list mt-2 space-y-1.5 list-none" }, _rfReviewed.map((f) => /* @__PURE__ */ React.createElement("li", { key: _rfKey(f), className: "pdf-workspace-review-row flex items-start gap-2 rounded-lg border border-slate-300 p-2 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("strong", null, (_rfEngineLabel[f.engine] || f.engine) + " \xB7 " + f.id), f.description && /* @__PURE__ */ React.createElement("p", null, f.description)), /* @__PURE__ */ React.createElement("div", { className: "pdf-workspace-review-actions" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-review-action": "undo", "data-review-key": _rfKey(f), onClick: (event) => _setReviewAttestation(event, _rfKey(f), false), "aria-label": _rqFill(t("pdf_audit.review_queue.undo_aria") || "Undo reviewed mark: {engine} {id}", { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id }), className: "rounded border px-2 py-1" }, t("pdf_audit.sheet_review.undo") || "Undo"))))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-review-action": "reset", onClick: (event) => _setReviewAttestation(event, null, false), className: "mt-2 rounded border px-2 py-1 text-xs" }, t("pdf_audit.review_queue.reset_all") || "Reset all reviewed marks")));
+      const _guides = typeof window !== "undefined" && window.AlloModules && window.AlloModules.RemediationDecisionGuides || null;
+      const _guideFor = (f) => _guides && typeof _guides.guideFor === "function" ? _guides.guideFor(f.engine, f.id) : null;
+      const _rfDecisions = { ...pdfFixResult && pdfFixResult.reviewDecisions || {}, ..._reviewDecisions };
+      const _decisionLabel = (f) => {
+        const d = _rfDecisions[_rfKey(f)];
+        const g2 = d && _guides && _guides.guideById(d.guide);
+        const o = g2 && g2.options.find((x) => x.id === d.option);
+        return o ? o.label : null;
+      };
+      const _openLesson = (event, id) => {
+        event.preventDefault();
+        const el = document.getElementById("allo-guide-" + id);
+        if (!el) return;
+        el.open = true;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        const s = el.querySelector("summary");
+        if (s) s.focus();
+      };
+      const _usedGuides = _rfAll.map(_guideFor).filter((g2, i, a) => g2 && a.indexOf(g2) === i);
+      const _srcPages = pdfFixResult && Array.isArray(pdfFixResult.groundTruthPages) ? pdfFixResult.groundTruthPages : null;
+      const _sourceEvidence = (f) => {
+        if (!_srcPages || !_guides || typeof _guides.sourceContext !== "function") return [];
+        const quoted = (String(f.description || "").match(/['"\u201c]([^'"\u201d]{2,80})['"\u201d]/) || [])[1];
+        const probes = [quoted].concat((f.where || []).map((w) => String(w || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 120))).filter(Boolean);
+        for (const p of probes) {
+          const hit = _guides.sourceContext(_srcPages, p, 2);
+          if (hit.length) return hit;
+        }
+        return [];
+      };
+      return /* @__PURE__ */ React.createElement("div", { id: "pdf-review-findings", className: "pdf-workspace-review mt-4 bg-white rounded-2xl border-2 border-amber-300 p-4 space-y-2", role: "region", "aria-label": t("pdf_audit.review_queue.aria") || "Findings that need human judgment" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-900 flex-1" }, t("pdf_audit.review_queue.heading") || "Needs your judgment"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5" }, _rfSource.committed ? t("pdf_audit.review_queue.current") || "current result" : (t("pdf_audit.review_queue.as_of") || "as of pass") + " " + _rfSource.passNumber), _canTriage && _rfOpen.length > 0 && !_remediationInFlight && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _runReviewTriage(_rfOpen), disabled: _triageBusy, className: "text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60", title: t("pdf_audit.review_queue.triage_title") || "Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you." }, _triageBusy ? t("pdf_audit.review_queue.triage_busy") || "Asking AI\u2026" : t("pdf_audit.review_queue.triage_button") || "Ask AI to resolve")), /* @__PURE__ */ React.createElement("p", { "data-review-status": true, tabIndex: -1, role: "status", "aria-live": "polite", "aria-atomic": "true", className: "text-xs font-semibold" }, _rqFill(t("pdf_audit.review_queue.status_counts") || "{pending} pending \xB7 {reviewed} reviewed", { pending: _rfOpen.length, reviewed: _rfDone })), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-900" }, _remediationInFlight ? t("pdf_audit.review_queue.explainer") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them here while the automatic passes handle the mechanical fixes; findings a later pass resolves drop off on their own." : t("pdf_audit.review_queue.explainer_settled") || "The automated engines flagged these but cannot decide them \u2014 semantic meaning, context, and intent need a person. Work through them with the Workbench, or mark each reviewed once you have checked it yourself."), /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, t("pdf_audit.review_queue.marking_note") || "Marking reviewed records your judgment. It does not repair the document, clear checker findings or change verification."), _rfSessionOnly > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, _rfSessionOnly === 1 ? t("pdf_audit.review_queue.session_only_one") || "One review is kept only in this workspace from a live pass; it is not yet recorded on the saved result." : _rqFill(t("pdf_audit.review_queue.session_only_many") || "{count} reviews are kept only in this workspace from a live pass; these marks are not yet recorded on the saved result.", { count: _rfSessionOnly })), _triage && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-900", role: "status" }, _triage.skipped === "over-cap" ? _rqFill(t("pdf_audit.review_queue.triage_over_cap") || 'The automatic AI pass was skipped: {found} findings exceed its cap of {cap}. "Ask AI to resolve" runs it on the first {cap}.', { found: _triage.found || "", cap: _triage.cap || 10 }) : _triage.skipped ? _rqFill(t("pdf_audit.review_queue.triage_failed") || "The AI pass could not run ({reason}).", { reason: _triage.skipped }) : Number.isFinite(_triage.resolved) ? _rqFill(t("pdf_audit.review_queue.triage_summary_resolved") || "AI review: {attempted} looked at, fixes applied: {applied}, no longer flagged after the re-check: {resolved}. Still need your judgment: {open}.", { attempted: _triage.attempted, applied: _triage.applied || 0, resolved: _triage.resolved, open: _rfOpen.length }) : _rqFill(t("pdf_audit.review_queue.triage_summary") || "AI review: {attempted} looked at, fixes applied: {applied}. Still need your judgment: {open}.", { attempted: _triage.attempted, applied: _triage.applied || 0, open: _rfOpen.length })), _rfOpen.length === 0 ? /* @__PURE__ */ React.createElement("p", { "data-review-completion": true, tabIndex: -1, className: "text-xs font-semibold" }, t("pdf_audit.review_queue.all_marked") || "All current findings marked reviewed. These are recorded judgments; verification and any confirmed failures remain unchanged.") : /* @__PURE__ */ React.createElement("ul", { className: "pdf-workspace-review-list space-y-1.5 list-none" }, _rfOpen.map((f) => /* @__PURE__ */ React.createElement("li", { key: _rfKey(f), className: "pdf-workspace-review-row flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold", "aria-hidden": "true" }, f.bucket === "incomplete" ? "\u26A0" : f.bucket === "potential" ? "\u{1F50E}" : "\u{1F440}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, f.description && /* @__PURE__ */ React.createElement("span", { className: "block font-semibold" }, f.description), /* @__PURE__ */ React.createElement("span", { className: "block opacity-80" + (f.description ? " mt-0.5" : "") }, /* @__PURE__ */ React.createElement("span", { className: f.description ? "font-mono" : "font-mono font-bold" }, f.id), /* @__PURE__ */ React.createElement("span", { className: "ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[10px] font-bold uppercase tracking-wide" }, (_rfEngineLabel[f.engine] || f.engine) + " \xB7 " + (_rfBucketLabel[f.bucket] || f.bucket)), f.nodes > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1" }, f.nodes, " ", f.nodes === 1 ? t("pdf_audit.review_queue.element") || "element" : t("pdf_audit.review_queue.elements") || "elements"), (f.wcagCriteria || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1" }, "WCAG ", f.wcagCriteria.join(", "))), (f.where || []).length > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 font-mono text-[10px] opacity-80" }, "\u2192 ", f.where.map((w, wi) => /* @__PURE__ */ React.createElement("span", { key: wi }, wi > 0 ? " \xB7 " : "", "\u201C", w, "\u201D"))), _triageFor(f) && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 text-[10px] font-bold text-indigo-900" }, _triageLabel(_triageFor(f))), (() => {
+        const ev = _sourceEvidence(f);
+        return ev.length ? /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 text-[10px] text-slate-800", "data-review-source": _rfKey(f) }, ev.map((w, wi) => /* @__PURE__ */ React.createElement("span", { key: wi, className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _rqFill(t("pdf_audit.decision_guide.in_original") || "In the original (page {page}):", { page: w.page })), " ", w.before, /* @__PURE__ */ React.createElement("mark", { className: "bg-yellow-200 text-slate-900 px-0.5" }, w.match), w.after))) : null;
+      })(), _decisionLabel(f) && /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5 text-[10px] font-bold text-emerald-900", "data-review-decision": _rfKey(f) }, (t("pdf_audit.decision_guide.your_decision") || "Your decision:") + " " + _decisionLabel(f)), (() => {
+        const g2 = _guideFor(f);
+        if (!g2) return null;
+        return /* @__PURE__ */ React.createElement("details", { className: "mt-1 rounded border border-amber-200 bg-white px-2 py-1", "data-decision-guide": g2.id }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-900" }, t("pdf_audit.decision_guide.how_to_decide") || "How to decide"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.decision_guide.why_person") || "Why a person decides:"), " ", g2.checkerCannot), /* @__PURE__ */ React.createElement("p", { className: "mt-1 font-semibold" }, g2.question), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1 list-none" }, g2.options.map((o) => /* @__PURE__ */ React.createElement("li", { key: o.id, className: "rounded bg-amber-50/60 px-1.5 py-1" }, o.id === "unsure" ? /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, o.label) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (event) => _setReviewAttestation(event, _rfKey(f), !!o.settles, { guide: g2.id, option: o.id }), "data-review-action": "decide", "data-review-key": _rfKey(f), "data-review-option": o.id, className: "px-1.5 py-0.5 rounded font-bold transition-colors " + (o.settles ? "bg-emerald-800 text-white hover:bg-emerald-900" : "bg-indigo-700 text-white hover:bg-indigo-800"), "aria-label": o.label + ": " + f.id }, o.label), /* @__PURE__ */ React.createElement("span", { className: "ml-1" }, o.choose), /* @__PURE__ */ React.createElement("span", { className: "block opacity-90" }, "\u2192 " + o.then)))), _guideWcagLine(g2), /* @__PURE__ */ React.createElement("a", { href: "#allo-guide-" + g2.id, onClick: (event) => _openLesson(event, g2.id), className: "inline-block mt-1 font-bold underline text-indigo-900" }, t("pdf_audit.decision_guide.lesson_link") || "How to decide: 2-minute lesson"));
+      })(), _rfIsSheet(f) && _rfCanConfirmSheet && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-[11px] text-amber-950" }, f.id === "style_color_misuse" ? t("pdf_audit.sheet_review.colour_question") || 'Equal Access asks this of every document with colour in its stylesheet. Check: is colour ever the ONLY way this document shows something (for example "answers in red" or a colour key with no labels)? If not, confirm it for this document.' : (f.checkReasons || []).length ? (t("pdf_audit.sheet_review.contrast_question_reasons") || "AlloFlow's stylesheet check could not answer this because the document uses: {reasons}. If those are decorative only, confirm it for this document.").replace("{reasons}", f.checkReasons.join("; ")) : t("pdf_audit.sheet_review.contrast_question") || "Check that nothing meaningful disappears in Windows high contrast mode, then confirm it for this document."), f.helpUrl && /* @__PURE__ */ React.createElement("a", { href: f.helpUrl, target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("pdf_audit.wcag_report.guidance") || "Guidance")), /* @__PURE__ */ React.createElement("div", { className: "pdf-workspace-review-actions shrink-0 flex gap-1" }, _rfIsSheet(f) && _rfCanConfirmSheet && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _confirmStylesheet(f.id, true), "data-review-action": "confirm-stylesheet", "data-review-key": _rfKey(f), className: "px-1.5 py-0.5 rounded bg-emerald-800 text-white hover:bg-emerald-900 font-bold transition-colors", title: t("pdf_audit.sheet_review.confirm_title") || "I checked this myself. Recorded for this exact document and counted toward verification; any change to the document asks again.", "aria-label": (t("pdf_audit.sheet_review.confirm_aria") || "Confirm for this document:") + " " + f.id }, t("pdf_audit.sheet_review.confirm") || "Confirm for this document"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _reviewToWorkbench(f), "data-review-action": "workbench", "data-review-key": _rfKey(f), "aria-label": _rqFill(t("pdf_audit.review_queue.workbench_aria") || "Open Workbench for {engine} {id}", { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id }), className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors", title: t("pdf_audit.review_queue.wb_title") || "Send to the Expert Workbench \u2014 prefills a targeted command you review and run" }, t("pdf_audit.review_queue.workbench") || "Workbench"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (event) => _setReviewAttestation(event, _rfKey(f), true), "data-review-action": "mark", "data-review-key": _rfKey(f), className: "px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-800 hover:text-white font-bold transition-colors", title: pdfFixResult ? t("pdf_audit.review_queue.done_title") || "Mark as reviewed \u2014 I checked this myself. Recorded in the audit report as a human attestation." : t("pdf_audit.review_queue.mark_title_unsaved") || "Mark as reviewed in this workspace. No saved result is available yet.", "aria-label": _rqFill(t("pdf_audit.review_queue.mark_aria") || "Mark reviewed: {engine} {id}", { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id }) }, t("pdf_audit.review_queue.done_aria") || "Mark reviewed"))))), (_rfSheetAnswered.length > 0 || _rfSheetConfirmed.length > 0) && /* @__PURE__ */ React.createElement("div", { "data-stylesheet-settled": true, className: "rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] text-emerald-950 space-y-1" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, t("pdf_audit.sheet_review.settled_heading") || "Stylesheet questions settled"), _rfSheetAnswered.map((f) => /* @__PURE__ */ React.createElement("p", { key: "answered-" + f.id }, "\u2713 ", /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, f.id), ": ", t("pdf_audit.sheet_review.answered_by_check") || "answered by AlloFlow's stylesheet check", ". ", t("pdf_audit.sheet_review.contrast_answer") || f.answer)), _rfSheetConfirmed.map((f) => /* @__PURE__ */ React.createElement("div", { key: "confirmed-" + f.id, className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "flex-1" }, "\u2713 ", /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, f.id), ": ", t("pdf_audit.sheet_review.confirmed_by_person") || "confirmed by a person for this exact document (a human attestation, not an automated check)"), _rfCanConfirmSheet && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _confirmStylesheet(f.id, false), "data-review-action": "withdraw-stylesheet", className: "rounded border border-emerald-700 px-2 py-0.5 font-bold", "aria-label": (t("pdf_audit.sheet_review.undo_aria") || "Withdraw confirmation:") + " " + f.id }, t("pdf_audit.sheet_review.undo") || "Undo")))), _rfDone > 0 && /* @__PURE__ */ React.createElement("details", { className: "pdf-workspace-reviewed" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-semibold" }, _rqFill(t("pdf_audit.review_queue.reviewed_summary") || "Reviewed findings ({count})", { count: _rfDone })), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-2" }, t("pdf_audit.review_queue.undo_note") || "Undo a mark to return that finding to the pending list. This does not change the document or verification."), /* @__PURE__ */ React.createElement("ul", { className: "pdf-workspace-review-list mt-2 space-y-1.5 list-none" }, _rfReviewed.map((f) => /* @__PURE__ */ React.createElement("li", { key: _rfKey(f), className: "pdf-workspace-review-row flex items-start gap-2 rounded-lg border border-slate-300 p-2 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("strong", null, (_rfEngineLabel[f.engine] || f.engine) + " \xB7 " + f.id), f.description && /* @__PURE__ */ React.createElement("p", null, f.description), _decisionLabel(f) && /* @__PURE__ */ React.createElement("p", { className: "font-semibold", "data-review-decision": _rfKey(f) }, (t("pdf_audit.decision_guide.your_decision") || "Your decision:") + " " + _decisionLabel(f))), /* @__PURE__ */ React.createElement("div", { className: "pdf-workspace-review-actions" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-review-action": "undo", "data-review-key": _rfKey(f), onClick: (event) => _setReviewAttestation(event, _rfKey(f), false), "aria-label": _rqFill(t("pdf_audit.review_queue.undo_aria") || "Undo reviewed mark: {engine} {id}", { engine: _rfEngineLabel[f.engine] || f.engine, id: f.id }), className: "rounded border px-2 py-1" }, t("pdf_audit.sheet_review.undo") || "Undo"))))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-review-action": "reset", onClick: (event) => _setReviewAttestation(event, null, false), className: "mt-2 rounded border px-2 py-1 text-xs" }, t("pdf_audit.review_queue.reset_all") || "Reset all reviewed marks")), _usedGuides.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "pdf-workspace-guides mt-3 border-t border-amber-200 pt-2", "data-decision-lessons": true }, /* @__PURE__ */ React.createElement("h5", { className: "text-xs font-black text-amber-900" }, t("pdf_audit.decision_guide.lessons_heading") || "How to decide: short lessons"), _usedGuides.map((g2) => /* @__PURE__ */ React.createElement("details", { key: g2.id, id: "allo-guide-" + g2.id, className: "mt-1 rounded border border-slate-300 bg-white px-2 py-1 text-[11px]" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold" }, g2.title, g2.wcag && g2.wcag.length ? " (WCAG " + g2.wcag.join(", ") + ")" : ""), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, g2.checkerCannot), /* @__PURE__ */ React.createElement("ol", { className: "mt-1 list-decimal pl-5 space-y-0.5" }, g2.lesson.steps.map((s, i) => /* @__PURE__ */ React.createElement("li", { key: i }, s))), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.decision_guide.example_fine") || "Fine as it is:"), " ", g2.lesson.fine), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.decision_guide.example_fix") || "Needs a change:"), " ", g2.lesson.fix), _guideWcagLine(g2)))));
     })(), pdfFixResult && pdfFixResult.accessibleHtml && /* @__PURE__ */ React.createElement(_PdfPreservationReview, { key: pdfDocumentEpoch, result: pdfFixResult, captureToken: _captureAsyncHtmlToken, commitMetadata: _commitAsyncHtmlIfCurrent, onWorkbench: (command) => {
       setExpertCommandInput(command);
       const section = document.getElementById("allo-sec-workbench");
@@ -13108,7 +13579,15 @@ Return ONLY JSON:
         const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1, ocrColumnOrder: 1 };
         const _textLossConcern = cov == null || cov < 97 || pdfFixResult.integrityWarning || _notes.some((n) => n && !_qualityKinds[n.kind]);
         return _textLossConcern ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-sky-800 leading-relaxed mt-1" }, (t("pdf_audit.fidelity_review.body") || "After accounting for de-hyphenation and whitespace cleanup, the remediated output still preserves {cov} of the source text. This is a content-fidelity check, not an accessibility barrier \u2014 some source text may not have carried over. Open the Diff view to compare the remediated text against the original, and keep the source PDF on hand to confirm nothing important was dropped.").replace("{cov}", cov != null ? cov + "%" : "less than the full source")) : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-sky-800 leading-relaxed mt-1" }, (t("pdf_audit.fidelity_review.body_quality") || "The text carried over fully ({cov} of source characters preserved) \u2014 the notes below are QUALITY flags (image descriptions, OCR confidence, removed running heads), not missing text. Review each note; the Diff view is available if you want to double-check.").replace("{cov}", cov != null ? cov + "%" : "~100%"));
-      })(), Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-1" }, pdfFixResult.fidelityNotes.filter(Boolean).map((n, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-xs leading-snug flex items-start gap-1.5 " + (n.kind === "refusal" ? "text-red-700 font-semibold" : n.kind === "numeric" || n.kind === "placement" ? "text-amber-800 font-semibold" : "text-sky-800") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, n.kind === "refusal" ? "\u{1F6AB}" : n.kind === "numeric" ? "\u{1F522}" : n.kind === "placement" ? "\u{1F4D1}" : n.kind === "tables" ? "\u25A6" : "\u{1F517}"), /* @__PURE__ */ React.createElement("span", null, typeof n === "string" ? n : n.msg)))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-sky-600 mt-2 italic" }, t("pdf_audit.fidelity_review.note") || "Coverage already excludes formatting-only changes (rejoined hyphens, collapsed spaces), so a shortfall here points to actual missing text worth a human glance \u2014 not a scoring artifact."))));
+      })(), Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-1" }, pdfFixResult.fidelityNotes.filter(Boolean).map((n, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-xs leading-snug flex items-start gap-1.5 " + (n.kind === "refusal" ? "text-red-700 font-semibold" : n.kind === "numeric" || n.kind === "placement" ? "text-amber-800 font-semibold" : "text-sky-800") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, n.kind === "refusal" ? "\u{1F6AB}" : n.kind === "numeric" ? "\u{1F522}" : n.kind === "placement" ? "\u{1F4D1}" : n.kind === "tables" ? "\u25A6" : "\u{1F517}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", null, typeof n === "string" ? n : n.msg), (() => {
+        const G = typeof window !== "undefined" && window.AlloModules && window.AlloModules.RemediationDecisionGuides || null;
+        const g2 = G && n && n.kind ? G.guideFor("fidelity", n.kind) : null;
+        if (!g2) return null;
+        const dec = { ...pdfFixResult && pdfFixResult.reviewDecisions || {}, ..._reviewDecisions }["fidelity|" + n.kind];
+        const chosen = dec && g2.options.find((o) => o.id === dec.option);
+        const ev = Array.isArray(n.evidence) ? n.evidence : [];
+        return /* @__PURE__ */ React.createElement("details", { className: "mt-1 rounded border border-sky-200 bg-white px-2 py-1 font-normal text-slate-900", "data-decision-guide": g2.id, "data-fidelity-kind": n.kind }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-900" }, (t("pdf_audit.decision_guide.how_to_decide") || "How to decide") + (chosen ? " \xB7 " + (t("pdf_audit.decision_guide.your_decision") || "Your decision:") + " " + chosen.label : "")), ev.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-0.5 list-none", "data-fidelity-evidence": true }, ev.map((e, ei) => /* @__PURE__ */ React.createElement("li", { key: ei }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, e.value), (e.where || []).length === 0 ? " \u2014 " + (t("pdf_audit.decision_guide.not_located") || "not located in the original's text") : (e.where || []).map((w, wi) => /* @__PURE__ */ React.createElement("span", { key: wi, className: "block pl-2" }, (t("pdf_audit.decision_guide.in_original") || "In the original (page {page}):").replace("{page}", w.page), " ", w.before, /* @__PURE__ */ React.createElement("mark", { className: "bg-yellow-200 px-0.5" }, w.match), w.after))))), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.decision_guide.why_person") || "Why a person decides:"), " ", g2.checkerCannot), _guideWcagLine(g2), /* @__PURE__ */ React.createElement("p", { className: "mt-1 font-semibold" }, g2.question), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1 list-none" }, g2.options.map((o) => /* @__PURE__ */ React.createElement("li", { key: o.id }, o.id === "unsure" ? /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, o.label) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _recordFidelityDecision(n.kind, g2.id, o.id), "data-fidelity-decide": o.id, className: "px-1.5 py-0.5 rounded font-bold text-white " + (o.settles ? "bg-emerald-800 hover:bg-emerald-900" : "bg-indigo-700 hover:bg-indigo-800") }, o.label), /* @__PURE__ */ React.createElement("span", { className: "ml-1" }, o.choose), /* @__PURE__ */ React.createElement("span", { className: "block opacity-90" }, "\u2192 " + o.then)))), /* @__PURE__ */ React.createElement("details", { id: "allo-guide-" + g2.id + "-content", className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold underline text-indigo-900" }, t("pdf_audit.decision_guide.lesson_link") || "How to decide: 2-minute lesson"), /* @__PURE__ */ React.createElement("ol", { className: "mt-1 list-decimal pl-5 space-y-0.5" }, g2.lesson.steps.map((s, si) => /* @__PURE__ */ React.createElement("li", { key: si }, s))), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.decision_guide.example_fine") || "Fine as it is:"), " ", g2.lesson.fine), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("pdf_audit.decision_guide.example_fix") || "Needs a change:"), " ", g2.lesson.fix)));
+      })())))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-sky-600 mt-2 italic" }, t("pdf_audit.fidelity_review.note") || "Coverage already excludes formatting-only changes (rejoined hyphens, collapsed spaces), so a shortfall here points to actual missing text worth a human glance \u2014 not a scoring artifact."))));
     })(), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -14724,6 +15203,7 @@ Return ONLY JSON:
             candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
             candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120), ...typeof entry.sourceLocation === "string" ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {} })) : [],
             reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
+            reviewDecisions: project.reviewDecisions && typeof project.reviewDecisions === "object" ? project.reviewDecisions : null,
             _audioJobMeta: project._audioJobMeta || null,
             _translation: project._translation || null,
             _plainLanguage: project._plainLanguage || null

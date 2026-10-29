@@ -2319,7 +2319,7 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
   }
   if (!text) return null;
   if (typeof text !== "string") {
-    warnLog("formatInlineText received non-string:", text);
+    warnLog("formatInlineText received non-string:", typeof text);
     return String(text);
   }
   text = text.replace(/&lt;br\s*\/?&gt;/gi, "\n").replace(/<br\s*\/?>/gi, "\n");

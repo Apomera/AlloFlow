@@ -1726,6 +1726,7 @@ const createPersonas = (deps) => {
             const style = char.artStyle || "Oil painting";
             let url = await generateCharacterPortrait(desc, style);
             if (!url) {
+                // pii-safe: historical or fictional persona name, never a person in the class
                 warnLog(`Retrying portrait for ${char.name} with simplified prompt...`);
                 const simpleDesc = `Historical portrait of ${char.name} (${char.role}).`;
                 url = await generateCharacterPortrait(simpleDesc, style);

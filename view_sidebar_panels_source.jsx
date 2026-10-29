@@ -38,6 +38,91 @@ function useAiTextAvailable() {
   }, []);
   return available;
 }
+// "Other ways to start": one collapsed line that lists only what this tool supports,
+// an experimental topic start (needs AI) and a blank resource the teacher fills in.
+// With no AI connected, Generate cannot run, so the blank start is shown directly.
+// framed: a tinted strip for use outside the Source Needed notice.
+function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
+  const aiTextAvailable = useAiTextAvailable();
+  const [open, setOpen] = React.useState(false);
+  const [topicOpen, setTopicOpen] = React.useState(false);
+  const [topic, setTopic] = React.useState('');
+  const topicId = 'start-topic-' + (React.useId ? React.useId().replace(/[^\w-]/g, '') : 'field');
+  const canTopic = typeof onStartFromTopic === 'function' && aiTextAvailable;
+  const canBlank = typeof onStartBlank === 'function';
+  if (!canTopic && !canBlank) return null;
+  const action = 'min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1';
+  const link = 'min-h-[24px] text-xs font-semibold text-sky-900 underline underline-offset-2 hover:text-sky-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500';
+  const blankButton = canBlank ? (
+    <button type="button" data-help-key="sidebar_start_blank" disabled={!!busy} onClick={() => onStartBlank()}
+      className={action + ' border border-sky-300 bg-white text-sky-900 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60'}>
+      {t('sidebar.start_blank') || 'Blank: fill it in yourself'}
+    </button>
+  ) : null;
+  const body = !aiTextAvailable ? (
+    <div className="flex flex-wrap items-center gap-2">{blankButton}</div>
+  ) : (
+    <div>
+      <button type="button" data-help-key="sidebar_other_ways_toggle" aria-expanded={open} onClick={() => setOpen((v) => !v)} className={link}>
+        {(t('sidebar.other_ways_to_start') || 'Other ways to start') + (open ? ' ▴' : ' ▾')}
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2">
+          {canTopic && (!topicOpen ? (
+            <button type="button" data-help-key="sidebar_source_needed_topic_toggle" aria-expanded="false" onClick={() => setTopicOpen(true)} className={link}>
+              {t('sidebar.needs_source_topic_toggle') || 'From a topic (experimental)'}
+            </button>
+          ) : (
+            <form onSubmit={(event) => { event.preventDefault(); const value = topic.trim(); if (value && !busy) onStartFromTopic(value); }}>
+              <label htmlFor={topicId} className="block font-semibold">{t('sidebar.needs_source_topic_label') || 'Topic'}</label>
+              <input id={topicId} type="text" value={topic} maxLength={300} autoFocus aria-describedby={topicId + '-note'}
+                onChange={(event) => setTopic(event.target.value)}
+                placeholder={t('sidebar.needs_source_topic_placeholder') || 'e.g. renewable and non-renewable energy'}
+                className="mt-1 w-full rounded-lg border border-sky-300 bg-white px-2 py-1.5 text-xs text-slate-900" />
+              <p id={topicId + '-note'} className="mt-1">{t('sidebar.needs_source_topic_note') || 'Experimental: made from the topic alone, so it is not checked against a source. Review it before sharing.'}</p>
+              <button type="submit" data-help-key="sidebar_source_needed_topic_create" disabled={!topic.trim() || !!busy}
+                className={action + ' mt-2 bg-sky-700 text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60'}>
+                {t('sidebar.needs_source_topic_create') || 'Create from topic'}
+              </button>
+            </form>
+          ))}
+          {blankButton}
+        </div>
+      )}
+    </div>
+  );
+  return framed ? (
+    <div data-help-key="sidebar_other_ways_to_start" className="border-b border-sky-200 bg-sky-50 px-3.5 py-2 text-xs text-sky-950">{body}</div>
+  ) : (
+    <div data-help-key="sidebar_other_ways_to_start" className="mt-2 border-t border-sky-200 pt-2">{body}</div>
+  );
+}
+
+// Shown inside a tool that builds from source material while there is none yet, so
+// a disabled Generate button explains itself and offers the way forward.
+function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartBlank, busy }) {
+  const openQuickStart = typeof window !== 'undefined' && typeof window.__alloOpenQuickStart === 'function' ? window.__alloOpenQuickStart : null;
+  const action = 'min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1';
+  return (
+    <div role="note" data-help-key="sidebar_source_needed_notice" className="border-b border-sky-200 bg-sky-50 px-3.5 py-2.5 text-xs text-sky-950">
+      <p className="font-semibold">{t('sidebar.needs_source') || 'This tool builds from source material.'}</p>
+      <p className="mt-0.5">{t('sidebar.needs_source_hint') || 'Add a text, file, or link first. Then Generate turns on here.'}</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button type="button" data-help-key="sidebar_source_needed_add" onClick={onAddSource} className={action + ' bg-sky-700 text-white hover:bg-sky-800'}>
+          {t('sidebar.needs_source_add') || 'Add source material'}
+        </button>
+        {openQuickStart && (
+          <button type="button" data-help-key="sidebar_source_needed_quick_start" onClick={() => { try { openQuickStart(); } catch (_) {} }}
+            className={action + ' border border-sky-300 bg-white text-sky-900 hover:bg-sky-100'}>
+            {t('sidebar.needs_source_quick_start') || 'Guided Quick Start'}
+          </button>
+        )}
+      </div>
+      <OtherWaysToStart t={t} onStartFromTopic={onStartFromTopic} onStartBlank={onStartBlank} busy={busy} />
+    </div>
+  );
+}
+
 // The doorway: rendered directly above a disabled generate button. Clicking
 // opens AI Backend Settings via the host bridge (window.__alloOpenAiSetup,
 // registered beside the aiCapability state in ANTI).
@@ -3840,6 +3925,21 @@ function GeneratorActionsView(props) {
     useEmojis, useLowQualityVisuals, useMathSourceContext, visualCustomInstructions, visualCustomStyle,
     visualLayoutMode, visualStyle,
   } = props;
+  // Start blank is offered only for tools the host says can be filled in by hand.
+  const canStartBlank = (id) => Array.isArray(window.__alloBlankStartTypes) && window.__alloBlankStartTypes.includes(id);
+  const startBlank = (id) => handleGenerate(id, null, false, null, { seed: { kind: 'blank' } });
+  // Opens the source panel, scrolls to it and puts the cursor in its first field.
+  const openSourceInput = () => {
+    if (typeof setExpandedTools === 'function') setExpandedTools((prev) => (prev.includes('source-input') ? prev : [...prev, 'source-input']));
+    window.setTimeout(() => {
+      const panel = document.getElementById('tour-input-panel');
+      if (!panel) return;
+      const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      try { panel.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); } catch (_) {}
+      const field = panel.querySelector('textarea, input[type="text"], input:not([type])');
+      if (field) try { field.focus({ preventScroll: true }); } catch (_) {}
+    }, 60);
+  };
   return (
 <div id="tour-generator-actions" data-help-key="generator_actions" className="grid min-w-0 grid-cols-1 gap-4">
             <style>{`
@@ -3947,6 +4047,7 @@ function GeneratorActionsView(props) {
                 <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Search size={16}/> {t('sidebar.tool_analysis')}</div>
                 {expandedTools.includes('analysis') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
+                {expandedTools.includes('analysis') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
               {/* ── AnalysisPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
               {expandedTools.includes('analysis') && window.AlloModules && window.AlloModules.AnalysisPanel && React.createElement(window.AlloModules.AnalysisPanel, {
           expandedTools, checkAccuracyWithSearch, handleGenerate, hasSourceOrAnalysis, inputText, isProcessing,
@@ -3966,6 +4067,8 @@ function GeneratorActionsView(props) {
                 </div>
                 {expandedTools.includes('glossary') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
+                {expandedTools.includes('glossary') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartBlank={canStartBlank('glossary') ? () => startBlank('glossary') : undefined} />}
+                {expandedTools.includes('glossary') && hasSourceOrAnalysis && canStartBlank('glossary') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('glossary')} />}
                 {/* ── GlossaryPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('glossary') && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
           expandedTools, InfoTooltip, autoRemoveWords, glossaryCustomInstructions,
@@ -3990,6 +4093,7 @@ function GeneratorActionsView(props) {
                     </div>
                     {expandedTools.includes('simplified') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('simplified') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
               {/* ── SimplifiedPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
               {expandedTools.includes('simplified') && window.AlloModules && window.AlloModules.SimplifiedPanel && React.createElement(window.AlloModules.SimplifiedPanel, {
           expandedTools, handleGenerate, hasSourceOrAnalysis, includeCharts,
@@ -4031,6 +4135,7 @@ function GeneratorActionsView(props) {
                 <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Layout size={16}/> {t('sidebar.tool_outline')}</div>
                 {expandedTools.includes('outline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
+                {expandedTools.includes('outline') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {/* ── OutlinePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('outline') && window.AlloModules && window.AlloModules.OutlinePanel && React.createElement(window.AlloModules.OutlinePanel, {
           expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, outlineCustomInstructions,
@@ -4049,6 +4154,7 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><BookOpen size={16}/> {t('sidebar.tool_note_taking') || 'Note-Taking Templates'}</div>
                   {expandedTools.includes('note-taking') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('note-taking') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {/* ── NoteTakingPanel lives in view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('note-taking') && window.AlloModules && window.AlloModules.NoteTakingPanel && React.createElement(window.AlloModules.NoteTakingPanel, {
           expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, noteTakingCustomInstructions, noteTakingTemplateType, setNoteTakingCustomInstructions, setNoteTakingTemplateType, t
@@ -4066,6 +4172,8 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('sidebar.tool_anchor_chart') || 'Anchor Chart'}</div>
                   {expandedTools.includes('anchor-chart') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('anchor-chart') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartFromTopic={(topic) => handleGenerate('anchor-chart', null, false, null, { seed: { kind: 'topic', text: topic } })} onStartBlank={canStartBlank('anchor-chart') ? () => startBlank('anchor-chart') : undefined} />}
+                  {expandedTools.includes('anchor-chart') && hasSourceOrAnalysis && canStartBlank('anchor-chart') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('anchor-chart')} />}
                 {/* ── AnchorChartPanel lives in view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('anchor-chart') && window.AlloModules && window.AlloModules.AnchorChartPanel && React.createElement(window.AlloModules.AnchorChartPanel, {
           anchorChartCustomInstructions, anchorChartType, expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, setAnchorChartCustomInstructions, setAnchorChartType, t
@@ -4083,6 +4191,7 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_memory_aid') || 'Memory Aid Studio'}</div>
                   {expandedTools.includes('memory-aid') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('memory-aid') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {expandedTools.includes('memory-aid') && window.AlloModules && window.AlloModules.MemoryAidPanel && React.createElement(window.AlloModules.MemoryAidPanel, {
                   expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
                   memoryAidSelectionMode, setMemoryAidSelectionMode,
@@ -4109,6 +4218,7 @@ function GeneratorActionsView(props) {
                   <div className='text-sm font-bold text-slate-700 flex gap-2 items-center'><Target size={16}/> {t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio'}</div>
                   {expandedTools.includes('applied-challenge') ? <ChevronUp size={16} className='text-slate-600'/> : <ChevronDown size={16} className='text-slate-600'/>}
                 </button>
+                  {expandedTools.includes('applied-challenge') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {expandedTools.includes('applied-challenge') && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
                   expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t,
                   appliedChallengeSelectionMode, setAppliedChallengeSelectionMode,
@@ -4129,6 +4239,7 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ImageIcon size={16}/> {t('sidebar.tool_visual')}</div>
                   {expandedTools.includes('image') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('image') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {/* ── ImagePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('image') && window.AlloModules && window.AlloModules.ImagePanel && React.createElement(window.AlloModules.ImagePanel, {
           expandedTools, creativeMode, fillInTheBlank, handleGenerate, hasSourceOrAnalysis,
@@ -4148,6 +4259,7 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileQuestion size={16}/> {t('sidebar.tool_faq')}</div>
                   {expandedTools.includes('faq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('faq') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {/* ── FaqPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('faq') && window.AlloModules && window.AlloModules.FaqPanel && React.createElement(window.AlloModules.FaqPanel, {
           expandedTools, faqCount, faqCustomInstructions, handleGenerate, hasSourceOrAnalysis,
@@ -4167,6 +4279,7 @@ function GeneratorActionsView(props) {
                   </div>
                   {expandedTools.includes('sentence-frames') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('sentence-frames') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {/* ── SentenceFramesPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('sentence-frames') && window.AlloModules && window.AlloModules.SentenceFramesPanel && React.createElement(window.AlloModules.SentenceFramesPanel, {
           expandedTools, frameCustomInstructions, frameType, handleGenerate, hasSourceOrAnalysis,
@@ -4184,6 +4297,7 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_brainstorm')}</div>
                   {expandedTools.includes('brainstorm') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('brainstorm') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {/* ── BrainstormPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('brainstorm') && window.AlloModules && window.AlloModules.BrainstormPanel && React.createElement(window.AlloModules.BrainstormPanel, {
           expandedTools, BRIDGE_MODES, Terminal, brainstormCustomInstructions, bridgeSimType,
@@ -4202,6 +4316,7 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><History size={16}/> {t('persona.title')}</div>
                   {expandedTools.includes('persona') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('persona') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartFromTopic={(topic) => handleGenerate('persona', null, false, null, { seed: { kind: 'topic', text: topic } })} />}
                 {/* ── PersonaPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('persona') && window.AlloModules && window.AlloModules.PersonaPanel && React.createElement(window.AlloModules.PersonaPanel, {
           expandedTools, ListChecks, MessageCircleQuestion, activeView, generatedContent,
@@ -4221,6 +4336,8 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ListOrdered size={16}/> {t('timeline.title')}</div>
                   {expandedTools.includes('timeline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('timeline') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartBlank={canStartBlank('timeline') ? () => startBlank('timeline') : undefined} />}
+                  {expandedTools.includes('timeline') && hasSourceOrAnalysis && canStartBlank('timeline') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('timeline')} />}
                 {/* ── TimelinePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('timeline') && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
           expandedTools, TIMELINE_MODE_DEFINITIONS, handleGenerate, hasSourceOrAnalysis, includeTimelineVisuals,
@@ -4234,12 +4351,14 @@ function GeneratorActionsView(props) {
               `}>
                 <button type="button"
                     data-help-key="tool_concept_sort"
-                    onClick={() => toggleTool('concept-sort')}
+                    aria-expanded={expandedTools.includes('concept-sort')} onClick={() => toggleTool('concept-sort')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:transition-none"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Filter size={16}/> {t('concept_sort.title')}</div>
                   {expandedTools.includes('concept-sort') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('concept-sort') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartFromTopic={(topic) => handleGenerate('concept-sort', null, false, null, { seed: { kind: 'topic', text: topic } })} onStartBlank={canStartBlank('concept-sort') ? () => startBlank('concept-sort') : undefined} />}
+                  {expandedTools.includes('concept-sort') && hasSourceOrAnalysis && canStartBlank('concept-sort') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('concept-sort')} />}
                 {/* ── ConceptSortPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('concept-sort') && window.AlloModules && window.AlloModules.ConceptSortPanel && React.createElement(window.AlloModules.ConceptSortPanel, {
           expandedTools, addConcept, conceptImageMode, conceptInput, conceptItemCount,
@@ -4254,12 +4373,13 @@ function GeneratorActionsView(props) {
               `}>
                 <button type="button"
                     data-help-key="tool_dbq"
-                    onClick={() => toggleTool('dbq')}
+                    aria-expanded={expandedTools.includes('dbq')} onClick={() => toggleTool('dbq')}
                     className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
                 >
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('dbq.title') || 'Document Analysis (DBQ)'}</div>
                   {expandedTools.includes('dbq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('dbq') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                 {/* ── DbqPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('dbq') && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
           expandedTools, addToast, callGemini, callGeminiVision, dbqCustomInstructions, fetchAndCleanUrl,
@@ -4324,6 +4444,7 @@ function GeneratorActionsView(props) {
                 </div>
                 {expandedTools.includes('adventure') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
+                {expandedTools.includes('adventure') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
               {/* ── AdventurePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
               {expandedTools.includes('adventure') && window.AlloModules && window.AlloModules.AdventurePanel && React.createElement(window.AlloModules.AdventurePanel, {
           expandedTools, Cloud, CloudOff, Octagon, Package,
@@ -4357,6 +4478,8 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><CheckSquare size={16}/> {t('sidebar.tool_quiz')}</div>
                   {expandedTools.includes('quiz') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
+                  {expandedTools.includes('quiz') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartBlank={canStartBlank('quiz') ? () => startBlank('quiz') : undefined} />}
+                  {expandedTools.includes('quiz') && hasSourceOrAnalysis && canStartBlank('quiz') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('quiz')} />}
                  {/* ── QuizPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                  {expandedTools.includes('quiz') && window.AlloModules && window.AlloModules.QuizPanel && React.createElement(window.AlloModules.QuizPanel, {
           expandedTools, InfoTooltip, dokLevel, generatedContent, handleGenerate,
@@ -4371,7 +4494,7 @@ function GeneratorActionsView(props) {
                `}>
                  <button type="button"
                      data-help-key="tool_lesson_plan"
-                     onClick={() => toggleTool('lesson-plan')}
+                     aria-expanded={expandedTools.includes('lesson-plan')} onClick={() => toggleTool('lesson-plan')}
                      className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
                  >
                    <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
@@ -4380,6 +4503,7 @@ function GeneratorActionsView(props) {
                    </div>
                    {expandedTools.includes('lesson-plan') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                  </button>
+                   {expandedTools.includes('lesson-plan') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
                  {/* ── LessonPlanPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                  {expandedTools.includes('lesson-plan') && window.AlloModules && window.AlloModules.LessonPlanPanel && React.createElement(window.AlloModules.LessonPlanPanel, {
           expandedTools, activeView, handleGenerateLessonPlan, hasSourceOrAnalysis, isProcessing,
@@ -4488,7 +4612,7 @@ function SourceInputShellView(props) {
 <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
             <div
                 className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2 cursor-pointer hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
-                onClick={() => toggleTool('source-input')}
+                aria-expanded={expandedTools.includes('source-input')} onClick={() => toggleTool('source-input')}
             >
               <h2 id="source-ready-title" tabIndex={-1} className="font-semibold text-slate-700 flex items-center gap-2 text-sm">
                 <FileText size={16} /> {isParentMode ? (t('family_start.title') || "Start with your child's reading") : t('tools.source')}
@@ -4627,6 +4751,7 @@ function SourceInputShellView(props) {
                                 autoFixPasses: project.autoFixPasses || 0,
                                 humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
                                 reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
+                                reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,
                                 // Audit 2026-06-13: this input-screen loader dropped the
                                 // companion-lane + score-honesty + resume keys the two
                                 // view-file loaders restore — so a project loaded via THIS

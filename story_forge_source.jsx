@@ -5957,7 +5957,8 @@ Return ONLY JSON:
           sentenceAudios.push(audioUrl || null);
         } catch (error) {
           if (error?.name === 'AbortError' || signal?.aborted) throw error;
-          console.warn('Sentence TTS failed for:', sentence, error);
+          // Length only: the sentence is the student's own writing.
+          console.warn('Sentence TTS failed (' + String(sentence || '').length + ' characters):', error);
           sentenceAudios.push(null);
         }
       }

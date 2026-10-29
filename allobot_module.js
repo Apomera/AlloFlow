@@ -2685,7 +2685,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     const canAttemptAudio = !isSilent && soundEnabledRef.current && !authFailedRef.current && configuredVolume > 0 && !isGlobalMuted() && !isAlloBotTtsOff();
     const now = Date.now();
     if (canAttemptAudio && safeText === lastGlobalSpeech.text && now - lastGlobalSpeech.time < 2e3) {
-      warnLog("AlloBot: Suppressing duplicate speech:", safeText);
+      warnLog("AlloBot: Suppressing duplicate speech (" + String(safeText || "").length + " characters)");
       return;
     }
     if (canAttemptAudio) {

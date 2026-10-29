@@ -364,6 +364,76 @@ function useAiTextAvailable() {
   }, []);
   return available;
 }
+function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
+  const aiTextAvailable = useAiTextAvailable();
+  const [open, setOpen] = React.useState(false);
+  const [topicOpen, setTopicOpen] = React.useState(false);
+  const [topic, setTopic] = React.useState("");
+  const topicId = "start-topic-" + (React.useId ? React.useId().replace(/[^\w-]/g, "") : "field");
+  const canTopic = typeof onStartFromTopic === "function" && aiTextAvailable;
+  const canBlank = typeof onStartBlank === "function";
+  if (!canTopic && !canBlank) return null;
+  const action = "min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1";
+  const link = "min-h-[24px] text-xs font-semibold text-sky-900 underline underline-offset-2 hover:text-sky-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500";
+  const blankButton = canBlank ? /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "sidebar_start_blank",
+      disabled: !!busy,
+      onClick: () => onStartBlank(),
+      className: action + " border border-sky-300 bg-white text-sky-900 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+    },
+    t("sidebar.start_blank") || "Blank: fill it in yourself"
+  ) : null;
+  const body = !aiTextAvailable ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, blankButton) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "sidebar_other_ways_toggle", "aria-expanded": open, onClick: () => setOpen((v) => !v), className: link }, (t("sidebar.other_ways_to_start") || "Other ways to start") + (open ? " \u25B4" : " \u25BE")), open && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, canTopic && (!topicOpen ? /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "sidebar_source_needed_topic_toggle", "aria-expanded": "false", onClick: () => setTopicOpen(true), className: link }, t("sidebar.needs_source_topic_toggle") || "From a topic (experimental)") : /* @__PURE__ */ React.createElement("form", { onSubmit: (event) => {
+    event.preventDefault();
+    const value = topic.trim();
+    if (value && !busy) onStartFromTopic(value);
+  } }, /* @__PURE__ */ React.createElement("label", { htmlFor: topicId, className: "block font-semibold" }, t("sidebar.needs_source_topic_label") || "Topic"), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      id: topicId,
+      type: "text",
+      value: topic,
+      maxLength: 300,
+      autoFocus: true,
+      "aria-describedby": topicId + "-note",
+      onChange: (event) => setTopic(event.target.value),
+      placeholder: t("sidebar.needs_source_topic_placeholder") || "e.g. renewable and non-renewable energy",
+      className: "mt-1 w-full rounded-lg border border-sky-300 bg-white px-2 py-1.5 text-xs text-slate-900"
+    }
+  ), /* @__PURE__ */ React.createElement("p", { id: topicId + "-note", className: "mt-1" }, t("sidebar.needs_source_topic_note") || "Experimental: made from the topic alone, so it is not checked against a source. Review it before sharing."), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "submit",
+      "data-help-key": "sidebar_source_needed_topic_create",
+      disabled: !topic.trim() || !!busy,
+      className: action + " mt-2 bg-sky-700 text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60"
+    },
+    t("sidebar.needs_source_topic_create") || "Create from topic"
+  ))), blankButton));
+  return framed ? /* @__PURE__ */ React.createElement("div", { "data-help-key": "sidebar_other_ways_to_start", className: "border-b border-sky-200 bg-sky-50 px-3.5 py-2 text-xs text-sky-950" }, body) : /* @__PURE__ */ React.createElement("div", { "data-help-key": "sidebar_other_ways_to_start", className: "mt-2 border-t border-sky-200 pt-2" }, body);
+}
+function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartBlank, busy }) {
+  const openQuickStart = typeof window !== "undefined" && typeof window.__alloOpenQuickStart === "function" ? window.__alloOpenQuickStart : null;
+  const action = "min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1";
+  return /* @__PURE__ */ React.createElement("div", { role: "note", "data-help-key": "sidebar_source_needed_notice", className: "border-b border-sky-200 bg-sky-50 px-3.5 py-2.5 text-xs text-sky-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, t("sidebar.needs_source") || "This tool builds from source material."), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5" }, t("sidebar.needs_source_hint") || "Add a text, file, or link first. Then Generate turns on here."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "sidebar_source_needed_add", onClick: onAddSource, className: action + " bg-sky-700 text-white hover:bg-sky-800" }, t("sidebar.needs_source_add") || "Add source material"), openQuickStart && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "sidebar_source_needed_quick_start",
+      onClick: () => {
+        try {
+          openQuickStart();
+        } catch (_) {
+        }
+      },
+      className: action + " border border-sky-300 bg-white text-sky-900 hover:bg-sky-100"
+    },
+    t("sidebar.needs_source_quick_start") || "Guided Quick Start"
+  )), /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, onStartFromTopic, onStartBlank, busy }));
+}
 function AiSetupNotice({ t }) {
   return /* @__PURE__ */ React.createElement(
     "button",
@@ -4073,6 +4143,25 @@ function GeneratorActionsView(props) {
     visualLayoutMode,
     visualStyle
   } = props;
+  const canStartBlank = (id) => Array.isArray(window.__alloBlankStartTypes) && window.__alloBlankStartTypes.includes(id);
+  const startBlank = (id) => handleGenerate(id, null, false, null, { seed: { kind: "blank" } });
+  const openSourceInput = () => {
+    if (typeof setExpandedTools === "function") setExpandedTools((prev) => prev.includes("source-input") ? prev : [...prev, "source-input"]);
+    window.setTimeout(() => {
+      const panel = document.getElementById("tour-input-panel");
+      if (!panel) return;
+      const reduce = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      try {
+        panel.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      } catch (_) {
+      }
+      const field = panel.querySelector('textarea, input[type="text"], input:not([type])');
+      if (field) try {
+        field.focus({ preventScroll: true });
+      } catch (_) {
+      }
+    }, 60);
+  };
   return /* @__PURE__ */ React.createElement("div", { id: "tour-generator-actions", "data-help-key": "generator_actions", className: "grid min-w-0 grid-cols-1 gap-4" }, /* @__PURE__ */ React.createElement("style", null, `
               ${hiddenToolCatalogSelector ? `${hiddenToolCatalogSelector}{display:none!important;}` : ""}
               #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) {
@@ -4202,7 +4291,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Search2, { size: 16 }), " ", t("sidebar.tool_analysis")),
     expandedTools.includes("analysis") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("analysis") && window.AlloModules && window.AlloModules.AnalysisPanel && React.createElement(window.AlloModules.AnalysisPanel, {
+  ), expandedTools.includes("analysis") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("analysis") && window.AlloModules && window.AlloModules.AnalysisPanel && React.createElement(window.AlloModules.AnalysisPanel, {
     expandedTools,
     checkAccuracyWithSearch,
     handleGenerate,
@@ -4224,7 +4313,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Globe2, { size: 16 }), " ", isParentMode ? t("glossary.word_helper") : t("sidebar.tool_glossary")),
     expandedTools.includes("glossary") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("glossary") && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
+  ), expandedTools.includes("glossary") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartBlank: canStartBlank("glossary") ? () => startBlank("glossary") : void 0 }), expandedTools.includes("glossary") && hasSourceOrAnalysis && canStartBlank("glossary") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("glossary") }), expandedTools.includes("glossary") && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
     expandedTools,
     InfoTooltip,
     autoRemoveWords,
@@ -4265,7 +4354,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(BookOpen2, { size: 16 }), " ", isParentMode ? t("simplified.parent_mode_label") : t("sidebar.tool_simplified")),
     expandedTools.includes("simplified") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("simplified") && window.AlloModules && window.AlloModules.SimplifiedPanel && React.createElement(window.AlloModules.SimplifiedPanel, {
+  ), expandedTools.includes("simplified") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("simplified") && window.AlloModules && window.AlloModules.SimplifiedPanel && React.createElement(window.AlloModules.SimplifiedPanel, {
     expandedTools,
     handleGenerate,
     hasSourceOrAnalysis,
@@ -4312,7 +4401,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Layout2, { size: 16 }), " ", t("sidebar.tool_outline")),
     expandedTools.includes("outline") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("outline") && window.AlloModules && window.AlloModules.OutlinePanel && React.createElement(window.AlloModules.OutlinePanel, {
+  ), expandedTools.includes("outline") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("outline") && window.AlloModules && window.AlloModules.OutlinePanel && React.createElement(window.AlloModules.OutlinePanel, {
     expandedTools,
     handleGenerate,
     hasSourceOrAnalysis,
@@ -4336,7 +4425,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(BookOpen2, { size: 16 }), " ", t("sidebar.tool_note_taking") || "Note-Taking Templates"),
     expandedTools.includes("note-taking") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("note-taking") && window.AlloModules && window.AlloModules.NoteTakingPanel && React.createElement(window.AlloModules.NoteTakingPanel, {
+  ), expandedTools.includes("note-taking") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("note-taking") && window.AlloModules && window.AlloModules.NoteTakingPanel && React.createElement(window.AlloModules.NoteTakingPanel, {
     expandedTools,
     handleGenerate,
     hasSourceOrAnalysis,
@@ -4360,7 +4449,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", t("sidebar.tool_anchor_chart") || "Anchor Chart"),
     expandedTools.includes("anchor-chart") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("anchor-chart") && window.AlloModules && window.AlloModules.AnchorChartPanel && React.createElement(window.AlloModules.AnchorChartPanel, {
+  ), expandedTools.includes("anchor-chart") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartFromTopic: (topic) => handleGenerate("anchor-chart", null, false, null, { seed: { kind: "topic", text: topic } }), onStartBlank: canStartBlank("anchor-chart") ? () => startBlank("anchor-chart") : void 0 }), expandedTools.includes("anchor-chart") && hasSourceOrAnalysis && canStartBlank("anchor-chart") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("anchor-chart") }), expandedTools.includes("anchor-chart") && window.AlloModules && window.AlloModules.AnchorChartPanel && React.createElement(window.AlloModules.AnchorChartPanel, {
     anchorChartCustomInstructions,
     anchorChartType,
     expandedTools,
@@ -4384,7 +4473,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 16 }), " ", t("sidebar.tool_memory_aid") || "Memory Aid Studio"),
     expandedTools.includes("memory-aid") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("memory-aid") && window.AlloModules && window.AlloModules.MemoryAidPanel && React.createElement(window.AlloModules.MemoryAidPanel, {
+  ), expandedTools.includes("memory-aid") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("memory-aid") && window.AlloModules && window.AlloModules.MemoryAidPanel && React.createElement(window.AlloModules.MemoryAidPanel, {
     expandedTools,
     handleGenerate,
     hasSourceOrAnalysis,
@@ -4422,7 +4511,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Target, { size: 16 }), " ", t("sidebar.tool_applied_challenge") || "Applied Challenge Studio"),
     expandedTools.includes("applied-challenge") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("applied-challenge") && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
+  ), expandedTools.includes("applied-challenge") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("applied-challenge") && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
     expandedTools,
     handleGenerate,
     hasSourceOrAnalysis,
@@ -4453,7 +4542,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(ImageIcon2, { size: 16 }), " ", t("sidebar.tool_visual")),
     expandedTools.includes("image") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("image") && window.AlloModules && window.AlloModules.ImagePanel && React.createElement(window.AlloModules.ImagePanel, {
+  ), expandedTools.includes("image") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("image") && window.AlloModules && window.AlloModules.ImagePanel && React.createElement(window.AlloModules.ImagePanel, {
     expandedTools,
     creativeMode,
     fillInTheBlank,
@@ -4489,7 +4578,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(FileQuestion, { size: 16 }), " ", t("sidebar.tool_faq")),
     expandedTools.includes("faq") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("faq") && window.AlloModules && window.AlloModules.FaqPanel && React.createElement(window.AlloModules.FaqPanel, {
+  ), expandedTools.includes("faq") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("faq") && window.AlloModules && window.AlloModules.FaqPanel && React.createElement(window.AlloModules.FaqPanel, {
     expandedTools,
     faqCount,
     faqCustomInstructions,
@@ -4512,7 +4601,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Quote, { size: 16 }), " ", isIndependentMode ? t("scaffolds.title_independent") : t(isParentMode ? "sidebar.tool_scaffolds_parent" : "sidebar.tool_scaffolds")),
     expandedTools.includes("sentence-frames") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("sentence-frames") && window.AlloModules && window.AlloModules.SentenceFramesPanel && React.createElement(window.AlloModules.SentenceFramesPanel, {
+  ), expandedTools.includes("sentence-frames") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("sentence-frames") && window.AlloModules && window.AlloModules.SentenceFramesPanel && React.createElement(window.AlloModules.SentenceFramesPanel, {
     expandedTools,
     frameCustomInstructions,
     frameType,
@@ -4535,7 +4624,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 16 }), " ", t("sidebar.tool_brainstorm")),
     expandedTools.includes("brainstorm") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("brainstorm") && window.AlloModules && window.AlloModules.BrainstormPanel && React.createElement(window.AlloModules.BrainstormPanel, {
+  ), expandedTools.includes("brainstorm") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("brainstorm") && window.AlloModules && window.AlloModules.BrainstormPanel && React.createElement(window.AlloModules.BrainstormPanel, {
     expandedTools,
     BRIDGE_MODES,
     Terminal,
@@ -4562,7 +4651,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(History2, { size: 16 }), " ", t("persona.title")),
     expandedTools.includes("persona") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("persona") && window.AlloModules && window.AlloModules.PersonaPanel && React.createElement(window.AlloModules.PersonaPanel, {
+  ), expandedTools.includes("persona") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartFromTopic: (topic) => handleGenerate("persona", null, false, null, { seed: { kind: "topic", text: topic } }) }), expandedTools.includes("persona") && window.AlloModules && window.AlloModules.PersonaPanel && React.createElement(window.AlloModules.PersonaPanel, {
     expandedTools,
     ListChecks,
     MessageCircleQuestion,
@@ -4593,7 +4682,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(ListOrdered2, { size: 16 }), " ", t("timeline.title")),
     expandedTools.includes("timeline") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("timeline") && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
+  ), expandedTools.includes("timeline") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartBlank: canStartBlank("timeline") ? () => startBlank("timeline") : void 0 }), expandedTools.includes("timeline") && hasSourceOrAnalysis && canStartBlank("timeline") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("timeline") }), expandedTools.includes("timeline") && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
     expandedTools,
     TIMELINE_MODE_DEFINITIONS,
     handleGenerate,
@@ -4617,12 +4706,13 @@ function GeneratorActionsView(props) {
     {
       type: "button",
       "data-help-key": "tool_concept_sort",
+      "aria-expanded": expandedTools.includes("concept-sort"),
       onClick: () => toggleTool("concept-sort"),
       className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:transition-none"
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Filter, { size: 16 }), " ", t("concept_sort.title")),
     expandedTools.includes("concept-sort") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("concept-sort") && window.AlloModules && window.AlloModules.ConceptSortPanel && React.createElement(window.AlloModules.ConceptSortPanel, {
+  ), expandedTools.includes("concept-sort") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartFromTopic: (topic) => handleGenerate("concept-sort", null, false, null, { seed: { kind: "topic", text: topic } }), onStartBlank: canStartBlank("concept-sort") ? () => startBlank("concept-sort") : void 0 }), expandedTools.includes("concept-sort") && hasSourceOrAnalysis && canStartBlank("concept-sort") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("concept-sort") }), expandedTools.includes("concept-sort") && window.AlloModules && window.AlloModules.ConceptSortPanel && React.createElement(window.AlloModules.ConceptSortPanel, {
     expandedTools,
     addConcept,
     conceptImageMode,
@@ -4649,12 +4739,13 @@ function GeneratorActionsView(props) {
     {
       type: "button",
       "data-help-key": "tool_dbq",
+      "aria-expanded": expandedTools.includes("dbq"),
       onClick: () => toggleTool("dbq"),
       className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", t("dbq.title") || "Document Analysis (DBQ)"),
     expandedTools.includes("dbq") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("dbq") && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
+  ), expandedTools.includes("dbq") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("dbq") && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
     expandedTools,
     addToast,
     callGemini,
@@ -4763,7 +4854,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-100 p-1 rounded-md text-purple-700" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, t("sidebar.tool_adventure")))),
     expandedTools.includes("adventure") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("adventure") && window.AlloModules && window.AlloModules.AdventurePanel && React.createElement(window.AlloModules.AdventurePanel, {
+  ), expandedTools.includes("adventure") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("adventure") && window.AlloModules && window.AlloModules.AdventurePanel && React.createElement(window.AlloModules.AdventurePanel, {
     expandedTools,
     Cloud,
     CloudOff,
@@ -4846,7 +4937,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16 }), " ", t("sidebar.tool_quiz")),
     expandedTools.includes("quiz") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("quiz") && window.AlloModules && window.AlloModules.QuizPanel && React.createElement(window.AlloModules.QuizPanel, {
+  ), expandedTools.includes("quiz") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartBlank: canStartBlank("quiz") ? () => startBlank("quiz") : void 0 }), expandedTools.includes("quiz") && hasSourceOrAnalysis && canStartBlank("quiz") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("quiz") }), expandedTools.includes("quiz") && window.AlloModules && window.AlloModules.QuizPanel && React.createElement(window.AlloModules.QuizPanel, {
     expandedTools,
     InfoTooltip,
     dokLevel,
@@ -4878,12 +4969,13 @@ function GeneratorActionsView(props) {
     {
       type: "button",
       "data-help-key": "tool_lesson_plan",
+      "aria-expanded": expandedTools.includes("lesson-plan"),
       onClick: () => toggleTool("lesson-plan"),
       className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 16, className: "text-indigo-600" }), isIndependentMode ? t("common.study_guide") : isParentMode ? t("lesson_plan.family_guide") : t("lesson_plan.title")),
     expandedTools.includes("lesson-plan") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("lesson-plan") && window.AlloModules && window.AlloModules.LessonPlanPanel && React.createElement(window.AlloModules.LessonPlanPanel, {
+  ), expandedTools.includes("lesson-plan") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("lesson-plan") && window.AlloModules && window.AlloModules.LessonPlanPanel && React.createElement(window.AlloModules.LessonPlanPanel, {
     expandedTools,
     activeView,
     handleGenerateLessonPlan,
@@ -5138,6 +5230,7 @@ function SourceInputShellView(props) {
     "div",
     {
       className: "p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2 cursor-pointer hover:bg-indigo-50 transition-colors motion-reduce:transition-none",
+      "aria-expanded": expandedTools.includes("source-input"),
       onClick: () => toggleTool("source-input")
     },
     /* @__PURE__ */ React.createElement("h2", { id: "source-ready-title", tabIndex: -1, className: "font-semibold text-slate-700 flex items-center gap-2 text-sm" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", isParentMode ? t("family_start.title") || "Start with your child's reading" : t("tools.source")),
@@ -5299,6 +5392,7 @@ function SourceInputShellView(props) {
             autoFixPasses: project.autoFixPasses || 0,
             humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
             reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
+            reviewDecisions: project.reviewDecisions && typeof project.reviewDecisions === "object" ? project.reviewDecisions : null,
             // Audit 2026-06-13: this input-screen loader dropped the
             // companion-lane + score-honesty + resume keys the two
             // view-file loaders restore — so a project loaded via THIS

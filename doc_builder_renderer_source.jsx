@@ -307,7 +307,8 @@ const renderJsonToHtml = (blocks) => {
               // Raw description; escaped with escapeTextField at the element-content sink below (its only
               // consumer). Vision-derived text is untrusted — see the table-path XSS note above.
               const _imgDesc = (block.description || block.alt || 'Image');
-              const _imgAltSafe = (block.description || block.alt || 'Image').replace(/\\/g, '').replace(/"/g, '').replace(/'/g, ''); // strip backslash too (a trailing \ escapes the JS-string delimiter)
+              // (2026-10-28) quotes escaped, not dropped ("NASA's" became "NASAs"); inert in the attribute, decoded in the JS string
+              const _imgAltSafe = (block.description || block.alt || 'Image').replace(/\\/g, '').replace(/"/g, '\\x22').replace(/'/g, '\\x27').replace(/[<>&]/g, (c) => '\\x' + c.charCodeAt(0).toString(16)); // strip backslash too (a trailing \ escapes the JS-string delimiter)
               const _imgId = 'pdf-img-ph-' + (block.id ? String(block.id).replace(/[^a-z0-9]/gi, '') : Math.random().toString(36).slice(2, 8));
               const _captionText = block.description || block.alt || '';
               // Drag-and-drop + pick-extracted support: handlers pull a dataURL from

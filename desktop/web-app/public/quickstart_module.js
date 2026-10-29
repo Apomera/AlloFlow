@@ -968,7 +968,7 @@ const QuickStartWizard = React.memo(({
     try {
       const results = await onLookupStandards(localData.grade, learningGoal, region);
       if (!Array.isArray(results)) {
-        warnLog("Standards lookup returned a non-array result:", results);
+        warnLog("Standards lookup returned a non-array result:", typeof results);
         if (addToast) addToast(t('toasts.standards_parse_error'), "warning");
         return;
       }

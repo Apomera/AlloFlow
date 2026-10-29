@@ -1002,6 +1002,15 @@ const handleMathProblemEdit = (pIdx, field, value, stepIdx = null, viewProblemKe
     // A delayed modal/keyboard callback must not edit (or clear state for) a
     // resource that is no longer the committed math view.
     if (__d.mathActiveResourceKeyRef.current !== resourceId) return;
+    const matchesRequestedProblem = problem => viewProblemKey == null || (problem?.id == null && problem?.problemId == null) || String(problem.id ?? problem.problemId) === String(viewProblemKey);
+    if (!matchesRequestedProblem(existingProblem)) return;
+    const reviewAcknowledgement = field === 'teacher_reviewed';
+    const canAcknowledgeReview = problem => !!(__d.isTeacherMode && value === true
+      && problem && typeof problem.question === 'string' && problem.question.trim()
+      && typeof problem.answer === 'string' && problem.answer.trim()
+      && problem._verification?.reviewRequired === true
+      && ['unsupported_verification', 'answer_needs_review'].includes(problem._verification?.reason));
+    if (reviewAcknowledgement && !canAcknowledgeReview(existingProblem)) return;
     const problemKey = viewProblemKey ?? (existingProblem && (existingProblem.id ?? existingProblem.problemId));
     if (resourceId && problemKey != null) {
       const stableKey = String(problemKey);
@@ -1065,12 +1074,16 @@ const handleMathProblemEdit = (pIdx, field, value, stepIdx = null, viewProblemKe
       if (!sourceProblems) return artifact;
       const updatedProblems = [...sourceProblems];
       const currentProblem = updatedProblems[pIdx];
-      if (!currentProblem || typeof currentProblem !== 'object' || Array.isArray(currentProblem)) return artifact;
+      if (!currentProblem || typeof currentProblem !== 'object' || Array.isArray(currentProblem) || !matchesRequestedProblem(currentProblem)) return artifact;
+      if (reviewAcknowledgement && JSON.stringify([currentProblem.question, currentProblem.answer, currentProblem.steps]) !== JSON.stringify([existingProblem.question, existingProblem.answer, existingProblem.steps])) return artifact;
       const problem = {
         ...currentProblem,
         ...(currentProblem.id == null && currentProblem.problemId == null && viewProblemKey != null ? { id: String(viewProblemKey) } : {})
       };
-      if (stepIdx !== null && field === 'step_explanation') {
+      if (reviewAcknowledgement && !canAcknowledgeReview(currentProblem)) return artifact;
+      if (reviewAcknowledgement) {
+        problem._verification = { ...problem._verification, verified: false, reviewRequired: false, teacherReviewed: true, status: 'teacher_reviewed' };
+      } else if (stepIdx !== null && field === 'step_explanation') {
         const updatedSteps = Array.isArray(problem.steps) ? [...problem.steps] : [];
         updatedSteps[stepIdx] = { ...(updatedSteps[stepIdx] && typeof updatedSteps[stepIdx] === 'object' ? updatedSteps[stepIdx] : {}), explanation: value };
         problem.steps = updatedSteps;
@@ -1081,7 +1094,10 @@ const handleMathProblemEdit = (pIdx, field, value, stepIdx = null, viewProblemKe
       } else {
         problem[field] = value;
       }
-      if (problem._verification && typeof problem._verification === 'object' && !Array.isArray(problem._verification)) {
+      if (!reviewAcknowledgement && problem._verification && typeof problem._verification === 'object' && !Array.isArray(problem._verification)) {
+        // Review applies only to the exact content the teacher accepted.
+        problem._verification = { ...problem._verification };
+        delete problem._verification.teacherReviewed;
         // An edited question invalidates the model's old expression. Recheck
         // the visible question and answer instead of retaining a stale key.
         if (field === 'question' || field === 'answer') delete problem.expression;
@@ -1089,7 +1105,7 @@ const handleMathProblemEdit = (pIdx, field, value, stepIdx = null, viewProblemKe
         const checked = typeof verify === 'function' ? verify([problem])[0] : null;
         problem._verification = checked
           ? { ...checked._verification, edited: true }
-          : { ...problem._verification, verified: false, edited: true };
+          : { ...problem._verification, verified: false, edited: true, reviewRequired: true, reason: 'unsupported_verification', status: 'needs_review' };
       }
       updatedProblems[pIdx] = problem;
       return {
@@ -1123,6 +1139,10 @@ const submitMathSelfGrade = (resourceId, problemsOverride) => {
           __d.addToast('Assessment grading tools are still loading. Try again in a moment.', 'error');
           return;
       }
+      if (problems.some(problem => problem._verification?.reviewRequired)) {
+          __d.addToast('Review every flagged question and answer before submitting this assessment.', 'error');
+          return;
+      }
       const grade = mathHelpers.gradeMathSelfAssessment(problems, __d.mathStudentAnswers);
       if (!grade.total) {
           __d.addToast('This assessment has no valid problems to grade.', 'error');
@@ -1148,6 +1168,7 @@ const submitMathSelfGrade = (resourceId, problemsOverride) => {
           timestamp: Date.now(),
           data: {
               ...grade,
+              resourceKind: 'submission',
               sourceId
           }
       };

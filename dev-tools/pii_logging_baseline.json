@@ -1,0 +1,70 @@
+{
+  "note": "Reviewed 2026-10-28. Sites listed here await a fix and must not grow; remove an entry when its site is fixed. Keys are call text, not line numbers.",
+  "reasons": {
+    "AlloFlowANTI.txt": "Host file: fix together with the next host change (a comment here counts against the ANTI comment budget). UI_STRINGS preview is app strings; speakWord previews 40 characters of read-aloud text.",
+    "doc_pipeline_source.jsx": "Another session was editing this file on 2026-10-28. Captions, OCR tokens and alt-text previews are DOCUMENT TEXT (a document can be an IEP): replace with counts once that work is committed. lang/color/cache-key previews are safe.",
+    "generate_dispatcher_source.jsx": "Another session was editing this file on 2026-10-28. Logs up to 1000 characters of the raw DBQ response: replace with its length once that work is committed.",
+    "stem_lab/stem_tool_geo.js": "Another session was editing this file on 2026-10-28. Logs the raw Quiz Builder response: replace with its length once that work is committed.",
+    "host_handlers_source.jsx": "Logs a resource title (titles can name a student). host_handlers_module.js has a content-hash pin in ANTI, App.jsx and src/ANTI, and both ANTI copies held another session's uncommitted work on 2026-10-28: fix with the next host change and update the pin (log item.type only)."
+  },
+  "accepted": {
+    "AlloFlowANTI.txt": [
+      {
+        "key": "console.error(\"UI_STRINGS: All parse methods failed\", e2.message, \"First 300 chars:\", cleaned.substring(0, 300))",
+        "why": "text preview (.slice/.substring)"
+      },
+      {
+        "key": "warnLog(\"speakWord called but browser TTS is disabled — use callTTS instead. Text:\", (text || \"\").substring(0, 40))",
+        "why": "text preview (.slice/.substring); content value `text`"
+      }
+    ],
+    "doc_pipeline_source.jsx": [
+      {
+        "key": "warnLog('[Legend repair] re-extraction returned nothing for \"' + String(block.caption || '(untitled)').slice(0, 60) + '\" — keeping the original ' + _rowCount + '-row table rather than replacing it wit",
+        "why": "text preview (.slice/.substring); content property `block.caption`"
+      },
+      {
+        "key": "warnLog('[fix_lang_span] rejected non-BCP47 lang: ' + JSON.stringify(p.lang).slice(0, 100))",
+        "why": "text preview (.slice/.substring)"
+      },
+      {
+        "key": "warnLog('[fix_contrast] rejected non-color oldColor: ' + JSON.stringify(p.oldColor).slice(0, 100))",
+        "why": "text preview (.slice/.substring)"
+      },
+      {
+        "key": "warnLog('[OCR Reconcile] page ' + _pn + ': collapsed ' + _dd.collapsed.length + ' adjacent duplicate token(s) (' + _dd.collapsed.slice(0, 5).join(', ') + ') — the echo is absent from the other engine\\",
+        "why": "text preview (.slice/.substring)"
+      },
+      {
+        "key": "warnLog(`[PDF Audit] Cache hit for ${_cacheKey.slice(0, 24)}... — skipping ${_auditorCount} audit calls`)",
+        "why": "text preview (.slice/.substring)"
+      },
+      {
+        "key": "warnLog(`[Auto-fix] Single-pass rejected (reason=${_singlePassDecision.reason}${_pct != null ? `, ${_pct}% text loss` : ''}): output ${fixedHtml.length} chars (text=${textCharCount(fixedHtml)}) vs sou",
+        "why": "content value `text`"
+      },
+      {
+        "key": "warnLog('[AltQuality] ' + altQualityReport.flaggedCount + '/' + altQualityReport.total + ' image description(s) flagged (' + altQualityReport.highCount + ' high): ' + altQualityReport.flagged.slice(0,",
+        "why": "text preview (.slice/.substring)"
+      }
+    ],
+    "generate_dispatcher_source.jsx": [
+      {
+        "key": "console.error('[DBQ] JSON parse failed. Raw response (first 1000 chars):', String(result || '').substring(0, 1000))",
+        "why": "text preview (.slice/.substring); content value `result`"
+      }
+    ],
+    "stem_lab/stem_tool_geo.js": [
+      {
+        "key": "console.warn('Quiz Builder parse error:', e, resp)",
+        "why": "content value `resp`"
+      }
+    ],
+    "host_handlers_source.jsx": [
+      {
+        "key": "warnLog('Translation failed for one resource, continuing:', item.title || item.type, itemErr?.message)",
+        "why": "content property `item.title`"
+      }
+    ]
+  }
+}

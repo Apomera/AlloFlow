@@ -6735,16 +6735,16 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             };
             resolve(validSubmission);
           } else {
-            warnLog("Skipping invalid file (not a student save):", file.name);
+            warnLog("Skipping a file that is not a student save (size only: file names often name the student):", file.size);
             resolve(null);
           }
         } catch (err) {
-          warnLog("Failed to parse file:", file.name);
+          warnLog("Failed to parse a file of", file.size, "bytes");
           resolve(null);
         }
       };
       reader.onerror = () => {
-        warnLog("Error reading file:", file.name);
+        warnLog("Error reading a file of", file.size, "bytes");
         resolve(null);
       };
       reader.readAsText(file);
