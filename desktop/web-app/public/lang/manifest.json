@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-10-22T02:30:10.933Z",
+  "generated": "2026-10-29T17:23:57.904Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -8,505 +8,505 @@
       "slug": "acholi",
       "display": "Acholi",
       "endonym": "Leb Acholi",
-      "keys": 84954,
-      "bytes": 7361744,
-      "updated": "2026-10-22"
+      "keys": 99352,
+      "bytes": 8720091,
+      "updated": "2026-10-29"
     },
     {
       "slug": "amharic",
       "display": "Amharic",
       "endonym": "አማርኛ",
-      "keys": 88774,
-      "bytes": 8602847,
-      "updated": "2026-10-22"
+      "keys": 102899,
+      "bytes": 9974809,
+      "updated": "2026-10-29"
     },
     {
       "slug": "arabic",
       "display": "Arabic",
       "endonym": "العربية",
-      "keys": 94157,
-      "bytes": 9417998,
-      "updated": "2026-10-22"
+      "keys": 108693,
+      "bytes": 10886016,
+      "updated": "2026-10-29"
     },
     {
       "slug": "bengali",
       "display": "Bengali",
       "endonym": "বাংলা",
-      "keys": 88785,
-      "bytes": 9942266,
-      "updated": "2026-10-22"
+      "keys": 102910,
+      "bytes": 11338502,
+      "updated": "2026-10-29"
     },
     {
       "slug": "burmese",
       "display": "Burmese",
       "endonym": "မြန်မာ",
-      "keys": 86504,
-      "bytes": 10090944,
-      "updated": "2026-10-22"
+      "keys": 100814,
+      "bytes": 11541666,
+      "updated": "2026-10-29"
     },
     {
       "slug": "chin_falam",
       "display": "Chin (Falam)",
       "endonym": "Laiholh (Falam)",
-      "keys": 84949,
-      "bytes": 7433965,
-      "updated": "2026-10-22"
+      "keys": 99347,
+      "bytes": 8793131,
+      "updated": "2026-10-29"
     },
     {
       "slug": "chin_hakha",
       "display": "Chin (Hakha)",
       "endonym": "Laiholh (Hakha)",
-      "keys": 84945,
-      "bytes": 7443297,
-      "updated": "2026-10-22"
+      "keys": 99343,
+      "bytes": 8802318,
+      "updated": "2026-10-29"
     },
     {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
       "endonym": "简体中文",
-      "keys": 89671,
-      "bytes": 7743233,
-      "updated": "2026-10-22"
+      "keys": 104730,
+      "bytes": 9158159,
+      "updated": "2026-10-29"
     },
     {
       "slug": "chinese_traditional",
       "display": "Chinese (Traditional)",
       "endonym": "繁體中文",
-      "keys": 89461,
-      "bytes": 7731005,
-      "updated": "2026-10-22"
+      "keys": 103585,
+      "bytes": 9066112,
+      "updated": "2026-10-29"
     },
     {
       "slug": "dari",
       "display": "Dari",
       "endonym": "دری",
-      "keys": 89614,
-      "bytes": 8713713,
-      "updated": "2026-10-22"
+      "keys": 103737,
+      "bytes": 10069292,
+      "updated": "2026-10-29"
     },
     {
       "slug": "dutch",
       "display": "Dutch",
       "endonym": "Nederlands",
-      "keys": 89427,
-      "bytes": 8131033,
-      "updated": "2026-10-22"
+      "keys": 103550,
+      "bytes": 9472913,
+      "updated": "2026-10-29"
     },
     {
       "slug": "esperanto",
       "display": "Esperanto",
       "endonym": "Esperanto",
-      "keys": 87147,
-      "bytes": 7794673,
-      "updated": "2026-10-22"
+      "keys": 101455,
+      "bytes": 9151216,
+      "updated": "2026-10-29"
     },
     {
       "slug": "farsi",
       "display": "Farsi",
       "endonym": "فارسی",
-      "keys": 89689,
-      "bytes": 8777997,
-      "updated": "2026-10-22"
+      "keys": 103812,
+      "bytes": 10132655,
+      "updated": "2026-10-29"
     },
     {
       "slug": "french",
       "display": "French",
       "endonym": "Français",
-      "keys": 95757,
-      "bytes": 8996261,
-      "updated": "2026-10-22"
+      "keys": 108860,
+      "bytes": 10289450,
+      "updated": "2026-10-29"
     },
     {
       "slug": "french_canadian",
       "display": "French (Canadian)",
       "endonym": "Français (Canada)",
-      "keys": 90603,
-      "bytes": 8472134,
-      "updated": "2026-10-22"
+      "keys": 103800,
+      "bytes": 9728940,
+      "updated": "2026-10-29"
     },
     {
       "slug": "german",
       "display": "German",
       "endonym": "Deutsch",
-      "keys": 89445,
-      "bytes": 7959283,
-      "updated": "2026-10-22"
+      "keys": 103569,
+      "bytes": 9308672,
+      "updated": "2026-10-29"
     },
     {
       "slug": "greek",
       "display": "Greek",
       "endonym": "Ελληνικά",
-      "keys": 88800,
-      "bytes": 9582469,
-      "updated": "2026-10-22"
+      "keys": 102926,
+      "bytes": 10964339,
+      "updated": "2026-10-29"
     },
     {
       "slug": "gujarati",
       "display": "Gujarati",
       "endonym": "ગુજરાતી",
-      "keys": 88611,
-      "bytes": 10305024,
-      "updated": "2026-10-22"
+      "keys": 102736,
+      "bytes": 11685452,
+      "updated": "2026-10-29"
     },
     {
       "slug": "haitian_creole",
       "display": "Haitian Creole",
       "endonym": "Kreyòl Ayisyen",
-      "keys": 91511,
-      "bytes": 7987039,
-      "updated": "2026-10-22"
+      "keys": 104732,
+      "bytes": 9239694,
+      "updated": "2026-10-29"
     },
     {
       "slug": "hausa",
       "display": "Hausa",
       "endonym": "Hausa",
-      "keys": 86509,
-      "bytes": 7669209,
-      "updated": "2026-10-22"
+      "keys": 100819,
+      "bytes": 9036284,
+      "updated": "2026-10-29"
     },
     {
       "slug": "hebrew",
       "display": "Hebrew",
       "endonym": "עברית",
-      "keys": 88805,
-      "bytes": 8534731,
-      "updated": "2026-10-22"
+      "keys": 102930,
+      "bytes": 9886960,
+      "updated": "2026-10-29"
     },
     {
       "slug": "hindi",
       "display": "Hindi",
       "endonym": "हिन्दी",
-      "keys": 88586,
-      "bytes": 9807942,
-      "updated": "2026-10-22"
+      "keys": 102711,
+      "bytes": 11201442,
+      "updated": "2026-10-29"
     },
     {
       "slug": "hmong",
       "display": "Hmong",
       "endonym": "Hmoob",
-      "keys": 86498,
-      "bytes": 7788832,
-      "updated": "2026-10-22"
+      "keys": 100808,
+      "bytes": 9161923,
+      "updated": "2026-10-29"
     },
     {
       "slug": "igbo",
       "display": "Igbo",
       "endonym": "Igbo",
-      "keys": 88780,
-      "bytes": 8054972,
-      "updated": "2026-10-22"
+      "keys": 102905,
+      "bytes": 9410761,
+      "updated": "2026-10-29"
     },
     {
       "slug": "indonesian",
       "display": "Indonesian",
       "endonym": "Bahasa Indonesia",
-      "keys": 88799,
-      "bytes": 7856396,
-      "updated": "2026-10-22"
+      "keys": 102924,
+      "bytes": 9202310,
+      "updated": "2026-10-29"
     },
     {
       "slug": "italian",
       "display": "Italian",
       "endonym": "Italiano",
-      "keys": 89426,
-      "bytes": 7983191,
-      "updated": "2026-10-22"
+      "keys": 103550,
+      "bytes": 9335312,
+      "updated": "2026-10-29"
     },
     {
       "slug": "japanese",
       "display": "Japanese",
       "endonym": "日本語",
-      "keys": 89534,
-      "bytes": 8055281,
-      "updated": "2026-10-22"
+      "keys": 103657,
+      "bytes": 9406896,
+      "updated": "2026-10-29"
     },
     {
       "slug": "kannada",
       "display": "Kannada",
       "endonym": "ಕನ್ನಡ",
-      "keys": 86339,
-      "bytes": 10590251,
-      "updated": "2026-10-22"
+      "keys": 100650,
+      "bytes": 11991796,
+      "updated": "2026-10-29"
     },
     {
       "slug": "karen",
       "display": "Karen",
       "endonym": "ကညီကျိာ်",
-      "keys": 84944,
-      "bytes": 8082227,
-      "updated": "2026-10-22"
+      "keys": 99342,
+      "bytes": 9453139,
+      "updated": "2026-10-29"
     },
     {
       "slug": "khmer",
       "display": "Khmer",
       "endonym": "ភាសាខ្មែរ",
-      "keys": 86510,
-      "bytes": 9423533,
-      "updated": "2026-10-22"
+      "keys": 100820,
+      "bytes": 10848712,
+      "updated": "2026-10-29"
     },
     {
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
       "endonym": "Ikinyarwanda",
-      "keys": 86503,
-      "bytes": 7796203,
-      "updated": "2026-10-22"
+      "keys": 100813,
+      "bytes": 9162444,
+      "updated": "2026-10-29"
     },
     {
       "slug": "kirundi",
       "display": "Kirundi",
       "endonym": "Ikirundi",
-      "keys": 86503,
-      "bytes": 7717531,
-      "updated": "2026-10-22"
+      "keys": 100730,
+      "bytes": 9066218,
+      "updated": "2026-10-29"
     },
     {
       "slug": "korean",
       "display": "Korean",
       "endonym": "한국어",
-      "keys": 88585,
-      "bytes": 7914360,
-      "updated": "2026-10-22"
+      "keys": 102711,
+      "bytes": 9263448,
+      "updated": "2026-10-29"
     },
     {
       "slug": "lao",
       "display": "Lao",
       "endonym": "ພາສາລາວ",
-      "keys": 86318,
-      "bytes": 8925865,
-      "updated": "2026-10-22"
+      "keys": 100605,
+      "bytes": 10375849,
+      "updated": "2026-10-29"
     },
     {
       "slug": "latin",
       "display": "Latin",
       "endonym": "Latina",
-      "keys": 86252,
-      "bytes": 7705883,
-      "updated": "2026-10-22"
+      "keys": 100562,
+      "bytes": 9067990,
+      "updated": "2026-10-29"
     },
     {
       "slug": "lingala",
       "display": "Lingala",
       "endonym": "Lingála",
-      "keys": 85489,
-      "bytes": 7400526,
-      "updated": "2026-10-22"
+      "keys": 99993,
+      "bytes": 8784796,
+      "updated": "2026-10-29"
     },
     {
       "slug": "maay_maay",
       "display": "Maay Maay",
       "endonym": "Af-Maay",
-      "keys": 85830,
-      "bytes": 7602822,
-      "updated": "2026-10-22"
+      "keys": 100157,
+      "bytes": 8958246,
+      "updated": "2026-10-29"
     },
     {
       "slug": "malayalam",
       "display": "Malayalam",
       "endonym": "മലയാളം",
-      "keys": 88610,
-      "bytes": 11479402,
-      "updated": "2026-10-22"
+      "keys": 102736,
+      "bytes": 12870442,
+      "updated": "2026-10-29"
     },
     {
       "slug": "marathi",
       "display": "Marathi",
       "endonym": "मराठी",
-      "keys": 88610,
-      "bytes": 10447854,
-      "updated": "2026-10-22"
+      "keys": 102736,
+      "bytes": 11832489,
+      "updated": "2026-10-29"
     },
     {
       "slug": "marshallese",
       "display": "Marshallese",
       "endonym": "Kajin Ṃajeḷ",
-      "keys": 84951,
-      "bytes": 7541131,
-      "updated": "2026-10-22"
+      "keys": 99349,
+      "bytes": 8901034,
+      "updated": "2026-10-29"
     },
     {
       "slug": "nepali",
       "display": "Nepali",
       "endonym": "नेपाली",
-      "keys": 88774,
-      "bytes": 9973754,
-      "updated": "2026-10-22"
+      "keys": 102900,
+      "bytes": 11372718,
+      "updated": "2026-10-29"
     },
     {
       "slug": "pashto",
       "display": "Pashto",
       "endonym": "پښتو",
-      "keys": 89661,
-      "bytes": 8594802,
-      "updated": "2026-10-22"
+      "keys": 103784,
+      "bytes": 9947326,
+      "updated": "2026-10-29"
     },
     {
       "slug": "polish",
       "display": "Polish",
       "endonym": "Polski",
-      "keys": 89617,
-      "bytes": 7804544,
-      "updated": "2026-10-22"
+      "keys": 103741,
+      "bytes": 9148398,
+      "updated": "2026-10-29"
     },
     {
       "slug": "portuguese_angola",
       "display": "Portuguese (Angola)",
       "endonym": "Português (Angola)",
-      "keys": 92870,
-      "bytes": 8468579,
-      "updated": "2026-10-22"
+      "keys": 106091,
+      "bytes": 9728270,
+      "updated": "2026-10-29"
     },
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
       "endonym": "Português (Brasil)",
-      "keys": 91339,
-      "bytes": 8397203,
-      "updated": "2026-10-22"
+      "keys": 104560,
+      "bytes": 9654619,
+      "updated": "2026-10-29"
     },
     {
       "slug": "portuguese_portugal",
       "display": "Portuguese (Portugal)",
       "endonym": "Português (Portugal)",
-      "keys": 90353,
-      "bytes": 8226851,
-      "updated": "2026-10-22"
+      "keys": 103574,
+      "bytes": 9488028,
+      "updated": "2026-10-29"
     },
     {
       "slug": "punjabi",
       "display": "Punjabi",
       "endonym": "ਪੰਜਾਬੀ",
-      "keys": 86504,
-      "bytes": 9342570,
-      "updated": "2026-10-22"
+      "keys": 100814,
+      "bytes": 10755528,
+      "updated": "2026-10-29"
     },
     {
       "slug": "romanian",
       "display": "Romanian",
       "endonym": "Română",
-      "keys": 88773,
-      "bytes": 7844598,
-      "updated": "2026-10-22"
+      "keys": 102899,
+      "bytes": 9201212,
+      "updated": "2026-10-29"
     },
     {
       "slug": "russian",
       "display": "Russian",
       "endonym": "Русский",
-      "keys": 89476,
-      "bytes": 9065178,
-      "updated": "2026-10-22"
+      "keys": 103599,
+      "bytes": 10431945,
+      "updated": "2026-10-29"
     },
     {
       "slug": "somali",
       "display": "Somali",
       "endonym": "Soomaali",
-      "keys": 88794,
-      "bytes": 8058005,
-      "updated": "2026-10-22"
+      "keys": 102919,
+      "bytes": 9405419,
+      "updated": "2026-10-29"
     },
     {
       "slug": "spanish_castilian",
       "display": "Spanish (Castilian)",
       "endonym": "Español (España)",
-      "keys": 90952,
-      "bytes": 8404298,
-      "updated": "2026-10-22"
+      "keys": 104127,
+      "bytes": 9655619,
+      "updated": "2026-10-29"
     },
     {
       "slug": "spanish_latin_america",
       "display": "Spanish (Latin America)",
       "endonym": "Español (Latinoamérica)",
-      "keys": 100341,
-      "bytes": 9332257,
-      "updated": "2026-10-22"
+      "keys": 113933,
+      "bytes": 10660184,
+      "updated": "2026-10-29"
     },
     {
       "slug": "swahili",
       "display": "Swahili",
       "endonym": "Kiswahili",
-      "keys": 88795,
-      "bytes": 7817348,
-      "updated": "2026-10-22"
+      "keys": 102920,
+      "bytes": 9167981,
+      "updated": "2026-10-29"
     },
     {
       "slug": "tagalog",
       "display": "Tagalog",
       "endonym": "Tagalog",
-      "keys": 88771,
-      "bytes": 7823507,
-      "updated": "2026-10-22"
+      "keys": 102897,
+      "bytes": 9174554,
+      "updated": "2026-10-29"
     },
     {
       "slug": "tamil",
       "display": "Tamil",
       "endonym": "தமிழ்",
-      "keys": 88782,
-      "bytes": 10630142,
-      "updated": "2026-10-22"
+      "keys": 102907,
+      "bytes": 12054928,
+      "updated": "2026-10-29"
     },
     {
       "slug": "telugu",
       "display": "Telugu",
       "endonym": "తెలుగు",
-      "keys": 88781,
-      "bytes": 10154749,
-      "updated": "2026-10-22"
+      "keys": 102906,
+      "bytes": 11566611,
+      "updated": "2026-10-29"
     },
     {
       "slug": "thai",
       "display": "Thai",
       "endonym": "ภาษาไทย",
-      "keys": 89455,
-      "bytes": 9986005,
-      "updated": "2026-10-22"
+      "keys": 103580,
+      "bytes": 11379415,
+      "updated": "2026-10-29"
     },
     {
       "slug": "tigrinya",
       "display": "Tigrinya",
       "endonym": "ትግርኛ",
-      "keys": 86503,
-      "bytes": 8291776,
-      "updated": "2026-10-22"
+      "keys": 100813,
+      "bytes": 9677059,
+      "updated": "2026-10-29"
     },
     {
       "slug": "turkish",
       "display": "Turkish",
       "endonym": "Türkçe",
-      "keys": 88629,
-      "bytes": 8098003,
-      "updated": "2026-10-22"
+      "keys": 102755,
+      "bytes": 9438741,
+      "updated": "2026-10-29"
     },
     {
       "slug": "ukrainian",
       "display": "Ukrainian",
       "endonym": "Українська",
-      "keys": 92179,
-      "bytes": 9487685,
-      "updated": "2026-10-22"
+      "keys": 106302,
+      "bytes": 10861716,
+      "updated": "2026-10-29"
     },
     {
       "slug": "urdu",
       "display": "Urdu",
       "endonym": "اردو",
-      "keys": 88785,
-      "bytes": 8616270,
-      "updated": "2026-10-22"
+      "keys": 102910,
+      "bytes": 9976784,
+      "updated": "2026-10-29"
     },
     {
       "slug": "vietnamese",
       "display": "Vietnamese",
       "endonym": "Tiếng Việt",
-      "keys": 88589,
-      "bytes": 8455633,
-      "updated": "2026-10-22"
+      "keys": 102714,
+      "bytes": 9805324,
+      "updated": "2026-10-29"
     },
     {
       "slug": "yoruba",
       "display": "Yoruba",
       "endonym": "Yorùbá",
-      "keys": 86509,
-      "bytes": 7818551,
-      "updated": "2026-10-22"
+      "keys": 100819,
+      "bytes": 9212464,
+      "updated": "2026-10-29"
     }
   ]
 }
