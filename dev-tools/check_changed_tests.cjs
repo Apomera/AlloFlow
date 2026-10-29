@@ -32,6 +32,7 @@
 
 const { spawnSync } = require('child_process');
 const { ROOT, readQuarantine } = require('./quarantine.cjs');
+const fallback = require('./changed_tests_fallback.cjs');
 
 const args = process.argv.slice(2);
 const QUIET = args.includes('--quiet');
@@ -135,6 +136,39 @@ if (!QUIET) process.stdout.write(output);
 // without this the gate would block those deploys outright.
 if (/No test files found/i.test(output)) {
   console.log('check_changed_tests: no test files cover this change â€” nothing to run.');
+  process.exit(0);
+}
+
+// The import-graph resolve itself can exhaust file handles on this tree (Windows,
+// 2,300+ test files): vitest dies with EMFILE before judging any test. Fall back to
+// the tests that name the changed files, run in small batches, and say so.
+if (res.status !== 0 && fallback.isHandleExhaustion(output)) {
+  const fs = require('fs');
+  const path = require('path');
+  const selected = fallback.selectTests(importable, fallback.listTestFiles(ROOT),
+    (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8'), quarantined);
+  console.log('check_changed_tests: vitest could not resolve the import graph (EMFILE: too many open files).');
+  if (!selected.length) {
+    console.log('check_changed_tests: fallback found no test that names the changed files; nothing to run.');
+    process.exit(0);
+  }
+  console.log('check_changed_tests: FALLBACK running ' + selected.length + ' test file(s) that name the changed files'
+    + ' (narrower than the import graph; CI runs the full suite).');
+  for (const batch of fallback.chunk(selected, 25)) {
+    const run = spawnSync(process.execPath, [ROOT + '/node_modules/vitest/vitest.mjs', 'run', ...batch, '--maxWorkers=2'], {
+      cwd: ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024,
+    });
+    const text = String(run.stdout || '') + String(run.stderr || '');
+    if (!QUIET) process.stdout.write(text);
+    if (run.status !== 0) {
+      console.error('');
+      console.error(fallback.isHandleExhaustion(text)
+        ? 'FAIL: the fallback batch also ran out of file handles, so no verdict is possible.'
+        : 'FAIL: a test that names a changed file is red. Fix the test or the code first.');
+      process.exit(1);
+    }
+  }
+  console.log('check_changed_tests: OK (fallback): every test that names a changed file passes.');
   process.exit(0);
 }
 

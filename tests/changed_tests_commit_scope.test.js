@@ -1,17 +1,24 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
+
+const fallback = createRequire(import.meta.url)('../dev-tools/changed_tests_fallback.cjs');
+const EMFILE = "Error: EMFILE: too many open files, open 'tests/tagged_pdf_release_gate.test.js'";
 
 const source = fs.readFileSync('dev-tools/check_changed_tests.cjs', 'utf8');
 const paths = count => Array.from({ length: count }, (_, i) => `tests/change-${i}.test.js`).join('\n');
 
-function run({ dirty = false, staged = '', unstaged = '', committed = '', args = [], failRange = false } = {}) {
+function run({ dirty = false, staged = '', unstaged = '', committed = '', args = [], failRange = false, related = null, runs = [], tests = {} } = {}) {
   const calls = [], output = [];
   let exitCode = 0;
   const isVitest = (argv) => /vitest\.mjs$/.test(String(argv[0]));
   const spawnSync = (command, argv, options) => {
     calls.push({ command, argv, options });
-    if (isVitest(argv)) return { status: 0, stdout: 'Tests passed', stderr: '' };
+    if (isVitest(argv)) {
+      if (argv[1] === 'related') return related || { status: 0, stdout: 'Tests passed', stderr: '' };
+      return runs.shift() || { status: 0, stdout: ' Tests  3 passed (3)', stderr: '' };
+    }
     let stdout = '';
     if (argv[0] === 'status') stdout = dirty ? ' M example.js' : '';
     else if (argv.includes('--cached')) stdout = staged;
@@ -28,6 +35,9 @@ function run({ dirty = false, staged = '', unstaged = '', committed = '', args =
       require(name) {
         if (name === 'child_process') return { spawnSync };
         if (name === './quarantine.cjs') return { ROOT: '.', readQuarantine: () => ['tests/known-failure.test.js'] };
+        if (name === './changed_tests_fallback.cjs') return { ...fallback, listTestFiles: () => Object.keys(tests).sort() };
+        if (name === 'fs') return { readFileSync: (file) => tests[file.replace(/^\.\//, '')] };
+        if (name === 'path') return { join: (...parts) => parts.join('/') };
         throw new Error('Unexpected import: ' + name);
       },
       process: { argv: ['node', 'check_changed_tests.cjs', ...args], execPath: 'node', platform: 'win32', stdout: { write: value => output.push(value) }, exit(code) { throw { gateExit: code }; } },
@@ -108,5 +118,77 @@ describe('deployment test scope after a source commit', () => {
 
   it('fails closed when Git cannot resolve the committed test range', () => {
     expect(() => run({ failRange: true })).toThrow('Unable to determine test scope');
+  });
+});
+
+// vitest related exhausted file handles mid-resolve on 2026-10-29 (a two-file
+// personas commit) and the gate reported it as a red test.
+describe('deployment test scope when vitest cannot resolve the import graph', () => {
+  const tests = {
+    'tests/personas_render.test.js': "fs.readFileSync('personas_module.js')",
+    'tests/personas_source.test.js': "fs.readFileSync('personas_source.jsx')",
+    'tests/known-failure.test.js': "fs.readFileSync('personas_module.js')",
+    'tests/unrelated.test.js': "fs.readFileSync('view_quiz_module.js')",
+  };
+  const crash = { status: 1, stdout: '', stderr: EMFILE };
+
+  it('runs the tests that name the changed file and reports the fallback', () => {
+    const result = run({ committed: 'personas_module.js', related: crash, tests });
+    expect(result.exitCode).toBe(0);
+    expect(result.vitest).toHaveLength(2);
+    expect(result.vitest[1].argv.slice(1)).toEqual(['run', 'tests/personas_render.test.js', 'tests/personas_source.test.js', '--maxWorkers=2']);
+    expect(result.output).toContain('FALLBACK running 2 test file(s)');
+    expect(result.output).toContain('OK (fallback)');
+  });
+
+  it('fails when a fallback test is red', () => {
+    const result = run({ committed: 'personas_module.js', related: crash, tests, runs: [{ status: 1, stdout: ' Tests  1 failed | 2 passed (3)', stderr: '' }] });
+    expect(result.exitCode).toBe(1);
+    expect(result.output).toContain('a test that names a changed file is red');
+  });
+
+  it('fails without a verdict when the fallback batch also runs out of handles', () => {
+    const result = run({ committed: 'personas_module.js', related: crash, tests, runs: [crash] });
+    expect(result.exitCode).toBe(1);
+    expect(result.output).toContain('no verdict is possible');
+  });
+
+  it('batches a large selection so no single run reopens the whole tree', () => {
+    const many = Object.fromEntries(Array.from({ length: 30 }, (_, i) => [`tests/p${String(i).padStart(2, '0')}.test.js`, 'personas_module.js']));
+    const result = run({ committed: 'personas_module.js', related: crash, tests: many });
+    expect(result.exitCode).toBe(0);
+    expect(result.vitest.slice(1).map(call => call.argv.length - 3)).toEqual([25, 5]);
+  });
+
+  it('keeps a real red test red when the output also mentions EMFILE', () => {
+    const result = run({ committed: 'personas_module.js', related: { status: 1, stdout: EMFILE + '\n Tests  1 failed (1)', stderr: '' }, tests });
+    expect(result.exitCode).toBe(1);
+    expect(result.vitest).toHaveLength(1);
+    expect(result.output).toContain('a test covering this change is red');
+  });
+
+  it('does not fall back on an ordinary failure', () => {
+    const result = run({ committed: 'personas_module.js', related: { status: 1, stdout: ' Tests  1 failed (1)', stderr: '' }, tests });
+    expect(result.exitCode).toBe(1);
+    expect(result.vitest).toHaveLength(1);
+  });
+});
+
+describe('changed-test fallback selection', () => {
+  it('names both halves of a compiled pair', () => {
+    expect(fallback.namesFor('desktop/web-app/public/personas_module.js').sort()).toEqual(['personas_module.js', 'personas_source.jsx']);
+    expect(fallback.namesFor('stem_lab/stem_tool_spacestation.js')).toEqual(['stem_tool_spacestation.js']);
+  });
+
+  it('includes changed test files and skips quarantined ones', () => {
+    const files = ['tests/a.test.js', 'tests/b.test.js', 'tests/q.test.js'];
+    const text = { 'tests/a.test.js': 'nothing', 'tests/b.test.js': 'nothing', 'tests/q.test.js': 'x_module.js' };
+    expect(fallback.selectTests(['tests/a.test.js', 'x_module.js'], files, f => text[f], ['tests/q.test.js'])).toEqual(['tests/a.test.js']);
+  });
+
+  it('recognises handle exhaustion only when no test summary was printed', () => {
+    expect(fallback.isHandleExhaustion(EMFILE)).toBe(true);
+    expect(fallback.isHandleExhaustion(EMFILE + '\n      Tests  2 passed (2)')).toBe(false);
+    expect(fallback.isHandleExhaustion('Error: ENOENT')).toBe(false);
   });
 });
