@@ -2660,6 +2660,9 @@ const hydrateSessionAssets = async (appId, resources) => {
   hydrated.forEach((item) => {
     if (item.type === "image" && item.data) restoreField(item.data, "imageUrl");
     if (item.type === "glossary" && Array.isArray(item.data)) item.data.forEach((term) => restoreField(term, "image"));
+    if (item.type === "memory-aid" && item.data && Array.isArray(item.data.cards)) item.data.cards.forEach((card) => {
+      if (card && typeof card === "object") restoreField(card, "visualImage");
+    });
     if (item.type === "adventure" && item.data) {
       restoreField(item.data, "sceneImage");
       if (item.data.snapshot && typeof item.data.snapshot === "object") {

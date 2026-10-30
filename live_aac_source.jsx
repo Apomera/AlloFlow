@@ -539,13 +539,23 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
         // and adventure happens to use a different key. It goes through the same
         // safePackImageSource budget as the others, so a large scene is dropped
         // on the byte cap rather than blowing up the pack.
-        for (const key of ['image', 'imageUrl', 'sceneImage']) {
+        for (const key of ALLO_PACK_IMAGE_FIELDS) {
+            // Top-level Memory Aid cards are restored with their alt text below.
+            if (key === 'visualImage' && item.type === 'memory-aid') continue;
             // A word-support picture is an object, restored validated above; nulling it here dropped it.
-            if (Object.prototype.hasOwnProperty.call(source, key) && !(source[key] && typeof source[key] === 'object')) target[key] = safePackImageSource(source[key]);
+            if (!Object.prototype.hasOwnProperty.call(source, key) || (source[key] && typeof source[key] === 'object')) continue;
+            target[key] = safePackImageSource(source[key]);
+            if (!target[key] && typeof source[key] === 'string' && source[key].trim()) (ALLO_PACK_IMAGE_ALT_FIELDS[key] || []).forEach(alt => { delete target[alt]; });
         }
-        if (Array.isArray(source.optionImageUrls) && Array.isArray(target.optionImageUrls)) {
-            target.optionImageUrls = source.optionImageUrls.map(safePackImageSource);
-        }
+        Object.keys(source).forEach(key => {
+            if (!_alloIsPackImageListField(key) || !source[key] || typeof source[key] !== 'object' || !target[key] || typeof target[key] !== 'object') return;
+            if (Array.isArray(source[key])) {
+                const packed = target[key];
+                if (Array.isArray(packed)) target[key] = source[key].map((entry, index) => typeof entry === 'string' ? safePackImageSource(entry) : packed[index]);
+                return;
+            }
+            Object.keys(source[key]).forEach(id => { if (typeof source[key][id] === 'string' && !['__proto__', 'constructor', 'prototype'].includes(id)) target[key][id] = safePackImageSource(source[key][id]); });
+        });
         // Animated visual panels need their still frames for pause/step and
         // reduced-motion viewing as well as the composed GIF in imageUrl.
         if (Array.isArray(source.frames) && Array.isArray(target.frames) && typeof source.imageUrl === 'string') {
@@ -886,6 +896,15 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     return stripUndefined(sanitizeResearch(packedResource));
 };
 
+// Every image leaf a resource can carry. The session sanitizer nulls data:
+// strings, so a field missing here reaches students blank (anchor-chart
+// iconUrl did). Superset of RESOURCE_IMAGE_FIELDS in
+// resource_image_controls_source.jsx; tests/pack_image_fields.test.js guards it.
+const ALLO_PACK_IMAGE_FIELDS = ['image', 'imageUrl', 'iconUrl', 'visualImage', 'avatarUrl', 'portrait', 'sceneImage', 'leftImageUrl', 'rightImageUrl', 'coverImage', 'backgroundImage', 'referenceImage', 'imageSrc', 'frayerExampleImage'];
+// Per-choice picture lists (optionImageUrls, answerImageUrls, ...) and id-keyed maps.
+const _alloIsPackImageListField = key => /ImageUrls$/.test(key) || key === 'images';
+// Descriptions that name a picture; dropped with it so nobody hears about a blank.
+const ALLO_PACK_IMAGE_ALT_FIELDS = { iconUrl: ['iconAlt', 'iconAltSource'], visualImage: ['visualAlt', 'visualAltSource'], sceneImage: ['sceneImageAlt'] };
 // Mailbox media preparation is separate from the synchronous privacy serializer.
 // Only inline still pictures are resized; remote URLs are never fetched here,
 // and animated GIFs retain their animation. Teacher originals are not modified.
@@ -973,11 +992,11 @@ const _alloMailboxResourceImages = resource => {
         if (value.type === 'simplified' && value.readingDelivery?.version === 1) {
             omittedReadingPictures += Math.max(0, Math.min(10000, Math.trunc(Number(value.readingDelivery.pictures?.omittedCount) || 0)));
         }
-        for (const key of ['image', 'imageUrl', 'visualImage', 'sceneImage']) add(value[key]);
+        for (const key of ALLO_PACK_IMAGE_FIELDS) add(value[key]);
         // Reading word-support pictures are objects with a validated src leaf.
         // They need the same recipient load check as string-valued pictures.
         if (value.image && typeof value.image === 'object') add(value.image.src);
-        if (Array.isArray(value.optionImageUrls)) value.optionImageUrls.forEach(add);
+        Object.keys(value).forEach(key => { if (_alloIsPackImageListField(key) && value[key] && typeof value[key] === 'object') Object.values(value[key]).forEach(add); });
         if (typeof value.imageUrl === 'string' && Array.isArray(value.frames)) value.frames.forEach(add);
         Object.keys(value).forEach(key => { if (!/^(?:originalImage|karaokeAudio|karaokeStudentAudio|audioRecording|recording|practiceAttempts|retrievalAttempts)$/.test(key)) visit(value[key]); });
     };

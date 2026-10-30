@@ -57,7 +57,8 @@ describe('adventure scene art survives the trip to a student', () => {
 
   it('the mailbox serializer restores sceneImage, not only image/imageUrl', () => {
     const aac = read('live_aac_source.jsx');
-    expect(aac).toContain("for (const key of ['image', 'imageUrl', 'sceneImage'])");
+    expect(aac).toMatch(/const ALLO_PACK_IMAGE_FIELDS = \[[^\]]*'sceneImage'/);
+    expect(aac).toContain('for (const key of ALLO_PACK_IMAGE_FIELDS)');
   });
 
   it('end to end: a sanitized adventure can be rehydrated with its art', () => {
