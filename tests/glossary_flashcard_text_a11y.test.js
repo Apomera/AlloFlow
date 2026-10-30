@@ -20,8 +20,9 @@ describe('Glossary flashcard definition read-aloud controls', () => {
 
   it('provides contextual names, large targets, and high-contrast focus', () => {
     expect(source).toContain("${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition");
-    expect(source).toContain("${t('common.read_translated_definition')}: ${standardDeckLang}");
-    expect(source).toContain("${t('common.read_translated_definition')}: ${flashcardLang}");
+    // The language is shown by its display name (glossaryLanguageLabel) since 2026-10-29.
+    expect(source).toContain("${t('common.read_translated_definition')}: ${glossaryLanguageLabel(standardDeckLang)}");
+    expect(source).toContain("${t('common.read_translated_definition')}: ${glossaryLanguageLabel(flashcardLang)}");
     expect(source.match(/min-h-11 max-w-full inline-flex items-center justify-center/g)?.length)
       .toBeGreaterThanOrEqual(9);
     expect(source).toContain('focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600');

@@ -167,25 +167,51 @@ const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLin
   );
 };
 
-// Exact offsets let reader controls and saved annotations remain siblings.
-const glossaryTextSegments = (value, glossary, language = 'English') => {
-  const text = String(value || ''), terms = new Map();
+// One matcher for every glossary surface, so the words a reader can hover, the words
+// word help anchors to and the words fill-in-the-blanks hides are always the same.
+const _glossaryTermMap = (glossary, language) => {
+  const terms = new Map();
   (Array.isArray(glossary) ? glossary : []).forEach(item => {
     if (!item || item.isSelected === false) return;
     const add = term => { if (typeof term === 'string' && term.trim()) terms.set(term.trim().toLowerCase(), item); };
     add(item.term);
     add(item.sourceTerm);
     const translation = item.translations?.[language];
-    if (translation) add(_glossaryTranslationParts(translation).term);
+    // A one-character translation would match inside every longer CJK word.
+    if (translation) {
+      const term = _glossaryTranslationParts(translation).term.trim();
+      if (term.length > 1) add(term);
+    }
   });
+  return terms;
+};
+// Chinese, Japanese and Thai are written without spaces between words, so their terms
+// match as plain substrings; every other script needs a Unicode word boundary.
+const _GLOSSARY_NO_WORD_BREAK = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u0e00-\u0e7f]/;
+const _glossaryPattern = terms => {
+  const escapeRegExp = term => String(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sorted = Array.from(terms.keys()).sort((a, b) => b.length - a.length);
+  const boundaried = [], substringy = [];
+  sorted.forEach(term => (_GLOSSARY_NO_WORD_BREAK.test(term) ? substringy : boundaried).push(escapeRegExp(term)));
+  try {
+    // The boundary is part of the pattern, so a longer term rejected at a position
+    // ("water cycle" in "water cycles") still lets a shorter one match there.
+    const branches = [];
+    if (boundaried.length) branches.push(`(?<![\\p{L}\\p{N}])(?:${boundaried.join('|')})(?![\\p{L}\\p{N}])`);
+    if (substringy.length) branches.push(`(?:${substringy.join('|')})`);
+    return new RegExp(branches.join('|'), 'giu');
+  } catch (_) {
+    // Lookbehind is unavailable on some older engines: fall back to the ASCII boundary.
+    return new RegExp(`\\b(?:${sorted.map(escapeRegExp).join('|')})\\b`, 'gi');
+  }
+};
+const _glossarySegments = (text, terms) => {
   if (!text || !terms.size) return [{ text, start: 0, end: text.length }];
-  const escape = term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(Array.from(terms.keys()).sort((a, b) => b.length - a.length).map(escape).join('|'), 'giu');
-  const result = [], word = /[\p{L}\p{N}]/u, unspaced = /[\u3040-\u30ff\u3400-\u9fff\u0e00-\u0e7f]/u;
+  const pattern = _glossaryPattern(terms), result = [];
   let cursor = 0, match;
   while ((match = pattern.exec(text))) {
+    if (!match[0]) { pattern.lastIndex += 1; continue; }
     const start = match.index, end = start + match[0].length;
-    if (!unspaced.test(match[0]) && (word.test(text.slice(0, start).match(/.$/u)?.[0] || '') || word.test(text.slice(end).match(/^./u)?.[0] || ''))) continue;
     if (start > cursor) result.push({ text: text.slice(cursor, start), start: cursor, end: start });
     result.push({ text: match[0], start, end, item: terms.get(match[0].toLowerCase()) });
     cursor = end;
@@ -193,63 +219,45 @@ const glossaryTextSegments = (value, glossary, language = 'English') => {
   if (cursor < text.length) result.push({ text: text.slice(cursor), start: cursor, end: text.length });
   return result.length ? result : [{ text, start: 0, end: text.length }];
 };
+// What the hover card shows, for surfaces that show a larger card (the word card
+// after a correct fill-in-the-blank answer).
+const glossaryCardFields = (item, language) => {
+  if (!item) return null;
+  const imageSrc = item.image ? (typeof item.image === 'string' ? item.image : item.image.src) : '';
+  const definitionLanguage = item.definitionLanguage || item.baseLanguage || 'English';
+  const translation = language && language !== definitionLanguage ? _glossaryTranslationParts(item.translations?.[language]) : null;
+  return {
+    term: item.term || '',
+    emoji: typeof item.emoji === 'string' ? item.emoji : '',
+    image: imageSrc ? { src: imageSrc, alt: (item.image && item.image.alt) || item.term || '' } : null,
+    definition: item.def || item.definition || item.explanation || item.text || '',
+    translation: translation && (translation.term || translation.definition) ? [translation.term, translation.definition].filter(Boolean).join(': ') : '',
+  };
+};
+// Exact offsets let reader controls and saved annotations remain siblings.
+const glossaryTextSegments = (value, glossary, language = 'English') =>
+  _glossarySegments(String(value || ''), _glossaryTermMap(glossary, language));
 
 const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps, instanceKey) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms, repairGeneratedText, getReadableContent, generateHelpfulHint } = deps;
   try { if (window._DEBUG_PHASE_M) console.log("[PhaseM] highlightGlossaryTerms fired"); } catch(_) {}
       if (!glossary || glossary.length === 0 || !text) return text;
-      const termMap = new Map();
-      glossary.forEach(item => {
-          if (item.isSelected === false) return;
-          if (item.term) termMap.set(item.term.toLowerCase(), item);
-          if (typeof item.sourceTerm === 'string' && item.sourceTerm.trim()) termMap.set(item.sourceTerm.trim().toLowerCase(), item);
-          if (item.translations?.[leveledTextLanguage]) {
-              const possibleTerm = _glossaryTranslationParts(item.translations[leveledTextLanguage]).term.trim().toLowerCase();
-              if (possibleTerm.length > 1) termMap.set(possibleTerm, item);
-          }
+      const termMap = _glossaryTermMap(glossary, leveledTextLanguage);
+      if (termMap.size === 0) return text;
+      // Rebuilt in the shape String.split gave before (text, term, text, ... with ''
+      // between adjacent terms), so blank ids and keys, which use the index, are unchanged.
+      const parts = [], partItems = [];
+      let between = '';
+      _glossarySegments(String(text), termMap).forEach(segment => {
+          if (!segment.item) { between += segment.text; return; }
+          parts.push(between, segment.text); partItems.push(null, segment.item);
+          between = '';
       });
-      const sortedTerms = Array.from(termMap.keys()).sort((a, b) => b.length - a.length);
-      if (sortedTerms.length === 0) return text;
-      // '$&' is the MATCHED TEXT — the old version replaced each metacharacter
-      // with itself, so this escaped nothing. A term like "C++" went into the
-      // pattern raw.
-      const escapeRegExp = (string) => String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // \b is ASCII-only in JS: it treats every non-Latin character as a
-      // non-word char, so `\bмозг\b` never matched and NO blanks were created
-      // at all for Russian, Arabic, Chinese, Greek… Cloze silently did nothing
-      // in those languages.
-      //
-      // Latin/Cyrillic/Greek/Arabic separate words with spaces, so they need a
-      // Unicode-aware boundary to avoid matching inside a longer word. CJK and
-      // Thai are written without word separators — a boundary assertion there
-      // would reject every legitimate match — so those terms match as plain
-      // substrings.
-      const NO_WORD_BREAK = /[぀-ヿ㐀-䶿一-鿿豈-﫿฀-๿]/;
-      const boundaried = [];
-      const substringy = [];
-      sortedTerms.forEach((term) => {
-        (NO_WORD_BREAK.test(term) ? substringy : boundaried).push(escapeRegExp(term));
-      });
-      const buildPattern = () => {
-        const branches = [];
-        if (boundaried.length) branches.push(`(?<![\\p{L}\\p{N}])(?:${boundaried.join('|')})(?![\\p{L}\\p{N}])`);
-        if (substringy.length) branches.push(`(?:${substringy.join('|')})`);
-        return new RegExp(`(${branches.join('|')})`, 'giu');
-      };
-      let pattern;
-      try {
-        pattern = buildPattern();
-      } catch (_) {
-        // Lookbehind is unavailable on some older engines — fall back to the
-        // ASCII boundary rather than crashing the whole passage render.
-        pattern = new RegExp(`\\b(${sortedTerms.map(t => escapeRegExp(t)).join('|')})\\b`, 'gi');
-      }
-      const parts = text.split(pattern);
+      parts.push(between); partItems.push(null);
       return parts.map((part, i) => {
            if (part == null) return part;
-          const lowerPart = part.toLowerCase();
-          if (termMap.has(lowerPart)) {
-              const item = termMap.get(lowerPart);
+          if (partItems[i]) {
+              const item = partItems[i];
               if (isCloze) {
                   // With a key from the caller the id is unique per place; without one it is
                   // the old part-index/text-length id, which repeats for every bolded term.
@@ -278,6 +286,8 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
                           isSolved={clozeInstanceSet.has(uniqueId)}
                           onCorrect={(word) => {
                               if (!clozeInstanceSet.has(uniqueId)) {
+                                  // Readers can show a word card for the newly solved term.
+                                  try { window.dispatchEvent(new CustomEvent('allo:cloze-solved', { detail: { item, word: part, language: leveledTextLanguage } })); } catch (_) {}
                                   setClozeInstanceSet(prev => {
                                       const newSet = new Set(prev);
                                       newSet.add(uniqueId);
@@ -653,6 +663,7 @@ const generateWordSearch = (targetLang, deps, activityData) => {
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.TextUtilityHelpers = {
   GlossaryTermSpan,
+  glossaryCardFields,
   glossaryTextSegments,
   highlightGlossaryTerms,
   repairGeneratedText,

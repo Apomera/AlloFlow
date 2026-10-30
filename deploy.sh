@@ -587,7 +587,10 @@ else
   if [[ -z "${ROOT_VER:-}" ]]; then
     pv_fail "could not read pluginCdnVersion from AlloFlowANTI.txt"
   else
-    if [[ "$ROOT_VER" == "$BUILD_HASH" ]]; then
+    # build.js stamps the full sha; BUILD_HASH is --short. Compare the commits, not the spellings.
+    ROOT_COMMIT=$(git rev-parse --verify --quiet "${ROOT_VER}^{commit}" 2>/dev/null || true)
+    BUILD_COMMIT=$(git rev-parse --verify --quiet "${BUILD_HASH}^{commit}" 2>/dev/null || true)
+    if [[ -n "$ROOT_COMMIT" && "$ROOT_COMMIT" == "$BUILD_COMMIT" ]]; then
       pv_ok "pluginCdnVersion @${ROOT_VER} matches the built hash"
     else
       pv_fail "pluginCdnVersion @${ROOT_VER} != built hash @${BUILD_HASH} (build.js may not have rewritten refs)"

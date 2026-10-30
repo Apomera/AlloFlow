@@ -2124,8 +2124,23 @@ function SourceInputPanel(props) {
     selectedOwnSourceIds,
     setSelectedOwnSourceIds,
     documentsOnly,
-    setDocumentsOnly
+    setDocumentsOnly,
+    history,
+    handleGenerate,
+    isProcessing
   } = props;
+  const analyses = (Array.isArray(history) ? history : []).filter((item) => item && item.type === "analysis" && item.data && typeof item.data.originalText === "string" && item.data.originalText.trim());
+  const matchedAnalysis = inputText && inputText.trim() ? analyses.slice().reverse().find((item) => item.data.originalText === inputText) : null;
+  const [analysisLink, setAnalysisLink] = React.useState(null);
+  React.useEffect(() => {
+    if (matchedAnalysis && (!analysisLink || analysisLink.id !== matchedAnalysis.id)) setAnalysisLink({ id: matchedAnalysis.id, noticed: false, dismissed: false });
+  }, [matchedAnalysis && matchedAnalysis.id]);
+  const linkedAnalysis = analysisLink && !analysisLink.dismissed ? analyses.find((item) => item.id === analysisLink.id) : null;
+  const analysisNote = !linkedAnalysis ? null : linkedAnalysis.data.originalText === inputText ? analysisLink.noticed ? "analyzed" : null : inputText && inputText.trim() ? "changed" : null;
+  const noticeAnalysis = () => {
+    if (analysisLink && !analysisLink.noticed && matchedAnalysis) setAnalysisLink({ ...analysisLink, noticed: true });
+  };
+  const dismissAnalysisNote = () => setAnalysisLink(analysisLink ? { ...analysisLink, dismissed: true } : null);
   if (!expandedTools || !expandedTools.includes("source-input")) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, showUrlInput && /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in motion-reduce:animate-none slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center bg-white p-1 rounded-lg border border-indigo-100 mb-2 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
@@ -2268,6 +2283,8 @@ function SourceInputPanel(props) {
     {
       "data-allo-textundo": "input",
       value: inputText,
+      "aria-describedby": analysisNote ? "source-analysis-note" : void 0,
+      onFocus: noticeAnalysis,
       onChange: (e) => setInputText(e.target.value),
       onPaste: async (e) => {
         const items = e.clipboardData?.items;
@@ -2313,7 +2330,7 @@ function SourceInputPanel(props) {
       "aria-label": t("common.source_material_aria"),
       "data-help-key": "input_area"
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 right-4 text-[11px] font-medium transition-opacity duration-500 text-slate-600 pointer-events-none flex items-center gap-1" }, isDraftSaving ? /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 8, className: "animate-spin motion-reduce:animate-none" }), " ", t("status.saving_draft")) : inputText && !isCanvas ? /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-green-700" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 8 }), " ", t("status.saved_device")) : null), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 hidden md:flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-b-xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none text-indigo-600", size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium text-indigo-600" }, generationStep)))));
+  ), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 right-4 text-[11px] font-medium transition-opacity duration-500 text-slate-600 pointer-events-none flex items-center gap-1" }, isDraftSaving ? /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 8, className: "animate-spin motion-reduce:animate-none" }), " ", t("status.saving_draft")) : inputText && !isCanvas ? /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-green-700" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 8 }), " ", t("status.saved_device")) : null), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 hidden md:flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-b-xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none text-indigo-600", size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium text-indigo-600" }, generationStep)))), analysisNote && /* @__PURE__ */ React.createElement("div", { id: "source-analysis-note", "data-source-analysis-note": analysisNote, className: "mx-4 mb-4 rounded-lg border border-violet-200 bg-violet-50 p-2.5 text-xs text-violet-950" }, /* @__PURE__ */ React.createElement("p", { className: "m-0" }, analysisNote === "analyzed" ? t("sidebar.source_analyzed_note") || "This text has been analyzed. Edits here won\u2019t change the analysis or the resources made from it." : t("sidebar.source_changed_note") || "This text no longer matches its analysis. Re-analyze so the analysis and new resources use your changes."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, analysisNote === "analyzed" && typeof window.__alloOpenSourceForRevision === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-edit-in-analysis": true, onClick: () => window.__alloOpenSourceForRevision(linkedAnalysis.id), className: "rounded-full border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-800 hover:bg-violet-100" }, t("sidebar.source_edit_in_analysis") || "Edit in Analyze Source"), analysisNote === "changed" && typeof handleGenerate === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-reanalyze": true, disabled: !!isProcessing, onClick: () => handleGenerate("analysis"), className: "rounded-full border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-800 hover:bg-violet-100 disabled:opacity-60" }, t("sidebar.source_reanalyze") || "Re-analyze"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-analysis-dismiss": true, onClick: dismissAnalysisNote, className: "rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100" }, analysisNote === "analyzed" ? t("sidebar.source_keep_editing") || "Keep editing here" : t("sidebar.source_analysis_dismiss") || "Dismiss"))));
 }
 function GlossaryPanel(props) {
   const aiTextAvailable = useAiTextAvailable();
@@ -4289,7 +4306,7 @@ function GeneratorActionsView(props) {
       onClick: () => toggleTool("analysis"),
       className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors motion-reduce:transition-none"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Search2, { size: 16 }), " ", t("sidebar.tool_analysis")),
+    /* @__PURE__ */ React.createElement("div", { className: "min-w-0 text-left" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Search2, { size: 16 }), " ", t("sidebar.tool_analysis")), /* @__PURE__ */ React.createElement("div", { "data-tool-subtitle": true, className: "mt-0.5 pl-6 text-xs font-medium text-slate-600" }, t("sidebar.tool_analysis_sub") || "Check and revise your source text")),
     expandedTools.includes("analysis") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
   ), expandedTools.includes("analysis") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("analysis") && window.AlloModules && window.AlloModules.AnalysisPanel && React.createElement(window.AlloModules.AnalysisPanel, {
     expandedTools,
@@ -5221,7 +5238,9 @@ function SourceInputShellView(props) {
     selectedOwnSourceIds,
     setSelectedOwnSourceIds,
     documentsOnly,
-    setDocumentsOnly
+    setDocumentsOnly,
+    history,
+    handleGenerate
   } = props;
   const simplifySources = !!guidedMode || !!isParentMode;
   const MoreSources = simplifySources ? "details" : React.Fragment;
@@ -5568,7 +5587,10 @@ function SourceInputShellView(props) {
     selectedOwnSourceIds,
     setSelectedOwnSourceIds,
     documentsOnly,
-    setDocumentsOnly
+    setDocumentsOnly,
+    history,
+    handleGenerate,
+    isProcessing
   }), expandedTools.includes("source-input") && isParentMode && isTeacherMode && String(inputText || "").trim().length > 20 && typeof onFamilyAction === "function" && /* @__PURE__ */ React.createElement("div", { "data-help-key": "family_source_actions", role: "group", "aria-label": t("family_start.actions_label") || "Adapt this reading", className: "flex flex-wrap gap-2 border-t border-slate-200 p-3" }, [
     { kind: "simplified", label: t("family_start.simpler") || "Simpler text", Icon: FileText2 },
     { kind: "glossary", label: t("family_start.words") || "Word list", Icon: Globe2 },

@@ -225,7 +225,7 @@ function HeaderBar(props) {
     handleToggleIsHelpMode, handleToggleIsJoinPopoverOpen, handleToggleShowExportMenu,
     hasConnectedRef, hintHistory, toastHistoryCount, isBotVisible, isCloudSyncEnabled, isExtracting,
     isGeneratingSource, isHelpMode, isJoinPopoverOpen, isProcessing,
-    isStudentLinkMode, isZenMode, joinAppIdInput, joinClassSession,
+    isStudentLinkMode, isZenMode, joinAppIdInput, joinClassSession, tourRevealHeader, tourResumeStep,
     joinCodeInput, languageToTTSCode, latestLessonPlan,
     leveledTextLanguage, liveStatus, notebookEntryCount, openExportPreview, onReturnToStart, pptxLoaded,
     resetFontSize, safeRemoveItem, selectedVoice, sessionData,
@@ -252,12 +252,28 @@ function HeaderBar(props) {
   const openHomeBehaviorTools = () => {
     if (homeBehaviorToolsAvailable) setShowBehaviorLens(true);
   };
+  // Shared by the expanded and compact headers so both keep the access-code gate.
+  const viewModeAvailable = !isStudentLinkMode && !isIndependentMode;
+  const startAppTour = (step) => {
+    setShowSetupPathMenu(false);
+    setSpotlightMessage('');
+    setTourStep(step);
+    setRunTour(true);
+  };
+  const toggleViewMode = () => {
+    if (!isTeacherMode && APP_CONFIG._cfg_validation_key) {
+      setPendingRole('toggle_view');
+      setIsGateOpen(true);
+    } else {
+      setIsTeacherMode(!isTeacherMode);
+    }
+  };
 
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
   // Remembered per device. The compact app bar is the default: the complete
   // command surface is still one explicit "More" action away, but it no
   // longer consumes the first third of a laptop viewport on every visit.
-  const [headerCollapsed, setHeaderCollapsed] = React.useState(() => {
+  const [headerCollapsedPreference, setHeaderCollapsed] = React.useState(() => {
     try {
       const saved = localStorage.getItem('allo_header_collapsed');
       if (saved === 'true') return true;
@@ -265,6 +281,9 @@ function HeaderBar(props) {
       return true;
     } catch (_) { return true; }
   });
+  // The app tour shows the full header only while it points at header controls;
+  // the remembered preference is untouched, so the bar collapses again afterwards.
+  const headerCollapsed = headerCollapsedPreference && !tourRevealHeader;
   const toggleHeaderCollapsed = React.useCallback((event) => {
     const button = event && event.currentTarget;
     if (button) {
@@ -296,6 +315,12 @@ function HeaderBar(props) {
       } catch (_) {}
       return next;
     });
+  }, []);
+  // The host's "Turn off this shortcut" notice changes the same preference.
+  React.useEffect(() => {
+    const sync = (e) => { if (e && e.detail && typeof e.detail.enabled === 'boolean') setSingleKeyShortcuts(e.detail.enabled); };
+    window.addEventListener('alloflow:single-key-shortcuts-changed', sync);
+    return () => window.removeEventListener('alloflow:single-key-shortcuts-changed', sync);
   }, []);
   const [voiceInputEngine, setVoiceInputEngine] = React.useState(() => {
     try {
@@ -614,6 +639,39 @@ function HeaderBar(props) {
     return { ok: true, isIOS };
   }, [t]);
   const canUseKokoroVoicePicker = kokoroCapability.ok;
+  // Choosing a Kokoro voice, or "Get the voice", IS the consent to download it.
+  // Nothing else on a phone may start this fetch; see the off-desktop guard in callTTS.
+  const startKokoroVoiceDownload = () => {
+    if (!canUseKokoroVoicePicker || window._kokoroTTS?.ready || window.__kokoroTTSDownloading || !window.__loadKokoroTTS) return;
+    window.__kokoroTTSDownloading = true;
+    window.__kokoroLoadUserInitiated = true;
+    addToast(
+      kokoroCapability.isIOS
+        ? (t('header.voice_kokoro_downloading_ios') || 'Getting the on-device voice (88 MB). It reads offline afterwards, though this browser may ask for it again after a few weeks unused.')
+        : (t('header.voice_kokoro_downloading') || 'Getting the on-device voice (88 MB, one time). You can keep working.'),
+      'info'
+    );
+    Promise.resolve().then(() => window.__loadKokoroTTS()).then(ok => {
+      if (ok) addToast(t('header.voice_kokoro_ready_toast') || 'On-device voice ready. It is saved on this device.', 'success');
+      else addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Another voice will read for now.', 'error');
+    }).catch(() => {
+      addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Another voice will read for now.', 'error');
+    }).finally(() => {
+      window.__kokoroTTSDownloading = false;
+      window.__kokoroLoadUserInitiated = false;
+    });
+  };
+  // With no engine loaded, say whether the model is saved here (it wakes on first
+  // use) or missing (a cloud or device voice reads instead).
+  const [kokoroSavedOnDevice, setKokoroSavedOnDevice] = React.useState(null);
+  React.useEffect(() => {
+    if (!showVoiceSettings || window._kokoroTTS) return undefined;
+    let live = true;
+    const check = window.AlloModules?.AlloCommands?.modelCache?.hasKokoro;
+    if (typeof check !== 'function') { setKokoroSavedOnDevice(null); return undefined; }
+    Promise.resolve(check()).then(saved => { if (live) setKokoroSavedOnDevice(!!saved); }, () => { if (live) setKokoroSavedOnDevice(null); });
+    return () => { live = false; };
+  }, [showVoiceSettings, selectedVoice]);
   // Called, never mounted as <Component/>, so these cannot create a new
   // component identity on each render.
   const renderKokoroVoiceGroup = () => {
@@ -797,7 +855,7 @@ function HeaderBar(props) {
           .allo-premium-header::after { content: ''; position: absolute; left: 3%; right: 3%; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(165,180,252,.55), transparent); pointer-events: none; }
           .allo-premium-header button { min-height: 44px; }
           .allo-premium-header button:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
-          .allo-premium-appbar { min-height: 68px; }
+          .allo-premium-appbar { min-height: 56px; }
           .allo-premium-appbar-brand { display: flex; flex: 1 1 auto; align-items: center; gap: .75rem; min-width: 0; }
           .allo-premium-context-block { min-width: 0; max-width: 21rem; flex: 1 1 auto; }
           .allo-premium-context-line, .allo-premium-pii-text { overflow-wrap: anywhere; }
@@ -809,6 +867,9 @@ function HeaderBar(props) {
             .allo-premium-appbar-brand { display: contents; }
             .allo-premium-brand-name { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
             .allo-premium-context-block { order: 99; flex: 0 0 100%; width: 100%; max-width: none; }
+            /* Phones: the open resource already names the view, so the role/view line stays for screen readers only; the privacy reminder stays visible. */
+            .allo-premium-context-line { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+            .allo-premium-context-block > .allo-premium-pii-row { margin-top: 0; }
             .allo-header-settings-dialog { top: 5rem !important; right: .75rem !important; left: .75rem !important; width: auto !important; max-height: calc(100dvh - 6rem); padding: 1rem !important; }
             .allo-reading-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
             .allo-reading-theme-grid .allo-reading-theme-swatch > span:last-child { overflow: visible !important; text-overflow: clip !important; white-space: normal !important; }
@@ -850,7 +911,7 @@ function HeaderBar(props) {
                   <span className={`allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
                     {compactRoleLabel} <span aria-hidden="true">/</span> {compactContextLabel}
                   </span>
-                  <span className={`mt-1 flex min-w-0 items-start gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'text-orange-100'}`} title={piiWarningText}>
+                  <span className={`allo-premium-pii-row mt-1 flex min-w-0 items-start gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'text-orange-100'}`} title={piiWarningText}>
                     <AlertCircle size={11} className="mt-px shrink-0" aria-hidden="true" />
                     <span className="allo-premium-pii-text">{piiWarningText}</span>
                   </span>
@@ -1058,6 +1119,20 @@ function HeaderBar(props) {
                       </>
                     )}
                   </div>
+                )}
+                {/* Outside the scrolling nav so it never scrolls away; labeled because the icon alone is ambiguous. */}
+                {viewModeAvailable && (
+                  <button type="button"
+                    onClick={toggleViewMode}
+                    data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
+                    data-compact-view-toggle=""
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
+                    title={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
+                    aria-label={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
+                  >
+                    {isTeacherMode ? <School size={16} aria-hidden="true" /> : <GraduationCap size={16} aria-hidden="true" />}
+                    <span className="hidden sm:inline whitespace-nowrap">{isTeacherMode ? homeToolsText('header.nav_student_view', 'Student view') : homeToolsText('header.nav_teacher_view', 'Teacher view')}</span>
+                  </button>
                 )}
                 {isTeacherMode && (
                   <button type="button"
@@ -1295,6 +1370,20 @@ function HeaderBar(props) {
                                                     </div>
                                                 )}
                                             </div>
+                                            {/* Beside Reading Theme on purpose: the theme colors lessons, the overlay tints everything. */}
+                                            <fieldset data-header-color-overlay aria-describedby="header-color-overlay-desc">
+                                                <legend className={`text-xs font-bold mb-1 ${_skin.label}`}>{t('settings.overlay') || 'Color Overlay'}</legend>
+                                                <p id="header-color-overlay-desc" className={`text-[11px] mb-2 ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>{t('reading_settings.overlay_desc') || 'Tints the whole screen, like a colored reading sheet.'}</p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {[['none', t('header.overlay_none') || 'None'], ['blue', t('header.reading_theme_blue') || 'Blue'], ['peach', t('header.overlay_peach') || 'Peach'], ['yellow', t('header.overlay_yellow') || 'Yellow']].map(([id, label]) => (
+                                                        <label key={id} className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold cursor-pointer ${colorOverlay === id ? _skin.accent : _skin.surface}`}>
+                                                            <input type="radio" name="header-color-overlay" value={id} checked={colorOverlay === id}
+                                                                onChange={() => { try { window.__alloReadingSettings?.set({ colorOverlay: id }); } catch (_) {} }} />
+                                                            {label}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </fieldset>
                                             <div className={`border-t ${_skin.divider} pt-3`}>
                                                 <button type="button"
                                                     onClick={toggleSingleKeyShortcuts}
@@ -1385,28 +1474,7 @@ function HeaderBar(props) {
                                                       const voice = e.target.value;
                                                       if (voice === '__kokoro_unavailable') return;
                                                       setSelectedVoice(voice);
-                                                      if (canUseKokoroVoicePicker && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && window.__loadKokoroTTS) {
-                                                        // Choosing the voice IS the consent to download it. Nothing
-                                                        // else on a phone may start this fetch; see the off-desktop
-                                                        // guard in callTTS.
-                                                        window.__kokoroTTSDownloading = true;
-                                                        window.__kokoroLoadUserInitiated = true;
-                                                        addToast(
-                                                          kokoroCapability.isIOS
-                                                            ? (t('header.voice_kokoro_downloading_ios') || 'Getting the on-device voice (88 MB). It reads offline afterwards, though this browser may ask for it again after a few weeks unused.')
-                                                            : (t('header.voice_kokoro_downloading') || 'Getting the on-device voice (88 MB, one time). You can keep working.'),
-                                                          'info'
-                                                        );
-                                                        Promise.resolve().then(() => window.__loadKokoroTTS()).then(ok => {
-                                                          if (ok) addToast(t('header.voice_kokoro_ready_toast') || 'On-device voice ready. It is saved on this device.', 'success');
-                                                          else addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Another voice will read for now.', 'error');
-                                                        }).catch(() => {
-                                                          addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Another voice will read for now.', 'error');
-                                                        }).finally(() => {
-                                                          window.__kokoroTTSDownloading = false;
-                                                          window.__kokoroLoadUserInitiated = false;
-                                                        });
-                                                      }
+                                                      if (KOKORO_VOICES.some(v => v.id === voice)) startKokoroVoiceDownload();
                                                     }}
                                                     data-help-key="header_settings_voice_select"
                                                     className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
@@ -1449,14 +1517,23 @@ function HeaderBar(props) {
                                                     toggle was retired — the q4 file is really ~291MB (not 43MB),
                                                     sounds worse, and benched no faster on wasm CPU. One honest
                                                     tier now: q8, ~88MB, downloaded once + cached on device. ── */}
-                                                {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
-                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`}>
+                                                {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && (
+                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`} data-kokoro-model-status={window._kokoroTTS?.ready ? 'ready' : (window._kokoroTTS || window.__kokoroTTSDownloading) ? 'preparing' : kokoroSavedOnDevice ? 'saved' : 'missing'}>
                                                         <p className="text-[11px] m-0">
                                                             <span className="font-bold">{t('header.voice_model_label') || 'Voice model'}:</span>{' '}
-                                                            {window._kokoroTTS.ready
+                                                            {window._kokoroTTS?.ready
                                                                 ? (t('header.voice_model_ready') || 'Kokoro (~88MB) — ready on this device. Downloaded once; reads offline.')
-                                                                : (t('header.voice_model_preparing') || 'Kokoro (~88MB) — preparing… a temporary voice reads aloud until it finishes.')}
+                                                                : (window._kokoroTTS || window.__kokoroTTSDownloading)
+                                                                    ? (t('header.voice_model_preparing') || 'Kokoro (~88MB) — preparing… a temporary voice reads aloud until it finishes.')
+                                                                    : kokoroSavedOnDevice
+                                                                        ? (t('header.voice_model_saved') || 'Kokoro (~88MB) is saved on this device. It starts when reading begins.')
+                                                                        : (t('header.voice_model_missing') || "Kokoro (~88MB) isn't on this device yet, so another voice reads aloud.")}
                                                         </p>
+                                                        {!window._kokoroTTS && !window.__kokoroTTSDownloading && kokoroSavedOnDevice === false && window.__loadKokoroTTS && (
+                                                            <button type="button" onClick={() => { startKokoroVoiceDownload(); setKokoroSavedOnDevice(null); }} data-kokoro-get-voice className={`mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}`}>
+                                                                {t('header.voice_model_get') || 'Get the voice (88 MB)'}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                                 {/* ── Browser-TTS Fallback Toggle ──
@@ -1600,16 +1677,9 @@ function HeaderBar(props) {
                         </button>
                     </div>
                     <div id="tour-header-tools" className={`relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
-                        {!isStudentLinkMode && !isIndependentMode && (
+                        {viewModeAvailable && (
                             <button type="button"
-                              onClick={() => {
-                                  if (!isTeacherMode && APP_CONFIG._cfg_validation_key) {
-                                      setPendingRole('toggle_view');
-                                      setIsGateOpen(true);
-                                  } else {
-                                      setIsTeacherMode(!isTeacherMode);
-                                  }
-                              }}
+                              onClick={toggleViewMode}
                               data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
                               className={`p-2 rounded-xl transition-all flex items-center gap-2 ${isTeacherMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-teal-700 hover:bg-teal-700 text-white shadow-lg shadow-teal-700/30'}`}
                               title={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
@@ -2211,6 +2281,27 @@ function HeaderBar(props) {
                   <span className="flex items-center gap-2 text-sm font-black"><Sparkles size={16} />{t('toolbar.rerun_wizard') || 'Re-run Setup Wizard'}</span>
                   <span className="block text-xs text-indigo-100 mt-1 leading-relaxed">{t('toolbar.quickstart_setup_desc') || 'Set grade, source material, standards, languages, and personalization.'}</span>
                 </button>
+                {/* The tour's own button lives in the expanded header, which is collapsed by default. */}
+                <button
+                  type="button"
+                  onClick={() => startAppTour(0)}
+                  data-help-key="header_tour_start"
+                  data-setup-tour-start=""
+                  className="w-full text-start rounded-xl border border-amber-300/30 bg-amber-500/15 hover:bg-amber-500/25 px-4 py-3 transition-colors"
+                >
+                  <span className="flex items-center gap-2 text-sm font-black"><Lightbulb size={16} aria-hidden="true" />{homeToolsText('toolbar.tour_take', 'Take the app tour')}</span>
+                  <span className="block text-xs text-amber-100 mt-1 leading-relaxed">{homeToolsText('toolbar.tour_take_desc', 'A guided look at each area of AlloFlow. Jump to any section from the tour card.')}</span>
+                </button>
+                {tourResumeStep > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => startAppTour(tourResumeStep)}
+                    data-setup-tour-resume=""
+                    className="w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
+                  >
+                    <span className="text-xs font-bold text-slate-200">{homeToolsText('toolbar.tour_resume', 'Resume the tour where you left off')}</span>
+                  </button>
+                )}
                 {canUseTeacherGuidedMode && <>
                 <button
                   type="button"

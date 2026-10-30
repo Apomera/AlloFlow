@@ -1107,7 +1107,23 @@ describe('model cache', () => {
     expect(typeof AC.modelCache.cachedBytes).toBe('function');
     // Presence is DETECTED, not enumerated: kokoro-js owns its file list.
     const src = readFileSync('allo_commands_source.jsx', 'utf-8');
-    expect(src).toContain("hasKokoro: function () { return modelCache.hasUrlLike('kokoro'); }");
+    expect(src).toContain("hasKokoro: function () { return modelCache.hasUrlLike(['kokoro', '.onnx']); }");
+  });
+  it('hasKokoro needs the model file: a cached voice .bin alone is not the model', async () => {
+    const repo = 'u:https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/';
+    let keys = [];
+    const previous = window.alloDeviceStorage;
+    window.alloDeviceStorage = { ready: () => Promise.resolve(), list: (ns) => Promise.resolve(ns === 'model_cache' ? keys : []) };
+    try {
+      keys = [repo + 'voices/af_heart.bin'];
+      expect(await AC.modelCache.hasKokoro()).toBe(false);
+      expect(await AC.modelCache.hasUrlLike('kokoro')).toBe(true);
+      keys.push(repo + 'onnx/model_quantized.onnx');
+      expect(await AC.modelCache.hasKokoro()).toBe(true);
+      expect(await AC.modelCache.hasUrlLike(['kokoro', ''])).toBe(false);
+    } finally {
+      window.alloDeviceStorage = previous;
+    }
   });
   it('the Kokoro worker proxies model fetches through the durable cache', () => {
     const loader = readFileSync('kokoro_tts_loader.js', 'utf-8');

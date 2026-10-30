@@ -27,8 +27,9 @@ describe('the header costs less space by default', () => {
     expect(SRC).toContain("headerCollapsed ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'");
   });
 
-  it('keeps context, destinations, session, Setup, and More in the 68px app bar', () => {
-    expect(SRC).toContain('.allo-premium-appbar { min-height: 68px; }');
+  it('keeps context, destinations, session, Setup, and More in the 56px app bar', () => {
+    // 2026-10-29: 68px left 24px of empty bar around the 44px targets; 56px keeps the targets and the context lines.
+    expect(SRC).toContain('.allo-premium-appbar { min-height: 56px; }');
     expect(SRC).toContain('.allo-premium-header button { min-height: 44px; }');
     const compact = SRC.slice(SRC.indexOf('{headerCollapsed && ('), SRC.indexOf('{/* Compact keeps context'));
     for (const key of ['header_dashboard', 'header_learning_hub', 'header_educator_hub']) {
@@ -37,6 +38,16 @@ describe('the header costs less space by default', () => {
     expect(compact).toContain('data-help-key="header_session_start"');
     expect(compact).toContain('data-help-key="header_rerun_wizard"');
     expect(compact).toContain("t('common.more_information') || 'More'");
+  });
+
+  it('on phones keeps the privacy reminder visible and the role/view line for screen readers only', () => {
+    const phone = SRC.split('@media (max-width: 639px) {')[1] || '';
+    const phoneRules = phone.split('@media')[0];
+    expect(phoneRules).toContain('.allo-premium-context-line { position: absolute; width: 1px; height: 1px;');
+    expect(phoneRules.includes('.allo-premium-pii-row { position: absolute'), 'privacy reminder stays visible').toBe(false);
+    expect(SRC).toContain('allo-premium-context-line text-[11px]');
+    expect(SRC).toContain('allo-premium-pii-row mt-1');
+    expect(MODULE.includes('.allo-premium-appbar { min-height: 56px; }'), 'module rebuilt from source').toBe(true);
   });
 });
 

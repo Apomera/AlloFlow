@@ -679,6 +679,34 @@ function isAllowedAlloSheetPopup(url) {
   }
 }
 
+// The Whiteboard (Excalidraw) reports drawings back to its opener, and a window
+// handed to the OS browser has none, so it must open as a child window. Two exact
+// pages only: the bundled copy beside the app (Resource images "Draw") and the CDN
+// copy the Educator Hub opens. Neither is a trusted AlloSheet window, so the
+// private-API header hook never adds the launch token to its requests.
+const WHITEBOARD_CDN_ORIGIN = 'https://alloflow-cdn.pages.dev';
+function isAllowedWhiteboardPage(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.username || parsed.password || parsed.hash) return false;
+    const localOrigins = new Set([
+      new URL(getCommandCenterUrl()).origin,
+      new URL(getBundledAppOrigin()).origin,
+    ]);
+    const local = localOrigins.has(parsed.origin) && parsed.pathname === '/app/whiteboard/whiteboard.html';
+    // Cloudflare Pages redirects *.html to the extensionless path.
+    const cdn = parsed.origin === WHITEBOARD_CDN_ORIGIN
+      && (parsed.pathname === '/whiteboard/whiteboard.html' || parsed.pathname === '/whiteboard/whiteboard');
+    if (!local && !cdn) return false;
+    for (const key of parsed.searchParams.keys()) {
+      if (key !== 'v' && key !== 'imageSlot' && key !== 'host') return false;
+    }
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 function configurePrivateApiRequestHeaders(targetWindow) {
   const privateApiOrigins = [
     new URL(getCommandCenterUrl()).origin,
@@ -1049,6 +1077,25 @@ function createMainWindow() {
         },
       };
     }
+    if (isAllowedWhiteboardPage(url)) {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          minWidth: 720,
+          minHeight: 520,
+          backgroundColor: '#ffffff',
+          autoHideMenuBar: true,
+          webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: true,
+            nodeIntegrationInSubFrames: false,
+            webSecurity: true,
+            devTools: false,
+          },
+        },
+      };
+    }
     // In-app popup views (accessibility reports, print previews, export
     // windows) open via window.open with about:blank/blob:/data: URLs —
     // allow those as child windows; real external links open in the browser.
@@ -1060,6 +1107,20 @@ function createMainWindow() {
   });
 
   mainWindow.webContents.on('did-create-window', (childWindow, details) => {
+    if (isAllowedWhiteboardPage(details && details.url)) {
+      // Excalidraw's help/library links leave for the OS browser; the window
+      // itself may only move between the allowed Whiteboard pages.
+      childWindow.webContents.setWindowOpenHandler(({ url }) => {
+        openExternalIfSafe(url);
+        return { action: 'deny' };
+      });
+      childWindow.webContents.on('will-navigate', (event, url) => {
+        if (isAllowedWhiteboardPage(url)) return;
+        event.preventDefault();
+        openExternalIfSafe(url);
+      });
+      return;
+    }
     if (!isAllowedAlloSheetPopup(details && details.url)) return;
     const companionOrigin = new URL(details.url).origin;
     const childId = childWindow.webContents.id;

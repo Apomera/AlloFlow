@@ -18,10 +18,12 @@ const FONTS = [
 
 describe('host bridge (AlloFlowANTI.txt)', () => {
   const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
-  const body = sliceBetween(anti, '  const readingSettingsRef = useRef(null);', '}, [selectedFont, baseFontSize, lineHeight, letterSpacing, colorOverlay, readingRuler]);', { file: 'AlloFlowANTI.txt', includeEnd: true });
+  const body = sliceBetween(anti, '  const readingSettingsRef = useRef(null);', '}, [selectedFont, baseFontSize, lineHeight, letterSpacing, colorOverlay, readingRuler, readingTheme, focusMode]);', { file: 'AlloFlowANTI.txt', includeEnd: true });
   const refs = [];
   let refIndex = 0;
-  const run = (state) => {
+  const THEMES = ['default', 'warm', 'dark', 'dyslexia'];
+  const run = (given) => {
+    const state = { READING_THEME_IDS: THEMES, readingTheme: 'default', focusMode: false, setReadingTheme: vi.fn(), setFocusMode: vi.fn(), ...given };
     refIndex = 0;
     const useRef = (v) => { const i = refIndex++; if (!refs[i]) refs[i] = { current: v }; return refs[i]; };
     const names = Object.keys(state);
@@ -59,6 +61,18 @@ describe('host bridge (AlloFlowANTI.txt)', () => {
     window.__alloReadingSettings.set({ fontId: 'lexend', colorOverlay: 'peach' });
     expect(s.setSelectedFont).toHaveBeenCalledWith('lexend');
     expect(s.setColorOverlay).toHaveBeenCalledWith('peach');
+  });
+
+  it('publishes the reading theme and bionic reading, and set() routes only known themes', () => {
+    const s = { ...setters(), setReadingTheme: vi.fn(), setFocusMode: vi.fn() };
+    run({ selectedFont: 'default', baseFontSize: 16, lineHeight: 1.6, letterSpacing: 0, colorOverlay: 'none', readingRuler: false, readingTheme: 'warm', focusMode: true, ...s });
+    expect(window.__alloReadingSettings.get()).toMatchObject({ readingTheme: 'warm', readingThemes: THEMES, bionic: true });
+    window.__alloReadingSettings.set({ readingTheme: 'purple', bionic: 'yes' });
+    expect(s.setReadingTheme).not.toHaveBeenCalled();
+    expect(s.setFocusMode).not.toHaveBeenCalled();
+    window.__alloReadingSettings.set({ readingTheme: 'dark', bionic: false });
+    expect(s.setReadingTheme).toHaveBeenCalledWith('dark');
+    expect(s.setFocusMode).toHaveBeenCalledWith(false);
   });
 });
 
@@ -126,6 +140,35 @@ describe('the reading-settings panel', () => {
     expect(setSpy).toHaveBeenLastCalledWith({ baseFontSize: 23 });
     [...panel.querySelectorAll('button')].find((b) => b.textContent === 'Reset size & spacing').click();
     expect(setSpy).toHaveBeenLastCalledWith({ baseFontSize: 16, lineHeight: 1.6, letterSpacing: 0 });
+  });
+
+  it('shows bionic reading and the app-wide reading theme when the host publishes them, and writes both through', () => {
+    Object.assign(state, { readingTheme: 'warm', readingThemes: ['default', 'warm', 'dark', 'dyslexia'], bionic: false });
+    const { opener } = setup();
+    const t = (k) => ({ 'header.reading_theme_dark': 'Oscuro', 'settings.reading_theme_desc': 'Para todo el contenido' })[k] || k;
+    const panel = lib.openReadingSettings({ opener, t }).element;
+    const theme = panel.querySelector('select[id$="-theme"]');
+    expect([...theme.options].map((o) => o.value)).toEqual(['default', 'warm', 'dark', 'dyslexia']);
+    expect(theme.value).toBe('warm');
+    expect(theme.options[2].textContent).toBe('Oscuro');
+    expect(theme.options[3].textContent, 'English fallback for an untranslated theme').toBe('Easy Read');
+    expect(document.getElementById(theme.getAttribute('aria-describedby')).textContent, 'says it applies to every resource').toBe('Para todo el contenido');
+    theme.value = 'dark'; theme.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(setSpy).toHaveBeenLastCalledWith({ readingTheme: 'dark' });
+    const bionic = panel.querySelector('input[id$="-bionic"]');
+    bionic.checked = true; bionic.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(setSpy).toHaveBeenLastCalledWith({ bionic: true });
+    window.__alloReadingSettings.set({ readingTheme: 'default', bionic: false });
+    expect(theme.value, 'the readout follows a change made elsewhere').toBe('default');
+    expect(bionic.checked).toBe(false);
+  });
+
+  it('an older host without theme or bionic still gets the panel, minus those controls', () => {
+    const { opener } = setup();
+    const panel = lib.openReadingSettings({ opener }).element;
+    expect(panel.querySelector('select[id$="-theme"]')).toBeNull();
+    expect(panel.querySelector('input[id$="-bionic"]')).toBeNull();
+    expect(panel.querySelectorAll('input[type="range"]').length).toBe(3);
   });
 
   it('Escape closes it and returns focus; Tab stays inside; the same opener toggles it; an outside press closes it', () => {

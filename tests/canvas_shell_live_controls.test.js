@@ -25,7 +25,12 @@ describe('Canvas shell live-session controls', () => {
     // at 5.5rem. The extracted dashboard opens as a bounded modal. The old per-feature
     // Live Polling / Pictionary floating buttons must not come back at
     // stack-overlapping positions.
-    expect(src).toContain("bottom:'5.5rem'");
+    // Floats above wherever the tool stack really ends (it publishes the offset),
+    // never under it, and steps aside while the tools panel is open.
+    expect(src).toContain("bottom:'var(--alloflow-fab-stack-clear, 5.5rem)',visibility:isFabExpanded ? 'hidden' : 'visible'");
+    for (const file of ['view_fab_stack_source.jsx', 'view_fab_stack_module.js', 'desktop/web-app/public/view_fab_stack_module.js']) {
+      expect(/root\.style\.setProperty\(["']--alloflow-fab-stack-clear["']/.test(readFileSync(resolve(process.cwd(), file), 'utf8')), file).toBe(true);
+    }
     expect(src).toContain("inset:0,zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'");
     expect(src).toContain('<LiveSessionDockView');
     for (const file of ['view_live_session_dock_source.jsx', 'view_live_session_dock_module.js', 'desktop/web-app/public/view_live_session_dock_module.js']) {

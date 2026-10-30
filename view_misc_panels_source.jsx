@@ -3556,8 +3556,12 @@ function TourOverlay(props) {
     tourStep, tourSteps,
     canGoBack = tourStep > 0,
     canGoForward = tourStep < tourSteps.length - 1,
-    compactTour = false
+    compactTour = false,
+    // Main tour only: grouped jump list, section-only toggle, skipped-step note.
+    tourNavigator = null
   } = props;
+  const tourProgress = tourNavigator && tourNavigator.progress;
+  const tourNotice = (tourNavigator && tourNavigator.notice) || '';
   const tourDialogRef = React.useRef(null);
   // Sample the bot's published flashlight position into state so the beam
   // actually FOLLOWS it. Reading window.__alloBotMuzzle at render time would pin
@@ -3621,7 +3625,7 @@ function TourOverlay(props) {
   React.useEffect(() => { tourDialogRef.current?.querySelectorAll('.allo-tour-copy').forEach(el => { el.scrollTop = 0; }); }, [tourStep, spotlightMessage]);
   if (!(runTour && tourRect)) return null;
   const tourAccessibleTitle = spotlightMessage ? (spotlightMessage.title || t('tour.spotlight_title')) : tourSteps[tourStep].title;
-  const tourAccessibleText = spotlightMessage ? (spotlightMessage.text || spotlightMessage || '') : (tourSteps[tourStep].text || '');
+  const tourAccessibleText = spotlightMessage ? (spotlightMessage.text || spotlightMessage || '') : ((tourNotice ? tourNotice + ' ' : '') + (tourSteps[tourStep].text || ''));
   // ── Beam geometry, computed from where the light actually IS ──
   //
   // The old beam was `apex -> (rect.left, rect.top) -> (rect.left, rect.bottom)`:
@@ -3879,10 +3883,36 @@ function TourOverlay(props) {
                     <>
                         <div className="flex justify-between items-start shrink-0">
                             <h4 className="font-bold text-indigo-900 text-lg">{tourSteps[tourStep].title}</h4>
-                            <span className="text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
-                                {tourStep + 1} / {tourSteps.length}
+                            <span data-tour-progress className="shrink-0 text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
+                                {tourProgress ? `${tourProgress.label} · ${tourProgress.current} / ${tourProgress.total}` : `${tourStep + 1} / ${tourSteps.length}`}
                             </span>
                         </div>
+                        {tourNavigator && (
+                            <div data-tour-navigator className="shrink-0 flex flex-wrap items-center gap-2">
+                                <label htmlFor="allo-tour-jump" className="text-xs font-bold text-slate-600">{t('tour.jump_to') || 'Jump to'}</label>
+                                <select
+                                    id="allo-tour-jump"
+                                    value={tourStep}
+                                    onChange={(event) => tourNavigator.onJump(Number(event.target.value))}
+                                    className="min-h-11 min-w-0 max-w-full flex-1 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700"
+                                >
+                                    {tourNavigator.sections.map(section => (
+                                        <optgroup key={section.id} label={section.label}>
+                                            {section.steps.map(item => <option key={item.index} value={item.index}>{item.title}</option>)}
+                                        </optgroup>
+                                    ))}
+                                </select>
+                                <button type="button"
+                                    data-tour-section-toggle
+                                    aria-pressed={!!tourNavigator.activeSection}
+                                    onClick={tourNavigator.onToggleSection}
+                                    className={`rounded-lg border px-3 text-xs font-bold ${tourNavigator.activeSection ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'}`}
+                                >
+                                    {t('tour.section_only') || 'Only this section'}
+                                </button>
+                            </div>
+                        )}
+                        {tourNotice && <p data-tour-skip-note className="shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">{tourNotice}</p>}
                         <div className="allo-tour-copy text-slate-600 text-sm leading-relaxed flex flex-col gap-2">
                             {(tourSteps[tourStep].text || '').split(/\r?\n/).map((line, i) => {
                                 const cleanLine = line.trim();

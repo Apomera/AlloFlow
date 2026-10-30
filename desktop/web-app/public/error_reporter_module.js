@@ -20,10 +20,11 @@
  *   ☐ console.warn()  — user can toggle on inside the panel
  *   ✗ console.log()   — never (debug noise)
  *
- * Persistence: last 50 entries in localStorage for 24 h, so a page reload
- * doesn't lose context. The badge counts only THIS page load's errors;
- * earlier ones stay in the log and reports, labelled. Toggle state and
- * "include warns" preference also persist.
+ * Persistence: last 50 entries for 24 h in THIS browser tab (sessionStorage),
+ * so a page reload doesn't lose context, but the next person on a shared
+ * device does not inherit the log. The badge counts only THIS page load's
+ * errors; earlier ones in the tab stay in the log and reports, labelled.
+ * Toggle state and "include warns" preference persist on the device.
  *
  * No React dep — renders via plain DOM so it still works if React itself
  * fails to load. Usable from any AlloFlow surface (Canvas embed, standalone
@@ -83,6 +84,12 @@
   var STORAGE_KEY = 'alloflow_error_log';
   var STORAGE_PREFS = 'alloflow_error_log_prefs';
   var MAX_BUFFERED = 50;
+  // The log is per tab: logged text can hold a student's answer or a roster
+  // entry, and on a shared school device it used to sit in localStorage for
+  // 24 h, readable by whoever signed in next. Those device-wide copies are
+  // deleted here. A blocked sessionStorage keeps the log in memory only.
+  var logStore = (function () { try { return window.sessionStorage || null; } catch (e) { return null; } })();
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
 
   // App build tag: on desktop the UA carries alloflow-desktop/<version>; on
   // the web there is no stable equivalent, so entries tag as 'web'.
@@ -254,6 +261,13 @@
   function reporterPosture() {
     try { return window.__alloPendingCoachPosture === 'educator' ? 'educator' : 'learner'; } catch (_) { return 'learner'; }
   }
+  // Student view (published by the host; families keep full diagnostics): no
+  // error badge, and the panel is only the report form. The raw log can hold
+  // earlier users' text on a shared device. An older host never sets the flag,
+  // so it keeps today's behavior.
+  function quietStudentView() {
+    try { return window.__alloStudentView === true; } catch (_) { return false; }
+  }
 
   function sanitizeDiagnosticValue(value, depth, seen) {
     if (typeof value === 'string') return redactSecrets(value);
@@ -272,7 +286,7 @@
     return output;
   }
 
-  // ── Initial state (rehydrated from localStorage) ──
+  // ── Initial state (rehydrated from this tab's sessionStorage) ──
   // Rehydration honesty (field-caught 2026-07-06): a report filed from 0.2.4
   // opened with a wall of 0.2.2-era entries — every timestamp PREDATED the
   // install — because the buffer persists across app upgrades. Stale entries
@@ -281,7 +295,7 @@
   // were captured before the pattern was added).
   var buffer = (function () {
     try {
-      var stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      var stored = JSON.parse((logStore && logStore.getItem(STORAGE_KEY)) || '[]');
       if (!Array.isArray(stored)) return [];
       var now = Date.now();
       return stored.filter(function (entry) {
@@ -306,7 +320,7 @@
 
   function persistBuffer() {
     buffer = buffer.map(function (entry) { return sanitizeDiagnosticValue(entry); });
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(buffer)); } catch (e) {}
+    try { if (logStore) logStore.setItem(STORAGE_KEY, JSON.stringify(buffer)); } catch (e) {}
   }
   function persistPrefs() {
     try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(prefs)); } catch (e) {}
@@ -557,6 +571,8 @@
     var parts = ['== Diagnostics: ' + identityLine() + ' =='];
     var moduleTrace = moduleLoadTraceLines();
     if (moduleTrace) parts.push('-- Tool-loading trace (latest attempts) --\n' + moduleTrace);
+    var compat = compatReportLines();
+    if (compat) parts.push(compat);
     try {
       var tts = (window.__alloTtsTrace || []);
       if (tts.length) parts.push('-- Read-aloud trace (last ' + Math.min(tts.length, 25) + ') --\n' + traceLinesForReport(tts, 25));
@@ -644,7 +660,8 @@
     var what = (lines ? 'This page load: ' + nowCount + ' unresolved error' + (nowCount === 1 ? '' : 's') + '.\n\n' + lines : '(No errors captured.)');
     try {
       var trace = moduleLoadTraceLines();
-      what = '== Diagnostics: ' + identityLine() + ' ==' + (trace ? '\n-- Tool-loading trace (latest attempts) --\n' + trace : '') + '\n\n' + what;
+      var compat = compatReportLines();
+      what = '== Diagnostics: ' + identityLine() + ' ==' + (trace ? '\n-- Tool-loading trace (latest attempts) --\n' + trace : '') + (compat ? '\n' + compat : '') + '\n\n' + what;
     } catch (_) {}
     var steps = 'Page: ' + safePageUrl() + '\nView: ' + (reporterPosture() === 'educator' ? 'teacher' : 'student') + ' mode';
     if (window.AlloModules) {
@@ -890,7 +907,7 @@
       if (badge) badge.style.display = 'none';
       return;
     }
-    if (errCount === 0) {
+    if (errCount === 0 || quietStudentView()) {
       if (badge) badge.style.display = 'none';
       return;
     }
@@ -1079,6 +1096,337 @@
       '</footer>';
   }
 
+  // ── Compatibility tab (2026-10-29) ──
+  // Hosts differ in what an embedded page may do. In the Gemini desktop app the
+  // storage approval window opened with no link back, so Approve stayed off.
+  // These checks report what THIS host allows. Results stay on the device until
+  // someone copies or sends them, and hold only check names and outcomes.
+  var compatResults = null;
+  var compatRunning = false;
+  var COMPAT_STATUS = {
+    ok: ['✓ Works', '#047857'],
+    no: ['✗ Not available', '#b91c1c'],
+    warn: ['! Partly', '#92400e'],
+    info: ['i Check by hand', '#475569']
+  };
+  // Rows a button fills in; the pattern matches the placeholder a run writes.
+  var COMPAT_MANUAL = { download: /^Use Test download/, 'file-picker': /^Use Test file picker/, 'device-storage': /^Checking/ };
+
+  function compatRow(id, label, status, detail) {
+    return { id: id, label: label, status: status, detail: detail };
+  }
+
+  function compatHostFacts() {
+    var ua = String(navigator.userAgent || '');
+    var facts = { host: 'Web page', engine: 'unknown', embedded: false, brands: [] };
+    try { facts.embedded = window.top !== window; } catch (_) { facts.embedded = true; }
+    try {
+      var surface = (window.__alloBuildStamp && window.__alloBuildStamp.surface) || '';
+      if (surface === 'desktop' || /alloflow-desktop\//.test(ua)) facts.host = 'AlloFlow desktop app';
+      else if (surface === 'canvas') facts.host = 'Gemini Canvas';
+      else if (surface === 'deployed') facts.host = 'AlloFlow website';
+      else if (surface === 'development') facts.host = 'Local development';
+    } catch (_) {}
+    facts.engine = /Electron\//.test(ua) ? 'Electron' : /Edg\//.test(ua) ? 'Edge or WebView2' :
+      /Chrome\//.test(ua) ? 'Chrome or Chromium' : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'unknown';
+    try {
+      facts.brands = ((navigator.userAgentData && navigator.userAgentData.brands) || [])
+        .map(function (b) { return String(b.brand) + ' ' + String(b.version); })
+        .filter(function (b) { return !/not.?a.?brand/i.test(b); });
+    } catch (_) {}
+    return facts;
+  }
+
+  function permissionPolicyAllows(feature) {
+    try {
+      var policy = document.permissionsPolicy || document.featurePolicy;
+      if (policy && typeof policy.allowsFeature === 'function') return !!policy.allowsFeature(feature);
+    } catch (_) {}
+    return null;
+  }
+
+  function compatMediaRow(id, label, feature) {
+    var row = compatRow(id, label, 'no', 'This host offers no camera or microphone access.');
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') return Promise.resolve(row);
+    var allowed = permissionPolicyAllows(feature);
+    if (allowed === false) { row.detail = 'The page that embeds AlloFlow does not allow it.'; return Promise.resolve(row); }
+    var done = function (state) {
+      if (state === 'denied') { row.status = 'no'; row.detail = 'Permission was denied for this page.'; }
+      else if (state === 'granted') { row.status = 'ok'; row.detail = 'Permission already granted.'; }
+      else { row.status = 'ok'; row.detail = 'Allowed here; the browser will ask the first time.'; }
+      return row;
+    };
+    try {
+      if (navigator.permissions && typeof navigator.permissions.query === 'function') {
+        return navigator.permissions.query({ name: feature }).then(function (s) { return done(s && s.state); }, function () { return done(''); });
+      }
+    } catch (_) {}
+    return Promise.resolve(done(''));
+  }
+
+  function compatVoicesRow() {
+    var row = compatRow('voices', 'Read-aloud voices on this device', 'no', 'This host has no built-in speech.');
+    if (!window.speechSynthesis || typeof window.speechSynthesis.getVoices !== 'function') return Promise.resolve(row);
+    return new Promise(function (resolve) {
+      var finished = false;
+      var finish = function () {
+        if (finished) return;
+        finished = true;
+        var count = 0;
+        try { count = (window.speechSynthesis.getVoices() || []).length; } catch (_) {}
+        row.status = count ? 'ok' : 'warn';
+        row.detail = count ? count + ' voice(s) available.' : 'Speech exists but lists no voices; AlloFlow falls back to its own engine.';
+        resolve(row);
+      };
+      try { if ((window.speechSynthesis.getVoices() || []).length) { finish(); return; } } catch (_) {}
+      try { window.speechSynthesis.addEventListener('voiceschanged', finish); } catch (_) {}
+      setTimeout(finish, 1500);
+    });
+  }
+
+  function compatIndexedDbRow() {
+    var row = compatRow('indexeddb', 'Save larger work on this device (IndexedDB)', 'no', 'Not available here.');
+    if (!window.indexedDB) return Promise.resolve(row);
+    return new Promise(function (resolve) {
+      var finished = false;
+      var finish = function (ok, detail) {
+        if (finished) return;
+        finished = true;
+        row.status = ok ? 'ok' : 'no';
+        row.detail = detail;
+        resolve(row);
+      };
+      try {
+        var req = window.indexedDB.open('allo_compat_check', 1);
+        req.onsuccess = function () {
+          try { req.result.close(); window.indexedDB.deleteDatabase('allo_compat_check'); } catch (_) {}
+          finish(true, 'Opened and removed a test database.');
+        };
+        req.onerror = function () { finish(false, 'Refused: ' + String(req.error && req.error.name || 'error')); };
+        req.onblocked = function () { finish(false, 'Blocked by another open copy.'); };
+      } catch (e) { finish(false, 'Refused: ' + String(e && e.name || e)); }
+      setTimeout(function () { finish(false, 'No answer within 3 seconds.'); }, 3000);
+    });
+  }
+
+  function compatStorageFactsRow() {
+    var row = compatRow('persist', 'Keep saved work when the browser needs space', 'info', 'This host does not say.');
+    if (!navigator.storage || typeof navigator.storage.persisted !== 'function') return Promise.resolve(row);
+    return Promise.resolve(navigator.storage.persisted()).then(function (persisted) {
+      row.status = persisted ? 'ok' : 'warn';
+      row.detail = persisted ? 'Saved work is kept until someone clears it.' : 'The browser may clear saved work if the device runs low on space.';
+      return row;
+    }, function () { return row; });
+  }
+
+  // Must run inside the click: browsers allow a new window and clipboard writes
+  // only during a user gesture, so those two start before anything awaits.
+  function runCompatChecks() {
+    if (compatRunning) return;
+    compatRunning = true;
+    var facts = compatHostFacts();
+    var rows = [];
+    var pending = [];
+
+    var popupRow = compatRow('popup', 'Open a new window', 'no', 'Blocked: no window opened.');
+    var linkRow = compatRow('popup-link', 'New window can report back (storage approval, pop-out tools)', 'no', 'No window to test.');
+    var printRow = compatRow('print-window', 'Print through a new window', 'no', 'Needs a new window.');
+    var popup = null;
+    try { popup = window.open('', 'alloflow_compat_check', 'popup=yes,width=360,height=220'); } catch (_) {}
+    if (popup) {
+      var linked = false, printable = false;
+      try { linked = popup.opener === window; } catch (_) {}
+      try { printable = typeof popup.print === 'function'; } catch (_) {}
+      try { popup.document.title = 'AlloFlow check'; popup.document.body.textContent = 'AlloFlow compatibility check. This window closes by itself.'; } catch (_) {}
+      popupRow.status = 'ok';
+      popupRow.detail = 'A window opened.';
+      linkRow.status = linked ? 'ok' : 'no';
+      linkRow.detail = linked ? 'The window is linked back to AlloFlow.' : 'The window has no link back, so storage approval and pop-out tools cannot send results.';
+      printRow.status = printable && linked ? 'ok' : 'no';
+      printRow.detail = printable && linked ? 'AlloFlow can print from the new window.' : 'AlloFlow cannot reach the new window to print it.';
+      pending.push(new Promise(function (resolve) {
+        setTimeout(function () {
+          var closedEarly = false;
+          try { closedEarly = !!popup.closed; } catch (_) {}
+          if (closedEarly) {
+            popupRow.status = 'warn';
+            popupRow.detail = 'A window opened but closed at once; the host may have sent it to another app.';
+          }
+          try { popup.close(); } catch (_) {}
+          resolve();
+        }, 600);
+      }));
+    }
+    rows.push(popupRow, linkRow, printRow);
+
+    var clipRow = compatRow('clipboard', 'Copy to the clipboard', 'no', 'This host offers no clipboard access.');
+    rows.push(clipRow);
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        pending.push(Promise.resolve(navigator.clipboard.writeText('AlloFlow compatibility check')).then(function () {
+          clipRow.status = 'ok';
+          clipRow.detail = 'Copied a test line (your clipboard now holds it).';
+        }, function (e) { clipRow.detail = 'Refused: ' + String(e && e.name || e); }));
+      }
+    } catch (e) { clipRow.detail = 'Refused: ' + String(e && e.name || e); }
+
+    var local = compatRow('localstorage', 'Remember settings on this device', 'no', 'Not available here.');
+    try {
+      window.localStorage.setItem('__allo_compat_check__', '1');
+      var back = window.localStorage.getItem('__allo_compat_check__');
+      window.localStorage.removeItem('__allo_compat_check__');
+      if (back === '1') { local.status = 'ok'; local.detail = 'Wrote and read back a test value.'; }
+    } catch (e) { local.detail = 'Refused: ' + String(e && e.name || e); }
+    rows.push(local);
+
+    var fullscreen = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+    rows.push(compatRow('fullscreen', 'Full screen', fullscreen ? 'ok' : 'no', fullscreen ? 'Allowed here.' : 'The host does not allow full screen.'));
+    var recognition = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    rows.push(compatRow('speech-input', 'Speech input', recognition ? 'ok' : 'no', recognition ? 'Speech recognition is available.' : 'No speech recognition in this host.'));
+    rows.push(compatRow('cookies', 'Cookies (sign-in)', navigator.cookieEnabled ? 'ok' : 'no', navigator.cookieEnabled ? 'Enabled.' : 'Disabled, so sign-in may fail.'));
+    rows.push(compatRow('secure', 'Secure page', window.isSecureContext ? 'ok' : 'no', window.isSecureContext ? 'Yes, so clipboard and microphone can work.' : 'No, so clipboard and microphone are blocked.'));
+    rows.push(compatRow('download', 'Download files', 'info', 'Use Test download, then look for alloflow-compat-check.txt in Downloads.'));
+    rows.push(compatRow('file-picker', 'Upload files', 'info', 'Use Test file picker. Nothing you pick is read or sent.'));
+
+    var asyncRows = [
+      compatMediaRow('microphone', 'Microphone', 'microphone'),
+      compatMediaRow('camera', 'Camera', 'camera'),
+      compatVoicesRow(),
+      compatIndexedDbRow(),
+      compatStorageFactsRow()
+    ];
+    Promise.all(pending.concat([Promise.all(asyncRows).then(function (more) { rows = rows.concat(more); })]))
+      .catch(function () {})
+      .then(function () {
+        // A re-run keeps results the user got by hand (download, picker, storage).
+        var manual = (compatResults ? compatResults.rows : []).filter(function (r) { return COMPAT_MANUAL[r.id] && !COMPAT_MANUAL[r.id].test(r.detail); });
+        rows = rows.filter(function (r) { return !manual.some(function (m) { return m.id === r.id; }); }).concat(manual);
+        compatResults = { at: new Date().toISOString(), facts: facts, rows: rows };
+        compatRunning = false;
+        refreshPanelIfOpen();
+      });
+    refreshPanelIfOpen();
+  }
+
+  function setCompatRow(row) {
+    if (!compatResults) compatResults = { at: new Date().toISOString(), facts: compatHostFacts(), rows: [] };
+    compatResults.rows = compatResults.rows.filter(function (r) { return r.id !== row.id; }).concat([row]);
+    refreshPanelIfOpen();
+  }
+
+  function testCompatDownload() {
+    try {
+      var blob = new Blob(['AlloFlow compatibility check: if you can read this file, downloads work.\n'], { type: 'text/plain' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'alloflow-compat-check.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (_) {} }, 5000);
+      setCompatRow(compatRow('download', 'Download files', 'info', 'Download started. If alloflow-compat-check.txt is not in Downloads, this host blocks downloads.'));
+    } catch (e) {
+      setCompatRow(compatRow('download', 'Download files', 'no', 'Refused: ' + String(e && e.name || e)));
+    }
+  }
+
+  function testCompatFilePicker() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+    var cleanup = function () { try { input.remove(); } catch (_) {} };
+    input.addEventListener('change', function () {
+      var file = input.files && input.files[0];
+      setCompatRow(file
+        ? compatRow('file-picker', 'Upload files', 'ok', 'A file was chosen (' + Math.max(1, Math.round(file.size / 1024)) + ' KB). It was not read or sent.')
+        : compatRow('file-picker', 'Upload files', 'warn', 'The picker opened but returned no file.'));
+      cleanup();
+    });
+    input.addEventListener('cancel', function () {
+      setCompatRow(compatRow('file-picker', 'Upload files', 'ok', 'The picker opened (cancelled, which is fine).'));
+      cleanup();
+    });
+    document.body.appendChild(input);
+    try { input.click(); } catch (e) {
+      setCompatRow(compatRow('file-picker', 'Upload files', 'no', 'Refused: ' + String(e && e.name || e)));
+      cleanup();
+    }
+  }
+
+  // Reuses the device-storage probe (popup and embedded-frame channels). Its
+  // popup half needs this click, so it runs inline when the module is loaded.
+  function runCompatDeviceStorage() {
+    var ds = window.alloDeviceStorage;
+    if (ds && typeof ds.probe === 'function') {
+      setCompatRow(compatRow('device-storage', 'Device storage connection', 'info', 'Checking (up to about 15 seconds)…'));
+      Promise.resolve().then(function () { return ds.probe(); }).then(function (res) {
+        var s = (res && res.summary) || {};
+        var bad = function (v) { return /^FAILED/.test(String(v || '')); };
+        var status = bad(s.popup) && bad(s.iframe) ? 'no' : (bad(s.popup) || bad(s.iframe) ? 'warn' : 'ok');
+        setCompatRow(compatRow('device-storage', 'Device storage connection', status,
+          'Separate window: ' + String(s.popup || 'no answer') + '. Embedded frame: ' + String(s.iframe || 'no answer') + '.'));
+      }, function (e) {
+        setCompatRow(compatRow('device-storage', 'Device storage connection', 'no', 'Check failed: ' + String(e && (e.code || e.message) || e)));
+      });
+      return;
+    }
+    if (typeof window.__alloOpenDeviceStorageProbe === 'function') {
+      closePanel();
+      window.__alloOpenDeviceStorageProbe();
+      return;
+    }
+    setCompatRow(compatRow('device-storage', 'Device storage connection', 'no', 'The device-storage tool is not loaded in this copy of AlloFlow.'));
+  }
+
+  function compatReportLines() {
+    if (!compatResults || !compatResults.rows.length) return '';
+    var f = compatResults.facts || {};
+    return '-- Compatibility check (' + compatResults.at + ') --\n' +
+      'host: ' + f.host + ' · engine: ' + f.engine + (f.embedded ? ' · embedded' : ' · top-level') + '\n' +
+      compatResults.rows.map(function (r) { return r.id + ': ' + r.status; }).join(', ');
+  }
+
+  function buildCompatDiagText() {
+    var payload;
+    try {
+      payload = JSON.stringify(sanitizeDiagnosticValue({
+        at: new Date().toISOString(),
+        surface: 'error-reporter',
+        identity: identityLine(),
+        host: compatHostFacts(),
+        checks: compatResults ? compatResults.rows : null
+      }), null, 2);
+    } catch (e) { payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e); }
+    return payload;
+  }
+
+  function compatTabHtml() {
+    var facts = compatHostFacts();
+    var btn = 'background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;';
+    var rows = !compatResults
+      ? '<p style="color:#64748b;font-style:italic;text-align:center;padding:20px 0;margin:0;">' + (compatRunning ? 'Running checks…' : 'Press Run checks. A small window opens and closes by itself, and a test line is copied to your clipboard.') + '</p>'
+      : '<ul style="list-style:none;margin:0;padding:0;">' + compatResults.rows.map(function (r) {
+          var s = COMPAT_STATUS[r.status] || COMPAT_STATUS.info;
+          return '<li data-compat-id="' + escapeHtml(r.id) + '" style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #e2e8f0;">' +
+            '<span style="flex:0 0 118px;font:700 12px/1.4 system-ui,sans-serif;color:' + s[1] + ';">' + escapeHtml(s[0]) + '</span>' +
+            '<span style="flex:1;font:12px/1.4 system-ui,sans-serif;color:#334155;"><strong style="color:#0f172a;">' + escapeHtml(r.label) + '</strong><br>' + escapeHtml(r.detail) + '</span>' +
+          '</li>';
+        }).join('') + '</ul>';
+    return '<div style="padding:10px 18px;border-bottom:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
+        '<span style="font:600 11px/1.4 system-ui,sans-serif;color:#475569;flex:1;min-width:200px;">' +
+          escapeHtml(facts.host + ' · ' + facts.engine + (facts.embedded ? ' · embedded in another page' : ' · top-level page')) + '</span>' +
+        '<button id="aer-compat-run" type="button"' + (compatRunning ? ' disabled' : '') + ' style="background:#0f766e;border:none;color:#fff;padding:5px 10px;border-radius:6px;font:700 11px/1 system-ui,sans-serif;cursor:pointer;">' + (compatResults ? 'Run checks again' : 'Run checks') + '</button>' +
+        '<button id="aer-compat-storage" type="button" style="' + btn + '">Check device storage</button>' +
+        '<button id="aer-compat-download" type="button" style="' + btn + '">Test download</button>' +
+        '<button id="aer-compat-file" type="button" style="' + btn + '">Test file picker</button>' +
+        '<button id="aer-compat-copy" type="button" style="' + btn + '">Copy results</button>' +
+      '</div>' +
+      '<div role="region" aria-label="Compatibility check results" aria-live="polite" style="flex:1;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' + rows + '</div>' +
+      '<footer style="padding:10px 18px;border-top:1px solid #e2e8f0;background:#fff;">' +
+        '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">Checks what this browser or app lets AlloFlow do. Run it once where AlloFlow works and once where it does not, then compare. Results are added to a bug report as check names and outcomes only.</p>' +
+      '</footer>';
+  }
+
   // ── Session sync tab (2026-07-20) ──
   // Live-session delivery failures are usually SILENT (a privacy-gate
   // refusal once killed resource sync for 2.5 days with only a console
@@ -1157,7 +1505,9 @@
         ' placeholder="' + escapeHtml(_errT('error_reporter_description_placeholder', 'What were you doing? What did you expect, and what happened instead?')) + '"' +
         ' style="display:block;box-sizing:border-box;width:100%;min-height:84px;max-height:220px;resize:vertical;padding:9px 10px;border:1px solid #94a3b8;border-radius:8px;background:#fff;color:#0f172a;font:16px/1.45 system-ui,sans-serif;">' + escapeHtml(descriptionDraft) + '</textarea>' +
       '<p id="aer-description-help" style="margin:6px 0 0;font:12px/1.5 system-ui,sans-serif;color:#475569;">' +
-        escapeHtml(_errT('error_reporter_description_help', 'Do not include student details or other private information. Up to 2,000 characters.')) + '</p>' +
+        escapeHtml(quietStudentView()
+          ? _errT('error_reporter_student_description_help', 'Do not include names or other personal details. Up to 2,000 characters.')
+          : _errT('error_reporter_description_help', 'Do not include student details or other private information. Up to 2,000 characters.')) + '</p>' +
       '</div>';
   }
 
@@ -1286,7 +1636,27 @@
     }
   }
 
+  // What a student sees: the description, the problem type, the reviewed
+  // technical-only report and Send. No log entries, toolbar or diagnostic tabs.
+  function studentReportHtml() {
+    return '<div data-aer-student-report style="background:#fff;border-radius:14px;width:min(640px,100%);max-width:640px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);">' +
+      '<header style="padding:14px 18px;border-bottom:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">' +
+        '<div>' +
+          '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">' + escapeHtml(_errT('error_reporter_student_title', 'Report a problem')) + '</h2>' +
+          '<p style="margin:4px 0 0;font:13px/1.45 system-ui,sans-serif;color:#475569;">' + escapeHtml(_errT('error_reporter_student_intro', 'Tell us what went wrong. The report includes technical details about the app, never your work.')) + '</p>' +
+        '</div>' +
+        '<button id="aer-close" type="button" aria-label="' + escapeHtml(_errT('error_reporter_student_close', 'Close')) + '" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:44px;height:44px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;">✕</button>' +
+      '</header>' +
+      '<div id="aer-error-content" role="region" aria-label="' + escapeHtml(_errT('error_reporter_student_title', 'Report a problem')) + '" style="flex:1;min-height:0;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' +
+        descriptionHtml() +
+        outgoingReviewHtml() +
+      '</div>' +
+      submissionFooterHtml() +
+      '</div>';
+  }
+
   function panelHtml() {
+    if (quietStudentView()) return studentReportHtml();
     var visible = buffer.filter(function (e) {
       return prefs.filter === 'all' ? true : (e.level === 'error' || (prefs.filter === 'errors_warns' && e.level === 'warn'));
     });
@@ -1295,7 +1665,7 @@
       : visible.slice().reverse().map(logEntryHtml).join('');
 
     var filterVal = prefs.filter || 'errors';
-    var onErrors = activeTab !== 'tts' && activeTab !== 'session' && activeTab !== 'search';
+    var onErrors = activeTab !== 'tts' && activeTab !== 'session' && activeTab !== 'search' && activeTab !== 'compat';
     var tabStyle = function (on) {
       return 'padding:7px 14px;border:none;border-bottom:2px solid ' + (on ? '#0d9488' : 'transparent') + ';background:transparent;color:' + (on ? '#0f172a' : '#64748b') + ';font:700 12px/1 system-ui,sans-serif;cursor:pointer;';
     };
@@ -1333,6 +1703,8 @@
       body = sessionTabHtml();
     } else if (activeTab === 'search') {
       body = searchTabHtml();
+    } else if (activeTab === 'compat') {
+      body = compatTabHtml();
     } else {
       body = ttsTabHtml();
     }
@@ -1343,16 +1715,17 @@
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
           '<div>' +
             '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">🩺 AlloFlow Diagnostics</h2>' +
-            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Review a copy before sharing it with support.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : 'Read-aloud & text-to-speech activity for this session.'))) + '</p>' +
+            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Review a copy before sharing it with support.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : (activeTab === 'compat' ? 'What this browser or app lets AlloFlow do.' : 'Read-aloud & text-to-speech activity for this session.')))) + '</p>' +
             '<p style="margin:2px 0 0;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;">' + escapeHtml(identityLine()) + '</p>' +
           '</div>' +
           '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
         '</div>' +
-        '<div role="tablist" aria-label="Diagnostics sections" style="display:flex;gap:4px;margin-top:8px;">' +
+        '<div role="tablist" aria-label="Diagnostics sections" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">' +
           '<button id="aer-tab-errors" type="button" role="tab" aria-selected="' + (onErrors ? 'true' : 'false') + '" style="' + tabStyle(onErrors) + '">⚠ Errors</button>' +
           '<button id="aer-tab-tts" type="button" role="tab" aria-selected="' + (activeTab === 'tts' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'tts') + '">🔊 Read-aloud</button>' +
           '<button id="aer-tab-session" type="button" role="tab" aria-selected="' + (activeTab === 'session' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'session') + '">🛰 Session</button>' +
           '<button id="aer-tab-search" type="button" role="tab" aria-selected="' + (activeTab === 'search' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'search') + '">🔎 Web search</button>' +
+          '<button id="aer-tab-compat" type="button" role="tab" aria-selected="' + (activeTab === 'compat' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'compat') + '">🧩 Compatibility</button>' +
         '</div>' +
       '</header>' +
       body +
@@ -1361,7 +1734,7 @@
 
 
   function openPanel(tab) {
-    if (tab === 'tts' || tab === 'errors' || tab === 'session' || tab === 'search') activeTab = tab;
+    if (tab === 'tts' || tab === 'errors' || tab === 'session' || tab === 'search' || tab === 'compat') activeTab = tab;
     if (panel) {
       // Already open: a tab request switches tabs instead of toggling closed.
       if (tab) { refreshPanelIfOpen(); return; }
@@ -1372,7 +1745,7 @@
     panel.id = 'allo-err-panel';
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
-    panel.setAttribute('aria-label', 'AlloFlow Error Reporter');
+    panel.setAttribute('aria-label', quietStudentView() ? _errT('error_reporter_student_title', 'Report a problem') : 'AlloFlow Error Reporter');
     panel.style.cssText = [
       'position:fixed', 'inset:0', 'z-index:2147483647',
       'background:rgba(15,23,42,0.55)',
@@ -1531,6 +1904,16 @@
     };
     if ($('aer-tab-search')) $('aer-tab-search').onclick = function () {
       if (activeTab !== 'search') { activeTab = 'search'; refreshPanelIfOpen(); }
+    };
+    if ($('aer-tab-compat')) $('aer-tab-compat').onclick = function () {
+      if (activeTab !== 'compat') { activeTab = 'compat'; refreshPanelIfOpen(); }
+    };
+    if ($('aer-compat-run')) $('aer-compat-run').onclick = runCompatChecks;
+    if ($('aer-compat-storage')) $('aer-compat-storage').onclick = runCompatDeviceStorage;
+    if ($('aer-compat-download')) $('aer-compat-download').onclick = testCompatDownload;
+    if ($('aer-compat-file')) $('aer-compat-file').onclick = testCompatFilePicker;
+    if ($('aer-compat-copy')) $('aer-compat-copy').onclick = function () {
+      copyDiagnosticsText(buildCompatDiagText(), 'aer-compat-copy', 'Copy results');
     };
     if ($('aer-search-refresh')) $('aer-search-refresh').onclick = refreshPanelIfOpen;
     if ($('aer-search-test')) $('aer-search-test').onclick = function () {
@@ -1803,10 +2186,13 @@
     getSupportReportingPolicy: getSupportReportingPolicy,
     redactSecrets: redactSecrets,
     openPanel: openPanel,
+    // The host calls this when the view changes, so the badge and an open panel follow it.
+    refreshView: function () { updateBadge(); refreshPanelIfOpen(); },
     // Direct deep-link to the read-aloud/TTS trace tab (AI backend settings
     // exposes this so the log is reachable with ZERO captured errors — a
     // stuck read-aloud rarely throws, it just stalls).
     openReadAloudLog: function () { openPanel('tts'); },
+    openCompatibilityCheck: function () { openPanel('compat'); },
     // Same reasoning for web search: a missing transport throws nothing and
     // captures no error, so the Search tab has to be reachable with an empty
     // error buffer. Grounded features link here when a search comes back dry.
@@ -1848,7 +2234,7 @@
       try { receiveApiFeedback(detail); } catch (_) {}
     });
   }
-  try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' || tab === 'search' ? tab : 'errors'); }; } catch (_) {}
+  try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' || tab === 'search' || tab === 'compat' ? tab : 'errors'); }; } catch (_) {}
 
   // A timed-out module that arrives later drops out of the count.
   try {

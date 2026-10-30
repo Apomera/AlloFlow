@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   function createWordPracticeCore() {
-    const LIMITS = Object.freeze({ words: 200, wordLength: 120, instructionChars: 12000, totalInstructionChars: 512 * 1024, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024 });
+    const LIMITS = Object.freeze({ words: 200, wordLength: 120, instructionChars: 12000, totalInstructionChars: 512 * 1024, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024, pictureChars: 6 * 1024 * 1024, totalPictureChars: 20 * 1024 * 1024 });
     const own = (obj, key) => obj && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
     const text = (value, max = 2000) => typeof value === 'string' ? value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max) : '';
     const key = value => text(value).normalize('NFC').toLocaleLowerCase().replace(/\s+/g, ' ');
@@ -160,6 +160,57 @@
         return valid ? 'data:' + mime + ';base64,' + match[2] : '';
       } catch (_) { return ''; }
     }
+    // A glossary picture: an embedded PNG, JPEG, GIF or WebP, checked by its file
+    // signature like audio above, or an https link (shown live and in the HTML file).
+    function safePicture(value) {
+      const candidate = typeof value === 'string' ? value.trim() : '';
+      if (!candidate || candidate.length > LIMITS.pictureChars) return '';
+      if (/^https:\/\/[^\s"'<>\\]+$/i.test(candidate)) return candidate.length <= 2048 ? candidate : '';
+      const match = /^data:image\/(png|jpeg|jpg|gif|webp);base64,([a-z0-9+/]*={0,2})$/i.exec(candidate);
+      if (!match || match[2].length < 16 || match[2].length % 4 !== 0) return '';
+      try {
+        const bytes = atob(match[2].slice(0, 32)), at = i => bytes.charCodeAt(i), type = match[1].toLowerCase();
+        const valid = type === 'png' ? at(0) === 0x89 && bytes.slice(1, 4) === 'PNG'
+          : type === 'gif' ? bytes.startsWith('GIF8')
+          : type === 'webp' ? bytes.slice(0, 4) === 'RIFF' && bytes.slice(8, 12) === 'WEBP'
+          : at(0) === 0xff && at(1) === 0xd8 && at(2) === 0xff;
+        return valid ? 'data:image/' + (type === 'jpg' ? 'jpeg' : type) + ';base64,' + match[2] : '';
+      } catch (_) { return ''; }
+    }
+    // The glossary's fingerprint of the picture a description was written for
+    // (same as the flashcard export): a description of an earlier picture is not reused.
+    function pictureHash(image) {
+      let h = 0x811c9dc5;
+      const mix = c => { h ^= c; h = Math.imul(h, 0x01000193) >>> 0; };
+      String(image.length).split('').forEach(ch => mix(ch.charCodeAt(0)));
+      const step = Math.max(1, Math.floor(image.length / 4096));
+      for (let i = 0; i < image.length; i += step) mix(image.charCodeAt(i));
+      return 'img-' + image.length.toString(36) + '-' + h.toString(16).padStart(8, '0');
+    }
+    function pictureCredit(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+      try {
+        const line = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AltText && window.AlloModules.AltText.openImageCreditLine;
+        if (typeof line === 'function') return text(line(value), 400);
+      } catch (_) {}
+      return ['set', 'author', 'license'].map(name => text(value[name], 160)).concat(value.modified === true ? ['edited'] : []).filter(Boolean).join(' · ');
+    }
+    // Accepts a glossary entry (image, imageAlt, imageDecorative, imageAttribution)
+    // or a saved practice item's own { picture } on re-normalisation.
+    function pictureFor(record, word) {
+      const saved = record.picture && typeof record.picture === 'object' && !Array.isArray(record.picture) ? record.picture : null;
+      const raw = saved ? saved.src : typeof record.image === 'string' ? record.image : record.image && typeof record.image === 'object' ? record.image.src : '';
+      const src = safePicture(raw);
+      if (!src) return null;
+      const decorative = saved ? saved.decorative === true : record.imageDecorative === true;
+      let alt = '';
+      if (!decorative) {
+        alt = text(saved ? saved.alt : record.imageAlt, 1000);
+        if (!saved && alt && record.imageAltHash && typeof raw === 'string' && pictureHash(raw) !== record.imageAltHash) alt = '';
+        alt = alt || text(word, LIMITS.wordLength);
+      }
+      return { src, alt, decorative, credit: saved ? text(saved.credit, 400) : pictureCredit(record.imageAttribution) };
+    }
     // Keep the portable player independent of the live Word Sounds module.
     // These are its canonical phonics/IPA mappings, parity-checked against
     // word_sounds_core.js. Resolve the original object before dropping its IPA
@@ -210,6 +261,8 @@
         autoAdvance: options.autoAdvance === true,
         intervalSeconds: bounded(options.intervalSeconds == null ? 3 : options.intervalSeconds, 3, 1, 30),
         includeAudio: options.includeAudio !== false,
+        includePictures: options.includePictures !== false,
+        vocabularyFirst: options.vocabularyFirst === 'meaning' ? 'meaning' : 'word',
         cardFont: ['default', 'arial', 'verdana', 'georgia'].includes(options.cardFont) ? options.cardFont : 'default',
         cardTextScale: bounded(options.cardTextScale == null ? 1 : options.cardTextScale, 1, 0.85, 1.4),
         cardTheme: ['paper', 'cream', 'mist'].includes(options.cardTheme) ? options.cardTheme : 'paper'
@@ -363,7 +416,8 @@
           translations: translationsFor(record.translations || record.translation, original),
           wordAudio: wordState.audio, wordAudioProvenance: wordState.provenance, wordAudioStatus: wordState.status, ...(wordState.original ? { wordAudioOriginal: wordState.original } : {}),
           phonemes,
-          sentenceActivity: sentenceActivityFor(record, original, termLanguage)
+          sentenceActivity: sentenceActivityFor(record, original, termLanguage),
+          picture: pictureFor(record, original)
         };
         if (existing) {
           ['definition', 'example'].forEach(field => { if (!existing[field] && item[field]) { existing[field] = item[field]; existing[field + 'Language'] = item[field + 'Language']; } });
@@ -372,6 +426,7 @@
           if (!existing.phonemes.length) existing.phonemes = item.phonemes;
           if (!existing.translations.length) existing.translations = item.translations;
           if (!existing.sentenceActivity) existing.sentenceActivity = item.sentenceActivity;
+          if (!existing.picture) existing.picture = item.picture;
           return;
         }
         seen.set(identity, item); usedIds.set(id, identity); items.push(item);
@@ -384,7 +439,14 @@
       let audioChars = 0;
       items.forEach(item => { audioChars += item.wordAudio.length + (item.wordAudioOriginal ? item.wordAudioOriginal.audio.length : 0); item.phonemes.forEach(sound => { audioChars += sound.audio.length + (sound.audioOriginal ? sound.audioOriginal.audio.length : 0); }); });
       if (audioChars > LIMITS.totalAudioChars) throw new Error('This practice set has too much audio. Split it into smaller word lists.');
-      return { version: 1, title: text(input.title, 160) || 'Word Fluency Pop-Up', language, items, options: normalizeOptions(input.options) };
+      // Pictures past the budget are left out (and counted) rather than blocking the set.
+      let pictureChars = 0, picturesOmitted = 0;
+      items.forEach(item => {
+        if (!item.picture || !/^data:/.test(item.picture.src)) return;
+        if (pictureChars + item.picture.src.length > LIMITS.totalPictureChars) { item.picture = null; picturesOmitted++; }
+        else pictureChars += item.picture.src.length;
+      });
+      return { version: 1, title: text(input.title, 160) || 'Word Fluency Pop-Up', language, items, options: normalizeOptions(input.options), ...(picturesOmitted ? { picturesOmitted } : {}) };
     }
     function createSequence(pack, value = {}, rng = Math.random) {
       const options = normalizeOptions(value);
@@ -417,8 +479,26 @@
       });
       return result;
     }
+    // "Start with the meaning" blanks the word (and its simple endings) in its own clue,
+    // so the definition or example never gives the answer away.
+    function maskWord(value, word) {
+      const source = typeof value === 'string' ? value : '', target = text(word, LIMITS.wordLength);
+      if (!source || !target) return source;
+      const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+      try {
+        // Scripts written without spaces have no word boundary to anchor on.
+        const pattern = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u.test(target)
+          ? new RegExp(escaped, 'giu')
+          : new RegExp('(?<![\\p{L}\\p{N}])' + escaped + "(?:s|es|ed|d|ing|'s)?(?![\\p{L}\\p{N}])", 'giu');
+        return source.replace(pattern, '____');
+      } catch (_) { return source; }
+    }
+    // Something to recall the word from; without it a card falls back to word-first.
+    function hasMeaning(item, options) {
+      return !!(item && (item.definition || item.example || (item.translations && item.translations.length) || (options && options.includePictures && item.picture)));
+    }
     function serializePack(pack) { return safeJson(normalizeInput(pack)); }
-    return { LIMITS, text, key, languageInfo, languageLabel, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, cardAppearance, createSequence, audioCoverage, serializePack };
+    return { LIMITS, text, key, languageInfo, languageLabel, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, safePicture, maskWord, hasMeaning, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, cardAppearance, createSequence, audioCoverage, serializePack };
   }
   root.AlloWordPracticeCore = createWordPracticeCore();
   // The standalone HTML player embeds this exact factory, keeping its validator

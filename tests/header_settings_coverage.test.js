@@ -81,7 +81,9 @@ describe('header settings resolved state and coverage',()=>{
 });
 
 describe('header on-device voice setup recovery',()=>{
-  function setup(loader){const selected=[],toasts=[];const fakeWindow={__loadKokoroTTS:loader};const callback=attributeValue(element('id','header-spoken-output-voice'),'onChange',{window:fakeWindow,setSelectedVoice:v=>selected.push(v),canUseKokoroVoicePicker:true,KOKORO_VOICES:[{id:'af_heart'}],kokoroCapability:{isIOS:false},addToast:(text,type)=>toasts.push({text,type}),t:()=>null});return {fakeWindow,selected,toasts,choose:()=>callback({target:{value:'af_heart'}})};}
+  // The picker and "Get the voice" share startKokoroVoiceDownload; run the real one in the same scope.
+  const download=block(header,'const startKokoroVoiceDownload = () => {','  // With no engine loaded');
+  function setup(loader){const selected=[],toasts=[];const fakeWindow={__loadKokoroTTS:loader};const scope={window:fakeWindow,setSelectedVoice:v=>selected.push(v),canUseKokoroVoicePicker:true,KOKORO_VOICES:[{id:'af_heart'}],kokoroCapability:{isIOS:false},addToast:(text,type)=>toasts.push({text,type}),t:()=>null};scope.startKokoroVoiceDownload=vm.runInNewContext(download+';startKokoroVoiceDownload',scope);const callback=attributeValue(element('id','header-spoken-output-voice'),'onChange',scope);return {fakeWindow,selected,toasts,choose:()=>callback({target:{value:'af_heart'}})};}
   it.each(['reject','throw','false'])('clears setup flags and permits retry after %s',async(mode)=>{
     let count=0;const s=setup(()=>{count++;if(mode==='throw')throw Error('unavailable');return mode==='reject'?Promise.reject(Error('unavailable')):Promise.resolve(false);});
     s.choose();await settle();expect(s.fakeWindow.__kokoroTTSDownloading).toBe(false);expect(s.fakeWindow.__kokoroLoadUserInitiated).toBe(false);expect(s.toasts.at(-1).type).toBe('error');
@@ -98,4 +100,48 @@ describe('header browser fallback persistence',()=>{
   function setup(config,fail=false){const toasts=[];let saved=config;const callback=attributeValue(element('id','header-browser-voice-fallback'),'onChange',{localStorage:{getItem:()=>JSON.stringify(saved),setItem:(key,value)=>{if(fail)throw Error('storage unavailable');expect(key).toBe('alloflow_ai_config');saved=JSON.parse(value);}},addToast:(text,type)=>toasts.push({text,type}),t:()=>null});return {callback,toasts,read:()=>saved};}
   it.each([true,false])('saves fallback=%s without dropping the selected provider',requested=>{const state=setup({ttsProvider:'kokoro',browserTtsFallback:!requested});const input={checked:requested};state.callback({currentTarget:input});expect(state.read()).toEqual({ttsProvider:'kokoro',browserTtsFallback:requested});expect(input.checked).toBe(requested);expect(state.toasts).toHaveLength(0);});
   it.each([true,false])('restores the visible choice if fallback=%s cannot be saved',requested=>{const state=setup({ttsProvider:'gemini',browserTtsFallback:!requested},true);const input={checked:requested};state.callback({currentTarget:input});expect(input.checked).toBe(!requested);expect(state.read().browserTtsFallback).toBe(!requested);expect(state.toasts.at(-1).type).toBe('error');});
+});
+
+// With no Kokoro engine loaded, the panel used to say nothing while another voice read
+// aloud. It now says whether the model is saved here (it wakes on first use) or missing,
+// and offers the download (10-29).
+describe('header Kokoro model status when no engine is loaded', () => {
+  const withAttr = (name) => { const node = elements.find(n => n.openingElement.attributes.some(a => a.name?.name === name)); if (!node) throw Error('Missing header control ' + name); return node; };
+  const status = (fakeWindow, kokoroSavedOnDevice) => attributeValue(withAttr('data-kokoro-model-status'), 'data-kokoro-model-status', { window: fakeWindow, kokoroSavedOnDevice });
+  it('names each state', () => {
+    expect(status({ _kokoroTTS: { ready: true } }, null)).toBe('ready');
+    expect(status({ _kokoroTTS: { ready: false } }, null)).toBe('preparing');
+    expect(status({ __kokoroTTSDownloading: true }, false)).toBe('preparing');
+    expect(status({}, true)).toBe('saved');
+    expect(status({}, false)).toBe('missing');
+    expect(status({}, null), 'unknown reads as missing, never as ready').toBe('missing');
+  });
+  it('"Get the voice" starts the same consented download as choosing the voice', () => {
+    let started = 0, reset = null;
+    const onClick = attributeValue(withAttr('data-kokoro-get-voice'), 'onClick', { startKokoroVoiceDownload: () => { started++; }, setKokoroSavedOnDevice: (v) => { reset = v; } });
+    onClick();
+    expect(started).toBe(1);
+    expect(reset, 're-renders into the preparing state').toBe(null);
+  });
+  it('checks the device copy only while the voice panel is open', () => {
+    const effect = block(header, 'const [kokoroSavedOnDevice, setKokoroSavedOnDevice] = React.useState(null);', '  // Called, never mounted');
+    expect(effect).toContain('if (!showVoiceSettings || window._kokoroTTS) return undefined;');
+    expect(effect).toContain('}, [showVoiceSettings, selectedVoice]);');
+  });
+});
+
+describe('header color overlay beside Reading Theme', () => {
+  it('each option writes through the shared reading settings', () => {
+    const calls = [];
+    for (const id of ['none', 'blue', 'peach', 'yellow']) {
+      const onChange = attributeValue(element('name', 'header-color-overlay'), 'onChange', { id, window: { __alloReadingSettings: { set: (p) => calls.push(p) } } });
+      onChange();
+    }
+    expect(calls).toEqual([{ colorOverlay: 'none' }, { colorOverlay: 'blue' }, { colorOverlay: 'peach' }, { colorOverlay: 'yellow' }]);
+  });
+  it('says what the overlay does, next to the theme', () => {
+    const panel = block(header, "{t('settings.reading_theme') || '🎨 Reading Theme'}", 'onClick={toggleSingleKeyShortcuts}');
+    expect(panel).toContain("t('reading_settings.overlay_desc')");
+    expect(panel).toContain('aria-describedby="header-color-overlay-desc"');
+  });
 });

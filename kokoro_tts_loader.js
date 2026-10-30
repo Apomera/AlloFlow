@@ -247,7 +247,9 @@
 
         // ── Sentence splitter (runs in worker) ──
         function splitSentences(text) {
-            const sentences = text.match(/[^.!?]*(?:(?:Dr|Mr|Mrs|Ms|St|Jr|Sr|Prof|vs|Inc|Ltd|Co|U\\\\.S\\\\.A|etc)\\\\.[^.!?]*)*[.!?]+[\\\\s]*|[^.!?]+$/gi);
+            // Template string: every regex backslash is doubled here. Titles,
+            // initials (U.S.A., a.m.) and decimals (3.5) never end a sentence.
+            const sentences = text.match(/(?:\\b(?:Dr|Mr|Mrs|Ms|St|Jr|Sr|Prof|vs|Inc|Ltd|Co|etc)\\.(?!$)|\\b(?:[a-z]\\.){2,}(?!$)|\\.(?=\\d)|[^.!?])+(?:[.!?]+|$)\\s*/gi);
             if (!sentences) return [text];
             return sentences.map(s => s.trim()).filter(s => s.length > 1);
         }
@@ -968,9 +970,10 @@
     // forever and the host's progress pill frozen at one percentage until the
     // person refreshed the page. Now, if NO progress message arrives for
     // STALL_MS while initialising, the worker is terminated and the init is
-    // retried once from a fresh worker (files already fetched are served from
-    // the transformers-cache, so the retry resumes rather than restarts). A
-    // second stall rejects with a TimeoutError the host can report honestly.
+    // retried once from a fresh worker. Only COMPLETE files are reused from the
+    // cache, and the model is one ~88MB file, so a stall mid-model restarts that
+    // file from zero. A second stall rejects with a TimeoutError the host can
+    // report honestly.
     const STALL_MS = 60000;
     const STALL_RETRIES = 1;
     let _stallTimer = null;
@@ -1456,5 +1459,5 @@
         },
     };
 
-    console.log('[Kokoro TTS] 📦 Worker-based loader registered (default: q4 fast mode). Call init() or speak() to start.');
+    console.log('[Kokoro TTS] 📦 Worker-based loader registered (default: q8). Call init() or speak() to start.');
 })();

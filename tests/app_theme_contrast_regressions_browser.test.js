@@ -85,6 +85,19 @@ const FIXTURE = `
   </div>
   <div class="theme-contrast" style="background:#000000;color:#ffff00">
     <div class="alloflow-student-tools-panel" style="position:static"><h2 id="c-tools-title" class="text-slate-900" style="color:#0f172a">Student tools</h2></div>
+  </div>
+  <div class="theme-light">
+    <div data-reading-theme="dark" style="background:#1a1a2e;color:#e2e8f0">
+      <section class="rounded-2xl border border-orange-200 bg-orange-50/60 p-4" style="background-color:rgba(255,247,237,0.6)"><h3 id="rd-comment-h" class="text-orange-950" style="color:#431407">Teacher comment</h3><p id="rd-comment-p" class="text-slate-800" style="color:#1e293b">Great reasoning.</p></section>
+      <div class="bg-violet-50/60 border border-violet-200" style="background-color:rgba(245,243,255,0.6)"><h3 id="rd-notes-h" class="text-violet-800" style="color:#5b21b6">Connections &amp; Memory Hooks</h3><p id="rd-notes-p" class="text-slate-500" style="color:#64748b">Optional</p></div>
+      <div class="space-y-4 bg-slate-50/50" style="background-color:rgba(248,250,252,0.5)"><select id="rd-cs-select" class="bg-white text-slate-600" style="background-color:#ffffff;color:#475569"><option>Producers</option></select></div>
+      <figure><figcaption class="visual-caption" style="background:#f8fafc;color:#1e293b"><span id="rd-caption">Cell structure</span></figcaption></figure>
+      <span id="rd-solid-chip" class="bg-indigo-600 hover:bg-indigo-50/50 text-white" style="background-color:#4f46e5;color:#ffffff">Live</span>
+    </div>
+    <div data-reading-theme="highContrast" style="background:#000000;color:#ffff00">
+      <div class="bg-amber-50/70" style="background-color:rgba(255,251,235,0.7)"><p id="hc-notes-p" class="text-slate-700" style="color:#334155">What does a cell need?</p></div>
+      <figure><figcaption class="visual-caption" style="background:#f8fafc;color:#1e293b"><span id="hc-caption">Cell structure</span></figcaption></figure>
+    </div>
   </div>`;
 
 beforeAll(async () => {
@@ -158,6 +171,18 @@ describe('in-app theme contrast regressions', () => {
       expect(m.color, id + ' uses the contrast palette').toBe('rgb(255, 255, 0)');
       expect(m.ratio, id).toBeGreaterThanOrEqual(7);
     }
+  });
+
+  // 2026-10-29: opacity-variant tints (bg-orange-50/60 teacher comment, bg-violet-50/60 notes
+  // cards, bg-slate-50/50 concept-sort rows) escaped the exact-name transparent list and stayed
+  // light under forced light text (1.6-2.9:1); lesson-image captions sat at 1.2:1 on #f8fafc.
+  it('reading themes clear opacity-variant tints and theme lesson-image captions', async () => {
+    for (const id of ['rd-comment-h', 'rd-comment-p', 'rd-notes-h', 'rd-notes-p', 'rd-cs-select', 'rd-caption']) {
+      expect((await measure(id)).ratio, 'dark ' + id).toBeGreaterThanOrEqual(4.5);
+    }
+    for (const id of ['hc-notes-p', 'hc-caption']) expect((await measure(id)).ratio, 'high contrast ' + id).toBeGreaterThanOrEqual(7);
+    const chip = await page.evaluate(() => getComputedStyle(document.getElementById('rd-solid-chip')).backgroundColor);
+    expect(chip, 'a hover:-only tint must not clear a solid chip at rest').toBe('rgb(79, 70, 229)');
   });
 
   it('the Student Tools panel follows the Dark and Contrast themes', async () => {

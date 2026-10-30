@@ -10754,9 +10754,22 @@ const handleNavigateResource = (direction) => {
           __d._alloFollowResourceLive(targetItem, { blockedToast: __d.t('toasts.teacher_view_only') });
       }
   };
+// The source box follows edits to the analyzed text only while it still holds that
+// same text, so nothing typed in the box is ever overwritten. The follow is not a
+// separate undo step: undoing the analysis edit brings the box back with it.
+const _followAnalysisInSourceBox = (previousText, value) => {
+    if (typeof __d.setInputText !== 'function' || typeof value !== 'string' || value === previousText) return;
+    const live = __d._textUndoLiveRef && __d._textUndoLiveRef.current;
+    const boxText = live && typeof live.inputText === 'string' ? live.inputText : __d.inputText;
+    if (boxText !== previousText || !String(previousText || '').trim()) return;
+    if (__d.textUndoRef && __d.textUndoRef.current) __d.textUndoRef.current.applyingInput = true;
+    __d.setInputText(value);
+};
 const handleAnalysisTextChange = (value) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'analysis') return;
-    __d._recordTextChange('analysis', __d.generatedContent.id, (__d.generatedContent.data && __d.generatedContent.data.originalText) || '', value);
+    const previousAnalysisText = (__d.generatedContent.data && __d.generatedContent.data.originalText) || '';
+    __d._recordTextChange('analysis', __d.generatedContent.id, previousAnalysisText, value);
+    _followAnalysisInSourceBox(previousAnalysisText, value);
     const evidence = __d._getFreshTextComplexityEvidence(__d.generatedContent, value);
     const newData = {
         ..._analysisDataForSourceEdit(__d.generatedContent?.data, value),
@@ -10780,6 +10793,10 @@ const _applyTextDomain = (entry) => {
       __d.textUndoRef.current.applyingInput = true;
       __d.setInputText(entry.value);
       return;
+    }
+    if (entry.domain === 'analysis' && __d._textUndoLiveRef && __d._textUndoLiveRef.current) {
+      const current = _readTextDomain(entry);
+      if (current.ok) _followAnalysisInSourceBox(current.value, entry.value);
     }
     const patch = (item) => {
       if (entry.domain !== 'analysis') return __d._applySimplifiedTextMutation(item, entry.value);

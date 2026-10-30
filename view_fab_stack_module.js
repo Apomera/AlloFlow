@@ -134,6 +134,37 @@ function FabStack(props) {
       window.visualViewport?.removeEventListener("resize", schedule);
     };
   }, [!!generatedContent, activeView, runTour]);
+  React.useEffect(() => {
+    const root = document.documentElement;
+    const stack = stackRef.current;
+    if (!stack) return void 0;
+    let frame = 0;
+    const publish = () => {
+      frame = 0;
+      const rect = stack.getBoundingClientRect();
+      if (!rect.height) {
+        root.style.removeProperty("--alloflow-fab-stack-clear");
+        return;
+      }
+      const rem = parseFloat(window.getComputedStyle(root).fontSize) || 16;
+      root.style.setProperty("--alloflow-fab-stack-clear", Math.max(5.5 * rem, Math.ceil(window.innerHeight - rect.top + 12)) + "px");
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(publish);
+    };
+    const observer = typeof ResizeObserver === "function" ? new ResizeObserver(schedule) : null;
+    observer?.observe(stack);
+    window.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("resize", schedule);
+    publish();
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+      root.style.removeProperty("--alloflow-fab-stack-clear");
+    };
+  }, [footerClearance, runTour]);
   const closeStudentTools = () => {
     if (!isFabExpanded) return;
     handleToggleIsFabExpanded();
@@ -506,7 +537,20 @@ function FabStack(props) {
         },
         /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, dictationAnnouncement),
         dictationStatus.privacy && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-[11px] text-slate-600" }, dictationStatus.privacy)
-      ))))
+      )))),
+      !isTeacherMode && window.AlloModules && window.AlloModules.ErrorReporter && typeof window.AlloModules.ErrorReporter.openPanel === "function" && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200/80 px-4 py-1" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-student-report-problem": "",
+          onClick: () => {
+            closeStudentTools();
+            window.setTimeout(() => window.AlloModules.ErrorReporter.openPanel("errors"), 0);
+          },
+          className: "min-h-11 text-xs font-bold text-slate-600 underline-offset-2 hover:text-slate-900 hover:underline"
+        },
+        t("student_tools.report_problem") || "Something not working? Report a problem"
+      ))
     ),
     /* @__PURE__ */ React.createElement(
       "button",

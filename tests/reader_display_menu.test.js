@@ -114,27 +114,42 @@ describe('the Practice panel', () => {
 });
 
 describe('the Display (Aa) panel', () => {
-  it('holds Immersive Reader, the reading theme and the reading width, closed at first', () => {
+  // Reading theme is app-wide, so outside Student preview the panel opens the shared
+  // reading settings instead of a second theme picker that claimed a narrower scope (10-29).
+  const withSharedSettings = (run) => {
+    const close = vi.fn();
+    const lib = { readingSettingsAvailable: () => true, openReadingSettings: vi.fn(() => ({ close })) };
+    window.AlloModules.UIFontLibrary = lib;
+    try { run(lib, close); } finally { delete window.AlloModules.UIFontLibrary; }
+  };
+  it('holds Immersive Reader, the shared reading settings and the reading width, closed at first', () => withSharedSettings((lib) => {
     mount();
     expect(toggle().getAttribute('aria-expanded')).toBe('false');
     expect(toggle().getAttribute('aria-controls')).toBe(panel().id);
     expect(panel().hidden).toBe(true);
     expect(panel().style.display).toBe('none');
     expect(panel().querySelector('[data-help-key="simplified_immersive_reader"]')).not.toBeNull();
-    expect(panel().querySelector('[data-adapted-theme-picker]')).not.toBeNull();
-    const themePicker = panel().querySelector('[data-adapted-theme-picker]');
-    const themeScope = host.querySelector('#' + themePicker.getAttribute('aria-describedby'));
-    expect(themeScope.textContent).toBe('Changes the reading area. Your app theme stays the same.');
-    expect(panel().contains(themeScope)).toBe(true);
-    const preview = panel().querySelector('[data-adapted-theme-preview]');
-    expect(preview.textContent).toBe('Aa');
-    expect(preview.getAttribute('aria-hidden')).toBe('true');
-    expect(preview.style.backgroundColor).toContain('--adapted-paper');
-    expect(preview.style.color).toContain('--adapted-ink');
+    expect(panel().querySelector('[data-adapted-theme-picker]'), 'the theme lives in the shared settings').toBeNull();
+    const settings = panel().querySelector('[data-reader-settings-button]');
+    expect(settings.textContent).toBe('AaReading settings');
+    expect(settings.getAttribute('aria-haspopup')).toBe('dialog');
     expect(panel().querySelector('input[aria-label="Reading width"]')).not.toBeNull();
     act(() => toggle().click());
     expect(toggle().getAttribute('aria-expanded')).toBe('true');
     expect(panel().hidden).toBe(false);
+    act(() => settings.click());
+    expect(lib.openReadingSettings).toHaveBeenCalledWith(expect.objectContaining({ opener: settings }));
+  }));
+  it('closes the shared settings it opened when the reader unmounts', () => withSharedSettings((lib, close) => {
+    mount();
+    act(() => panel().querySelector('[data-reader-settings-button]').click());
+    act(() => root.unmount()); root = null;
+    expect(close).toHaveBeenCalledWith(false);
+  }));
+  it('shows no settings button until the host publishes the shared settings', () => {
+    mount();
+    expect(panel().querySelector('[data-reader-settings-button]')).toBeNull();
+    expect(panel().querySelector('[data-adapted-theme-picker]')).toBeNull();
   });
   it('remembers being left open', () => {
     mount();
@@ -146,9 +161,9 @@ describe('the Display (Aa) panel', () => {
   it('closes with Escape and returns focus to its button', () => {
     mount();
     act(() => toggle().click());
-    const picker = panel().querySelector('[data-adapted-theme-picker]');
-    act(() => picker.focus());
-    act(() => picker.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    const width = panel().querySelector('input[aria-label="Reading width"]');
+    act(() => width.focus());
+    act(() => width.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     expect(panel().hidden).toBe(true);
     expect(document.activeElement).toBe(toggle());
   });

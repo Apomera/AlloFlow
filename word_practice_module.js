@@ -5,7 +5,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
 (function (root) {
   'use strict';
   function createWordPracticeCore() {
-    const LIMITS = Object.freeze({ words: 200, wordLength: 120, instructionChars: 12000, totalInstructionChars: 512 * 1024, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024 });
+    const LIMITS = Object.freeze({ words: 200, wordLength: 120, instructionChars: 12000, totalInstructionChars: 512 * 1024, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024, pictureChars: 6 * 1024 * 1024, totalPictureChars: 20 * 1024 * 1024 });
     const own = (obj, key) => obj && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
     const text = (value, max = 2000) => typeof value === 'string' ? value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max) : '';
     const key = value => text(value).normalize('NFC').toLocaleLowerCase().replace(/\s+/g, ' ');
@@ -163,6 +163,57 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
         return valid ? 'data:' + mime + ';base64,' + match[2] : '';
       } catch (_) { return ''; }
     }
+    // A glossary picture: an embedded PNG, JPEG, GIF or WebP, checked by its file
+    // signature like audio above, or an https link (shown live and in the HTML file).
+    function safePicture(value) {
+      const candidate = typeof value === 'string' ? value.trim() : '';
+      if (!candidate || candidate.length > LIMITS.pictureChars) return '';
+      if (/^https:\/\/[^\s"'<>\\]+$/i.test(candidate)) return candidate.length <= 2048 ? candidate : '';
+      const match = /^data:image\/(png|jpeg|jpg|gif|webp);base64,([a-z0-9+/]*={0,2})$/i.exec(candidate);
+      if (!match || match[2].length < 16 || match[2].length % 4 !== 0) return '';
+      try {
+        const bytes = atob(match[2].slice(0, 32)), at = i => bytes.charCodeAt(i), type = match[1].toLowerCase();
+        const valid = type === 'png' ? at(0) === 0x89 && bytes.slice(1, 4) === 'PNG'
+          : type === 'gif' ? bytes.startsWith('GIF8')
+          : type === 'webp' ? bytes.slice(0, 4) === 'RIFF' && bytes.slice(8, 12) === 'WEBP'
+          : at(0) === 0xff && at(1) === 0xd8 && at(2) === 0xff;
+        return valid ? 'data:image/' + (type === 'jpg' ? 'jpeg' : type) + ';base64,' + match[2] : '';
+      } catch (_) { return ''; }
+    }
+    // The glossary's fingerprint of the picture a description was written for
+    // (same as the flashcard export): a description of an earlier picture is not reused.
+    function pictureHash(image) {
+      let h = 0x811c9dc5;
+      const mix = c => { h ^= c; h = Math.imul(h, 0x01000193) >>> 0; };
+      String(image.length).split('').forEach(ch => mix(ch.charCodeAt(0)));
+      const step = Math.max(1, Math.floor(image.length / 4096));
+      for (let i = 0; i < image.length; i += step) mix(image.charCodeAt(i));
+      return 'img-' + image.length.toString(36) + '-' + h.toString(16).padStart(8, '0');
+    }
+    function pictureCredit(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+      try {
+        const line = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AltText && window.AlloModules.AltText.openImageCreditLine;
+        if (typeof line === 'function') return text(line(value), 400);
+      } catch (_) {}
+      return ['set', 'author', 'license'].map(name => text(value[name], 160)).concat(value.modified === true ? ['edited'] : []).filter(Boolean).join(' · ');
+    }
+    // Accepts a glossary entry (image, imageAlt, imageDecorative, imageAttribution)
+    // or a saved practice item's own { picture } on re-normalisation.
+    function pictureFor(record, word) {
+      const saved = record.picture && typeof record.picture === 'object' && !Array.isArray(record.picture) ? record.picture : null;
+      const raw = saved ? saved.src : typeof record.image === 'string' ? record.image : record.image && typeof record.image === 'object' ? record.image.src : '';
+      const src = safePicture(raw);
+      if (!src) return null;
+      const decorative = saved ? saved.decorative === true : record.imageDecorative === true;
+      let alt = '';
+      if (!decorative) {
+        alt = text(saved ? saved.alt : record.imageAlt, 1000);
+        if (!saved && alt && record.imageAltHash && typeof raw === 'string' && pictureHash(raw) !== record.imageAltHash) alt = '';
+        alt = alt || text(word, LIMITS.wordLength);
+      }
+      return { src, alt, decorative, credit: saved ? text(saved.credit, 400) : pictureCredit(record.imageAttribution) };
+    }
     // Keep the portable player independent of the live Word Sounds module.
     // These are its canonical phonics/IPA mappings, parity-checked against
     // word_sounds_core.js. Resolve the original object before dropping its IPA
@@ -213,6 +264,8 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
         autoAdvance: options.autoAdvance === true,
         intervalSeconds: bounded(options.intervalSeconds == null ? 3 : options.intervalSeconds, 3, 1, 30),
         includeAudio: options.includeAudio !== false,
+        includePictures: options.includePictures !== false,
+        vocabularyFirst: options.vocabularyFirst === 'meaning' ? 'meaning' : 'word',
         cardFont: ['default', 'arial', 'verdana', 'georgia'].includes(options.cardFont) ? options.cardFont : 'default',
         cardTextScale: bounded(options.cardTextScale == null ? 1 : options.cardTextScale, 1, 0.85, 1.4),
         cardTheme: ['paper', 'cream', 'mist'].includes(options.cardTheme) ? options.cardTheme : 'paper'
@@ -366,7 +419,8 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
           translations: translationsFor(record.translations || record.translation, original),
           wordAudio: wordState.audio, wordAudioProvenance: wordState.provenance, wordAudioStatus: wordState.status, ...(wordState.original ? { wordAudioOriginal: wordState.original } : {}),
           phonemes,
-          sentenceActivity: sentenceActivityFor(record, original, termLanguage)
+          sentenceActivity: sentenceActivityFor(record, original, termLanguage),
+          picture: pictureFor(record, original)
         };
         if (existing) {
           ['definition', 'example'].forEach(field => { if (!existing[field] && item[field]) { existing[field] = item[field]; existing[field + 'Language'] = item[field + 'Language']; } });
@@ -375,6 +429,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
           if (!existing.phonemes.length) existing.phonemes = item.phonemes;
           if (!existing.translations.length) existing.translations = item.translations;
           if (!existing.sentenceActivity) existing.sentenceActivity = item.sentenceActivity;
+          if (!existing.picture) existing.picture = item.picture;
           return;
         }
         seen.set(identity, item); usedIds.set(id, identity); items.push(item);
@@ -387,7 +442,14 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       let audioChars = 0;
       items.forEach(item => { audioChars += item.wordAudio.length + (item.wordAudioOriginal ? item.wordAudioOriginal.audio.length : 0); item.phonemes.forEach(sound => { audioChars += sound.audio.length + (sound.audioOriginal ? sound.audioOriginal.audio.length : 0); }); });
       if (audioChars > LIMITS.totalAudioChars) throw new Error('This practice set has too much audio. Split it into smaller word lists.');
-      return { version: 1, title: text(input.title, 160) || 'Word Fluency Pop-Up', language, items, options: normalizeOptions(input.options) };
+      // Pictures past the budget are left out (and counted) rather than blocking the set.
+      let pictureChars = 0, picturesOmitted = 0;
+      items.forEach(item => {
+        if (!item.picture || !/^data:/.test(item.picture.src)) return;
+        if (pictureChars + item.picture.src.length > LIMITS.totalPictureChars) { item.picture = null; picturesOmitted++; }
+        else pictureChars += item.picture.src.length;
+      });
+      return { version: 1, title: text(input.title, 160) || 'Word Fluency Pop-Up', language, items, options: normalizeOptions(input.options), ...(picturesOmitted ? { picturesOmitted } : {}) };
     }
     function createSequence(pack, value = {}, rng = Math.random) {
       const options = normalizeOptions(value);
@@ -420,8 +482,26 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       });
       return result;
     }
+    // "Start with the meaning" blanks the word (and its simple endings) in its own clue,
+    // so the definition or example never gives the answer away.
+    function maskWord(value, word) {
+      const source = typeof value === 'string' ? value : '', target = text(word, LIMITS.wordLength);
+      if (!source || !target) return source;
+      const escaped = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+      try {
+        // Scripts written without spaces have no word boundary to anchor on.
+        const pattern = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u.test(target)
+          ? new RegExp(escaped, 'giu')
+          : new RegExp('(?<![\\p{L}\\p{N}])' + escaped + "(?:s|es|ed|d|ing|'s)?(?![\\p{L}\\p{N}])", 'giu');
+        return source.replace(pattern, '____');
+      } catch (_) { return source; }
+    }
+    // Something to recall the word from; without it a card falls back to word-first.
+    function hasMeaning(item, options) {
+      return !!(item && (item.definition || item.example || (item.translations && item.translations.length) || (options && options.includePictures && item.picture)));
+    }
     function serializePack(pack) { return safeJson(normalizeInput(pack)); }
-    return { LIMITS, text, key, languageInfo, languageLabel, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, cardAppearance, createSequence, audioCoverage, serializePack };
+    return { LIMITS, text, key, languageInfo, languageLabel, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, safePicture, maskWord, hasMeaning, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, cardAppearance, createSequence, audioCoverage, serializePack };
   }
   root.AlloWordPracticeCore = createWordPracticeCore();
   // The standalone HTML player embeds this exact factory, keeping its validator
@@ -923,17 +1003,52 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       }
       return parts;
     }
-    function vocabularyHeading(slide, item) {
+    // prompt: the meaning-first question shown in place of the word.
+    function vocabularyHeading(slide, item, prompt) {
       // Pasted line breaks are whitespace within a term, not forced title rows.
-      const heading = item.word.replace(/\s+/gu, ' ');
+      const heading = (prompt ? prompt.text : item.word).replace(/\s+/gu, ' ');
       let fontSize = 48 * textScale;
       while (fontSize > 12 && readableTextLines(heading, 11.7 * 72 / fontSize / fontWidth).length * fontSize * 1.35 > 1.05 * 72) fontSize = Math.max(12, fontSize - 1);
-      slide.addText(heading, { x: 0.8, y: 0.92, w: 11.7, h: 1.05, fontFace: appearance.fontFace, fontSize, color: appearance.heading, bold: true, align: 'center', valign: 'mid', margin: 0, ...textLanguage(itemLanguage(item, 'term')) });
+      slide.addText(heading, { x: 0.8, y: 0.92, w: 11.7, h: 1.05, fontFace: appearance.fontFace, fontSize, color: appearance.heading, bold: true, align: 'center', valign: 'mid', margin: 0, ...textLanguage(prompt ? prompt.language : itemLanguage(item, 'term')) });
     }
-    function vocabularyPages(item) {
-      const sections = [];
-      if (item.definition) sections.push({ text: item.definition, language: itemLanguage(item, 'definition') });
-      if (item.example) sections.push({ text: item.example, language: itemLanguage(item, 'example'), label: localized('pptx_example', 'Example: ') });
+    // Natural size from the file header (PNG IHDR, GIF screen, JPEG start-of-frame), so a
+    // picture is fitted without stretching. PowerPoint embeds PNG, JPEG and GIF only.
+    function pictureDimensions(src) {
+      const match = /^data:image\/(png|jpeg|gif);base64,(.+)$/i.exec(src || '');
+      if (!match) return null;
+      let bytes;
+      try { bytes = atob(match[2].slice(0, 262144)); } catch (_) { return null; }
+      const type = match[1].toLowerCase(), at = i => bytes.charCodeAt(i);
+      let size = null;
+      if (type === 'png' && bytes.length >= 24) size = { w: ((at(16) << 24) | (at(17) << 16) | (at(18) << 8) | at(19)) >>> 0, h: ((at(20) << 24) | (at(21) << 16) | (at(22) << 8) | at(23)) >>> 0 };
+      else if (type === 'gif' && bytes.length >= 10) size = { w: at(6) | (at(7) << 8), h: at(8) | (at(9) << 8) };
+      else if (type === 'jpeg') {
+        for (let i = 2; i + 9 < bytes.length;) {
+          if (at(i) !== 0xff) { i++; continue; }
+          const marker = at(i + 1);
+          if (marker === 0xff || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd8)) { i += marker === 0xff ? 1 : 2; continue; }
+          if ([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf].includes(marker)) { size = { w: (at(i + 7) << 8) | at(i + 8), h: (at(i + 5) << 8) | at(i + 6) }; break; }
+          i += 2 + ((at(i + 2) << 8) | at(i + 3));
+        }
+      }
+      return size && size.w > 0 && size.h > 0 ? size : null;
+    }
+    // The word with its picture, before the meaning slides: word, picture, then meaning.
+    function addPictureSlide(item, footer, prompt) {
+      const picture = options.includePictures && item.picture, size = picture && pictureDimensions(picture.src);
+      if (!size) return null;
+      const slide = slideBase(footer); vocabularyHeading(slide, item, prompt);
+      const box = { x: 1.0, y: 2.15, w: 11.3, h: picture.credit ? 3.9 : 4.35 }, scale = Math.min(box.w / size.w, box.h / size.h);
+      const w = size.w * scale, h = size.h * scale;
+      slide.addImage({ data: picture.src, x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h, altText: picture.alt || '' });
+      if (picture.credit) slide.addText(picture.credit, { x: 1.0, y: 6.15, w: 11.3, h: 0.4, fontFace: appearance.fontFace, fontSize: 12, color: appearance.muted, align: 'center', valign: 'top', margin: 0, fit: 'shrink' });
+      return slide;
+    }
+    // masked: meaning-first clue pages, with the word blanked in its own definition and example.
+    function vocabularyPages(item, masked) {
+      const sections = [], clue = value => masked ? core.maskWord(value, item.word) : value;
+      if (item.definition) sections.push({ text: clue(item.definition), language: itemLanguage(item, 'definition') });
+      if (item.example) sections.push({ text: clue(item.example), language: itemLanguage(item, 'example'), label: localized('pptx_example', 'Example: ') });
       item.translations.forEach(value => {
         const label = core.languageLabel(value.language, context.currentUiLanguage || context.uiLanguage || 'English');
         // A dedicated label line keeps opposite writing directions from
@@ -1007,14 +1122,23 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
           await addAudio(prompt, item);
           const answer = slideBase(answerFooter()); mainWord(answer, item.word, card, item, true);
         } else if (options.mode === 'vocabulary') {
-          const pages = vocabularyPages(item);
+          // Meaning first: clue slides under the question, then the word on an answer slide.
+          const recall = options.vocabularyFirst === 'meaning' && core.hasMeaning(item, options);
+          const prompt = recall ? localized('meaning_first_prompt', 'Which word matches this meaning?') : null;
+          const pages = vocabularyPages(item, recall);
+          const pictureSlide = addPictureSlide(item, footer, prompt);
+          if (pictureSlide && !recall) await addAudio(pictureSlide, item);
           for (let page = 0; page < pages.length; page++) {
             checkAbort(context);
             const slide = slideBase(pages.length > 1 ? [...footer, localized('pptx_part', 'Part {n}/{total}', { n: page + 1, total: pages.length })] : footer);
-            vocabularyHeading(slide, item);
+            vocabularyHeading(slide, item, prompt);
             addVocabularyPage(slide, pages[page]);
-            if (page === 0) await addAudio(slide, item);
+            if (page === 0 && !pictureSlide && !recall) await addAudio(slide, item);
             await sentencePageYield();
+          }
+          if (recall) {
+            checkAbort(context);
+            const answer = slideBase(answerFooter()); mainWord(answer, item.word, card, item, true); await addAudio(answer, item);
           }
         } else {
           const slide = slideBase(footer); mainWord(slide, item.word, card, item, options.mode === 'blend');
@@ -1056,6 +1180,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
 @media(max-width:640px){.awp-overlay{padding:6px}.awp-dialog{padding:.9375rem;max-height:calc(100dvh - 12px);border-radius:12px}.awp-grid{grid-template-columns:minmax(0,1fr);gap:1rem}.awp-player{padding:.5rem}.awp-dialog .awp-player{padding-inline:0}.awp-stage{padding:1.125rem .625rem;min-height:42vh}.awp-head{gap:.5rem}.awp h1{font-size:1.375rem}.awp button{padding:.5625rem .6875rem}.awp-word{font-size:clamp(1.875rem,11vw,4.5rem)}}
 @media(max-width:640px){.awp-options{grid-template-columns:minmax(0,1fr)}.awp-delivery{grid-template-columns:repeat(2,minmax(0,1fr))}.awp-delivery .awp-primary{grid-column:1/-1}.awp-set-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.awp-audio-setup{padding:.75rem}.awp-audio-setup button{width:100%}.awp-operation{padding:.5rem}.awp-operation button{width:100%;padding-inline:.375rem}}
 @media(max-width:640px){.awp-appearance-controls{grid-template-columns:minmax(0,1fr)}.awp-appearance{padding:.75rem}.awp-card-preview{padding:.75rem}}
+.awp-stage{touch-action:pan-y}.awp-picture{margin:1rem auto 0;max-width:min(100%,32rem)}.awp-picture img{display:block;max-width:100%;max-height:34vh;margin:0 auto;object-fit:contain;border-radius:10px}.awp-picture figcaption{margin-top:.25rem;font-size:.75rem;color:var(--awp-card-muted,#45536a);text-align:center}.awp-card-preview .awp-picture img{max-height:8rem}
 @media(prefers-reduced-motion:reduce){.awp *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}`;
 
   // This factory is embedded verbatim in the offline file; keep it dependency-free.
@@ -1161,10 +1286,14 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     const newRound = button(L('new_round', 'New round'), () => { sequence = core.createSequence(pack, options); index = 0; running = false; render(); }, roundButtons);
     const reviewRound = button(L('start_review', 'Start review ({count})', { count: 0 }), () => { sequence = core.createSequence({ items: pack.items.filter(item => review.has(item.id)) }, { ...options, repetitions: 1 }); index = 0; running = false; render(); }, roundButtons);
     make('p', options.autoAdvance ? L('keys_help_timed', 'Arrow keys: move · Space: start or pause timer · R: reveal') : L('keys_help_manual', 'Arrow keys: move · Space: next card · R: reveal'), 'awp-note', footer);
+    const coarse = (() => { try { return !!(win.matchMedia && win.matchMedia('(any-pointer: coarse)').matches); } catch (_) { return false; } })();
+    if (coarse) make('p', L('touch_help', 'Touch screens: tap the card to reveal, tap again for the next card, or swipe to move.'), 'awp-note awp-touch-help', footer);
     const status = make('p', '', 'awp-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
     function current() { return items.get(sequence[index] && sequence[index].itemId); }
+    // "Start with the meaning": the clue first, the word on reveal.
+    function meaningFirst() { return options.mode === 'vocabulary' && options.vocabularyFirst === 'meaning' && core.hasMeaning(current(), options); }
     function updateAudioControls() {
-      const item = current(), hideAnswer = options.mode === 'sentence' && !revealed;
+      const item = current(), hideAnswer = (options.mode === 'sentence' || meaningFirst()) && !revealed;
       wordButton.hidden = !options.includeAudio || hideAnswer; soundsButton.hidden = !options.includeAudio || hideAnswer;
       wordButton.disabled = !item || !core.safeAudio(item.wordAudio);
       soundsButton.disabled = !item || !item.phonemes.length || item.phonemes.some(sound => !core.safeAudio(sound.audio));
@@ -1197,7 +1326,8 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       if (timer) win.clearTimeout(timer); timer = null;
       if (!running || dead) return;
       if ((options.mode === 'sentence' || options.mode === 'spelling') && !revealed) return;
-      timer = win.setTimeout(() => move(1), options.intervalSeconds * 1000);
+      // Timed meaning-first cards show the word before moving on.
+      timer = win.setTimeout(() => { if (meaningFirst() && !revealed) { revealed = true; renderCard(); schedule(); } else move(1); }, options.intervalSeconds * 1000);
     }
     function updateReview() {
       const marked = current() && review.has(current().id);
@@ -1208,6 +1338,13 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     function appendTranslation(parent, translation) {
       if (translation.language) { const label = core.languageLabel(translation.language, hooks.uiLanguage || labels.__uiLanguage || 'English'); passage(parent, label.text + ': ', label.language, 'awp-language-name'); }
       passage(parent, translation.text, translation.language, 'awp-translation');
+    }
+    // The glossary picture with its credit. A decorative picture is hidden from screen readers.
+    function appendPicture(parent, picture) {
+      const figure = make('figure', null, 'awp-picture', parent), image = make('img', null, '', figure);
+      image.src = picture.src; image.alt = picture.alt || ''; image.decoding = 'async';
+      if (!picture.alt) image.setAttribute('role', 'presentation');
+      if (picture.credit) make('figcaption', picture.credit, '', figure);
     }
     function renderCard() {
       // Choices are replaced on every card/reveal. Keep keyboard focus inside
@@ -1239,9 +1376,16 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
         const sounds = language(make('div', null, 'awp-phonemes', card), fieldLanguage(item, 'term'));
         item.phonemes.forEach(sound => passage(sounds, sound.label, fieldLanguage(item, 'term'), 'awp-phoneme'));
         make('p', L('blend_help', 'Say the sounds, then blend the word.'), 'awp-note awp-gap', card);
+      } else if (meaningFirst() && !revealed) {
+        make('p', L('meaning_first_prompt', 'Which word matches this meaning?'), 'awp-note awp-meaning-prompt', card);
+        if (options.includePictures && item.picture) appendPicture(card, item.picture);
+        if (item.definition) passage(card, core.maskWord(item.definition, item.word), fieldLanguage(item, 'definition'), 'awp-detail awp-gap awp-definition', 'p');
+        if (item.example) passage(card, core.maskWord(item.example, item.word), fieldLanguage(item, 'example'), 'awp-detail awp-example', 'p');
+        item.translations.forEach(translation => appendTranslation(make('p', null, 'awp-detail', card), translation));
       } else {
         showWord();
         if (options.mode === 'vocabulary' && revealed) {
+          if (options.includePictures && item.picture) appendPicture(card, item.picture);
           if (item.definition) passage(card, item.definition, fieldLanguage(item, 'definition'), 'awp-detail awp-gap awp-definition', 'p');
           if (item.example) passage(card, item.example, fieldLanguage(item, 'example'), 'awp-detail awp-example', 'p');
           item.translations.forEach(translation => appendTranslation(make('p', null, 'awp-detail', card), translation));
@@ -1249,7 +1393,8 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
         }
       }
       reveal.hidden = options.mode === 'popup' || (options.mode === 'blend' && !item.phonemes.length);
-      setLabel(reveal, options.mode === 'vocabulary' ? 'show_meaning' : options.mode === 'blend' ? 'show_word' : 'reveal_answer', options.mode === 'vocabulary' ? 'Show meaning' : options.mode === 'blend' ? 'Show word' : 'Reveal answer'); reveal.disabled = revealed;
+      const showsWord = options.mode === 'blend' || meaningFirst();
+      setLabel(reveal, showsWord ? 'show_word' : options.mode === 'vocabulary' ? 'show_meaning' : 'reveal_answer', showsWord ? 'Show word' : options.mode === 'vocabulary' ? 'Show meaning' : 'Reveal answer'); reveal.disabled = revealed;
       // Keep every visible passage in its own language in the live announcement.
       // Hidden spelling/sentence answers are never added before reveal.
       const marker = '\ufff0', template = L('card_announce', 'Card {n} of {total}. {visible}', { n: index + 1, total: sequence.length, visible: marker });
@@ -1265,6 +1410,11 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       } else if (options.mode === 'blend' && !revealed && item.phonemes.length) {
         passage(announcement, item.phonemes.map(sound => sound.label).join(', '), fieldLanguage(item, 'term')); separator();
         make('span', L('blend_help', 'Say the sounds, then blend the word.'), '', announcement);
+      } else if (meaningFirst() && !revealed) {
+        make('span', L('meaning_first_prompt', 'Which word matches this meaning?'), '', announcement);
+        if (item.definition) { separator(); passage(announcement, core.maskWord(item.definition, item.word), fieldLanguage(item, 'definition'), 'awp-definition'); }
+        if (item.example) { separator(); passage(announcement, core.maskWord(item.example, item.word), fieldLanguage(item, 'example'), 'awp-example'); }
+        item.translations.forEach(translation => { separator(); appendTranslation(announcement, translation); });
       } else {
         passage(announcement, item.word, fieldLanguage(item, 'term'), 'awp-announced-word');
         if (options.mode === 'vocabulary' && revealed) {
@@ -1309,6 +1459,23 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       else if (event.key === ' ' && event.target.tagName !== 'BUTTON') { event.preventDefault(); if (options.autoAdvance) { running = !running; updateTimer(); schedule(); } else move(1); }
       else if (event.key.toLowerCase() === 'r' && !reveal.hidden && !reveal.disabled) { event.preventDefault(); revealed = true; renderCard(); schedule(); }
     }
+    // Touch and pen only (a mouse keeps its buttons and keys): a tap on the card reveals,
+    // then moves on; a sideways swipe moves, mirrored for right-to-left interfaces.
+    let touchStart = null;
+    // A second finger (a pinch) cancels the gesture.
+    function pointerDown(event) { touchStart = event.isPrimary === false ? null : { x: event.clientX, y: event.clientY, at: Date.now() }; }
+    function pointerUp(event) {
+      const start = touchStart; touchStart = null;
+      if (!start || dead || !current() || event.pointerType === 'mouse') return;
+      if (event.target && event.target.closest && event.target.closest('button,a,input,select,textarea,[role="button"]')) return;
+      const dx = event.clientX - start.x, dy = event.clientY - start.y;
+      if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - start.at < 1000) { move((dx < 0) !== (host.dir === 'rtl') ? 1 : -1); return; }
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) return;
+      if (!reveal.hidden && !reveal.disabled) { revealed = true; renderCard(); schedule(); }
+      else move(1);
+    }
+    function pointerCancel() { touchStart = null; }
+    stage.addEventListener('pointerdown', pointerDown); stage.addEventListener('pointerup', pointerUp); stage.addEventListener('pointercancel', pointerCancel);
     function visibility() { if (doc.hidden) { running = false; stopAudio(); updateTimer(); schedule(); } }
     function fullscreenChange() { setLabel(fullscreen, doc.fullscreenElement ? 'exit_full_screen' : 'full_screen', doc.fullscreenElement ? 'Exit full screen' : 'Full screen'); }
     function destroy() { dead = true; if (timer) win.clearTimeout(timer); stopAudio(); host.removeEventListener('keydown', keydown); doc.removeEventListener('visibilitychange', visibility); doc.removeEventListener('fullscreenchange', fullscreenChange); win.removeEventListener('pagehide', destroy); if (doc.fullscreenElement === host && doc.exitFullscreen) doc.exitFullscreen().catch(() => {}); }
@@ -1334,7 +1501,10 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
   function buildHtml(input, value, suppliedSequence, labels, reader, uiLanguageName) {
     const core = root.AlloWordPracticeCore;
     const normalized = core.normalizeInput(input), options = core.normalizeOptions({ ...normalized.options, ...value });
-    const pack = withoutOriginalAudio(withoutAudio({ ...normalized, options }, options.includeAudio));
+    const withAudioChoice = withoutOriginalAudio(withoutAudio({ ...normalized, options }, options.includeAudio));
+    const pack = options.includePictures ? withAudioChoice : { ...withAudioChoice, items: withAudioChoice.items.map(item => ({ ...item, picture: null })) };
+    // The file stays network-free unless it shows a web-link picture.
+    const webPictures = pack.items.some(item => item.picture && /^https:/i.test(item.picture.src));
     const sequence = suppliedSequence || core.createSequence(pack, options);
     const playerLabels = labels && typeof labels === 'object' ? labels : {};
     const uiName = uiLanguageName || playerLabels.__uiLanguage || (Object.keys(playerLabels).length ? '' : 'English');
@@ -1342,7 +1512,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     const audioIssues = options.includeAudio ? core.audioIssueCounts(normalized) : {};
     const cssText = part => typeof part === 'string' ? part.replace(/</g, '\\3c ') : '';
     const fontCss = reader ? cssText(reader.fontCss) : '', readerCss = reader ? cssText(reader.css) : '';
-    return '<!doctype html><html lang="' + core.escapeHtml(language) + '" dir="' + uiLanguage.dir + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; media-src data: blob:; img-src data:' + (fontCss ? '; font-src data:' : '') + '"><title>' + core.escapeHtml(pack.title) + '</title><style>body{margin:0;background:#f5f7fb}' + CSS + (fontCss || readerCss ? '\n' + fontCss + '\n' + readerCss : '') + '</style></head><body><main id="practice" aria-label="' + core.escapeHtml(playerLabels.practice_label || 'Word practice') + '"></main><script>\n(function(){"use strict";const styleCardSurface=' + styleCardSurface.toString() + ';const appearanceControls=' + appearanceControls.toString() + ';const core=(' + core.createCore.toString() + ')();const pack=core.normalizeInput(' + core.safeJson(pack) + ');const options=core.normalizeOptions(' + core.safeJson(options) + ');(' + mountPlayer.toString() + ')(document.getElementById("practice"),pack,options,' + core.safeJson(sequence) + ',core,{labels:' + core.safeJson(playerLabels) + ',uiLanguage:' + core.safeJson(uiName) + ',audioIssues:' + core.safeJson(audioIssues) + '});})();\n</script></body></html>';
+    return '<!doctype html><html lang="' + core.escapeHtml(language) + '" dir="' + uiLanguage.dir + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; media-src data: blob:; img-src data:' + (webPictures ? ' https:' : '') + (fontCss ? '; font-src data:' : '') + '"><title>' + core.escapeHtml(pack.title) + '</title><style>body{margin:0;background:#f5f7fb}' + CSS + (fontCss || readerCss ? '\n' + fontCss + '\n' + readerCss : '') + '</style></head><body><main id="practice" aria-label="' + core.escapeHtml(playerLabels.practice_label || 'Word practice') + '"></main><script>\n(function(){"use strict";const styleCardSurface=' + styleCardSurface.toString() + ';const appearanceControls=' + appearanceControls.toString() + ';const core=(' + core.createCore.toString() + ')();const pack=core.normalizeInput(' + core.safeJson(pack) + ');const options=core.normalizeOptions(' + core.safeJson(options) + ');(' + mountPlayer.toString() + ')(document.getElementById("practice"),pack,options,' + core.safeJson(sequence) + ',core,{labels:' + core.safeJson(playerLabels) + ',uiLanguage:' + core.safeJson(uiName) + ',audioIssues:' + core.safeJson(audioIssues) + '});})();\n</script></body></html>';
   }
 
   // The player's strings, translated once per dialog and handed to the player (and
@@ -1351,6 +1521,8 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
   PLAYER_STRINGS.push(['word_practice.audio_language_omitted', '{count} saved recordings use a different language and are not played. Prepare replacement audio in Present & Export.']);
   PLAYER_STRINGS.push(['word_practice.audio_language_omitted_one', '{count} saved recording uses a different language and is not played. Prepare replacement audio in Present & Export.']);
   PLAYER_STRINGS.push(['word_practice.mode_popup', 'Word Fluency Pop-Up']);
+PLAYER_STRINGS.push(['word_practice.meaning_first_prompt', 'Which word matches this meaning?']);
+PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to reveal, tap again for the next card, or swipe to move.']);
   [['appearance', 'Card appearance'], ['card_font', 'Card font'], ['font_default', 'Default font'], ['card_text_size', 'Card text size'], ['card_style', 'Card style'], ['style_paper', 'Plain'], ['style_cream', 'Warm'], ['style_mist', 'Blue tint'], ['card_preview', 'Card preview']].forEach(([key, fallback]) => PLAYER_STRINGS.push(['word_practice.' + key, fallback]));
   let active = null, nextDialogId = 0;
   function open(context = {}) {
@@ -1359,6 +1531,22 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     const core = root.AlloWordPracticeCore, doc = root.document, previousFocus = doc.activeElement;
     const fieldPrefix = 'awp-' + (++nextDialogId) + '-'; let nextFieldId = 0;
     let pack = core.normalizeInput(context), player = null, closed = false, busy = false, operation = null;
+    // A fresh launch starts from the teacher's last setup on this device. A launch that
+    // brings its own options (a saved set, Word Sounds) keeps them.
+    const SETUP_KEY = 'alloflow_word_practice_setup';
+    const SETUP_FIELDS = ['mode', 'repetitions', 'autoAdvance', 'intervalSeconds', 'shuffle', 'varyPosition', 'varySize', 'includeAudio', 'includePictures', 'vocabularyFirst', 'cardFont', 'cardTextScale', 'cardTheme'];
+    if (!context.options) {
+      try {
+        const saved = JSON.parse(root.localStorage.getItem(SETUP_KEY) || 'null'), chosen = {};
+        if (saved && typeof saved === 'object' && !Array.isArray(saved)) SETUP_FIELDS.forEach(name => { if (Object.prototype.hasOwnProperty.call(saved, name)) chosen[name] = saved[name]; });
+        // Finish the Sentence needs prepared boards; never reopen a list onto an empty activity.
+        if (chosen.mode === 'sentence' && !pack.items.some(item => item.sentenceActivity)) delete chosen.mode;
+        if (Object.keys(chosen).length) pack = { ...pack, options: core.normalizeOptions({ ...pack.options, ...chosen }) };
+      } catch (_) {}
+    }
+    function rememberSetup(value) {
+      try { const chosen = {}; SETUP_FIELDS.forEach(name => { chosen[name] = value[name]; }); root.localStorage.setItem(SETUP_KEY, JSON.stringify(chosen)); } catch (_) {}
+    }
     // The visible list is a selection, not the metadata store. A word removed
     // during editing can be restored without discarding its prepared content.
     const catalogue = new Map();
@@ -1428,6 +1616,8 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     const activityOptions = make('div', null, right, 'awp-options');
     const mode = field(activityOptions, tx('word_practice.activity', 'Practice activity'), 'select');
     [['popup', tx('word_practice.mode_popup', 'Word Fluency Pop-Up')], ['blend', tx('word_practice.mode_blend', 'Sound & Blend')], ['vocabulary', tx('word_practice.mode_vocabulary', 'Word Meaning')], ['spelling', tx('word_practice.mode_spelling', 'Listen & Spell')], ['sentence', tx('word_practice.mode_sentence', 'Finish the Sentence')]].forEach(([value, label]) => { const option = make('option', label, mode); option.value = value; });
+    const vocabularyFirst = field(activityOptions, tx('word_practice.vocabulary_first', 'Show first'), 'select');
+    [['word', tx('word_practice.vocabulary_first_word', 'The word, then its meaning')], ['meaning', tx('word_practice.vocabulary_first_meaning', 'The meaning, then recall the word')]].forEach(([value, label]) => { const option = make('option', label, vocabularyFirst); option.value = value; });
     const repetitions = field(activityOptions, tx('word_practice.repetitions', 'Repetitions per word'), 'input', 'number'); repetitions.min = '1'; repetitions.max = '10';
     const pacing = field(activityOptions, tx('word_practice.pacing', 'Pacing'), 'select'); [['manual', tx('word_practice.pacing_manual', 'Teacher advances')], ['timed', tx('word_practice.pacing_timed', 'Timed cards')]].forEach(([value, label]) => { const option = make('option', label, pacing); option.value = value; });
     const interval = field(activityOptions, tx('word_practice.seconds_per_card', 'Seconds per card'), 'input', 'number'); interval.min = '1'; interval.max = '30'; interval.step = '0.5';
@@ -1442,8 +1632,11 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     const position = checkbox(tx('word_practice.vary_position', 'Vary word position'));
     const size = checkbox(tx('word_practice.vary_size', 'Vary word size'));
     const includeAudio = checkbox(tx('word_practice.include_audio', 'Include prepared audio'));
+    const includePictures = checkbox(tx('word_practice.include_pictures', 'Show pictures on Word Meaning cards'));
     const useReading = readingButton ? checkbox(tx('reading_settings.use_mine', 'Use my reading settings')) : null;
     if (useReading) { const help = make('p', tx('word_practice.use_mine_help', 'The HTML file uses your font, text size and spacing.'), right, 'awp-note'); help.id = useReading.id + '-help'; useReading.setAttribute('aria-describedby', help.id); }
+    const pictureNote = make('p', '', right, 'awp-note awp-picture-note'); pictureNote.hidden = true;
+    pictureNote.id = includePictures.id + '-help'; includePictures.setAttribute('aria-describedby', pictureNote.id);
     const appearanceSection = make('fieldset', null, setup, 'awp-appearance');
     make('legend', tx('word_practice.appearance', 'Card appearance'), appearanceSection);
     const appearanceFields = make('div', null, appearanceSection, 'awp-appearance-controls');
@@ -1495,7 +1688,7 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
     const cancelButton = make('button', tx('word_practice.cancel_preparation', 'Cancel preparation'), operationPanel); cancelButton.type = 'button'; cancelButton.hidden = true; cancelButton.onclick = cancelOperation;
     const operationProgress = make('progress', null, operationPanel); operationProgress.hidden = true; operationProgress.setAttribute('aria-label', tx('word_practice.preparation_progress', 'Preparation progress'));
     const fileInput = make('input', null, setup); fileInput.type = 'file'; fileInput.accept = '.json,application/json'; fileInput.hidden = true;
-    function options() { return core.normalizeOptions({ mode: mode.value, repetitions: repetitions.value, autoAdvance: pacing.value === 'timed', intervalSeconds: interval.value, shuffle: shuffle.checked, varyPosition: position.checked, varySize: size.checked, includeAudio: includeAudio.checked, cardFont: appearance.cardFont.value, cardTextScale: appearance.cardTextScale.value, cardTheme: appearance.cardTheme.value }); }
+    function options() { return core.normalizeOptions({ mode: mode.value, repetitions: repetitions.value, autoAdvance: pacing.value === 'timed', intervalSeconds: interval.value, shuffle: shuffle.checked, varyPosition: position.checked, varySize: size.checked, includeAudio: includeAudio.checked, includePictures: includePictures.checked, vocabularyFirst: vocabularyFirst.value, cardFont: appearance.cardFont.value, cardTextScale: appearance.cardTextScale.value, cardTheme: appearance.cardTheme.value }); }
     function updateAppearancePreview(current) {
       const opts = options();
       previewItems = opts.mode === 'sentence' ? current.items.filter(item => item.sentenceActivity) : current.items;
@@ -1526,14 +1719,15 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       if (pickerFocused && previewPicker.hidden) focusPreview();
       previewPrevious.disabled = busy || index === 0; previewNext.disabled = busy || index >= previewItems.length - 1;
       updateLabel(previewProgress, item ? tx('word_practice.card_progress', 'Card {n} of {total}', { n: index + 1, total: previewItems.length }) : '');
-      const revealKey = opts.mode === 'vocabulary' ? 'show_meaning' : opts.mode === 'blend' ? 'show_word' : 'reveal_answer';
-      updateLabel(previewReveal, tx('word_practice.' + revealKey, opts.mode === 'vocabulary' ? 'Show meaning' : opts.mode === 'blend' ? 'Show word' : 'Reveal answer'));
+      const previewMeaningFirst = opts.mode === 'vocabulary' && opts.vocabularyFirst === 'meaning' && core.hasMeaning(item, opts);
+      const revealKey = previewMeaningFirst || opts.mode === 'blend' ? 'show_word' : opts.mode === 'vocabulary' ? 'show_meaning' : 'reveal_answer';
+      updateLabel(previewReveal, tx('word_practice.' + revealKey, revealKey === 'show_word' ? 'Show word' : revealKey === 'show_meaning' ? 'Show meaning' : 'Reveal answer'));
       previewReveal.hidden = !item || opts.mode === 'popup' || (opts.mode === 'blend' && !item.phonemes.length);
       previewReveal.disabled = busy || !item || previewRevealed; previewReveal.setAttribute('aria-expanded', String(previewRevealed));
       const fieldLanguage = field => core.fieldLanguage(item, field, current.language);
       // Appearance-only changes keep the existing passages, focus and reading position.
       // Exclude audio data from this key: only its availability changes a spelling prompt.
-      const contentKey = JSON.stringify([opts.mode, previewRevealed, item ? [item.id, item.word, item.definition, item.example, item.translations, item.phonemes.map(sound => sound.label), item.sentenceActivity, ['term', 'definition', 'example', 'sentence'].map(fieldLanguage), opts.mode === 'spelling' && opts.includeAudio && !!item.wordAudio] : current.items.length]);
+      const contentKey = JSON.stringify([opts.mode, opts.vocabularyFirst, previewRevealed, item ? [item.id, item.word, item.definition, item.example, item.translations, item.phonemes.map(sound => sound.label), item.sentenceActivity, ['term', 'definition', 'example', 'sentence'].map(fieldLanguage), opts.mode === 'spelling' && opts.includeAudio && !!item.wordAudio, opts.includePictures && item.picture ? [item.picture.src.length, item.picture.alt, item.picture.credit] : null] : current.items.length]);
       const scrollTop = preview.scrollTop, scrollLeft = preview.scrollLeft;
       const sameContent = contentKey === previewContentKey;
       if (!sameContent) {
@@ -1560,9 +1754,30 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
           const sounds = setLanguage(make('div', null, preview, 'awp-preview-sounds'), fieldLanguage('term'));
           item.phonemes.forEach(sound => passage(sound.label, 'term', 'awp-preview-sound', sounds, 'span'));
           label('blend_help', 'Say the sounds, then blend the word.', 'awp-note awp-gap');
+        } else if (previewMeaningFirst && !previewRevealed) {
+          label('meaning_first_prompt', 'Which word matches this meaning?', 'awp-note awp-meaning-prompt');
+          if (opts.includePictures && item.picture) {
+            const figure = make('figure', null, preview, 'awp-picture'), image = make('img', null, figure);
+            image.src = item.picture.src; image.alt = item.picture.alt || '';
+            if (!item.picture.alt) image.setAttribute('role', 'presentation');
+            if (item.picture.credit) make('figcaption', item.picture.credit, figure);
+          }
+          if (item.definition) passage(core.maskWord(item.definition, item.word), 'definition', 'awp-preview-detail awp-gap awp-preview-definition');
+          if (item.example) passage(core.maskWord(item.example, item.word), 'example', 'awp-preview-detail awp-preview-example');
+          item.translations.forEach(translation => {
+            const row = make('p', '', preview, 'awp-preview-detail');
+            if (translation.language) { const name = core.languageLabel(translation.language, uiLanguageName); setLanguage(make('span', name.text + ': ', row, 'awp-preview-language-name'), name.language); }
+            setLanguage(make('span', translation.text, row, 'awp-preview-translation'), translation.language);
+          });
         } else {
           passage(item.word, 'term', 'awp-preview-word', preview, 'div');
           if (opts.mode === 'vocabulary' && previewRevealed) {
+            if (opts.includePictures && item.picture) {
+              const figure = make('figure', null, preview, 'awp-picture'), image = make('img', null, figure);
+              image.src = item.picture.src; image.alt = item.picture.alt || '';
+              if (!item.picture.alt) image.setAttribute('role', 'presentation');
+              if (item.picture.credit) make('figcaption', item.picture.credit, figure);
+            }
             if (item.definition) passage(item.definition, 'definition', 'awp-preview-detail awp-gap awp-preview-definition');
             if (item.example) passage(item.example, 'example', 'awp-preview-detail awp-preview-example');
             item.translations.forEach(translation => {
@@ -1670,20 +1885,32 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
         (nextFocus || (groups.length ? reviewSummary : wordsInput)).focus({ preventScroll: true });
       }
     }
+    // The picture choice appears only when a word has a picture. The note says what is
+    // left out: pictures over the size budget, and links or WebP that slides cannot embed.
+    function updatePictureNote(current) {
+      const withPictures = current.items.filter(item => item.picture), omitted = current.picturesOmitted || 0;
+      includePictures.closest('label').hidden = !withPictures.length && !omitted;
+      const notes = [];
+      if (includePictures.checked && omitted) notes.push(tx('word_practice.pictures_left_out', 'Pictures left out to keep this set a manageable size: {count}.', { count: omitted }));
+      const notInSlides = withPictures.filter(item => !/^data:image\/(png|jpeg|gif);/i.test(item.picture.src)).length;
+      if (includePictures.checked && notInSlides) notes.push(tx('word_practice.pictures_not_in_pptx', 'Pictures that are web links or WebP images, which PowerPoint cannot include: {count}. They still show when presenting and in the HTML file.', { count: notInSlides }));
+      pictureNote.hidden = !notes.length; updateLabel(pictureNote, notes.join(' '));
+    }
     function updateCoverage() {
       try { const current = readPack(), counts = core.audioCoverage(current), sentences = current.items.filter(item => item.sentenceActivity).length; coverage.textContent = tx('word_practice.coverage', '{count} words · Word audio: {audio}/{total} · Complete sound sequences: {complete}/{total} · Sentence activities: {sentences}', { count: current.items.length, audio: counts.words, total: counts.totalWords, complete: counts.completePhonemeWords, sentences: sentences }); setLanguage(coverage, dialogTextLanguages.get(coverage.textContent));
         const stale = includeAudio.checked ? core.audioIssueCounts(current).staleLanguage : 0; audioWarning.hidden = !stale;
         if (stale) { audioWarning.textContent = tx(stale === 1 ? 'word_practice.audio_language_omitted_one' : 'word_practice.audio_language_omitted', stale === 1 ? '{count} saved recording uses a different language and is not played. Prepare replacement audio in Present & Export.' : '{count} saved recordings use a different language and are not played. Prepare replacement audio in Present & Export.', { count: stale }); setLanguage(audioWarning, dialogTextLanguages.get(audioWarning.textContent)); }
-        updatePlan(current); renderMeaningChoices(); updateAppearancePreview(current); }
+        updatePictureNote(current); updatePlan(current); renderMeaningChoices(); updateAppearancePreview(current); }
       catch (error) { coverage.textContent = error.message; setLanguage(coverage, 'English'); planCount.textContent = ''; planNote.hidden = false; updateLabel(planNote, error.message); plan.dataset.needsReview = 'true'; reviewDetails.hidden = true; preview.hidden = true; previewToolbar.hidden = true; previewPicker.hidden = true; }
       interval.disabled = pacing.value !== 'timed';
       interval.parentElement.hidden = pacing.value !== 'timed';
+      vocabularyFirst.parentElement.hidden = mode.value !== 'vocabulary';
       timingNote.hidden = pacing.value !== 'timed';
     }
     function fill() {
       titleInput.value = pack.title; wordsInput.value = pack.items.map(item => item.word).join('\n');
       const opts = pack.options; mode.value = opts.mode; repetitions.value = opts.repetitions; pacing.value = opts.autoAdvance ? 'timed' : 'manual'; interval.value = opts.intervalSeconds;
-      shuffle.checked = opts.shuffle; position.checked = opts.varyPosition; size.checked = opts.varySize; includeAudio.checked = opts.includeAudio;
+      shuffle.checked = opts.shuffle; position.checked = opts.varyPosition; size.checked = opts.varySize; includeAudio.checked = opts.includeAudio; includePictures.checked = opts.includePictures; vocabularyFirst.value = opts.vocabularyFirst;
       appearance.setOptions(opts);
       updateCoverage();
     }
@@ -1802,6 +2029,8 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
       pack = imported; catalogue.clear(); remember(pack); previewId = ''; previewIndex = 0; previewMode = ''; previewRevealed = false; previewPickerKey = ''; fill(); status.textContent = tx('word_practice.set_opened', 'Word set opened.');
     }));
     setup.addEventListener('change', updateCoverage);
+    // Only a teacher's own change is remembered, not the settings a saved set arrives with.
+    setup.addEventListener('change', event => { if (event.target !== fileInput) rememberSetup(options()); });
     let coverageTimer = null;
     const scheduleCoverage = () => { root.clearTimeout(coverageTimer); coverageTimer = root.setTimeout(() => { coverageTimer = null; if (!closed && !busy) updateCoverage(); }, 180); };
     wordsInput.addEventListener('input', scheduleCoverage); repetitions.addEventListener('input', scheduleCoverage);

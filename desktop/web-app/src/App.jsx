@@ -13801,6 +13801,10 @@ const AlloFlowContent = () => {
       const VS = window.AlloModules && window.AlloModules.VideoStudio;
       if (VS && typeof VS.setCoachPosture === 'function') VS.setCoachPosture(posture);
   }, [isTeacherMode, isParentMode]);
+  useEffect(() => {
+      window.__alloStudentView = !isTeacherMode || isIndependentMode;
+      try { window.AlloModules?.ErrorReporter?.refreshView?.(); } catch (_) {}
+  }, [isTeacherMode, isIndependentMode]);
   // stripUndefined + sanitizeHistoryForCloud extracted to firestore_sync_module.js;
   // top-level shims at file head (line ~130) get upgraded on CDN load.
   const mergeCloudAndLocal = (...__a) => _alloHostHandlers().mergeCloudAndLocal(...__a);
@@ -16320,7 +16324,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=98b6e4a7e173b1ade8a76cf9d4adbf7b832a6ed7');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=98b6e4a7e173b1ade8a76cf9d4adbf7b832a6ed7');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=98b6e4a7e173b1ade8a76cf9d4adbf7b832a6ed7');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=da08b3de'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=2d601a14'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=98b6e4a7e173b1ade8a76cf9d4adbf7b832a6ed7');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=98b6e4a7e173b1ade8a76cf9d4adbf7b832a6ed7');
@@ -16336,7 +16340,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=1a43bca7');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=75ed0a6c');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=74740e9b');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=cf17a550');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=98b6e4a7e173b1ade8a76cf9d4adbf7b832a6ed7');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=98b6e4a7e173b1ade8a76cf9d4adbf7b832a6ed7');
@@ -17554,7 +17558,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.__alloOpenAiSetup = () => { try { setShowAIBackendModal(true); } catch (_) {} };
       window.__alloOpenQuickStart = () => { try { safeRemoveItem('allo_wizard_completed'); setShowWizard(true); } catch (_) {} };
       window.__alloBlankStartTypes = ['quiz', 'glossary', 'timeline', 'concept-sort', 'anchor-chart'];
-      return () => { window.removeEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh); window.removeEventListener('storage', refresh); try { delete window.__alloOpenAiSetup; delete window.__alloOpenQuickStart; delete window.__alloBlankStartTypes; } catch (_) {} };
+      window.__alloOpenSourceForRevision = (sourceId) => { try { const live = _resourceMutationStateRef.current || {}; const source = sourceId ? (live.history || []).find(item => item && item.id === sourceId && item.type === 'analysis') : null; if (source && typeof learningWebRestoreViewRef.current === 'function') { Promise.resolve(learningWebRestoreViewRef.current(source)).then(opened => { if (opened !== false) setIsEditingAnalysis(true); }); return 'analysis'; } setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']); window.setTimeout(() => { const panel = document.getElementById('tour-input-panel'); const field = panel && panel.querySelector('textarea'); try { if (panel) panel.scrollIntoView({ block: 'start' }); if (field) field.focus({ preventScroll: true }); } catch (_) {} }, 50); return 'input'; } catch (_) { return null; } };
+      return () => { window.removeEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh); window.removeEventListener('storage', refresh); try { delete window.__alloOpenAiSetup; delete window.__alloOpenQuickStart; delete window.__alloBlankStartTypes; delete window.__alloOpenSourceForRevision; } catch (_) {} };
   }, []);
   const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
   const [showSdTurboOfferModal, setShowSdTurboOfferModal] = useState(false);
@@ -19563,6 +19568,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       else safeSetItem('allo_disable_animations', disableAnimations ? '1' : '0');
     } catch (_) {}
   }, [disableAnimations]);
+  useEffect(() => { window.__alloReduceMotion = !!disableAnimations; }, [disableAnimations]);
   const [letterSpacing, setLetterSpacing] = useState(() => { try { const v = parseFloat(safeGetItem('allo_letter_spacing')); return Number.isFinite(v) && v >= 0 && v <= 0.2 ? v : 0; } catch (_) { return 0; } });
   useEffect(() => { safeSetItem('allo_letter_spacing', String(letterSpacing)); }, [letterSpacing]);
   const [isCheckingLevel, setIsCheckingLevel] = useState(false);
@@ -19650,14 +19656,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       try { safeSetItem('allo_reading_theme_favorites', JSON.stringify(readingThemeFavorites)); } catch {}
   }, [readingThemeFavorites]);
   const readingSettingsRef = useRef(null);
-  readingSettingsRef.current = { fontId: selectedFont, baseFontSize, lineHeight, letterSpacing, colorOverlay, readingRuler, setSelectedFont, setBaseFontSize, setLineHeight, setLetterSpacing, setColorOverlay, setReadingRuler };
+  readingSettingsRef.current = { fontId: selectedFont, baseFontSize, lineHeight, letterSpacing, colorOverlay, readingRuler, readingTheme, bionic: focusMode, setSelectedFont, setBaseFontSize, setLineHeight, setLetterSpacing, setColorOverlay, setReadingRuler, setReadingTheme, setFocusMode };
   const readingBodyFontRef = useRef('');
   useEffect(() => {
       if (typeof window === 'undefined' || typeof document === 'undefined') return;
       const read = () => {
           const s = readingSettingsRef.current;
           const o = (window.FONT_OPTIONS || []).find(f => f.id === s.fontId) || {};
-          return { fontId: s.fontId, fontFamily: o.family || '', fontClass: o.cssClass || '', baseFontSize: s.baseFontSize, lineHeight: s.lineHeight, letterSpacing: s.letterSpacing, colorOverlay: s.colorOverlay, readingRuler: !!s.readingRuler, fonts: window.FONT_OPTIONS || [] };
+          return { fontId: s.fontId, fontFamily: o.family || '', fontClass: o.cssClass || '', baseFontSize: s.baseFontSize, lineHeight: s.lineHeight, letterSpacing: s.letterSpacing, colorOverlay: s.colorOverlay, readingRuler: !!s.readingRuler, readingTheme: s.readingTheme, readingThemes: READING_THEME_IDS, bionic: !!s.bionic, fonts: window.FONT_OPTIONS || [] };
       };
       if (!window.__alloReadingSettings) {
           window.__alloReadingSettings = {
@@ -19671,6 +19677,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   if (Number.isFinite(p.letterSpacing)) s.setLetterSpacing(Math.max(0, Math.min(0.2, Math.round(p.letterSpacing * 100) / 100)));
                   if (['none', 'blue', 'peach', 'yellow'].includes(p.colorOverlay)) s.setColorOverlay(p.colorOverlay);
                   if (typeof p.readingRuler === 'boolean') s.setReadingRuler(p.readingRuler);
+                  if (READING_THEME_IDS.includes(p.readingTheme)) s.setReadingTheme(p.readingTheme);
+                  if (typeof p.bionic === 'boolean') s.setFocusMode(p.bionic);
               },
               subscribe: (fn) => {
                   const h = (e) => { try { fn(e.detail); } catch (_) {} };
@@ -19692,7 +19700,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       root.setProperty('--allo-reader-line-height', String(now.lineHeight));
       root.setProperty('--allo-reader-letter-spacing', now.letterSpacing + 'em');
       try { window.dispatchEvent(new CustomEvent('alloflow:reading-settings-changed', { detail: now })); } catch (_) {}
-  }, [selectedFont, baseFontSize, lineHeight, letterSpacing, colorOverlay, readingRuler]);
+  }, [selectedFont, baseFontSize, lineHeight, letterSpacing, colorOverlay, readingRuler, readingTheme, focusMode]);
   const [readerLayerHost, setReaderLayerHost] = useState(null);
   useEffect(() => {
       if (typeof document === 'undefined') return undefined;
@@ -21110,10 +21118,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // `helpKey` (data-help-key attribute — the pipeline modal has 62), and may
   // carry an `onEnter` callback for per-step UI side effects.
   const [customTourSteps, setCustomTourSteps] = useState(null);
-  useEffect(() => { if (!runTour) setCustomTourSteps(null); }, [runTour]);
+  const [tourSection, setTourSection] = useState(null);
+  const [tourSkipped, setTourSkipped] = useState([]);
+  const [tourResumeStep, setTourResumeStep] = useState(0);
+  useEffect(() => { if (!runTour) { if (!customTourSteps) setTourResumeStep(tourStep > 0 ? tourStep : 0); setCustomTourSteps(null); setTourSection(null); } }, [runTour]);
   const _resolveTourEl = (step) => {
     if (!step) return null;
-    if (step.id) { const el = document.getElementById(step.id); if (el) return el; }
+    if (step.id) { const el = document.getElementById(step.id); if (el && el.getClientRects().length > 0) return el; }
     if (step.helpKey) { try { return Array.from(document.querySelectorAll('[data-help-key="' + step.helpKey + '"]')).find(el => el.getClientRects().length > 0) || null; } catch (_) {} }
     return null;
   };
@@ -21137,7 +21148,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isSpotlightMode, setIsSpotlightMode] = useState(false);
   const [spotlightMessage, setSpotlightMessage] = useState(null);
   const [botSpotlightPos, setBotSpotlightPos] = useState(null);
-  const DOM_TO_TOOL_ID_MAP = (window.AlloModules && window.AlloModules.TextPipelineHelpers && window.AlloModules.TextPipelineHelpers.DOM_TO_TOOL_ID_MAP) || {};
+  const DOM_TO_TOOL_ID_MAP = { ...Object.fromEntries(Object.entries(GUIDED_TOUR_MAP).filter(([toolId]) => !['source-input', 'directions', 'package-deliver', '_final'].includes(toolId)).map(([toolId, domId]) => [domId, toolId])), ...((window.AlloModules && window.AlloModules.TextPipelineHelpers && window.AlloModules.TextPipelineHelpers.DOM_TO_TOOL_ID_MAP) || {}) };
     const tourSteps = [
       { id: 'tour-guided-mode', helpKey: 'header_rerun_wizard', text: t('tour.guided_workflow_text') || "Build a lesson step by step from Start & setup → Guided Mode. Choose Adapt a reading for a focused path, another preset, or Plan with AI and review the proposed steps. Add source text, review each result, write or draft student directions, then open the current lesson in Document Builder. Preview the learner experience and complete the readiness checks before teaching. Resume later saves your place on this device.", title: t('tour.guided_workflow_title') || 'Build your first lesson with Guided Mode' },
       { id: 'tour-input-panel', text: t('tour.input_panel_text'), title: t('tour.input_panel_title') },
@@ -21188,6 +21199,37 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       { id: 'tour-header-actions', text: t('tour.actions_text'), title: t('tour.actions_title') },
       { id: 'tour-history-panel', text: t('tour.history_text'), title: t('tour.history_title') },
   ];
+  const TOUR_SECTIONS = [
+    { id: 'start', label: t('tour.section_start') || 'Get started', ids: ['tour-guided-mode', 'tour-input-panel', 'tour-upload-source', 'tour-tool-udl', 'tour-tool-finder', 'tour-universal-settings'] },
+    { id: 'access', label: t('tour.section_access') || 'Understand & access', ids: ['tour-tool-analysis', 'ui-tool-glossary', 'ui-tool-simplified', 'tour-tool-wordsounds', 'tour-tool-outline', 'tour-tool-anchor-chart', 'tour-tool-memory-aid', 'tour-tool-visual', 'tour-tool-faq', 'tour-tool-scaffolds', 'tour-tool-note-taking'] },
+    { id: 'engage', label: t('tour.section_engage') || 'Engage', ids: ['tour-tool-applied-challenge', 'tour-tool-brainstorm', 'tour-tool-persona', 'tour-tool-timeline', 'tour-tool-concept-sort', 'tour-tool-math', 'tour-tool-adventure'] },
+    { id: 'assess', label: t('tour.section_assess') || 'Assess & deliver', ids: ['ui-tool-quiz', 'quiz-mode-select', 'tour-tool-dbq', 'tour-tool-alignment', 'tour-tool-lesson-plan', 'tour-tool-directions', 'tour-tool-fullpack'] },
+    { id: 'app', label: t('tour.section_app') || 'Around the app', ids: [...['tour-header-utils', 'tour-header-tools', 'tour-header-actions'], 'tour-history-panel'] },
+  ];
+  const _tourSectionOf = (index) => TOUR_SECTIONS.find(section => section.ids.includes(tourSteps[index]?.id)) || null;
+  const _tourInSection = (index) => !!customTourSteps || !tourSection || _tourSectionOf(index)?.id === tourSection;
+  const _tourStepsBetween = (from, to) => {
+    const between = [], direction = to > from ? 1 : -1;
+    for (let index = from + direction; index !== to && index >= 0 && index < tourSteps.length; index += direction) if (_tourInSection(index)) between.push(index);
+    return between;
+  };
+  const _tourExpectedStepRef = useRef(null);
+  const _tourMarkSkipped = (from, to) => { _tourExpectedStepRef.current = to; setTourSkipped(customTourSteps ? [] : _tourStepsBetween(from, to)); };
+  useEffect(() => {
+    if (!runTour || customTourSteps) { _tourExpectedStepRef.current = null; setTourSkipped(previous => previous.length ? [] : previous); return; }
+    const expected = _tourExpectedStepRef.current;
+    _tourExpectedStepRef.current = tourStep;
+    if (expected === null || expected === tourStep) return;
+    setTourSkipped(previous => previous.concat(_tourInSection(expected) ? [expected] : [], _tourStepsBetween(expected, tourStep)));
+  }, [runTour, tourStep, customTourSteps]);
+  const _tourLayoutRef = useRef(null);
+  useEffect(() => {
+    if (runTour && !customTourSteps) { if (!_tourLayoutRef.current) _tourLayoutRef.current = { expandedTools, activeSidebarTab }; return; }
+    const saved = _tourLayoutRef.current;
+    _tourLayoutRef.current = null;
+    if (saved && !runTour) { setExpandedTools(saved.expandedTools); setActiveSidebarTab(saved.activeSidebarTab); }
+  }, [runTour, customTourSteps]);
+  const tourRevealHeader = !!runTour && !customTourSteps && ['tour-header-utils', 'tour-header-tools', 'tour-header-actions'].includes(tourSteps[tourStep]?.id);
   useEffect(() => {
     const _steps = customTourSteps || tourSteps;
     if (runTour && _steps[tourStep]) {
@@ -21196,9 +21238,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             const el = _resolveTourEl(_steps[tourStep]);
             if (el) {
                 if (stepId === 'ui-tool-simplified') {
-                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                     window.scrollTo({ top: 0, behavior: window.__alloReduceMotion ? 'auto' : 'smooth' });
                 } else {
-                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     el.scrollIntoView({ behavior: window.__alloReduceMotion ? 'auto' : 'smooth', block: 'center' });
                 }
             }
         }, 300);
@@ -21328,6 +21370,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (e.key === '?' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey && (() => { try { return localStorage.getItem('allo_single_key_shortcuts') !== 'off'; } catch (_) { return true; } })()) {
         e.preventDefault();
         handleToggleIsHelpMode();
+        if (!isHelpMode && !window.__alloHelpKeyNoticeShown) {
+          window.__alloHelpKeyNoticeShown = true;
+          addToast(t('help_mode.shortcut_notice') || 'Help Mode turned on with the ? key.', 'info', { action: {
+            label: t('help_mode.shortcut_turn_off') || 'Turn off this shortcut',
+            onClick: () => {
+              try { localStorage.setItem('allo_single_key_shortcuts', 'off'); } catch (_) {}
+              try { window.dispatchEvent(new CustomEvent('alloflow:single-key-shortcuts-changed', { detail: { enabled: false } })); } catch (_) {}
+              setIsHelpMode(false);
+              addToast(t('help_mode.shortcut_off') || 'The ? shortcut is off. You can turn it back on in Text settings.', 'success');
+            },
+          } });
+        }
         return;
       }
       if (e.key === 'Escape' && isHelpMode) {
@@ -21517,12 +21571,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   _tourRunContextRef.current = _tourRunContext;
   const _tourTravelDirectionRef = useRef(1);
   useEffect(() => { if (!runTour) _tourTravelDirectionRef.current = 1; }, [runTour]);
-  const _findTourStepIndex = (steps, current, direction) => {
+  const _findTourStepIndex = (steps, current, direction, inScope) => {
       if (!Array.isArray(steps) || !Number.isInteger(current) || ![-1, 1].includes(direction)) return -1;
       for (let index = current + direction; index >= 0 && index < steps.length; index += direction) {
+          if (inScope && !inScope(index)) continue;
           const candidate = steps[index];
           // Modal tours may need onEnter to reveal their target first.
-          const canReveal = candidate && (typeof candidate.onEnter === 'function' || candidate.id === 'tour-history-panel' || DOM_TO_TOOL_ID_MAP[candidate.id]);
+          const canReveal = candidate && (typeof candidate.onEnter === 'function' || ['tour-history-panel', ...['tour-header-utils', 'tour-header-tools', 'tour-header-actions']].includes(candidate.id) || DOM_TO_TOOL_ID_MAP[candidate.id]);
           if (candidate && (canReveal || _resolveTourEl(candidate))) return index;
       }
       return -1;
@@ -21540,14 +21595,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (el) {
               const tallPanels = ['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary', 'tour-tool-wordsounds'];
               const scrollBlock = tallPanels.includes(step.id) ? 'start' : 'center';
-              if (navigate) el.scrollIntoView({ behavior: 'smooth', block: scrollBlock, inline: 'center' });
+              if (navigate) el.scrollIntoView({ behavior: window.__alloReduceMotion ? 'auto' : 'smooth', block: scrollBlock, inline: 'center' });
               const rect = el.getBoundingClientRect();
               let padding = 0;
               if (step.id === 'tour-tool-adventure') {
                   padding = 40;
               }
-              const clampedTop = Math.max(60, rect.top - padding);
-              const heightAdjustment = (rect.top - padding) < 60 ? (60 - (rect.top - padding)) : 0;
+              const clampLine = rect.bottom + padding - 60 >= 24 ? 60 : 0;
+              const clampedTop = Math.max(clampLine, rect.top - padding);
+              const heightAdjustment = (rect.top - padding) < clampLine ? (clampLine - (rect.top - padding)) : 0;
               const nextRect = {
                   top: clampedTop,
                   left: rect.left - padding,
@@ -21710,14 +21766,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [isSpotlightMode, runTour]);
   const handleNextTourStep = () => {
       _tourTravelDirectionRef.current = 1;
-      const next = _findTourStepIndex(customTourSteps || tourSteps, tourStep, 1);
-      if (next >= 0) setTourStep(next);
+      const next = _findTourStepIndex(customTourSteps || tourSteps, tourStep, 1, _tourInSection);
+      if (next >= 0) { _tourMarkSkipped(tourStep, next); setTourStep(next); }
       else { setRunTour(false); setTourStep(0); }
   };
   const handlePrevTourStep = () => {
       _tourTravelDirectionRef.current = -1;
-      const previous = _findTourStepIndex(customTourSteps || tourSteps, tourStep, -1);
-      if (previous >= 0) setTourStep(previous);
+      const previous = _findTourStepIndex(customTourSteps || tourSteps, tourStep, -1, _tourInSection);
+      if (previous >= 0) { _tourMarkSkipped(tourStep, previous); setTourStep(previous); }
   };
   useEffect(() => {
       if (!runTour) return;
@@ -21741,6 +21797,29 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.addEventListener('keydown', handleTourKeyDown);
       return () => window.removeEventListener('keydown', handleTourKeyDown);
   }, [runTour, handleNextTourStep, handlePrevTourStep]);
+  const handleJumpToTourStep = (index) => {
+      if (customTourSteps || !Number.isInteger(index) || !tourSteps[index]) return;
+      _tourTravelDirectionRef.current = 1;
+      if (tourSection) setTourSection(_tourSectionOf(index)?.id || null);
+      _tourExpectedStepRef.current = index;
+      setTourSkipped([]);
+      setTourStep(index);
+  };
+  const handleToggleTourSection = () => {
+      setTourSkipped([]);
+      setTourSection(current => current ? null : (_tourSectionOf(tourStep)?.id || null));
+  };
+  const tourNavigator = customTourSteps ? null : (() => {
+      const sections = TOUR_SECTIONS.map(section => ({ id: section.id, label: section.label, steps: tourSteps.map((step, index) => ({ index, title: step.title })).filter(item => section.ids.includes(tourSteps[item.index].id)) }));
+      const active = tourSection ? sections.find(section => section.id === tourSection) : null;
+      const position = active ? active.steps.findIndex(item => item.index === tourStep) : -1;
+      const skippedTitles = tourSkipped.map(index => tourSteps[index]?.title).filter(Boolean).join(', ');
+      return {
+          sections, activeSection: tourSection, onJump: handleJumpToTourStep, onToggleSection: handleToggleTourSection,
+          progress: active && position >= 0 ? { current: position + 1, total: active.steps.length, label: active.label } : null,
+          notice: skippedTitles ? (t('tour.skipped_unavailable', { steps: skippedTitles }) || ('Skipped, not available in this view: ' + skippedTitles)) : '',
+      };
+  })();
   useEffect(() => {
       if (!runTour) {
           return;
@@ -21753,6 +21832,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setIsSpotlightMode(true);
       const step = (customTourSteps || tourSteps)[tourStep];
       if (!step) return;
+      if (!customTourSteps && !_tourInSection(tourStep)) {
+          const inSection = _findTourStepIndex(tourSteps, tourStep, _tourTravelDirectionRef.current, _tourInSection);
+          if (inSection >= 0) setTourStep(inSection); else setRunTour(false);
+          return;
+      }
       // The sidebar/expand side effects belong to the MAIN app tour only —
       // a custom (pipeline/builder) tour runs inside a modal where they'd
       // fight the layout. Custom steps use their own onEnter instead.
@@ -21796,7 +21880,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     toastTimersRef.current.forEach(timer => clearTimeout(timer));
     toastTimersRef.current.clear();
   }, []);
-  const addToast = (message, type = 'info') => {
+  const addToast = (message, type = 'info', options = null) => {
     const id = Date.now() + Math.random();
     const normalizedMessage = String(message ?? '');
     const baseDuration = type === 'error' ? 10000
@@ -21804,8 +21888,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       : type === 'success' ? 4500
       : 5000;
     const readingDuration = Math.min(5000, Math.max(0, normalizedMessage.length - 80) * 40);
-    const duration = baseDuration + readingDuration;
-    const nextToast = { id, message: normalizedMessage, type, duration };
+    const action = options && options.action && typeof options.action.onClick === 'function' && options.action.label ? options.action : null;
+    const duration = baseDuration + readingDuration + (action ? 5000 : 0);
+    const nextToast = { id, message: normalizedMessage, type, duration, action };
     setToasts(prev => {
       const next = [...prev, nextToast];
       const removed = next.slice(0, Math.max(0, next.length - 3));
@@ -23745,7 +23830,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const WHITEBOARD_ORIGIN = 'https://alloflow-cdn.pages.dev';
   const openWhiteboard = React.useCallback(() => {
     try {
-      const w = window.open(WHITEBOARD_ORIGIN + '/whiteboard/whiteboard.html?v=3', 'alloflow-whiteboard', 'width=1280,height=860');
+      const w = window.open(WHITEBOARD_ORIGIN + '/whiteboard/whiteboard.html?v=4&host=' + encodeURIComponent(window.origin || window.location.origin), 'alloflow-whiteboard', 'width=1280,height=860');
       if (!w) { try { window.alert(t('educator_hub.whiteboard_popup_blocked') || 'Allow pop-ups for this page, then open the Whiteboard again.'); } catch (_a) {} return; }
       whiteboardWinRef.current = w;
       try { w.focus(); } catch (_f) {}
@@ -43386,6 +43471,17 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                  toast.type === 'warning' ? <AlertTriangle size={18} className="text-amber-500 shrink-0" /> :
                  <Info size={18} className="text-indigo-500 shrink-0" />}
                 <span className="min-w-0 flex-1 text-sm font-semibold leading-relaxed">{toast.message}</span>
+                {toast.action && (
+                  <button
+                    type="button"
+                    data-help-ignore="true"
+                    data-toast-action
+                    onClick={() => { dismissToast(toast.id); toast.action.onClick(); }}
+                    className="-my-1 min-h-[44px] shrink-0 rounded-lg border border-current px-3 text-sm font-bold hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  >
+                    {toast.action.label}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => dismissToast(toast.id)}
@@ -43695,7 +43791,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           </button>
         </div>
       )}
-      {!isZenMode && <HeaderBar isSpecialistMode={isSpecialistMode} setShowBehaviorLens={setShowBehaviorLens} APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} liveStatus={!isTeacherMode && !activeSessionCode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) ? { mode: 'homework', nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, changeCodename: () => setShowStudentWelcome(true) } : !isTeacherMode && activeSessionCode ? { nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, connection: liveSessionConnectionState.status, hostState: liveHostConnectionState, retryConnection: retryLiveSessionConnection, leave: leaveLiveSession, changeCodename: () => setShowStudentWelcome(true), signals: (user && user.uid) ? (() => {
+      {!isZenMode && <HeaderBar tourRevealHeader={tourRevealHeader} tourResumeStep={tourResumeStep} isSpecialistMode={isSpecialistMode} setShowBehaviorLens={setShowBehaviorLens} APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} liveStatus={!isTeacherMode && !activeSessionCode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) ? { mode: 'homework', nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, changeCodename: () => setShowStudentWelcome(true) } : !isTeacherMode && activeSessionCode ? { nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, connection: liveSessionConnectionState.status, hostState: liveHostConnectionState, retryConnection: retryLiveSessionConnection, leave: leaveLiveSession, changeCodename: () => setShowStudentWelcome(true), signals: (user && user.uid) ? (() => {
         // Help signals (student sender). Enum-only Tier-1 channel: writes
         // roster.{uid}.signal + signalAt via writeToSession; the teacher's Live
         // Session Center lists + clears them. No free text by design. Lived in
@@ -43963,9 +44059,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     // switcher (2147483001), with headroom under the 32-bit max.
                     zIndex: 2147483600,
                     backgroundColor: theme === 'contrast'
-                        ? (colorOverlay === 'blue' ? 'rgba(0, 255, 255, 0.15)' :
-                           colorOverlay === 'peach' ? 'rgba(255, 0, 255, 0.15)' :
-                           'rgba(50, 205, 50, 0.15)')
+                        ? (colorOverlay === 'blue' ? 'rgba(80, 160, 255, 0.18)' :
+                           colorOverlay === 'peach' ? 'rgba(255, 170, 120, 0.18)' :
+                           'rgba(255, 230, 0, 0.15)')
                         : undefined,
                     mixBlendMode: theme === 'light' ? 'multiply' : 'normal',
                 }}
@@ -44085,6 +44181,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     sourceVocabulary, standardInputValue, standardMode, startNewPdfAudit, suggestedStandards, t,
     targetStandards, toggleTool, urlSearchQuery, urlToFetch, videoTranscriptSourceContext,
     useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly,
+    history, handleGenerate,
   })}
 </CDNModuleGate>
           )}
@@ -44536,9 +44633,6 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             style={readingTheme !== 'default' ? {
               backgroundColor: readingTheme === 'warm' ? '#fff1e6' : readingTheme === 'sepia' ? '#f3eadb' : readingTheme === 'blue' ? '#eef5fc' : readingTheme === 'green' ? '#eef7ec' : readingTheme === 'rose' ? '#fdf0f4' : readingTheme === 'dyslexia' ? '#fcf8e4' : readingTheme === 'dim' ? '#adb3bd' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : undefined,
               color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'warm' ? '#432714' : readingTheme === 'sepia' ? '#2a1f13' : readingTheme === 'blue' ? '#16304b' : readingTheme === 'green' ? '#123f21' : readingTheme === 'rose' ? '#561530' : readingTheme === 'dyslexia' ? '#3f3b31' : readingTheme === 'dim' ? '#000000' : undefined,
-              fontFamily: readingTheme === 'dyslexia' ? "'OpenDyslexic', 'Atkinson Hyperlegible', sans-serif" : undefined,
-              letterSpacing: readingTheme === 'dyslexia' ? '0.05em' : undefined,
-              lineHeight: readingTheme === 'dyslexia' ? '1.8' : undefined,
               transition: 'background-color 0.24s ease, color 0.24s ease',
             } : { transition: 'background-color 0.24s ease, color 0.24s ease' }}
           >
@@ -46096,8 +46190,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           botSpotlightPos, handleNextTourStep, handlePrevTourStep, handleSetRunTourToFalse, isSpotlightMode,
           runTour, setIsSpotlightMode, setRunTour, setSpotlightMessage, spotlightMessage,
           t, tourRect, tourStep, tourSteps: customTourSteps || tourSteps, compactTour: !!customTourSteps,
-          canGoBack: _findTourStepIndex(customTourSteps || tourSteps, tourStep, -1) >= 0,
-          canGoForward: _findTourStepIndex(customTourSteps || tourSteps, tourStep, 1) >= 0
+          canGoBack: _findTourStepIndex(customTourSteps || tourSteps, tourStep, -1, _tourInSection) >= 0,
+          canGoForward: _findTourStepIndex(customTourSteps || tourSteps, tourStep, 1, _tourInSection) >= 0,
+          tourNavigator
       })}
       {isSyntaxGame && generatedContent && (
         <ErrorBoundary fallbackMessage={t('error.syntax_scramble')}>
@@ -46312,7 +46407,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               onClick={() => setShowLiveDock(v => !v)}
               aria-label={t('live_dock.open_aria') || 'Open the live dashboard'}
               aria-expanded={showLiveDock}
-              style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
+              style={{position:'fixed',bottom:'var(--alloflow-fab-stack-clear, 5.5rem)',visibility:isFabExpanded ? 'hidden' : 'visible',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
             >
               {(t('live_dock.button') || '🎛️ Live Dashboard') + (liveOrganizer ? ' · 🧩' : '') + (activeSignals.length > 0 ? ' · ✋' + activeSignals.length : '')}
             </button>
@@ -47531,7 +47626,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           resumeWorkspace: launchResume,
           onResumeWorkspace: resumeLaunchWorkspace,
           companion: window.AlloModules.OnboardingCoach ? React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
-          t, setRunTour, embedded: true,
+          t, setRunTour: (value) => { if (value) setTourStep(0); setRunTour(value); }, embedded: true,
           pickMode: function (key) {
               const choices = { full: 'teacher_full', guided: 'teacher', learning_tools: 'student_explore', educator: 'specialist', student: 'student_explore', teacher: 'teacher', family: 'family', specialist: 'specialist' };
               if (choices[key]) chooseLaunchRole(choices[key]);

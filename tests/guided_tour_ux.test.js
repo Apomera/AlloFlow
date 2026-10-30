@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 const require = createRequire(import.meta.url);
 const hostSource = readFileSync('AlloFlowANTI.txt', 'utf8');
 const strings = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
@@ -31,10 +32,9 @@ function mount(overrides = {}) {
   return {next,previous,close,props};
 }
 function shortcut() {
-  const start=hostSource.indexOf('      const handleTourKeyDown = (e) => {');
-  const end=hostSource.indexOf("      window.addEventListener('keydown', handleTourKeyDown)",start);
+  const body=sliceBetween(hostSource,'      const handleTourKeyDown = (e) => {',"      window.addEventListener('keydown', handleTourKeyDown)",{file:'AlloFlowANTI.txt',label:'tour keydown handler'});
   const next=vi.fn(),previous=vi.fn(),close=vi.fn();
-  const run=new Function('handleNextTourStep','handlePrevTourStep','handleSetRunTourToFalse','setRunTour',hostSource.slice(start,end)+'\nreturn handleTourKeyDown;')(next,previous,close,vi.fn());
+  const run=new Function('handleNextTourStep','handlePrevTourStep','handleSetRunTourToFalse','setRunTour',body+'\nreturn handleTourKeyDown;')(next,previous,close,vi.fn());
   return {run,next,previous,close};
 }
 describe('Feature tour navigation',()=>{
@@ -79,8 +79,8 @@ describe('Feature tour navigation',()=>{
 });
 describe('Current feature tour content and anchors',()=>{
   it('introduces Guided Mode with a current entry point and reviewed delivery workflow',()=>{
-    const start=hostSource.indexOf('const tourSteps = [');const end=hostSource.indexOf('\n  ];',start);
-    const steps=new Function('t',hostSource.slice(start,end+5)+'\nreturn tourSteps;')(key=>key.split('.').reduce((v,k)=>v?.[k],strings));
+    const block=sliceBetween(hostSource,'const tourSteps = [','\n  ];',{file:'AlloFlowANTI.txt',label:'tourSteps',includeEnd:true});
+    const steps=new Function('t',block+'\nreturn tourSteps;')(key=>key.split('.').reduce((v,k)=>v?.[k],strings));
     expect(new Set(steps.map(s=>s.id)).size).toBe(steps.length);
     expect(steps.every(s=>s.title?.trim()&&s.text?.trim())).toBe(true);
     expect(steps[0].helpKey).toBe('header_rerun_wizard');
@@ -89,8 +89,8 @@ describe('Current feature tour content and anchors',()=>{
     expect(steps.find(s=>s.id==='tour-upload-source').text).toContain('unresolved issues');
   });
   it('resolves the visible Start & setup control when the desktop copy is hidden',()=>{
-    const start=hostSource.indexOf('  const _resolveTourEl = (step) => {');const end=hostSource.indexOf('\n  // The pipeline guided tours',start);
-    const resolveTarget=new Function(hostSource.slice(start,end)+'\nreturn _resolveTourEl;')();
+    const block=sliceBetween(hostSource,'  const _resolveTourEl = (step) => {','\n  // The pipeline guided tours',{file:'AlloFlowANTI.txt',label:'_resolveTourEl'});
+    const resolveTarget=new Function(block+'\nreturn _resolveTourEl;')();
     container=document.createElement('div');container.innerHTML='<button data-help-key="header_rerun_wizard" hidden>Desktop</button><button data-help-key="header_rerun_wizard">Mobile</button>';document.body.appendChild(container);
     const visible=container.lastChild;visible.getClientRects=()=>[{}];
     expect(resolveTarget({helpKey:'header_rerun_wizard'})).toBe(visible);
@@ -100,14 +100,14 @@ describe('Current feature tour content and anchors',()=>{
 
 describe('Tour navigation across unavailable targets', () => {
   function navigation(steps, current, direction = 1, toolMap = {}) {
-    const slice = (a,b) => hostSource.slice(hostSource.indexOf(a), hostSource.indexOf(b,hostSource.indexOf(a)));
+    const slice = (a,b) => sliceBetween(hostSource,a,b,{file:'AlloFlowANTI.txt'});
     const context = { current: {} }, travel = { current: direction };
     const target = { scrollIntoView:vi.fn(),getBoundingClientRect:()=>({top:80,left:20,right:200,bottom:180,width:180,height:100}) };
     const resolveTarget = vi.fn(step=>step.visible ? target : null);
     const setStep=vi.fn(),setRunning=vi.fn(),setCustom=vi.fn(),setRect=vi.fn();
     const api = new Function('ctx', `
       const {steps:tourSteps,current:tourStep,context:_tourRunContextRef,travel:_tourTravelDirectionRef,resolveTarget:_resolveTourEl,setStep:setTourStep,setRunning:setRunTour,setCustom:setCustomTourSteps,setRect:setTourRect,toolMap:DOM_TO_TOOL_ID_MAP}=ctx;
-      const runTour=true,spotlightMessage=null,customTourSteps=null,alloBotRef={current:null};
+      const runTour=true,spotlightMessage=null,customTourSteps=null,alloBotRef={current:null},_tourInSection=()=>true,_tourMarkSkipped=()=>{};
       const useCallback=fn=>fn;
       ${slice('  const _findTourStepIndex =','  const updateTourMetrics =')}
       ${slice('  const updateTourMetrics =','  const ensureToolVisible =')}

@@ -129,6 +129,10 @@
   }
   var E = window.ExcalidrawLib;
   var imageSlot = new URLSearchParams(window.location.search).get('imageSlot') || '';
+  // The opener's origin as the app wrote it into this URL ('null' = opaque frame).
+  // Image-slot hosts that sent none were same-origin.
+  var declaredHost = new URLSearchParams(window.location.search).get('host') || '';
+  var slotHost = imageSlot ? (declaredHost || window.location.origin) : '';
   var slotInitialized = false, pendingSlotScene = null;
   var React = window.React, ReactDOM = window.ReactDOM;
   // The opener's origin is learned from its ack (see the message listener in Boot);
@@ -154,6 +158,18 @@
       return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host);
     } catch (_) { return false; }
   }
+  // Gemini Canvas runs on a Google sandbox host the list above cannot name. Trust it
+  // only when it is the origin the app declared in this window's URL, so a page that
+  // claimed the window by name first still is not trusted.
+  function isDeclaredCanvasOpener(origin, declared) {
+    var o = String(origin || '');
+    if (!o || o !== String(declared || '')) return false;
+    try {
+      var u = new URL(o);
+      var host = (u.hostname || '').toLowerCase();
+      return u.protocol === 'https:' && (/(^|\.)usercontent\.goog$/.test(host) || /\.googleusercontent\.com$/.test(host));
+    } catch (_) { return false; }
+  }
   var linked = false;
   var HANDSHAKE_TYPES = { 'allocwb-hello': 1, 'allocwb-closed': 1 };
   var toOpener = function (payload) {
@@ -163,7 +179,7 @@
       if (!handshake && !linked) return;
       if (imageSlot) payload = Object.assign({}, payload, { type: payload.type.replace('allocwb-', 'alloasset-'), token: imageSlot });
       var target = (linked && openerOrigin && openerOrigin !== 'null') ? openerOrigin : '*';
-      if (imageSlot) target = window.location.origin;
+      if (imageSlot) target = slotHost === 'null' ? '*' : slotHost;
       window.opener.postMessage(payload, target);
     } catch (_) {}
   };
@@ -300,14 +316,14 @@
   }
 
   // Small inline status line in the header (also an aria-live region).
-  function flash(msg, good) {
+  function flash(msg, good, sticky) {
     var el = document.getElementById('flashmsg');
     if (!el) return;
     el.textContent = msg;
     el.style.color = good === false ? '#f87171' : '#34d399';
     el.style.opacity = '1';
     clearTimeout(flash._t);
-    flash._t = setTimeout(function () { el.style.opacity = '0'; }, 2600);
+    if (!sticky) flash._t = setTimeout(function () { el.style.opacity = '0'; }, 2600);
   }
 
   // "Save to AlloFlow" — export the scene to a PNG and hand BOTH the image and
@@ -814,6 +830,8 @@
     if (!window.opener) {
       saveBtn.disabled = true; saveBtn.style.opacity = '0.5'; saveBtn.style.cursor = 'not-allowed';
       saveBtn.title = 'Open the Whiteboard from AlloFlow to save into your resources.';
+      // e.g. the Gemini desktop app opens windows with no link back to the page
+      if (imageSlot) flash('This window has no link back to AlloFlow. Choose Export PNG, then use Upload image in AlloFlow.', false, true);
     } else {
       setLinked(false); // until the opener acks from a trusted origin
       saveBtn.addEventListener('click', function () {
@@ -853,7 +871,7 @@
       var d = ev.data;
       if (!d || typeof d !== 'object') return;
       if (imageSlot) {
-        if (ev.origin !== window.location.origin || d.token !== imageSlot) return;
+        if (ev.origin !== slotHost || d.token !== imageSlot) return;
         if (d.type === 'alloasset-ack' && !slotInitialized) {
           slotInitialized = true; openerOrigin = ev.origin; setLinked(true);
           var name = document.getElementById('nameInput'); if (name) name.value = String(d.title || 'Drawing').slice(0, 120);
@@ -871,7 +889,7 @@
       // still reaches window.opener and nothing else. Learning a real origin
       // remains an upgrade; learning 'null' was a downgrade to muteness.
       if (d.type === 'allocwb-ack') {
-        if (!isTrustedOpenerOrigin(ev.origin)) return;
+        if (!isTrustedOpenerOrigin(ev.origin) && !isDeclaredCanvasOpener(ev.origin, declaredHost)) return;
         openerOrigin = ev.origin;
         setLinked(true);
         return;
@@ -900,7 +918,7 @@
     } catch (_) {}
   });
 
-  window.__alloWhiteboardTrust = { isTrustedOpenerOrigin: isTrustedOpenerOrigin, offsetSkeletonBelow: offsetSkeletonBelow };
+  window.__alloWhiteboardTrust = { isTrustedOpenerOrigin: isTrustedOpenerOrigin, isDeclaredCanvasOpener: isDeclaredCanvasOpener, offsetSkeletonBelow: offsetSkeletonBelow };
   var hello = function () { toOpener({ type: 'allocwb-hello' }); };
   hello(); setTimeout(hello, 900);
   window.addEventListener('beforeunload', function () { toOpener({ type: 'allocwb-closed' }); });

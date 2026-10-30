@@ -620,6 +620,8 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
     playbackRuntime.controller = typeof AbortController !== "undefined" ? new AbortController() : null;
   }
   const sessionSignal = playbackRuntime.controller ? playbackRuntime.controller.signal : null;
+  if (!playbackRuntime.kokoroLock || playbackRuntime.kokoroLock.sessionId !== sessionId) playbackRuntime.kokoroLock = { sessionId, engine: null };
+  const kokoroLock = playbackRuntime.kokoroLock;
   if (playbackSessionRef.current !== sessionId || index >= sentences.length) {
     if (playbackSessionRef.current === sessionId) stopPlayback("ended", contentId, sessionId);
     return;
@@ -937,7 +939,8 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
             language: segmentLanguage,
             priority: "interactive",
             reason: "read-aloud-active",
-            signal: sessionSignal
+            signal: sessionSignal,
+            kokoroLock
           }, mode === "persona" ? {} : { maxRetries: 1 });
           promise = Promise.resolve(callTTS(textToSpeak, currentVoice, personaTtsSpeed, requestOptions)).then((url) => {
             if (url) addBlobUrl(url);
@@ -1079,7 +1082,8 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
           priority: "normal",
           reason: "read-aloud-preload",
           signal: sessionSignal,
-          maxRetries: 0
+          maxRetries: 0,
+          kokoroLock
         };
         audioBufferRef.current[nextBufferKey] = Promise.resolve().then(() => callTTS(
           textToPreload,

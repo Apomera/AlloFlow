@@ -165,3 +165,31 @@ describe('the tail probe measures what it claims to', () => {
     expect(measure(pcm, SR).lastSample).toBe(0);
   });
 });
+
+// The splitter's regex sits in the same template literal, so its backslashes are
+// doubled in the file. loadWorker() runs the RAW text; this cooks the function the
+// way the browser does. A splitter double-escaped once too often turned
+// "Dr. Smith measured 3.5 cm" into "Dr." / "Smith measured 3." / "5 cm" (10-29).
+describe('the worker sentence splitter', () => {
+  const cooked = () => {
+    const body = workerBody(LOADER);
+    const start = body.indexOf('function splitSentences');
+    const end = body.indexOf('\n        }', start);
+    if (start < 0 || end < 0) throw new Error('splitSentences not found in the worker body');
+    const raw = body.slice(start, end + 10);
+    // eslint-disable-next-line no-new-func
+    const source = new Function('return `' + raw + '`;')();
+    // eslint-disable-next-line no-new-func
+    return new Function(source + '\nreturn splitSentences;')();
+  };
+  const split = cooked();
+  it('keeps titles, initials and decimals inside one sentence', () => {
+    expect(split('Dr. Smith measured 3.5 cm of rain. It was wet.')).toEqual(['Dr. Smith measured 3.5 cm of rain.', 'It was wet.']);
+    expect(split('Mrs. Lee went to the U.S.A. last year. Then home.')).toEqual(['Mrs. Lee went to the U.S.A. last year.', 'Then home.']);
+    expect(split('It costs $4.50 at 9 a.m. today. Done.')).toEqual(['It costs $4.50 at 9 a.m. today.', 'Done.']);
+  });
+  it('still splits on real sentence ends and keeps an unpunctuated tail', () => {
+    expect(split('Wait!! Really? Yes... ok')).toEqual(['Wait!!', 'Really?', 'Yes...', 'ok']);
+    expect(split('No terminal punctuation here')).toEqual(['No terminal punctuation here']);
+  });
+});

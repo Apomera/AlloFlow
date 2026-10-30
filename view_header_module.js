@@ -212,6 +212,8 @@ function HeaderBar(props) {
     isZenMode,
     joinAppIdInput,
     joinClassSession,
+    tourRevealHeader,
+    tourResumeStep,
     joinCodeInput,
     languageToTTSCode,
     latestLessonPlan,
@@ -285,8 +287,23 @@ function HeaderBar(props) {
   const openHomeBehaviorTools = () => {
     if (homeBehaviorToolsAvailable) setShowBehaviorLens(true);
   };
+  const viewModeAvailable = !isStudentLinkMode && !isIndependentMode;
+  const startAppTour = (step) => {
+    setShowSetupPathMenu(false);
+    setSpotlightMessage("");
+    setTourStep(step);
+    setRunTour(true);
+  };
+  const toggleViewMode = () => {
+    if (!isTeacherMode && APP_CONFIG._cfg_validation_key) {
+      setPendingRole("toggle_view");
+      setIsGateOpen(true);
+    } else {
+      setIsTeacherMode(!isTeacherMode);
+    }
+  };
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
-  const [headerCollapsed, setHeaderCollapsed] = React.useState(() => {
+  const [headerCollapsedPreference, setHeaderCollapsed] = React.useState(() => {
     try {
       const saved = localStorage.getItem("allo_header_collapsed");
       if (saved === "true") return true;
@@ -296,6 +313,7 @@ function HeaderBar(props) {
       return true;
     }
   });
+  const headerCollapsed = headerCollapsedPreference && !tourRevealHeader;
   const toggleHeaderCollapsed = React.useCallback((event) => {
     const button = event && event.currentTarget;
     if (button) {
@@ -333,6 +351,13 @@ function HeaderBar(props) {
       }
       return next;
     });
+  }, []);
+  React.useEffect(() => {
+    const sync = (e) => {
+      if (e && e.detail && typeof e.detail.enabled === "boolean") setSingleKeyShortcuts(e.detail.enabled);
+    };
+    window.addEventListener("alloflow:single-key-shortcuts-changed", sync);
+    return () => window.removeEventListener("alloflow:single-key-shortcuts-changed", sync);
   }, []);
   const [voiceInputEngine, setVoiceInputEngine] = React.useState(() => {
     try {
@@ -602,6 +627,42 @@ function HeaderBar(props) {
     return { ok: true, isIOS };
   }, [t]);
   const canUseKokoroVoicePicker = kokoroCapability.ok;
+  const startKokoroVoiceDownload = () => {
+    if (!canUseKokoroVoicePicker || window._kokoroTTS?.ready || window.__kokoroTTSDownloading || !window.__loadKokoroTTS) return;
+    window.__kokoroTTSDownloading = true;
+    window.__kokoroLoadUserInitiated = true;
+    addToast(
+      kokoroCapability.isIOS ? t("header.voice_kokoro_downloading_ios") || "Getting the on-device voice (88 MB). It reads offline afterwards, though this browser may ask for it again after a few weeks unused." : t("header.voice_kokoro_downloading") || "Getting the on-device voice (88 MB, one time). You can keep working.",
+      "info"
+    );
+    Promise.resolve().then(() => window.__loadKokoroTTS()).then((ok) => {
+      if (ok) addToast(t("header.voice_kokoro_ready_toast") || "On-device voice ready. It is saved on this device.", "success");
+      else addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
+    }).catch(() => {
+      addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
+    }).finally(() => {
+      window.__kokoroTTSDownloading = false;
+      window.__kokoroLoadUserInitiated = false;
+    });
+  };
+  const [kokoroSavedOnDevice, setKokoroSavedOnDevice] = React.useState(null);
+  React.useEffect(() => {
+    if (!showVoiceSettings || window._kokoroTTS) return void 0;
+    let live = true;
+    const check = window.AlloModules?.AlloCommands?.modelCache?.hasKokoro;
+    if (typeof check !== "function") {
+      setKokoroSavedOnDevice(null);
+      return void 0;
+    }
+    Promise.resolve(check()).then((saved) => {
+      if (live) setKokoroSavedOnDevice(!!saved);
+    }, () => {
+      if (live) setKokoroSavedOnDevice(null);
+    });
+    return () => {
+      live = false;
+    };
+  }, [showVoiceSettings, selectedVoice]);
   const renderKokoroVoiceGroup = () => {
     if (!kokoroCapability.ok) {
       return /* @__PURE__ */ React.createElement("optgroup", { label: (t("header.voice_kokoro_group") || "On-device voice (Kokoro)") + " (" + kokoroCapability.reason + ")" }, /* @__PURE__ */ React.createElement("option", { value: "__kokoro_unavailable", disabled: true }, t("header.voice_kokoro_cannot_run") || "Cannot run on this device"));
@@ -720,7 +781,7 @@ function HeaderBar(props) {
           .allo-premium-header::after { content: ''; position: absolute; left: 3%; right: 3%; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(165,180,252,.55), transparent); pointer-events: none; }
           .allo-premium-header button { min-height: 44px; }
           .allo-premium-header button:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
-          .allo-premium-appbar { min-height: 68px; }
+          .allo-premium-appbar { min-height: 56px; }
           .allo-premium-appbar-brand { display: flex; flex: 1 1 auto; align-items: center; gap: .75rem; min-width: 0; }
           .allo-premium-context-block { min-width: 0; max-width: 21rem; flex: 1 1 auto; }
           .allo-premium-context-line, .allo-premium-pii-text { overflow-wrap: anywhere; }
@@ -732,12 +793,15 @@ function HeaderBar(props) {
             .allo-premium-appbar-brand { display: contents; }
             .allo-premium-brand-name { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
             .allo-premium-context-block { order: 99; flex: 0 0 100%; width: 100%; max-width: none; }
+            /* Phones: the open resource already names the view, so the role/view line stays for screen readers only; the privacy reminder stays visible. */
+            .allo-premium-context-line { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+            .allo-premium-context-block > .allo-premium-pii-row { margin-top: 0; }
             .allo-header-settings-dialog { top: 5rem !important; right: .75rem !important; left: .75rem !important; width: auto !important; max-height: calc(100dvh - 6rem); padding: 1rem !important; }
             .allo-reading-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
             .allo-reading-theme-grid .allo-reading-theme-swatch > span:last-child { overflow: visible !important; text-overflow: clip !important; white-space: normal !important; }
           }
           @media (prefers-reduced-motion: reduce) { .allo-premium-header, .allo-premium-header * { transition-duration: .01ms !important; } }
-        `), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[1600px] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar flex items-center gap-2 sm:gap-3 min-w-0" : "flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar-brand" : "" }, /* @__PURE__ */ React.createElement("h1", { className: `${headerCollapsed ? "text-xl md:text-2xl" : "text-2xl md:text-3xl"} font-black tracking-tight flex min-w-0 shrink-0 items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : `${headerCollapsed ? "p-1 rounded-xl" : "p-1.5 rounded-2xl"} bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30`}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: headerCollapsed ? "w-7 h-7" : "w-9 h-9", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("span", { className: `allo-premium-brand-name ${theme === "contrast" ? "" : "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent"}` }, t("header.app_name")), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: `hidden 2xl:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), !headerCollapsed && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-sm font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), headerCollapsed ? /* @__PURE__ */ React.createElement("div", { className: "allo-premium-context-block flex flex-col justify-center leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: `allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, compactRoleLabel, " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "/"), " ", compactContextLabel), /* @__PURE__ */ React.createElement("span", { className: `mt-1 flex min-w-0 items-start gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "text-orange-100"}`, title: piiWarningText }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 11, className: "mt-px shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "allo-premium-pii-text" }, piiWarningText))) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] ${theme === "contrast" ? "text-yellow-400" : "px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100"}` }, t("header.rights")), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100"}` }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", piiWarningText), /* @__PURE__ */ React.createElement(
+        `), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[1600px] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar flex items-center gap-2 sm:gap-3 min-w-0" : "flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" }, /* @__PURE__ */ React.createElement("div", { className: headerCollapsed ? "allo-premium-appbar-brand" : "" }, /* @__PURE__ */ React.createElement("h1", { className: `${headerCollapsed ? "text-xl md:text-2xl" : "text-2xl md:text-3xl"} font-black tracking-tight flex min-w-0 shrink-0 items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : `${headerCollapsed ? "p-1 rounded-xl" : "p-1.5 rounded-2xl"} bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30`}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: headerCollapsed ? "w-7 h-7" : "w-9 h-9", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("span", { className: `allo-premium-brand-name ${theme === "contrast" ? "" : "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent"}` }, t("header.app_name")), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: `hidden 2xl:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), !headerCollapsed && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-sm font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), headerCollapsed ? /* @__PURE__ */ React.createElement("div", { className: "allo-premium-context-block flex flex-col justify-center leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: `allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, compactRoleLabel, " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "/"), " ", compactContextLabel), /* @__PURE__ */ React.createElement("span", { className: `allo-premium-pii-row mt-1 flex min-w-0 items-start gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "text-orange-100"}`, title: piiWarningText }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 11, className: "mt-px shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "allo-premium-pii-text" }, piiWarningText))) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] ${theme === "contrast" ? "text-yellow-400" : "px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100"}` }, t("header.rights")), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100"}` }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", piiWarningText), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -881,7 +945,20 @@ function HeaderBar(props) {
   }, className: `rounded-lg border px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.surface : "border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100"}` }, liveStatus.nickname ? "Change codename" : "Set codename"), !_liveConnected && liveStatus && typeof liveStatus.retryConnection === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => liveStatus.retryConnection(), className: `rounded-lg px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.accent : "bg-amber-700 text-white hover:bg-amber-800"}` }, t("mailbox.retry") || "Retry"), liveStatus && typeof liveStatus.leave === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     handleCloseLiveStatus();
     liveStatus.leave();
-  }, className: `ml-auto rounded-lg border px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.surface : "border-rose-300 bg-white text-rose-800 hover:bg-rose-50"}` }, t("mailbox.leave_session") || "Leave session"))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleCloseLiveStatus }))), isTeacherMode && /* @__PURE__ */ React.createElement(
+  }, className: `ml-auto rounded-lg border px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.surface : "border-rose-300 bg-white text-rose-800 hover:bg-rose-50"}` }, t("mailbox.leave_session") || "Leave session"))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleCloseLiveStatus }))), viewModeAvailable && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: toggleViewMode,
+      "data-help-key": isTeacherMode ? "header_view_student" : "header_view_teacher",
+      "data-compact-view-toggle": "",
+      className: "inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors",
+      title: isTeacherMode ? t("header.view_student") : t("header.view_teacher"),
+      "aria-label": isTeacherMode ? t("header.view_student") : t("header.view_teacher")
+    },
+    isTeacherMode ? /* @__PURE__ */ React.createElement(School, { size: 16, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(GraduationCap, { size: 16, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline whitespace-nowrap" }, isTeacherMode ? homeToolsText("header.nav_student_view", "Student view") : homeToolsText("header.nav_teacher_view", "Teacher view"))
+  ), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1069,7 +1146,21 @@ function HeaderBar(props) {
         className: `min-h-9 rounded-lg border px-3 text-xs font-bold transition-colors motion-reduce:transition-none ${selectedReadingThemeIsFavorite ? theme === "contrast" ? "border-yellow-400 bg-yellow-400 text-black" : theme === "dark" ? "border-amber-400 bg-amber-950 text-amber-100" : "border-amber-500 bg-amber-100 text-amber-950" : _skin.field + " hover:border-amber-500"}`
       },
       selectedReadingThemeIsFavorite ? "\u2605 Favorite" : "\u2606 Favorite this theme"
-    ), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite", className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, readingThemePreferenceScope ? `Saved for ${readingThemePreferenceScope} when this live class syncs.` : normalizedReadingThemeFavorites.length ? `${normalizedReadingThemeFavorites.length} favorite${normalizedReadingThemeFavorites.length === 1 ? "" : "s"} saved on this device.` : "Favorites appear first in this picker."))), /* @__PURE__ */ React.createElement("div", { className: `border-t ${_skin.divider} pt-3` }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite", className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, readingThemePreferenceScope ? `Saved for ${readingThemePreferenceScope} when this live class syncs.` : normalizedReadingThemeFavorites.length ? `${normalizedReadingThemeFavorites.length} favorite${normalizedReadingThemeFavorites.length === 1 ? "" : "s"} saved on this device.` : "Favorites appear first in this picker."))), /* @__PURE__ */ React.createElement("fieldset", { "data-header-color-overlay": true, "aria-describedby": "header-color-overlay-desc" }, /* @__PURE__ */ React.createElement("legend", { className: `text-xs font-bold mb-1 ${_skin.label}` }, t("settings.overlay") || "Color Overlay"), /* @__PURE__ */ React.createElement("p", { id: "header-color-overlay-desc", className: `text-[11px] mb-2 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("reading_settings.overlay_desc") || "Tints the whole screen, like a colored reading sheet."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, [["none", t("header.overlay_none") || "None"], ["blue", t("header.reading_theme_blue") || "Blue"], ["peach", t("header.overlay_peach") || "Peach"], ["yellow", t("header.overlay_yellow") || "Yellow"]].map(([id, label]) => /* @__PURE__ */ React.createElement("label", { key: id, className: `inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold cursor-pointer ${colorOverlay === id ? _skin.accent : _skin.surface}` }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "radio",
+        name: "header-color-overlay",
+        value: id,
+        checked: colorOverlay === id,
+        onChange: () => {
+          try {
+            window.__alloReadingSettings?.set({ colorOverlay: id });
+          } catch (_) {
+          }
+        }
+      }
+    ), label)))), /* @__PURE__ */ React.createElement("div", { className: `border-t ${_skin.divider} pt-3` }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -1125,23 +1216,7 @@ function HeaderBar(props) {
           const voice = e.target.value;
           if (voice === "__kokoro_unavailable") return;
           setSelectedVoice(voice);
-          if (canUseKokoroVoicePicker && KOKORO_VOICES.some((v) => v.id === voice) && !window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && window.__loadKokoroTTS) {
-            window.__kokoroTTSDownloading = true;
-            window.__kokoroLoadUserInitiated = true;
-            addToast(
-              kokoroCapability.isIOS ? t("header.voice_kokoro_downloading_ios") || "Getting the on-device voice (88 MB). It reads offline afterwards, though this browser may ask for it again after a few weeks unused." : t("header.voice_kokoro_downloading") || "Getting the on-device voice (88 MB, one time). You can keep working.",
-              "info"
-            );
-            Promise.resolve().then(() => window.__loadKokoroTTS()).then((ok) => {
-              if (ok) addToast(t("header.voice_kokoro_ready_toast") || "On-device voice ready. It is saved on this device.", "success");
-              else addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
-            }).catch(() => {
-              addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
-            }).finally(() => {
-              window.__kokoroTTSDownloading = false;
-              window.__kokoroLoadUserInitiated = false;
-            });
-          }
+          if (KOKORO_VOICES.some((v) => v.id === voice)) startKokoroVoiceDownload();
         },
         "data-help-key": "header_settings_voice_select",
         className: `w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`
@@ -1151,7 +1226,10 @@ function HeaderBar(props) {
            phone loads. This branch used to be cloud voices only. */
         /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup())
       )
-    ), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && window._kokoroTTS && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : t("header.voice_model_preparing") || "Kokoro (~88MB) \u2014 preparing\u2026 a temporary voice reads aloud until it finishes.")), /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    ), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}`, "data-kokoro-model-status": window._kokoroTTS?.ready ? "ready" : window._kokoroTTS || window.__kokoroTTSDownloading ? "preparing" : kokoroSavedOnDevice ? "saved" : "missing" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS?.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : window._kokoroTTS || window.__kokoroTTSDownloading ? t("header.voice_model_preparing") || "Kokoro (~88MB) \u2014 preparing\u2026 a temporary voice reads aloud until it finishes." : kokoroSavedOnDevice ? t("header.voice_model_saved") || "Kokoro (~88MB) is saved on this device. It starts when reading begins." : t("header.voice_model_missing") || "Kokoro (~88MB) isn't on this device yet, so another voice reads aloud."), !window._kokoroTTS && !window.__kokoroTTSDownloading && kokoroSavedOnDevice === false && window.__loadKokoroTTS && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      startKokoroVoiceDownload();
+      setKokoroSavedOnDevice(null);
+    }, "data-kokoro-get-voice": true, className: `mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}` }, t("header.voice_model_get") || "Get the voice (88 MB)")), /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "checkbox",
@@ -1253,18 +1331,11 @@ function HeaderBar(props) {
       "aria-label": `${t("a11y.overlay_toggle")}: ${selectedOverlayLabel}`
     },
     /* @__PURE__ */ React.createElement(Palette, { size: 20, "aria-hidden": "true" })
-  )), /* @__PURE__ */ React.createElement("div", { id: "tour-header-tools", className: `relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, !isStudentLinkMode && !isIndependentMode && /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { id: "tour-header-tools", className: `relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, viewModeAvailable && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      onClick: () => {
-        if (!isTeacherMode && APP_CONFIG._cfg_validation_key) {
-          setPendingRole("toggle_view");
-          setIsGateOpen(true);
-        } else {
-          setIsTeacherMode(!isTeacherMode);
-        }
-      },
+      onClick: toggleViewMode,
       "data-help-key": isTeacherMode ? "header_view_student" : "header_view_teacher",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${isTeacherMode ? "bg-white/10 hover:bg-white/20 text-white" : "bg-teal-700 hover:bg-teal-700 text-white shadow-lg shadow-teal-700/30"}`,
       title: isTeacherMode ? t("header.view_student") : t("header.view_teacher"),
@@ -1790,6 +1861,26 @@ function HeaderBar(props) {
         },
         /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), t("toolbar.rerun_wizard") || "Re-run Setup Wizard"),
         /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-100 mt-1 leading-relaxed" }, t("toolbar.quickstart_setup_desc") || "Set grade, source material, standards, languages, and personalization.")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => startAppTour(0),
+          "data-help-key": "header_tour_start",
+          "data-setup-tour-start": "",
+          className: "w-full text-start rounded-xl border border-amber-300/30 bg-amber-500/15 hover:bg-amber-500/25 px-4 py-3 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 16, "aria-hidden": "true" }), homeToolsText("toolbar.tour_take", "Take the app tour")),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-amber-100 mt-1 leading-relaxed" }, homeToolsText("toolbar.tour_take_desc", "A guided look at each area of AlloFlow. Jump to any section from the tour card."))
+      ), tourResumeStep > 0 && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => startAppTour(tourResumeStep),
+          "data-setup-tour-resume": "",
+          className: "w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-200" }, homeToolsText("toolbar.tour_resume", "Resume the tour where you left off"))
       ), canUseTeacherGuidedMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
         "button",
         {

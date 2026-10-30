@@ -290,7 +290,10 @@ describe('flashcard HTML export', () => {
 
   it('splits the full-width colon and marks each side with its language and direction', () => {
     vi.useFakeTimers();
-    const { html } = exportCards(data);
+    // Karen became a known language (kar) on 2026-10-29, so a made-up name now stands in
+    // for "a language the export cannot identify".
+    const withUnknown = data.map(item => ({ ...item, translations: { ...item.translations, 'Unlisted Language': item.term === 'Leaf' ? 'zib: plant part' : 'zab: under' } }));
+    const { html } = exportCards(withUnknown);
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const zh = [...doc.querySelectorAll('.secondary-text')].find((el) => el.textContent === '叶子');
     expect(zh, 'the Chinese term lost its card front').toBeTruthy();
@@ -298,8 +301,11 @@ describe('flashcard HTML export', () => {
     const ar = [...doc.querySelectorAll('span[dir="rtl"]')].find((el) => el.textContent === 'جزء من النبات');
     expect(ar?.getAttribute('lang')).toBe('ar');
     const karen = [...doc.querySelectorAll('.secondary-text')].find((el) => el.textContent === 'lah');
-    expect(karen.getAttribute('dir')).toBe('auto');
-    expect(karen.hasAttribute('lang'), 'an unknown language must not be labelled English').toBe(false);
+    expect(karen.getAttribute('lang')).toBe('kar');
+    expect(karen.getAttribute('dir')).toBe('ltr');
+    const unknown = [...doc.querySelectorAll('.secondary-text')].find((el) => el.textContent === 'zib');
+    expect(unknown.getAttribute('dir')).toBe('auto');
+    expect(unknown.hasAttribute('lang'), 'an unknown language must not be labelled English').toBe(false);
   });
 
   it('writes each picture once, however many language sets repeat it', () => {

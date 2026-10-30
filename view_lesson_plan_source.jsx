@@ -238,6 +238,67 @@ function _lessonPlanSummaryHtml(plan, { t, normalizeMaterialItem, title, gradeLe
     + (question ? `<p class="eq"><strong>${esc(tr('summary_essential_question', 'Essential question:'))}</strong> ${esc(question)}</p>` : '')
     + `<div class="grid">${body}</div><footer>${esc(tr('summary_footer', 'One-page summary from AlloFlow. The full teacher guide has every step.'))}</footer></body></html>`;
 }
+// Woven teaching view (read-only): lines from the latest saved teaching script, shown under the plan phase
+// each step teaches. Editing, versions and regeneration stay in the Teaching script section.
+const _LESSON_SCRIPT_PHASES = ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'];
+function _lessonPlanWovenScript(plan) {
+  const saved = Array.isArray(plan?.data?.teachingScripts) ? plan.data.teachingScripts : [];
+  const versions = saved.filter(version => version && version.id && Array.isArray(version.steps) && version.steps.length && version.steps.every(step => step && typeof step === 'object' && !Array.isArray(step)));
+  const version = versions[versions.length - 1];
+  if (!version) return null;
+  const recommendations = new Map();
+  (Array.isArray(version.sources) ? version.sources : []).forEach(source => {
+    if (!source || typeof source !== 'object') return;
+    (Array.isArray(source.recommendations) ? source.recommendations : []).forEach(recommendation => {
+      if (recommendation && typeof recommendation === 'object' && recommendation.id != null) recommendations.set(String(recommendation.id), { source, recommendation });
+    });
+  });
+  const byPhase = {}, other = [];
+  version.steps.forEach((step, index) => {
+    if (_LESSON_SCRIPT_PHASES.includes(step.phase)) (byPhase[step.phase] = byPhase[step.phase] || []).push({ step, index });
+    else other.push({ step, index });
+  });
+  // Same plan fingerprint the script panel compares; if the runtime has not loaded, no warning is claimed either way.
+  let stale = false;
+  try {
+    const runtime = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.LessonTeachingScript;
+    const recorded = version.inputSnapshot && version.inputSnapshot.planFingerprint;
+    if (recorded && runtime && typeof runtime.captureInputs === 'function') stale = runtime.captureInputs(plan, {}, []).planFingerprint !== recorded;
+  } catch (_) {}
+  return { version, versionCount: versions.length, byPhase, other, recommendations, stale };
+}
+const _lessonPlanLabel = (t, namespace, key, fallback) => {
+  const value = typeof t === 'function' ? t(namespace + '.' + key) : '';
+  return typeof value === 'string' && value && value !== namespace + '.' + key ? value : fallback;
+};
+function LessonPlanScriptLines({ woven, phase, t }) {
+  const entries = phase ? woven.byPhase[phase] : woven.other;
+  if (!entries || !entries.length) return null;
+  const lt = (key, fallback) => _lessonPlanLabel(t, 'lesson_script', key, fallback);
+  const pt = (key, fallback) => _lessonPlanLabel(t, 'lesson_plan', key, fallback);
+  const text = value => _lessonPlanText(value);
+  const supportFields = [['studentDoes', lt('student_does', 'Learners do')], ['possibleResponse', lt('possible_response', 'Possible learner response')], ['ifStruggling', lt('if_struggling', 'If learners need support (likely misconception)')], ['ifReady', lt('if_ready', 'If learners are ready to go further')]];
+  return <ol className="mt-3 space-y-3 border-l-4 border-indigo-300 pl-3" aria-label={pt('script_lines_label', 'Teaching script for this part')} data-plan-script-phase={phase || 'other'}>
+    {entries.map(({ step, index }) => {
+      const support = supportFields.filter(([key]) => text(step[key]).trim());
+      const cited = (Array.isArray(step.recommendationIds) ? step.recommendationIds : []).map(id => woven.recommendations.get(String(id))).filter(Boolean);
+      const minutes = Number(step.minutes);
+      return <li key={step.id || index} dir="auto" className="min-w-0 break-words text-sm text-slate-800">
+        <p className="text-xs font-bold text-indigo-900">{index + 1}. {text(step.title)}{Number.isFinite(minutes) && minutes > 0 && step.minutes !== '' && step.minutes != null ? ' · ' + minutes + ' ' + lt('minutes', 'minutes') : ''}</p>
+        {text(step.teacherSays).trim() && <p className="mt-1"><span className="font-bold text-indigo-900">{lt('say_aloud', 'Say aloud')}:</span> <span className="whitespace-pre-wrap">{text(step.teacherSays)}</span></p>}
+        {text(step.checkQuestion).trim() && <p className="mt-1"><span className="font-bold text-indigo-900">{lt('ask_aloud', 'Ask aloud')}:</span> <span className="whitespace-pre-wrap">{text(step.checkQuestion)}</span></p>}
+        {support.length > 0 && <details className="mt-1">
+          <summary className="min-h-11 cursor-pointer rounded py-3 text-xs leading-5 font-bold text-indigo-800 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">{pt('script_step_more', 'Learner moves and support')}</summary>
+          <dl className="mt-1 space-y-1">{support.map(([key, label]) => <div key={key}><dt className="text-xs font-bold text-slate-700">{label}</dt><dd className="whitespace-pre-wrap">{text(step[key])}</dd></div>)}</dl>
+        </details>}
+        {cited.length > 0 && <p className="mt-1 text-xs text-slate-700">{pt('script_based_on', 'Based on:')} {cited.map(({ source, recommendation }, position) => {
+          const locator = text(recommendation.locator).replace(/;\s*retrieved page text offset \d+/i, '').trim();
+          return <span key={String(recommendation.id)}>{position ? '; ' : ''}{[text(source.title) || text(source.author), locator].filter(Boolean).join(' · ')}</span>;
+        })}</p>}
+      </li>;
+    })}
+  </ol>;
+}
 function LessonPlanOverview({ plan, t, BilingualFieldRenderer, normalizeMaterialItem }) {
   const tr = (key, fallback) => t('lesson_plan.' + key) || fallback;
   const list = value => (Array.isArray(value) ? value : value == null ? [] : [value]).map(_lessonPlanText).filter(text => text.trim());
@@ -344,7 +405,10 @@ function LessonPlanView(props) {
     window.addEventListener('alloflow:criterion-rollup', onRollup);
     return function () { window.removeEventListener('alloflow:criterion-rollup', onRollup); };
   }, []);
-  var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, { ...fieldProps, artifact: generatedContent, text: _lessonPlanText(fieldProps.text) }) : <div className={fieldProps.className}>{_lessonPlanText(fieldProps.text)}</div>;
+  var _scriptInPlan = React.useState(true);
+  var woven = React.useMemo(function () { return audienceView ? null : _lessonPlanWovenScript(generatedContent); }, [generatedContent, audienceView, props.teachingScriptLoadState]);
+  var showWoven = !!woven && !isEditingLessonPlan && _scriptInPlan[0];
+  var BilingualFieldRenderer = fieldProps =>props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, { ...fieldProps, artifact: generatedContent, text: _lessonPlanText(fieldProps.text) }) : <div className={fieldProps.className}>{_lessonPlanText(fieldProps.text)}</div>;
   return (
                     <div className="min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-0 sm:pr-2 pb-10">
                         {audienceView && !['study', 'family'].includes(generatedContent.config?.generationInputs?.mode) && <p role="status" className="rounded-lg border border-slate-300 p-3 text-sm">This learner view includes structured tasks and learning goals. Teacher narrative sections are omitted because this saved plan does not identify separate learner text.</p>}
@@ -408,30 +472,14 @@ function LessonPlanView(props) {
                                  </div>
                              </div>
                              {!audienceView && <LessonPlanOverview plan={generatedContent} t={t} BilingualFieldRenderer={BilingualFieldRenderer} normalizeMaterialItem={normalizeMaterialItem} />}
-                               {!audienceView && <PlanningInputsSummary resource={generatedContent} history={history} t={t} onOpen={props.onOpenPlanningResource} />}
-                             {!audienceView && typeof props.onGenerateTeachingScript === 'function' && (
-                                 <div className="mb-6">
-                                     {window.AlloModules?.LessonTeachingScriptView && (!props.teachingScriptLoadState || props.teachingScriptLoadState === 'ready') ? React.createElement(window.AlloModules.LessonTeachingScriptView, {
-                                         key: String(generatedContent.id), generatedContent,
-                                         history: props.teachingScriptMaterials || [], isTeacherMode, isParentMode, isIndependentMode, t,
-                                         capabilities: props.capabilities, defaultSettings: props.defaultSettings,
-                                         scriptRun: props.scriptRun, draftScope: props.teachingScriptDraftScope,
-                                         planEditing: !!isEditingLessonPlan, planEditBridge: scriptEditBridge,
-                                           createTeachingScriptAudio: props.createTeachingScriptAudio, audioProfile: props.teachingScriptAudioProfile,
-                                           audioVoice: props.teachingScriptVoice, audioSpeed: props.teachingScriptSpeed, onOpenVoiceSettings: props.onOpenTeachingScriptVoiceSettings, onDeleteTeachingScript: props.onDeleteTeachingScript,
-                                         onGenerateTeachingScript: props.onGenerateTeachingScript,
-                                         onCancelTeachingScript: props.onCancelTeachingScript,
-                                         onGetTeachingScriptRecovery: props.onGetTeachingScriptRecovery,
-                                         onDiscardTeachingScriptRecovery: props.onDiscardTeachingScriptRecovery,
-                                         onRegenerateTeachingStep: props.onRegenerateTeachingStep,
-                                         onUpdateTeachingScript: props.onUpdateTeachingScript,
-                                         onOpenTeachingMaterial: props.onOpenTeachingMaterial
-                                     }) : (
-                                         <section className="rounded-xl border border-indigo-200 bg-white p-4" aria-label={t('lesson_script.title') || 'Teaching script'}>
-                                             <p role="status" className="text-sm text-slate-800">{props.teachingScriptLoadState === 'error' ? (t('lesson_script.load_error') || 'Teaching script tools could not load. Your lesson plan is still available.') : (t('lesson_script.loading') || 'Loading teaching script tools…')}</p>
-                                             {props.teachingScriptLoadState === 'error' && typeof props.onRetryTeachingScriptLoad === 'function' && <button type="button" onClick={props.onRetryTeachingScriptLoad} className="mt-3 min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{t('lesson_script.retry_load') || 'Try loading again'}</button>}
-                                         </section>
-                                     )}
+                             {woven && !isEditingLessonPlan && (
+                                 <div className="mb-4 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800 no-print" data-plan-script-woven>
+                                     <div className="flex flex-wrap items-center justify-between gap-2">
+                                         <p className="min-w-0 break-words"><span className="font-bold text-indigo-900">{tl('lesson_plan.script_woven_title', 'Teaching script')}</span>{' · '}{_lessonPlanText(woven.version.title)}{woven.versionCount > 1 ? ' · ' + tl('lesson_plan.script_woven_latest', 'latest saved version') : ''}</p>
+                                         <button type="button" aria-pressed={showWoven} onClick={() => _scriptInPlan[1](value => !value)} className="min-h-11 rounded-full border border-indigo-300 bg-white px-3 py-1.5 text-sm font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tl('lesson_plan.script_woven_toggle', 'Show script lines in the plan')}</button>
+                                     </div>
+                                     {showWoven && woven.stale && <p role="status" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-amber-950">{tl('lesson_plan.script_woven_stale', 'This lesson changed after the script was written. Check each script line against the plan, or create a new script version below.')}</p>}
+                                     <p className="mt-1 text-xs text-slate-600">{tl('lesson_plan.script_woven_edit_hint', 'To edit, regenerate or choose another version, use the Teaching script section below the lesson.')}</p>
                                  </div>
                              )}
                              <div className="space-y-6">
@@ -514,6 +562,7 @@ function LessonPlanView(props) {
                                          ) : (
                                              <BilingualFieldRenderer text={generatedContent?.data.hook} className="text-sm text-slate-700" />
                                          )}
+                                         {showWoven && <LessonPlanScriptLines woven={woven} phase="hook" t={t} />}
                                      </div>
                                  </div>
                                  {successCriteria.some(item => item != null && (isEditingLessonPlan || _lessonPlanCriterionText(item).trim())) && (() => {
@@ -585,6 +634,7 @@ function LessonPlanView(props) {
                                      ) : (
                                          <BilingualFieldRenderer text={generatedContent?.data.directInstruction} className="text-sm text-slate-700" />
                                      )}
+                                     {showWoven && <LessonPlanScriptLines woven={woven} phase="directInstruction" t={t} />}
                                  </div>
                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                      <div className="bg-white p-4 rounded-lg border border-indigo-100">
@@ -600,6 +650,7 @@ function LessonPlanView(props) {
                                          ) : (
                                              <BilingualFieldRenderer text={generatedContent?.data.guidedPractice} className="text-sm text-slate-700" />
                                          )}
+                                         {showWoven && <LessonPlanScriptLines woven={woven} phase="guidedPractice" t={t} />}
                                      </div>
                                      <div className="bg-white p-4 rounded-lg border border-indigo-100">
                                          <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"><PenTool size={14}/> {t(`lesson_headers.${headerMode}.independentPractice`)}</h4>
@@ -614,6 +665,7 @@ function LessonPlanView(props) {
                                          ) : (
                                              <BilingualFieldRenderer text={generatedContent?.data.independentPractice} className="text-sm text-slate-700" />
                                          )}
+                                         {showWoven && <LessonPlanScriptLines woven={woven} phase="independentPractice" t={t} />}
                                      </div>
                                  </div>
                                  <div className="bg-white p-4 rounded-lg border border-indigo-100">
@@ -629,7 +681,14 @@ function LessonPlanView(props) {
                                      ) : (
                                          <BilingualFieldRenderer text={generatedContent?.data.closure} className="text-sm text-slate-700" />
                                      )}
+                                     {showWoven && <LessonPlanScriptLines woven={woven} phase="closure" t={t} />}
                                  </div>
+                                 {showWoven && woven.other.length > 0 && (
+                                     <div className="bg-white p-4 rounded-lg border border-indigo-100" data-plan-script-other>
+                                         <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2">{tl('lesson_plan.script_other_steps', 'More script steps')}</h4>
+                                         <LessonPlanScriptLines woven={woven} phase={null} t={t} />
+                                     </div>
+                                 )}
                                  {generatedContent?.data.extensions && (
                                      <div className="bg-white p-4 rounded-lg border border-indigo-100 mt-4">
                                          <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -724,6 +783,33 @@ function LessonPlanView(props) {
                                      </div>
                                  )}
                              </div>
+                             {/* Plan first; the script and the generation inputs support it from below. */}
+                             {!audienceView && typeof props.onGenerateTeachingScript === 'function' && (
+                                 <div className="mt-8 border-t border-indigo-200 pt-6">
+                                     {window.AlloModules?.LessonTeachingScriptView && (!props.teachingScriptLoadState || props.teachingScriptLoadState === 'ready') ? React.createElement(window.AlloModules.LessonTeachingScriptView, {
+                                         key: String(generatedContent.id), generatedContent,
+                                         history: props.teachingScriptMaterials || [], isTeacherMode, isParentMode, isIndependentMode, t,
+                                         capabilities: props.capabilities, defaultSettings: props.defaultSettings,
+                                         scriptRun: props.scriptRun, draftScope: props.teachingScriptDraftScope,
+                                         planEditing: !!isEditingLessonPlan, planEditBridge: scriptEditBridge,
+                                           createTeachingScriptAudio: props.createTeachingScriptAudio, audioProfile: props.teachingScriptAudioProfile,
+                                           audioVoice: props.teachingScriptVoice, audioSpeed: props.teachingScriptSpeed, onOpenVoiceSettings: props.onOpenTeachingScriptVoiceSettings, onDeleteTeachingScript: props.onDeleteTeachingScript,
+                                         onGenerateTeachingScript: props.onGenerateTeachingScript,
+                                         onCancelTeachingScript: props.onCancelTeachingScript,
+                                         onGetTeachingScriptRecovery: props.onGetTeachingScriptRecovery,
+                                         onDiscardTeachingScriptRecovery: props.onDiscardTeachingScriptRecovery,
+                                         onRegenerateTeachingStep: props.onRegenerateTeachingStep,
+                                         onUpdateTeachingScript: props.onUpdateTeachingScript,
+                                         onOpenTeachingMaterial: props.onOpenTeachingMaterial
+                                     }) : (
+                                         <section className="rounded-xl border border-indigo-200 bg-white p-4" aria-label={t('lesson_script.title') || 'Teaching script'}>
+                                             <p role="status" className="text-sm text-slate-800">{props.teachingScriptLoadState === 'error' ? (t('lesson_script.load_error') || 'Teaching script tools could not load. Your lesson plan is still available.') : (t('lesson_script.loading') || 'Loading teaching script tools…')}</p>
+                                             {props.teachingScriptLoadState === 'error' && typeof props.onRetryTeachingScriptLoad === 'function' && <button type="button" onClick={props.onRetryTeachingScriptLoad} className="mt-3 min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">{t('lesson_script.retry_load') || 'Try loading again'}</button>}
+                                         </section>
+                                     )}
+                                 </div>
+                             )}
+                             {!audienceView && <div className="mt-4"><PlanningInputsSummary resource={generatedContent} history={history} t={t} onOpen={props.onOpenPlanningResource} /></div>}
                         </div>
                         {/* ── STEM Station Recommendations ── */}
                         {recommendedStemTools.length > 0 && (
@@ -797,7 +883,7 @@ function LessonPlanView(props) {
                         )}
 
                         <div className="flex justify-center pb-8">
-                             <button onClick={() => handleExport('print')} className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg">
+                             <button onClick={handleExportPDF} data-lesson-plan-print-bottom className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg">
                                 <Printer size={18}/> {t('lesson_plan.print')}
                              </button>
                         </div>

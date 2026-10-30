@@ -3132,8 +3132,12 @@ function TourOverlay(props) {
     tourSteps,
     canGoBack = tourStep > 0,
     canGoForward = tourStep < tourSteps.length - 1,
-    compactTour = false
+    compactTour = false,
+    // Main tour only: grouped jump list, section-only toggle, skipped-step note.
+    tourNavigator = null
   } = props;
+  const tourProgress = tourNavigator && tourNavigator.progress;
+  const tourNotice = tourNavigator && tourNavigator.notice || "";
   const tourDialogRef = React.useRef(null);
   const [liveMuzzle, setLiveMuzzle] = React.useState(null);
   React.useEffect(() => {
@@ -3211,7 +3215,7 @@ function TourOverlay(props) {
   }, [tourStep, spotlightMessage]);
   if (!(runTour && tourRect)) return null;
   const tourAccessibleTitle = spotlightMessage ? spotlightMessage.title || t("tour.spotlight_title") : tourSteps[tourStep].title;
-  const tourAccessibleText = spotlightMessage ? spotlightMessage.text || spotlightMessage || "" : tourSteps[tourStep].text || "";
+  const tourAccessibleText = spotlightMessage ? spotlightMessage.text || spotlightMessage || "" : (tourNotice ? tourNotice + " " : "") + (tourSteps[tourStep].text || "");
   const _beam = (() => {
     if (!botSpotlightPos || !tourRect) return null;
     const live = liveMuzzle;
@@ -3368,7 +3372,26 @@ function TourOverlay(props) {
         return /* @__PURE__ */ React.createElement("div", { key: i, className: "grid grid-cols-[24px_1fr] gap-1 mb-2 items-start group" }, /* @__PURE__ */ React.createElement("div", { className: "mt-2 h-2 w-2 rounded-full bg-amber-400 group-hover:bg-amber-500 transition-colors mx-auto shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "text-slate-700 text-lg font-medium leading-relaxed" }, formatText(bulletText)));
       }
       return /* @__PURE__ */ React.createElement("p", { key: i, className: "text-slate-800 text-xl font-medium leading-relaxed mb-4" }, formatText(cleanLine));
-    }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start shrink-0" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg" }, tourSteps[tourStep].title), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full" }, tourStep + 1, " / ", tourSteps.length)), /* @__PURE__ */ React.createElement("div", { className: "allo-tour-copy text-slate-600 text-sm leading-relaxed flex flex-col gap-2" }, (tourSteps[tourStep].text || "").split(/\r?\n/).map((line, i) => {
+    }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start shrink-0" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg" }, tourSteps[tourStep].title), /* @__PURE__ */ React.createElement("span", { "data-tour-progress": true, className: "shrink-0 text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full" }, tourProgress ? `${tourProgress.label} \xB7 ${tourProgress.current} / ${tourProgress.total}` : `${tourStep + 1} / ${tourSteps.length}`)), tourNavigator && /* @__PURE__ */ React.createElement("div", { "data-tour-navigator": true, className: "shrink-0 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-tour-jump", className: "text-xs font-bold text-slate-600" }, t("tour.jump_to") || "Jump to"), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        id: "allo-tour-jump",
+        value: tourStep,
+        onChange: (event) => tourNavigator.onJump(Number(event.target.value)),
+        className: "min-h-11 min-w-0 max-w-full flex-1 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700"
+      },
+      tourNavigator.sections.map((section) => /* @__PURE__ */ React.createElement("optgroup", { key: section.id, label: section.label }, section.steps.map((item) => /* @__PURE__ */ React.createElement("option", { key: item.index, value: item.index }, item.title))))
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-tour-section-toggle": true,
+        "aria-pressed": !!tourNavigator.activeSection,
+        onClick: tourNavigator.onToggleSection,
+        className: `rounded-lg border px-3 text-xs font-bold ${tourNavigator.activeSection ? "border-indigo-700 bg-indigo-700 text-white" : "border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50"}`
+      },
+      t("tour.section_only") || "Only this section"
+    )), tourNotice && /* @__PURE__ */ React.createElement("p", { "data-tour-skip-note": true, className: "shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900" }, tourNotice), /* @__PURE__ */ React.createElement("div", { className: "allo-tour-copy text-slate-600 text-sm leading-relaxed flex flex-col gap-2" }, (tourSteps[tourStep].text || "").split(/\r?\n/).map((line, i) => {
       const cleanLine = line.trim();
       if (!cleanLine) return /* @__PURE__ */ React.createElement("div", { key: i, className: "h-2" });
       const formatText = (text) => {

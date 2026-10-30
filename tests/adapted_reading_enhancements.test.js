@@ -218,19 +218,25 @@ describe('Student reading workflow and teacher boundaries', () => {
   });
 });
 
+// The reading theme is app-wide (it colors every resource), so the reader opens the
+// shared reading settings for it. Only Student preview keeps a local picker (10-29).
 describe('Adapted reader theme selection', () => {
-  it.each([false, true])('retains reading preferences in focused view with teacher=%s', isTeacherMode => {
-    const { props } = mount({ isTeacherMode, isZenMode: true, readingTheme: 'warm' });
-    const picker = host.querySelector('[data-adapted-theme-picker]');
-    expect(picker.value).toBe('warm');
-    expect(host.querySelector('[data-help-key="simplified_immersive_reader"]')).not.toBeNull();
-    expect(host.querySelector('[data-help-key="simplified_teacher_tools"]')).toBeNull();
-    expect(host.querySelector('[data-help-key="simplified_edit"]')).toBeNull();
-    act(() => { picker.value = 'dark'; picker.dispatchEvent(new Event('change', { bubbles: true })); });
-    expect(props.setReadingTheme).toHaveBeenCalledWith('dark');
+  it.each([false, true])('keeps the shared reading settings in reach in focused view with teacher=%s', isTeacherMode => {
+    const open = vi.fn(() => ({ close: vi.fn() }));
+    window.AlloModules.UIFontLibrary = { readingSettingsAvailable: () => true, openReadingSettings: open };
+    try {
+      mount({ isTeacherMode, isZenMode: true, readingTheme: 'warm' });
+      expect(host.querySelector('[data-adapted-theme-picker]')).toBeNull();
+      expect(host.querySelector('[data-help-key="simplified_immersive_reader"]')).not.toBeNull();
+      expect(host.querySelector('[data-help-key="simplified_teacher_tools"]')).toBeNull();
+      expect(host.querySelector('[data-help-key="simplified_edit"]')).toBeNull();
+      const settings = host.querySelector('[data-reader-settings-button]');
+      act(() => settings.click());
+      expect(open).toHaveBeenCalledWith(expect.objectContaining({ opener: settings }));
+    } finally { delete window.AlloModules.UIFontLibrary; }
   });
-  it.each(['light', 'dark', 'contrast'])('keeps every reading palette selectable under the %s app theme', theme => {
-    const { props } = mount({ theme, readingTheme: 'dark', isZenMode: false });
+  it.each(['light', 'dark', 'contrast'])('keeps every reading palette selectable in Student preview under the %s app theme', theme => {
+    const { props } = mount({ theme, readingTheme: 'dark', isZenMode: false, isStudentPreview: true });
     const select = host.querySelector('[data-adapted-theme-picker]');
     expect(select.value).toBe('dark');
     expect([...select.options].map(option => option.value)).toEqual(['default', 'warm', 'sepia', 'dark', 'dim', 'highContrast', 'blue', 'green', 'rose', 'dyslexia']);
@@ -246,7 +252,6 @@ describe('Adapted reader theme selection', () => {
     act(() => root.render(React.createElement(View, { ...props, theme: 'dark', readingTheme: 'dim' })));
     expect(host.querySelector('[data-reading-passage]')).toBe(passage);
     expect(width.value).toBe('40');
-    expect(host.querySelector('[data-adapted-theme-picker]').value).toBe('dim');
     expect(host.querySelector('[aria-controls^="simplified-practice-tools-"]').getAttribute('aria-expanded')).toBe('true');
     expect(host.querySelector('[role="dialog"]')).not.toBeNull();
     expect(props.closeDefinition).not.toHaveBeenCalled();
@@ -274,7 +279,6 @@ describe('Discoverable Focus view', () => {
     expect(toggle.getAttribute('aria-pressed')).toBe('true');
     expect(host.querySelector('[data-reading-passage]')).toBe(passage);
     expect(width.value).toBe('40');
-    expect(host.querySelector('[data-adapted-theme-picker]').value).toBe('warm');
     expect(props.stopPlayback).not.toHaveBeenCalled();
     act(() => toggle.click());
     expect(onFocusViewChange).toHaveBeenLastCalledWith(false);
@@ -290,9 +294,9 @@ describe('Discoverable Focus view', () => {
   });
   it('keeps focus on an existing reader control when focus view is exited elsewhere', () => {
     const { props } = mount({ isZenMode: true, onFocusViewChange: vi.fn() });
-    const picker = host.querySelector('[data-adapted-theme-picker]');picker.focus();
+    const width = host.querySelector('input[aria-label="Reading width"]');width.focus();
     act(() => root.render(React.createElement(View, { ...props, isZenMode: false })));
-    expect(document.activeElement).toBe(picker);
+    expect(document.activeElement).toBe(width);
   });
 });
 

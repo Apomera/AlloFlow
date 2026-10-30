@@ -168,6 +168,15 @@ function _ltsText(value) {
   if (value && typeof value === 'object') return _ltsText(value.en || value.text || value.title);
   return '';
 }
+// Plans saved before 2026-10-29 carry "; retrieved page text offset N", a line index into the reader's copy that no teacher can look up.
+function _ltsLocator(value) {
+  return _ltsText(value).replace(/;\s*retrieved page text offset \d+/i, '').trim();
+}
+function _ltsReadableDate(value) {
+  const text = _ltsText(value);
+  const date = new Date(text);
+  return text && Number.isFinite(date.getTime()) ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : text;
+}
 function _ltsSafeUrl(value) {
   try {
     const url = new URL(String(value || ''));
@@ -793,7 +802,7 @@ function LessonTeachingScriptPanel(props) {
       if (Array.isArray(step.recommendationIds) && step.recommendationIds.length) lines.push(tr('draft_recommendations', 'Teaching guidance IDs:') + ' ' + step.recommendationIds.map(String).join('; '));
     });
     lines.push('', tr('sources', 'Teaching sources and evidence'));
-    (Array.isArray(snapshot?.sources) ? snapshot.sources : []).forEach(source => { if (!source || typeof source !== 'object') return; lines.push([_ltsText(source.id), _ltsText(source.title), _ltsSafeUrl(source.url), _ltsText(source.author), _ltsText(source.scope)].filter(Boolean).join(' · ')); (Array.isArray(source.recommendations) ? source.recommendations : []).forEach(rec => { if (rec && typeof rec === 'object') lines.push([_ltsText(rec.id), _ltsText(rec.text), _ltsText(rec.locator)].filter(Boolean).join(' · ')); }); });
+    (Array.isArray(snapshot?.sources) ? snapshot.sources : []).forEach(source => { if (!source || typeof source !== 'object') return; lines.push([_ltsText(source.id), _ltsText(source.title), _ltsSafeUrl(source.url), _ltsText(source.author), _ltsText(source.scope)].filter(Boolean).join(' · ')); (Array.isArray(source.recommendations) ? source.recommendations : []).forEach(rec => { if (rec && typeof rec === 'object') lines.push([_ltsText(rec.id), _ltsText(rec.text), _ltsLocator(rec.locator)].filter(Boolean).join(' · ')); }); });
     (Array.isArray(snapshot?.warnings) ? snapshot.warnings : []).forEach(warning => lines.push(_ltsText(warning)));
     return lines.join('\n');
   };
@@ -1034,7 +1043,7 @@ function LessonTeachingScriptPanel(props) {
                   const entry = recommendationById.get(String(recommendationId));
                   if (!entry) return <li key={recommendationId}>{tr('missing_recommendation', 'The cited teaching guidance is unavailable. Review this step.')}</li>;
                   const href = _ltsSafeUrl(entry.source.url);
-                  return <li key={recommendationId}><p>{_ltsText(entry.recommendation.text)}</p><p className="mt-1 text-xs">{href ? <a href={href} target="_blank" rel="noopener noreferrer" className="font-bold underline">{_ltsText(entry.source.title)}</a> : _ltsText(entry.source.title)}{entry.recommendation.locator ? ' · ' + _ltsText(entry.recommendation.locator) : ''}{entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''}</p></li>;
+                  return <li key={recommendationId}><p>{_ltsText(entry.recommendation.text)}</p><p className="mt-1 text-xs">{href ? <a href={href} target="_blank" rel="noopener noreferrer" className="font-bold underline">{_ltsText(entry.source.title)}</a> : _ltsText(entry.source.title)}{_ltsLocator(entry.recommendation.locator) ? ' · ' + _ltsLocator(entry.recommendation.locator) : ''}{entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''}</p></li>;
                 })}
               </ul>}
             </li>)}
@@ -1053,20 +1062,26 @@ function LessonTeachingScriptPanel(props) {
               </div>}
             </div>
           </div>}
-          <div className="space-y-3 border-t border-slate-200 pt-4">
-            <h5 className="font-black text-slate-900">{tr('sources', 'Teaching sources and evidence')}</h5>
+          {/* Reference material: collapsed so the steps stay the focus; each step already cites the guidance it used. */}
+          <details className="border-t border-slate-200 pt-4" data-script-sources>
+            <summary className="min-h-11 cursor-pointer rounded py-2.5 font-black text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"><h5 className="inline">{tr('sources', 'Teaching sources and evidence')}</h5>{sources.length ? ' (' + sources.length + ')' : ''}</summary>
+            <div className="mt-3 space-y-3">
             {sources.length ? <ul className="space-y-3">{sources.map((source, index) => {
               const href = _ltsSafeUrl(source.url);
               return <li key={source.id || index} className="rounded-lg border border-slate-200 p-3 text-sm text-slate-800">
                 <p className="font-bold">{href ? <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-800 underline">{_ltsText(source.title) || href}</a> : _ltsText(source.title) || tr('source_unavailable', 'Source link unavailable')}</p>
                 <p>{[_ltsText(source.author), _ltsText(source.publishedAt), source.evidenceKind === 'general-practice' ? tr('evidence_general', 'General instructional practice') : source.evidenceKind === 'content-specific' ? tr('evidence_content', 'Content-specific guidance') : ''].filter(Boolean).join(' · ')}</p>
-                {source.scope && <p className="mt-1">{tr('scope_label', 'Scope:')} {_ltsText(source.scope)}</p>}
-                {source.evidenceLevel && <p>{tr('evidence_level', 'Evidence level:')} {_ltsText(source.evidenceLevel)}</p>}
-                {source.retrievedAt && <p className="text-xs text-slate-600">{tr('retrieved', 'Retrieved:')} {_ltsText(source.retrievedAt)}</p>}
-                {Array.isArray(source.recommendations) && source.recommendations.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-5">{source.recommendations.filter(recommendation => recommendation && typeof recommendation === 'object').map((recommendation, offset) => <li key={recommendation.id || offset}>{_ltsText(recommendation.text)}{recommendation.locator ? ' (' + _ltsText(recommendation.locator) + ')' : ''}</li>)}</ul>}
+                {Array.isArray(source.recommendations) && source.recommendations.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-5">{source.recommendations.filter(recommendation => recommendation && typeof recommendation === 'object').map((recommendation, offset) => <li key={recommendation.id || offset}>{_ltsText(recommendation.text)}{_ltsLocator(recommendation.locator) ? ' (' + _ltsLocator(recommendation.locator) + ')' : ''}</li>)}</ul>}
+                {(source.scope || source.evidenceLevel || source.retrievedAt) && <details className="mt-2">
+                  <summary className="min-h-11 cursor-pointer py-3 text-sm leading-5 font-bold text-indigo-800 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">{tr('about_source', 'About this source')}</summary>
+                  {source.scope && <p className="mt-1">{tr('scope_label', 'Scope:')} {_ltsText(source.scope)}</p>}
+                  {source.evidenceLevel && <p>{tr('evidence_level', 'Evidence level:')} {_ltsText(source.evidenceLevel)}</p>}
+                  {source.retrievedAt && <p className="text-xs text-slate-600">{tr('retrieved', 'Retrieved:')} <time dateTime={_ltsText(source.retrievedAt)}>{_ltsReadableDate(source.retrievedAt)}</time></p>}
+                </details>}
               </li>;
             })}</ul> : <p className="text-sm text-slate-700">{tr('no_sources', 'No research sources are attached to this version. Review the teaching choices against your lesson and learners.')}</p>}
-          </div>
+            </div>
+          </details>
         </div>}
       </div>}
     </section>

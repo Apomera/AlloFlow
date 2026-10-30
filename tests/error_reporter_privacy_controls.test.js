@@ -20,7 +20,7 @@ function boot(options = {}) {
   const clipboard = { writeText: vi.fn(async () => {}) };
   Object.defineProperty(w.navigator, 'clipboard', { value: clipboard });
   if (Object.hasOwn(options, 'policy')) w.ALLOFLOW_SUPPORT_REPORTING_POLICY = options.policy;
-  if (options.seed) w.localStorage.setItem('alloflow_error_log', JSON.stringify(options.seed));
+  if (options.seed) w.sessionStorage.setItem('alloflow_error_log', JSON.stringify(options.seed));
   if (options.before) options.before(w);
   w.eval(source);
   const api = w.AlloModules.ErrorReporter;
@@ -88,7 +88,7 @@ describe('deployment-owned support destinations', () => {
   it('sends the exact reviewed fields only to the configured HTTPS endpoint', async () => {
     const endpoint = 'https://district.example/support/report';
     const { w, api } = boot({ policy: { version: 1, enabled: true, endpoint } });
-    const stored = w.localStorage.getItem('alloflow_error_log');
+    const stored = w.sessionStorage.getItem('alloflow_error_log');
     edit(w, 'aer-report-what', 'Reviewed diagnostic text.');
     edit(w, 'aer-report-steps', 'Reviewed steps.');
     edit(w, 'aer-report-browser', 'Reviewed browser metadata.');
@@ -102,7 +102,7 @@ describe('deployment-owned support destinations', () => {
       browser: 'Reviewed browser metadata.', url: 'https://district.example/permitted-context' });
     expect(w.fetch.mock.calls[0][1]).toMatchObject({ redirect: 'error', credentials: 'omit',
       referrerPolicy: 'no-referrer', cache: 'no-store' });
-    expect(w.localStorage.getItem('alloflow_error_log')).toBe(stored);
+    expect(w.sessionStorage.getItem('alloflow_error_log')).toBe(stored);
     expect(api.getBuffer()[0].message).toBe(logText);
     expect(w.open).not.toHaveBeenCalled();
     expect(element(w, 'aer-report-form')).toBeNull();
@@ -236,7 +236,7 @@ describe('credential scrubbing without altering clinical content', () => {
     });
     api.record('error', 'Request failed ' + credential, credential, 'https://user:' + canary + '@app.example/source',
       1, 1, { password: canary, sessionCount: 12 });
-    expect(w.localStorage.getItem('alloflow_error_log')).not.toContain(canary.slice(0, 12));
+    expect(w.sessionStorage.getItem('alloflow_error_log')).not.toContain(canary.slice(0, 12));
     expect(JSON.stringify(api.getBuffer())).not.toContain(canary.slice(0, 12));
     expect(api.getBuffer().at(-1).api.sessionCount).toBe(12);
     element(w, 'aer-refresh-report').click();
@@ -320,7 +320,7 @@ describe('credential scrubbing without altering clinical content', () => {
     expect(omitted.length).toBeLessThan(100);
     api.record('error', huge);
     expect(api.getBuffer().at(-1).message).toBe(omitted);
-    expect(w.localStorage.getItem('alloflow_error_log')).not.toContain('Ordinary diagnostic prefix');
+    expect(w.sessionStorage.getItem('alloflow_error_log')).not.toContain('Ordinary diagnostic prefix');
     element(w, 'aer-refresh-report').click();
     element(w, 'aer-copy').click(); await flush();
     expect(clipboard.writeText.mock.calls[0][0]).not.toContain('Ordinary diagnostic prefix');

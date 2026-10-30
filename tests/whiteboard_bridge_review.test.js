@@ -30,7 +30,7 @@ function lift(name, extraArgs = [], extraVals = []) {
 
 describe('the popup only hands its drawing to a trusted opener', () => {
   it('gates Save and AI on an ack from a trusted origin', () => {
-    expect(src).toContain("if (d.type === 'allocwb-ack') {\n        if (!isTrustedOpenerOrigin(ev.origin)) return;");
+    expect(src).toContain("if (d.type === 'allocwb-ack') {\n        if (!isTrustedOpenerOrigin(ev.origin) && !isDeclaredCanvasOpener(ev.origin, declaredHost)) return;");
     expect(src).toContain('setLinked(true);');
     expect(src).toContain("if (!linked) { flash('Waiting for AlloFlow to connect\\u2026', false); return; }");
     expect(src).toContain("if (!linked) { aiStatus('Waiting for AlloFlow to connect\\u2026', false); return; }");
@@ -61,6 +61,27 @@ describe('the popup only hands its drawing to a trusted opener', () => {
     expect(ok('https://anyone.web.app')).toBe(false);
     expect(ok('')).toBe(false);
     expect(ok(undefined)).toBe(false);
+  });
+
+  it('trusts a Canvas sandbox host only when it is the origin the app declared', () => {
+    const ok = lift('isDeclaredCanvasOpener');
+    const canvas = 'https://abc123-scf.usercontent.goog';
+    expect(ok(canvas, canvas)).toBe(true);
+    expect(ok('https://x.googleusercontent.com', 'https://x.googleusercontent.com')).toBe(true);
+    // a page that claimed the window by name first is a different origin
+    expect(ok('https://other-scf.usercontent.goog', canvas)).toBe(false);
+    expect(ok(canvas, '')).toBe(false);
+    expect(ok(canvas, undefined)).toBe(false);
+    // declaring a non-Canvas origin does not widen trust
+    expect(ok('https://evil.example', 'https://evil.example')).toBe(false);
+    expect(ok('https://usercontent.goog.evil.example', 'https://usercontent.goog.evil.example')).toBe(false);
+    expect(ok('http://abc-scf.usercontent.goog', 'http://abc-scf.usercontent.goog')).toBe(false);
+    expect(ok('null', 'null')).toBe(false);
+  });
+
+  it('the Educator Hub declares its origin when it opens the Whiteboard', () => {
+    const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
+    expect(anti).toContain("'/whiteboard/whiteboard.html?v=4&host=' + encodeURIComponent(window.origin || window.location.origin)");
   });
 });
 

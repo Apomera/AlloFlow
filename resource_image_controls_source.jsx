@@ -141,24 +141,32 @@ function validResourceDrawingScene(scene) {
   try { return JSON.stringify(scene).length <= 2 * 1024 * 1024; } catch (_) { return false; }
 }
 
-// Same-origin Whiteboard only. A separate channel, source window and one-time
-// token bind the reply to its slot; it never creates an extra history resource.
-function openResourceDrawing({ scene, title, onSave, onCancel, onError }) {
-  if (!/^https?:$/.test(window.location.protocol) || window.location.origin === 'null') {
-    onError?.(new Error('Open AlloFlow in its browser or desktop app to draw here. You can also upload an exported drawing.')); return () => {};
-  }
+// The Whiteboard lives on the CDN. Canvas and the /app/ shell have no ./whiteboard/
+// of their own, so a page-relative URL opened a 404 or the app itself.
+const RESOURCE_WHITEBOARD_ORIGIN = 'https://alloflow-cdn.pages.dev';
+function resourceDrawingWhiteboardUrl(loc, token, hostOrigin) {
+  const host = String(loc.hostname || '').toLowerCase(), web = /^https?:$/.test(loc.protocol);
+  const url = web && /^(localhost|127\.0\.0\.1)$/.test(host) ? new URL('./whiteboard/whiteboard.html', loc.href)
+    : new URL('/whiteboard/whiteboard.html', web && /(^|\.)alloflow-cdn\.pages\.dev$/.test(host) ? loc.origin : RESOURCE_WHITEBOARD_ORIGIN);
+  url.search = '?imageSlot=' + encodeURIComponent(token) + '&host=' + encodeURIComponent(hostOrigin) + '&v=4';
+  return url;
+}
+
+// A separate channel, the exact popup, both origins and a one-time token bind the
+// reply to its slot; it never creates an extra history resource.
+function openResourceDrawing({ scene, title, onSave, onCancel, onError, onStatus }) {
   const token = window.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2);
-  const base = window.location.origin;
-  const url = new URL('./whiteboard/whiteboard.html', window.location.href); url.search = '?imageSlot=' + encodeURIComponent(token);
+  const hostOrigin = (typeof window.origin === 'string' && window.origin) || window.location.origin;
+  const url = resourceDrawingWhiteboardUrl(window.location, token, hostOrigin), base = url.origin;
   const popup = window.open(url.href, '_blank', 'width=1120,height=800');
   if (!popup) { onError?.(new Error('Allow pop-ups for AlloFlow, then choose Draw again.')); return () => {}; }
   let done = false, saving = false, connected = false, cancelRequested = false;
   const post = payload => { try { popup.postMessage({ ...payload, token }, base); } catch (_) {} };
-  const cleanup = () => { done = true; window.removeEventListener('message', receive); clearInterval(closedTimer); clearTimeout(connectTimer); };
+  const cleanup = () => { done = true; window.removeEventListener('message', receive); clearInterval(closedTimer); clearTimeout(connectTimer); clearTimeout(slowTimer); };
   const receive = async event => {
     if (done || event.source !== popup || event.origin !== base || event.data?.token !== token) return;
     const data = event.data;
-    if (data.type === 'alloasset-hello') { connected = true; clearTimeout(connectTimer); post({ type: 'alloasset-ack', title, scene: validResourceDrawingScene(scene) ? scene : null }); return; }
+    if (data.type === 'alloasset-hello') { connected = true; clearTimeout(connectTimer); clearTimeout(slowTimer); onStatus?.('Draw in the Whiteboard, then choose Use drawing.'); post({ type: 'alloasset-ack', title, scene: validResourceDrawingScene(scene) ? scene : null }); return; }
     if (data.type === 'alloasset-closed') { cleanup(); onCancel?.(); return; }
     if (data.type !== 'alloasset-save' || saving) return;
     saving = true;
@@ -174,7 +182,10 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError }) {
   };
   window.addEventListener('message', receive);
   const closedTimer = setInterval(() => { if (popup.closed) { cleanup(); onCancel?.(); } }, 700);
-  const connectTimer = setTimeout(() => { if (!connected && !done) { cleanup(); onError?.(Error('The Whiteboard could not connect. Check your connection and try again.')); } }, 30000);
+  // The Whiteboard downloads Excalidraw before it says hello, so a slow network is
+  // not a failure yet; a window with no link back (some desktop shells) never will.
+  const slowTimer = setTimeout(() => { if (!connected && !done) onStatus?.('Still connecting to the Whiteboard. If it says it has no link back to AlloFlow, choose Export PNG there, then Upload image here.'); }, 8000);
+  const connectTimer = setTimeout(() => { if (!connected && !done) { cleanup(); onError?.(Error('The Whiteboard could not connect. You can still draw there: choose Export PNG, then Upload image here.')); } }, 30000);
   popup.focus?.();
   return () => { if (saving) { cancelRequested = true; return; } if (!done) { post({ type: 'alloasset-disconnected' }); cleanup(); } };
 }
@@ -202,13 +213,15 @@ function ResourceImageInput({ label = 'Image', value = '', scene, alt = '', disa
       <textarea value={description} maxLength={1600} disabled={disabled || busy} onChange={event => setDescription(event.target.value)} className="mt-1 block min-h-16 w-full rounded border border-slate-400 p-2" />
     </label>
     <div className="my-2 flex flex-wrap gap-2">
-      <ImageAssetPicker label="Upload image" disabled={disabled || busy} onLoaded={result => { setEditor(result); setMessage(''); }} onError={error => setMessage(error.message)} />
+      {/* Stays usable while a drawing is pending: Export PNG + upload is the fallback when the Whiteboard cannot link back. */}
+      <ImageAssetPicker label="Upload image" disabled={disabled} onLoaded={result => { cancelDrawing.current?.(); cancelDrawing.current = null; setBusy(false); setEditor(result); setMessage(''); }} onError={error => setMessage(error.message)} />
       <button ref={trigger} type="button" className={button} disabled={disabled || busy} onClick={() => {
         cancelDrawing.current?.();
         setBusy(true); setMessage('Draw in the Whiteboard, then choose Use drawing.');
         cancelDrawing.current = openResourceDrawing({ scene, title: label, onSave: finish,
           onCancel: () => { if (alive.current) { setBusy(false); setMessage('Drawing closed.'); trigger.current?.focus(); } },
-          onError: error => { if (alive.current) { setBusy(false); setMessage(error.message); } } });
+          onError: error => { if (alive.current) { setBusy(false); setMessage(error.message); } },
+          onStatus: text => { if (alive.current) setMessage(text); } });
       }}>{scene ? 'Edit drawing' : 'Draw with Excalidraw'}</button>
       {value && <button type="button" className={button} disabled={disabled || busy} onClick={() => finish({ dataUrl: value, scene }).catch(error => setMessage(error.message))}>Save description</button>}
     </div>

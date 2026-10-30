@@ -117,7 +117,7 @@ describe('whiteboard AI drawing recorder', () => {
     expect(src).toContain('This browser cannot record canvas video.');
     // The launcher pin must move or teachers keep the cached build.
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
-    expect(anti).toContain("/whiteboard/whiteboard.html?v=3");
+    expect(anti).toContain("/whiteboard/whiteboard.html?v=4");
   });
 
   it('deploy mirror matches the root whiteboard', () => {
@@ -137,7 +137,7 @@ describe('whiteboard AI drawing recorder', () => {
     // guarded is kept in a new shape: an opaque 'null' opener is accepted, but
     // 'null' is never used as a postMessage targetOrigin, because that made
     // every later post throw into its own catch and the bridge go mute.
-    expect(source).toContain("if (d.type === 'allocwb-ack') {\n        if (!isTrustedOpenerOrigin(ev.origin)) return;");
+    expect(source).toContain("if (d.type === 'allocwb-ack') {\n        if (!isTrustedOpenerOrigin(ev.origin) && !isDeclaredCanvasOpener(ev.origin, declaredHost)) return;");
     expect(source).not.toContain("if (d.type === 'allocwb-ack') { openerOrigin = ev.origin; return; }");
     expect(source).toContain("var target = (linked && openerOrigin && openerOrigin !== 'null') ? openerOrigin : '*';");
     // and the allowlist itself admits the opaque opener rather than muting it

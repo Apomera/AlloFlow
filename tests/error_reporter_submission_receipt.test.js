@@ -421,7 +421,7 @@ describe('optional error report description', () => {
     expect(description(w).value).toBe('</textarea><img id="description-injected" src=x onerror="alert(1)">\nhttps://example.test/?allo_mb=[redacted]&token=[redacted]&view=normal');
     expect(element(w, 'description-injected')).toBeNull();
     expect(w.alert).not.toHaveBeenCalled();
-    const stored = Array.from({ length: w.localStorage.length }, (_, index) => w.localStorage.getItem(w.localStorage.key(index))).join('\n');
+    const stored = [w.localStorage, w.sessionStorage].flatMap(store => Array.from({ length: store.length }, (_, index) => store.getItem(store.key(index)))).join('\n');
     expect(stored).not.toContain('description-injected');
     expect(stored).not.toContain('DESCRIPTION_JOIN_SECRET');
     click(w, 'aer-copy');

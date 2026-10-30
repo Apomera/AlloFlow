@@ -182,12 +182,53 @@ describe('drawing handoff', () => {
     send('alloasset-save', { png: PNG, scene: SCENE }); await Promise.resolve();
     expect(onSave).toHaveBeenCalledOnce(); expect(popup.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'alloasset-saved' }), url.origin); cancel();
   });
+  it('opens the CDN Whiteboard from hosts that do not serve one, and names the host origin', () => {
+    const at = (href, origin) => { const u = new URL(href); return H.resourceDrawingWhiteboardUrl(u, 'tok', origin || u.origin); };
+    const canvas = at('https://abc123-scf.usercontent.goog/', 'https://abc123-scf.usercontent.goog');
+    expect(canvas.origin + canvas.pathname).toBe('https://alloflow-cdn.pages.dev/whiteboard/whiteboard.html');
+    expect(canvas.searchParams.get('imageSlot')).toBe('tok'); expect(canvas.searchParams.get('host')).toBe('https://abc123-scf.usercontent.goog');
+    expect(at('blob:https://x.googleusercontent.com/1-2', 'null').searchParams.get('host')).toBe('null');
+    expect(at('blob:https://x.googleusercontent.com/1-2', 'null').origin).toBe('https://alloflow-cdn.pages.dev');
+    expect(at('https://alloflow-cdn.pages.dev/app/index.html').pathname).toBe('/whiteboard/whiteboard.html');
+    expect(at('https://preview1.alloflow-cdn.pages.dev/app/').origin).toBe('https://preview1.alloflow-cdn.pages.dev');
+    expect(at('https://evil-alloflow-cdn.pages.dev.example/').origin).toBe('https://alloflow-cdn.pages.dev');
+    expect(at('http://localhost:5173/sub/index.html').href).toMatch(/^http:\/\/localhost:5173\/sub\/whiteboard\/whiteboard\.html\?/);
+  });
   it('retains a drawing in the popup when its resource rejects a stale save', async () => {
     const popup = { postMessage: vi.fn(), focus: vi.fn(), closed: false }; vi.spyOn(window, 'open').mockReturnValue(popup);
     const error = vi.fn(), cancel = H.openResourceDrawing({ onSave: () => false, onError: error });
     const token = new URL(window.open.mock.calls[0][0]).searchParams.get('imageSlot');
     window.dispatchEvent(new MessageEvent('message', { origin: window.location.origin, source: popup, data: { type: 'alloasset-save', token, png: PNG, scene: SCENE } }));
     await Promise.resolve(); expect(error).toHaveBeenCalled(); expect(popup.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ type: 'alloasset-error' }), window.location.origin); cancel();
+  });
+  it('says how to fall back while the Whiteboard is slow, then gives up with the same advice', () => {
+    vi.useFakeTimers();
+    try {
+      const popup = { postMessage: vi.fn(), focus: vi.fn(), closed: false }; vi.spyOn(window, 'open').mockReturnValue(popup);
+      const onStatus = vi.fn(), onError = vi.fn();
+      H.openResourceDrawing({ onSave: vi.fn(), onStatus, onError });
+      vi.advanceTimersByTime(7900); expect(onStatus).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(200); expect(onStatus).toHaveBeenCalledWith(expect.stringContaining('Export PNG')); expect(onError).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(22000); expect(onError).toHaveBeenCalledOnce(); expect(onError.mock.calls[0][0].message).toContain('Upload image');
+    } finally { vi.useRealTimers(); }
+  });
+  it('a hello in time clears the slow notice', () => {
+    vi.useFakeTimers();
+    try {
+      const popup = { postMessage: vi.fn(), focus: vi.fn(), closed: false }; vi.spyOn(window, 'open').mockReturnValue(popup);
+      const onStatus = vi.fn(), onError = vi.fn(), cancel = H.openResourceDrawing({ onSave: vi.fn(), onStatus, onError });
+      const token = new URL(window.open.mock.calls[0][0]).searchParams.get('imageSlot');
+      window.dispatchEvent(new MessageEvent('message', { origin: window.location.origin, source: popup, data: { type: 'alloasset-hello', token } }));
+      vi.advanceTimersByTime(40000);
+      expect(onStatus.mock.calls.flat().join(' ')).not.toContain('Still connecting'); expect(onError).not.toHaveBeenCalled(); cancel();
+    } finally { vi.useRealTimers(); }
+  });
+  it('keeps Upload usable while a drawing is pending, and uploading ends the drawing session', async () => {
+    const popup = { postMessage: vi.fn(), focus: vi.fn(), closed: false }; vi.spyOn(window, 'open').mockReturnValue(popup);
+    await mount(window.AlloModules.ResourceImageInput, { label: 'River', onApply: vi.fn().mockResolvedValue(true) });
+    const draw = [...host.querySelectorAll('button')].find(b => b.textContent === 'Draw with Excalidraw');
+    await act(async () => draw.click());
+    expect(draw.disabled).toBe(true); expect(host.querySelector('input[type=file]').disabled).toBe(false);
   });
   it('offers upload and drawing for empty slots even when AI is off', async () => {
     window.AlloImageGeneration.setEnabled(false);

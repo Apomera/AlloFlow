@@ -43,7 +43,9 @@ function mount(overrides = {}) {
   cleanup = () => { act(() => root.unmount()); container.remove(); };
   return { container, props: () => props, render };
 }
-const button = (container, text) => [...container.querySelectorAll('button')].find(node => node.textContent.trim() === text);
+// The card-appearance preview has its own "Show meaning" button; it is not the
+// presentation's, so lookups skip it.
+const button = (container, text) => [...container.querySelectorAll('button')].find(node => node.textContent.trim() === text && !node.closest('.awp-card-preview, .awp-appearance'));
 const launch = view => view.container.querySelector('button[aria-describedby="glossary-presentation-help"]');
 const field = label => [...document.querySelectorAll('.awp-fields label')].find(node => node.querySelector('span')?.textContent === label)?.querySelector('input,select,textarea');
 async function click(element) { expect(element).toBeTruthy(); await act(async () => element.click()); }

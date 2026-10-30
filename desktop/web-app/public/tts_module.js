@@ -961,6 +961,8 @@ const createTTS = deps => {
     var _language = _speechProfile.baseLanguage;
     var _isEnglish = /^english$/i.test(_language);
     var _signal = _callOpts.signal || null;
+    // Shared by one passage's sentences: { engine: null | 'kokoro' | 'fallback' }.
+    var _kokoroLock = _callOpts.kokoroLock && typeof _callOpts.kokoroLock === 'object' ? _callOpts.kokoroLock : null;
     var _isAbortError = e => e && (e.name === 'AbortError' || /aborted/i.test(e.message || ''));
     var _resolvedProfileEmitted = false;
     var _resolutionProfile = (provider, engine, model, resolvedVoice, effectiveRate, extra) => {
@@ -1308,8 +1310,11 @@ const createTTS = deps => {
           // model is genuinely on THIS device or we are the desktop
           // build, so it cannot start a surprise 88MB download for a
           // QR student on a phone.
-          if (!window._kokoroTTS || !window._kokoroTTS.ready) await ensureKokoroTts(undefined, _signal);
-          if (window._kokoroTTS) {
+          // A passage that began on the fallback voice keeps it (see _kokoroLock).
+          const _kokoroLockedOut = _isKokoroVoice && _kokoroLock && _kokoroLock.engine === 'fallback';
+          if (_kokoroLockedOut) _ttsTrace('calltts:kokoro-locked', null);
+          if (!_kokoroLockedOut && (!window._kokoroTTS || !window._kokoroTTS.ready)) await ensureKokoroTts(undefined, _signal);
+          if (!_kokoroLockedOut && window._kokoroTTS) {
             // callTTS promises one COMPLETE playable URL. The streaming
             // API returns only its first chunk and requires chainPlay,
             // which karaoke and most read-aloud callers do not use.
@@ -1355,6 +1360,7 @@ const createTTS = deps => {
                 _ttsTrace('calltts:kokoro-fallback-ok', {
                   voice: kokoroVoice
                 });
+                if (_isKokoroVoice && _kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'kokoro';
                 return _emitResolvedProfile(url, _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(kokoroVoice), 1, {
                   fallbackFrom: _isKokoroVoice ? null : 'gemini'
                 }));
@@ -1387,6 +1393,7 @@ const createTTS = deps => {
             });
             if (url) {
               _ttsTrace('calltts:piper-fallback-ok', null);
+              if (_isKokoroVoice && _kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'fallback';
               return _emitResolvedProfile(url, _resolutionProfile('local', 'piper-browser', null, _resolvedPiperVoice('en'), 1, {
                 languageCode: 'en',
                 fallbackFrom: 'gemini'
@@ -1434,6 +1441,7 @@ const createTTS = deps => {
         quotaFailed: !!window.__ttsGeminiQuotaFailed,
         authFailed: !!window.__ttsGeminiAuthFailed
       });
+      if (_isKokoroVoice && _kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'fallback';
       return null;
     }
     // ─── Desktop/Firebase: a selected Kokoro voice speaks through the local engine ───
@@ -1487,6 +1495,10 @@ const createTTS = deps => {
         console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — deferring to cloud voices for this call');
         _routeNote('kokoro-skip', 'non-English content: ' + _language);
         _kokoroDeferredToGemini = true;
+      } else if (_kokoroLock && _kokoroLock.engine === 'fallback') {
+        // The passage began on another voice; switching mid-passage is worse than waiting.
+        _routeNote('kokoro-locked', 'passage started on a fallback voice');
+        _kokoroDeferredToGemini = true;
       } else if (window._kokoroTTS && window._kokoroTTS.ready) {
         try {
           // Generic callTTS callers consume a single URL, so return a
@@ -1498,6 +1510,7 @@ const createTTS = deps => {
           });
           if (kokoroUrl) {
             _routeNote('kokoro', _kokoroPreferred ? 'kokoro voice selected' : 'keyless reroute');
+            if (_kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'kokoro';
             return _emitResolvedProfile(kokoroUrl, _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(voiceName), 1));
           }
           _routeNote('kokoro-empty', 'engine returned no audio');
@@ -1522,6 +1535,7 @@ const createTTS = deps => {
           });
           if (wokenUrl) {
             _routeNote('kokoro', 'engine woken from on-device model');
+            if (_kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'kokoro';
             return _emitResolvedProfile(wokenUrl, _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(voiceName), 1));
           }
           _routeNote('kokoro-empty', 'woken engine returned no audio');
@@ -1563,6 +1577,7 @@ const createTTS = deps => {
         _routeNote('kokoro-not-ready', 'engine not downloaded — automatic download is desktop-only');
         _kokoroDeferredToGemini = true;
       }
+      if (_kokoroLock && !_kokoroLock.engine && _isEnglish && _kokoroDeferredToGemini) _kokoroLock.engine = 'fallback';
     }
     if (!_isEnglish && (_localTtsChosen || _kokoroKeyless)) {
       try {

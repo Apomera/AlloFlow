@@ -491,17 +491,52 @@
       }
       return parts;
     }
-    function vocabularyHeading(slide, item) {
+    // prompt: the meaning-first question shown in place of the word.
+    function vocabularyHeading(slide, item, prompt) {
       // Pasted line breaks are whitespace within a term, not forced title rows.
-      const heading = item.word.replace(/\s+/gu, ' ');
+      const heading = (prompt ? prompt.text : item.word).replace(/\s+/gu, ' ');
       let fontSize = 48 * textScale;
       while (fontSize > 12 && readableTextLines(heading, 11.7 * 72 / fontSize / fontWidth).length * fontSize * 1.35 > 1.05 * 72) fontSize = Math.max(12, fontSize - 1);
-      slide.addText(heading, { x: 0.8, y: 0.92, w: 11.7, h: 1.05, fontFace: appearance.fontFace, fontSize, color: appearance.heading, bold: true, align: 'center', valign: 'mid', margin: 0, ...textLanguage(itemLanguage(item, 'term')) });
+      slide.addText(heading, { x: 0.8, y: 0.92, w: 11.7, h: 1.05, fontFace: appearance.fontFace, fontSize, color: appearance.heading, bold: true, align: 'center', valign: 'mid', margin: 0, ...textLanguage(prompt ? prompt.language : itemLanguage(item, 'term')) });
     }
-    function vocabularyPages(item) {
-      const sections = [];
-      if (item.definition) sections.push({ text: item.definition, language: itemLanguage(item, 'definition') });
-      if (item.example) sections.push({ text: item.example, language: itemLanguage(item, 'example'), label: localized('pptx_example', 'Example: ') });
+    // Natural size from the file header (PNG IHDR, GIF screen, JPEG start-of-frame), so a
+    // picture is fitted without stretching. PowerPoint embeds PNG, JPEG and GIF only.
+    function pictureDimensions(src) {
+      const match = /^data:image\/(png|jpeg|gif);base64,(.+)$/i.exec(src || '');
+      if (!match) return null;
+      let bytes;
+      try { bytes = atob(match[2].slice(0, 262144)); } catch (_) { return null; }
+      const type = match[1].toLowerCase(), at = i => bytes.charCodeAt(i);
+      let size = null;
+      if (type === 'png' && bytes.length >= 24) size = { w: ((at(16) << 24) | (at(17) << 16) | (at(18) << 8) | at(19)) >>> 0, h: ((at(20) << 24) | (at(21) << 16) | (at(22) << 8) | at(23)) >>> 0 };
+      else if (type === 'gif' && bytes.length >= 10) size = { w: at(6) | (at(7) << 8), h: at(8) | (at(9) << 8) };
+      else if (type === 'jpeg') {
+        for (let i = 2; i + 9 < bytes.length;) {
+          if (at(i) !== 0xff) { i++; continue; }
+          const marker = at(i + 1);
+          if (marker === 0xff || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd8)) { i += marker === 0xff ? 1 : 2; continue; }
+          if ([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf].includes(marker)) { size = { w: (at(i + 7) << 8) | at(i + 8), h: (at(i + 5) << 8) | at(i + 6) }; break; }
+          i += 2 + ((at(i + 2) << 8) | at(i + 3));
+        }
+      }
+      return size && size.w > 0 && size.h > 0 ? size : null;
+    }
+    // The word with its picture, before the meaning slides: word, picture, then meaning.
+    function addPictureSlide(item, footer, prompt) {
+      const picture = options.includePictures && item.picture, size = picture && pictureDimensions(picture.src);
+      if (!size) return null;
+      const slide = slideBase(footer); vocabularyHeading(slide, item, prompt);
+      const box = { x: 1.0, y: 2.15, w: 11.3, h: picture.credit ? 3.9 : 4.35 }, scale = Math.min(box.w / size.w, box.h / size.h);
+      const w = size.w * scale, h = size.h * scale;
+      slide.addImage({ data: picture.src, x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h, altText: picture.alt || '' });
+      if (picture.credit) slide.addText(picture.credit, { x: 1.0, y: 6.15, w: 11.3, h: 0.4, fontFace: appearance.fontFace, fontSize: 12, color: appearance.muted, align: 'center', valign: 'top', margin: 0, fit: 'shrink' });
+      return slide;
+    }
+    // masked: meaning-first clue pages, with the word blanked in its own definition and example.
+    function vocabularyPages(item, masked) {
+      const sections = [], clue = value => masked ? core.maskWord(value, item.word) : value;
+      if (item.definition) sections.push({ text: clue(item.definition), language: itemLanguage(item, 'definition') });
+      if (item.example) sections.push({ text: clue(item.example), language: itemLanguage(item, 'example'), label: localized('pptx_example', 'Example: ') });
       item.translations.forEach(value => {
         const label = core.languageLabel(value.language, context.currentUiLanguage || context.uiLanguage || 'English');
         // A dedicated label line keeps opposite writing directions from
@@ -575,14 +610,23 @@
           await addAudio(prompt, item);
           const answer = slideBase(answerFooter()); mainWord(answer, item.word, card, item, true);
         } else if (options.mode === 'vocabulary') {
-          const pages = vocabularyPages(item);
+          // Meaning first: clue slides under the question, then the word on an answer slide.
+          const recall = options.vocabularyFirst === 'meaning' && core.hasMeaning(item, options);
+          const prompt = recall ? localized('meaning_first_prompt', 'Which word matches this meaning?') : null;
+          const pages = vocabularyPages(item, recall);
+          const pictureSlide = addPictureSlide(item, footer, prompt);
+          if (pictureSlide && !recall) await addAudio(pictureSlide, item);
           for (let page = 0; page < pages.length; page++) {
             checkAbort(context);
             const slide = slideBase(pages.length > 1 ? [...footer, localized('pptx_part', 'Part {n}/{total}', { n: page + 1, total: pages.length })] : footer);
-            vocabularyHeading(slide, item);
+            vocabularyHeading(slide, item, prompt);
             addVocabularyPage(slide, pages[page]);
-            if (page === 0) await addAudio(slide, item);
+            if (page === 0 && !pictureSlide && !recall) await addAudio(slide, item);
             await sentencePageYield();
+          }
+          if (recall) {
+            checkAbort(context);
+            const answer = slideBase(answerFooter()); mainWord(answer, item.word, card, item, true); await addAudio(answer, item);
           }
         } else {
           const slide = slideBase(footer); mainWord(slide, item.word, card, item, options.mode === 'blend');

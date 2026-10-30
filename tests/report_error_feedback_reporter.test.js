@@ -86,7 +86,9 @@ describe('request lifecycle diagnostics', () => {
       const panel = w.document.getElementById('allo-err-panel');
       expect(panel.querySelector('img')).toBeNull();
       expect(panel.textContent).not.toContain('private-token');
-      expect(w.localStorage.getItem('alloflow_error_log')).not.toContain('private-key');
+      const storedLog = w.sessionStorage.getItem('alloflow_error_log');
+      expect(storedLog, 'the log is kept in this tab').toBeTruthy();
+      expect(storedLog).not.toContain('private-key');
     } finally { close(); }
   });
   it('preserves focus through live diagnostics updates and Escape returns to the opening control', () => {

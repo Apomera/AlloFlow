@@ -21,6 +21,7 @@ const _CONCEPT_ACCENTS = [
   // sky
 ];
 const _conceptAccentFor = (i) => _CONCEPT_ACCENTS[i % _CONCEPT_ACCENTS.length];
+let _kcmInstanceSeq = 0;
 const _kcmT = (t, key, fallback) => {
   try {
     const v = t && t(key);
@@ -76,6 +77,9 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
   const rightRefs = useRef([]);
   const [lines, setLines] = useState([]);
   const [dims, setDims] = useState({ w: 0, h: 0 });
+  const uidRef = useRef(null);
+  if (uidRef.current == null) uidRef.current = ++_kcmInstanceSeq;
+  const uid = uidRef.current;
   const mid = Math.ceil(branches.length / 2);
   const left = branches.slice(0, mid);
   const right = branches.slice(mid);
@@ -154,16 +158,21 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                     0%, 100% { box-shadow: 0 0 50px rgba(99,102,241,0.45), 0 10px 30px rgba(67,56,202,0.25), inset 0 -10px 30px rgba(30,27,75,0.25); }
                     50%      { box-shadow: 0 0 70px rgba(99,102,241,0.6),  0 12px 34px rgba(67,56,202,0.32), inset 0 -10px 30px rgba(30,27,75,0.25); }
                 }
+                /* With the animation removed, the inline start state (dash offset 2000,
+                    opacity 0) would stick and hide every line and dot \u2014 show the end state. */
                 @media (prefers-reduced-motion: reduce) {
                     .alloflow-concept-line-primary, .alloflow-concept-endpoint, .alloflow-concept-bubble {
                         animation: none !important;
                     }
+                    .alloflow-concept-line-primary { stroke-dasharray: none !important; }
+                    .alloflow-concept-endpoint { opacity: 1 !important; }
                 }
                 @media print {
                     .alloflow-concept-line-primary, .alloflow-concept-endpoint, .alloflow-concept-bubble {
                         animation: none !important;
                         stroke-dasharray: none !important;
                     }
+                    .alloflow-concept-endpoint { opacity: 1 !important; }
                     .alloflow-concept-bubble {
                         box-shadow: none !important;
                     }
@@ -201,13 +210,26 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
         viewBox: `0 0 ${dims.w || 1} ${dims.h || 1}`,
         "aria-hidden": "true"
       },
-      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "alloflow-concept-line", x1: "0", y1: "0", x2: "1", y2: "0" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#6366f1", stopOpacity: "0.9" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#a5b4fc", stopOpacity: "0.55" })), /* @__PURE__ */ React.createElement("filter", { id: "alloflow-concept-line-glow", x: "-20%", y: "-20%", width: "140%", height: "140%" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "1.5" }))),
-      lines.map((l) => /* @__PURE__ */ React.createElement("g", { key: l.key }, /* @__PURE__ */ React.createElement("path", { d: l.d, fill: "none", stroke: "#c7d2fe", strokeWidth: 6, strokeLinecap: "round", opacity: 0.35, filter: "url(#alloflow-concept-line-glow)" }), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("defs", null, lines.map((l) => /* @__PURE__ */ React.createElement(
+        "linearGradient",
+        {
+          key: l.key,
+          id: `alloflow-concept-line-${uid}-${l.key}`,
+          gradientUnits: "userSpaceOnUse",
+          x1: Math.min(l.bubbleX, l.cardX),
+          y1: 0,
+          x2: Math.max(l.bubbleX, l.cardX),
+          y2: 0
+        },
+        /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#6366f1", stopOpacity: "0.9" }),
+        /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#a5b4fc", stopOpacity: "0.55" })
+      )), /* @__PURE__ */ React.createElement("filter", { id: `alloflow-concept-line-glow-${uid}`, filterUnits: "userSpaceOnUse", x: 0, y: 0, width: dims.w || 1, height: dims.h || 1 }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "1.5" }))),
+      lines.map((l) => /* @__PURE__ */ React.createElement("g", { key: l.key }, /* @__PURE__ */ React.createElement("path", { d: l.d, fill: "none", stroke: "#c7d2fe", strokeWidth: 6, strokeLinecap: "round", opacity: 0.35, filter: `url(#alloflow-concept-line-glow-${uid})` }), /* @__PURE__ */ React.createElement(
         "path",
         {
           d: l.d,
           fill: "none",
-          stroke: "url(#alloflow-concept-line)",
+          stroke: `url(#alloflow-concept-line-${uid}-${l.key})`,
           strokeWidth: 2.5,
           strokeLinecap: "round",
           className: "alloflow-concept-line-primary",
@@ -295,7 +317,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
         )
       );
     })),
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center px-8 z-20 my-4 md:my-0 shrink-0" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center px-8 md:px-16 z-20 my-4 md:my-0 shrink-0" }, /* @__PURE__ */ React.createElement(
       "div",
       {
         ref: centerRef,

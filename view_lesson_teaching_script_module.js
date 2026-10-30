@@ -441,6 +441,19 @@ function _ltsText(value) {
   if (value && typeof value === 'object') return _ltsText(value.en || value.text || value.title);
   return '';
 }
+// Plans saved before 2026-10-29 carry "; retrieved page text offset N", a line index into the reader's copy that no teacher can look up.
+function _ltsLocator(value) {
+  return _ltsText(value).replace(/;\s*retrieved page text offset \d+/i, '').trim();
+}
+function _ltsReadableDate(value) {
+  const text = _ltsText(value);
+  const date = new Date(text);
+  return text && Number.isFinite(date.getTime()) ? date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : text;
+}
 function _ltsSafeUrl(value) {
   try {
     const url = new URL(String(value || ''));
@@ -1316,7 +1329,7 @@ function LessonTeachingScriptPanel(props) {
       if (!source || typeof source !== 'object') return;
       lines.push([_ltsText(source.id), _ltsText(source.title), _ltsSafeUrl(source.url), _ltsText(source.author), _ltsText(source.scope)].filter(Boolean).join(' · '));
       (Array.isArray(source.recommendations) ? source.recommendations : []).forEach(rec => {
-        if (rec && typeof rec === 'object') lines.push([_ltsText(rec.id), _ltsText(rec.text), _ltsText(rec.locator)].filter(Boolean).join(' · '));
+        if (rec && typeof rec === 'object') lines.push([_ltsText(rec.id), _ltsText(rec.text), _ltsLocator(rec.locator)].filter(Boolean).join(' · '));
       });
     });
     (Array.isArray(snapshot?.warnings) ? snapshot.warnings : []).forEach(warning => lines.push(_ltsText(warning)));
@@ -2026,7 +2039,7 @@ function LessonTeachingScriptPanel(props) {
       target: "_blank",
       rel: "noopener noreferrer",
       className: "font-bold underline"
-    }, _ltsText(entry.source.title)) : _ltsText(entry.source.title), entry.recommendation.locator ? ' · ' + _ltsText(entry.recommendation.locator) : '', entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''));
+    }, _ltsText(entry.source.title)) : _ltsText(entry.source.title), _ltsLocator(entry.recommendation.locator) ? ' · ' + _ltsLocator(entry.recommendation.locator) : '', entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''));
   }))))), draft && /*#__PURE__*/React.createElement("div", {
     ref: editActions,
     tabIndex: -1,
@@ -2084,11 +2097,16 @@ function LessonTeachingScriptPanel(props) {
     className: buttonClass,
     disabled: saving || busy,
     onClick: discardEdits
-  }, tr('discard_confirm', 'Discard changes')))))), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-3 border-t border-slate-200 pt-4"
+  }, tr('discard_confirm', 'Discard changes')))))), /*#__PURE__*/React.createElement("details", {
+    className: "border-t border-slate-200 pt-4",
+    "data-script-sources": true
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "min-h-11 cursor-pointer rounded py-2.5 font-black text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
   }, /*#__PURE__*/React.createElement("h5", {
-    className: "font-black text-slate-900"
-  }, tr('sources', 'Teaching sources and evidence')), sources.length ? /*#__PURE__*/React.createElement("ul", {
+    className: "inline"
+  }, tr('sources', 'Teaching sources and evidence')), sources.length ? ' (' + sources.length + ')' : ''), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 space-y-3"
+  }, sources.length ? /*#__PURE__*/React.createElement("ul", {
     className: "space-y-3"
   }, sources.map((source, index) => {
     const href = _ltsSafeUrl(source.url);
@@ -2102,18 +2120,24 @@ function LessonTeachingScriptPanel(props) {
       target: "_blank",
       rel: "noopener noreferrer",
       className: "text-indigo-800 underline"
-    }, _ltsText(source.title) || href) : _ltsText(source.title) || tr('source_unavailable', 'Source link unavailable')), /*#__PURE__*/React.createElement("p", null, [_ltsText(source.author), _ltsText(source.publishedAt), source.evidenceKind === 'general-practice' ? tr('evidence_general', 'General instructional practice') : source.evidenceKind === 'content-specific' ? tr('evidence_content', 'Content-specific guidance') : ''].filter(Boolean).join(' · ')), source.scope && /*#__PURE__*/React.createElement("p", {
-      className: "mt-1"
-    }, tr('scope_label', 'Scope:'), " ", _ltsText(source.scope)), source.evidenceLevel && /*#__PURE__*/React.createElement("p", null, tr('evidence_level', 'Evidence level:'), " ", _ltsText(source.evidenceLevel)), source.retrievedAt && /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-600"
-    }, tr('retrieved', 'Retrieved:'), " ", _ltsText(source.retrievedAt)), Array.isArray(source.recommendations) && source.recommendations.length > 0 && /*#__PURE__*/React.createElement("ul", {
+    }, _ltsText(source.title) || href) : _ltsText(source.title) || tr('source_unavailable', 'Source link unavailable')), /*#__PURE__*/React.createElement("p", null, [_ltsText(source.author), _ltsText(source.publishedAt), source.evidenceKind === 'general-practice' ? tr('evidence_general', 'General instructional practice') : source.evidenceKind === 'content-specific' ? tr('evidence_content', 'Content-specific guidance') : ''].filter(Boolean).join(' · ')), Array.isArray(source.recommendations) && source.recommendations.length > 0 && /*#__PURE__*/React.createElement("ul", {
       className: "mt-2 list-disc space-y-1 pl-5"
     }, source.recommendations.filter(recommendation => recommendation && typeof recommendation === 'object').map((recommendation, offset) => /*#__PURE__*/React.createElement("li", {
       key: recommendation.id || offset
-    }, _ltsText(recommendation.text), recommendation.locator ? ' (' + _ltsText(recommendation.locator) + ')' : ''))));
+    }, _ltsText(recommendation.text), _ltsLocator(recommendation.locator) ? ' (' + _ltsLocator(recommendation.locator) + ')' : ''))), (source.scope || source.evidenceLevel || source.retrievedAt) && /*#__PURE__*/React.createElement("details", {
+      className: "mt-2"
+    }, /*#__PURE__*/React.createElement("summary", {
+      className: "min-h-11 cursor-pointer py-3 text-sm leading-5 font-bold text-indigo-800 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+    }, tr('about_source', 'About this source')), source.scope && /*#__PURE__*/React.createElement("p", {
+      className: "mt-1"
+    }, tr('scope_label', 'Scope:'), " ", _ltsText(source.scope)), source.evidenceLevel && /*#__PURE__*/React.createElement("p", null, tr('evidence_level', 'Evidence level:'), " ", _ltsText(source.evidenceLevel)), source.retrievedAt && /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-600"
+    }, tr('retrieved', 'Retrieved:'), " ", /*#__PURE__*/React.createElement("time", {
+      dateTime: _ltsText(source.retrievedAt)
+    }, _ltsReadableDate(source.retrievedAt)))));
   })) : /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
-  }, tr('no_sources', 'No research sources are attached to this version. Review the teaching choices against your lesson and learners.'))))));
+  }, tr('no_sources', 'No research sources are attached to this version. Review the teaching choices against your lesson and learners.')))))));
 }
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.LessonTeachingScriptView = LessonTeachingScriptView;

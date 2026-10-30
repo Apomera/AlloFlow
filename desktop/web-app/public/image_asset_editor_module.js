@@ -604,16 +604,17 @@ function validResourceDrawingScene(scene) {
     return false;
   }
 }
-function openResourceDrawing({ scene, title, onSave, onCancel, onError }) {
-  if (!/^https?:$/.test(window.location.protocol) || window.location.origin === "null") {
-    onError?.(new Error("Open AlloFlow in its browser or desktop app to draw here. You can also upload an exported drawing."));
-    return () => {
-    };
-  }
+const RESOURCE_WHITEBOARD_ORIGIN = "https://alloflow-cdn.pages.dev";
+function resourceDrawingWhiteboardUrl(loc, token, hostOrigin) {
+  const host = String(loc.hostname || "").toLowerCase(), web = /^https?:$/.test(loc.protocol);
+  const url = web && /^(localhost|127\.0\.0\.1)$/.test(host) ? new URL("./whiteboard/whiteboard.html", loc.href) : new URL("/whiteboard/whiteboard.html", web && /(^|\.)alloflow-cdn\.pages\.dev$/.test(host) ? loc.origin : RESOURCE_WHITEBOARD_ORIGIN);
+  url.search = "?imageSlot=" + encodeURIComponent(token) + "&host=" + encodeURIComponent(hostOrigin) + "&v=4";
+  return url;
+}
+function openResourceDrawing({ scene, title, onSave, onCancel, onError, onStatus }) {
   const token = window.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2);
-  const base = window.location.origin;
-  const url = new URL("./whiteboard/whiteboard.html", window.location.href);
-  url.search = "?imageSlot=" + encodeURIComponent(token);
+  const hostOrigin = typeof window.origin === "string" && window.origin || window.location.origin;
+  const url = resourceDrawingWhiteboardUrl(window.location, token, hostOrigin), base = url.origin;
   const popup = window.open(url.href, "_blank", "width=1120,height=800");
   if (!popup) {
     onError?.(new Error("Allow pop-ups for AlloFlow, then choose Draw again."));
@@ -632,6 +633,7 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError }) {
     window.removeEventListener("message", receive);
     clearInterval(closedTimer);
     clearTimeout(connectTimer);
+    clearTimeout(slowTimer);
   };
   const receive = async (event) => {
     if (done || event.source !== popup || event.origin !== base || event.data?.token !== token) return;
@@ -639,6 +641,8 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError }) {
     if (data.type === "alloasset-hello") {
       connected = true;
       clearTimeout(connectTimer);
+      clearTimeout(slowTimer);
+      onStatus?.("Draw in the Whiteboard, then choose Use drawing.");
       post({ type: "alloasset-ack", title, scene: validResourceDrawingScene(scene) ? scene : null });
       return;
     }
@@ -675,10 +679,13 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError }) {
       onCancel?.();
     }
   }, 700);
+  const slowTimer = setTimeout(() => {
+    if (!connected && !done) onStatus?.("Still connecting to the Whiteboard. If it says it has no link back to AlloFlow, choose Export PNG there, then Upload image here.");
+  }, 8e3);
   const connectTimer = setTimeout(() => {
     if (!connected && !done) {
       cleanup();
-      onError?.(Error("The Whiteboard could not connect. Check your connection and try again."));
+      onError?.(Error("The Whiteboard could not connect. You can still draw there: choose Export PNG, then Upload image here."));
     }
   }, 3e4);
   popup.focus?.();
@@ -726,7 +733,10 @@ function ResourceImageInput({ label = "Image", value = "", scene, alt = "", disa
     return true;
   };
   const button = "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50";
-  return /* @__PURE__ */ React.createElement("section", { className: "rounded-xl border border-slate-300 bg-white p-3 text-slate-900", "data-resource-image-input": true }, /* @__PURE__ */ React.createElement("h4", { className: "mb-2 font-bold" }, label), value && /* @__PURE__ */ React.createElement("img", { src: value, alt: alt || "", className: "mb-3 max-h-40 max-w-full rounded object-contain" }), /* @__PURE__ */ React.createElement("label", { className: "block text-sm" }, "Image description", /* @__PURE__ */ React.createElement("textarea", { value: description, maxLength: 1600, disabled: disabled || busy, onChange: (event) => setDescription(event.target.value), className: "mt-1 block min-h-16 w-full rounded border border-slate-400 p-2" })), /* @__PURE__ */ React.createElement("div", { className: "my-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(ImageAssetPicker, { label: "Upload image", disabled: disabled || busy, onLoaded: (result) => {
+  return /* @__PURE__ */ React.createElement("section", { className: "rounded-xl border border-slate-300 bg-white p-3 text-slate-900", "data-resource-image-input": true }, /* @__PURE__ */ React.createElement("h4", { className: "mb-2 font-bold" }, label), value && /* @__PURE__ */ React.createElement("img", { src: value, alt: alt || "", className: "mb-3 max-h-40 max-w-full rounded object-contain" }), /* @__PURE__ */ React.createElement("label", { className: "block text-sm" }, "Image description", /* @__PURE__ */ React.createElement("textarea", { value: description, maxLength: 1600, disabled: disabled || busy, onChange: (event) => setDescription(event.target.value), className: "mt-1 block min-h-16 w-full rounded border border-slate-400 p-2" })), /* @__PURE__ */ React.createElement("div", { className: "my-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(ImageAssetPicker, { label: "Upload image", disabled, onLoaded: (result) => {
+    cancelDrawing.current?.();
+    cancelDrawing.current = null;
+    setBusy(false);
     setEditor(result);
     setMessage("");
   }, onError: (error) => setMessage(error.message) }), /* @__PURE__ */ React.createElement("button", { ref: trigger, type: "button", className: button, disabled: disabled || busy, onClick: () => {
@@ -749,6 +759,9 @@ function ResourceImageInput({ label = "Image", value = "", scene, alt = "", disa
           setBusy(false);
           setMessage(error.message);
         }
+      },
+      onStatus: (text) => {
+        if (alive.current) setMessage(text);
       }
     });
   } }, scene ? "Edit drawing" : "Draw with Excalidraw"), value && /* @__PURE__ */ React.createElement("button", { type: "button", className: button, disabled: disabled || busy, onClick: () => finish({ dataUrl: value, scene }).catch((error) => setMessage(error.message)) }, "Save description")), editor && /* @__PURE__ */ React.createElement(ImageAssetEditor, { sourceDataUrl: editor.dataUrl, onApply: (result) => finish(result).catch((error) => setMessage(error.message)), onCancel: () => {
@@ -793,7 +806,7 @@ window.AlloModules.ImageAssetPicker = ImageAssetPicker;
 window.AlloModules.AiImageGenerationToggle = AiImageGenerationToggle;
 window.AlloModules.ResourceImagesPanel = ResourceImagesPanel;
 window.AlloModules.ResourceImageInput = ResourceImageInput;
-window.AlloModules.ResourceImageTools = { resourceImageSlots, replaceResourceImage, openResourceDrawing, validResourceDrawingScene };
+window.AlloModules.ResourceImageTools = { resourceImageSlots, replaceResourceImage, openResourceDrawing, validResourceDrawingScene, resourceDrawingWhiteboardUrl };
 window.AlloModules.ImageAssetTools = {
   IMAGE_ASSET_ACCEPT: IMAGE_ASSET_ACCEPT,
   IMAGE_ASSET_MAX_FILE_BYTES: IMAGE_ASSET_MAX_FILE_BYTES,

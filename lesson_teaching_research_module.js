@@ -190,14 +190,14 @@
   function parseRecommendations(pageText, entry) {
     var lines = pageText.split('\n').map(function (line) { return line.replace(/\s+/g, ' ').trim(); });
     var found = [], seen = {};
-    function push(number, rating, sentence, offsetHint) {
+    function push(number, rating, sentence) {
       var text = sentence.replace(/\s*\[.*$/, '').trim();
       if (text.length < 25 || text.length > 600 || /https?:\/\//i.test(text)) return;
       var key = text.toLowerCase();
       if (seen[key]) return; seen[key] = true;
       var id = entry.id + '-r' + (number ? String(number).toLowerCase() : 'x' + (found.length + 1));
       if (found.some(function (item) { return item.id === id; })) id += '-' + (found.length + 1);
-      found.push({ id: id, number: number, text: text, evidenceLevel: rating ? rating + ' (reported by WWC for Recommendation ' + (number || '(unnumbered)') + ')' : 'Not captured in retrieved text', locator: 'Recommendation ' + (number || '(unnumbered)') + '; retrieved page text offset ' + offsetHint, supportingText: text });
+      found.push({ id: id, number: number, text: text, evidenceLevel: rating ? rating + ' (reported by WWC for Recommendation ' + (number || '(unnumbered)') + ')' : 'Not captured in retrieved text', locator: 'Recommendation ' + (number || '(unnumbered)'), supportingText: text });
     }
     for (var i = 0; i < lines.length; i++) {
       var numberMatch = /^(\d{1,2}[a-z]?)[.):]?$/i.exec(lines[i]);
@@ -210,7 +210,7 @@
           if (isNoiseLine(candidate)) continue;
           sentence = candidate; break;
         }
-        if (sentence) push(numberMatch[1], rating, sentence, i);
+        if (sentence) push(numberMatch[1], rating, sentence);
       }
     }
     return found;

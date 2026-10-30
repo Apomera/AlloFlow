@@ -446,6 +446,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     + '.allo-reading-settings .rs-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}'
     + '.allo-reading-settings .rs-row{display:grid;gap:4px;margin:10px 0}'
     + '.allo-reading-settings .rs-label{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:.9rem}'
+    + '.allo-reading-settings .rs-note{font-size:.8rem;line-height:1.35}'
     + '.allo-reading-settings .rs-line{display:flex;align-items:center;gap:8px}'
     + '.allo-reading-settings input[type=range]{flex:1;min-width:0;min-height:44px;accent-color:#4338ca}'
     + '.allo-reading-settings select{min-height:44px;width:100%;border:1px solid #64748b;border-radius:8px;padding:4px 8px;background:#fff;color:#0f172a;font:inherit}'
@@ -514,6 +515,25 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     lh.row.appendChild(lh.input); panel.appendChild(lh.row);
     var ls = range('spacing', tx('settings.text.spacing', 'Letter Spacing'), 0, 0.2, 0.01, s.letterSpacing, function (v) { return Number(v).toFixed(2) + ' em'; });
     ls.row.appendChild(ls.input); panel.appendChild(ls.row);
+    // Bionic reading and reading theme; an older host exposes neither.
+    var bionic = null, themeSel = null;
+    if (typeof s.bionic === 'boolean') {
+      bionic = el('input', { type: 'checkbox', id: uid + '-bionic' });
+      bionic.checked = s.bionic;
+      panel.appendChild(el('div', { 'class': 'rs-row' }, [el('label', { 'class': 'rs-check', 'for': uid + '-bionic' }, [bionic, el('span', { text: tx('settings.text.bionic', 'Bionic Reading Style') })])]));
+    }
+    if (Array.isArray(s.readingThemes) && s.readingThemes.length) {
+      var themeKeys = { highContrast: 'contrast', dyslexia: 'easy_read' };
+      var themeNames = { default: 'Default', warm: 'Warm', sepia: 'Sepia', dark: 'Dark', highContrast: 'Contrast', blue: 'Blue', green: 'Green', rose: 'Rose', dyslexia: 'Easy Read', dim: 'Dim' };
+      themeSel = el('select', { id: uid + '-theme', 'aria-describedby': uid + '-theme-scope' });
+      s.readingThemes.forEach(function (id) { themeSel.appendChild(el('option', { value: id, text: tx('header.reading_theme_' + (themeKeys[id] || id), themeNames[id] || id) })); });
+      themeSel.value = s.readingTheme || 'default';
+      panel.appendChild(el('div', { 'class': 'rs-row' }, [
+        el('label', { 'for': uid + '-theme', 'class': 'rs-label', text: tx('header.reading_theme_aria', 'Reading theme') }),
+        themeSel,
+        el('span', { id: uid + '-theme-scope', 'class': 'rs-note', text: tx('settings.reading_theme_desc', 'Background & text color for all content views') }),
+      ]));
+    }
     // Color overlay
     var overlayNames = { none: tx('header.overlay_none', 'None'), blue: tx('header.reading_theme_blue', 'Blue'), peach: tx('header.overlay_peach', 'Peach'), yellow: tx('header.overlay_yellow', 'Yellow') };
     var choices = el('div', { 'class': 'rs-choices' });
@@ -524,7 +544,11 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       radios[k] = r;
       choices.appendChild(el('label', null, [r, el('span', { text: overlayNames[k] })]));
     });
-    panel.appendChild(el('fieldset', null, [el('legend', { text: tx('reading_settings.overlay', 'Color overlay') }), choices]));
+    panel.appendChild(el('fieldset', { 'aria-describedby': uid + '-overlay-desc' }, [
+      el('legend', { text: tx('reading_settings.overlay', 'Color overlay') }),
+      el('span', { id: uid + '-overlay-desc', 'class': 'rs-note', text: tx('reading_settings.overlay_desc', 'Tints the whole screen, like a colored reading sheet.') }),
+      choices,
+    ]));
     // Ruler
     var ruler = el('input', { type: 'checkbox', id: uid + '-ruler' });
     ruler.checked = !!s.readingRuler;
@@ -540,6 +564,8 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     ls.input.addEventListener('input', function () { api.set({ letterSpacing: Number(ls.input.value) }); });
     Object.keys(radios).forEach(function (k) { radios[k].addEventListener('change', function () { if (radios[k].checked) api.set({ colorOverlay: k }); }); });
     ruler.addEventListener('change', function () { api.set({ readingRuler: ruler.checked }); });
+    if (bionic) bionic.addEventListener('change', function () { api.set({ bionic: bionic.checked }); });
+    if (themeSel) themeSel.addEventListener('change', function () { api.set({ readingTheme: themeSel.value }); });
     reset.addEventListener('click', function () { api.set({ baseFontSize: 16, lineHeight: 1.6, letterSpacing: 0 }); });
     var refresh = function (n) {
       n = n || api.get();
@@ -550,6 +576,8 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       });
       Object.keys(radios).forEach(function (k) { radios[k].checked = n.colorOverlay === k; });
       ruler.checked = !!n.readingRuler;
+      if (bionic) bionic.checked = !!n.bionic;
+      if (themeSel && n.readingTheme && themeSel.value !== n.readingTheme) themeSel.value = n.readingTheme;
     };
     var unsubscribe = typeof api.subscribe === 'function' ? api.subscribe(refresh) : function () {};
     container.appendChild(panel);

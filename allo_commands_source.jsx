@@ -3966,24 +3966,24 @@ var modelCache = {
   // INSIDE a Web Worker (which cannot reach the device-storage bridge), so the
   // worker relays bytes here and reads them back through match().
   put: function (url, buf, contentType) { return _mcStoreBuffer(url, buf, contentType); },
-  // Is anything cached whose URL contains this fragment? Used for model
-  // presence checks without hardcoding a file list we do not control.
+  // Is anything cached whose URL contains this fragment (or every fragment of an
+  // array)? Used for model presence checks without hardcoding a file list we do not control.
   hasUrlLike: async function (fragment) {
     try {
       var ds = await _deviceStorage();
       var keys = await ds.list(MODEL_NS);
-      var needle = String(fragment || '').toLowerCase();
-      if (!needle || !Array.isArray(keys)) return false;
+      var needles = (Array.isArray(fragment) ? fragment : [fragment]).map(function (f) { return String(f || '').toLowerCase(); });
+      if (!needles.length || needles.some(function (n) { return !n; }) || !Array.isArray(keys)) return false;
       for (var i = 0; i < keys.length; i++) {
-        var k = String(keys[i] || '');
-        if (k.indexOf('u:') === 0 && k.toLowerCase().indexOf(needle) >= 0) return true;
+        var k = String(keys[i] || '').toLowerCase();
+        if (k.indexOf('u:') === 0 && needles.every(function (n) { return k.indexOf(n) >= 0; })) return true;
       }
       return false;
     } catch (_) { return false; }
   },
   // Kokoro's file set is decided by kokoro-js, not by us, so presence is
-  // detected rather than enumerated.
-  hasKokoro: function () { return modelCache.hasUrlLike('kokoro'); },
+  // detected rather than enumerated. A cached voice .bin alone is not the model.
+  hasKokoro: function () { return modelCache.hasUrlLike(['kokoro', '.onnx']); },
   // Approximate on-device size of the model cache, for the storage manager.
   cachedBytes: async function () {
     try {

@@ -52,7 +52,7 @@ describe('LessonTeachingResearch lesson-aware evidence selection', () => {
     expect(source.recommendations.map(item => item.id)).toEqual(['wwc-fractions-2010-r2', 'wwc-fractions-2010-r3']);
     for (const item of source.recommendations) {
       expect(page).toContain(item.supportingText);
-      expect(item.locator).toMatch(/Recommendation [23]; retrieved page text offset \d+/);
+      expect(item.locator).toMatch(/^Recommendation [23]$/);
       expect(item.evidenceLevel).toMatch(/^Moderate \(reported by WWC/);
     }
     expect(read.mock.calls.map(call => call[0])).toEqual([URL, BASE + '26']);

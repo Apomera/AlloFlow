@@ -3,7 +3,7 @@
 //
 // Field report: a student joining a live session got "⚠ 15 errors". Every
 // entry was weeks old (CDN timeouts from 08-16, AI 403s from builds that no
-// longer exist): the buffer persists in localStorage, and the only pruning
+// longer exist): the buffer persisted in localStorage (per tab since 10-29), and the only pruning
 // was by build tag, which on the web is always 'web'. The report also sent
 // the live-session join secret (?allo_mb=) because entries and reports kept
 // the full URL.
@@ -27,7 +27,7 @@ const HOUR = 60 * 60 * 1000;
 function boot({ url = LIVE_URL, seed = null, before = null } = {}) {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', { url, runScripts: 'outside-only', virtualConsole: new VirtualConsole() });
   const w = dom.window;
-  if (seed) w.localStorage.setItem('alloflow_error_log', JSON.stringify(seed));
+  if (seed) w.sessionStorage.setItem('alloflow_error_log', JSON.stringify(seed));
   w.console.log = () => {};
   w.__sent = [];
   w.fetch = (u, opts) => { w.__sent.push(JSON.parse(opts.body)); return new Promise(() => {}); };
@@ -79,7 +79,7 @@ describe('stale entries do not reach the badge', () => {
     const w = boot({ seed });
     expect(w.AlloModules.ErrorReporter.getBuffer()).toHaveLength(0);
     expect(badgeText(w)).toBe('');
-    expect(JSON.parse(w.localStorage.getItem('alloflow_error_log'))).toHaveLength(0);
+    expect(JSON.parse(w.sessionStorage.getItem('alloflow_error_log'))).toHaveLength(0);
   });
 
   it('an earlier page load within 24 h stays in the log, labelled, but not on the badge', () => {
@@ -149,7 +149,7 @@ describe('the live-session join secret never leaves the page', () => {
 
   it('is scrubbed from entries already sitting in storage', () => {
     const w = boot({ seed: [oldEntry(HOUR, 'x', { stack: 'at ' + LIVE_URL })] });
-    expect(w.localStorage.getItem('alloflow_error_log')).not.toContain(SECRET_HEAD);
+    expect(w.sessionStorage.getItem('alloflow_error_log')).not.toContain(SECRET_HEAD);
   });
 
   it('is scrubbed from trace tails, which other modules write unscrubbed', () => {

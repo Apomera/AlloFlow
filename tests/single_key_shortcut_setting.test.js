@@ -16,10 +16,11 @@ const sliceFile = (file, start, end) => sliceBetween(read(file), start, end, { f
 
 // The real host handler, built against stubs for the help-mode state it closes over.
 const handlerBody = sliceFile('AlloFlowANTI.txt', 'const onHelpKeyDown = (e) => {', "document.addEventListener('keydown', onHelpKeyDown, true);");
-let calls;
+let calls, toasts;
 function makeHandler(isHelpMode) {
-  return new Function('handleToggleIsHelpMode', 'isHelpMode', 'isSpotlightMode', 'setIsSpotlightMode',
-    handlerBody + '\nreturn onHelpKeyDown;')(() => calls.push('toggle'), isHelpMode, false, () => calls.push('spotlight'));
+  return new Function('handleToggleIsHelpMode', 'isHelpMode', 'isSpotlightMode', 'setIsSpotlightMode', 'addToast', 't', 'setIsHelpMode',
+    handlerBody + '\nreturn onHelpKeyDown;')(() => calls.push('toggle'), isHelpMode, false, () => calls.push('spotlight'),
+    (message, type, options) => toasts.push({ message, type, options }), (k) => k, (v) => calls.push('helpMode:' + v));
 }
 function press(handler, key, target = document.body, init = {}) {
   const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
@@ -46,7 +47,7 @@ function mountPreference() {
 }
 
 describe('"?" help shortcut respects the Single-key shortcuts setting', () => {
-  beforeEach(() => { calls = []; localStorage.clear(); document.body.innerHTML = '<main id="m"><input id="i"></main>'; });
+  beforeEach(() => { calls = []; toasts = []; window.__alloHelpKeyNoticeShown = true; localStorage.clear(); document.body.innerHTML = '<main id="m"><input id="i"></main>'; });
 
   it('is on by default: "?" toggles Help Mode', () => {
     const e = press(makeHandler(false), '?');
@@ -108,5 +109,47 @@ describe('Help Mode stays reachable without the shortcut', () => {
     expect(dialog).toContain("t('settings.text.single_key_shortcuts')");
     expect(dialog).toContain('aria-describedby="header-single-key-shortcuts-desc"');
     expect(dialog).toContain("t('settings.text.single_key_shortcuts_sub')");
+  });
+});
+
+// Speech input or a stray key can turn Help Mode on by accident, and the off switch
+// lives in Text settings, where nobody looks for a keyboard setting (10-29).
+describe('the first "?" of a session offers the off switch', () => {
+  beforeEach(() => { calls = []; toasts = []; delete window.__alloHelpKeyNoticeShown; localStorage.clear(); });
+
+  it('shows one notice with a working "Turn off this shortcut" action, once per session', () => {
+    press(makeHandler(false), '?');
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].message).toBe('help_mode.shortcut_notice');
+    expect(toasts[0].options.action.label).toBe('help_mode.shortcut_turn_off');
+    const heard = [];
+    const listen = (e) => heard.push(e.detail.enabled);
+    window.addEventListener('alloflow:single-key-shortcuts-changed', listen);
+    try { toasts[0].options.action.onClick(); } finally { window.removeEventListener('alloflow:single-key-shortcuts-changed', listen); }
+    expect(localStorage.getItem('allo_single_key_shortcuts')).toBe('off');
+    expect(heard, 'the header switch hears it').toEqual([false]);
+    expect(calls).toContain('helpMode:false');
+    expect(toasts[1]).toMatchObject({ message: 'help_mode.shortcut_off', type: 'success' });
+    localStorage.clear(); toasts = [];
+    press(makeHandler(false), '?');
+    expect(toasts, 'not again this session').toEqual([]);
+  });
+
+  it('says nothing when "?" turns Help Mode off', () => {
+    press(makeHandler(true), '?');
+    expect(calls).toEqual(['toggle']);
+    expect(toasts).toEqual([]);
+  });
+
+  it('the header switch follows the notice', () => {
+    const block = sliceBetween(headerModule, 'const sync = (e) => {', '}, []);', { file: 'view_header_module.js', includeEnd: true });
+    let state = true, listener = null;
+    const fakeWindow = { addEventListener: (name, fn) => { if (name === 'alloflow:single-key-shortcuts-changed') listener = fn; }, removeEventListener() {} };
+    new Function('window', 'setSingleKeyShortcuts', block.replace(/\}, \[\]\);$/, ''))(fakeWindow, (v) => { state = v; });
+    expect(typeof listener).toBe('function');
+    listener({ detail: { enabled: false } });
+    expect(state).toBe(false);
+    listener({ detail: { enabled: 'nope' } });
+    expect(state, 'ignores a malformed event').toBe(false);
   });
 });

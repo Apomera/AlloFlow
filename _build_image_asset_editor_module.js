@@ -45,7 +45,7 @@ const outputCode = [
   'window.AlloModules.AiImageGenerationToggle = AiImageGenerationToggle;',
   'window.AlloModules.ResourceImagesPanel = ResourceImagesPanel;',
   'window.AlloModules.ResourceImageInput = ResourceImageInput;',
-  'window.AlloModules.ResourceImageTools = { resourceImageSlots, replaceResourceImage, openResourceDrawing, validResourceDrawingScene };',
+  'window.AlloModules.ResourceImageTools = { resourceImageSlots, replaceResourceImage, openResourceDrawing, validResourceDrawingScene, resourceDrawingWhiteboardUrl };',
   'window.AlloModules.ImageAssetTools = {',
   '  IMAGE_ASSET_ACCEPT: IMAGE_ASSET_ACCEPT,',
   '  IMAGE_ASSET_MAX_FILE_BYTES: IMAGE_ASSET_MAX_FILE_BYTES,',

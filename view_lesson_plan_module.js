@@ -430,6 +430,120 @@ function _lessonPlanSummaryHtml(plan, {
   const lang = typeof document !== 'undefined' && document.documentElement.lang || 'en';
   return `<!doctype html><html lang="${esc(lang)}"><head><meta charset="utf-8"><title>${esc(title + ' · ' + tr('summary_title', 'One-page summary'))}</title><style>` + '@page{margin:12mm}body{font:10.5pt/1.35 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#111;margin:0}h1{font-size:15pt;margin:0 0 2px}' + '.meta{color:#444;margin:0 0 8px}.eq{border-left:3px solid #4338ca;background:#eef2ff;padding:4px 8px;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}' + 'section{break-inside:avoid}h2{font-size:11pt;margin:0 0 3px;color:#312e81}ul,ol{margin:0;padding-left:16px}li{margin:0 0 2px}.total{font-weight:700;margin:3px 0 0}footer{margin-top:10px;font-size:8.5pt;color:#555}' + `</style></head><body><h1>${esc(title)}</h1>${gradeLevel ? `<p class="meta">${esc(gradeLevel)}</p>` : ''}` + (question ? `<p class="eq"><strong>${esc(tr('summary_essential_question', 'Essential question:'))}</strong> ${esc(question)}</p>` : '') + `<div class="grid">${body}</div><footer>${esc(tr('summary_footer', 'One-page summary from AlloFlow. The full teacher guide has every step.'))}</footer></body></html>`;
 }
+// Woven teaching view (read-only): lines from the latest saved teaching script, shown under the plan phase
+// each step teaches. Editing, versions and regeneration stay in the Teaching script section.
+const _LESSON_SCRIPT_PHASES = ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'];
+function _lessonPlanWovenScript(plan) {
+  const saved = Array.isArray(plan?.data?.teachingScripts) ? plan.data.teachingScripts : [];
+  const versions = saved.filter(version => version && version.id && Array.isArray(version.steps) && version.steps.length && version.steps.every(step => step && typeof step === 'object' && !Array.isArray(step)));
+  const version = versions[versions.length - 1];
+  if (!version) return null;
+  const recommendations = new Map();
+  (Array.isArray(version.sources) ? version.sources : []).forEach(source => {
+    if (!source || typeof source !== 'object') return;
+    (Array.isArray(source.recommendations) ? source.recommendations : []).forEach(recommendation => {
+      if (recommendation && typeof recommendation === 'object' && recommendation.id != null) recommendations.set(String(recommendation.id), {
+        source,
+        recommendation
+      });
+    });
+  });
+  const byPhase = {},
+    other = [];
+  version.steps.forEach((step, index) => {
+    if (_LESSON_SCRIPT_PHASES.includes(step.phase)) (byPhase[step.phase] = byPhase[step.phase] || []).push({
+      step,
+      index
+    });else other.push({
+      step,
+      index
+    });
+  });
+  // Same plan fingerprint the script panel compares; if the runtime has not loaded, no warning is claimed either way.
+  let stale = false;
+  try {
+    const runtime = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.LessonTeachingScript;
+    const recorded = version.inputSnapshot && version.inputSnapshot.planFingerprint;
+    if (recorded && runtime && typeof runtime.captureInputs === 'function') stale = runtime.captureInputs(plan, {}, []).planFingerprint !== recorded;
+  } catch (_) {}
+  return {
+    version,
+    versionCount: versions.length,
+    byPhase,
+    other,
+    recommendations,
+    stale
+  };
+}
+const _lessonPlanLabel = (t, namespace, key, fallback) => {
+  const value = typeof t === 'function' ? t(namespace + '.' + key) : '';
+  return typeof value === 'string' && value && value !== namespace + '.' + key ? value : fallback;
+};
+function LessonPlanScriptLines({
+  woven,
+  phase,
+  t
+}) {
+  const entries = phase ? woven.byPhase[phase] : woven.other;
+  if (!entries || !entries.length) return null;
+  const lt = (key, fallback) => _lessonPlanLabel(t, 'lesson_script', key, fallback);
+  const pt = (key, fallback) => _lessonPlanLabel(t, 'lesson_plan', key, fallback);
+  const text = value => _lessonPlanText(value);
+  const supportFields = [['studentDoes', lt('student_does', 'Learners do')], ['possibleResponse', lt('possible_response', 'Possible learner response')], ['ifStruggling', lt('if_struggling', 'If learners need support (likely misconception)')], ['ifReady', lt('if_ready', 'If learners are ready to go further')]];
+  return /*#__PURE__*/React.createElement("ol", {
+    className: "mt-3 space-y-3 border-l-4 border-indigo-300 pl-3",
+    "aria-label": pt('script_lines_label', 'Teaching script for this part'),
+    "data-plan-script-phase": phase || 'other'
+  }, entries.map(({
+    step,
+    index
+  }) => {
+    const support = supportFields.filter(([key]) => text(step[key]).trim());
+    const cited = (Array.isArray(step.recommendationIds) ? step.recommendationIds : []).map(id => woven.recommendations.get(String(id))).filter(Boolean);
+    const minutes = Number(step.minutes);
+    return /*#__PURE__*/React.createElement("li", {
+      key: step.id || index,
+      dir: "auto",
+      className: "min-w-0 break-words text-sm text-slate-800"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xs font-bold text-indigo-900"
+    }, index + 1, ". ", text(step.title), Number.isFinite(minutes) && minutes > 0 && step.minutes !== '' && step.minutes != null ? ' · ' + minutes + ' ' + lt('minutes', 'minutes') : ''), text(step.teacherSays).trim() && /*#__PURE__*/React.createElement("p", {
+      className: "mt-1"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-indigo-900"
+    }, lt('say_aloud', 'Say aloud'), ":"), " ", /*#__PURE__*/React.createElement("span", {
+      className: "whitespace-pre-wrap"
+    }, text(step.teacherSays))), text(step.checkQuestion).trim() && /*#__PURE__*/React.createElement("p", {
+      className: "mt-1"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-indigo-900"
+    }, lt('ask_aloud', 'Ask aloud'), ":"), " ", /*#__PURE__*/React.createElement("span", {
+      className: "whitespace-pre-wrap"
+    }, text(step.checkQuestion))), support.length > 0 && /*#__PURE__*/React.createElement("details", {
+      className: "mt-1"
+    }, /*#__PURE__*/React.createElement("summary", {
+      className: "min-h-11 cursor-pointer rounded py-3 text-xs leading-5 font-bold text-indigo-800 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+    }, pt('script_step_more', 'Learner moves and support')), /*#__PURE__*/React.createElement("dl", {
+      className: "mt-1 space-y-1"
+    }, support.map(([key, label]) => /*#__PURE__*/React.createElement("div", {
+      key: key
+    }, /*#__PURE__*/React.createElement("dt", {
+      className: "text-xs font-bold text-slate-700"
+    }, label), /*#__PURE__*/React.createElement("dd", {
+      className: "whitespace-pre-wrap"
+    }, text(step[key])))))), cited.length > 0 && /*#__PURE__*/React.createElement("p", {
+      className: "mt-1 text-xs text-slate-700"
+    }, pt('script_based_on', 'Based on:'), " ", cited.map(({
+      source,
+      recommendation
+    }, position) => {
+      const locator = text(recommendation.locator).replace(/;\s*retrieved page text offset \d+/i, '').trim();
+      return /*#__PURE__*/React.createElement("span", {
+        key: String(recommendation.id)
+      }, position ? '; ' : '', [text(source.title) || text(source.author), locator].filter(Boolean).join(' · '));
+    })));
+  }));
+}
 function LessonPlanOverview({
   plan,
   t,
@@ -610,6 +724,11 @@ function LessonPlanView(props) {
       window.removeEventListener('alloflow:criterion-rollup', onRollup);
     };
   }, []);
+  var _scriptInPlan = React.useState(true);
+  var woven = React.useMemo(function () {
+    return audienceView ? null : _lessonPlanWovenScript(generatedContent);
+  }, [generatedContent, audienceView, props.teachingScriptLoadState]);
+  var showWoven = !!woven && !isEditingLessonPlan && _scriptInPlan[0];
   var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, {
     ...fieldProps,
     artifact: generatedContent,
@@ -685,51 +804,26 @@ function LessonPlanView(props) {
     t: t,
     BilingualFieldRenderer: BilingualFieldRenderer,
     normalizeMaterialItem: normalizeMaterialItem
-  }), !audienceView && /*#__PURE__*/React.createElement(PlanningInputsSummary, {
-    resource: generatedContent,
-    history: history,
-    t: t,
-    onOpen: props.onOpenPlanningResource
-  }), !audienceView && typeof props.onGenerateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
-    className: "mb-6"
-  }, window.AlloModules?.LessonTeachingScriptView && (!props.teachingScriptLoadState || props.teachingScriptLoadState === 'ready') ? React.createElement(window.AlloModules.LessonTeachingScriptView, {
-    key: String(generatedContent.id),
-    generatedContent,
-    history: props.teachingScriptMaterials || [],
-    isTeacherMode,
-    isParentMode,
-    isIndependentMode,
-    t,
-    capabilities: props.capabilities,
-    defaultSettings: props.defaultSettings,
-    scriptRun: props.scriptRun,
-    draftScope: props.teachingScriptDraftScope,
-    planEditing: !!isEditingLessonPlan,
-    planEditBridge: scriptEditBridge,
-    createTeachingScriptAudio: props.createTeachingScriptAudio,
-    audioProfile: props.teachingScriptAudioProfile,
-    audioVoice: props.teachingScriptVoice,
-    audioSpeed: props.teachingScriptSpeed,
-    onOpenVoiceSettings: props.onOpenTeachingScriptVoiceSettings,
-    onDeleteTeachingScript: props.onDeleteTeachingScript,
-    onGenerateTeachingScript: props.onGenerateTeachingScript,
-    onCancelTeachingScript: props.onCancelTeachingScript,
-    onGetTeachingScriptRecovery: props.onGetTeachingScriptRecovery,
-    onDiscardTeachingScriptRecovery: props.onDiscardTeachingScriptRecovery,
-    onRegenerateTeachingStep: props.onRegenerateTeachingStep,
-    onUpdateTeachingScript: props.onUpdateTeachingScript,
-    onOpenTeachingMaterial: props.onOpenTeachingMaterial
-  }) : /*#__PURE__*/React.createElement("section", {
-    className: "rounded-xl border border-indigo-200 bg-white p-4",
-    "aria-label": t('lesson_script.title') || 'Teaching script'
+  }), woven && !isEditingLessonPlan && /*#__PURE__*/React.createElement("div", {
+    className: "mb-4 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800 no-print",
+    "data-plan-script-woven": true
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2"
   }, /*#__PURE__*/React.createElement("p", {
-    role: "status",
-    className: "text-sm text-slate-800"
-  }, props.teachingScriptLoadState === 'error' ? t('lesson_script.load_error') || 'Teaching script tools could not load. Your lesson plan is still available.' : t('lesson_script.loading') || 'Loading teaching script tools…'), props.teachingScriptLoadState === 'error' && typeof props.onRetryTeachingScriptLoad === 'function' && /*#__PURE__*/React.createElement("button", {
+    className: "min-w-0 break-words"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-indigo-900"
+  }, tl('lesson_plan.script_woven_title', 'Teaching script')), ' · ', _lessonPlanText(woven.version.title), woven.versionCount > 1 ? ' · ' + tl('lesson_plan.script_woven_latest', 'latest saved version') : ''), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: props.onRetryTeachingScriptLoad,
-    className: "mt-3 min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, t('lesson_script.retry_load') || 'Try loading again'))), /*#__PURE__*/React.createElement("div", {
+    "aria-pressed": showWoven,
+    onClick: () => _scriptInPlan[1](value => !value),
+    className: "min-h-11 rounded-full border border-indigo-300 bg-white px-3 py-1.5 text-sm font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, tl('lesson_plan.script_woven_toggle', 'Show script lines in the plan'))), showWoven && woven.stale && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-amber-950"
+  }, tl('lesson_plan.script_woven_stale', 'This lesson changed after the script was written. Check each script line against the plan, or create a new script version below.')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-xs text-slate-600"
+  }, tl('lesson_plan.script_woven_edit_hint', 'To edit, regenerate or choose another version, use the Teaching script section below the lesson.'))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, (materialsNeeded.length > 0 || isEditingLessonPlan) && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
@@ -817,6 +911,10 @@ function LessonPlanView(props) {
   }) : /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: generatedContent?.data.hook,
     className: "text-sm text-slate-700"
+  }), showWoven && /*#__PURE__*/React.createElement(LessonPlanScriptLines, {
+    woven: woven,
+    phase: "hook",
+    t: t
   }))), successCriteria.some(item => item != null && (isEditingLessonPlan || _lessonPlanCriterionText(item).trim())) && (() => {
     // Success criteria: derived from the exit ticket generated before this
     // plan (each id IS that quiz's concept label) or from the objectives.
@@ -901,6 +999,10 @@ function LessonPlanView(props) {
   }) : /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: generatedContent?.data.directInstruction,
     className: "text-sm text-slate-700"
+  }), showWoven && /*#__PURE__*/React.createElement(LessonPlanScriptLines, {
+    woven: woven,
+    phase: "directInstruction",
+    t: t
   })), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -918,6 +1020,10 @@ function LessonPlanView(props) {
   }) : /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: generatedContent?.data.guidedPractice,
     className: "text-sm text-slate-700"
+  }), showWoven && /*#__PURE__*/React.createElement(LessonPlanScriptLines, {
+    woven: woven,
+    phase: "guidedPractice",
+    t: t
   })), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -933,6 +1039,10 @@ function LessonPlanView(props) {
   }) : /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: generatedContent?.data.independentPractice,
     className: "text-sm text-slate-700"
+  }), showWoven && /*#__PURE__*/React.createElement(LessonPlanScriptLines, {
+    woven: woven,
+    phase: "independentPractice",
+    t: t
   }))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -948,6 +1058,19 @@ function LessonPlanView(props) {
   }) : /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: generatedContent?.data.closure,
     className: "text-sm text-slate-700"
+  }), showWoven && /*#__PURE__*/React.createElement(LessonPlanScriptLines, {
+    woven: woven,
+    phase: "closure",
+    t: t
+  })), showWoven && woven.other.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-4 rounded-lg border border-indigo-100",
+    "data-plan-script-other": true
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2"
+  }, tl('lesson_plan.script_other_steps', 'More script steps')), /*#__PURE__*/React.createElement(LessonPlanScriptLines, {
+    woven: woven,
+    phase: null,
+    t: t
   })), generatedContent?.data.extensions && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100 mt-4"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -1033,7 +1156,53 @@ function LessonPlanView(props) {
     className: "text-sm text-slate-700 leading-relaxed whitespace-pre-line"
   }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: generatedContent?.data.extensions
-  })))))), recommendedStemTools.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }))))), !audienceView && typeof props.onGenerateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 border-t border-indigo-200 pt-6"
+  }, window.AlloModules?.LessonTeachingScriptView && (!props.teachingScriptLoadState || props.teachingScriptLoadState === 'ready') ? React.createElement(window.AlloModules.LessonTeachingScriptView, {
+    key: String(generatedContent.id),
+    generatedContent,
+    history: props.teachingScriptMaterials || [],
+    isTeacherMode,
+    isParentMode,
+    isIndependentMode,
+    t,
+    capabilities: props.capabilities,
+    defaultSettings: props.defaultSettings,
+    scriptRun: props.scriptRun,
+    draftScope: props.teachingScriptDraftScope,
+    planEditing: !!isEditingLessonPlan,
+    planEditBridge: scriptEditBridge,
+    createTeachingScriptAudio: props.createTeachingScriptAudio,
+    audioProfile: props.teachingScriptAudioProfile,
+    audioVoice: props.teachingScriptVoice,
+    audioSpeed: props.teachingScriptSpeed,
+    onOpenVoiceSettings: props.onOpenTeachingScriptVoiceSettings,
+    onDeleteTeachingScript: props.onDeleteTeachingScript,
+    onGenerateTeachingScript: props.onGenerateTeachingScript,
+    onCancelTeachingScript: props.onCancelTeachingScript,
+    onGetTeachingScriptRecovery: props.onGetTeachingScriptRecovery,
+    onDiscardTeachingScriptRecovery: props.onDiscardTeachingScriptRecovery,
+    onRegenerateTeachingStep: props.onRegenerateTeachingStep,
+    onUpdateTeachingScript: props.onUpdateTeachingScript,
+    onOpenTeachingMaterial: props.onOpenTeachingMaterial
+  }) : /*#__PURE__*/React.createElement("section", {
+    className: "rounded-xl border border-indigo-200 bg-white p-4",
+    "aria-label": t('lesson_script.title') || 'Teaching script'
+  }, /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "text-sm text-slate-800"
+  }, props.teachingScriptLoadState === 'error' ? t('lesson_script.load_error') || 'Teaching script tools could not load. Your lesson plan is still available.' : t('lesson_script.loading') || 'Loading teaching script tools…'), props.teachingScriptLoadState === 'error' && typeof props.onRetryTeachingScriptLoad === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: props.onRetryTeachingScriptLoad,
+    className: "mt-3 min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, t('lesson_script.retry_load') || 'Try loading again'))), !audienceView && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4"
+  }, /*#__PURE__*/React.createElement(PlanningInputsSummary, {
+    resource: generatedContent,
+    history: history,
+    t: t,
+    onOpen: props.onOpenPlanningResource
+  }))), recommendedStemTools.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-6 mb-4 border-2 border-emerald-200 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 p-5 animate-in fade-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center justify-between gap-3 mb-3"
@@ -1105,7 +1274,8 @@ function LessonPlanView(props) {
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center pb-8"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleExport('print'),
+    onClick: handleExportPDF,
+    "data-lesson-plan-print-bottom": true,
     className: "flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg"
   }, /*#__PURE__*/React.createElement(Printer, {
     size: 18
