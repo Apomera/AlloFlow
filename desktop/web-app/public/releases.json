@@ -1,5 +1,12 @@
 [
   {
+    "id": "rel_20261030T113810Z_v1_14",
+    "version": "1.14",
+    "canvas_url": "https://share.gemini.google/wUEhxuDEF82C",
+    "released": "2026-10-30T11:38:10.117Z",
+    "notes": "Canvas build with the 10-29 night deploy: anchor chart and all resource pictures reach mailbox students, reading-theme contrast fixes, Live Dashboard no longer overlaps Reading tools, reader clarity, word practice pictures."
+  },
+  {
     "id": "rel_20261029T213033Z_v1_13",
     "version": "1.13",
     "canvas_url": "https://share.gemini.google/wxPzSFtAWmMn",

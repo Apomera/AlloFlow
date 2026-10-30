@@ -1,6 +1,6 @@
 {
-  "version": "1.13",
-  "canvas_url": "https://share.gemini.google/wxPzSFtAWmMn",
-  "released": "2026-10-29T21:30:33.900Z",
-  "notes": "New ways to start: begin a quiz, glossary, timeline, concept sort or anchor chart from a topic or from a blank template you fill in yourself (no source text needed), with full editors for each. Tools that need source text now say so and offer a way forward. Quiz reflections can be added and removed while editing, plus clearer contrast in dark and high-contrast themes for Teach Live, student views and exports."
+  "version": "1.14",
+  "canvas_url": "https://share.gemini.google/wUEhxuDEF82C",
+  "released": "2026-10-30T11:38:10.117Z",
+  "notes": "Canvas build with the 10-29 night deploy: anchor chart and all resource pictures reach mailbox students, reading-theme contrast fixes, Live Dashboard no longer overlaps Reading tools, reader clarity, word practice pictures."
 }
