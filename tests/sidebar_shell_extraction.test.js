@@ -12,13 +12,16 @@ const React = require(resolve('desktop/web-app/node_modules/react'));
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
 const { act } = require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
 const source = readFileSync('view_sidebar_panels_source.jsx', 'utf8');
-const moduleText = readFileSync('view_sidebar_panels_module.js', 'utf8');
+const moduleText = readFileSync(process.env.ALLO_SIDEBAR_CANDIDATE || 'view_sidebar_panels_module.js', 'utf8');
 const shell = readFileSync('AlloFlowANTI.txt', 'utf8');
 const ast = parse(source, { sourceType: 'script', plugins: ['jsx'] });
 const names = ['GeneratorActionsView', 'SourceInputShellView'];
 const functions = ast.program.body.filter(n => n.type === 'FunctionDeclaration' && names.includes(n.id.name));
 // Helpers declared in this same module are valid dependencies, not missing host captures.
-const moduleHelpers = new Set(ast.program.body.filter(n => n.type === 'FunctionDeclaration').map(n => n.id.name));
+const moduleHelpers = new Set([
+  ...ast.program.body.filter(n => n.type === 'FunctionDeclaration').map(n => n.id.name),
+  ...ast.program.body.filter(n => n.type === 'VariableDeclaration').flatMap(n => n.declarations.map(d => d.id.name)),
+]);
 let api, Gate, root, host;
 beforeAll(() => {
   global.IS_REACT_ACT_ENVIRONMENT = true;
@@ -106,18 +109,38 @@ describe('sidebar shell CDN boundaries', () => {
     const hidden = api.GeneratorActionsView({ ...p, isGuidedToolVisible: () => false });
     expect(all(hidden).find(n => n.props.id === 'tour-tool-math').props.style.display).toBe('none');
   });
-  it('passes the current pasted source through the generated analysis panel action', () => {
+  it('keeps the source check out of the tool list: it lives in the Source view', () => {
     const inputText = 'Current pasted passage\nwith exact punctuation.';
     const p = fixture('GeneratorActionsView', { expandedTools: ['analysis'], inputText, hasSourceOrAnalysis: true, isProcessing: false });
-    const panel = all(api.GeneratorActionsView(p)).find(node => node.type === window.AlloModules.AnalysisPanel);
-    expect(panel).toBeTruthy();
-    expect(panel.props.inputText).toBe(inputText);
+    const nodes = all(api.GeneratorActionsView(p));
+    expect(nodes.some(node => node.props.id === 'tour-tool-analysis')).toBe(false);
+    expect(nodes.some(node => node.type === window.AlloModules.AnalysisPanel)).toBe(false);
+    expect(typeof api.SourceView).toBe('function');
+  });
+  // Based on: Automatic means the source in use outside a unit (the host passes
+  // effectiveReadingSourceId), and the box names that source (2026-10-30).
+  it('names the source the tools will use in Based on, and opens it', () => {
+    window.AlloModules.InstructionalContext || new Function('window', readFileSync('instructional_context_module.js', 'utf8'))(window);
+    const choice = p => all(api.GeneratorActionsView(p)).find(node => node.type && node.type.name === 'ReadingSourceChoice');
+    const inputText = 'Our town garden opened this spring.';
+    const older = { id: 'a1', type: 'analysis', title: 'Older check', data: { originalText: 'An older version of the garden text.' } };
+    const base = { inputText, selectedReadingSourceId: '', effectiveReadingSourceId: '__input__', activeUnitId: 'all', history: [older] };
+    const draft = fixture('GeneratorActionsView', { ...base, sourceRecord: null });
     host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host);
-    act(() => root.render(panel));
-    const generate = host.querySelector('[data-help-key="analysis_generate_button"]');
-    expect(generate.disabled).toBe(false);
-    act(() => generate.click());
-    expect(p.handleGenerate).toHaveBeenCalledWith('analysis', null, false, inputText, { selectedReadingSourceId: '__input__' });
+    act(() => root.render(choice(draft)));
+    const select = host.querySelector('#reading-activity-source');
+    expect(select.options[0].textContent).toBe('Automatic: your source');
+    expect([...select.options].some(option => option.value === '__input__')).toBe(false);
+    expect(host.querySelector('[data-source-using]').textContent).toContain('Activities will use your source: Our town garden opened this spring. · Draft, used when you make a resource');
+    act(() => host.querySelector('[data-source-using-open]').click());
+    expect(draft.openSourceView).toHaveBeenCalledWith({ focus: false });
+    const used = fixture('GeneratorActionsView', { ...base, sourceRecord: { inUse: { text: inputText, version: 2 } } });
+    act(() => root.render(choice(used)));
+    expect(host.querySelector('[data-source-using]').textContent).toContain('In use, version 2');
+    const unit = fixture('GeneratorActionsView', { ...base, effectiveReadingSourceId: '', activeUnitId: 'unit-1', history: [] });
+    act(() => root.render(choice(unit)));
+    expect(host.querySelector('#reading-activity-source').options[0].textContent).toBe('Automatic — follow lesson roles');
+    expect([...host.querySelector('#reading-activity-source').options].some(option => option.value === '__input__' && option.textContent === 'Your source text')).toBe(true);
   });
   it('preserves catalog callbacks and suppresses discovery in Guided Mode', () => {
     const p = fixture('GeneratorActionsView'); const tree = api.GeneratorActionsView(p);

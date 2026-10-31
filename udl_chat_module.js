@@ -3817,7 +3817,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      if (isAffirmative) {
                          sendBotMsg(t('chat_guide.flow.running_analysis'));
                          const resultItem = await _genTracked('analysis');
-                         if (isShowMeMode) performHighlight('tour-tool-analysis');
+                         if (isShowMeMode) performHighlight('tour-source-check');
                          setUdlMessages(prev => [...prev, buildStepPackChoices("Analysis complete. How would you like to proceed with the rest of the lesson?\n\n1. **Step-by-Step:** We continue building resources one by one (Glossary next).\n2. **Full Pack:** I prepare a resource-pack plan based on this analysis for you to review before generation.", 'post_analysis_route')]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'post_analysis_route' }));
                          setIsChatProcessing(false);

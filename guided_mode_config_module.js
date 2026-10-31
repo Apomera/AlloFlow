@@ -65,7 +65,7 @@ if (window.AlloModules && window.AlloModules.GuidedModeConfig) { console.log('[C
   ];
   const GUIDED_STEPS = [
     { id: 'source-input', phase: 'plan', label: 'Source Material', action: 'Choose, paste, or type the original source for your lesson. Keep its wording and learning goal in view as you add supports.', success: 'Source captured. Review the learning goal and the supports students may need.' },
-    { id: 'analysis', phase: 'understand', label: 'Analyze Source Material', action: 'Run Analyze to scan the reading level, key concepts, and tricky vocabulary.', success: 'Analysis done. That shows you where to scaffold.' },
+    { id: 'analysis', phase: 'understand', label: 'Check your source', action: 'In the source view, press Use this source (or Run check) to see the reading level, key concepts and accuracy.', success: 'Source checked. That shows you where to scaffold.' },
     { id: 'glossary', phase: 'access', label: 'Glossary & Language Selection', action: 'Generate a glossary of the key terms, in your students’ languages if needed.', success: 'Glossary ready. Front-loading vocabulary helps multilingual learners most.' },
     { id: 'simplified', phase: 'access', label: 'Original with Supports', action: 'Choose Read original with supports to keep the exact source text. Create an adapted companion only when it serves your learning goal; review any changed meaning before sharing.', success: 'Reading ready. Review the original and its word help, check any optional adaptation for accuracy, then preview the student experience before delivery.' },
     { id: 'ui-tool-wordsounds', phase: 'access', label: 'Word Sounds', action: 'Build Word Sounds practice for the decoding and phonics targets.', success: 'Word Sounds set. Great support for your emerging readers.' },
@@ -102,7 +102,7 @@ if (window.AlloModules && window.AlloModules.GuidedModeConfig) { console.log('[C
 
   const GUIDED_TOUR_MAP = {
     'source-input': 'tour-input-panel',
-    'analysis': 'tour-tool-analysis',
+    'analysis': 'tour-source-check',
     'glossary': 'ui-tool-glossary',
     'simplified': 'ui-tool-simplified',
     'ui-tool-wordsounds': 'tour-tool-wordsounds',

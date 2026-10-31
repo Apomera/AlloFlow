@@ -9,11 +9,12 @@ import { React, ReactDOMClient, act } from './helpers/games_live_harness.js';
 
 const MODULE = readFileSync(process.env.ALLO_SIDEBAR_CANDIDATE || 'view_sidebar_panels_module.js', 'utf8');
 const ANTI = readFileSync(process.env.ALLO_ANTI_CANDIDATE || 'AlloFlowANTI.txt', 'utf8');
-const SOURCE_TOOLS = ['analysis', 'glossary', 'simplified', 'outline', 'note-taking', 'anchor-chart', 'memory-aid',
+const SOURCE_TOOLS = ['glossary', 'simplified', 'outline', 'note-taking', 'anchor-chart', 'memory-aid',
   'applied-challenge', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort',
   'dbq', 'adventure', 'quiz', 'lesson-plan'];
 // These start without a source: math from a typed topic, Word Sounds from word lists.
-const NO_SOURCE_NEEDED = ['math', 'ui-tool-wordsounds', 'source-input'];
+// The source check is not a tool card since the 2026-10-30 source redesign: it lives in the Source view.
+const NO_SOURCE_NEEDED = ['math', 'ui-tool-wordsounds', 'source-input', 'analysis'];
 
 // Slice a compiled declaration by matching its braces (the code carries no braces in strings).
 function sliceBlock(text, start) {

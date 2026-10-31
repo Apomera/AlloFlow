@@ -581,7 +581,28 @@
       var sess = (window.__alloSessionSyncTrace || []);
       if (sess.length) parts.push('-- Session sync trace (last ' + Math.min(sess.length, 15) + ') --\n' + traceLinesForReport(sess, 15));
     } catch (_) {}
+    try {
+      var mb = mailboxCallLines(window.__alloMailboxCallTrace, window.__alloMailboxFlight, Date.now());
+      if (mb) parts.push(mb);
+    } catch (_) {}
     return parts.join('\n\n');
+  }
+
+  // Class Mailbox load, from this device: action names and timings only, never
+  // message content. Apps Script caps simultaneous runs per mailbox owner.
+  function mailboxCallLines(ring, flight, now) {
+    if (!Array.isArray(ring) || !ring.length) return '';
+    var recent = ring.filter(function (c) { return c && now - c.at <= 600000; });
+    var counts = {};
+    recent.forEach(function (c) { counts[c.a] = (counts[c.a] || 0) + 1; });
+    var byAction = Object.keys(counts).sort(function (x, y) { return counts[y] - counts[x]; })
+      .map(function (a) { return a + ' ' + counts[a]; }).join(', ');
+    var lines = ['-- Mailbox calls (last 10 min: ' + recent.length + (byAction ? '; ' + byAction : '') + ') --'];
+    if (flight) lines.push('in flight ' + flight.inFlight + '/' + flight.max + ', queued ' + flight.queued + ', peak in flight ' + flight.peakInFlight + ', peak queued ' + flight.peakQueued);
+    ring.slice(-12).forEach(function (c) {
+      lines.push(new Date(c.at).toISOString().slice(11, 19) + ' ' + c.a + ' wait ' + c.waitMs + 'ms run ' + c.ms + 'ms ' + c.outcome);
+    });
+    return lines.join('\n');
   }
 
   function buildCapturedReportPayload() {

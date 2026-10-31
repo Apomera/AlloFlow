@@ -25,7 +25,13 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 26;
+var VERSION = 27;
+// Apps Script allows 30 simultaneous runs per owner and a run waiting on the
+// script lock still counts, so live writes give up quickly and answer "busy"
+// (the app retries with backoff) instead of queueing for seconds.
+var LIVE_WRITE_LOCK_MS = 2000;
+var ACTIVITY_LOCK_MS = 3000;
+var LOAD_STAT_TTL_SEC = 15 * 60;       // per-minute action counts for the status page
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -92,12 +98,47 @@ var DELIVER_ALLOWED_MIMES = {
 };
 
 function doGet() {
-  return out({ ok: true, v: VERSION, service: 'alloflow-class-mailbox', t: Date.now() });
+  return out({ ok: true, v: VERSION, service: 'alloflow-class-mailbox', t: Date.now(), load: recentLoad() });
+}
+
+// Approximate request counts per action and minute. Read-modify-write without
+// the lock on purpose: a lost increment under load is fine for a status page,
+// and taking the lock here would add the very queueing this exists to reveal.
+function countAction(action) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var key = 'st:' + Math.floor(Date.now() / 60000);
+    var counts = {};
+    try { counts = JSON.parse(cache.get(key) || '{}') || {}; } catch (e) { counts = {}; }
+    var name = /^[a-z]{1,24}$/.test(action) ? action : 'other';
+    counts[name] = (counts[name] || 0) + 1;
+    cache.put(key, JSON.stringify(counts), LOAD_STAT_TTL_SEC);
+  } catch (e) { /* counting must never fail a request */ }
+}
+
+function recentLoad() {
+  try {
+    var cache = CacheService.getScriptCache();
+    var minute = Math.floor(Date.now() / 60000);
+    var keys = [];
+    for (var i = 0; i < 10; i++) keys.push('st:' + (minute - i));
+    var got = cache.getAll(keys);
+    var perMinute = [], totals = {};
+    keys.forEach(function(k) {
+      var counts = {};
+      try { counts = JSON.parse(got[k] || '{}') || {}; } catch (e) { counts = {}; }
+      var n = 0;
+      Object.keys(counts).forEach(function(a) { n += counts[a]; totals[a] = (totals[a] || 0) + counts[a]; });
+      perMinute.push(n);
+    });
+    return { minutes: 10, perMinute: perMinute, byAction: totals };
+  } catch (e) { return null; }
 }
 
 function doPost(e) {
   var p = {};
   try { p = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (err) {}
+  countAction(String((p && p.a) || ''));
   try {
     return handle(p || {});
   } catch (err) {
@@ -369,6 +410,9 @@ function closeSessionLocked(cache, props, code) {
   props.deleteProperty('sess_' + code);
   if (props.getProperty('sess_' + code) !== null) throw new Error('session-close-failed');
   clearSessionEphemeral(cache, code);
+  // A lock-free refill (sessionSecretFor) may have written between the two
+  // steps above; it re-reads the marker, and this second removal covers the rest.
+  cache.remove('s:' + code);
 }
 
 function closeSession(cache, props, code) {
@@ -419,6 +463,21 @@ function sessionSecretFor(code, cache, props) {
       var envelope = JSON.parse(cached);
       if (envelope && envelope.v === 1 && validSessionWindow(envelope, Date.now())) return envelope.k;
     } catch (e) { /* migrate a legacy plain-secret cache from its marker */ }
+  }
+  // v27: the common miss (cache evicted, marker still valid) refills without the
+  // script lock, which every polling device used to queue on at once. Re-reading
+  // the marker after the write catches a close or code reuse that raced the
+  // refill; only those rare cases, and expiry cleanup, fall through to the lock.
+  var fastStored = props.getProperty('sess_' + code);
+  if (fastStored === null) {
+    if (cached) cache.remove('s:' + code);
+    return null;
+  }
+  var fastMarker = sessionMarker(fastStored, Date.now());
+  if (fastMarker) {
+    cacheSessionSecret(cache, code, fastMarker, Date.now());
+    if (props.getProperty('sess_' + code) === fastStored) return fastMarker.k;
+    cache.remove('s:' + code);
   }
   var secret = withSessionLifecycleLock(function() {
     var now = Date.now();
@@ -492,7 +551,7 @@ function send(cache, code, p, actor) {
   }
   if (!validateJsonValue(value, 0)) return out({ ok: false, e: 'bad-data' });
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
+  if (!lock.tryLock(LIVE_WRITE_LOCK_MS)) return out({ ok: false, e: 'busy' });
   try {
     var limit = actor.role === 'teacher' ? RATE_LIMIT_MSGS : PARTICIPANT_WRITES_PER_MIN;
     if (!rateCheck(cache, actorRateKey(code, actor, 'send'), limit)) {
@@ -1173,7 +1232,7 @@ function docWrite(cache, code, action, p, actor) {
   }
 
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
+  if (!lock.tryLock(LIVE_WRITE_LOCK_MS)) return out({ ok: false, e: 'busy' });
   try {
     var limit = actor.role === 'teacher' ? RATE_LIMIT_MSGS : PARTICIPANT_WRITES_PER_MIN;
     if (!rateCheck(cache, actorRateKey(code, actor, 'doc'), limit)) {
@@ -2395,7 +2454,7 @@ function upsertAssignmentActivity(cache, p, admin) {
     if (!term) return out({ ok: false, e: 'bad-term' });
   }
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  if (!lock.tryLock(ACTIVITY_LOCK_MS)) return out({ ok: false, e: 'busy' });
   try {
     var state = readAssignmentActivityState(context);
     var responses = state.responses || {};

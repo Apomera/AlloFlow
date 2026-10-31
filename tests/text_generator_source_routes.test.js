@@ -6,10 +6,15 @@ const shell = readFileSync('AlloFlowANTI.txt', 'utf8');
 const start = shell.indexOf('  const handleGenerateLessonPlan = async ');
 const end = shell.indexOf('  const _extensionGuideRequests = ', start);
 if (start < 0 || end < 0) throw new Error('Lesson-plan launcher not found');
+// Based on's effective choice comes from the host rule (Automatic = the source in use outside a unit).
+const ruleStart = shell.indexOf('  const _alloReadingSourceChoice = () =>');
+if (ruleStart < 0) throw new Error('Based on rule not found');
+const ruleSource = shell.slice(ruleStart, shell.indexOf('\n', ruleStart) + 1);
 const createLauncher = new Function('deps', `
   const { _alloAwaitModules, history, inputText, activeUnitId, selectedReadingSourceId,
     requestGenerationSourceChoice, generationSourceChoiceContextRef, addToast,
     setAlloGenerationType, _alloCmapHandlersDeps, getLessonContext } = deps;
+  ${ruleSource}
   ${shell.slice(start, end)}
   return handleGenerateLessonPlan;
 `);

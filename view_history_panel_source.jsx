@@ -346,7 +346,7 @@ function HistoryPanel(props) {
     onOpenDeviceRecovery = (() => {}),
     setEditTitle, setIsCommunityCatalogOpen, setMovingItemId, setNewUnitName,
     setSelHubTab, setShowSelHub, setShowStemLab, setStemLabTab, t, units,
-    onVisualizeUnit,
+    onVisualizeUnit, sourceRecord = null,
     activeSelStation = null,
     setActiveSelStation = (() => {}),
   } = props;
@@ -1491,6 +1491,13 @@ function HistoryPanel(props) {
                                 : itemTextBadge && itemTextBadge.tone === 'amber'
                                     ? 'border-amber-300 bg-amber-50 text-amber-900'
                                     : 'border-slate-200 bg-white text-slate-600';
+                        // Made from an older version of the source in use (see the Source view).
+                        const itemSourceVersion = getSafeArtifactField(item, 'sourceVersion');
+                        const sourceInUse = getSafeArtifactField(sourceRecord, 'inUse');
+                        const sourceVersionNow = getSafeArtifactField(sourceInUse, 'version');
+                        const itemOlderSourceLabel = Number.isSafeInteger(itemSourceVersion) && Number.isSafeInteger(sourceVersionNow) && itemSourceVersion < sourceVersionNow
+                            ? (t('history.from_source_version') || 'From source version {version}').replace('{version}', String(itemSourceVersion))
+                            : '';
                         const itemDate = getSafeRowDate(getSafeArtifactField(item, 'timestamp'));
                         const itemDateLabel = itemDate
                             ? formatHistoryDate(itemDate)
@@ -1597,7 +1604,7 @@ function HistoryPanel(props) {
                                             }}
                                             style={{ flexBasis: '10rem' }}
                                             className={`min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? 'cursor-default bg-indigo-50/80 text-slate-900' : 'hover:bg-slate-100 text-slate-800'} aria-disabled:opacity-60`}
-                                            aria-label={isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`}
+                                            aria-label={(isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`) + (itemOlderSourceLabel ? `. ${itemOlderSourceLabel}` : '')}
                                             aria-current={isCurrent ? 'page' : undefined}
                                             aria-busy={isOpening || undefined}
                                             aria-disabled={isSyncMode || isCurrent}
@@ -1614,6 +1621,11 @@ function HistoryPanel(props) {
                                                     {itemTextBadge && (
                                                         <span className={`rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}`}>
                                                             {itemTextBadge.label}
+                                                        </span>
+                                                    )}
+                                                    {itemOlderSourceLabel && (
+                                                        <span data-history-source-version className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 font-semibold text-amber-900" title={t('history.from_source_version_hint') || 'Your source has changed since this was made. Open it to remake it from the current version.'}>
+                                                            {itemOlderSourceLabel}
                                                         </span>
                                                     )}
                                                     {itemDateLabel && <time dateTime={itemDateTime}>{itemDateLabel}</time>}

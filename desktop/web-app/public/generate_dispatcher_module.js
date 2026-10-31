@@ -9779,7 +9779,8 @@ Return ONLY JSON:
       newItem.unitId = _itemUnitId;
       throwIfGenerationAborted();
       if (!memoryProgress) setHistory(prev => isGenerationCurrent() && !generationSignal?.aborted ? [...prev, newItem] : prev);
-      if (!memoryProgress && (switchView || !generatedContent)) {
+      // The source check runs from the Source view and must leave it on screen.
+      if (!memoryProgress && (switchView || (!generatedContent && configOverride.stayOnView !== true))) {
           setGeneratedContent(newItem);
           setActiveView(type);
           setStickers([]);
@@ -9805,7 +9806,7 @@ Return ONLY JSON:
           if (type === 'gemini-bridge') flyToElement('tour-tool-brainstorm');
           if (type === 'outline') flyToElement('tour-tool-outline');
           if (type === 'image') flyToElement('tour-tool-visual');
-          if (type === 'analysis') flyToElement('tour-tool-analysis');
+          if (type === 'analysis') flyToElement('tour-source-check');
       }
       return newItem;
     } catch (err) {

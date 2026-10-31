@@ -94,7 +94,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(26);
+        expect(call({ a: 'hello' }).v).toBe(27);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -869,7 +869,7 @@ describe('ANTI wiring pins', () => {
         expect(anti).toMatch(/applyMbDownPayload/);
         expect(anti).toMatch(/_alloCollectResChunk\(store, v\)/);
         // Poll cadence: slower base while the channel is open.
-        expect(anti).toMatch(/rtcOpen \? 8000 : ALLO_MB_POLL_MS/);
+        expect(anti).toMatch(/rtcOpen \? ALLO_MB_RTC_POLL_MS : ALLO_MB_POLL_MS/);
     });
 
     it('live sessions host a durable pack + advertise packRef, and students getpack-heal it', () => {

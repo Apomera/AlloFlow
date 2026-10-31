@@ -1427,7 +1427,7 @@ const UI_ELEMENT_MAP = {
   "simplified": "ui-tool-simplified",
   "source": "tour-source-input",
   "inputs": "tour-source-input",
-  "analysis": "tour-tool-analysis",
+  "analysis": "tour-source-check",
   "outline": "tour-tool-outline",
   "visual": "tour-tool-visual",
   "image": "tour-tool-visual",

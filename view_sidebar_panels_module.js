@@ -2056,6 +2056,255 @@ function DbqPanel(props) {
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-rose-600" })
   ));
 }
+const SourceRecord = {
+  status(record, text) {
+    const value = typeof text === "string" ? text : "";
+    if (!value.trim()) return "empty";
+    return record && record.inUse && record.inUse.text === value ? "in-use" : "draft";
+  },
+  use(record, text) {
+    const value = typeof text === "string" ? text : "";
+    if (!value.trim()) return record || null;
+    const base = record && typeof record === "object" ? record : {};
+    if (base.inUse && base.inUse.text === value) return typeof base.pending === "string" ? { ...base, pending: null } : base;
+    const version = (base.inUse ? Number(base.inUse.version) || 0 : 0) + 1;
+    const at = Date.now();
+    const versions = (Array.isArray(base.versions) ? base.versions : []).concat([{ version, text: value, at }]).slice(-20);
+    return { ...base, inUse: { text: value, version, at }, versions, pending: null };
+  },
+  // Making a resource from a draft uses it, unless the teacher is typing in the
+  // editor right then: the text is marked pending and used when they leave it.
+  autoUse(record, text, typing) {
+    const value = typeof text === "string" ? text : "";
+    if (!value.trim() || record && record.inUse && record.inUse.text === value) return record || null;
+    if (typing) return { ...record || {}, pending: value };
+    return SourceRecord.use(record, value);
+  },
+  settle(record, text) {
+    if (!record || typeof record.pending !== "string") return record || null;
+    return record.pending === text && String(text || "").trim() ? SourceRecord.use(record, text) : { ...record, pending: null };
+  },
+  // New history items remember the source version they were made from.
+  stamp(history, record, seen) {
+    const version = record && record.inUse ? record.inUse.version : null;
+    let changed = false;
+    const next = (Array.isArray(history) ? history : []).map((item) => {
+      if (!item || item.id == null || seen.has(item.id)) return item;
+      seen.add(item.id);
+      if (version == null || typeof item.sourceVersion === "number") return item;
+      changed = true;
+      return { ...item, sourceVersion: version };
+    });
+    return changed ? next : history;
+  },
+  checkFor(history, text) {
+    if (typeof text !== "string" || !text.trim()) return null;
+    return (Array.isArray(history) ? history : []).slice().reverse().find((item) => item && item.type === "analysis" && item.data && item.data.originalText === text) || null;
+  },
+  summary(item, say) {
+    if (!item || !item.data) return "";
+    const tr = typeof say === "function" ? say : (key, fallback) => fallback;
+    const data = item.data, parts = [];
+    if (data.readingLevel && data.readingLevel.range) parts.push(String(data.readingLevel.range));
+    if (Array.isArray(data.concepts) && data.concepts.length) parts.push(tr("source_view.check_concepts", "{count} key concepts").replace("{count}", String(data.concepts.length)));
+    if (data.accuracy && data.accuracy.rating) parts.push(tr("source_view.check_accuracy", "Accuracy: {rating}").replace("{rating}", String(data.accuracy.rating)));
+    return parts.join(" \xB7 ");
+  },
+  title(text) {
+    const line = String(text || "").split("\n").map((part) => part.replace(/^[#>*\-\s]+/, "").trim()).find(Boolean) || "";
+    const words = line.split(/\s+/).filter(Boolean);
+    return words.slice(0, 8).join(" ") + (words.length > 8 ? "\u2026" : "");
+  }
+};
+function SourceView(props) {
+  const {
+    t,
+    inputText,
+    setInputText,
+    sourceRecord,
+    setSourceRecord,
+    sourceReplacement,
+    setSourceReplacement,
+    history,
+    handleGenerate,
+    isProcessing,
+    isGeneratingSource,
+    generationStep,
+    isExtracting,
+    setIsExtracting,
+    setGenerationStep,
+    callGeminiVision,
+    addToast,
+    checkAccuracyWithSearch,
+    setCheckAccuracyWithSearch,
+    handleFormatText,
+    refineSourceSuggestion,
+    openAnalysis,
+    aiTextAvailable,
+    isDraftSaving,
+    isCanvas,
+    focusRequest,
+    onShowResources,
+    setSourceTopic,
+    handleSpeak,
+    isPlaying,
+    playingContentId
+  } = props;
+  const say = (key, fallback) => {
+    try {
+      const value = t(key);
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
+  const fill = (text2, values) => String(text2).replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
+  const text = typeof inputText === "string" ? inputText : "";
+  const status = SourceRecord.status(sourceRecord, text);
+  const inUse = sourceRecord && sourceRecord.inUse ? sourceRecord.inUse : null;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const [editing, setEditing] = React.useState(false);
+  const [skipCheck, setSkipCheck] = React.useState(false);
+  const [checkRun, setCheckRun] = React.useState(null);
+  const [refineInstruction, setRefineInstruction] = React.useState("");
+  const [refining, setRefining] = React.useState(false);
+  const editorRef = React.useRef(null);
+  const readOnly = status === "in-use" && !editing;
+  React.useEffect(() => {
+    if (focusRequest && editorRef.current) editorRef.current.focus();
+  }, [focusRequest]);
+  React.useEffect(() => {
+    if (editing && editorRef.current) editorRef.current.focus();
+  }, [editing]);
+  const aiReady = aiTextAvailable !== false;
+  const check = SourceRecord.checkFor(history, text);
+  const checkState = check ? "done" : checkRun && checkRun.text === text ? checkRun.state === "running" ? "running" : "failed" : aiReady ? "none" : "unavailable";
+  const runCheck = (value) => {
+    const target = typeof value === "string" ? value : text;
+    if (!target.trim() || typeof handleGenerate !== "function") return;
+    setCheckRun({ text: target, state: "running" });
+    const finish = () => setCheckRun((run) => run && run.text === target ? { ...run, state: "finished" } : run);
+    Promise.resolve(handleGenerate("analysis", null, false, target, { selectedReadingSourceId: "__input__", stayOnView: true }, false)).then(finish, finish);
+  };
+  const useSource = () => {
+    if (!text.trim() || typeof setSourceRecord !== "function") return;
+    setSourceRecord((record2) => SourceRecord.use(record2, text));
+    setEditing(false);
+    if (!skipCheck && aiReady && !check) runCheck(text);
+  };
+  const discardChanges = () => {
+    if (!inUse) return;
+    setInputText(inUse.text);
+    setEditing(false);
+  };
+  const settle = () => {
+    if (sourceRecord && typeof sourceRecord.pending === "string" && typeof setSourceRecord === "function") setSourceRecord((record2) => SourceRecord.settle(record2, text));
+  };
+  const replacement = !sourceReplacement ? null : sourceReplacement.status === "review" ? sourceReplacement : sourceReplacement.status === "replaced" && text === sourceReplacement.text ? sourceReplacement : sourceReplacement.status === "restored" && text === sourceReplacement.previous ? sourceReplacement : null;
+  const record = (next) => {
+    if (typeof setSourceReplacement === "function") setSourceReplacement(next);
+  };
+  const clearTopic = () => {
+    if (typeof setSourceTopic === "function") setSourceTopic("");
+  };
+  const keepText = () => {
+    record(null);
+    clearTopic();
+  };
+  const usePassage = () => {
+    if (!sourceReplacement) return;
+    setInputText(sourceReplacement.text);
+    record({ ...sourceReplacement, previous: text, status: "replaced" });
+    clearTopic();
+  };
+  const undo = () => {
+    if (!sourceReplacement) return;
+    setInputText(sourceReplacement.previous);
+    record({ ...sourceReplacement, status: "restored" });
+  };
+  const suggestRewrite = () => {
+    const instruction = refineInstruction.trim();
+    if (!instruction || !text.trim() || typeof refineSourceSuggestion !== "function" || refining) return;
+    setRefining(true);
+    const base = text;
+    Promise.resolve(refineSourceSuggestion(instruction, base)).then((rewrite) => {
+      if (typeof rewrite === "string" && rewrite.trim() && rewrite !== base) {
+        record({ status: "review", reason: "refine", text: rewrite, previous: base, topic: "", at: Date.now() });
+        setRefineInstruction("");
+      }
+    }, () => {
+    }).then(() => setRefining(false));
+  };
+  const format = (kind) => {
+    if (!readOnly && typeof handleFormatText === "function") handleFormatText(kind, editorRef, text, setInputText);
+  };
+  const pasteImage = (event) => {
+    const items = event.clipboardData && event.clipboardData.items;
+    if (!items || typeof callGeminiVision !== "function") return;
+    for (const item of items) {
+      if (!item.type || !item.type.startsWith("image/")) continue;
+      event.preventDefault();
+      const blob = item.getAsFile();
+      if (!blob) return;
+      setIsExtracting(true);
+      setGenerationStep(say("source_view.extracting_image", "Extracting text from the pasted image..."));
+      if (addToast) addToast(t("toasts.image_detected_extracting"), "info");
+      const reader = new window.FileReader();
+      reader.onload = async () => {
+        try {
+          const base64 = String(reader.result).split(",")[1];
+          const extracted = await callGeminiVision("You are an OCR expert for educators. Extract all readable text from this image. Preserve structure (headers, paragraphs) using markdown. If there are tables, preserve them as markdown tables. Return ONLY the extracted text.", base64, item.type);
+          if (extracted && extracted.trim().length > 10) {
+            setInputText((previous) => previous ? previous + "\n\n" + extracted.trim() : extracted.trim());
+            if (addToast) addToast(t("toasts.text_extracted_image"), "success");
+          } else if (addToast) addToast(t("toasts.extract_readable_failed_short"), "error");
+        } catch (error) {
+          if (addToast) addToast(t("errors.image_ocr_failed") + (error && error.message ? error.message : ""), "error");
+        }
+        setIsExtracting(false);
+        setGenerationStep("");
+      };
+      reader.readAsDataURL(blob);
+      return;
+    }
+  };
+  const statusLine = status === "empty" ? say("source_view.status_empty", "Paste or type your text below. It stays a draft until you use it.") : status === "in-use" ? fill(say("source_view.status_in_use", "In use \xB7 version {version} \xB7 {words} words."), { version: inUse ? inUse.version : 1, words }) : inUse ? fill(say("source_view.status_next", "Editing version {next} \xB7 {words} words. Resources keep using version {version} until you use this version."), { next: inUse.version + 1, version: inUse.version, words }) : fill(say("source_view.status_draft", "Draft \xB7 {words} words. Resources use it once you press Use this source or make a resource."), { words });
+  const checkLine = checkState === "done" ? SourceRecord.summary(check, say) || say("source_view.check_done", "Checked.") : checkState === "running" ? say("source_view.check_running", "Checking your source\u2026") : checkState === "failed" ? say("source_view.check_failed", "The source check didn\u2019t finish.") : checkState === "unavailable" ? say("source_view.check_unavailable", "The source check needs AI, which isn\u2019t set up here.") : say("source_view.check_none", "Not checked yet.");
+  const reviewTitle = replacement && replacement.reason === "refine" ? say("source_view.review_refine_title", "A suggested rewrite is ready") : say("sidebar.source_review_title", "A new passage is ready");
+  const reviewBody = !replacement ? "" : replacement.reason === "refine" ? say("source_view.review_refine", "Your text has not changed. Review the suggestion below.") : replacement.reason === "edited" ? say("sidebar.source_review_edited", "Your source text changed while AI was writing, so it was not replaced. Review the new passage below.") : say("sidebar.source_review_unconfirmed", "You already have source text, so the new passage was not put in automatically. Review it below.");
+  const pending = sourceRecord && typeof sourceRecord.pending === "string";
+  const reading = !!isPlaying && playingContentId === "source-view";
+  const readAloud = () => {
+    if (typeof handleSpeak !== "function" || !text.trim()) return;
+    const language = check && check.data && typeof check.data.sourceLanguage === "string" && check.data.sourceLanguage.trim() ? check.data.sourceLanguage : null;
+    handleSpeak(text, "source-view", 0, false, language);
+  };
+  return /* @__PURE__ */ React.createElement("section", { "data-source-view": true, "data-source-status": status, "aria-labelledby": "source-view-title", className: "mx-auto w-full max-w-3xl space-y-4 text-left" }, /* @__PURE__ */ React.createElement("header", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("h2", { id: "source-view-title", className: "text-xl font-black text-slate-900" }, say("source_view.title", "Your source")), /* @__PURE__ */ React.createElement("p", { id: "source-view-status", "data-source-status-line": true, role: "status", className: "text-sm text-slate-700" }, statusLine), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, status === "draft" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-use": true, "data-help-key": "source_view_use", onClick: useSource, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, inUse ? say("source_view.use_version", "Use this version") : say("source_view.use", "Use this source")), status === "draft" && aiReady && /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-11 items-center gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-skip-check": true, checked: skipCheck, onChange: (event) => setSkipCheck(event.target.checked) }), say("source_view.skip_check", "Skip the source check")), status === "draft" && inUse && !(replacement && replacement.status === "replaced" && replacement.previous === inUse.text) && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-discard": true, onClick: discardChanges, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, fill(say("source_view.discard", "Discard changes (back to version {version})"), { version: inUse.version })), status === "in-use" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-make-resources": true, onClick: () => {
+    if (typeof onShowResources === "function") onShowResources();
+  }, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, say("source_view.make_resources", "Make resources")), typeof handleSpeak === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-read-aloud": true, "aria-pressed": reading, onClick: readAloud, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, reading ? say("source_view.stop_reading", "Stop reading") : say("source_view.read_aloud", "Read aloud")))), readOnly ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { "data-source-readonly": true, "aria-describedby": "source-view-status", className: "max-h-[60vh] overflow-y-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-900" }, text), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-edit": true, onClick: () => setEditing(true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, say("source_view.edit", "Edit source"))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { role: "toolbar", "aria-label": say("source_view.format_toolbar", "Formatting"), className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "bold", onClick: () => format("bold"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.bold", "Bold")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "italic", onClick: () => format("italic"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.italic", "Italic")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "highlight", onClick: () => format("highlight"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.highlight", "Highlight")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "h2", onClick: () => format("h2"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("source_view.heading", "Heading")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "list", onClick: () => format("list"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.list", "List"))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      "data-allo-textundo": "input",
+      ref: editorRef,
+      value: text,
+      onChange: (event) => setInputText(event.target.value),
+      onBlur: settle,
+      onPaste: pasteImage,
+      placeholder: isExtracting ? t("common.scanning_document") : say("source_view.placeholder", "Paste or type your text here. You can format it, ask AI for a suggested rewrite, and check it before you use it."),
+      disabled: isExtracting,
+      "aria-busy": !!(isGeneratingSource || isExtracting),
+      "aria-label": say("common.source_material_aria", "Source material"),
+      "aria-describedby": "source-view-status",
+      "data-help-key": "input_area",
+      className: "h-[50vh] min-h-[240px] w-full resize-y rounded-xl border border-slate-400 p-4 text-sm leading-relaxed focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30"
+    }
+  ), /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none absolute bottom-2 right-4 text-[11px] font-medium text-slate-600" }, isDraftSaving ? say("status.saving_draft", "Saving draft\u2026") : text && !isCanvas ? say("status.saved_device", "Saved on this device") : null))), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("p", { "data-source-writing-status": true, role: "status", className: "text-sm font-medium text-violet-900" }, (generationStep || say("common.writing_content", "Writing content...")) + " " + say("sidebar.source_writing_keeps_text", "Your text stays here until you choose to replace it.")), pending && /* @__PURE__ */ React.createElement("p", { "data-source-lock-pending": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, sourceRecord.pending === text ? say("source_view.pending", "A resource is being made from this text. It will be used when you leave the editor.") : say("source_view.pending_changed", "You changed the text after starting a resource, so it stays a draft.")), replacement && replacement.status === "review" && /* @__PURE__ */ React.createElement("section", { "data-source-replacement-review": true, "aria-labelledby": "source-replacement-review-title", className: "rounded-xl border-2 border-amber-400 bg-amber-50 p-4 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("h3", { id: "source-replacement-review-title", className: "font-bold" }, reviewTitle), /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-1" }, reviewBody), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-amber-200 bg-white p-3 text-slate-800", "data-source-review-text": true }, replacement.text), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-keep": true, onClick: keepText, className: "min-h-11 rounded-md border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-50" }, say("sidebar.source_review_keep", "Keep my text")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-replace": true, onClick: usePassage, className: "min-h-11 rounded-md bg-amber-800 px-3 font-bold text-white hover:bg-amber-900" }, replacement.reason === "refine" ? say("source_view.review_use_rewrite", "Use this rewrite") : say("sidebar.source_review_replace", "Replace with the new passage")))), replacement && replacement.status === "replaced" && /* @__PURE__ */ React.createElement("div", { "data-source-replaced-notice": true, className: "flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950" }, /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 flex-1" }, replacement.topic ? fill(say("sidebar.source_replaced_topic", "Your source text was replaced with a new passage about \u201C{topic}\u201D."), { topic: replacement.topic }) : say("source_view.replaced", "Your source text was replaced.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-replace-undo": true, onClick: undo, className: "min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100" }, say("sidebar.source_replace_undo", "Undo"))), replacement && replacement.status === "restored" && /* @__PURE__ */ React.createElement("p", { "data-source-restored-notice": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, say("sidebar.source_restored", "Your previous source text is back.")), /* @__PURE__ */ React.createElement("section", { id: "source-check-panel", "data-source-check": true, "data-help-key": "source_view_check", "aria-labelledby": "source-check-title", className: "rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-check-title", className: "font-bold text-slate-900" }, say("source_view.check_title", "Source check")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.check_desc", "Reading level, key concepts and accuracy for this text. It runs when you use the source.")), /* @__PURE__ */ React.createElement("p", { "data-source-check-state": checkState, role: "status", className: "mt-2 text-slate-800" }, checkLine), typeof setCheckAccuracyWithSearch === "function" && /* @__PURE__ */ React.createElement("label", { className: "mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-web-check": true, checked: !!checkAccuracyWithSearch, onChange: (event) => setCheckAccuracyWithSearch(event.target.checked) }), say("source_view.web_check", "Check accuracy with a web search")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, aiReady && checkState !== "running" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-run-check": true, disabled: !!isProcessing, onClick: () => runCheck(text), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60" }, checkState === "done" ? say("source_view.check_again", "Run the check again") : checkState === "failed" ? say("source_view.check_retry", "Retry") : say("source_view.check_run", "Run check")), check && typeof openAnalysis === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-check-details": true, onClick: () => openAnalysis(check), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100" }, say("source_view.check_details", "Details")))), !readOnly && aiReady && typeof refineSourceSuggestion === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("section", { "data-source-refine": true, "aria-labelledby": "source-refine-title", className: "rounded-xl border border-slate-200 bg-white p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-refine-title", className: "font-bold text-slate-900" }, say("source_view.refine_title", "Ask AI to adjust this text")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.refine_desc", "You get a suggested rewrite to review. Your text changes only if you use it.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", "data-source-refine-input": true, value: refineInstruction, onChange: (event) => setRefineInstruction(event.target.value), onKeyDown: (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      suggestRewrite();
+    }
+  }, "aria-label": say("source_view.refine_label", "What should change?"), placeholder: say("source_view.refine_placeholder", "For example: shorten to about 300 words"), className: "min-h-11 min-w-[12rem] flex-1 rounded-lg border border-slate-400 px-3" }), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-refine-go": true, disabled: refining || !refineInstruction.trim(), onClick: suggestRewrite, className: "min-h-11 rounded-lg border border-violet-700 bg-white px-3 font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60" }, refining ? say("source_view.refining", "Writing a suggestion\u2026") : say("source_view.refine_go", "Suggest a rewrite")))));
+}
 function SourceInputPanel(props) {
   const {
     addToast,
@@ -2127,20 +2376,29 @@ function SourceInputPanel(props) {
     setDocumentsOnly,
     history,
     handleGenerate,
-    isProcessing
+    isProcessing,
+    sourceReplacement,
+    setSourceReplacement,
+    sourceRecord,
+    openSourceView
   } = props;
-  const analyses = (Array.isArray(history) ? history : []).filter((item) => item && item.type === "analysis" && item.data && typeof item.data.originalText === "string" && item.data.originalText.trim());
-  const matchedAnalysis = inputText && inputText.trim() ? analyses.slice().reverse().find((item) => item.data.originalText === inputText) : null;
-  const [analysisLink, setAnalysisLink] = React.useState(null);
-  React.useEffect(() => {
-    if (matchedAnalysis && (!analysisLink || analysisLink.id !== matchedAnalysis.id)) setAnalysisLink({ id: matchedAnalysis.id, noticed: false, dismissed: false });
-  }, [matchedAnalysis && matchedAnalysis.id]);
-  const linkedAnalysis = analysisLink && !analysisLink.dismissed ? analyses.find((item) => item.id === analysisLink.id) : null;
-  const analysisNote = !linkedAnalysis ? null : linkedAnalysis.data.originalText === inputText ? analysisLink.noticed ? "analyzed" : null : inputText && inputText.trim() ? "changed" : null;
-  const noticeAnalysis = () => {
-    if (analysisLink && !analysisLink.noticed && matchedAnalysis) setAnalysisLink({ ...analysisLink, noticed: true });
+  const panelText = (key, fallback) => {
+    try {
+      const value = t(key);
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
   };
-  const dismissAnalysisNote = () => setAnalysisLink(analysisLink ? { ...analysisLink, dismissed: true } : null);
+  const fillText = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
+  const sourceStatus = SourceRecord.status(sourceRecord, inputText);
+  const inUse = sourceRecord && sourceRecord.inUse ? sourceRecord.inUse : null;
+  const sourceWords = typeof inputText === "string" && inputText.trim() ? inputText.trim().split(/\s+/).length : 0;
+  const sourceTitle = SourceRecord.title(inputText);
+  const sourceCheck = SourceRecord.checkFor(history, inputText);
+  const openSource = (focus) => {
+    if (typeof openSourceView === "function") openSourceView({ focus });
+  };
   if (!expandedTools || !expandedTools.includes("source-input")) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, showUrlInput && /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in motion-reduce:animate-none slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center bg-white p-1 rounded-lg border border-indigo-100 mb-2 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
@@ -2277,60 +2535,9 @@ function SourceInputPanel(props) {
     setSelectedOwnSourceIds,
     documentsOnly,
     setDocumentsOnly,
-    generationStep
-  }), /* @__PURE__ */ React.createElement("div", { className: "p-4 relative" }, /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      "data-allo-textundo": "input",
-      value: inputText,
-      "aria-describedby": analysisNote ? "source-analysis-note" : void 0,
-      onFocus: noticeAnalysis,
-      onChange: (e) => setInputText(e.target.value),
-      onPaste: async (e) => {
-        const items = e.clipboardData?.items;
-        if (!items || !callGeminiVision) return;
-        for (const item of items) {
-          if (item.type.startsWith("image/")) {
-            e.preventDefault();
-            const blob = item.getAsFile();
-            if (!blob) return;
-            setIsExtracting(true);
-            setGenerationStep("Extracting text from pasted image...");
-            addToast && addToast(t("toasts.image_detected_extracting"), "info");
-            const reader = new FileReader();
-            reader.onload = async () => {
-              try {
-                const base64 = reader.result.split(",")[1];
-                const text = await callGeminiVision(
-                  "You are an OCR expert for educators. Extract all readable text from this image. Preserve structure (headers, paragraphs) using markdown. If there are tables, preserve them as markdown tables. Return ONLY the extracted text.",
-                  base64,
-                  item.type
-                );
-                if (text && text.trim().length > 10) {
-                  setInputText((prev) => prev ? prev + "\n\n" + text.trim() : text.trim());
-                  addToast && addToast(t("toasts.text_extracted_image"), "success");
-                } else {
-                  addToast && addToast(t("toasts.extract_readable_failed_short"), "error");
-                }
-              } catch (err) {
-                addToast && addToast(t("errors.image_ocr_failed") + err.message, "error");
-              }
-              setIsExtracting(false);
-              setGenerationStep("");
-            };
-            reader.readAsDataURL(blob);
-            return;
-          }
-        }
-      },
-      placeholder: isGeneratingSource ? t("common.writing_content") : isExtracting ? t("common.scanning_document") : t("input.placeholder"),
-      disabled: isGeneratingSource || isExtracting,
-      "aria-busy": isGeneratingSource,
-      className: `w-full h-48 p-3 text-sm border border-slate-400 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none transition-all motion-reduce:transition-none duration-300 ${isGeneratingSource || isExtracting ? "bg-slate-50 text-slate-600" : ""}`,
-      "aria-label": t("common.source_material_aria"),
-      "data-help-key": "input_area"
-    }
-  ), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 right-4 text-[11px] font-medium transition-opacity duration-500 text-slate-600 pointer-events-none flex items-center gap-1" }, isDraftSaving ? /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 8, className: "animate-spin motion-reduce:animate-none" }), " ", t("status.saving_draft")) : inputText && !isCanvas ? /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-green-700" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 8 }), " ", t("status.saved_device")) : null), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 hidden md:flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-b-xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none text-indigo-600", size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium text-indigo-600" }, generationStep)))), analysisNote && /* @__PURE__ */ React.createElement("div", { id: "source-analysis-note", "data-source-analysis-note": analysisNote, className: "mx-4 mb-4 rounded-lg border border-violet-200 bg-violet-50 p-2.5 text-xs text-violet-950" }, /* @__PURE__ */ React.createElement("p", { className: "m-0" }, analysisNote === "analyzed" ? t("sidebar.source_analyzed_note") || "This text has been analyzed. Edits here won\u2019t change the analysis or the resources made from it." : t("sidebar.source_changed_note") || "This text no longer matches its analysis. Re-analyze so the analysis and new resources use your changes."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, analysisNote === "analyzed" && typeof window.__alloOpenSourceForRevision === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-edit-in-analysis": true, onClick: () => window.__alloOpenSourceForRevision(linkedAnalysis.id), className: "rounded-full border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-800 hover:bg-violet-100" }, t("sidebar.source_edit_in_analysis") || "Edit in Analyze Source"), analysisNote === "changed" && typeof handleGenerate === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-reanalyze": true, disabled: !!isProcessing, onClick: () => handleGenerate("analysis"), className: "rounded-full border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-800 hover:bg-violet-100 disabled:opacity-60" }, t("sidebar.source_reanalyze") || "Re-analyze"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-analysis-dismiss": true, onClick: dismissAnalysisNote, className: "rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100" }, analysisNote === "analyzed" ? t("sidebar.source_keep_editing") || "Keep editing here" : t("sidebar.source_analysis_dismiss") || "Dismiss"))));
+    generationStep,
+    inputText
+  }), sourceStatus === "empty" ? /* @__PURE__ */ React.createElement("div", { "data-source-ways-in": true, id: "tour-source-check", className: "p-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-paste": true, onClick: () => openSource(true), className: "w-full min-h-11 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-800" }, panelText("sidebar.source_paste_or_type", "Paste or type your own text")), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-2 text-xs text-slate-600" }, panelText("sidebar.source_ways_in_hint", "Or start from Upload, Link, Books or Write with AI above. Your text opens in the source view."))) : /* @__PURE__ */ React.createElement("div", { "data-source-summary": true, "data-help-key": "source_summary_card", "data-source-status": sourceStatus, className: "m-4 rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("p", { className: "m-0 text-sm font-bold text-slate-900" }, sourceStatus === "in-use" ? inUse && inUse.version > 1 ? fillText(panelText("sidebar.source_summary_in_use_version", "Your source: in use, version {version}"), { version: inUse.version }) : panelText("sidebar.source_summary_in_use", "Your source: in use") : panelText("sidebar.source_summary_draft", "Your source: draft")), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 line-clamp-2 text-slate-700", "data-source-summary-first": true }, sourceTitle), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 text-slate-600" }, fillText(panelText("sidebar.source_summary_words", "{words} words"), { words: sourceWords })), /* @__PURE__ */ React.createElement("p", { id: "tour-source-check", "data-source-check-line": true, className: "m-0 mt-1 text-slate-700" }, sourceCheck ? SourceRecord.summary(sourceCheck, panelText) || panelText("source_view.check_done", "Checked.") : panelText("source_view.check_none", "Not checked yet.")), sourceRecord && typeof sourceRecord.pending === "string" && /* @__PURE__ */ React.createElement("p", { "data-source-lock-pending": true, role: "status", className: "m-0 mt-1 text-emerald-900" }, panelText("sidebar.source_pending_short", "Will be used when you finish editing.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-open": true, onClick: () => openSource(sourceStatus === "draft"), "aria-label": fillText(sourceStatus === "in-use" ? panelText("sidebar.source_open_named", "Open source: {title}") : panelText("sidebar.source_continue_named", "Continue editing: {title}"), { title: sourceTitle }), className: "mt-3 w-full min-h-11 rounded-lg bg-indigo-700 px-3 text-sm font-bold text-white hover:bg-indigo-800" }, sourceStatus === "in-use" ? panelText("sidebar.source_open", "Open source") : panelText("sidebar.source_continue", "Continue editing"))));
 }
 function GlossaryPanel(props) {
   const aiTextAvailable = useAiTextAvailable();
@@ -3716,13 +3923,27 @@ function UiToolWordsoundsPanel(props) {
 function ReadingSourceChoice(props) {
   const api = window.AlloModules && window.AlloModules.InstructionalContext;
   const selectedId = props.selectedReadingSourceId || "";
+  const effectiveId = typeof props.effectiveReadingSourceId === "string" ? props.effectiveReadingSourceId : selectedId;
+  const say = (key, fallback) => {
+    try {
+      const value = props.t && props.t(key);
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
   const result = React.useMemo(() => api?.resolveReadingSource ? api.resolveReadingSource({
     items: props.history || [],
-    sourceArtifactId: selectedId,
+    sourceArtifactId: effectiveId,
     inputText: props.inputText || "",
     unitId: props.activeUnitId || "all",
     language: props.leveledTextLanguage || "English"
-  }) : { status: "loading", candidates: [] }, [api, props.history, selectedId, props.inputText, props.activeUnitId, props.leveledTextLanguage]);
+  }) : { status: "loading", candidates: [] }, [api, props.history, effectiveId, props.inputText, props.activeUnitId, props.leveledTextLanguage]);
+  const hasSourceText = !!String(props.inputText || "").trim();
+  const automaticSource = !selectedId && effectiveId === "__input__";
+  const usesSource = effectiveId === "__input__" && result.status === "resolved";
+  const sourceStatus = SourceRecord.status(props.sourceRecord, props.inputText);
+  const sourceVersion = props.sourceRecord && props.sourceRecord.inUse ? props.sourceRecord.inUse.version : 0;
   const candidates = result.candidates || [];
   const candidateItem = (candidate) => candidate.artifact || candidate.item || candidate;
   const candidateId = (candidate) => String(candidate.inputArtifactId || candidate.id || candidateItem(candidate).id || "");
@@ -3731,11 +3952,11 @@ function ReadingSourceChoice(props) {
   const selected = result.artifact || result.item;
   const title = selected?.title || result.title || (result.status === "resolved" ? "Current pasted text" : "");
   const unknownSelection = selectedId && selectedId !== "__input__" && !candidates.some((candidate) => candidateId(candidate) === selectedId);
-  return /* @__PURE__ */ React.createElement("section", { "data-reading-source-choice": true, className: "rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "reading-activity-source", className: "block text-sm font-bold text-slate-900" }, "Based on"), /* @__PURE__ */ React.createElement("select", { id: "reading-activity-source", "aria-describedby": "reading-activity-source-help", value: selectedId, disabled: props.isProcessing || !api?.resolveReadingSource, onChange: (event) => props.setSelectedReadingSourceId?.(event.target.value), className: "mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("option", { value: "" }, result.status === "ambiguous" ? "Choose a reading for this activity" : "Automatic \u2014 follow lesson roles"), !!String(props.inputText || "").trim() && /* @__PURE__ */ React.createElement("option", { value: "__input__" }, "Current pasted text"), unknownSelection && /* @__PURE__ */ React.createElement("option", { value: selectedId, disabled: true }, "Selected reading is no longer available in this lesson"), candidates.map((candidate) => {
+  return /* @__PURE__ */ React.createElement("section", { "data-reading-source-choice": true, className: "rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "reading-activity-source", className: "block text-sm font-bold text-slate-900" }, "Based on"), /* @__PURE__ */ React.createElement("select", { id: "reading-activity-source", "aria-describedby": "reading-activity-source-help", value: selectedId, disabled: props.isProcessing || !api?.resolveReadingSource, onChange: (event) => props.setSelectedReadingSourceId?.(event.target.value), className: "mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("option", { value: "" }, automaticSource ? say("sidebar.based_on_auto_source", "Automatic: your source") : result.status === "ambiguous" ? "Choose a reading for this activity" : "Automatic \u2014 follow lesson roles"), hasSourceText && (selectedId === "__input__" || !automaticSource) && /* @__PURE__ */ React.createElement("option", { value: "__input__" }, say("sidebar.based_on_your_source", "Your source text")), unknownSelection && /* @__PURE__ */ React.createElement("option", { value: selectedId, disabled: true }, "Selected reading is no longer available in this lesson"), candidates.map((candidate) => {
     const item = candidateItem(candidate);
     const profile = candidate.instructionalText || api?.getInstructionalText?.(item) || {};
     return /* @__PURE__ */ React.createElement("option", { key: candidateId(candidate), value: candidateId(candidate), disabled: candidate.eligible === false }, item.title || candidate.title || "Reading", " \xB7 ", formLabel(profile.form), " \xB7 ", roleLabel(profile.role), candidate.eligible === false ? " (needs review)" : "");
-  })), /* @__PURE__ */ React.createElement("p", { id: "reading-activity-source-help", role: "status", className: "mt-2 break-words text-xs leading-relaxed " + (result.status === "resolved" ? "text-slate-700" : "text-amber-900") }, result.status === "resolved" ? "Activities will use: " + title + ". This choice does not change its lesson role." : result.status === "ambiguous" ? "More than one reading could be used. Choose the passage before generating activities." : result.status === "loading" ? "Reading choices are loading." : selectedId ? "Choose an available reading or the current pasted text." : "Add a passage or choose a saved reading for text-based activities."));
+  })), usesSource ? /* @__PURE__ */ React.createElement("div", { id: "reading-activity-source-help", "data-source-using": true, role: "status", className: "mt-2 break-words text-xs leading-relaxed text-slate-700" }, /* @__PURE__ */ React.createElement("p", { className: "m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-900" }, say("sidebar.based_on_uses_source", "Activities will use your source: {title}").replace("{title}", SourceRecord.title(props.inputText))), " \xB7 ", sourceStatus === "in-use" ? sourceVersion > 1 ? say("sidebar.source_using_version", "In use, version {version}").replace("{version}", String(sourceVersion)) : say("sidebar.source_using_in_use", "In use") : say("sidebar.source_using_draft", "Draft, used when you make a resource")), typeof props.openSourceView === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-using-open": true, onClick: () => props.openSourceView({ focus: false }), className: "min-h-11 font-bold text-indigo-700 underline" }, say("sidebar.source_open", "Open source"))) : /* @__PURE__ */ React.createElement("p", { id: "reading-activity-source-help", role: "status", className: "mt-2 break-words text-xs leading-relaxed " + (result.status === "resolved" ? "text-slate-700" : "text-amber-900") }, result.status === "resolved" ? "Activities will use: " + title + ". This choice does not change its lesson role." : result.status === "ambiguous" ? "More than one reading could be used. Choose the passage before generating activities." : result.status === "loading" ? "Reading choices are loading." : selectedId ? "Choose an available reading or the current pasted text." : "Add a passage or choose a saved reading for text-based activities."));
 }
 function GeneratorActionsView(props) {
   const {
@@ -4158,7 +4379,9 @@ function GeneratorActionsView(props) {
     visualCustomInstructions,
     visualCustomStyle,
     visualLayoutMode,
-    visualStyle
+    visualStyle,
+    sourceRecord,
+    openSourceView
   } = props;
   const canStartBlank = (id) => Array.isArray(window.__alloBlankStartTypes) && window.__alloBlankStartTypes.includes(id);
   const startBlank = (id) => handleGenerate(id, null, false, null, { seed: { kind: "blank" } });
@@ -4295,29 +4518,7 @@ function GeneratorActionsView(props) {
     resolveTranslationPolicy,
     isTranslationControlRelevant,
     translationTargetChoices
-  }), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("analysis") ? void 0 : "none" }, id: "tour-tool-analysis", "data-help-key": "tool_analysis", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
-                ${activeView === "analysis" ? "border-violet-600 shadow-xl shadow-violet-500/20" : "border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10"}
-              ` }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "tool_analysis",
-      "aria-expanded": expandedTools.includes("analysis"),
-      onClick: () => toggleTool("analysis"),
-      className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors motion-reduce:transition-none"
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "min-w-0 text-left" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Search2, { size: 16 }), " ", t("sidebar.tool_analysis")), /* @__PURE__ */ React.createElement("div", { "data-tool-subtitle": true, className: "mt-0.5 pl-6 text-xs font-medium text-slate-600" }, t("sidebar.tool_analysis_sub") || "Check and revise your source text")),
-    expandedTools.includes("analysis") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("analysis") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("analysis") && window.AlloModules && window.AlloModules.AnalysisPanel && React.createElement(window.AlloModules.AnalysisPanel, {
-    expandedTools,
-    checkAccuracyWithSearch,
-    handleGenerate,
-    hasSourceOrAnalysis,
-    inputText,
-    isProcessing,
-    setCheckAccuracyWithSearch,
-    t
-  })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("glossary") ? void 0 : "none" }, id: "ui-tool-glossary", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+  }), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("glossary") ? void 0 : "none" }, id: "ui-tool-glossary", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "glossary" ? "border-sky-600 shadow-xl shadow-sky-500/20" : "border-slate-200 hover:border-sky-200 shadow-lg shadow-sky-500/10"}
               ` }, /* @__PURE__ */ React.createElement(
     "button",
@@ -5127,6 +5328,80 @@ function GeneratorActionsView(props) {
     /* @__PURE__ */ React.createElement(ArrowRight2, { size: 16, className: "text-teal-700 group-hover:text-teal-600" })
   )));
 }
+function SourceChangeControl({ t, inputText, sourceRecord, setSourceReplacement }) {
+  const [asking, setAsking] = React.useState(false);
+  const keepRef = React.useRef(null);
+  const buttonRef = React.useRef(null);
+  React.useEffect(() => {
+    if (asking && keepRef.current) keepRef.current.focus();
+  }, [asking]);
+  const say = (key, fallback) => {
+    try {
+      const value = t(key);
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
+  const inUse = sourceRecord && sourceRecord.inUse && sourceRecord.inUse.text === inputText ? sourceRecord.inUse : null;
+  const keep = () => {
+    setAsking(false);
+    if (buttonRef.current) buttonRef.current.focus();
+  };
+  const start = () => {
+    setAsking(false);
+    if (typeof setSourceReplacement === "function") setSourceReplacement({ status: "change-pending", previous: inputText, at: Date.now() });
+  };
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-source-change": true,
+      "data-help-key": "source_change_btn",
+      ref: buttonRef,
+      "aria-expanded": asking,
+      onClick: () => setAsking(true),
+      title: say("input.actions.change_source_hint_v2", "Choose a different source. You are asked first, and you can undo it."),
+      className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm"
+    },
+    say("input.actions.change_source", "Change source")
+  ), asking && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      "data-source-change-confirm": true,
+      role: "alertdialog",
+      "aria-modal": "false",
+      "aria-labelledby": "source-change-title",
+      "aria-describedby": "source-change-desc",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          keep();
+        }
+      },
+      className: "basis-full w-full cursor-auto rounded-lg border-2 border-amber-400 bg-amber-50 p-3 text-left text-xs text-amber-950"
+    },
+    /* @__PURE__ */ React.createElement("h3", { id: "source-change-title", className: "text-sm font-bold" }, say("sidebar.source_change_title", "Choose a different source?")),
+    /* @__PURE__ */ React.createElement("p", { id: "source-change-desc", className: "mt-1" }, inUse ? say("sidebar.source_change_in_use", "Your current text stays until the new one arrives, and you can undo the change. Resources keep using version {version} until you use the new text.").replace("{version}", String(inUse.version)) : say("sidebar.source_change_draft", "Your current text stays until the new one arrives, and you can undo the change.")),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", ref: keepRef, "data-source-change-keep": true, onClick: keep, className: "min-h-11 rounded-md border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-50" }, say("sidebar.source_change_cancel", "Keep my source")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-change-go": true, onClick: start, className: "min-h-11 rounded-md bg-amber-800 px-3 font-bold text-white hover:bg-amber-900" }, say("sidebar.source_change_go", "Choose a new source")))
+  ));
+}
+function SourceShellWatch({ inputText, sourceStatus, sourceReplacement, setSourceReplacement, openSourceView }) {
+  const lastStatusRef = React.useRef(sourceStatus);
+  React.useEffect(() => {
+    if (!sourceReplacement || sourceReplacement.status !== "change-pending" || typeof setSourceReplacement !== "function") return;
+    if (typeof inputText === "string" && inputText.trim() && inputText !== sourceReplacement.previous) {
+      setSourceReplacement({ ...sourceReplacement, status: "replaced", text: inputText, topic: "" });
+      if (typeof openSourceView === "function") openSourceView({ focus: false });
+    }
+  }, [inputText]);
+  React.useEffect(() => {
+    if (lastStatusRef.current === "empty" && sourceStatus === "draft" && typeof openSourceView === "function") openSourceView({ focus: false });
+    lastStatusRef.current = sourceStatus;
+  }, [sourceStatus]);
+  return null;
+}
 function SourceInputShellView(props) {
   const {
     BookOpen: BookOpen2,
@@ -5240,11 +5515,31 @@ function SourceInputShellView(props) {
     documentsOnly,
     setDocumentsOnly,
     history,
-    handleGenerate
+    handleGenerate,
+    sourceReplacement,
+    setSourceReplacement,
+    sourceRecord,
+    setSourceRecord,
+    openSourceView
   } = props;
   const simplifySources = !!guidedMode || !!isParentMode;
-  const MoreSources = simplifySources ? "details" : React.Fragment;
-  const moreSourcesProps = simplifySources ? { className: "min-w-0 max-w-full", "data-help-key": "source_more_options" } : {};
+  const headerText = (key, fallback) => {
+    try {
+      const value = t(key);
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
+  const sourceStatus = SourceRecord.status(sourceRecord, inputText);
+  const changeOpen = !!(sourceReplacement && sourceReplacement.status === "change-pending");
+  const showWaysIn = sourceStatus === "empty" || changeOpen;
+  const cancelChange = () => {
+    if (changeOpen && typeof setSourceReplacement === "function") setSourceReplacement(null);
+  };
+  const collapseSources = simplifySources;
+  const MoreSources = collapseSources ? "details" : React.Fragment;
+  const moreSourcesProps = collapseSources ? { className: "min-w-0 max-w-full", "data-help-key": "source_more_options" } : {};
   return /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("source-input") ? void 0 : "none" }, id: "tour-input-panel", "data-help-key": "source_input", className: `bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === "input" ? "border-indigo-600 shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200"}` }, /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -5263,7 +5558,7 @@ function SourceInputShellView(props) {
         className: "hidden",
         accept: "image/*,application/pdf,.docx,.pptx,.txt,.md,.markdown,.csv,.tsv,.json,.html,.xml,.xlsx,.xls,.xlsb,.ods,video/*,audio/*"
       }
-    ), /* @__PURE__ */ React.createElement(
+    ), !showWaysIn ? /* @__PURE__ */ React.createElement(SourceChangeControl, { t, inputText, sourceRecord, setSourceReplacement }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -5277,7 +5572,7 @@ function SourceInputShellView(props) {
       },
       isExtracting ? /* @__PURE__ */ React.createElement(RefreshCw2, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Upload, { size: 12 }),
       isExtracting ? t("input.actions.analyzing_short") : t("common.upload")
-    ), /* @__PURE__ */ React.createElement(MoreSources, { ...moreSourcesProps }, simplifySources && /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-10 inline-flex items-center gap-1 px-2 text-xs font-medium text-slate-700" }, /* @__PURE__ */ React.createElement(ChevronDown2, { size: 12, "aria-hidden": "true" }), t("input.actions.more_sources") || "More sources"), /* @__PURE__ */ React.createElement("div", { className: simplifySources ? "mt-2 flex flex-wrap items-center gap-2" : "contents" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer", title: t("input.load_project_tooltip") || "Load a previously saved AlloFlow PDF project" }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.load_project") || "Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
+    ), /* @__PURE__ */ React.createElement(MoreSources, { ...moreSourcesProps }, collapseSources && /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-10 inline-flex items-center gap-1 px-2 text-xs font-medium text-slate-700" }, /* @__PURE__ */ React.createElement(ChevronDown2, { size: 12, "aria-hidden": "true" }), t("input.actions.more_sources") || "More sources"), /* @__PURE__ */ React.createElement("div", { className: collapseSources ? "mt-2 flex flex-wrap items-center gap-2" : "contents" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer", title: t("input.load_project_tooltip") || "Load a previously saved AlloFlow PDF project" }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.load_project") || "Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       if (file.size > 64 * 1024 * 1024) {
@@ -5476,10 +5771,12 @@ function SourceInputShellView(props) {
         },
         disabled: isGeneratingSource || isExtracting,
         "aria-busy": isGeneratingSource,
-        className: "text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none"
+        "aria-expanded": !!showSourceGen,
+        title: headerText("input.actions.write_with_ai_hint", "Write a new source passage with AI. It does not use your current source."),
+        className: "text-xs flex items-center gap-1 bg-violet-50 border border-violet-300 text-violet-800 hover:bg-violet-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none"
       },
-      /* @__PURE__ */ React.createElement(Sparkles2, { size: 12 }),
-      showSourceGen ? t("common.cancel") : t("input.actions.generate_short")
+      /* @__PURE__ */ React.createElement(Sparkles2, { size: 12, "aria-hidden": "true" }),
+      showSourceGen ? t("common.cancel") : changeOpen ? headerText("input.actions.replace_with_ai", "Replace with an AI-written passage") : headerText("input.actions.write_with_ai", "Write with AI")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -5492,8 +5789,8 @@ function SourceInputShellView(props) {
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D6}"),
       t("input.actions.books_short") || "Books"
-    )))), expandedTools.includes("source-input") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" }))
-  ), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
+    ))), changeOpen && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-change-cancel": true, onClick: cancelChange, className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium" }, headerText("sidebar.source_change_cancel", "Keep my source")))), expandedTools.includes("source-input") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" }))
+  ), /* @__PURE__ */ React.createElement(SourceShellWatch, { inputText, sourceStatus, sourceReplacement, setSourceReplacement, openSourceView }), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -5590,7 +5887,11 @@ function SourceInputShellView(props) {
     setDocumentsOnly,
     history,
     handleGenerate,
-    isProcessing
+    isProcessing,
+    sourceReplacement,
+    setSourceReplacement,
+    sourceRecord,
+    openSourceView
   }), expandedTools.includes("source-input") && isParentMode && isTeacherMode && String(inputText || "").trim().length > 20 && typeof onFamilyAction === "function" && /* @__PURE__ */ React.createElement("div", { "data-help-key": "family_source_actions", role: "group", "aria-label": t("family_start.actions_label") || "Adapt this reading", className: "flex flex-wrap gap-2 border-t border-slate-200 p-3" }, [
     { kind: "simplified", label: t("family_start.simpler") || "Simpler text", Icon: FileText2 },
     { kind: "glossary", label: t("family_start.words") || "Word list", Icon: Globe2 },
@@ -5624,6 +5925,6 @@ window.AlloModules.ToolCatalogControls = (typeof ToolCatalogControls !== 'undefi
 window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
 window.AlloModules.SurpriseMeCompare = (typeof SurpriseMeCompare !== 'undefined') ? SurpriseMeCompare : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
-window.AlloModules.SidebarPanels = { GeneratorActionsView, SourceInputShellView, UNIVERSAL_GRADE_CHOICES };  // truthy legacy registration plus host views
+window.AlloModules.SidebarPanels = { GeneratorActionsView, SourceInputShellView, SourceView, SourceRecord, UNIVERSAL_GRADE_CHOICES };  // truthy legacy registration plus host views
 console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');
 })();

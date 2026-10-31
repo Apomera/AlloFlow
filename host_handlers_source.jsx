@@ -3686,6 +3686,8 @@ const restoreCanvasWorkspaceSnapshot = async (candidate) => {
           );
           __d.setInputText(typeof workspace.inputText === 'string' ? workspace.inputText : '');
           __d.setSourceTopic(typeof workspace.sourceTopic === 'string' ? workspace.sourceTopic : '');
+          // The source in use, its versions and any pending use come back with the workspace.
+          if (typeof __d.setSourceRecord === 'function') __d.setSourceRecord(workspace.sourceRecord && typeof workspace.sourceRecord === 'object' ? workspace.sourceRecord : null);
           __d.setPersistedLessonDNA(workspace.persistedLessonDNA ?? null);
           const settings = workspace.lessonSettings || {};
           const researchSettings = _alloNormalizeResearchSettings(settings);

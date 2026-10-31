@@ -1780,6 +1780,7 @@ function sourcePanelImportSummary(outcome, text) {
   return text("input.my_sources_import_summary", "Saved {saved} document(s), including {replaced} replacement(s). Skipped {skipped}; failed {failed}.").replace(/\{(saved|replaced|skipped|failed)\}/g, (_, key) => String(counts[key]));
 }
 const sourceResearchSessions = /* @__PURE__ */ new WeakMap();
+const typedSourceTopics = /* @__PURE__ */ new WeakMap();
 function SourceResearchDialog({ title, onClose, children, sourceText, busy, scrollBody = true }) {
   const ref = React.useRef(null);
   React.useEffect(() => {
@@ -2488,8 +2489,16 @@ function SourceGenPanel(props) {
     setSelectedOwnSourceIds,
     documentsOnly,
     setDocumentsOnly,
-    generationStep
+    generationStep,
+    inputText
   } = props;
+  const [confirmReplace, setConfirmReplace] = React.useState(false);
+  const replaceKeepRef = React.useRef(null);
+  const writeButtonRef = React.useRef(null);
+  React.useEffect(() => {
+    if (confirmReplace && replaceKeepRef.current) replaceKeepRef.current.focus();
+  }, [confirmReplace]);
+  const existingSourceWords = typeof inputText === "string" && inputText.trim() ? inputText.trim().split(/\s+/).length : 0;
   const sourceText = (key, fallback, values) => {
     try {
       const value = t(key, values);
@@ -2500,6 +2509,12 @@ function SourceGenPanel(props) {
   };
   const sessionKey = typeof setSourceTopic === "function" ? setSourceTopic : null;
   const restoredSession = sessionKey && sourceResearchSessions.get(sessionKey);
+  const topicFilledEarlier = !!String(sourceTopic || "").trim() && !(sessionKey && typedSourceTopics.get(sessionKey) === sourceTopic);
+  const topicInputRef = React.useRef(null);
+  const typeTopic = (value) => {
+    if (sessionKey) typedSourceTopics.set(sessionKey, value);
+    setSourceTopic(value);
+  };
   const [researchConfig, setResearchConfig] = React.useState(() => restoredSession?.config || {
     version: 1,
     enabled: !!(includeSourceCitations || useOwnSources || documentsOnly),
@@ -2573,15 +2588,21 @@ function SourceGenPanel(props) {
   }, []);
   const ownSourceControlsBusy = ownSourceBusy || ownSourceImporting || isGeneratingSource;
   const canGenerateSource = (!!sourceTopic.trim() || targetStandards.length > 0) && !ownSourceControlsBusy && (!researchDocuments || researchConfig.mode !== "sources" || researchConfig.urls.length > 0 || reviewPacket?.topic === sourceTopic.trim() && reviewPacket.items?.some((item) => item.included && item.kind !== "document") || ownSourceCount > 0 && !ownSourceLoading && !ownSourceReadError);
-  const submitSource = async () => {
+  const submitSource = async (confirmed) => {
     if (reviewBeforeWriting) {
       setReviewOpen(true);
       return;
     }
     if (!canGenerateSource) return;
+    if (existingSourceWords > 0 && confirmed !== true) {
+      setConfirmReplace(true);
+      return;
+    }
+    setConfirmReplace(false);
     const result = await handleGenerateSource({
       researchConfig,
       selectedOwnSourceIds: selectedIds,
+      replaceConfirmed: existingSourceWords > 0,
       ...researchConfig.enabled && reviewPacket?.topic === sourceTopic.trim() ? { researchPacket: reviewPacket } : {}
     });
     if (researchConfig.enabled && result?.packet) setReviewPacket(result.packet);
@@ -2790,15 +2811,17 @@ function SourceGenPanel(props) {
   if (!showSourceGen) return null;
   const finderGrade = sourceLevel || gradeLevel;
   const sourceGradeMismatch = _getSourceGradeMismatch(sourceLevel, gradeLevel);
-  return /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-source-topic", className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.topic")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { "data-source-writer": true, className: "p-4 bg-violet-50/60 border-b border-violet-200 animate-in slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-violet-950" }, sourceText("input.write_source_heading", "Write a new source passage with AI")), /* @__PURE__ */ React.createElement("p", { "data-source-writer-intro": true, className: "mt-1 text-xs text-violet-900" }, existingSourceWords > 0 ? sourceText("input.write_source_intro_existing", "This writes new text from the topic below. It does not use your current source. To make resources from your own text, close this and open your source.") : sourceText("input.write_source_intro", "AI writes a new passage from the topic below. To use your own text instead, choose Paste or type your own text."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-source-topic", className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.topic")), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "allo-source-topic",
+      ref: topicInputRef,
       type: "text",
       value: sourceTopic,
-      onChange: (e) => setSourceTopic(e.target.value),
+      onChange: (e) => typeTopic(e.target.value),
       placeholder: t("wizard.topic_placeholder"),
       "aria-label": t("common.topic_subject_aria"),
+      "aria-describedby": topicFilledEarlier ? "allo-source-topic-origin" : void 0,
       className: "w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300",
       onKeyDown: (e) => {
         if (e.key === "Enter") {
@@ -2808,7 +2831,10 @@ function SourceGenPanel(props) {
       },
       autoFocus: true
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.tone")), /* @__PURE__ */ React.createElement(
+  ), topicFilledEarlier && /* @__PURE__ */ React.createElement("p", { id: "allo-source-topic-origin", "data-source-topic-origin": true, className: "mt-1 flex flex-wrap items-center gap-x-2 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("span", null, sourceText("input.topic_filled_earlier", "This topic was filled in for you earlier (for example by the setup wizard, AlloBot or a saved lesson). The new passage will be about it.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-topic-clear": true, onClick: () => {
+    typeTopic("");
+    if (topicInputRef.current) topicInputRef.current.focus();
+  }, className: "min-h-11 font-bold text-amber-900 underline" }, sourceText("input.topic_clear", "Clear topic")))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.tone")), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: sourceTone,
@@ -3100,17 +3126,46 @@ function SourceGenPanel(props) {
       generate: handleGenerateSource,
       sourceText
     }
-  )), researchConfig.enabled && !reviewBeforeWriting && reviewPacket?.topic === sourceTopic.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReviewOpen(true), disabled: ownSourceControlsBusy, className: "min-h-11 px-2 underline text-indigo-800" }, sourceText("input.research_review_sources", "Review sources")), researchConfig.enabled && researchConfig.mode === "sources" && !canGenerateSource && !ownSourceControlsBusy && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-amber-900" }, sourceText("input.research_sources_required", "Select a document, add a webpage, or add source text in review.")), /* @__PURE__ */ React.createElement(
+  )), researchConfig.enabled && !reviewBeforeWriting && reviewPacket?.topic === sourceTopic.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReviewOpen(true), disabled: ownSourceControlsBusy, className: "min-h-11 px-2 underline text-indigo-800" }, sourceText("input.research_review_sources", "Review sources")), researchConfig.enabled && researchConfig.mode === "sources" && !canGenerateSource && !ownSourceControlsBusy && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-amber-900" }, sourceText("input.research_sources_required", "Select a document, add a webpage, or add source text in review.")), confirmReplace && (() => {
+    const fill = (text, values2) => String(text).replace(/\{(\w+)\}/g, (match, name) => values2[name] == null ? match : String(values2[name]));
+    const values = { words: existingSourceWords, topic: sourceTopic.trim() || sourceText("input.replace_source_standards", "your attached standards") };
+    const keepText = () => {
+      setConfirmReplace(false);
+      if (writeButtonRef.current) writeButtonRef.current.focus();
+    };
+    return /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        "data-source-replace-confirm": true,
+        role: "alertdialog",
+        "aria-modal": "false",
+        "aria-labelledby": "allo-source-replace-title",
+        "aria-describedby": "allo-source-replace-desc",
+        onKeyDown: (e) => {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+            keepText();
+          }
+        },
+        className: "rounded-lg border-2 border-amber-400 bg-amber-50 p-3"
+      },
+      /* @__PURE__ */ React.createElement("h4", { id: "allo-source-replace-title", className: "text-sm font-bold text-amber-950" }, sourceText("input.replace_source_title", "Replace your source text?")),
+      /* @__PURE__ */ React.createElement("p", { id: "allo-source-replace-desc", className: "mt-1 text-xs text-amber-950" }, fill(sourceText("input.replace_source_body", "Your source has {words} words. A new passage about \u201C{topic}\u201D will replace them. You can undo this afterwards.", values), values)),
+      /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", ref: replaceKeepRef, "data-source-replace-keep": true, onClick: keepText, className: "min-h-11 rounded-md border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, sourceText("input.replace_source_keep", "Keep my text")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-replace-confirm-button": true, onClick: () => submitSource(true), className: "min-h-11 rounded-md bg-amber-800 px-3 text-sm font-bold text-white hover:bg-amber-900" }, sourceText("input.replace_source_confirm", "Replace with a new passage")))
+    );
+  })(), /* @__PURE__ */ React.createElement(
     "button",
     {
+      ref: writeButtonRef,
       "data-help-key": "source_generate_button",
       onClick: submitSource,
       disabled: reviewBeforeWriting ? ownSourceControlsBusy || !sourceTopic.trim() : !canGenerateSource,
       "aria-busy": isGeneratingSource,
-      className: "w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      className: "w-full bg-violet-700 text-white text-sm font-medium py-2 rounded-md hover:bg-violet-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     },
     isGeneratingSource ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none", size: 14 }) : /* @__PURE__ */ React.createElement(Pencil, { size: 14 }),
-    /* @__PURE__ */ React.createElement("span", { role: isGeneratingSource ? "status" : void 0, "aria-live": "polite", "aria-atomic": "true" }, isGeneratingSource ? generationStep || t("input.writing") : reviewBeforeWriting ? sourceText("input.research_review_sources", "Review sources") : t("input.generate"))
+    /* @__PURE__ */ React.createElement("span", { role: isGeneratingSource ? "status" : void 0, "aria-live": "polite", "aria-atomic": "true" }, isGeneratingSource ? generationStep || t("input.writing") : reviewBeforeWriting ? sourceText("input.research_review_sources", "Review sources") : sourceText("input.write_new_passage", "Write a new source passage"))
   ));
 }
 SourceGenPanel.getGradeMismatch = _getSourceGradeMismatch;

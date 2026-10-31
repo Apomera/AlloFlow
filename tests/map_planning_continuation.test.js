@@ -263,7 +263,7 @@ describe('dispatcher guide provenance',()=>{
   const host=fs.readFileSync(file,'utf8');
   const a=host.indexOf('const getLessonContext ='),b=host.indexOf('\n  };',a)+5;
   const getLessonContext=vi.fn(),trace=vi.fn(),window={AlloModules:{ExportHandlers:{getLessonContext}}};
-  const wrapper=new Function('window','history','targetStandards','inputText','activeUnitId','selectedReadingSourceId',host.slice(a,b)+';return getLessonContext;')(window,[],[],'','unit','source');
+  const wrapper=new Function('window','history','targetStandards','inputText','activeUnitId','selectedReadingSourceId','_alloReadingSourceChoice',host.slice(a,b)+';return getLessonContext;')(window,[],[],'','unit','source',()=>'source');
   wrapper([],{trace});
   expect(getLessonContext.mock.calls[0][1].trace).toBe(trace);
   expect(host).toContain('}, [organizerHydrationKey]);');

@@ -472,6 +472,15 @@ const handleWizardComplete = (data, deps) => {
     if (finalData.format) {
         setTextFormat(finalData.format);
     }
+    // Text from the wizard opens in the Source view like every other way in;
+    // text that replaces an existing source can be undone there.
+    const showSource = () => { if (typeof deps.openSourceView === 'function') deps.openSourceView({ focus: false }); };
+    const putSourceText = (text) => {
+      const previous = typeof inputText === 'string' ? inputText : '';
+      setInputText(text);
+      if (previous.trim() && previous !== text && typeof deps.setSourceReplacement === 'function') deps.setSourceReplacement({ status: 'replaced', previous, text, topic: '', at: Date.now() });
+      showSource();
+    };
     if (finalData.sourceMode === 'generate') {
       if (typeof deps.setUseOwnSources === 'function') deps.setUseOwnSources(finalData.useOwnSources === true);
       if (typeof deps.setSelectedOwnSourceIds === 'function') deps.setSelectedOwnSourceIds(Array.isArray(finalData.selectedOwnSourceIds) ? finalData.selectedOwnSourceIds.slice() : null);
@@ -487,6 +496,7 @@ const handleWizardComplete = (data, deps) => {
       if (finalData.vocabulary) setSourceVocabulary(finalData.vocabulary);
       setShowSourceGen(true);
       setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
+      showSource();
       setTimeout(() => {
           handleGenerateSource({
               topic: finalData.topic,
@@ -506,7 +516,7 @@ const handleWizardComplete = (data, deps) => {
       }, 500);
     } else if (finalData.sourceMode === 'url' || finalData.sourceMode === 'search' || finalData.sourceMode === 'storybook') {
       if (finalData.fetchedContent) {
-          setInputText(finalData.fetchedContent);
+          putSourceText(finalData.fetchedContent);
       }
       const topic = finalData.searchQuery || finalData.topic;
       if (topic) setSourceTopic(topic);
@@ -542,7 +552,7 @@ const handleWizardComplete = (data, deps) => {
           if (fileInputRef.current) fileInputRef.current.click();
       }, 200);
     } else if (finalData.materialType === 'text') {
-      setInputText(finalData.topic);
+      putSourceText(finalData.topic);
     }
     setShowWizard(false);
     safeSetItem('allo_wizard_completed', 'true');

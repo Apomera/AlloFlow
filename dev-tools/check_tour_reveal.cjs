@@ -238,7 +238,7 @@ async function sectionCheck(page) {
     if (!section.available) problems.push('sections: no Jump to list');
     else {
       if (section.groups.length !== 5 || section.groups.reduce((n, g) => n + g.count, 0) !== ids.length) problems.push('sections: jump list does not cover every step exactly once');
-      if (!/Understand & access · 7 \/ 11/.test(section.progress)) problems.push('sections: progress label is ' + section.progress);
+      if (!/Understand & access · 6 \/ 10/.test(section.progress)) problems.push('sections: progress label is ' + section.progress);
       if (section.afterNext !== 'tour-tool-visual') problems.push('sections: Next left the section (went to ' + section.afterNext + ')');
       if (!section.ended) problems.push('sections: Finish did not end the tour');
     }

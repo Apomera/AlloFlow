@@ -1240,7 +1240,7 @@ var createContentEngine = function(deps) {
       setSelectedLanguages, setShowSourceGen, setStudentInterests,
       setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen,
       setPhonicsData, setRevisionData, setSelectionMenu, handleSimplifiedTextChange,
-      setPlayingContentId, setPlaybackState,
+      setPlayingContentId, setPlaybackState, setSourceReplacement,
       recordSourceProvenance, calculateReadability;
   var alloBotRef = { current: null };
   var isBotVisible = false;
@@ -1299,6 +1299,7 @@ var createContentEngine = function(deps) {
     setLanguageInput = s.setLanguageInput; setLeveledTextLanguage = s.setLeveledTextLanguage;
     setSelectedConcepts = s.setSelectedConcepts; setSelectedLanguages = s.setSelectedLanguages;
     setShowSourceGen = s.setShowSourceGen; setStudentInterests = s.setStudentInterests;
+    setSourceReplacement = s.setSourceReplacement;
     setCustomReviseInstruction = s.setCustomReviseInstruction;
     setDefinitionData = s.setDefinitionData; setIsCustomReviseOpen = s.setIsCustomReviseOpen;
     setPhonicsData = s.setPhonicsData; setRevisionData = s.setRevisionData;
@@ -1599,7 +1600,19 @@ var createContentEngine = function(deps) {
     // in the interface language; leveledTextLanguage belongs to the downstream
     // adaptation/translation step and must not translate the source prematurely.
     const effectiveLanguage = currentUiLanguage || 'English';
-    if (!effTopic.trim() && (!effStandards || effStandards.length === 0)) return;
+    if (!effTopic.trim() && (!effStandards || effStandards.length === 0)) {
+        // Used to return silently, so a click that did nothing looked like a hang.
+        let needTopic = '';
+        try { needTopic = t('input.source_topic_needed'); } catch (_) {}
+        if (typeof needTopic !== 'string' || !needTopic.trim() || needTopic === 'input.source_topic_needed') needTopic = 'Add a topic, or attach a standard, so AI knows what to write about. Your source text was not changed.';
+        addToast(needTopic, 'info');
+        return;
+    }
+    // The source as it was when writing started. A result never silently
+    // replaces source text: if the box has text, the caller must have confirmed
+    // the replacement first, and the box must still hold what it held then.
+    // Otherwise the new passage is offered for review instead.
+    const sourceTextAtStart = typeof inputText === 'string' ? inputText : '';
     const dialectInstruction = effectiveLanguage !== 'English'
         ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions."
         : "";
@@ -1614,7 +1627,20 @@ var createContentEngine = function(deps) {
     // could overwrite edits made while the provider was running.
     const publishSource = function(text) {
         if (overrides?.isCurrent && !overrides.isCurrent()) return;
+        let liveText = sourceTextAtStart;
+        try { const live = _s().inputText; if (typeof live === 'string') liveText = live; } catch (_) {}
+        const editedMeanwhile = liveText !== sourceTextAtStart;
+        const replacing = !!liveText.trim();
+        const record = typeof setSourceReplacement === 'function' ? setSourceReplacement : null;
+        const replacement = { text, previous: liveText, topic: String(effTopic || '').trim(), at: Date.now() };
+        if (record && replacing && (editedMeanwhile || overrides?.replaceConfirmed !== true)) {
+            record({ ...replacement, status: 'review', reason: editedMeanwhile ? 'edited' : 'unconfirmed' });
+            if (switchView) setActiveView('input');
+            setShowSourceGen(false);
+            return;
+        }
         setInputText(text);
+        if (record) record(replacing ? { ...replacement, status: 'replaced' } : null);
         if (switchView) { setGeneratedContent(null); setActiveView('input'); }
         setShowSourceGen(false);
     };

@@ -7,7 +7,7 @@ const CODE = 'ABC23', KEY = 'synthetic_join_secret_1234567890';
 const START = 1792872000000, TTL = 6 * 60 * 60 * 1000;
 
 function fixture() {
-  let now = START, locked = false, available = true, afterAcquire;
+  let now = START, locked = false, available = true, afterAcquire, afterMarkerRead;
   const values = new Map(), properties = new Map(), puts = [], reads = [], removals = [];
   class Clock extends Date { constructor(...args) { super(...(args.length ? args : [now])); } static now() { return now; } }
   const cache = {
@@ -18,7 +18,13 @@ function fixture() {
     getAll: keys => Object.fromEntries(keys.filter(key => values.has(key)).map(key => [key, values.get(key)])),
   };
   const props = {
-    getProperty(key) { reads.push(key); return properties.get(key) ?? null; },
+    getProperty(key) {
+      reads.push(key);
+      const value = properties.get(key) ?? null;
+      // Runs another request's lifecycle change right after this read returns.
+      if (afterMarkerRead && key.indexOf('sess_') === 0) { const f = afterMarkerRead; afterMarkerRead = null; f(); }
+      return value;
+    },
     setProperty: (key, value) => properties.set(key, String(value)),
     deleteProperty: key => properties.delete(key),
     getProperties: () => Object.fromEntries(properties),
@@ -37,6 +43,7 @@ function fixture() {
     time(value) { now = value; },
     unavailable() { available = false; },
     afterAcquire(fn) { afterAcquire = fn; },
+    afterMarkerRead(fn) { afterMarkerRead = fn; },
     marker(value = KEY + '|' + START) { properties.set('sess_' + CODE, value); },
     lookup() { return context.sessionSecretFor(CODE, cache, props); },
     call(p) { return JSON.parse(context.handle({ admin: properties.get('admin'), ...p }).getContent()); },
@@ -97,18 +104,40 @@ describe('mailbox absolute session access window', () => {
     expect(f.values.has('s:' + CODE)).toBe(false);
   });
 
-  it('re-reads the current marker only after acquiring the lifecycle lock, preserving a replacement session', () => {
+  // v27: a cache miss refills WITHOUT the script lock (every polling device used
+  // to queue on it at once), then re-reads the marker. A lifecycle change that
+  // races the refill must still win.
+  it('a cache-miss refill with a valid marker takes no lock', () => {
+    const f = fixture(); f.marker(); f.unavailable();
+    expect(f.lookup()).toBe(KEY);
+    expect(JSON.parse(f.values.get('s:' + CODE))).toMatchObject({ k: KEY, at: START });
+  });
+
+  it('a replacement session that races the refill wins: the stale key is never served or left cached', () => {
     const f = fixture(); f.marker(); f.values.set('s:' + CODE, KEY);
     const replacement = 'replacement_join_secret_123456789';
-    f.afterAcquire(() => { f.time(START + 1000); f.marker(replacement + '|' + (START + 1000)); });
+    f.afterMarkerRead(() => { f.time(START + 1000); f.marker(replacement + '|' + (START + 1000)); });
     expect(f.lookup()).toBe(replacement);
     expect(JSON.parse(f.values.get('s:' + CODE))).toMatchObject({ k: replacement, at: START + 1000 });
   });
 
-  it('cannot rewarm a legacy cache after close wins the lifecycle lock', () => {
+  it('a close that races the refill wins: the session is not revived', () => {
     const f = fixture(); f.marker(); f.values.set('s:' + CODE, KEY);
-    f.afterAcquire(() => f.properties.delete('sess_' + CODE));
-    expect(f.lookup()).toBeNull(); expect(f.puts).toHaveLength(0);
+    f.afterMarkerRead(() => f.properties.delete('sess_' + CODE));
+    expect(f.lookup()).toBeNull();
+    expect(f.values.has('s:' + CODE)).toBe(false);
+  });
+
+  it('a close that lands after the refill wrote still removes the cached key', () => {
+    const f = fixture(); f.marker();
+    expect(f.lookup()).toBe(KEY);
+    expect(f.values.has('s:' + CODE)).toBe(true);
+    // Simulate the refill writing again between close's cache removal and marker deletion.
+    const realDelete = f.props.deleteProperty;
+    f.props.deleteProperty = (key) => { f.values.set('s:' + CODE, JSON.stringify({ v: 1, k: KEY, at: START, expiresAt: START + TTL })); return realDelete(key); };
+    expect(f.context.closeSession(f.cache, f.props, CODE)).toBe(true);
+    expect(f.values.has('s:' + CODE)).toBe(false);
+    expect(f.lookup()).toBeNull();
   });
 
   it('prunes expired and malformed markers with their known ephemeral cache, preserving an active session and other settings', () => {
@@ -134,13 +163,15 @@ describe('mailbox absolute session access window', () => {
     expect(f.lookup()).toBeNull(); expect(f.values.has('d:' + CODE + ':s')).toBe(false);
   });
 
-  it('returns retryable busy rather than falsely ending a cold session when its lock is unavailable', () => {
+  it('a busy lock never ends a session: a valid cold one still joins, cleanup and lifecycle answer retryable busy', () => {
     const f = fixture(); f.marker(); f.unavailable();
-    expect(() => f.lookup()).toThrow('mailbox-session-busy');
-    expect(f.http({ a: 'join', c: CODE, k: KEY })).toEqual({ ok: false, e: 'busy' });
+    expect(f.lookup(), 'joins and polls still resolve the session').toBe(KEY);
     expect(f.call({ a: 'open', c: CODE, k: KEY })).toEqual({ ok: false, e: 'busy' });
     expect(f.call({ a: 'closeall' })).toEqual({ ok: false, e: 'busy' });
     expect(f.properties.get('sess_' + CODE)).toBe(KEY + '|' + START);
+    const g = fixture(); g.marker(); g.time(START + TTL); g.unavailable();
+    expect(() => g.lookup()).toThrow('mailbox-session-busy');
+    expect(g.properties.get('sess_' + CODE), 'expiry cleanup waits for the lock').toBe(KEY + '|' + START);
   });
 
   it('does not turn unknown or malformed session codes into expensive cache cleanup jobs', () => {
@@ -165,5 +196,27 @@ describe('mailbox absolute session access window', () => {
     expect(f.lookup()).toBe(KEY);
     expect(f.context.closeSession(f.cache, f.props, CODE)).toBe(true);
     expect(f.lookup()).toBeNull();
+  });
+});
+
+// v27 status page: approximate per-action request counts for the last ten
+// minutes, so "something is hammering the mailbox" becomes "this action, this often".
+describe('mailbox load counter', () => {
+  it('counts each POST by action per minute and reports the last ten minutes on GET', () => {
+    const f = fixture();
+    f.http({ a: 'hello' }); f.http({ a: 'hello' }); f.http({ a: 'dget' });
+    f.time(START + 60000);
+    f.http({ a: 'recv' }); f.http({ a: '<script>' });
+    const status = JSON.parse(f.context.doGet().getContent());
+    expect(status).toMatchObject({ ok: true, v: 27 });
+    expect(status.load.byAction).toEqual({ hello: 2, dget: 1, recv: 1, other: 1 });
+    expect(status.load.perMinute.slice(0, 2)).toEqual([2, 3]);
+    f.time(START + 11 * 60000);
+    expect(JSON.parse(f.context.doGet().getContent()).load.byAction).toEqual({});
+  });
+  it('a counter failure never fails the request', () => {
+    const f = fixture();
+    f.cache.put = () => { throw new Error('cache down'); };
+    expect(f.http({ a: 'hello' })).toMatchObject({ ok: true, v: 27 });
   });
 });

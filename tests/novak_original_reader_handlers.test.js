@@ -11,6 +11,10 @@ const handlerStart = shell.indexOf('  const openReadingArtifact = ');
 const handlerEnd = shell.indexOf('  const handleCreateAdaptedCompanion = ', handlerStart);
 if (handlerStart < 0 || handlerEnd < 0) throw new Error('Original reader handlers could not be found');
 const handlerSource = shell.slice(handlerStart, handlerEnd);
+// Based on's effective choice is computed by the host (Automatic = the source in use outside a unit).
+const ruleStart = shell.indexOf('  const _alloReadingSourceChoice = () =>');
+if (ruleStart < 0) throw new Error('Based on rule could not be found');
+const ruleSource = shell.slice(ruleStart, shell.indexOf('\n', ruleStart) + 1);
 const buildHandlers = new Function('deps', `
   const {
     history, inputText, sourceTopic, gradeLevel, leveledTextLanguage, activeUnitId, selectedReadingSourceId,
@@ -19,7 +23,7 @@ const buildHandlers = new Function('deps', `
     setGeneratedContent, setActiveView, setHistory, addToast, callGemini, handleGenerate,
     supportDraftSessionRef, requestReadingSupportTransition, _resourceMutationStateRef
   } = deps;
-  ${handlerSource}
+  ${ruleSource}  ${handlerSource}
   return { handleReadOriginal, openReadingArtifact };
 `);
 

@@ -449,11 +449,11 @@ function ClassMailboxSetupView(props) {
     onClick: connectMailbox,
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60"
-  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 26 && /*#__PURE__*/React.createElement("div", {
+  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 27 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-800 mb-2"
-  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". Update it to v26 to enforce the original six-hour live-session access deadline and preserve teacher assignments when students reconnect. Existing Drive delivery, lesson boards and live tools remain available at the same URL:"), /*#__PURE__*/React.createElement("ol", {
+  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". Update it to v27 so a busy class does not overload it (Google limits how many mailbox requests can run at once). It keeps the six-hour live-session access deadline and teacher assignments when students reconnect. Existing Drive delivery, lesson boards and live tools remain available at the same URL:"), /*#__PURE__*/React.createElement("ol", {
     className: "list-decimal list-inside text-xs text-amber-900 space-y-1"
   }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("button", {
     type: "button",

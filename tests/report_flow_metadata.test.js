@@ -39,7 +39,11 @@ function originalAction(options = {}) {
   const start = host.indexOf('  const handleReadOriginal = (selected = null) => {');
   const end = host.indexOf('  const handleCreateAdaptedCompanion =', start);
   if (start < 0 || end <= start) throw new Error('Original-reading host action boundaries changed');
-  const run = new Function('deps', 'const {window, history, supportDraftSessionRef, requestReadingSupportTransition, selectedReadingSourceId, activeUnitId, inputText, leveledTextLanguage, gradeLevel, sourceTopic, addToast, handleGenerate, openReadingArtifact, setHistory} = deps;\n' + host.slice(start, end) + '\nreturn handleReadOriginal;')(deps);
+  // Based on's effective choice comes from the host rule (Automatic = the source in use outside a unit).
+  const ruleStart = host.indexOf('  const _alloReadingSourceChoice = () =>');
+  if (ruleStart < 0) throw new Error('Based on rule boundaries changed');
+  const rule = host.slice(ruleStart, host.indexOf('\n', ruleStart) + 1);
+  const run = new Function('deps', 'const {window, history, supportDraftSessionRef, requestReadingSupportTransition, selectedReadingSourceId, activeUnitId, inputText, leveledTextLanguage, gradeLevel, sourceTopic, addToast, handleGenerate, openReadingArtifact, setHistory} = deps;\n' + rule + host.slice(start, end) + '\nreturn handleReadOriginal;')(deps);
   return { run, deps, api, history };
 }
 
