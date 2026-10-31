@@ -1,5 +1,12 @@
 [
   {
+    "id": "rel_20261031T022940Z_v1_15",
+    "version": "1.15",
+    "canvas_url": "https://share.gemini.google/XpSBJ64aXPvh",
+    "released": "2026-10-31T02:29:40.628Z",
+    "notes": "Canvas build with the 10-30 deploy: the redesigned Source workflow (one Source view editor, draft and in-use versions, source check, Change source with Undo, Based on follows your source), version badges, Read aloud, and Class Mailbox v27."
+  },
+  {
     "id": "rel_20261030T113810Z_v1_14",
     "version": "1.14",
     "canvas_url": "https://share.gemini.google/wUEhxuDEF82C",
